@@ -1,5 +1,14 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,11 +18,20 @@
  * the root directory of this source tree.
  */
 
-import os from 'os';
-import {asyncExecute, safeSpawn} from './process';
+var _os;
 
-const DEFAULT_JOIN_TIMEOUT = 5000;
-let SCRIBE_CAT_COMMAND = 'scribe_cat';
+function _load_os() {
+  return _os = _interopRequireDefault(require('os'));
+}
+
+var _process;
+
+function _load_process() {
+  return _process = require('./process');
+}
+
+var DEFAULT_JOIN_TIMEOUT = 5000;
+var SCRIBE_CAT_COMMAND = 'scribe_cat';
 
 /**
  * A wrapper of `scribe_cat` (https://github.com/facebookarchive/scribe/blob/master/examples/scribe_cat)
@@ -21,12 +39,11 @@ let SCRIBE_CAT_COMMAND = 'scribe_cat';
  * call `scribeProcess.write($object)` to save an JSON schemaed Object into scribe category.
  * It will also recover from `scribe_cat` failure automatically.
  */
-export default class ScribeProcess {
-  _scribeCategory: string;
-  _childProcess: ?child_process$ChildProcess;
-  _childProcessRunning: WeakMap<child_process$ChildProcess, boolean>;
 
-  constructor(scribeCategory: string) {
+var ScribeProcess = (function () {
+  function ScribeProcess(scribeCategory) {
+    _classCallCheck(this, ScribeProcess);
+
     this._scribeCategory = scribeCategory;
     this._childProcessRunning = new WeakMap();
     this._getOrCreateChildProcess();
@@ -35,70 +52,100 @@ export default class ScribeProcess {
   /**
    * Check if `scribe_cat` exists in PATH.
    */
-  static async isScribeCatOnPath(): Promise<boolean> {
-    const {exitCode} = await asyncExecute('which', [SCRIBE_CAT_COMMAND]);
-    return exitCode === 0;
-  }
 
-  /**
-   * Write a string to a Scribe category.
-   * Ensure newlines are properly escaped.
-   */
-  async write(message: string): Promise<void> {
-    const child = await this._getOrCreateChildProcess();
-    return new Promise((resolve, reject) => {
-      child.stdin.write(`${message}${os.EOL}`, resolve);
-    });
-  }
+  _createClass(ScribeProcess, [{
+    key: 'write',
 
-  dispose(): Promise<void> {
-    if (this._childProcess != null) {
-      const child = this._childProcess;
-      if (this._childProcessRunning.get(child)) {
-        child.kill();
-      }
-    }
-    return Promise.resolve();
-  }
-
-  join(timeout: number = DEFAULT_JOIN_TIMEOUT): Promise<void> {
-    if (this._childProcess != null) {
-      const child = this._childProcess;
-      child.stdin.end();
-      return new Promise(resolve => {
-        child.on('exit', () => resolve());
-        setTimeout(resolve, timeout);
+    /**
+     * Write a string to a Scribe category.
+     * Ensure newlines are properly escaped.
+     */
+    value: _asyncToGenerator(function* (message) {
+      var child = yield this._getOrCreateChildProcess();
+      return new Promise(function (resolve, reject) {
+        child.stdin.write('' + message + (_os || _load_os()).default.EOL, resolve);
       });
-    } else {
+    })
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      if (this._childProcess != null) {
+        var child = this._childProcess;
+        if (this._childProcessRunning.get(child)) {
+          child.kill();
+        }
+      }
       return Promise.resolve();
     }
-  }
+  }, {
+    key: 'join',
+    value: function join() {
+      var _this = this;
 
-  _getOrCreateChildProcess(): child_process$ChildProcess {
-    if (this._childProcess) {
-      return this._childProcess;
+      var timeout = arguments.length <= 0 || arguments[0] === undefined ? DEFAULT_JOIN_TIMEOUT : arguments[0];
+
+      if (this._childProcess != null) {
+        var _ret = (function () {
+          var child = _this._childProcess;
+          child.stdin.end();
+          return {
+            v: new Promise(function (resolve) {
+              child.on('exit', function () {
+                return resolve();
+              });
+              setTimeout(resolve, timeout);
+            })
+          };
+        })();
+
+        if (typeof _ret === 'object') return _ret.v;
+      } else {
+        return Promise.resolve();
+      }
     }
+  }, {
+    key: '_getOrCreateChildProcess',
+    value: function _getOrCreateChildProcess() {
+      var _this2 = this;
 
-    const child = this._childProcess = safeSpawn(SCRIBE_CAT_COMMAND, [this._scribeCategory]);
-    child.stdin.setDefaultEncoding('utf8');
-    this._childProcessRunning.set(child, true);
-    child.on('error', error => {
-      this._childProcess = null;
-      this._childProcessRunning.set(child, false);
-    });
-    child.on('exit', e => {
-      this._childProcess = null;
-      this._childProcessRunning.set(child, false);
-    });
+      if (this._childProcess) {
+        return this._childProcess;
+      }
 
-    return child;
-  }
-}
+      var child = this._childProcess = (0, (_process || _load_process()).safeSpawn)(SCRIBE_CAT_COMMAND, [this._scribeCategory]);
+      child.stdin.setDefaultEncoding('utf8');
+      this._childProcessRunning.set(child, true);
+      child.on('error', function (error) {
+        _this2._childProcess = null;
+        _this2._childProcessRunning.set(child, false);
+      });
+      child.on('exit', function (e) {
+        _this2._childProcess = null;
+        _this2._childProcessRunning.set(child, false);
+      });
 
-export const __test__ = {
-  setScribeCatCommand(newCommand: string): string {
-    const originalCommand = SCRIBE_CAT_COMMAND;
+      return child;
+    }
+  }], [{
+    key: 'isScribeCatOnPath',
+    value: _asyncToGenerator(function* () {
+      var _ref = yield (0, (_process || _load_process()).asyncExecute)('which', [SCRIBE_CAT_COMMAND]);
+
+      var exitCode = _ref.exitCode;
+
+      return exitCode === 0;
+    })
+  }]);
+
+  return ScribeProcess;
+})();
+
+exports.default = ScribeProcess;
+var __test__ = {
+  setScribeCatCommand: function setScribeCatCommand(newCommand) {
+    var originalCommand = SCRIBE_CAT_COMMAND;
     SCRIBE_CAT_COMMAND = newCommand;
     return originalCommand;
-  },
+  }
 };
+exports.__test__ = __test__;

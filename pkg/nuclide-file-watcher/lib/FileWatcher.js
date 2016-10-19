@@ -1,5 +1,10 @@
-'use babel';
-/* @flow */
+var _createDecoratedClass = (function () { function defineProperties(target, descriptors, initializers) { for (var i = 0; i < descriptors.length; i++) { var descriptor = descriptors[i]; var decorators = descriptor.decorators; var key = descriptor.key; delete descriptor.key; delete descriptor.decorators; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor || descriptor.initializer) descriptor.writable = true; if (decorators) { for (var f = 0; f < decorators.length; f++) { var decorator = decorators[f]; if (typeof decorator === 'function') { descriptor = decorator(target, key, descriptor) || descriptor; } else { throw new TypeError('The decorator for method ' + descriptor.key + ' is of the invalid type ' + typeof decorator); } } if (descriptor.initializer !== undefined) { initializers[key] = descriptor; continue; } } Object.defineProperty(target, key, descriptor); } } return function (Constructor, protoProps, staticProps, protoInitializers, staticInitializers) { if (protoProps) defineProperties(Constructor.prototype, protoProps, protoInitializers); if (staticProps) defineProperties(Constructor, staticProps, staticInitializers); return Constructor; }; })();
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,85 +14,116 @@
  * the root directory of this source tree.
  */
 
-import {CompositeDisposable} from 'atom';
-import {trackTiming, track} from '../../nuclide-analytics';
-import nuclideUri from '../../commons-node/nuclideUri';
-import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
-import {getLogger} from '../../nuclide-logging';
+var _atom;
 
-const logger = getLogger();
+function _load_atom() {
+  return _atom = require('atom');
+}
 
-class FileWatcher {
+var _nuclideAnalytics;
 
-  _editor: TextEditor;
-  _subscriptions: ?CompositeDisposable;
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
 
-  constructor(editor: TextEditor) {
+var _commonsNodeNuclideUri;
+
+function _load_commonsNodeNuclideUri() {
+  return _commonsNodeNuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+var _nuclideLogging;
+
+function _load_nuclideLogging() {
+  return _nuclideLogging = require('../../nuclide-logging');
+}
+
+var logger = (0, (_nuclideLogging || _load_nuclideLogging()).getLogger)();
+
+var FileWatcher = (function () {
+  function FileWatcher(editor) {
+    var _this = this;
+
+    _classCallCheck(this, FileWatcher);
+
     this._editor = editor;
     if (this._editor == null) {
       logger.warn('No editor instance on this._editor');
       return;
     }
-    const _subscriptions = new CompositeDisposable();
-    _subscriptions.add(this._editor.onDidConflict(() => {
-      if (this._shouldPromptToReload()) {
-        logger.info(`Conflict at file: ${this._editor.getPath() || 'File not found'}`);
-        this._promptReload();
+    var _subscriptions = new (_atom || _load_atom()).CompositeDisposable();
+    _subscriptions.add(this._editor.onDidConflict(function () {
+      if (_this._shouldPromptToReload()) {
+        logger.info('Conflict at file: ' + (_this._editor.getPath() || 'File not found'));
+        _this._promptReload();
       }
     }));
     this._subscriptions = _subscriptions;
   }
 
-  _shouldPromptToReload(): boolean {
-    return this._editor.getBuffer().isInConflict();
-  }
-
-  @trackTiming('file-watcher:promptReload')
-  async _promptReload(): Promise<any> {
-    const filePath = this._editor.getPath();
-    if (filePath == null) {
-      return;
+  _createDecoratedClass(FileWatcher, [{
+    key: '_shouldPromptToReload',
+    value: function _shouldPromptToReload() {
+      return this._editor.getBuffer().isInConflict();
     }
-    const encoding = this._editor.getEncoding();
-    const fileName = nuclideUri.basename(filePath);
-    const choice = atom.confirm({
-      message: fileName + ' has changed on disk.',
-      buttons: ['Reload', 'Compare', 'Ignore'],
-    });
-    if (choice === 2) {
-      track('file-watcher:promptReload-ignoreChosen');
-      return;
-    }
-    if (choice === 0) {
-      track('file-watcher:promptReload-reloadChosen');
-      const buffer = this._editor.getBuffer();
-      if (buffer) {
-        buffer.reload();
+  }, {
+    key: '_promptReload',
+    decorators: [(0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackTiming)('file-watcher:promptReload')],
+    value: _asyncToGenerator(function* () {
+      var filePath = this._editor.getPath();
+      if (filePath == null) {
+        return;
       }
-      return;
+      var encoding = this._editor.getEncoding();
+      var fileName = (_commonsNodeNuclideUri || _load_commonsNodeNuclideUri()).default.basename(filePath);
+      var choice = atom.confirm({
+        message: fileName + ' has changed on disk.',
+        buttons: ['Reload', 'Compare', 'Ignore']
+      });
+      if (choice === 2) {
+        (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('file-watcher:promptReload-ignoreChosen');
+        return;
+      }
+      if (choice === 0) {
+        (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('file-watcher:promptReload-reloadChosen');
+        var buffer = this._editor.getBuffer();
+        if (buffer) {
+          buffer.reload();
+        }
+        return;
+      }
+      (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('file-watcher:promptReload-compareChosen');
+
+      // Load the file contents locally or remotely.
+      var service = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getFileSystemServiceByNuclideUri)(filePath);
+      var localFilePath = (_commonsNodeNuclideUri || _load_commonsNodeNuclideUri()).default.getPath(filePath);
+      var contents = (yield service.readFile(localFilePath)).toString(encoding);
+
+      // Open a right split pane to compare the contents.
+      // TODO: We can use the diff-view here when ready.
+      var splitEditor = yield atom.workspace.open('', { split: 'right' });
+
+      splitEditor.insertText(contents);
+      splitEditor.setGrammar(this._editor.getGrammar());
+    })
+  }, {
+    key: 'destroy',
+    value: function destroy() {
+      if (!this._subscriptions) {
+        return;
+      }
+      this._subscriptions.dispose();
+      this._subscriptions = null;
     }
-    track('file-watcher:promptReload-compareChosen');
+  }]);
 
-    // Load the file contents locally or remotely.
-    const service = getFileSystemServiceByNuclideUri(filePath);
-    const localFilePath = nuclideUri.getPath(filePath);
-    const contents = (await service.readFile(localFilePath)).toString(encoding);
-
-    // Open a right split pane to compare the contents.
-    // TODO: We can use the diff-view here when ready.
-    const splitEditor = await atom.workspace.open('', {split: 'right'});
-
-    splitEditor.insertText(contents);
-    splitEditor.setGrammar(this._editor.getGrammar());
-  }
-
-  destroy() {
-    if (!this._subscriptions) {
-      return;
-    }
-    this._subscriptions.dispose();
-    this._subscriptions = null;
-  }
-}
+  return FileWatcher;
+})();
 
 module.exports = FileWatcher;

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,84 +10,83 @@
  * the root directory of this source tree.
  */
 
-import type {
-  Provider,
-  ProviderType,
-} from '../../nuclide-quick-open/lib/types';
-import type {
-  FileResult,
-} from '../../nuclide-quick-open/lib/rpc-types';
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
-import {
-  RemoteDirectory,
-  getFuzzyFileSearchServiceByNuclideUri,
-} from '../../nuclide-remote-connection';
+var _nuclideRemoteConnection;
 
-import {getIgnoredNames} from './utils';
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
 
-export default ({
+var _utils;
+
+function _load_utils() {
+  return _utils = require('./utils');
+}
+
+exports.default = {
   // Give preference to filename results in OmniSearch.
-  getPriority: () => 1,
+  getPriority: function getPriority() {
+    return 1;
+  },
 
-  getName(): string {
+  getName: function getName() {
     return 'FuzzyFileNameProvider';
   },
 
-  getProviderType(): ProviderType {
+  getProviderType: function getProviderType() {
     return 'DIRECTORY';
   },
 
-  isRenderable(): boolean {
+  isRenderable: function isRenderable() {
     return true;
   },
 
-  getDebounceDelay(): number {
+  getDebounceDelay: function getDebounceDelay() {
     return 0;
   },
 
-  getAction(): string {
+  getAction: function getAction() {
     return 'nuclide-fuzzy-filename-provider:toggle-provider';
   },
 
-  getPromptText(): string {
+  getPromptText: function getPromptText() {
     return 'Fuzzy File Name Search';
   },
 
-  getTabTitle(): string {
+  getTabTitle: function getTabTitle() {
     return 'Filenames';
   },
 
-  isEligibleForDirectory(directory: atom$Directory): Promise<boolean> {
+  isEligibleForDirectory: function isEligibleForDirectory(directory) {
     return directory.exists();
   },
 
-  async executeQuery(query: string, directory?: atom$Directory): Promise<Array<FileResult>> {
+  executeQuery: _asyncToGenerator(function* (query, directory) {
     if (query.length === 0) {
       return [];
     }
 
     if (directory == null) {
-      throw new Error(
-        'FuzzyFileNameProvider is a directory-specific provider but its executeQuery method was'
-        + ' called without a directory argument.',
-      );
+      throw new Error('FuzzyFileNameProvider is a directory-specific provider but its executeQuery method was' + ' called without a directory argument.');
     }
 
-    const directoryPath = directory.getPath();
-    const service = getFuzzyFileSearchServiceByNuclideUri(directoryPath);
-    const results = await service.queryFuzzyFile(directoryPath, query, getIgnoredNames());
+    var directoryPath = directory.getPath();
+    var service = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getFuzzyFileSearchServiceByNuclideUri)(directoryPath);
+    var results = yield service.queryFuzzyFile(directoryPath, query, (0, (_utils || _load_utils()).getIgnoredNames)());
 
     // Take the `nuclide://<host>` prefix into account for matchIndexes of remote files.
-    if (RemoteDirectory.isRemoteDirectory(directory)) {
-      const remoteDir: RemoteDirectory = (directory: any);
-      const indexOffset = directoryPath.length - remoteDir.getLocalPath().length;
-      for (let i = 0; i < results.length; i++) {
-        for (let j = 0; j < results[i].matchIndexes.length; j++) {
+    if ((_nuclideRemoteConnection || _load_nuclideRemoteConnection()).RemoteDirectory.isRemoteDirectory(directory)) {
+      var remoteDir = directory;
+      var indexOffset = directoryPath.length - remoteDir.getLocalPath().length;
+      for (var i = 0; i < results.length; i++) {
+        for (var j = 0; j < results[i].matchIndexes.length; j++) {
           results[i].matchIndexes[j] += indexOffset;
         }
       }
     }
 
-    return ((results: any): Array<FileResult>);
-  },
-}: Provider);
+    return results;
+  })
+};
+module.exports = exports.default;

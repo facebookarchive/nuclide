@@ -1,5 +1,8 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,14 +12,47 @@
  * the root directory of this source tree.
  */
 
-export {default as DebuggerInstance} from './DebuggerInstance';
-export {default as DebuggerProcessInfo} from './DebuggerProcessInfo';
-export {default as DebuggerLaunchAttachProvider} from './DebuggerLaunchAttachProvider';
+var _DebuggerInstance = require('./DebuggerInstance');
 
-export {
-  setOutputService,
-  getOutputService,
-  setNotificationService,
-  getNotificationService,
-  registerOutputWindowLogging,
-} from './AtomServiceContainer';
+exports.DebuggerInstance = _interopRequire(_DebuggerInstance);
+
+var _DebuggerProcessInfo = require('./DebuggerProcessInfo');
+
+exports.DebuggerProcessInfo = _interopRequire(_DebuggerProcessInfo);
+
+var _DebuggerLaunchAttachProvider = require('./DebuggerLaunchAttachProvider');
+
+exports.DebuggerLaunchAttachProvider = _interopRequire(_DebuggerLaunchAttachProvider);
+
+var _AtomServiceContainer = require('./AtomServiceContainer');
+
+Object.defineProperty(exports, 'setOutputService', {
+  enumerable: true,
+  get: function get() {
+    return _AtomServiceContainer.setOutputService;
+  }
+});
+Object.defineProperty(exports, 'getOutputService', {
+  enumerable: true,
+  get: function get() {
+    return _AtomServiceContainer.getOutputService;
+  }
+});
+Object.defineProperty(exports, 'setNotificationService', {
+  enumerable: true,
+  get: function get() {
+    return _AtomServiceContainer.setNotificationService;
+  }
+});
+Object.defineProperty(exports, 'getNotificationService', {
+  enumerable: true,
+  get: function get() {
+    return _AtomServiceContainer.getNotificationService;
+  }
+});
+Object.defineProperty(exports, 'registerOutputWindowLogging', {
+  enumerable: true,
+  get: function get() {
+    return _AtomServiceContainer.registerOutputWindowLogging;
+  }
+});

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -11,11 +12,16 @@
 
 // Use this module to import the global `WebInspector` with types.
 
-import type {WebInspector as WebInspectorType} from './types';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import invariant from 'assert';
+var _assert;
+
+function _load_assert() {
+  return _assert = _interopRequireDefault(require('assert'));
+}
 
 // Prevent accidental import for this file when `WebInspector` is not in scope.
-invariant(global.WebInspector != null);
+(0, (_assert || _load_assert()).default)(global.WebInspector != null);
 
-export default (global.WebInspector: WebInspectorType);
+exports.default = global.WebInspector;
+module.exports = exports.default;

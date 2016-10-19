@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,50 +10,69 @@
  * the root directory of this source tree.
  */
 
-import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
-import type {OutputService} from '../../nuclide-console/lib/types';
-import type {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
-import type {
-  NuclideDebuggerProvider,
-} from '../../nuclide-debugger-interfaces/service';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.createDebuggerProvider = createDebuggerProvider;
+exports.consumeOutputService = consumeOutputService;
+exports.consumeCwdApi = consumeCwdApi;
 
-import nuclideUri from '../../commons-node/nuclideUri';
-import {ReactNativeLaunchAttachProvider} from './debugging/ReactNativeLaunchAttachProvider';
-import invariant from 'assert';
-import Activation from './Activation';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-let activation: ?Activation = null;
+var _commonsNodeNuclideUri;
 
-export function activate(state: ?Object): void {
-  invariant(activation == null);
-  activation = new Activation(state);
+function _load_commonsNodeNuclideUri() {
+  return _commonsNodeNuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
 }
 
-export function deactivate(): void {
-  invariant(activation != null);
+var _debuggingReactNativeLaunchAttachProvider;
+
+function _load_debuggingReactNativeLaunchAttachProvider() {
+  return _debuggingReactNativeLaunchAttachProvider = require('./debugging/ReactNativeLaunchAttachProvider');
+}
+
+var _assert;
+
+function _load_assert() {
+  return _assert = _interopRequireDefault(require('assert'));
+}
+
+var _Activation;
+
+function _load_Activation() {
+  return _Activation = _interopRequireDefault(require('./Activation'));
+}
+
+var activation = null;
+
+function activate(state) {
+  (0, (_assert || _load_assert()).default)(activation == null);
+  activation = new (_Activation || _load_Activation()).default(state);
+}
+
+function deactivate() {
+  (0, (_assert || _load_assert()).default)(activation != null);
   activation.dispose();
   activation = null;
 }
 
-export function createDebuggerProvider(): NuclideDebuggerProvider {
+function createDebuggerProvider() {
   return {
     name: 'react-native',
-    getLaunchAttachProvider(connection: NuclideUri): ?DebuggerLaunchAttachProvider {
-      if (nuclideUri.isLocal(connection)) {
-        return new ReactNativeLaunchAttachProvider('React Native', connection);
+    getLaunchAttachProvider: function getLaunchAttachProvider(connection) {
+      if ((_commonsNodeNuclideUri || _load_commonsNodeNuclideUri()).default.isLocal(connection)) {
+        return new (_debuggingReactNativeLaunchAttachProvider || _load_debuggingReactNativeLaunchAttachProvider()).ReactNativeLaunchAttachProvider('React Native', connection);
       }
       return null;
-    },
+    }
   };
 }
 
-export function consumeOutputService(api: OutputService): void {
-  invariant(activation != null);
+function consumeOutputService(api) {
+  (0, (_assert || _load_assert()).default)(activation != null);
   return activation.consumeOutputService(api);
 }
 
-export function consumeCwdApi(api: CwdApi): void {
-  invariant(activation != null);
+function consumeCwdApi(api) {
+  (0, (_assert || _load_assert()).default)(activation != null);
   return activation.consumeCwdApi(api);
 }

@@ -1,5 +1,9 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.getConfig = getConfig;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,18 +13,18 @@
  * the root directory of this source tree.
  */
 
-import featureConfig from '../../commons-atom/featureConfig';
-import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
+var _commonsAtomFeatureConfig;
 
-type HackConfig = {
-  hhClientPath: string,
-  useIdeConnection: boolean,
-  logLevel: LogLevel,
-};
+function _load_commonsAtomFeatureConfig() {
+  return _commonsAtomFeatureConfig = _interopRequireDefault(require('../../commons-atom/featureConfig'));
+}
 
-export const HACK_CONFIG_PATH = 'nuclide-hack';
-export const SHOW_TYPE_COVERAGE_CONFIG_PATH = HACK_CONFIG_PATH + '.showTypeCoverage';
+var HACK_CONFIG_PATH = 'nuclide-hack';
+exports.HACK_CONFIG_PATH = HACK_CONFIG_PATH;
+var SHOW_TYPE_COVERAGE_CONFIG_PATH = HACK_CONFIG_PATH + '.showTypeCoverage';
 
-export function getConfig(): HackConfig {
-  return (featureConfig.get(HACK_CONFIG_PATH): any);
+exports.SHOW_TYPE_COVERAGE_CONFIG_PATH = SHOW_TYPE_COVERAGE_CONFIG_PATH;
+
+function getConfig() {
+  return (_commonsAtomFeatureConfig || _load_commonsAtomFeatureConfig()).default.get(HACK_CONFIG_PATH);
 }

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,47 +10,56 @@
  * the root directory of this source tree.
  */
 
-import type {Node} from 'ast-types-flow';
+exports.parseJSON = parseJSON;
+exports.babelPosToPoint = babelPosToPoint;
+exports.babelLocToRange = babelLocToRange;
 
-import invariant from 'assert';
-import {Point, Range} from 'atom';
-import parse from 'babel-core/lib/helpers/parse';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-type BabelPos = {
-  line: number,
-  column: number,
-};
+var _assert;
 
-type BabelLoc = {
-  start: BabelPos,
-  end: BabelPos,
-};
+function _load_assert() {
+  return _assert = _interopRequireDefault(require('assert'));
+}
+
+var _atom;
+
+function _load_atom() {
+  return _atom = require('atom');
+}
+
+var _babelCoreLibHelpersParse;
+
+function _load_babelCoreLibHelpersParse() {
+  return _babelCoreLibHelpersParse = _interopRequireDefault(require('babel-core/lib/helpers/parse'));
+}
 
 /**
  * Returns a Babel Expression AST node, or null if the parse does not succeed.
  */
-export function parseJSON(json: string): ?Node {
+
+function parseJSON(json) {
   // This messes up the positions but without it, babel won't parse the text as an expression.
-  const jsonWithParens = '(\n' + json + '\n)';
+  var jsonWithParens = '(\n' + json + '\n)';
   try {
-    const ast: Node = parse(jsonWithParens);
+    var ast = (0, (_babelCoreLibHelpersParse || _load_babelCoreLibHelpersParse()).default)(jsonWithParens);
     if (ast.type === 'File') {
-      invariant(ast.program.body[0].type === 'ExpressionStatement');
+      (0, (_assert || _load_assert()).default)(ast.program.body[0].type === 'ExpressionStatement');
       return ast.program.body[0].expression;
     } else if (ast.type === 'Program') {
-      invariant(ast.body[0].type === 'ExpressionStatement');
+      (0, (_assert || _load_assert()).default)(ast.body[0].type === 'ExpressionStatement');
       return ast.body[0].expression;
     }
   } catch (e) {}
   return null;
 }
 
-export function babelPosToPoint(pos: BabelPos): atom$Point {
+function babelPosToPoint(pos) {
   // Need to subtract 2: one to move from 1-indexed to 0-indexed, another to account for the open
   // paren we had to add on the first line.
-  return new Point(pos.line - 2, pos.column);
+  return new (_atom || _load_atom()).Point(pos.line - 2, pos.column);
 }
 
-export function babelLocToRange(loc: BabelLoc): atom$Range {
-  return new Range(babelPosToPoint(loc.start), babelPosToPoint(loc.end));
+function babelLocToRange(loc) {
+  return new (_atom || _load_atom()).Range(babelPosToPoint(loc.start), babelPosToPoint(loc.end));
 }

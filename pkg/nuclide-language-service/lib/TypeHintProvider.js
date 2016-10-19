@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,33 +10,34 @@
  * the root directory of this source tree.
  */
 
-import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
-import type {LanguageService} from './LanguageService';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {ConnectionCache} from '../../nuclide-remote-connection';
-import {getFileVersionOfEditor} from '../../nuclide-open-files';
-import {trackOperationTiming} from '../../nuclide-analytics';
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
-export type TypeHintConfig = {
-  version: string,
-  priority: number,
-  analyticsEventName: string,
-};
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-export class TypeHintProvider<T: LanguageService> {
-  providerName: string;
-  selector: string;
-  inclusionPriority: number;
-  _analyticsEventName: string;
-  _connectionToLanguageService: ConnectionCache<T>;
+var _nuclideRemoteConnection;
 
-  constructor(
-    name: string,
-    selector: string,
-    priority: number,
-    analyticsEventName: string,
-    connectionToLanguageService: ConnectionCache<T>,
-  ) {
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+var _nuclideOpenFiles;
+
+function _load_nuclideOpenFiles() {
+  return _nuclideOpenFiles = require('../../nuclide-open-files');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var TypeHintProvider = (function () {
+  function TypeHintProvider(name, selector, priority, analyticsEventName, connectionToLanguageService) {
+    _classCallCheck(this, TypeHintProvider);
+
     this.providerName = name;
     this.selector = selector;
     this.inclusionPriority = priority;
@@ -43,33 +45,29 @@ export class TypeHintProvider<T: LanguageService> {
     this._connectionToLanguageService = connectionToLanguageService;
   }
 
-  static register(
-    name: string,
-    selector: string,
-    config: TypeHintConfig,
-    connectionToLanguageService: ConnectionCache<T>,
-  ): IDisposable {
-    return atom.packages.serviceHub.provide(
-      'nuclide-type-hint.provider',
-      config.version,
-      new TypeHintProvider(
-        name,
-        selector,
-        config.priority,
-        config.analyticsEventName,
-        connectionToLanguageService,
-      ));
-  }
+  _createClass(TypeHintProvider, [{
+    key: 'typeHint',
+    value: _asyncToGenerator(function* (editor, position) {
+      var _this = this;
 
-  async typeHint(editor: atom$TextEditor, position: atom$Point): Promise<?TypeHint> {
-    return trackOperationTiming(this._analyticsEventName, async () => {
-      const fileVersion = await getFileVersionOfEditor(editor);
-      const languageService = this._connectionToLanguageService.getForUri(editor.getPath());
-      if (languageService == null || fileVersion == null) {
-        return null;
-      }
+      return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackOperationTiming)(this._analyticsEventName, _asyncToGenerator(function* () {
+        var fileVersion = yield (0, (_nuclideOpenFiles || _load_nuclideOpenFiles()).getFileVersionOfEditor)(editor);
+        var languageService = _this._connectionToLanguageService.getForUri(editor.getPath());
+        if (languageService == null || fileVersion == null) {
+          return null;
+        }
 
-      return await (await languageService).typeHint(fileVersion, position);
-    });
-  }
-}
+        return yield (yield languageService).typeHint(fileVersion, position);
+      }));
+    })
+  }], [{
+    key: 'register',
+    value: function register(name, selector, config, connectionToLanguageService) {
+      return atom.packages.serviceHub.provide('nuclide-type-hint.provider', config.version, new TypeHintProvider(name, selector, config.priority, config.analyticsEventName, connectionToLanguageService));
+    }
+  }]);
+
+  return TypeHintProvider;
+})();
+
+exports.TypeHintProvider = TypeHintProvider;

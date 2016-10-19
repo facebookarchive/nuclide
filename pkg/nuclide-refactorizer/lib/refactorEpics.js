@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,106 +10,106 @@
  * the root directory of this source tree.
  */
 
-import type {ActionsObservable, Epic} from '../../commons-node/redux-observable';
-import type ProviderRegistry from '../../commons-atom/ProviderRegistry';
-import type {
-  RefactorAction,
-  RefactorState,
-  ExecuteAction,
-} from './types';
-import type {RefactorProvider} from '..';
+exports.getEpics = getEpics;
 
-import invariant from 'assert';
-import {Observable} from 'rxjs';
-
-import applyTextEdits from '../../nuclide-textedit';
-
-import * as Actions from './refactorActions';
-
-export function getEpics(
-  providers: ProviderRegistry<RefactorProvider>,
-): Array<Epic<RefactorAction, RefactorState>> {
-  return [
-    function getRefactoringsEpic(
-      actions: ActionsObservable<RefactorAction>,
-    ): Observable<RefactorAction> {
-      return actions
-        .ofType('open')
-        .switchMap(() => {
-          return Observable.fromPromise(getRefactorings(providers)).takeUntil(actions);
-        });
-    },
-
-    function executeRefactoringEpic(
-      actions: ActionsObservable<RefactorAction>,
-    ): Observable<RefactorAction> {
-      return actions
-        .ofType('execute')
-        .switchMap(action => {
-          // Flow doesn't understand the implications of ofType :(
-          invariant(action.type === 'execute');
-          return Observable.fromPromise(executeRefactoring(action)).takeUntil(actions);
-        });
-    },
-
-    function handleErrors(
-      actions: ActionsObservable<RefactorAction>,
-    ): Observable<RefactorAction> {
-      return actions
-        // This is weird but Flow won't accept `action.error` or even `Boolean(action.error)`
-        .filter(action => (action.error ? true : false))
-        // TODO provide some feedback to the user that an error has occurred
-        .map(action => {
-          invariant(action.error);
-          return Actions.close();
-        });
-    },
-  ];
-}
-
-async function getRefactorings(
-  providers: ProviderRegistry<RefactorProvider>,
-): Promise<RefactorAction> {
-  const editor = atom.workspace.getActiveTextEditor();
+var getRefactorings = _asyncToGenerator(function* (providers) {
+  var editor = atom.workspace.getActiveTextEditor();
   if (editor == null) {
-    return Actions.gotRefactoringsError();
+    return (_refactorActions || _load_refactorActions()).gotRefactoringsError();
   }
-  const cursor = editor.getLastCursor();
-  const provider = providers.getProviderForEditor(editor);
+  var cursor = editor.getLastCursor();
+  var provider = providers.getProviderForEditor(editor);
   if (provider == null) {
-    return Actions.gotRefactoringsError();
+    return (_refactorActions || _load_refactorActions()).gotRefactoringsError();
   }
   try {
-    const availableRefactorings =
-      await provider.refactoringsAtPoint(editor, cursor.getBufferPosition());
-    return Actions.gotRefactorings(editor, provider, availableRefactorings);
+    var availableRefactorings = yield provider.refactoringsAtPoint(editor, cursor.getBufferPosition());
+    return (_refactorActions || _load_refactorActions()).gotRefactorings(editor, provider, availableRefactorings);
   } catch (e) {
-    return Actions.gotRefactoringsError();
+    return (_refactorActions || _load_refactorActions()).gotRefactoringsError();
   }
-}
+});
 
-async function executeRefactoring(
-  action: ExecuteAction,
-): Promise<RefactorAction> {
-  const {refactoring, provider} = action.payload;
-  let response;
+var executeRefactoring = _asyncToGenerator(function* (action) {
+  var _action$payload = action.payload;
+  var refactoring = _action$payload.refactoring;
+  var provider = _action$payload.provider;
+
+  var response = undefined;
   try {
-    response = await provider.refactor(refactoring);
+    response = yield provider.refactor(refactoring);
   } catch (e) {
     // TODO use an error action here
-    return Actions.close();
+    return (_refactorActions || _load_refactorActions()).close();
   }
   // TODO do something sane if the provider returns null
-  invariant(response != null);
-  const editor = atom.workspace.getActiveTextEditor();
+  (0, (_assert || _load_assert()).default)(response != null);
+  var editor = atom.workspace.getActiveTextEditor();
   // TODO handle it if the editor has gone away
-  invariant(editor != null);
-  const path = editor.getPath();
+  (0, (_assert || _load_assert()).default)(editor != null);
+  var path = editor.getPath();
   // TODO handle editors with no path
-  invariant(path != null);
+  (0, (_assert || _load_assert()).default)(path != null);
   // TODO also apply edits to other files
-  const fileEdits = response.edits.get(path);
-  invariant(fileEdits != null);
-  applyTextEdits(path, ...fileEdits);
-  return Actions.close();
+  var fileEdits = response.edits.get(path);
+  (0, (_assert || _load_assert()).default)(fileEdits != null);
+  (0, (_nuclideTextedit || _load_nuclideTextedit()).default).apply(undefined, [path].concat(_toConsumableArray(fileEdits)));
+  return (_refactorActions || _load_refactorActions()).close();
+});
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _assert;
+
+function _load_assert() {
+  return _assert = _interopRequireDefault(require('assert'));
+}
+
+var _rxjsBundlesRxMinJs;
+
+function _load_rxjsBundlesRxMinJs() {
+  return _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+}
+
+var _nuclideTextedit;
+
+function _load_nuclideTextedit() {
+  return _nuclideTextedit = _interopRequireDefault(require('../../nuclide-textedit'));
+}
+
+var _refactorActions;
+
+function _load_refactorActions() {
+  return _refactorActions = _interopRequireWildcard(require('./refactorActions'));
+}
+
+function getEpics(providers) {
+  return [function getRefactoringsEpic(actions) {
+    return actions.ofType('open').switchMap(function () {
+      return (_rxjsBundlesRxMinJs || _load_rxjsBundlesRxMinJs()).Observable.fromPromise(getRefactorings(providers)).takeUntil(actions);
+    });
+  }, function executeRefactoringEpic(actions) {
+    return actions.ofType('execute').switchMap(function (action) {
+      // Flow doesn't understand the implications of ofType :(
+      (0, (_assert || _load_assert()).default)(action.type === 'execute');
+      return (_rxjsBundlesRxMinJs || _load_rxjsBundlesRxMinJs()).Observable.fromPromise(executeRefactoring(action)).takeUntil(actions);
+    });
+  }, function handleErrors(actions) {
+    return actions
+    // This is weird but Flow won't accept `action.error` or even `Boolean(action.error)`
+    .filter(function (action) {
+      return action.error ? true : false;
+    })
+    // TODO provide some feedback to the user that an error has occurred
+    .map(function (action) {
+      (0, (_assert || _load_assert()).default)(action.error);
+      return (_refactorActions || _load_refactorActions()).close();
+    });
+  }];
 }

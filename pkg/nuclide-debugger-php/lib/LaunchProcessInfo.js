@@ -1,5 +1,14 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,34 +18,52 @@
  * the root directory of this source tree.
  */
 
-import {DebuggerProcessInfo} from '../../nuclide-debugger-base';
-import {PhpDebuggerInstance} from './PhpDebuggerInstance';
+var _nuclideDebuggerBase;
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+function _load_nuclideDebuggerBase() {
+  return _nuclideDebuggerBase = require('../../nuclide-debugger-base');
+}
 
-export class LaunchProcessInfo extends DebuggerProcessInfo {
-  _launchTarget: string;
+var _PhpDebuggerInstance;
 
-  constructor(targetUri: NuclideUri, launchTarget: string) {
-    super('hhvm', targetUri);
+function _load_PhpDebuggerInstance() {
+  return _PhpDebuggerInstance = require('./PhpDebuggerInstance');
+}
+
+var LaunchProcessInfo = (function (_DebuggerProcessInfo) {
+  _inherits(LaunchProcessInfo, _DebuggerProcessInfo);
+
+  function LaunchProcessInfo(targetUri, launchTarget) {
+    _classCallCheck(this, LaunchProcessInfo);
+
+    _get(Object.getPrototypeOf(LaunchProcessInfo.prototype), 'constructor', this).call(this, 'hhvm', targetUri);
     this._launchTarget = launchTarget;
   }
 
-  debug(): Promise<PhpDebuggerInstance> {
-    const phpDebuggerInstance = new PhpDebuggerInstance(this, this._launchTarget);
-    return Promise.resolve(phpDebuggerInstance);
-  }
+  _createClass(LaunchProcessInfo, [{
+    key: 'debug',
+    value: function debug() {
+      var phpDebuggerInstance = new (_PhpDebuggerInstance || _load_PhpDebuggerInstance()).PhpDebuggerInstance(this, this._launchTarget);
+      return Promise.resolve(phpDebuggerInstance);
+    }
+  }, {
+    key: 'supportThreads',
+    value: function supportThreads() {
+      return true;
+    }
+  }, {
+    key: 'supportSingleThreadStepping',
+    value: function supportSingleThreadStepping() {
+      return true;
+    }
+  }, {
+    key: 'singleThreadSteppingEnabled',
+    value: function singleThreadSteppingEnabled() {
+      return true;
+    }
+  }]);
 
-  supportThreads(): boolean {
-    return true;
-  }
+  return LaunchProcessInfo;
+})((_nuclideDebuggerBase || _load_nuclideDebuggerBase()).DebuggerProcessInfo);
 
-  supportSingleThreadStepping(): boolean {
-    return true;
-  }
-
-  singleThreadSteppingEnabled(): boolean {
-    return true;
-  }
-
-}
+exports.LaunchProcessInfo = LaunchProcessInfo;

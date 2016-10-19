@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,117 +10,132 @@
  * the root directory of this source tree.
  */
 
-import type {LazyTreeNode} from './LazyTreeNode';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {React, ReactDOM} from 'react-for-atom';
-import classnames from 'classnames';
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
-const INDENT_IN_PX = 10;
-const INDENT_PER_LEVEL_IN_PX = 15;
-const DOWN_ARROW = '\uF0A3';
-const RIGHT_ARROW = '\uF078';
-const SPINNER = '\uF087';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-type Props = {
-  depth: number,
-  isContainer: bool,
-  isExpanded: bool,
-  isLoading: bool,
-  isSelected: bool,
-  label: string,
-  labelElement?: ?React.Element<any>,
-  labelClassName: string,
-  node: LazyTreeNode,
-  onClickArrow: (event: SyntheticMouseEvent, node: LazyTreeNode) => void,
-  onClick: (event: SyntheticMouseEvent, node: LazyTreeNode) => void,
-  onDoubleClick: (event: SyntheticMouseEvent, node: LazyTreeNode) => void,
-  onMouseDown: (event: SyntheticMouseEvent, node: LazyTreeNode) => void,
-  path: string,
-  rowClassName: string,
-};
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _reactForAtom;
+
+function _load_reactForAtom() {
+  return _reactForAtom = require('react-for-atom');
+}
+
+var _classnames;
+
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
+
+var INDENT_IN_PX = 10;
+var INDENT_PER_LEVEL_IN_PX = 15;
+var DOWN_ARROW = '';
+var RIGHT_ARROW = '';
+var SPINNER = '';
 
 /**
  * Represents one entry in a TreeComponent.
  */
-export class TreeNodeComponent extends React.PureComponent {
-  props: Props;
-  state: void;
 
-  constructor(props: Props) {
-    super(props);
-    (this: any)._onClick = this._onClick.bind(this);
-    (this: any)._onDoubleClick = this._onDoubleClick.bind(this);
-    (this: any)._onMouseDown = this._onMouseDown.bind(this);
+var TreeNodeComponent = (function (_React$PureComponent) {
+  _inherits(TreeNodeComponent, _React$PureComponent);
+
+  function TreeNodeComponent(props) {
+    _classCallCheck(this, TreeNodeComponent);
+
+    _get(Object.getPrototypeOf(TreeNodeComponent.prototype), 'constructor', this).call(this, props);
+    this._onClick = this._onClick.bind(this);
+    this._onDoubleClick = this._onDoubleClick.bind(this);
+    this._onMouseDown = this._onMouseDown.bind(this);
   }
 
-  render(): React.Element<any> {
-    const rowClassNameObj: {[key: string]: ?boolean} = {
-      // Support for selectors in the "file-icons" package.
-      // @see {@link https://atom.io/packages/file-icons|file-icons}
-      'entry file list-item': true,
-      'nuclide-tree-component-item': true,
-      'nuclide-tree-component-selected': this.props.isSelected,
-    };
-    if (this.props.rowClassName) {
-      rowClassNameObj[this.props.rowClassName] = true;
-    }
-
-    const itemStyle = {
-      paddingLeft: INDENT_IN_PX + this.props.depth * INDENT_PER_LEVEL_IN_PX,
-    };
-
-    let arrow;
-    if (this.props.isContainer) {
-      if (this.props.isExpanded) {
-        if (this.props.isLoading) {
-          arrow = <span className="nuclide-tree-component-item-arrow-spinner">{SPINNER}</span>;
-        } else {
-          arrow = DOWN_ARROW;
-        }
-      } else {
-        arrow = RIGHT_ARROW;
+  _createClass(TreeNodeComponent, [{
+    key: 'render',
+    value: function render() {
+      var rowClassNameObj = {
+        // Support for selectors in the "file-icons" package.
+        // @see {@link https://atom.io/packages/file-icons|file-icons}
+        'entry file list-item': true,
+        'nuclide-tree-component-item': true,
+        'nuclide-tree-component-selected': this.props.isSelected
+      };
+      if (this.props.rowClassName) {
+        rowClassNameObj[this.props.rowClassName] = true;
       }
-    }
 
-    return (
-      <div
-        className={classnames(rowClassNameObj)}
-        style={itemStyle}
-        onClick={this._onClick}
-        onDoubleClick={this._onDoubleClick}
-        onMouseDown={this._onMouseDown}>
-        <span className="nuclide-tree-component-item-arrow" ref="arrow">
-          {arrow}
-        </span>
+      var itemStyle = {
+        paddingLeft: INDENT_IN_PX + this.props.depth * INDENT_PER_LEVEL_IN_PX
+      };
+
+      var arrow = undefined;
+      if (this.props.isContainer) {
+        if (this.props.isExpanded) {
+          if (this.props.isLoading) {
+            arrow = (_reactForAtom || _load_reactForAtom()).React.createElement(
+              'span',
+              { className: 'nuclide-tree-component-item-arrow-spinner' },
+              SPINNER
+            );
+          } else {
+            arrow = DOWN_ARROW;
+          }
+        } else {
+          arrow = RIGHT_ARROW;
+        }
+      }
+
+      return (_reactForAtom || _load_reactForAtom()).React.createElement(
+        'div',
         {
-          this.props.labelElement != null ?
-          this.props.labelElement :
-          <span
-            className={this.props.labelClassName}
+          className: (0, (_classnames || _load_classnames()).default)(rowClassNameObj),
+          style: itemStyle,
+          onClick: this._onClick,
+          onDoubleClick: this._onDoubleClick,
+          onMouseDown: this._onMouseDown },
+        (_reactForAtom || _load_reactForAtom()).React.createElement(
+          'span',
+          { className: 'nuclide-tree-component-item-arrow', ref: 'arrow' },
+          arrow
+        ),
+        this.props.labelElement != null ? this.props.labelElement : (_reactForAtom || _load_reactForAtom()).React.createElement(
+          'span',
+          {
+            className: this.props.labelClassName,
             // `data-name` is support for selectors in the "file-icons" package.
             // @see {@link https://atom.io/packages/file-icons|file-icons}
-            data-name={this.props.label}
-            data-path={this.props.path}>
-            {this.props.label}
-          </span>
-        }
-      </div>
-    );
-  }
-
-  _onClick(event: SyntheticMouseEvent): void {
-    if (ReactDOM.findDOMNode(this.refs.arrow).contains(event.target)) {
-      this.props.onClickArrow(event, this.props.node);
-    } else {
-      this.props.onClick(event, this.props.node);
+            'data-name': this.props.label,
+            'data-path': this.props.path },
+          this.props.label
+        )
+      );
     }
-  }
+  }, {
+    key: '_onClick',
+    value: function _onClick(event) {
+      if ((_reactForAtom || _load_reactForAtom()).ReactDOM.findDOMNode(this.refs.arrow).contains(event.target)) {
+        this.props.onClickArrow(event, this.props.node);
+      } else {
+        this.props.onClick(event, this.props.node);
+      }
+    }
+  }, {
+    key: '_onDoubleClick',
+    value: function _onDoubleClick(event) {
+      this.props.onDoubleClick(event, this.props.node);
+    }
+  }, {
+    key: '_onMouseDown',
+    value: function _onMouseDown(event) {
+      this.props.onMouseDown(event, this.props.node);
+    }
+  }]);
 
-  _onDoubleClick(event: SyntheticMouseEvent): void {
-    this.props.onDoubleClick(event, this.props.node);
-  }
+  return TreeNodeComponent;
+})((_reactForAtom || _load_reactForAtom()).React.PureComponent);
 
-  _onMouseDown(event: SyntheticMouseEvent): void {
-    this.props.onMouseDown(event, this.props.node);
-  }
-}
+exports.TreeNodeComponent = TreeNodeComponent;

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,47 +10,62 @@
  * the root directory of this source tree.
  */
 
-import type {
-  AttachTargetInfo,
-} from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerService';
-import type LaunchAttachDispatcher, {LaunchAttachAction} from './LaunchAttachDispatcher';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {Emitter} from 'atom';
-import {ActionTypes} from './LaunchAttachDispatcher';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-const ATTACH_TARGET_LIST_CHANGE_EVENT = 'ATTACH_TARGET_LIST_CHANGE_EVENT';
+var _atom;
 
-export class LaunchAttachStore {
-  _dispatcher: LaunchAttachDispatcher;
-  _dispatcherToken: string;
-  _attachTargetInfos: Array<AttachTargetInfo>;
-  _emitter: Emitter;
+function _load_atom() {
+  return _atom = require('atom');
+}
 
-  constructor(dispatcher: LaunchAttachDispatcher) {
+var _LaunchAttachDispatcher;
+
+function _load_LaunchAttachDispatcher() {
+  return _LaunchAttachDispatcher = require('./LaunchAttachDispatcher');
+}
+
+var ATTACH_TARGET_LIST_CHANGE_EVENT = 'ATTACH_TARGET_LIST_CHANGE_EVENT';
+
+var LaunchAttachStore = (function () {
+  function LaunchAttachStore(dispatcher) {
+    _classCallCheck(this, LaunchAttachStore);
+
     this._dispatcher = dispatcher;
     this._dispatcherToken = this._dispatcher.register(this._handleActions.bind(this));
-    this._emitter = new Emitter();
+    this._emitter = new (_atom || _load_atom()).Emitter();
     this._attachTargetInfos = [];
   }
 
-  dispose() {
-    this._dispatcher.unregister(this._dispatcherToken);
-  }
-
-  onAttachTargetListChanged(callback: () => void): IDisposable {
-    return this._emitter.on(ATTACH_TARGET_LIST_CHANGE_EVENT, callback);
-  }
-
-  _handleActions(action: LaunchAttachAction): void {
-    switch (action.actionType) {
-      case ActionTypes.UPDATE_ATTACH_TARGET_LIST:
-        this._attachTargetInfos = action.attachTargetInfos;
-        this._emitter.emit(ATTACH_TARGET_LIST_CHANGE_EVENT);
-        break;
+  _createClass(LaunchAttachStore, [{
+    key: 'dispose',
+    value: function dispose() {
+      this._dispatcher.unregister(this._dispatcherToken);
     }
-  }
+  }, {
+    key: 'onAttachTargetListChanged',
+    value: function onAttachTargetListChanged(callback) {
+      return this._emitter.on(ATTACH_TARGET_LIST_CHANGE_EVENT, callback);
+    }
+  }, {
+    key: '_handleActions',
+    value: function _handleActions(action) {
+      switch (action.actionType) {
+        case (_LaunchAttachDispatcher || _load_LaunchAttachDispatcher()).ActionTypes.UPDATE_ATTACH_TARGET_LIST:
+          this._attachTargetInfos = action.attachTargetInfos;
+          this._emitter.emit(ATTACH_TARGET_LIST_CHANGE_EVENT);
+          break;
+      }
+    }
+  }, {
+    key: 'getAttachTargetInfos',
+    value: function getAttachTargetInfos() {
+      return this._attachTargetInfos;
+    }
+  }]);
 
-  getAttachTargetInfos(): Array<AttachTargetInfo> {
-    return this._attachTargetInfos;
-  }
-}
+  return LaunchAttachStore;
+})();
+
+exports.LaunchAttachStore = LaunchAttachStore;

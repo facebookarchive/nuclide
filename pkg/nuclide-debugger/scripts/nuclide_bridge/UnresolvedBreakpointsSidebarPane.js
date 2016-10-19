@@ -1,5 +1,16 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,98 +20,143 @@
  * the root directory of this source tree.
  */
 
-import NuclideBridge from './NuclideBridge';
-import React from 'react';
-import ReactDOM from 'react-dom';
-import nuclideUri from '../../../commons-node/nuclideUri';
-import url from 'url';
-import invariant from 'assert';
-import WebInspector from '../../lib/WebInspector';
+var _NuclideBridge;
 
-type Props = {};
+function _load_NuclideBridge() {
+  return _NuclideBridge = _interopRequireDefault(require('./NuclideBridge'));
+}
 
-type State = {
-  breakpoints: Array<{url: string, line: number}>,
-};
+var _react;
 
-class UnresolvedBreakpointsComponent extends React.Component {
-  props: Props;
-  state: State;
+function _load_react() {
+  return _react = _interopRequireDefault(require('react'));
+}
 
-  _changeHandler: ?IDisposable;
+var _reactDom;
 
-  constructor(props: Props) {
-    super(props);
+function _load_reactDom() {
+  return _reactDom = _interopRequireDefault(require('react-dom'));
+}
+
+var _commonsNodeNuclideUri;
+
+function _load_commonsNodeNuclideUri() {
+  return _commonsNodeNuclideUri = _interopRequireDefault(require('../../../commons-node/nuclideUri'));
+}
+
+var _url;
+
+function _load_url() {
+  return _url = _interopRequireDefault(require('url'));
+}
+
+var _assert;
+
+function _load_assert() {
+  return _assert = _interopRequireDefault(require('assert'));
+}
+
+var _libWebInspector;
+
+function _load_libWebInspector() {
+  return _libWebInspector = _interopRequireDefault(require('../../lib/WebInspector'));
+}
+
+var UnresolvedBreakpointsComponent = (function (_default$Component) {
+  _inherits(UnresolvedBreakpointsComponent, _default$Component);
+
+  function UnresolvedBreakpointsComponent(props) {
+    _classCallCheck(this, UnresolvedBreakpointsComponent);
+
+    _get(Object.getPrototypeOf(UnresolvedBreakpointsComponent.prototype), 'constructor', this).call(this, props);
 
     this._changeHandler = null;
     this.state = this._getState();
 
-    (this: any)._updateState = this._updateState.bind(this);
-    (this: any)._getState = this._getState.bind(this);
+    this._updateState = this._updateState.bind(this);
+    this._getState = this._getState.bind(this);
   }
 
-  componentWillMount() {
-    this._changeHandler = NuclideBridge.onUnresolvedBreakpointsChanged(this._updateState);
-  }
+  _createClass(UnresolvedBreakpointsComponent, [{
+    key: 'componentWillMount',
+    value: function componentWillMount() {
+      this._changeHandler = (_NuclideBridge || _load_NuclideBridge()).default.onUnresolvedBreakpointsChanged(this._updateState);
+    }
+  }, {
+    key: 'componentWillUnmount',
+    value: function componentWillUnmount() {
+      (0, (_assert || _load_assert()).default)(this._changeHandler != null);
+      this._changeHandler.dispose();
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var _this = this;
 
-  componentWillUnmount() {
-    invariant(this._changeHandler != null);
-    this._changeHandler.dispose();
-  }
+      var children = this.state.breakpoints.map(function (breakpoint) {
+        var _default$parse = (_url || _load_url()).default.parse(breakpoint.url);
 
-  render() {
-    const children = this.state.breakpoints.map(breakpoint => {
-      const {pathname} = url.parse(breakpoint.url);
-      invariant(pathname);
-      const longRep = `${pathname}:${breakpoint.line + 1}`;
-      const shortRep = `${nuclideUri.basename(pathname)}:${breakpoint.line + 1}`;
-      return (
-        <li
-          key={longRep}
-          className="cursor-pointer source-text"
-          onClick={this._onBreakpointClick.bind(this, breakpoint)}
-          title={longRep}>
-          {shortRep}
-        </li>
+        var pathname = _default$parse.pathname;
+
+        (0, (_assert || _load_assert()).default)(pathname);
+        var longRep = pathname + ':' + (breakpoint.line + 1);
+        var shortRep = (_commonsNodeNuclideUri || _load_commonsNodeNuclideUri()).default.basename(pathname) + ':' + (breakpoint.line + 1);
+        return (_react || _load_react()).default.createElement(
+          'li',
+          {
+            key: longRep,
+            className: 'cursor-pointer source-text',
+            onClick: _this._onBreakpointClick.bind(_this, breakpoint),
+            title: longRep },
+          shortRep
+        );
+      });
+      return (_react || _load_react()).default.createElement(
+        'ol',
+        { className: 'breakpoint-list' },
+        this.state.breakpoints.length > 0 ? children : (_react || _load_react()).default.createElement(
+          'div',
+          { className: 'info' },
+          'None'
+        )
       );
-    });
-    return (
-      <ol className="breakpoint-list">
-        {this.state.breakpoints.length > 0
-          ? children
-          : <div className="info">None</div>}
-      </ol>
-    );
-  }
+    }
+  }, {
+    key: '_onBreakpointClick',
+    value: function _onBreakpointClick(breakpoint) {
+      (_NuclideBridge || _load_NuclideBridge()).default.sendOpenSourceLocation(breakpoint.url, breakpoint.line);
+    }
+  }, {
+    key: '_updateState',
+    value: function _updateState() {
+      this.setState(this._getState());
+    }
+  }, {
+    key: '_getState',
+    value: function _getState() {
+      return {
+        breakpoints: (_NuclideBridge || _load_NuclideBridge()).default.getUnresolvedBreakpointsList()
+      };
+    }
+  }]);
 
-  _onBreakpointClick(breakpoint: {url: string, line: number}) {
-    NuclideBridge.sendOpenSourceLocation(breakpoint.url, breakpoint.line);
-  }
+  return UnresolvedBreakpointsComponent;
+})((_react || _load_react()).default.Component);
 
-  _updateState() {
-    this.setState(this._getState());
-  }
+var UnresolvedBreakpointsSidebarPane = (function (_default$SidebarPane) {
+  _inherits(UnresolvedBreakpointsSidebarPane, _default$SidebarPane);
 
-  _getState() {
-    return {
-      breakpoints: NuclideBridge.getUnresolvedBreakpointsList(),
-    };
-  }
-}
+  function UnresolvedBreakpointsSidebarPane() {
+    _classCallCheck(this, UnresolvedBreakpointsSidebarPane);
 
-export default class UnresolvedBreakpointsSidebarPane extends WebInspector.SidebarPane {
-  constructor() {
     // WebInspector classes are not es6 classes, but babel forces a super call.
-    super();
+    _get(Object.getPrototypeOf(UnresolvedBreakpointsSidebarPane.prototype), 'constructor', this).call(this);
     // Actual super call.
-    WebInspector.SidebarPane.call(this, 'Unresolved Breakpoints');
+    (_libWebInspector || _load_libWebInspector()).default.SidebarPane.call(this, 'Unresolved Breakpoints');
 
     this.registerRequiredCSS('components/breakpointsList.css');
 
-    ReactDOM.render(
-      <UnresolvedBreakpointsComponent />,
-      this.bodyElement,
-    );
+    (_reactDom || _load_reactDom()).default.render((_react || _load_react()).default.createElement(UnresolvedBreakpointsComponent, null), this.bodyElement);
 
     this.expand();
   }
@@ -108,6 +164,14 @@ export default class UnresolvedBreakpointsSidebarPane extends WebInspector.Sideb
   // This is implemented by various UI views, but is not declared anywhere as
   // an official interface. There's callers to various `reset` functions, so
   // it's probably safer to have this.
-  reset() {
-  }
-}
+
+  _createClass(UnresolvedBreakpointsSidebarPane, [{
+    key: 'reset',
+    value: function reset() {}
+  }]);
+
+  return UnresolvedBreakpointsSidebarPane;
+})((_libWebInspector || _load_libWebInspector()).default.SidebarPane);
+
+exports.default = UnresolvedBreakpointsSidebarPane;
+module.exports = exports.default;

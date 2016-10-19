@@ -1,5 +1,10 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.moveUp = moveUp;
+exports.moveDown = moveDown;
+exports.moveRight = moveRight;
+exports.moveLeft = moveLeft;
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,40 +14,48 @@
  * the root directory of this source tree.
  */
 
-import {track} from '../../nuclide-analytics';
+var _nuclideAnalytics;
 
-type MoveOperation = 'up' | 'down' | 'right' | 'left';
-
-export function moveUp() {
-  doSplit('up', (pane, params) => pane.splitUp(params));
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
 }
 
-export function moveDown() {
-  doSplit('down', (pane, params) => pane.splitDown(params));
+function moveUp() {
+  doSplit('up', function (pane, params) {
+    return pane.splitUp(params);
+  });
 }
 
-export function moveRight() {
-  doSplit('right', (pane, params) => pane.splitRight(params));
+function moveDown() {
+  doSplit('down', function (pane, params) {
+    return pane.splitDown(params);
+  });
 }
 
-export function moveLeft() {
-  doSplit('left', (pane, params) => pane.splitLeft(params));
+function moveRight() {
+  doSplit('right', function (pane, params) {
+    return pane.splitRight(params);
+  });
 }
 
-function doSplit(
-    operation: MoveOperation,
-    splitOperation: (pane: atom$Pane, params?: atom$PaneSplitParams) => atom$Pane) {
-  const activePane = atom.workspace.getActivePane();
+function moveLeft() {
+  doSplit('left', function (pane, params) {
+    return pane.splitLeft(params);
+  });
+}
+
+function doSplit(operation, splitOperation) {
+  var activePane = atom.workspace.getActivePane();
   if (activePane == null) {
     return;
   }
 
-  track('nuclide-move-item-to-available-pane');
-  const activeItem = activePane.getActiveItem();
+  (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('nuclide-move-item-to-available-pane');
+  var activeItem = activePane.getActiveItem();
   if (activeItem != null) {
-    const targetPane = findTargetPane(activePane, operation);
+    var targetPane = findTargetPane(activePane, operation);
     if (targetPane != null) {
-      const index = targetPane.getItems().length;
+      var index = targetPane.getItems().length;
       activePane.moveItemToPane(activeItem, targetPane, index);
       targetPane.activateItemAtIndex(index);
       targetPane.activate();
@@ -54,8 +67,8 @@ function doSplit(
   // pane contains exactly zero or one items.
   // The new empty pane will be kept if the global atom setting
   // 'Destroy Empty Panes' is false, otherwise it will be removed.
-  const newPane = splitOperation(activePane, {copyActiveItem: false});
-  const item = activePane.getActiveItem();
+  var newPane = splitOperation(activePane, { copyActiveItem: false });
+  var item = activePane.getActiveItem();
   if (item) {
     activePane.moveItemToPane(item, newPane, 0);
   }
@@ -65,61 +78,73 @@ function doSplit(
  * See if there is already a pane in the direction the user is trying to split.
  * If there are multiple, returns the "nearest" pane.
  */
-function findTargetPane(
-  activePane: atom$Pane,
-  operation: MoveOperation,
-): ?atom$Pane {
-  const activeRect = atom.views.getView(activePane).getBoundingClientRect();
-  const predicate = createPredicate(operation, activeRect);
+function findTargetPane(activePane, operation) {
+  var activeRect = atom.views.getView(activePane).getBoundingClientRect();
+  var predicate = createPredicate(operation, activeRect);
 
-  const paneToRect: WeakMap<atom$Pane, ClientRect> = new WeakMap();
-  const candidatePanes = atom.workspace.getPanes().filter(pane => {
+  var paneToRect = new WeakMap();
+  var candidatePanes = atom.workspace.getPanes().filter(function (pane) {
     if (pane === activePane) {
       return false;
     } else {
-      const rect = atom.views.getView(pane).getBoundingClientRect();
-      paneToRect.set(pane, rect);
-      return predicate(rect);
+      var _rect = atom.views.getView(pane).getBoundingClientRect();
+      paneToRect.set(pane, _rect);
+      return predicate(_rect);
     }
   });
 
   if (candidatePanes.length === 1) {
     return candidatePanes[0];
   } else if (candidatePanes.length > 1) {
-    const xAxisComparator = (rect: ClientRect) => Math.abs(rect.left - activeRect.left);
-    const yAxisComparator = (rect: ClientRect) => Math.abs(rect.top - activeRect.top);
-    const isHorizontalMove = operation === 'left' || operation === 'right';
-    const primaryComparator = isHorizontalMove ? xAxisComparator : yAxisComparator;
-    const secondaryComparator = isHorizontalMove ? yAxisComparator : xAxisComparator;
-    candidatePanes.sort((pane1, pane2) => {
-      const rect1 = paneToRect.get(pane1);
-      const rect2 = paneToRect.get(pane2);
-      const comp = primaryComparator(rect1) - primaryComparator(rect2);
-      if (comp !== 0) {
-        return comp;
-      } else {
-        return secondaryComparator(rect1) - secondaryComparator(rect2);
-      }
-    });
-    return candidatePanes[0];
+    var _ret = (function () {
+      var xAxisComparator = function xAxisComparator(rect) {
+        return Math.abs(rect.left - activeRect.left);
+      };
+      var yAxisComparator = function yAxisComparator(rect) {
+        return Math.abs(rect.top - activeRect.top);
+      };
+      var isHorizontalMove = operation === 'left' || operation === 'right';
+      var primaryComparator = isHorizontalMove ? xAxisComparator : yAxisComparator;
+      var secondaryComparator = isHorizontalMove ? yAxisComparator : xAxisComparator;
+      candidatePanes.sort(function (pane1, pane2) {
+        var rect1 = paneToRect.get(pane1);
+        var rect2 = paneToRect.get(pane2);
+        var comp = primaryComparator(rect1) - primaryComparator(rect2);
+        if (comp !== 0) {
+          return comp;
+        } else {
+          return secondaryComparator(rect1) - secondaryComparator(rect2);
+        }
+      });
+      return {
+        v: candidatePanes[0]
+      };
+    })();
+
+    if (typeof _ret === 'object') return _ret.v;
   } else {
     return null;
   }
 }
 
-function createPredicate(
-  operation: MoveOperation,
-  activeRect: ClientRect,
-): (rect: ClientRect) => boolean {
+function createPredicate(operation, activeRect) {
   switch (operation) {
     case 'up':
-      return rect => rect.top < activeRect.top;
+      return function (rect) {
+        return rect.top < activeRect.top;
+      };
     case 'down':
-      return rect => rect.top > activeRect.top;
+      return function (rect) {
+        return rect.top > activeRect.top;
+      };
     case 'left':
-      return rect => rect.left < activeRect.left;
+      return function (rect) {
+        return rect.left < activeRect.left;
+      };
     case 'right':
-      return rect => rect.left > activeRect.left;
+      return function (rect) {
+        return rect.left > activeRect.left;
+      };
   }
-  throw Error(`Unknown operation: ${operation}`);
+  throw Error('Unknown operation: ' + operation);
 }

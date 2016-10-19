@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,79 +10,67 @@
  * the root directory of this source tree.
  */
 
-import type {
-  Diagnostics,
-  Diagnostic,
-  MessageComponent,
-  Range,
-} from '..';
+exports.flowStatusOutputToDiagnostics = flowStatusOutputToDiagnostics;
 
-import type {
-  FlowStatusOutput,
-  FlowStatusError,
-  FlowStatusErrorMessageComponent,
-  FlowLoc,
-} from './flowOutputTypes';
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
 
-export function flowStatusOutputToDiagnostics(
-  root: string,
-  statusOutput: FlowStatusOutput,
-): Diagnostics {
-  const errors: Array<FlowStatusError> = statusOutput.errors;
-  const messages: Array<Diagnostic> = errors.map((flowStatusError: FlowStatusError) => {
-    const flowMessageComponents: Array<FlowStatusErrorMessageComponent> =
-      flowStatusError.message;
-    const level = flowStatusError.level;
+function flowStatusOutputToDiagnostics(root, statusOutput) {
+  var errors = statusOutput.errors;
+  var messages = errors.map(function (flowStatusError) {
+    var flowMessageComponents = flowStatusError.message;
+    var level = flowStatusError.level;
 
-    const messageComponents: Array<MessageComponent> =
-      flowMessageComponents.map(flowMessageComponentToMessageComponent);
-    const operation = flowStatusError.operation;
+    var messageComponents = flowMessageComponents.map(flowMessageComponentToMessageComponent);
+    var operation = flowStatusError.operation;
     if (operation != null) {
-      const operationComponent = flowMessageComponentToMessageComponent(operation);
+      var operationComponent = flowMessageComponentToMessageComponent(operation);
       operationComponent.descr = 'See also: ' + operationComponent.descr;
       messageComponents.push(operationComponent);
     }
-    const extra = flowStatusError.extra;
+    var extra = flowStatusError.extra;
     if (extra != null) {
-      const flatExtra = [].concat(...extra.map(({message}) => message));
-      messageComponents.push(...flatExtra.map(flowMessageComponentToMessageComponent));
+      var _ref;
+
+      var flatExtra = (_ref = []).concat.apply(_ref, _toConsumableArray(extra.map(function (_ref2) {
+        var message = _ref2.message;
+        return message;
+      })));
+      messageComponents.push.apply(messageComponents, _toConsumableArray(flatExtra.map(flowMessageComponentToMessageComponent)));
     }
 
     return {
-      level,
-      messageComponents,
+      level: level,
+      messageComponents: messageComponents
     };
   });
 
   return {
     flowRoot: root,
-    messages,
+    messages: messages
   };
 }
 
-function flowMessageComponentToMessageComponent(
-  component: FlowStatusErrorMessageComponent,
-): MessageComponent {
+function flowMessageComponentToMessageComponent(component) {
   return {
     descr: component.descr,
-    range: maybeFlowLocToRange(component.loc),
+    range: maybeFlowLocToRange(component.loc)
   };
 }
 
-function maybeFlowLocToRange(loc: ?FlowLoc): ?Range {
+function maybeFlowLocToRange(loc) {
   return loc == null ? null : flowLocToRange(loc);
 }
 
-function flowLocToRange(loc: FlowLoc): Range {
+function flowLocToRange(loc) {
   return {
     file: loc.source,
     start: {
       line: loc.start.line,
-      column: loc.start.column,
+      column: loc.start.column
     },
     end: {
       line: loc.end.line,
-      column: loc.end.column,
-    },
+      column: loc.end.column
+    }
   };
 }

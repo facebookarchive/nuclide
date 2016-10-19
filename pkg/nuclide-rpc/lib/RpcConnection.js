@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,741 +10,740 @@
  * the root directory of this source tree.
  */
 
-import type {ConfigEntry, Transport} from './index';
-import type {ReturnType, Type, Parameter} from './types';
-import type {TypeRegistry} from './TypeRegistry';
-import type {
-  ResponseMessage,
-  RequestMessage,
-  CallMessage,
-  CallObjectMessage,
-  NewObjectMessage,
-} from './messages';
-import type {
-  ClassDefinition,
-  FunctionImplementation,
-} from './ServiceRegistry';
-import type {TimingTracker} from '../../nuclide-analytics';
-import type {Observer} from 'rxjs';
-import type {PredefinedTransformer} from './index';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import invariant from 'assert';
-import {Observable, ConnectableObservable} from 'rxjs';
-import {ServiceRegistry} from './ServiceRegistry';
-import {ObjectRegistry} from './ObjectRegistry';
-import {
-  createCallMessage,
-  createCallObjectMessage,
-  createNewObjectMessage,
-  createDisposeMessage,
-  createUnsubscribeMessage,
-  createPromiseMessage,
-  createErrorResponseMessage,
-  createNextMessage,
-  createCompleteMessage,
-  createObserveErrorMessage,
-  decodeError,
-} from './messages';
-import {builtinLocation, voidType} from './builtin-types';
-import {startTracking, trackOperationTiming} from '../../nuclide-analytics';
-import {getLogger} from '../../nuclide-logging';
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
-const logger = getLogger();
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-const SERVICE_FRAMEWORK_RPC_TIMEOUT_MS = 60 * 1000;
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-type RpcConnectionKind = 'server' | 'client';
+var _assert;
 
-class Subscription {
-  _message: Object;
-  _observer: Observer<any>;
+function _load_assert() {
+  return _assert = _interopRequireDefault(require('assert'));
+}
 
-  constructor(message: Object, observer: Observer<any>) {
+var _rxjsBundlesRxMinJs;
+
+function _load_rxjsBundlesRxMinJs() {
+  return _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+}
+
+var _ServiceRegistry;
+
+function _load_ServiceRegistry() {
+  return _ServiceRegistry = require('./ServiceRegistry');
+}
+
+var _ObjectRegistry;
+
+function _load_ObjectRegistry() {
+  return _ObjectRegistry = require('./ObjectRegistry');
+}
+
+var _messages;
+
+function _load_messages() {
+  return _messages = require('./messages');
+}
+
+var _builtinTypes;
+
+function _load_builtinTypes() {
+  return _builtinTypes = require('./builtin-types');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _nuclideLogging;
+
+function _load_nuclideLogging() {
+  return _nuclideLogging = require('../../nuclide-logging');
+}
+
+var logger = (0, (_nuclideLogging || _load_nuclideLogging()).getLogger)();
+
+var SERVICE_FRAMEWORK_RPC_TIMEOUT_MS = 60 * 1000;
+
+var Subscription = (function () {
+  function Subscription(message, observer) {
+    _classCallCheck(this, Subscription);
+
     this._message = message;
     this._observer = observer;
   }
 
-  error(error): void {
-    try {
-      this._observer.error(decodeError(this._message, error));
-    } catch (e) {
-      logger.error(`Caught exception in Subscription.error: ${e.toString()}`);
+  _createClass(Subscription, [{
+    key: 'error',
+    value: (function (_error) {
+      function error(_x) {
+        return _error.apply(this, arguments);
+      }
+
+      error.toString = function () {
+        return _error.toString();
+      };
+
+      return error;
+    })(function (error) {
+      try {
+        this._observer.error((0, (_messages || _load_messages()).decodeError)(this._message, error));
+      } catch (e) {
+        logger.error('Caught exception in Subscription.error: ' + e.toString());
+      }
+    })
+  }, {
+    key: 'next',
+    value: function next(data) {
+      try {
+        this._observer.next(data);
+      } catch (e) {
+        logger.error('Caught exception in Subscription.next: ' + e.toString());
+      }
     }
-  }
-
-  next(data: any): void {
-    try {
-      this._observer.next(data);
-    } catch (e) {
-      logger.error(`Caught exception in Subscription.next: ${e.toString()}`);
+  }, {
+    key: 'complete',
+    value: function complete() {
+      try {
+        this._observer.complete();
+      } catch (e) {
+        logger.error('Caught exception in Subscription.complete: ' + e.toString());
+      }
     }
-  }
+  }]);
 
-  complete(): void {
-    try {
-      this._observer.complete();
-    } catch (e) {
-      logger.error(`Caught exception in Subscription.complete: ${e.toString()}`);
-    }
-  }
-}
+  return Subscription;
+})();
 
-class Call {
-  _message: RequestMessage;
-  _timeoutMessage: string;
-  _reject: (error: any) => void;
-  _resolve: (result: any) => void;
-  _cleanup: () => void;
-  _complete: boolean;
-  _timerId: ?number;
+var Call = (function () {
+  function Call(message, timeoutMessage, resolve, reject, cleanup) {
+    var _this = this;
 
-  constructor(
-    message: RequestMessage,
-    timeoutMessage: string,
-    resolve: (result: any) => void,
-    reject: (error: any) => void,
-    cleanup: () => void,
-  ) {
+    _classCallCheck(this, Call);
+
     this._message = message;
     this._timeoutMessage = timeoutMessage;
     this._resolve = resolve;
     this._reject = reject;
     this._cleanup = cleanup;
     this._complete = false;
-    this._timerId = setTimeout(() => {
-      this._timeout();
+    this._timerId = setTimeout(function () {
+      _this._timeout();
     }, SERVICE_FRAMEWORK_RPC_TIMEOUT_MS);
   }
 
-  reject(error): void {
-    if (!this._complete) {
-      this.cleanup();
-      this._reject(decodeError(this._message, error));
+  _createClass(Call, [{
+    key: 'reject',
+    value: function reject(error) {
+      if (!this._complete) {
+        this.cleanup();
+        this._reject((0, (_messages || _load_messages()).decodeError)(this._message, error));
+      }
     }
-  }
-
-  resolve(result): void {
-    if (!this._complete) {
-      this.cleanup();
-      this._resolve(result);
+  }, {
+    key: 'resolve',
+    value: function resolve(result) {
+      if (!this._complete) {
+        this.cleanup();
+        this._resolve(result);
+      }
     }
-  }
-
-  cleanup(): void {
-    if (!this._complete) {
-      this._complete = true;
-      clearTimeout(this._timerId);
-      this._timerId = null;
-      this._cleanup();
+  }, {
+    key: 'cleanup',
+    value: function cleanup() {
+      if (!this._complete) {
+        this._complete = true;
+        clearTimeout(this._timerId);
+        this._timerId = null;
+        this._cleanup();
+      }
     }
-  }
-
-  _timeout(): void {
-    if (!this._complete) {
-      this.cleanup();
-      this._reject(new Error(
-        `Timeout after ${SERVICE_FRAMEWORK_RPC_TIMEOUT_MS} for id: ` +
-        `${this._message.id}, ${this._timeoutMessage}.`,
-      ));
+  }, {
+    key: '_timeout',
+    value: function _timeout() {
+      if (!this._complete) {
+        this.cleanup();
+        this._reject(new Error('Timeout after ' + SERVICE_FRAMEWORK_RPC_TIMEOUT_MS + ' for id: ' + (this._message.id + ', ' + this._timeoutMessage + '.')));
+      }
     }
-  }
-}
+  }]);
 
-export class RpcConnection<TransportType: Transport> {
-  _rpcRequestId: number;
-  _transport: TransportType;
-  _serviceRegistry: ServiceRegistry;
-  _objectRegistry: ObjectRegistry;
-  _subscriptions: Map<number, Subscription>;
-  _calls: Map<number, Call>;
+  return Call;
+})();
+
+var RpcConnection = (function () {
 
   // Do not call this directly, use factory methods below.
-  constructor(
-    kind: RpcConnectionKind,
-    serviceRegistry: ServiceRegistry,
-    transport: TransportType,
-  ) {
+
+  function RpcConnection(kind, serviceRegistry, transport) {
+    var _this2 = this;
+
+    _classCallCheck(this, RpcConnection);
+
     this._transport = transport;
     this._rpcRequestId = 1;
     this._serviceRegistry = serviceRegistry;
-    this._objectRegistry = new ObjectRegistry(kind, this._serviceRegistry, this);
-    this._transport.onMessage().subscribe(message => { this._handleMessage(message); });
+    this._objectRegistry = new (_ObjectRegistry || _load_ObjectRegistry()).ObjectRegistry(kind, this._serviceRegistry, this);
+    this._transport.onMessage().subscribe(function (message) {
+      _this2._handleMessage(message);
+    });
     this._subscriptions = new Map();
     this._calls = new Map();
   }
 
   // Creates a connection on the server side.
-  static createServer(
-    serviceRegistry: ServiceRegistry,
-    transport: TransportType,
-  ): RpcConnection<TransportType> {
-    return new RpcConnection(
-      'server',
-      serviceRegistry,
-      transport);
-  }
 
-  // Creates a client side connection to a server on another machine.
-  static createRemote(
-    transport: TransportType,
-    predefinedTypes: Array<PredefinedTransformer>,
-    services: Array<ConfigEntry>,
-  ): RpcConnection<TransportType> {
-    return new RpcConnection(
-      'client',
-      new ServiceRegistry(predefinedTypes, services),
-      transport);
-  }
-
-  // Creates a client side connection to a server on the same machine.
-  static createLocal(
-    transport: TransportType,
-    predefinedTypes: Array<PredefinedTransformer>,
-    services: Array<ConfigEntry>,
-  ): RpcConnection<TransportType> {
-    return new RpcConnection(
-      'client',
-      new ServiceRegistry(predefinedTypes, services),
-      transport);
-  }
-
-  getService(serviceName: string): Object {
-    const service = this._objectRegistry.getService(serviceName);
-    invariant(service != null, `No config found for service ${serviceName}`);
-    return service;
-  }
-
-  addServices(services: Array<ConfigEntry>): void {
-    services.forEach(this.addService, this);
-  }
-
-  addService(service: ConfigEntry): void {
-    this._serviceRegistry.addService(service);
-  }
-
-  // Delegate marshalling to the type registry.
-  marshal(value: any, type: Type): any {
-    return this._getTypeRegistry().marshal(this._objectRegistry, value, type);
-  }
-  unmarshal(value: any, type: Type): any {
-    return this._getTypeRegistry().unmarshal(this._objectRegistry, value, type);
-  }
-
-  marshalArguments(
-    args: Array<any>,
-    argTypes: Array<Parameter>,
-  ): Promise<Object> {
-    return this._getTypeRegistry().marshalArguments(this._objectRegistry, args, argTypes);
-  }
-
-  unmarshalArguments(
-    args: Object,
-    argTypes: Array<Parameter>,
-  ): Promise<Array<any>> {
-    return this._getTypeRegistry().unmarshalArguments(this._objectRegistry, args, argTypes);
-  }
-
-  /**
-   * Call a remote function, through the service framework.
-   * @param functionName - The name of the remote function to invoke.
-   * @param returnType - The type of object that this function returns, so the the transport
-   *   layer can register the appropriate listeners.
-   * @param args - The serialized arguments to invoke the remote function with.
-   */
-  callRemoteFunction(functionName: string, returnType: ReturnType, args: Object): any {
-    return this._sendMessageAndListenForResult(
-      createCallMessage(functionName, this._generateRequestId(), args),
-      returnType,
-      `Calling function ${functionName}`,
-    );
-  }
-
-  /**
-   * Call a method of a remote object, through the service framework.
-   * @param objectId - The id of the remote object.
-   * @param methodName - The name of the method to invoke.
-   * @param returnType - The type of object that this function returns, so the the transport
-   *   layer can register the appropriate listeners.
-   * @param args - The serialized arguments to invoke the remote method with.
-   */
-  callRemoteMethod(
-    objectId: number,
-    methodName: string,
-    returnType: ReturnType,
-    args: Object,
-  ): any {
-    return this._sendMessageAndListenForResult(
-      createCallObjectMessage(methodName, objectId, this._generateRequestId(), args),
-      returnType,
-      `Calling remote method ${methodName}.`,
-    );
-  }
-
-  /**
-   * Call a remote constructor, returning an id that eventually resolves to a unique identifier
-   * for the object.
-   * @param interfaceName - The name of the remote class for which to construct an object.
-   * @param thisArg - The newly created proxy object.
-   * @param unmarshalledArgs - Unmarshalled arguments to pass to the remote constructor.
-   * @param argTypes - Types of arguments.
-   */
-  createRemoteObject(
-    interfaceName: string,
-    thisArg: Object,
-    unmarshalledArgs: Array<any>,
-    argTypes: Array<Parameter>,
-  ): void {
-    const idPromise = (async () => {
-      const marshalledArgs = await this._getTypeRegistry().marshalArguments(
-        this._objectRegistry, unmarshalledArgs, argTypes);
-      return this._sendMessageAndListenForResult(
-        createNewObjectMessage(interfaceName, this._generateRequestId(), marshalledArgs),
-        'promise',
-        `Creating instance of ${interfaceName}`,
-      );
-    })();
-    this._objectRegistry.addProxy(thisArg, interfaceName, idPromise);
-  }
-
-  /**
-   * Dispose a remote object. This makes it's proxies unsuable, and calls the `dispose` method on
-   * the remote object.
-   * @param object - The remote object.
-   * @returns A Promise that resolves when the object disposal has completed.
-   */
-  async disposeRemoteObject(object: Object): Promise<void> {
-    const objectId = await this._objectRegistry.disposeProxy(object);
-    if (objectId == null) {
-      logger.info('Duplicate dispose call on remote proxy');
-    } else if (this._transport.isClosed()) {
-      logger.info('Dispose call on remote proxy after connection closed');
-    } else {
-      return await this._sendMessageAndListenForResult(
-        createDisposeMessage(this._generateRequestId(), objectId),
-        'promise', `Disposing object ${objectId}`);
+  _createClass(RpcConnection, [{
+    key: 'getService',
+    value: function getService(serviceName) {
+      var service = this._objectRegistry.getService(serviceName);
+      (0, (_assert || _load_assert()).default)(service != null, 'No config found for service ' + serviceName);
+      return service;
     }
-  }
+  }, {
+    key: 'addServices',
+    value: function addServices(services) {
+      services.forEach(this.addService, this);
+    }
+  }, {
+    key: 'addService',
+    value: function addService(service) {
+      this._serviceRegistry.addService(service);
+    }
 
-  /**
-   * Helper function that listens for a result for the given id.
-   * @param returnType - Determines the type of messages we should subscribe to, and what this
-   *   function should return.
-   * @param id - The id of the request who's result we are listening for.
-   * @returns Depending on the expected return type, this function either returns undefined, a
-   *   Promise, or an Observable.
-   */
-  _sendMessageAndListenForResult(
-    message: RequestMessage,
-    returnType: ReturnType,
-    timeoutMessage: string,
-  ): any {
-    const operation = () => {
-      switch (returnType) {
-        case 'void':
-          this._transport.send(JSON.stringify(message));
-          return; // No values to return.
-        case 'promise':
-          // Listen for a single message, and resolve or reject a promise on that message.
-          return new Promise((resolve, reject) => {
-            this._transport.send(JSON.stringify(message));
-            this._calls.set(message.id, new Call(
-              message,
-              timeoutMessage,
-              resolve,
-              reject,
-              () => {
-                this._calls.delete(message.id);
-              },
-            ));
-          });
-        case 'observable': {
-          const id = message.id;
-          invariant(!this._subscriptions.has(id));
+    // Delegate marshalling to the type registry.
+  }, {
+    key: 'marshal',
+    value: function marshal(value, type) {
+      return this._getTypeRegistry().marshal(this._objectRegistry, value, type);
+    }
+  }, {
+    key: 'unmarshal',
+    value: function unmarshal(value, type) {
+      return this._getTypeRegistry().unmarshal(this._objectRegistry, value, type);
+    }
+  }, {
+    key: 'marshalArguments',
+    value: function marshalArguments(args, argTypes) {
+      return this._getTypeRegistry().marshalArguments(this._objectRegistry, args, argTypes);
+    }
+  }, {
+    key: 'unmarshalArguments',
+    value: function unmarshalArguments(args, argTypes) {
+      return this._getTypeRegistry().unmarshalArguments(this._objectRegistry, args, argTypes);
+    }
 
-          const sendSubscribe = () => {
-            this._transport.send(JSON.stringify(message));
-          };
-          const sendUnsubscribe = () => {
-            if (!this._transport.isClosed()) {
-              this._transport.send(JSON.stringify(createUnsubscribeMessage(id)));
-            }
-          };
-          let hadSubscription = false;
-          const observable = Observable.create(observer => {
-            // Only allow a single subscription. This will be the common case,
-            // and adding this restriction allows disposing of the observable
-            // on the remote side after the initial subscription is complete.
-            if (hadSubscription) {
-              throw new Error('Attempt to re-connect with a remote Observable.');
-            }
-            hadSubscription = true;
+    /**
+     * Call a remote function, through the service framework.
+     * @param functionName - The name of the remote function to invoke.
+     * @param returnType - The type of object that this function returns, so the the transport
+     *   layer can register the appropriate listeners.
+     * @param args - The serialized arguments to invoke the remote function with.
+     */
+  }, {
+    key: 'callRemoteFunction',
+    value: function callRemoteFunction(functionName, returnType, args) {
+      return this._sendMessageAndListenForResult((0, (_messages || _load_messages()).createCallMessage)(functionName, this._generateRequestId(), args), returnType, 'Calling function ' + functionName);
+    }
 
-            const subscription = new Subscription(message, observer);
-            this._subscriptions.set(id, subscription);
-            sendSubscribe();
+    /**
+     * Call a method of a remote object, through the service framework.
+     * @param objectId - The id of the remote object.
+     * @param methodName - The name of the method to invoke.
+     * @param returnType - The type of object that this function returns, so the the transport
+     *   layer can register the appropriate listeners.
+     * @param args - The serialized arguments to invoke the remote method with.
+     */
+  }, {
+    key: 'callRemoteMethod',
+    value: function callRemoteMethod(objectId, methodName, returnType, args) {
+      return this._sendMessageAndListenForResult((0, (_messages || _load_messages()).createCallObjectMessage)(methodName, objectId, this._generateRequestId(), args), returnType, 'Calling remote method ' + methodName + '.');
+    }
 
-            // Observable dispose function, which is called on subscription dispose, on stream
-            // completion, and on stream error.
-            return {
-              unsubscribe: () => {
-                if (!this._subscriptions.has(id)) {
-                  // guard against multiple unsubscribe calls
-                  return;
-                }
-                this._subscriptions.delete(id);
+    /**
+     * Call a remote constructor, returning an id that eventually resolves to a unique identifier
+     * for the object.
+     * @param interfaceName - The name of the remote class for which to construct an object.
+     * @param thisArg - The newly created proxy object.
+     * @param unmarshalledArgs - Unmarshalled arguments to pass to the remote constructor.
+     * @param argTypes - Types of arguments.
+     */
+  }, {
+    key: 'createRemoteObject',
+    value: function createRemoteObject(interfaceName, thisArg, unmarshalledArgs, argTypes) {
+      var _this3 = this;
 
-                sendUnsubscribe();
-              },
-            };
-          });
+      var idPromise = _asyncToGenerator(function* () {
+        var marshalledArgs = yield _this3._getTypeRegistry().marshalArguments(_this3._objectRegistry, unmarshalledArgs, argTypes);
+        return _this3._sendMessageAndListenForResult((0, (_messages || _load_messages()).createNewObjectMessage)(interfaceName, _this3._generateRequestId(), marshalledArgs), 'promise', 'Creating instance of ' + interfaceName);
+      })();
+      this._objectRegistry.addProxy(thisArg, interfaceName, idPromise);
+    }
 
-          // Conversion to ConnectableObservable happens in the generated
-          // proxies.
-          return observable;
-        }
-        default:
-          throw new Error(`Unkown return type: ${returnType}.`);
+    /**
+     * Dispose a remote object. This makes it's proxies unsuable, and calls the `dispose` method on
+     * the remote object.
+     * @param object - The remote object.
+     * @returns A Promise that resolves when the object disposal has completed.
+     */
+  }, {
+    key: 'disposeRemoteObject',
+    value: _asyncToGenerator(function* (object) {
+      var objectId = yield this._objectRegistry.disposeProxy(object);
+      if (objectId == null) {
+        logger.info('Duplicate dispose call on remote proxy');
+      } else if (this._transport.isClosed()) {
+        logger.info('Dispose call on remote proxy after connection closed');
+      } else {
+        return yield this._sendMessageAndListenForResult((0, (_messages || _load_messages()).createDisposeMessage)(this._generateRequestId(), objectId), 'promise', 'Disposing object ' + objectId);
       }
-    };
-    return trackOperationTiming(
-      trackingIdOfMessageAndNetwork(this._objectRegistry, message),
-      operation);
-  }
+    })
 
-  _returnPromise(
-    id: number,
-    timingTracker: TimingTracker,
-    candidate: any,
-    type: Type,
-  ): void {
-    let returnVal = candidate;
-    // Ensure that the return value is a promise.
-    if (!isThenable(returnVal)) {
-      returnVal = Promise.reject(
-        new Error('Expected a Promise, but the function returned something else.'));
+    /**
+     * Helper function that listens for a result for the given id.
+     * @param returnType - Determines the type of messages we should subscribe to, and what this
+     *   function should return.
+     * @param id - The id of the request who's result we are listening for.
+     * @returns Depending on the expected return type, this function either returns undefined, a
+     *   Promise, or an Observable.
+     */
+  }, {
+    key: '_sendMessageAndListenForResult',
+    value: function _sendMessageAndListenForResult(message, returnType, timeoutMessage) {
+      var _this4 = this;
+
+      var operation = function operation() {
+        switch (returnType) {
+          case 'void':
+            _this4._transport.send(JSON.stringify(message));
+            return; // No values to return.
+          case 'promise':
+            // Listen for a single message, and resolve or reject a promise on that message.
+            return new Promise(function (resolve, reject) {
+              _this4._transport.send(JSON.stringify(message));
+              _this4._calls.set(message.id, new Call(message, timeoutMessage, resolve, reject, function () {
+                _this4._calls.delete(message.id);
+              }));
+            });
+          case 'observable':
+            {
+              var _ret = (function () {
+                var id = message.id;
+                (0, (_assert || _load_assert()).default)(!_this4._subscriptions.has(id));
+
+                var sendSubscribe = function sendSubscribe() {
+                  _this4._transport.send(JSON.stringify(message));
+                };
+                var sendUnsubscribe = function sendUnsubscribe() {
+                  if (!_this4._transport.isClosed()) {
+                    _this4._transport.send(JSON.stringify((0, (_messages || _load_messages()).createUnsubscribeMessage)(id)));
+                  }
+                };
+                var hadSubscription = false;
+                var observable = (_rxjsBundlesRxMinJs || _load_rxjsBundlesRxMinJs()).Observable.create(function (observer) {
+                  // Only allow a single subscription. This will be the common case,
+                  // and adding this restriction allows disposing of the observable
+                  // on the remote side after the initial subscription is complete.
+                  if (hadSubscription) {
+                    throw new Error('Attempt to re-connect with a remote Observable.');
+                  }
+                  hadSubscription = true;
+
+                  var subscription = new Subscription(message, observer);
+                  _this4._subscriptions.set(id, subscription);
+                  sendSubscribe();
+
+                  // Observable dispose function, which is called on subscription dispose, on stream
+                  // completion, and on stream error.
+                  return {
+                    unsubscribe: function unsubscribe() {
+                      if (!_this4._subscriptions.has(id)) {
+                        // guard against multiple unsubscribe calls
+                        return;
+                      }
+                      _this4._subscriptions.delete(id);
+
+                      sendUnsubscribe();
+                    }
+                  };
+                });
+
+                // Conversion to ConnectableObservable happens in the generated
+                // proxies.
+                return {
+                  v: observable
+                };
+              })();
+
+              if (typeof _ret === 'object') return _ret.v;
+            }
+          default:
+            throw new Error('Unkown return type: ' + returnType + '.');
+        }
+      };
+      return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackOperationTiming)(trackingIdOfMessageAndNetwork(this._objectRegistry, message), operation);
+    }
+  }, {
+    key: '_returnPromise',
+    value: function _returnPromise(id, timingTracker, candidate, type) {
+      var _this5 = this;
+
+      var returnVal = candidate;
+      // Ensure that the return value is a promise.
+      if (!isThenable(returnVal)) {
+        returnVal = Promise.reject(new Error('Expected a Promise, but the function returned something else.'));
+      }
+
+      // Marshal the result, to send over the network.
+      (0, (_assert || _load_assert()).default)(returnVal != null);
+      returnVal = returnVal.then(function (value) {
+        return _this5._getTypeRegistry().marshal(_this5._objectRegistry, value, type);
+      });
+
+      // Send the result of the promise across the socket.
+      returnVal.then(function (result) {
+        _this5._transport.send(JSON.stringify((0, (_messages || _load_messages()).createPromiseMessage)(id, result)));
+        timingTracker.onSuccess();
+      }, function (error) {
+        _this5._transport.send(JSON.stringify((0, (_messages || _load_messages()).createErrorResponseMessage)(id, error)));
+        timingTracker.onError(error == null ? new Error() : error);
+      });
+    }
+  }, {
+    key: '_returnObservable',
+    value: function _returnObservable(id, returnVal, elementType) {
+      var _this6 = this;
+
+      var result = undefined;
+      // Ensure that the return value is an observable.
+      if (!isConnectableObservable(returnVal)) {
+        result = (_rxjsBundlesRxMinJs || _load_rxjsBundlesRxMinJs()).Observable.throw(new Error('Expected an Observable, but the function returned something else.')).publish();
+      } else {
+        result = returnVal;
+      }
+
+      // Marshal the result, to send over the network.
+      result.concatMap(function (value) {
+        return _this6._getTypeRegistry().marshal(_this6._objectRegistry, value, elementType);
+      })
+
+      // Send the next, error, and completion events of the observable across the socket.
+      .subscribe(function (data) {
+        _this6._transport.send(JSON.stringify((0, (_messages || _load_messages()).createNextMessage)(id, data)));
+      }, function (error) {
+        _this6._transport.send(JSON.stringify((0, (_messages || _load_messages()).createObserveErrorMessage)(id, error)));
+        _this6._objectRegistry.removeSubscription(id);
+      }, function (completed) {
+        _this6._transport.send(JSON.stringify((0, (_messages || _load_messages()).createCompleteMessage)(id)));
+        _this6._objectRegistry.removeSubscription(id);
+      });
+
+      this._objectRegistry.addSubscription(id, result.connect());
     }
 
-    // Marshal the result, to send over the network.
-    invariant(returnVal != null);
-    returnVal = returnVal.then(value => this._getTypeRegistry().marshal(
-      this._objectRegistry, value, type));
-
-    // Send the result of the promise across the socket.
-    returnVal.then(result => {
-      this._transport.send(JSON.stringify(createPromiseMessage(id, result)));
-      timingTracker.onSuccess();
-    }, error => {
-      this._transport.send(JSON.stringify(createErrorResponseMessage(id, error)));
-      timingTracker.onError(error == null ? new Error() : error);
-    });
-  }
-
-  _returnObservable(id: number, returnVal: any, elementType: Type): void {
-    let result: ConnectableObservable<any>;
-    // Ensure that the return value is an observable.
-    if (!isConnectableObservable(returnVal)) {
-      result = Observable.throw(new Error(
-        'Expected an Observable, but the function returned something else.')).publish();
-    } else {
-      result = returnVal;
+    // Returns true if a promise was returned.
+  }, {
+    key: '_returnValue',
+    value: function _returnValue(id, timingTracker, value, type) {
+      switch (type.kind) {
+        case 'void':
+          break; // No need to send anything back to the user.
+        case 'promise':
+          this._returnPromise(id, timingTracker, value, type.type);
+          return true;
+        case 'observable':
+          this._returnObservable(id, value, type.type);
+          break;
+        default:
+          throw new Error('Unkown return type ' + type.kind + '.');
+      }
+      return false;
     }
+  }, {
+    key: '_callFunction',
+    value: _asyncToGenerator(function* (id, timingTracker, call) {
+      var _getFunctionImplemention2 = this._getFunctionImplemention(call.method);
 
-    // Marshal the result, to send over the network.
-    result.concatMap(value => this._getTypeRegistry().marshal(
-      this._objectRegistry, value, elementType))
+      var localImplementation = _getFunctionImplemention2.localImplementation;
+      var type = _getFunctionImplemention2.type;
 
-    // Send the next, error, and completion events of the observable across the socket.
-    .subscribe(data => {
-      this._transport.send(JSON.stringify(createNextMessage(id, data)));
-    }, error => {
-      this._transport.send(JSON.stringify(createObserveErrorMessage(id, error)));
-      this._objectRegistry.removeSubscription(id);
-    }, completed => {
-      this._transport.send(JSON.stringify(createCompleteMessage(id)));
-      this._objectRegistry.removeSubscription(id);
-    });
+      var marshalledArgs = yield this._getTypeRegistry().unmarshalArguments(this._objectRegistry, call.args, type.argumentTypes);
 
-    this._objectRegistry.addSubscription(id, result.connect());
-  }
+      return this._returnValue(id, timingTracker, localImplementation.apply(this, marshalledArgs), type.returnType);
+    })
+  }, {
+    key: '_callMethod',
+    value: _asyncToGenerator(function* (id, timingTracker, call) {
+      var object = this._objectRegistry.unmarshal(call.objectId);
+      (0, (_assert || _load_assert()).default)(object != null);
 
-  // Returns true if a promise was returned.
-  _returnValue(id: number, timingTracker: TimingTracker, value: any, type: Type): boolean {
-    switch (type.kind) {
-      case 'void':
-        break; // No need to send anything back to the user.
-      case 'promise':
-        this._returnPromise(id, timingTracker, value, type.type);
-        return true;
-      case 'observable':
-        this._returnObservable(id, value, type.type);
-        break;
-      default:
-        throw new Error(`Unkown return type ${type.kind}.`);
-    }
-    return false;
-  }
+      var interfaceName = this._objectRegistry.getInterface(call.objectId);
+      var classDefinition = this._getClassDefinition(interfaceName);
+      (0, (_assert || _load_assert()).default)(classDefinition != null);
+      var type = classDefinition.definition.instanceMethods.get(call.method);
+      (0, (_assert || _load_assert()).default)(type != null);
 
-  async _callFunction(
-    id: number,
-    timingTracker: TimingTracker,
-    call: CallMessage,
-  ): Promise<boolean> {
-    const {
-      localImplementation,
-      type,
-    } = this._getFunctionImplemention(call.method);
-    const marshalledArgs = await this._getTypeRegistry().unmarshalArguments(
-      this._objectRegistry, call.args, type.argumentTypes);
+      var marshalledArgs = yield this._getTypeRegistry().unmarshalArguments(this._objectRegistry, call.args, type.argumentTypes);
 
-    return this._returnValue(
-      id,
-      timingTracker,
-      localImplementation.apply(this, marshalledArgs),
-      type.returnType);
-  }
+      return this._returnValue(id, timingTracker, object[call.method].apply(object, marshalledArgs), type.returnType);
+    })
+  }, {
+    key: '_callConstructor',
+    value: _asyncToGenerator(function* (id, timingTracker, constructorMessage) {
+      var classDefinition = this._getClassDefinition(constructorMessage.interface);
+      (0, (_assert || _load_assert()).default)(classDefinition != null);
+      var localImplementation = classDefinition.localImplementation;
+      var definition = classDefinition.definition;
 
-  async _callMethod(
-    id: number,
-    timingTracker: TimingTracker,
-    call: CallObjectMessage,
-  ): Promise<boolean> {
-    const object = this._objectRegistry.unmarshal(call.objectId);
-    invariant(object != null);
+      var constructorArgs = definition.constructorArgs;
+      (0, (_assert || _load_assert()).default)(constructorArgs != null);
 
-    const interfaceName = this._objectRegistry.getInterface(call.objectId);
-    const classDefinition = this._getClassDefinition(interfaceName);
-    invariant(classDefinition != null);
-    const type = classDefinition.definition.instanceMethods.get(call.method);
-    invariant(type != null);
+      var marshalledArgs = yield this._getTypeRegistry().unmarshalArguments(this._objectRegistry, constructorMessage.args, constructorArgs);
 
-    const marshalledArgs = await this._getTypeRegistry().unmarshalArguments(
-      this._objectRegistry, call.args, type.argumentTypes);
+      // Create a new object and put it in the registry.
+      var newObject = construct(localImplementation, marshalledArgs);
 
-    return this._returnValue(
-      id,
-      timingTracker,
-      object[call.method].apply(object, marshalledArgs),
-      type.returnType);
-  }
-
-  async _callConstructor(
-    id: number,
-    timingTracker: TimingTracker,
-    constructorMessage: NewObjectMessage,
-  ): Promise<void> {
-    const classDefinition = this._getClassDefinition(constructorMessage.interface);
-    invariant(classDefinition != null);
-    const {
-      localImplementation,
-      definition,
-    } = classDefinition;
-    const constructorArgs = definition.constructorArgs;
-    invariant(constructorArgs != null);
-
-    const marshalledArgs = await this._getTypeRegistry().unmarshalArguments(
-      this._objectRegistry, constructorMessage.args, constructorArgs);
-
-    // Create a new object and put it in the registry.
-    const newObject = construct(localImplementation, marshalledArgs);
-
-    // Return the object, which will automatically be converted to an id through the
-    // marshalling system.
-    this._returnPromise(
-      id,
-      timingTracker,
-      Promise.resolve(newObject),
-      {
+      // Return the object, which will automatically be converted to an id through the
+      // marshalling system.
+      this._returnPromise(id, timingTracker, Promise.resolve(newObject), {
         kind: 'named',
         name: constructorMessage.interface,
-        location: builtinLocation,
+        location: (_builtinTypes || _load_builtinTypes()).builtinLocation
       });
-  }
-
-  getTransport(): TransportType {
-    return this._transport;
-  }
-
-  _parseMessage(value: string): ?Object {
-    try {
-      return JSON.parse(value);
-    } catch (e) {
-      logger.error(`Recieved invalid JSON message: '${value}'`);
-      return null;
+    })
+  }, {
+    key: 'getTransport',
+    value: function getTransport() {
+      return this._transport;
     }
-  }
-
-  _handleMessage(value: string): void {
-    const message: ?(RequestMessage | ResponseMessage) = this._parseMessage(value);
-    if (message == null) {
-      return;
+  }, {
+    key: '_parseMessage',
+    value: function _parseMessage(value) {
+      try {
+        return JSON.parse(value);
+      } catch (e) {
+        logger.error('Recieved invalid JSON message: \'' + value + '\'');
+        return null;
+      }
     }
-
-    // TODO: advinsky uncomment after version 0.136 and below are phased out
-    // invariant(message.protocol === SERVICE_FRAMEWORK3_PROTOCOL);
-
-    switch (message.type) {
-      case 'response':
-      case 'error-response':
-      case 'next':
-      case 'complete':
-      case 'error':
-        this._handleResponseMessage(message);
-        break;
-      case 'call':
-      case 'call-object':
-      case 'new':
-      case 'dispose':
-      case 'unsubscribe':
-        this._handleRequestMessage(message);
-        break;
-      default:
-        throw new Error('Unexpected message type');
-    }
-  }
-
-  _handleResponseMessage(message: ResponseMessage): void {
-    const id = message.id;
-    switch (message.type) {
-      case 'response': {
-        const call = this._calls.get(id);
-        if (call != null) {
-          const {result} = message;
-          call.resolve(result);
-        }
-        break;
+  }, {
+    key: '_handleMessage',
+    value: function _handleMessage(value) {
+      var message = this._parseMessage(value);
+      if (message == null) {
+        return;
       }
-      case 'error-response': {
-        const call = this._calls.get(id);
-        if (call != null) {
-          const {error} = message;
-          call.reject(error);
-        }
-        break;
-      }
-      case 'next': {
-        const subscription = this._subscriptions.get(id);
-        if (subscription != null) {
-          const {value} = message;
-          subscription.next(value);
-        }
-        break;
-      }
-      case 'complete': {
-        const subscription = this._subscriptions.get(id);
-        if (subscription != null) {
-          subscription.complete();
-          this._subscriptions.delete(id);
-        }
-        break;
-      }
-      case 'error': {
-        const subscription = this._subscriptions.get(id);
-        if (subscription != null) {
-          const {error} = message;
-          subscription.error(error);
-          this._subscriptions.delete(id);
-        }
-        break;
-      }
-      default:
-        throw new Error(`Unexpected message type ${JSON.stringify(message)}`);
-    }
-  }
 
-  async _handleRequestMessage(message: RequestMessage): Promise<void> {
-    const id = message.id;
+      // TODO: advinsky uncomment after version 0.136 and below are phased out
+      // invariant(message.protocol === SERVICE_FRAMEWORK3_PROTOCOL);
 
-    // Track timings of all function calls, method calls, and object creations.
-    // Note: for Observables we only track how long it takes to create the initial Observable.
-    // while for Promises we track the length of time it takes to resolve or reject.
-    // For returning void, we track the time for the call to complete.
-    const timingTracker: TimingTracker
-      = startTracking(trackingIdOfMessage(this._objectRegistry, message));
-
-    // Here's the main message handler ...
-    try {
-      let returnedPromise = false;
       switch (message.type) {
+        case 'response':
+        case 'error-response':
+        case 'next':
+        case 'complete':
+        case 'error':
+          this._handleResponseMessage(message);
+          break;
         case 'call':
-          returnedPromise = await this._callFunction(id, timingTracker, message);
-          break;
         case 'call-object':
-          returnedPromise = await this._callMethod(id, timingTracker, message);
-          break;
         case 'new':
-          await this._callConstructor(id, timingTracker, message);
-          returnedPromise = true;
-          break;
         case 'dispose':
-          await this._objectRegistry.disposeObject(message.objectId);
-          this._returnPromise(id, timingTracker, Promise.resolve(), voidType);
-          returnedPromise = true;
-          break;
         case 'unsubscribe':
-          this._objectRegistry.disposeSubscription(id);
+          this._handleRequestMessage(message);
           break;
         default:
-          throw new Error(`Unkown message type ${message.type}`);
+          throw new Error('Unexpected message type');
       }
-      if (!returnedPromise) {
-        timingTracker.onSuccess();
-      }
-    } catch (e) {
-      logger.error(e != null ? e.message : e);
-      timingTracker.onError(e == null ? new Error() : e);
-      this._transport.send(JSON.stringify(createErrorResponseMessage(id, e)));
     }
-  }
+  }, {
+    key: '_handleResponseMessage',
+    value: function _handleResponseMessage(message) {
+      var id = message.id;
+      switch (message.type) {
+        case 'response':
+          {
+            var call = this._calls.get(id);
+            if (call != null) {
+              var _result = message.result;
 
-  _getFunctionImplemention(name: string): FunctionImplementation {
-    return this._serviceRegistry.getFunctionImplemention(name);
-  }
+              call.resolve(_result);
+            }
+            break;
+          }
+        case 'error-response':
+          {
+            var call = this._calls.get(id);
+            if (call != null) {
+              var _error2 = message.error;
 
-  _getClassDefinition(className: string): ClassDefinition {
-    return this._serviceRegistry.getClassDefinition(className);
-  }
+              call.reject(_error2);
+            }
+            break;
+          }
+        case 'next':
+          {
+            var subscription = this._subscriptions.get(id);
+            if (subscription != null) {
+              var value = message.value;
 
-  _generateRequestId(): number {
-    return this._rpcRequestId++;
-  }
+              subscription.next(value);
+            }
+            break;
+          }
+        case 'complete':
+          {
+            var subscription = this._subscriptions.get(id);
+            if (subscription != null) {
+              subscription.complete();
+              this._subscriptions.delete(id);
+            }
+            break;
+          }
+        case 'error':
+          {
+            var subscription = this._subscriptions.get(id);
+            if (subscription != null) {
+              var _error3 = message.error;
 
-  _getTypeRegistry(): TypeRegistry {
-    return this._serviceRegistry.getTypeRegistry();
-  }
+              subscription.error(_error3);
+              this._subscriptions.delete(id);
+            }
+            break;
+          }
+        default:
+          throw new Error('Unexpected message type ' + JSON.stringify(message));
+      }
+    }
+  }, {
+    key: '_handleRequestMessage',
+    value: _asyncToGenerator(function* (message) {
+      var id = message.id;
 
-  dispose(): void {
-    this._transport.close();
-    this._objectRegistry.dispose();
-    this._calls.forEach(call => {
-      call.reject(new Error('Connection Closed'));
-    });
-    this._subscriptions.forEach(subscription => {
-      subscription.error(new Error('Connection Closed'));
-    });
-    this._subscriptions.clear();
-  }
-}
+      // Track timings of all function calls, method calls, and object creations.
+      // Note: for Observables we only track how long it takes to create the initial Observable.
+      // while for Promises we track the length of time it takes to resolve or reject.
+      // For returning void, we track the time for the call to complete.
+      var timingTracker = (0, (_nuclideAnalytics || _load_nuclideAnalytics()).startTracking)(trackingIdOfMessage(this._objectRegistry, message));
 
-function trackingIdOfMessage(registry: ObjectRegistry, message: RequestMessage): string {
+      // Here's the main message handler ...
+      try {
+        var returnedPromise = false;
+        switch (message.type) {
+          case 'call':
+            returnedPromise = yield this._callFunction(id, timingTracker, message);
+            break;
+          case 'call-object':
+            returnedPromise = yield this._callMethod(id, timingTracker, message);
+            break;
+          case 'new':
+            yield this._callConstructor(id, timingTracker, message);
+            returnedPromise = true;
+            break;
+          case 'dispose':
+            yield this._objectRegistry.disposeObject(message.objectId);
+            this._returnPromise(id, timingTracker, Promise.resolve(), (_builtinTypes || _load_builtinTypes()).voidType);
+            returnedPromise = true;
+            break;
+          case 'unsubscribe':
+            this._objectRegistry.disposeSubscription(id);
+            break;
+          default:
+            throw new Error('Unkown message type ' + message.type);
+        }
+        if (!returnedPromise) {
+          timingTracker.onSuccess();
+        }
+      } catch (e) {
+        logger.error(e != null ? e.message : e);
+        timingTracker.onError(e == null ? new Error() : e);
+        this._transport.send(JSON.stringify((0, (_messages || _load_messages()).createErrorResponseMessage)(id, e)));
+      }
+    })
+  }, {
+    key: '_getFunctionImplemention',
+    value: function _getFunctionImplemention(name) {
+      return this._serviceRegistry.getFunctionImplemention(name);
+    }
+  }, {
+    key: '_getClassDefinition',
+    value: function _getClassDefinition(className) {
+      return this._serviceRegistry.getClassDefinition(className);
+    }
+  }, {
+    key: '_generateRequestId',
+    value: function _generateRequestId() {
+      return this._rpcRequestId++;
+    }
+  }, {
+    key: '_getTypeRegistry',
+    value: function _getTypeRegistry() {
+      return this._serviceRegistry.getTypeRegistry();
+    }
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      this._transport.close();
+      this._objectRegistry.dispose();
+      this._calls.forEach(function (call) {
+        call.reject(new Error('Connection Closed'));
+      });
+      this._subscriptions.forEach(function (subscription) {
+        subscription.error(new Error('Connection Closed'));
+      });
+      this._subscriptions.clear();
+    }
+  }], [{
+    key: 'createServer',
+    value: function createServer(serviceRegistry, transport) {
+      return new RpcConnection('server', serviceRegistry, transport);
+    }
+
+    // Creates a client side connection to a server on another machine.
+  }, {
+    key: 'createRemote',
+    value: function createRemote(transport, predefinedTypes, services) {
+      return new RpcConnection('client', new (_ServiceRegistry || _load_ServiceRegistry()).ServiceRegistry(predefinedTypes, services), transport);
+    }
+
+    // Creates a client side connection to a server on the same machine.
+  }, {
+    key: 'createLocal',
+    value: function createLocal(transport, predefinedTypes, services) {
+      return new RpcConnection('client', new (_ServiceRegistry || _load_ServiceRegistry()).ServiceRegistry(predefinedTypes, services), transport);
+    }
+  }]);
+
+  return RpcConnection;
+})();
+
+exports.RpcConnection = RpcConnection;
+
+function trackingIdOfMessage(registry, message) {
   switch (message.type) {
     case 'call':
-      return `service-framework:${message.method}`;
+      return 'service-framework:' + message.method;
     case 'call-object':
-      const callInterface = registry.getInterface(message.objectId);
-      return `service-framework:${callInterface}.${message.method}`;
+      var callInterface = registry.getInterface(message.objectId);
+      return 'service-framework:' + callInterface + '.' + message.method;
     case 'new':
-      return `service-framework:new:${message.interface}`;
+      return 'service-framework:new:' + message.interface;
     case 'dispose':
-      const interfaceName = registry.getInterface(message.objectId);
-      return `service-framework:dispose:${interfaceName}`;
+      var interfaceName = registry.getInterface(message.objectId);
+      return 'service-framework:dispose:' + interfaceName;
     case 'unsubscribe':
       return 'service-framework:disposeObservable';
     default:
-      throw new Error(`Unknown message type ${message.type}`);
+      throw new Error('Unknown message type ' + message.type);
   }
 }
 
-function trackingIdOfMessageAndNetwork(registry: ObjectRegistry, message: RequestMessage): string {
+function trackingIdOfMessageAndNetwork(registry, message) {
   return trackingIdOfMessage(registry, message) + ':plus-network';
 }
 
@@ -764,13 +764,13 @@ function construct(classObject, args) {
 /**
  * A helper function that checks if an object is thenable (Promise-like).
  */
-function isThenable(object: any): boolean {
+function isThenable(object) {
   return Boolean(object && object.then);
 }
 
 /**
  * A helper function that checks if an object is an Observable.
  */
-function isConnectableObservable(object: any): boolean {
+function isConnectableObservable(object) {
   return Boolean(object && object.concatMap && object.subscribe && object.connect);
 }

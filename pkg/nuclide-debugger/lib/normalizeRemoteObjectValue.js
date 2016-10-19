@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,19 +10,27 @@
  * the root directory of this source tree.
  */
 
-import type {EvaluationResult} from './types';
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-import invariant from 'assert';
+exports.normalizeRemoteObjectValue = normalizeRemoteObjectValue;
 
-export function normalizeRemoteObjectValue(remoteObject: ?Object): ?EvaluationResult {
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _assert;
+
+function _load_assert() {
+  return _assert = _interopRequireDefault(require('assert'));
+}
+
+function normalizeRemoteObjectValue(remoteObject) {
   if (remoteObject == null) {
     return null;
   }
-  const modifiedProperties = {};
-  const normalizeUnderscores = field => {
-    invariant(remoteObject != null);
+  var modifiedProperties = {};
+  var normalizeUnderscores = function normalizeUnderscores(field) {
+    (0, (_assert || _load_assert()).default)(remoteObject != null);
     modifiedProperties[field] = remoteObject[field];
-    const underscoreField = `_${field}`;
+    var underscoreField = '_' + field;
     if (remoteObject.hasOwnProperty(underscoreField) && remoteObject[underscoreField] != null) {
       modifiedProperties[field] = String(remoteObject[underscoreField]);
     } else if (remoteObject.hasOwnProperty(field) && remoteObject[field] != null) {
@@ -29,8 +38,5 @@ export function normalizeRemoteObjectValue(remoteObject: ?Object): ?EvaluationRe
     }
   };
   ['type', 'description', 'objectId', 'value'].forEach(normalizeUnderscores);
-  return {
-    ...remoteObject,
-    ...modifiedProperties,
-  };
+  return _extends({}, remoteObject, modifiedProperties);
 }

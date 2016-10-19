@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,20 +10,16 @@
  * the root directory of this source tree.
  */
 
-export type PhabricatorRevisionInfo = {
- url: string,
- id: number,
- name: string,
-};
+exports.getPhabricatorRevisionFromCommitMessage = getPhabricatorRevisionFromCommitMessage;
+exports.getPhabricatorRevisionFromUrl = getPhabricatorRevisionFromUrl;
+exports.getCommitAuthorFromAuthorEmail = getCommitAuthorFromAuthorEmail;
 
-const DIFFERENTIAL_REVISION_REGEX = /^Differential Revision:\s*(\S+)/im;
-const DIFFERENTIAL_ID_REGEX = /[dD]([1-9][0-9]{5,})/im;
-const COMMIT_AUTHOR_REGEX = /.*<(.*)@.*>/im;
+var DIFFERENTIAL_REVISION_REGEX = /^Differential Revision:\s*(\S+)/im;
+var DIFFERENTIAL_ID_REGEX = /[dD]([1-9][0-9]{5,})/im;
+var COMMIT_AUTHOR_REGEX = /.*<(.*)@.*>/im;
 
-export function getPhabricatorRevisionFromCommitMessage(
-  commitMessage: string,
-): ?PhabricatorRevisionInfo {
-  const match = DIFFERENTIAL_REVISION_REGEX.exec(commitMessage);
+function getPhabricatorRevisionFromCommitMessage(commitMessage) {
+  var match = DIFFERENTIAL_REVISION_REGEX.exec(commitMessage);
   if (match === null) {
     return null;
   }
@@ -30,10 +27,8 @@ export function getPhabricatorRevisionFromCommitMessage(
   return getPhabricatorRevisionFromUrl(match[1]);
 }
 
-export function getPhabricatorRevisionFromUrl(
-  diffUrl: string,
-): ?PhabricatorRevisionInfo {
-  const match = DIFFERENTIAL_ID_REGEX.exec(diffUrl);
+function getPhabricatorRevisionFromUrl(diffUrl) {
+  var match = DIFFERENTIAL_ID_REGEX.exec(diffUrl);
   if (match === null) {
     return null;
   }
@@ -41,14 +36,12 @@ export function getPhabricatorRevisionFromUrl(
   return {
     url: diffUrl,
     id: parseInt(match[1], 10),
-    name: `D${match[1]}`,
+    name: 'D' + match[1]
   };
 }
 
-export function getCommitAuthorFromAuthorEmail(
-  author: string,
-): ?string {
-  const match = COMMIT_AUTHOR_REGEX.exec(author);
+function getCommitAuthorFromAuthorEmail(author) {
+  var match = COMMIT_AUTHOR_REGEX.exec(author);
   if (match === null) {
     return null;
   } else {

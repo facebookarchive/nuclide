@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,52 +10,85 @@
  * the root directory of this source tree.
  */
 
-import type {HandlesByType, ChildProcessInfo} from '../types';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {React} from 'react-for-atom';
-import BasicStatsSectionComponent from './sections/BasicStatsSectionComponent';
-import ActiveHandlesSectionComponent from './sections/ActiveHandlesSectionComponent';
-import ChildProcessTreeComponent from './sections/ChildProcessTreeComponent';
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
-type Props = {
-  toolbarJewel: string,
-  updateToolbarJewel: (value: string) => void,
-  cpuPercentage: number,
-  memory: number,
-  heapPercentage: number,
-  activeHandles: number,
-  activeRequests: number,
-  activeHandlesByType: HandlesByType,
-  childProcessesTree: ?ChildProcessInfo,
-};
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-export default class HealthPaneItemComponent extends React.Component {
-  props: Props;
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-  render(): React.Element<any> {
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-    const sections = {
-      Stats:
-        <BasicStatsSectionComponent {...this.props} />,
-      Subprocesses:
-        <ChildProcessTreeComponent childProcessesTree={this.props.childProcessesTree} />,
-      Handles:
-        <ActiveHandlesSectionComponent activeHandlesByType={this.props.activeHandlesByType} />,
-    };
+var _reactForAtom;
 
-    // For each section, we use settings-view to get a familiar look for table cells.
-    return (
-      <div>
-        {Object.keys(sections).map((title, s) =>
-          <div className="nuclide-health-pane-item-section" key={s}>
-            <h2>{title}</h2>
-            <div className="settings-view">
-              {sections[title]}
-            </div>
-          </div>,
-        )}
-      </div>
-    );
+function _load_reactForAtom() {
+  return _reactForAtom = require('react-for-atom');
+}
+
+var _sectionsBasicStatsSectionComponent;
+
+function _load_sectionsBasicStatsSectionComponent() {
+  return _sectionsBasicStatsSectionComponent = _interopRequireDefault(require('./sections/BasicStatsSectionComponent'));
+}
+
+var _sectionsActiveHandlesSectionComponent;
+
+function _load_sectionsActiveHandlesSectionComponent() {
+  return _sectionsActiveHandlesSectionComponent = _interopRequireDefault(require('./sections/ActiveHandlesSectionComponent'));
+}
+
+var _sectionsChildProcessTreeComponent;
+
+function _load_sectionsChildProcessTreeComponent() {
+  return _sectionsChildProcessTreeComponent = _interopRequireDefault(require('./sections/ChildProcessTreeComponent'));
+}
+
+var HealthPaneItemComponent = (function (_React$Component) {
+  _inherits(HealthPaneItemComponent, _React$Component);
+
+  function HealthPaneItemComponent() {
+    _classCallCheck(this, HealthPaneItemComponent);
+
+    _get(Object.getPrototypeOf(HealthPaneItemComponent.prototype), 'constructor', this).apply(this, arguments);
   }
 
-}
+  _createClass(HealthPaneItemComponent, [{
+    key: 'render',
+    value: function render() {
+
+      var sections = {
+        Stats: (_reactForAtom || _load_reactForAtom()).React.createElement((_sectionsBasicStatsSectionComponent || _load_sectionsBasicStatsSectionComponent()).default, this.props),
+        Subprocesses: (_reactForAtom || _load_reactForAtom()).React.createElement((_sectionsChildProcessTreeComponent || _load_sectionsChildProcessTreeComponent()).default, { childProcessesTree: this.props.childProcessesTree }),
+        Handles: (_reactForAtom || _load_reactForAtom()).React.createElement((_sectionsActiveHandlesSectionComponent || _load_sectionsActiveHandlesSectionComponent()).default, { activeHandlesByType: this.props.activeHandlesByType })
+      };
+
+      // For each section, we use settings-view to get a familiar look for table cells.
+      return (_reactForAtom || _load_reactForAtom()).React.createElement(
+        'div',
+        null,
+        Object.keys(sections).map(function (title, s) {
+          return (_reactForAtom || _load_reactForAtom()).React.createElement(
+            'div',
+            { className: 'nuclide-health-pane-item-section', key: s },
+            (_reactForAtom || _load_reactForAtom()).React.createElement(
+              'h2',
+              null,
+              title
+            ),
+            (_reactForAtom || _load_reactForAtom()).React.createElement(
+              'div',
+              { className: 'settings-view' },
+              sections[title]
+            )
+          );
+        })
+      );
+    }
+  }]);
+
+  return HealthPaneItemComponent;
+})((_reactForAtom || _load_reactForAtom()).React.Component);
+
+exports.default = HealthPaneItemComponent;
+module.exports = exports.default;

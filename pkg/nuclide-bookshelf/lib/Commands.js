@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,52 +10,75 @@
  * the root directory of this source tree.
  */
 
-import type {Action, BookShelfState} from './types';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {ActionType} from './constants';
-import {getRepoPathToEditors} from './utils';
-import {track} from '../../nuclide-analytics';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-export class Commands {
-  _dispatch: (action: Action) => void;
-  _getState: () => BookShelfState;
+var _constants;
 
-  constructor(dispatch: (action: Action) => void, getState: () => BookShelfState) {
+function _load_constants() {
+  return _constants = require('./constants');
+}
+
+var _utils;
+
+function _load_utils() {
+  return _utils = require('./utils');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var Commands = (function () {
+  function Commands(dispatch, getState) {
+    _classCallCheck(this, Commands);
+
     this._dispatch = dispatch;
     this._getState = getState;
 
-    (this: any).addProjectRepository = this.addProjectRepository.bind(this);
-    (this: any).restorePaneItemState = this.restorePaneItemState.bind(this);
-    (this: any).updatePaneItemState = this.updatePaneItemState.bind(this);
+    this.addProjectRepository = this.addProjectRepository.bind(this);
+    this.restorePaneItemState = this.restorePaneItemState.bind(this);
+    this.updatePaneItemState = this.updatePaneItemState.bind(this);
   }
 
-  addProjectRepository(repository: atom$Repository): void {
-    this._dispatch({
-      payload: {
-        repository,
-      },
-      type: ActionType.ADD_PROJECT_REPOSITORY,
-    });
-  }
+  _createClass(Commands, [{
+    key: 'addProjectRepository',
+    value: function addProjectRepository(repository) {
+      this._dispatch({
+        payload: {
+          repository: repository
+        },
+        type: (_constants || _load_constants()).ActionType.ADD_PROJECT_REPOSITORY
+      });
+    }
+  }, {
+    key: 'updatePaneItemState',
+    value: function updatePaneItemState() {
+      this._dispatch({
+        type: (_constants || _load_constants()).ActionType.UPDATE_PANE_ITEM_STATE,
+        payload: {
+          repositoryPathToEditors: (0, (_utils || _load_utils()).getRepoPathToEditors)()
+        }
+      });
+    }
+  }, {
+    key: 'restorePaneItemState',
+    value: function restorePaneItemState(repository, newShortHead) {
+      (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('bookshelf-restore-files');
+      this._dispatch({
+        payload: {
+          repository: repository,
+          shortHead: newShortHead
+        },
+        type: (_constants || _load_constants()).ActionType.RESTORE_PANE_ITEM_STATE
+      });
+    }
+  }]);
 
-  updatePaneItemState(): void {
-    this._dispatch({
-      type: ActionType.UPDATE_PANE_ITEM_STATE,
-      payload: {
-        repositoryPathToEditors: getRepoPathToEditors(),
-      },
-    });
-  }
+  return Commands;
+})();
 
-  restorePaneItemState(repository: atom$Repository, newShortHead: string): void {
-    track('bookshelf-restore-files');
-    this._dispatch({
-      payload: {
-        repository,
-        shortHead: newShortHead,
-      },
-      type: ActionType.RESTORE_PANE_ITEM_STATE,
-    });
-  }
-
-}
+exports.Commands = Commands;

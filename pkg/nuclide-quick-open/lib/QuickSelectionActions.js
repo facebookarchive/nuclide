@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,25 +8,35 @@
  * the root directory of this source tree.
  */
 
-import QuickSelectionDispatcher, {ActionTypes} from './QuickSelectionDispatcher';
+var _QuickSelectionDispatcher;
 
-const QuickSelectionActions = {
+function _load_QuickSelectionDispatcher() {
+  return _QuickSelectionDispatcher = _interopRequireDefault(require('./QuickSelectionDispatcher'));
+}
 
-  query(query: string): void {
-    QuickSelectionDispatcher.getInstance().dispatch({
-      actionType: ActionTypes.QUERY,
-      query,
+var _QuickSelectionDispatcher2;
+
+function _load_QuickSelectionDispatcher2() {
+  return _QuickSelectionDispatcher2 = require('./QuickSelectionDispatcher');
+}
+
+var QuickSelectionActions = {
+
+  query: function query(_query) {
+    (_QuickSelectionDispatcher || _load_QuickSelectionDispatcher()).default.getInstance().dispatch({
+      actionType: (_QuickSelectionDispatcher2 || _load_QuickSelectionDispatcher2()).ActionTypes.QUERY,
+      query: _query
     });
   },
 
-  changeActiveProvider(providerName: string): void {
-    setImmediate(() => {
-      QuickSelectionDispatcher.getInstance().dispatch({
-        actionType: ActionTypes.ACTIVE_PROVIDER_CHANGED,
-        providerName,
+  changeActiveProvider: function changeActiveProvider(providerName) {
+    setImmediate(function () {
+      (_QuickSelectionDispatcher || _load_QuickSelectionDispatcher()).default.getInstance().dispatch({
+        actionType: (_QuickSelectionDispatcher2 || _load_QuickSelectionDispatcher2()).ActionTypes.ACTIVE_PROVIDER_CHANGED,
+        providerName: providerName
       });
     });
-  },
+  }
 
 };
 

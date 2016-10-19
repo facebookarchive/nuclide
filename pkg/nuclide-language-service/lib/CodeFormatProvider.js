@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,65 +10,63 @@
  * the root directory of this source tree.
  */
 
-import type {LanguageService} from './LanguageService';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {ConnectionCache} from '../../nuclide-remote-connection';
-import {trackOperationTiming} from '../../nuclide-analytics';
-import {getFileVersionOfEditor} from '../../nuclide-open-files';
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
-export type CodeFormatConfig = {
-  version: string,
-  priority: number,
-  analyticsEventName: string,
-};
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-export class CodeFormatProvider<T: LanguageService> {
-  name: string;
-  selector: string;
-  inclusionPriority: number;
-  _analyticsEventName: string;
-  _connectionToLanguageService: ConnectionCache<T>;
+var _nuclideRemoteConnection;
 
-  constructor(
-    name: string,
-    selector: string,
-    priority: number,
-    analyticsEventName: string,
-    connectionToLanguageService: ConnectionCache<T>,
-  ) {
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _nuclideOpenFiles;
+
+function _load_nuclideOpenFiles() {
+  return _nuclideOpenFiles = require('../../nuclide-open-files');
+}
+
+var CodeFormatProvider = (function () {
+  function CodeFormatProvider(name, selector, priority, analyticsEventName, connectionToLanguageService) {
+    _classCallCheck(this, CodeFormatProvider);
+
     this.name = name;
     this.selector = selector;
     this.inclusionPriority = priority;
     this._connectionToLanguageService = connectionToLanguageService;
   }
 
-  static register(
-    name: string,
-    selector: string,
-    config: CodeFormatConfig,
-    connectionToLanguageService: ConnectionCache<T>,
-  ): IDisposable {
-    return atom.packages.serviceHub.provide(
-      'nuclide-code-format.provider',
-      config.version,
-      new CodeFormatProvider(
-        name,
-        selector,
-        config.priority,
-        config.analyticsEventName,
-        connectionToLanguageService,
-      ));
-  }
+  _createClass(CodeFormatProvider, [{
+    key: 'formatCode',
+    value: function formatCode(editor, range) {
+      var _this = this;
 
-  formatCode(editor: atom$TextEditor, range: atom$Range): Promise<string> {
-    return trackOperationTiming(this._analyticsEventName, async () => {
-      const fileVersion = await getFileVersionOfEditor(editor);
-      const languageService = this._connectionToLanguageService.getForUri(editor.getPath());
-      if (languageService == null || fileVersion == null) {
-        return editor.getTextInBufferRange(range);
-      }
+      return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackOperationTiming)(this._analyticsEventName, _asyncToGenerator(function* () {
+        var fileVersion = yield (0, (_nuclideOpenFiles || _load_nuclideOpenFiles()).getFileVersionOfEditor)(editor);
+        var languageService = _this._connectionToLanguageService.getForUri(editor.getPath());
+        if (languageService == null || fileVersion == null) {
+          return editor.getTextInBufferRange(range);
+        }
 
-      return await (await languageService).formatSource(fileVersion, range);
-    });
-  }
-}
+        return yield (yield languageService).formatSource(fileVersion, range);
+      }));
+    }
+  }], [{
+    key: 'register',
+    value: function register(name, selector, config, connectionToLanguageService) {
+      return atom.packages.serviceHub.provide('nuclide-code-format.provider', config.version, new CodeFormatProvider(name, selector, config.priority, config.analyticsEventName, connectionToLanguageService));
+    }
+  }]);
+
+  return CodeFormatProvider;
+})();
+
+exports.CodeFormatProvider = CodeFormatProvider;

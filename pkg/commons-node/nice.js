@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,62 +10,33 @@
  * the root directory of this source tree.
  */
 
-import type {LRUCache} from 'lru-cache';
+var niceSafeSpawn = _asyncToGenerator(function* (command, args, execOptions) {
+  var nicified = yield nicifyCommand(command, args);
+  return (0, (_process || _load_process()).safeSpawn)(nicified.command, nicified.args, execOptions);
+});
 
-import type {
-  AsyncExecuteOptions,
-  AsyncExecuteReturn,
-} from './process';
+exports.niceSafeSpawn = niceSafeSpawn;
 
-import LRU from 'lru-cache';
+var niceCheckOutput = _asyncToGenerator(function* (command, args, execOptions) {
+  var nicified = yield nicifyCommand(command, args);
+  return yield (0, (_process || _load_process()).checkOutput)(nicified.command, nicified.args, execOptions);
+});
 
-import {
-  safeSpawn,
-  asyncExecute,
-  checkOutput,
-} from './process';
+exports.niceCheckOutput = niceCheckOutput;
 
-import which from './which';
+var niceAsyncExecute = _asyncToGenerator(function* (command, args, execOptions) {
+  var nicified = yield nicifyCommand(command, args);
+  return yield (0, (_process || _load_process()).asyncExecute)(nicified.command, nicified.args, execOptions);
+});
 
-const NICE_COMMAND = 'nice';
-const IONICE_COMMAND = 'ionice';
+exports.niceAsyncExecute = niceAsyncExecute;
 
-export async function niceSafeSpawn(
-  command: string,
-  args: Array<string>,
-  execOptions?: Object,
-): Promise<child_process$ChildProcess> {
-  const nicified = await nicifyCommand(command, args);
-  return safeSpawn(nicified.command, nicified.args, execOptions);
-}
-
-export async function niceCheckOutput(
-  command: string,
-  args: Array<string>,
-  execOptions?: AsyncExecuteOptions,
-): Promise<AsyncExecuteReturn> {
-  const nicified = await nicifyCommand(command, args);
-  return await checkOutput(nicified.command, nicified.args, execOptions);
-}
-
-export async function niceAsyncExecute(
-  command: string,
-  args: Array<string>,
-  execOptions?: AsyncExecuteOptions,
-): Promise<AsyncExecuteReturn> {
-  const nicified = await nicifyCommand(command, args);
-  return await asyncExecute(nicified.command, nicified.args, execOptions);
-}
-
-async function nicifyCommand(
-  command: string,
-  args: Array<string>,
-): Promise<{command: string, args: Array<string>}> {
-  const fullArgs = [command, ...args];
-  if (await hasNiceCommand()) {
+var nicifyCommand = _asyncToGenerator(function* (command, args) {
+  var fullArgs = [command].concat(args);
+  if (yield hasNiceCommand()) {
     fullArgs.unshift(NICE_COMMAND);
   }
-  if (await hasIoniceCommand()) {
+  if (yield hasIoniceCommand()) {
     // Leave the process in the Best Effort class (default), but set it to the lowest priority for
     // that class. Priorities range from 0-7 with 4 as the default and lower numbers representing
     // higher priorities.
@@ -79,31 +51,56 @@ async function nicifyCommand(
   }
   return {
     command: fullArgs[0],
-    args: fullArgs.slice(1),
+    args: fullArgs.slice(1)
   };
+});
+
+var hasCommand = _asyncToGenerator(function* (command) {
+  var result = commandAvailabilityCache.get(command);
+  if (result == null) {
+    result = (yield (0, (_which || _load_which()).default)(command)) != null;
+    commandAvailabilityCache.set(command, result);
+  }
+  return result;
+});
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _lruCache;
+
+function _load_lruCache() {
+  return _lruCache = _interopRequireDefault(require('lru-cache'));
 }
 
-const commandAvailabilityCache: LRUCache<string, boolean> = LRU({
+var _process;
+
+function _load_process() {
+  return _process = require('./process');
+}
+
+var _which;
+
+function _load_which() {
+  return _which = _interopRequireDefault(require('./which'));
+}
+
+var NICE_COMMAND = 'nice';
+var IONICE_COMMAND = 'ionice';
+
+var commandAvailabilityCache = (0, (_lruCache || _load_lruCache()).default)({
   max: 10,
   // Realistically this will not change very often so we can cache for long periods of time. We
   // probably could just check at startup and get away with it, but maybe someone will install
   // `ionice` and it would be nice to pick that up.
-  maxAge: 1000 * 60 * 5, // 5 minutes
-});
+  maxAge: 1000 * 60 * 5 });
 
-function hasNiceCommand(): Promise<boolean> {
+// 5 minutes
+function hasNiceCommand() {
   return hasCommand(NICE_COMMAND);
 }
 
-function hasIoniceCommand(): Promise<boolean> {
+function hasIoniceCommand() {
   return hasCommand(IONICE_COMMAND);
-}
-
-async function hasCommand(command: string): Promise<boolean> {
-  let result: ?boolean = commandAvailabilityCache.get(command);
-  if (result == null) {
-    result = await which(command) != null;
-    commandAvailabilityCache.set(command, result);
-  }
-  return result;
 }

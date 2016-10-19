@@ -1,5 +1,12 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,65 +16,98 @@
  * the root directory of this source tree.
  */
 
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {logger} from './logger';
-import {DebuggerConnection} from './DebuggerConnection';
-import invariant from 'assert';
-import {connectToIwdp} from './connectToIwdp';
+var _commonsNodeUniversalDisposable;
 
-import type {ConnectableObservable} from 'rxjs';
+function _load_commonsNodeUniversalDisposable() {
+  return _commonsNodeUniversalDisposable = _interopRequireDefault(require('../../commons-node/UniversalDisposable'));
+}
 
-const {log} = logger;
+var _logger;
 
-let lastServiceObjectDispose = null;
+function _load_logger() {
+  return _logger = require('./logger');
+}
 
-import {ClientCallback} from '../../nuclide-debugger-common/lib/main';
+var _DebuggerConnection;
 
-export class IwdpDebuggerService {
-  _clientCallback: ClientCallback;
-  _disposables: UniversalDisposable;
-  _debuggerConnection: ?DebuggerConnection;
+function _load_DebuggerConnection() {
+  return _DebuggerConnection = require('./DebuggerConnection');
+}
 
-  constructor() {
+var _assert;
+
+function _load_assert() {
+  return _assert = _interopRequireDefault(require('assert'));
+}
+
+var _connectToIwdp;
+
+function _load_connectToIwdp() {
+  return _connectToIwdp = require('./connectToIwdp');
+}
+
+var log = (_logger || _load_logger()).logger.log;
+
+var lastServiceObjectDispose = null;
+
+var _nuclideDebuggerCommonLibMain;
+
+function _load_nuclideDebuggerCommonLibMain() {
+  return _nuclideDebuggerCommonLibMain = require('../../nuclide-debugger-common/lib/main');
+}
+
+var IwdpDebuggerService = (function () {
+  function IwdpDebuggerService() {
+    _classCallCheck(this, IwdpDebuggerService);
+
     if (lastServiceObjectDispose != null) {
       lastServiceObjectDispose();
     }
     lastServiceObjectDispose = this.dispose.bind(this);
-    this._disposables = new UniversalDisposable();
-    this._clientCallback = new ClientCallback();
+    this._disposables = new (_commonsNodeUniversalDisposable || _load_commonsNodeUniversalDisposable()).default();
+    this._clientCallback = new (_nuclideDebuggerCommonLibMain || _load_nuclideDebuggerCommonLibMain()).ClientCallback();
     this._disposables.add(this._clientCallback);
   }
 
-  getServerMessageObservable(): ConnectableObservable<string> {
-    return this._clientCallback.getServerMessageObservable().publish();
-  }
+  _createClass(IwdpDebuggerService, [{
+    key: 'getServerMessageObservable',
+    value: function getServerMessageObservable() {
+      return this._clientCallback.getServerMessageObservable().publish();
+    }
+  }, {
+    key: 'attach',
+    value: function attach() {
+      var _this = this;
 
-  attach(): Promise<string> {
-    return new Promise(resolve => {
-      this._disposables.add(
-        connectToIwdp().subscribe(deviceInfos => {
-          log(`Got device infos: ${JSON.stringify(deviceInfos)}`);
-          invariant(deviceInfos.length > 0, 'DeviceInfo array is empty.');
-          this._debuggerConnection = new DebuggerConnection(
-            deviceInfos[0],
-            message => this._clientCallback.sendChromeMessage(message),
-          );
+      return new Promise(function (resolve) {
+        _this._disposables.add((0, (_connectToIwdp || _load_connectToIwdp()).connectToIwdp)().subscribe(function (deviceInfos) {
+          log('Got device infos: ' + JSON.stringify(deviceInfos));
+          (0, (_assert || _load_assert()).default)(deviceInfos.length > 0, 'DeviceInfo array is empty.');
+          _this._debuggerConnection = new (_DebuggerConnection || _load_DebuggerConnection()).DebuggerConnection(deviceInfos[0], function (message) {
+            return _this._clientCallback.sendChromeMessage(message);
+          });
           // Block resolution of this promise until we have successfully connected to the proxy.
           resolve('IWDP connected');
-        }),
-      );
-    });
-  }
-
-  sendCommand(message: string): Promise<void> {
-    if (this._debuggerConnection != null) {
-      this._debuggerConnection.sendCommand(message);
+        }));
+      });
     }
-    return Promise.resolve();
-  }
+  }, {
+    key: 'sendCommand',
+    value: function sendCommand(message) {
+      if (this._debuggerConnection != null) {
+        this._debuggerConnection.sendCommand(message);
+      }
+      return Promise.resolve();
+    }
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      this._disposables.dispose();
+      return Promise.resolve();
+    }
+  }]);
 
-  dispose(): Promise<void> {
-    this._disposables.dispose();
-    return Promise.resolve();
-  }
-}
+  return IwdpDebuggerService;
+})();
+
+exports.IwdpDebuggerService = IwdpDebuggerService;

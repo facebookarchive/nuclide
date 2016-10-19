@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,166 +10,187 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {LanguageService} from './LanguageService';
-import type {ServerConnection} from '../../nuclide-remote-connection';
-import type {CodeHighlightConfig} from './CodeHighlightProvider';
-import type {OutlineViewConfig} from './OutlineViewProvider';
-import type {TypeCoverageConfig} from './TypeCoverageProvider';
-import type {DefinitionConfig} from './DefinitionProvider';
-import type {TypeHintConfig} from './TypeHintProvider';
-import type {CodeFormatConfig} from './CodeFormatProvider';
-import type {FindReferencesConfig} from './FindReferencesProvider';
-import type {EvaluationExpressionConfig} from './EvaluationExpressionProvider';
-import type {AutocompleteConfig} from './AutocompleteProvider';
-import type {DiagnosticsConfig} from './DiagnosticsProvider';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {ConnectionCache} from '../../nuclide-remote-connection';
-import {Observable} from 'rxjs';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {CodeHighlightProvider} from './CodeHighlightProvider';
-import {OutlineViewProvider} from './OutlineViewProvider';
-import {TypeCoverageProvider} from './TypeCoverageProvider';
-import {DefinitionProvider} from './DefinitionProvider';
-import {TypeHintProvider} from './TypeHintProvider';
-import {CodeFormatProvider} from './CodeFormatProvider';
-import {FindReferencesProvider} from './FindReferencesProvider';
-import {EvaluationExpressionProvider} from './EvaluationExpressionProvider';
-import {AutocompleteProvider} from './AutocompleteProvider';
-import {registerDiagnostics} from './DiagnosticsProvider';
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
-export type AtomLanguageServiceConfig = {
-  name: string,
-  grammars: Array<string>,
-  highlights?: CodeHighlightConfig,
-  outlines?: OutlineViewConfig,
-  coverage?: TypeCoverageConfig,
-  definition?: DefinitionConfig,
-  typeHint?: TypeHintConfig,
-  codeFormat?: CodeFormatConfig,
-  findReferences?: FindReferencesConfig,
-  evaluationExpression?: EvaluationExpressionConfig,
-  autocomplete?: AutocompleteConfig,
-  diagnostics?: DiagnosticsConfig,
-};
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-export class AtomLanguageService<T: LanguageService> {
-  _config: AtomLanguageServiceConfig;
-  _connectionToLanguageService: ConnectionCache<T>;
-  _subscriptions: UniversalDisposable;
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-  constructor(
-    languageServiceFactory: (connection: ?ServerConnection) => Promise<T>,
-    config: AtomLanguageServiceConfig,
-  ) {
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+var _rxjsBundlesRxMinJs;
+
+function _load_rxjsBundlesRxMinJs() {
+  return _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+}
+
+var _commonsNodeUniversalDisposable;
+
+function _load_commonsNodeUniversalDisposable() {
+  return _commonsNodeUniversalDisposable = _interopRequireDefault(require('../../commons-node/UniversalDisposable'));
+}
+
+var _CodeHighlightProvider;
+
+function _load_CodeHighlightProvider() {
+  return _CodeHighlightProvider = require('./CodeHighlightProvider');
+}
+
+var _OutlineViewProvider;
+
+function _load_OutlineViewProvider() {
+  return _OutlineViewProvider = require('./OutlineViewProvider');
+}
+
+var _TypeCoverageProvider;
+
+function _load_TypeCoverageProvider() {
+  return _TypeCoverageProvider = require('./TypeCoverageProvider');
+}
+
+var _DefinitionProvider;
+
+function _load_DefinitionProvider() {
+  return _DefinitionProvider = require('./DefinitionProvider');
+}
+
+var _TypeHintProvider;
+
+function _load_TypeHintProvider() {
+  return _TypeHintProvider = require('./TypeHintProvider');
+}
+
+var _CodeFormatProvider;
+
+function _load_CodeFormatProvider() {
+  return _CodeFormatProvider = require('./CodeFormatProvider');
+}
+
+var _FindReferencesProvider;
+
+function _load_FindReferencesProvider() {
+  return _FindReferencesProvider = require('./FindReferencesProvider');
+}
+
+var _EvaluationExpressionProvider;
+
+function _load_EvaluationExpressionProvider() {
+  return _EvaluationExpressionProvider = require('./EvaluationExpressionProvider');
+}
+
+var _AutocompleteProvider;
+
+function _load_AutocompleteProvider() {
+  return _AutocompleteProvider = require('./AutocompleteProvider');
+}
+
+var _DiagnosticsProvider;
+
+function _load_DiagnosticsProvider() {
+  return _DiagnosticsProvider = require('./DiagnosticsProvider');
+}
+
+var AtomLanguageService = (function () {
+  function AtomLanguageService(languageServiceFactory, config) {
+    _classCallCheck(this, AtomLanguageService);
+
     this._config = config;
-    this._subscriptions = new UniversalDisposable();
-    this._connectionToLanguageService = new ConnectionCache(languageServiceFactory);
+    this._subscriptions = new (_commonsNodeUniversalDisposable || _load_commonsNodeUniversalDisposable()).default();
+    this._connectionToLanguageService = new (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).ConnectionCache(languageServiceFactory);
     this._subscriptions.add(this._connectionToLanguageService);
   }
 
-  _selector(): string {
-    return this._config.grammars.join(', ');
-  }
-
-  activate(): void {
-    const highlightsConfig = this._config.highlights;
-    if (highlightsConfig != null) {
-      this._subscriptions.add(CodeHighlightProvider.register(
-        this._config.name,
-        this._selector(),
-        highlightsConfig,
-        this._connectionToLanguageService));
+  _createClass(AtomLanguageService, [{
+    key: '_selector',
+    value: function _selector() {
+      return this._config.grammars.join(', ');
     }
+  }, {
+    key: 'activate',
+    value: function activate() {
+      var highlightsConfig = this._config.highlights;
+      if (highlightsConfig != null) {
+        this._subscriptions.add((_CodeHighlightProvider || _load_CodeHighlightProvider()).CodeHighlightProvider.register(this._config.name, this._selector(), highlightsConfig, this._connectionToLanguageService));
+      }
 
-    const outlinesConfig = this._config.outlines;
-    if (outlinesConfig != null) {
-      this._subscriptions.add(OutlineViewProvider.register(
-        this._config.name, this._selector(), outlinesConfig, this._connectionToLanguageService));
+      var outlinesConfig = this._config.outlines;
+      if (outlinesConfig != null) {
+        this._subscriptions.add((_OutlineViewProvider || _load_OutlineViewProvider()).OutlineViewProvider.register(this._config.name, this._selector(), outlinesConfig, this._connectionToLanguageService));
+      }
+
+      var coverageConfig = this._config.coverage;
+      if (coverageConfig != null) {
+        this._subscriptions.add((_TypeCoverageProvider || _load_TypeCoverageProvider()).TypeCoverageProvider.register(this._config.name, this._selector(), coverageConfig, this._connectionToLanguageService));
+      }
+
+      var definitionConfig = this._config.definition;
+      if (definitionConfig != null) {
+        this._subscriptions.add((_DefinitionProvider || _load_DefinitionProvider()).DefinitionProvider.register(this._config.name, this._config.grammars, definitionConfig, this._connectionToLanguageService));
+      }
+
+      var typeHintConfig = this._config.typeHint;
+      if (typeHintConfig != null) {
+        this._subscriptions.add((_TypeHintProvider || _load_TypeHintProvider()).TypeHintProvider.register(this._config.name, this._selector(), typeHintConfig, this._connectionToLanguageService));
+      }
+
+      var codeFormatConfig = this._config.codeFormat;
+      if (codeFormatConfig != null) {
+        this._subscriptions.add((_CodeFormatProvider || _load_CodeFormatProvider()).CodeFormatProvider.register(this._config.name, this._selector(), codeFormatConfig, this._connectionToLanguageService));
+      }
+
+      var findReferencesConfig = this._config.findReferences;
+      if (findReferencesConfig != null) {
+        this._subscriptions.add((_FindReferencesProvider || _load_FindReferencesProvider()).FindReferencesProvider.register(this._config.name, this._config.grammars, findReferencesConfig, this._connectionToLanguageService));
+      }
+
+      var evaluationExpressionConfig = this._config.evaluationExpression;
+      if (evaluationExpressionConfig != null) {
+        this._subscriptions.add((_EvaluationExpressionProvider || _load_EvaluationExpressionProvider()).EvaluationExpressionProvider.register(this._config.name, this._selector(), evaluationExpressionConfig, this._connectionToLanguageService));
+      }
+
+      var autocompleteConfig = this._config.autocomplete;
+      if (autocompleteConfig != null) {
+        this._subscriptions.add((_AutocompleteProvider || _load_AutocompleteProvider()).AutocompleteProvider.register(this._config.name, this._config.grammars, autocompleteConfig, this._connectionToLanguageService));
+      }
+
+      var diagnosticsConfig = this._config.diagnostics;
+      if (diagnosticsConfig != null) {
+        this._subscriptions.add((0, (_DiagnosticsProvider || _load_DiagnosticsProvider()).registerDiagnostics)(this._config.name, this._config.grammars, diagnosticsConfig, this._connectionToLanguageService));
+      }
     }
-
-    const coverageConfig = this._config.coverage;
-    if (coverageConfig != null) {
-      this._subscriptions.add(TypeCoverageProvider.register(
-        this._config.name, this._selector(), coverageConfig, this._connectionToLanguageService));
-    }
-
-    const definitionConfig = this._config.definition;
-    if (definitionConfig != null) {
-      this._subscriptions.add(DefinitionProvider.register(
-        this._config.name,
-        this._config.grammars,
-        definitionConfig,
-        this._connectionToLanguageService));
-    }
-
-    const typeHintConfig = this._config.typeHint;
-    if (typeHintConfig != null) {
-      this._subscriptions.add(TypeHintProvider.register(
-        this._config.name, this._selector(), typeHintConfig, this._connectionToLanguageService));
-    }
-
-    const codeFormatConfig = this._config.codeFormat;
-    if (codeFormatConfig != null) {
-      this._subscriptions.add(CodeFormatProvider.register(
-        this._config.name, this._selector(), codeFormatConfig, this._connectionToLanguageService));
-    }
-
-    const findReferencesConfig = this._config.findReferences;
-    if (findReferencesConfig != null) {
-      this._subscriptions.add(FindReferencesProvider.register(
-        this._config.name,
-        this._config.grammars,
-        findReferencesConfig,
-        this._connectionToLanguageService));
-    }
-
-    const evaluationExpressionConfig = this._config.evaluationExpression;
-    if (evaluationExpressionConfig != null) {
-      this._subscriptions.add(EvaluationExpressionProvider.register(
-        this._config.name,
-        this._selector(),
-        evaluationExpressionConfig,
-        this._connectionToLanguageService));
-    }
-
-    const autocompleteConfig = this._config.autocomplete;
-    if (autocompleteConfig != null) {
-      this._subscriptions.add(AutocompleteProvider.register(
-        this._config.name,
-        this._config.grammars,
-        autocompleteConfig,
-        this._connectionToLanguageService));
-    }
-
-    const diagnosticsConfig = this._config.diagnostics;
-    if (diagnosticsConfig != null) {
-      this._subscriptions.add(registerDiagnostics(
-        this._config.name,
-        this._config.grammars,
-        diagnosticsConfig,
-        this._connectionToLanguageService));
-    }
-  }
-
-  async getLanguageServiceForUri(fileUri: ?NuclideUri): Promise<?T> {
-    const result = this._connectionToLanguageService.getForUri(fileUri);
-    return (result == null) ? null : await result;
-  }
-
-  async isFileInProject(fileUri: NuclideUri): Promise<bool> {
-    const languageService = await this.getLanguageServiceForUri(fileUri);
-    return (languageService != null) && await languageService.isFileInProject(fileUri);
-  }
-
-  observeLanguageServices(): Observable<T> {
-    return this._connectionToLanguageService.observeValues()
-      .switchMap(languageService => {
-        return Observable.fromPromise(languageService);
+  }, {
+    key: 'getLanguageServiceForUri',
+    value: _asyncToGenerator(function* (fileUri) {
+      var result = this._connectionToLanguageService.getForUri(fileUri);
+      return result == null ? null : (yield result);
+    })
+  }, {
+    key: 'isFileInProject',
+    value: _asyncToGenerator(function* (fileUri) {
+      var languageService = yield this.getLanguageServiceForUri(fileUri);
+      return languageService != null && (yield languageService.isFileInProject(fileUri));
+    })
+  }, {
+    key: 'observeLanguageServices',
+    value: function observeLanguageServices() {
+      return this._connectionToLanguageService.observeValues().switchMap(function (languageService) {
+        return (_rxjsBundlesRxMinJs || _load_rxjsBundlesRxMinJs()).Observable.fromPromise(languageService);
       });
-  }
+    }
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      this._subscriptions.dispose();
+    }
+  }]);
 
-  dispose(): void {
-    this._subscriptions.dispose();
-  }
-}
+  return AtomLanguageService;
+})();
+
+exports.AtomLanguageService = AtomLanguageService;

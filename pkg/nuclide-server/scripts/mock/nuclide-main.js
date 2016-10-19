@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,20 +8,39 @@
  * the root directory of this source tree.
  */
 
-import https from 'https';
-import http from 'http';
-import fs from 'fs';
-import url from 'url';
+var _https;
+
+function _load_https() {
+  return _https = _interopRequireDefault(require('https'));
+}
+
+var _http;
+
+function _load_http() {
+  return _http = _interopRequireDefault(require('http'));
+}
+
+var _fs;
+
+function _load_fs() {
+  return _fs = _interopRequireDefault(require('fs'));
+}
+
+var _url;
+
+function _load_url() {
+  return _url = _interopRequireDefault(require('url'));
+}
 
 // Set the initial version by reading from the file.
-const json = JSON.parse(fs.readFileSync(require.resolve('./package.json'), 'utf8'));
-const version = /^(\d+)\.(\d+)\.(\d+)(?:-([a-z0-9.-]+))?$/.exec(json.version)[2];
+var json = JSON.parse((_fs || _load_fs()).default.readFileSync(require.resolve('./package.json'), 'utf8'));
+var version = /^(\d+)\.(\d+)\.(\d+)(?:-([a-z0-9.-]+))?$/.exec(json.version)[2];
 
 function processArgs() {
-  const args = process.argv.slice(2);
-  const processedArgs = {};
+  var args = process.argv.slice(2);
+  var processedArgs = {};
 
-  args.forEach((argument, index) => {
+  args.forEach(function (argument, index) {
     if (index % 2 !== 0) {
       processedArgs[args[index - 1].slice(2)] = argument;
     }
@@ -31,24 +49,24 @@ function processArgs() {
 }
 
 function startServer(args) {
-  let _webServer;
+  var _webServer = undefined;
   if (args.key && args.cert && args.ca) {
-    const webServerOptions = {
-      key: fs.readFileSync(args.key),
-      cert: fs.readFileSync(args.cert),
-      ca: fs.readFileSync(args.ca),
+    var webServerOptions = {
+      key: (_fs || _load_fs()).default.readFileSync(args.key),
+      cert: (_fs || _load_fs()).default.readFileSync(args.cert),
+      ca: (_fs || _load_fs()).default.readFileSync(args.ca),
       requestCert: true,
-      rejectUnauthorized: true,
+      rejectUnauthorized: true
     };
 
-    _webServer = https.createServer(webServerOptions, handleRequest);
+    _webServer = (_https || _load_https()).default.createServer(webServerOptions, handleRequest);
     // eslint-disable-next-line no-console
     console.log('running in secure mode');
   } else {
-    _webServer = http.createServer(handleRequest);
+    _webServer = (_http || _load_http()).default.createServer(handleRequest);
   }
 
-  _webServer.on('listening', () => {
+  _webServer.on('listening', function () {
     // eslint-disable-next-line no-console
     console.log('listening on port ' + args.port);
   });
@@ -57,7 +75,7 @@ function startServer(args) {
 }
 
 function handleRequest(request, response) {
-  const pathname = url.parse(request.url, false).pathname;
+  var pathname = (_url || _load_url()).default.parse(request.url, false).pathname;
 
   switch (pathname) {
     case '/heartbeat':
@@ -70,7 +88,6 @@ function handleRequest(request, response) {
       break;
   }
 }
-
 
 function handleVersion(request, response) {
   response.writeHead(200);

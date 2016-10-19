@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,38 +10,34 @@
  * the root directory of this source tree.
  */
 
-import type {LanguageService} from './LanguageService';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {ConnectionCache} from '../../nuclide-remote-connection';
-import {trackOperationTiming} from '../../nuclide-analytics';
-import {getFileVersionOfEditor} from '../../nuclide-open-files';
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
-export type AutocompleteConfig = {
-  inclusionPriority: number,
-  suggestionPriority: number,
-  excludeLowerPriority: boolean,
-  version: string,
-  analyticsEventName: string,
-};
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-export class AutocompleteProvider<T: LanguageService> {
-  name: string;
-  selector: string;
-  inclusionPriority: number;
-  suggestionPriority: number;
-  excludeLowerPriority: boolean;
-  _analyticsEventName: string;
-  _connectionToLanguageService: ConnectionCache<T>;
+var _nuclideRemoteConnection;
 
-  constructor(
-    name: string,
-    selector: string,
-    inclusionPriority: number,
-    suggestionPriority: number,
-    excludeLowerPriority: boolean,
-    analyticsEventName: string,
-    connectionToLanguageService: ConnectionCache<T>,
-  ) {
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _nuclideOpenFiles;
+
+function _load_nuclideOpenFiles() {
+  return _nuclideOpenFiles = require('../../nuclide-open-files');
+}
+
+var AutocompleteProvider = (function () {
+  function AutocompleteProvider(name, selector, inclusionPriority, suggestionPriority, excludeLowerPriority, analyticsEventName, connectionToLanguageService) {
+    _classCallCheck(this, AutocompleteProvider);
+
     this.name = name;
     this.selector = selector;
     this.inclusionPriority = inclusionPriority;
@@ -50,42 +47,35 @@ export class AutocompleteProvider<T: LanguageService> {
     this._connectionToLanguageService = connectionToLanguageService;
   }
 
-  static register(
-    name: string,
-    grammars: Array<string>,
-    config: AutocompleteConfig,
-    connectionToLanguageService: ConnectionCache<T>,
-  ): IDisposable {
-    return atom.packages.serviceHub.provide(
-      'autocomplete.provider',
-      config.version,
-      new AutocompleteProvider(
-        name,
-        grammars.map(grammar => '.' + grammar).join(', '),
-        config.inclusionPriority,
-        config.suggestionPriority,
-        config.excludeLowerPriority,
-        config.analyticsEventName,
-        connectionToLanguageService,
-      ));
-  }
+  _createClass(AutocompleteProvider, [{
+    key: 'getSuggestions',
+    value: function getSuggestions(request) {
+      var _this = this;
 
-  getSuggestions(
-    request: atom$AutocompleteRequest,
-  ): Promise<?Array<atom$AutocompleteSuggestion>> {
-    return trackOperationTiming(
-      this._analyticsEventName,
-      async () => {
-        const {editor, activatedManually} = request;
-        const fileVersion = await getFileVersionOfEditor(editor);
-        const languageService = this._connectionToLanguageService.getForUri(editor.getPath());
+      return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackOperationTiming)(this._analyticsEventName, _asyncToGenerator(function* () {
+        var editor = request.editor;
+        var activatedManually = request.activatedManually;
+
+        var fileVersion = yield (0, (_nuclideOpenFiles || _load_nuclideOpenFiles()).getFileVersionOfEditor)(editor);
+        var languageService = _this._connectionToLanguageService.getForUri(editor.getPath());
         if (languageService == null || fileVersion == null) {
           return [];
         }
-        const position = editor.getLastCursor().getBufferPosition();
+        var position = editor.getLastCursor().getBufferPosition();
 
-        return await (await languageService).getAutocompleteSuggestions(
-          fileVersion, position, activatedManually == null ? false : activatedManually);
-      });
-  }
-}
+        return yield (yield languageService).getAutocompleteSuggestions(fileVersion, position, activatedManually == null ? false : activatedManually);
+      }));
+    }
+  }], [{
+    key: 'register',
+    value: function register(name, grammars, config, connectionToLanguageService) {
+      return atom.packages.serviceHub.provide('autocomplete.provider', config.version, new AutocompleteProvider(name, grammars.map(function (grammar) {
+        return '.' + grammar;
+      }).join(', '), config.inclusionPriority, config.suggestionPriority, config.excludeLowerPriority, config.analyticsEventName, connectionToLanguageService));
+    }
+  }]);
+
+  return AutocompleteProvider;
+})();
+
+exports.AutocompleteProvider = AutocompleteProvider;

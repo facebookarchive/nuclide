@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,105 +10,147 @@
  * the root directory of this source tree.
  */
 
-import type {Task, TaskEvent} from '../../commons-node/tasks';
-import type {TaskMetadata} from '../../nuclide-task-runner/lib/types';
-import type {ArcToolbarModel as ArcToolbarModelType} from './ArcToolbarModel';
-import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
-import type {Message} from '../../nuclide-console/lib/types';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {taskFromObservable} from '../../commons-node/tasks';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
-import {createExtraUiComponent} from './ui/createExtraUiComponent';
-import {React} from 'react-for-atom';
-import {Observable, Subject} from 'rxjs';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-export default class ArcBuildSystem {
-  _model: ArcToolbarModelType;
-  _extraUi: ?ReactClass<any>;
-  id: string;
-  name: string;
-  _tasks: ?Observable<Array<TaskMetadata>>;
-  _cwdApi: ?CwdApi;
-  _outputMessages: Subject<Message>;
-  _disposables: UniversalDisposable;
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-  constructor() {
+var _commonsNodeUniversalDisposable;
+
+function _load_commonsNodeUniversalDisposable() {
+  return _commonsNodeUniversalDisposable = _interopRequireDefault(require('../../commons-node/UniversalDisposable'));
+}
+
+var _commonsNodeTasks;
+
+function _load_commonsNodeTasks() {
+  return _commonsNodeTasks = require('../../commons-node/tasks');
+}
+
+var _commonsNodeEvent;
+
+function _load_commonsNodeEvent() {
+  return _commonsNodeEvent = require('../../commons-node/event');
+}
+
+var _uiCreateExtraUiComponent;
+
+function _load_uiCreateExtraUiComponent() {
+  return _uiCreateExtraUiComponent = require('./ui/createExtraUiComponent');
+}
+
+var _reactForAtom;
+
+function _load_reactForAtom() {
+  return _reactForAtom = require('react-for-atom');
+}
+
+var _rxjsBundlesRxMinJs;
+
+function _load_rxjsBundlesRxMinJs() {
+  return _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+}
+
+var ArcBuildSystem = (function () {
+  function ArcBuildSystem() {
+    _classCallCheck(this, ArcBuildSystem);
+
     this.id = 'arcanist';
-    this._outputMessages = new Subject();
+    this._outputMessages = new (_rxjsBundlesRxMinJs || _load_rxjsBundlesRxMinJs()).Subject();
     this._model = this._getModel();
     this.name = this._model.getName();
-    this._disposables = new UniversalDisposable(this._outputMessages);
+    this._disposables = new (_commonsNodeUniversalDisposable || _load_commonsNodeUniversalDisposable()).default(this._outputMessages);
   }
 
-  setCwdApi(cwdApi: ?CwdApi): void {
-    this._cwdApi = cwdApi;
-    this._model.setCwdApi(cwdApi);
-  }
-
-  _getModel(): ArcToolbarModelType {
-    let ArcToolbarModel;
-    try {
-      // $FlowFB
-      ArcToolbarModel = require('./fb/FbArcToolbarModel').FbArcToolbarModel;
-    } catch (_) {
-      ArcToolbarModel = require('./ArcToolbarModel').ArcToolbarModel;
+  _createClass(ArcBuildSystem, [{
+    key: 'setCwdApi',
+    value: function setCwdApi(cwdApi) {
+      this._cwdApi = cwdApi;
+      this._model.setCwdApi(cwdApi);
     }
-    return new ArcToolbarModel(this._outputMessages);
-  }
-
-  observeTaskList(cb: (taskList: Array<TaskMetadata>) => mixed): IDisposable {
-    if (this._tasks == null) {
-      this._tasks = Observable.concat(
-        Observable.of(this._model.getTaskList()),
-        observableFromSubscribeFunction(this._model.onChange.bind(this._model))
-          .map(() => this._model.getTaskList()),
-      );
+  }, {
+    key: '_getModel',
+    value: function _getModel() {
+      var ArcToolbarModel = undefined;
+      try {
+        // $FlowFB
+        ArcToolbarModel = require('./fb/FbArcToolbarModel').FbArcToolbarModel;
+      } catch (_) {
+        ArcToolbarModel = require('./ArcToolbarModel').ArcToolbarModel;
+      }
+      return new ArcToolbarModel(this._outputMessages);
     }
-    return new UniversalDisposable(
-      this._tasks.subscribe({next: cb}),
-    );
-  }
+  }, {
+    key: 'observeTaskList',
+    value: function observeTaskList(cb) {
+      var _this = this;
 
-  getExtraUi(): ReactClass<any> {
-    if (this._extraUi == null) {
-      this._extraUi = createExtraUiComponent(this._model);
+      if (this._tasks == null) {
+        this._tasks = (_rxjsBundlesRxMinJs || _load_rxjsBundlesRxMinJs()).Observable.concat((_rxjsBundlesRxMinJs || _load_rxjsBundlesRxMinJs()).Observable.of(this._model.getTaskList()), (0, (_commonsNodeEvent || _load_commonsNodeEvent()).observableFromSubscribeFunction)(this._model.onChange.bind(this._model)).map(function () {
+          return _this._model.getTaskList();
+        }));
+      }
+      return new (_commonsNodeUniversalDisposable || _load_commonsNodeUniversalDisposable()).default(this._tasks.subscribe({ next: cb }));
     }
-    return this._extraUi;
-  }
-
-  getIcon(): ReactClass<any> {
-    return ArcIcon;
-  }
-
-  getOutputMessages(): Observable<Message> {
-    return this._outputMessages;
-  }
-
-  runTask(taskType: string): Task {
-    if (!this._model.getTaskList().some(task => task.type === taskType)) {
-      throw new Error(`There's no hhvm task named "${taskType}"`);
+  }, {
+    key: 'getExtraUi',
+    value: function getExtraUi() {
+      if (this._extraUi == null) {
+        this._extraUi = (0, (_uiCreateExtraUiComponent || _load_uiCreateExtraUiComponent()).createExtraUiComponent)(this._model);
+      }
+      return this._extraUi;
     }
+  }, {
+    key: 'getIcon',
+    value: function getIcon() {
+      return ArcIcon;
+    }
+  }, {
+    key: 'getOutputMessages',
+    value: function getOutputMessages() {
+      return this._outputMessages;
+    }
+  }, {
+    key: 'runTask',
+    value: function runTask(taskType) {
+      if (!this._model.getTaskList().some(function (task) {
+        return task.type === taskType;
+      })) {
+        throw new Error('There\'s no hhvm task named "' + taskType + '"');
+      }
 
-    const taskFunction = getTaskRunFunction(this._model, taskType);
-    return taskFromObservable(taskFunction());
-  }
+      var taskFunction = getTaskRunFunction(this._model, taskType);
+      return (0, (_commonsNodeTasks || _load_commonsNodeTasks()).taskFromObservable)(taskFunction());
+    }
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      this._disposables.dispose();
+    }
+  }]);
 
-  dispose(): void {
-    this._disposables.dispose();
-  }
-}
+  return ArcBuildSystem;
+})();
 
-function getTaskRunFunction(
-  model: ArcToolbarModelType,
-  taskType: string,
-): () => Observable<TaskEvent> {
+exports.default = ArcBuildSystem;
+
+function getTaskRunFunction(model, taskType) {
   switch (taskType) {
     case 'build':
-      return () => model.arcBuild();
+      return function () {
+        return model.arcBuild();
+      };
     default:
-      throw new Error(`Invalid task type: ${taskType}`);
+      throw new Error('Invalid task type: ' + taskType);
   }
 }
 
-const ArcIcon = () => <span>arc</span>;
+var ArcIcon = function ArcIcon() {
+  return (_reactForAtom || _load_reactForAtom()).React.createElement(
+    'span',
+    null,
+    'arc'
+  );
+};
+module.exports = exports.default;

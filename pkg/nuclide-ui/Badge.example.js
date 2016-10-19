@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,84 +10,127 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
-import {Block} from './Block';
-import {
-  Badge,
-  BadgeColors,
-  BadgeSizes,
-} from './Badge';
+var _reactForAtom;
 
-const BadgeBasicExample = (): React.Element<any> => (
-  <div>
-    <Block>
-      <Badge value={1} />{' '}
-      <Badge value={11} />{' '}
-      <Badge value={123} />
-    </Block>
-  </div>
-);
+function _load_reactForAtom() {
+  return _reactForAtom = require('react-for-atom');
+}
 
-const BadgeColorExample = (): React.Element<any> => (
-  <div>
-    <Block>
-      Info: <Badge color={BadgeColors.info} value={123} />
-    </Block>
-    <Block>
-      Success: <Badge color={BadgeColors.success} value={123} />
-    </Block>
-    <Block>
-      Warning: <Badge color={BadgeColors.warning} value={123} />
-    </Block>
-    <Block>
-      Error: <Badge color={BadgeColors.error} value={123} />
-    </Block>
-  </div>
-);
+var _Block;
 
-const BadgeSizeExample = (): React.Element<any> => (
-  <div>
-    <Block>
-      Small: <Badge size={BadgeSizes.small} value={123} />
-    </Block>
-    <Block>
-      Medium: <Badge size={BadgeSizes.medium} value={123} />
-    </Block>
-    <Block>
-      Large: <Badge size={BadgeSizes.large} value={123} />
-    </Block>
-  </div>
-);
+function _load_Block() {
+  return _Block = require('./Block');
+}
 
-const BadgeIconExample = (): React.Element<any> => (
-  <div>
-    <Block>
-      <Badge icon="gear" value={13} />{' '}
-      <Badge icon="cloud-download" color={BadgeColors.info} value={23} />{' '}
-      <Badge icon="octoface" color={BadgeColors.success} value={42} />
-    </Block>
-  </div>
-);
+var _Badge;
 
-export const BadgeExamples = {
+function _load_Badge() {
+  return _Badge = require('./Badge');
+}
+
+var BadgeBasicExample = function BadgeBasicExample() {
+  return (_reactForAtom || _load_reactForAtom()).React.createElement(
+    'div',
+    null,
+    (_reactForAtom || _load_reactForAtom()).React.createElement(
+      (_Block || _load_Block()).Block,
+      null,
+      (_reactForAtom || _load_reactForAtom()).React.createElement((_Badge || _load_Badge()).Badge, { value: 1 }),
+      ' ',
+      (_reactForAtom || _load_reactForAtom()).React.createElement((_Badge || _load_Badge()).Badge, { value: 11 }),
+      ' ',
+      (_reactForAtom || _load_reactForAtom()).React.createElement((_Badge || _load_Badge()).Badge, { value: 123 })
+    )
+  );
+};
+
+var BadgeColorExample = function BadgeColorExample() {
+  return (_reactForAtom || _load_reactForAtom()).React.createElement(
+    'div',
+    null,
+    (_reactForAtom || _load_reactForAtom()).React.createElement(
+      (_Block || _load_Block()).Block,
+      null,
+      'Info: ',
+      (_reactForAtom || _load_reactForAtom()).React.createElement((_Badge || _load_Badge()).Badge, { color: (_Badge || _load_Badge()).BadgeColors.info, value: 123 })
+    ),
+    (_reactForAtom || _load_reactForAtom()).React.createElement(
+      (_Block || _load_Block()).Block,
+      null,
+      'Success: ',
+      (_reactForAtom || _load_reactForAtom()).React.createElement((_Badge || _load_Badge()).Badge, { color: (_Badge || _load_Badge()).BadgeColors.success, value: 123 })
+    ),
+    (_reactForAtom || _load_reactForAtom()).React.createElement(
+      (_Block || _load_Block()).Block,
+      null,
+      'Warning: ',
+      (_reactForAtom || _load_reactForAtom()).React.createElement((_Badge || _load_Badge()).Badge, { color: (_Badge || _load_Badge()).BadgeColors.warning, value: 123 })
+    ),
+    (_reactForAtom || _load_reactForAtom()).React.createElement(
+      (_Block || _load_Block()).Block,
+      null,
+      'Error: ',
+      (_reactForAtom || _load_reactForAtom()).React.createElement((_Badge || _load_Badge()).Badge, { color: (_Badge || _load_Badge()).BadgeColors.error, value: 123 })
+    )
+  );
+};
+
+var BadgeSizeExample = function BadgeSizeExample() {
+  return (_reactForAtom || _load_reactForAtom()).React.createElement(
+    'div',
+    null,
+    (_reactForAtom || _load_reactForAtom()).React.createElement(
+      (_Block || _load_Block()).Block,
+      null,
+      'Small: ',
+      (_reactForAtom || _load_reactForAtom()).React.createElement((_Badge || _load_Badge()).Badge, { size: (_Badge || _load_Badge()).BadgeSizes.small, value: 123 })
+    ),
+    (_reactForAtom || _load_reactForAtom()).React.createElement(
+      (_Block || _load_Block()).Block,
+      null,
+      'Medium: ',
+      (_reactForAtom || _load_reactForAtom()).React.createElement((_Badge || _load_Badge()).Badge, { size: (_Badge || _load_Badge()).BadgeSizes.medium, value: 123 })
+    ),
+    (_reactForAtom || _load_reactForAtom()).React.createElement(
+      (_Block || _load_Block()).Block,
+      null,
+      'Large: ',
+      (_reactForAtom || _load_reactForAtom()).React.createElement((_Badge || _load_Badge()).Badge, { size: (_Badge || _load_Badge()).BadgeSizes.large, value: 123 })
+    )
+  );
+};
+
+var BadgeIconExample = function BadgeIconExample() {
+  return (_reactForAtom || _load_reactForAtom()).React.createElement(
+    'div',
+    null,
+    (_reactForAtom || _load_reactForAtom()).React.createElement(
+      (_Block || _load_Block()).Block,
+      null,
+      (_reactForAtom || _load_reactForAtom()).React.createElement((_Badge || _load_Badge()).Badge, { icon: 'gear', value: 13 }),
+      ' ',
+      (_reactForAtom || _load_reactForAtom()).React.createElement((_Badge || _load_Badge()).Badge, { icon: 'cloud-download', color: (_Badge || _load_Badge()).BadgeColors.info, value: 23 }),
+      ' ',
+      (_reactForAtom || _load_reactForAtom()).React.createElement((_Badge || _load_Badge()).Badge, { icon: 'octoface', color: (_Badge || _load_Badge()).BadgeColors.success, value: 42 })
+    )
+  );
+};
+
+var BadgeExamples = {
   sectionName: 'Badges',
   description: 'Badges are typically used to display numbers.',
-  examples: [
-    {
-      title: 'Basic badges',
-      component: BadgeBasicExample,
-    },
-    {
-      title: 'Colored badges',
-      component: BadgeColorExample,
-    },
-    {
-      title: 'Badges with explicit size',
-      component: BadgeSizeExample,
-    },
-    {
-      title: 'Badges with Icons',
-      component: BadgeIconExample,
-    },
-  ],
+  examples: [{
+    title: 'Basic badges',
+    component: BadgeBasicExample
+  }, {
+    title: 'Colored badges',
+    component: BadgeColorExample
+  }, {
+    title: 'Badges with explicit size',
+    component: BadgeSizeExample
+  }, {
+    title: 'Badges with Icons',
+    component: BadgeIconExample
+  }]
 };
+exports.BadgeExamples = BadgeExamples;

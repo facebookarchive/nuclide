@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,15 +8,17 @@
  * the root directory of this source tree.
  */
 
-import type {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import {NodeLaunchAttachProvider} from './NodeLaunchAttachProvider';
+var _NodeLaunchAttachProvider;
 
-function getLaunchAttachProvider(connection: NuclideUri): ?DebuggerLaunchAttachProvider {
-  return new NodeLaunchAttachProvider('JavaScript', connection);
+function _load_NodeLaunchAttachProvider() {
+  return _NodeLaunchAttachProvider = require('./NodeLaunchAttachProvider');
+}
+
+function getLaunchAttachProvider(connection) {
+  return new (_NodeLaunchAttachProvider || _load_NodeLaunchAttachProvider()).NodeLaunchAttachProvider('JavaScript', connection);
 }
 
 module.exports = {
   name: 'Node',
-  getLaunchAttachProvider,
+  getLaunchAttachProvider: getLaunchAttachProvider
 };

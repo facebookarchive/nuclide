@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,55 +10,48 @@
  * the root directory of this source tree.
  */
 
-import type {PredefinedTransformer} from './index';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {createProxyFactory} from './main';
-import {TypeRegistry} from './TypeRegistry';
-import type {
-  FunctionType,
-  Definition,
-  InterfaceDefinition,
-  Type,
-} from './types';
-import type {ProxyFactory} from './main';
-import invariant from 'assert';
-import type {ConfigEntry} from './index';
-import type {ObjectRegistry} from './ObjectRegistry';
-import {getLogger} from '../../nuclide-logging';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-const logger = getLogger();
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-export type FunctionImplementation = {localImplementation: Function, type: FunctionType};
-export type ClassDefinition = {localImplementation: any, definition: InterfaceDefinition};
-export type ServiceDefinition = {
-  name: string,
-  factory: ProxyFactory, // Maps from RpcContext to proxy
-};
+var _main;
 
-export class ServiceRegistry {
-  _typeRegistry: TypeRegistry;
+function _load_main() {
+  return _main = require('./main');
+}
 
-  /**
-   * Store a mapping from function name to a structure holding both the local implementation and
-   * the type definition of the function.
-   */
-  _functionsByName: Map<string, FunctionImplementation>;
+var _TypeRegistry;
 
-  /**
-   * Store a mapping from a class name to a struct containing it's local constructor and it's
-   * interface definition.
-   */
-  _classesByName: Map<string, ClassDefinition>;
+function _load_TypeRegistry() {
+  return _TypeRegistry = require('./TypeRegistry');
+}
 
-  _predefinedTypes: Array<string>;
-  _services: Map<string, ServiceDefinition>;
+var _assert;
 
-  constructor(
-    predefinedTypes: Array<PredefinedTransformer>,
-    services: Array<ConfigEntry>,
-  ) {
-    this._typeRegistry = new TypeRegistry(predefinedTypes);
-    this._predefinedTypes = predefinedTypes.map(predefinedType => predefinedType.typeName);
+function _load_assert() {
+  return _assert = _interopRequireDefault(require('assert'));
+}
+
+var _nuclideLogging;
+
+function _load_nuclideLogging() {
+  return _nuclideLogging = require('../../nuclide-logging');
+}
+
+var logger = (0, (_nuclideLogging || _load_nuclideLogging()).getLogger)();
+
+// Maps from RpcContext to proxy
+
+var ServiceRegistry = (function () {
+  function ServiceRegistry(predefinedTypes, services) {
+    _classCallCheck(this, ServiceRegistry);
+
+    this._typeRegistry = new (_TypeRegistry || _load_TypeRegistry()).TypeRegistry(predefinedTypes);
+    this._predefinedTypes = predefinedTypes.map(function (predefinedType) {
+      return predefinedType.typeName;
+    });
     this._functionsByName = new Map();
     this._classesByName = new Map();
     this._services = new Map();
@@ -65,108 +59,127 @@ export class ServiceRegistry {
     this.addServices(services);
   }
 
-  addServices(services: Array<ConfigEntry>): void {
-    services.forEach(this.addService, this);
-  }
+  _createClass(ServiceRegistry, [{
+    key: 'addServices',
+    value: function addServices(services) {
+      services.forEach(this.addService, this);
+    }
+  }, {
+    key: 'addService',
+    value: function addService(service) {
+      var _this = this;
 
-  addService(service: ConfigEntry): void {
-    const preserveFunctionNames = service.preserveFunctionNames != null
-      && service.preserveFunctionNames;
-    try {
-      const factory = createProxyFactory(
-        service.name,
-        preserveFunctionNames,
-        service.definition,
-        this._predefinedTypes,
-      );
-      // $FlowIssue - the parameter passed to require must be a literal string.
-      const localImpl = require(service.implementation);
-      this._services.set(service.name, {
-        name: service.name,
-        factory,
-      });
+      var preserveFunctionNames = service.preserveFunctionNames != null && service.preserveFunctionNames;
+      try {
+        (function () {
+          var factory = (0, (_main || _load_main()).createProxyFactory)(service.name, preserveFunctionNames, service.definition, _this._predefinedTypes);
+          // $FlowIssue - the parameter passed to require must be a literal string.
+          var localImpl = require(service.implementation);
+          _this._services.set(service.name, {
+            name: service.name,
+            factory: factory
+          });
 
-      // Register type aliases.
-      factory.defs.forEach((definition: Definition) => {
-        const name = definition.name;
-        switch (definition.kind) {
-          case 'alias':
-            if (definition.definition != null) {
-              this._typeRegistry.registerAlias(
-                name, definition.location, (definition.definition: Type));
+          // Register type aliases.
+          factory.defs.forEach(function (definition) {
+            var name = definition.name;
+            switch (definition.kind) {
+              case 'alias':
+                if (definition.definition != null) {
+                  _this._typeRegistry.registerAlias(name, definition.location, definition.definition);
+                }
+                break;
+              case 'function':
+                // Register module-level functions.
+                var functionName = service.preserveFunctionNames ? name : service.name + '/' + name;
+                _this._registerFunction(functionName, localImpl[name], definition.type);
+                break;
+              case 'interface':
+                // Register interfaces.
+                _this._classesByName.set(name, {
+                  localImplementation: localImpl[name],
+                  definition: definition
+                });
+
+                _this._typeRegistry.registerType(name, definition.location, function (object, context) {
+                  return context.marshal(name, object);
+                }, function (objectId, context) {
+                  return context.unmarshal(objectId, name, context.getService(service.name)[name]);
+                });
+
+                // Register all of the static methods as remote functions.
+                definition.staticMethods.forEach(function (funcType, funcName) {
+                  _this._registerFunction(name + '/' + funcName, localImpl[name][funcName], funcType);
+                });
+                break;
             }
-            break;
-          case 'function':
-            // Register module-level functions.
-            const functionName = service.preserveFunctionNames
-              ? name : `${service.name}/${name}`;
-            this._registerFunction(functionName, localImpl[name], definition.type);
-            break;
-          case 'interface':
-            // Register interfaces.
-            this._classesByName.set(name, {
-              localImplementation: localImpl[name],
-              definition,
-            });
-
-            this._typeRegistry.registerType(
-              name,
-              definition.location,
-              (object, context: ObjectRegistry) => context.marshal(name, object),
-              (objectId, context: ObjectRegistry) =>
-                context.unmarshal(objectId, name, context.getService(service.name)[name]));
-
-            // Register all of the static methods as remote functions.
-            definition.staticMethods.forEach((funcType, funcName) => {
-              this._registerFunction(`${name}/${funcName}`, localImpl[name][funcName], funcType);
-            });
-            break;
-        }
+          });
+        })();
+      } catch (e) {
+        logger.error('Failed to load service ' + service.name + '. Stack Trace:\n' + e.stack);
+        throw e;
+      }
+    }
+  }, {
+    key: '_registerFunction',
+    value: function _registerFunction(name, localImpl, type) {
+      if (this._functionsByName.has(name)) {
+        throw new Error('Duplicate RPC function: ' + name);
+      }
+      this._functionsByName.set(name, {
+        localImplementation: localImpl,
+        type: type
       });
-
-    } catch (e) {
-      logger.error(`Failed to load service ${service.name}. Stack Trace:\n${e.stack}`);
-      throw e;
     }
-  }
-
-  _registerFunction(name: string, localImpl: Function, type: FunctionType): void {
-    if (this._functionsByName.has(name)) {
-      throw new Error(`Duplicate RPC function: ${name}`);
+  }, {
+    key: 'getFunctionImplemention',
+    value: function getFunctionImplemention(name) {
+      var result = this._functionsByName.get(name);
+      (0, (_assert || _load_assert()).default)(result);
+      return result;
     }
-    this._functionsByName.set(name, {
-      localImplementation: localImpl,
-      type,
-    });
-  }
+  }, {
+    key: 'getClassDefinition',
+    value: function getClassDefinition(className) {
+      var result = this._classesByName.get(className);
+      (0, (_assert || _load_assert()).default)(result != null);
+      return result;
+    }
+  }, {
+    key: 'getTypeRegistry',
+    value: function getTypeRegistry() {
+      return this._typeRegistry;
+    }
+  }, {
+    key: 'getServices',
+    value: function getServices() {
+      return this._services.values();
+    }
+  }, {
+    key: 'hasService',
+    value: function hasService(serviceName) {
+      return this._services.has(serviceName);
+    }
+  }, {
+    key: 'getService',
+    value: function getService(serviceName) {
+      var result = this._services.get(serviceName);
+      (0, (_assert || _load_assert()).default)(result != null);
+      return result;
+    }
+  }]);
 
-  getFunctionImplemention(name: string): FunctionImplementation {
-    const result = this._functionsByName.get(name);
-    invariant(result);
-    return result;
-  }
+  return ServiceRegistry;
+})();
 
-  getClassDefinition(className: string): ClassDefinition {
-    const result = this._classesByName.get(className);
-    invariant(result != null);
-    return result;
-  }
+exports.ServiceRegistry = ServiceRegistry;
 
-  getTypeRegistry(): TypeRegistry {
-    return this._typeRegistry;
-  }
+/**
+ * Store a mapping from function name to a structure holding both the local implementation and
+ * the type definition of the function.
+ */
 
-  getServices(): Iterator<ServiceDefinition> {
-    return this._services.values();
-  }
-
-  hasService(serviceName: string): boolean {
-    return this._services.has(serviceName);
-  }
-
-  getService(serviceName: string): ServiceDefinition {
-    const result = this._services.get(serviceName);
-    invariant(result != null);
-    return result;
-  }
-}
+/**
+ * Store a mapping from a class name to a struct containing it's local constructor and it's
+ * interface definition.
+ */

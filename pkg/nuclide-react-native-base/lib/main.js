@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,5 +10,20 @@
  * the root directory of this source tree.
  */
 
-export {startPackager} from './startPackager';
-export {getCommandInfo} from './getCommandInfo';
+var _startPackager = require('./startPackager');
+
+Object.defineProperty(exports, 'startPackager', {
+  enumerable: true,
+  get: function get() {
+    return _startPackager.startPackager;
+  }
+});
+
+var _getCommandInfo = require('./getCommandInfo');
+
+Object.defineProperty(exports, 'getCommandInfo', {
+  enumerable: true,
+  get: function get() {
+    return _getCommandInfo.getCommandInfo;
+  }
+});

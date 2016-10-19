@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,214 +10,190 @@
  * the root directory of this source tree.
  */
 
-import type {
-  Action,
-  CommitState,
-  DiffModeType,
-  FileDiffState,
-  PublishState,
-  RepositoryAction,
-  RepositoryState,
-  UIProvider,
-} from '../types';
-import type {HgRepositoryClient} from '../../../nuclide-hg-repository-client';
-import type {CwdApi} from '../../../nuclide-current-working-directory/lib/CwdApi';
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-import * as ActionTypes from './ActionTypes';
-import invariant from 'assert';
-import {
-  getEmptyActiveRepositoryState,
-  getEmptyCommitState,
-  getEmptyFileDiffState,
-  getEmptyPublishState,
-  getEmptyRebaseOnAmendState,
-  getEmptyRepositoriesState,
-  getEmptyRepositoryState,
-  getEmptyViewModeState,
-} from './createEmptyAppState';
+exports.activeRepository = activeRepository;
+exports.repositories = repositories;
+exports.commit = commit;
+exports.publish = publish;
+exports.fileDiff = fileDiff;
+exports.isLoadingFileDiff = isLoadingFileDiff;
+exports.shouldRebaseOnAmend = shouldRebaseOnAmend;
+exports.viewMode = viewMode;
+exports.cwdApi = cwdApi;
+exports.uiProviders = uiProviders;
 
-export function activeRepository(
-  state: ?HgRepositoryClient,
-  action: Action,
-): ?HgRepositoryClient {
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
+
+var _ActionTypes;
+
+function _load_ActionTypes() {
+  return _ActionTypes = _interopRequireWildcard(require('./ActionTypes'));
+}
+
+var _assert;
+
+function _load_assert() {
+  return _assert = _interopRequireDefault(require('assert'));
+}
+
+var _createEmptyAppState;
+
+function _load_createEmptyAppState() {
+  return _createEmptyAppState = require('./createEmptyAppState');
+}
+
+function activeRepository(state, action) {
   switch (action.type) {
-    case ActionTypes.UPDATE_ACTIVE_REPOSITORY:
+    case (_ActionTypes || _load_ActionTypes()).UPDATE_ACTIVE_REPOSITORY:
       return action.payload.hgRepository;
   }
-  return state || getEmptyActiveRepositoryState();
+  return state || (0, (_createEmptyAppState || _load_createEmptyAppState()).getEmptyActiveRepositoryState)();
 }
 
-export function repositories(
-  state: Map<HgRepositoryClient, RepositoryState>,
-  action: Action,
-): Map<HgRepositoryClient, RepositoryState> {
+function repositories(state, action) {
   switch (action.type) {
-    case ActionTypes.SET_COMPARE_ID:
-    case ActionTypes.UPDATE_DIRTY_FILES:
-    case ActionTypes.UPDATE_SELECTED_FILES:
-    case ActionTypes.UPDATE_HEAD_TO_FORKBASE_REVISIONS:
-    case ActionTypes.UPDATE_LOADING_SELECTED_FILES: {
-      const {repository} = action.payload;
-      const oldRepositoryState = state.get(repository);
-      invariant(oldRepositoryState != null);
-      return new Map(state)
-        .set(repository, reduceRepositoryAction(oldRepositoryState, action));
-    }
-    case ActionTypes.ADD_REPOSITORY: {
-      const {repository} = action.payload;
-      return new Map(state)
-          .set(repository, getEmptyRepositoryState());
-    }
-    case ActionTypes.REMOVE_REPOSITORY: {
-      const {repository} = action.payload;
-      const newRepositories = new Map(state);
-      newRepositories.delete(repository);
-      return newRepositories;
-    }
+    case (_ActionTypes || _load_ActionTypes()).SET_COMPARE_ID:
+    case (_ActionTypes || _load_ActionTypes()).UPDATE_DIRTY_FILES:
+    case (_ActionTypes || _load_ActionTypes()).UPDATE_SELECTED_FILES:
+    case (_ActionTypes || _load_ActionTypes()).UPDATE_HEAD_TO_FORKBASE_REVISIONS:
+    case (_ActionTypes || _load_ActionTypes()).UPDATE_LOADING_SELECTED_FILES:
+      {
+        var repository = action.payload.repository;
+
+        var oldRepositoryState = state.get(repository);
+        (0, (_assert || _load_assert()).default)(oldRepositoryState != null);
+        return new Map(state).set(repository, reduceRepositoryAction(oldRepositoryState, action));
+      }
+    case (_ActionTypes || _load_ActionTypes()).ADD_REPOSITORY:
+      {
+        var repository = action.payload.repository;
+
+        return new Map(state).set(repository, (0, (_createEmptyAppState || _load_createEmptyAppState()).getEmptyRepositoryState)());
+      }
+    case (_ActionTypes || _load_ActionTypes()).REMOVE_REPOSITORY:
+      {
+        var repository = action.payload.repository;
+
+        var newRepositories = new Map(state);
+        newRepositories.delete(repository);
+        return newRepositories;
+      }
   }
-  return state || getEmptyRepositoriesState();
+  return state || (0, (_createEmptyAppState || _load_createEmptyAppState()).getEmptyRepositoriesState)();
 }
 
-function reduceRepositoryAction(
-  repositoryState: RepositoryState,
-  action: RepositoryAction,
-): RepositoryState {
+function reduceRepositoryAction(repositoryState, action) {
   switch (action.type) {
-    case ActionTypes.SET_COMPARE_ID:
-      return {
-        ...repositoryState,
-        compareRevisionId: action.payload.compareId,
-      };
-    case ActionTypes.UPDATE_DIRTY_FILES:
-      return {
-        ...repositoryState,
-        dirtyFiles: action.payload.dirtyFiles,
-      };
-    case ActionTypes.UPDATE_SELECTED_FILES:
-      return {
-        ...repositoryState,
-        selectedFiles: action.payload.selectedFiles,
-      };
-    case ActionTypes.UPDATE_HEAD_TO_FORKBASE_REVISIONS:
-      return {
-        ...repositoryState,
+    case (_ActionTypes || _load_ActionTypes()).SET_COMPARE_ID:
+      return _extends({}, repositoryState, {
+        compareRevisionId: action.payload.compareId
+      });
+    case (_ActionTypes || _load_ActionTypes()).UPDATE_DIRTY_FILES:
+      return _extends({}, repositoryState, {
+        dirtyFiles: action.payload.dirtyFiles
+      });
+    case (_ActionTypes || _load_ActionTypes()).UPDATE_SELECTED_FILES:
+      return _extends({}, repositoryState, {
+        selectedFiles: action.payload.selectedFiles
+      });
+    case (_ActionTypes || _load_ActionTypes()).UPDATE_HEAD_TO_FORKBASE_REVISIONS:
+      return _extends({}, repositoryState, {
         headToForkBaseRevisions: action.payload.headToForkBaseRevisions,
-        revisionStatuses: action.payload.revisionStatuses,
-      };
-    case ActionTypes.UPDATE_LOADING_SELECTED_FILES:
-      return {
-        ...repositoryState,
-        isLoadingSelectedFiles: action.payload.isLoading,
-      };
+        revisionStatuses: action.payload.revisionStatuses
+      });
+    case (_ActionTypes || _load_ActionTypes()).UPDATE_LOADING_SELECTED_FILES:
+      return _extends({}, repositoryState, {
+        isLoadingSelectedFiles: action.payload.isLoading
+      });
     default:
       throw new Error('Invalid Repository Action!');
   }
 }
 
-export function commit(
-  state: CommitState,
-  action: Action,
-): CommitState {
+function commit(state, action) {
   switch (action.type) {
-    case ActionTypes.UPDATE_COMMIT_STATE:
+    case (_ActionTypes || _load_ActionTypes()).UPDATE_COMMIT_STATE:
       return action.payload.commit;
-    case ActionTypes.SET_COMMIT_MODE:
-      return {
-        ...state,
-        mode: action.payload.commitMode,
-      };
+    case (_ActionTypes || _load_ActionTypes()).SET_COMMIT_MODE:
+      return _extends({}, state, {
+        mode: action.payload.commitMode
+      });
   }
-  return state || getEmptyCommitState();
+  return state || (0, (_createEmptyAppState || _load_createEmptyAppState()).getEmptyCommitState)();
 }
 
-export function publish(
-  state: PublishState,
-  action: Action,
-): PublishState {
+function publish(state, action) {
   switch (action.type) {
-    case ActionTypes.UPDATE_PUBLISH_STATE:
+    case (_ActionTypes || _load_ActionTypes()).UPDATE_PUBLISH_STATE:
       return action.payload.publish;
   }
-  return state || getEmptyPublishState();
+  return state || (0, (_createEmptyAppState || _load_createEmptyAppState()).getEmptyPublishState)();
 }
 
-export function fileDiff(
-  state: FileDiffState,
-  action: Action,
-): FileDiffState {
+function fileDiff(state, action) {
   switch (action.type) {
-    case ActionTypes.UPDATE_FILE_DIFF:
-      const {fileDiff: diff} = action.payload;
-      return {
-        ...diff,
-        uiElements: diff.uiElements || state.uiElements,
-      };
-    case ActionTypes.UPDATE_FILE_UI_ELEMENTS:
-      return {
-        ...state,
-        uiElements: action.payload.uiElements,
-      };
+    case (_ActionTypes || _load_ActionTypes()).UPDATE_FILE_DIFF:
+      var diff = action.payload.fileDiff;
+
+      return _extends({}, diff, {
+        uiElements: diff.uiElements || state.uiElements
+      });
+    case (_ActionTypes || _load_ActionTypes()).UPDATE_FILE_UI_ELEMENTS:
+      return _extends({}, state, {
+        uiElements: action.payload.uiElements
+      });
   }
-  return state || getEmptyFileDiffState();
+  return state || (0, (_createEmptyAppState || _load_createEmptyAppState()).getEmptyFileDiffState)();
 }
 
-export function isLoadingFileDiff(
-  state: boolean,
-  action: Action,
-): boolean {
+function isLoadingFileDiff(state, action) {
   switch (action.type) {
-    case ActionTypes.UPDATE_LOADING_FILE_DIFF:
+    case (_ActionTypes || _load_ActionTypes()).UPDATE_LOADING_FILE_DIFF:
       return action.payload.isLoading;
   }
   return state || false;
 }
 
-export function shouldRebaseOnAmend(
-  state: boolean,
-  action: Action,
-): boolean {
+function shouldRebaseOnAmend(state, action) {
   switch (action.type) {
-    case ActionTypes.SET_SHOULD_REBASE_ON_AMEND:
+    case (_ActionTypes || _load_ActionTypes()).SET_SHOULD_REBASE_ON_AMEND:
       return action.payload.shouldRebaseOnAmend;
   }
   if (state === undefined) {
-    return getEmptyRebaseOnAmendState();
+    return (0, (_createEmptyAppState || _load_createEmptyAppState()).getEmptyRebaseOnAmendState)();
   }
   return state;
 }
 
-export function viewMode(
-  state: DiffModeType,
-  action: Action,
-): DiffModeType {
+function viewMode(state, action) {
   switch (action.type) {
-    case ActionTypes.SET_VIEW_MODE:
+    case (_ActionTypes || _load_ActionTypes()).SET_VIEW_MODE:
       return action.payload.viewMode;
   }
-  return state || getEmptyViewModeState();
+  return state || (0, (_createEmptyAppState || _load_createEmptyAppState()).getEmptyViewModeState)();
 }
 
-export function cwdApi(
-  state: ?CwdApi,
-  action: Action,
-): ?CwdApi {
+function cwdApi(state, action) {
   switch (action.type) {
-    case ActionTypes.SET_CWD_API:
+    case (_ActionTypes || _load_ActionTypes()).SET_CWD_API:
       return action.payload.cwdApi;
   }
   return state || null;
 }
 
-export function uiProviders(
-  state: Array<UIProvider>,
-  action: Action,
-): Array<UIProvider> {
+function uiProviders(state, action) {
   switch (action.type) {
-    case ActionTypes.ADD_UI_PROVIDER:
+    case (_ActionTypes || _load_ActionTypes()).ADD_UI_PROVIDER:
       return state.concat(action.payload.uiProvider);
-    case ActionTypes.REMOVE_UI_PROVIDER:
-      const {uiProvider} = action.payload;
-      return state.filter(provider => provider !== uiProvider);
+    case (_ActionTypes || _load_ActionTypes()).REMOVE_UI_PROVIDER:
+      var uiProvider = action.payload.uiProvider;
+
+      return state.filter(function (provider) {
+        return provider !== uiProvider;
+      });
   }
   return state || [];
 }

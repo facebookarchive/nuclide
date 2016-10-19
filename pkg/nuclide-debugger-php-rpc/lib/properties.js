@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,42 +8,47 @@
  * the root directory of this source tree.
  */
 
+var _utils;
 
-import logger from './utils';
-import {
-  remoteObjectIdOfObjectId,
-  endIndexOfObjectId,
-  startIndexOfObjectId,
-  countOfObjectId,
-  getChildIds,
-} from './ObjectId';
-import {convertValue} from './values';
-import invariant from 'assert';
+function _load_utils() {
+  return _utils = _interopRequireDefault(require('./utils'));
+}
 
-import type {ObjectId} from './ObjectId';
-import type {DbgpProperty} from './DbgpSocket';
+var _ObjectId;
 
-function convertProperties(
-  id: ObjectId,
-  properties: Array<DbgpProperty>,
-): Array<Runtime$PropertyDescriptor> {
-  logger.log('Got properties: ' + JSON.stringify(properties));
-  return properties.map(property => convertProperty(id, property));
+function _load_ObjectId() {
+  return _ObjectId = require('./ObjectId');
+}
+
+var _values;
+
+function _load_values() {
+  return _values = require('./values');
+}
+
+var _assert;
+
+function _load_assert() {
+  return _assert = _interopRequireDefault(require('assert'));
+}
+
+function convertProperties(id, properties) {
+  (_utils || _load_utils()).default.log('Got properties: ' + JSON.stringify(properties));
+  return properties.map(function (property) {
+    return convertProperty(id, property);
+  });
 }
 
 /**
  * Converts a DbgpProperty to a Chrome PropertyDescriptor.
  */
-function convertProperty(
-  contextId: ObjectId,
-  dbgpProperty: DbgpProperty,
-): Runtime$PropertyDescriptor {
-  logger.log('Converting to Chrome property: ' + JSON.stringify(dbgpProperty));
-  const result = {
+function convertProperty(contextId, dbgpProperty) {
+  (_utils || _load_utils()).default.log('Converting to Chrome property: ' + JSON.stringify(dbgpProperty));
+  var result = {
     configurable: false,
     enumerable: true,
     name: dbgpProperty.$.name || 'Anonymous Property',
-    value: convertValue(contextId, dbgpProperty),
+    value: (0, (_values || _load_values()).convertValue)(contextId, dbgpProperty)
   };
   return result;
 }
@@ -53,30 +57,30 @@ function convertProperty(
  * Given an ObjectId for a multi page object, gets PropertyDescriptors
  * for the object's children.
  */
-function getPagedProperties(pagedId: ObjectId): Array<Runtime$PropertyDescriptor> {
-  invariant(pagedId.elementRange);
-  const pagesize = pagedId.elementRange.pagesize;
-  const endIndex = endIndexOfObjectId(pagedId);
+function getPagedProperties(pagedId) {
+  (0, (_assert || _load_assert()).default)(pagedId.elementRange);
+  var pagesize = pagedId.elementRange.pagesize;
+  var endIndex = (0, (_ObjectId || _load_ObjectId()).endIndexOfObjectId)(pagedId);
 
-  const childIds = getChildIds(pagedId);
-  return childIds.map(childId => {
-    const childStartIndex = startIndexOfObjectId(childId, pagesize);
-    const childCount = countOfObjectId(childId, pagesize, endIndex);
+  var childIds = (0, (_ObjectId || _load_ObjectId()).getChildIds)(pagedId);
+  return childIds.map(function (childId) {
+    var childStartIndex = (0, (_ObjectId || _load_ObjectId()).startIndexOfObjectId)(childId, pagesize);
+    var childCount = (0, (_ObjectId || _load_ObjectId()).countOfObjectId)(childId, pagesize, endIndex);
     return {
       configurable: false,
       enumerable: true,
-      name: `Elements(${childStartIndex}..${childStartIndex + childCount - 1})`,
+      name: 'Elements(' + childStartIndex + '..' + (childStartIndex + childCount - 1) + ')',
       value: {
-        description: `${childCount} elements`,
+        description: childCount + ' elements',
         type: 'object',
-        objectId: remoteObjectIdOfObjectId(childId),
-      },
+        objectId: (0, (_ObjectId || _load_ObjectId()).remoteObjectIdOfObjectId)(childId)
+      }
     };
   });
 }
 
 module.exports = {
-  convertProperties,
-  convertProperty,
-  getPagedProperties,
+  convertProperties: convertProperties,
+  convertProperty: convertProperty,
+  getPagedProperties: getPagedProperties
 };

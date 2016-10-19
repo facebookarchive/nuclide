@@ -1,5 +1,14 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.getAutocompleteArguments = getAutocompleteArguments;
+exports.getIncludeOptionalArguments = getIncludeOptionalArguments;
+exports.getPythonPath = getPythonPath;
+exports.getShowGlobalVariables = getShowGlobalVariables;
+exports.getEnableLinting = getEnableLinting;
+exports.getLintOnFly = getLintOnFly;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,28 +18,32 @@
  * the root directory of this source tree.
  */
 
-import featureConfig from '../../commons-atom/featureConfig';
+var _commonsAtomFeatureConfig;
 
-export function getAutocompleteArguments(): boolean {
-  return (featureConfig.get('nuclide-python.autocompleteArguments'): any);
+function _load_commonsAtomFeatureConfig() {
+  return _commonsAtomFeatureConfig = _interopRequireDefault(require('../../commons-atom/featureConfig'));
 }
 
-export function getIncludeOptionalArguments(): boolean {
-  return (featureConfig.get('nuclide-python.includeOptionalArguments'): any);
+function getAutocompleteArguments() {
+  return (_commonsAtomFeatureConfig || _load_commonsAtomFeatureConfig()).default.get('nuclide-python.autocompleteArguments');
 }
 
-export function getPythonPath(): string {
-  return (featureConfig.get('nuclide-python.pathToPython'): any);
+function getIncludeOptionalArguments() {
+  return (_commonsAtomFeatureConfig || _load_commonsAtomFeatureConfig()).default.get('nuclide-python.includeOptionalArguments');
 }
 
-export function getShowGlobalVariables(): boolean {
-  return (featureConfig.get('nuclide-python.showGlobalVariables'): any);
+function getPythonPath() {
+  return (_commonsAtomFeatureConfig || _load_commonsAtomFeatureConfig()).default.get('nuclide-python.pathToPython');
 }
 
-export function getEnableLinting(): boolean {
-  return (featureConfig.get('nuclide-python.enableLinting'): any);
+function getShowGlobalVariables() {
+  return (_commonsAtomFeatureConfig || _load_commonsAtomFeatureConfig()).default.get('nuclide-python.showGlobalVariables');
 }
 
-export function getLintOnFly(): boolean {
-  return (featureConfig.get('nuclide-python.lintOnFly'): any);
+function getEnableLinting() {
+  return (_commonsAtomFeatureConfig || _load_commonsAtomFeatureConfig()).default.get('nuclide-python.enableLinting');
+}
+
+function getLintOnFly() {
+  return (_commonsAtomFeatureConfig || _load_commonsAtomFeatureConfig()).default.get('nuclide-python.lintOnFly');
 }

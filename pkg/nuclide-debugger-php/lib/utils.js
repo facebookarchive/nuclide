@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,8 +10,13 @@
  * the root directory of this source tree.
  */
 
-import {getCategoryLogger} from '../../nuclide-logging';
+var _nuclideLogging;
 
-const DEBUGGER_LOGGER_CATEGORY = 'nuclide-debugger-php';
+function _load_nuclideLogging() {
+  return _nuclideLogging = require('../../nuclide-logging');
+}
 
-export default getCategoryLogger(DEBUGGER_LOGGER_CATEGORY);
+var DEBUGGER_LOGGER_CATEGORY = 'nuclide-debugger-php';
+
+exports.default = (0, (_nuclideLogging || _load_nuclideLogging()).getCategoryLogger)(DEBUGGER_LOGGER_CATEGORY);
+module.exports = exports.default;

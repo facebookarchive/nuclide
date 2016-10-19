@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,20 +10,23 @@
  * the root directory of this source tree.
  */
 
-import type {UpdateStateAction, SendRequestAction, PartialAppState} from './types';
+exports.updateState = updateState;
+exports.sendHttpRequest = sendHttpRequest;
+var UPDATE_STATE = 'UPDATE_STATE';
+exports.UPDATE_STATE = UPDATE_STATE;
+var SEND_REQUEST = 'SEND_REQUEST';
 
-export const UPDATE_STATE = 'UPDATE_STATE';
-export const SEND_REQUEST = 'SEND_REQUEST';
+exports.SEND_REQUEST = SEND_REQUEST;
 
-export function updateState(state: PartialAppState): UpdateStateAction {
+function updateState(state) {
   return {
     type: UPDATE_STATE,
-    payload: {state},
+    payload: { state: state }
   };
 }
 
-export function sendHttpRequest(): SendRequestAction {
+function sendHttpRequest() {
   return {
-    type: SEND_REQUEST,
+    type: SEND_REQUEST
   };
 }

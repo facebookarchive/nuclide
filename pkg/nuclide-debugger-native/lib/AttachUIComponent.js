@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,242 +10,270 @@
  * the root directory of this source tree.
  */
 
-import type {LaunchAttachStore} from './LaunchAttachStore';
-import type {LaunchAttachActions} from './LaunchAttachActions';
-import type {
-  AttachTargetInfo,
-} from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerService';
-import type {Column} from '../../nuclide-ui/Table';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {React} from 'react-for-atom';
-import {AtomInput} from '../../nuclide-ui/AtomInput';
-import {Table} from '../../nuclide-ui/Table';
-import {
-  Button,
-  ButtonTypes,
-} from '../../nuclide-ui/Button';
-import {ButtonGroup} from '../../nuclide-ui/ButtonGroup';
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
-type PropsType = {
-  store: LaunchAttachStore,
-  actions: LaunchAttachActions,
-};
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-type StateType = {
-  targetListChangeDisposable: IDisposable,
-  attachTargetInfos: Array<AttachTargetInfo>,
-  selectedAttachTarget: ?AttachTargetInfo,
-  filterText: string,
-  sortDescending: boolean,
-  sortedColumn: ?string,
-};
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-function getColumns(): Array<Column> {
-  return [
-    {
-      title: 'Process Name',
-      key: 'process',
-      width: 0.25,
-    },
-    {
-      title: 'PID',
-      key: 'pid',
-      width: 0.10,
-    },
-    {
-      title: 'Command Name',
-      key: 'command',
-      width: 0.65,
-    },
-  ];
+var _reactForAtom;
+
+function _load_reactForAtom() {
+  return _reactForAtom = require('react-for-atom');
 }
 
-function getCompareFunction(
-  sortedColumn: ?string,
-  sortDescending: boolean,
-): (a: AttachTargetInfo, b: AttachTargetInfo) => number {
+var _nuclideUiAtomInput;
+
+function _load_nuclideUiAtomInput() {
+  return _nuclideUiAtomInput = require('../../nuclide-ui/AtomInput');
+}
+
+var _nuclideUiTable;
+
+function _load_nuclideUiTable() {
+  return _nuclideUiTable = require('../../nuclide-ui/Table');
+}
+
+var _nuclideUiButton;
+
+function _load_nuclideUiButton() {
+  return _nuclideUiButton = require('../../nuclide-ui/Button');
+}
+
+var _nuclideUiButtonGroup;
+
+function _load_nuclideUiButtonGroup() {
+  return _nuclideUiButtonGroup = require('../../nuclide-ui/ButtonGroup');
+}
+
+function getColumns() {
+  return [{
+    title: 'Process Name',
+    key: 'process',
+    width: 0.25
+  }, {
+    title: 'PID',
+    key: 'pid',
+    width: 0.10
+  }, {
+    title: 'Command Name',
+    key: 'command',
+    width: 0.65
+  }];
+}
+
+function getCompareFunction(sortedColumn, sortDescending) {
   switch (sortedColumn) {
     case 'pid':
-      const order = sortDescending ? -1 : 1;
-      return (target1: AttachTargetInfo, target2: AttachTargetInfo) => (
-        order * (target1.pid - target2.pid)
-      );
+      var order = sortDescending ? -1 : 1;
+      return function (target1, target2) {
+        return order * (target1.pid - target2.pid);
+      };
     case 'process':
-      return (target1: AttachTargetInfo, target2: AttachTargetInfo) => {
-        const first = sortDescending ? target2.name : target1.name;
-        const second = sortDescending ? target1.name : target2.name;
+      return function (target1, target2) {
+        var first = sortDescending ? target2.name : target1.name;
+        var second = sortDescending ? target1.name : target2.name;
         return first.toLowerCase().localeCompare(second.toLowerCase());
       };
     case 'command':
-      return (target1: AttachTargetInfo, target2: AttachTargetInfo) => {
-        const first = sortDescending ? target2.commandName : target1.commandName;
-        const second = sortDescending ? target1.commandName : target2.commandName;
+      return function (target1, target2) {
+        var first = sortDescending ? target2.commandName : target1.commandName;
+        var second = sortDescending ? target1.commandName : target2.commandName;
         return first.toLowerCase().localeCompare(second.toLowerCase());
       };
-    default: break;
+    default:
+      break;
   }
-  return () => 0;
+  return function () {
+    return 0;
+  };
 }
 
-export class AttachUIComponent extends React.Component<void, PropsType, StateType> {
-  props: PropsType;
-  state: StateType;
+var AttachUIComponent = (function (_React$Component) {
+  _inherits(AttachUIComponent, _React$Component);
 
-  constructor(props: PropsType) {
-    super(props);
+  function AttachUIComponent(props) {
+    _classCallCheck(this, AttachUIComponent);
 
-    (this: any)._handleFilterTextChange = this._handleFilterTextChange.bind(this);
-    (this: any)._handleSelectTableRow = this._handleSelectTableRow.bind(this);
-    (this: any)._handleCancelButtonClick = this._handleCancelButtonClick.bind(this);
-    (this: any)._handleAttachClick = this._handleAttachClick.bind(this);
-    (this: any)._updateAttachTargetList = this._updateAttachTargetList.bind(this);
-    (this: any)._updateList = this._updateList.bind(this);
-    (this: any)._handleSort = this._handleSort.bind(this);
+    _get(Object.getPrototypeOf(AttachUIComponent.prototype), 'constructor', this).call(this, props);
+
+    this._handleFilterTextChange = this._handleFilterTextChange.bind(this);
+    this._handleSelectTableRow = this._handleSelectTableRow.bind(this);
+    this._handleCancelButtonClick = this._handleCancelButtonClick.bind(this);
+    this._handleAttachClick = this._handleAttachClick.bind(this);
+    this._updateAttachTargetList = this._updateAttachTargetList.bind(this);
+    this._updateList = this._updateList.bind(this);
+    this._handleSort = this._handleSort.bind(this);
     this.state = {
       targetListChangeDisposable: this.props.store.onAttachTargetListChanged(this._updateList),
       attachTargetInfos: [],
       selectedAttachTarget: null,
       filterText: '',
       sortDescending: false,
-      sortedColumn: null,
+      sortedColumn: null
     };
   }
 
-  componentWillUnmount() {
-    if (this.state.targetListChangeDisposable != null) {
-      this.state.targetListChangeDisposable.dispose();
-    }
-  }
-
-  _updateList(): void {
-    const newSelectedTarget = this.state.selectedAttachTarget == null
-      ? null
-      : this._getAttachTargetOfPid(this.state.selectedAttachTarget.pid);
-    this.setState({
-      attachTargetInfos: this.props.store.getAttachTargetInfos(),
-      selectedAttachTarget: newSelectedTarget,
-    });
-  }
-
-  _getAttachTargetOfPid(pid: number): ?AttachTargetInfo {
-    for (const target of this.props.store.getAttachTargetInfos()) {
-      if (target.pid === pid) {
-        return target;
+  _createClass(AttachUIComponent, [{
+    key: 'componentWillUnmount',
+    value: function componentWillUnmount() {
+      if (this.state.targetListChangeDisposable != null) {
+        this.state.targetListChangeDisposable.dispose();
       }
     }
-    return null;
-  }
+  }, {
+    key: '_updateList',
+    value: function _updateList() {
+      var newSelectedTarget = this.state.selectedAttachTarget == null ? null : this._getAttachTargetOfPid(this.state.selectedAttachTarget.pid);
+      this.setState({
+        attachTargetInfos: this.props.store.getAttachTargetInfos(),
+        selectedAttachTarget: newSelectedTarget
+      });
+    }
+  }, {
+    key: '_getAttachTargetOfPid',
+    value: function _getAttachTargetOfPid(pid) {
+      for (var target of this.props.store.getAttachTargetInfos()) {
+        if (target.pid === pid) {
+          return target;
+        }
+      }
+      return null;
+    }
+  }, {
+    key: '_handleSort',
+    value: function _handleSort(sortedColumn, sortDescending) {
+      this.setState({
+        sortedColumn: sortedColumn,
+        sortDescending: sortDescending
+      });
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var filterRegex = new RegExp(this.state.filterText, 'i');
+      var _state = this.state;
+      var attachTargetInfos = _state.attachTargetInfos;
+      var sortedColumn = _state.sortedColumn;
+      var sortDescending = _state.sortDescending;
 
-  _handleSort(sortedColumn: ?string, sortDescending: boolean): void {
-    this.setState({
-      sortedColumn,
-      sortDescending,
-    });
-  }
+      var compareFn = getCompareFunction(sortedColumn, sortDescending);
+      var selectedAttachTarget = this.state.selectedAttachTarget;
 
-  render(): React.Element<any> {
-    const filterRegex = new RegExp(this.state.filterText, 'i');
-    const {
-      attachTargetInfos,
-      sortedColumn,
-      sortDescending,
-    } = this.state;
-    const compareFn = getCompareFunction(sortedColumn, sortDescending);
-    const {selectedAttachTarget} = this.state;
-    let selectedIndex = null;
-    const rows = attachTargetInfos
-      .filter(item => filterRegex.test(item.name) || filterRegex.test(item.pid.toString()) ||
-        filterRegex.test(item.commandName))
-      .sort(compareFn)
-      .map((item, index) => {
-        const row = {
+      var selectedIndex = null;
+      var rows = attachTargetInfos.filter(function (item) {
+        return filterRegex.test(item.name) || filterRegex.test(item.pid.toString()) || filterRegex.test(item.commandName);
+      }).sort(compareFn).map(function (item, index) {
+        var row = {
           data: {
             process: item.name,
             pid: item.pid,
-            command: item.commandName,
-          },
+            command: item.commandName
+          }
         };
         if (selectedAttachTarget != null && row.data.pid === selectedAttachTarget.pid) {
           selectedIndex = index;
         }
         return row;
       });
-    return (
-      <div className="block">
-        <AtomInput
-          placeholderText="Search..."
-          initialValue={this.state.filterText}
-          onDidChange={this._handleFilterTextChange}
-          size="sm"
-        />
-        <Table
-          columns={getColumns()}
-          fixedHeader={true}
-          maxBodyHeight="30em"
-          rows={rows}
-          sortable={true}
-          onSort={this._handleSort}
-          sortedColumn={this.state.sortedColumn}
-          sortDescending={this.state.sortDescending}
-          selectable={true}
-          selectedIndex={selectedIndex}
-          onSelect={this._handleSelectTableRow}
-          collapsable={true}
-        />
-        <div className="nuclide-debugger-native-launch-attach-actions">
-          <ButtonGroup>
-            <Button onClick={this._handleCancelButtonClick}>
-              Cancel
-            </Button>
-            <Button
-                buttonType={ButtonTypes.PRIMARY}
-                onClick={this._handleAttachClick}
-                disabled={selectedIndex == null}>
-              Attach
-            </Button>
-          </ButtonGroup>
-        </div>
-      </div>
-    );
-  }
-
-  _handleFilterTextChange(text: string): void {
-    this.setState({
-      filterText: text,
-    });
-  }
-
-  _handleSelectTableRow(item: {pid: number}, selectedIndex: number): void {
-    const attachTarget = this._getAttachTargetOfPid(item.pid);
-    this.setState({
-      selectedAttachTarget: attachTarget,
-    });
-  }
-
-  _handleDoubleClickTableRow(): void {
-    this._attachToProcess();
-  }
-
-  _handleAttachClick(): void {
-    this._attachToProcess();
-  }
-
-  _handleCancelButtonClick(): void {
-    this.props.actions.toggleLaunchAttachDialog();
-  }
-
-  _updateAttachTargetList(): void {
-    // Fire and forget.
-    this.props.actions.updateAttachTargetList();
-  }
-
-  _attachToProcess(): void {
-    const attachTarget = this.state.selectedAttachTarget;
-    if (attachTarget != null) {
-      // Fire and forget.
-      this.props.actions.attachDebugger(attachTarget);
-      this.props.actions.showDebuggerPanel();
+      return (_reactForAtom || _load_reactForAtom()).React.createElement(
+        'div',
+        { className: 'block' },
+        (_reactForAtom || _load_reactForAtom()).React.createElement((_nuclideUiAtomInput || _load_nuclideUiAtomInput()).AtomInput, {
+          placeholderText: 'Search...',
+          initialValue: this.state.filterText,
+          onDidChange: this._handleFilterTextChange,
+          size: 'sm'
+        }),
+        (_reactForAtom || _load_reactForAtom()).React.createElement((_nuclideUiTable || _load_nuclideUiTable()).Table, {
+          columns: getColumns(),
+          fixedHeader: true,
+          maxBodyHeight: '30em',
+          rows: rows,
+          sortable: true,
+          onSort: this._handleSort,
+          sortedColumn: this.state.sortedColumn,
+          sortDescending: this.state.sortDescending,
+          selectable: true,
+          selectedIndex: selectedIndex,
+          onSelect: this._handleSelectTableRow,
+          collapsable: true
+        }),
+        (_reactForAtom || _load_reactForAtom()).React.createElement(
+          'div',
+          { className: 'nuclide-debugger-native-launch-attach-actions' },
+          (_reactForAtom || _load_reactForAtom()).React.createElement(
+            (_nuclideUiButtonGroup || _load_nuclideUiButtonGroup()).ButtonGroup,
+            null,
+            (_reactForAtom || _load_reactForAtom()).React.createElement(
+              (_nuclideUiButton || _load_nuclideUiButton()).Button,
+              { onClick: this._handleCancelButtonClick },
+              'Cancel'
+            ),
+            (_reactForAtom || _load_reactForAtom()).React.createElement(
+              (_nuclideUiButton || _load_nuclideUiButton()).Button,
+              {
+                buttonType: (_nuclideUiButton || _load_nuclideUiButton()).ButtonTypes.PRIMARY,
+                onClick: this._handleAttachClick,
+                disabled: selectedIndex == null },
+              'Attach'
+            )
+          )
+        )
+      );
+    }
+  }, {
+    key: '_handleFilterTextChange',
+    value: function _handleFilterTextChange(text) {
+      this.setState({
+        filterText: text
+      });
+    }
+  }, {
+    key: '_handleSelectTableRow',
+    value: function _handleSelectTableRow(item, selectedIndex) {
+      var attachTarget = this._getAttachTargetOfPid(item.pid);
+      this.setState({
+        selectedAttachTarget: attachTarget
+      });
+    }
+  }, {
+    key: '_handleDoubleClickTableRow',
+    value: function _handleDoubleClickTableRow() {
+      this._attachToProcess();
+    }
+  }, {
+    key: '_handleAttachClick',
+    value: function _handleAttachClick() {
+      this._attachToProcess();
+    }
+  }, {
+    key: '_handleCancelButtonClick',
+    value: function _handleCancelButtonClick() {
       this.props.actions.toggleLaunchAttachDialog();
     }
-  }
-}
+  }, {
+    key: '_updateAttachTargetList',
+    value: function _updateAttachTargetList() {
+      // Fire and forget.
+      this.props.actions.updateAttachTargetList();
+    }
+  }, {
+    key: '_attachToProcess',
+    value: function _attachToProcess() {
+      var attachTarget = this.state.selectedAttachTarget;
+      if (attachTarget != null) {
+        // Fire and forget.
+        this.props.actions.attachDebugger(attachTarget);
+        this.props.actions.showDebuggerPanel();
+        this.props.actions.toggleLaunchAttachDialog();
+      }
+    }
+  }]);
+
+  return AttachUIComponent;
+})((_reactForAtom || _load_reactForAtom()).React.Component);
+
+exports.AttachUIComponent = AttachUIComponent;

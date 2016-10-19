@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,108 +10,142 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../commons-node/nuclideUri';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-import {Emitter, Directory} from 'atom';
-import nuclideUri from '../commons-node/nuclideUri';
-import singleton from '../commons-node/singleton';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-const REMOVE_PROJECT_EVENT = 'did-remove-project';
-const ADD_PROJECT_EVENT = 'did-add-project';
-const PROJECT_PATH_WATCHER_INSTANCE_KEY = '_nuclide_project_path_watcher';
+var _atom;
 
-function getValidProjectPaths(): Array<string> {
-  return atom.project.getDirectories().filter(directory => {
+function _load_atom() {
+  return _atom = require('atom');
+}
+
+var _commonsNodeNuclideUri;
+
+function _load_commonsNodeNuclideUri() {
+  return _commonsNodeNuclideUri = _interopRequireDefault(require('../commons-node/nuclideUri'));
+}
+
+var _commonsNodeSingleton;
+
+function _load_commonsNodeSingleton() {
+  return _commonsNodeSingleton = _interopRequireDefault(require('../commons-node/singleton'));
+}
+
+var REMOVE_PROJECT_EVENT = 'did-remove-project';
+var ADD_PROJECT_EVENT = 'did-add-project';
+var PROJECT_PATH_WATCHER_INSTANCE_KEY = '_nuclide_project_path_watcher';
+
+function getValidProjectPaths() {
+  return atom.project.getDirectories().filter(function (directory) {
     // If a remote directory path is a local `Directory` instance, the project path
     // isn't yet ready for consumption.
-    if (nuclideUri.isRemote(directory.getPath()) && directory instanceof Directory) {
+    if ((_commonsNodeNuclideUri || _load_commonsNodeNuclideUri()).default.isRemote(directory.getPath()) && directory instanceof (_atom || _load_atom()).Directory) {
       return false;
     }
     return true;
-  }).map(directory => directory.getPath());
+  }).map(function (directory) {
+    return directory.getPath();
+  });
 }
 
-class ProjectManager {
+var ProjectManager = (function () {
+  function ProjectManager() {
+    _classCallCheck(this, ProjectManager);
 
-  _emitter: Emitter;
-  _projectPaths: Set<string>;
-
-  constructor() {
-    this._emitter = new Emitter();
+    this._emitter = new (_atom || _load_atom()).Emitter();
     this._projectPaths = new Set(getValidProjectPaths());
     atom.project.onDidChangePaths(this._updateProjectPaths.bind(this));
   }
 
-  _updateProjectPaths(newProjectPaths: Array<string>): void {
-    const oldProjectPathSet = this._projectPaths;
-    const newProjectPathSet = new Set(getValidProjectPaths());
-    for (const oldProjectPath of oldProjectPathSet) {
-      if (!newProjectPathSet.has(oldProjectPath)) {
-        this._emitter.emit(REMOVE_PROJECT_EVENT, oldProjectPath);
+  _createClass(ProjectManager, [{
+    key: '_updateProjectPaths',
+    value: function _updateProjectPaths(newProjectPaths) {
+      var oldProjectPathSet = this._projectPaths;
+      var newProjectPathSet = new Set(getValidProjectPaths());
+      for (var oldProjectPath of oldProjectPathSet) {
+        if (!newProjectPathSet.has(oldProjectPath)) {
+          this._emitter.emit(REMOVE_PROJECT_EVENT, oldProjectPath);
+        }
       }
-    }
-    for (const newProjectPath of newProjectPathSet) {
-      if (!oldProjectPathSet.has(newProjectPath)) {
-        this._emitter.emit(ADD_PROJECT_EVENT, newProjectPath);
+      for (var newProjectPath of newProjectPathSet) {
+        if (!oldProjectPathSet.has(newProjectPath)) {
+          this._emitter.emit(ADD_PROJECT_EVENT, newProjectPath);
+        }
       }
+      this._projectPaths = newProjectPathSet;
     }
-    this._projectPaths = newProjectPathSet;
-  }
-
-  observeProjectPaths(callback: (projectPath: string) => void): IDisposable {
-    for (const projectPath of this._projectPaths) {
-      callback(projectPath);
+  }, {
+    key: 'observeProjectPaths',
+    value: function observeProjectPaths(callback) {
+      for (var _projectPath of this._projectPaths) {
+        callback(_projectPath);
+      }
+      return this._emitter.on(ADD_PROJECT_EVENT, callback);
     }
-    return this._emitter.on(ADD_PROJECT_EVENT, callback);
-  }
+  }, {
+    key: 'onDidAddProjectPath',
+    value: function onDidAddProjectPath(callback) {
+      return this._emitter.on(ADD_PROJECT_EVENT, callback);
+    }
+  }, {
+    key: 'onDidRemoveProjectPath',
+    value: function onDidRemoveProjectPath(callback) {
+      return this._emitter.on(REMOVE_PROJECT_EVENT, callback);
+    }
+  }]);
 
-  onDidAddProjectPath(callback: (projectPath: string) => void): IDisposable {
-    return this._emitter.on(ADD_PROJECT_EVENT, callback);
-  }
+  return ProjectManager;
+})();
 
-  onDidRemoveProjectPath(callback: (projectPath: string) => void): IDisposable {
-    return this._emitter.on(REMOVE_PROJECT_EVENT, callback);
-  }
+function getProjectManager() {
+  return (_commonsNodeSingleton || _load_commonsNodeSingleton()).default.get(PROJECT_PATH_WATCHER_INSTANCE_KEY, function () {
+    return new ProjectManager();
+  });
 }
 
-function getProjectManager(): ProjectManager {
-  return singleton.get(
-    PROJECT_PATH_WATCHER_INSTANCE_KEY,
-    () => new ProjectManager(),
-  );
-}
+function getAtomProjectRelativePath(path) {
+  var _atom$project$relativizePath = atom.project.relativizePath(path);
 
-function getAtomProjectRelativePath(path: NuclideUri): ?string {
-  const [projectPath, relativePath] = atom.project.relativizePath(path);
+  var _atom$project$relativizePath2 = _slicedToArray(_atom$project$relativizePath, 2);
+
+  var projectPath = _atom$project$relativizePath2[0];
+  var relativePath = _atom$project$relativizePath2[1];
+
   if (!projectPath) {
     return null;
   }
   return relativePath;
 }
 
-function getAtomProjectRootPath(path: NuclideUri): ?string {
-  const [projectPath] = atom.project.relativizePath(path);
+function getAtomProjectRootPath(path) {
+  var _atom$project$relativizePath3 = atom.project.relativizePath(path);
+
+  var _atom$project$relativizePath32 = _slicedToArray(_atom$project$relativizePath3, 1);
+
+  var projectPath = _atom$project$relativizePath32[0];
+
   return projectPath;
 }
 
 module.exports = {
-  getAtomProjectRelativePath,
+  getAtomProjectRelativePath: getAtomProjectRelativePath,
 
-  getAtomProjectRootPath,
+  getAtomProjectRootPath: getAtomProjectRootPath,
 
-  observeProjectPaths(callback: (projectPath: string) => void): IDisposable {
+  observeProjectPaths: function observeProjectPaths(callback) {
     return getProjectManager().observeProjectPaths(callback);
   },
 
-  onDidAddProjectPath(callback: (projectPath: string) => void): IDisposable {
+  onDidAddProjectPath: function onDidAddProjectPath(callback) {
     return getProjectManager().onDidAddProjectPath(callback);
   },
 
-  onDidRemoveProjectPath(callback: (projectPath: string) => void): IDisposable {
+  onDidRemoveProjectPath: function onDidRemoveProjectPath(callback) {
     return getProjectManager().onDidRemoveProjectPath(callback);
   },
 
   __test__: {
-    PROJECT_PATH_WATCHER_INSTANCE_KEY,
-  },
+    PROJECT_PATH_WATCHER_INSTANCE_KEY: PROJECT_PATH_WATCHER_INSTANCE_KEY
+  }
 };
