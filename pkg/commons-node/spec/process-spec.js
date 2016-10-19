@@ -106,6 +106,7 @@ describe('commons-node/process', () => {
     it('should not crash the process on an error', () => {
       waitsForPromise(async () => {
         spyOn(console, 'error'); // suppress error printing
+        spyOn(console, 'log'); // suppress log printing
         const child = await safeSpawn('fakeCommand');
         expect(child).not.toBe(null);
         expect(child.listeners('error').length).toBeGreaterThan(0);
@@ -130,6 +131,7 @@ describe('commons-node/process', () => {
           kill: jasmine.createSpy(),
         };
         spyOn(console, 'error'); // suppress error printing
+        spyOn(console, 'log'); // suppress log printing
         await killProcess((proc: any), false);
         expect(proc.kill).toHaveBeenCalled();
       });
@@ -141,6 +143,7 @@ describe('commons-node/process', () => {
           pid: 123,
         };
         spyOn(console, 'error'); // suppress error printing
+        spyOn(console, 'log'); // suppress log printing
         Object.defineProperty(process, 'platform', {value: 'win32'});
         spyOn(child_process, 'exec');
         await killProcess((proc: any), true);
@@ -267,6 +270,7 @@ describe('commons-node/process', () => {
     it('errors when the process does', () => {
       waitsForPromise(async () => {
         spyOn(console, 'error'); // suppress error printing
+        spyOn(console, 'log'); // suppress log printing
         const createProcess = () => safeSpawn('fakeCommand');
         const processStream = createProcessStream(createProcess);
         let error;
@@ -284,6 +288,7 @@ describe('commons-node/process', () => {
     it('can be retried', () => {
       waitsForPromise(async () => {
         spyOn(console, 'error'); // suppress error printing
+        spyOn(console, 'log'); // suppress log printing
         const createProcess = jasmine.createSpy().andCallFake(
           () => safeSpawn('fakeCommand'),
         );
@@ -315,6 +320,7 @@ describe('commons-node/process', () => {
       it('protects against giving an exited process', () => {
         waitsForPromise(async () => {
           spyOn(console, 'error'); // suppress error printing
+          spyOn(console, 'log'); // suppress log printing
           const childProcess = safeSpawn('fakeCommand');
           // Wait until after the "error" event is dispatched. (This is what makes the usage
           // invalid.)
@@ -328,6 +334,7 @@ describe('commons-node/process', () => {
       it("doesn't complain when given a process that subsequently errors", () => {
         waitsForPromise(async () => {
           spyOn(console, 'error'); // suppress error printing
+          spyOn(console, 'log'); // suppress log printing
           let error;
           try {
             await createProcessStream(() => safeSpawn('fakeCommand')).toPromise();
@@ -409,6 +416,7 @@ describe('commons-node/process', () => {
 
     it('completes the stream if the process errors', () => {
       spyOn(console, 'error');
+      spyOn(console, 'log'); // suppress log printing
       // If the stream doesn't complete, this will timeout.
       waitsForPromise({timeout: 1000}, async () => {
         await observeProcess(() => safeSpawn('fakeCommand')).toArray().toPromise();
@@ -421,6 +429,7 @@ describe('commons-node/process', () => {
     beforeEach(() => {
       // Suppress console spew.
       spyOn(console, 'error');
+      spyOn(console, 'log'); // suppress log printing
     });
 
     if (origPlatform === 'win32') { return; }

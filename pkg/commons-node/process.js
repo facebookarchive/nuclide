@@ -117,6 +117,12 @@ function logError(...args) {
   console.error(...args);
 }
 
+function log(...args) {
+  // Can't use nuclide-logging here to not cause cycle dependency.
+  // eslint-disable-next-line no-console
+  console.log(...args);
+}
+
 function monitorStreamErrors(process: child_process$ChildProcess, command, args, options): void {
   STREAM_NAMES.forEach(streamName => {
     // $FlowIssue
@@ -288,7 +294,7 @@ export function killProcess(
   childProcess: child_process$ChildProcess,
   killTree: boolean,
 ): void {
-  logError(`Ending process stream. Killing process ${childProcess.pid}`);
+  log(`Ending process stream. Killing process ${childProcess.pid}`);
   _killProcess(childProcess, killTree).then(
     () => {},
     error => {
