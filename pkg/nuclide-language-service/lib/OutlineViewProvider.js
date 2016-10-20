@@ -62,7 +62,7 @@ export class OutlineViewProvider<T: LanguageService> {
   }
 
   getOutline(editor: atom$TextEditor): Promise<?Outline> {
-    return trackOperationTiming(this._analyticsEventName, async() => {
+    return trackOperationTiming(this._analyticsEventName, async () => {
       const fileVersion = await getFileVersionOfEditor(editor);
       const languageService = this._connectionToLanguageService.getForUri(editor.getPath());
       if (languageService == null || fileVersion == null) {

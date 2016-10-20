@@ -41,7 +41,7 @@ export const Highlight = (props: Props) => {
     className,
     color,
     children,
-    ...remainingProps,
+    ...remainingProps
   } = props;
   const colorClassName = HighlightColorClassNames[color == null ? 'default' : color];
   const newClassName = classnames(colorClassName, className);

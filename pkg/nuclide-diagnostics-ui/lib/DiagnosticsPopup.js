@@ -61,7 +61,7 @@ export const DiagnosticsPopup = (props: DiagnosticsPopupProps) => {
     left,
     messages,
     top,
-    ...rest,
+    ...rest
   } = props;
   return (
     <div

@@ -35,7 +35,7 @@ export class ListViewItem extends React.Component {
       children,
       index,
       value,
-      ...remainingProps,
+      ...remainingProps
     } = this.props;
     return (
       <div

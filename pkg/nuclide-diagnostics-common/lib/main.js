@@ -44,12 +44,16 @@ export type FileMessageUpdate = {
 export type DiagnosticMessage = FileDiagnosticMessage | ProjectDiagnosticMessage;
 
 export type DiagnosticUpdater = {
-  onFileMessagesDidUpdate:
-    (callback: (update: FileMessageUpdate) => mixed, filePath: NuclideUri) => IDisposable,
-  onProjectMessagesDidUpdate:
-    (callback: (messages: Array<ProjectDiagnosticMessage>) => mixed) => IDisposable,
-  onAllMessagesDidUpdate:
-    (callback: (messages: Array<DiagnosticMessage>) => mixed) => IDisposable,
+  onFileMessagesDidUpdate: (
+    callback: (update: FileMessageUpdate) => mixed,
+    filePath: NuclideUri,
+  ) => IDisposable,
+  onProjectMessagesDidUpdate: (
+    callback: (messages: Array<ProjectDiagnosticMessage>) => mixed,
+  ) => IDisposable,
+  onAllMessagesDidUpdate: (
+    callback: (messages: Array<DiagnosticMessage>) => mixed,
+  ) => IDisposable,
   applyFix: (message: FileDiagnosticMessage) => void,
   applyFixesForFile: (file: NuclideUri) => void,
 };

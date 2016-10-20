@@ -77,7 +77,7 @@ function createLazyLogger(category: string): Logger {
     return function(...args: Array<any>) {
       const logger = getLog4jsLogger(category);
       invariant(logger);
-      logger[level].apply(logger, args);
+      logger[level](...args);
     };
   }
 

@@ -10,7 +10,7 @@
  */
 
 /* NON-TRANSPILED FILE */
-/* eslint-disable babel/func-params-comma-dangle, prefer-object-spread/prefer-object-spread */
+/* eslint comma-dangle: [1, always-multiline], prefer-object-spread/prefer-object-spread: 0 */
 
 // This rule is here because of a babel 5 bug, where "export type" is treated
 // as a value export. This results in the types file getting required. In most

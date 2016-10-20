@@ -68,10 +68,13 @@ declare class http$fixed$ServerResponse {
 
 declare class https$fixed {
   Server: typeof http$fixed$Server,
-  createServer(options: Object,
-    requestListener?:
-      (request: http$fixed$IncomingMessage, response: http$fixed$ServerResponse) => void):
-      http$fixed$Server,
+  createServer(
+    options: Object,
+    requestListener?: (
+      request: http$fixed$IncomingMessage,
+      response: http$fixed$ServerResponse,
+    ) => void,
+  ): http$fixed$Server,
   request(
     options: Object | string,
     callback: (response: http$fixed$IncomingMessage) => void
@@ -84,9 +87,12 @@ declare class https$fixed {
 
 declare class http$fixed {
   Server: typeof http$fixed$Server,
-  createServer(requestListener?:
-      (request: http$fixed$IncomingMessage, response: http$fixed$ServerResponse) => void):
-      http$fixed$Server,
+  createServer(
+    requestListener?: (
+      request: http$fixed$IncomingMessage,
+      response: http$fixed$ServerResponse,
+    ) => void
+  ): http$fixed$Server,
   request(
     options: Object | string,
     callback: (response: http$fixed$IncomingMessage) => void

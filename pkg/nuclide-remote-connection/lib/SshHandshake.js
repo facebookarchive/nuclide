@@ -98,8 +98,11 @@ export type SshConnectionDelegate = {
   /** Invoked when connection is sucessful */
   onDidConnect: (connection: RemoteConnection, config: SshConnectionConfiguration) => void,
   /** Invoked when connection is fails */
-  onError:
-    (errorType: SshHandshakeErrorType, error: Error, config: SshConnectionConfiguration) => void,
+  onError: (
+    errorType: SshHandshakeErrorType,
+    error: Error,
+    config: SshConnectionConfiguration,
+  ) => void,
 };
 
 const SshConnectionErrorLevelMap: Map<SshConnectionErrorLevel, SshHandshakeErrorType> = new Map([

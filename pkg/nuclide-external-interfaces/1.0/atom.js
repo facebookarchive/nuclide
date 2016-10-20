@@ -456,7 +456,7 @@ type atom$PointLike = atom$Point
 | atom$PointObject;
 
 declare class atom$Point {
-  static fromObject(object: atom$PointLike, copy:? boolean): atom$Point,
+  static fromObject(object: atom$PointLike, copy: ? boolean): atom$Point,
   constructor(row: number, column: number): void,
   row: number,
   column: number,
@@ -1675,8 +1675,9 @@ type atom$AutocompleteRequest = {
 
 type atom$AutocompleteProvider = {
   selector: string,
-  getSuggestions:
-      (request: atom$AutocompleteRequest) => Promise<?Array<atom$AutocompleteSuggestion>>,
+  getSuggestions: (
+    request: atom$AutocompleteRequest,
+  ) => Promise<?Array<atom$AutocompleteSuggestion>>,
   disableForSelector?: string,
   inclusionPriority?: number,
   excludeLowerPriority?: boolean,

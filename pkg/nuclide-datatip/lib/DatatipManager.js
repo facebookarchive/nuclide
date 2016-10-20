@@ -34,8 +34,11 @@ const logger = getLogger();
 
 export class DatatipManager {
   _subscriptions: CompositeDisposable;
-  _debouncedMouseMove:
-    (event: MouseEvent, editor: TextEditor, editorView: atom$TextEditorElement) => void;
+  _debouncedMouseMove: (
+    event: MouseEvent,
+    editor: TextEditor,
+    editorView: atom$TextEditorElement,
+  ) => void;
   _boundHideDatatip: Function;
   _globalKeydownSubscription: ?IDisposable;
   _marker: ?atom$Marker;

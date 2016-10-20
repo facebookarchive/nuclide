@@ -44,7 +44,7 @@ process.on('message', (message: RemoteMessage) => {
   let output;
   let error;
   try {
-    output = service.apply(null, args || []);
+    output = service(...args || []);
   } catch (e) {
     error = e;
   }

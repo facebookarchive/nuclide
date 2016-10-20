@@ -22,10 +22,19 @@ type Props = {
   bookmarks: ?Array<BookmarkInfo>,
   bookmarksIsLoading: ?Array<BookmarkInfo>,
   hasSeparator: boolean,
-  onBookmarkClick: (bookmark: BookmarkInfo, repository: atom$Repository) => mixed,
-  onBookmarkContextMenu:
-    (bookmark: BookmarkInfo, repository: atom$Repository, event: SyntheticMouseEvent) => mixed,
-  onRepoGearClick: (repository: atom$Repository, event: SyntheticMouseEvent) => mixed,
+  onBookmarkClick: (
+    bookmark: BookmarkInfo,
+    repository: atom$Repository,
+  ) => mixed,
+  onBookmarkContextMenu: (
+    bookmark: BookmarkInfo,
+    repository: atom$Repository,
+    event: SyntheticMouseEvent,
+  ) => mixed,
+  onRepoGearClick: (
+    repository: atom$Repository,
+    event: SyntheticMouseEvent,
+  ) => mixed,
   onUncommittedChangesClick: (repository: atom$Repository) => mixed,
   repository: ?atom$Repository,
   selectedItem: ?SelectableItem,

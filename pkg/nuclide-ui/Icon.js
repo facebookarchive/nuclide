@@ -28,7 +28,7 @@ export const Icon = (props: Props) => {
     icon,
     children,
     className,
-    ...remainingProps,
+    ...remainingProps
   } = props;
   const newClassName = classnames(
     className,

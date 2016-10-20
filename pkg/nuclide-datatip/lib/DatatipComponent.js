@@ -48,7 +48,7 @@ export class DatatipComponent extends React.Component {
       children,
       action,
       actionTitle,
-      ...props,
+      ...props
     } = this.props;
     delete props.onActionClick;
     let actionButton;

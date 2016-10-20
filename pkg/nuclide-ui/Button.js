@@ -75,7 +75,7 @@ export const Button = (props: Props) => {
     className,
     wrapperElement,
     tooltip,
-    ...remainingProps,
+    ...remainingProps
   } = props;
   const sizeClassname = size == null ? '' : ButtonSizeClassnames[size] || '';
   const buttonTypeClassname = buttonType == null ? '' : ButtonTypeClassnames[buttonType] || '';

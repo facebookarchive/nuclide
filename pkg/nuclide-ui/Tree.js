@@ -22,7 +22,7 @@ export const TreeItem = (props: TreeItemProps) => {
     className,
     selected,
     children,
-    ...remainingProps,
+    ...remainingProps
   } = props;
   return (
     <li className={classnames(
@@ -57,7 +57,7 @@ export const NestedTreeItem = (props: NestedTreeItemProps) => {
     collapsed,
     title,
     children,
-    ...remainingProps,
+    ...remainingProps
   } = props;
   return (
     <li className={classnames(

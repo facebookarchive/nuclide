@@ -43,7 +43,7 @@ describe('BidiService', () => {
   });
 
   it('Test calls from server back to client', () => {
-    waitsForPromise(async() => {
+    waitsForPromise(async () => {
       const i1 = new I1();
       const i2 = new I2();
 

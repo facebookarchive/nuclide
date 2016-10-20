@@ -10,7 +10,7 @@
  */
 
 /* NON-TRANSPILED FILE */
-/* eslint-disable babel/func-params-comma-dangle, prefer-object-spread/prefer-object-spread */
+/* eslint comma-dangle: [1, always-multiline], prefer-object-spread/prefer-object-spread: 0 */
 
 // Relative to nuclide-debugger/scripts, where html page is loaded.
 require('./nuclide_bridge/NuclideBridge');

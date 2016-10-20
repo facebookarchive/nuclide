@@ -73,11 +73,10 @@ class SuggestionList extends React.Component {
   componentWillMount() {
     const {suggestionList} = this.props;
     const suggestion = suggestionList.getSuggestion();
-    invariant(suggestion);
     // TODO(nmote): This is assuming `suggestion.callback` is always an Array, which is not true
     //   according to hyperclick/lib/types. It can also be a function.
-    this._items = ((suggestion.callback: any):
-        Array<{rightLabel?: string, title: string, callback: () => mixed}>);
+    invariant(suggestion != null && Array.isArray(suggestion.callback));
+    this._items = suggestion.callback;
     this._textEditor = suggestionList.getTextEditor();
   }
 

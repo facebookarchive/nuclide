@@ -74,10 +74,8 @@ export class DebuggerProxyClient {
     // Messages with `$close` are special instructions and messages with `replyID` are cross-talk
     // from another executor (probably Chrome), so filter both out. Otherwise, the messages from RN
     // are forwarded as-is to the executor.
-    const executorRequests = (
-      (this._rnMessages.filter(message => message.$close == null && message.replyID == null): any):
-      Observable<ExecutorRequest>
-    );
+    const executorRequests: Observable<ExecutorRequest> = this._rnMessages
+      .filter(message => message.$close == null && message.replyID == null);
 
     this._executorResponses = executeRequests(executorRequests)
       .catch(err => {
@@ -105,10 +103,10 @@ export class DebuggerProxyClient {
 
     // Send the executor results to the RN app. (Close the loop.)
     (
-      (this._executorResponses.filter(response => response.kind === 'result'): any):
-      Observable<ExecutorResult>
-    )
-      .subscribe(executorResults);
+      (this._executorResponses.filter(
+        response => response.kind === 'result',
+      ): any): Observable<ExecutorResult>
+    ).subscribe(executorResults);
 
     // Disconnect when the RN app tells us to (via a specially-formatted message).
     this._rnMessages

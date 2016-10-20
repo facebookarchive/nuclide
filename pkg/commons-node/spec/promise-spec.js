@@ -619,7 +619,7 @@ async function captureParallelismHistory(
 ): Promise<{result: mixed, parallelismHistory: Array<number>}> {
   const parallelismHistory = [];
   let parralelism = 0;
-  const result = await asyncFunction.apply(null, args.map(arg => {
+  const result = await asyncFunction(...args.map(arg => {
     if (typeof arg !== 'function') {
       return arg;
     }

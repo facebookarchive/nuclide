@@ -145,7 +145,7 @@ type electron$BrowserWindowOptions = {
   hasShadow?: boolean,
   darkTheme?: boolean,
   transparent?: boolean,
-  type?: /* Linux */ 'desktop' | 'dock' | 'toolbar' | 'splash' | 'notification' |
+  type?: 'desktop' | 'dock' | 'toolbar' | 'splash' | 'notification' |
          /* macOS */ 'desktop' | 'textured' |
          /* Windows */ 'toolbar',
   titleBarStyle?: 'default' | 'hidden' | 'hidden-inset',

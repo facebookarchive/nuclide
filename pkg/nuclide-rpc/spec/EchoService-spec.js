@@ -35,12 +35,12 @@ describe('EchoServer', () => {
   // Basic types.
   it('Echoes an argument of type "any".', () => {
     const number = 12345;
-    waitsForPromise(async() => {
+    waitsForPromise(async () => {
       const results = await service.echoAny(number);
       expect(results).toBe(number);
     });
     const object = {hello: 'world', success: true};
-    waitsForPromise(async() => {
+    waitsForPromise(async () => {
       const results = await service.echoAny(object);
       expect(results).toEqual(object);
     });

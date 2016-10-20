@@ -522,7 +522,7 @@ export class RpcConnection<TransportType: Transport> {
     return this._returnValue(
       id,
       timingTracker,
-      object[call.method].apply(object, marshalledArgs),
+      object[call.method](...marshalledArgs),
       type.returnType);
   }
 

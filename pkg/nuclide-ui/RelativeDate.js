@@ -52,7 +52,7 @@ export default class Revision extends React.Component {
   render(): React.Element<any> {
     const {
       date,
-      ...remainingProps,
+      ...remainingProps
     } = this.props;
     return <span {...remainingProps}>{relativeDate(date)}</span>;
   }
