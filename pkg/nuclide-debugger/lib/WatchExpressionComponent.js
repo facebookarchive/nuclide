@@ -155,7 +155,7 @@ export class WatchExpressionComponent extends React.Component {
         </div>
         <i
           className="icon icon-x nuclide-debugger-watch-expression-xout"
-          onMouseDown={this.removeExpression.bind(this, index)}
+          onClick={this.removeExpression.bind(this, index)}
         />
       </div>
     );
