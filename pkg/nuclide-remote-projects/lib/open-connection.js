@@ -39,7 +39,7 @@ export function openConnectionDialog(props?: Object): Promise<?RemoteConnection>
     dialogPromiseQueue = new PromiseQueue();
   }
 
-  return dialogPromiseQueue.submit((resolve, reject) => {
+  return dialogPromiseQueue.submit(() => new Promise((resolve, reject) => {
     // During the lifetime of this 'openConnectionDialog' flow, the 'default'
     // connection profile should not change (even if it is reset by the user
     // connecting to a remote project from another Atom window).
@@ -236,5 +236,5 @@ export function openConnectionDialog(props?: Object): Promise<?RemoteConnection>
     // `openBaseDialog` will select the "default" / "Most Recent" option.
     openBaseDialog(compositeConnectionProfiles.find(
       profile => profile.displayTitle === defaultConnectionProfile.params.displayTitle));
-  });
+  }));
 }

@@ -187,7 +187,7 @@ function _runBuckCommandFromProjectRoot(
 
   const newArgs = addClientId ? args.concat(CLIENT_ID_ARGS) : args;
   logger.debug('Buck command:', pathToBuck, newArgs, options);
-  return getPool(rootPath, readOnly).submitFunction(
+  return getPool(rootPath, readOnly).submit(
     () => checkOutput(pathToBuck, newArgs, options),
   );
 }

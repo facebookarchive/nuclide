@@ -32,17 +32,23 @@ describe('PromiseQueue', () => {
     let res3End = 0;
 
     runs(() => {
-      queue.submit((resolve, reject) => {
+      queue.submit(async () => {
         res1Start = Date.now();
-        setTimeout(() => { resolve(res1End = Date.now()); }, 100);
+        await new Promise(resolve => {
+          setTimeout(() => { resolve(res1End = Date.now()); }, 100);
+        });
       });
-      queue.submit((resolve, reject) => {
+      queue.submit(async () => {
         res2Start = Date.now();
-        setTimeout(() => { resolve(res2End = Date.now()); }, 200);
+        await new Promise(resolve => {
+          setTimeout(() => { resolve(res2End = Date.now()); }, 200);
+        });
       });
-      queue.submit((resolve, reject) => {
+      queue.submit(async () => {
         res3Start = Date.now();
-        setTimeout(() => { resolve(res3End = Date.now()); }, 300);
+        await new Promise(resolve => {
+          setTimeout(() => { resolve(res3End = Date.now()); }, 300);
+        });
       });
     });
 
@@ -72,14 +78,16 @@ describe('PromisePool', () => {
 
     const executors = [];
     for (let i = 0; i < numDelayedExecutors; i++) {
-      executors.push((resolve, reject) => {
+      executors.push(async () => {
         numRunning++;
         expect(numRunning <= poolSize).toBe(true);
-        setTimeout(() => {
-          expect(numRunning <= poolSize).toBe(true);
-          numRunning--;
-          resolve();
-        }, delayMs);
+        await new Promise(resolve => {
+          setTimeout(() => {
+            expect(numRunning <= poolSize).toBe(true);
+            numRunning--;
+            resolve();
+          }, delayMs);
+        });
       });
     }
 
@@ -90,14 +98,6 @@ describe('PromisePool', () => {
       await Promise.all(executors.map(executor => queue.submit(executor)));
       const end = Date.now();
       expect(end - start).toBeLessThan(numDelayedExecutors * delayMs / (poolSize - 1));
-    });
-  });
-
-  it('accepts functions returning promises', () => {
-    waitsForPromise(async () => {
-      const queue = new PromisePool(1);
-      const result = await queue.submitFunction(() => Promise.resolve('test'));
-      expect(result).toBe('test');
     });
   });
 });

@@ -47,7 +47,7 @@ export async function callHHClient(
     trackingIdOfHackArgs(args) + ':plus-queue',
     () => {
       invariant(hhPromiseQueue);
-      return hhPromiseQueue.submit(async (resolve, reject) => {
+      return hhPromiseQueue.submit(async () => {
         // Append args on the end of our commands.
         const defaults =
           ['--json', '--retries', '0', '--retry-if-init', 'false', '--from', 'nuclide'];
@@ -56,22 +56,18 @@ export async function callHHClient(
         allArgs.push(hackRoot);
 
         let execResult = null;
-        try {
-          logger.logTrace(`Calling Hack: ${hackCommand} with ${allArgs.toString()}`);
-          execResult = await trackOperationTiming(
-            trackingIdOfHackArgs(args),
-            () => asyncExecute(hackCommand, allArgs, {stdin: processInput}));
-        } catch (err) {
-          reject(err);
-          return;
-        }
+
+        logger.logTrace(`Calling Hack: ${hackCommand} with ${allArgs.toString()}`);
+        execResult = await trackOperationTiming(
+          trackingIdOfHackArgs(args),
+          () => asyncExecute(hackCommand, allArgs, {stdin: processInput}),
+        );
+
         const {stdout, stderr} = execResult;
         if (stderr.indexOf(HH_SERVER_INIT_MESSAGE) !== -1) {
-          reject(new Error(`${HH_SERVER_INIT_MESSAGE}: try: \`arc build\` or try again later!`));
-          return;
+          throw new Error(`${HH_SERVER_INIT_MESSAGE}: try: \`arc build\` or try again later!`);
         } else if (stderr.startsWith(HH_SERVER_BUSY_MESSAGE)) {
-          reject(new Error(`${HH_SERVER_BUSY_MESSAGE}: try: \`arc build\` or try again later!`));
-          return;
+          throw new Error(`${HH_SERVER_BUSY_MESSAGE}: try: \`arc build\` or try again later!`);
         }
 
         const output = errorStream ? stderr : stdout;
@@ -81,12 +77,12 @@ export async function callHHClient(
           invariant(result.hackRoot === undefined);
           // result may be an array, so don't return a new object.
           result.hackRoot = hackRoot;
-          resolve(result);
+          return result;
         } catch (err) {
           const errorMessage = `hh_client error, args: [${args.join(',')}]
 stdout: ${stdout}, stderr: ${stderr}`;
           logger.logError(errorMessage);
-          reject(new Error(errorMessage));
+          throw new Error(errorMessage);
         }
       });
     });

@@ -12,7 +12,7 @@
 import Dequeue from 'dequeue';
 import EventEmitter from 'events';
 
-type Executor<T> = (resolve: (result: T) => any, reject: any) => any;
+type Executor<T> = () => Promise<T>;
 
 /**
  * A pool that executes Promise executors in parallel given the poolSize, in order.
@@ -56,11 +56,6 @@ export class PromisePool {
     return promise;
   }
 
-  // Submit a function that wraps a promise.
-  submitFunction<T>(fn: () => Promise<T>): Promise<T> {
-    return this.submit((resolve, reject) => fn().then(resolve, reject));
-  }
-
   _run() {
     if (this._numPromisesRunning === this._poolSize) {
       return;
@@ -72,7 +67,8 @@ export class PromisePool {
 
     const {id, executor} = this._fifo.shift();
     this._numPromisesRunning++;
-    new Promise(executor).then(result => {
+
+    executor().then(result => {
       this._emitter.emit(id, {isSuccess: true, value: result});
       this._numPromisesRunning--;
       this._run();

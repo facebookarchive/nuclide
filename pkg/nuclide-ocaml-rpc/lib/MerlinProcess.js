@@ -134,19 +134,13 @@ export class MerlinProcessV2_3_1 extends MerlinProcessBase {
   }
 
   async pushDotMerlinPath(file: NuclideUri): Promise<mixed> {
-    return await this._promiseQueue.submit(async (resolve, reject) => {
-      const result = await this.runSingleCommand([
-        'reset',
-        'dot_merlin',
-        [file],
-        'auto',
-      ]);
-      resolve(result);
-    });
+    return await this._promiseQueue.submit(
+      () => this.runSingleCommand(['reset', 'dot_merlin', [file], 'auto']),
+    );
   }
 
   async pushNewBuffer(name: NuclideUri, content: string): Promise<mixed> {
-    return await this._promiseQueue.submit(async (resolve, reject) => {
+    return await this._promiseQueue.submit(async () => {
       await this.runSingleCommand([
         'reset',
         'auto', // one of {ml, mli, auto}
@@ -166,7 +160,8 @@ export class MerlinProcessV2_3_1 extends MerlinProcessBase {
         'source-eof',
         content,
       ]);
-      resolve(result);
+
+      return result;
     });
   }
 
@@ -176,7 +171,7 @@ export class MerlinProcessV2_3_1 extends MerlinProcessBase {
     col: number,
     kind: string,
   ): Promise<?{file: string, pos: {line: number, col: number}}> {
-    return await this._promiseQueue.submit(async (resolve, reject) => {
+    return await this._promiseQueue.submit(async () => {
       const location = await this.runSingleCommand([
         'locate',
         /* identifier name */ '',
@@ -185,9 +180,8 @@ export class MerlinProcessV2_3_1 extends MerlinProcessBase {
         {line: line + 1, col},
       ]);
 
-
       if (typeof location === 'string') {
-        return reject(Error(location));
+        throw new Error(location);
       }
 
       // Ocamlmerlin doesn't include a `file` field at all if the destination is
@@ -196,7 +190,7 @@ export class MerlinProcessV2_3_1 extends MerlinProcessBase {
         location.file = file;
       }
 
-      resolve(location);
+      return location;
     });
   }
 
@@ -205,40 +199,31 @@ export class MerlinProcessV2_3_1 extends MerlinProcessBase {
     line: number,
     col: number,
   ): Promise<Array<MerlinType>> {
-    return await this._promiseQueue.submit((resolve, reject) => {
-      this.runSingleCommand(['type', 'enclosing', 'at', {line: line + 1, col}])
-        .then(resolve)
-        .catch(reject);
-    });
+    return await this._promiseQueue.submit(
+      () => this.runSingleCommand(
+        ['type', 'enclosing', 'at', {line: line + 1, col}],
+      ),
+    );
   }
 
   async complete(file: NuclideUri, line: number, col: number, prefix: string): Promise<mixed> {
-    return await this._promiseQueue.submit((resolve, reject) => {
-      this.runSingleCommand([
-        'complete',
-        'prefix',
-        prefix,
-        'at',
-        {line: line + 1, col: col + 1},
-      ]).then(resolve)
-        .catch(reject);
-    });
+    return await this._promiseQueue.submit(
+      () => this.runSingleCommand(
+        ['complete', 'prefix', prefix, 'at', {line: line + 1, col: col + 1},
+      ]),
+    );
   }
 
   async errors(): Promise<Array<MerlinError>> {
-    return await this._promiseQueue.submit((resolve, reject) => {
-      this.runSingleCommand(['errors'])
-        .then(resolve)
-        .catch(reject);
-    });
+    return await this._promiseQueue.submit(
+      () => this.runSingleCommand(['errors']),
+    );
   }
 
   async outline(path: NuclideUri): Promise<Array<MerlinOutline>> {
-    return await this._promiseQueue.submit((resolve, reject) => {
-      this.runSingleCommand(['outline'])
-        .then(resolve)
-        .catch(reject);
-    });
+    return await this._promiseQueue.submit(
+      () => this.runSingleCommand(['outline']),
+    );
   }
 }
 
@@ -257,15 +242,9 @@ export class MerlinProcessV2_5 extends MerlinProcessBase {
   }
 
   async pushDotMerlinPath(file: NuclideUri): Promise<mixed> {
-    return await this._promiseQueue.submit(async (resolve, reject) => {
-      const result = await this.runSingleCommand([
-        'reset',
-        'dot_merlin',
-        [file],
-        'auto',
-      ]);
-      resolve(result);
-    });
+    return await this._promiseQueue.submit(
+      () => this.runSingleCommand(['reset', 'dot_merlin', [file], 'auto']),
+    );
   }
 
   /**
@@ -276,15 +255,9 @@ export class MerlinProcessV2_5 extends MerlinProcessBase {
    * @return on success: a cursor position pointed at the end of the buffer
    */
   async pushNewBuffer(name: NuclideUri, content: string): Promise<mixed> {
-    return await this._promiseQueue.submit(async (resolve, reject) => {
-      const result = await this.runSingleCommand([
-        'tell',
-        'start',
-        'end',
-        content,
-      ]);
-      resolve(result);
-    });
+    return await this._promiseQueue.submit(
+      () => this.runSingleCommand(['tell', 'start', 'end', content]),
+    );
   }
 
   /**
@@ -302,7 +275,7 @@ export class MerlinProcessV2_5 extends MerlinProcessBase {
     col: number,
     kind: string,
   ): Promise<?{file: string, pos: {line: number, col: number}}> {
-    return await this._promiseQueue.submit(async (resolve, reject) => {
+    return await this._promiseQueue.submit(async () => {
       const location = await this.runSingleCommand([
         'locate',
         /* identifier name */ '',
@@ -311,9 +284,8 @@ export class MerlinProcessV2_5 extends MerlinProcessBase {
         {line: line + 1, col},
       ]);
 
-
       if (typeof location === 'string') {
-        return reject(Error(location));
+        throw new Error(location);
       }
 
       // Ocamlmerlin doesn't include a `file` field at all if the destination is
@@ -322,7 +294,7 @@ export class MerlinProcessV2_5 extends MerlinProcessBase {
         location.file = file;
       }
 
-      resolve(location);
+      return location;
     });
   }
 
@@ -331,40 +303,31 @@ export class MerlinProcessV2_5 extends MerlinProcessBase {
     line: number,
     col: number,
   ): Promise<Array<MerlinType>> {
-    return await this._promiseQueue.submit((resolve, reject) => {
-      this.runSingleCommand(['type', 'enclosing', 'at', {line: line + 1, col}])
-        .then(resolve)
-        .catch(reject);
-    });
+    return await this._promiseQueue.submit(
+      () => this.runSingleCommand(
+        ['type', 'enclosing', 'at', {line: line + 1, col}],
+      ),
+    );
   }
 
   async complete(file: NuclideUri, line: number, col: number, prefix: string): Promise<mixed> {
-    return await this._promiseQueue.submit((resolve, reject) => {
-      this.runSingleCommand([
-        'complete',
-        'prefix',
-        prefix,
-        'at',
-        {line: line + 1, col: col + 1},
-      ]).then(resolve)
-        .catch(reject);
-    });
+    return await this._promiseQueue.submit(
+      () => this.runSingleCommand(
+        ['complete', 'prefix', prefix, 'at', {line: line + 1, col: col + 1}],
+      ),
+    );
   }
 
   async errors(): Promise<Array<MerlinError>> {
-    return await this._promiseQueue.submit((resolve, reject) => {
-      this.runSingleCommand(['errors'])
-        .then(resolve)
-        .catch(reject);
-    });
+    return await this._promiseQueue.submit(
+      () => this.runSingleCommand(['errors']),
+    );
   }
 
   async outline(path: NuclideUri): Promise<Array<MerlinOutline>> {
-    return await this._promiseQueue.submit((resolve, reject) => {
-      this.runSingleCommand(['outline'])
-        .then(resolve)
-        .catch(reject);
-    });
+    return await this._promiseQueue.submit(
+      () => this.runSingleCommand(['outline']),
+    );
   }
 }
 
