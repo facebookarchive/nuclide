@@ -171,7 +171,7 @@ export class HgRepositoryClient {
 
         return observeBufferOpen().filter(buffer => {
           const filePath = buffer.getPath();
-          return filePath != null && filePath.length !== 0 && this._isPathRelevant(filePath);
+          return filePath != null && filePath.length !== 0 && this.isPathRelevant(filePath);
         })
         .flatMap(buffer => {
           const filePath = buffer.getPath();
@@ -481,7 +481,7 @@ export class HgRepositoryClient {
    * Checks whether a path is relevant to this HgRepositoryClient. A path is
    * defined as 'relevant' if it is within the project directory opened within the repo.
    */
-  _isPathRelevant(filePath: NuclideUri): boolean {
+  isPathRelevant(filePath: NuclideUri): boolean {
     return this._projectDirectory.contains(filePath) ||
            (this._projectDirectory.getPath() === filePath);
   }
@@ -596,7 +596,7 @@ export class HgRepositoryClient {
   async _updateDiffInfo(filePaths: Array<NuclideUri>): Promise<?Map<NuclideUri, DiffInfo>> {
     const pathsToFetch = filePaths.filter(aPath => {
       // Don't try to fetch information for this path if it's not in the repo.
-      if (!this._isPathRelevant(aPath)) {
+      if (!this.isPathRelevant(aPath)) {
         return false;
       }
       // Don't do another update for this path if we are in the middle of running an update.
