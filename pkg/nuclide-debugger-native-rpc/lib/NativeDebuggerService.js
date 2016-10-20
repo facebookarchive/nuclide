@@ -37,7 +37,7 @@ export type LaunchTargetInfo = {
   environmentVariables: Array<string>,
   workingDirectory: string,
   stdinFilePath?: string,
-  basepath?: string
+  basepath?: string,
 };
 
 export type DebuggerConfig = {

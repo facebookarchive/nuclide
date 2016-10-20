@@ -58,7 +58,7 @@ async function hgActionToPath(
     atom.notifications.addError(`Cannot ${actionName} a non-mercurial repository path`);
     return;
   }
-  const hgRepository: HgRepositoryClient = (repository : any);
+  const hgRepository: HgRepositoryClient = (repository: any);
   try {
     await action(hgRepository);
     atom.notifications.addSuccess(

@@ -50,8 +50,7 @@ describe('side-bar', () => {
       const tabTitleContent = (
         (document.querySelector(
           '.left.tool-panel:last-child .nuclide-tabs .tab:last-child .title span',
-        ): any)
-        : HTMLSelectElement
+        ): any): HTMLSelectElement
       );
       // Selected option should be the source-control-side-bar, titled "Source Control"
       expect(String(tabTitleContent.innerText).trim()).toBe('Source Control');

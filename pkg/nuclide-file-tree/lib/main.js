@@ -140,7 +140,7 @@ class Activation {
     this._fileTreeController.setHideIgnoredNames(hideIgnoredNames);
   }
 
-  _setIgnoredNames(ignoredNames: string|Array<string>) {
+  _setIgnoredNames(ignoredNames: string | Array<string>) {
     let normalizedIgnoredNames;
     if (ignoredNames === '') {
       normalizedIgnoredNames = [];

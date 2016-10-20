@@ -59,8 +59,8 @@ export type ServiceName = string;
 export type GroupedResult = {
   [key: ServiceName]: {
     results: {
-      [key: DirectoryName]: ProviderResult
+      [key: DirectoryName]: ProviderResult,
     },
     title: string,
-  }
+  },
 };

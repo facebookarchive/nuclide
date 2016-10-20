@@ -19,7 +19,7 @@ import {maybeToString} from '../../commons-node/string';
 import {NuxView} from './NuxView';
 
 export class NuxTour {
-  _nuxList : Array<NuxView>;
+  _nuxList: Array<NuxView>;
   _callback: ?(() => void);
   _currentStep: number;
   _id: number;
@@ -30,7 +30,7 @@ export class NuxTour {
   constructor(
     id: number,
     name: string,
-    nuxList : ?(Array<NuxView>),
+    nuxList: ?(Array<NuxView>),
     trigger: ?NuxTriggerModel,
     gatekeeperID: ?string,
   ): void {

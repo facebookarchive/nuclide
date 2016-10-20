@@ -31,7 +31,7 @@ type Props = {
   children?: mixed,
   /** Allows specifying an element other than `button` to be used as the wrapper node. */
   wrapperElement?: ButtonNodeName,
-  tooltip?: atom$TooltipsAddOptions
+  tooltip?: atom$TooltipsAddOptions,
 };
 
 export const ButtonSizes = Object.freeze({

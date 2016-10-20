@@ -62,9 +62,9 @@ function goTo(fullFile, shortFile, line, column, waitForActivate) {
 
 describe('Nav Stack Integration', () => {
   it('tests navigation stack', () => {
-    let flowProjectPath: string = (null : any);
-    let mainPath: string = (null : any);
-    let fooPath: string = (null : any);
+    let flowProjectPath: string = (null: any);
+    let mainPath: string = (null: any);
+    let fooPath: string = (null: any);
 
     function getMainPath() {
       return mainPath;

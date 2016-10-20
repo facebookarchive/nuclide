@@ -26,7 +26,7 @@ type SwiftPMTaskRunnerAction =
   } |
   {
     actionType: 'UPDATE_TEST_SETTINGS',
-    buildPath: string
+    buildPath: string,
   } |
   {
     actionType: 'UPDATE_COMPILE_COMMANDS',

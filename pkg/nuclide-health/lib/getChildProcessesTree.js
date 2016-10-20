@@ -27,7 +27,7 @@ type PSTable = {
   },
   ioBytesStats: {
     [pid: number]: IOBytesStats,
-  }
+  },
 };
 
 export default function getChildProcessesTree(): Observable<?ChildProcessInfo> {

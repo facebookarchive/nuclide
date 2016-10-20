@@ -88,7 +88,7 @@ export type DebuggerAction =
   } |
   {
     actionType: 'REMOVE_REGISTER_EXECUTOR',
-    data: () => IDisposable
+    data: () => IDisposable,
   } |
   {
     actionType: 'REGISTER_CONSOLE',

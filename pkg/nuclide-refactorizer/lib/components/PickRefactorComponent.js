@@ -25,7 +25,7 @@ import * as Actions from '../refactorActions';
 export class PickRefactorComponent extends React.Component {
   props: {
     pickPhase: PickPhase,
-    store: Store
+    store: Store,
   };
 
   render(): React.Element<any> {

@@ -35,7 +35,7 @@ const ERROR_RESPONSES = new Set([
  */
 export type MerlinProcess = {
 
-  isRunning(): bool,
+  isRunning(): boolean,
 
   /**
    * Tell merlin where to find its per-repo .merlin config file.
@@ -97,7 +97,7 @@ export type MerlinProcess = {
 class MerlinProcessBase {
   _proc: child_process$ChildProcess;
   _promiseQueue: PromiseQueue;
-  _running: bool;
+  _running: boolean;
 
   constructor(proc: child_process$ChildProcess) {
     this._proc = proc;
@@ -106,7 +106,7 @@ class MerlinProcessBase {
     this._proc.on('exit', (code, signal) => { this._running = false; });
   }
 
-  isRunning(): bool {
+  isRunning(): boolean {
     return this._running;
   }
 

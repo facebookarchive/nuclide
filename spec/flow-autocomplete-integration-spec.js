@@ -21,8 +21,8 @@ import {
 
 describeRemotableTest('Flow Autocomplete', context => {
   it('tests simple autocomplete example', () => {
-    let textEditor: atom$TextEditor = (null : any);
-    let textEditorView: HTMLElement = (null : any);
+    let textEditor: atom$TextEditor = (null: any);
+    let textEditorView: HTMLElement = (null: any);
 
     waitsForPromise({timeout: 240000}, async () => {
       // Copy flow project to a temporary location.

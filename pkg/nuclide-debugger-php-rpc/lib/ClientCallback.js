@@ -107,7 +107,7 @@ export class ClientCallback {
   _sendJsonObject(observable: Observable<string>, value: Object): void {
     const message = JSON.stringify(value);
     logger.log('Sending JSON: ' + message);
-    ((observable : any) : Subject<any>).next(message);
+    ((observable: any): Subject<any>).next(message);
   }
 
   dispose(): void {

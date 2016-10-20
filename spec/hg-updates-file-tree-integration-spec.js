@@ -29,11 +29,11 @@ import {waitsForRepositoryReady} from './utils/diff-view-utils';
 const {AmendMode} = hgConstants;
 
 describeRemotableTest('Mercurial File Changes Tree Integration Tests', (context: TestContext) => {
-  let repoPath: string = (null : any);
-  let repoRemotePath: string = (null : any);
-  let hgRepository: HgRepositoryClient = (null : any);
+  let repoPath: string = (null: any);
+  let repoRemotePath: string = (null: any);
+  let hgRepository: HgRepositoryClient = (null: any);
   // Revision info for creating bookmarks stemming from these revisions
-  let firstRevision: RevisionInfo = (null : any);
+  let firstRevision: RevisionInfo = (null: any);
 
   beforeEach(() => {
     // Waiting for the UI to update is slow...

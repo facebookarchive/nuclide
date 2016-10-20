@@ -40,10 +40,10 @@ import type {StatusCodeNumberValue} from '../../nuclide-hg-rpc/lib/HgService';
 type ChangeListener = () => mixed;
 
 export type ExportStoreData = {
-  childKeyMap: { [key: string]: Array<string> },
-  expandedKeysByRoot: { [key: string]: Array<string> },
+  childKeyMap: {[key: string]: Array<string>},
+  expandedKeysByRoot: {[key: string]: Array<string>},
   rootKeys: Array<string>,
-  selectedKeysByRoot: { [key: string]: Array<string> },
+  selectedKeysByRoot: {[key: string]: Array<string>},
   version: number,
   openFilesExpanded?: boolean,
   uncommittedChangesExpanded?: boolean,

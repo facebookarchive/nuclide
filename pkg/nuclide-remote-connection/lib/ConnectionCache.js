@@ -26,7 +26,7 @@ export class ConnectionCache<T: IDisposable> extends Cache<?ServerConnection, Pr
   // If lazy is true, then entries will only be created when get() is called.
   // Otherwise, entries will be created as soon as ServerConnection's are
   // established.
-  constructor(factory: (connection: ?ServerConnection) => Promise<T>, lazy: bool = false) {
+  constructor(factory: (connection: ?ServerConnection) => Promise<T>, lazy: boolean = false) {
     super(factory, valuePromise => valuePromise.then(value => value.dispose()));
     this._subscriptions = new UniversalDisposable();
     this._subscriptions.add(

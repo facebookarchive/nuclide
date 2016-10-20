@@ -22,10 +22,10 @@ const SPINNER = '\uF087';
 
 type Props = {
   depth: number,
-  isContainer: bool,
-  isExpanded: bool,
-  isLoading: bool,
-  isSelected: bool,
+  isContainer: boolean,
+  isExpanded: boolean,
+  isLoading: boolean,
+  isSelected: boolean,
   label: string,
   labelElement?: ?React.Element<any>,
   labelClassName: string,

@@ -62,7 +62,7 @@ describe('Diff View Browse Mode Integration Test', () => {
     invariant(textEditor, 'no active text editor!');
     atom.commands.dispatch(atom.views.getView(textEditor), 'nuclide-diff-view:open');
 
-    let diffViewElement: ?HTMLElement = (null : any);
+    let diffViewElement: ?HTMLElement = (null: any);
     waitsFor('diff view to load', 10000, () => {
       diffViewElement = atom.workspace.getActivePaneItem();
       return diffViewElement != null && diffViewElement.tagName === 'NUCLIDE-DIFF-VIEW';

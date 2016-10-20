@@ -25,7 +25,7 @@ export const ActionType = Object.freeze({
 });
 
 // This is to work around flow's missing support of enums.
-(ActionType: { [key: string]: ActionTypeValue });
+(ActionType: {[key: string]: ActionTypeValue});
 
 export const ActiveShortHeadChangeBehavior = Object.freeze({
   ALWAYS_IGNORE: 'Always Ignore',
@@ -33,7 +33,7 @@ export const ActiveShortHeadChangeBehavior = Object.freeze({
   PROMPT_TO_RESTORE: 'Prompt to Restore',
 });
 
-(ActiveShortHeadChangeBehavior: { [key: string]: ActiveShortHeadChangeBehaviorValue });
+(ActiveShortHeadChangeBehavior: {[key: string]: ActiveShortHeadChangeBehaviorValue});
 
 export const ACTIVE_SHORTHEAD_CHANGE_BEHAVIOR_CONFIG =
   'nuclide-bookshelf.changeActiveBookmarkBehavior';

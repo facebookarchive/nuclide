@@ -73,8 +73,7 @@ describe('debugger-php-rpc DataCache', () => {
     convertValue = spyOn(values, 'convertValue').andReturn(EXPRESSION);
 
     const {DataCache} = (
-      (uncachedRequire(require, '../lib/DataCache'): any)
-      : {DataCache: () => DataCacheType}
+      (uncachedRequire(require, '../lib/DataCache'): any): {DataCache: () => DataCacheType}
     );
     cache = new DataCache(socket);
   });

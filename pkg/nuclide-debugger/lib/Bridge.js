@@ -297,7 +297,7 @@ class Bridge {
 
   _handleDebuggerPaused(options: ?{
     stopThreadId: number,
-    threadSwitchNotification: {sourceURL: string, lineNumber: number, message: string}
+    threadSwitchNotification: {sourceURL: string, lineNumber: number, message: string},
   }): void {
     this._debuggerModel.getActions().setDebuggerMode(DebuggerMode.PAUSED);
     if (options != null) {

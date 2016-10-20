@@ -22,7 +22,7 @@ import {waitsForHyperclickResult} from './utils/hyperclick-common';
 
 describeRemotableTest('Python Integration Test', context => {
   let pyProjPath;
-  let textEditor: atom$TextEditor = (null : any);
+  let textEditor: atom$TextEditor = (null: any);
 
   it('supports autocompletion and hyperclick', () => {
     waitsForPromise({timeout: 60000}, async () => {

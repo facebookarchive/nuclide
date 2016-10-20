@@ -11,8 +11,8 @@
 
 export type AtomCommands = {
   [target: string]: {
-    [commandName: string]: (event: Event) => mixed;
-  };
+    [commandName: string]: (event: Event) => mixed,
+  },
 };
 
 import {reconcileSets} from '../commons-node/observable';

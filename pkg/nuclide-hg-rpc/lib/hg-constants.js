@@ -45,7 +45,7 @@ const StatusCodeNumber = Object.freeze({
 });
 
 // This is to work around flow's missing support of enums.
-(StatusCodeNumber: { [key: string]: StatusCodeNumberValue });
+(StatusCodeNumber: {[key: string]: StatusCodeNumberValue});
 
 const StatusCodeIdToNumber: {[key: StatusCodeIdValue]: StatusCodeNumberValue} = {
   [StatusCodeId.ADDED]: StatusCodeNumber.ADDED,
@@ -65,7 +65,7 @@ const MergeConflictStatus = Object.freeze({
 });
 
 // This is to work around flow's missing support of enums.
-(MergeConflictStatus: { [key: string]: MergeConflictStatusValue });
+(MergeConflictStatus: {[key: string]: MergeConflictStatusValue});
 
 const AmendMode = Object.freeze({
   CLEAN: 'Clean',
@@ -74,7 +74,7 @@ const AmendMode = Object.freeze({
 });
 
 // This is to work around flow's missing support of enums.
-(AmendMode: { [key: string]: AmendModeValue });
+(AmendMode: {[key: string]: AmendModeValue});
 
 const CommitPhase = Object.freeze({
   PUBLIC: 'public',
@@ -85,7 +85,7 @@ const CommitPhase = Object.freeze({
 const HEAD_REVISION_EXPRESSION = '.';
 
 // This is to work around flow's missing support of enums.
-(CommitPhase: { [key: string]: CommitPhaseType });
+(CommitPhase: {[key: string]: CommitPhaseType});
 
 module.exports = {
   AmendMode,

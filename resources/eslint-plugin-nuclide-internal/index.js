@@ -23,7 +23,6 @@ module.exports = {
     'no-unnecessary-disposable-wrapping': require('./no-unnecessary-disposable-wrapping'),
     'prefer-nuclide-uri': require('./prefer-nuclide-uri'),
     'prefer-types-only-header': require('./prefer-types-only-header'),
-    'type-alias-semi': require('./type-alias-semi'),
   },
   rulesConfig: {
     'atom-commands': 0,
@@ -35,6 +34,5 @@ module.exports = {
     'no-unnecessary-disposable-wrapping': 0,
     'prefer-nuclide-uri': 0,
     'prefer-types-only-header': 0,
-    'type-alias-semi': 0,
   },
 };

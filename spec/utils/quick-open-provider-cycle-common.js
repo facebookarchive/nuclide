@@ -161,7 +161,7 @@ export function runTest(context: TestContext) {
       omniSearchTextEditorElement.click();
       // upcast to `any` before downcasting to child type
       const omniSearchTextEditor =
-        ((omniSearchTextEditorElement : any): atom$TextEditorElement).getModel();
+        ((omniSearchTextEditorElement: any): atom$TextEditorElement).getModel();
       omniSearchTextEditor.insertText('TEST');
     });
 

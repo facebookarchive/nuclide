@@ -59,7 +59,7 @@ describe('Diff View Right Editor Save and Edit Test', () => {
     // Open diff view
     atom.commands.dispatch(atom.views.getView(textEditor), 'nuclide-diff-view:open');
 
-    let diffViewElement: ?HTMLElement = (null : any);
+    let diffViewElement: ?HTMLElement = (null: any);
 
     waitsFor('diff view to load', 10000, () => {
       diffViewElement = atom.workspace.getActivePaneItem();

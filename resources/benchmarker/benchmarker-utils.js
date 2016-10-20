@@ -13,7 +13,7 @@ import fs from 'fs';
 
 async function timedAsync<T>(
   promise: Promise<T>,
-  waitUntilNoRequests: bool = true,
+  waitUntilNoRequests: boolean = true,
 ): Promise<{
   time: number,
   promiseTime: number,

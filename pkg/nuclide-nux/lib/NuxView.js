@@ -30,10 +30,10 @@ function validatePlacement(position: string) : boolean {
 }
 
 export class NuxView {
-  _selector : (() => ?HTMLElement);
+  _selector: () => ?HTMLElement;
   _position: 'top' | 'bottom' | 'left' | 'right' | 'auto';
   _content: string;
-  _disposables : CompositeDisposable;
+  _disposables: CompositeDisposable;
   _callback: ?((success: boolean) => void);
   _tooltipDisposable: IDisposable;
   _completePredicate: ?(() => boolean);
@@ -66,7 +66,7 @@ export class NuxView {
   constructor(
     tourId: number,
     selectorString: ?string,
-    selectorFunction : ?Function,
+    selectorFunction: ?Function,
     position: 'top' | 'bottom' | 'left' | 'right' | 'auto',
     content: string,
     completePredicate: ?(() => boolean) = null,

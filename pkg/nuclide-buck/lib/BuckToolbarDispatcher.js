@@ -38,7 +38,7 @@ type BuckToolbarAction =
   } |
   {
     actionType: 'UPDATE_RULE_TYPE',
-    ruleType: ?string
+    ruleType: ?string,
   } |
   {
     actionType: 'UPDATE_SIMULATOR',

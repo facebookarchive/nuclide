@@ -71,7 +71,7 @@ export const FileChangeStatus = Object.freeze({
   UNTRACKED: 5,
 });
 
-(FileChangeStatus: { [key: string]: FileChangeStatusValue });
+(FileChangeStatus: {[key: string]: FileChangeStatusValue});
 
 export const HgStatusToFileChangeStatus
   : {[key: StatusCodeNumberValue]: FileChangeStatusValue} = Object.freeze({

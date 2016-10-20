@@ -58,7 +58,7 @@ function getActivePathAndHgRepository(): ?{activePath: string, repository: HgRep
   if (repository == null || repository.getType() !== 'hg') {
     return null;
   }
-  const hgRepository: HgRepositoryClient = (repository : any);
+  const hgRepository: HgRepositoryClient = (repository: any);
   return {
     repository: hgRepository,
     activePath: filePath,
@@ -90,7 +90,7 @@ export function activate(state: any): void {
     'atom-text-editor',
     'nuclide-hg-repository:revert',
     event => {
-      const editorElement: atom$TextEditorElement = (event.target : any);
+      const editorElement: atom$TextEditorElement = (event.target: any);
       revertPath(editorElement.getModel().getPath());
     },
   ));
@@ -99,7 +99,7 @@ export function activate(state: any): void {
     'atom-text-editor',
     'nuclide-hg-repository:add',
     event => {
-      const editorElement: atom$TextEditorElement = (event.target : any);
+      const editorElement: atom$TextEditorElement = (event.target: any);
       addPath(editorElement.getModel().getPath());
     },
   ));

@@ -23,7 +23,7 @@ type ToolBarManager = {
     priority?: number,
   }): ToolBarButtonView,
   removeItems(): void,
-  onDidDestroy(callback: () => void): Disposable
+  onDidDestroy(callback: () => void): Disposable,
 };
 
 type ToolBarButtonView = {

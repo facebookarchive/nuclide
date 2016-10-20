@@ -281,7 +281,7 @@ export class TreeRootComponent extends React.Component {
 
     const promises: Array<Promise<any>> = [];
     const allKeys: Array<string> = [];
-    const keyToNode: { [key:string]: LazyTreeNode} = {};
+    const keyToNode: {[key: string]: LazyTreeNode} = {};
 
     this.state.roots.forEach(root => {
       const stack = [{node: root, depth: 0}];

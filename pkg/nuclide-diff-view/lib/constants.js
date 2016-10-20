@@ -26,7 +26,7 @@ export const DiffMode = Object.freeze({
 });
 
 // This is to work around flow's missing support of enums.
-(DiffMode: { [key: string]: DiffModeType });
+(DiffMode: {[key: string]: DiffModeType});
 
 export const DiffOption = Object.freeze({
   DIRTY: 'Dirty',
@@ -35,7 +35,7 @@ export const DiffOption = Object.freeze({
 });
 
 // This is to work around flow's missing support of enums.
-(DiffOption: { [key: string]: DiffOptionType });
+(DiffOption: {[key: string]: DiffOptionType});
 
 export const CommitMode = Object.freeze({
   COMMIT: 'Commit',
@@ -43,7 +43,7 @@ export const CommitMode = Object.freeze({
 });
 
 // This is to work around flow's missing support of enums.
-(CommitMode: { [key: string]: CommitModeType });
+(CommitMode: {[key: string]: CommitModeType});
 
 export const CommitModeState = Object.freeze({
   READY: 'Ready',
@@ -52,7 +52,7 @@ export const CommitModeState = Object.freeze({
 });
 
 // This is to work around flow's missing support of enums.
-(CommitModeState: { [key: string]: CommitModeStateType });
+(CommitModeState: {[key: string]: CommitModeStateType});
 
 export const PublishMode = Object.freeze({
   CREATE: 'Create',
@@ -60,7 +60,7 @@ export const PublishMode = Object.freeze({
 });
 
 // This is to work around flow's missing support of enums.
-(PublishMode: { [key: string]: PublishModeType });
+(PublishMode: {[key: string]: PublishModeType});
 
 export const PublishModeState = Object.freeze({
   READY: 'Ready',
@@ -70,7 +70,7 @@ export const PublishModeState = Object.freeze({
 });
 
 // This is to work around flow's missing support of enums.
-(PublishModeState: { [key: string]: PublishModeStateType });
+(PublishModeState: {[key: string]: PublishModeStateType});
 
 export const NON_MERCURIAL_REPO_DISPLAY_NAME = '[X] Non-Mercurial Repository';
 
@@ -81,4 +81,4 @@ export const DiffSectionStatus = Object.freeze({
 });
 
 // This is to work around flow's missing support of enums.
-(DiffSectionStatus: { [key: string]: DiffSectionStatusType });
+(DiffSectionStatus: {[key: string]: DiffSectionStatusType});

@@ -366,7 +366,7 @@ describe('Nuclide service parser test suite.', () => {
   });
 });
 
-function mapDefinitions(map: Map<string, Definition>): { [key: string]: Object } {
+function mapDefinitions(map: Map<string, Definition>): {[key: string]: Object} {
   const obj = {};
   for (const it of map.values()) {
     let value;

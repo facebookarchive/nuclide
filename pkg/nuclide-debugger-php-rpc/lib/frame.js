@@ -31,12 +31,12 @@ type DbgpStackFrame = {
     type: string,
     filename: string,
     lineno: string,
-  }
+  },
 };
 
 type FrameLocation = {
   lineNumber: number,
-  scriptId: string
+  scriptId: string,
 };
 
 function idOfFrame(frame: DbgpStackFrame): string {

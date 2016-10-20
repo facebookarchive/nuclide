@@ -13,7 +13,7 @@ import classnames from 'classnames';
 import {React} from 'react-for-atom';
 
 type Props = {
-  className? : string,
+  className?: string,
   children?: mixed,
 };
 

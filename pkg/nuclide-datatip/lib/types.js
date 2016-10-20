@@ -15,7 +15,7 @@ export type Datatip = {
 };
 
 export type PinnedDatatip = {
-  dispose(): void
+  dispose(): void,
 };
 
 export type DatatipProvider = {

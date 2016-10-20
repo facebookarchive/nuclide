@@ -16,9 +16,9 @@ import {describeRemotableTest} from './utils/remotable-tests';
 
 describeRemotableTest('Blame gutter integration test', (context: TestContext) => {
   it('renders the blame gutter', () => {
-    let textEditorView: HTMLElement = (null : any);
-    let blameGutter: HTMLElement = (null : any);
-    let blameEntries: Array<HTMLElement> = (null : any);
+    let textEditorView: HTMLElement = (null: any);
+    let blameGutter: HTMLElement = (null: any);
+    let blameEntries: Array<HTMLElement> = (null: any);
 
     waitsForPromise({timeout: 60000}, async () => {
       // Copy mercurial project to temporary directory.

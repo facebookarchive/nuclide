@@ -25,7 +25,7 @@ type ObjectRegistration = {
 // All remotable objects have some set of named functions,
 // and they also have a dispose method.
 export type RemoteObject = {
-  [id:string]: Function;
+  [id: string]: Function,
   dispose: () => void,
 };
 

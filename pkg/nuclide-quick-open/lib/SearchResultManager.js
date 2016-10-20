@@ -102,7 +102,7 @@ class SearchResultManager {
   _debouncedUpdateDirectories: Function;
   _emitter: Emitter;
   _subscriptions: CompositeDisposable;
-  _registeredProviders: {[key: string]: Map<string, Provider>;};
+  _registeredProviders: {[key: string]: Map<string, Provider>};
   _activeProviderName: string;
   _isDisposed: boolean;
 

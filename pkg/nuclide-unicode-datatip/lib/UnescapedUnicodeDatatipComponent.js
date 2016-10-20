@@ -13,7 +13,7 @@ import {React} from 'react-for-atom';
 import {zeroPaddedHex} from './Unicode';
 
 type DatatipComponentProps = {
-  codePoints: Array<number>
+  codePoints: Array<number>,
 };
 
 export default function makeUnescapedUnicodeDatatipComponent(

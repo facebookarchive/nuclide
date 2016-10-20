@@ -216,7 +216,7 @@ export default class ConnectionDialog extends React.Component {
     this.setState({isDirty: false});
   }
 
-  _validateInitialDirectory(path: string): bool {
+  _validateInitialDirectory(path: string): boolean {
     return path !== '/';
   }
 

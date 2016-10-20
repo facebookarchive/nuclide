@@ -50,7 +50,7 @@ xdescribe('Diff View Commit Mode Integration Test', () => {
   it('tests commit view have the changed files & commit/amend works', () => {
     atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-diff-view:open');
 
-    let diffViewElement: HTMLElement = (null : any);
+    let diffViewElement: HTMLElement = (null: any);
     waitsFor('diff view to load', 10000, () => {
       diffViewElement = (atom.workspace.getActivePaneItem(): any);
       return diffViewElement != null && diffViewElement.tagName === 'NUCLIDE-DIFF-VIEW';

@@ -49,7 +49,7 @@ type Props = {
   options: Array<Option>,
   onChange?: (value: any) => mixed,
   size?: ShortButtonSize,
-  tooltip?: atom$TooltipsAddOptions
+  tooltip?: atom$TooltipsAddOptions,
 };
 
 export class Dropdown extends React.Component {

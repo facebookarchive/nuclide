@@ -14,7 +14,7 @@ import {React} from 'react-for-atom';
 
 type LoadingSpinnerSize = 'EXTRA_SMALL' | 'SMALL' | 'MEDIUM' | 'LARGE';
 type Props = {
-  className? : string,
+  className?: string,
   /** The size of the LoadingSpinner. Defaults to MEDIUM. */
   size?: LoadingSpinnerSize,
   /**

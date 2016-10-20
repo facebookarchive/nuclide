@@ -299,22 +299,22 @@ module.exports = {
     'babel/no-await-in-loop': 1,
 
     // flowtype (https://github.com/gajus/eslint-plugin-flowtype)
-    // 'flowtype/boolean-style': 1,
+    'flowtype/boolean-style': 1,
     'flowtype/define-flow-type': 1,
-    // 'flowtype/delimiter-dangle': [1, 'always-multiline'],
-    // 'flowtype/generic-spacing': 1,
+    'flowtype/delimiter-dangle': [1, 'always-multiline'],
+    'flowtype/generic-spacing': 1,
     'flowtype/no-dupe-keys': 0,
     'flowtype/no-weak-types': 0,
     'flowtype/require-parameter-type': 0,
     'flowtype/require-return-type': 0,
     'flowtype/require-valid-file-annotation': 0,
-    // 'flowtype/semi': 1,
+    'flowtype/semi': 1,
     'flowtype/sort-keys': 0,
     'flowtype/space-after-type-colon': [1, 'always'],
-    // 'flowtype/space-before-generic-bracket': 1,
-    // 'flowtype/space-before-type-colon': 1,
+    'flowtype/space-before-generic-bracket': 1,
+    'flowtype/space-before-type-colon': 1,
     'flowtype/type-id-match': 0,
-    // 'flowtype/union-intersection-spacing': 1,
+    'flowtype/union-intersection-spacing': 1,
     'flowtype/use-flow-type': 1,
     'flowtype/valid-syntax': 0,
 
@@ -339,7 +339,6 @@ module.exports = {
     'nuclide-internal/no-unnecessary-disposable-wrapping': 1,
     'nuclide-internal/prefer-nuclide-uri': 1,
     'nuclide-internal/prefer-types-only-header': 1,
-    'nuclide-internal/type-alias-semi': 1,
 
     // prefer-object-spread (https://github.com/bryanrsmith/eslint-plugin-prefer-object-spread)
     'prefer-object-spread/prefer-object-spread': 1,

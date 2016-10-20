@@ -22,7 +22,7 @@ import nuclideUri from '../../commons-node/nuclideUri';
 type Options = {[key: string]: boolean};
 
 type AdditionalOptions = {
-  [key: string]: string;
+  [key: string]: string,
 };
 
 type Props = {
@@ -57,7 +57,7 @@ class FileDialogComponent extends React.Component {
   };
 
   state: {
-    options: Options
+    options: Options,
   };
 
   constructor(props: Props) {

@@ -29,8 +29,8 @@ const jasmine: {
     prototype: {
       ddescribe?: () => void,
       iit?: () => void,
-    }
-  }
+    },
+  },
 } = global.jasmine;
 
 function setGlobalFocusPriority(priority) {

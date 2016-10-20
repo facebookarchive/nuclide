@@ -14,7 +14,7 @@
  */
 export const HACK_GRAMMARS = ['text.html.hack', 'text.html.php'];
 
-export type SearchResultTypeValue = 0| 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+export type SearchResultTypeValue = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 export const SearchResultType = Object.freeze({
   CLASS: 0,
   TYPEDEF: 1,

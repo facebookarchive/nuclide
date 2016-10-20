@@ -121,6 +121,6 @@ export function getHackLanguageForUri(uri: ?NuclideUri): Promise<?HackLanguageSe
   return hackLanguageService.getLanguageServiceForUri(uri);
 }
 
-export function isFileInHackProject(fileUri: NuclideUri): Promise<bool> {
+export function isFileInHackProject(fileUri: NuclideUri): Promise<boolean> {
   return hackLanguageService.isFileInProject(fileUri);
 }

@@ -156,7 +156,7 @@ export class AtomLanguageService<T: LanguageService> {
     return (result == null) ? null : await result;
   }
 
-  async isFileInProject(fileUri: NuclideUri): Promise<bool> {
+  async isFileInProject(fileUri: NuclideUri): Promise<boolean> {
     const languageService = await this.getLanguageServiceForUri(fileUri);
     return (languageService != null) && await languageService.isFileInProject(fileUri);
   }

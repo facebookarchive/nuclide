@@ -12,7 +12,7 @@
 /* eslint-disable no-console */
 
 declare function waitsForPromise(
-  optionsOrFunc: ({shouldReject?: boolean, timeout?: number} | () => Promise<mixed>),
+  optionsOrFunc: {shouldReject?: boolean, timeout?: number} | () => Promise<mixed>,
   func?: () => Promise<mixed>,
 ): void;
 

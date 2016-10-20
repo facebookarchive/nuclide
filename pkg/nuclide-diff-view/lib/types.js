@@ -185,7 +185,7 @@ export type UpdateHeadToForkBaseRevisions = {
     repository: HgRepositoryClient,
     headToForkBaseRevisions: Array<RevisionInfo>,
     revisionStatuses: RevisionStatuses,
-  }
+  },
 };
 
 export type UpdateSelectedFilesAction = {

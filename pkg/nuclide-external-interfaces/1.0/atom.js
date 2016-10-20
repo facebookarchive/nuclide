@@ -115,13 +115,13 @@ declare class atom$Config {
   // Config Subscription
   observe(
     keyPath: string,
-    optionsOrCallback?: (Object | (value: any) => void),
+    optionsOrCallback?: Object | (value: any) => void,
     callback?: (value: any) => void
   ): IDisposable,
 
   onDidChange(
-    keyPathOrCallback: (string | (event: Object) => void),
-    optionsOrCallback?: (Object | (event: Object) => void),
+    keyPathOrCallback: string | (event: Object) => void,
+    optionsOrCallback?: Object | (event: Object) => void,
     callback?: (event: Object) => void
   ): IDisposable,
 

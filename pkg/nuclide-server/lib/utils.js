@@ -20,7 +20,7 @@ type HttpResponse = {
   statusCode: number,
 };
 export type ResponseBody = {body: string, response: HttpResponse};
-type QueryParams = {[key:string]: any};
+type QueryParams = {[key: string]: any};
 type SerializedArguments = {args: Array<string>, argTypes: Array<string>};
 
 export type RequestOptions = {

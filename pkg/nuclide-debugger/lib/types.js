@@ -24,7 +24,7 @@ export type EvaluationResult = {
   // Either:
   value?: string,
   // Or:
-  description? : string,
+  description?: string,
   objectId?: string,
 };
 
