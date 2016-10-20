@@ -49,7 +49,7 @@ export default class SideBarPanelComponent extends React.Component {
     }));
     const activeTabName = selectedViewMenuItemValue;
     return (
-      <div style={{display: 'flex', flex: 1, flexDirection: 'column', minWidth: 0}} tabIndex={0}>
+      <div className="nuclide-side-bar-tab-container" tabIndex={0}>
         <Tabs
           activeTabName={activeTabName}
           tabs={tabs}

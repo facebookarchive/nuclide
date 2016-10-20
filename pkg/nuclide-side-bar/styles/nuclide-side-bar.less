@@ -1,0 +1,27 @@
+@import "ui-variables";
+
+.nuclide-side-bar-tab-container {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* Ensure consistent tab padding in One Dark/Light themes */
+// Match @ui-padding-pane in One Dark/Light
+@padding: 0.5em;
+.theme-one-dark-ui,
+.theme-one-light-ui, {
+  .nuclide-side-bar-tab-container {
+    padding-top: @padding;
+  }
+}
+
+@media (max-width: 1000px), (max-height: 600px) {
+  [theme-one-light-ui-layoutmode="auto"],
+  [theme-one-dark-ui-layoutmode="auto"] {
+    .nuclide-side-bar-tab-container {
+      padding-top: 0;
+    }
+  }
+}
