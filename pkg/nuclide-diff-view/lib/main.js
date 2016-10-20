@@ -16,6 +16,7 @@ import type FileTreeContextMenu from '../../nuclide-file-tree/lib/FileTreeContex
 import type {HomeFragments} from '../../nuclide-home/lib/types';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
+import type {OutputService, Message} from '../../nuclide-console/lib/types';
 
 import type {RegisterNux, TriggerNux} from '../../nuclide-nux/lib/main';
 
@@ -44,7 +45,7 @@ import * as Epics from './redux/Epics';
 import * as Reducers from './redux/Reducers';
 import {applyMiddleware, bindActionCreators, createStore, combineReducers} from 'redux';
 import {combineEpics, createEpicMiddleware} from '../../commons-node/redux-observable';
-import {Observable} from 'rxjs';
+import {Observable, Subject} from 'rxjs';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {getLogger} from '../../nuclide-logging';
 
@@ -174,12 +175,14 @@ class Activation {
   _diffViewElement: ?DiffViewElement;
   _diffViewComponent: ?React.Component<DiffViewComponent, any, any>;
   _tryTriggerNuxService: ?TriggerNux;
+  _progressUpdates: Subject<Message>;
 
   _store: Store;
   _actionCreators: BoundActionCreators;
 
   constructor(rawState: ?SerializedDiffViewState) {
     this._subscriptions = new UniversalDisposable();
+    this._progressUpdates = new Subject();
 
     const initialState = createEmptyAppState();
 
@@ -382,7 +385,7 @@ class Activation {
   _getDiffViewModel(): DiffViewModel {
     let diffViewModel = this._diffViewModel;
     if (diffViewModel == null) {
-      diffViewModel = new DiffViewModel(this._actionCreators);
+      diffViewModel = new DiffViewModel(this._actionCreators, this._progressUpdates);
       this._subscriptions.add(diffViewModel);
       this._diffViewModel = diffViewModel;
     }
@@ -445,6 +448,15 @@ class Activation {
         diffEntityOptions.commitMode !== commitMode) {
       this._actionCreators.setCommitMode(diffEntityOptions.commitMode);
     }
+  }
+
+  consumeOutputService(api: OutputService): void {
+    this._subscriptions.add(
+      api.registerOutputProvider({
+        id: 'diff-view',
+        messages: this._progressUpdates.asObservable(),
+      }),
+    );
   }
 
 

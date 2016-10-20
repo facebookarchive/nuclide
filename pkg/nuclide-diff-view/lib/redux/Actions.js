@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import type {Message} from '../../../nuclide-console/lib/types';
 import type {NuclideUri} from '../../../commons-node/nuclideUri';
 import type {
   AddRepositoryAction,
@@ -272,12 +273,14 @@ export function setShouldRebaseOnAmend(
 export function commit(
   repository: HgRepositoryClient,
   message: string,
+  publishUpdates: Subject<Message>,
 ): CommitAction {
   return {
     type: ActionTypes.COMMIT,
     payload: {
       message,
       repository,
+      publishUpdates,
     },
   };
 }

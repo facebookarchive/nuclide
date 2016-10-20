@@ -8,6 +8,7 @@
  * @flow
  */
 
+import type {Message} from '../../nuclide-console/lib/types';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {RevisionInfo} from '../../nuclide-hg-rpc/lib/HgService';
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
@@ -287,6 +288,7 @@ export type CommitAction = {
   payload: {
     message: string,
     repository: HgRepositoryClient,
+    publishUpdates: Subject<Message>,
   },
 };
 

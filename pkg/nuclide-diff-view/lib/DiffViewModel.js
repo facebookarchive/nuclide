@@ -12,6 +12,7 @@
 import type {
   HgRepositoryClient,
 } from '../../nuclide-hg-repository-client';
+import type {Message} from '../../nuclide-console/lib/types';
 import type {
   RevisionsState,
   FileChangeStatusValue,
@@ -109,10 +110,12 @@ export default class DiffViewModel {
   _emitter: Emitter;
   _state: State;
   _publishUpdates: Subject<any>;
+  _progressUpdates: Subject<Message>;
   _actionCreators: BoundActionCreators;
 
-  constructor(actionCreators: BoundActionCreators) {
+  constructor(actionCreators: BoundActionCreators, progressUpdates: Subject<Message>) {
     this._actionCreators = actionCreators;
+    this._progressUpdates = progressUpdates;
     this._emitter = new Emitter();
     this._publishUpdates = new Subject();
     this._state = getInitialState();
@@ -206,7 +209,7 @@ export default class DiffViewModel {
     }
     const activeRepository = this._state.activeRepository;
     invariant(activeRepository != null, 'No active repository stack');
-    this._actionCreators.commit(activeRepository, message);
+    this._actionCreators.commit(activeRepository, message, this._progressUpdates);
   }
 
   injectState(newState: State): void {
