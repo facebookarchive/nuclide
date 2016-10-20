@@ -54,17 +54,21 @@ module.exports = {
     return {
       range,
       async callback() {
-        await instance.pushNewBuffer(file, textEditor.getText());
-        const location = await instance.locate(
-          file,
-          start.row,
-          start.column,
-          kind);
-        if (!location) {
-          return;
-        }
+        try {
+          await instance.pushNewBuffer(file, textEditor.getText());
+          const location = await instance.locate(
+            file,
+            start.row,
+            start.column,
+            kind);
+          if (!location) {
+            return;
+          }
 
-        goToLocation(location.file, location.pos.line - 1, location.pos.col);
+          goToLocation(location.file, location.pos.line - 1, location.pos.col);
+        } catch (e) {
+          atom.notifications.addError(e.message, {dismissable: true});
+        }
       },
     };
   },
