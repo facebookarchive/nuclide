@@ -29,7 +29,7 @@ or within Atom itself:
 
 1. Open Atom.
 2. Choose `Atom | Preferences` (on Linux this will be `Edit | Preferences`) to bring up the **Settings** tab.
-3. In the **Settings** tab, and select **Install** from the list at the left.
+3. In the **Settings** tab, select **Install** from the list at the left.
 4. In the search box, type "Nuclide" and press the `Enter` key.
 5. Click the **Install** button for the `nuclide` package.
 
@@ -55,7 +55,7 @@ or you can go through the Atom Packages UI:
 
 1. Open Atom.
 2. Choose `Atom | Preferences` to bring up the **Settings** tab.
-3. In the **Settings** tab, and select **Install** from the list at the left.
+3. In the **Settings** tab, select **Install** from the list at the left.
 4. In the search box, type "Nuclide" and press the `Enter` key.
 5. Click the **Install** button for the `nuclide` package.
 
@@ -96,7 +96,7 @@ Or you can go through the Atom Packages UI to install Atom:
 
 1. Open Atom.
 2. Choose `Edit | Preferences` to bring up the **Settings** tab.
-3. In the **Settings** tab, and select **Install** from the list at the left.
+3. In the **Settings** tab, select **Install** from the list at the left.
 4. In the search box, type "Nuclide" and press the `Enter` key.
 5. Click the **Install** button for the `nuclide` package.
 
