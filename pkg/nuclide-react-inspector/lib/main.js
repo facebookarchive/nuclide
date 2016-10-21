@@ -33,9 +33,9 @@ export function consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
   invariant(disposables != null);
   disposables.add(
     api.registerFactory({
-      id: 'nuclide-react-native-inspector',
-      name: 'React Native Inspector',
-      toggleCommand: 'nuclide-react-native-inspector:toggle',
+      id: 'nuclide-react-inspector',
+      name: 'React Inspector',
+      toggleCommand: 'nuclide-react-inspector:toggle',
       defaultLocation: 'pane',
       create: () => viewableFromReactElement(<Inspector />),
       isInstance: item => item instanceof Inspector,

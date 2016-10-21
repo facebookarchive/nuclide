@@ -37,7 +37,7 @@ describe('React Native Inspector', () => {
     // Activate the Inspector
     atom.commands.dispatch(
       atom.views.getView(atom.workspace),
-      'nuclide-react-native-inspector:toggle',
+      'nuclide-react-inspector:toggle',
       {visible: true},
     );
 

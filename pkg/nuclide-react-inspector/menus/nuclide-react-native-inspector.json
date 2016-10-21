@@ -4,11 +4,11 @@
       "label": "Nuclide",
       "submenu": [
         {
-          "label": "React Native",
+          "label": "React",
           "submenu": [
             {
               "label": "Toggle Inspector",
-              "command": "nuclide-react-native-inspector:toggle"
+              "command": "nuclide-react-inspector:toggle"
             }
           ]
         }

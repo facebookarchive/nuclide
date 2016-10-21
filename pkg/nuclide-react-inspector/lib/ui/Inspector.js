@@ -20,7 +20,7 @@ export default class Inspector extends React.Component {
   }
 
   getTitle(): string {
-    return 'React Native Inspector';
+    return 'React Inspector';
   }
 
   render(): ?React.Element<any> {
@@ -30,7 +30,7 @@ export default class Inspector extends React.Component {
         nodeintegration={true}
         className="native-key-bindings"
         onDidFinishLoad={this._handleDidFinishLoad}
-        src="atom://nuclide/pkg/nuclide-react-native-inspector/lib/ui/inspector.html"
+        src="atom://nuclide/pkg/nuclide-react-inspector/lib/ui/inspector.html"
       />
     );
   }
