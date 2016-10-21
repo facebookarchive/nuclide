@@ -181,4 +181,65 @@ describe('LogTailer', () => {
     expect(atom.notifications.addError).toHaveBeenCalled();
   });
 
+  it('uses the error handler', () => {
+    spyOn(atom.notifications, 'addError');
+    const handleError = jasmine.createSpy('handleError');
+    const messages = new Subject();
+    const logTailer = new LogTailer({
+      name: 'test',
+      messages,
+      handleError,
+      trackingEvents: {
+        start: 'logtailer-test-start',
+        stop: 'logtailer-test-stop',
+        restart: 'logtailer-test-restart',
+      },
+    });
+    logTailer.start();
+    messages.error(new Error('Uh oh'));
+    expect(handleError).toHaveBeenCalled();
+    expect(atom.notifications.addError).not.toHaveBeenCalled();
+  });
+
+  it('uses the default error handling when the error is re-thrown by the handler', () => {
+    spyOn(atom.notifications, 'addError');
+    const handleError = jasmine.createSpy('handleError').andCallFake(err => { throw err; });
+    const messages = new Subject();
+    const logTailer = new LogTailer({
+      name: 'test',
+      messages,
+      handleError,
+      trackingEvents: {
+        start: 'logtailer-test-start',
+        stop: 'logtailer-test-stop',
+        restart: 'logtailer-test-restart',
+      },
+    });
+    logTailer.start();
+    messages.error(new Error('Uh oh'));
+    expect(handleError).toHaveBeenCalled();
+    expect(atom.notifications.addError).toHaveBeenCalled();
+  });
+
+  it("doesn't use the default notification when the error handler throws a new error", () => {
+    spyOn(atom.notifications, 'addError');
+    const handleError = jasmine.createSpy('handleError')
+      .andCallFake(() => { throw new Error('Unexpected'); });
+    const messages = new Subject();
+    const logTailer = new LogTailer({
+      name: 'test',
+      messages,
+      handleError,
+      trackingEvents: {
+        start: 'logtailer-test-start',
+        stop: 'logtailer-test-stop',
+        restart: 'logtailer-test-restart',
+      },
+    });
+    logTailer.start();
+    messages.error(new Error('Uh oh'));
+    expect(handleError).toHaveBeenCalled();
+    expect(atom.notifications.addError).not.toHaveBeenCalled();
+  });
+
 });
