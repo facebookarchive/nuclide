@@ -49,6 +49,30 @@ export class PackagerActivation {
       name: 'React Native Packager',
       messages,
       ready,
+      handleError(err) {
+        switch (err.name) {
+          case 'NoReactNativeProjectError':
+            // If a React Native project hasn't been found, notify the user and complete normally.
+            atom.notifications.addError("Couldn't find a React Native project", {
+              dismissable: true,
+              description:
+                'Make sure that your current working root (or its ancestor) contains a' +
+                ' "node_modules" directory with react-native installed, or a .buckconfig file' +
+                ' with a "[react-native]" section that has a "server" key.',
+            });
+            return;
+          case 'PackagerError':
+            invariant(err instanceof PackagerError);
+            atom.notifications.addError(
+              `Packager exited with non-zero ${err.exitMessage}`, {
+                dismissable: true,
+                detail: err.stderr.trim() === '' ? undefined : err.stderr,
+              },
+            );
+            return;
+        }
+        throw err;
+      },
       trackingEvents: {
         start: 'react-native-packager:start',
         stop: 'react-native-packager:stop',
@@ -166,29 +190,6 @@ function getPackagerObservable(projectRootPath: ?string): Observable<PackagerEve
           // We just ignore these.
           return Observable.empty();
       }
-    })
-    .catch(err => {
-      switch (err.name) {
-        case 'NoReactNativeProjectError':
-          // If a React Native project hasn't been found, notify the user and complete normally.
-          atom.notifications.addError("Couldn't find a React Native project", {
-            dismissable: true,
-            description:
-              'Make sure that your current working root (or its ancestor) contains a' +
-              ' "node_modules" directory with react-native installed, or a .buckconfig file with' +
-              ' a "[react-native]" section that has a "server" key.',
-          });
-          return Observable.empty();
-        case 'PackagerError':
-          atom.notifications.addError(
-            `Packager exited with non-zero ${err.exitMessage}`, {
-              dismissable: true,
-              detail: err.stderr.trim() === '' ? undefined : err.stderr,
-            },
-          );
-          return Observable.empty();
-      }
-      throw err;
     });
 
   return parseMessages(stdout);

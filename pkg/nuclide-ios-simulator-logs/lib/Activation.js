@@ -26,19 +26,19 @@ class Activation {
   constructor(state: ?Object) {
     this._iosLogTailer = new LogTailer({
       name: 'iOS Simulator Logs',
-      messages: Observable.defer(() => createMessageStream(createProcessStream()))
-        .catch(err => {
-          if (err.code === 'ENOENT') {
-            const {message, meta} = formatEnoentNotification({
-              feature: 'iOS Syslog tailing',
-              toolName: 'syslog',
-              pathSetting: 'nuclide-ios-simulator-logs.pathToSyslog',
-            });
-            atom.notifications.addError(message, meta);
-            return Observable.empty();
-          }
-          throw err;
-        }),
+      messages: Observable.defer(() => createMessageStream(createProcessStream())),
+      handleError(err) {
+        if ((err: any).code === 'ENOENT') {
+          const {message, meta} = formatEnoentNotification({
+            feature: 'iOS Syslog tailing',
+            toolName: 'syslog',
+            pathSetting: 'nuclide-ios-simulator-logs.pathToSyslog',
+          });
+          atom.notifications.addError(message, meta);
+          return;
+        }
+        throw err;
+      },
       trackingEvents: {
         start: 'ios-simulator-logs:start',
         stop: 'ios-simulator-logs:stop',

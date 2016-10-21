@@ -38,20 +38,7 @@ class Activation {
               },
               0,
             )
-          ))
-          .catch(err => {
-            if (isNoEntError(err)) {
-              const {message, meta} = formatEnoentNotification({
-                feature: 'Tailing Android (adb) logs',
-                toolName: 'adb',
-                pathSetting: 'nuclide-adb-logcat.pathToAdb',
-              });
-              atom.notifications.addError(message, meta);
-              return Observable.empty();
-            }
-
-            throw err;
-          }),
+          )),
       ),
     );
 
@@ -62,6 +49,18 @@ class Activation {
         start: 'adb-logcat:start',
         stop: 'adb-logcat:stop',
         restart: 'adb-logcat:restart',
+      },
+      handleError(err) {
+        if (isNoEntError(err)) {
+          const {message, meta} = formatEnoentNotification({
+            feature: 'Tailing Android (adb) logs',
+            toolName: 'adb',
+            pathSetting: 'nuclide-adb-logcat.pathToAdb',
+          });
+          atom.notifications.addError(message, meta);
+          return;
+        }
+        throw err;
       },
     });
 
