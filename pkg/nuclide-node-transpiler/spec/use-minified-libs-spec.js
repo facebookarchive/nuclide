@@ -19,6 +19,8 @@ console.log(__filename);
 
 const assert = require('assert');
 const babel = require('babel-core');
+const babylon = require('babylon');
+const babelTransformSyntaxFlow = require('babel-plugin-syntax-flow');
 
 const transformer = require('../lib/use-minified-libs-tr');
 
@@ -58,6 +60,7 @@ assertTransformation(`
 assertTransformation(`
   import type {using} from 'rxjs/observable/using';
 `, `
+  import type { using } from 'rxjs/observable/using';
 `);
 
 // require-minified
@@ -66,9 +69,8 @@ assertTransformation(`
   const {Observable} = require('rxjs');
   assert(Rx.Observable === Observable);
 `, `
-  var Rx = require('rxjs/bundles/Rx.min.js');
-  var _require = require('rxjs/bundles/Rx.min.js');
-  var Observable = _require.Observable;
+  const Rx = require('rxjs/bundles/Rx.min.js');
+  const { Observable } = require('rxjs/bundles/Rx.min.js');
   assert(Rx.Observable === Observable);
 `);
 
@@ -77,17 +79,19 @@ assertTransformation(`
   import Rx from 'rxjs';
   assert(Rx.Observable === Observable);
 `, `
-  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+  'use strict';
 
-  var _rxjs;
+  var _RxMin;
 
-  function _load_rxjs() {
-    return _rxjs = _interopRequireDefault(require('rxjs/bundles/Rx.min.js'));
+  function _load_RxMin() {
+    return _RxMin = _interopRequireDefault(require('rxjs/bundles/Rx.min.js'));
   }
 
-  assert((_rxjs || _load_rxjs())['default'].Observable === Observable);
+  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+  assert((_RxMin || _load_RxMin()).default.Observable === Observable);
 `, [
-  require.resolve('../lib/inline-imports-tr'),
+  require('babel-plugin-transform-inline-imports-commonjs'),
 ]);
 
 // only-entry-module
@@ -97,15 +101,16 @@ assert.throws(() => {
   `, `
     import {using} from 'rxjs/observable/using';
   `);
-}, /SyntaxError: unknown: Line 2: Only importing "rxjs" is supported/);
-
+}, /SyntaxError: unknown: Only importing "rxjs" is supported/);
 
 function stripMeta(node) {
   delete node.start;
   delete node.end;
   delete node.leadingComments;
   delete node.trailingComments;
-  delete node.raw;
+  delete node.loc;
+  delete node.tokens;
+  delete node.parenStart;
   for (const p in node) {
     if (node[p] && typeof node[p] === 'object') {
       stripMeta(node[p]);
@@ -114,17 +119,24 @@ function stripMeta(node) {
   return node;
 }
 
+function parse(source) {
+  return babylon.parse(source, {
+    sourceType: 'module',
+    plugins: ['*', 'jsx', 'flow'],
+  });
+}
+
 function assertTransformation(source, expected, plugins) {
   const output = babel.transform(source, {
     plugins: (plugins || []).concat([
+      babelTransformSyntaxFlow,
       transformer,
     ]),
-    blacklist: ['strict', 'es6.modules'],
   }).code;
   try {
     assert.deepEqual(
-      stripMeta(babel.parse(output)),
-      stripMeta(babel.parse(expected))
+      stripMeta(parse(output, {sourceType: 'module'})),
+      stripMeta(parse(expected, {sourceType: 'module'}))
     );
   } catch (err) {
     console.log(output);

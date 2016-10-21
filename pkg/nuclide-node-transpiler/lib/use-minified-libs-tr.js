@@ -16,43 +16,63 @@ const MINIFIED_LIBS = new Map([
   ['rxjs', 'rxjs/bundles/Rx.min.js'],
 ]);
 
-function replaceModuleId(node) {
-  const id = node.value;
-  for (const minifiedLib of MINIFIED_LIBS) {
-    const name = minifiedLib[0];
-    const replacement = minifiedLib[1];
-    if (id === name) {
-      node.value = replacement;
-    } else if (id.startsWith(name + '/')) {
-      throw this.errorWithNode(`Only importing "${name}" is supported.`);
+module.exports = context => {
+  const t = context.types;
+
+  function replaceModuleId(state, source) {
+    if (state.ranUseMinifiedLibs) {
+      return;
+    }
+    t.assertStringLiteral(source);
+    const id = source.node.value;
+    for (const minifiedLib of MINIFIED_LIBS) {
+      const name = minifiedLib[0];
+      const replacement = minifiedLib[1];
+      if (id === name) {
+        source.replaceWith(t.stringLiteral(replacement));
+        break;
+      } else if (id.startsWith(name + '/')) {
+        throw source.buildCodeFrameError(`Only importing "${name}" is supported. ${id}`);
+      }
     }
   }
-}
 
-module.exports = function useMinifiedLibs(babel) {
-  return new babel.Plugin('use-minified-libs', {
+  return {
     visitor: {
-      CallExpression(node, parent, scope, state) {
+      CallExpression(path) {
+        const node = path.node;
         // "require.resolve" is not checked.
         if (
           node.callee.type === 'Identifier' &&
           node.callee.name === 'require' &&
           node.arguments[0] &&
-          node.arguments[0].type === 'Literal'
+          node.arguments[0].type === 'StringLiteral'
         ) {
-          replaceModuleId.call(this, node.arguments[0]);
+          const source = path.get('arguments.0');
+          replaceModuleId(this, source);
         }
       },
-      ImportDeclaration(node, parent, scope, state) {
+      ImportDeclaration(path) {
+        const node = path.node;
         if (node.importKind !== 'type') {
-          replaceModuleId.call(this, node.source);
+          const source = path.get('source');
+          replaceModuleId(this, source);
         }
       },
-      'ExportAllDeclaration|ExportNamedDeclaration'(node, parent, scope, state) {
+      'ExportAllDeclaration|ExportNamedDeclaration'(path) {
+        const node = path.node;
         if (node.exportKind !== 'type' && node.source !== null) {
-          replaceModuleId.call(this, node.source);
+          const source = path.get('source');
+          replaceModuleId(this, source);
         }
+      },
+      Program: {
+        exit(path) {
+          // Avoid re-running this transform when doing multiple passes.
+          // inline-imports-commonjs does a requeue on `import`s.
+          this.ranUseMinifiedLibs = true;
+        },
       },
     },
-  });
+  };
 };

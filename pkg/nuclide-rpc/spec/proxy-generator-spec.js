@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-import * as babel from 'babel-core';
 import fs from 'fs';
-import generate from 'babel-core/lib/generation';
+import * as t from 'babel-types';
+import generate from 'babel-generator';
 import {generateProxy} from '../lib/proxy-generator';
 import {addMatchers} from '../../nuclide-test-helpers';
 import {parseServiceDefinition} from '../lib/service-parser';
@@ -22,8 +22,6 @@ import {__test__} from '../lib/proxy-generator';
 import type {Type} from '../lib/types';
 
 import {builtinLocation} from '../lib/builtin-types';
-
-const t = babel.types;
 
 describe('Proxy generator test suite.', () => {
   beforeEach(function() {

@@ -544,7 +544,7 @@ export class RpcConnection<TransportType: Transport> {
       this._objectRegistry, constructorMessage.args, constructorArgs);
 
     // Create a new object and put it in the registry.
-    const newObject = construct(localImplementation, marshalledArgs);
+    const newObject = new localImplementation(...marshalledArgs);
 
     // Return the object, which will automatically be converted to an id through the
     // marshalling system.
@@ -745,20 +745,6 @@ function trackingIdOfMessage(registry: ObjectRegistry, message: RequestMessage):
 
 function trackingIdOfMessageAndNetwork(registry: ObjectRegistry, message: RequestMessage): string {
   return trackingIdOfMessage(registry, message) + ':plus-network';
-}
-
-/**
- * A helper function that let's us 'apply' an array of arguments to a constructor.
- * It works by creating a new constructor that has the same prototype as the original
- * constructor, and simply applies the original constructor directly to 'this'.
- * @returns An instance of classObject.
- */
-function construct(classObject, args) {
-  function F() {
-    return classObject.apply(this, args);
-  }
-  F.prototype = classObject.prototype;
-  return new F();
 }
 
 /**

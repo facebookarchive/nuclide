@@ -52,6 +52,11 @@
       "from": "async@>=0.2.9 <0.3.0",
       "resolved": "https://registry.npmjs.org/async/-/async-0.2.10.tgz"
     },
+    "async-to-generator": {
+      "version": "1.0.0",
+      "from": "async-to-generator@1.0.0",
+      "resolved": "https://registry.npmjs.org/async-to-generator/-/async-to-generator-1.0.0.tgz"
+    },
     "atom-package-deps": {
       "version": "4.3.1",
       "from": "atom-package-deps@4.3.1",
@@ -76,6 +81,11 @@
       "version": "1.5.0",
       "from": "aws4@>=1.2.1 <2.0.0",
       "resolved": "https://registry.npmjs.org/aws4/-/aws4-1.5.0.tgz"
+    },
+    "babylon": {
+      "version": "6.12.0",
+      "from": "babylon@6.12.0",
+      "resolved": "https://registry.npmjs.org/babylon/-/babylon-6.12.0.tgz"
     },
     "balanced-match": {
       "version": "0.4.2",
@@ -191,9 +201,9 @@
       "resolved": "https://registry.npmjs.org/consistent-env/-/consistent-env-1.3.0.tgz"
     },
     "core-js": {
-      "version": "1.2.7",
-      "from": "core-js@>=1.0.0 <2.0.0",
-      "resolved": "https://registry.npmjs.org/core-js/-/core-js-1.2.7.tgz"
+      "version": "2.4.1",
+      "from": "core-js@2.4.1",
+      "resolved": "https://registry.npmjs.org/core-js/-/core-js-2.4.1.tgz"
     },
     "core-util-is": {
       "version": "1.0.2",
@@ -338,7 +348,14 @@
     "fbjs": {
       "version": "0.8.5",
       "from": "fbjs@>=0.8.4 <0.9.0",
-      "resolved": "https://registry.npmjs.org/fbjs/-/fbjs-0.8.5.tgz"
+      "resolved": "https://registry.npmjs.org/fbjs/-/fbjs-0.8.5.tgz",
+      "dependencies": {
+        "core-js": {
+          "version": "1.2.7",
+          "from": "core-js@>=1.0.0 <2.0.0",
+          "resolved": "https://registry.npmjs.org/core-js/-/core-js-1.2.7.tgz"
+        }
+      }
     },
     "finalhandler": {
       "version": "0.5.0",

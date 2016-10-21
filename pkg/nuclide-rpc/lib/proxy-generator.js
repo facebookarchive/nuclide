@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-import * as t from 'babel-core/lib/types';
-import generate from 'babel-core/lib/generation';
+import * as t from 'babel-types';
+import generate from 'babel-generator';
 
 import type {
   Definitions,
@@ -78,9 +78,9 @@ const objectDefinePropertyCall = (name, value) => t.callExpression(
   t.memberExpression(t.identifier('Object'), t.identifier('defineProperty')),
   [
     moduleDotExportsExpression,
-    t.literal(name),
+    t.stringLiteral(name),
     t.objectExpression([
-      t.property('init', t.identifier('value'), value),
+      t.objectProperty(t.identifier('value'), value),
     ]),
   ],
 );
@@ -88,14 +88,21 @@ const objectDefinePropertyCall = (name, value) => t.callExpression(
 const dependenciesNodes = names => {
   return {
     // let name0, ... nameN;
-    declaration: t.variableDeclaration('let', names.map(name => t.identifier(name))),
+    declaration: t.variableDeclaration(
+        'let',
+        names.map(name => t.variableDeclarator(t.identifier(name))),
+    ),
     // function() { name0 = arguments[0]; ... nameN = arguments[N]; }
     injectionCall: t.functionExpression(null, [],
       t.blockStatement(
         names.map((name, i) => t.expressionStatement(
           t.assignmentExpression('=',
             t.identifier(name),
-            t.memberExpression(t.identifier('arguments'), t.literal(i)),
+            t.memberExpression(
+              t.identifier('arguments'),
+              t.numericLiteral(i),
+              /* computed: */ true,
+            ),
           ),
         )),
       ),
@@ -169,7 +176,7 @@ export function generateProxy(
   const assignment = t.assignmentExpression('=', moduleDotExportsExpression, func);
   const program = t.program([
     // !!!This module is not transpiled!!!
-    t.expressionStatement(t.literal('use strict')),
+    t.expressionStatement(t.stringLiteral('use strict')),
     deps.declaration,
     t.expressionStatement(assignment),
     t.expressionStatement(objectDefinePropertyCall('inject', deps.injectionCall)),
@@ -189,8 +196,8 @@ export function generateProxy(
 function generateFunctionProxy(name: string, funcType: FunctionType): any {
   // _client.callRemoteFunction(name, kind, args)
   const callExpression = t.callExpression(callRemoteFunctionExpression, [
-    t.literal(name),
-    t.literal(funcType.returnType.kind),
+    t.stringLiteral(name),
+    t.stringLiteral(funcType.returnType.kind),
     t.identifier('args'),
   ]);
 
@@ -222,12 +229,14 @@ function generateInterfaceProxy(def: InterfaceDefinition): any {
 
   // Generate proxies for static methods.
   def.staticMethods.forEach((funcType, methodName) => {
-    methodDefinitions.push(t.methodDefinition(
-      t.identifier(methodName),
-      generateFunctionProxy(`${def.name}/${methodName}`, funcType),
+    const funcProxy = generateFunctionProxy(`${def.name}/${methodName}`, funcType);
+    methodDefinitions.push(t.classMethod(
       'method',
-      false,
-      true,
+      t.identifier(methodName),
+      funcProxy.params,
+      funcProxy.body,
+      /* computed: */ false,
+      /* static: */ true,
     ));
   });
 
@@ -254,7 +263,7 @@ function generateInterfaceProxy(def: InterfaceDefinition): any {
   // Generate the dispose method.
   methodDefinitions.push(generateDisposeMethod());
 
-  return t.classExpression(null, t.classBody(methodDefinitions), null);
+  return t.classExpression(null, null, t.classBody(methodDefinitions), []);
 }
 
 /**
@@ -276,7 +285,7 @@ function generateRemoteConstructor(className: string, constructorArgs: Array<Par
   const rpcCallExpression = t.callExpression(
     createRemoteObjectExpression,
     [
-      t.literal(className),
+      t.stringLiteral(className),
       t.thisExpression(),
       argsArray,
       argTypes,
@@ -284,8 +293,14 @@ function generateRemoteConstructor(className: string, constructorArgs: Array<Par
   );
 
   // constructor(arg0, arg1, ..., argN) { ... }
-  const constructor = t.FunctionExpression(null, args, t.blockStatement([rpcCallExpression]));
-  return t.methodDefinition(t.identifier('constructor'), constructor, 'constructor', false, false);
+  return t.classMethod(
+    'constructor',
+    t.identifier('constructor'),
+    args,
+    t.blockStatement([
+      t.expressionStatement(rpcCallExpression),
+    ]),
+  );
 }
 
 /**
@@ -298,8 +313,8 @@ function generateRemoteDispatch(methodName: string, thisType: NamedType, funcTyp
   // _client.callRemoteMethod(this, methodName, returnType, args)
   const remoteMethodCall = t.callExpression(callRemoteMethodExpression, [
     idIdentifier,
-    t.literal(methodName),
-    t.literal(funcType.returnType.kind),
+    t.stringLiteral(methodName),
+    t.stringLiteral(funcType.returnType.kind),
     t.identifier('args')]);
 
   // _client.marshal(this, thisType).then(id => { return ... })
@@ -326,11 +341,14 @@ function generateRemoteDispatch(methodName: string, thisType: NamedType, funcTyp
   // methodName(arg0, ... argN) { return ... }
   const funcTypeArgs = funcType.argumentTypes.map((arg, i) => t.identifier(`arg${i}`));
   const result = generateUnmarshalResult(funcType.returnType, marshallThenCall);
-  const funcExpression = t.functionExpression(null, funcTypeArgs, t.blockStatement([
-    t.returnStatement(result)]),
+  return t.classMethod(
+    'method',
+    t.identifier(methodName),
+    funcTypeArgs,
+    t.blockStatement([
+      t.returnStatement(result),
+    ]),
   );
-
-  return t.methodDefinition(t.identifier(methodName), funcExpression, 'method', false, false);
 }
 
 function generateUnmarshalResult(returnType: Type, rpcCallExpression) {
@@ -388,8 +406,12 @@ function generateDisposeMethod() {
     t.callExpression(disposeRemoteObjectExpression, [t.thisExpression()]));
 
   // dispose() { ... }
-  return t.methodDefinition(t.identifier('dispose'),
-    t.functionExpression(null, [], t.blockStatement([returnStatement])), 'method', false, false);
+  return t.classMethod(
+    'method',
+    t.identifier('dispose'),
+    [],
+    t.blockStatement([returnStatement]),
+  );
 }
 
 /**
@@ -422,14 +444,15 @@ function generateTransformStatement(id: any, type: Type, marshal: boolean): any 
  * @returns A babel AST node.
  */
 function objectToLiteral(obj: any): any {
-  if (
-    typeof obj === 'string' ||
-    typeof obj === 'number' ||
-    typeof obj === 'boolean' ||
-    obj === null
-  ) {
-    // abc, 123, true, false, null
-    return t.literal(obj);
+
+  if (typeof obj === 'string') {
+    return t.stringLiteral(obj);
+  } else if (typeof obj === 'number') {
+    return t.numericLiteral(obj);
+  } else if (typeof obj === 'boolean') {
+    return t.booleanLiteral(obj);
+  } else if (obj === null) {
+    return t.nullLiteral();
   } else if (obj === undefined) {
     // undefined
     return t.identifier('undefined');
@@ -438,17 +461,18 @@ function objectToLiteral(obj: any): any {
     return t.arrayExpression(obj.map(elem => objectToLiteral(elem)));
   } else if (obj instanceof Map) {
     return t.newExpression(
-      t.identifier('Map'), obj.size
+      t.identifier('Map'),
+      obj.size
         // new Map([...])
         ? [objectToLiteral(Array.from(obj.entries()))]
         // new Map()
-        : null,
+        : [],
     );
   } else if (typeof obj === 'object') {
     // {a: 1, b: 2}
     return t.objectExpression(
       Object.keys(obj).map(key =>
-        t.property('init', t.identifier(key), objectToLiteral(obj[key])),
+        t.objectProperty(t.identifier(key), objectToLiteral(obj[key])),
       ),
     );
   }

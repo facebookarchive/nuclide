@@ -30,47 +30,74 @@ const os = require('os');
 const PREFIXES = ["'use babel'", '"use babel"', '/* @flow */', '/** @babel */'];
 const PREFIX_LENGTH = Math.max(...PREFIXES.map(x => x.length));
 
-// Atom defaults: https://github.com/atom/atom/blob/v1.6.2/static/babelrc.json
-// {
-//   "breakConfig": true,
-//   "sourceMap": "inline",
-//   "blacklist": ["es6.forOf", "useStrict"],
-//   "optional": ["asyncToGenerator"],
-//   "stage": 0
-// }
-
+// NOTE: When removing plugins, testing Atom is not enough, it's important to
+// test the nuclide server. Atom runs with `--harmony` so some JS feature may
+// work there, but not on the server.
 const BABEL_OPTIONS = {
-  breakConfig: true,
-  // TODO(asuarez): Remove path information if source maps are enabled for builds.
-  // sourceMap: 'inline',
-  blacklist: [
-    'es3.memberExpressionLiterals',
-    'es6.forOf',
-    'useStrict',
-  ],
-  optional: [
-    'asyncToGenerator',
-  ],
-  // TODO(asuarez): Improve perf by explicitly running only the transforms we use.
-  stage: 1,
   plugins: [
-    require.resolve('./remove-use-babel-tr'),
-    require.resolve('./use-minified-libs-tr'),
-    require.resolve('./inline-imports-tr'),
+    [require.resolve('./use-minified-libs-tr')],
+
+    // TODO(asuarez): Remove decorators and remove:
+    [require.resolve('babel-plugin-transform-decorators-legacy')],
+    // TODO(asuarez): Switch module boundaries to `module.exports` and remove:
+    [require.resolve('babel-plugin-add-module-exports')],
+    // TODO(asuarez): Remove after updating to Node 6.3.0:
+    [require.resolve('babel-plugin-transform-es2015-parameters')],
+    [require.resolve('babel-plugin-transform-es2015-shorthand-properties')],
+    [require.resolve('babel-plugin-transform-es2015-sticky-regex')],
+    [require.resolve('babel-plugin-transform-es2015-unicode-regex')],
+
+    [require.resolve('babel-plugin-check-es2015-constants')],
+    [require.resolve('babel-plugin-syntax-trailing-function-commas')],
+    [require.resolve('babel-plugin-transform-strict-mode')],
+
+    [require.resolve('babel-plugin-syntax-async-functions')],
+    [require.resolve('babel-plugin-transform-async-to-module-method'), {
+      module: 'async-to-generator',
+      method: 'default',
+    }],
+    [require.resolve('babel-plugin-syntax-class-properties')],
+    [require.resolve('babel-plugin-transform-class-properties')],
+    [require.resolve('babel-plugin-syntax-object-rest-spread')],
+    [require.resolve('babel-plugin-transform-object-rest-spread')],
+    // object-rest-spread needs es2015-destructuring
+    [require.resolve('babel-plugin-transform-es2015-destructuring')],
+
+    // babel-preset-react:
+    [require.resolve('babel-plugin-transform-react-jsx')],
+    [require.resolve('babel-plugin-transform-flow-strip-types')],
+    [require.resolve('babel-plugin-syntax-flow')],
+    [require.resolve('babel-plugin-syntax-jsx')],
+    [require.resolve('babel-plugin-transform-react-display-name')],
+
+    // Toggle these to control inline-imports:
+    // [require.resolve('babel-plugin-transform-es2015-modules-commonjs')],
+    [require.resolve('babel-plugin-transform-inline-imports-commonjs'), {
+      excludeModules: [
+        'async-to-generator',
+        'atom',
+        'electron',
+        'react-for-atom',
+        'rxjs/bundles/Rx.min.js',
+      ],
+      excludeNodeBuiltins: true,
+    }],
   ],
-  // comments: false,
-  // compact: true,
-  // externalHelpers: true,
-  // loose: [
-  //   'es6.classes',
-  //   'es6.destructuring',
-  //   'es6.forOf',
-  //   'es6.modules',
-  //   'es6.properties.computed',
-  //   'es6.spread',
-  //   'es6.templateLiterals',
-  // ],
 };
+
+function getVersion(start) {
+  let current = start;
+  do {
+    try {
+      const filename = path.join(current, 'package.json');
+      const src = fs.readFileSync(filename);
+      const json = JSON.parse(src);
+      return json.version;
+    } catch (err) {
+      current = path.join(current, '..');
+    }
+  } while (current !== path.join(current, '..'));
+}
 
 class NodeTranspiler {
 
@@ -98,15 +125,20 @@ class NodeTranspiler {
         .update(this._babelVersion, 'utf8')
         .update('\0', 'utf8')
         .update(JSON.stringify(optsOnly), 'utf8');
-      // The source of this file and that of plugins is used as part of the
-      // hash as a way to version our transforms.
+      // The source of this file and that of our plugins is used as part of the
+      // hash as a way to version our transforms. For external transforms their
+      // package.json version is used.
       [__filename]
         .concat(BABEL_OPTIONS.plugins)
         .filter(Boolean)
-        .forEach(pluginFile => {
-          hash
-            .update(fs.readFileSync(pluginFile))
-            .update('\0', 'utf8');
+        .forEach(plugin => {
+          const pluginFile = Array.isArray(plugin) ? plugin[0] : plugin;
+          if (pluginFile.includes('node_modules')) {
+            hash.update(getVersion(pluginFile));
+          } else {
+            hash.update(fs.readFileSync(pluginFile));
+          }
+          hash.update('\0', 'utf8');
         });
       this._configDigest = hash.digest('hex');
     }

@@ -25,7 +25,7 @@ import type {
   Babel$Node,
 } from './types';
 
-import babelParse from './babel-parse';
+import * as babylon from 'babylon';
 import {namedBuiltinTypes} from './builtin-types';
 import {locationToString} from './location';
 import {validateDefinitions} from './DefinitionValidator';
@@ -169,7 +169,11 @@ class FileParser {
   parse(source: string): Set<string> {
     this._imports = new Map();
 
-    const program = babelParse(source);
+    const ast = babylon.parse(source, {
+      sourceType: 'module',
+      plugins: ['*', 'jsx', 'flow'],
+    });
+    const program = ast.program;
     invariant(program && program.type === 'Program', 'The result of parsing is a Program node.');
 
     // Iterate through each node in the program body.
@@ -328,13 +332,13 @@ class FileParser {
     const classBody = declaration.body;
     for (const method of classBody.body) {
       if (method.kind === 'constructor') {
-        def.constructorArgs = method.value.params.map(param => this._parseParameter(param));
-        if (method.value.returnType) {
+        def.constructorArgs = method.params.map(param => this._parseParameter(param));
+        if (method.returnType) {
           throw this._error(method, 'constructors may not have return types');
         }
       } else {
         if (!isPrivateMemberName(method.key.name)) {
-          const {name, type} = this._parseMethodDefinition(method);
+          const {name, type} = this._parseClassMethod(method);
           const isStatic = Boolean(method.static);
           this._validateMethod(method, name, type, isStatic);
           this._defineMethod(name, type, isStatic ? def.staticMethods : def.instanceMethods);
@@ -379,7 +383,7 @@ class FileParser {
       invariant(property.type === 'ObjectTypeProperty');
 
       if (!isPrivateMemberName(property.key.name)) {
-        const {name, type} = this._parseInterfaceMethodDefinition(property);
+        const {name, type} = this._parseInterfaceClassMethod(property);
         invariant(!property.static, 'static interface members are a parse error');
         this._validateMethod(property, name, type, false);
         this._defineMethod(name, type, def.instanceMethods);
@@ -404,27 +408,27 @@ class FileParser {
 
   /**
    * Helper function that parses an method definition in a class.
-   * @param defintion - The MethodDefinition AST node.
+   * @param defintion - The ClassMethod AST node.
    * @returns A record containing the name of the method, and a FunctionType object
    *   encoding the arguments and return type of the method.
    */
-  _parseMethodDefinition(definition: any): {name: string, type: FunctionType} {
-    this._assert(definition, definition.type === 'MethodDefinition',
-        'This is a MethodDefinition object.');
+  _parseClassMethod(definition: any): {name: string, type: FunctionType} {
+    this._assert(definition, definition.type === 'ClassMethod',
+        'This is a ClassMethod object.');
     this._assert(definition, definition.key && definition.key.type === 'Identifier',
       'This method defintion has an key (a name).');
-    this._assert(definition, definition.value.returnType &&
-      definition.value.returnType.type === 'TypeAnnotation',
+    this._assert(definition, definition.returnType &&
+      definition.returnType.type === 'TypeAnnotation',
       `${definition.key.name} missing a return type annotation.`);
 
-    const returnType = this._parseTypeAnnotation(definition.value.returnType.typeAnnotation);
+    const returnType = this._parseTypeAnnotation(definition.returnType.typeAnnotation);
     return {
       location: this._locationOfNode(definition.key),
       name: definition.key.name,
       type: {
-        location: this._locationOfNode(definition.value),
+        location: this._locationOfNode(definition),
         kind: 'function',
-        argumentTypes: definition.value.params.map(param => this._parseParameter(param)),
+        argumentTypes: definition.params.map(param => this._parseParameter(param)),
         returnType,
       },
     };
@@ -437,7 +441,7 @@ class FileParser {
    * @returns A record containing the name of the method, and a FunctionType object
    *   encoding the arguments and return type of the method.
    */
-  _parseInterfaceMethodDefinition(definition: any): {name: string, type: FunctionType} {
+  _parseInterfaceClassMethod(definition: any): {name: string, type: FunctionType} {
     this._assert(definition, definition.type === 'ObjectTypeProperty',
         'This is a ObjectTypeProperty object.');
     this._assert(definition, definition.key && definition.key.type === 'Identifier',
@@ -537,7 +541,7 @@ class FileParser {
         return {location, kind: 'boolean'};
       case 'StringLiteralTypeAnnotation':
         return {location, kind: 'string-literal', value: typeAnnotation.value};
-      case 'NumberLiteralTypeAnnotation':
+      case 'NumericLiteralTypeAnnotation':
         return {location, kind: 'number-literal', value: typeAnnotation.value};
       case 'BooleanLiteralTypeAnnotation':
         return {location, kind: 'boolean-literal', value: typeAnnotation.value};

@@ -41,6 +41,7 @@ module.exports = _client => {
         });
       });
     }
+
     constructor(arg0, arg1) {
       _client.createRemoteObject("Vector2", this, [arg0, arg1], [{
         name: "x",
@@ -70,8 +71,9 @@ module.exports = _client => {
             kind: "number"
           }
         }
-      }])
+      }]);
     }
+
     len() {
       return _client.marshalArguments(Array.from(arguments), []).then(args => {
         return _client.marshal(this, {
@@ -96,6 +98,7 @@ module.exports = _client => {
         });
       });
     }
+
     watchChanges() {
       return Observable.fromPromise(_client.marshalArguments(Array.from(arguments), []).then(args => {
         return _client.marshal(this, {
@@ -120,9 +123,11 @@ module.exports = _client => {
         });
       }).publish();
     }
+
     dispose() {
       return _client.disposeRemoteObject(this);
     }
+
   };
 
   remoteModule.getCurrentDirection = function () {
@@ -176,6 +181,7 @@ module.exports = _client => {
         });
       });
     }
+
     f() {
       return _client.marshalArguments(Array.from(arguments), []).then(args => {
         return _client.marshal(this, {
@@ -191,6 +197,7 @@ module.exports = _client => {
         });
       });
     }
+
     o() {
       return Observable.fromPromise(_client.marshalArguments(Array.from(arguments), []).then(args => {
         return _client.marshal(this, {
@@ -215,9 +222,11 @@ module.exports = _client => {
         });
       }).publish();
     }
+
     dispose() {
       return _client.disposeRemoteObject(this);
     }
+
   };
   return remoteModule;
 };

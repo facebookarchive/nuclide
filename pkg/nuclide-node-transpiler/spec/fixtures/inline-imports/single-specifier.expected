@@ -1,9 +1,0 @@
-var _Foo;
-
-function _load_Foo() {
-  return _Foo = require('Foo');
-}
-
-function test() {
-  (0, (_Foo || _load_Foo()).bar)();
-}

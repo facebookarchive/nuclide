@@ -9,11 +9,9 @@
  * the root directory of this source tree.
  */
 
-import type {Node} from 'ast-types-flow';
-
 import invariant from 'assert';
 import {Point, Range} from 'atom';
-import parse from 'babel-core/lib/helpers/parse';
+import * as babylon from 'babylon';
 
 type BabelPos = {
   line: number,
@@ -28,11 +26,11 @@ type BabelLoc = {
 /**
  * Returns a Babel Expression AST node, or null if the parse does not succeed.
  */
-export function parseJSON(json: string): ?Node {
+export function parseJSON(json: string): ?Object {
   // This messes up the positions but without it, babel won't parse the text as an expression.
   const jsonWithParens = '(\n' + json + '\n)';
   try {
-    const ast: Node = parse(jsonWithParens);
+    const ast: Object = babylon.parse(jsonWithParens);
     if (ast.type === 'File') {
       invariant(ast.program.body[0].type === 'ExpressionStatement');
       return ast.program.body[0].expression;

@@ -134,7 +134,7 @@ function getDependencyVersion(json: string, range: atom$Range): ?string {
 }
 
 function isValidVersion(valueASTNode: Object): boolean {
-  return valueASTNode.type === 'Literal' && typeof valueASTNode.value === 'string';
+  return valueASTNode.type === 'StringLiteral';
 }
 
 // return an array of property AST nodes
