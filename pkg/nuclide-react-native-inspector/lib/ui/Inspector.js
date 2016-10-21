@@ -39,7 +39,7 @@ export default class Inspector extends React.Component {
     const element = ((event.target: any): WebviewElement);
     const requirePaths = require.cache[__filename].paths;
     const inspectorDevTools =
-      nuclideUri.join(__dirname, '../../VendorLib/dev-tools/standalone.js');
+      nuclideUri.join(__dirname, '../../VendorLib/dev-tools/build/standalone.js');
     element.executeJavaScript(
       `initializeElementInspector(
         ${JSON.stringify(inspectorDevTools)},

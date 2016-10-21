@@ -64,21 +64,33 @@
         max-width: 40em;
         margin: 0 auto;
       }
+      #loading-status {
+        display: block;
+        font-size: 12px;
+        font-weight: normal;
+      }
     </style>
   </head>
   <body>
     <div id="container">
       <div id="connecting-screen">
         <div>
-          <h2>Waiting for a connection from React Native</h2>
+          <h2>
+            Waiting for a connection from React
+            <!-- The text of this element will be replaced by the devtools -->
+            <small id="loading-status"></small>
+          </h2>
           <p>
             This should happen pretty quickly. If it hasn't, something's wrong. &#128546;
           </p>
           <h3>Troubleshooting Tips:</h3>
           <ul id="connecting-screen-tips">
             <li>
-              Make sure a React Native app is running and that it's in DEV mode.
+              If you're using React Native, make sure your app is running and that it's in DEV mode.
             </li>
+            <li>
+              If you're using React for web, make sure to include the following script tag in your page:
+              <pre>&lt;script src="http://localhost:8097">&lt;/script></pre>
             <li>
               Only one element inspector can be active at a time. Close any other open inspectors.
             </li>
