@@ -82,3 +82,8 @@ export const DiffSectionStatus = Object.freeze({
 
 // This is to work around flow's missing support of enums.
 (DiffSectionStatus: {[key: string]: DiffSectionStatusType});
+
+export const LintErrorMessages = [
+  'Usage Exception: Lint',
+  'ESLint reported a warning',
+];

@@ -17,7 +17,7 @@ import {AtomTextEditor} from '../../nuclide-ui/AtomTextEditor';
 import {AtomInput} from '../../nuclide-ui/AtomInput';
 import {Checkbox} from '../../nuclide-ui/Checkbox';
 import classnames from 'classnames';
-import {DiffMode, PublishMode, PublishModeState} from './constants';
+import {DiffMode, PublishMode, PublishModeState, LintErrorMessages} from './constants';
 import {React} from 'react-for-atom';
 import {
   Button,
@@ -93,9 +93,9 @@ export default class DiffPublishView extends React.Component {
   }
 
   _onPublishUpdate(message: Object): void {
-    const {level, text} = message;
-    // If its a error log with lint we show the lint excuse input
-    if (level === 'error' && text.includes('Usage Exception: Lint')) {
+    const {text} = message;
+    // If the messages contain a lint error or warning show lint input
+    if (LintErrorMessages.some(error => text.includes(error))) {
       this.setState({hasLintError: true});
     }
     this._textBuffer.append(text);
