@@ -21,7 +21,7 @@ category_name = args[0];
 with open(os.path.join(os.environ['SCRIBE_MOCK_PATH'], category_name), 'a') as f:
     while True:
         line = sys.stdin.readline()
-        if line.strip() == '"abort"':
+        if line == '':
             sys.exit(1)
         f.write(line)
         f.flush();

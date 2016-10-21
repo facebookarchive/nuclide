@@ -44,8 +44,8 @@ export default class ScribeProcess {
    * Write a string to a Scribe category.
    * Ensure newlines are properly escaped.
    */
-  async write(message: string): Promise<void> {
-    const child = await this._getOrCreateChildProcess();
+  write(message: string): Promise<void> {
+    const child = this._getOrCreateChildProcess();
     return new Promise((resolve, reject) => {
       child.stdin.write(`${message}${os.EOL}`, resolve);
     });
@@ -63,11 +63,20 @@ export default class ScribeProcess {
 
   join(timeout: number = DEFAULT_JOIN_TIMEOUT): Promise<void> {
     if (this._childProcess != null) {
-      const child = this._childProcess;
-      child.stdin.end();
+      const {stdin} = this._childProcess;
+      // Make sure stdin has drained before ending it.
+      if (!stdin.write(os.EOL)) {
+        stdin.once('drain', () => stdin.end());
+      } else {
+        stdin.end();
+      }
       return new Promise(resolve => {
-        child.on('exit', () => resolve());
-        setTimeout(resolve, timeout);
+        if (this._childProcess == null) {
+          resolve();
+        } else {
+          this._childProcess.on('exit', () => resolve());
+          setTimeout(resolve, timeout);
+        }
       });
     } else {
       return Promise.resolve();

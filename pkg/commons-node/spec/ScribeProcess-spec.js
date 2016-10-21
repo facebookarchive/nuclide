@@ -30,10 +30,9 @@ describe('scribe_cat test suites', () => {
 
   beforeEach(() => {
     jasmine.useRealClock();
-    // The script who simluate behavior of scribe_cat. Different from `scribe_cat` who save
-    // data into scribe, it save data into ${process.env['SCRIBE_MOCK_PATH'] + category_name}
-    // so that we could verify that the data is saved.
-    // Also, if a special data "abort" (with quote) is received, it will crash itself.
+    // Simulated scribe_cat script which saves data into:
+    //   ${process.env['SCRIBE_MOCK_PATH'] + category_name}
+    // It terminates once we cut off the stdin stream.
     const scribeCatMockCommandPath = nuclideUri.join(
       nuclideUri.dirname(__filename),
       'scripts',
@@ -63,7 +62,7 @@ describe('scribe_cat test suites', () => {
       'constitution', 'of', 'its', 'nucleus.',
     ];
     waitsForPromise(async () => {
-      await Promise.all(messages.map(message => localScribeProcess.write(message)));
+      messages.map(message => localScribeProcess.write(message));
       // Wait for `scribe_cat_mock` to flush data into disk.
       await localScribeProcess.join();
       expect(messages).toEqual(await getContentOfScribeCategory('test'));
@@ -77,11 +76,10 @@ describe('scribe_cat test suites', () => {
     const secondPart = 'characterized by the specific constitution of its nucleus.'.split(' ');
 
     waitsForPromise(async () => {
-      await Promise.all(firstPart.map(message => localScribeProcess.write(message)));
-      await localScribeProcess.write(JSON.stringify('abort'));
-      // Wait for the scribe process to crash.
+      firstPart.map(message => localScribeProcess.write(message));
+      // Kill the existing process.
       await localScribeProcess.join();
-      await Promise.all(secondPart.map(message => localScribeProcess.write(message)));
+      secondPart.map(message => localScribeProcess.write(message));
       // Wait for `scribe_cat_mock` to flush data into disk.
       await localScribeProcess.join();
       expect(firstPart.concat(secondPart))
