@@ -567,7 +567,7 @@ export function getOriginalEnvironment(): Object {
   }
 
   const {NUCLIDE_ORIGINAL_ENV} = process.env;
-  if (NUCLIDE_ORIGINAL_ENV != null) {
+  if (NUCLIDE_ORIGINAL_ENV != null && NUCLIDE_ORIGINAL_ENV.trim() !== '') {
     const envString = new Buffer(NUCLIDE_ORIGINAL_ENV, 'base64').toString();
     cachedOriginalEnvironment = {};
     for (const envVar of envString.split('\0')) {
