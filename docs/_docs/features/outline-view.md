@@ -8,7 +8,7 @@ permalink: /docs/features/outline-view/
 Nuclide provides an Outline View to allow for quick navigation of a code file. This can be
 particularly useful for lengthy files with many classes, functions, methods, etc.
 
-![](/static/images/docs/feature-outline-view.png)
+<img src="/static/images/docs/feature-outline-view.png" align="middle" style="width:400px" />
 
 * TOC
 {:toc}
