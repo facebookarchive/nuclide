@@ -60,9 +60,14 @@ import {notifyInternalError} from '../notifications';
 import {startTracking, track} from '../../../nuclide-analytics';
 import nuclideUri from '../../../commons-node/nuclideUri';
 import {getLogger} from '../../../nuclide-logging';
+import {
+  dispatchConsoleToggle,
+  pipeProcessMessagesToConsole,
+} from '../../../commons-atom/streamProcessToConsoleMessages';
 
 const CHANGE_DEBOUNCE_DELAY_MS = 10;
 const FILESYSTEM_REVISION_TITLE = 'Filesystem / Editor';
+const SHOW_CONSOLE_ON_PROCESS_EVENTS = ['stdout', 'stderr', 'error'];
 
 function trackComplete<T>(eventName: string, operation: Observable<T>): Observable<T> {
   // Start the timer when the observable is subscribed.
@@ -573,8 +578,9 @@ export function commit(
     invariant(action.type === ActionTypes.COMMIT);
 
     track('diff-view-commit');
-    const {message, repository} = action.payload;
+    const {message, repository, publishUpdates} = action.payload;
     const {commit: {mode}, shouldRebaseOnAmend} = store.getState();
+    let consoleShown = false;
 
     return Observable.concat(
       Observable.of(Actions.updateCommitState({
@@ -587,32 +593,26 @@ export function commit(
         switch (mode) {
           case CommitMode.COMMIT:
             track('diff-view-commit-commit');
-            return repository.commit(message)
-              .toArray();
+            return repository.commit(message);
           case CommitMode.AMEND:
             track('diff-view-commit-amend');
             return repository.amend(message, getAmendMode(shouldRebaseOnAmend))
-              .toArray();
+              .do(processMessage => {
+                if (!consoleShown && SHOW_CONSOLE_ON_PROCESS_EVENTS.includes(processMessage.kind)) {
+                  dispatchConsoleToggle(true);
+                  consoleShown = true;
+                }
+              });
           default:
             return Observable.throw(new Error(`Invalid Commit Mode ${mode}`));
         }
       }))
-      .switchMap(processMessages => {
-        const successMessage = mode === CommitMode.COMMIT ? 'created' : 'amended';
-        atom.notifications.addSuccess(`Commit ${successMessage}`, {nativeFriendly: true});
-
-        return Observable.of(
-          Actions.setViewMode(DiffMode.BROWSE_MODE),
-          Actions.updateCommitState(getEmptyCommitState()),
-        );
-      })
-      .catch(error => {
-        atom.notifications.addError('Error creating commit', {
-          detail: `Details: ${error.message}`,
-          nativeFriendly: true,
-        });
-        return Observable.empty();
-      }),
+      .do(pipeProcessMessagesToConsole.bind(null, mode, publishUpdates))
+      .ignoreElements(),
+      Observable.of(
+        Actions.setViewMode(DiffMode.BROWSE_MODE),
+        Actions.updateCommitState(getEmptyCommitState()),
+      ),
     );
   });
 }
