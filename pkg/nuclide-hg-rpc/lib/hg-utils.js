@@ -99,7 +99,10 @@ function getHgExecParams(
   let args = args_;
   const options = {
     ...options_,
-    env: {...getOriginalEnvironment()},
+    env: {
+      ...getOriginalEnvironment(),
+      ATOM_BACKUP_EDITOR: 'false',
+    },
   };
   if (!options.NO_HGPLAIN) {
     // Setting HGPLAIN=1 overrides any custom aliases a user has defined.
@@ -132,7 +135,7 @@ export async function getEditMergeConfigs(): Promise<{args: Array<string>, hgEdi
     throw new Error('CommandServer not initialized!');
   }
   // Atom RPC needs to agree with the Atom process / nuclide server on the address and port.
-  const hgEditor = `ATOM_BACKUP_EDITOR=false "${getAtomRpcScriptPath()}"`
+  const hgEditor = getAtomRpcScriptPath()
     + ` -f ${connectionDetails.family} -p ${connectionDetails.port} --wait`;
   return {
     args: [

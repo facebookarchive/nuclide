@@ -14,10 +14,12 @@ import type {RevisionFileChanges} from '../../nuclide-hg-rpc/lib/HgService';
 import type {ConnectableObservable} from 'rxjs';
 import type {ProcessMessage} from '../../commons-node/process-rpc-types';
 
+import {getEditMergeConfigs} from '../../nuclide-hg-rpc/lib/hg-utils';
 import invariant from 'assert';
 import {Observable} from 'rxjs';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {
+  getOriginalEnvironment,
   observeProcess,
   safeSpawn,
   scriptSafeSpawnAndObserveOutput,
@@ -146,6 +148,26 @@ async function getCommitBasedArcConfigDirectory(filePath: string): Promise<?stri
   return await findArcConfigDirectory(configLookupPath);
 }
 
+
+function getArcExecOptions(
+  cwd: string,
+  hgEditor?: string,
+): Object {
+  const options = {
+    cwd,
+    env: {
+      ...getOriginalEnvironment(),
+      ATOM_BACKUP_EDITOR: 'false',
+    },
+  };
+
+  if (hgEditor != null) {
+    options.env.HGEDITOR = hgEditor;
+  }
+
+  return options;
+}
+
 function _callArcDiff(
   filePath: NuclideUri,
   extraArcDiffArgs: Array<string>,
@@ -158,10 +180,7 @@ function _callArcDiff(
       if (arcConfigDir == null) {
         throw new Error('Failed to find Arcanist config.  Is this project set up for Arcanist?');
       }
-      const options = {
-        cwd: arcConfigDir,
-      };
-      return scriptSafeSpawnAndObserveOutput('arc', args, options);
+      return scriptSafeSpawnAndObserveOutput('arc', args, getArcExecOptions(arcConfigDir));
     }).share();
 }
 
@@ -208,25 +227,29 @@ export function execArcPull(
   fetchLatest: boolean,
   allowDirtyChanges: boolean,
 ): ConnectableObservable<ProcessMessage> {
-  const args = ['pull'];
-  if (fetchLatest) {
-    args.push('--latest');
-  }
+  return Observable.fromPromise(getEditMergeConfigs())
+    .switchMap(editMergeConfigs => {
+      const args = ['pull'];
+      if (fetchLatest) {
+        args.push('--latest');
+      }
 
-  if (allowDirtyChanges) {
-    args.push('--allow-dirty');
-  }
+      if (allowDirtyChanges) {
+        args.push('--allow-dirty');
+      }
 
-  const options = {cwd};
-  return observeProcess(() => safeSpawn('arc', args, options)).publish();
+      return observeProcess(() =>
+        safeSpawn('arc', args, getArcExecOptions(cwd, editMergeConfigs.hgEditor)),
+      );
+    }).publish();
 }
 
 export function execArcLand(
   cwd: NuclideUri,
 ): ConnectableObservable<ProcessMessage> {
   const args = ['land'];
-  const options = {cwd};
-  return observeProcess(() => safeSpawn('arc', args, options)).publish();
+  return observeProcess(() => safeSpawn('arc', args, getArcExecOptions(cwd)))
+    .publish();
 }
 
 export function execArcPatch(
@@ -234,8 +257,8 @@ export function execArcPatch(
   differentialRevision: string,
 ): ConnectableObservable<ProcessMessage> {
   const args = ['patch', differentialRevision];
-  const options = {cwd};
-  return observeProcess(() => safeSpawn('arc', args, options)).publish();
+  return observeProcess(() => safeSpawn('arc', args, getArcExecOptions(cwd)))
+    .publish();
 }
 
 async function execArcLint(
@@ -247,8 +270,7 @@ async function execArcLint(
   if (skip.length > 0) {
     args.push('--skip', skip.join(','));
   }
-  const options = {cwd};
-  const result = await niceCheckOutput('arc', args, options);
+  const result = await niceCheckOutput('arc', args, getArcExecOptions(cwd));
 
   const output: Map<string, Array<Object>> = new Map();
   // Arc lint outputs multiple JSON objects on mutliple lines. Split them, then merge the
