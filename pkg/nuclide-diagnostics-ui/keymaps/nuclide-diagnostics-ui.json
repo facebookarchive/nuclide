@@ -6,5 +6,13 @@
     "alt-ctrl->": "nuclide-diagnostics-ui:go-to-last-diagnostic",
     "alt-<": "nuclide-diagnostics-ui:go-to-previous-diagnostic",
     "alt->": "nuclide-diagnostics-ui:go-to-next-diagnostic"
+  },
+  ".platform-darwin": {
+    "alt-cmd-<": "nuclide-diagnostics-ui:go-to-previous-diagnostic-trace",
+    "alt-cmd->": "nuclide-diagnostics-ui:go-to-next-diagnostic-trace"
+  },
+  ".platform-linux, .platform-win32": {
+    "alt-ctrl-K": "nuclide-diagnostics-ui:go-to-previous-diagnostic-trace",
+    "alt-ctrl-L": "nuclide-diagnostics-ui:go-to-next-diagnostic-trace"
   }
 }

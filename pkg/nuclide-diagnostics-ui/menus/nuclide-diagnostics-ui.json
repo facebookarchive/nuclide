@@ -33,6 +33,14 @@
             {
               "label": "Go To Previous Diagnostic",
               "command": "nuclide-diagnostics-ui:go-to-previous-diagnostic"
+            },
+            {
+              "label": "Go To Next Diagnostic Trace",
+              "command": "nuclide-diagnostics-ui:go-to-next-diagnostic-trace"
+            },
+            {
+              "label": "Go To Previous Diagnostic Trace",
+              "command": "nuclide-diagnostics-ui:go-to-previous-diagnostic-trace"
             }
           ]
         }

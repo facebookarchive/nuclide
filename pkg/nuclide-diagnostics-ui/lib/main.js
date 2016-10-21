@@ -15,6 +15,7 @@ import type {
 } from '../../nuclide-diagnostics-common';
 import type {
   FileDiagnosticMessage,
+  Trace,
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
 import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
 import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
@@ -253,6 +254,7 @@ class KeyboardShortcuts {
   _subscriptions: UniversalDisposable;
   _diagnostics: Array<FileDiagnosticMessage>;
   _index: ?number;
+  _traceIndex: ?number;
 
   constructor(diagnosticUpdater: ObservableDiagnosticUpdater) {
     this._index = null;
@@ -268,6 +270,7 @@ class KeyboardShortcuts {
           this._diagnostics = (diagnostics
             .filter(diagnostic => diagnostic.scope === 'file'): any);
           this._index = null;
+          this._traceIndex = null;
         }),
       atom.commands.add(
         'atom-workspace',
@@ -289,15 +292,32 @@ class KeyboardShortcuts {
         'nuclide-diagnostics-ui:go-to-previous-diagnostic',
         () => { this._index == null ? last() : this.setIndex(this._index - 1); },
       ),
+      atom.commands.add(
+        'atom-workspace',
+        'nuclide-diagnostics-ui:go-to-next-diagnostic-trace',
+        () => { this.nextTrace(); },
+      ),
+      atom.commands.add(
+        'atom-workspace',
+        'nuclide-diagnostics-ui:go-to-previous-diagnostic-trace',
+        () => { this.previousTrace(); },
+      ),
     );
   }
 
   setIndex(index: number): void {
+    this._traceIndex = null;
     if (this._diagnostics.length === 0) {
       this._index = null;
       return;
     }
     this._index = Math.max(0, Math.min(index, this._diagnostics.length - 1));
+    this.gotoCurrentIndex();
+  }
+
+  gotoCurrentIndex(): void {
+    invariant(this._index != null);
+    invariant(this._traceIndex == null);
     const diagnostic = this._diagnostics[this._index];
     const range = diagnostic.range;
     if (range == null) {
@@ -305,6 +325,57 @@ class KeyboardShortcuts {
     } else {
       goToLocation(diagnostic.filePath, range.start.row, range.start.column);
     }
+  }
+
+  nextTrace(): void {
+    const traces = this.currentTraces();
+    if (traces == null) {
+      return;
+    }
+    let candidateTrace = this._traceIndex == null ? 0 : this._traceIndex + 1;
+    while (candidateTrace < traces.length) {
+      if (this.trySetCurrentTrace(traces, candidateTrace)) {
+        return;
+      }
+      candidateTrace++;
+    }
+    this._traceIndex = null;
+    this.gotoCurrentIndex();
+  }
+
+  previousTrace(): void {
+    const traces = this.currentTraces();
+    if (traces == null) {
+      return;
+    }
+    let candidateTrace = this._traceIndex == null ? traces.length - 1 : this._traceIndex - 1;
+    while (candidateTrace >= 0) {
+      if (this.trySetCurrentTrace(traces, candidateTrace)) {
+        return;
+      }
+      candidateTrace--;
+    }
+    this._traceIndex = null;
+    this.gotoCurrentIndex();
+  }
+
+  currentTraces(): ?Array<Trace> {
+    if (this._index == null) {
+      return null;
+    }
+    const diagnostic = this._diagnostics[this._index];
+    return diagnostic.trace;
+  }
+
+  // TODO: Should filter out traces whose location matches the main diagnostic's location?
+  trySetCurrentTrace(traces: Array<Trace>, traceIndex: number): boolean {
+    const trace = traces[traceIndex];
+    if (trace.filePath != null && trace.range != null) {
+      this._traceIndex = traceIndex;
+      goToLocation(trace.filePath, trace.range.start.row, trace.range.start.column);
+      return true;
+    }
+    return false;
   }
 
   dispose(): void {
