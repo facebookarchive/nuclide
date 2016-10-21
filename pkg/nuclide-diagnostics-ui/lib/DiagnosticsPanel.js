@@ -35,6 +35,7 @@ type Props = {
   onFilterByActiveTextEditorChange: (isChecked: boolean) => mixed,
   warnAboutLinter: boolean,
   disableLinter: () => mixed,
+  showTraces: boolean,
 };
 
 /**
@@ -50,9 +51,10 @@ class DiagnosticsPanel extends React.Component {
   }
 
   render(): React.Element<any> {
-    let warningCount = 0;
+    let warningCount: number = 0;
     let errorCount = 0;
     let {diagnostics} = this.props;
+    const {showTraces} = this.props;
     if (this.props.filterByActiveTextEditor && this.props.pathToActiveTextEditor) {
       const pathToFilterBy = this.props.pathToActiveTextEditor;
       diagnostics = diagnostics.filter(
@@ -126,6 +128,7 @@ class DiagnosticsPanel extends React.Component {
           <DiagnosticsPane
             showFileName={!this.props.filterByActiveTextEditor}
             diagnostics={diagnostics}
+            showTraces={showTraces}
           />
         </div>
       </PanelComponent>

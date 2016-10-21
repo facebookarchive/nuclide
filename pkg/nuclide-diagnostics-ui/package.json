@@ -6,6 +6,20 @@
   "description": "Displays diagnostics in context in a TextEditor",
   "atomTestRunner": "../../lib/test-runner.js",
   "nuclide": {
+    "configMetadata": {
+      "pathComponents": [
+        "IDE",
+        "Diagnostics"
+      ]
+    },
+    "config": {
+      "showDiagnosticTraces": {
+        "title": "Show full diagnostic traces",
+        "type": "boolean",
+        "default": false,
+        "description": "Shows full trace information in diagnostics."
+      }
+    },
     "packageType": "Atom",
     "testRunner": "apm"
   },

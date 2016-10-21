@@ -23,15 +23,22 @@ import {
 } from '../../nuclide-ui/Highlight';
 import {sortDiagnostics} from './DiagnosticsSorter';
 import {getProjectRelativePathOfDiagnostic} from './paneUtils';
+import {DiagnosticsMessageNoHeader} from '../../nuclide-ui/DiagnosticsMessage';
 
-type textAndType = {text: string, isPlainText: boolean};
+// text is always used for sorting.
+// Precedence for rendering is: element, html, text.
+type DescriptionField = {
+  text: string,
+  html: ?string,
+  element: ?React.Element<any>,
+};
 
 export type DisplayDiagnostic = {
   type: string,
   providerName: string,
   filePath: string,
   range: number,
-  description: textAndType,
+  description: DescriptionField,
   diagnostic: DiagnosticMessage,
 };
 
@@ -58,13 +65,15 @@ function TypeComponent(props: {data: 'Warning' | 'Error'}): React.Element<any> {
 
 /** @return text and a boolean indicating whether it is plaintext or HTML. */
 function getMessageContent(
+  showTraces: boolean,
   diagnostic: DiagnosticMessage,
-): textAndType {
+): DescriptionField {
   let text = '';
   let isPlainText = true;
   const traces = diagnostic.trace || [];
   const allMessages: Array<{html?: string, text?: string}> = [diagnostic, ...traces];
   for (const message of allMessages) {
+    // TODO: A mix of html and text diagnostics will yield a wonky sort ordering.
     if (message.html != null) {
       text += message.html + ' ';
       isPlainText = false;
@@ -76,16 +85,20 @@ function getMessageContent(
   }
   return {
     text: text.trim(),
-    isPlainText,
+    html: isPlainText ? null : text.trim(),
+    element: showTraces && diagnostic.scope === 'file'
+      ? DiagnosticsMessageNoHeader({message: diagnostic, goToLocation, fixer: () => {}}) : null,
   };
 }
 
-function DescriptionComponent(props: {data: textAndType}): React.Element<any> {
+function DescriptionComponent(props: {data: DescriptionField}): React.Element<any> {
   const message = props.data;
-  if (message.isPlainText) {
-    return <span>{message.text}</span>;
-  } else {
+  if (message.element != null) {
+    return message.element;
+  } else if (message.html != null) {
     return <span dangerouslySetInnerHTML={{__html: message.text}} />;
+  } else {
+    return <span>{message.text}</span>;
   }
 }
 
@@ -108,6 +121,7 @@ function goToDiagnosticLocation(rowData: DiagnosticMessage): void {
 type DiagnosticsPaneProps = {
   diagnostics: Array<DiagnosticMessage>,
   showFileName: ?boolean,
+  showTraces: boolean,
 };
 
 export default class DiagnosticsPane extends React.Component {
@@ -176,13 +190,13 @@ export default class DiagnosticsPane extends React.Component {
   }
 
   render(): React.Element<any> {
-    const {diagnostics} = this.props;
+    const {diagnostics, showTraces} = this.props;
     const {
       sortedColumn,
       sortDescending,
     } = this.state;
     const diagnosticRows = diagnostics.map(diagnostic => {
-      const messageContent = getMessageContent(diagnostic);
+      const messageContent = getMessageContent(showTraces, diagnostic);
       return {
         data: {
           type: diagnostic.type,

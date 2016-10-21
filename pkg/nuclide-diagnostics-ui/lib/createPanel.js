@@ -26,6 +26,7 @@ type PanelProps = {
   filterByActiveTextEditor: boolean,
   onFilterByActiveTextEditorChange: (isChecked: boolean) => void,
   warnAboutLinter: boolean,
+  showTraces: boolean,
   disableLinter: () => void,
 };
 
@@ -33,6 +34,7 @@ export default function createDiagnosticsPanel(
   diagnostics: Observable<Array<DiagnosticMessage>>,
   initialHeight: number,
   initialfilterByActiveTextEditor: boolean,
+  showTraces: Observable<boolean>,
   disableLinter: () => void,
   onFilterByActiveTextEditorChange: (filterByActiveTextEditor: boolean) => void,
 ): {
@@ -59,6 +61,7 @@ export default function createDiagnosticsPanel(
     const propsStream = getPropsStream(
       diagnostics,
       warnAboutLinterStream,
+      showTraces,
       initialHeight,
       initialfilterByActiveTextEditor,
       disableLinter,
@@ -92,6 +95,7 @@ export default function createDiagnosticsPanel(
 function getPropsStream(
   diagnosticsStream: Observable<Array<DiagnosticMessage>>,
   warnAboutLinterStream: Observable<boolean>,
+  showTraces: Observable<boolean>,
   initialHeight: number,
   initialfilterByActiveTextEditor: boolean,
   disableLinter: () => void,
@@ -126,11 +130,13 @@ function getPropsStream(
     sortedDiagnostics,
     warnAboutLinterStream,
     filterByActiveTextEditorStream,
+    showTraces,
   )
-    .map(([pathToActiveTextEditor, diagnostics, warnAboutLinter, filter]) => ({
+    .map(([pathToActiveTextEditor, diagnostics, warnAboutLinter, filter, traces]) => ({
       pathToActiveTextEditor,
       diagnostics,
       warnAboutLinter,
+      showTraces: traces,
       disableLinter,
       filterByActiveTextEditor: filter,
       onFilterByActiveTextEditorChange: handleFilterByActiveTextEditorChange,

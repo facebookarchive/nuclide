@@ -32,6 +32,7 @@ import createDiagnosticsPanel from './createPanel';
 import StatusBarTile from './StatusBarTile';
 import {applyUpdateToEditor} from './gutter';
 import {goToLocation} from '../../commons-atom/go-to-location';
+import featureConfig from '../../commons-atom/featureConfig';
 
 const DEFAULT_HIDE_DIAGNOSTICS_PANEL = true;
 const DEFAULT_TABLE_HEIGHT = 200;
@@ -61,6 +62,7 @@ function createPanel(diagnosticUpdater: ObservableDiagnosticUpdater): IDisposabl
     diagnosticUpdater.allMessageUpdates,
     activationState.diagnosticsPanelHeight,
     activationState.filterByActiveTextEditor,
+    featureConfig.observeAsStream('nuclide-diagnostics-ui.showDiagnosticTraces'),
     disableLinter,
     filterByActiveTextEditor => {
       if (activationState != null) {

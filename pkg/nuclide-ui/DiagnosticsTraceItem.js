@@ -36,7 +36,8 @@ export const DiagnosticsTraceItem = (props: DiagnosticsTraceItemProps) => {
     if (trace.range) {
       locString += `:${trace.range.start.row + 1}`;
     }
-    const onClick = () => {
+    const onClick = (event: SyntheticMouseEvent) => {
+      event.stopPropagation();
       goToLocation(path, Math.max(trace.range ? trace.range.start.row : 0, 0));
     };
     locSpan = <span>: <a href="#" onClick={onClick}>{locString}</a></span>;

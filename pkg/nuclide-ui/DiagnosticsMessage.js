@@ -54,13 +54,9 @@ function plainTextForDiagnostic(message: FileDiagnosticMessage): string {
   return [message, ...trace].map(plainTextForItem).join('\n');
 }
 
-/**
- * Visually groups Buttons passed in as children.
- */
-export const DiagnosticsMessage = (props: DiagnosticsMessageProps) => {
+function diagnosticHeader(props: DiagnosticsMessageProps) {
   const {
       message,
-      goToLocation,
       fixer,
   } = props;
   const providerClassName = message.type === 'Error'
@@ -81,7 +77,7 @@ export const DiagnosticsMessage = (props: DiagnosticsMessageProps) => {
       <Button buttonType={buttonType} size="EXTRA_SMALL" onClick={applyFix}>Fix</Button>
     );
   }
-  const header = (
+  return (
     <div className="nuclide-diagnostics-gutter-ui-popup-header">
       <ButtonGroup>
         {fixButton}
@@ -90,7 +86,14 @@ export const DiagnosticsMessage = (props: DiagnosticsMessageProps) => {
       <span className={providerClassName}>{message.providerName}</span>
     </div>
   );
-  const traceElements = message.trace
+}
+
+function traceElements(props: DiagnosticsMessageProps) {
+  const {
+      message,
+      goToLocation,
+  } = props;
+  return message.trace
     ? message.trace.map((traceItem, i) =>
       <DiagnosticsTraceItem
         key={i}
@@ -99,13 +102,31 @@ export const DiagnosticsMessage = (props: DiagnosticsMessageProps) => {
       />,
     )
     : null;
+}
+
+/**
+ * Visually groups Buttons passed in as children.
+ */
+export const DiagnosticsMessage = (props: DiagnosticsMessageProps) => {
   return (
     <div>
-      {header}
+      {diagnosticHeader(props)}
       <div className="nuclide-diagnostics-gutter-ui-popup-message">
-        <DiagnosticsMessageText message={message} />
+        <DiagnosticsMessageText message={props.message} />
       </div>
-      {traceElements}
+      {traceElements(props)}
+    </div>
+  );
+};
+
+/**
+ * Visually groups Buttons passed in as children.
+ */
+export const DiagnosticsMessageNoHeader = (props: DiagnosticsMessageProps) => {
+  return (
+    <div>
+      <DiagnosticsMessageText message={props.message} />
+      {traceElements(props)}
     </div>
   );
 };
