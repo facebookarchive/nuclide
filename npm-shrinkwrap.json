@@ -417,9 +417,9 @@
       "dev": true
     },
     "babylon": {
-      "version": "6.12.0",
-      "from": "babylon@6.12.0",
-      "resolved": "https://registry.npmjs.org/babylon/-/babylon-6.12.0.tgz"
+      "version": "6.13.0",
+      "from": "babylon@6.13.0",
+      "resolved": "https://registry.npmjs.org/babylon/-/babylon-6.13.0.tgz"
     },
     "balanced-match": {
       "version": "0.4.2",
@@ -2162,9 +2162,9 @@
       "resolved": "https://registry.npmjs.org/ssh2/-/ssh2-0.5.1.tgz"
     },
     "ssh2-streams": {
-      "version": "0.1.11",
+      "version": "0.1.12",
       "from": "ssh2-streams@>=0.1.0 <0.2.0",
-      "resolved": "https://registry.npmjs.org/ssh2-streams/-/ssh2-streams-0.1.11.tgz"
+      "resolved": "https://registry.npmjs.org/ssh2-streams/-/ssh2-streams-0.1.12.tgz"
     },
     "sshpk": {
       "version": "1.10.1",
