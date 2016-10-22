@@ -64,7 +64,7 @@ export class PackagerActivation {
           case 'PackagerError':
             invariant(err instanceof PackagerError);
             atom.notifications.addError(
-              `Packager exited with non-zero ${err.exitMessage}`, {
+              `Packager exited with ${err.exitMessage}`, {
                 dismissable: true,
                 detail: err.stderr.trim() === '' ? undefined : err.stderr,
               },
