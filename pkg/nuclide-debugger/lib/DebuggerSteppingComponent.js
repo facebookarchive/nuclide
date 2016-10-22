@@ -31,6 +31,50 @@ type DebuggerSteppingComponentProps = {
   customControlButtons: Array<ControlButtonSpecification>,
 };
 
+const STEP_OVER_ICON =
+  <svg viewBox="0 0 100 100">
+    <circle cx="46" cy="63" r="10" />
+    <path
+      d={
+        'M83.8,54.7c-6.5-16.6-20.7-28.1-37.2-28.1c-19.4,0-35.6,16-39.9,' +
+        '37.3l11.6,2.9c3-16.2,14.5-28.2,28.2-28.2 c11,0,20.7,7.8,25.6,' +
+        '19.3l-9.6,2.7l20.8,14.7L93.7,52L83.8,54.7z'
+      }
+    />
+  </svg>;
+
+const STEP_INTO_ICON =
+  <svg viewBox="0 0 100 100">
+    <circle cx="50" cy="75" r="10" />
+    <polygon points="42,20 57,20 57,40 72,40 50,60 28,40 42,40" />
+  </svg>;
+
+const STEP_OUT_ICON =
+  <svg viewBox="0 0 100 100">
+    <circle cx="50" cy="75" r="10" />
+    <polygon
+      points="42,20 57,20 57,40 72,40 50,60 28,40 42,40"
+      transform="rotate(180, 50, 40)"
+    />
+  </svg>;
+
+function SVGButton(props: {
+  onClick: () => void,
+  title: string,
+  icon: React.Element<any>,
+}): React.Element<any> {
+  return (
+    <Button
+      className="nuclide-debugger-stepping-svg-button"
+      onClick={props.onClick}
+      title={props.title}>
+      <div>
+        {props.icon}
+      </div>
+    </Button>
+  );
+}
+
 export class DebuggerSteppingComponent extends React.Component {
   props: DebuggerSteppingComponentProps;
 
@@ -62,22 +106,22 @@ export class DebuggerSteppingComponent extends React.Component {
               )
             }
           />
-          <Button
-            icon="arrow-right"
+          <SVGButton
+            icon={STEP_OVER_ICON}
             title="step over"
             onClick={
               actions.triggerDebuggerAction.bind(actions, ChromeActionRegistryActions.STEP_OVER)
             }
           />
-          <Button
-            icon="arrow-down"
+          <SVGButton
+            icon={STEP_INTO_ICON}
             title="step into"
             onClick={
               actions.triggerDebuggerAction.bind(actions, ChromeActionRegistryActions.STEP_INTO)
             }
           />
-          <Button
-            icon="arrow-up"
+          <SVGButton
+            icon={STEP_OUT_ICON}
             title="step out"
             onClick={
               actions.triggerDebuggerAction.bind(actions, ChromeActionRegistryActions.STEP_OUT)

@@ -154,6 +154,24 @@ Use flexbox cross-axis stretch to fill the vertical space.
   flex-wrap: wrap;
 }
 
+.nuclide-debugger-stepping-svg-button {
+  div {
+    width: 10px;
+  }
+  svg {
+    width: 20px;
+    fill: @text-color;
+    margin: 0 auto;
+    position: relative;
+    left: -5px;
+    vertical-align: baseline;
+    top: 3px;
+  }
+  svg:hover {
+    fill: @text-color-highlight;
+  }
+}
+
 .nuclide-debugger-stepping-buttongroup {
   margin-right: 1em;
 }
