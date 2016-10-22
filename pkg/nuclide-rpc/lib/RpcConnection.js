@@ -683,13 +683,13 @@ export class RpcConnection<TransportType: Transport> {
           this._objectRegistry.disposeSubscription(id);
           break;
         default:
-          throw new Error(`Unkown message type ${message.type}`);
+          throw new Error(`Unknown message type ${message.type}`);
       }
       if (!returnedPromise) {
         timingTracker.onSuccess();
       }
     } catch (e) {
-      logger.error(e != null ? e.message : e);
+      logger.error(`Error handling RPC ${message.type} message`, e);
       timingTracker.onError(e == null ? new Error() : e);
       this._transport.send(JSON.stringify(createErrorResponseMessage(id, e)));
     }
