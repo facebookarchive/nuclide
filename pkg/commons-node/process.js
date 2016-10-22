@@ -375,15 +375,19 @@ export function getOutputStream(
 ): Observable<ProcessMessage> {
   return Observable.defer(() => {
     // We need to start listening for the exit event immediately, but defer emitting it until the
-    // output streams end.
+    // (buffered) output streams end.
     const exit = observeProcessExit(() => process, killTreeOnComplete).publishReplay();
     const exitSub = exit.connect();
 
     const error = Observable.fromEvent(process, 'error')
       .map(errorObj => ({kind: 'error', error: errorObj}));
-    const stdout = splitStream(observeStream(process.stdout))
+    // It's possible for stdout and stderr to remain open (even indefinitely) after the exit event.
+    // This utility, however, treats the exit event as stream-ending, which helps us to avoid easy
+    // bugs. We give a short (100ms) timeout for the stdout and stderr streams to close.
+    const close = exit.delay(100);
+    const stdout = splitStream(observeStream(process.stdout).takeUntil(close))
       .map(data => ({kind: 'stdout', data}));
-    const stderr = splitStream(observeStream(process.stderr))
+    const stderr = splitStream(observeStream(process.stderr).takeUntil(close))
       .map(data => ({kind: 'stderr', data}));
 
     return takeWhileInclusive(
