@@ -65,7 +65,7 @@ import {
   pipeProcessMessagesToConsole,
 } from '../../../commons-atom/streamProcessToConsoleMessages';
 
-const CHANGE_DEBOUNCE_DELAY_MS = 10;
+const CHANGE_DEBOUNCE_DELAY_MS = 300;
 const FILESYSTEM_REVISION_TITLE = 'Filesystem / Editor';
 const SHOW_CONSOLE_ON_PROCESS_EVENTS = ['stdout', 'stderr', 'error'];
 

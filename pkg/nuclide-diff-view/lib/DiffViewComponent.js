@@ -22,7 +22,8 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import invariant from 'assert';
 import {MultiRootChangedFilesView} from '../../nuclide-ui/MultiRootChangedFilesView';
-import {CompositeDisposable, Disposable, TextBuffer} from 'atom';
+import {Disposable, TextBuffer} from 'atom';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {
   React,
   ReactDOM,
@@ -49,6 +50,8 @@ import {
   LoadingSpinner,
   LoadingSpinnerSizes,
 } from '../../nuclide-ui/LoadingSpinner';
+import {observableFromSubscribeFunction} from '../../commons-node/event';
+import {Observable} from 'rxjs';
 
 type Props = {
   diffModel: DiffViewModel,
@@ -134,12 +137,13 @@ function getInitialState(): State {
 
 const EMPTY_FUNCTION = () => {};
 const SCROLL_FIRST_CHANGE_DELAY_MS = 100;
+const DEBOUNCE_STATE_UPDATES_MS = 50;
 
 export default class DiffViewComponent extends React.Component {
   props: Props;
   state: State;
 
-  _subscriptions: CompositeDisposable;
+  _subscriptions: UniversalDisposable;
   _syncScroll: SyncScroll;
   _oldEditorPane: atom$Pane;
   _oldEditorComponent: DiffViewEditorPane;
@@ -158,7 +162,6 @@ export default class DiffViewComponent extends React.Component {
   constructor(props: Props) {
     super(props);
     this.state = getInitialState();
-    (this: any)._onModelStateChange = this._onModelStateChange.bind(this);
     (this: any)._updateLineDiffState = this._updateLineDiffState.bind(this);
     (this: any)._onTimelineChangeRevision = this._onTimelineChangeRevision.bind(this);
     (this: any)._handleNavigateToDiffSection = this._handleNavigateToDiffSection.bind(this);
@@ -168,22 +171,27 @@ export default class DiffViewComponent extends React.Component {
     (this: any)._onDidChangeScrollTop = this._onDidChangeScrollTop.bind(this);
     (this: any)._pixelRangeForDiffSection = this._pixelRangeForDiffSection.bind(this);
     this._readonlyBuffer = new TextBuffer();
-    this._subscriptions = new CompositeDisposable();
+    this._subscriptions = new UniversalDisposable();
   }
 
   componentDidMount(): void {
     const {diffModel, tryTriggerNux} = this.props;
-    this._subscriptions.add(diffModel.onDidUpdateState(() => {
-      this._updateLineDiffState(diffModel.getState());
-      this._renderTree();
-    }));
-    this._subscriptions.add(diffModel.onDidUpdateState(this._onModelStateChange));
-    this._subscriptions.add(atom.workspace.onDidChangeActivePaneItem(activeItem => {
-      if (activeItem != null && (activeItem: any).tagName === 'NUCLIDE-DIFF-VIEW') {
-        // Re-render on activation.
+    this._subscriptions.add(
+      Observable.merge(
+        observableFromSubscribeFunction(
+          diffModel.onDidUpdateState.bind(diffModel)),
+        observableFromSubscribeFunction(
+          atom.workspace.onDidChangeActivePaneItem.bind(atom.workspace)),
+      ).filter(() => {
+        const activeItem = atom.workspace.getActivePaneItem();
+        return activeItem != null && (activeItem: any).tagName === 'NUCLIDE-DIFF-VIEW';
+      })
+      .debounceTime(DEBOUNCE_STATE_UPDATES_MS)
+      .subscribe(() => {
         this._updateLineDiffState(diffModel.getState());
-      }
-    }));
+        this.forceUpdate();
+      }),
+    );
 
     this._paneContainer = createPaneContainer();
     // The changed files status tree takes 1/5 of the width and lives on the right most,
@@ -219,10 +227,6 @@ export default class DiffViewComponent extends React.Component {
     this._updateLineDiffState(diffModel.getState());
 
     tryTriggerNux();
-  }
-
-  _onModelStateChange(): void {
-    this.setState({});
   }
 
   _setupSyncScroll(): void {
