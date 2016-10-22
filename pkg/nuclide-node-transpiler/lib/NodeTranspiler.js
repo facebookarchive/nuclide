@@ -35,6 +35,7 @@ const PREFIX_LENGTH = Math.max(...PREFIXES.map(x => x.length));
 // work there, but not on the server.
 const BABEL_OPTIONS = {
   plugins: [
+    [require.resolve('./inline-invariant-tr')],
     [require.resolve('./use-minified-libs-tr')],
 
     // TODO(asuarez): Remove decorators and remove:
