@@ -96,9 +96,11 @@ class NavigatonBarJumpTarget extends React.Component {
     const {diffSection, pixelRangeForDiffSection, navigationScale} = this.props;
     const lineChangeClass = sectionStatusToClassName(diffSection.status);
     const {top, bottom} = pixelRangeForDiffSection(diffSection);
+    const scaledTop = top * navigationScale;
+    const scaledHeight = Math.max((bottom - top) * navigationScale, 1);
     const targetStyle = {
-      top: `${top * navigationScale}px`,
-      height: `${(bottom - top) * navigationScale}px`,
+      top: `${scaledTop}px`,
+      height: `${scaledHeight}px`,
     };
     const targetClassName = classnames({
       'nuclide-diff-view-navigation-target': true,
