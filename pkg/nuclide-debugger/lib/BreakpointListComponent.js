@@ -51,7 +51,7 @@ export class BreakpointListComponent extends React.Component {
     this.props.actions.openSourceLocation(nuclideUri.nuclideUriToUri(path), line);
   }
 
-  render(): ?React.Element<any> {
+  render(): ?React.Element<*> {
     const {breakpoints} = this.props;
     if (breakpoints == null || breakpoints.length === 0) {
       return <span>(no breakpoints)</span>;

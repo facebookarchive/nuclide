@@ -16,7 +16,7 @@ import {MeasuredComponent} from './MeasuredComponent';
 import {Button} from './Button';
 
 type Props = {
-  children?: React.Element<any>,
+  children?: React.Element<*>,
   maxHeight: number, // Maximum height of the component in px
   showMoreByDefault?: boolean,
 };
@@ -54,7 +54,7 @@ export class ShowMoreComponent extends React.Component {
     }
   }
 
-  render(): React.Element<any> {
+  render(): React.Element<*> {
     const {showingMore, currentHeight} = this.state;
     const {maxHeight} = this.props;
 

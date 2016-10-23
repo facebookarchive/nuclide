@@ -74,7 +74,7 @@ class BuckToolbar extends React.Component {
     this._disposables.dispose();
   }
 
-  render(): React.Element<any> {
+  render(): React.Element<*> {
     const buckToolbarStore = this._buckToolbarStore;
     const isAppleBundle = buckToolbarStore.getRuleType() === 'apple_bundle';
     const devices = buckToolbarStore.getDevices();

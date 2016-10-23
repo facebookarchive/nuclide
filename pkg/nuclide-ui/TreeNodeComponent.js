@@ -27,7 +27,7 @@ type Props = {
   isLoading: boolean,
   isSelected: boolean,
   label: string,
-  labelElement?: ?React.Element<any>,
+  labelElement?: ?React.Element<*>,
   labelClassName: string,
   node: LazyTreeNode,
   onClickArrow: (event: SyntheticMouseEvent, node: LazyTreeNode) => void,
@@ -52,7 +52,7 @@ export class TreeNodeComponent extends React.PureComponent {
     (this: any)._onMouseDown = this._onMouseDown.bind(this);
   }
 
-  render(): React.Element<any> {
+  render(): React.Element<*> {
     const rowClassNameObj: {[key: string]: ?boolean} = {
       // Support for selectors in the "file-icons" package.
       // @see {@link https://atom.io/packages/file-icons|file-icons}

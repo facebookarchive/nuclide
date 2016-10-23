@@ -24,7 +24,7 @@ export class HhvmLaunchAttachProvider extends DebuggerLaunchAttachProvider {
     return ['Attach', 'Launch'];
   }
 
-  getComponent(action: string): ?React.Element<any> {
+  getComponent(action: string): ?React.Element<*> {
     if (action === 'Launch') {
       return <LaunchUiComponent targetUri={this.getTargetUri()} />;
     } else if (action === 'Attach') {

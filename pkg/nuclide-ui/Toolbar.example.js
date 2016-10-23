@@ -17,7 +17,7 @@ import {ToolbarLeft} from './ToolbarLeft';
 import {ToolbarRight} from './ToolbarRight';
 import {Button} from './Button';
 
-const ToolbarExampleLeft = (): React.Element<any> => (
+const ToolbarExampleLeft = (): React.Element<*> => (
   <div>
     <Block>
       <Toolbar location="top">
@@ -35,7 +35,7 @@ const ToolbarExampleLeft = (): React.Element<any> => (
   </div>
 );
 
-const ToolbarExampleCenter = (): React.Element<any> => (
+const ToolbarExampleCenter = (): React.Element<*> => (
   <Block>
     <Toolbar location="top">
       <ToolbarCenter>
@@ -45,7 +45,7 @@ const ToolbarExampleCenter = (): React.Element<any> => (
   </Block>
 );
 
-const ToolbarExampleRight = (): React.Element<any> => (
+const ToolbarExampleRight = (): React.Element<*> => (
   <Block>
     <Toolbar location="top">
       <ToolbarRight>
@@ -55,7 +55,7 @@ const ToolbarExampleRight = (): React.Element<any> => (
   </Block>
 );
 
-const ToolbarExampleMultiple = (): React.Element<any> => (
+const ToolbarExampleMultiple = (): React.Element<*> => (
   <Block>
     <Toolbar location="top">
       <ToolbarLeft>

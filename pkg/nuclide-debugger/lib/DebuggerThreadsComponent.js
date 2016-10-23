@@ -43,7 +43,7 @@ export class DebuggerThreadsComponent extends React.Component {
     this.props.bridge.selectThread(data.id);
   }
 
-  render(): ?React.Element<any> {
+  render(): ?React.Element<*> {
     const {
       threadList,
       selectedThreadId,

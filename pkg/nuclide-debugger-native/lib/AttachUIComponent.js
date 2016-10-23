@@ -142,7 +142,7 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
     });
   }
 
-  render(): React.Element<any> {
+  render(): React.Element<*> {
     const filterRegex = new RegExp(this.state.filterText, 'i');
     const {
       attachTargetInfos,

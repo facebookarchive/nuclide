@@ -13,7 +13,7 @@ import {React} from 'react-for-atom';
 
 export class BuckIcon extends React.Component {
 
-  render(): React.Element<any> {
+  render(): React.Element<*> {
     return (
       <svg
         version="1.1"

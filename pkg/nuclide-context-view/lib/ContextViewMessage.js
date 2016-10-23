@@ -25,10 +25,10 @@ export default class ContextViewMessage extends React.Component {
   );
 
   props: {
-    message: string | React.Element<any>,
+    message: string | React.Element<*>,
   };
 
-  render(): React.Element<any> {
+  render(): React.Element<*> {
     return <div>{this.props.message}</div>;
   }
 }

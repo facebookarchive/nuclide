@@ -107,7 +107,7 @@ export class PanelComponent extends React.Component {
     }
   }
 
-  render(): React.Element<any> {
+  render(): React.Element<*> {
     // We create an overlay to always display the resize cursor while the user
     // is resizing the panel, even if their mouse leaves the handle.
     let resizeCursorOverlay = null;

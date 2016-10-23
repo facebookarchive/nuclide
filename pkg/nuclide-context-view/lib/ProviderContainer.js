@@ -15,7 +15,7 @@ import {track} from '../../nuclide-analytics';
 
 type Props = {
   title: string,
-  children?: React.Element<any>,
+  children?: React.Element<*>,
 };
 
 type State = {
@@ -38,7 +38,7 @@ export class ProviderContainer extends React.Component {
     (this: any)._setCollapsed = this._setCollapsed.bind(this);
   }
 
-  render(): ?React.Element<any> {
+  render(): ?React.Element<*> {
     return (
       <div className="nuclide-context-view-provider-container">
         <Section headline={this.props.title}

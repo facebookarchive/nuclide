@@ -50,7 +50,7 @@ export default class QuickOpenHelpers {
     return false;
   }
 
-  static getComponentForItem(uncastedItem: FileResult): React.Element<any> {
+  static getComponentForItem(uncastedItem: FileResult): React.Element<*> {
     const item = ((uncastedItem: any): Result);
     const path = nuclideUri.relative(item.dir, item.path);
     let kind;

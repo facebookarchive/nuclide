@@ -13,7 +13,7 @@ import {React} from 'react-for-atom';
 import {Block} from './Block';
 import RelativeDate from './RelativeDate';
 
-const RelativeDateExample = (): React.Element<any> => (
+const RelativeDateExample = (): React.Element<*> => (
   <div>
     <Block>
       <div>Updated every 10 seconds (default): "<RelativeDate date={new Date()} />"</div>

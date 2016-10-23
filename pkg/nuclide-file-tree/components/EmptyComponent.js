@@ -14,7 +14,7 @@ import {Button} from '../../nuclide-ui/Button';
 
 export class EmptyComponent extends React.Component {
 
-  render(): React.Element<any> {
+  render(): React.Element<*> {
     return (
       <div className="padded">
         <Button

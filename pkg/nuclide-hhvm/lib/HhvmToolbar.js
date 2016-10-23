@@ -79,7 +79,7 @@ class HhvmToolbar extends React.Component {
     this.refs.debugTarget.setText(store.getDebugTarget());
   }
 
-  render(): React.Element<any> {
+  render(): React.Element<*> {
     const store = this.props.projectStore;
     const isDebugScript = store.getDebugMode() === 'script';
     return (

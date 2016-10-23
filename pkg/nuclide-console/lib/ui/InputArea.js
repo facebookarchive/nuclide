@@ -111,7 +111,7 @@ export default class OutputTable extends React.Component {
     }
   }
 
-  render(): ?React.Element<any> {
+  render(): ?React.Element<*> {
     const grammar = this.props.scopeName == null
       ? null : atom.grammars.grammarForScopeName(this.props.scopeName);
     return (

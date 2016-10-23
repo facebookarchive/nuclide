@@ -52,7 +52,7 @@ type Props = {
 export default class HomePaneItem extends React.Component {
   props: Props;
   state: {
-    allHomeFragments: Immutable.Set<string, React.Element<any>>,
+    allHomeFragments: Immutable.Set<string, React.Element<*>>,
     showOnStartup: boolean,
   };
 

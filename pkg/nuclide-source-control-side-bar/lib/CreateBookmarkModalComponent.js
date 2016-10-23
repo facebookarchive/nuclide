@@ -44,7 +44,7 @@ export default class CreateBookmarkModal extends React.Component {
     this.props.onCreate(this.refs.atomTextEditor.getModel().getText(), this.props.repo);
   }
 
-  render(): React.Element<any> {
+  render(): React.Element<*> {
     return (
       <div>
         <h6 style={{marginTop: 0}}><strong>Create bookmark</strong></h6>

@@ -224,7 +224,7 @@ export class AtomTextEditor extends React.Component {
     return this._textEditorElement;
   }
 
-  render(): React.Element<any> {
+  render(): React.Element<*> {
     const className = classnames(
       this.props.className,
       'nuclide-text-editor-container',

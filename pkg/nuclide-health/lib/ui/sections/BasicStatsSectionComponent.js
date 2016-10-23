@@ -36,7 +36,7 @@ export default class BasicStatsSectionComponent extends React.Component {
     this.props.updateToolbarJewel(value);
   }
 
-  render(): React.Element<any> {
+  render(): React.Element<*> {
     const stats = [
       {
         name: 'CPU',

@@ -61,7 +61,7 @@ export class FileTreeEntryComponent extends React.Component {
     return nextProps.node !== this.props.node;
   }
 
-  render(): React.Element<any> {
+  render(): React.Element<*> {
     const node = this.props.node;
 
     const outerClassName = classnames('entry', {
@@ -146,7 +146,7 @@ export class FileTreeEntryComponent extends React.Component {
     );
   }
 
-  _renderCheckbox(): ?React.Element<any> {
+  _renderCheckbox(): ?React.Element<*> {
     if (!this.props.node.conf.isEditingWorkingSet) {
       return;
     }
@@ -161,7 +161,7 @@ export class FileTreeEntryComponent extends React.Component {
     );
   }
 
-  _renderConnectionTitle(): ?React.Element<any> {
+  _renderConnectionTitle(): ?React.Element<*> {
     if (!this.props.node.isRoot) {
       return null;
     }

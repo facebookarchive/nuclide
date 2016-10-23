@@ -46,7 +46,7 @@ export default class BuckToolbarSettings extends React.Component {
     };
   }
 
-  render(): React.Element<any> {
+  render(): React.Element<*> {
     let runArguments;
     if (this.props.buildType === 'debug' || this.props.buildType === 'run') {
       runArguments = (

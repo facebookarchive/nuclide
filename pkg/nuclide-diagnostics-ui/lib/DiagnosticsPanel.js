@@ -50,7 +50,7 @@ class DiagnosticsPanel extends React.Component {
       this._onFilterByActiveTextEditorChange.bind(this);
   }
 
-  render(): React.Element<any> {
+  render(): React.Element<*> {
     let warningCount: number = 0;
     let errorCount = 0;
     let {diagnostics} = this.props;

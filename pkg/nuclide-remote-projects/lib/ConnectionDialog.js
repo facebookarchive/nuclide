@@ -220,7 +220,7 @@ export default class ConnectionDialog extends React.Component {
     return path !== '/';
   }
 
-  render(): React.Element<any> {
+  render(): React.Element<*> {
     const mode = this.state.mode;
     let content;
     let isOkDisabled;

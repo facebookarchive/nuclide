@@ -51,7 +51,7 @@ export class View extends React.Component {
     container.appendChild(el);
   }
 
-  render(): React.Element<any> {
+  render(): React.Element<*> {
     return <nuclide-react-mount-root />;
   }
 }

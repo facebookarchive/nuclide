@@ -85,7 +85,7 @@ export default class FindReferencesView extends React.Component {
     this.setState({selected: (this.state.selected === i) ? -1 : i});
   }
 
-  render(): React.Element<any> {
+  render(): React.Element<*> {
     const children = this.state.references.map((fileRefs, i) =>
       <FileReferencesView
         key={i}

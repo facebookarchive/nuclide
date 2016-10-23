@@ -31,7 +31,7 @@ export default class SettingsCheckbox extends React.Component {
     this.props.onChange(isChecked);
   }
 
-  render(): React.Element<any> {
+  render(): React.Element<*> {
     const keyPath = this.props.keyPath;
     const id = normalizeIdentifier(keyPath);
     const title = this.props.title;

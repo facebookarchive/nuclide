@@ -177,7 +177,7 @@ export class ConsoleContainer extends React.Component {
     return this._actionCreators;
   }
 
-  render(): ?React.Element<any> {
+  render(): ?React.Element<*> {
     if (!this.state.ready) { return <span />; }
 
     const actionCreators = this._getBoundActionCreators();

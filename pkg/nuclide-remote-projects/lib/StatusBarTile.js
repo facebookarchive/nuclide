@@ -30,7 +30,7 @@ export default class StatusBarTile extends React.Component {
     (this: any)._onStatusBarTileClicked = this._onStatusBarTileClicked.bind(this);
   }
 
-  render(): ?React.Element<any> {
+  render(): ?React.Element<*> {
     let iconName = null;
     switch (this.props.connectionState) {
       case ConnectionState.NONE:

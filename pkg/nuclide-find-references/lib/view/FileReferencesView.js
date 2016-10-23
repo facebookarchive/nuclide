@@ -62,7 +62,7 @@ export default class FileReferencesView extends React.Component {
     evt.stopPropagation();
   }
 
-  render(): React.Element<any> {
+  render(): React.Element<*> {
     const groups = this.props.refGroups.map((group: ReferenceGroup, i) => {
       const firstRef = group.references[0];
       const lastRef = group.references[group.references.length - 1];

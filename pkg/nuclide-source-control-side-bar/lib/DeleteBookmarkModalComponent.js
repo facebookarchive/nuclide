@@ -36,7 +36,7 @@ export default class DeleteBookmarkModalComponent extends React.Component {
     this.props.onDelete(this.props.bookmark, this.props.repository);
   }
 
-  render(): React.Element<any> {
+  render(): React.Element<*> {
     return (
       <div>
         <h6 style={{marginTop: 0}}>

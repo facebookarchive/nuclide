@@ -148,7 +148,7 @@ export default class DiffCommitView extends React.Component {
       </Toolbar>);
   }
 
-  render(): React.Element<any> {
+  render(): React.Element<*> {
     return (
       <div className="nuclide-diff-mode">
         <div className="message-editor-wrapper">

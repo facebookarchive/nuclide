@@ -27,7 +27,7 @@ type DebuggerDatatipComponentProps = {
 export class DebuggerDatatipComponent extends React.Component {
   props: DebuggerDatatipComponentProps;
 
-  render(): ?React.Element<any> {
+  render(): ?React.Element<*> {
     const {
       expression,
       evaluationResult,

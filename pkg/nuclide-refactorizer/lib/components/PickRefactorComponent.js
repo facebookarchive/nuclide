@@ -28,7 +28,7 @@ export class PickRefactorComponent extends React.Component {
     store: Store,
   };
 
-  render(): React.Element<any> {
+  render(): React.Element<*> {
     const elements = this.props.pickPhase.availableRefactorings
       .map((r, i) => <div key={i}>{this._renderRefactorOption(r)}</div>);
     return <div>{elements}</div>;
@@ -38,7 +38,7 @@ export class PickRefactorComponent extends React.Component {
     this.props.store.dispatch(Actions.pickedRefactor(refactoring));
   }
 
-  _renderRefactorOption(refactoring: AvailableRefactoring): React.Element<any> {
+  _renderRefactorOption(refactoring: AvailableRefactoring): React.Element<*> {
     switch (refactoring.kind) {
       case 'rename':
         return <Button onClick={() => { this._pickRefactor(refactoring); }}>Rename</Button>;

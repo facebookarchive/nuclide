@@ -33,7 +33,7 @@ export default class OutputTable extends React.Component {
     (this: any)._getProvider = this._getProvider.bind(this);
   }
 
-  render(): ?React.Element<any> {
+  render(): ?React.Element<*> {
     return (
       <div
         className="nuclide-console-table-wrapper native-key-bindings"
@@ -51,7 +51,7 @@ export default class OutputTable extends React.Component {
     return this.props.getProvider(id);
   }
 
-  _renderRow(record: Record, index: number): React.Element<any> {
+  _renderRow(record: Record, index: number): React.Element<*> {
     return (
       <RecordView
         key={this._hasher.getHash(record)}

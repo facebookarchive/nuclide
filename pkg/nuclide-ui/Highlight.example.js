@@ -16,7 +16,7 @@ import {
   HighlightColors,
 } from './Highlight';
 
-const HighlightExample = (): React.Element<any> => (
+const HighlightExample = (): React.Element<*> => (
   <div>
     <Block>
       <Highlight>Default</Highlight>

@@ -32,7 +32,7 @@ export class NodeLaunchAttachProvider extends DebuggerLaunchAttachProvider {
     return ['Attach'];
   }
 
-  getComponent(action: string): ?React.Element<any> {
+  getComponent(action: string): ?React.Element<*> {
     if (action === 'Attach') {
       this._actions.updateAttachTargetList();
       return <AttachUIComponent store={this._store} actions={this._actions} />;

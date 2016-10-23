@@ -54,7 +54,7 @@ export default class ArcToolbarSection extends React.Component {
     return targets.map(target => ({value: target, label: target}));
   }
 
-  _renderReloadTargetsButton(): ?React.Element<any> {
+  _renderReloadTargetsButton(): ?React.Element<*> {
     const error = this.props.model.getBuildTargetsError();
     if (error == null) { return null; }
     return (
@@ -67,7 +67,7 @@ export default class ArcToolbarSection extends React.Component {
     );
   }
 
-  render(): ?React.Element<any> {
+  render(): ?React.Element<*> {
     const {model} = this.props;
     if (!model.isArcSupported()) {
       return null;

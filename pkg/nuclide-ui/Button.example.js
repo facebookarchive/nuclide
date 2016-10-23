@@ -18,7 +18,7 @@ import {Dropdown} from './Dropdown';
 import {ModalMultiSelect} from './ModalMultiSelect';
 import {SplitButtonDropdown} from './SplitButtonDropdown';
 
-const ButtonSizeExample = (): React.Element<any> => (
+const ButtonSizeExample = (): React.Element<*> => (
   <Block>
     <Button className="inline-block" size="EXTRA_SMALL">extra_small</Button>
     <Button className="inline-block" size="SMALL">small</Button>
@@ -27,14 +27,14 @@ const ButtonSizeExample = (): React.Element<any> => (
   </Block>
 );
 
-const ButtonDisabledExample = (): React.Element<any> => (
+const ButtonDisabledExample = (): React.Element<*> => (
   <Block>
     <Button className="inline-block">enabled</Button>
     <Button className="inline-block" disabled={true}>disabled</Button>
   </Block>
 );
 
-const ButtonColorExample = (): React.Element<any> => (
+const ButtonColorExample = (): React.Element<*> => (
   <div>
     <Block>
       <ButtonGroup>
@@ -58,7 +58,7 @@ const ButtonColorExample = (): React.Element<any> => (
   </div>
 );
 
-const ButtonIconExample = (): React.Element<any> => (
+const ButtonIconExample = (): React.Element<*> => (
   <Block>
     <ButtonGroup>
       <Button icon="gear" />
@@ -71,7 +71,7 @@ const ButtonIconExample = (): React.Element<any> => (
   </Block>
 );
 
-const ButtonGroupExample = (): React.Element<any> => (
+const ButtonGroupExample = (): React.Element<*> => (
   <div>
     <Block>
       <ButtonGroup size="EXTRA_SMALL">
@@ -104,7 +104,7 @@ const ButtonGroupExample = (): React.Element<any> => (
   </div>
 );
 
-const ButtonToolbarExample = (): React.Element<any> => (
+const ButtonToolbarExample = (): React.Element<*> => (
   <div>
     <Block>
       <ButtonToolbar>
@@ -127,7 +127,7 @@ const DropdownExample = (() => {
     {value: 3, label: 'Three'},
     {value: 4, label: 'Four'},
   ];
-  return (): React.Element<any> => (
+  return (): React.Element<*> => (
     <div>
       <Dropdown
         options={options}
@@ -146,7 +146,7 @@ const SplitButtonDropdownExample = (() => {
     {value: 4, label: 'Squirrel', icon: 'squirrel'},
     {value: 5, label: 'Beaker', icon: 'telescope', disabled: true},
   ];
-  return (): React.Element<any> => (
+  return (): React.Element<*> => (
     <div>
       <SplitButtonDropdown
         options={options}
@@ -168,7 +168,7 @@ class ModalMultiSelectExample extends React.Component {
     this.state = {value: [2]};
   }
 
-  render(): React.Element<any> {
+  render(): React.Element<*> {
     const options = [
       {value: 1, label: 'One'},
       {value: 2, label: 'Two'},

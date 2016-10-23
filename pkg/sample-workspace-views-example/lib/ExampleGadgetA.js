@@ -32,7 +32,7 @@ export class ExampleGadgetA {
 
 }
 
-function View(): React.Element<any> {
+function View(): React.Element<*> {
   return (
     <div className="pane-item padded nuclide-example-gadget">
       This gadget was defined with a separate model and React component.

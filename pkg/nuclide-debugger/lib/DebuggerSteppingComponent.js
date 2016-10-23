@@ -61,8 +61,8 @@ const STEP_OUT_ICON =
 function SVGButton(props: {
   onClick: () => void,
   title: string,
-  icon: React.Element<any>,
-}): React.Element<any> {
+  icon: React.Element<*>,
+}): React.Element<*> {
   return (
     <Button
       className="nuclide-debugger-stepping-svg-button"
@@ -82,7 +82,7 @@ export class DebuggerSteppingComponent extends React.Component {
     super(props);
   }
 
-  render(): ?React.Element<any> {
+  render(): ?React.Element<*> {
     const {
       actions,
       debuggerMode,

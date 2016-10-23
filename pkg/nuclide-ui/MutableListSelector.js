@@ -74,7 +74,7 @@ export class MutableListSelector extends React.Component {
     this.props.onItemDoubleClicked(itemId);
   }
 
-  render(): ?React.Element<any> {
+  render(): ?React.Element<*> {
     let selectedItem;
     const listItems = this.props.items.map(item => {
       let classes = 'list-item';

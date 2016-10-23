@@ -323,7 +323,7 @@ export class Combobox extends React.Component {
     }
   }
 
-  render(): React.Element<any> {
+  render(): React.Element<*> {
     let optionsContainer;
     const options = [];
 

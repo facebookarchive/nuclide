@@ -39,7 +39,7 @@ export default class SwiftPMTestSettingsModal extends React.Component {
     };
   }
 
-  render(): React.Element<any> {
+  render(): React.Element<*> {
     return (
       <Modal onDismiss={this.props.onDismiss}>
         <div className="block">

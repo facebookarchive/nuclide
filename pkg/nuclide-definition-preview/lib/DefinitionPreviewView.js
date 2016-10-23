@@ -127,7 +127,7 @@ export class DefinitionPreviewView extends React.Component {
     }
   }
 
-  render(): React.Element<any> {
+  render(): React.Element<*> {
     const {ContextViewMessage, definition} = this.props;
     const atMinHeight = (this.state.editorHeight - EDITOR_HEIGHT_DELTA) < MINIMUM_EDITOR_HEIGHT;
     // Show either a "No definition" message or the definition in an editors

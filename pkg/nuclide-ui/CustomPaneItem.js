@@ -38,7 +38,7 @@ export class CustomPaneItem extends HTMLElement {
    *
    * @return A React component that this element call ReactDOM.render() on.
    */
-  __renderPaneItem(options: CustomPaneItemOptions): React.Element<any> {
+  __renderPaneItem(options: CustomPaneItemOptions): React.Element<*> {
     throw new Error('Subclass should implement this method.');
   }
 

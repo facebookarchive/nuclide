@@ -107,7 +107,7 @@ export class WorkingSetSelectionComponent extends React.Component {
     node.focus();
   }
 
-  render(): React.Element<any> {
+  render(): React.Element<*> {
     const applicableDefinitions = this.state.applicableDefinitions.map((def, index) => {
       return (
         <ApplicableDefinitionLine
@@ -210,7 +210,7 @@ class ApplicableDefinitionLine extends React.Component {
     (this: any)._editButtonOnClick = this._editButtonOnClick.bind(this);
   }
 
-  render(): React.Element<any> {
+  render(): React.Element<*> {
     const classes = {
       active: this.props.def.active,
       selected: this.props.selected,
@@ -272,7 +272,7 @@ class NonApplicableDefinitionLine extends React.Component {
     (this: any)._deleteButtonOnClick = this._deleteButtonOnClick.bind(this);
   }
 
-  render(): React.Element<any> {
+  render(): React.Element<*> {
     return (
       <li className="clearfix">
         <Button

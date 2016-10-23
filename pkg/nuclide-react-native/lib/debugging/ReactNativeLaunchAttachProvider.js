@@ -20,7 +20,7 @@ export class ReactNativeLaunchAttachProvider extends DebuggerLaunchAttachProvide
     return ['Attach'];
   }
 
-  getComponent(action: string): ?React.Element<any> {
+  getComponent(action: string): ?React.Element<*> {
     invariant(action === 'Attach');
     return <DebugUiComponent targetUri={this.getTargetUri()} />;
   }

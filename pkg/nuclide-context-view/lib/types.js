@@ -26,7 +26,7 @@ export type ContextProvider = {
    * components. This gives Context View the ability to set the props (which
    * contains the currentDefinition) of each provider.
    */
-  getElementFactory: () => ((props: ContextElementProps) => React.Element<any>),
+  getElementFactory: () => ((props: ContextElementProps) => React.Element<*>),
   id: string, // Unique ID of the provider (suggested: use the package name of the provider)
   title: string, // Display name
 };

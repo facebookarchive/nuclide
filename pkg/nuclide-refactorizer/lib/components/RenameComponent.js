@@ -41,7 +41,7 @@ export class RenameComponent extends React.Component {
     };
   }
 
-  render(): React.Element<any> {
+  render(): React.Element<*> {
     return (<div>
       <AtomInput
         initialValue={this.props.phase.symbolAtPoint.text}

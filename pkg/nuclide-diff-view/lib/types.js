@@ -79,7 +79,7 @@ export type DiffSection = {
 };
 
 export type UIElement = {
-  node: React.Element<any>,
+  node: React.Element<*>,
   bufferRow: number,
   inNewEditor: boolean,
 };

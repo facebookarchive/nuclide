@@ -44,7 +44,7 @@ export class DebugUiComponent extends React.Component {
     };
   }
 
-  render(): React.Element<any> {
+  render(): React.Element<*> {
     return (
       <div className="block">
         <div className="block">

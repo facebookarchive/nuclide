@@ -23,7 +23,7 @@ export class IwdpLaunchAttachProvider extends DebuggerLaunchAttachProvider {
     return ['Attach'];
   }
 
-  getComponent(action: string): ?React.Element<any> {
+  getComponent(action: string): ?React.Element<*> {
     if (action === 'Attach') {
       return <AttachUiComponent targetUri={this.getTargetUri()} />;
     } else {

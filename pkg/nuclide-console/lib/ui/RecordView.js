@@ -28,7 +28,7 @@ type Props = {
 export default class RecordView extends React.Component {
   props: Props;
 
-  _renderContent(record: Record): React.Element<any> {
+  _renderContent(record: Record): React.Element<*> {
     if (record.kind === 'request') {
       // TODO: We really want to use a text editor to render this so that we can get syntax
       // highlighting, but they're just too expensive. Figure out a less-expensive way to get syntax
@@ -54,7 +54,7 @@ export default class RecordView extends React.Component {
   _renderNestedValueComponent(
     record: Record,
     provider: ?OutputProvider | ?Executor,
-  ): React.Element<any> {
+  ): React.Element<*> {
     const getProperties = provider == null ? null : provider.getProperties;
     const type = record.data == null ? null : record.data.type;
     const simpleValueComponent = getComponent(type);
@@ -69,7 +69,7 @@ export default class RecordView extends React.Component {
     );
   }
 
-  render(): React.Element<any> {
+  render(): React.Element<*> {
     const {record} = this.props;
     const classNames = classnames(
       'nuclide-console-record',

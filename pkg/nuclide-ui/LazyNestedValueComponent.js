@@ -35,7 +35,7 @@ function isObjectValue(result: EvaluationResult): boolean {
   return result.objectId != null;
 }
 
-function TreeItemWithLoadingSpinner(): React.Element<any> {
+function TreeItemWithLoadingSpinner(): React.Element<*> {
   return <TreeItem><LoadingSpinner size="EXTRA_SMALL" delay={SPINNER_DELAY} /></TreeItem>;
 }
 
@@ -99,9 +99,9 @@ const LoadableValueComponent = (props: LoadableValueComponentProps) => {
 
 // TODO allow passing action components (edit button, pin button) here
 function renderValueLine(
-  expression: React.Element<any> | ?string,
-  value: React.Element<any> | string,
-): React.Element<any> {
+  expression: React.Element<*> | ?string,
+  value: React.Element<*> | string,
+): React.Element<*> {
   if (expression == null) {
     return <div className="nuclide-ui-lazy-nested-value-container">{value}</div>;
   } else {
@@ -225,7 +225,7 @@ class ValueComponent extends React.Component {
     event.stopPropagation();
   }
 
-  render(): ?React.Element<any> {
+  render(): ?React.Element<*> {
     const {
       evaluationResult,
       expression,
@@ -374,7 +374,7 @@ class TopLevelLazyNestedValueComponent extends React.Component {
     }
   }
 
-  render(): React.Element<any> {
+  render(): React.Element<*> {
     const className = this.props.className != null
       ? this.props.className
       : 'nuclide-ui-lazy-nested-value';

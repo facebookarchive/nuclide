@@ -120,7 +120,7 @@ class DebuggerView extends React.Component {
     });
   }
 
-  render(): React.Element<any> {
+  render(): React.Element<*> {
     const {
       model,
     } = this.props;

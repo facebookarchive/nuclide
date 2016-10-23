@@ -18,7 +18,7 @@ import {
 type Props = {
   title: string,
   icon: string,
-  description: string | React.Element<any>,
+  description: string | React.Element<*>,
   command: ?(string | () => void),
 };
 
@@ -45,7 +45,7 @@ class HomeFeatureComponent extends React.Component {
     }
   }
 
-  render(): React.Element<any> {
+  render(): React.Element<*> {
     const {title, command} = this.props;
     return (
       <details className="nuclide-home-card">

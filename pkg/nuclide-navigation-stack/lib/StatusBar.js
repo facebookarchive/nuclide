@@ -63,7 +63,7 @@ type Props = {
   onForward: () => mixed,
 };
 
-function NavStackStatusBarTile(props: Props): React.Element<any> {
+function NavStackStatusBarTile(props: Props): React.Element<*> {
   return <Block>
       <ButtonGroup>
         <Button

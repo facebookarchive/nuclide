@@ -15,7 +15,7 @@ import {React, ReactDOM} from 'react-for-atom';
 import Tabs from '../../nuclide-ui/Tabs';
 
 type Props = {
-  children?: React.Element<any>,
+  children?: React.Element<*>,
   menuItems: Array<{label: string, value: string}>,
   onSelectedViewMenuItemChange: (value: ?string) => void,
   selectedViewMenuItemValue: ?string,
@@ -38,7 +38,7 @@ export default class SideBarPanelComponent extends React.Component {
     this.props.onSelectedViewMenuItemChange(value);
   }
 
-  render(): React.Element<any> {
+  render(): React.Element<*> {
     const {
       menuItems,
       selectedViewMenuItemValue,

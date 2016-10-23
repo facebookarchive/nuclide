@@ -60,7 +60,7 @@ type Props = {
    * Whether column widths can be resized interactively via drag&drop. Default behavior is `true`.
    */
   resizeable?: boolean,
-  children?: React.Element<any>,
+  children?: React.Element<*>,
   /**
    * Whether columns can be sorted.
    * If specified, `onSort`, `sortedColumn`, and `sortDescending` must also be specified.
@@ -263,11 +263,11 @@ export class Table extends React.Component {
     onSelect(selectedItem.data, selectedIndex);
   }
 
-  _renderEmptyCellContent(): React.Element<any> {
+  _renderEmptyCellContent(): React.Element<*> {
     return <div />;
   }
 
-  render(): React.Element<any> {
+  render(): React.Element<*> {
     const {
       alternateBackground,
       className,

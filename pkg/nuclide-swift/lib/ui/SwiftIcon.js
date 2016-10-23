@@ -16,7 +16,7 @@
 import {React} from 'react-for-atom';
 
 export class SwiftIcon extends React.Component {
-  render(): React.Element<any> {
+  render(): React.Element<*> {
     return (
       <svg
         version="1.1"

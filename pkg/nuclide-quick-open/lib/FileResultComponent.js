@@ -17,15 +17,15 @@ import nuclideUri from '../../commons-node/nuclideUri';
 
 type Key = number | string;
 
-function renderSubsequence(seq: string, props: Object): ?React.Element<any> {
+function renderSubsequence(seq: string, props: Object): ?React.Element<*> {
   return seq.length === 0 ? null : <span {...props}>{seq}</span>;
 }
 
-function renderUnmatchedSubsequence(seq: string, key: Key): ?React.Element<any> {
+function renderUnmatchedSubsequence(seq: string, key: Key): ?React.Element<*> {
   return renderSubsequence(seq, {key});
 }
 
-function renderMatchedSubsequence(seq: string, key: Key): ?React.Element<any> {
+function renderMatchedSubsequence(seq: string, key: Key): ?React.Element<*> {
   return renderSubsequence(
     seq,
     {
@@ -41,7 +41,7 @@ class FileResultComponent {
     item: FileResult,
     serviceName: string,
     dirName: string,
-  ): React.Element<any> {
+  ): React.Element<*> {
     // Trim the `dirName` off the `filePath` since that's shown by the group
     let filePath = item.path;
     let matchIndexes = item.matchIndexes || [];

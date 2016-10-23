@@ -56,7 +56,7 @@ export default class DebuggerInspector extends React.Component {
     );
   }
 
-  render(): React.Element<any> {
+  render(): React.Element<*> {
     return (
       <div className="inspector">
         <div className="control-bar" ref="controlBar">
