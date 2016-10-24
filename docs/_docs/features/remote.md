@@ -26,7 +26,7 @@ The remote machine must meet certain prerequisites before the
 
 - [Python](https://www.python.org/) 2.6 or later. In many cases, this will already be installed by
 default on your OS distribution.
-- [Node](https://nodejs.org/) 5.10.0 or later.
+- A version of [Node](https://nodejs.org/) that is equal to or greater than that specified in ["node" (under "engines") in the package information](https://github.com/facebook/nuclide/blob/master/package.json).
 - `node` and `npm` must be in your `$PATH` environment variable.
 - [Watchman](https://facebook.github.io/watchman). The Nuclide server
 requires Watchman to detect file and directory changes. Follow the Watchman
