@@ -1,5 +1,27 @@
 # Nuclide Changelog
 
+## v0.177.0
+
+### General
+
+* Enable showTraces in diagnostics.
+* Add keyboard shortcuts for cycling through diagnostic traces.
+* Files can be closed now by middle-clicking on their name in "Open Files" section.
+
+### React
+
+* Updated React Inspector now works with all different kinds of React apps! See facebook/react-devtools#440.
+
+### Debugger
+
+* More intuitive icons for step over/in/out.
+* Doesn't jump anymore when you expand a local.
+
+### Smart Log
+
+* Fix cmd-click to checkout a branch.
+
+
 ## v0.176.0
 
 ### Highlights
