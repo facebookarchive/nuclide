@@ -392,6 +392,10 @@ export class ConnectionMultiplexer {
   }
 
   _emitRequestUpdate(connection: Connection): void {
+    if (connection.isDummyConnection() && !connection.isViewable()) {
+      // Only show dummy connection in requests UI if it is viewable.
+      return;
+    }
     this._emitNotification(CONNECTION_MUX_NOTIFICATION.REQUEST_UPDATE,
       {
         id: connection.getId(),
