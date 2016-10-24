@@ -60,12 +60,12 @@ const BABEL_OPTIONS = {
     [require.resolve('babel-plugin-syntax-class-properties')],
     [require.resolve('babel-plugin-transform-class-properties')],
     [require.resolve('babel-plugin-syntax-object-rest-spread')],
-    [require.resolve('babel-plugin-transform-object-rest-spread')],
+    [require.resolve('babel-plugin-transform-object-rest-spread'), {useBuiltIns: true}],
     // object-rest-spread needs es2015-destructuring
     [require.resolve('babel-plugin-transform-es2015-destructuring')],
 
     // babel-preset-react:
-    [require.resolve('babel-plugin-transform-react-jsx')],
+    [require.resolve('babel-plugin-transform-react-jsx'), {useBuiltIns: true}],
     [require.resolve('babel-plugin-transform-flow-strip-types')],
     [require.resolve('babel-plugin-syntax-flow')],
     [require.resolve('babel-plugin-syntax-jsx')],
