@@ -286,6 +286,46 @@ describe('refactorStore', () => {
           expectNoUncaughtErrors();
         });
       });
+
+      it('fails gracefully when the edits do not apply', () => {
+        waitsForPromise(async () => {
+          refactoringsAtPointReturn = Promise.resolve([
+            TEST_FILE_RENAME,
+          ]);
+          const edits = [{
+            oldRange: new Range([0, 0], [0, 3]),
+            // intentionally not 'foo' in order to trigger a conflict when we attempt to apply this
+            // edit.
+            oldText: 'foz',
+            newText: 'bar',
+          }];
+          refactorReturn = Promise.resolve({
+            edits: new Map([[TEST_FILE, edits]]),
+          });
+
+          store.dispatch(Actions.open());
+          await waitForPhase('pick');
+          store.dispatch(Actions.pickedRefactor(TEST_FILE_RENAME));
+          await waitForPhase('rename');
+          const rename: RenameRequest = {
+            kind: 'rename',
+            symbolAtPoint: TEST_FILE_SYMBOL_AT_POINT,
+            editor: openEditor,
+            newName: 'bar',
+          };
+          store.dispatch(Actions.execute(provider, rename));
+          // TODO should display an error somewhere
+          await waitForClose();
+          expect(openEditor.getText()).toEqual('foo\nbar\nfoo\n');
+
+          // TODO test this with multiple files. it will become much more complex. We need to make
+          // sure that we can apply the entire refactoring transactionally. this means if something
+          // goes wrong we need to roll back the rest.
+
+          await nextTick();
+          expectNoUncaughtErrors();
+        });
+      });
     });
   });
 });

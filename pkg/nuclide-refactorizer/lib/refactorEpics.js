@@ -111,6 +111,8 @@ async function executeRefactoring(
   // TODO also apply edits to other files
   const fileEdits = response.edits.get(path);
   invariant(fileEdits != null);
+  // TODO check the return value to see if the edits were applied correctly. if not, display an
+  // appropriate message.
   applyTextEdits(path, ...fileEdits);
   return Actions.close();
 }
