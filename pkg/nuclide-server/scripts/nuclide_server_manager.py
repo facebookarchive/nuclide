@@ -253,6 +253,7 @@ class NuclideServerManager(object):
                 self.options.timeout,
                 quiet=self.options.quiet,
                 debug=self.options.debug,
+                inspect=self.options.inspect,
                 abort_on_uncaught_exception=self.options.dump_core)
         else:
             # Use https.
@@ -276,6 +277,7 @@ class NuclideServerManager(object):
                 ca=certs_generator.ca_cert,
                 quiet=self.options.quiet,
                 debug=self.options.debug,
+                inspect=self.options.inspect,
                 abort_on_uncaught_exception=self.options.dump_core)
 
 
@@ -317,6 +319,11 @@ def get_option_parser():
     parser.add_option(
         '--debug',
         help='Start in debugger. Only use this flag interactively',
+        action='store_true',
+        default=False)
+    parser.add_option(
+        '--inspect',
+        help='Start remote debugger on port 5858',
         action='store_true',
         default=False)
     parser.add_option(

@@ -173,16 +173,19 @@ class NuclideServer(object):
         self.logger.info('NuclideServer is going to restart.')
         return self.start(timeout, force=True)
 
-    def start(self, timeout, cert=None, key=None, ca=None, force=False, quiet=False, debug=False,
+    def start(self, timeout, cert=None, key=None, ca=None, force=False,
+              quiet=False, debug=False, inspect=False,
               abort_on_uncaught_exception=False):
-        self.logger.info('NuclideServer start/restarting with the following arguments:\n \
-                          timeout: {0}\n \
-                          cert:    {1}\n \
-                          key:     {2}\n \
-                          ca:      {3}\n \
-                          force:   {4}\n \
-                          quiet:   {5}\n \
-                          debug:   {6}'.format(timeout, cert, key, ca, force, quiet, debug))
+        self.logger.info(
+            'NuclideServer start/restarting with the following arguments:\n \
+             timeout: {0}\n \
+             cert:    {1}\n \
+             key:     {2}\n \
+             ca:      {3}\n \
+             force:   {4}\n \
+             quiet:   {5}\n \
+             debug:   {6}\n \
+             inspect: {7}'.format(timeout, cert, key, ca, force, quiet, debug, inspect))
         # If one but not all certificate files are given.
         if (cert or key or ca) and not (cert and key and ca):
             self.logger.error('Incomplete certificate files.')
@@ -205,6 +208,8 @@ class NuclideServer(object):
             js_cmd += ' --cert %s --key %s --ca %s' % (cert, key, ca)
         if abort_on_uncaught_exception:
             js_cmd += ' --abort_on_uncaught_exception '
+        if inspect:
+            js_cmd = '--debug ' + js_cmd
         if debug:
             args = shlex.split('node debug %s' % js_cmd)
             p = subprocess.Popen(args)
