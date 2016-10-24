@@ -51,7 +51,7 @@ export default class RevisionTimelineNode extends React.Component {
     this.props.onSelectionChange(this.props.revision);
   }
 
-  render(): React.Element<*> {
+  render(): React.Element<any> {
     const {revisionStatus, index, revision, revisionsCount, selectedIndex} = this.props;
     const {author, bookmarks, date, description, hash, title} = revision;
     const revisionClassName = classnames('revision revision--actionable', {

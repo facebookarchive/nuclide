@@ -89,7 +89,7 @@ export class SwiftPMTaskRunner {
         activeTaskType: ?string,
       };
 
-      render(): React.Element<*> {
+      render(): React.Element<any> {
         return (
           <SwiftPMTaskRunnerToolbar
             store={store}

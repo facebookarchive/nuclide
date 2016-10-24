@@ -41,7 +41,7 @@ export class AttachUiComponent extends React.Component<void, PropsType, StateTyp
     };
   }
 
-  render(): React.Element<*> {
+  render(): React.Element<any> {
     return (
       <div className="block">
         <div className="nuclide-debugger-iwdp-launch-attach-ui-select-project">

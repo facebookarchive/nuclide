@@ -101,7 +101,7 @@ export default class DiffViewEditorPane extends React.Component {
     this._diffViewEditor.destroy();
   }
 
-  render(): React.Element<*> {
+  render(): React.Element<any> {
     const {isLoading} = this.props;
     const rootClassName = classnames({
       'nuclide-diff-editor-container': true,

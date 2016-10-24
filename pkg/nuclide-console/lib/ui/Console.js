@@ -72,7 +72,7 @@ export default class Console extends React.Component {
     }
   }
 
-  _renderPromptButton(): React.Element<*> {
+  _renderPromptButton(): React.Element<any> {
     invariant(this.props.currentExecutor != null);
     const {currentExecutor} = this.props;
     const options = Array.from(this.props.executors.values())
@@ -122,7 +122,7 @@ export default class Console extends React.Component {
     return this.props.getProvider(id);
   }
 
-  render(): ?React.Element<*> {
+  render(): ?React.Element<any> {
     return (
       <div className="nuclide-console">
         <ConsoleHeader
@@ -163,7 +163,7 @@ export default class Console extends React.Component {
     );
   }
 
-  _renderPrompt(): ?React.Element<*> {
+  _renderPrompt(): ?React.Element<any> {
     const {currentExecutor} = this.props;
     if (currentExecutor == null) {
       return;

@@ -16,7 +16,7 @@ import ReactMountRootElement from '../nuclide-ui/ReactMountRootElement';
  * Create a DOM element and mount the React element in it. It will be unmounted when the node is
  * detached.
  */
-export function renderReactRoot(reactElement: React.Element<*>): HTMLElement {
+export function renderReactRoot(reactElement: React.Element<any>): HTMLElement {
   const element = new ReactMountRootElement();
   element.setReactElement(reactElement);
   return element;

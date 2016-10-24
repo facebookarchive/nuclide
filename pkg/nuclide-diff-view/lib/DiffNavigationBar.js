@@ -33,7 +33,7 @@ export default class DiffNavigationBar extends React.Component {
     (this: any)._handleClick = this._handleClick.bind(this);
   }
 
-  render(): React.Element<*> {
+  render(): React.Element<any> {
     const {
       diffSections,
       pixelRangeForDiffSection,
@@ -92,7 +92,7 @@ class NavigatonBarJumpTarget extends React.Component {
     (this: any)._handleClick = this._handleClick.bind(this);
   }
 
-  render(): React.Element<*> {
+  render(): React.Element<any> {
     const {diffSection, pixelRangeForDiffSection, navigationScale} = this.props;
     const lineChangeClass = sectionStatusToClassName(diffSection.status);
     const {top, bottom} = pixelRangeForDiffSection(diffSection);

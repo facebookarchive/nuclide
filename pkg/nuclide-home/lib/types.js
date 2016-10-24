@@ -13,11 +13,11 @@ import {React} from 'react-for-atom';
 export type HomeFragments = {
   // A string that a package can publish to the main part of the home panel. This allows for
   // customized welcome messages, but should be used judiciously.
-  welcome?: React.Element<*>,
+  welcome?: React.Element<any>,
   feature?: {
     title: string,
     icon: string,
-    description: React.Element<*> | string,
+    description: React.Element<any> | string,
     command?: string | () => void,
   },
   priority?: number,

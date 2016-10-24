@@ -140,7 +140,7 @@ export class NewDebuggerView extends React.Component {
     this._dispose();
   }
 
-  render(): React.Element<*> {
+  render(): React.Element<any> {
     const {
       model,
     } = this.props;

@@ -46,7 +46,7 @@ export class DebuggerCallstackComponent extends React.Component {
     this.props.bridge.setSelectedCallFrameIndex(callFrameIndex);
   }
 
-  render(): ?React.Element<*> {
+  render(): ?React.Element<any> {
     const {callstack} = this.props;
     const items = callstack == null
       ? []

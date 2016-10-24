@@ -60,7 +60,7 @@ export default class DebuggerLaunchAttachProvider {
   /**
    * Returns the UI component for input debug action.
    */
-  getComponent(action: string): ?React.Element<*> {
+  getComponent(action: string): ?React.Element<any> {
     throw new Error('abstract method');
   }
 

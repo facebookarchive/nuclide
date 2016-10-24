@@ -19,7 +19,7 @@ type Props = {
   onHide: () => void,
   onResize: (newWidth: number) => void,
   locked: boolean,
-  children?: React.Element<*>,
+  children?: React.Element<any>,
 };
 
 /**

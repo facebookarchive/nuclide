@@ -38,7 +38,7 @@ export class Panel extends React.Component {
     }
   }
 
-  render(): ?React.Element<*> {
+  render(): ?React.Element<any> {
     if (this.props.paneContainer == null) { return null; }
     return (
       <div className="nuclide-workspace-views-panel">

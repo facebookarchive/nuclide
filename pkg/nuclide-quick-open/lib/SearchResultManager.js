@@ -19,7 +19,7 @@ import type {
 } from './rpc-types';
 
 type ResultRenderer =
-  (item: FileResult, serviceName: string, dirName: string) => React.Element<*>;
+  (item: FileResult, serviceName: string, dirName: string) => React.Element<any>;
 
 import invariant from 'assert';
 import {track} from '../../nuclide-analytics';

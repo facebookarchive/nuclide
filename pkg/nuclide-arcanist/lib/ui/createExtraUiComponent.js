@@ -26,7 +26,7 @@ export function createExtraUiComponent(
 
   return class ExtraUi extends React.Component {
 
-    render(): React.Element<*> {
+    render(): React.Element<any> {
       return (
         <ArcToolbarSection model={model} />
       );

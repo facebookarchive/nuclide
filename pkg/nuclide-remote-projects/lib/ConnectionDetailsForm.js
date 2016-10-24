@@ -129,7 +129,7 @@ export default class ConnectionDetailsForm extends React.Component {
     );
   }
 
-  render(): React.Element<*> {
+  render(): React.Element<any> {
     const {className} = this.props;
     const activeAuthMethod = authMethods[this.state.selectedAuthMethodIndex];
     // We need native-key-bindings so that delete works and we need

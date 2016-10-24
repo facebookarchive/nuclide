@@ -103,7 +103,7 @@ export class RequestEditDialog extends React.Component<void, PropsType, void> {
     this.props.actionCreators.updateState({headers});
   }
 
-  render(): React.Element<*> {
+  render(): React.Element<any> {
     return (
       <div className="block">
         <div className="nuclide-edit-request-dialog">

@@ -49,7 +49,7 @@ export default class Revision extends React.Component {
     }
   }
 
-  render(): React.Element<*> {
+  render(): React.Element<any> {
     const {
       date,
       ...remainingProps

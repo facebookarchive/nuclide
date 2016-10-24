@@ -55,7 +55,7 @@ export default class DiffViewToolbar extends React.Component {
     );
   }
 
-  render(): React.Element<*> {
+  render(): React.Element<any> {
     const {filePath} = this.props;
     const hasActiveFile = filePath != null && filePath.length > 0;
     const hasDiffsUp = this._getPreviousDiffSection() != null;

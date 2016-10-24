@@ -42,7 +42,7 @@ export class LocalsComponent extends React.Component {
       value: EvaluationResult,
     },
     index: number,
-  ): ?React.Element<*> {
+  ): ?React.Element<any> {
     if (local == null) {
       // `local` might be `null` while switching threads.
       return null;
@@ -68,7 +68,7 @@ export class LocalsComponent extends React.Component {
     );
   }
 
-  render(): ?React.Element<*> {
+  render(): ?React.Element<any> {
     const {
       watchExpressionStore,
       locals,

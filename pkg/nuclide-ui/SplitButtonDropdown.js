@@ -37,7 +37,7 @@ type Props = {
 export class SplitButtonDropdown extends React.Component {
   props: Props;
 
-  render(): React.Element<*> {
+  render(): React.Element<any> {
     const selectedOption = this.props.options.find(option => (
       option.type !== 'separator' && option.value === this.props.value),
     ) || this.props.options[0];

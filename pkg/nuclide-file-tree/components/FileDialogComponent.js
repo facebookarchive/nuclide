@@ -31,7 +31,7 @@ type Props = {
   iconClassName?: string,
   initialValue?: string,
   // Message is displayed above the input.
-  message: React.Element<*>,
+  message: React.Element<any>,
   // Will be called (before `onClose`) if the user confirms.
   onConfirm: (value: boolean, options: Options) => void,
   // Will be called regardless of whether the user confirms.
@@ -101,7 +101,7 @@ class FileDialogComponent extends React.Component {
     document.removeEventListener('mousedown', this._handleDocumentMouseDown);
   }
 
-  render(): React.Element<*> {
+  render(): React.Element<any> {
     let labelClassName;
     if (this.props.iconClassName != null) {
       labelClassName = `icon ${this.props.iconClassName}`;

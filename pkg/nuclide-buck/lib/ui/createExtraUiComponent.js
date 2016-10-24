@@ -33,7 +33,7 @@ export function createExtraUiComponent(
       activeTaskType: ?TaskType,
     };
 
-    render(): React.Element<*> {
+    render(): React.Element<any> {
       return (
         <BuckToolbar
           activeTaskType={this.props.activeTaskType}

@@ -25,8 +25,8 @@ type Option = {
 };
 
 type Props = {
-  labelComponent?: (props: LabelComponentProps) => React.Element<*>,
-  optionComponent?: (props: OptionComponentProps) => React.Element<*>,
+  labelComponent?: (props: LabelComponentProps) => React.Element<any>,
+  optionComponent?: (props: OptionComponentProps) => React.Element<any>,
   className?: string,
   disabled?: boolean,
   options: Array<Option>,
@@ -72,7 +72,7 @@ export class ModalMultiSelect extends React.Component {
     };
   }
 
-  render(): React.Element<*> {
+  render(): React.Element<any> {
     const LabelComponent = this.props.labelComponent || DefaultLabelComponent;
     const selectedOptions = this.props.options
       .filter(option => this.props.value.indexOf(option.value) !== -1);
@@ -122,7 +122,7 @@ export class ModalMultiSelect extends React.Component {
     this.props.onChange(this.state.activeValues);
   }
 
-  _renderModal(): ?React.Element<*> {
+  _renderModal(): ?React.Element<any> {
     if (!this.state.showModal) { return; }
 
     return (

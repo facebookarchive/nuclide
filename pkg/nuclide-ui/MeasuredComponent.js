@@ -31,7 +31,7 @@ export type DOMMeasurements = {
 
 type Props = {
   onMeasurementsChanged: (measurements: DOMMeasurements) => void,
-  children?: React.Element<*>,
+  children?: React.Element<any>,
 };
 
 /** A container which invokes a callback function supplied in props whenever the
@@ -108,7 +108,7 @@ export class MeasuredComponent extends React.Component {
     this._mutationObserver.observe(this._domNode, observerConfig);
   }
 
-  render(): React.Element<*> {
+  render(): React.Element<any> {
     return <div ref={this._updateDomNode}>{this.props.children}</div>;
   }
 }

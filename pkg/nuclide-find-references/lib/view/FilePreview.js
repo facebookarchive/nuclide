@@ -51,7 +51,7 @@ export default class FilePreview extends React.Component {
     ]);
   }
 
-  render(): React.Element<*> {
+  render(): React.Element<any> {
     const lineNumbers = [];
     for (let i = this.props.startLine; i <= this.props.endLine; i++) {
       lineNumbers.push(

@@ -23,7 +23,7 @@ type Props = {
   iconComponent: ReactClass<any>,
 };
 
-export function TaskRunnerButton(props: Props): React.Element<*> {
+export function TaskRunnerButton(props: Props): React.Element<any> {
   const IconComponent = props.iconComponent;
   const buttonProps = {...props};
   delete buttonProps.icon;

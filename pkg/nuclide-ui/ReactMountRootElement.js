@@ -15,9 +15,9 @@ import {React, ReactDOM} from 'react-for-atom';
  * A custom HTMLElement we render React elements into.
  */
 class ReactMountRootElement extends HTMLElement {
-  _reactElement: ?React.Element<*>;
+  _reactElement: ?React.Element<any>;
 
-  setReactElement(reactElement: React.Element<*>): void {
+  setReactElement(reactElement: React.Element<any>): void {
     this._reactElement = reactElement;
   }
 

@@ -19,7 +19,7 @@ type Option = {
 };
 
 type Props = {
-  optionComponent?: (props: OptionComponentProps) => React.Element<*>,
+  optionComponent?: (props: OptionComponentProps) => React.Element<any>,
   className?: string,
   options: Array<Option>,
   value: Array<any>,
@@ -115,7 +115,7 @@ export class MultiSelectList extends React.Component {
     this.props.onChange(activeValues);
   }
 
-  render(): ?React.Element<*> {
+  render(): ?React.Element<any> {
     return (
       <div
         className="nuclide-multi-select-list select-list block"
@@ -127,7 +127,7 @@ export class MultiSelectList extends React.Component {
     );
   }
 
-  _renderOptions(): Array<React.Element<*>> {
+  _renderOptions(): Array<React.Element<any>> {
     const OptionComponent = this.props.optionComponent || DefaultOptionComponent;
     return this.props.options.map((option, index) => {
       const selected = this.state.selectedValue === option.value;

@@ -104,7 +104,7 @@ export default class BuckToolbarTargetSelector extends React.Component {
     this.props.actions.updateBuildTarget(trimmed);
   }
 
-  render(): React.Element<*> {
+  render(): React.Element<any> {
     return (
       <Combobox
         className="inline-block nuclide-buck-target-combobox"

@@ -67,7 +67,7 @@ const FIRST_SELECTED_DESCENDANT_REF: string = 'firstSelectedDescendant';
 
 type DefaultProps = {
   // Render will return this component if there are no root nodes.
-  elementToRenderWhenEmpty?: ?(null | React.Element<*>),
+  elementToRenderWhenEmpty?: ?(null | React.Element<any>),
   // A node can be confirmed if it is a selected non-container node and the user is clicks on it
   // or presses <enter>.
   onConfirmSelection: (node: LazyTreeNode) => void,
@@ -270,7 +270,7 @@ export class TreeRootComponent extends React.Component {
     atom.contextMenu.add(contextMenuObj);
   }
 
-  render(): ?React.Element<*> {
+  render(): ?React.Element<any> {
     if (this.state.roots.length === 0) {
       return this.props.elementToRenderWhenEmpty;
     }

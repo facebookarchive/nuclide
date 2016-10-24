@@ -55,7 +55,7 @@ export default class ConsoleHeader extends React.Component {
     this.props.toggleRegExpFilter();
   }
 
-  _renderProcessControlButton(source: Source): ?React.Element<*> {
+  _renderProcessControlButton(source: Source): ?React.Element<any> {
     let action;
     let label;
     let icon;
@@ -90,7 +90,7 @@ export default class ConsoleHeader extends React.Component {
     );
   }
 
-  _renderOption(optionProps: {option: {label: string, value: string}}): React.Element<*> {
+  _renderOption(optionProps: {option: {label: string, value: string}}): React.Element<any> {
     const {option} = optionProps;
     const source = this.props.sources.find(s => s.id === option.value);
     invariant(source != null);
@@ -102,7 +102,7 @@ export default class ConsoleHeader extends React.Component {
     );
   }
 
-  render(): ?React.Element<*> {
+  render(): ?React.Element<any> {
     const options = this.props.sources
       .slice()
       .sort((a, b) => sortAlpha(a.name, b.name))
@@ -177,7 +177,7 @@ type LabelProps = {
   selectedOptions: Array<{value: string, label: string}>,
 };
 
-function MultiSelectLabel(props: LabelProps): React.Element<*> {
+function MultiSelectLabel(props: LabelProps): React.Element<any> {
   const {selectedOptions} = props;
   const label = selectedOptions.length === 1
     ? selectedOptions[0].label

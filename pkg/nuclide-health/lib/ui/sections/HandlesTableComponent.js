@@ -46,7 +46,7 @@ export default class HandlesTableComponent<T: Object>
     return handleSummaries;
   }
 
-  render(): React.Element<*> {
+  render(): React.Element<any> {
     if (this.props.handles.length === 0) {
       return <div />;
     }

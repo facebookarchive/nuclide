@@ -53,7 +53,7 @@ export default class RenameBookmarkModal extends React.Component {
     );
   }
 
-  render(): React.Element<*> {
+  render(): React.Element<any> {
     return (
       <div>
         <h6 style={{marginTop: 0}}><strong>Rename bookmark</strong></h6>

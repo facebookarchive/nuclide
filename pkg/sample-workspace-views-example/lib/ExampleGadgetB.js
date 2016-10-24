@@ -21,7 +21,7 @@ export class ExampleGadgetB extends React.Component {
     return 'squirrel';
   }
 
-  render(): React.Element<*> {
+  render(): React.Element<any> {
     return (
       <div className="pane-item padded nuclide-example-gadget">
           This gadget stores its state in the topmost React component.

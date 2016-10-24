@@ -55,7 +55,7 @@ export default class SwiftPMBuildSettingsModal extends React.Component {
     };
   }
 
-  render(): React.Element<*> {
+  render(): React.Element<any> {
     return (
       <Modal onDismiss={this.props.onDismiss}>
         <div className="block">

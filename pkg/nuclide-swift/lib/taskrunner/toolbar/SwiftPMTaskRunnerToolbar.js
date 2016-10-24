@@ -28,7 +28,7 @@ export default class SwiftPMTaskRunnerToolbar extends React.Component {
     (this: any)._onChdirChange = this._onChdirChange.bind(this);
   }
 
-  render(): React.Element<*> {
+  render(): React.Element<any> {
     const settingsElements = [];
     switch (this.props.activeTaskType) {
       case SwiftPMTaskRunnerBuildTaskMetadata.type:

@@ -15,7 +15,7 @@ import {React} from 'react-for-atom';
 type ListViewItemProps = {
   index: number,
   value?: ?Object,
-  children?: ?React.Element<*>,
+  children?: ?React.Element<any>,
   onSelect: (value: ?Object, index: number) => void,
 };
 
@@ -30,7 +30,7 @@ export class ListViewItem extends React.Component {
     this.props.onSelect(value, index);
   }
 
-  render(): React.Element<*> {
+  render(): React.Element<any> {
     const {
       children,
       index,
@@ -53,7 +53,7 @@ type ListViewProps = {
    * Whether to shade even and odd items differently.
    */
   alternateBackground?: boolean,
-  children?: React.Element<*>,
+  children?: React.Element<any>,
   /**
    * Whether items can be selected.
    * If specified, `onSelect` must also be specified.
@@ -79,7 +79,7 @@ export class ListView extends React.Component {
     }
   }
 
-  render(): React.Element<*> {
+  render(): React.Element<any> {
     const {
       children,
       alternateBackground,
@@ -87,7 +87,7 @@ export class ListView extends React.Component {
     } = this.props;
     const renderedItems = React.Children.map(
       children,
-      (child: React.Element<*>, index: number) =>
+      (child: React.Element<any>, index: number) =>
         React.cloneElement(
           child,
           {

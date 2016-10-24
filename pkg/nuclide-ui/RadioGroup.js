@@ -15,7 +15,7 @@ import {React} from 'react-for-atom';
 let uid = 0;
 
 type Props = {
-  optionLabels: Array<React.Element<*>>,
+  optionLabels: Array<React.Element<any>>,
   selectedIndex: number,
   onSelectedChange(selectedIndex: number): void,
 };
@@ -44,7 +44,7 @@ export default class RadioGroup extends React.Component {
     };
   }
 
-  render(): React.Element<*> {
+  render(): React.Element<any> {
     const {onSelectedChange} = this.props;
     const checkboxes = this.props.optionLabels.map((labelContent, i) => {
       const id = 'nuclide-radiogroup-' + uid + '-' + i;

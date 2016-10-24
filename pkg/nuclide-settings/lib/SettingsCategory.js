@@ -20,7 +20,7 @@ type Props = {
 export default class SettingsCategory extends React.Component {
   props: Props;
 
-  render(): ?React.Element<*> {
+  render(): ?React.Element<any> {
 
     const children = Object.keys(this.props.packages).sort().map(pkgName => {
       const pkgData = this.props.packages[pkgName];
@@ -63,7 +63,7 @@ export default class SettingsCategory extends React.Component {
 
 }
 
-function ControlGroup(props: {children?: React.Children}): React.Element<*> {
+function ControlGroup(props: {children?: React.Children}): React.Element<any> {
   return (
     <div className="control-group">
       <div className="controls">

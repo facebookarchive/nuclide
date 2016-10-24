@@ -78,7 +78,7 @@ export class Dropdown extends React.Component {
     }
   }
 
-  render(): React.Element<*> {
+  render(): React.Element<any> {
     const selectedOption = this.props.options.find(option => (
       option.type !== 'separator' && option.value === this.props.value),
     ) || this.props.options[0];
@@ -108,7 +108,7 @@ export class Dropdown extends React.Component {
     );
   }
 
-  _renderSelectedLabel(option: Option): ?React.Element<*> {
+  _renderSelectedLabel(option: Option): ?React.Element<any> {
     let text;
     if (option == null) {
       text = '';

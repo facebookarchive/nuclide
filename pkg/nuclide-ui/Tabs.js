@@ -17,7 +17,7 @@ import nullthrows from 'nullthrows';
 export type Tab = {
   name: string,
   icon?: atom$Octicon,
-  tabContent: React.Element<*>,
+  tabContent: React.Element<any>,
 };
 
 type Props = {
@@ -52,7 +52,7 @@ export default class Tabs extends React.Component {
     }
   }
 
-  _renderTabMenu(): React.Element<*> {
+  _renderTabMenu(): React.Element<any> {
     const closeButton = this.props.closeable
       ? <div className="close-icon" onClick={this.props.onClose} />
       : null;
@@ -85,7 +85,7 @@ export default class Tabs extends React.Component {
     );
   }
 
-  render(): React.Element<*> {
+  render(): React.Element<any> {
     return (
       <div className="nuclide-tabs">
         {this._renderTabMenu()}

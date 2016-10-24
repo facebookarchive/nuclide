@@ -26,7 +26,7 @@ type ProcessWithLevel = {
 export default class ChildProcessTreeComponent extends React.Component {
   props: Props;
 
-  render(): React.Element<*> {
+  render(): React.Element<any> {
     const {childProcessesTree} = this.props;
     if (!childProcessesTree) {
       return <div />;

@@ -536,7 +536,7 @@ export default class DiffViewComponent extends React.Component {
     this._subscriptions.dispose();
   }
 
-  render(): React.Element<*> {
+  render(): React.Element<any> {
     const {
       diffSections,
       filePath,

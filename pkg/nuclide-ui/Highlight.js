@@ -17,7 +17,7 @@ export type HighlightColor = 'default' | 'info' | 'success' | 'warning' | 'error
 type Props = {
   className?: string,
   color?: HighlightColor,
-  children?: ?React.Element<*>,
+  children?: ?React.Element<any>,
 };
 
 export const HighlightColors = Object.freeze({

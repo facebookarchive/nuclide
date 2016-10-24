@@ -55,7 +55,7 @@ export default class ChangedFilesList extends React.Component {
     );
   }
 
-  render(): ?React.Element<*> {
+  render(): ?React.Element<any> {
     const {fileChanges, commandPrefix} = this.props;
     if (fileChanges.size === 0 && this.props.hideEmptyFolders) {
       return null;

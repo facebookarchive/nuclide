@@ -96,7 +96,7 @@ export class OpenFilesListComponent extends React.PureComponent {
     });
   }
 
-  render(): React.Element<*> {
+  render(): React.Element<any> {
     const sortedEntries = propsToEntries(this.props);
 
     return (

@@ -52,7 +52,7 @@ export function bindObservableAsProps<T : ReactClass<any>, U : T>(
       }
     }
 
-    render(): ?React.Element<*> {
+    render(): ?React.Element<any> {
       if (!this._resolved) {
         return null;
       }

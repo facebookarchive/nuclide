@@ -135,7 +135,7 @@ export default class NuclideSettingsPaneItem extends React.Component {
     featureConfig.set(keyPath, value);
   }
 
-  render(): ?React.Element<*> {
+  render(): ?React.Element<any> {
     const elements = [];
 
     const configData = this._getConfigData();

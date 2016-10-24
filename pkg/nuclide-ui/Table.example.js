@@ -13,11 +13,11 @@ import {React} from 'react-for-atom';
 import {Block} from './Block';
 import {Table} from './Table';
 
-const Highlight42Component = (props: {data: ?number}): ?React.Element<*> => (
+const Highlight42Component = (props: {data: ?number}): ?React.Element<any> => (
   <div style={props.data === 42 ? {fontWeight: 'bold'} : {}}>{props.data}</div>
 );
 
-const TableExample = (): React.Element<*> => {
+const TableExample = (): React.Element<any> => {
   const columns = [
     {
       title: 'first column',
@@ -136,7 +136,7 @@ class SortableTableExample extends React.Component {
     });
   }
 
-  render(): React.Element<*> {
+  render(): React.Element<any> {
     const columns = [
       {
         title: 'first',
@@ -167,7 +167,7 @@ class SortableTableExample extends React.Component {
   }
 }
 
-const EmptyTableExample = (): React.Element<*> => {
+const EmptyTableExample = (): React.Element<any> => {
   const columns = [
     {
       title: 'first column',

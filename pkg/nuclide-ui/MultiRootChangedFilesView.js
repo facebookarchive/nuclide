@@ -141,7 +141,7 @@ export class MultiRootChangedFilesView extends React.Component {
     return eventTarget.getAttribute('data-path');
   }
 
-  render(): React.Element<*> {
+  render(): React.Element<any> {
     if (this.props.fileChanges.size === 0) {
       return <div>No changes</div>;
     }

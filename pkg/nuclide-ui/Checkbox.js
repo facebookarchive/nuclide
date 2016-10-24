@@ -71,7 +71,7 @@ export class Checkbox extends React.PureComponent {
     ReactDOM.findDOMNode(this.refs.input).indeterminate = this.props.indeterminate;
   }
 
-  render(): React.Element<*> {
+  render(): React.Element<any> {
     const {
       checked,
       className,

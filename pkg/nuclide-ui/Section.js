@@ -14,9 +14,9 @@ import classnames from 'classnames';
 
 type SectionSize = 'large' | 'small';
 type Props = {
-  headline: React.Element<*> | string,
+  headline: React.Element<any> | string,
   className?: string,
-  children?: React.Element<*>,
+  children?: React.Element<any>,
   // Option A: Specify just `collapsable` for uncontrolled toggle behavior.
   collapsable?: boolean,
   // `collapsable` overrides this when specified.
@@ -68,7 +68,7 @@ export class Section extends React.Component {
     }
   }
 
-  render(): React.Element<*> {
+  render(): React.Element<any> {
     const collapsable: boolean = (this.props.collapsable != null)
       ? this.props.collapsable
       : false;

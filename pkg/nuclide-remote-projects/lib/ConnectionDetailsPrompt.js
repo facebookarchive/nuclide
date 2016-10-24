@@ -145,7 +145,7 @@ export default class ConnectionDetailsPrompt extends React.Component {
     this.props.onProfileClicked(parseInt(profileId, 10) + 1);
   }
 
-  render(): React.Element<*> {
+  render(): React.Element<any> {
 
     // If there are profiles, pre-fill the form with the information from the
     // specified selected profile.

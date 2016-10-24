@@ -21,7 +21,7 @@ type Props = {
 export default class ActiveHandlesSectionComponent extends React.Component {
   props: Props;
 
-  render(): React.Element<*> {
+  render(): React.Element<any> {
     if (
       !this.props.activeHandlesByType ||
       Object.keys(this.props.activeHandlesByType).length === 0

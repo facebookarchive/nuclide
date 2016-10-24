@@ -31,7 +31,7 @@ type Props = {
 export default class HealthPaneItemComponent extends React.Component {
   props: Props;
 
-  render(): React.Element<*> {
+  render(): React.Element<any> {
 
     const sections = {
       Stats:

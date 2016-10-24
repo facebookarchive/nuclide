@@ -26,7 +26,7 @@ type Props = {
 export class Portal extends React.Component {
   props: Props;
   _container: HTMLElement;
-  _renderedChildren: ?React.Element<*>;
+  _renderedChildren: ?React.Element<any>;
 
   componentDidMount(): void {
     // Do the initial render.
@@ -41,7 +41,7 @@ export class Portal extends React.Component {
     this._render(this.props.children, this.props.container);
   }
 
-  _render(element: ?React.Element<*>, container: HTMLElement): void {
+  _render(element: ?React.Element<any>, container: HTMLElement): void {
     if (this._container != null && (container !== this._container || element == null)) {
       ReactDOM.unmountComponentAtNode(this._container);
     }

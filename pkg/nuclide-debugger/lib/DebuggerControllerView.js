@@ -74,7 +74,7 @@ export default class DebuggerControllerView extends React.Component {
     this._updateStateFromStore(nextProps.store);
   }
 
-  render(): ?React.Element<*> {
+  render(): ?React.Element<any> {
     if (this.state.processSocket) {
       return (
         <DebuggerInspector

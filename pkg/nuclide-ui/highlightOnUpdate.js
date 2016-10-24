@@ -66,7 +66,7 @@ export function highlightOnUpdate<T : ReactClass<any>>(
       );
     }
 
-    render(): React.Element<*> {
+    render(): React.Element<any> {
       return (
         <span className={`${className} ${this.showFlash ? className + '-highlight' : ''}`}>
           <ComposedComponent {...this.props} />
