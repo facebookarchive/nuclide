@@ -10,7 +10,7 @@
  */
 
 
-import {MomoizedFieldsDeriver} from './MomoizedFieldsDeriver';
+import {MemoizedFieldsDeriver} from './MemoizedFieldsDeriver';
 import nuclideUri from '../../commons-node/nuclideUri';
 import Immutable from 'immutable';
 
@@ -139,7 +139,7 @@ export class FileTreeNode {
   prevSibling: ?FileTreeNode;
 
   conf: StoreConfigData;
-  _deriver: MomoizedFieldsDeriver;
+  _deriver: MemoizedFieldsDeriver;
 
   uri: NuclideUri;
   rootUri: NuclideUri;
@@ -196,7 +196,7 @@ export class FileTreeNode {
   constructor(
     options: FileTreeNodeOptions,
     conf: StoreConfigData,
-    _deriver: ?MomoizedFieldsDeriver = null,
+    _deriver: ?MemoizedFieldsDeriver = null,
   ) {
     this.parent = null;
     this.nextSibling = null;
@@ -205,7 +205,7 @@ export class FileTreeNode {
 
     this._assignOptions(options);
 
-    this._deriver = _deriver || new MomoizedFieldsDeriver(options.uri, options.rootUri);
+    this._deriver = _deriver || new MemoizedFieldsDeriver(options.uri, options.rootUri);
     const derived = this._deriver.buildDerivedFields(conf);
     this._assignDerived(derived);
 

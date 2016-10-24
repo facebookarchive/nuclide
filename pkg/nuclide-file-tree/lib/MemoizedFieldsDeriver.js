@@ -38,7 +38,7 @@ import {StatusCodeNumber} from '../../nuclide-hg-rpc/lib/hg-constants';
  * stored.
  *
  */
-export class MomoizedFieldsDeriver {
+export class MemoizedFieldsDeriver {
   _uri: NuclideUri;
   _rootUri: NuclideUri;
 
