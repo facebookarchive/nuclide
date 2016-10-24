@@ -29,7 +29,12 @@ export class PickRefactorComponent extends React.Component {
   };
 
   render(): React.Element<any> {
-    const elements = this.props.pickPhase.availableRefactorings
+    const {availableRefactorings} = this.props.pickPhase;
+    if (availableRefactorings.length === 0) {
+      return <div>No refactorings available at this location</div>;
+    }
+
+    const elements = availableRefactorings
       .map((r, i) => <div key={i}>{this._renderRefactorOption(r)}</div>);
     return <div>{elements}</div>;
   }
