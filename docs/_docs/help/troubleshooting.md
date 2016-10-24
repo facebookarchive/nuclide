@@ -22,17 +22,15 @@ check out the following tips:
 
 *Node Version*
 
-Verify that you are using the correct node version by running:
+A version of [Node](https://nodejs.org/) that is equal to or greater than that specified in ["node" (under "engines") in the package information](https://github.com/facebook/nuclide/blob/master/package.json) is required. Use the command-line to verify your Node version by running:
 
 ```bash
 node --version
 ```
 
-and verifying that you have version 5.10.0 or higher.
-
 *Permissions*
 
-If you get `EACCESS` errors when you `npm install`, then you likely do not have your NPM properly
+If you get `EACCESS` errors when you run the `npm install` command, you likely do not have your NPM properly
 configured for installing global packages without root permissions. To fix this problem, install in
 a directory your user owns like this:
 
@@ -54,14 +52,14 @@ npm install -g nuclide
 
 without errors.
 
-If you previously ran `npm install` as root you may need to correct the permissions on your `.npm`
+If you previously ran `npm install` as root, you may need to correct the permissions on your `.npm`
 directory by running:
 
 ```bash
 sudo chown -R userid:userid .npm
 ```
 
-where `userid` is your userid.  If you still get errors you may need to do this:
+where `userid` is your userid.  If you still get errors you may need to clear your NPM cache with:
 
 ```bash
 npm clear cache
@@ -70,32 +68,16 @@ npm clear cache
 ### Files Not Syncing
 
 Sometimes you'll have a setup that used to work, but starts to fail. Here some things you can try to make it work again:
-- If you have a version mismatch you'll want to run `npm update -g nuclide` on the server and on the client you'll want to make sure you have the same version as well.
-- Other tools that watch files may cause problems as well. Try stopping that process and stopping the file watcher as well via `watchman shutdown-server`. Then try to reconnect to the server again from Atom.
-- Try `killall node` on the server side. Then try connecting again.
+
+* If you have a version mismatch between your client and remote server Nuclide installations, you'll want to run `npm update -g nuclide` on the server and make sure you have the same version on the client as well.
+* Other tools that watch files may cause problems as well. Try stopping that process and stopping the file watcher as well via `watchman shutdown-server`. Then try to reconnect to the server again from Atom.
+* Use `killall node` on the server side, then try reconnecting.
 
 ## Environment Issues
 
-### Custom `$PATH`
-
-In general, it is perfectly fine to open Atom/Nuclide from something like the Dock. However, if
-you have installed certain Nuclide prerequisites outside of a location that is not in your default
-`$PATH`, you may run into issues. This is because does not inherit any custom changes to `$PATH` or
-other environment variables when opening Atom/Nuclide outside of a command line environment.
-
-For example, if you have installed HHVM in a location that is specified in your `.bashrc`,
-Atom/Nuclide will not see that location, and thus not be able to load HHVM for debugging Hack
-programs.
-
-However, *opening Atom/Nuclide from the command line* will inherit any custom changes to your
-environment variables.
-
-This is a [known issue](https://github.com/AtomLinter/Linter/issues/150), and there are possible
-[workarounds](http://serverfault.com/a/277034).
-
 ### Uninstalling Older Versions of Nuclide
 
-[Nuclide v0.0.35](https://github.com/facebook/nuclide/releases/tag/v0.0.35) and earlier was released
+[Nuclide v0.0.35](https://github.com/facebook/nuclide/releases/tag/v0.0.35) and earlier were released
 as many separate Atom packages. If you have any packages starting with `nuclide-`, you likely have
 some part of <=v0.0.35 still installed.
 
@@ -149,22 +131,28 @@ nuclide-toolbar \
 nuclide-type-hint \
 nuclide-url-hyperclick
 ```
+
 ## Flow Issues
 
 ### Features Not Working
 
 If the Flow features are not working in Nuclide:
 
-- Make sure `flow` is on your [`$PATH`](#flow-issues__flow-and-path).
+- Make sure `flow` is in your [`$PATH`](#flow-issues__flow-and-path) environment variable.
 - Ensure that you have `/* @flow */` at the top of your `.js` file.
 - Ensure you have an empty `.flowconfig` file in the root of of your project directory.
 
 ### `flow` and `$PATH`
 
-If installed `flow` in a place not on your `$PATH` (e.g., unzipped it in your home directory which
-is not on your `$PATH`), then you either have to update your `$PATH` or explicitly specify it.
+If you installed `flow` in a place not in your `$PATH` environment variable (e.g., unzipped it in your home directory), then you either have to update your `$PATH` environment variable or explicitly specify it.
 
-![](/static/images/help/troubleshooting-settings-nuclide-flow-executable.png)
+1. Open the Nuclide Settings tab either by pressing `Cmd+,` (`Ctrl-,` on Linux) or by going to `Package | Settings View | Open`.
+2. Select **Packages** from the list at the left, and search for `nuclide`.
+3. Click on the **Settings** button for the `nuclide` package.
+4. Scroll down until you find `nuclide-flow`.
+5. Set the location of your `flow` installation in the **Path to Flow Executable** text box.
+
+<img src="/static/images/help/troubleshooting-flow-executable-setting.png" align="middle" style="width:800px"/>
 
 ### Module Not Found
 

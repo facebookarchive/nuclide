@@ -12,13 +12,11 @@ Here is an ever-growing list of frequently asked questions around Nuclide.
 
 ## How do I open Nuclide?
 
-See [opening](/docs/editor/basics/#opening) in the Nuclide [basics](/docs/editor/basics/#opening)
-section.
+After ensuring you have Nuclide [set up](/docs/editor/setup/), see the [Opening](/docs/editor/basics/#opening) section in Nuclide [Basics](/docs/editor/basics/) for instructions.
 
 ## What version of Nuclide is installed?
 
-Determine which version of Nuclide you have installed with
-[Atom Package Manager](https://github.com/atom/apm) (APM) from the command line.
+You can determine the installed version of Nuclide with the [Atom Package Manager](https://github.com/atom/apm) (APM) from the command-line.
 
 ```bash
 $ apm list --no-dev --installed
