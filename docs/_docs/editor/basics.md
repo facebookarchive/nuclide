@@ -228,3 +228,19 @@ The Command Palette shows you every available command available in Atom and Nucl
 You can narrow down the options that match your search by typing in the text box at the top of the Command Palette.
 
 ![](/static/images/docs/editor-basics-command-palette-search.png)
+
+## Distraction-Free Mode
+
+Distraction-Free Mode enables you to eliminate any surrounding panes allowing the [Editing Area](/docs/editor/basics/#editing-area) to take over the entirety of the window without having to toggle panes off individually.
+
+To use Distraction-Free Mode in your project, click on the **Toggle Distraction-Free Mode** button in the [Nuclide toolbar](/docs/features/toolbar/#buttons).
+
+Before activating Distraction-Free Mode:
+
+![](/static/images/docs/editor-basics-distraction.png)
+
+After activating Distraction-Free Mode:
+
+![](/static/images/docs/editor-basics-distraction-free.png)
+
+>If you wish, you can activate other panes after entering Distraction-Free Mode by toggling them on with their [toolbar buttons](/docs/features/toolbar/#buttons) or the [Command Palette](#command-palette).

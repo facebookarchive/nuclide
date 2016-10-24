@@ -50,13 +50,13 @@ The Nuclide Toolbar has buttons that, when clicked, take you to a specific featu
 
 * ![](/static/images/docs/feature-toolbar-button-diagnostics.png) Toggle [Diagnostics](/docs/editor/basics/#status-bar__code-diagnostics) Table
 * ![](/static/images/docs/feature-toolbar-button-outline-view.png) Toggle [Outline View](/docs/features/outline-view/)
-* <img src="/static/images/docs/feature-toolbar-button-context-view.png" style="width: 60px"/> Toggle Context View
+* <img src="/static/images/docs/feature-toolbar-button-context-view.png" style="width: 60px"/> Toggle [Context View](/docs/features/context-view)
 * <img src="/static/images/docs/feature-toolbar-button-task-runner.png" style="width: 60px;"/> Toggle [Task Runner Toolbar](/docs/features/task-runner)
 * ![](/static/images/docs/feature-toolbar-button-debugger.png) Toggle [Debugger](/docs/features/debugger/)
 * ![](/static/images/docs/feature-toolbar-button-test-runner.png) Toggle Test Runner
 * <img src="/static/images/docs/feature-toolbar-button-console.png" style="width: 60px;"/> Toggle [Console](/docs/features/debugger/#basics__evaluation)
 * ![](/static/images/docs/feature-toolbar-button-diff-view.png) Open [Diff View](/docs/features/hg/#diff-view)
-* ![](/static/images/docs/feature-toolbar-button-distraction-free-mode.png) Toggle distraction-free mode
+* ![](/static/images/docs/feature-toolbar-button-distraction-free-mode.png) Toggle [Distraction-Free Mode](/docs/editor/basics/#distraction-free-mode)
 * ![](/static/images/docs/feature-toolbar-button-nuclide-settings.png) Open [Nuclide Settings](/docs/editor/basics/#preferences-pane)
 * ![](/static/images/docs/feature-toolbar-button-nuclide-health.png) Toggle [Nuclide health stats](/docs/features/health-statistics/)
 
