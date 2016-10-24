@@ -48,13 +48,16 @@ function itemToTree(item: any): ?FlowOutlineTree {
     case 'FunctionDeclaration':
       return functionOutline(item.id.name, item.params, extent);
     case 'ClassDeclaration':
+    case 'ClassExpression':
+      const tokenizedText = [keyword('class')];
+      let representativeName = undefined;
+      if (item.id != null) {
+        tokenizedText.push(whitespace(' '), className(item.id.name));
+        representativeName = item.id.name;
+      }
       return {
-        tokenizedText: [
-          keyword('class'),
-          whitespace(' '),
-          className(item.id.name),
-        ],
-        representativeName: item.id.name,
+        tokenizedText,
+        representativeName,
         children: itemsToTrees(item.body.body),
         ...extent,
       };
@@ -91,20 +94,9 @@ function itemToTree(item: any): ?FlowOutlineTree {
       };
     case 'ExportDeclaration':
     case 'ExportNamedDeclaration':
-      const tree = itemToTree(item.declaration);
-      if (tree == null) {
-        return null;
-      }
-      return {
-        tokenizedText: [
-          keyword('export'),
-          whitespace(' '),
-          ...tree.tokenizedText,
-        ],
-        representativeName: tree.representativeName,
-        children: tree.children,
-        ...extent,
-      };
+      return exportDeclaration(item, extent, Boolean(item.default));
+    case 'ExportDefaultDeclaration':
+      return exportDeclaration(item, extent, true);
     case 'ExpressionStatement':
       return topLevelExpressionOutline(item);
     case 'TypeAlias':
@@ -114,6 +106,28 @@ function itemToTree(item: any): ?FlowOutlineTree {
     default:
       return null;
   }
+}
+
+function exportDeclaration(
+  item: any,
+  extent: Extent,
+  isDefault: boolean,
+): ?FlowOutlineTree {
+  const tree = itemToTree(item.declaration);
+  if (tree == null) {
+    return null;
+  }
+  const tokenizedText = [keyword('export'), whitespace(' ')];
+  if (isDefault) {
+    tokenizedText.push(keyword('default'), whitespace(' '));
+  }
+  tokenizedText.push(...tree.tokenizedText);
+  return {
+    tokenizedText,
+    representativeName: tree.representativeName,
+    children: tree.children,
+    ...extent,
+  };
 }
 
 function paramReducer(

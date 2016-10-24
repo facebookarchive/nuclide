@@ -26,3 +26,5 @@ module.exports = {
 // We should not render these
 module.notexports = {};
 notmodule.exports = {};
+
+export default class {}

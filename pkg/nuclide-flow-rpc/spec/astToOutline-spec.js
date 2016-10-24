@@ -500,6 +500,25 @@ const expectedExportsOutline: Array<FlowOutlineTree> = [
       },
     ],
   },
+  {
+    tokenizedText: [
+      {value: 'export', kind: 'keyword'},
+      {value: ' ', kind: 'whitespace'},
+      {value: 'default', kind: 'keyword'},
+      {value: ' ', kind: 'whitespace'},
+      {value: 'class', kind: 'keyword'},
+    ],
+    represenativeName: undefined,
+    startPosition: {
+      line: 29,
+      column: 0,
+    },
+    endPosition: {
+      line: 29,
+      column: 23,
+    },
+    children: [],
+  },
 ];
 
 const expectedTypesOutline = [
