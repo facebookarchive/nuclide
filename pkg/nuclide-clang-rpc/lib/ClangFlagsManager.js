@@ -246,15 +246,9 @@ export default class ClangFlagsManager {
     buckProjectRoot: string,
     target: string,
   ): Promise<Map<string, ClangFlags>> {
-    // TODO(mbolin): The architecture should be chosen from a dropdown menu like
-    // it is in Xcode rather than hardcoding things to iphonesimulator-x86_64.
-    let arch;
-    if (process.platform === 'darwin') {
-      arch = 'iphonesimulator-x86_64';
-    } else {
-      arch = 'default';
-    }
-    const buildTarget = target + '#compilation-database,' + arch;
+    // TODO(t12973165): Allow configuring a custom flavor.
+    // For now, this seems to use cxx.default_platform, which tends to be correct.
+    const buildTarget = target + '#compilation-database';
     // Since this is a background process, avoid stressing the system.
     const maxLoad = os.cpus().length / 2;
     const buildReport = await BuckService.build(

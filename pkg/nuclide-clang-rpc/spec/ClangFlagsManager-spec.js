@@ -36,11 +36,7 @@ describe('ClangFlagsManager', () => {
       {
         success: true,
         results: {
-          '//test#compilation-database,iphonesimulator-x86_64': {
-            output: 'compile_commands.json',
-          },
-          // For testing on non-Mac machines.
-          '//test#compilation-database,default': {
+          '//test#compilation-database': {
             output: 'compile_commands.json',
           },
         },
