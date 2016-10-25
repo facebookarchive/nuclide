@@ -806,9 +806,9 @@
       "dev": true
     },
     "eslint-plugin-flowtype": {
-      "version": "2.21.0",
-      "from": "eslint-plugin-flowtype@2.21.0",
-      "resolved": "https://registry.npmjs.org/eslint-plugin-flowtype/-/eslint-plugin-flowtype-2.21.0.tgz",
+      "version": "2.23.1",
+      "from": "eslint-plugin-flowtype@2.23.1",
+      "resolved": "https://registry.npmjs.org/eslint-plugin-flowtype/-/eslint-plugin-flowtype-2.23.1.tgz",
       "dev": true
     },
     "eslint-plugin-jasmine": {

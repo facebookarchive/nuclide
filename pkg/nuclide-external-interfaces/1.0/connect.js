@@ -30,7 +30,7 @@ type connect$ServerStackItem = {
 };
 
 declare class connect$Server {
-  (req: http$fixed$IncomingMessage, res: http$fixed$ServerResponse, next?: Function): void;
+  (req: http$fixed$IncomingMessage, res: http$fixed$ServerResponse, next?: Function): void,
 
   route: string,
   stack: Array<connect$ServerStackItem>,

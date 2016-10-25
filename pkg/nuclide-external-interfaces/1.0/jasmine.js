@@ -61,7 +61,7 @@ type JasmineSpyCall = {
 };
 
 type JasmineSpy = {
-  (...args: Array<any>): any;
+  (...args: Array<any>): any,
   andCallFake(fake: (...args: Array<any>) => mixed): JasmineSpy,
   andCallThrough(): JasmineSpy,
   argsForCall: Array<Array<mixed>>,

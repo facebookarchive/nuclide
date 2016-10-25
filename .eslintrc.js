@@ -295,7 +295,7 @@ module.exports = {
     'babel/object-curly-spacing': 0,
     'babel/object-shorthand': 0,
     // Babel (not in eslint)
-    'babel/flow-object-type': [1, 'comma'],
+    'babel/flow-object-type': 0,
     'babel/no-await-in-loop': 1,
 
     // flowtype (https://github.com/gajus/eslint-plugin-flowtype)
@@ -305,6 +305,7 @@ module.exports = {
     'flowtype/generic-spacing': 1,
     'flowtype/no-dupe-keys': 0,
     'flowtype/no-weak-types': 0,
+    'flowtype/object-type-delimiter': 1,
     'flowtype/require-parameter-type': 0,
     'flowtype/require-return-type': 0,
     'flowtype/require-valid-file-annotation': 0,
