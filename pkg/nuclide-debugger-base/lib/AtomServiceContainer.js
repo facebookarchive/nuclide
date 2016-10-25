@@ -33,13 +33,15 @@ export function getNotificationService(): ?raiseNativeNotificationFunc {
   return _raiseNativeNotification;
 }
 
-// TODO: refactor this function to work with other providers(like hhvm).
-export function registerOutputWindowLogging(userOutputStream: Observable<string>): ?IDisposable {
+export function registerConsoleLogging(
+  sourceId: string,
+  userOutputStream: Observable<string>,
+): ?IDisposable {
   const api = getOutputService();
   let outputDisposable = null;
   if (api != null) {
     outputDisposable = api.registerOutputProvider({
-      id: 'lldb debugger',
+      id: sourceId,
       messages: userOutputStream.map(message => JSON.parse(message)),
     });
   }

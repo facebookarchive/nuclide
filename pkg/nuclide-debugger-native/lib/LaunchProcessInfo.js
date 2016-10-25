@@ -22,7 +22,7 @@ import invariant from 'assert';
 import {LldbDebuggerInstance} from './LldbDebuggerInstance';
 import {
   DebuggerProcessInfo,
-  registerOutputWindowLogging,
+  registerConsoleLogging,
 } from '../../nuclide-debugger-base';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {getConfig} from './utils';
@@ -46,8 +46,10 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
     }
 
     let debugSession = null;
-    let outputDisposable
-      = registerOutputWindowLogging(rpcService.getOutputWindowObservable().refCount());
+    let outputDisposable = registerConsoleLogging(
+      'C++ debugger',
+      rpcService.getOutputWindowObservable().refCount(),
+    );
     try {
       await rpcService.launch(this._launchTargetInfo);
       // Start websocket server with Chrome after launch completed.

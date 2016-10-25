@@ -21,5 +21,5 @@ export {
   getOutputService,
   setNotificationService,
   getNotificationService,
-  registerOutputWindowLogging,
+  registerConsoleLogging,
 } from './AtomServiceContainer';

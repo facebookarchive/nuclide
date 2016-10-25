@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {getOutputService} from '../../nuclide-debugger-base';
+import {registerConsoleLogging} from '../../nuclide-debugger-base';
 import utils from './utils';
 const {log, logError} = utils;
 import {Observable} from 'rxjs';
@@ -79,32 +79,21 @@ export class ObservableManager {
   }
 
   _registerOutputWindowLogging(sharedOutputWindowMessages: Observable<Object>): void {
-    const api = getOutputService();
-    if (api != null) {
-      const messages = sharedOutputWindowMessages
-        .filter(messageObj => messageObj.method === 'Console.messageAdded')
-        .map(messageObj => {
-          return {
-            level: messageObj.params.message.level,
-            text: messageObj.params.message.text,
-          };
+    const filteredMesages = sharedOutputWindowMessages
+      .filter(messageObj => messageObj.method === 'Console.messageAdded')
+      .map(messageObj => {
+        return JSON.stringify({
+          level: messageObj.params.message.level,
+          text: messageObj.params.message.text,
         });
-      this._disposables.add(
-        sharedOutputWindowMessages.subscribe({
-          complete: this._handleOutputWindowEnd.bind(this),
-        }),
-        api.registerOutputProvider({
-          id: 'hhvm debugger',
-          messages,
-        }),
-      );
-    } else {
-      logError('Cannot get output window service.');
+      });
+    const outputDisposable = registerConsoleLogging(
+      'PHP Debugger',
+      filteredMesages,
+    );
+    if (outputDisposable != null) {
+      this._disposables.add(outputDisposable);
     }
-  }
-
-  _handleOutputWindowEnd(): void {
-    log('Output window observable ended.');
   }
 
   _handleNotificationMessage(message: NotificationMessage): void {

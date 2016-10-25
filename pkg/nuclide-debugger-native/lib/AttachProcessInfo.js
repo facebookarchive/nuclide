@@ -19,7 +19,7 @@ import type {
 
 import {
   DebuggerProcessInfo,
-  registerOutputWindowLogging,
+  registerConsoleLogging,
 } from '../../nuclide-debugger-base';
 import invariant from 'assert';
 import {LldbDebuggerInstance} from './LldbDebuggerInstance';
@@ -41,8 +41,10 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
   async debug(): Promise<DebuggerInstance> {
     const rpcService = this._getRpcService();
     let debugSession = null;
-    let outputDisposable
-      = registerOutputWindowLogging(rpcService.getOutputWindowObservable().refCount());
+    let outputDisposable = registerConsoleLogging(
+      'C++ Debugger',
+      rpcService.getOutputWindowObservable().refCount(),
+    );
     try {
       await rpcService.attach(this._targetInfo);
       // Start websocket server with Chrome after attach completed.
