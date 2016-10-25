@@ -12,6 +12,7 @@
 import type {
   DiffSection,
   DiffSectionStatusType,
+  LineMapping,
   OffsetMap,
   TextDiff,
 } from './types';
@@ -37,12 +38,15 @@ type DiffChunk = {
 export function computeDiff(oldText: string, newText: string): TextDiff {
   const {addedLines, removedLines, chunks} = _computeDiffChunks(oldText, newText);
   const {oldLineOffsets, newLineOffsets} = _computeOffsets(chunks);
+  const {oldToNew, newToOld} = _computeLineDiffMapping(chunks);
 
   return {
     addedLines,
     removedLines,
     oldLineOffsets,
     newLineOffsets,
+    oldToNew,
+    newToOld,
   };
 }
 
@@ -208,6 +212,62 @@ export function computeDiffSections(
   }
 
   return diffSections;
+}
+
+export function _computeLineDiffMapping(
+  diffChunks: Array<ChunkPiece>,
+): LineMapping {
+  const newToOld = [];
+  const oldToNew = [];
+
+  let oldLineCount = 0;
+  let newLineCount = 0;
+
+  // Used to track the changed sections.
+  let addedCount = 0;
+  let removedCount = 0;
+
+  for (const chunk of diffChunks) {
+    const {added, removed, offset, count} = chunk;
+    if (added) {
+      addedCount = count;
+      newLineCount += count;
+    } else if (removed) {
+      removedCount = count;
+      oldLineCount += count;
+    } else {
+      if (addedCount > 0 && removedCount > 0) {
+        // There's a changed section.
+        const changedCount = Math.min(addedCount, removedCount);
+        for (let i = changedCount; i > 0; i--) {
+          oldToNew.push(newLineCount - i);
+          newToOld.push(oldLineCount - i);
+        }
+      }
+      if (offset < 0) {
+        for (let i = offset; i < 0; i++) {
+          oldToNew.push(newLineCount);
+        }
+      } else if (offset > 0) {
+        for (let i = 0; i < offset; i++) {
+          newToOld.push(oldLineCount);
+        }
+      }
+      for (let i = 0; i < count; i++) {
+        newToOld.push(oldLineCount);
+        oldToNew.push(newLineCount);
+        newLineCount++;
+        oldLineCount++;
+      }
+      addedCount = 0;
+      removedCount = 0;
+    }
+  }
+
+  return {
+    newToOld,
+    oldToNew,
+  };
 }
 
 function *getLineSectionsWithStatus(

@@ -52,11 +52,16 @@ export type RevisionsState = {
 
 export type OffsetMap = Map<number, number>;
 
-export type TextDiff = {
+export type TextDiff = LineMapping & {
   addedLines: Array<number>,
   removedLines: Array<number>,
   oldLineOffsets: OffsetMap,
   newLineOffsets: OffsetMap,
+};
+
+export type LineMapping = {
+  newToOld: Array<number>,
+  oldToNew: Array<number>,
 };
 
 export type HgDiffState = {

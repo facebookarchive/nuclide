@@ -13,6 +13,7 @@ import type {
   DiffSection,
   DiffSectionStatusType,
   DiffModeType,
+  LineMapping,
   OffsetMap,
   UIElement,
 } from './types';
@@ -77,6 +78,7 @@ type State = {
   newEditorState: EditorState,
   diffSections: Array<DiffSection>,
   selectedDiffSectionIndex: number,
+  lineMapping: LineMapping,
 };
 
 function initialEditorState(): EditorState {
@@ -132,6 +134,7 @@ function getInitialState(): State {
     newEditorState: initialEditorState(),
     oldEditorState: initialEditorState(),
     selectedDiffSectionIndex: -1,
+    lineMapping: {oldToNew: [], newToOld: []},
   };
 }
 
@@ -399,6 +402,7 @@ export default class DiffViewComponent extends React.Component {
       isLoadingFileDiff,
       oldEditorState: oldState,
       newEditorState: newState,
+      lineMapping,
     } = this.state;
     const oldEditorComponent = ReactDOM.render(
         <DiffViewEditorPane
@@ -407,6 +411,7 @@ export default class DiffViewComponent extends React.Component {
           filePath={filePath}
           isLoading={isLoadingFileDiff}
           offsets={oldState.offsets}
+          lineMapping={lineMapping}
           highlightedLines={oldState.highlightedLines}
           textContent={oldState.text}
           inlineElements={oldState.inlineElements}
@@ -426,6 +431,7 @@ export default class DiffViewComponent extends React.Component {
           filePath={filePath}
           isLoading={isLoadingFileDiff}
           offsets={newState.offsets}
+          lineMapping={lineMapping}
           highlightedLines={newState.highlightedLines}
           inlineElements={newState.inlineElements}
           onDidUpdateTextEditorElement={this._onDidUpdateTextEditorElement}
@@ -621,8 +627,14 @@ export default class DiffViewComponent extends React.Component {
     const oldEditorElements = inlineComponents.filter(component => !component.inNewEditor);
     const newEditorElements = inlineComponents.filter(component => component.inNewEditor);
 
-    const {addedLines, removedLines, oldLineOffsets, newLineOffsets} =
-      computeDiff(oldContents, newContents);
+    const {
+      addedLines,
+      removedLines,
+      oldLineOffsets,
+      newLineOffsets,
+      newToOld,
+      oldToNew,
+    } = computeDiff(oldContents, newContents);
 
     const oldEditorState = {
       revisionTitle: fromRevisionTitle,
@@ -654,6 +666,7 @@ export default class DiffViewComponent extends React.Component {
 
     this.setState({
       diffSections,
+      lineMapping: {oldToNew, newToOld},
       filePath,
       isLoadingFileDiff,
       newEditorState,

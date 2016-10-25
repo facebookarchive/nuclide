@@ -10,7 +10,7 @@
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {HighlightedLines, OffsetMap, UIElement} from './types';
+import type {HighlightedLines, LineMapping, OffsetMap, UIElement} from './types';
 
 import {arrayEqual, mapEqual} from '../../commons-node/collection';
 import {React} from 'react-for-atom';
@@ -31,6 +31,7 @@ const DEBOUNCE_SCROLL_MS = 50;
 type Props = {
   filePath: NuclideUri,
   isLoading: boolean,
+  lineMapping: LineMapping,
   textBuffer: atom$TextBuffer,
   offsets: OffsetMap,
   highlightedLines: {

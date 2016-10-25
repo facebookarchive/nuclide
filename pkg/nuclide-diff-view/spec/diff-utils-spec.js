@@ -24,15 +24,31 @@ const {
 describe('diff-utils', () => {
   describe('computeDiff()', () => {
     it('diffs two empty texts', () => {
-      const {addedLines, removedLines, oldLineOffsets, newLineOffsets} = computeDiff('', '');
+      const {
+        addedLines,
+        removedLines,
+        oldLineOffsets,
+        newLineOffsets,
+        newToOld,
+        oldToNew,
+      } = computeDiff('', '');
       expect(addedLines).toEqual([]);
       expect(removedLines).toEqual([]);
       expect(oldLineOffsets.size).toBe(0);
       expect(newLineOffsets.size).toBe(0);
+      expect(newToOld).toEqual([0]);
+      expect(oldToNew).toEqual([0]);
     });
 
     it('diffs simple text with one line changes', () => {
-      const {addedLines, removedLines, oldLineOffsets, newLineOffsets} = computeDiff(
+      const {
+        addedLines,
+        removedLines,
+        oldLineOffsets,
+        newLineOffsets,
+        newToOld,
+        oldToNew,
+      } = computeDiff(
 `simple text
 on multiline
 same end line`,
@@ -45,6 +61,8 @@ same end line`,
       expect(removedLines).toEqual([0]); // the first line was removed.
       expect(oldLineOffsets).toEqual(new Map([[2, 1]])); // offset 1 for the new added line.
       expect(newLineOffsets).toEqual(new Map([[0, 1]])); // offset 1 for the first removed line.
+      expect(newToOld).toEqual([1, 2, 2]);
+      expect(oldToNew).toEqual([0, 0, 2]);
     });
 
     it('diffs multi-line text changes', () => {
