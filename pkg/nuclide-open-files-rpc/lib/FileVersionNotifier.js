@@ -56,14 +56,14 @@ export class FileVersionNotifier {
     return this._versions.get(filePath);
   }
 
-  waitForBufferAtVersion(fileVersion: FileVersion): Promise<void> {
+  waitForBufferAtVersion(fileVersion: FileVersion): Promise<boolean> {
     const filePath = fileVersion.filePath;
     const version = fileVersion.version;
     const currentVersion = this._versions.get(filePath);
     if (currentVersion === version) {
-      return Promise.resolve();
+      return Promise.resolve(true);
     } else if (currentVersion != null && currentVersion > version) {
-      return Promise.reject(createRejectError());
+      return Promise.resolve(false);
     }
     const request = new Request(filePath, version);
     this._requests.add(filePath, request);
@@ -82,8 +82,8 @@ export class FileVersionNotifier {
     const remaining = requests.filter(request => request.changeCount > currentVersion);
     this._requests.set(filePath, remaining);
 
-    resolves.forEach(request => request.resolve());
-    rejects.forEach(request => request.reject(createRejectError()));
+    resolves.forEach(request => request.resolve(true));
+    rejects.forEach(request => request.resolve(false));
   }
 }
 
@@ -91,7 +91,7 @@ function createRejectError(): Error {
   return new Error('File modified past requested change');
 }
 
-class Request extends Deferred<void> {
+class Request extends Deferred<boolean> {
   filePath: NuclideUri;
   changeCount: number;
 

@@ -63,11 +63,14 @@ export class CodeFormatProvider<T: LanguageService> {
     return trackOperationTiming(this._analyticsEventName, async () => {
       const fileVersion = await getFileVersionOfEditor(editor);
       const languageService = this._connectionToLanguageService.getForUri(editor.getPath());
-      if (languageService == null || fileVersion == null) {
-        return editor.getTextInBufferRange(range);
+      if (languageService != null && fileVersion != null) {
+        const result = await (await languageService).formatSource(fileVersion, range);
+        if (result != null) {
+          return result;
+        }
       }
 
-      return await (await languageService).formatSource(fileVersion, range);
+      return editor.getTextInBufferRange(range);
     });
   }
 }

@@ -379,7 +379,7 @@ class HackLanguageAnalyzer {
     filePath: NuclideUri,
     buffer: atom$TextBuffer,
     range: atom$Range,
-  ): Promise<string> {
+  ): Promise<?string> {
     const contents = buffer.getText();
     const startOffset = buffer.characterIndexForPosition(range.start) + 1;
     const endOffset = buffer.characterIndexForPosition(range.end) + 1;

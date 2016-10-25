@@ -291,6 +291,7 @@ describe('nuclide-open-files', () => {
         const fileVersion = await getFileVersionOfBuffer(buffer);
         invariant(fileVersion != null);
         const serverBuffer = await getBufferAtVersion(fileVersion);
+        invariant(serverBuffer != null);
         expect(serverBuffer.getText()).toEqual('contents1');
 
         buffer.destroy();
@@ -305,11 +306,14 @@ describe('nuclide-open-files', () => {
         const fileVersion = await getFileVersionOfBuffer(buffer);
         invariant(fileVersion != null);
         fileVersion.version++;
-        const serverBuffer = getBufferAtVersion(fileVersion);
+        const serverBufferPromise = getBufferAtVersion(fileVersion);
 
         buffer.append('42');
 
-        expect((await serverBuffer).getText()).toEqual('contents142');
+        invariant(serverBufferPromise != null);
+        const serverBuffer = await serverBufferPromise;
+        invariant(serverBuffer != null);
+        expect(serverBuffer.getText()).toEqual('contents142');
 
         buffer.destroy();
       });
@@ -328,14 +332,8 @@ describe('nuclide-open-files', () => {
         invariant(fileVersion != null);
         await getBufferAtVersion(fileVersion);
 
-        let hadError = false;
-        try {
-          await getBufferAtVersion(outdatedFileVersion);
-        } catch (e) {
-          hadError = true;
-        }
-
-        expect(hadError).toBe(true);
+        const result = await getBufferAtVersion(outdatedFileVersion);
+        expect(result).toBe(null);
 
         buffer.destroy();
       });
@@ -343,7 +341,7 @@ describe('nuclide-open-files', () => {
 
     it('get version before file opens', () => {
       waitsForPromise(async () => {
-        const serverBuffer = getBufferAtVersion({
+        const serverBufferPromise = getBufferAtVersion({
           notifier,
           filePath: 'f3',
           version: 1,
@@ -352,7 +350,9 @@ describe('nuclide-open-files', () => {
         const buffer = new TextBuffer({filePath: 'f3', text: 'contents3'});
         atom.project.addBuffer(buffer);
 
-        expect((await serverBuffer).getText()).toEqual('contents3');
+        const serverBuffer = await serverBufferPromise;
+        invariant(serverBuffer != null);
+        expect(serverBuffer.getText()).toEqual('contents3');
 
         buffer.destroy();
       });
@@ -369,14 +369,9 @@ describe('nuclide-open-files', () => {
         const buffer = new TextBuffer({filePath: 'f3', text: 'contents1'});
         atom.project.addBuffer(buffer);
 
-        let hadError = false;
-        try {
-          await serverBuffer;
-        } catch (e) {
-          hadError = true;
-        }
+        const result = await serverBuffer;
 
-        expect(hadError).toBe(true);
+        expect(result).toBe(null);
 
         buffer.destroy();
       });
@@ -389,8 +384,9 @@ describe('nuclide-open-files', () => {
 
         const fileVersion = await getFileVersionOfBuffer(buffer);
         invariant(fileVersion != null);
-        expect((await getBufferAtVersion(fileVersion)).getText())
-          .toEqual('contents3');
+        const serverBuffer = await getBufferAtVersion(fileVersion);
+        invariant(serverBuffer != null);
+        expect(serverBuffer.getText()).toEqual('contents3');
 
         const recievedClose = (await getFileCache()).observeFileEvents()
           .filter(event => event.kind === 'close')
@@ -404,7 +400,9 @@ describe('nuclide-open-files', () => {
         atom.project.addBuffer(buffer2);
         const fileVersion2 = await getFileVersionOfBuffer(buffer2);
         invariant(fileVersion2 != null);
-        expect((await getBufferAtVersion(fileVersion2)).getText())
+        const serverBuffer2 = await getBufferAtVersion(fileVersion2);
+        invariant(serverBuffer2 != null);
+        expect(serverBuffer2.getText())
           .toEqual('contents4');
 
         buffer2.destroy();

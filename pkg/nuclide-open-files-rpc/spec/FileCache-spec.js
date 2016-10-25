@@ -39,9 +39,12 @@ describe('FileCache', () => {
   // Initialize with a placeholder
   let finishEvents: () => Promise<Array<Object>> = async () => [];
 
-  async function getFileContentsByVersion(filePath, changeCount): Promise<string> {
-    return (await cache.getBufferAtVersion(cache.createFileVersion(filePath, changeCount)))
-      .getText();
+  async function getFileContentsByVersion(filePath, changeCount): Promise<?string> {
+    const buffer = await cache.getBufferAtVersion(cache.createFileVersion(filePath, changeCount));
+    if (buffer == null) {
+      return null;
+    }
+    return buffer.getText();
   }
 
   beforeEach(() => {
@@ -467,13 +470,8 @@ describe('FileCache', () => {
         },
         contents: 'contents1',
       });
-      let hadError = false;
-      try {
-        await getFileContentsByVersion('f1', 2);
-      } catch (e) {
-        hadError = true;
-      }
-      expect(hadError).toBe(true);
+      const value = await getFileContentsByVersion('f1', 2);
+      expect(value).toBe(null);
     });
   });
   it('getBufferAtVersion on next version', () => {
@@ -538,13 +536,7 @@ describe('FileCache', () => {
         },
         contents: 'contents1',
       });
-      let hadError = false;
-      try {
-        await result;
-      } catch (e) {
-        hadError = true;
-      }
-      expect(hadError).toBe(true);
+      expect(await result).toBe(null);
     });
   });
   it('getBufferAtVersion on sync open', () => {

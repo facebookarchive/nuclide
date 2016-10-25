@@ -90,7 +90,7 @@ export interface LanguageService {
   formatSource(
     fileVersion: FileVersion,
     range: atom$Range,
-  ): Promise<string>,
+  ): Promise<?string>,
 
   getEvaluationExpression(
     fileVersion: FileVersion,

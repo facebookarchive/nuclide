@@ -127,13 +127,13 @@ class HackProcess extends RpcProcess {
     return this.getService('HackConnectionService');
   }
 
-  async getBufferAtVersion(fileVersion: FileVersion): Promise<atom$TextBuffer> {
+  async getBufferAtVersion(fileVersion: FileVersion): Promise<?atom$TextBuffer> {
     const buffer = await getBufferAtVersion(fileVersion);
     // Must also wait for edits to be sent to Hack
-    await this._fileVersionNotifier.waitForBufferAtVersion(fileVersion);
-    invariant(buffer.changeCount === fileVersion.version,
-      'File changed waiting for edits to be sent to Hack');
-    return buffer;
+    if (!(await this._fileVersionNotifier.waitForBufferAtVersion(fileVersion))) {
+      return null;
+    }
+    return buffer != null && buffer.changeCount === fileVersion.version ? buffer : null;
   }
 
   async getAutocompleteSuggestions(
@@ -144,6 +144,9 @@ class HackProcess extends RpcProcess {
     const filePath = fileVersion.filePath;
     logger.logTrace(`Attempting Hack Autocomplete: ${filePath}, ${position.toString()}`);
     const buffer = await this.getBufferAtVersion(fileVersion);
+    if (buffer == null) {
+      return [];
+    }
     const contents = buffer.getText();
     const offset = buffer.characterIndexForPosition(position);
 

@@ -89,7 +89,7 @@ export type LanguageAnalyzer = {
     filePath: NuclideUri,
     buffer: atom$TextBuffer,
     range: atom$Range,
-  ): Promise<string>,
+  ): Promise<?string>,
 
   getEvaluationExpression(
     filePath: NuclideUri,
@@ -119,6 +119,9 @@ export class ServerLanguageService {
   ): Promise<?DiagnosticProviderUpdate> {
     const filePath = fileVersion.filePath;
     const buffer = await getBufferAtVersion(fileVersion);
+    if (buffer == null) {
+      return null;
+    }
     return await this._analyzer.getDiagnostics(filePath, buffer);
   }
 
@@ -133,6 +136,9 @@ export class ServerLanguageService {
   ): Promise<Array<Completion>> {
     const filePath = fileVersion.filePath;
     const buffer = await getBufferAtVersion(fileVersion);
+    if (buffer == null) {
+      return [];
+    }
     return await this._analyzer.getAutocompleteSuggestions(
       filePath, buffer, position, activatedManually);
   }
@@ -143,6 +149,9 @@ export class ServerLanguageService {
   ): Promise<?DefinitionQueryResult> {
     const filePath = fileVersion.filePath;
     const buffer = await getBufferAtVersion(fileVersion);
+    if (buffer == null) {
+      return null;
+    }
     return await this._analyzer.getDefinition(filePath, buffer, position);
   }
 
@@ -159,6 +168,9 @@ export class ServerLanguageService {
   ): Promise<?FindReferencesReturn> {
     const filePath = fileVersion.filePath;
     const buffer = await getBufferAtVersion(fileVersion);
+    if (buffer == null) {
+      return null;
+    }
     return await this._analyzer.findReferences(filePath, buffer, position);
   }
 
@@ -173,12 +185,18 @@ export class ServerLanguageService {
   ): Promise<?Outline> {
     const filePath = fileVersion.filePath;
     const buffer = await getBufferAtVersion(fileVersion);
+    if (buffer == null) {
+      return null;
+    }
     return await this._analyzer.getOutline(filePath, buffer);
   }
 
   async typeHint(fileVersion: FileVersion, position: atom$Point): Promise<?TypeHint> {
     const filePath = fileVersion.filePath;
     const buffer = await getBufferAtVersion(fileVersion);
+    if (buffer == null) {
+      return null;
+    }
     return await this._analyzer.typeHint(filePath, buffer, position);
   }
 
@@ -188,15 +206,21 @@ export class ServerLanguageService {
   ): Promise<Array<atom$Range>> {
     const filePath = fileVersion.filePath;
     const buffer = await getBufferAtVersion(fileVersion);
+    if (buffer == null) {
+      return [];
+    }
     return await this._analyzer.highlight(filePath, buffer, position);
   }
 
   async formatSource(
     fileVersion: FileVersion,
     range: atom$Range,
-  ): Promise<string> {
+  ): Promise<?string> {
     const filePath = fileVersion.filePath;
     const buffer = await getBufferAtVersion(fileVersion);
+    if (buffer == null) {
+      return null;
+    }
     return await this._analyzer.formatSource(filePath, buffer, range);
   }
 
@@ -206,6 +230,9 @@ export class ServerLanguageService {
   ): Promise<?NuclideEvaluationExpression> {
     const filePath = fileVersion.filePath;
     const buffer = await getBufferAtVersion(fileVersion);
+    if (buffer == null) {
+      return null;
+    }
     return await this._analyzer.getEvaluationExpression(filePath, buffer, position);
   }
 

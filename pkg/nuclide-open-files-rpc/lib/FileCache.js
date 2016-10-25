@@ -128,16 +128,12 @@ export class FileCache {
     return this._buffers.get(filePath);
   }
 
-  async getBufferAtVersion(fileVersion: FileVersion): Promise<atom$TextBuffer> {
-    await this._requests.waitForBufferAtVersion(fileVersion);
-
-    const buffer = this._buffers.get(fileVersion.filePath);
-    if (buffer == null) {
-      throw new Error('File closed at requested revision');
-    } if (buffer.changeCount !== fileVersion.version) {
-      throw new Error('Sync error. File at unexpected version');
+  async getBufferAtVersion(fileVersion: FileVersion): Promise<?atom$TextBuffer> {
+    if (!(await this._requests.waitForBufferAtVersion(fileVersion))) {
+      return null;
     }
-    return buffer;
+    const buffer = this.getBuffer(fileVersion.filePath);
+    return buffer != null && buffer.changeCount === fileVersion.version ? buffer : null;
   }
 
   observeFileEvents(): Observable<LocalFileEvent> {
