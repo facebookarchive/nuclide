@@ -255,13 +255,13 @@
     },
     "babel-plugin-syntax-async-functions": {
       "version": "6.13.0",
-      "from": "babel-plugin-syntax-async-functions@6.13.0",
+      "from": "babel-plugin-syntax-async-functions@>=6.8.0 <7.0.0",
       "resolved": "https://registry.npmjs.org/babel-plugin-syntax-async-functions/-/babel-plugin-syntax-async-functions-6.13.0.tgz",
       "dev": true
     },
     "babel-plugin-syntax-class-properties": {
       "version": "6.13.0",
-      "from": "babel-plugin-syntax-class-properties@6.13.0",
+      "from": "babel-plugin-syntax-class-properties@>=6.8.0 <7.0.0",
       "resolved": "https://registry.npmjs.org/babel-plugin-syntax-class-properties/-/babel-plugin-syntax-class-properties-6.13.0.tgz",
       "dev": true
     },
@@ -273,26 +273,20 @@
     },
     "babel-plugin-syntax-flow": {
       "version": "6.18.0",
-      "from": "babel-plugin-syntax-flow@6.18.0",
+      "from": "babel-plugin-syntax-flow@>=6.18.0 <7.0.0",
       "resolved": "https://registry.npmjs.org/babel-plugin-syntax-flow/-/babel-plugin-syntax-flow-6.18.0.tgz",
       "dev": true
     },
     "babel-plugin-syntax-jsx": {
       "version": "6.18.0",
-      "from": "babel-plugin-syntax-jsx@6.18.0",
+      "from": "babel-plugin-syntax-jsx@>=6.8.0 <7.0.0",
       "resolved": "https://registry.npmjs.org/babel-plugin-syntax-jsx/-/babel-plugin-syntax-jsx-6.18.0.tgz",
       "dev": true
     },
     "babel-plugin-syntax-object-rest-spread": {
       "version": "6.13.0",
-      "from": "babel-plugin-syntax-object-rest-spread@6.13.0",
+      "from": "babel-plugin-syntax-object-rest-spread@>=6.8.0 <7.0.0",
       "resolved": "https://registry.npmjs.org/babel-plugin-syntax-object-rest-spread/-/babel-plugin-syntax-object-rest-spread-6.13.0.tgz",
-      "dev": true
-    },
-    "babel-plugin-syntax-trailing-function-commas": {
-      "version": "6.13.0",
-      "from": "babel-plugin-syntax-trailing-function-commas@6.13.0",
-      "resolved": "https://registry.npmjs.org/babel-plugin-syntax-trailing-function-commas/-/babel-plugin-syntax-trailing-function-commas-6.13.0.tgz",
       "dev": true
     },
     "babel-plugin-transform-async-to-module-method": {

@@ -34,6 +34,16 @@ const PREFIX_LENGTH = Math.max(...PREFIXES.map(x => x.length));
 // test the nuclide server. Atom runs with `--harmony` so some JS feature may
 // work there, but not on the server.
 const BABEL_OPTIONS = {
+  parserOpts: {
+    plugins: [
+      'classProperties',
+      'flow',
+      'jsx',
+      'objectRestSpread',
+      // TODO(asuarez): Remove decorators and remove:
+      'decorators',
+    ],
+  },
   plugins: [
     [require.resolve('./inline-invariant-tr')],
     [require.resolve('./use-minified-libs-tr')],
@@ -49,17 +59,13 @@ const BABEL_OPTIONS = {
     [require.resolve('babel-plugin-transform-es2015-unicode-regex')],
 
     [require.resolve('babel-plugin-check-es2015-constants')],
-    [require.resolve('babel-plugin-syntax-trailing-function-commas')],
     [require.resolve('babel-plugin-transform-strict-mode')],
 
-    [require.resolve('babel-plugin-syntax-async-functions')],
     [require.resolve('babel-plugin-transform-async-to-module-method'), {
       module: 'async-to-generator',
       method: 'default',
     }],
-    [require.resolve('babel-plugin-syntax-class-properties')],
     [require.resolve('babel-plugin-transform-class-properties')],
-    [require.resolve('babel-plugin-syntax-object-rest-spread')],
     [require.resolve('babel-plugin-transform-object-rest-spread'), {useBuiltIns: true}],
     // object-rest-spread needs es2015-destructuring
     [require.resolve('babel-plugin-transform-es2015-destructuring')],
@@ -67,8 +73,6 @@ const BABEL_OPTIONS = {
     // babel-preset-react:
     [require.resolve('babel-plugin-transform-react-jsx'), {useBuiltIns: true}],
     [require.resolve('babel-plugin-transform-flow-strip-types')],
-    [require.resolve('babel-plugin-syntax-flow')],
-    [require.resolve('babel-plugin-syntax-jsx')],
     [require.resolve('babel-plugin-transform-react-display-name')],
 
     // Toggle these to control inline-imports:
