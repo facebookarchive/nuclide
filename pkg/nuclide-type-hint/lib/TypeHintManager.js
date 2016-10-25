@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,81 +9,118 @@
  * the root directory of this source tree.
  */
 
-import type {TypeHintProvider} from './types';
-import type {Datatip} from '../../nuclide-datatip/lib/types';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-import invariant from 'assert';
-import {arrayRemove} from '../../commons-node/collection';
-import {track, trackOperationTiming} from '../../nuclide-analytics';
-import {makeTypeHintComponent} from './TypeHintComponent';
-import {getLogger} from '../../nuclide-logging';
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
-const logger = getLogger();
+var _collection;
 
-class TypeHintManager {
-  _typeHintProviders: Array<TypeHintProvider>;
+function _load_collection() {
+  return _collection = require('../../commons-node/collection');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _TypeHintComponent;
+
+function _load_TypeHintComponent() {
+  return _TypeHintComponent = require('./TypeHintComponent');
+}
+
+var _nuclideLogging;
+
+function _load_nuclideLogging() {
+  return _nuclideLogging = require('../../nuclide-logging');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const logger = (0, (_nuclideLogging || _load_nuclideLogging()).getLogger)();
+
+let TypeHintManager = class TypeHintManager {
+
+  constructor() {
+    this._typeHintProviders = [];
+  }
   /**
    * This helps determine if we should show the type hint when toggling it via
    * command. The toggle command first negates this, and then if this is true
    * shows a type hint, otherwise it hides the current typehint.
    */
-  _typeHintToggle: boolean;
 
-  constructor() {
-    this._typeHintProviders = [];
+
+  datatip(editor, position) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const grammar = editor.getGrammar();
+      const scopeName = grammar.scopeName;
+
+      var _getMatchingProviders = _this._getMatchingProvidersForScopeName(scopeName);
+
+      var _getMatchingProviders2 = _slicedToArray(_getMatchingProviders, 1);
+
+      const provider = _getMatchingProviders2[0];
+
+      if (provider == null) {
+        return null;
+      }
+      let name;
+      if (provider.providerName != null) {
+        name = provider.providerName;
+      } else {
+        name = 'unknown';
+        logger.error('Type hint provider has no name', provider);
+      }
+      const typeHint = yield (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackOperationTiming)(name + '.typeHint', function () {
+        return provider.typeHint(editor, position);
+      });
+      if (!typeHint || _this._marker) {
+        return;
+      }
+      const hint = typeHint.hint;
+      const hintTree = typeHint.hintTree;
+      const range = typeHint.range;
+      // For now, actual hint text is required.
+
+      if (!(hint != null)) {
+        throw new Error('Invariant violation: "hint != null"');
+      }
+      // We track the timing above, but we still want to know the number of popups that are shown.
+
+
+      (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('type-hint-popup', {
+        scope: scopeName,
+        message: hint
+      });
+      return {
+        component: (0, (_TypeHintComponent || _load_TypeHintComponent()).makeTypeHintComponent)(hintTree || hint, grammar),
+        range: range
+      };
+    })();
   }
 
-  async datatip(editor: TextEditor, position: atom$Point): Promise<?Datatip> {
-    const grammar = editor.getGrammar();
-    const {scopeName} = grammar;
-    const [provider] = this._getMatchingProvidersForScopeName(scopeName);
-    if (provider == null) {
-      return null;
-    }
-    let name;
-    if (provider.providerName != null) {
-      name = provider.providerName;
-    } else {
-      name = 'unknown';
-      logger.error('Type hint provider has no name', provider);
-    }
-    const typeHint = await trackOperationTiming(
-      name + '.typeHint',
-      () => provider.typeHint(editor, position),
-    );
-    if (!typeHint || this._marker) {
-      return;
-    }
-    const {hint, hintTree, range} = typeHint;
-    // For now, actual hint text is required.
-    invariant(hint != null);
-    // We track the timing above, but we still want to know the number of popups that are shown.
-    track('type-hint-popup', {
-      scope: scopeName,
-      message: hint,
-    });
-    return {
-      component: makeTypeHintComponent(hintTree || hint, grammar),
-      range,
-    };
-  }
-
-  _getMatchingProvidersForScopeName(scopeName: string): Array<TypeHintProvider> {
-    return this._typeHintProviders.filter((provider: TypeHintProvider) => {
+  _getMatchingProvidersForScopeName(scopeName) {
+    return this._typeHintProviders.filter(provider => {
       const providerGrammars = provider.selector.split(/, ?/);
       return provider.inclusionPriority > 0 && providerGrammars.indexOf(scopeName) !== -1;
-    }).sort((providerA: TypeHintProvider, providerB: TypeHintProvider) => {
+    }).sort((providerA, providerB) => {
       return providerA.inclusionPriority - providerB.inclusionPriority;
     });
   }
 
-  addProvider(provider: TypeHintProvider) {
+  addProvider(provider) {
     this._typeHintProviders.push(provider);
   }
 
-  removeProvider(provider: TypeHintProvider): void {
-    arrayRemove(this._typeHintProviders, provider);
+  removeProvider(provider) {
+    (0, (_collection || _load_collection()).arrayRemove)(this._typeHintProviders, provider);
   }
-}
+};
+
 
 module.exports = TypeHintManager;

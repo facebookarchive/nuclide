@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,24 +9,36 @@
  * the root directory of this source tree.
  */
 
-import invariant from 'assert';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.activate = activate;
+exports.provideDatatipService = provideDatatipService;
+exports.deactivate = deactivate;
 
-import {DatatipManager} from './DatatipManager';
+var _DatatipManager;
 
-let datatipManager: ?DatatipManager = null;
+function _load_DatatipManager() {
+  return _DatatipManager = require('./DatatipManager');
+}
 
-export function activate(state: ?any): void {
+let datatipManager = null;
+
+function activate(state) {
   if (datatipManager == null) {
-    datatipManager = new DatatipManager();
+    datatipManager = new (_DatatipManager || _load_DatatipManager()).DatatipManager();
   }
 }
 
-export function provideDatatipService(): DatatipManager {
-  invariant(datatipManager);
+function provideDatatipService() {
+  if (!datatipManager) {
+    throw new Error('Invariant violation: "datatipManager"');
+  }
+
   return datatipManager;
 }
 
-export function deactivate() {
+function deactivate() {
   if (datatipManager != null) {
     datatipManager.dispose();
     datatipManager = null;

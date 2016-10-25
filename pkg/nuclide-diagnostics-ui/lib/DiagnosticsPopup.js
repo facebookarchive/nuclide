@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,69 +9,69 @@
  * the root directory of this source tree.
  */
 
-import type {
-  FileDiagnosticMessage,
-} from '../../nuclide-diagnostics-common/lib/rpc-types';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DiagnosticsPopup = undefined;
 
-import {React} from 'react-for-atom';
-import classnames from 'classnames';
-import {DiagnosticsMessage} from '../../nuclide-ui/DiagnosticsMessage';
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-type DiagnosticsPopupProps = {
-  messages: Array<FileDiagnosticMessage>,
-  goToLocation: (filePath: NuclideUri, line: number) => mixed,
-  fixer: (message: FileDiagnosticMessage) => void,
-  left: number,
-  top: number,
-};
+var _reactForAtom = require('react-for-atom');
 
-function renderMessage(
-  fixer: (message: FileDiagnosticMessage) => void,
-  goToLocation: (filePath: NuclideUri, line: number) => mixed,
-  message: FileDiagnosticMessage,
-  index: number,
-): React.Element<any> {
-  const className = classnames(
-    // native-key-bindings and tabIndex=-1 are both needed to allow copying the text in the popup.
-    'native-key-bindings',
-    'nuclide-diagnostics-gutter-ui-popup-diagnostic',
-    {
-      'nuclide-diagnostics-gutter-ui-popup-error': message.type === 'Error',
-      'nuclide-diagnostics-gutter-ui-popup-warning': message.type !== 'Error',
-    },
-  );
-  return (
-    <div className={className} key={index} tabIndex={-1}>
-      <DiagnosticsMessage
-        fixer={fixer}
-        goToLocation={goToLocation}
-        key={index}
-        message={message}
-      />
-    </div>
+var _classnames;
+
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
+
+var _DiagnosticsMessage;
+
+function _load_DiagnosticsMessage() {
+  return _DiagnosticsMessage = require('../../nuclide-ui/DiagnosticsMessage');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
+
+function renderMessage(fixer, goToLocation, message, index) {
+  const className = (0, (_classnames || _load_classnames()).default)(
+  // native-key-bindings and tabIndex=-1 are both needed to allow copying the text in the popup.
+  'native-key-bindings', 'nuclide-diagnostics-gutter-ui-popup-diagnostic', {
+    'nuclide-diagnostics-gutter-ui-popup-error': message.type === 'Error',
+    'nuclide-diagnostics-gutter-ui-popup-warning': message.type !== 'Error'
+  });
+  return _reactForAtom.React.createElement(
+    'div',
+    { className: className, key: index, tabIndex: -1 },
+    _reactForAtom.React.createElement((_DiagnosticsMessage || _load_DiagnosticsMessage()).DiagnosticsMessage, {
+      fixer: fixer,
+      goToLocation: goToLocation,
+      key: index,
+      message: message
+    })
   );
 }
 
 // TODO move LESS styles to nuclide-ui
-export const DiagnosticsPopup = (props: DiagnosticsPopupProps) => {
-  const {
-    fixer,
-    goToLocation,
-    left,
-    messages,
-    top,
-    ...rest
-  } = props;
-  return (
-    <div
-      className="nuclide-diagnostics-gutter-ui-popup"
-      style={{
-        left,
-        top,
-      }}
-      {...rest}>
-      {messages.map(renderMessage.bind(null, fixer, goToLocation))}
-    </div>
+const DiagnosticsPopup = exports.DiagnosticsPopup = props => {
+  const fixer = props.fixer;
+  const goToLocation = props.goToLocation;
+  const left = props.left;
+  const messages = props.messages;
+  const top = props.top;
+
+  const rest = _objectWithoutProperties(props, ['fixer', 'goToLocation', 'left', 'messages', 'top']);
+
+  return _reactForAtom.React.createElement(
+    'div',
+    _extends({
+      className: 'nuclide-diagnostics-gutter-ui-popup',
+      style: {
+        left: left,
+        top: top
+      }
+    }, rest),
+    messages.map(renderMessage.bind(null, fixer, goToLocation))
   );
 };

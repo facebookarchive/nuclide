@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,65 +9,93 @@
  * the root directory of this source tree.
  */
 
-import type {
-  NativeDebuggerService,
-} from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerService';
-import type {DebuggerProcessInfo} from '../../nuclide-debugger-base';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.LldbDebuggerInstance = undefined;
 
-import utils from './utils';
-import {DebuggerInstance} from '../../nuclide-debugger-base';
-import {Emitter} from 'atom';
-import {translateMessageFromServer, translateMessageToServer} from './ChromeMessageRemoting';
-import nuclideUri from '../../commons-node/nuclideUri';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {getConfig} from './utils';
-import {
-  WebSocketServer,
-} from '../../nuclide-debugger-common/lib/WebSocketServer';
-import {stringifyError} from '../../commons-node/string';
+var _utils;
 
-const {log, logInfo, logError} = utils;
+function _load_utils() {
+  return _utils = _interopRequireDefault(require('./utils'));
+}
+
+var _utils2;
+
+function _load_utils2() {
+  return _utils2 = require('./utils');
+}
+
+var _nuclideDebuggerBase;
+
+function _load_nuclideDebuggerBase() {
+  return _nuclideDebuggerBase = require('../../nuclide-debugger-base');
+}
+
+var _atom = require('atom');
+
+var _ChromeMessageRemoting;
+
+function _load_ChromeMessageRemoting() {
+  return _ChromeMessageRemoting = require('./ChromeMessageRemoting');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../commons-node/UniversalDisposable'));
+}
+
+var _WebSocketServer;
+
+function _load_WebSocketServer() {
+  return _WebSocketServer = require('../../nuclide-debugger-common/lib/WebSocketServer');
+}
+
+var _string;
+
+function _load_string() {
+  return _string = require('../../commons-node/string');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const log = (_utils || _load_utils()).default.log;
+
+const logInfo = (_utils || _load_utils()).default.logInfo;
+
+const logError = (_utils || _load_utils()).default.logError;
 
 const SESSION_END_EVENT = 'session-end-event';
 
-export class LldbDebuggerInstance extends DebuggerInstance {
-  _rpcService: NativeDebuggerService;
-  _attachPromise: ?Promise<NativeDebuggerService>;
-  _chromeWebSocketServer: WebSocketServer;
-  _chromeWebSocket: ?WebSocket;
-  _disposables: UniversalDisposable;
-  _emitter: Emitter;
+let LldbDebuggerInstance = exports.LldbDebuggerInstance = class LldbDebuggerInstance extends (_nuclideDebuggerBase || _load_nuclideDebuggerBase()).DebuggerInstance {
 
-  constructor(
-    processInfo: DebuggerProcessInfo,
-    rpcService: NativeDebuggerService,
-    outputDisposable: IDisposable,
-  ) {
+  constructor(processInfo, rpcService, outputDisposable) {
     super(processInfo);
     this._rpcService = rpcService;
     this._attachPromise = null;
 
     this._chromeWebSocket = null;
-    this._disposables = new UniversalDisposable();
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
     this._disposables.add(outputDisposable);
-    this._chromeWebSocketServer = new WebSocketServer();
+    this._chromeWebSocketServer = new (_WebSocketServer || _load_WebSocketServer()).WebSocketServer();
     this._disposables.add(this._chromeWebSocketServer);
-    this._emitter = new Emitter();
+    this._emitter = new _atom.Emitter();
     this._registerServerHandlers(rpcService);
   }
 
-  _registerServerHandlers(rpcService: NativeDebuggerService): void {
+  _registerServerHandlers(rpcService) {
     this._disposables.add(rpcService);
-    this._disposables.add(
-      rpcService.getServerMessageObservable().refCount().subscribe(
-        this._handleServerMessage.bind(this),
-        this._handleServerError.bind(this),
-        this._handleSessionEnd.bind(this),
-      ),
-    );
+    this._disposables.add(rpcService.getServerMessageObservable().refCount().subscribe(this._handleServerMessage.bind(this), this._handleServerError.bind(this), this._handleSessionEnd.bind(this)));
   }
 
-  _handleServerMessage(message_: string): void {
+  _handleServerMessage(message_) {
     let message = message_;
     log('Recieved server message: ' + message);
     const webSocket = this._chromeWebSocket;
@@ -79,38 +107,36 @@ export class LldbDebuggerInstance extends DebuggerInstance {
     }
   }
 
-  _handleServerError(error: string): void {
+  _handleServerError(error) {
     logError('Received server error: ' + error);
   }
 
-  _handleSessionEnd(): void {
+  _handleSessionEnd() {
     log('Ending Session');
     this._emitter.emit(SESSION_END_EVENT);
     this.dispose();
   }
 
-  getWebsocketAddress(): Promise<string> {
+  getWebsocketAddress() {
     return Promise.resolve(this._startChromeWebSocketServer());
   }
 
-  _startChromeWebSocketServer(): string {
+  _startChromeWebSocketServer() {
     // setup web socket
     const wsPort = this._getWebSocketPort();
     // WebSocketServer.start() only returns when a client connects to it.
     // while websocket client(chrome) can't connect to it until _startChromeWebSocketServer()
     // returns so we can't await here.
-    this._chromeWebSocketServer.start(wsPort)
-      .catch(this._handleWebSocketServerError.bind(this))
-      .then(this._handleWebSocketServerConnection.bind(this));
-    const result = `ws=localhost:${String(wsPort)}/`;
+    this._chromeWebSocketServer.start(wsPort).catch(this._handleWebSocketServerError.bind(this)).then(this._handleWebSocketServerConnection.bind(this));
+    const result = `ws=localhost:${ String(wsPort) }/`;
     logInfo('Listening for connection at: ' + result);
     return result;
   }
 
-  _handleWebSocketServerError(error: Object): void {
-    let errorMessage = `Server error: ${JSON.stringify(error)}`;
+  _handleWebSocketServerError(error) {
+    let errorMessage = `Server error: ${ JSON.stringify(error) }`;
     if (error.code === 'EADDRINUSE') {
-      errorMessage = `The debug port ${error.port} is in use.
+      errorMessage = `The debug port ${ error.port } is in use.
       Please choose a different port in the debugger config settings.`;
     }
     atom.notifications.addError(errorMessage);
@@ -118,7 +144,7 @@ export class LldbDebuggerInstance extends DebuggerInstance {
     this.dispose();
   }
 
-  _handleWebSocketServerConnection(webSocket: WebSocket): void {
+  _handleWebSocketServerConnection(webSocket) {
     if (this._chromeWebSocket) {
       log('Already connected to Chrome WebSocket. Discarding new connection.');
       webSocket.close();
@@ -134,45 +160,41 @@ export class LldbDebuggerInstance extends DebuggerInstance {
     webSocket.on('close', this._handleChromeSocketClose.bind(this));
   }
 
-  _getWebSocketPort(): number {
+  _getWebSocketPort() {
     // Use the port from config setting if set, otherwise
     // generate a random port.
-    const configPort = Number(getConfig().debugPort);
-    return Number.isInteger(configPort) && configPort > 0 ?
-      configPort :
-      this._generateRandomInteger(2000, 65535);
+    const configPort = Number((0, (_utils2 || _load_utils2()).getConfig)().debugPort);
+    return Number.isInteger(configPort) && configPort > 0 ? configPort : this._generateRandomInteger(2000, 65535);
   }
 
-  _generateRandomInteger(min: number, max: number): number {
+  _generateRandomInteger(min, max) {
     return Math.floor(Math.random() * (max - min) + min);
   }
 
-  onSessionEnd(callback: () => void): IDisposable {
+  onSessionEnd(callback) {
     return this._emitter.on(SESSION_END_EVENT, callback);
   }
 
-  _translateMessageIfNeeded(message_: string): string {
+  _translateMessageIfNeeded(message_) {
     let message = message_;
     // TODO: do we really need isRemote() checking?
-    if (nuclideUri.isRemote(this.getTargetUri())) {
-      message = translateMessageFromServer(
-        nuclideUri.getHostname(this.getTargetUri()),
-        message);
+    if ((_nuclideUri || _load_nuclideUri()).default.isRemote(this.getTargetUri())) {
+      message = (0, (_ChromeMessageRemoting || _load_ChromeMessageRemoting()).translateMessageFromServer)((_nuclideUri || _load_nuclideUri()).default.getHostname(this.getTargetUri()), message);
     }
     return message;
   }
 
-  _handleChromeSocketMessage(message: string): void {
+  _handleChromeSocketMessage(message) {
     log('Recieved Chrome message: ' + message);
-    this._rpcService.sendCommand(translateMessageToServer(message));
+    this._rpcService.sendCommand((0, (_ChromeMessageRemoting || _load_ChromeMessageRemoting()).translateMessageToServer)(message));
   }
 
-  _handleChromeSocketError(error: Error): void {
-    logError('Chrome webSocket error ' + stringifyError(error));
+  _handleChromeSocketError(error) {
+    logError('Chrome webSocket error ' + (0, (_string || _load_string()).stringifyError)(error));
     this.dispose();
   }
 
-  _handleChromeSocketClose(code: number): void {
+  _handleChromeSocketClose(code) {
     log('Chrome webSocket Closed ' + code);
     this.dispose();
   }
@@ -180,4 +202,4 @@ export class LldbDebuggerInstance extends DebuggerInstance {
   dispose() {
     this._disposables.dispose();
   }
-}
+};

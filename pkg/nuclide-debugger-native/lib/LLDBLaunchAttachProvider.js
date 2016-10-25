@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,43 +9,77 @@
  * the root directory of this source tree.
  */
 
-import {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
-import {React} from 'react-for-atom';
-import {LaunchAttachStore} from './LaunchAttachStore';
-import LaunchAttachDispatcher from './LaunchAttachDispatcher';
-import {LaunchUIComponent} from './LaunchUIComponent';
-import {AttachUIComponent} from './AttachUIComponent';
-import {LaunchAttachActions} from './LaunchAttachActions';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.LLDBLaunchAttachProvider = undefined;
 
-export class LLDBLaunchAttachProvider extends DebuggerLaunchAttachProvider {
-  _dispatcher: LaunchAttachDispatcher;
-  _actions: LaunchAttachActions;
-  _store: LaunchAttachStore;
+var _nuclideDebuggerBase;
 
-  constructor(debuggingTypeName: string, targetUri: string) {
+function _load_nuclideDebuggerBase() {
+  return _nuclideDebuggerBase = require('../../nuclide-debugger-base');
+}
+
+var _reactForAtom = require('react-for-atom');
+
+var _LaunchAttachStore;
+
+function _load_LaunchAttachStore() {
+  return _LaunchAttachStore = require('./LaunchAttachStore');
+}
+
+var _LaunchAttachDispatcher;
+
+function _load_LaunchAttachDispatcher() {
+  return _LaunchAttachDispatcher = _interopRequireDefault(require('./LaunchAttachDispatcher'));
+}
+
+var _LaunchUIComponent;
+
+function _load_LaunchUIComponent() {
+  return _LaunchUIComponent = require('./LaunchUIComponent');
+}
+
+var _AttachUIComponent;
+
+function _load_AttachUIComponent() {
+  return _AttachUIComponent = require('./AttachUIComponent');
+}
+
+var _LaunchAttachActions;
+
+function _load_LaunchAttachActions() {
+  return _LaunchAttachActions = require('./LaunchAttachActions');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let LLDBLaunchAttachProvider = exports.LLDBLaunchAttachProvider = class LLDBLaunchAttachProvider extends (_nuclideDebuggerBase || _load_nuclideDebuggerBase()).DebuggerLaunchAttachProvider {
+
+  constructor(debuggingTypeName, targetUri) {
     super(debuggingTypeName, targetUri);
-    this._dispatcher = new LaunchAttachDispatcher();
-    this._actions = new LaunchAttachActions(this._dispatcher, this.getTargetUri());
-    this._store = new LaunchAttachStore(this._dispatcher);
+    this._dispatcher = new (_LaunchAttachDispatcher || _load_LaunchAttachDispatcher()).default();
+    this._actions = new (_LaunchAttachActions || _load_LaunchAttachActions()).LaunchAttachActions(this._dispatcher, this.getTargetUri());
+    this._store = new (_LaunchAttachStore || _load_LaunchAttachStore()).LaunchAttachStore(this._dispatcher);
   }
 
-  getActions(): Array<string> {
+  getActions() {
     return ['Attach', 'Launch'];
   }
 
-  getComponent(action: string): ?React.Element<any> {
+  getComponent(action) {
     if (action === 'Launch') {
-      return <LaunchUIComponent store={this._store} actions={this._actions} />;
+      return _reactForAtom.React.createElement((_LaunchUIComponent || _load_LaunchUIComponent()).LaunchUIComponent, { store: this._store, actions: this._actions });
     } else if (action === 'Attach') {
       this._actions.updateAttachTargetList();
-      return <AttachUIComponent store={this._store} actions={this._actions} />;
+      return _reactForAtom.React.createElement((_AttachUIComponent || _load_AttachUIComponent()).AttachUIComponent, { store: this._store, actions: this._actions });
     } else {
       return null;
     }
   }
 
-  dispose(): void {
+  dispose() {
     this._store.dispose();
     this._actions.dispose();
   }
-}
+};

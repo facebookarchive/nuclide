@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,7 +9,14 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.MeasuredComponent = undefined;
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _reactForAtom = require('react-for-atom');
 
 const observerConfig = {
   childList: true,
@@ -17,82 +24,58 @@ const observerConfig = {
   characterData: true,
   subtree: true,
   attributeOldValue: true,
-  characterDataOldValue: true,
-};
-
-export type DOMMeasurements = {
-  clientHeight: number,
-  clientWidth: number,
-  offsetHeight: number,
-  offsetWidth: number,
-  scrollHeight: number,
-  scrollWidth: number,
-};
-
-type Props = {
-  onMeasurementsChanged: (measurements: DOMMeasurements) => void,
-  children?: React.Element<any>,
+  characterDataOldValue: true
 };
 
 /** A container which invokes a callback function supplied in props whenever the
  * container's height and width measurements change. The callback is invoked once
  * when the MeasuredComponent has mounted.
  */
-export class MeasuredComponent extends React.Component {
+let MeasuredComponent = exports.MeasuredComponent = class MeasuredComponent extends _reactForAtom.React.Component {
 
-  props: Props;
-  // Listens to the container DOM node for mutations
-  _mutationObserver: MutationObserver;
-  _previousMeasurements: ?DOMMeasurements;
-  _domNode: ?HTMLElement;
-
-  constructor(props: Props) {
+  constructor(props) {
     super(props);
     this._previousMeasurements = null;
-    (this: any)._updateDomNode = this._updateDomNode.bind(this);
+    this._updateDomNode = this._updateDomNode.bind(this);
   }
+  // Listens to the container DOM node for mutations
 
-  componentDidMount(): void {
+
+  componentDidMount() {
     // MutationObserver.observe() doesn't invoke its callback, so explicitly invoke it here
     this._considerInvokingMutationCallback();
   }
 
-  _considerInvokingMutationCallback(): void {
+  _considerInvokingMutationCallback() {
     if (this._domNode == null) {
       return;
     }
-    const {
-      clientHeight,
-      clientWidth,
-      offsetHeight,
-      offsetWidth,
-      scrollHeight,
-      scrollWidth,
-    } = this._domNode;
-    if (this._previousMeasurements != null
-      && clientHeight === this._previousMeasurements.clientHeight
-      && clientWidth === this._previousMeasurements.clientWidth
-      && offsetHeight === this._previousMeasurements.offsetHeight
-      && offsetWidth === this._previousMeasurements.offsetWidth
-      && scrollHeight === this._previousMeasurements.scrollHeight
-      && scrollWidth === this._previousMeasurements.scrollWidth) {
+    var _domNode = this._domNode;
+    const clientHeight = _domNode.clientHeight;
+    const clientWidth = _domNode.clientWidth;
+    const offsetHeight = _domNode.offsetHeight;
+    const offsetWidth = _domNode.offsetWidth;
+    const scrollHeight = _domNode.scrollHeight;
+    const scrollWidth = _domNode.scrollWidth;
+
+    if (this._previousMeasurements != null && clientHeight === this._previousMeasurements.clientHeight && clientWidth === this._previousMeasurements.clientWidth && offsetHeight === this._previousMeasurements.offsetHeight && offsetWidth === this._previousMeasurements.offsetWidth && scrollHeight === this._previousMeasurements.scrollHeight && scrollWidth === this._previousMeasurements.scrollWidth) {
       return; // Because the measurements are all the same
     }
     const measurements = {
-      clientHeight,
-      clientWidth,
-      offsetHeight,
-      offsetWidth,
-      scrollHeight,
-      scrollWidth,
+      clientHeight: clientHeight,
+      clientWidth: clientWidth,
+      offsetHeight: offsetHeight,
+      offsetWidth: offsetWidth,
+      scrollHeight: scrollHeight,
+      scrollWidth: scrollWidth
     };
     // Measurements changed, so invoke callback
-    this.props.onMeasurementsChanged({...measurements});
+    this.props.onMeasurementsChanged(_extends({}, measurements));
     // Update measurements
     this._previousMeasurements = measurements;
   }
 
-  _updateDomNode(node: ?HTMLElement): void {
+  _updateDomNode(node) {
     if (node == null) {
       this._domNode = null;
       // _updateDomNode is called before component unmount, so don't need to disconect()
@@ -100,7 +83,7 @@ export class MeasuredComponent extends React.Component {
       this._mutationObserver.disconnect();
       return;
     }
-    this._mutationObserver = new MutationObserver((mutations: Array<MutationRecord>) => {
+    this._mutationObserver = new MutationObserver(mutations => {
       // Invoke callback and update _previousMeasurements if measurements have changed
       this._considerInvokingMutationCallback();
     });
@@ -108,7 +91,11 @@ export class MeasuredComponent extends React.Component {
     this._mutationObserver.observe(this._domNode, observerConfig);
   }
 
-  render(): React.Element<any> {
-    return <div ref={this._updateDomNode}>{this.props.children}</div>;
+  render() {
+    return _reactForAtom.React.createElement(
+      'div',
+      { ref: this._updateDomNode },
+      this.props.children
+    );
   }
-}
+};

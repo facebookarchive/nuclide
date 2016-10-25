@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,87 +9,117 @@
  * the root directory of this source tree.
  */
 
-import type {CommitModeStateType} from './types';
-import type DiffViewModel from './DiffViewModel';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = undefined;
 
-import {AtomTextEditor} from '../../nuclide-ui/AtomTextEditor';
-import {Checkbox} from '../../nuclide-ui/Checkbox';
-import classnames from 'classnames';
-import {DiffMode, CommitMode, CommitModeState} from './constants';
-import {CompositeDisposable} from 'atom';
-import {React} from 'react-for-atom';
-import {
-  Button,
-  ButtonSizes,
-  ButtonTypes,
-} from '../../nuclide-ui/Button';
-import {Toolbar} from '../../nuclide-ui/Toolbar';
-import {ToolbarLeft} from '../../nuclide-ui/ToolbarLeft';
-import {ToolbarRight} from '../../nuclide-ui/ToolbarRight';
+var _AtomTextEditor;
 
-type Props = {
-  commitMessage: ?string,
-  commitMode: string,
-  commitModeState: CommitModeStateType,
-  diffModel: DiffViewModel,
-  shouldRebaseOnAmend: boolean,
-};
+function _load_AtomTextEditor() {
+  return _AtomTextEditor = require('../../nuclide-ui/AtomTextEditor');
+}
 
-export default class DiffCommitView extends React.Component {
-  props: Props;
-  _subscriptions: CompositeDisposable;
+var _Checkbox;
 
-  constructor(props: Props) {
+function _load_Checkbox() {
+  return _Checkbox = require('../../nuclide-ui/Checkbox');
+}
+
+var _classnames;
+
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
+
+var _constants;
+
+function _load_constants() {
+  return _constants = require('./constants');
+}
+
+var _atom = require('atom');
+
+var _reactForAtom = require('react-for-atom');
+
+var _Button;
+
+function _load_Button() {
+  return _Button = require('../../nuclide-ui/Button');
+}
+
+var _Toolbar;
+
+function _load_Toolbar() {
+  return _Toolbar = require('../../nuclide-ui/Toolbar');
+}
+
+var _ToolbarLeft;
+
+function _load_ToolbarLeft() {
+  return _ToolbarLeft = require('../../nuclide-ui/ToolbarLeft');
+}
+
+var _ToolbarRight;
+
+function _load_ToolbarRight() {
+  return _ToolbarRight = require('../../nuclide-ui/ToolbarRight');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let DiffCommitView = class DiffCommitView extends _reactForAtom.React.Component {
+
+  constructor(props) {
     super(props);
-    (this: any).__onClickCommit = this.__onClickCommit.bind(this);
-    (this: any)._onToggleAmend = this._onToggleAmend.bind(this);
-    (this: any)._onToggleAmendRebase = this._onToggleAmendRebase.bind(this);
-    (this: any)._onClickBack = this._onClickBack.bind(this);
+    this.__onClickCommit = this.__onClickCommit.bind(this);
+    this._onToggleAmend = this._onToggleAmend.bind(this);
+    this._onToggleAmendRebase = this._onToggleAmendRebase.bind(this);
+    this._onClickBack = this._onClickBack.bind(this);
   }
 
-  componentDidMount(): void {
+  componentDidMount() {
     this.__populateCommitMessage();
 
     // Shortcut to commit when on form
-    this._subscriptions = new CompositeDisposable(
-      atom.commands.add(
-        '.commit-form-wrapper',
-        'nuclide-diff-view:commit-message',
-        event => this.__onClickCommit()),
-    );
+    this._subscriptions = new _atom.CompositeDisposable(atom.commands.add('.commit-form-wrapper', 'nuclide-diff-view:commit-message', event => this.__onClickCommit()));
   }
 
-  componentDidUpdate(prevProps: Props, prevState: void): void {
+  componentDidUpdate(prevProps, prevState) {
     if (this.props.commitMessage !== prevProps.commitMessage) {
       this.__populateCommitMessage();
     }
   }
 
-  __populateCommitMessage(): void {
+  __populateCommitMessage() {
     this.refs.message.getTextBuffer().setText(this.props.commitMessage || '');
   }
 
-  _isLoading(): boolean {
-    const {commitModeState} = this.props;
-    return commitModeState !== CommitModeState.READY;
+  _isLoading() {
+    const commitModeState = this.props.commitModeState;
+
+    return commitModeState !== (_constants || _load_constants()).CommitModeState.READY;
   }
 
-  _getToolbar(): Toolbar {
-    const {commitModeState, commitMode} = this.props;
+  _getToolbar() {
+    var _props = this.props;
+    const commitModeState = _props.commitModeState;
+    const commitMode = _props.commitMode;
+
     let message;
     switch (commitModeState) {
-      case CommitModeState.AWAITING_COMMIT:
-        if (commitMode === CommitMode.AMEND) {
+      case (_constants || _load_constants()).CommitModeState.AWAITING_COMMIT:
+        if (commitMode === (_constants || _load_constants()).CommitMode.AMEND) {
           message = 'Amending...';
         } else {
           message = 'Committing...';
         }
         break;
-      case CommitModeState.LOADING_COMMIT_MESSAGE:
+      case (_constants || _load_constants()).CommitModeState.LOADING_COMMIT_MESSAGE:
         message = 'Loading...';
         break;
-      case CommitModeState.READY:
-        if (commitMode === CommitMode.AMEND) {
+      case (_constants || _load_constants()).CommitModeState.READY:
+        if (commitMode === (_constants || _load_constants()).CommitMode.AMEND) {
           message = 'Amend';
         } else {
           message = 'Commit';
@@ -101,93 +131,101 @@ export default class DiffCommitView extends React.Component {
     }
 
     const isLoading = this._isLoading();
-    const btnClassname = classnames('pull-right', {
-      'btn-progress': isLoading,
+    const btnClassname = (0, (_classnames || _load_classnames()).default)('pull-right', {
+      'btn-progress': isLoading
     });
 
     let rebaseOptionElement = null;
-    if (this.props.commitMode === CommitMode.AMEND) {
-      rebaseOptionElement = (
-        <Checkbox
-          className="padded"
-          checked={this.props.shouldRebaseOnAmend}
-          disabled={isLoading}
-          label="Rebase stacked commits"
-          onChange={this._onToggleAmendRebase}
-          tabIndex="-1"
-        />
-      );
+    if (this.props.commitMode === (_constants || _load_constants()).CommitMode.AMEND) {
+      rebaseOptionElement = _reactForAtom.React.createElement((_Checkbox || _load_Checkbox()).Checkbox, {
+        className: 'padded',
+        checked: this.props.shouldRebaseOnAmend,
+        disabled: isLoading,
+        label: 'Rebase stacked commits',
+        onChange: this._onToggleAmendRebase,
+        tabIndex: '-1'
+      });
     }
 
-    return (
-      <Toolbar location="bottom">
-        <ToolbarLeft>
-          <Checkbox
-            checked={this.props.commitMode === CommitMode.AMEND}
-            disabled={isLoading}
-            label="Amend"
-            onChange={this._onToggleAmend}
-          />
-          {rebaseOptionElement}
-        </ToolbarLeft>
-        <ToolbarRight>
-          <Button
-            size={ButtonSizes.SMALL}
-            onClick={this._onClickBack}>
-            Back
-          </Button>
-          <Button
-            className={btnClassname}
-            size={ButtonSizes.SMALL}
-            buttonType={ButtonTypes.SUCCESS}
-            disabled={isLoading}
-            onClick={this.__onClickCommit}>
-            {message}
-          </Button>
-        </ToolbarRight>
-      </Toolbar>);
-  }
-
-  render(): React.Element<any> {
-    return (
-      <div className="nuclide-diff-mode">
-        <div className="message-editor-wrapper">
-          <AtomTextEditor
-            gutterHidden={true}
-            path=".HG_COMMIT_EDITMSG"
-            readOnly={this._isLoading()}
-            ref="message"
-          />
-        </div>
-        {this._getToolbar()}
-      </div>
+    return _reactForAtom.React.createElement(
+      (_Toolbar || _load_Toolbar()).Toolbar,
+      { location: 'bottom' },
+      _reactForAtom.React.createElement(
+        (_ToolbarLeft || _load_ToolbarLeft()).ToolbarLeft,
+        null,
+        _reactForAtom.React.createElement((_Checkbox || _load_Checkbox()).Checkbox, {
+          checked: this.props.commitMode === (_constants || _load_constants()).CommitMode.AMEND,
+          disabled: isLoading,
+          label: 'Amend',
+          onChange: this._onToggleAmend
+        }),
+        rebaseOptionElement
+      ),
+      _reactForAtom.React.createElement(
+        (_ToolbarRight || _load_ToolbarRight()).ToolbarRight,
+        null,
+        _reactForAtom.React.createElement(
+          (_Button || _load_Button()).Button,
+          {
+            size: (_Button || _load_Button()).ButtonSizes.SMALL,
+            onClick: this._onClickBack },
+          'Back'
+        ),
+        _reactForAtom.React.createElement(
+          (_Button || _load_Button()).Button,
+          {
+            className: btnClassname,
+            size: (_Button || _load_Button()).ButtonSizes.SMALL,
+            buttonType: (_Button || _load_Button()).ButtonTypes.SUCCESS,
+            disabled: isLoading,
+            onClick: this.__onClickCommit },
+          message
+        )
+      )
     );
   }
 
-  __onClickCommit(): void {
+  render() {
+    return _reactForAtom.React.createElement(
+      'div',
+      { className: 'nuclide-diff-mode' },
+      _reactForAtom.React.createElement(
+        'div',
+        { className: 'message-editor-wrapper' },
+        _reactForAtom.React.createElement((_AtomTextEditor || _load_AtomTextEditor()).AtomTextEditor, {
+          gutterHidden: true,
+          path: '.HG_COMMIT_EDITMSG',
+          readOnly: this._isLoading(),
+          ref: 'message'
+        })
+      ),
+      this._getToolbar()
+    );
+  }
+
+  __onClickCommit() {
     this.props.diffModel.commit(this.__getCommitMessage());
   }
 
-  _onClickBack(): void {
-    this.props.diffModel.setViewMode(DiffMode.BROWSE_MODE);
+  _onClickBack() {
+    this.props.diffModel.setViewMode((_constants || _load_constants()).DiffMode.BROWSE_MODE);
   }
 
-  __getCommitMessage(): string {
+  __getCommitMessage() {
     return this.refs.message.getTextBuffer().getText();
   }
 
-  _onToggleAmend(isChecked: boolean): void {
-    this.props.diffModel.setCommitMode(isChecked
-      ? CommitMode.AMEND
-      : CommitMode.COMMIT,
-    );
+  _onToggleAmend(isChecked) {
+    this.props.diffModel.setCommitMode(isChecked ? (_constants || _load_constants()).CommitMode.AMEND : (_constants || _load_constants()).CommitMode.COMMIT);
   }
 
-  _onToggleAmendRebase(isChecked: boolean): void {
+  _onToggleAmendRebase(isChecked) {
     this.props.diffModel.setShouldAmendRebase(isChecked);
   }
 
-  componentWillUnmount(): void {
+  componentWillUnmount() {
     this._subscriptions.dispose();
   }
-}
+};
+exports.default = DiffCommitView;
+module.exports = exports['default'];

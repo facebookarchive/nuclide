@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,76 +9,88 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {Definition, DefinitionQueryResult} from './rpc-types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Service = undefined;
 
-import {Disposable} from 'atom';
-import invariant from 'assert';
-import ProviderRegistry from '../../commons-atom/ProviderRegistry';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-// Provides definitions for a set of language grammars.
-export type DefinitionProvider = {
-  name: string,
-  // If there are multiple providers for a given grammar, the one with the highest priority will be
-  // used.
-  priority: number,
-  grammarScopes: Array<string>,
-  getDefinition: (editor: TextEditor, position: atom$Point) => Promise<?DefinitionQueryResult>,
-  // filename is any file/path in the project containing id.
-  getDefinitionById: (filename: NuclideUri, id: string) => Promise<?Definition>,
-};
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.consumeDefinitionProvider = consumeDefinitionProvider;
+exports.provideDefinitionService = provideDefinitionService;
 
-export type DefinitionService = {
-  getDefinition(editor: TextEditor, position: atom$Point): Promise<?DefinitionQueryResult>,
-};
+var _atom = require('atom');
+
+var _ProviderRegistry;
+
+function _load_ProviderRegistry() {
+  return _ProviderRegistry = _interopRequireDefault(require('../../commons-atom/ProviderRegistry'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // Provides definitions given a file & position.
 // Relies on per-language(grammar) providers to provide results.
-export class Service {
-  _providers: ProviderRegistry<DefinitionProvider>;
+
+
+// Provides definitions for a set of language grammars.
+let Service = exports.Service = class Service {
 
   constructor() {
-    this._providers = new ProviderRegistry();
+    this._providers = new (_ProviderRegistry || _load_ProviderRegistry()).default();
   }
 
-  dispose() {
+  dispose() {}
 
+  getDefinition(editor, position) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const provider = _this._providers.getProviderForEditor(editor);
+      return provider == null ? null : yield provider.getDefinition(editor, position);
+    })();
   }
 
-  async getDefinition(editor: TextEditor, position: atom$Point): Promise<?DefinitionQueryResult> {
-    const provider = this._providers.getProviderForEditor(editor);
-    return provider == null ? null : await provider.getDefinition(editor, position);
-  }
-
-  consumeDefinitionProvider(provider: DefinitionProvider): IDisposable {
+  consumeDefinitionProvider(provider) {
     this._providers.addProvider(provider);
-    return new Disposable(() => { this._providers.removeProvider(provider); });
+    return new _atom.Disposable(() => {
+      this._providers.removeProvider(provider);
+    });
   }
-}
+};
 
-let activation: ?Service = null;
 
-export function activate(state: Object | void) {
+let activation = null;
+
+function activate(state) {
   if (activation == null) {
     activation = new Service(state);
   }
 }
 
-export function deactivate() {
+function deactivate() {
   if (activation != null) {
     activation.dispose();
     activation = null;
   }
 }
 
-export function consumeDefinitionProvider(provider: DefinitionProvider): IDisposable {
-  invariant(activation != null);
+function consumeDefinitionProvider(provider) {
+  if (!(activation != null)) {
+    throw new Error('Invariant violation: "activation != null"');
+  }
+
   return activation.consumeDefinitionProvider(provider);
 }
 
-export function provideDefinitionService(): DefinitionService {
-  invariant(activation != null);
+function provideDefinitionService() {
+  if (!(activation != null)) {
+    throw new Error('Invariant violation: "activation != null"');
+  }
+
   return {
-    getDefinition: activation.getDefinition.bind(activation),
+    getDefinition: activation.getDefinition.bind(activation)
   };
 }

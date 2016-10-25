@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,62 +9,144 @@
  * the root directory of this source tree.
  */
 
-import type {LoggingAppender} from './types';
-import ScribeProcess from '../../commons-node/ScribeProcess';
-import {isRunningInTest, isRunningInClient} from '../../commons-node/system-info';
-import fsPromise from '../../commons-node/fsPromise';
-import userInfo from '../../commons-node/userInfo';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getDefaultConfig = exports.CurrentDateFileAppender = exports.getServerLogAppenderConfig = exports.LOG_FILE_PATH = undefined;
 
-import os from 'os';
-import nuclideUri from '../../commons-node/nuclideUri';
-import {asString as log4jsFormatter} from 'log4js/lib/date_format';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-const LOG_DIRECTORY = nuclideUri.join(os.tmpdir(), `/nuclide-${userInfo().username}-logs`);
-export const LOG_FILE_PATH = nuclideUri.join(LOG_DIRECTORY, 'nuclide.log');
+let getServerLogAppenderConfig = exports.getServerLogAppenderConfig = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* () {
+    // Skip config scribe_cat logger if
+    // 1) running in test environment
+    // 2) or running in Atom client
+    // 3) or running in open sourced version of nuclide
+    // 4) or the scribe_cat command is missing.
+    if ((0, (_systemInfo || _load_systemInfo()).isRunningInTest)() || (0, (_systemInfo || _load_systemInfo()).isRunningInClient)() || !(yield (_fsPromise || _load_fsPromise()).default.exists(scribeAppenderPath)) || !(yield (_ScribeProcess || _load_ScribeProcess()).default.isScribeCatOnPath())) {
+      return null;
+    }
 
-let logDirectoryInitialized = false;
-const scribeAppenderPath = nuclideUri.join(__dirname, '../fb/scribeAppender.js');
+    return {
+      type: 'logLevelFilter',
+      level: 'DEBUG',
+      appender: {
+        type: scribeAppenderPath,
+        scribeCategory: 'errorlog_arsenal'
+      }
+    };
+  });
 
-const LOG4JS_DATE_FORMAT = '-yyyy-MM-dd';
-
-export async function getServerLogAppenderConfig(): Promise<?Object> {
-  // Skip config scribe_cat logger if
-  // 1) running in test environment
-  // 2) or running in Atom client
-  // 3) or running in open sourced version of nuclide
-  // 4) or the scribe_cat command is missing.
-  if (isRunningInTest() ||
-      isRunningInClient() ||
-      !(await fsPromise.exists(scribeAppenderPath)) ||
-      !(await ScribeProcess.isScribeCatOnPath())) {
-    return null;
-  }
-
-  return {
-    type: 'logLevelFilter',
-    level: 'DEBUG',
-    appender: {
-      type: scribeAppenderPath,
-      scribeCategory: 'errorlog_arsenal',
-    },
+  return function getServerLogAppenderConfig() {
+    return _ref.apply(this, arguments);
   };
-}
+})();
 
 /**
  * @return The absolute path to the log file for the specified date.
  */
-export function getPathToLogFileForDate(targetDate: Date): string {
-  return LOG_FILE_PATH + log4jsFormatter(LOG4JS_DATE_FORMAT, targetDate);
+
+
+let getDefaultConfig = exports.getDefaultConfig = (() => {
+  var _ref2 = (0, _asyncToGenerator.default)(function* () {
+
+    if (!logDirectoryInitialized) {
+      yield (_fsPromise || _load_fsPromise()).default.mkdirp(LOG_DIRECTORY);
+      logDirectoryInitialized = true;
+    }
+
+    const config = {
+      appenders: [{
+        type: 'logLevelFilter',
+        level: 'INFO',
+        appender: {
+          type: (_nuclideUri || _load_nuclideUri()).default.join(__dirname, './consoleAppender')
+        }
+      }, {
+        type: 'logLevelFilter',
+        level: 'ALL',
+        appender: {
+          type: (_nuclideUri || _load_nuclideUri()).default.join(__dirname, './nuclideConsoleAppender')
+        }
+      }, CurrentDateFileAppender]
+    };
+
+    const serverLogAppenderConfig = yield getServerLogAppenderConfig();
+    if (serverLogAppenderConfig) {
+      config.appenders.push(serverLogAppenderConfig);
+    }
+
+    return config;
+  });
+
+  return function getDefaultConfig() {
+    return _ref2.apply(this, arguments);
+  };
+})();
+
+exports.getPathToLogFileForDate = getPathToLogFileForDate;
+exports.getPathToLogFileForToday = getPathToLogFileForToday;
+
+var _ScribeProcess;
+
+function _load_ScribeProcess() {
+  return _ScribeProcess = _interopRequireDefault(require('../../commons-node/ScribeProcess'));
+}
+
+var _systemInfo;
+
+function _load_systemInfo() {
+  return _systemInfo = require('../../commons-node/system-info');
+}
+
+var _fsPromise;
+
+function _load_fsPromise() {
+  return _fsPromise = _interopRequireDefault(require('../../commons-node/fsPromise'));
+}
+
+var _userInfo;
+
+function _load_userInfo() {
+  return _userInfo = _interopRequireDefault(require('../../commons-node/userInfo'));
+}
+
+var _os = _interopRequireDefault(require('os'));
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var _date_format;
+
+function _load_date_format() {
+  return _date_format = require('log4js/lib/date_format');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const LOG_DIRECTORY = (_nuclideUri || _load_nuclideUri()).default.join(_os.default.tmpdir(), `/nuclide-${ (0, (_userInfo || _load_userInfo()).default)().username }-logs`);
+const LOG_FILE_PATH = exports.LOG_FILE_PATH = (_nuclideUri || _load_nuclideUri()).default.join(LOG_DIRECTORY, 'nuclide.log');
+
+let logDirectoryInitialized = false;
+const scribeAppenderPath = (_nuclideUri || _load_nuclideUri()).default.join(__dirname, '../fb/scribeAppender.js');
+
+const LOG4JS_DATE_FORMAT = '-yyyy-MM-dd';
+
+function getPathToLogFileForDate(targetDate) {
+  return LOG_FILE_PATH + (0, (_date_format || _load_date_format()).asString)(LOG4JS_DATE_FORMAT, targetDate);
 }
 
 /**
  * @return The absolute path to the log file for today.
  */
-export function getPathToLogFileForToday(): string {
+function getPathToLogFileForToday() {
   return getPathToLogFileForDate(new Date());
 }
 
-export const CurrentDateFileAppender: Object = {
+const CurrentDateFileAppender = exports.CurrentDateFileAppender = {
   type: 'dateFile',
   alwaysIncludePattern: true,
   absolute: true,
@@ -74,41 +156,6 @@ export const CurrentDateFileAppender: Object = {
     type: 'pattern',
     // Format log in following pattern:
     // yyyy-MM-dd HH:mm:ss.mil $Level (pid:$pid) $categroy - $message.
-    pattern: `%d{ISO8601} %p (pid:${process.pid}) %c - %m`,
-  },
+    pattern: `%d{ISO8601} %p (pid:${ process.pid }) %c - %m`
+  }
 };
-
-export async function getDefaultConfig(): Promise<LoggingAppender> {
-
-  if (!logDirectoryInitialized) {
-    await fsPromise.mkdirp(LOG_DIRECTORY);
-    logDirectoryInitialized = true;
-  }
-
-  const config = {
-    appenders: [
-      {
-        type: 'logLevelFilter',
-        level: 'INFO',
-        appender: {
-          type: nuclideUri.join(__dirname, './consoleAppender'),
-        },
-      },
-      {
-        type: 'logLevelFilter',
-        level: 'ALL',
-        appender: {
-          type: nuclideUri.join(__dirname, './nuclideConsoleAppender'),
-        },
-      },
-      CurrentDateFileAppender,
-    ],
-  };
-
-  const serverLogAppenderConfig = await getServerLogAppenderConfig();
-  if (serverLogAppenderConfig) {
-    config.appenders.push(serverLogAppenderConfig);
-  }
-
-  return config;
-}

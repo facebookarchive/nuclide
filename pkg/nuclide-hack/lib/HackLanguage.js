@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,91 +9,118 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import typeof * as HackService from '../../nuclide-hack-rpc/lib/HackService';
-import type {HackLanguageService} from '../../nuclide-hack-rpc/lib/HackService-types';
-import type {ServerConnection} from '../../nuclide-remote-connection';
-import type {
-  AtomLanguageServiceConfig,
-} from '../../nuclide-language-service/lib/AtomLanguageService';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.hackLanguageService = undefined;
 
-import {getServiceByConnection} from '../../nuclide-remote-connection';
-import {getConfig} from './config';
-import {getNotifierByConnection} from '../../nuclide-open-files';
-import {AtomLanguageService} from '../../nuclide-language-service';
-import {HACK_GRAMMARS} from '../../nuclide-hack-common';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+let connectionToHackService = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (connection) {
+    const hackService = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getServiceByConnection)(HACK_SERVICE_NAME, connection);
+    const config = (0, (_config || _load_config()).getConfig)();
+    const useIdeConnection = config.useIdeConnection;
+    // TODO:     || (await passesGK('nuclide_hack_use_persistent_connection'));
+    const fileNotifier = yield (0, (_nuclideOpenFiles || _load_nuclideOpenFiles()).getNotifierByConnection)(connection);
+    const languageService = yield hackService.initialize(config.hhClientPath, useIdeConnection, config.logLevel, fileNotifier);
+
+    return languageService;
+  });
+
+  return function connectionToHackService(_x) {
+    return _ref.apply(this, arguments);
+  };
+})();
+
+exports.resetHackLanguageService = resetHackLanguageService;
+exports.getHackLanguageForUri = getHackLanguageForUri;
+exports.isFileInHackProject = isFileInHackProject;
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+var _config;
+
+function _load_config() {
+  return _config = require('./config');
+}
+
+var _nuclideOpenFiles;
+
+function _load_nuclideOpenFiles() {
+  return _nuclideOpenFiles = require('../../nuclide-open-files');
+}
+
+var _nuclideLanguageService;
+
+function _load_nuclideLanguageService() {
+  return _nuclideLanguageService = require('../../nuclide-language-service');
+}
+
+var _nuclideHackCommon;
+
+function _load_nuclideHackCommon() {
+  return _nuclideHackCommon = require('../../nuclide-hack-common');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const HACK_SERVICE_NAME = 'HackService';
 
-async function connectionToHackService(
-  connection: ?ServerConnection,
-): Promise<HackLanguageService> {
-  const hackService: HackService = getServiceByConnection(HACK_SERVICE_NAME, connection);
-  const config = getConfig();
-  const useIdeConnection = config.useIdeConnection;
-  // TODO:     || (await passesGK('nuclide_hack_use_persistent_connection'));
-  const fileNotifier = await getNotifierByConnection(connection);
-  const languageService = await hackService.initialize(
-    config.hhClientPath,
-    useIdeConnection,
-    config.logLevel,
-    fileNotifier);
+const diagnosticsConfig = (0, (_config || _load_config()).getConfig)().useIdeConnection ? {
+  version: '0.2.0',
+  analyticsEventName: 'hack.observe-diagnostics'
+} : {
+  version: '0.1.0',
+  shouldRunOnTheFly: false,
+  analyticsEventName: 'hack.run-diagnostics'
+};
 
-  return languageService;
-}
-
-const diagnosticsConfig = getConfig().useIdeConnection
-  ? {
-    version: '0.2.0',
-    analyticsEventName: 'hack.observe-diagnostics',
-  }
-  : {
-    version: '0.1.0',
-    shouldRunOnTheFly: false,
-    analyticsEventName: 'hack.run-diagnostics',
-  };
-
-const atomConfig: AtomLanguageServiceConfig = {
+const atomConfig = {
   name: 'Hack',
-  grammars: HACK_GRAMMARS,
+  grammars: (_nuclideHackCommon || _load_nuclideHackCommon()).HACK_GRAMMARS,
   highlights: {
     version: '0.0.0',
     priority: 1,
-    analyticsEventName: 'hack.codehighlight',
+    analyticsEventName: 'hack.codehighlight'
   },
   outlines: {
     version: '0.0.0',
     priority: 1,
-    analyticsEventName: 'hack.outline',
+    analyticsEventName: 'hack.outline'
   },
   coverage: {
     version: '0.0.0',
     priority: 10,
-    analyticsEventName: 'hack:run-type-coverage',
+    analyticsEventName: 'hack:run-type-coverage'
   },
   definition: {
     version: '0.0.0',
     priority: 20,
     definitionEventName: 'hack.get-definition',
-    definitionByIdEventName: 'hack.get-definition-by-id',
+    definitionByIdEventName: 'hack.get-definition-by-id'
   },
   typeHint: {
     version: '0.0.0',
     priority: 1,
-    analyticsEventName: 'hack.typeHint',
+    analyticsEventName: 'hack.typeHint'
   },
   codeFormat: {
     version: '0.0.0',
     priority: 1,
-    analyticsEventName: 'hack.formatCode',
+    analyticsEventName: 'hack.formatCode'
   },
   findReferences: {
     version: '0.0.0',
-    analyticsEventName: 'hack:findReferences',
+    analyticsEventName: 'hack:findReferences'
   },
   evaluationExpression: {
     version: '0.0.0',
-    analyticsEventName: 'hack.evaluationExpression',
+    analyticsEventName: 'hack.evaluationExpression'
   },
   autocomplete: {
     version: '2.0.0',
@@ -101,26 +128,25 @@ const atomConfig: AtomLanguageServiceConfig = {
     // The context-sensitive hack autocompletions are more relevant than snippets.
     suggestionPriority: 3,
     excludeLowerPriority: false,
-    analyticsEventName: 'hack.getAutocompleteSuggestions',
+    analyticsEventName: 'hack.getAutocompleteSuggestions'
   },
-  diagnostics: diagnosticsConfig,
+  diagnostics: diagnosticsConfig
 };
 
 // This needs to be initialized eagerly for Hack Symbol search and the HHVM Toolbar.
-export let hackLanguageService: AtomLanguageService<HackLanguageService>
-  = new AtomLanguageService(connectionToHackService, atomConfig);
+let hackLanguageService = exports.hackLanguageService = new (_nuclideLanguageService || _load_nuclideLanguageService()).AtomLanguageService(connectionToHackService, atomConfig);
 
-export function resetHackLanguageService(): void {
+function resetHackLanguageService() {
   hackLanguageService.dispose();
   // Reset to an unactivated LanguageService when the Hack package is deactivated.
   // TODO: Sort out the dependencies between the HHVM toolbar, quick-open and Hack.
-  hackLanguageService = new AtomLanguageService(connectionToHackService, atomConfig);
+  exports.hackLanguageService = hackLanguageService = new (_nuclideLanguageService || _load_nuclideLanguageService()).AtomLanguageService(connectionToHackService, atomConfig);
 }
 
-export function getHackLanguageForUri(uri: ?NuclideUri): Promise<?HackLanguageService> {
+function getHackLanguageForUri(uri) {
   return hackLanguageService.getLanguageServiceForUri(uri);
 }
 
-export function isFileInHackProject(fileUri: NuclideUri): Promise<boolean> {
+function isFileInHackProject(fileUri) {
   return hackLanguageService.isFileInProject(fileUri);
 }

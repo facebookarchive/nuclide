@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,35 +9,31 @@
  * the root directory of this source tree.
  */
 
-import type {SerializedState, TaskSettings, TaskType} from './types';
-import type {Device} from '../../nuclide-ios-common';
-import type BuckToolbarDispatcher from './BuckToolbarDispatcher';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = undefined;
 
-import {ActionTypes} from './BuckToolbarDispatcher';
-import {Emitter} from 'atom';
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-export default class BuckToolbarStore {
+var _BuckToolbarDispatcher;
 
-  _devices: Array<Device>;
-  _dispatcher: BuckToolbarDispatcher;
-  _emitter: Emitter;
-  _currentProjectRoot: ?string;
-  _currentBuckRoot: ?string;
-  _isLoadingRule: boolean;
-  _buildTarget: string;
-  _buildRuleType: ?string;
-  _simulator: ?string;
-  _isReactNativeServerMode: boolean;
-  _taskSettings: {[key: TaskType]: TaskSettings};
+function _load_BuckToolbarDispatcher() {
+  return _BuckToolbarDispatcher = require('./BuckToolbarDispatcher');
+}
 
-  constructor(dispatcher: BuckToolbarDispatcher, initialState: ?SerializedState) {
+var _atom = require('atom');
+
+let BuckToolbarStore = class BuckToolbarStore {
+
+  constructor(dispatcher, initialState) {
     this._dispatcher = dispatcher;
-    this._emitter = new Emitter();
+    this._emitter = new _atom.Emitter();
     this._initState(initialState);
     this._setupActions();
   }
 
-  _initState(initialState: ?SerializedState) {
+  _initState(initialState) {
     this._devices = [];
     this._isLoadingRule = false;
     this._buildTarget = initialState && initialState.buildTarget || '';
@@ -50,36 +46,34 @@ export default class BuckToolbarStore {
   _setupActions() {
     this._dispatcher.register(action => {
       switch (action.actionType) {
-        case ActionTypes.UPDATE_BUCK_ROOT:
+        case (_BuckToolbarDispatcher || _load_BuckToolbarDispatcher()).ActionTypes.UPDATE_BUCK_ROOT:
           this._currentProjectRoot = action.projectRoot;
           this._currentBuckRoot = action.buckRoot;
           break;
-        case ActionTypes.UPDATE_BUILD_TARGET:
+        case (_BuckToolbarDispatcher || _load_BuckToolbarDispatcher()).ActionTypes.UPDATE_BUILD_TARGET:
           this._buildTarget = action.buildTarget;
           break;
-        case ActionTypes.UPDATE_IS_LOADING_RULE:
+        case (_BuckToolbarDispatcher || _load_BuckToolbarDispatcher()).ActionTypes.UPDATE_IS_LOADING_RULE:
           this._isLoadingRule = action.isLoadingRule;
           break;
-        case ActionTypes.UPDATE_RULE_TYPE:
+        case (_BuckToolbarDispatcher || _load_BuckToolbarDispatcher()).ActionTypes.UPDATE_RULE_TYPE:
           this._buildRuleType = action.ruleType;
           break;
-        case ActionTypes.UPDATE_SIMULATOR:
+        case (_BuckToolbarDispatcher || _load_BuckToolbarDispatcher()).ActionTypes.UPDATE_SIMULATOR:
           this._simulator = action.simulator;
           break;
-        case ActionTypes.UPDATE_REACT_NATIVE_SERVER_MODE:
+        case (_BuckToolbarDispatcher || _load_BuckToolbarDispatcher()).ActionTypes.UPDATE_REACT_NATIVE_SERVER_MODE:
           this._isReactNativeServerMode = action.serverMode;
           break;
-        case ActionTypes.UPDATE_TASK_SETTINGS:
-          this._taskSettings = {
-            ...this._taskSettings,
-            [action.taskType]: action.settings,
-          };
+        case (_BuckToolbarDispatcher || _load_BuckToolbarDispatcher()).ActionTypes.UPDATE_TASK_SETTINGS:
+          this._taskSettings = _extends({}, this._taskSettings, {
+            [action.taskType]: action.settings
+          });
           break;
-        case ActionTypes.UPDATE_DEVICES:
+        case (_BuckToolbarDispatcher || _load_BuckToolbarDispatcher()).ActionTypes.UPDATE_DEVICES:
           this._devices = action.devices;
           const currentDeviceId = this._simulator;
-          const isInvalidSimulator = currentDeviceId == null
-            || !this._devices.some(device => device.udid === currentDeviceId);
+          const isInvalidSimulator = currentDeviceId == null || !this._devices.some(device => device.udid === currentDeviceId);
           if (isInvalidSimulator && this._devices.length) {
             this._simulator = this._devices[0].udid;
           }
@@ -93,61 +87,62 @@ export default class BuckToolbarStore {
     this._emitter.dispose();
   }
 
-  subscribe(callback: () => void): IDisposable {
+  subscribe(callback) {
     return this._emitter.on('change', callback);
   }
 
-  emitChange(): void {
+  emitChange() {
     this._emitter.emit('change');
   }
 
-  getBuildTarget(): string {
+  getBuildTarget() {
     return this._buildTarget;
   }
 
-  getCurrentProjectRoot(): ?string {
+  getCurrentProjectRoot() {
     return this._currentProjectRoot;
   }
 
-  getCurrentBuckRoot(): ?string {
+  getCurrentBuckRoot() {
     return this._currentBuckRoot;
   }
 
-  getDevices(): Array<Device> {
+  getDevices() {
     return this._devices;
   }
 
-  isLoadingRule(): boolean {
+  isLoadingRule() {
     return this._isLoadingRule;
   }
 
-  getRuleType(): ?string {
+  getRuleType() {
     return this._buildRuleType;
   }
 
-  canBeReactNativeApp(): boolean {
+  canBeReactNativeApp() {
     return this._buildRuleType === 'apple_bundle' || this._buildRuleType === 'android_binary';
   }
 
-  isReactNativeServerMode(): boolean {
+  isReactNativeServerMode() {
     return this.canBeReactNativeApp() && this._isReactNativeServerMode;
   }
 
-  isInstallableRule(): boolean {
+  isInstallableRule() {
     return this.canBeReactNativeApp() || this._buildRuleType === 'apk_genrule';
   }
 
-  isDebuggableRule(): boolean {
-    return this.isInstallableRule() || this._buildRuleType === 'cxx_test' ||
-      this._buildRuleType === 'cxx_binary';
+  isDebuggableRule() {
+    return this.isInstallableRule() || this._buildRuleType === 'cxx_test' || this._buildRuleType === 'cxx_binary';
   }
 
-  getSimulator(): ?string {
+  getSimulator() {
     return this._simulator;
   }
 
-  getTaskSettings(): {[key: TaskType]: TaskSettings} {
+  getTaskSettings() {
     return this._taskSettings;
   }
 
-}
+};
+exports.default = BuckToolbarStore;
+module.exports = exports['default'];

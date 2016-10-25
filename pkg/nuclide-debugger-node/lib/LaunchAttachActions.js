@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,102 +9,115 @@
  * the root directory of this source tree.
  */
 
-import type LaunchAttachDispatcher from './LaunchAttachDispatcher';
-import type {
-  NodeAttachTargetInfo,
-} from '../../nuclide-debugger-node-rpc/lib/NodeDebuggerService';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {DebuggerProcessInfo} from '../../nuclide-debugger-base';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.LaunchAttachActions = undefined;
 
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {ActionTypes} from './LaunchAttachDispatcher';
-import {NodeAttachProcessInfo} from './NodeAttachProcessInfo';
-import {getNodeDebuggerServiceByNuclideUri} from '../../nuclide-remote-connection';
-import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-const ATTACH_TARGET_LIST_REFRESH_INTERVAL = 2000;
+var _UniversalDisposable;
 
-export class LaunchAttachActions {
-  _dispatcher: LaunchAttachDispatcher;
-  _targetUri: NuclideUri;
-  _refreshTimerId: ?number;
-  _dialogVisible: boolean;
-  _subscriptions: IDisposable;
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../commons-node/UniversalDisposable'));
+}
 
-  constructor(dispatcher: LaunchAttachDispatcher, targetUri: NuclideUri) {
+var _LaunchAttachDispatcher;
+
+function _load_LaunchAttachDispatcher() {
+  return _LaunchAttachDispatcher = require('./LaunchAttachDispatcher');
+}
+
+var _NodeAttachProcessInfo;
+
+function _load_NodeAttachProcessInfo() {
+  return _NodeAttachProcessInfo = require('./NodeAttachProcessInfo');
+}
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+var _consumeFirstProvider;
+
+function _load_consumeFirstProvider() {
+  return _consumeFirstProvider = _interopRequireDefault(require('../../commons-atom/consumeFirstProvider'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const ATTACH_TARGET_LIST_REFRESH_INTERVAL = 2000;let LaunchAttachActions = exports.LaunchAttachActions = class LaunchAttachActions {
+
+  constructor(dispatcher, targetUri) {
     this._dispatcher = dispatcher;
     this._targetUri = targetUri;
     this._refreshTimerId = null;
     this._dialogVisible = true; // visible by default.
-    (this: any).updateAttachTargetList = this.updateAttachTargetList.bind(this);
-    (this: any)._handleLaunchAttachDialogToggle = this._handleLaunchAttachDialogToggle.bind(this);
-    this._subscriptions = new UniversalDisposable(
-      atom.commands.add('atom-workspace', {
-        // eslint-disable-next-line nuclide-internal/atom-commands
-        'nuclide-debugger:toggle-launch-attach': this._handleLaunchAttachDialogToggle,
-      }),
-      () => {
-        if (this._refreshTimerId != null) {
-          clearTimeout(this._refreshTimerId);
-          this._refreshTimerId = null;
-        }
-      },
-    );
+    this.updateAttachTargetList = this.updateAttachTargetList.bind(this);
+    this._handleLaunchAttachDialogToggle = this._handleLaunchAttachDialogToggle.bind(this);
+    this._subscriptions = new (_UniversalDisposable || _load_UniversalDisposable()).default(atom.commands.add('atom-workspace', {
+      // eslint-disable-next-line nuclide-internal/atom-commands
+      'nuclide-debugger:toggle-launch-attach': this._handleLaunchAttachDialogToggle
+    }), () => {
+      if (this._refreshTimerId != null) {
+        clearTimeout(this._refreshTimerId);
+        this._refreshTimerId = null;
+      }
+    });
     this._setTimerEnabledState(true);
   }
 
-  _handleLaunchAttachDialogToggle(): void {
+  _handleLaunchAttachDialogToggle() {
     this._dialogVisible = !this._dialogVisible;
     this._setTimerEnabledState(this._dialogVisible);
     // Fire and forget.
     this.updateAttachTargetList();
   }
 
-  _setTimerEnabledState(enabled: boolean): void {
+  _setTimerEnabledState(enabled) {
     if (enabled) {
-      this._refreshTimerId = setInterval(
-        this.updateAttachTargetList,
-        ATTACH_TARGET_LIST_REFRESH_INTERVAL,
-      );
+      this._refreshTimerId = setInterval(this.updateAttachTargetList, ATTACH_TARGET_LIST_REFRESH_INTERVAL);
     } else if (this._refreshTimerId != null) {
       clearTimeout(this._refreshTimerId);
     }
   }
 
-  attachDebugger(attachTarget: NodeAttachTargetInfo): Promise<void> {
-    const attachInfo = new NodeAttachProcessInfo(this._targetUri, attachTarget);
+  attachDebugger(attachTarget) {
+    const attachInfo = new (_NodeAttachProcessInfo || _load_NodeAttachProcessInfo()).NodeAttachProcessInfo(this._targetUri, attachTarget);
     return this._startDebugging(attachInfo);
   }
 
-  toggleLaunchAttachDialog(): void {
-    atom.commands.dispatch(
-      atom.views.getView(atom.workspace),
-      'nuclide-debugger:toggle-launch-attach',
-    );
+  toggleLaunchAttachDialog() {
+    atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:toggle-launch-attach');
   }
 
-  showDebuggerPanel(): void {
-    atom.commands.dispatch(
-      atom.views.getView(atom.workspace),
-      'nuclide-debugger:show',
-    );
+  showDebuggerPanel() {
+    atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
   }
 
-  async _startDebugging(processInfo: DebuggerProcessInfo): Promise<void> {
-    const debuggerService = await consumeFirstProvider('nuclide-debugger.remote');
-    await debuggerService.startDebugging(processInfo);
+  _startDebugging(processInfo) {
+    return (0, _asyncToGenerator.default)(function* () {
+      const debuggerService = yield (0, (_consumeFirstProvider || _load_consumeFirstProvider()).default)('nuclide-debugger.remote');
+      yield debuggerService.startDebugging(processInfo);
+    })();
   }
 
-  async updateAttachTargetList(): Promise<void> {
-    const rpcService = getNodeDebuggerServiceByNuclideUri(this._targetUri);
-    const attachTargetList = await rpcService.getAttachTargetInfoList();
-    this._dispatcher.dispatch({
-      actionType: ActionTypes.UPDATE_ATTACH_TARGET_LIST,
-      attachTargetInfos: attachTargetList,
-    });
+  updateAttachTargetList() {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const rpcService = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getNodeDebuggerServiceByNuclideUri)(_this._targetUri);
+      const attachTargetList = yield rpcService.getAttachTargetInfoList();
+      _this._dispatcher.dispatch({
+        actionType: (_LaunchAttachDispatcher || _load_LaunchAttachDispatcher()).ActionTypes.UPDATE_ATTACH_TARGET_LIST,
+        attachTargetInfos: attachTargetList
+      });
+    })();
   }
 
-  dispose(): void {
+  dispose() {
     this._subscriptions.dispose();
   }
-}
+};

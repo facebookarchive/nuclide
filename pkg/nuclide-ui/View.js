@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,49 +9,52 @@
  * the root directory of this source tree.
  */
 
-import {React, ReactDOM} from 'react-for-atom';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.View = undefined;
 
-type Props = {
-  item: Object,
-};
+var _reactForAtom = require('react-for-atom');
 
 /**
  * A React component used for rendering an item associated with a view via Atom's view registry.
  * Because we're going through Atom's ViewRegistry (which returns DOM nodes), we need to render an
  * empty element and manually attach the view (DOM element) we get from Atom.
  */
-export class View extends React.Component {
-  props: Props;
-  _renderedItem: ?Object;
+let View = exports.View = class View extends _reactForAtom.React.Component {
 
-  shouldComponentUpdate(nextProps: Props): boolean {
+  shouldComponentUpdate(nextProps) {
     return this.props.item !== nextProps.item;
   }
 
-  componentDidMount(): void {
+  componentDidMount() {
     this._update(this.props.item);
   }
 
-  componentDidUpdate(): void {
+  componentDidUpdate() {
     this._update(this.props.item);
   }
 
-  _update(item: ?Object): void {
-    if (item === this._renderedItem) { return; }
+  _update(item) {
+    if (item === this._renderedItem) {
+      return;
+    }
 
     // Remove the current children.
-    const container = ReactDOM.findDOMNode(this);
+    const container = _reactForAtom.ReactDOM.findDOMNode(this);
     while (container.lastChild != null) {
       container.removeChild(container.lastChild);
     }
 
     this._renderedItem = item;
-    if (item == null) { return; }
+    if (item == null) {
+      return;
+    }
     const el = atom.views.getView(item);
     container.appendChild(el);
   }
 
-  render(): React.Element<any> {
-    return <nuclide-react-mount-root />;
+  render() {
+    return _reactForAtom.React.createElement('nuclide-react-mount-root', null);
   }
-}
+};

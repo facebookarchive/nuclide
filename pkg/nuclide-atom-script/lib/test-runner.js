@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -20,93 +20,120 @@
 // process will have production options set - not test options like
 // `--user-data-dir`.
 
-import type {
-  ExitCode,
-  TestRunnerParams,
-} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import invariant from 'assert';
-import nuclideUri from '../../commons-node/nuclideUri';
-import {shellParse} from '../../commons-node/string';
-import {Console} from 'console';
-import electron from 'electron';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-const {ipcRenderer} = electron;
-invariant(ipcRenderer != null);
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var _string;
+
+function _load_string() {
+  return _string = require('../../commons-node/string');
+}
+
+var _console = require('console');
+
+var _electron = _interopRequireDefault(require('electron'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const ipcRenderer = _electron.default.ipcRenderer;
+
+if (!(ipcRenderer != null)) {
+  throw new Error('Invariant violation: "ipcRenderer != null"');
+}
 
 const STDOUT_FILTERS = [
-  // Always shows:
-  /^window load time: \d+ms\n$/i,
-];
+// Always shows:
+/^window load time: \d+ms\n$/i];
 
 const STDERR_FILTERS = [
-  // If the script takes ~1sec or more, and there's another Atom window open,
-  // then this error gets logged. It's because we set `--user-data-dir`, and
-  // our process can't get a lock on the IndexedDB file.
-  // https://github.com/atom/atom/blob/v1.7.3/src/state-store.js#L16
-  /^Could not connect to indexedDB Event { isTrusted: \[Getter\] }\n$/i,
-];
+// If the script takes ~1sec or more, and there's another Atom window open,
+// then this error gets logged. It's because we set `--user-data-dir`, and
+// our process can't get a lock on the IndexedDB file.
+// https://github.com/atom/atom/blob/v1.7.3/src/state-store.js#L16
+/^Could not connect to indexedDB Event { isTrusted: \[Getter\] }\n$/i];
 
 // eslint-disable-next-line no-unused-vars
 const debugConsole = global.console;
 
 // https://github.com/nodejs/node/blob/v5.1.1/lib/console.js
-const outputConsole = new Console(
-  { /* stdout */
-    write(chunk) {
-      if (!STDOUT_FILTERS.some(re => re.test(chunk))) {
-        ipcRenderer.send('write-to-stdout', chunk);
+const outputConsole = new _console.Console({
+  /* stdout */
+  write: function (chunk) {
+    if (!STDOUT_FILTERS.some(re => re.test(chunk))) {
+      ipcRenderer.send('write-to-stdout', chunk);
+    }
+  }
+}, {
+  /* stderr */
+  write: function (chunk) {
+    if (!STDERR_FILTERS.some(re => re.test(chunk))) {
+      ipcRenderer.send('write-to-stderr', chunk);
+    }
+  }
+});
+
+exports.default = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (params) {
+    let exitCode = 0;
+    try {
+      const atomGlobal = params.buildAtomEnvironment({
+        applicationDelegate: params.buildDefaultApplicationDelegate(),
+        document: document,
+        window: window
+      });
+      atomGlobal.atomScriptMode = true;
+
+      if (!(typeof process.env.FILE_ATOM_SCRIPT === 'string')) {
+        throw new Error('Invariant violation: "typeof process.env.FILE_ATOM_SCRIPT === \'string\'"');
       }
-    },
-  },
-  { /* stderr */
-    write(chunk) {
-      if (!STDERR_FILTERS.some(re => re.test(chunk))) {
-        ipcRenderer.send('write-to-stderr', chunk);
+
+      const fileAtomScript = process.env.FILE_ATOM_SCRIPT;
+
+      if (!(typeof process.env.ARGS_ATOM_SCRIPT === 'string')) {
+        throw new Error('Invariant violation: "typeof process.env.ARGS_ATOM_SCRIPT === \'string\'"');
       }
-    },
-  },
-);
 
-export default async function runTest(
-  params: TestRunnerParams,
-): Promise<ExitCode> {
-  let exitCode = 0;
-  try {
-    const atomGlobal = params.buildAtomEnvironment({
-      applicationDelegate: params.buildDefaultApplicationDelegate(),
-      document,
-      window,
-    });
-    atomGlobal.atomScriptMode = true;
+      const argsAtomScript = process.env.ARGS_ATOM_SCRIPT;
 
-    invariant(typeof process.env.FILE_ATOM_SCRIPT === 'string');
-    const fileAtomScript = process.env.FILE_ATOM_SCRIPT;
+      const scriptPath = (_nuclideUri || _load_nuclideUri()).default.resolve(fileAtomScript);
+      const scriptArgs = argsAtomScript === "''" ? [] : (0, (_string || _load_string()).shellParse)(argsAtomScript);
 
-    invariant(typeof process.env.ARGS_ATOM_SCRIPT === 'string');
-    const argsAtomScript = process.env.ARGS_ATOM_SCRIPT;
+      // Unfortunately we have to pollute our environment if we want to take
+      // advantage of Atom's v8 cache. Ideally, we'd run the script file using
+      // `vm.runInNewContext`, with the ipc bridged `console` in the new context.
+      // The v8 cache is activated via a monkey-patched `Module.prototype.load`,
+      // which executes code with `vm.runInThisContext`. So if you want the cache
+      // you have to run in this context.
+      // https://github.com/atom/atom/blob/v1.7.3/src/native-compile-cache.js#L71
 
-    const scriptPath = nuclideUri.resolve(fileAtomScript);
-    const scriptArgs = argsAtomScript === "''" ? [] : shellParse(argsAtomScript);
+      global.atom = atomGlobal;
+      global.console = outputConsole;
 
-    // Unfortunately we have to pollute our environment if we want to take
-    // advantage of Atom's v8 cache. Ideally, we'd run the script file using
-    // `vm.runInNewContext`, with the ipc bridged `console` in the new context.
-    // The v8 cache is activated via a monkey-patched `Module.prototype.load`,
-    // which executes code with `vm.runInThisContext`. So if you want the cache
-    // you have to run in this context.
-    // https://github.com/atom/atom/blob/v1.7.3/src/native-compile-cache.js#L71
+      // $FlowIgnore
+      const handler = require(scriptPath);
+      exitCode = yield handler(scriptArgs);
+    } catch (e) {
+      outputConsole.error(e);
+      exitCode = 1;
+    }
 
-    global.atom = atomGlobal;
-    global.console = outputConsole;
+    return exitCode;
+  });
 
-    // $FlowIgnore
-    const handler = require(scriptPath);
-    exitCode = await handler(scriptArgs);
-  } catch (e) {
-    outputConsole.error(e);
-    exitCode = 1;
+  function runTest(_x) {
+    return _ref.apply(this, arguments);
   }
 
-  return exitCode;
-}
+  return runTest;
+})();
+
+module.exports = exports['default'];

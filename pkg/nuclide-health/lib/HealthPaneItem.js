@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,27 +9,28 @@
  * the root directory of this source tree.
  */
 
-import type {PaneItemState} from './types';
-import type {Observable} from 'rxjs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = undefined;
 
-import HealthPaneItemComponent from './ui/HealthPaneItemComponent';
-import {React} from 'react-for-atom';
+var _HealthPaneItemComponent;
 
-type Props = {
-  stateStream: Observable<?PaneItemState>,
-};
+function _load_HealthPaneItemComponent() {
+  return _HealthPaneItemComponent = _interopRequireDefault(require('./ui/HealthPaneItemComponent'));
+}
 
-export default class HealthPaneItem extends React.Component {
-  props: Props;
-  state: PaneItemState;
+var _reactForAtom = require('react-for-atom');
 
-  _stateSubscription: rxjs$ISubscription;
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-  constructor(props: Props) {
+let HealthPaneItem = class HealthPaneItem extends _reactForAtom.React.Component {
+
+  constructor(props) {
     super(props);
     this.state = {
       stats: null,
-      childProcessesTree: null,
+      childProcessesTree: null
     };
   }
 
@@ -42,41 +43,48 @@ export default class HealthPaneItem extends React.Component {
     this._stateSubscription.unsubscribe();
   }
 
-  getTitle(): string {
+  getTitle() {
     return 'Health';
   }
 
-  getIconName(): string {
+  getIconName() {
     return 'dashboard';
   }
 
   // Return false to prevent the tab getting split (since we only update a singleton health pane).
-  copy(): boolean {
+  copy() {
     return false;
   }
 
   render() {
-    const {toolbarJewel, updateToolbarJewel, childProcessesTree, stats} = this.state;
+    var _state = this.state;
+    const toolbarJewel = _state.toolbarJewel;
+    const updateToolbarJewel = _state.updateToolbarJewel;
+    const childProcessesTree = _state.childProcessesTree;
+    const stats = _state.stats;
+
 
     if (stats == null) {
-      return <div />;
+      return _reactForAtom.React.createElement('div', null);
     }
 
-    return (
-      <div className="pane-item padded nuclide-health-pane-item">
-        <HealthPaneItemComponent
-          toolbarJewel={toolbarJewel}
-          updateToolbarJewel={updateToolbarJewel}
-          cpuPercentage={stats.cpuPercentage}
-          heapPercentage={stats.heapPercentage}
-          memory={stats.rss}
-          activeHandles={stats.activeHandles}
-          activeRequests={stats.activeRequests}
-          activeHandlesByType={stats.activeHandlesByType}
-          childProcessesTree={childProcessesTree}
-        />
-      </div>
+    return _reactForAtom.React.createElement(
+      'div',
+      { className: 'pane-item padded nuclide-health-pane-item' },
+      _reactForAtom.React.createElement((_HealthPaneItemComponent || _load_HealthPaneItemComponent()).default, {
+        toolbarJewel: toolbarJewel,
+        updateToolbarJewel: updateToolbarJewel,
+        cpuPercentage: stats.cpuPercentage,
+        heapPercentage: stats.heapPercentage,
+        memory: stats.rss,
+        activeHandles: stats.activeHandles,
+        activeRequests: stats.activeRequests,
+        activeHandlesByType: stats.activeHandlesByType,
+        childProcessesTree: childProcessesTree
+      })
     );
   }
 
-}
+};
+exports.default = HealthPaneItem;
+module.exports = exports['default'];

@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,11 +9,20 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = repositoryContainsPath;
 
-import {Directory} from 'atom';
-import nuclideUri from '../../commons-node/nuclideUri';
+var _atom = require('atom');
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * @param repository Either a GitRepository or HgRepositoryClient.
@@ -21,24 +30,20 @@ import nuclideUri from '../../commons-node/nuclideUri';
  * @return boolean Whether the file path exists within the working directory
  *   (aka root directory) of the repository, or is the working directory.
  */
-export default function repositoryContainsPath(
-  repository: atom$Repository,
-  filePath: NuclideUri,
-): boolean {
+function repositoryContainsPath(repository, filePath) {
   const workingDirectoryPath = repository.getWorkingDirectory();
   if (pathsAreEqual(workingDirectoryPath, filePath)) {
     return true;
   }
 
   if (repository.getType() === 'git') {
-    const rootGitProjectDirectory = new Directory(workingDirectoryPath);
+    const rootGitProjectDirectory = new _atom.Directory(workingDirectoryPath);
     return rootGitProjectDirectory.contains(filePath);
   } else if (repository.getType() === 'hg') {
-    const hgRepository = ((repository: any): HgRepositoryClient);
+    const hgRepository = repository;
     return hgRepository._workingDirectory.contains(filePath);
   }
-  throw new Error(
-    'repositoryContainsPath: Received an unrecognized repository type. Expected git or hg.');
+  throw new Error('repositoryContainsPath: Received an unrecognized repository type. Expected git or hg.');
 }
 
 /**
@@ -46,8 +51,9 @@ export default function repositoryContainsPath(
  * @param filePath2 An absolute file path.
  * @return Whether the file paths are equal, accounting for trailing slashes.
  */
-function pathsAreEqual(filePath1: string, filePath2: string): boolean {
-  const realPath1 = nuclideUri.resolve(filePath1);
-  const realPath2 = nuclideUri.resolve(filePath2);
+function pathsAreEqual(filePath1, filePath2) {
+  const realPath1 = (_nuclideUri || _load_nuclideUri()).default.resolve(filePath1);
+  const realPath2 = (_nuclideUri || _load_nuclideUri()).default.resolve(filePath2);
   return realPath1 === realPath2;
 }
+module.exports = exports['default'];

@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,34 +9,45 @@
  * the root directory of this source tree.
  */
 
-import {DebuggerProcessInfo} from '../../nuclide-debugger-base';
-import {PhpDebuggerInstance} from './PhpDebuggerInstance';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.LaunchProcessInfo = undefined;
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+var _nuclideDebuggerBase;
 
-export class LaunchProcessInfo extends DebuggerProcessInfo {
-  _launchTarget: string;
+function _load_nuclideDebuggerBase() {
+  return _nuclideDebuggerBase = require('../../nuclide-debugger-base');
+}
 
-  constructor(targetUri: NuclideUri, launchTarget: string) {
+var _PhpDebuggerInstance;
+
+function _load_PhpDebuggerInstance() {
+  return _PhpDebuggerInstance = require('./PhpDebuggerInstance');
+}
+
+let LaunchProcessInfo = exports.LaunchProcessInfo = class LaunchProcessInfo extends (_nuclideDebuggerBase || _load_nuclideDebuggerBase()).DebuggerProcessInfo {
+
+  constructor(targetUri, launchTarget) {
     super('hhvm', targetUri);
     this._launchTarget = launchTarget;
   }
 
-  debug(): Promise<PhpDebuggerInstance> {
-    const phpDebuggerInstance = new PhpDebuggerInstance(this, this._launchTarget);
+  debug() {
+    const phpDebuggerInstance = new (_PhpDebuggerInstance || _load_PhpDebuggerInstance()).PhpDebuggerInstance(this, this._launchTarget);
     return Promise.resolve(phpDebuggerInstance);
   }
 
-  supportThreads(): boolean {
+  supportThreads() {
     return true;
   }
 
-  supportSingleThreadStepping(): boolean {
+  supportSingleThreadStepping() {
     return true;
   }
 
-  singleThreadSteppingEnabled(): boolean {
+  singleThreadSteppingEnabled() {
     return true;
   }
 
-}
+};

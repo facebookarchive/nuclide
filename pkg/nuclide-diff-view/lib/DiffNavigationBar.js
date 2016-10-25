@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,119 +9,123 @@
  * the root directory of this source tree.
  */
 
-import type {
-  DiffSection,
-  DiffSectionStatusType,
-} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = undefined;
 
-import classnames from 'classnames';
-import {DiffSectionStatus} from './constants';
-import {React} from 'react-for-atom';
+var _classnames;
 
-type DiffNavigationBarProps = {
-  diffSections: Array<DiffSection>,
-  navigationScale: number,
-  pixelRangeForDiffSection: (diffSection: DiffSection) => {top: number, bottom: number},
-  onNavigateToDiffSection: (diffSectionStatus: DiffSectionStatusType, lineNumber: number) => any,
-};
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
 
-export default class DiffNavigationBar extends React.Component {
-  props: DiffNavigationBarProps;
+var _constants;
 
-  constructor(props: DiffNavigationBarProps) {
+function _load_constants() {
+  return _constants = require('./constants');
+}
+
+var _reactForAtom = require('react-for-atom');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let DiffNavigationBar = class DiffNavigationBar extends _reactForAtom.React.Component {
+
+  constructor(props) {
     super(props);
-    (this: any)._handleClick = this._handleClick.bind(this);
+    this._handleClick = this._handleClick.bind(this);
   }
 
-  render(): React.Element<any> {
-    const {
-      diffSections,
-      pixelRangeForDiffSection,
-      navigationScale,
-    } = this.props;
+  render() {
+    var _props = this.props;
+    const diffSections = _props.diffSections;
+    const pixelRangeForDiffSection = _props.pixelRangeForDiffSection;
+    const navigationScale = _props.navigationScale;
+
 
     const jumpTargets = diffSections.map(diffSection => {
-      return (
-        <NavigatonBarJumpTarget
-          navigationScale={navigationScale}
-          diffSection={diffSection}
-          key={diffSection.status + diffSection.lineNumber}
-          pixelRangeForDiffSection={pixelRangeForDiffSection}
-          onClick={this._handleClick}
-        />
-      );
+      return _reactForAtom.React.createElement(NavigatonBarJumpTarget, {
+        navigationScale: navigationScale,
+        diffSection: diffSection,
+        key: diffSection.status + diffSection.lineNumber,
+        pixelRangeForDiffSection: pixelRangeForDiffSection,
+        onClick: this._handleClick
+      });
     });
 
-    return (
-      <div className="nuclide-diff-view-navigation-bar">
-        {jumpTargets}
-      </div>
+    return _reactForAtom.React.createElement(
+      'div',
+      { className: 'nuclide-diff-view-navigation-bar' },
+      jumpTargets
     );
   }
 
-  _handleClick(diffSectionStatus: DiffSectionStatusType, lineNumber: number): void {
+  _handleClick(diffSectionStatus, lineNumber) {
     this.props.onNavigateToDiffSection(diffSectionStatus, lineNumber);
   }
-}
+};
+exports.default = DiffNavigationBar;
 
-function sectionStatusToClassName(statusType: DiffSectionStatusType): string {
+
+function sectionStatusToClassName(statusType) {
   switch (statusType) {
-    case DiffSectionStatus.ADDED:
+    case (_constants || _load_constants()).DiffSectionStatus.ADDED:
       return 'added';
-    case DiffSectionStatus.CHANGED:
+    case (_constants || _load_constants()).DiffSectionStatus.CHANGED:
       return 'modified';
-    case DiffSectionStatus.REMOVED:
+    case (_constants || _load_constants()).DiffSectionStatus.REMOVED:
       return 'removed';
     default:
       throw new Error('Invalid diff section status');
   }
 }
 
-type NavigatonBarJumpTargetProps = {
-  navigationScale: number,
-  diffSection: DiffSection,
-  pixelRangeForDiffSection: (diffSection: DiffSection) => {top: number, bottom: number},
-  onClick: (diffSectionStatus: DiffSectionStatusType, lineNumber: number) => any,
-};
+let NavigatonBarJumpTarget = class NavigatonBarJumpTarget extends _reactForAtom.React.Component {
 
-class NavigatonBarJumpTarget extends React.Component {
-  props: NavigatonBarJumpTargetProps;
-
-  constructor(props: NavigatonBarJumpTargetProps) {
+  constructor(props) {
     super(props);
-    (this: any)._handleClick = this._handleClick.bind(this);
+    this._handleClick = this._handleClick.bind(this);
   }
 
-  render(): React.Element<any> {
-    const {diffSection, pixelRangeForDiffSection, navigationScale} = this.props;
+  render() {
+    var _props2 = this.props;
+    const diffSection = _props2.diffSection;
+    const pixelRangeForDiffSection = _props2.pixelRangeForDiffSection;
+    const navigationScale = _props2.navigationScale;
+
     const lineChangeClass = sectionStatusToClassName(diffSection.status);
-    const {top, bottom} = pixelRangeForDiffSection(diffSection);
+
+    var _pixelRangeForDiffSec = pixelRangeForDiffSection(diffSection);
+
+    const top = _pixelRangeForDiffSec.top;
+    const bottom = _pixelRangeForDiffSec.bottom;
+
     const scaledTop = top * navigationScale;
     const scaledHeight = Math.max((bottom - top) * navigationScale, 1);
     const targetStyle = {
-      top: `${scaledTop}px`,
-      height: `${scaledHeight}px`,
+      top: `${ scaledTop }px`,
+      height: `${ scaledHeight }px`
     };
-    const targetClassName = classnames({
+    const targetClassName = (0, (_classnames || _load_classnames()).default)({
       'nuclide-diff-view-navigation-target': true,
-      [lineChangeClass]: true,
+      [lineChangeClass]: true
     });
 
-    return (
-      <div
-        className={targetClassName}
-        style={targetStyle}
-        onClick={this._handleClick}
-      />
-    );
+    return _reactForAtom.React.createElement('div', {
+      className: targetClassName,
+      style: targetStyle,
+      onClick: this._handleClick
+    });
   }
 
-  _handleClick(e: SyntheticMouseEvent): void {
-    const {diffSection} = this.props;
-    const targetRectangle = ((e.target: any): HTMLElement).getBoundingClientRect();
+  _handleClick(e) {
+    const diffSection = this.props.diffSection;
+
+    const targetRectangle = e.target.getBoundingClientRect();
     const lineHeight = (e.clientY - targetRectangle.top) / targetRectangle.height;
-    const scrollToLineNumber = diffSection.lineNumber +
-      Math.floor(diffSection.lineCount * lineHeight);
+    const scrollToLineNumber = diffSection.lineNumber + Math.floor(diffSection.lineCount * lineHeight);
     this.props.onClick(diffSection.status, scrollToLineNumber);
   }
-}
+};
+module.exports = exports['default'];

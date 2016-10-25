@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,38 +9,50 @@
  * the root directory of this source tree.
  */
 
-import type {Observable} from 'rxjs';
-import type {DebuggerEvent} from '../debugger/types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = main;
 
-import {DebuggerCommander} from '../debugger/DebuggerCommander';
-import {launchDebugger} from '../debugger/debugger';
-import readline from 'readline';
-import yargs from 'yargs';
+var _DebuggerCommander;
 
-export default function main(args: Array<string>) {
-  const argv = yargs
-    .usage('Python command-line debugger in JavaScript.\nUsage: $0 <file-to-run.py> <arg1> <arg2>')
-    .help('help')
-    .alias('h', 'help')
-    .demand(1, 'Must specify a Python file')
-    .parse(args);
+function _load_DebuggerCommander() {
+  return _DebuggerCommander = require('../debugger/DebuggerCommander');
+}
 
-  const commander = new DebuggerCommander();
-  const observable = launchDebugger(
-    commander.asObservable(),
-    /* initialBreakpoints */ [],
-    /* pathToPythonExecutable */ 'python',
-    /* pythonArgs */ argv._,
-  );
+var _debugger;
+
+function _load_debugger() {
+  return _debugger = require('../debugger/debugger');
+}
+
+var _readline = _interopRequireDefault(require('readline'));
+
+var _yargs;
+
+function _load_yargs() {
+  return _yargs = _interopRequireDefault(require('yargs'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function main(args) {
+  const argv = (_yargs || _load_yargs()).default.usage('Python command-line debugger in JavaScript.\nUsage: $0 <file-to-run.py> <arg1> <arg2>').help('help').alias('h', 'help').demand(1, 'Must specify a Python file').parse(args);
+
+  const commander = new (_DebuggerCommander || _load_DebuggerCommander()).DebuggerCommander();
+  const observable = (0, (_debugger || _load_debugger()).launchDebugger)(commander.asObservable(),
+  /* initialBreakpoints */[],
+  /* pathToPythonExecutable */'python',
+  /* pythonArgs */argv._);
 
   interact(observable, commander);
 }
 
 /* eslint-disable no-console */
-function interact(observable: Observable<DebuggerEvent>, commander: DebuggerCommander) {
-  const rl = readline.createInterface({
+function interact(observable, commander) {
+  const rl = _readline.default.createInterface({
     input: process.stdin,
-    output: process.stdout,
+    output: process.stdout
   });
 
   function ask() {
@@ -75,30 +87,34 @@ function interact(observable: Observable<DebuggerEvent>, commander: DebuggerComm
           commander.step();
           break;
         default:
-          console.error(`Unrecognized command: ${answer}`);
+          console.error(`Unrecognized command: ${ answer }`);
           ask();
       }
     });
   }
 
   observable.subscribe({
-    next(message) {
+    next: function (message) {
       if (message.event === 'start') {
         // Give the user a chance to set breakpoints before starting the program.
         console.log('Program started. Type \'c\' to continue or \'s\' to start stepping.');
         ask();
       } else if (message.event === 'stop') {
-        const {file, line} = message;
-        console.log(`Stopped at: ${file}:${line}`);
+        const file = message.file;
+        const line = message.line;
+
+        console.log(`Stopped at: ${ file }:${ line }`);
         ask();
       }
     },
-    error(error) {
+    error: function (error) {
       console.error('ERROR:', error);
     },
-    complete() {
+    complete: function () {
       rl.close();
-    },
+    }
   });
 }
 /* eslint-enable no-console */
+
+module.exports = exports['default'];

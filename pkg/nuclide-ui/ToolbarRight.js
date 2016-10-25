@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,16 +9,17 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ToolbarRight = undefined;
 
-type Props = {
-  children?: mixed,
-};
+var _reactForAtom = require('react-for-atom');
 
-export const ToolbarRight = (props: Props) => {
-  return (
-    <div className="nuclide-ui-toolbar__right">
-      {props.children}
-    </div>
+const ToolbarRight = exports.ToolbarRight = props => {
+  return _reactForAtom.React.createElement(
+    'div',
+    { className: 'nuclide-ui-toolbar__right' },
+    props.children
   );
 };

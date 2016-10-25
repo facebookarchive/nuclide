@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,36 +9,56 @@
  * the root directory of this source tree.
  */
 
-import {Emitter} from 'atom';
-import {WorkingSet} from '../../nuclide-working-sets-common';
-import {arrayEqual} from '../../commons-node/collection';
-import {track} from '../../nuclide-analytics';
-import {getLogger} from '../../nuclide-logging';
-import nuclideUri from '../../commons-node/nuclideUri';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.WorkingSetsStore = undefined;
 
-import type {WorkingSetDefinition} from './types';
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-type ApplicabilitySortedDefinitions = {
-  applicable: Array<WorkingSetDefinition>,
-  notApplicable: Array<WorkingSetDefinition>,
-};
+var _atom = require('atom');
+
+var _nuclideWorkingSetsCommon;
+
+function _load_nuclideWorkingSetsCommon() {
+  return _nuclideWorkingSetsCommon = require('../../nuclide-working-sets-common');
+}
+
+var _collection;
+
+function _load_collection() {
+  return _collection = require('../../commons-node/collection');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _nuclideLogging;
+
+function _load_nuclideLogging() {
+  return _nuclideLogging = require('../../nuclide-logging');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const NEW_WORKING_SET_EVENT = 'new-working-set';
 const NEW_DEFINITIONS_EVENT = 'new-definitions';
 const SAVE_DEFINITIONS_EVENT = 'save-definitions';
 
-export class WorkingSetsStore {
-  _emitter: Emitter;
-  _current: WorkingSet;
-  _definitions: Array<WorkingSetDefinition>;
-  _applicableDefinitions: Array<WorkingSetDefinition>;
-  _notApplicableDefinitions: Array<WorkingSetDefinition>;
-  _prevCombinedUris: Array<string>;
-  _lastSelected: Array<string>;
+let WorkingSetsStore = exports.WorkingSetsStore = class WorkingSetsStore {
 
   constructor() {
-    this._emitter = new Emitter();
-    this._current = new WorkingSet();
+    this._emitter = new _atom.Emitter();
+    this._current = new (_nuclideWorkingSetsCommon || _load_nuclideWorkingSetsCommon()).WorkingSet();
     this._definitions = [];
     this._applicableDefinitions = [];
     this._notApplicableDefinitions = [];
@@ -46,79 +66,77 @@ export class WorkingSetsStore {
     this._lastSelected = [];
   }
 
-  getCurrent(): WorkingSet {
+  getCurrent() {
     return this._current;
   }
 
-  getDefinitions(): Array<WorkingSetDefinition> {
+  getDefinitions() {
     return this._definitions;
   }
 
-  getApplicableDefinitions(): Array<WorkingSetDefinition> {
+  getApplicableDefinitions() {
     return this._applicableDefinitions;
   }
 
-  getNotApplicableDefinitions(): Array<WorkingSetDefinition> {
+  getNotApplicableDefinitions() {
     return this._notApplicableDefinitions;
   }
 
-  subscribeToCurrent(callback: (current: WorkingSet) => void): IDisposable {
+  subscribeToCurrent(callback) {
     return this._emitter.on(NEW_WORKING_SET_EVENT, callback);
   }
 
-  subscribeToDefinitions(
-    callback: (definitions: ApplicabilitySortedDefinitions) => mixed,
-  ): IDisposable {
+  subscribeToDefinitions(callback) {
     return this._emitter.on(NEW_DEFINITIONS_EVENT, callback);
   }
 
-  onSaveDefinitions(
-    callback: (definitions: Array<WorkingSetDefinition>) => mixed,
-  ): IDisposable {
+  onSaveDefinitions(callback) {
     return this._emitter.on(SAVE_DEFINITIONS_EVENT, callback);
   }
 
-  updateDefinitions(definitions: Array<WorkingSetDefinition>): void {
-    const {applicable, notApplicable} = this._sortOutApplicability(definitions);
+  updateDefinitions(definitions) {
+    var _sortOutApplicability = this._sortOutApplicability(definitions);
+
+    const applicable = _sortOutApplicability.applicable;
+    const notApplicable = _sortOutApplicability.notApplicable;
+
     this._setDefinitions(applicable, notApplicable, definitions);
   }
 
-  updateApplicability(): void {
-    const {applicable, notApplicable} = this._sortOutApplicability(this._definitions);
+  updateApplicability() {
+    var _sortOutApplicability2 = this._sortOutApplicability(this._definitions);
+
+    const applicable = _sortOutApplicability2.applicable;
+    const notApplicable = _sortOutApplicability2.notApplicable;
+
     this._setDefinitions(applicable, notApplicable, this._definitions);
   }
 
-  saveWorkingSet(name: string, workingSet: WorkingSet): void {
+  saveWorkingSet(name, workingSet) {
     this._saveDefinition(name, name, workingSet);
   }
 
-  update(name: string, newName: string, workingSet: WorkingSet): void {
+  update(name, newName, workingSet) {
     this._saveDefinition(name, newName, workingSet);
   }
 
-  activate(name: string): void {
-    this._activateDefinition(name, /* active */ true);
+  activate(name) {
+    this._activateDefinition(name, /* active */true);
   }
 
-  deactivate(name: string): void {
-    this._activateDefinition(name, /* active */ false);
+  deactivate(name) {
+    this._activateDefinition(name, /* active */false);
   }
 
-  deleteWorkingSet(name: string): void {
-    track('working-sets-delete', {name});
+  deleteWorkingSet(name) {
+    (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('working-sets-delete', { name: name });
 
     const definitions = this._definitions.filter(d => d.name !== name);
     this._saveDefinitions(definitions);
   }
 
-  _setDefinitions(
-    applicable: Array<WorkingSetDefinition>,
-    notApplicable: Array<WorkingSetDefinition>,
-    definitions: Array<WorkingSetDefinition>,
-  ): void {
-    const somethingHasChanged =
-      !arrayEqual(this._applicableDefinitions, applicable) ||
-      !arrayEqual(this._notApplicableDefinitions, notApplicable);
+  _setDefinitions(applicable, notApplicable, definitions) {
+    const somethingHasChanged = !(0, (_collection || _load_collection()).arrayEqual)(this._applicableDefinitions, applicable) || !(0, (_collection || _load_collection()).arrayEqual)(this._notApplicableDefinitions, notApplicable);
 
     if (somethingHasChanged) {
       this._applicableDefinitions = applicable;
@@ -129,25 +147,23 @@ export class WorkingSetsStore {
       if (activeApplicable.length > 0) {
         this._lastSelected = activeApplicable.map(d => d.name);
       }
-      this._emitter.emit(NEW_DEFINITIONS_EVENT, {applicable, notApplicable});
+      this._emitter.emit(NEW_DEFINITIONS_EVENT, { applicable: applicable, notApplicable: notApplicable });
 
       this._updateCurrentWorkingSet(activeApplicable);
     }
   }
 
-  _updateCurrentWorkingSet(activeApplicable: Array<WorkingSetDefinition>): void {
-    const combinedUris = [].concat(
-      ...activeApplicable.map(d => d.uris),
-    );
+  _updateCurrentWorkingSet(activeApplicable) {
+    const combinedUris = [].concat(...activeApplicable.map(d => d.uris));
 
-    const newWorkingSet = new WorkingSet(combinedUris);
+    const newWorkingSet = new (_nuclideWorkingSetsCommon || _load_nuclideWorkingSetsCommon()).WorkingSet(combinedUris);
     if (!this._current.equals(newWorkingSet)) {
       this._current = newWorkingSet;
       this._emitter.emit(NEW_WORKING_SET_EVENT, newWorkingSet);
     }
   }
 
-  _saveDefinition(name: string, newName: string, workingSet: WorkingSet): void {
+  _saveDefinition(name, newName, workingSet) {
     const definitions = this.getDefinitions();
 
     let nameIndex = -1;
@@ -159,28 +175,21 @@ export class WorkingSetsStore {
 
     let newDefinitions;
     if (nameIndex < 0) {
-      track('working-sets-create', {name, uris: workingSet.getUris().join(',')});
+      (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('working-sets-create', { name: name, uris: workingSet.getUris().join(',') });
 
-      newDefinitions = definitions.concat({name, uris: workingSet.getUris(), active: false});
+      newDefinitions = definitions.concat({ name: name, uris: workingSet.getUris(), active: false });
     } else {
-      track(
-        'working-sets-update',
-        {oldName: name, name: newName, uris: workingSet.getUris().join(',')},
-      );
+      (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('working-sets-update', { oldName: name, name: newName, uris: workingSet.getUris().join(',') });
 
       const active = definitions[nameIndex].active;
-      newDefinitions = [].concat(
-        definitions.slice(0, nameIndex),
-        {name: newName, uris: workingSet.getUris(), active},
-        definitions.slice(nameIndex + 1),
-      );
+      newDefinitions = [].concat(definitions.slice(0, nameIndex), { name: newName, uris: workingSet.getUris(), active: active }, definitions.slice(nameIndex + 1));
     }
 
     this._saveDefinitions(newDefinitions);
   }
 
-  _activateDefinition(name: string, active: boolean): void {
-    track('working-sets-activate', {name, active: active.toString()});
+  _activateDefinition(name, active) {
+    (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('working-sets-activate', { name: name, active: active.toString() });
 
     const definitions = this.getDefinitions();
     const newDefinitions = definitions.map(d => {
@@ -193,38 +202,37 @@ export class WorkingSetsStore {
     this._saveDefinitions(newDefinitions);
   }
 
-  deactivateAll(): void {
+  deactivateAll() {
     const definitions = this.getDefinitions().map(d => {
       if (!this._isApplicable(d)) {
         return d;
       }
 
-      return {...d, active: false};
+      return _extends({}, d, { active: false });
     });
     this._saveDefinitions(definitions);
   }
 
-  toggleLastSelected(): void {
-    track('working-sets-toggle-last-selected');
+  toggleLastSelected() {
+    (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('working-sets-toggle-last-selected');
 
     if (this.getApplicableDefinitions().some(d => d.active)) {
       this.deactivateAll();
     } else {
       const newDefinitions = this.getDefinitions().map(d => {
-        return {
-          ...d,
-          active: d.active || this._lastSelected.indexOf(d.name) > -1,
-        };
+        return _extends({}, d, {
+          active: d.active || this._lastSelected.indexOf(d.name) > -1
+        });
       });
       this._saveDefinitions(newDefinitions);
     }
   }
 
-  _saveDefinitions(definitions: Array<WorkingSetDefinition>): void {
+  _saveDefinitions(definitions) {
     this._emitter.emit(SAVE_DEFINITIONS_EVENT, definitions);
   }
 
-  _sortOutApplicability(definitions: Array<WorkingSetDefinition>): ApplicabilitySortedDefinitions {
+  _sortOutApplicability(definitions) {
     const applicable = [];
     const notApplicable = [];
 
@@ -236,25 +244,25 @@ export class WorkingSetsStore {
       }
     });
 
-    return {applicable, notApplicable};
+    return { applicable: applicable, notApplicable: notApplicable };
   }
 
-  _isApplicable(definition: WorkingSetDefinition): boolean {
-    const workingSet = new WorkingSet(definition.uris);
+  _isApplicable(definition) {
+    const workingSet = new (_nuclideWorkingSetsCommon || _load_nuclideWorkingSetsCommon()).WorkingSet(definition.uris);
     const dirs = atom.project.getDirectories().filter(dir => {
       // Apparently sometimes Atom supplies an invalid directory, or a directory with an
       // invalid paths. See https://github.com/facebook/nuclide/issues/416
       if (dir == null) {
-        const logger = getLogger();
+        const logger = (0, (_nuclideLogging || _load_nuclideLogging()).getLogger)();
 
         logger.warn('Received a null directory from Atom');
         return false;
       }
       try {
-        nuclideUri.parse(dir.getPath());
+        (_nuclideUri || _load_nuclideUri()).default.parse(dir.getPath());
         return true;
       } catch (e) {
-        const logger = getLogger();
+        const logger = (0, (_nuclideLogging || _load_nuclideLogging()).getLogger)();
 
         logger.warn('Failed to parse path supplied by Atom', dir.getPath());
         return false;
@@ -263,4 +271,4 @@ export class WorkingSetsStore {
 
     return dirs.some(dir => workingSet.containsDir(dir.getPath()));
   }
-}
+};

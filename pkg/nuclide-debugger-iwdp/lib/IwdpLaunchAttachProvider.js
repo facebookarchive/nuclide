@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,27 +9,43 @@
  * the root directory of this source tree.
  */
 
-import {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
-import {React} from 'react-for-atom';
-import {AttachUiComponent} from './AttachUiComponent';
-import invariant from 'assert';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.IwdpLaunchAttachProvider = undefined;
 
-export class IwdpLaunchAttachProvider extends DebuggerLaunchAttachProvider {
-  constructor(debuggingTypeName: string, targetUri: string) {
+var _nuclideDebuggerBase;
+
+function _load_nuclideDebuggerBase() {
+  return _nuclideDebuggerBase = require('../../nuclide-debugger-base');
+}
+
+var _reactForAtom = require('react-for-atom');
+
+var _AttachUiComponent;
+
+function _load_AttachUiComponent() {
+  return _AttachUiComponent = require('./AttachUiComponent');
+}
+
+let IwdpLaunchAttachProvider = exports.IwdpLaunchAttachProvider = class IwdpLaunchAttachProvider extends (_nuclideDebuggerBase || _load_nuclideDebuggerBase()).DebuggerLaunchAttachProvider {
+  constructor(debuggingTypeName, targetUri) {
     super(debuggingTypeName, targetUri);
   }
 
-  getActions(): Array<string> {
+  getActions() {
     return ['Attach'];
   }
 
-  getComponent(action: string): ?React.Element<any> {
+  getComponent(action) {
     if (action === 'Attach') {
-      return <AttachUiComponent targetUri={this.getTargetUri()} />;
+      return _reactForAtom.React.createElement((_AttachUiComponent || _load_AttachUiComponent()).AttachUiComponent, { targetUri: this.getTargetUri() });
     } else {
-      invariant(false, 'Unrecognized action for component.');
+      if (!false) {
+        throw new Error('Unrecognized action for component.');
+      }
     }
   }
 
-  dispose(): void {}
-}
+  dispose() {}
+};

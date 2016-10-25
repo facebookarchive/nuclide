@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,90 +9,113 @@
  * the root directory of this source tree.
  */
 
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import WS from 'ws';
-import {Observable} from 'rxjs';
-import {createWebSocketListener} from './createWebSocketListener';
-import {logger} from './logger';
-import {FileCache} from './FileCache';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DebuggerConnection = undefined;
 
-import type {IosDeviceInfo} from './types';
+var _UniversalDisposable;
 
-const {log} = logger;
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../commons-node/UniversalDisposable'));
+}
 
-export class DebuggerConnection {
-  _webSocket: WS;
-  _disposables: UniversalDisposable;
-  _fileCache: FileCache;
-  _sendMessageToClient: (message: string) => void;
+var _ws;
 
-  constructor(iosDeviceInfo: IosDeviceInfo, sendMessageToClient: (message: string) => void) {
+function _load_ws() {
+  return _ws = _interopRequireDefault(require('ws'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _createWebSocketListener;
+
+function _load_createWebSocketListener() {
+  return _createWebSocketListener = require('./createWebSocketListener');
+}
+
+var _logger;
+
+function _load_logger() {
+  return _logger = require('./logger');
+}
+
+var _FileCache;
+
+function _load_FileCache() {
+  return _FileCache = require('./FileCache');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const log = (_logger || _load_logger()).logger.log;
+
+let DebuggerConnection = exports.DebuggerConnection = class DebuggerConnection {
+
+  constructor(iosDeviceInfo, sendMessageToClient) {
     this._sendMessageToClient = sendMessageToClient;
-    this._fileCache = new FileCache();
-    const {webSocketDebuggerUrl} = iosDeviceInfo;
-    const webSocket = new WS(webSocketDebuggerUrl);
+    this._fileCache = new (_FileCache || _load_FileCache()).FileCache();
+    const webSocketDebuggerUrl = iosDeviceInfo.webSocketDebuggerUrl;
+
+    const webSocket = new (_ws || _load_ws()).default(webSocketDebuggerUrl);
     this._webSocket = webSocket;
-    const socketMessages = createWebSocketListener(webSocket);
+    const socketMessages = (0, (_createWebSocketListener || _load_createWebSocketListener()).createWebSocketListener)(webSocket);
     const translatedMessages = this._translateMessagesForClient(socketMessages);
-    this._disposables = new UniversalDisposable(
-      translatedMessages.subscribe(sendMessageToClient),
-      () => webSocket.close(),
-      this._fileCache,
-    );
-    log(`DebuggerConnection created with device info: ${JSON.stringify(iosDeviceInfo)}`);
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default(translatedMessages.subscribe(sendMessageToClient), () => webSocket.close(), this._fileCache);
+    log(`DebuggerConnection created with device info: ${ JSON.stringify(iosDeviceInfo) }`);
   }
 
-  sendCommand(message: string): void {
+  sendCommand(message) {
     this._webSocket.send(this._translateMessageForServer(message));
   }
 
-  _translateMessagesForClient(socketMessages: Observable<string>): Observable<string> {
-    return socketMessages
-      .map(JSON.parse)
-      .mergeMap((message: {method: string}) => {
-        if (message.method === 'Debugger.scriptParsed') {
-          return Observable.fromPromise(this._fileCache.handleScriptParsed(message));
-        } else {
-          return Observable.of(message);
-        }
-      })
-      .map(JSON.stringify);
+  _translateMessagesForClient(socketMessages) {
+    return socketMessages.map(JSON.parse).mergeMap(message => {
+      if (message.method === 'Debugger.scriptParsed') {
+        return _rxjsBundlesRxMinJs.Observable.fromPromise(this._fileCache.handleScriptParsed(message));
+      } else {
+        return _rxjsBundlesRxMinJs.Observable.of(message);
+      }
+    }).map(JSON.stringify);
   }
 
-  _translateMessageForServer(message: string): string {
+  _translateMessageForServer(message) {
     const obj = JSON.parse(message);
     switch (obj.method) {
-      case 'Debugger.setBreakpointByUrl': {
-        const updatedObj = this._fileCache.handleSetBreakpointByUrl(obj);
-        const updatedMessage = JSON.stringify(updatedObj);
-        log(`Sending message to proxy: ${updatedMessage}`);
-        return updatedMessage;
-      }
-      case 'Debugger.enable': {
-        // Nuclide's debugger will auto-resume the first pause event, so we send a dummy pause
-        // when the debugger initially attaches.
-        this._sendFakeLoaderBreakpointPause();
-        return message;
-      }
-      default: {
-        return message;
-      }
+      case 'Debugger.setBreakpointByUrl':
+        {
+          const updatedObj = this._fileCache.handleSetBreakpointByUrl(obj);
+          const updatedMessage = JSON.stringify(updatedObj);
+          log(`Sending message to proxy: ${ updatedMessage }`);
+          return updatedMessage;
+        }
+      case 'Debugger.enable':
+        {
+          // Nuclide's debugger will auto-resume the first pause event, so we send a dummy pause
+          // when the debugger initially attaches.
+          this._sendFakeLoaderBreakpointPause();
+          return message;
+        }
+      default:
+        {
+          return message;
+        }
     }
   }
 
-  _sendFakeLoaderBreakpointPause(): void {
+  _sendFakeLoaderBreakpointPause() {
     const debuggerPausedMessage = {
       method: 'Debugger.paused',
       params: {
         callFrames: [],
         reason: 'breakpoint',
-        data: {},
-      },
+        data: {}
+      }
     };
     this._sendMessageToClient(JSON.stringify(debuggerPausedMessage));
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
   }
-}
+};

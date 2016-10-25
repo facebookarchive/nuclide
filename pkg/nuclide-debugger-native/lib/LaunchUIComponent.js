@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,113 +9,149 @@
  * the root directory of this source tree.
  */
 
-import {shellParse} from '../../commons-node/string';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.LaunchUIComponent = undefined;
 
-import type {LaunchAttachStore} from './LaunchAttachStore';
-import type {LaunchAttachActions} from './LaunchAttachActions';
+var _string;
 
-import {React} from 'react-for-atom';
-import {AtomInput} from '../../nuclide-ui/AtomInput';
-import {
-  Button,
-  ButtonTypes,
-} from '../../nuclide-ui/Button';
-import {ButtonGroup} from '../../nuclide-ui/ButtonGroup';
+function _load_string() {
+  return _string = require('../../commons-node/string');
+}
 
-type PropsType = {
-  store: LaunchAttachStore,
-  actions: LaunchAttachActions,
-};
+var _reactForAtom = require('react-for-atom');
 
-export class LaunchUIComponent extends React.Component<void, PropsType, void> {
-  props: PropsType;
+var _AtomInput;
 
-  constructor(props: PropsType) {
+function _load_AtomInput() {
+  return _AtomInput = require('../../nuclide-ui/AtomInput');
+}
+
+var _Button;
+
+function _load_Button() {
+  return _Button = require('../../nuclide-ui/Button');
+}
+
+var _ButtonGroup;
+
+function _load_ButtonGroup() {
+  return _ButtonGroup = require('../../nuclide-ui/ButtonGroup');
+}
+
+let LaunchUIComponent = exports.LaunchUIComponent = class LaunchUIComponent extends _reactForAtom.React.Component {
+
+  constructor(props) {
     super(props);
-    (this: any)._handleLaunchClick = this._handleLaunchClick.bind(this);
-    (this: any)._cancelClick = this._cancelClick.bind(this);
+    this._handleLaunchClick = this._handleLaunchClick.bind(this);
+    this._cancelClick = this._cancelClick.bind(this);
   }
 
-  componentDidMount(): void {
+  componentDidMount() {
     const launchExecutableInput = this.refs.launchExecutable;
     if (launchExecutableInput != null) {
       launchExecutableInput.focus();
     }
   }
 
-  render(): React.Element<any> {
+  render() {
     // TODO: smart fill the working directory textbox.
     // TODO: make tab stop between textbox work.
     // Reserve tabIndex [1~10] to header portion of the UI so we start from "11" here.
-    return (
-      <div className="block">
-        <label>Executable: </label>
-        <AtomInput
-          ref="launchExecutable"
-          tabIndex="11"
-          placeholderText="Input the executable path you want to launch"
-          onConfirm={this._handleLaunchClick}
-        />
-        <label>Arguments: </label>
-        <AtomInput
-          ref="launchArguments"
-          tabIndex="12"
-          placeholderText="Arguments to the executable"
-          onConfirm={this._handleLaunchClick}
-        />
-        <label>Environment Variables: </label>
-        <AtomInput
-          ref="launchEnvironmentVariables"
-          tabIndex="13"
-          placeholderText="Environment variables (e.g., SHELL=/bin/bash PATH=/bin)"
-          onConfirm={this._handleLaunchClick}
-        />
-        <label>Working directory: </label>
-        <AtomInput
-          ref="launchWorkingDirectory"
-          tabIndex="14"
-          placeholderText="Working directory for the launched executable"
-          onConfirm={this._handleLaunchClick}
-        />
-        <label>Stdin file: </label>
-        <AtomInput
-          ref="stdinFilePath"
-          tabIndex="15"
-          placeholderText="Redirect stdin to this file"
-          onConfirm={this._handleLaunchClick}
-        />
-        <div style={{display: 'flex', flexDirection: 'row-reverse'}}>
-          <ButtonGroup>
-            <Button
-              tabIndex="17"
-              onClick={this._cancelClick}>
-              Cancel
-            </Button>
-            <Button
-              buttonType={ButtonTypes.PRIMARY}
-              tabIndex="16"
-              onClick={this._handleLaunchClick}>
-              Launch
-            </Button>
-          </ButtonGroup>
-        </div>
-      </div>
+    return _reactForAtom.React.createElement(
+      'div',
+      { className: 'block' },
+      _reactForAtom.React.createElement(
+        'label',
+        null,
+        'Executable: '
+      ),
+      _reactForAtom.React.createElement((_AtomInput || _load_AtomInput()).AtomInput, {
+        ref: 'launchExecutable',
+        tabIndex: '11',
+        placeholderText: 'Input the executable path you want to launch',
+        onConfirm: this._handleLaunchClick
+      }),
+      _reactForAtom.React.createElement(
+        'label',
+        null,
+        'Arguments: '
+      ),
+      _reactForAtom.React.createElement((_AtomInput || _load_AtomInput()).AtomInput, {
+        ref: 'launchArguments',
+        tabIndex: '12',
+        placeholderText: 'Arguments to the executable',
+        onConfirm: this._handleLaunchClick
+      }),
+      _reactForAtom.React.createElement(
+        'label',
+        null,
+        'Environment Variables: '
+      ),
+      _reactForAtom.React.createElement((_AtomInput || _load_AtomInput()).AtomInput, {
+        ref: 'launchEnvironmentVariables',
+        tabIndex: '13',
+        placeholderText: 'Environment variables (e.g., SHELL=/bin/bash PATH=/bin)',
+        onConfirm: this._handleLaunchClick
+      }),
+      _reactForAtom.React.createElement(
+        'label',
+        null,
+        'Working directory: '
+      ),
+      _reactForAtom.React.createElement((_AtomInput || _load_AtomInput()).AtomInput, {
+        ref: 'launchWorkingDirectory',
+        tabIndex: '14',
+        placeholderText: 'Working directory for the launched executable',
+        onConfirm: this._handleLaunchClick
+      }),
+      _reactForAtom.React.createElement(
+        'label',
+        null,
+        'Stdin file: '
+      ),
+      _reactForAtom.React.createElement((_AtomInput || _load_AtomInput()).AtomInput, {
+        ref: 'stdinFilePath',
+        tabIndex: '15',
+        placeholderText: 'Redirect stdin to this file',
+        onConfirm: this._handleLaunchClick
+      }),
+      _reactForAtom.React.createElement(
+        'div',
+        { style: { display: 'flex', flexDirection: 'row-reverse' } },
+        _reactForAtom.React.createElement(
+          (_ButtonGroup || _load_ButtonGroup()).ButtonGroup,
+          null,
+          _reactForAtom.React.createElement(
+            (_Button || _load_Button()).Button,
+            {
+              tabIndex: '17',
+              onClick: this._cancelClick },
+            'Cancel'
+          ),
+          _reactForAtom.React.createElement(
+            (_Button || _load_Button()).Button,
+            {
+              buttonType: (_Button || _load_Button()).ButtonTypes.PRIMARY,
+              tabIndex: '16',
+              onClick: this._handleLaunchClick },
+            'Launch'
+          )
+        )
+      )
     );
   }
 
-  _cancelClick(): void {
-    atom.commands.dispatch(
-      atom.views.getView(atom.workspace),
-      'nuclide-debugger:toggle-launch-attach',
-    );
+  _cancelClick() {
+    atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:toggle-launch-attach');
   }
 
-  _handleLaunchClick(): void {
+  _handleLaunchClick() {
     // TODO: perform some validation for the input.
     const launchExecutable = this.refs.launchExecutable.getText().trim();
-    const launchArguments = shellParse(this.refs.launchArguments.getText());
-    const launchEnvironmentVariables = shellParse(
-      this.refs.launchEnvironmentVariables.getText());
+    const launchArguments = (0, (_string || _load_string()).shellParse)(this.refs.launchArguments.getText());
+    const launchEnvironmentVariables = (0, (_string || _load_string()).shellParse)(this.refs.launchEnvironmentVariables.getText());
     const launchWorkingDirectory = this.refs.launchWorkingDirectory.getText().trim();
     const stdinFilePath = this.refs.stdinFilePath.getText().trim();
     const launchTarget = {
@@ -123,11 +159,11 @@ export class LaunchUIComponent extends React.Component<void, PropsType, void> {
       arguments: launchArguments,
       environmentVariables: launchEnvironmentVariables,
       workingDirectory: launchWorkingDirectory,
-      stdinFilePath,
+      stdinFilePath: stdinFilePath
     };
     // Fire and forget.
     this.props.actions.launchDebugger(launchTarget);
     this.props.actions.showDebuggerPanel();
     this.props.actions.toggleLaunchAttachDialog();
   }
-}
+};

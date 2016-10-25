@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,8 +9,14 @@
  * the root directory of this source tree.
  */
 
-import fs from 'fs';
-import invariant from 'assert';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getVersion = getVersion;
+
+var _fs = _interopRequireDefault(require('fs'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // Use a regex and not the "semver" module so the result here is the same
 // as from python code.
@@ -33,15 +39,20 @@ let version;
  * (new feature or whatever) that do not work with the older servers.
  * It also includes server changes that break older clients.
  */
-export function getVersion(): string {
+function getVersion() {
   if (!version) {
     // Don't use require() because it may be reading from the module cache.
     // Do use require.resolve so the paths can be codemoded in the future.
     const pkgFilename = require.resolve('../../../package.json');
-    const pkgJson = JSON.parse(fs.readFileSync(pkgFilename, 'utf8'));
+    const pkgJson = JSON.parse(_fs.default.readFileSync(pkgFilename, 'utf8'));
     const match = SEMVERISH_RE.exec(pkgJson.version);
-    invariant(match);
+
+    if (!match) {
+      throw new Error('Invariant violation: "match"');
+    }
     // const majorVersion = match[1];
+
+
     const minorVersion = match[2];
     // const patchVersion = match[3];
     // const prereleaseVersion = match[4];

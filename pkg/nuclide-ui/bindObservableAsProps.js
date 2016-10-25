@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,9 +9,15 @@
  * the root directory of this source tree.
  */
 
-import type {Observable} from 'rxjs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {React} from 'react-for-atom';
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+exports.bindObservableAsProps = bindObservableAsProps;
+
+var _reactForAtom = require('react-for-atom');
 
 /**
  * Injects any key/value pairs from the given Observable value into the component as named props.
@@ -22,15 +28,9 @@ import {React} from 'react-for-atom';
  * The wrapped component is guaranteed to render only if the observable has resolved;
  * otherwise, the wrapper component renders `null`.
  */
-export function bindObservableAsProps<T : ReactClass<any>, U : T>(
-  stream: Observable<{[key: string]: any}>,
-  ComposedComponent: T,
-): U {
+function bindObservableAsProps(stream, ComposedComponent) {
   // $FlowIssue The return type is guaranteed to be the same as the type of ComposedComponent.
-  return class extends React.Component {
-    _subscription: ?rxjs$ISubscription;
-    state: {[key: string]: any};
-    _resolved: boolean;
+  return class extends _reactForAtom.React.Component {
 
     constructor(props) {
       super(props);
@@ -39,28 +39,25 @@ export function bindObservableAsProps<T : ReactClass<any>, U : T>(
       this._resolved = false;
     }
 
-    componentDidMount(): void {
+    componentDidMount() {
       this._subscription = stream.subscribe(newState => {
         this._resolved = true;
         this.setState(newState);
       });
     }
 
-    componentWillUnmount(): void {
+    componentWillUnmount() {
       if (this._subscription != null) {
         this._subscription.unsubscribe();
       }
     }
 
-    render(): ?React.Element<any> {
+    render() {
       if (!this._resolved) {
         return null;
       }
-      const props = {
-        ...this.props,
-        ...this.state,
-      };
-      return <ComposedComponent {...props} />;
+      const props = _extends({}, this.props, this.state);
+      return _reactForAtom.React.createElement(ComposedComponent, props);
     }
   };
 }

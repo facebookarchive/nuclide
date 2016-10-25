@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,20 +9,35 @@
  * the root directory of this source tree.
  */
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.AtomTextEditor = undefined;
 
-import invariant from 'assert';
-import classnames from 'classnames';
-import {
-  React,
-  ReactDOM,
-} from 'react-for-atom';
-import semver from 'semver';
-import {TextBuffer} from 'atom';
+var _class, _temp;
+
+var _classnames;
+
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
+
+var _reactForAtom = require('react-for-atom');
+
+var _semver;
+
+function _load_semver() {
+  return _semver = _interopRequireDefault(require('semver'));
+}
+
+var _atom = require('atom');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const doNothing = () => {};
 
-function setupTextEditor(props: Props): atom$TextEditor {
-  const textBuffer = props.textBuffer || new TextBuffer();
+function setupTextEditor(props) {
+  const textBuffer = props.textBuffer || new _atom.TextBuffer();
   if (props.path) {
     textBuffer.setPath(props.path);
   }
@@ -34,9 +49,9 @@ function setupTextEditor(props: Props): atom$TextEditor {
   const textEditorParams = {
     buffer: textBuffer,
     lineNumberGutterVisible: !props.gutterHidden,
-    autoHeight: props.autoGrow,
+    autoHeight: props.autoGrow
   };
-  const textEditor: atom$TextEditor = atom.workspace.buildTextEditor(textEditorParams);
+  const textEditor = atom.workspace.buildTextEditor(textEditorParams);
 
   if (props.grammar != null) {
     textEditor.setGrammar(props.grammar);
@@ -71,7 +86,7 @@ function setupTextEditor(props: Props): atom$TextEditor {
     textEditor.duplicateLines = doNothing;
 
     // Remove the cursor line decorations because that's distracting in read-only mode.
-    textEditor.getDecorations({class: 'cursor-line'}).forEach(decoration => {
+    textEditor.getDecorations({ class: 'cursor-line' }).forEach(decoration => {
       decoration.destroy();
     });
   }
@@ -79,60 +94,16 @@ function setupTextEditor(props: Props): atom$TextEditor {
   return textEditor;
 }
 
-type DefaultProps = {
-  _alwaysUpdate: boolean,
-  autoGrow: boolean,
-  gutterHidden: boolean,
-  lineNumberGutterVisible: boolean,
-  readOnly: boolean,
-  syncTextContents: boolean,
-  tabIndex: string,
-  softWrapped: boolean,
-};
+let AtomTextEditor = exports.AtomTextEditor = (_temp = _class = class AtomTextEditor extends _reactForAtom.React.Component {
 
-type Props = {
-  // `_alwaysUpdate` forces calls to `setupEditor` to always run when props change.
-  // TODO jxg remove once the diff view no longer relies on it.
-  _alwaysUpdate: boolean,
-  autoGrow: boolean,
-  className?: string,
-  gutterHidden: boolean,
-  grammar?: ?Object,
-  onDidTextBufferChange?: (event: atom$TextEditEvent) => mixed,
-  path?: string,
-  placeholderText?: string,
-  readOnly: boolean,
-  textBuffer?: TextBuffer,
-  syncTextContents: boolean,
-  tabIndex: string,
-  softWrapped: boolean,
-};
-
-export class AtomTextEditor extends React.Component {
-  static defaultProps: DefaultProps = {
-    _alwaysUpdate: false,
-    gutterHidden: false,
-    lineNumberGutterVisible: true,
-    readOnly: false,
-    autoGrow: false,
-    syncTextContents: true,
-    tabIndex: '0',  // Keep in line with other input elements.
-    softWrapped: false,
-  };
-
-  props: Props;
-  _onDidAttachDisposable: ?IDisposable;
-  _textEditorElement: ?atom$TextEditorElement;
-
-  componentDidMount(): void {
+  componentDidMount() {
     this._updateTextEditor(setupTextEditor(this.props));
     this._onDidUpdateTextEditorElement(this.props);
   }
 
-  _updateTextEditor(textEditor: atom$TextEditor): void {
-    const container = ReactDOM.findDOMNode(this);
-    const textEditorElement: atom$TextEditorElement = this._textEditorElement =
-      (document.createElement('atom-text-editor'): any);
+  _updateTextEditor(textEditor) {
+    const container = _reactForAtom.ReactDOM.findDOMNode(this);
+    const textEditorElement = this._textEditorElement = document.createElement('atom-text-editor');
     textEditorElement.setModel(textEditor);
     textEditorElement.setAttribute('tabindex', this.props.tabIndex);
     // HACK! This is a workaround for the ViewRegistry where Atom has a default view provider for
@@ -149,31 +120,25 @@ export class AtomTextEditor extends React.Component {
     // The following is a hack to work around the broken atom-text-editor auto-sizing in Atom 1.9.x
     // See https://github.com/atom/atom/issues/12441 to follow the proper fix.
     // TODO @jxg remove once atom-text-editor is fixed.
-    if (semver.lt(atom.getVersion(), '1.9.0')) {
+    if ((_semver || _load_semver()).default.lt(atom.getVersion(), '1.9.0')) {
       return;
     }
     this._ensureDidAttachDisposableDisposed();
     this._onDidAttachDisposable = textEditorElement.onDidAttach(() => {
-      const correctlySizedElement = textEditorElement.querySelector(
-        '* /deep/ .lines > :first-child > :first-child',
-      );
+      const correctlySizedElement = textEditorElement.querySelector('* /deep/ .lines > :first-child > :first-child');
       if (correctlySizedElement == null) {
         return;
       }
-      const {width} = correctlySizedElement.style;
+      const width = correctlySizedElement.style.width;
+
       container.style.width = width;
     });
   }
 
-  componentWillReceiveProps(nextProps: Object): void {
-    if (
-        nextProps.textBuffer !== this.props.textBuffer ||
-        nextProps.readOnly !== this.props.readOnly
-      ) {
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.textBuffer !== this.props.textBuffer || nextProps.readOnly !== this.props.readOnly) {
       const previousTextContents = this.getTextBuffer().getText();
-      const nextTextContents = nextProps.textBuffer == null
-        ? nextProps.textBuffer
-        : nextProps.textBuffer.getText();
+      const nextTextContents = nextProps.textBuffer == null ? nextProps.textBuffer : nextProps.textBuffer.getText();
       if (nextProps._alwaysUpdate || nextTextContents !== previousTextContents) {
         const textEditor = setupTextEditor(nextProps);
         if (nextProps.syncTextContents) {
@@ -197,60 +162,71 @@ export class AtomTextEditor extends React.Component {
     }
   }
 
-  _onDidUpdateTextEditorElement(props: Object): void {
+  _onDidUpdateTextEditorElement(props) {
     if (!props.readOnly) {
       return;
     }
     // TODO(most): t9929679 Remove this hack when Atom has a blinking cursor configuration API.
-    const {component} = this.getElement();
+
+    var _getElement = this.getElement();
+
+    const component = _getElement.component;
+
     if (component == null) {
       return;
     }
-    const {presenter} = component;
+    const presenter = component.presenter;
+
     presenter.startBlinkingCursors = doNothing;
     presenter.stopBlinkingCursors(false);
   }
 
-  getTextBuffer(): atom$TextBuffer {
+  getTextBuffer() {
     return this.getModel().getBuffer();
   }
 
-  getModel(): atom$TextEditor {
+  getModel() {
     return this.getElement().getModel();
   }
 
-  getElement(): atom$TextEditorElement {
-    invariant(this._textEditorElement);
+  getElement() {
+    if (!this._textEditorElement) {
+      throw new Error('Invariant violation: "this._textEditorElement"');
+    }
+
     return this._textEditorElement;
   }
 
-  render(): React.Element<any> {
-    const className = classnames(
-      this.props.className,
-      'nuclide-text-editor-container',
-      {
-        'no-auto-grow': !this.props.autoGrow,
-      },
-    );
-    return (
-      <div className={className} />
-    );
+  render() {
+    const className = (0, (_classnames || _load_classnames()).default)(this.props.className, 'nuclide-text-editor-container', {
+      'no-auto-grow': !this.props.autoGrow
+    });
+    return _reactForAtom.React.createElement('div', { className: className });
   }
 
   // This component wraps the imperative API of `<atom-text-editor>`, and so React's rendering
   // should always pass because this subtree won't change.
-  shouldComponentUpdate(nextProps: Object, nextState: void): boolean {
+  shouldComponentUpdate(nextProps, nextState) {
     return false;
   }
 
-  componentWillUnmount(): void {
+  componentWillUnmount() {
     this._ensureDidAttachDisposableDisposed();
   }
 
-  _ensureDidAttachDisposableDisposed(): void {
+  _ensureDidAttachDisposableDisposed() {
     if (this._onDidAttachDisposable != null) {
       this._onDidAttachDisposable.dispose();
     }
   }
 
-}
+}, _class.defaultProps = {
+  _alwaysUpdate: false,
+  gutterHidden: false,
+  lineNumberGutterVisible: true,
+  readOnly: false,
+  autoGrow: false,
+  syncTextContents: true,
+  tabIndex: '0', // Keep in line with other input elements.
+  softWrapped: false
+}, _temp);

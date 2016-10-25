@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,72 +9,85 @@
  * the root directory of this source tree.
  */
 
-import {
-  React,
-} from 'react-for-atom';
-import type {
-  Callstack,
-  CallstackItem,
-} from './types';
-import type DebuggerActions from './DebuggerActions';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DebuggerCallstackComponent = undefined;
 
-import nuclideUri from '../../commons-node/nuclideUri';
-import {
-  ListView,
-  ListViewItem,
-} from '../../nuclide-ui/ListView';
-import Bridge from './Bridge';
+var _reactForAtom = require('react-for-atom');
 
-type DebuggerCallstackComponentProps = {
-  actions: DebuggerActions,
-  callstack: ?Callstack,
-  bridge: Bridge,
-};
+var _nuclideUri;
 
-export class DebuggerCallstackComponent extends React.Component {
-  props: DebuggerCallstackComponentProps;
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
 
-  constructor(props: DebuggerCallstackComponentProps) {
+var _ListView;
+
+function _load_ListView() {
+  return _ListView = require('../../nuclide-ui/ListView');
+}
+
+var _Bridge;
+
+function _load_Bridge() {
+  return _Bridge = _interopRequireDefault(require('./Bridge'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let DebuggerCallstackComponent = exports.DebuggerCallstackComponent = class DebuggerCallstackComponent extends _reactForAtom.React.Component {
+
+  constructor(props) {
     super(props);
-    (this: any)._handleCallframeClick = this._handleCallframeClick.bind(this);
+    this._handleCallframeClick = this._handleCallframeClick.bind(this);
   }
 
-  _handleCallframeClick(
-    callFrameIndex: number,
-    clickedCallframe: ?CallstackItem,
-  ): void {
+  _handleCallframeClick(callFrameIndex, clickedCallframe) {
     this.props.bridge.setSelectedCallFrameIndex(callFrameIndex);
   }
 
-  render(): ?React.Element<any> {
-    const {callstack} = this.props;
-    const items = callstack == null
-      ? []
-      : callstack.map((callstackItem, i) => {
-        const {
-          name,
-          location,
-        } = callstackItem;
-        const path = nuclideUri.basename(location.path);
-        const content = (
-          <div className="nuclide-debugger-callstack-item" key={i}>
-            <div className="nuclide-debugger-callstack-name">
-              {name}
-            </div>
-            <div>
-              {path}:{location.line + 1}
-            </div>
-          </div>
-        );
-        return <ListViewItem key={i} value={callstackItem}>{content}</ListViewItem>;
-      });
-    return callstack == null
-      ? <span>(callstack unavailable)</span>
-      : <ListView
-          alternateBackground={true}
-          selectable={true}
-          onSelect={this._handleCallframeClick}>
-          {items}
-        </ListView>;
+  render() {
+    const callstack = this.props.callstack;
+
+    const items = callstack == null ? [] : callstack.map((callstackItem, i) => {
+      const name = callstackItem.name;
+      const location = callstackItem.location;
+
+      const path = (_nuclideUri || _load_nuclideUri()).default.basename(location.path);
+      const content = _reactForAtom.React.createElement(
+        'div',
+        { className: 'nuclide-debugger-callstack-item', key: i },
+        _reactForAtom.React.createElement(
+          'div',
+          { className: 'nuclide-debugger-callstack-name' },
+          name
+        ),
+        _reactForAtom.React.createElement(
+          'div',
+          null,
+          path,
+          ':',
+          location.line + 1
+        )
+      );
+      return _reactForAtom.React.createElement(
+        (_ListView || _load_ListView()).ListViewItem,
+        { key: i, value: callstackItem },
+        content
+      );
+    });
+    return callstack == null ? _reactForAtom.React.createElement(
+      'span',
+      null,
+      '(callstack unavailable)'
+    ) : _reactForAtom.React.createElement(
+      (_ListView || _load_ListView()).ListView,
+      {
+        alternateBackground: true,
+        selectable: true,
+        onSelect: this._handleCallframeClick },
+      items
+    );
   }
-}
+};

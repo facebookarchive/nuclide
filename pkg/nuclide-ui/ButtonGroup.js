@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,52 +9,48 @@
  * the root directory of this source tree.
  */
 
-import classnames from 'classnames';
-import {React} from 'react-for-atom';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ButtonGroup = exports.ButtonGroupSizes = undefined;
 
-type ButtonGroupSize = 'EXTRA_SMALL' | 'SMALL' | 'LARGE';
+var _classnames;
 
-type Props = {
-  /** The size of the buttons within the group. Overrides any `size` props on child buttons. */
-  size?: ButtonGroupSize,
-  /** The contents of the ButtonGroup; Generally, an instance of `Button`. */
-  children?: mixed,
-  className?: string,
-};
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
 
-export const ButtonGroupSizes = Object.freeze({
+var _reactForAtom = require('react-for-atom');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const ButtonGroupSizes = exports.ButtonGroupSizes = Object.freeze({
   EXTRA_SMALL: 'EXTRA_SMALL',
   SMALL: 'SMALL',
-  LARGE: 'LARGE',
+  LARGE: 'LARGE'
 });
 
 const ButtonGroupSizeClassnames = Object.freeze({
   EXTRA_SMALL: 'btn-group-xs',
   SMALL: 'btn-group-sm',
-  LARGE: 'btn-group-lg',
+  LARGE: 'btn-group-lg'
 });
 
 /**
  * Visually groups Buttons passed in as children.
  */
-export const ButtonGroup = (props: Props) => {
-  const {
-    size,
-    children,
-    className,
-  } = props;
+const ButtonGroup = exports.ButtonGroup = props => {
+  const size = props.size;
+  const children = props.children;
+  const className = props.className;
+
   const sizeClassName = size == null ? '' : ButtonGroupSizeClassnames[size] || '';
-  const newClassName = classnames(
-    className,
-    'btn-group',
-    'nuclide-btn-group',
-    {
-      [sizeClassName]: size != null,
-    },
-  );
-  return (
-    <div className={newClassName}>
-      {children}
-    </div>
+  const newClassName = (0, (_classnames || _load_classnames()).default)(className, 'btn-group', 'nuclide-btn-group', {
+    [sizeClassName]: size != null
+  });
+  return _reactForAtom.React.createElement(
+    'div',
+    { className: newClassName },
+    children
   );
 };

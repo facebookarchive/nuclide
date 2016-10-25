@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,39 +9,55 @@
  * the root directory of this source tree.
  */
 
-import type {Level, Message} from '../../nuclide-console/lib/types';
-import type {AslLevel, AslRecord} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.createMessage = createMessage;
 
-import {parseMessageText} from './parseMessageText';
+var _parseMessageText2;
+
+function _load_parseMessageText() {
+  return _parseMessageText2 = require('./parseMessageText');
+}
 
 /**
  * Convert a structured logcat entry into the format that nuclide-console wants.
  */
-export function createMessage(record: AslRecord): Message {
-  const {text, level, tags} = parseMessageText(record.Message);
+function createMessage(record) {
+  var _parseMessageText = (0, (_parseMessageText2 || _load_parseMessageText()).parseMessageText)(record.Message);
+
+  const text = _parseMessageText.text;
+  const level = _parseMessageText.level;
+  const tags = _parseMessageText.tags;
+
   return {
-    text,
+    text: text,
     level: level == null ? getLevel(record.Level) : level,
-    tags: tags == null ? undefined : tags,
+    tags: tags == null ? undefined : tags
   };
 }
 
-function getLevel(level: AslLevel): Level {
+function getLevel(level) {
   switch (level) {
     case '0': // Emergency
     case '1': // Alert
     case '2': // Critical
-    case '3': // Error
+    case '3':
+      // Error
       return 'error';
-    case '4': // Warning
+    case '4':
+      // Warning
       return 'warning';
-    case '5': // Notice
+    case '5':
+      // Notice
       return 'log';
-    case '6': // Info
+    case '6':
+      // Info
       return 'info';
-    case '7': // Debug
+    case '7':
+      // Debug
       return 'debug';
     default:
-      throw new Error(`Invalid ASL level: ${level}`);
+      throw new Error(`Invalid ASL level: ${ level }`);
   }
 }

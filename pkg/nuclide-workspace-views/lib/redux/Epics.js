@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,111 +9,141 @@
  * the root directory of this source tree.
  */
 
-import type {Action, AppState, Location, Store, Viewable, ViewableFactory} from '../types';
-import type {ActionsObservable} from '../../../commons-node/redux-observable';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {trackEvent} from '../../../nuclide-analytics';
-import * as Actions from './Actions';
-import invariant from 'assert';
-import {Observable} from 'rxjs';
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
-type ItemAndLocation = {
-  item: Viewable,
-  location: Location,
-};
+exports.registerLocationFactoryEpic = registerLocationFactoryEpic;
+exports.createViewableEpic = createViewableEpic;
+exports.trackActionsEpic = trackActionsEpic;
+exports.trackEpic = trackEpic;
+exports.toggleItemVisibilityEpic = toggleItemVisibilityEpic;
+exports.toggleItemVisibilityImmediatelyEpic = toggleItemVisibilityImmediatelyEpic;
+exports.setItemVisibilityEpic = setItemVisibilityEpic;
+exports.unregisterViewableFactoryEpic = unregisterViewableFactoryEpic;
+exports.unregisterLocationEpic = unregisterLocationEpic;
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../../nuclide-analytics');
+}
+
+var _Actions;
+
+function _load_Actions() {
+  return _Actions = _interopRequireWildcard(require('./Actions'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 /**
  * Register a record provider for every executor.
  */
-export function registerLocationFactoryEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions.ofType(Actions.REGISTER_LOCATION_FACTORY).map(action => {
-    invariant(action.type === Actions.REGISTER_LOCATION_FACTORY);
-    const {locationFactory: factory} = action.payload;
+function registerLocationFactoryEpic(actions, store) {
+  return actions.ofType((_Actions || _load_Actions()).REGISTER_LOCATION_FACTORY).map(action => {
+    if (!(action.type === (_Actions || _load_Actions()).REGISTER_LOCATION_FACTORY)) {
+      throw new Error('Invariant violation: "action.type === Actions.REGISTER_LOCATION_FACTORY"');
+    }
+
+    const factory = action.payload.locationFactory;
 
     // Create the location using the state we have serialized for it.
-    const {serializedLocationStates} = store.getState();
+
+    var _store$getState = store.getState();
+
+    const serializedLocationStates = _store$getState.serializedLocationStates;
+
     const serializedLocationState = serializedLocationStates.get(factory.id);
     const location = factory.create(serializedLocationState);
-    return Actions.registerLocation(factory.id, location);
+    return (_Actions || _load_Actions()).registerLocation(factory.id, location);
   });
 }
 
 /**
  * Create and show an item of the specified type.
  */
-export function createViewableEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions.ofType(Actions.CREATE_VIEWABLE)
-    .switchMap(action => {
-      invariant(action.type === Actions.CREATE_VIEWABLE);
-      const {itemType} = action.payload;
-      const state = store.getState();
-      const factory = state.viewableFactories.get(itemType);
-      invariant(factory != null);
+function createViewableEpic(actions, store) {
+  return actions.ofType((_Actions || _load_Actions()).CREATE_VIEWABLE).switchMap(action => {
+    if (!(action.type === (_Actions || _load_Actions()).CREATE_VIEWABLE)) {
+      throw new Error('Invariant violation: "action.type === Actions.CREATE_VIEWABLE"');
+    }
 
-      // Find a location for this viewable.
-      let location;
-      if (factory.defaultLocation != null) {
-        location = state.locations.get(factory.defaultLocation);
-      }
-      if (location == null) {
-        const entry = Array.from(state.locations.entries()).find(
-          ([id, loc]) => locationIsAllowed(id, factory),
-        );
-        location = entry == null ? null : entry[1];
-      }
+    const itemType = action.payload.itemType;
 
-      if (location == null) {
-        return Observable.empty();
-      }
+    const state = store.getState();
+    const factory = state.viewableFactories.get(itemType);
 
-      const item = factory.create();
-      location.showItem(item);
-      return Observable.of(Actions.itemCreated(item, itemType));
-    });
+    if (!(factory != null)) {
+      throw new Error('Invariant violation: "factory != null"');
+    }
+
+    // Find a location for this viewable.
+
+
+    let location;
+    if (factory.defaultLocation != null) {
+      location = state.locations.get(factory.defaultLocation);
+    }
+    if (location == null) {
+      const entry = Array.from(state.locations.entries()).find((_ref) => {
+        var _ref2 = _slicedToArray(_ref, 2);
+
+        let id = _ref2[0];
+        let loc = _ref2[1];
+        return locationIsAllowed(id, factory);
+      });
+      location = entry == null ? null : entry[1];
+    }
+
+    if (location == null) {
+      return _rxjsBundlesRxMinJs.Observable.empty();
+    }
+
+    const item = factory.create();
+    location.showItem(item);
+    return _rxjsBundlesRxMinJs.Observable.of((_Actions || _load_Actions()).itemCreated(item, itemType));
+  });
 }
 
 /**
  * Convert actions into tracking events. We perform the side-effect of actually calling track in
  * another epic and keep this one pure.
  */
-export function trackActionsEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions.ofType(Actions.ITEM_CREATED)
-    // Map to a tracking event.
-    .map(action => {
-      invariant(action.type === Actions.ITEM_CREATED);
-      const {itemType} = action.payload;
-      // TODO: Appeal to `item` for custom tracking event here. Let's wait until we need that
-      //   though.
-      return Actions.track({
-        type: 'workspace-view-created',
-        data: {itemType},
-      });
+function trackActionsEpic(actions, store) {
+  return actions.ofType((_Actions || _load_Actions()).ITEM_CREATED)
+  // Map to a tracking event.
+  .map(action => {
+    if (!(action.type === (_Actions || _load_Actions()).ITEM_CREATED)) {
+      throw new Error('Invariant violation: "action.type === Actions.ITEM_CREATED"');
+    }
+
+    const itemType = action.payload.itemType;
+    // TODO: Appeal to `item` for custom tracking event here. Let's wait until we need that
+    //   though.
+
+    return (_Actions || _load_Actions()).track({
+      type: 'workspace-view-created',
+      data: { itemType: itemType }
     });
+  });
 }
 
 /**
  * Make tracking requests.
  */
-export function trackEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions.ofType(Actions.TRACK)
-    .map(action => {
-      invariant(action.type === Actions.TRACK);
-      return action.payload.event;
-    })
-    .do(trackEvent)
-    .ignoreElements();
+function trackEpic(actions, store) {
+  return actions.ofType((_Actions || _load_Actions()).TRACK).map(action => {
+    if (!(action.type === (_Actions || _load_Actions()).TRACK)) {
+      throw new Error('Invariant violation: "action.type === Actions.TRACK"');
+    }
+
+    return action.payload.event;
+  }).do((_nuclideAnalytics || _load_nuclideAnalytics()).trackEvent).ignoreElements();
 }
 
 /**
@@ -123,152 +153,176 @@ export function trackEpic(
  * done (`PackageManager::onDidActivateInitialPackages`), but there's no way to tell if we missed
  * it! So we'll just settle for using `nextTick`.
  */
-export function toggleItemVisibilityEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  const toggleActions = actions
-    .filter(action => action.type === Actions.TOGGLE_ITEM_VISIBILITY && !action.payload.immediate);
-  const nextTick = Observable.create(observer => { process.nextTick(() => { observer.next(); }); });
+function toggleItemVisibilityEpic(actions, store) {
+  const toggleActions = actions.filter(action => action.type === (_Actions || _load_Actions()).TOGGLE_ITEM_VISIBILITY && !action.payload.immediate);
+  const nextTick = _rxjsBundlesRxMinJs.Observable.create(observer => {
+    process.nextTick(() => {
+      observer.next();
+    });
+  });
   const missedActions = toggleActions.buffer(nextTick).take(1).concatAll();
-  return Observable.concat(missedActions, toggleActions)
-    .map(action => {
-      invariant(action.type === Actions.TOGGLE_ITEM_VISIBILITY);
-      const {itemType, visible} = action.payload;
-      return Actions.toggleItemVisibility(itemType, visible == null ? undefined : visible, true);
-    });
+  return _rxjsBundlesRxMinJs.Observable.concat(missedActions, toggleActions).map(action => {
+    if (!(action.type === (_Actions || _load_Actions()).TOGGLE_ITEM_VISIBILITY)) {
+      throw new Error('Invariant violation: "action.type === Actions.TOGGLE_ITEM_VISIBILITY"');
+    }
+
+    var _action$payload = action.payload;
+    const itemType = _action$payload.itemType;
+    const visible = _action$payload.visible;
+
+    return (_Actions || _load_Actions()).toggleItemVisibility(itemType, visible == null ? undefined : visible, true);
+  });
 }
 
-export function toggleItemVisibilityImmediatelyEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions
-    .filter(action => action.type === Actions.TOGGLE_ITEM_VISIBILITY && action.payload.immediate)
-    .switchMap(action => {
-      invariant(action.type === Actions.TOGGLE_ITEM_VISIBILITY);
-      const {itemType, visible} = action.payload;
-      const state = store.getState();
+function toggleItemVisibilityImmediatelyEpic(actions, store) {
+  return actions.filter(action => action.type === (_Actions || _load_Actions()).TOGGLE_ITEM_VISIBILITY && action.payload.immediate).switchMap(action => {
+    if (!(action.type === (_Actions || _load_Actions()).TOGGLE_ITEM_VISIBILITY)) {
+      throw new Error('Invariant violation: "action.type === Actions.TOGGLE_ITEM_VISIBILITY"');
+    }
 
-      // Does an item of this type already exist?
-      const viewableFactory = state.viewableFactories.get(itemType);
-      invariant(viewableFactory != null);
-      const itemsAndLocations = findAllItems(
-        state.locations.values(), it => viewableFactory.isInstance(it),
-      );
+    var _action$payload2 = action.payload;
+    const itemType = _action$payload2.itemType;
+    const visible = _action$payload2.visible;
 
-      if (itemsAndLocations.length === 0) {
-        if (visible === false) {
-          return Observable.empty();
+    const state = store.getState();
+
+    // Does an item of this type already exist?
+    const viewableFactory = state.viewableFactories.get(itemType);
+
+    if (!(viewableFactory != null)) {
+      throw new Error('Invariant violation: "viewableFactory != null"');
+    }
+
+    const itemsAndLocations = findAllItems(state.locations.values(), it => viewableFactory.isInstance(it));
+
+    if (itemsAndLocations.length === 0) {
+      if (visible === false) {
+        return _rxjsBundlesRxMinJs.Observable.empty();
+      }
+      // We need to create and add the item.
+      return _rxjsBundlesRxMinJs.Observable.of((_Actions || _load_Actions()).createViewable(itemType));
+    }
+
+    // Change the visibility of all matching items. If some are visible and some aren't, this
+    // won't be a true toggle, but it makes more sense.
+    const makeVisible = visible != null ? visible : !itemsAndLocations.some((_ref3) => {
+      let item = _ref3.item;
+      let location = _ref3.location;
+      return location.itemIsVisible(item);
+    });
+    return _rxjsBundlesRxMinJs.Observable.from(itemsAndLocations.map((_ref4) => {
+      let item = _ref4.item;
+      let location = _ref4.location;
+      return (_Actions || _load_Actions()).setItemVisibility({
+        item: item,
+        locationId: getLocationId(location, state),
+        visible: makeVisible
+      });
+    }));
+  });
+}
+
+function setItemVisibilityEpic(actions, store) {
+  return actions.ofType((_Actions || _load_Actions()).SET_ITEM_VISIBILITY).do(action => {
+    if (!(action.type === (_Actions || _load_Actions()).SET_ITEM_VISIBILITY)) {
+      throw new Error('Invariant violation: "action.type === Actions.SET_ITEM_VISIBILITY"');
+    }
+
+    var _action$payload3 = action.payload;
+    const item = _action$payload3.item;
+    const locationId = _action$payload3.locationId;
+    const visible = _action$payload3.visible;
+
+    const location = store.getState().locations.get(locationId);
+
+    if (!(location != null)) {
+      throw new Error('Invariant violation: "location != null"');
+    }
+
+    if (visible) {
+      location.showItem(item);
+    } else {
+      location.hideItem(item);
+    }
+  }).ignoreElements();
+}
+
+function unregisterViewableFactoryEpic(actions, store) {
+  return actions.ofType((_Actions || _load_Actions()).UNREGISTER_VIEWABLE_FACTORY).do(action => {
+    if (!(action.type === (_Actions || _load_Actions()).UNREGISTER_VIEWABLE_FACTORY)) {
+      throw new Error('Invariant violation: "action.type === Actions.UNREGISTER_VIEWABLE_FACTORY"');
+    }
+
+    const state = store.getState();
+    const factory = state.viewableFactories.get(action.payload.id);
+
+    if (factory == null) {
+      return;
+    }
+
+    // When a viewable is unregistered, we need to remove all instances of it.
+    for (const location of state.locations.values()) {
+      location.getItems().forEach(item => {
+        if (factory.isInstance(item)) {
+          location.destroyItem(item);
         }
-        // We need to create and add the item.
-        return Observable.of(Actions.createViewable(itemType));
-      }
+      });
+    }
+  }).map(action => {
+    if (!(action.type === (_Actions || _load_Actions()).UNREGISTER_VIEWABLE_FACTORY)) {
+      throw new Error('Invariant violation: "action.type === Actions.UNREGISTER_VIEWABLE_FACTORY"');
+    }
 
-      // Change the visibility of all matching items. If some are visible and some aren't, this
-      // won't be a true toggle, but it makes more sense.
-      const makeVisible = visible != null
-        ? visible
-        : !itemsAndLocations.some(({item, location}) => location.itemIsVisible(item));
-      return Observable.from(
-        itemsAndLocations.map(({item, location}) => (
-          Actions.setItemVisibility({
-            item,
-            locationId: getLocationId(location, state),
-            visible: makeVisible,
-          })
-        )),
-      );
-
-    });
+    return (_Actions || _load_Actions()).viewableFactoryUnregistered(action.payload.id);
+  });
 }
 
-export function setItemVisibilityEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions.ofType(Actions.SET_ITEM_VISIBILITY)
-    .do(action => {
-      invariant(action.type === Actions.SET_ITEM_VISIBILITY);
-      const {item, locationId, visible} = action.payload;
-      const location = store.getState().locations.get(locationId);
-      invariant(location != null);
-      if (visible) {
-        location.showItem(item);
-      } else {
-        location.hideItem(item);
-      }
-    })
-    .ignoreElements();
+function unregisterLocationEpic(actions, store) {
+  return actions.ofType((_Actions || _load_Actions()).UNREGISTER_LOCATION).do(action => {
+    if (!(action.type === (_Actions || _load_Actions()).UNREGISTER_LOCATION)) {
+      throw new Error('Invariant violation: "action.type === Actions.UNREGISTER_LOCATION"');
+    }
+
+    const id = action.payload.id;
+    // Destroy the location.
+
+    const location = store.getState().locations.get(id);
+
+    if (!(location != null)) {
+      throw new Error('Invariant violation: "location != null"');
+    }
+
+    if (typeof location.destroy === 'function') {
+      location.destroy();
+    }
+  }).map(action => {
+    if (!(action.type === (_Actions || _load_Actions()).UNREGISTER_LOCATION)) {
+      throw new Error('Invariant violation: "action.type === Actions.UNREGISTER_LOCATION"');
+    }
+
+    return (_Actions || _load_Actions()).locationUnregistered(action.payload.id);
+  });
 }
 
-export function unregisterViewableFactoryEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions.ofType(Actions.UNREGISTER_VIEWABLE_FACTORY)
-    .do(action => {
-      invariant(action.type === Actions.UNREGISTER_VIEWABLE_FACTORY);
-
-      const state = store.getState();
-      const factory = state.viewableFactories.get(action.payload.id);
-
-      if (factory == null) { return; }
-
-      // When a viewable is unregistered, we need to remove all instances of it.
-      for (const location of state.locations.values()) {
-        location.getItems().forEach(item => {
-          if (factory.isInstance(item)) {
-            location.destroyItem(item);
-          }
-        });
-      }
-    })
-    .map(action => {
-      invariant(action.type === Actions.UNREGISTER_VIEWABLE_FACTORY);
-      return Actions.viewableFactoryUnregistered(action.payload.id);
-    });
-}
-
-export function unregisterLocationEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions.ofType(Actions.UNREGISTER_LOCATION)
-    .do(action => {
-      invariant(action.type === Actions.UNREGISTER_LOCATION);
-      const {id} = action.payload;
-      // Destroy the location.
-      const location = store.getState().locations.get(id);
-
-      invariant(location != null);
-      if (typeof location.destroy === 'function') {
-        location.destroy();
-      }
-    })
-    .map(action => {
-      invariant(action.type === Actions.UNREGISTER_LOCATION);
-      return Actions.locationUnregistered(action.payload.id);
-    });
-}
-
-function findAllItems(
-  locations: Iterable<Location>,
-  predicate: (item: Viewable) => boolean,
-): Array<ItemAndLocation> {
+function findAllItems(locations, predicate) {
   const itemsAndLocations = [];
   for (const location of locations) {
     for (const item of location.getItems()) {
       if (predicate(item)) {
-        itemsAndLocations.push({item, location});
+        itemsAndLocations.push({ item: item, location: location });
       }
     }
   }
   return itemsAndLocations;
 }
 
-function getLocationId(location: Location, state: AppState): string {
-  for (const [id, loc] of state.locations.entries()) {
+function getLocationId(location, state) {
+  for (const _ref5 of state.locations.entries()) {
+    var _ref6 = _slicedToArray(_ref5, 2);
+
+    const id = _ref6[0];
+    const loc = _ref6[1];
+
     if (location === loc) {
       return id;
     }
@@ -277,8 +331,11 @@ function getLocationId(location: Location, state: AppState): string {
   throw new Error();
 }
 
-function locationIsAllowed(locationId: string, viewableFactory: ViewableFactory): boolean {
-  const {defaultLocation, allowedLocations, disallowedLocations} = viewableFactory;
+function locationIsAllowed(locationId, viewableFactory) {
+  const defaultLocation = viewableFactory.defaultLocation;
+  const allowedLocations = viewableFactory.allowedLocations;
+  const disallowedLocations = viewableFactory.disallowedLocations;
+
   if (locationId === defaultLocation) {
     return true;
   }

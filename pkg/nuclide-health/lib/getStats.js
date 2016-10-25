@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,36 +9,43 @@
  * the root directory of this source tree.
  */
 
-import type {HealthStats} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import os from 'os';
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-export default function getStats(): HealthStats {
-  const stats = process.memoryUsage();                          // RSS, heap and usage.
+exports.default = getStats;
+
+var _os = _interopRequireDefault(require('os'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function getStats() {
+  const stats = process.memoryUsage(); // RSS, heap and usage.
   const activeHandles = getActiveHandles();
   const activeHandlesByType = getActiveHandlesByType(Array.from(activeHandles));
 
-  return {
-    ...stats,
-    heapPercentage: (100 * stats.heapUsed / stats.heapTotal),   // Just for convenience.
-    cpuPercentage: os.loadavg()[0],                             // 1 minute CPU average.
+  return _extends({}, stats, {
+    heapPercentage: 100 * stats.heapUsed / stats.heapTotal, // Just for convenience.
+    cpuPercentage: _os.default.loadavg()[0], // 1 minute CPU average.
     activeHandles: activeHandles.length,
     activeRequests: getActiveRequests().length,
-    activeHandlesByType,
-  };
+    activeHandlesByType: activeHandlesByType
+  });
 }
 
 // These two functions are to defend against undocumented Node functions.
-function getActiveHandles(): Array<Object> {
+function getActiveHandles() {
   // $FlowFixMe: Private method
   return process._getActiveHandles();
 }
 
-function getActiveHandlesByType(handles: Array<Object>): {[type: string]: Array<Object>} {
+function getActiveHandlesByType(handles) {
   const activeHandlesByType = {
     childprocess: [],
     tlssocket: [],
-    other: [],
+    other: []
   };
   getTopLevelHandles(handles).filter(handle => {
     let type = handle.constructor.name.toLowerCase();
@@ -51,9 +58,9 @@ function getActiveHandlesByType(handles: Array<Object>): {[type: string]: Array<
 }
 
 // Returns a list of handles which are not children of others (i.e. sockets as process pipes).
-function getTopLevelHandles(handles: Array<Object>): Array<Object> {
-  const topLevelHandles: Array<Object> = [];
-  const seen: Set<Object> = new Set();
+function getTopLevelHandles(handles) {
+  const topLevelHandles = [];
+  const seen = new Set();
   handles.forEach(handle => {
     if (seen.has(handle)) {
       return;
@@ -72,7 +79,8 @@ function getTopLevelHandles(handles: Array<Object>): Array<Object> {
   return topLevelHandles;
 }
 
-function getActiveRequests(): Array<Object> {
+function getActiveRequests() {
   // $FlowFixMe: Private method.
   return process._getActiveRequests();
 }
+module.exports = exports['default'];

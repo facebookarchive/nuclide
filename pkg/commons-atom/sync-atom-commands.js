@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,17 +9,20 @@
  * the root directory of this source tree.
  */
 
-export type AtomCommands = {
-  [target: string]: {
-    [commandName: string]: (event: Event) => mixed,
-  },
-};
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = syncAtomCommands;
 
-import {reconcileSets} from '../commons-node/observable';
-import {CompositeDisposable} from 'atom';
-import {Observable} from 'rxjs';
+var _observable;
 
-type Projector<T> = (item: T) => AtomCommands;
+function _load_observable() {
+  return _observable = require('../commons-node/observable');
+}
+
+var _atom = require('atom');
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
 /**
  * A utility that adds and removes commands to the Atom command registry based on their presence in
@@ -27,26 +30,15 @@ type Projector<T> = (item: T) => AtomCommands;
  * result (commands), we diff the input (sets) since it's easier and less likely to contain
  * functions (which are unlikely to be able to be safely compared using `===`).
  */
-export default function syncAtomCommands<T>(
-  source: Observable<Set<T>>,
-  project: Projector<T>,
-  hash?: (v: T) => any,
-): IDisposable {
+function syncAtomCommands(source, project, hash) {
   // Add empty sets before completing and erroring to make sure that we remove remaining commands
   // in both cases.
-  const sets = source
-    .concat(Observable.of(new Set()))
-    .catch(err => Observable.of(new Set()).concat(Observable.throw(err)));
+  const sets = source.concat(_rxjsBundlesRxMinJs.Observable.of(new Set())).catch(err => _rxjsBundlesRxMinJs.Observable.of(new Set()).concat(_rxjsBundlesRxMinJs.Observable.throw(err)));
 
-  return reconcileSets(
-    sets,
-    item => {
-      const commands = project(item);
-      const disposables = Object.keys(commands).map(target => (
-        atom.commands.add(target, commands[target])
-      ));
-      return new CompositeDisposable(...disposables);
-    },
-    hash,
-  );
+  return (0, (_observable || _load_observable()).reconcileSets)(sets, item => {
+    const commands = project(item);
+    const disposables = Object.keys(commands).map(target => atom.commands.add(target, commands[target]));
+    return new _atom.CompositeDisposable(...disposables);
+  }, hash);
 }
+module.exports = exports['default'];

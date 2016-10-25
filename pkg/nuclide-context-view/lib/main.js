@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,60 +9,53 @@
  * the root directory of this source tree.
  */
 
-import type {
-  ContextProvider,
-  NuclideContextView,
-} from './types';
-import type {ContextViewConfig} from './ContextViewManager';
-import type {DefinitionService} from '../../nuclide-definition-service';
-import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
-import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.serialize = serialize;
+exports.toggleContextView = toggleContextView;
+exports.showContextView = showContextView;
+exports.hideContextView = hideContextView;
+exports.consumeDefinitionService = consumeDefinitionService;
+exports.consumeToolBar = consumeToolBar;
+exports.getDistractionFreeModeProvider = getDistractionFreeModeProvider;
+exports.provideNuclideContextView = provideNuclideContextView;
 
-import {ContextViewManager} from './ContextViewManager';
-import {Disposable, CompositeDisposable} from 'atom';
-import invariant from 'assert';
+var _ContextViewManager;
+
+function _load_ContextViewManager() {
+  return _ContextViewManager = require('./ContextViewManager');
+}
+
+var _atom = require('atom');
 
 const INITIAL_PANEL_WIDTH = 300;
 const INITIAL_PANEL_VISIBILITY = false;
 
-let currentService: ?DefinitionService = null;
-let manager: ?ContextViewManager = null;
-let disposables: CompositeDisposable;
+let currentService = null;
+let manager = null;
+let disposables;
 const initialViewState = {};
 
-export function activate(state?: Object = {}): void {
+function activate() {
+  let state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
   initialViewState.width = state.width || INITIAL_PANEL_WIDTH;
   initialViewState.visible = state.visible || INITIAL_PANEL_VISIBILITY;
-  disposables = new CompositeDisposable();
+  disposables = new _atom.CompositeDisposable();
   // Toggle
-  disposables.add(
-    atom.commands.add(
-      'atom-workspace',
-      'nuclide-context-view:toggle',
-      this.toggleContextView.bind(this),
-    ),
-  );
+  disposables.add(atom.commands.add('atom-workspace', 'nuclide-context-view:toggle', this.toggleContextView.bind(this)));
 
   // Show
-  disposables.add(
-    atom.commands.add(
-      'atom-workspace',
-      'nuclide-context-view:show',
-      this.showContextView.bind(this),
-    ),
-  );
+  disposables.add(atom.commands.add('atom-workspace', 'nuclide-context-view:show', this.showContextView.bind(this)));
 
   // Hide
-  disposables.add(
-    atom.commands.add(
-      'atom-workspace',
-      'nuclide-context-view:hide',
-      this.hideContextView.bind(this),
-    ),
-  );
+  disposables.add(atom.commands.add('atom-workspace', 'nuclide-context-view:hide', this.hideContextView.bind(this)));
 }
 
-export function deactivate(): void {
+function deactivate() {
   currentService = null;
   disposables.dispose();
   if (manager != null) {
@@ -72,7 +65,7 @@ export function deactivate(): void {
   }
 }
 
-export function serialize(): ?ContextViewConfig {
+function serialize() {
   if (manager != null) {
     return manager.serialize();
   }
@@ -80,22 +73,22 @@ export function serialize(): ?ContextViewConfig {
 
 /** Returns the singleton ContextViewManager instance of this package, or null
  * if the user doesn't pass the Context View GK check. */
-function getContextViewManager(): ContextViewManager {
+function getContextViewManager() {
   if (manager == null) {
-    manager = new ContextViewManager(initialViewState.width, initialViewState.visible);
+    manager = new (_ContextViewManager || _load_ContextViewManager()).ContextViewManager(initialViewState.width, initialViewState.visible);
   }
   return manager;
 }
 
-export function toggleContextView(): void {
+function toggleContextView() {
   getContextViewManager().toggle();
 }
 
-export function showContextView(): void {
+function showContextView() {
   getContextViewManager().show();
 }
 
-export function hideContextView(): void {
+function hideContextView() {
   getContextViewManager().hide();
 }
 
@@ -104,23 +97,26 @@ export function hideContextView(): void {
  * want to provide context for a definition. A context provider must consume the
  * nuclide-context-view service and register themselves as a provider.
  */
-const Service: NuclideContextView = {
-  registerProvider(provider: ContextProvider): Disposable {
-    invariant(provider != null, 'Cannot register null context provider');
+const Service = {
+  registerProvider: function (provider) {
+    if (!(provider != null)) {
+      throw new Error('Cannot register null context provider');
+    }
+
     const contextViewManager = getContextViewManager();
     contextViewManager.registerProvider(provider);
-    return new Disposable(() => {
+    return new _atom.Disposable(() => {
       contextViewManager.unregisterProvider(provider.id);
     });
-  },
+  }
 };
 
-export function consumeDefinitionService(service: DefinitionService): IDisposable {
+function consumeDefinitionService(service) {
   if (service !== currentService) {
     currentService = service;
     getContextViewManager().consumeDefinitionService(currentService);
   }
-  return new Disposable(() => {
+  return new _atom.Disposable(() => {
     currentService = null;
     if (manager != null) {
       manager.consumeDefinitionService(null);
@@ -128,35 +124,38 @@ export function consumeDefinitionService(service: DefinitionService): IDisposabl
   });
 }
 
-export function consumeToolBar(getToolBar: GetToolBar): IDisposable {
+function consumeToolBar(getToolBar) {
   const toolBar = getToolBar('nuclide-context-view');
-  const {element} = toolBar.addButton({
+
+  var _toolBar$addButton = toolBar.addButton({
     icon: 'info',
     callback: 'nuclide-context-view:toggle',
     tooltip: 'Toggle Context View',
-    priority: 300,
+    priority: 300
   });
+
+  const element = _toolBar$addButton.element;
+
   element.classList.add('nuclide-context-view-toolbar-button');
-  const disposable = new Disposable(() => { toolBar.removeItems(); });
+  const disposable = new _atom.Disposable(() => {
+    toolBar.removeItems();
+  });
   disposables.add(disposable);
   return disposable;
 }
 
-export function getDistractionFreeModeProvider(): DistractionFreeModeProvider {
+function getDistractionFreeModeProvider() {
   return {
     name: 'nuclide-context-view',
-    isVisible(): boolean {
+    isVisible: function () {
       return manager != null && manager._isVisible;
     },
-    toggle(): void {
-      atom.commands.dispatch(
-        atom.views.getView(atom.workspace),
-        'nuclide-context-view:toggle',
-      );
-    },
+    toggle: function () {
+      atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-context-view:toggle');
+    }
   };
 }
 
-export function provideNuclideContextView(): NuclideContextView {
+function provideNuclideContextView() {
   return Service;
 }

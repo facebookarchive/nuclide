@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,42 +9,86 @@
  * the root directory of this source tree.
  */
 
-import type {PhpDebuggerSessionConfig} from '../../nuclide-debugger-php-rpc';
-import type {DebuggerProcessInfo} from '../../nuclide-debugger-base';
-import type {
-  PhpDebuggerService as PhpDebuggerServiceType,
-} from '../../nuclide-debugger-php-rpc/lib/PhpDebuggerService';
-import typeof * as PhpDebuggerService
-  from '../../nuclide-debugger-php-rpc/lib/PhpDebuggerService';
-import utils from './utils';
-import invariant from 'assert';
-import {DebuggerInstance} from '../../nuclide-debugger-base';
-import {ObservableManager} from './ObservableManager';
-import {CompositeDisposable} from 'atom';
-import featureConfig from '../../commons-atom/featureConfig';
-import {translateMessageFromServer, translateMessageToServer} from './ChromeMessageRemoting';
-import nuclideUri from '../../commons-node/nuclideUri';
-import {Disposable} from 'atom';
-import WS from 'ws';
-import {stringifyError} from '../../commons-node/string';
-import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.PhpDebuggerInstance = undefined;
 
-const {log, logInfo, logError, setLogLevel} = utils;
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-function getConfig(): PhpDebuggerSessionConfig {
-  return (featureConfig.get('nuclide-debugger-php'): any);
+var _utils;
+
+function _load_utils() {
+  return _utils = _interopRequireDefault(require('./utils'));
 }
 
-export class PhpDebuggerInstance extends DebuggerInstance {
-  _proxy: ?PhpDebuggerServiceType;
-  _server: ?WS.Server;
-  _webSocket: ?WebSocket;
-  _launchScriptPath: ?string;
-  _sessionEndCallback: ?() => void;
-  _observableManager: ?ObservableManager;
-  _disposables: CompositeDisposable;
+var _nuclideDebuggerBase;
 
-  constructor(processInfo: DebuggerProcessInfo, launchScriptPath: ?string) {
+function _load_nuclideDebuggerBase() {
+  return _nuclideDebuggerBase = require('../../nuclide-debugger-base');
+}
+
+var _ObservableManager;
+
+function _load_ObservableManager() {
+  return _ObservableManager = require('./ObservableManager');
+}
+
+var _atom = require('atom');
+
+var _featureConfig;
+
+function _load_featureConfig() {
+  return _featureConfig = _interopRequireDefault(require('../../commons-atom/featureConfig'));
+}
+
+var _ChromeMessageRemoting;
+
+function _load_ChromeMessageRemoting() {
+  return _ChromeMessageRemoting = require('./ChromeMessageRemoting');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var _ws;
+
+function _load_ws() {
+  return _ws = _interopRequireDefault(require('ws'));
+}
+
+var _string;
+
+function _load_string() {
+  return _string = require('../../commons-node/string');
+}
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const log = (_utils || _load_utils()).default.log;
+
+const logInfo = (_utils || _load_utils()).default.logInfo;
+
+const logError = (_utils || _load_utils()).default.logError;
+
+const setLogLevel = (_utils || _load_utils()).default.setLogLevel;
+
+function getConfig() {
+  return (_featureConfig || _load_featureConfig()).default.get('nuclide-debugger-php');
+}
+
+let PhpDebuggerInstance = exports.PhpDebuggerInstance = class PhpDebuggerInstance extends (_nuclideDebuggerBase || _load_nuclideDebuggerBase()).DebuggerInstance {
+
+  constructor(processInfo, launchScriptPath) {
     super(processInfo);
     this._launchScriptPath = launchScriptPath;
     this._proxy = null;
@@ -52,126 +96,132 @@ export class PhpDebuggerInstance extends DebuggerInstance {
     this._webSocket = null;
     this._sessionEndCallback = null;
     this._observableManager = null;
-    this._disposables = new CompositeDisposable();
+    this._disposables = new _atom.CompositeDisposable();
     setLogLevel(getConfig().logLevel);
   }
 
-  async getWebsocketAddress(): Promise<string> {
-    logInfo('Connecting to: ' + this.getTargetUri());
-    const service: ?PhpDebuggerService =
-      getServiceByNuclideUri('PhpDebuggerService', this.getTargetUri());
-    invariant(service);
-    const proxy = new service.PhpDebuggerService();
-    this._disposables.add(proxy);
-    this._proxy = proxy;
-    this._observableManager = new ObservableManager(
-      proxy.getNotificationObservable().refCount(),
-      proxy.getServerMessageObservable().refCount(),
-      proxy.getOutputWindowObservable().refCount().map(message => {
-        const serverMessage = translateMessageFromServer(
-          nuclideUri.getHostname(this.getTargetUri()),
-          message,
-        );
-        return JSON.parse(serverMessage);
-      }),
-      this._sendServerMessageToChromeUi.bind(this),
-      this._endSession.bind(this),
-    );
-    this._disposables.add(this._observableManager);
+  getWebsocketAddress() {
+    var _this = this;
 
-    const config = getConfig();
-    const sessionConfig: PhpDebuggerSessionConfig = {
-      xdebugAttachPort: config.xdebugAttachPort,
-      xdebugLaunchingPort: config.xdebugLaunchingPort,
-      targetUri: nuclideUri.getPath(this.getTargetUri()),
-      logLevel: config.logLevel,
-      endDebugWhenNoRequests: false,
-      phpRuntimePath: config.phpRuntimePath,
-      phpRuntimeArgs: config.phpRuntimeArgs,
-      dummyRequestFilePath: 'php_only_xdebug_request.php',
-      stopOneStopAll: config.stopOneStopAll,
-    };
-    logInfo('Connection config: ' + JSON.stringify(config));
+    return (0, _asyncToGenerator.default)(function* () {
+      logInfo('Connecting to: ' + _this.getTargetUri());
+      const service = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getServiceByNuclideUri)('PhpDebuggerService', _this.getTargetUri());
 
-    if (!isValidRegex(config.scriptRegex)) {
-      // TODO: User facing error message?
-      invariant(config.scriptRegex != null);
-      logError('nuclide-debugger-php config scriptRegex is not a valid regular expression: '
-        + config.scriptRegex);
-    } else {
-      sessionConfig.scriptRegex = config.scriptRegex;
-    }
-
-    if (!isValidRegex(config.idekeyRegex)) {
-      // TODO: User facing error message?
-      invariant(config.idekeyRegex != null);
-      logError('nuclide-debugger-php config idekeyRegex is not a valid regular expression: '
-        + config.idekeyRegex);
-    } else {
-      sessionConfig.idekeyRegex = config.idekeyRegex;
-    }
-
-    // Set config related to script launching.
-    if (this._launchScriptPath != null) {
-      invariant(config.xdebugLaunchingPort != null);
-      sessionConfig.xdebugAttachPort = config.xdebugLaunchingPort;
-      sessionConfig.endDebugWhenNoRequests = true;
-      sessionConfig.launchScriptPath = this._launchScriptPath;
-    }
-
-    const attachResult = await proxy.debug(sessionConfig);
-    logInfo('Attached to process. Attach message: ' + attachResult);
-
-    // setup web socket
-    // TODO: Assign random port rather than using fixed port.
-    const wsPort = 2000;
-    const server = new WS.Server({port: wsPort});
-    this._server = server;
-    server.on('error', error => {
-      logError('Server error: ' + error);
-      this.dispose();
-    });
-    server.on('headers', headers => {
-      log('Server headers: ' + headers);
-    });
-    server.on('connection', webSocket => {
-      if (this._webSocket) {
-        log('Already connected to web socket. Discarding new connection.');
-        return;
+      if (!service) {
+        throw new Error('Invariant violation: "service"');
       }
 
-      log('Connecting to web socket client.');
-      this._webSocket = webSocket;
-      webSocket.on('message', this._onSocketMessage.bind(this));
-      webSocket.on('error', this._onSocketError.bind(this));
-      webSocket.on('close', this._onSocketClose.bind(this));
-    });
-    this._disposables.add(new Disposable(() => this._disposeServer()));
-    this._disposables.add(new Disposable(() => this._disposeWebSocket()));
+      const proxy = new service.PhpDebuggerService();
+      _this._disposables.add(proxy);
+      _this._proxy = proxy;
+      _this._observableManager = new (_ObservableManager || _load_ObservableManager()).ObservableManager(proxy.getNotificationObservable().refCount(), proxy.getServerMessageObservable().refCount(), proxy.getOutputWindowObservable().refCount().map(function (message) {
+        const serverMessage = (0, (_ChromeMessageRemoting || _load_ChromeMessageRemoting()).translateMessageFromServer)((_nuclideUri || _load_nuclideUri()).default.getHostname(_this.getTargetUri()), message);
+        return JSON.parse(serverMessage);
+      }), _this._sendServerMessageToChromeUi.bind(_this), _this._endSession.bind(_this));
+      _this._disposables.add(_this._observableManager);
 
-    const result = 'ws=localhost:' + String(wsPort) + '/';
-    log('Listening for connection at: ' + result);
-    return result;
+      const config = getConfig();
+      const sessionConfig = {
+        xdebugAttachPort: config.xdebugAttachPort,
+        xdebugLaunchingPort: config.xdebugLaunchingPort,
+        targetUri: (_nuclideUri || _load_nuclideUri()).default.getPath(_this.getTargetUri()),
+        logLevel: config.logLevel,
+        endDebugWhenNoRequests: false,
+        phpRuntimePath: config.phpRuntimePath,
+        phpRuntimeArgs: config.phpRuntimeArgs,
+        dummyRequestFilePath: 'php_only_xdebug_request.php',
+        stopOneStopAll: config.stopOneStopAll
+      };
+      logInfo('Connection config: ' + JSON.stringify(config));
+
+      if (!isValidRegex(config.scriptRegex)) {
+        // TODO: User facing error message?
+        if (!(config.scriptRegex != null)) {
+          throw new Error('Invariant violation: "config.scriptRegex != null"');
+        }
+
+        logError('nuclide-debugger-php config scriptRegex is not a valid regular expression: ' + config.scriptRegex);
+      } else {
+        sessionConfig.scriptRegex = config.scriptRegex;
+      }
+
+      if (!isValidRegex(config.idekeyRegex)) {
+        // TODO: User facing error message?
+        if (!(config.idekeyRegex != null)) {
+          throw new Error('Invariant violation: "config.idekeyRegex != null"');
+        }
+
+        logError('nuclide-debugger-php config idekeyRegex is not a valid regular expression: ' + config.idekeyRegex);
+      } else {
+        sessionConfig.idekeyRegex = config.idekeyRegex;
+      }
+
+      // Set config related to script launching.
+      if (_this._launchScriptPath != null) {
+        if (!(config.xdebugLaunchingPort != null)) {
+          throw new Error('Invariant violation: "config.xdebugLaunchingPort != null"');
+        }
+
+        sessionConfig.xdebugAttachPort = config.xdebugLaunchingPort;
+        sessionConfig.endDebugWhenNoRequests = true;
+        sessionConfig.launchScriptPath = _this._launchScriptPath;
+      }
+
+      const attachResult = yield proxy.debug(sessionConfig);
+      logInfo('Attached to process. Attach message: ' + attachResult);
+
+      // setup web socket
+      // TODO: Assign random port rather than using fixed port.
+      const wsPort = 2000;
+      const server = new (_ws || _load_ws()).default.Server({ port: wsPort });
+      _this._server = server;
+      server.on('error', function (error) {
+        logError('Server error: ' + error);
+        _this.dispose();
+      });
+      server.on('headers', function (headers) {
+        log('Server headers: ' + headers);
+      });
+      server.on('connection', function (webSocket) {
+        if (_this._webSocket) {
+          log('Already connected to web socket. Discarding new connection.');
+          return;
+        }
+
+        log('Connecting to web socket client.');
+        _this._webSocket = webSocket;
+        webSocket.on('message', _this._onSocketMessage.bind(_this));
+        webSocket.on('error', _this._onSocketError.bind(_this));
+        webSocket.on('close', _this._onSocketClose.bind(_this));
+      });
+      _this._disposables.add(new _atom.Disposable(function () {
+        return _this._disposeServer();
+      }));
+      _this._disposables.add(new _atom.Disposable(function () {
+        return _this._disposeWebSocket();
+      }));
+
+      const result = 'ws=localhost:' + String(wsPort) + '/';
+      log('Listening for connection at: ' + result);
+      return result;
+    })();
   }
 
-  onSessionEnd(callback: () => void): Disposable {
+  onSessionEnd(callback) {
     this._sessionEndCallback = callback;
-    return new Disposable(() => { this._sessionEndCallback = null; });
+    return new _atom.Disposable(() => {
+      this._sessionEndCallback = null;
+    });
   }
 
-  _sendServerMessageToChromeUi(message: string): void {
+  _sendServerMessageToChromeUi(message) {
     const webSocket = this._webSocket;
     if (webSocket != null) {
-      webSocket.send(
-        translateMessageFromServer(
-          nuclideUri.getHostname(this.getTargetUri()),
-          message,
-        ),
-      );
+      webSocket.send((0, (_ChromeMessageRemoting || _load_ChromeMessageRemoting()).translateMessageFromServer)((_nuclideUri || _load_nuclideUri()).default.getHostname(this.getTargetUri()), message));
     }
   }
 
-  _endSession(): void {
+  _endSession() {
     log('Ending Session');
     if (this._sessionEndCallback) {
       this._sessionEndCallback();
@@ -179,24 +229,24 @@ export class PhpDebuggerInstance extends DebuggerInstance {
     this.dispose();
   }
 
-  _onSocketMessage(message: string): void {
+  _onSocketMessage(message) {
     log('Recieved webSocket message: ' + message);
     const proxy = this._proxy;
     if (proxy) {
-      proxy.sendCommand(translateMessageToServer(message));
+      proxy.sendCommand((0, (_ChromeMessageRemoting || _load_ChromeMessageRemoting()).translateMessageToServer)(message));
     }
   }
 
-  _onSocketError(error: Error): void {
-    logError('webSocket error ' + stringifyError(error));
+  _onSocketError(error) {
+    logError('webSocket error ' + (0, (_string || _load_string()).stringifyError)(error));
     this.dispose();
   }
 
-  _onSocketClose(code: number): void {
+  _onSocketClose(code) {
     log('webSocket Closed ' + code);
   }
 
-  _disposeWebSocket(): void {
+  _disposeWebSocket() {
     const webSocket = this._webSocket;
     if (webSocket) {
       this._webSocket = null;
@@ -205,7 +255,7 @@ export class PhpDebuggerInstance extends DebuggerInstance {
     }
   }
 
-  _disposeServer(): void {
+  _disposeServer() {
     const server = this._server;
     if (server) {
       this._server = null;
@@ -214,13 +264,14 @@ export class PhpDebuggerInstance extends DebuggerInstance {
     }
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
   }
-}
+};
 
 // TODO: Move this to nuclide-commons.
-function isValidRegex(value: ?string): boolean {
+
+function isValidRegex(value) {
   if (value == null) {
     return false;
   }

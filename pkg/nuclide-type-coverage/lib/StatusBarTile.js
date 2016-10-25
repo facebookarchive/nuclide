@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,106 +9,86 @@
  * the root directory of this source tree.
  */
 
-import type {Observable} from 'rxjs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.StatusBarTile = undefined;
 
-import type {Result} from '../../commons-atom/ActiveEditorRegistry';
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-import type {CoverageProvider} from './types';
-import type {CoverageResult} from './rpc-types';
+var _reactForAtom = require('react-for-atom');
 
-import invariant from 'assert';
-import {React} from 'react-for-atom';
-import {Subscription} from 'rxjs';
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
-import {StatusBarTileComponent} from './StatusBarTileComponent';
+var _StatusBarTileComponent;
 
-type Props = {
-  results: Observable<Result<CoverageProvider, ?CoverageResult>>,
-  isActive: Observable<boolean>,
-  onClick: Function,
-};
+function _load_StatusBarTileComponent() {
+  return _StatusBarTileComponent = require('./StatusBarTileComponent');
+}
 
-type State = {
-  result: ?{
-    percentage: number,
-    providerName: string,
-  },
-  pending: boolean,
-  isActive: boolean,
-};
+let StatusBarTile = exports.StatusBarTile = class StatusBarTile extends _reactForAtom.React.Component {
 
-export class StatusBarTile extends React.Component {
-  _item: ?HTMLElement;
-  _tile: ?atom$StatusBarTile;
-
-  _percentage: ?number;
-
-  state: State;
-  props: Props;
-
-  subscription: ?rxjs$ISubscription;
-
-  constructor(props: Props) {
+  constructor(props) {
     super(props);
     this.state = {
       result: null,
       pending: false,
-      isActive: false,
+      isActive: false
     };
   }
 
-  componentDidMount(): void {
-    invariant(this.subscription == null);
-    const subscription = this.subscription = new Subscription();
-    subscription.add(
-      this.props.results.subscribe(result => this._consumeResult(result)),
-    );
-    subscription.add(
-      this.props.isActive.subscribe(isActive => this._consumeIsActive(isActive)),
-    );
+  componentDidMount() {
+    if (!(this.subscription == null)) {
+      throw new Error('Invariant violation: "this.subscription == null"');
+    }
+
+    const subscription = this.subscription = new _rxjsBundlesRxMinJs.Subscription();
+    subscription.add(this.props.results.subscribe(result => this._consumeResult(result)));
+    subscription.add(this.props.isActive.subscribe(isActive => this._consumeIsActive(isActive)));
   }
 
-  componentWillUnmount(): void {
-    invariant(this.subscription != null);
+  componentWillUnmount() {
+    if (!(this.subscription != null)) {
+      throw new Error('Invariant violation: "this.subscription != null"');
+    }
+
     this.subscription.unsubscribe();
     this.subscription = null;
-    this.setState({result: null});
+    this.setState({ result: null });
   }
 
-  _consumeResult(result: Result<CoverageProvider, ?CoverageResult>): void {
+  _consumeResult(result) {
     switch (result.kind) {
       case 'not-text-editor':
       case 'no-provider':
       case 'provider-error':
-        this.setState({result: null});
+        this.setState({ result: null });
         break;
       case 'pane-change':
       case 'edit':
       case 'save':
-        this.setState({pending: true});
+        this.setState({ pending: true });
         break;
       case 'result':
         const coverageResult = result.result;
         this.setState({
           result: coverageResult == null ? null : {
             percentage: coverageResult.percentage,
-            providerName: result.provider.displayName,
+            providerName: result.provider.displayName
           },
-          pending: false,
+          pending: false
         });
         break;
       default:
-        throw new Error(`Should handle kind ${result.kind}`);
+        throw new Error(`Should handle kind ${ result.kind }`);
     }
   }
 
-  _consumeIsActive(isActive: boolean): void {
-    this.setState({isActive});
+  _consumeIsActive(isActive) {
+    this.setState({ isActive: isActive });
   }
 
-  render(): React.Element<any> {
-    return (
-      <StatusBarTileComponent {...this.state} onClick={this.props.onClick} />
-    );
+  render() {
+    return _reactForAtom.React.createElement((_StatusBarTileComponent || _load_StatusBarTileComponent()).StatusBarTileComponent, _extends({}, this.state, { onClick: this.props.onClick }));
   }
-}
+};

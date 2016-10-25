@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,215 +9,147 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
-import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
-import type {
-  Definition,
-  DefinitionQueryResult,
-} from '../../nuclide-definition-service/lib/rpc-types';
-import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
-import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
-import type {FindReferencesReturn} from '../../nuclide-find-references/lib/rpc-types';
-import type {
-  DiagnosticProviderUpdate,
-  FileDiagnosticUpdate,
-} from '../../nuclide-diagnostics-common/lib/rpc-types';
-import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
-import type {ConnectableObservable, Observable} from 'rxjs';
-import type {Completion} from '../../nuclide-language-service/lib/LanguageService';
-import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ServerLanguageService = undefined;
 
-import invariant from 'assert';
-import {getBufferAtVersion} from '../../nuclide-open-files-rpc';
-import {FileCache} from '../../nuclide-open-files-rpc';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-export type LanguageAnalyzer = {
-  getDiagnostics(
-    filePath: NuclideUri,
-    buffer: atom$TextBuffer,
-  ): Promise<?DiagnosticProviderUpdate>,
+var _nuclideOpenFilesRpc;
 
-  observeDiagnostics(): Observable<FileDiagnosticUpdate>,
+function _load_nuclideOpenFilesRpc() {
+  return _nuclideOpenFilesRpc = require('../../nuclide-open-files-rpc');
+}
 
-  getAutocompleteSuggestions(
-    filePath: NuclideUri,
-    buffer: atom$TextBuffer,
-    position: atom$Point,
-    activatedManually: boolean,
-  ): Promise<Array<Completion>>,
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-  getDefinition(
-    filePath: NuclideUri,
-    buffer: atom$TextBuffer,
-    position: atom$Point,
-  ): Promise<?DefinitionQueryResult>,
+let ServerLanguageService = exports.ServerLanguageService = class ServerLanguageService {
 
-  getDefinitionById(
-    file: NuclideUri,
-    id: string,
-  ): Promise<?Definition>,
+  constructor(fileNotifier, analyzer) {
+    if (!(fileNotifier instanceof (_nuclideOpenFilesRpc || _load_nuclideOpenFilesRpc()).FileCache)) {
+      throw new Error('Invariant violation: "fileNotifier instanceof FileCache"');
+    }
 
-  findReferences(
-    filePath: NuclideUri,
-    buffer: atom$TextBuffer,
-    position: atom$Point,
-  ): Promise<?FindReferencesReturn>,
-
-  getCoverage(
-    filePath: NuclideUri,
-  ): Promise<?CoverageResult>,
-
-  getOutline(
-    filePath: NuclideUri,
-    buffer: atom$TextBuffer,
-  ): Promise<?Outline>,
-
-  typeHint(
-    filePath: NuclideUri,
-    buffer: atom$TextBuffer,
-    position: atom$Point,
-  ): Promise<?TypeHint>,
-
-  highlight(
-    filePath: NuclideUri,
-    buffer: atom$TextBuffer,
-    position: atom$Point,
-  ): Promise<Array<atom$Range>>,
-
-  formatSource(
-    filePath: NuclideUri,
-    buffer: atom$TextBuffer,
-    range: atom$Range,
-  ): Promise<string>,
-
-  getEvaluationExpression(
-    filePath: NuclideUri,
-    buffer: atom$TextBuffer,
-    position: atom$Point,
-  ): Promise<?NuclideEvaluationExpression>,
-
-  getProjectRoot(fileUri: NuclideUri): Promise<?NuclideUri>,
-
-  isFileInProject(fileUri: NuclideUri): Promise<boolean>,
-
-  dispose(): void,
-};
-
-export class ServerLanguageService {
-  _fileCache: FileCache;
-  _analyzer: LanguageAnalyzer;
-
-  constructor(fileNotifier: FileNotifier, analyzer: LanguageAnalyzer) {
-    invariant(fileNotifier instanceof FileCache);
     this._fileCache = fileNotifier;
     this._analyzer = analyzer;
   }
 
-  async getDiagnostics(
-    fileVersion: FileVersion,
-  ): Promise<?DiagnosticProviderUpdate> {
-    const filePath = fileVersion.filePath;
-    const buffer = await getBufferAtVersion(fileVersion);
-    return await this._analyzer.getDiagnostics(filePath, buffer);
+  getDiagnostics(fileVersion) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const filePath = fileVersion.filePath;
+      const buffer = yield (0, (_nuclideOpenFilesRpc || _load_nuclideOpenFilesRpc()).getBufferAtVersion)(fileVersion);
+      return yield _this._analyzer.getDiagnostics(filePath, buffer);
+    })();
   }
 
-  observeDiagnostics(): ConnectableObservable<FileDiagnosticUpdate> {
+  observeDiagnostics() {
     return this._analyzer.observeDiagnostics().publish();
   }
 
-  async getAutocompleteSuggestions(
-    fileVersion: FileVersion,
-    position: atom$Point,
-    activatedManually: boolean,
-  ): Promise<Array<Completion>> {
-    const filePath = fileVersion.filePath;
-    const buffer = await getBufferAtVersion(fileVersion);
-    return await this._analyzer.getAutocompleteSuggestions(
-      filePath, buffer, position, activatedManually);
+  getAutocompleteSuggestions(fileVersion, position, activatedManually) {
+    var _this2 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const filePath = fileVersion.filePath;
+      const buffer = yield (0, (_nuclideOpenFilesRpc || _load_nuclideOpenFilesRpc()).getBufferAtVersion)(fileVersion);
+      return yield _this2._analyzer.getAutocompleteSuggestions(filePath, buffer, position, activatedManually);
+    })();
   }
 
-  async getDefinition(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?DefinitionQueryResult> {
-    const filePath = fileVersion.filePath;
-    const buffer = await getBufferAtVersion(fileVersion);
-    return await this._analyzer.getDefinition(filePath, buffer, position);
+  getDefinition(fileVersion, position) {
+    var _this3 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const filePath = fileVersion.filePath;
+      const buffer = yield (0, (_nuclideOpenFilesRpc || _load_nuclideOpenFilesRpc()).getBufferAtVersion)(fileVersion);
+      return yield _this3._analyzer.getDefinition(filePath, buffer, position);
+    })();
   }
 
-  getDefinitionById(
-    file: NuclideUri,
-    id: string,
-  ): Promise<?Definition> {
+  getDefinitionById(file, id) {
     return this._analyzer.getDefinitionById(file, id);
   }
 
-  async findReferences(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?FindReferencesReturn> {
-    const filePath = fileVersion.filePath;
-    const buffer = await getBufferAtVersion(fileVersion);
-    return await this._analyzer.findReferences(filePath, buffer, position);
+  findReferences(fileVersion, position) {
+    var _this4 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const filePath = fileVersion.filePath;
+      const buffer = yield (0, (_nuclideOpenFilesRpc || _load_nuclideOpenFilesRpc()).getBufferAtVersion)(fileVersion);
+      return yield _this4._analyzer.findReferences(filePath, buffer, position);
+    })();
   }
 
-  getCoverage(
-    filePath: NuclideUri,
-  ): Promise<?CoverageResult> {
+  getCoverage(filePath) {
     return this._analyzer.getCoverage(filePath);
   }
 
-  async getOutline(
-    fileVersion: FileVersion,
-  ): Promise<?Outline> {
-    const filePath = fileVersion.filePath;
-    const buffer = await getBufferAtVersion(fileVersion);
-    return await this._analyzer.getOutline(filePath, buffer);
+  getOutline(fileVersion) {
+    var _this5 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const filePath = fileVersion.filePath;
+      const buffer = yield (0, (_nuclideOpenFilesRpc || _load_nuclideOpenFilesRpc()).getBufferAtVersion)(fileVersion);
+      return yield _this5._analyzer.getOutline(filePath, buffer);
+    })();
   }
 
-  async typeHint(fileVersion: FileVersion, position: atom$Point): Promise<?TypeHint> {
-    const filePath = fileVersion.filePath;
-    const buffer = await getBufferAtVersion(fileVersion);
-    return await this._analyzer.typeHint(filePath, buffer, position);
+  typeHint(fileVersion, position) {
+    var _this6 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const filePath = fileVersion.filePath;
+      const buffer = yield (0, (_nuclideOpenFilesRpc || _load_nuclideOpenFilesRpc()).getBufferAtVersion)(fileVersion);
+      return yield _this6._analyzer.typeHint(filePath, buffer, position);
+    })();
   }
 
-  async highlight(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<Array<atom$Range>> {
-    const filePath = fileVersion.filePath;
-    const buffer = await getBufferAtVersion(fileVersion);
-    return await this._analyzer.highlight(filePath, buffer, position);
+  highlight(fileVersion, position) {
+    var _this7 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const filePath = fileVersion.filePath;
+      const buffer = yield (0, (_nuclideOpenFilesRpc || _load_nuclideOpenFilesRpc()).getBufferAtVersion)(fileVersion);
+      return yield _this7._analyzer.highlight(filePath, buffer, position);
+    })();
   }
 
-  async formatSource(
-    fileVersion: FileVersion,
-    range: atom$Range,
-  ): Promise<string> {
-    const filePath = fileVersion.filePath;
-    const buffer = await getBufferAtVersion(fileVersion);
-    return await this._analyzer.formatSource(filePath, buffer, range);
+  formatSource(fileVersion, range) {
+    var _this8 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const filePath = fileVersion.filePath;
+      const buffer = yield (0, (_nuclideOpenFilesRpc || _load_nuclideOpenFilesRpc()).getBufferAtVersion)(fileVersion);
+      return yield _this8._analyzer.formatSource(filePath, buffer, range);
+    })();
   }
 
-  async getEvaluationExpression(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?NuclideEvaluationExpression> {
-    const filePath = fileVersion.filePath;
-    const buffer = await getBufferAtVersion(fileVersion);
-    return await this._analyzer.getEvaluationExpression(filePath, buffer, position);
+  getEvaluationExpression(fileVersion, position) {
+    var _this9 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const filePath = fileVersion.filePath;
+      const buffer = yield (0, (_nuclideOpenFilesRpc || _load_nuclideOpenFilesRpc()).getBufferAtVersion)(fileVersion);
+      return yield _this9._analyzer.getEvaluationExpression(filePath, buffer, position);
+    })();
   }
 
-  getProjectRoot(fileUri: NuclideUri): Promise<?NuclideUri> {
+  getProjectRoot(fileUri) {
     return this._analyzer.getProjectRoot(fileUri);
   }
 
-  async isFileInProject(fileUri: NuclideUri): Promise<boolean> {
-    return this._analyzer.isFileInProject(fileUri);
+  isFileInProject(fileUri) {
+    var _this10 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      return _this10._analyzer.isFileInProject(fileUri);
+    })();
   }
 
-  dispose(): void {
+  dispose() {
     this._analyzer.dispose();
   }
-}
+};

@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,10 +9,20 @@
  * the root directory of this source tree.
  */
 
-import Dequeue from 'dequeue';
-import EventEmitter from 'events';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.PromiseQueue = exports.PromisePool = undefined;
 
-type Executor<T> = () => Promise<T>;
+var _dequeue;
+
+function _load_dequeue() {
+  return _dequeue = _interopRequireDefault(require('dequeue'));
+}
+
+var _events = _interopRequireDefault(require('events'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * A pool that executes Promise executors in parallel given the poolSize, in order.
@@ -22,16 +32,11 @@ type Executor<T> = () => Promise<T>;
  * a sequence of async operations that need to be run in parallel and you also want
  * control the number of concurrent executions.
  */
-export class PromisePool {
-  _fifo: Dequeue;
-  _emitter: EventEmitter;
-  _numPromisesRunning: number;
-  _poolSize: number;
-  _nextRequestId: number;
+let PromisePool = exports.PromisePool = class PromisePool {
 
-  constructor(poolSize: number) {
-    this._fifo = new Dequeue();
-    this._emitter = new EventEmitter();
+  constructor(poolSize) {
+    this._fifo = new (_dequeue || _load_dequeue()).default();
+    this._emitter = new _events.default();
     this._numPromisesRunning = 0;
     this._poolSize = poolSize;
     this._nextRequestId = 1;
@@ -43,12 +48,14 @@ export class PromisePool {
    * @return A Promise that will be resolved/rejected in response to the
    *     execution of the executor.
    */
-  submit<T>(executor: Executor<T>): Promise<T> {
+  submit(executor) {
     const id = this._getNextRequestId();
-    this._fifo.push({id, executor});
+    this._fifo.push({ id: id, executor: executor });
     const promise = new Promise((resolve, reject) => {
       this._emitter.once(id, result => {
-        const {isSuccess, value} = result;
+        const isSuccess = result.isSuccess;
+        const value = result.value;
+
         (isSuccess ? resolve : reject)(value);
       });
     });
@@ -65,24 +72,28 @@ export class PromisePool {
       return;
     }
 
-    const {id, executor} = this._fifo.shift();
+    var _fifo$shift = this._fifo.shift();
+
+    const id = _fifo$shift.id;
+    const executor = _fifo$shift.executor;
+
     this._numPromisesRunning++;
 
     executor().then(result => {
-      this._emitter.emit(id, {isSuccess: true, value: result});
+      this._emitter.emit(id, { isSuccess: true, value: result });
       this._numPromisesRunning--;
       this._run();
     }, error => {
-      this._emitter.emit(id, {isSuccess: false, value: error});
+      this._emitter.emit(id, { isSuccess: false, value: error });
       this._numPromisesRunning--;
       this._run();
     });
   }
 
-  _getNextRequestId(): string {
+  _getNextRequestId() {
     return (this._nextRequestId++).toString(16);
   }
-}
+};
 
 /**
  * FIFO queue that executes Promise executors one at a time, in order.
@@ -91,8 +102,8 @@ export class PromisePool {
  * immediately. This may not always be desirable. Use a PromiseQueue if you have
  * a sequence of async operations that need to use a shared resource serially.
  */
-export class PromiseQueue {
-  _promisePool: PromisePool;
+
+let PromiseQueue = exports.PromiseQueue = class PromiseQueue {
 
   constructor() {
     this._promisePool = new PromisePool(1);
@@ -104,7 +115,7 @@ export class PromiseQueue {
    * @return A Promise that will be resolved/rejected in response to the
    *     execution of the executor.
    */
-  submit<T>(executor: Executor<T>): Promise<T> {
+  submit(executor) {
     return this._promisePool.submit(executor);
   }
-}
+};

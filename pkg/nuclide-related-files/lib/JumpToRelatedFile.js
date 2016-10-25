@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,53 +9,72 @@
  * the root directory of this source tree.
  */
 
-import RelatedFileFinder from './RelatedFileFinder';
-import {trackOperationTiming} from '../../nuclide-analytics';
-import featureConfig from '../../commons-atom/featureConfig';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = undefined;
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _RelatedFileFinder;
+
+function _load_RelatedFileFinder() {
+  return _RelatedFileFinder = _interopRequireDefault(require('./RelatedFileFinder'));
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _featureConfig;
+
+function _load_featureConfig() {
+  return _featureConfig = _interopRequireDefault(require('../../commons-atom/featureConfig'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Sets up listeners so the user can jump to related files.
  *
  * Clients must call `dispose()` once they're done with an instance.
  */
-export default class JumpToRelatedFile {
-  _subscription: IDisposable;
+let JumpToRelatedFile = class JumpToRelatedFile {
 
   constructor() {
-    this._subscription = atom.commands.add(
-      'atom-workspace',
-      {
-        'nuclide-related-files:jump-to-next-related-file': () => {
-          const editor = atom.workspace.getActiveTextEditor();
-          if (editor == null) {
-            return;
-          }
-          const path = editor.getPath();
-          if (path) {
-            trackOperationTiming(
-              'nuclide-related-files:jump-to-next-related-file',
-              async () => this._open(await this.getNextRelatedFile(path)),
-            );
-          }
-        },
-        'nuclide-related-files:jump-to-previous-related-file': () => {
-          const editor = atom.workspace.getActiveTextEditor();
-          if (editor == null) {
-            return;
-          }
-          const path = editor.getPath();
-          if (path) {
-            trackOperationTiming(
-              'nuclide-related-files:jump-to-previous-related-file',
-              async () => this._open(await this.getPreviousRelatedFile(path)),
-            );
-          }
-        },
+    var _this = this;
+
+    this._subscription = atom.commands.add('atom-workspace', {
+      'nuclide-related-files:jump-to-next-related-file': () => {
+        const editor = atom.workspace.getActiveTextEditor();
+        if (editor == null) {
+          return;
+        }
+        const path = editor.getPath();
+        if (path) {
+          (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackOperationTiming)('nuclide-related-files:jump-to-next-related-file', (0, _asyncToGenerator.default)(function* () {
+            return _this._open((yield _this.getNextRelatedFile(path)));
+          }));
+        }
       },
-    );
+      'nuclide-related-files:jump-to-previous-related-file': () => {
+        const editor = atom.workspace.getActiveTextEditor();
+        if (editor == null) {
+          return;
+        }
+        const path = editor.getPath();
+        if (path) {
+          (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackOperationTiming)('nuclide-related-files:jump-to-previous-related-file', (0, _asyncToGenerator.default)(function* () {
+            return _this._open((yield _this.getPreviousRelatedFile(path)));
+          }));
+        }
+      }
+    });
   }
 
-  dispose(): void {
+  dispose() {
     this._subscription.dispose();
   }
 
@@ -63,39 +82,54 @@ export default class JumpToRelatedFile {
    * Gets the next related file, which Xcode defines as the one that comes
    * before the current one alphabetically.
    */
-  async getNextRelatedFile(path: string): Promise<string> {
-    const {relatedFiles, index} = await RelatedFileFinder.find(
-      path, this._getFileTypeWhitelist());
-    if (index === -1) {
-      return path;
-    }
-    return relatedFiles[(relatedFiles.length + index - 1) % relatedFiles.length];
+  getNextRelatedFile(path) {
+    var _this2 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      var _ref3 = yield (_RelatedFileFinder || _load_RelatedFileFinder()).default.find(path, _this2._getFileTypeWhitelist());
+
+      const relatedFiles = _ref3.relatedFiles;
+      const index = _ref3.index;
+
+      if (index === -1) {
+        return path;
+      }
+      return relatedFiles[(relatedFiles.length + index - 1) % relatedFiles.length];
+    })();
   }
 
   /**
    * Gets the previous related file, which Xcode defines as the one that comes
    * after the current one alphabetically.
    */
-  async getPreviousRelatedFile(path: string): Promise<string> {
-    const {relatedFiles, index} = await RelatedFileFinder.find(
-      path, this._getFileTypeWhitelist());
-    if (index === -1) {
-      return path;
-    }
-    return relatedFiles[(index + 1) % relatedFiles.length];
+  getPreviousRelatedFile(path) {
+    var _this3 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      var _ref4 = yield (_RelatedFileFinder || _load_RelatedFileFinder()).default.find(path, _this3._getFileTypeWhitelist());
+
+      const relatedFiles = _ref4.relatedFiles;
+      const index = _ref4.index;
+
+      if (index === -1) {
+        return path;
+      }
+      return relatedFiles[(index + 1) % relatedFiles.length];
+    })();
   }
 
-  _getFileTypeWhitelist(): Set<string> {
-    const fileTypeWhitelist: Array<string> =
-      (featureConfig.get('nuclide-related-files.fileTypeWhitelist'): any);
+  _getFileTypeWhitelist() {
+    const fileTypeWhitelist = (_featureConfig || _load_featureConfig()).default.get('nuclide-related-files.fileTypeWhitelist');
     return new Set(fileTypeWhitelist);
   }
 
-  _open(path: string) {
-    if (featureConfig.get('nuclide-related-files.openInNextPane')) {
+  _open(path) {
+    if ((_featureConfig || _load_featureConfig()).default.get('nuclide-related-files.openInNextPane')) {
       atom.workspace.activateNextPane();
     }
-    atom.workspace.open(path, {searchAllPanes: true});
+    atom.workspace.open(path, { searchAllPanes: true });
   }
 
-}
+};
+exports.default = JumpToRelatedFile;
+module.exports = exports['default'];

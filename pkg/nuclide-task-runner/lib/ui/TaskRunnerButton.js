@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,40 +9,49 @@
  * the root directory of this source tree.
  */
 
-import type {ButtonSize} from '../../../nuclide-ui/Button';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {Button} from '../../../nuclide-ui/Button';
-import {Icon} from '../../../nuclide-ui/Icon';
-import {React} from 'react-for-atom';
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-type Props = {
-  icon?: atom$Octicon,
-  selected?: boolean,
-  size?: ButtonSize,
-  children?: mixed,
-  iconComponent: ReactClass<any>,
-};
+exports.TaskRunnerButton = TaskRunnerButton;
 
-export function TaskRunnerButton(props: Props): React.Element<any> {
+var _Button;
+
+function _load_Button() {
+  return _Button = require('../../../nuclide-ui/Button');
+}
+
+var _Icon;
+
+function _load_Icon() {
+  return _Icon = require('../../../nuclide-ui/Icon');
+}
+
+var _reactForAtom = require('react-for-atom');
+
+function TaskRunnerButton(props) {
   const IconComponent = props.iconComponent;
-  const buttonProps = {...props};
+  const buttonProps = _extends({}, props);
   delete buttonProps.icon;
   delete buttonProps.label;
   delete buttonProps.iconComponent;
-  const icon = props.icon == null
-    ? null
-    : <Icon icon={props.icon} className="nuclide-task-runner-system-task-icon" />;
+  const icon = props.icon == null ? null : _reactForAtom.React.createElement((_Icon || _load_Icon()).Icon, { icon: props.icon, className: 'nuclide-task-runner-system-task-icon' });
   return (
     // $FlowFixMe
-    <Button
-      {...buttonProps}
-      className="nuclide-task-runner-system-task-button">
-      <div className="nuclide-task-runner-system-icon-wrapper">
-        <IconComponent />
-      </div>
-      <div className="nuclide-task-runner-system-task-button-divider" />
-      {icon}
-      {props.children}
-    </Button>
+    _reactForAtom.React.createElement(
+      (_Button || _load_Button()).Button,
+      _extends({}, buttonProps, {
+        className: 'nuclide-task-runner-system-task-button' }),
+      _reactForAtom.React.createElement(
+        'div',
+        { className: 'nuclide-task-runner-system-icon-wrapper' },
+        _reactForAtom.React.createElement(IconComponent, null)
+      ),
+      _reactForAtom.React.createElement('div', { className: 'nuclide-task-runner-system-task-button-divider' }),
+      icon,
+      props.children
+    )
   );
 }

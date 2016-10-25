@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,12 +9,18 @@
  * the root directory of this source tree.
  */
 
-import zlib from 'zlib';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.compress = compress;
+exports.decompress = decompress;
 
-export function compress(data: string): Buffer {
-  return zlib.deflateSync(data);
-}
+var _zlib = _interopRequireDefault(require('zlib'));
 
-export function decompress(data: Buffer): string {
-  return zlib.inflateSync(data).toString('utf-8');
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function compress(data) {
+  return _zlib.default.deflateSync(data);
+}function decompress(data) {
+  return _zlib.default.inflateSync(data).toString('utf-8');
 }

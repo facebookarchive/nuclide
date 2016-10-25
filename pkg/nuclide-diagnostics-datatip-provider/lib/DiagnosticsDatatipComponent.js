@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,38 +9,47 @@
  * the root directory of this source tree.
  */
 
-import type {
-  FileDiagnosticMessage,
-} from '../../nuclide-diagnostics-common/lib/rpc-types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DiagnosticsDatatipComponent = undefined;
 
-import {goToLocation} from '../../commons-atom/go-to-location';
-import {React} from 'react-for-atom';
-import {DiagnosticsMessage} from '../../nuclide-ui/DiagnosticsMessage';
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-type DiagnosticsDatatipComponentProps = {
-  message: FileDiagnosticMessage,
-};
+exports.makeDiagnosticsDatatipComponent = makeDiagnosticsDatatipComponent;
+
+var _goToLocation;
+
+function _load_goToLocation() {
+  return _goToLocation = require('../../commons-atom/go-to-location');
+}
+
+var _reactForAtom = require('react-for-atom');
+
+var _DiagnosticsMessage;
+
+function _load_DiagnosticsMessage() {
+  return _DiagnosticsMessage = require('../../nuclide-ui/DiagnosticsMessage');
+}
 
 const NOOP = () => {};
 
-export class DiagnosticsDatatipComponent extends React.Component {
-  props: DiagnosticsDatatipComponentProps;
+let DiagnosticsDatatipComponent = exports.DiagnosticsDatatipComponent = class DiagnosticsDatatipComponent extends _reactForAtom.React.Component {
 
-  render(): React.Element<any> {
+  render() {
     // Remove the `fix` property to prevent the fix button from showing up (for now).
-    const message = {...this.props.message, fix: undefined};
-    return (
-      <div className="nuclide-diagnostics-datatip">
-        <DiagnosticsMessage
-          message={message}
-          goToLocation={goToLocation}
-          fixer={NOOP}
-        />
-      </div>
+    const message = _extends({}, this.props.message, { fix: undefined });
+    return _reactForAtom.React.createElement(
+      'div',
+      { className: 'nuclide-diagnostics-datatip' },
+      _reactForAtom.React.createElement((_DiagnosticsMessage || _load_DiagnosticsMessage()).DiagnosticsMessage, {
+        message: message,
+        goToLocation: (_goToLocation || _load_goToLocation()).goToLocation,
+        fixer: NOOP
+      })
     );
   }
-}
-
-export function makeDiagnosticsDatatipComponent(message: FileDiagnosticMessage): ReactClass<any> {
-  return () => <DiagnosticsDatatipComponent message={message} />;
+};
+function makeDiagnosticsDatatipComponent(message) {
+  return () => _reactForAtom.React.createElement(DiagnosticsDatatipComponent, { message: message });
 }

@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,25 +9,29 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
-import classnames from 'classnames';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.StatusBarTileComponent = undefined;
 
-type Props = {
-  busy: boolean,
-};
+var _reactForAtom = require('react-for-atom');
 
-export class StatusBarTileComponent extends React.Component {
-  props: Props;
+var _classnames;
 
-  constructor(props: Props) {
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let StatusBarTileComponent = exports.StatusBarTileComponent = class StatusBarTileComponent extends _reactForAtom.React.Component {
+
+  constructor(props) {
     super(props);
   }
 
-  render(): React.Element<any> {
-    const classes = classnames(
-      'nuclide-busy-signal-status-bar',
-      {'loading-spinner-tiny': this.props.busy},
-    );
-    return <div className={classes} />;
+  render() {
+    const classes = (0, (_classnames || _load_classnames()).default)('nuclide-busy-signal-status-bar', { 'loading-spinner-tiny': this.props.busy });
+    return _reactForAtom.React.createElement('div', { className: classes });
   }
-}
+};

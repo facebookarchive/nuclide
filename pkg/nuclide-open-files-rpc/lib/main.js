@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,28 +9,49 @@
  * the root directory of this source tree.
  */
 
-import type {FileVersion} from './rpc-types';
-import {FileCache} from './FileCache';
-import {FileVersionNotifier} from './FileVersionNotifier';
-import {trackOperationTiming} from '../../nuclide-analytics';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.OPEN_FILES_SERVICE = exports.FileVersionNotifier = exports.FileCache = undefined;
 
-export {FileCache, FileVersionNotifier};
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-import invariant from 'assert';
+exports.getBufferAtVersion = getBufferAtVersion;
 
-export const OPEN_FILES_SERVICE = 'OpenFilesService';
+var _FileCache;
 
-export function getBufferAtVersion(fileVersion: FileVersion): Promise<atom$TextBuffer> {
-  return trackOperationTiming(
-    'getBufferAtVersion',
-    async () => {
-      invariant(
-        fileVersion.notifier instanceof FileCache,
-        'Don\'t call this from the Atom process');
-      const buffer = await (fileVersion.notifier: FileCache).getBufferAtVersion(fileVersion);
-      if (buffer.changeCount !== fileVersion.version) {
-        throw new Error('File sync error. File modifier past requested change.');
-      }
-      return buffer;
-    });
+function _load_FileCache() {
+  return _FileCache = require('./FileCache');
+}
+
+var _FileVersionNotifier;
+
+function _load_FileVersionNotifier() {
+  return _FileVersionNotifier = require('./FileVersionNotifier');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.FileCache = (_FileCache || _load_FileCache()).FileCache;
+exports.FileVersionNotifier = (_FileVersionNotifier || _load_FileVersionNotifier()).FileVersionNotifier;
+const OPEN_FILES_SERVICE = exports.OPEN_FILES_SERVICE = 'OpenFilesService';
+
+function getBufferAtVersion(fileVersion) {
+  return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackOperationTiming)('getBufferAtVersion', (0, _asyncToGenerator.default)(function* () {
+    if (!(fileVersion.notifier instanceof (_FileCache || _load_FileCache()).FileCache)) {
+      throw new Error('Don\'t call this from the Atom process');
+    }
+
+    const buffer = yield fileVersion.notifier.getBufferAtVersion(fileVersion);
+    if (buffer.changeCount !== fileVersion.version) {
+      throw new Error('File sync error. File modifier past requested change.');
+    }
+    return buffer;
+  }));
 }

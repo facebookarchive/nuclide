@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,48 +9,59 @@
  * the root directory of this source tree.
  */
 
-import {Subject} from 'rxjs';
-import type {Observable} from 'rxjs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.goToLocation = undefined;
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
 // Opens the given file at the line/column.
 // By default will center the opened text editor.
-export async function goToLocation(
-  file: string,
-  line?: number,
-  column?: number,
-  center?: boolean = true,
-): Promise<atom$TextEditor> {
-  const editor = await atom.workspace.open(file, {
-    initialLine: line,
-    initialColumn: column,
-    searchAllPanes: true,
+let goToLocation = exports.goToLocation = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (file, line, column) {
+    let center = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
+
+    const editor = yield atom.workspace.open(file, {
+      initialLine: line,
+      initialColumn: column,
+      searchAllPanes: true
+    });
+
+    if (center) {
+      editor.scrollToBufferPosition([line, column], { center: true });
+    }
+    return editor;
   });
 
-  if (center) {
-    editor.scrollToBufferPosition([line, column], {center: true});
-  }
-  return editor;
-}
+  return function goToLocation(_x2, _x3, _x4) {
+    return _ref.apply(this, arguments);
+  };
+})();
 
-const goToLocationSubject = new Subject();
+exports.goToLocationInEditor = goToLocationInEditor;
+exports.observeNavigatingEditors = observeNavigatingEditors;
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const goToLocationSubject = new _rxjsBundlesRxMinJs.Subject();
 
 // Scrolls to the given line/column at the given editor
 // broadcasts the editor instance on an observable (subject) available
 // through the getGoToLocation
-export function goToLocationInEditor(
-  editor: atom$TextEditor,
-  line: number,
-  column: number,
-  center: boolean = true,
-): void {
+function goToLocationInEditor(editor, line, column) {
+  let center = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
+
   editor.setCursorBufferPosition([line, column]);
   if (center) {
-    editor.scrollToBufferPosition([line, column], {center: true});
+    editor.scrollToBufferPosition([line, column], { center: true });
   }
 
   goToLocationSubject.next(editor);
 }
 
-export function observeNavigatingEditors(): Observable<atom$TextEditor> {
+function observeNavigatingEditors() {
   return goToLocationSubject;
 }

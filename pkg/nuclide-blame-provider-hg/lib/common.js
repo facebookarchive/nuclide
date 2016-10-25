@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,14 +9,21 @@
  * the root directory of this source tree.
  */
 
-import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.hgRepositoryForEditor = hgRepositoryForEditor;
 
-import {repositoryForPath} from '../../nuclide-hg-git-bridge';
+var _nuclideHgGitBridge;
 
-export function hgRepositoryForEditor(editor: TextEditor): ?HgRepositoryClient {
-  const repo = repositoryForPath(editor.getPath() || '');
+function _load_nuclideHgGitBridge() {
+  return _nuclideHgGitBridge = require('../../nuclide-hg-git-bridge');
+}
+
+function hgRepositoryForEditor(editor) {
+  const repo = (0, (_nuclideHgGitBridge || _load_nuclideHgGitBridge()).repositoryForPath)(editor.getPath() || '');
   if (!repo || repo.getType() !== 'hg') {
     return null;
   }
-  return ((repo: any): HgRepositoryClient);
+  return repo;
 }

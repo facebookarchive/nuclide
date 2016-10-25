@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,34 +9,34 @@
  * the root directory of this source tree.
  */
 
-import type DebuggerProcessInfo from './DebuggerProcessInfo';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+let DebuggerInstance = class DebuggerInstance {
 
-export default class DebuggerInstance {
-  _processInfo: DebuggerProcessInfo;
-  onSessionEnd: ?(callback: () => void) => IDisposable;
-
-  constructor(processInfo: DebuggerProcessInfo) {
+  constructor(processInfo) {
     this._processInfo = processInfo;
   }
 
-  getDebuggerProcessInfo(): DebuggerProcessInfo {
+  getDebuggerProcessInfo() {
     return this._processInfo;
   }
 
-  getProviderName(): string {
+  getProviderName() {
     return this._processInfo.getServiceName();
   }
 
-  getTargetUri(): NuclideUri {
+  getTargetUri() {
     return this._processInfo.getTargetUri();
   }
 
-  dispose(): void {
+  dispose() {
     throw new Error('abstract method');
   }
 
-  getWebsocketAddress(): Promise<string> {
+  getWebsocketAddress() {
     throw new Error('abstract method');
   }
-}
+};
+exports.default = DebuggerInstance;
+module.exports = exports['default'];

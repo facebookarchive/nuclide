@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,23 +9,24 @@
  * the root directory of this source tree.
  */
 
-import type {OffsetMap, UIElement} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = undefined;
 
-import {Range} from 'atom';
-import {ReactDOM} from 'react-for-atom';
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
+var _atom = require('atom');
+
+var _reactForAtom = require('react-for-atom');
 
 /**
  * The DiffViewEditor manages the lifecycle of the two editors used in the diff view,
  * and controls its rendering of highlights and offsets.
  */
-export default class DiffViewEditor {
-  _editor: atom$TextEditor;
-  _editorElement: atom$TextEditorElement;
-  _highlightMarkers: Array<atom$Marker>;
-  _offsetMarkers: Array<atom$Marker>;
-  _uiElementsMarkers: Array<atom$Marker>;
+let DiffViewEditor = class DiffViewEditor {
 
-  constructor(editorElement: atom$TextEditorElement) {
+  constructor(editorElement) {
     this._editorElement = editorElement;
     this._editor = editorElement.getModel();
     this._highlightMarkers = [];
@@ -33,40 +34,40 @@ export default class DiffViewEditor {
     this._uiElementsMarkers = [];
   }
 
-  setUIElements(elements: Array<UIElement>): void {
+  setUIElements(elements) {
     for (const marker of this._uiElementsMarkers) {
       marker.destroy();
     }
     this._uiElementsMarkers = elements.map(element => {
-      const {node, bufferRow} = element;
+      const node = element.node;
+      const bufferRow = element.bufferRow;
       // TODO(most): OMG, this mutates React props for the created component!!
+
       Object.assign(node.props.helpers, {
-        scrollToRow: this._scrollToRow.bind(this),
+        scrollToRow: this._scrollToRow.bind(this)
       });
       const container = document.createElement('div');
-      ReactDOM.render(node, container);
+      _reactForAtom.ReactDOM.render(node, container);
       // an overlay marker at a buffer range with row x renders under row x + 1
       // so, use range at bufferRow - 1 to actually display at bufferRow
       const range = [[bufferRow - 1, 0], [bufferRow - 1, 0]];
-      const marker = this._editor.markBufferRange(range, {invalidate: 'never'});
+      const marker = this._editor.markBufferRange(range, { invalidate: 'never' });
       this._editor.decorateMarker(marker, {
         type: 'overlay',
         item: container,
-        position: 'tail',
+        position: 'tail'
       });
       return marker;
     });
   }
 
-  scrollToScreenLine(screenLine: number): void {
+  scrollToScreenLine(screenLine) {
     this._editor.scrollToScreenPosition(
-      // Markers are ordered in ascending order by line number.
-      [screenLine, 0],
-      {center: true},
-    );
+    // Markers are ordered in ascending order by line number.
+    [screenLine, 0], { center: true });
   }
 
-  setFileContents(filePath: string, contents: string): void {
+  setFileContents(filePath, contents) {
     const buffer = this._editor.getBuffer();
     if (buffer.getText() !== contents) {
       // Applies only to the compared read only text buffer.
@@ -77,11 +78,11 @@ export default class DiffViewEditor {
     this._editor.setGrammar(grammar);
   }
 
-  getModel(): Object {
+  getModel() {
     return this._editor;
   }
 
-  getText(): string {
+  getText() {
     return this._editor.getText();
   }
 
@@ -89,15 +90,14 @@ export default class DiffViewEditor {
    * @param addedLines An array of buffer line numbers that should be highlighted as added.
    * @param removedLines An array of buffer line numbers that should be highlighted as removed.
    */
-  setHighlightedLines(addedLines: Array<number> = [], removedLines: Array<number> = []) {
+  setHighlightedLines() {
+    let addedLines = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+    let removedLines = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
+
     for (const marker of this._highlightMarkers) {
       marker.destroy();
     }
-    this._highlightMarkers = addedLines.map(
-      lineNumber => this._createLineMarker(lineNumber, 'insert'),
-    ).concat(removedLines.map(
-      lineNumber => this._createLineMarker(lineNumber, 'delete'),
-    ));
+    this._highlightMarkers = addedLines.map(lineNumber => this._createLineMarker(lineNumber, 'insert')).concat(removedLines.map(lineNumber => this._createLineMarker(lineNumber, 'delete')));
   }
 
   /**
@@ -105,36 +105,35 @@ export default class DiffViewEditor {
    * @param type The type of highlight to be applied to the line.
   *    Could be a value of: ['insert', 'delete'].
    */
-  _createLineMarker(lineNumber: number, type: string): atom$Marker {
-    const range = new Range(
-      [lineNumber, 0],
-      [lineNumber + 1, 0],
-    );
-    const marker = this._editor.markBufferRange(range, {invalidate: 'never'});
-    this._editor.decorateMarker(marker, {type: 'highlight', class: `diff-view-${type}`});
+  _createLineMarker(lineNumber, type) {
+    const range = new _atom.Range([lineNumber, 0], [lineNumber + 1, 0]);
+    const marker = this._editor.markBufferRange(range, { invalidate: 'never' });
+    this._editor.decorateMarker(marker, { type: 'highlight', class: `diff-view-${ type }` });
     return marker;
   }
 
-  setOffsets(lineOffsets: OffsetMap): void {
+  setOffsets(lineOffsets) {
     this._offsetMarkers.forEach(marker => marker.destroy());
     this._offsetMarkers = [];
     const lineHeight = this._editor.getLineHeightInPixels();
-    for (const [lineNumber, offsetLines] of lineOffsets) {
+    for (const _ref of lineOffsets) {
+      var _ref2 = _slicedToArray(_ref, 2);
+
+      const lineNumber = _ref2[0];
+      const offsetLines = _ref2[1];
+
       const blockItem = document.createElement('div');
-      blockItem.style.minHeight = (offsetLines * lineHeight) + 'px';
+      blockItem.style.minHeight = offsetLines * lineHeight + 'px';
       blockItem.className = 'nuclide-diff-view-block-offset';
-      const marker = this._editor.markBufferPosition([lineNumber, 0], {invalidate: 'never'});
+      const marker = this._editor.markBufferPosition([lineNumber, 0], { invalidate: 'never' });
       // The position should be `after` if the offset is at the end of the file.
       const position = lineNumber >= this._editor.getLineCount() - 1 ? 'after' : 'before';
-      this._editor.decorateMarker(
-        marker,
-        {type: 'block', item: blockItem, position},
-      );
+      this._editor.decorateMarker(marker, { type: 'block', item: blockItem, position: position });
       this._offsetMarkers.push(marker);
     }
   }
 
-  destroy(): void {
+  destroy() {
     this._highlightMarkers.forEach(marker => marker.destroy());
     this._highlightMarkers = [];
     this._offsetMarkers.forEach(marker => marker.destroy());
@@ -144,10 +143,9 @@ export default class DiffViewEditor {
     this._editor.destroy();
   }
 
-  _scrollToRow(row: number): void {
-    this._editor.scrollToBufferPosition(
-      [row, 0],
-      {center: true},
-    );
+  _scrollToRow(row) {
+    this._editor.scrollToBufferPosition([row, 0], { center: true });
   }
-}
+};
+exports.default = DiffViewEditor;
+module.exports = exports['default'];

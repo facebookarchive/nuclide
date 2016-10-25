@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,14 +9,29 @@
  * the root directory of this source tree.
  */
 
-import singleton from '../../commons-node/singleton';
-import {maybeToString} from '../../commons-node/string';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.__test__ = undefined;
+exports.default = addPrepareStackTraceHook;
 
-type PrepareStackTraceFunction = (error: Error, frames: Array<CallSite>) => any;
+var _singleton;
+
+function _load_singleton() {
+  return _singleton = _interopRequireDefault(require('../../commons-node/singleton'));
+}
+
+var _string;
+
+function _load_string() {
+  return _string = require('../../commons-node/string');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const PREPARE_STACK_TRACE_HOOKED_KEY = '_nuclide_error_stack_trace_hooked';
 
-let hookedPrepareStackTrace: ?PrepareStackTraceFunction;
+let hookedPrepareStackTrace;
 
 /**
  * v8 provided a way to customize Error stacktrace generation by overwriting
@@ -29,58 +44,49 @@ let hookedPrepareStackTrace: ?PrepareStackTraceFunction;
  * This is required as Atom's builtin coffeescript package need to show coffeescript stacktrace by
  * customize Error.prepareStackTrace.
  */
-export default function addPrepareStackTraceHook(): void {
-  singleton.get(
-    PREPARE_STACK_TRACE_HOOKED_KEY,
-    () => {
-      hookedPrepareStackTrace = createHookedPrepareStackTrace(Error.prepareStackTrace
-        || defaultPrepareStackTrace);
+function addPrepareStackTraceHook() {
+  (_singleton || _load_singleton()).default.get(PREPARE_STACK_TRACE_HOOKED_KEY, () => {
+    hookedPrepareStackTrace = createHookedPrepareStackTrace(Error.prepareStackTrace || defaultPrepareStackTrace);
 
-      // Hook Error.prepareStackTrace by leveraging get/set accessor. In this way, writing to
-      // Error.prepareStackTrace will put the new prepareStackTrace functions in a wrapper that
-      // calls the hook.
-      // $FlowIssue
-      Object.defineProperty(Error, 'prepareStackTrace', {
-        get() {
-          return hookedPrepareStackTrace;
-        },
-        set(newValue) {
-          hookedPrepareStackTrace = createHookedPrepareStackTrace(newValue
-            || defaultPrepareStackTrace);
-        },
-        enumerable: false,
-        configurable: true,
-      });
+    // Hook Error.prepareStackTrace by leveraging get/set accessor. In this way, writing to
+    // Error.prepareStackTrace will put the new prepareStackTrace functions in a wrapper that
+    // calls the hook.
+    // $FlowIssue
+    Object.defineProperty(Error, 'prepareStackTrace', {
+      get: function () {
+        return hookedPrepareStackTrace;
+      },
+      set: function (newValue) {
+        hookedPrepareStackTrace = createHookedPrepareStackTrace(newValue || defaultPrepareStackTrace);
+      },
 
-      // TODO (chenshen) t8789330.
-      // Atom added getRawStack to Error.prototype to get Error's structured stacktrace
-      // (https://github.com/atom/grim/blob/master/src/grim.coffee#L43). However, this
-      // doesn't work well with our customization of stacktrace. So here we temporarily
-      // walk around this by following hack, until https://github.com/atom/atom/issues/9641
-      // get addressed.
-      /* $FlowFixMe */ // eslint-disable-next-line no-extend-native
-      Error.prototype.getRawStack = null;
-      return true;
-    },
-  );
+      enumerable: false,
+      configurable: true
+    });
+
+    // TODO (chenshen) t8789330.
+    // Atom added getRawStack to Error.prototype to get Error's structured stacktrace
+    // (https://github.com/atom/grim/blob/master/src/grim.coffee#L43). However, this
+    // doesn't work well with our customization of stacktrace. So here we temporarily
+    // walk around this by following hack, until https://github.com/atom/atom/issues/9641
+    // get addressed.
+    /* $FlowFixMe */ // eslint-disable-next-line no-extend-native
+    Error.prototype.getRawStack = null;
+    return true;
+  });
 }
 
 /**
  * Create a wrapper that calls to structuredStackTraceHook first, then return the result of
  * prepareStackTrace.
  */
-function createHookedPrepareStackTrace(
-  prepareStackTrace: PrepareStackTraceFunction,
-): PrepareStackTraceFunction {
+function createHookedPrepareStackTrace(prepareStackTrace) {
   // If the prepareStackTrace is already been hooked, just return it.
   if (prepareStackTrace.name === 'nuclideHookedPrepareStackTrace') {
     return prepareStackTrace;
   }
 
-  const hookedFunction = function nuclideHookedPrepareStackTrace(
-    error: Error,
-    frames: Array<CallSite>,
-  ): any {
+  const hookedFunction = function nuclideHookedPrepareStackTrace(error, frames) {
     structuredStackTraceHook(error, frames);
     return prepareStackTrace(error, frames);
   };
@@ -88,7 +94,7 @@ function createHookedPrepareStackTrace(
   return hookedFunction;
 }
 
-function structuredStackTraceHook(error: Error, frames: Array<CallSite>): void {
+function structuredStackTraceHook(error, frames) {
   // $FlowFixMe
   error.stackTrace = frames.map(frame => {
     const scriptNameOrUrl = frame.getScriptNameOrSourceURL();
@@ -99,26 +105,26 @@ function structuredStackTraceHook(error: Error, frames: Array<CallSite>): void {
       fileName: frame.getFileName(),
       lineNumber: frame.getLineNumber(),
       columnNumber: frame.getColumnNumber(),
-      evalOrigin,
+      evalOrigin: evalOrigin,
       isTopLevel: frame.isToplevel(),
       isEval: frame.isEval(),
       isNative: frame.isNative(),
-      isConstructor: frame.isConstructor(),
+      isConstructor: frame.isConstructor()
     };
   });
 }
 
-function defaultPrepareStackTrace(error: Error, frames: Array<CallSite>): string {
-  let formattedStackTrace = error.message ? `${error.name}: ${error.message}` : `${error.name}`;
+function defaultPrepareStackTrace(error, frames) {
+  let formattedStackTrace = error.message ? `${ error.name }: ${ error.message }` : `${ error.name }`;
   frames.forEach(frame => {
-    formattedStackTrace += `\n    at ${maybeToString(frame.toString())}`;
+    formattedStackTrace += `\n    at ${ (0, (_string || _load_string()).maybeToString)(frame.toString()) }`;
   });
   return formattedStackTrace;
 }
 
-export const __test__ = {
-  createHookedPrepareStackTrace,
-  resetPrepareStackTraceHooked() {
-    singleton.clear(PREPARE_STACK_TRACE_HOOKED_KEY);
-  },
+const __test__ = exports.__test__ = {
+  createHookedPrepareStackTrace: createHookedPrepareStackTrace,
+  resetPrepareStackTraceHooked: function () {
+    (_singleton || _load_singleton()).default.clear(PREPARE_STACK_TRACE_HOOKED_KEY);
+  }
 };

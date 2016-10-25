@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,24 +9,15 @@
  * the root directory of this source tree.
  */
 
-import type {
-  RefactorState,
-  RefactorAction,
-  OpenAction,
-  PickedRefactorAction,
-  GotRefactoringsAction,
-  ExecuteAction,
-} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = refactorReducers;
 
-import invariant from 'assert';
-
-export default function refactorReducers(
-  state_: ?RefactorState,
-  action: RefactorAction,
-): RefactorState {
+function refactorReducers(state_, action) {
   let state = state_;
   if (state == null) {
-    state = {type: 'closed'};
+    state = { type: 'closed' };
   }
 
   if (action.error) {
@@ -51,20 +42,27 @@ export default function refactorReducers(
   }
 }
 
-function open(state: RefactorState, action: OpenAction): RefactorState {
-  invariant(state.type === 'closed');
+function open(state, action) {
+  if (!(state.type === 'closed')) {
+    throw new Error('Invariant violation: "state.type === \'closed\'"');
+  }
 
   return {
     type: 'open',
     phase: {
-      type: 'get-refactorings',
-    },
+      type: 'get-refactorings'
+    }
   };
 }
 
-function gotRefactorings(state: RefactorState, action: GotRefactoringsAction): RefactorState {
-  invariant(state.type === 'open');
-  invariant(state.phase.type === 'get-refactorings');
+function gotRefactorings(state, action) {
+  if (!(state.type === 'open')) {
+    throw new Error('Invariant violation: "state.type === \'open\'"');
+  }
+
+  if (!(state.phase.type === 'get-refactorings')) {
+    throw new Error('Invariant violation: "state.phase.type === \'get-refactorings\'"');
+  }
 
   const editor = action.payload.editor;
 
@@ -73,22 +71,30 @@ function gotRefactorings(state: RefactorState, action: GotRefactoringsAction): R
     phase: {
       type: 'pick',
       provider: action.payload.provider,
-      editor,
-      availableRefactorings: action.payload.availableRefactorings,
-    },
+      editor: editor,
+      availableRefactorings: action.payload.availableRefactorings
+    }
   };
 }
 
-function close(state: RefactorState): RefactorState {
-  invariant(state.type === 'open');
+function close(state) {
+  if (!(state.type === 'open')) {
+    throw new Error('Invariant violation: "state.type === \'open\'"');
+  }
+
   return {
-    type: 'closed',
+    type: 'closed'
   };
 }
 
-function pickedRefactor(state: RefactorState, action: PickedRefactorAction): RefactorState {
-  invariant(state.type === 'open');
-  invariant(state.phase.type === 'pick');
+function pickedRefactor(state, action) {
+  if (!(state.type === 'open')) {
+    throw new Error('Invariant violation: "state.type === \'open\'"');
+  }
+
+  if (!(state.phase.type === 'pick')) {
+    throw new Error('Invariant violation: "state.phase.type === \'pick\'"');
+  }
 
   const refactoring = action.payload.refactoring;
   const editor = state.phase.editor;
@@ -98,17 +104,21 @@ function pickedRefactor(state: RefactorState, action: PickedRefactorAction): Ref
       type: 'rename',
       provider: state.phase.provider,
       symbolAtPoint: refactoring.symbolAtPoint,
-      editor,
-    },
+      editor: editor
+    }
   };
 }
 
-function executeRefactor(state: RefactorState, action: ExecuteAction): RefactorState {
-  invariant(state.type === 'open');
+function executeRefactor(state, action) {
+  if (!(state.type === 'open')) {
+    throw new Error('Invariant violation: "state.type === \'open\'"');
+  }
+
   return {
     type: 'open',
     phase: {
-      type: 'execute',
-    },
+      type: 'execute'
+    }
   };
 }
+module.exports = exports['default'];

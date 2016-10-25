@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,12 +9,16 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {TextEdit} from './rpc-types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = applyTextEdits;
 
-import invariant from 'assert';
+var _textEditor;
 
-import {existingEditorForUri} from '../../commons-atom/text-editor';
+function _load_textEditor() {
+  return _textEditor = require('../../commons-atom/text-editor');
+}
 
 /**
  * Attempts to apply the given patches to the given file.
@@ -28,15 +32,23 @@ import {existingEditorForUri} from '../../commons-atom/text-editor';
  * Returns true if the application was successful, otherwise false (e.g. if the oldText did not
  * match).
  */
-export default function applyTextEdits(path: NuclideUri, ...edits: Array<TextEdit>): boolean {
-  const editor = existingEditorForUri(path);
-  invariant(editor != null);
+function applyTextEdits(path) {
+  const editor = (0, (_textEditor || _load_textEditor()).existingEditorForUri)(path);
+
+  if (!(editor != null)) {
+    throw new Error('Invariant violation: "editor != null"');
+  }
 
   const buffer = editor.getBuffer();
   const checkpoint = buffer.createCheckpoint();
 
   // Iterate through in reverse order. Edits earlier in the file can move around text later in the
   // file, so to avoid conflicts edits should be applied last first.
+
+  for (var _len = arguments.length, edits = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+    edits[_key - 1] = arguments[_key];
+  }
+
   for (let i = edits.length - 1; i >= 0; i--) {
     const edit = edits[i];
     const success = applyToBuffer(buffer, edit);
@@ -50,7 +62,7 @@ export default function applyTextEdits(path: NuclideUri, ...edits: Array<TextEdi
   return true;
 }
 
-function applyToBuffer(buffer: atom$TextBuffer, edit: TextEdit): boolean {
+function applyToBuffer(buffer, edit) {
   if (edit.oldRange.start.row === edit.oldRange.end.row) {
     // A little extra validation when the old range spans only one line. In particular, this helps
     // when the old range is empty so there is no old text for us to compare against. We can at
@@ -69,3 +81,4 @@ function applyToBuffer(buffer: atom$TextBuffer, edit: TextEdit): boolean {
   buffer.setTextInRange(edit.oldRange, edit.newText);
   return true;
 }
+module.exports = exports['default'];

@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,96 +9,145 @@
  * the root directory of this source tree.
  */
 
-import invariant from 'assert';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.MessageTranslator = undefined;
 
-import logger from './utils';
-import {DebuggerHandler} from './DebuggerHandler';
-import PageHandler from './PageHandler';
-import ConsoleHandler from './ConsoleHandler';
-import {RuntimeHandler} from './RuntimeHandler';
-import {ConnectionMultiplexer} from './ConnectionMultiplexer';
-import {ClientCallback} from './ClientCallback';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-import type Handler from './Handler';
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
+var _utils;
+
+function _load_utils() {
+  return _utils = _interopRequireDefault(require('./utils'));
+}
+
+var _DebuggerHandler;
+
+function _load_DebuggerHandler() {
+  return _DebuggerHandler = require('./DebuggerHandler');
+}
+
+var _PageHandler;
+
+function _load_PageHandler() {
+  return _PageHandler = _interopRequireDefault(require('./PageHandler'));
+}
+
+var _ConsoleHandler;
+
+function _load_ConsoleHandler() {
+  return _ConsoleHandler = _interopRequireDefault(require('./ConsoleHandler'));
+}
+
+var _RuntimeHandler;
+
+function _load_RuntimeHandler() {
+  return _RuntimeHandler = require('./RuntimeHandler');
+}
+
+var _ConnectionMultiplexer;
+
+function _load_ConnectionMultiplexer() {
+  return _ConnectionMultiplexer = require('./ConnectionMultiplexer');
+}
+
+var _ClientCallback;
+
+function _load_ClientCallback() {
+  return _ClientCallback = require('./ClientCallback');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Translates Chrome dev tools JSON messages to/from dbgp.
  * TODO: Should we proactively push files to the debugger?
  * Currently we reactively push files to the debuger when they appear in a stack trace.
  */
-export class MessageTranslator {
-  _isDisposed: boolean;
-  _connectionMultiplexer: ConnectionMultiplexer;
-  _clientCallback: ClientCallback;
-  _debuggerHandler: DebuggerHandler;
-  _handlers: Map<string, Handler>;
+let MessageTranslator = exports.MessageTranslator = class MessageTranslator {
 
-  constructor(clientCallback: ClientCallback) {
+  constructor(clientCallback) {
     this._isDisposed = false;
-    this._connectionMultiplexer = new ConnectionMultiplexer(clientCallback);
+    this._connectionMultiplexer = new (_ConnectionMultiplexer || _load_ConnectionMultiplexer()).ConnectionMultiplexer(clientCallback);
     this._handlers = new Map();
     this._clientCallback = clientCallback;
-    this._debuggerHandler = new DebuggerHandler(
-      clientCallback,
-      this._connectionMultiplexer,
-    );
+    this._debuggerHandler = new (_DebuggerHandler || _load_DebuggerHandler()).DebuggerHandler(clientCallback, this._connectionMultiplexer);
     this._addHandler(this._debuggerHandler);
-    this._addHandler(new PageHandler(clientCallback));
-    this._addHandler(new ConsoleHandler(clientCallback));
-    this._addHandler(new RuntimeHandler(
-      clientCallback,
-      this._connectionMultiplexer,
-    ));
+    this._addHandler(new (_PageHandler || _load_PageHandler()).default(clientCallback));
+    this._addHandler(new (_ConsoleHandler || _load_ConsoleHandler()).default(clientCallback));
+    this._addHandler(new (_RuntimeHandler || _load_RuntimeHandler()).RuntimeHandler(clientCallback, this._connectionMultiplexer));
   }
 
-  _addHandler(handler: Handler): void {
+  _addHandler(handler) {
     this._handlers.set(handler.getDomain(), handler);
   }
 
-  onSessionEnd(callback: () => void): void {
-    logger.log('onSessionEnd');
+  onSessionEnd(callback) {
+    (_utils || _load_utils()).default.log('onSessionEnd');
     this._debuggerHandler.onSessionEnd(callback);
   }
 
-  async handleCommand(command: string): Promise<void> {
-    logger.log('handleCommand: ' + command);
-    const {id, method, params} = JSON.parse(command);
+  handleCommand(command) {
+    var _this = this;
 
-    if (!method || typeof method !== 'string') {
-      this._replyWithError(id, 'Missing method: ' + command);
-      return;
-    }
-    const methodParts = method.split('.');
-    if (methodParts.length !== 2) {
-      this._replyWithError(id, 'Badly formatted method: ' + command);
-      return;
-    }
-    const [domain, methodName] = methodParts;
+    return (0, _asyncToGenerator.default)(function* () {
+      (_utils || _load_utils()).default.log('handleCommand: ' + command);
 
-    if (!this._handlers.has(domain)) {
-      this._replyWithError(id, 'Unknown domain: ' + command);
-      return;
-    }
+      var _JSON$parse = JSON.parse(command);
 
-    try {
-      const handler = this._handlers.get(domain);
-      invariant(handler != null);
-      await handler.handleMethod(id, methodName, params);
-    } catch (e) {
-      logger.logError(`Exception handling command ${id}: ${e} ${e.stack}`);
-      this._replyWithError(id, `Error handling command: ${e}\n ${e.stack}`);
-    }
+      const id = _JSON$parse.id;
+      const method = _JSON$parse.method;
+      const params = _JSON$parse.params;
+
+
+      if (!method || typeof method !== 'string') {
+        _this._replyWithError(id, 'Missing method: ' + command);
+        return;
+      }
+      const methodParts = method.split('.');
+      if (methodParts.length !== 2) {
+        _this._replyWithError(id, 'Badly formatted method: ' + command);
+        return;
+      }
+
+      var _methodParts = _slicedToArray(methodParts, 2);
+
+      const domain = _methodParts[0];
+      const methodName = _methodParts[1];
+
+
+      if (!_this._handlers.has(domain)) {
+        _this._replyWithError(id, 'Unknown domain: ' + command);
+        return;
+      }
+
+      try {
+        const handler = _this._handlers.get(domain);
+
+        if (!(handler != null)) {
+          throw new Error('Invariant violation: "handler != null"');
+        }
+
+        yield handler.handleMethod(id, methodName, params);
+      } catch (e) {
+        (_utils || _load_utils()).default.logError(`Exception handling command ${ id }: ${ e } ${ e.stack }`);
+        _this._replyWithError(id, `Error handling command: ${ e }\n ${ e.stack }`);
+      }
+    })();
   }
 
-  _replyWithError(id: number, error: string): void {
-    logger.log(error);
+  _replyWithError(id, error) {
+    (_utils || _load_utils()).default.log(error);
     this._clientCallback.replyWithError(id, error);
   }
 
-  dispose(): void {
+  dispose() {
     if (!this._isDisposed) {
       this._isDisposed = true;
       this._connectionMultiplexer.dispose();
     }
   }
-}
+};

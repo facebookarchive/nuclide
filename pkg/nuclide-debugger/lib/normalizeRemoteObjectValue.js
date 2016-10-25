@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,19 +9,26 @@
  * the root directory of this source tree.
  */
 
-import type {EvaluationResult} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import invariant from 'assert';
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-export function normalizeRemoteObjectValue(remoteObject: ?Object): ?EvaluationResult {
+exports.normalizeRemoteObjectValue = normalizeRemoteObjectValue;
+
+function normalizeRemoteObjectValue(remoteObject) {
   if (remoteObject == null) {
     return null;
   }
   const modifiedProperties = {};
   const normalizeUnderscores = field => {
-    invariant(remoteObject != null);
+    if (!(remoteObject != null)) {
+      throw new Error('Invariant violation: "remoteObject != null"');
+    }
+
     modifiedProperties[field] = remoteObject[field];
-    const underscoreField = `_${field}`;
+    const underscoreField = `_${ field }`;
     if (remoteObject.hasOwnProperty(underscoreField) && remoteObject[underscoreField] != null) {
       modifiedProperties[field] = String(remoteObject[underscoreField]);
     } else if (remoteObject.hasOwnProperty(field) && remoteObject[field] != null) {
@@ -29,8 +36,5 @@ export function normalizeRemoteObjectValue(remoteObject: ?Object): ?EvaluationRe
     }
   };
   ['type', 'description', 'objectId', 'value'].forEach(normalizeUnderscores);
-  return {
-    ...remoteObject,
-    ...modifiedProperties,
-  };
+  return _extends({}, remoteObject, modifiedProperties);
 }

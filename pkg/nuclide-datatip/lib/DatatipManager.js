@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,72 +9,72 @@
  * the root directory of this source tree.
  */
 
-import type {
-  Datatip,
-  DatatipProvider,
-} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DatatipManager = undefined;
 
-import {CompositeDisposable, Disposable} from 'atom';
-import {
-  React,
-  ReactDOM,
-} from 'react-for-atom';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-import debounce from '../../commons-node/debounce';
-import {arrayCompact, arrayRemove} from '../../commons-node/collection';
-import {track, trackOperationTiming} from '../../nuclide-analytics';
-import {getLogger} from '../../nuclide-logging';
+var _atom = require('atom');
 
-import {DatatipComponent, DATATIP_ACTIONS} from './DatatipComponent';
-import {PinnedDatatip} from './PinnedDatatip';
+var _reactForAtom = require('react-for-atom');
 
-import featureConfig from '../../commons-atom/featureConfig';
+var _debounce;
 
-const logger = getLogger();
+function _load_debounce() {
+  return _debounce = _interopRequireDefault(require('../../commons-node/debounce'));
+}
 
-export class DatatipManager {
-  _subscriptions: CompositeDisposable;
-  _debouncedMouseMove: (
-    event: MouseEvent,
-    editor: TextEditor,
-    editorView: atom$TextEditorElement,
-  ) => void;
-  _boundHideDatatip: Function;
-  _globalKeydownSubscription: ?IDisposable;
-  _marker: ?atom$Marker;
-  _ephemeralDatatipElement: HTMLElement;
-  _currentRange: ?atom$Range;
-  _isHoveringDatatip: boolean;
-  _datatipProviders: Array<DatatipProvider>;
-  _pinnedDatatips: Set<PinnedDatatip>;
+var _collection;
 
-  /**
-   * This helps determine if we should show the datatip when toggling it via
-   * command. The toggle command first negates this, and then if this is true
-   * shows a datatip, otherwise it hides the current datatip.
-   */
-  _datatipToggle: boolean;
+function _load_collection() {
+  return _collection = require('../../commons-node/collection');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _nuclideLogging;
+
+function _load_nuclideLogging() {
+  return _nuclideLogging = require('../../nuclide-logging');
+}
+
+var _DatatipComponent;
+
+function _load_DatatipComponent() {
+  return _DatatipComponent = require('./DatatipComponent');
+}
+
+var _PinnedDatatip;
+
+function _load_PinnedDatatip() {
+  return _PinnedDatatip = require('./PinnedDatatip');
+}
+
+var _featureConfig;
+
+function _load_featureConfig() {
+  return _featureConfig = _interopRequireDefault(require('../../commons-atom/featureConfig'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const logger = (0, (_nuclideLogging || _load_nuclideLogging()).getLogger)();
+
+let DatatipManager = exports.DatatipManager = class DatatipManager {
 
   constructor() {
     this._boundHideDatatip = this.hideDatatip.bind(this);
-    this._subscriptions = new CompositeDisposable();
-    this._subscriptions.add(atom.commands.add(
-      'atom-text-editor',
-      'nuclide-datatip:toggle',
-      this.toggleDatatip.bind(this),
-    ));
-    this._subscriptions.add(atom.commands.add(
-      'atom-text-editor',
-      'core:cancel',
-      this._boundHideDatatip,
-    ));
+    this._subscriptions = new _atom.CompositeDisposable();
+    this._subscriptions.add(atom.commands.add('atom-text-editor', 'nuclide-datatip:toggle', this.toggleDatatip.bind(this)));
+    this._subscriptions.add(atom.commands.add('atom-text-editor', 'core:cancel', this._boundHideDatatip));
     this._debouncedMouseMove = () => {};
-    this._subscriptions.add(
-      featureConfig.observe(
-        'nuclide-datatip.datatipDebounceDelay',
-        debounceDelay => this.updateDebounceDelay(debounceDelay),
-      ),
-    );
+    this._subscriptions.add((_featureConfig || _load_featureConfig()).default.observe('nuclide-datatip.datatipDebounceDelay', debounceDelay => this.updateDebounceDelay(debounceDelay)));
     // TODO(most): Replace with @jjiaa's mouseListenerForTextEditor introduced in D2005545.
     this._subscriptions.add(atom.workspace.observeTextEditors(editor => {
       // When the cursor moves the next time we do a toggle we should show the
@@ -84,12 +84,11 @@ export class DatatipManager {
       }));
 
       const editorView = atom.views.getView(editor);
-      const mouseMoveListener = (event: Event) => {
+      const mouseMoveListener = event => {
         this.handleMouseMove(event, editor, editorView);
       };
       editorView.addEventListener('mousemove', mouseMoveListener);
-      const mouseListenerSubscription = new Disposable(() =>
-          editorView.removeEventListener('mousemove', mouseMoveListener));
+      const mouseListenerSubscription = new _atom.Disposable(() => editorView.removeEventListener('mousemove', mouseMoveListener));
       const destroySubscription = editor.onDidDestroy(() => {
         mouseListenerSubscription.dispose();
         this._subscriptions.remove(mouseListenerSubscription);
@@ -101,8 +100,8 @@ export class DatatipManager {
     this._ephemeralDatatipElement = document.createElement('div');
     this._ephemeralDatatipElement.className = 'nuclide-datatip-overlay';
 
-    const datatipMouseEnter = (event: Event) => this._handleElementMouseEnter(event);
-    const datatipMouseLeave = debounce(event => this._handleElementMouseLeave(event), 100);
+    const datatipMouseEnter = event => this._handleElementMouseEnter(event);
+    const datatipMouseLeave = (0, (_debounce || _load_debounce()).default)(event => this._handleElementMouseLeave(event), 100);
     this._ephemeralDatatipElement.addEventListener('mouseenter', datatipMouseEnter);
     this._ephemeralDatatipElement.addEventListener('mouseleave', datatipMouseLeave);
 
@@ -115,22 +114,26 @@ export class DatatipManager {
     this._globalKeydownSubscription = null;
   }
 
-  updateDebounceDelay(debounceDelay: number): void {
-    this._debouncedMouseMove = debounce(
-      (event, editor, editorView) => {
-        this._datatipForMouseEvent(event, editor, editorView);
-      },
-      debounceDelay,
-      /* immediate */ false,
-    );
+  /**
+   * This helps determine if we should show the datatip when toggling it via
+   * command. The toggle command first negates this, and then if this is true
+   * shows a datatip, otherwise it hides the current datatip.
+   */
+
+
+  updateDebounceDelay(debounceDelay) {
+    this._debouncedMouseMove = (0, (_debounce || _load_debounce()).default)((event, editor, editorView) => {
+      this._datatipForMouseEvent(event, editor, editorView);
+    }, debounceDelay,
+    /* immediate */false);
   }
 
-  handleMouseMove(event: Event, editor: TextEditor, editorView: atom$TextEditorElement): void {
-    const mouseEvent: MouseEvent = (event: any);
+  handleMouseMove(event, editor, editorView) {
+    const mouseEvent = event;
     this._debouncedMouseMove(mouseEvent, editor, editorView);
   }
 
-  toggleDatatip(): void {
+  toggleDatatip() {
     this._datatipToggle = !this._datatipToggle;
     if (this._datatipToggle) {
       const editor = atom.workspace.getActiveTextEditor();
@@ -143,7 +146,7 @@ export class DatatipManager {
     }
   }
 
-  hideDatatip(): void {
+  hideDatatip() {
     if (this._marker == null) {
       return;
     }
@@ -158,19 +161,15 @@ export class DatatipManager {
     this._isHoveringDatatip = false;
   }
 
-  _handleElementMouseEnter(event: Event): void {
+  _handleElementMouseEnter(event) {
     this._isHoveringDatatip = true;
   }
 
-  _handleElementMouseLeave(event: Event): void {
+  _handleElementMouseLeave(event) {
     this._isHoveringDatatip = false;
   }
 
-  _datatipForMouseEvent(
-    e: MouseEvent,
-    editor: TextEditor,
-    editorView: atom$TextEditorElement,
-  ): void {
+  _datatipForMouseEvent(e, editor, editorView) {
     if (!editorView.component || this._isHoveringDatatip) {
       // The editor was destroyed, but the destroy handler haven't yet been called to cancel
       // the timer.
@@ -179,8 +178,7 @@ export class DatatipManager {
     const textEditorComponent = editorView.component;
     const screenPosition = textEditorComponent.screenPositionForMouseEvent(e);
     const pixelPosition = textEditorComponent.pixelPositionForMouseEvent(e);
-    const pixelPositionFromScreenPosition =
-      textEditorComponent.pixelPositionForScreenPosition(screenPosition);
+    const pixelPositionFromScreenPosition = textEditorComponent.pixelPositionForScreenPosition(screenPosition);
     // Distance (in pixels) between screenPosition and the cursor.
     const horizontalDistance = pixelPosition.left - pixelPositionFromScreenPosition.left;
     // `screenPositionForMouseEvent.column` cannot exceed the current line length.
@@ -193,187 +191,184 @@ export class DatatipManager {
     this._datatipInEditor(editor, bufferPosition);
   }
 
-  async _datatipInEditor(editor: TextEditor, position: atom$Point): Promise<any> {
-    if (this._currentRange != null && this._currentRange.containsPoint(position)) {
-      return;
-    }
+  _datatipInEditor(editor, position) {
+    var _this = this;
 
-    if (this._marker != null) {
-      this.hideDatatip();
-    }
+    return (0, _asyncToGenerator.default)(function* () {
+      if (_this._currentRange != null && _this._currentRange.containsPoint(position)) {
+        return;
+      }
 
-    if (editor.isDestroyed()) {
-      return;
-    }
+      if (_this._marker != null) {
+        _this.hideDatatip();
+      }
 
-    const {scopeName} = editor.getGrammar();
-    const providers = this._getMatchingProvidersForScopeName(scopeName);
-    if (providers.length === 0) {
-      return;
-    }
-    const datatips = arrayCompact(await Promise.all(
-      providers.map(async (provider: DatatipProvider): Promise<?Object> => {
-        let name;
-        if (provider.providerName != null) {
-          name = provider.providerName;
-        } else {
-          name = 'unknown';
-          logger.error('Datatip provider has no name', provider);
-        }
-        const datatip = await trackOperationTiming(
-          name + '.datatip',
-          () => provider.datatip(editor, position),
-        );
-        if (!datatip || this._marker) {
-          return;
-        }
-        const {pinnable, component, range} = datatip;
-        // We track the timing above, but we still want to know the number of popups that are shown.
-        track('datatip-popup', {
-          scope: scopeName,
-          providerName: name,
-          rangeStartRow: String(range.start.row),
-          rangeStartColumn: String(range.start.column),
-          rangeEndRow: String(range.end.row),
-          rangeEndColumn: String(range.end.column),
+      if (editor.isDestroyed()) {
+        return;
+      }
+
+      var _editor$getGrammar = editor.getGrammar();
+
+      const scopeName = _editor$getGrammar.scopeName;
+
+      const providers = _this._getMatchingProvidersForScopeName(scopeName);
+      if (providers.length === 0) {
+        return;
+      }
+      const datatips = (0, (_collection || _load_collection()).arrayCompact)((yield Promise.all(providers.map((() => {
+        var _ref = (0, _asyncToGenerator.default)(function* (provider) {
+          let name;
+          if (provider.providerName != null) {
+            name = provider.providerName;
+          } else {
+            name = 'unknown';
+            logger.error('Datatip provider has no name', provider);
+          }
+          const datatip = yield (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackOperationTiming)(name + '.datatip', function () {
+            return provider.datatip(editor, position);
+          });
+          if (!datatip || _this._marker) {
+            return;
+          }
+          const pinnable = datatip.pinnable;
+          const component = datatip.component;
+          const range = datatip.range;
+          // We track the timing above, but we still want to know the number of popups that are shown.
+
+          (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('datatip-popup', {
+            scope: scopeName,
+            providerName: name,
+            rangeStartRow: String(range.start.row),
+            rangeStartColumn: String(range.start.column),
+            rangeEndRow: String(range.end.row),
+            rangeEndColumn: String(range.end.column)
+          });
+          _this._currentRange = range;
+          let action;
+          let actionTitle;
+          // Datatips are pinnable by default, unless explicitly specified otherwise.
+          if (pinnable !== false) {
+            action = (_DatatipComponent || _load_DatatipComponent()).DATATIP_ACTIONS.PIN;
+            actionTitle = 'Pin this Datatip';
+          }
+
+          return {
+            range: range,
+            component: component,
+            pinnable: pinnable,
+            name: name,
+            action: action,
+            actionTitle: actionTitle
+          };
         });
-        this._currentRange = range;
-        let action;
-        let actionTitle;
-        // Datatips are pinnable by default, unless explicitly specified otherwise.
-        if (pinnable !== false) {
-          action = DATATIP_ACTIONS.PIN;
-          actionTitle = 'Pin this Datatip';
-        }
 
-        return {
-          range,
-          component,
-          pinnable,
-          name,
-          action,
-          actionTitle,
+        return function (_x) {
+          return _ref.apply(this, arguments);
         };
-      }),
-    ));
-    if (datatips.length === 0) {
-      return;
-    }
-    const renderedProviders = datatips.map(datatip => {
-      const {
-        component: ProvidedComponent,
-        name,
-        action,
-        actionTitle,
-      } = datatip;
-      return (
-        <DatatipComponent
-          action={action}
-          actionTitle={actionTitle}
-          onActionClick={this._handlePinClicked.bind(this, editor, datatip)}
-          key={name}>
-          <ProvidedComponent />
-        </DatatipComponent>
-      );
-    });
+      })()))));
+      if (datatips.length === 0) {
+        return;
+      }
+      const renderedProviders = datatips.map(function (datatip) {
+        const ProvidedComponent = datatip.component;
+        const name = datatip.name;
+        const action = datatip.action;
+        const actionTitle = datatip.actionTitle;
 
-    let combinedRange = datatips[0].range;
-    for (let i = 1; i < datatips.length; i++) {
-      combinedRange = combinedRange.union(datatips[i].range);
-    }
+        return _reactForAtom.React.createElement(
+          (_DatatipComponent || _load_DatatipComponent()).DatatipComponent,
+          {
+            action: action,
+            actionTitle: actionTitle,
+            onActionClick: _this._handlePinClicked.bind(_this, editor, datatip),
+            key: name },
+          _reactForAtom.React.createElement(ProvidedComponent, null)
+        );
+      });
 
-    // Transform the matched element range to the hint range.
-    const marker: atom$Marker = editor.markBufferRange(combinedRange, {invalidate: 'never'});
-    this._marker = marker;
+      let combinedRange = datatips[0].range;
+      for (let i = 1; i < datatips.length; i++) {
+        combinedRange = combinedRange.union(datatips[i].range);
+      }
 
-    ReactDOM.render(
-      <div>{renderedProviders}</div>,
-      this._ephemeralDatatipElement,
-    );
-    this._ephemeralDatatipElement.style.display = 'block';
+      // Transform the matched element range to the hint range.
+      const marker = editor.markBufferRange(combinedRange, { invalidate: 'never' });
+      _this._marker = marker;
 
-    editor.decorateMarker(
-      marker,
-      {
+      _reactForAtom.ReactDOM.render(_reactForAtom.React.createElement(
+        'div',
+        null,
+        renderedProviders
+      ), _this._ephemeralDatatipElement);
+      _this._ephemeralDatatipElement.style.display = 'block';
+
+      editor.decorateMarker(marker, {
         type: 'overlay',
         position: 'tail',
-        item: this._ephemeralDatatipElement,
-      },
-    );
-    editor.decorateMarker(
-      marker,
-      {
+        item: _this._ephemeralDatatipElement
+      });
+      editor.decorateMarker(marker, {
         type: 'highlight',
-        class: 'nuclide-datatip-highlight-region',
-      },
-    );
-    this._subscribeToGlobalKeydown();
+        class: 'nuclide-datatip-highlight-region'
+      });
+      _this._subscribeToGlobalKeydown();
+    })();
   }
 
-  _subscribeToGlobalKeydown(): void {
+  _subscribeToGlobalKeydown() {
     const editor = atom.views.getView(atom.workspace);
     editor.addEventListener('keydown', this._boundHideDatatip);
-    this._globalKeydownSubscription = new Disposable(() => {
+    this._globalKeydownSubscription = new _atom.Disposable(() => {
       editor.removeEventListener('keydown', this._boundHideDatatip);
     });
   }
 
-  _handlePinClicked(editor: TextEditor, datatip: Datatip): void {
+  _handlePinClicked(editor, datatip) {
     this.hideDatatip();
-    this._pinnedDatatips.add(new PinnedDatatip(datatip, editor, pinnedDatatip => {
+    this._pinnedDatatips.add(new (_PinnedDatatip || _load_PinnedDatatip()).PinnedDatatip(datatip, editor, pinnedDatatip => {
       this._pinnedDatatips.delete(pinnedDatatip);
     }));
   }
 
-  _getMatchingProvidersForScopeName(scopeName: string): Array<DatatipProvider> {
-    return this._datatipProviders.filter((provider: DatatipProvider) => {
+  _getMatchingProvidersForScopeName(scopeName) {
+    return this._datatipProviders.filter(provider => {
       return provider.inclusionPriority > 0 && provider.validForScope(scopeName);
-    }).sort((providerA: DatatipProvider, providerB: DatatipProvider) => {
+    }).sort((providerA, providerB) => {
       return providerA.inclusionPriority - providerB.inclusionPriority;
     });
   }
 
-  addProvider(provider: DatatipProvider) {
+  addProvider(provider) {
     this._datatipProviders.push(provider);
   }
 
-  removeProvider(provider: DatatipProvider): void {
-    arrayRemove(this._datatipProviders, provider);
+  removeProvider(provider) {
+    (0, (_collection || _load_collection()).arrayRemove)(this._datatipProviders, provider);
   }
 
-  createDatatip(component: ReactClass<any>, range: atom$Range, pinnable?: boolean): Datatip {
+  createDatatip(component, range, pinnable) {
     return {
-      component,
-      range,
-      pinnable,
+      component: component,
+      range: range,
+      pinnable: pinnable
     };
   }
 
-  createPinnedDataTip(
-    component: ReactClass<any>,
-    range: atom$Range,
-    pinnable?: boolean,
-    editor: TextEditor,
-    onDispose: (pinnedDatatip: PinnedDatatip) => void,
-    ): PinnedDatatip {
-    const datatip = new PinnedDatatip(
-      this.createDatatip(component, range, pinnable),
-      editor,
-      onDispose,
-    );
+  createPinnedDataTip(component, range, pinnable, editor, onDispose) {
+    const datatip = new (_PinnedDatatip || _load_PinnedDatatip()).PinnedDatatip(this.createDatatip(component, range, pinnable), editor, onDispose);
     this._pinnedDatatips.add(datatip);
     return datatip;
   }
 
-  deletePinnedDatatip(datatip: PinnedDatatip) {
+  deletePinnedDatatip(datatip) {
     this._pinnedDatatips.delete(datatip);
   }
 
   dispose() {
     this.hideDatatip();
-    ReactDOM.unmountComponentAtNode(this._ephemeralDatatipElement);
+    _reactForAtom.ReactDOM.unmountComponentAtNode(this._ephemeralDatatipElement);
     this._ephemeralDatatipElement.remove();
     this._pinnedDatatips.forEach(pinnedDatatip => pinnedDatatip.dispose());
     this._subscriptions.dispose();
   }
-}
+};

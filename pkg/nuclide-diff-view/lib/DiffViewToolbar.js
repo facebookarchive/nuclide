@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,111 +9,133 @@
  * the root directory of this source tree.
  */
 
-import type {DiffModeType, DiffSection, DiffSectionStatusType} from './types';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = undefined;
 
-import {Button} from '../../nuclide-ui/Button';
-import {ButtonGroup} from '../../nuclide-ui/ButtonGroup';
-import {CompositeDisposable} from 'atom';
-import {React} from 'react-for-atom';
-import {Toolbar} from '../../nuclide-ui/Toolbar';
-import {ToolbarCenter} from '../../nuclide-ui/ToolbarCenter';
-import {ToolbarLeft} from '../../nuclide-ui/ToolbarLeft';
-import {ToolbarRight} from '../../nuclide-ui/ToolbarRight';
+var _Button;
 
-type Props = {
-  diffSections: Array<DiffSection>,
-  filePath: NuclideUri,
-  selectedDiffSectionIndex: number,
-  newRevisionTitle: ?string,
-  oldRevisionTitle: ?string,
-  onSwitchToEditor: () => mixed,
-  onSwitchMode: (mode: DiffModeType) => mixed,
-  onNavigateToDiffSection: (diffSectionStatus: DiffSectionStatusType, lineNumber: number) => any,
-};
+function _load_Button() {
+  return _Button = require('../../nuclide-ui/Button');
+}
 
-export default class DiffViewToolbar extends React.Component {
-  props: Props;
-  _subscriptions: CompositeDisposable;
+var _ButtonGroup;
 
-  constructor(props: Props) {
+function _load_ButtonGroup() {
+  return _ButtonGroup = require('../../nuclide-ui/ButtonGroup');
+}
+
+var _atom = require('atom');
+
+var _reactForAtom = require('react-for-atom');
+
+var _Toolbar;
+
+function _load_Toolbar() {
+  return _Toolbar = require('../../nuclide-ui/Toolbar');
+}
+
+var _ToolbarCenter;
+
+function _load_ToolbarCenter() {
+  return _ToolbarCenter = require('../../nuclide-ui/ToolbarCenter');
+}
+
+var _ToolbarLeft;
+
+function _load_ToolbarLeft() {
+  return _ToolbarLeft = require('../../nuclide-ui/ToolbarLeft');
+}
+
+var _ToolbarRight;
+
+function _load_ToolbarRight() {
+  return _ToolbarRight = require('../../nuclide-ui/ToolbarRight');
+}
+
+let DiffViewToolbar = class DiffViewToolbar extends _reactForAtom.React.Component {
+
+  constructor(props) {
     super(props);
-    (this: any)._onClickNavigateDown = this._onClickNavigateDown.bind(this);
-    (this: any)._onClickNavigateUp = this._onClickNavigateUp.bind(this);
+    this._onClickNavigateDown = this._onClickNavigateDown.bind(this);
+    this._onClickNavigateUp = this._onClickNavigateUp.bind(this);
 
-    this._subscriptions = new CompositeDisposable(
-      atom.commands.add(
-        '.nuclide-diff-editor-container',
-        'nuclide-diff-view:next-diff-section',
-        this._onClickNavigateDown,
-      ),
-      atom.commands.add(
-        '.nuclide-diff-editor-container',
-        'nuclide-diff-view:previous-diff-section',
-        this._onClickNavigateUp,
-      ),
-    );
+    this._subscriptions = new _atom.CompositeDisposable(atom.commands.add('.nuclide-diff-editor-container', 'nuclide-diff-view:next-diff-section', this._onClickNavigateDown), atom.commands.add('.nuclide-diff-editor-container', 'nuclide-diff-view:previous-diff-section', this._onClickNavigateUp));
   }
 
-  render(): React.Element<any> {
-    const {filePath} = this.props;
+  render() {
+    const filePath = this.props.filePath;
+
     const hasActiveFile = filePath != null && filePath.length > 0;
     const hasDiffsUp = this._getPreviousDiffSection() != null;
     const hasDiffsDown = this._getNextDiffSection() != null;
-    return (
-      <Toolbar location="top">
-        <ToolbarLeft />
-        <ToolbarCenter>
-          {this.props.oldRevisionTitle == null ? '?' : this.props.oldRevisionTitle}
-          {'...'}
-          {this.props.newRevisionTitle == null ? '?' : this.props.newRevisionTitle}
-        </ToolbarCenter>
-        <ToolbarRight>
-          <ButtonGroup className="padded" size="SMALL">
-            <Button
-              disabled={!hasActiveFile || !hasDiffsDown}
-              icon="arrow-down"
-              onClick={this._onClickNavigateDown}
-              title="Jump to next section"
-            />
-            <Button
-              disabled={!hasActiveFile || !hasDiffsUp}
-              icon="arrow-up"
-              onClick={this._onClickNavigateUp}
-              title="Jump to previous section"
-            />
-          </ButtonGroup>
-
-          <ButtonGroup size="SMALL">
-            <Button
-              className="nuclide-diff-view-goto-editor-button"
-              disabled={!hasActiveFile}
-              onClick={this.props.onSwitchToEditor}>
-              Goto Editor
-            </Button>
-          </ButtonGroup>
-        </ToolbarRight>
-      </Toolbar>
+    return _reactForAtom.React.createElement(
+      (_Toolbar || _load_Toolbar()).Toolbar,
+      { location: 'top' },
+      _reactForAtom.React.createElement((_ToolbarLeft || _load_ToolbarLeft()).ToolbarLeft, null),
+      _reactForAtom.React.createElement(
+        (_ToolbarCenter || _load_ToolbarCenter()).ToolbarCenter,
+        null,
+        this.props.oldRevisionTitle == null ? '?' : this.props.oldRevisionTitle,
+        '...',
+        this.props.newRevisionTitle == null ? '?' : this.props.newRevisionTitle
+      ),
+      _reactForAtom.React.createElement(
+        (_ToolbarRight || _load_ToolbarRight()).ToolbarRight,
+        null,
+        _reactForAtom.React.createElement(
+          (_ButtonGroup || _load_ButtonGroup()).ButtonGroup,
+          { className: 'padded', size: 'SMALL' },
+          _reactForAtom.React.createElement((_Button || _load_Button()).Button, {
+            disabled: !hasActiveFile || !hasDiffsDown,
+            icon: 'arrow-down',
+            onClick: this._onClickNavigateDown,
+            title: 'Jump to next section'
+          }),
+          _reactForAtom.React.createElement((_Button || _load_Button()).Button, {
+            disabled: !hasActiveFile || !hasDiffsUp,
+            icon: 'arrow-up',
+            onClick: this._onClickNavigateUp,
+            title: 'Jump to previous section'
+          })
+        ),
+        _reactForAtom.React.createElement(
+          (_ButtonGroup || _load_ButtonGroup()).ButtonGroup,
+          { size: 'SMALL' },
+          _reactForAtom.React.createElement(
+            (_Button || _load_Button()).Button,
+            {
+              className: 'nuclide-diff-view-goto-editor-button',
+              disabled: !hasActiveFile,
+              onClick: this.props.onSwitchToEditor },
+            'Goto Editor'
+          )
+        )
+      )
     );
   }
 
-  _onClickNavigateUp(): void {
+  _onClickNavigateUp() {
     this._navigateToSection(this._getPreviousDiffSection());
   }
 
-  _onClickNavigateDown(): void {
+  _onClickNavigateDown() {
     this._navigateToSection(this._getNextDiffSection());
   }
 
-  _navigateToSection(diffSection: ?DiffSection): void {
+  _navigateToSection(diffSection) {
     if (diffSection == null) {
       return;
     }
     this.props.onNavigateToDiffSection(diffSection.status, diffSection.lineNumber);
   }
 
-  _getPreviousDiffSection(): ?DiffSection {
-    const {diffSections, selectedDiffSectionIndex} = this.props;
+  _getPreviousDiffSection() {
+    var _props = this.props;
+    const diffSections = _props.diffSections;
+    const selectedDiffSectionIndex = _props.selectedDiffSectionIndex;
+
     const previousSectionIndex = selectedDiffSectionIndex - 1;
     if (previousSectionIndex < 0) {
       return null;
@@ -121,12 +143,17 @@ export default class DiffViewToolbar extends React.Component {
     return diffSections[previousSectionIndex];
   }
 
-  _getNextDiffSection(): ?DiffSection {
-    const {diffSections, selectedDiffSectionIndex} = this.props;
+  _getNextDiffSection() {
+    var _props2 = this.props;
+    const diffSections = _props2.diffSections;
+    const selectedDiffSectionIndex = _props2.selectedDiffSectionIndex;
+
     const nextSectionIndex = selectedDiffSectionIndex + 1;
     if (nextSectionIndex >= diffSections.length) {
       return null;
     }
     return diffSections[nextSectionIndex];
   }
-}
+};
+exports.default = DiffViewToolbar;
+module.exports = exports['default'];

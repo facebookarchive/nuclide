@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,38 +9,36 @@
  * the root directory of this source tree.
  */
 
-import type {LanguageService} from './LanguageService';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.AutocompleteProvider = undefined;
 
-import {ConnectionCache} from '../../nuclide-remote-connection';
-import {trackOperationTiming} from '../../nuclide-analytics';
-import {getFileVersionOfEditor} from '../../nuclide-open-files';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-export type AutocompleteConfig = {
-  inclusionPriority: number,
-  suggestionPriority: number,
-  excludeLowerPriority: boolean,
-  version: string,
-  analyticsEventName: string,
-};
+var _nuclideRemoteConnection;
 
-export class AutocompleteProvider<T: LanguageService> {
-  name: string;
-  selector: string;
-  inclusionPriority: number;
-  suggestionPriority: number;
-  excludeLowerPriority: boolean;
-  _analyticsEventName: string;
-  _connectionToLanguageService: ConnectionCache<T>;
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
 
-  constructor(
-    name: string,
-    selector: string,
-    inclusionPriority: number,
-    suggestionPriority: number,
-    excludeLowerPriority: boolean,
-    analyticsEventName: string,
-    connectionToLanguageService: ConnectionCache<T>,
-  ) {
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _nuclideOpenFiles;
+
+function _load_nuclideOpenFiles() {
+  return _nuclideOpenFiles = require('../../nuclide-open-files');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let AutocompleteProvider = exports.AutocompleteProvider = class AutocompleteProvider {
+
+  constructor(name, selector, inclusionPriority, suggestionPriority, excludeLowerPriority, analyticsEventName, connectionToLanguageService) {
     this.name = name;
     this.selector = selector;
     this.inclusionPriority = inclusionPriority;
@@ -50,42 +48,25 @@ export class AutocompleteProvider<T: LanguageService> {
     this._connectionToLanguageService = connectionToLanguageService;
   }
 
-  static register(
-    name: string,
-    grammars: Array<string>,
-    config: AutocompleteConfig,
-    connectionToLanguageService: ConnectionCache<T>,
-  ): IDisposable {
-    return atom.packages.serviceHub.provide(
-      'autocomplete.provider',
-      config.version,
-      new AutocompleteProvider(
-        name,
-        grammars.map(grammar => '.' + grammar).join(', '),
-        config.inclusionPriority,
-        config.suggestionPriority,
-        config.excludeLowerPriority,
-        config.analyticsEventName,
-        connectionToLanguageService,
-      ));
+  static register(name, grammars, config, connectionToLanguageService) {
+    return atom.packages.serviceHub.provide('autocomplete.provider', config.version, new AutocompleteProvider(name, grammars.map(grammar => '.' + grammar).join(', '), config.inclusionPriority, config.suggestionPriority, config.excludeLowerPriority, config.analyticsEventName, connectionToLanguageService));
   }
 
-  getSuggestions(
-    request: atom$AutocompleteRequest,
-  ): Promise<?Array<atom$AutocompleteSuggestion>> {
-    return trackOperationTiming(
-      this._analyticsEventName,
-      async () => {
-        const {editor, activatedManually} = request;
-        const fileVersion = await getFileVersionOfEditor(editor);
-        const languageService = this._connectionToLanguageService.getForUri(editor.getPath());
-        if (languageService == null || fileVersion == null) {
-          return [];
-        }
-        const position = editor.getLastCursor().getBufferPosition();
+  getSuggestions(request) {
+    var _this = this;
 
-        return await (await languageService).getAutocompleteSuggestions(
-          fileVersion, position, activatedManually == null ? false : activatedManually);
-      });
+    return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackOperationTiming)(this._analyticsEventName, (0, _asyncToGenerator.default)(function* () {
+      const editor = request.editor;
+      const activatedManually = request.activatedManually;
+
+      const fileVersion = yield (0, (_nuclideOpenFiles || _load_nuclideOpenFiles()).getFileVersionOfEditor)(editor);
+      const languageService = _this._connectionToLanguageService.getForUri(editor.getPath());
+      if (languageService == null || fileVersion == null) {
+        return [];
+      }
+      const position = editor.getLastCursor().getBufferPosition();
+
+      return yield (yield languageService).getAutocompleteSuggestions(fileVersion, position, activatedManually == null ? false : activatedManually);
+    }));
   }
-}
+};

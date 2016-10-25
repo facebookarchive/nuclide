@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,30 +9,54 @@
  * the root directory of this source tree.
  */
 
-import type {ActionsObservable} from '../../commons-node/redux-observable';
-import type {Action, Store} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.sendHttpRequest = sendHttpRequest;
 
-import * as Actions from './Actions';
-import {Observable} from 'rxjs';
-import invariant from 'assert';
-import xfetch from '../../commons-node/xfetch';
-import {track} from '../../nuclide-analytics';
+var _Actions;
 
-export function sendHttpRequest(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions.ofType(Actions.SEND_REQUEST)
-    .do(action => {
-      invariant(action.type === Actions.SEND_REQUEST);
-      const credentials = 'include'; // We always want to send cookies.
-      const {uri, method, headers, body} = store.getState();
-      const options = method === 'POST'
-        ? {method, credentials, headers, body}
-        : {method, credentials, headers};
-      track('nuclide-http-request-sender:http-request', {uri, options});
-      xfetch(uri, options);
-    })
-    // This epic is just for side-effects.
-    .ignoreElements();
+function _load_Actions() {
+  return _Actions = _interopRequireWildcard(require('./Actions'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _xfetch;
+
+function _load_xfetch() {
+  return _xfetch = _interopRequireDefault(require('../../commons-node/xfetch'));
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function sendHttpRequest(actions, store) {
+  return actions.ofType((_Actions || _load_Actions()).SEND_REQUEST).do(action => {
+    if (!(action.type === (_Actions || _load_Actions()).SEND_REQUEST)) {
+      throw new Error('Invariant violation: "action.type === Actions.SEND_REQUEST"');
+    }
+
+    const credentials = 'include'; // We always want to send cookies.
+
+    var _store$getState = store.getState();
+
+    const uri = _store$getState.uri;
+    const method = _store$getState.method;
+    const headers = _store$getState.headers;
+    const body = _store$getState.body;
+
+    const options = method === 'POST' ? { method: method, credentials: credentials, headers: headers, body: body } : { method: method, credentials: credentials, headers: headers };
+    (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('nuclide-http-request-sender:http-request', { uri: uri, options: options });
+    (0, (_xfetch || _load_xfetch()).default)(uri, options);
+  })
+  // This epic is just for side-effects.
+  .ignoreElements();
 }

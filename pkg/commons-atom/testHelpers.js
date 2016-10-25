@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,8 +9,23 @@
  * the root directory of this source tree.
  */
 
-import invariant from 'assert';
-import nuclideUri from '../commons-node/nuclideUri';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.rangeMatchers = undefined;
+exports.dispatchKeyboardEvent = dispatchKeyboardEvent;
+exports.setLocalProject = setLocalProject;
+exports.waitsForFile = waitsForFile;
+exports.waitsForFilePosition = waitsForFilePosition;
+exports.getMountedReactRootNames = getMountedReactRootNames;
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../commons-node/nuclideUri'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Use this function to simulate keyboard shortcuts or special keys, e.g. cmd-v,
@@ -23,18 +38,19 @@ import nuclideUri from '../commons-node/nuclideUri';
  * @param metaKeys An object denoting which meta keys are pressed for this
  * keyboard event.
  */
-export function dispatchKeyboardEvent(
-  key: string,
-  target: HTMLElement,
-  metaKeys: {alt?: boolean, cmd?: boolean, ctrl?: boolean, shift?: boolean} = {},
-): void {
-  const {alt, cmd, ctrl, shift} = metaKeys;
+function dispatchKeyboardEvent(key, target) {
+  let metaKeys = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+  const alt = metaKeys.alt;
+  const cmd = metaKeys.cmd;
+  const ctrl = metaKeys.ctrl;
+  const shift = metaKeys.shift;
+
   const event = atom.keymaps.constructor.buildKeydownEvent(key, {
-    target,
+    target: target,
     alt: Boolean(alt),
     cmd: Boolean(cmd),
     ctrl: Boolean(ctrl),
-    shift: Boolean(shift),
+    shift: Boolean(shift)
   });
   atom.keymaps.handleKeyboardEvent(event);
 }
@@ -43,7 +59,7 @@ export function dispatchKeyboardEvent(
  * Custom matchers for jasmine testing, as described in:
  * http://jasmine.github.io/1.3/introduction.html#section-Writing_a_custom_matcher.
  */
-export const rangeMatchers = {
+const rangeMatchers = exports.rangeMatchers = {
   /**
    * Determines if two Ranges are equal. This function should not be called
    * directly, but rather added as a Jasmine custom matcher.
@@ -51,9 +67,10 @@ export const rangeMatchers = {
    * @this A JasmineMatcher object.
    * @returns True if the Ranges are equal.
    */
-  toEqualAtomRange(expected: ?atom$Range): boolean {
+  toEqualAtomRange: function (expected) {
     return Boolean(this.actual && expected && this.actual.isEqual(expected));
   },
+
 
   /**
    * Same as `toEqualAtomRange` but for an array of Ranges. This function should
@@ -62,13 +79,17 @@ export const rangeMatchers = {
    * @this A JasmineMatcher object.
    * @returns True if the array of Ranges are equal.
    */
-  toEqualAtomRanges(expected: ?Array<atom$Range>): boolean {
+  toEqualAtomRanges: function (expected) {
     let allEqual = true;
     if (!this.actual || !expected) {
       return false;
     }
     this.actual.some((range, index) => {
-      invariant(expected); // Tell Flow this is definitely non-null now.
+      if (!expected) {
+        throw new Error('Invariant violation: "expected"');
+      } // Tell Flow this is definitely non-null now.
+
+
       if (range.isEqual(expected[index])) {
         return false;
       } else {
@@ -77,14 +98,14 @@ export const rangeMatchers = {
       }
     });
     return allEqual;
-  },
+  }
 };
 
 /**
  * Set the project. If there are one or more projects set previously, this
  * replaces them all with the one(s) provided as the argument `projectPath`.
  */
-export function setLocalProject(projectPath: string | Array<string>): void {
+function setLocalProject(projectPath) {
   if (Array.isArray(projectPath)) {
     atom.project.setPaths(projectPath);
   } else {
@@ -96,8 +117,10 @@ export function setLocalProject(projectPath: string | Array<string>): void {
  * Waits for the specified file to become the active text editor.
  * Can only be used in a Jasmine context.
  */
-export function waitsForFile(filename: string, timeoutMs: number = 10000): void {
-  waitsFor(`${filename} to become active`, timeoutMs, () => {
+function waitsForFile(filename) {
+  let timeoutMs = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 10000;
+
+  waitsFor(`${ filename } to become active`, timeoutMs, () => {
     const editor = atom.workspace.getActiveTextEditor();
     if (editor == null) {
       return false;
@@ -106,17 +129,14 @@ export function waitsForFile(filename: string, timeoutMs: number = 10000): void 
     if (editorPath == null) {
       return false;
     }
-    return nuclideUri.basename(editorPath) === filename;
+    return (_nuclideUri || _load_nuclideUri()).default.basename(editorPath) === filename;
   });
 }
 
-export function waitsForFilePosition(
-  filename: string,
-  row: number,
-  column: number,
-  timeoutMs: number = 10000,
-): void {
-  waitsFor(`${filename} to become active at ${row}:${column}`, timeoutMs, () => {
+function waitsForFilePosition(filename, row, column) {
+  let timeoutMs = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 10000;
+
+  waitsFor(`${ filename } to become active at ${ row }:${ column }`, timeoutMs, () => {
     const editor = atom.workspace.getActiveTextEditor();
     if (editor == null) {
       return false;
@@ -126,9 +146,7 @@ export function waitsForFilePosition(
       return false;
     }
     const pos = editor.getCursorBufferPosition();
-    return nuclideUri.basename(editorPath) === filename
-      && pos.row === row
-      && pos.column === column;
+    return (_nuclideUri || _load_nuclideUri()).default.basename(editorPath) === filename && pos.row === row && pos.column === column;
   });
 }
 
@@ -152,13 +170,13 @@ export function waitsForFilePosition(
  *      console.log(ReactComponentTreeHook.getElement(rootID));
  *    });
  */
-export function getMountedReactRootNames(): Array<string> {
-  const ReactComponentTreeHookPath =
-    Object.keys(require.cache).find(x => x.endsWith('react/lib/ReactComponentTreeHook.js'));
-  invariant(
-    ReactComponentTreeHookPath != null,
-    'ReactComponentTreeHook could not be found in the module cache.',
-  );
+function getMountedReactRootNames() {
+  const ReactComponentTreeHookPath = Object.keys(require.cache).find(x => x.endsWith('react/lib/ReactComponentTreeHook.js'));
+
+  if (!(ReactComponentTreeHookPath != null)) {
+    throw new Error('ReactComponentTreeHook could not be found in the module cache.');
+  }
+
   const ReactComponentTreeHook = require.cache[ReactComponentTreeHookPath].exports;
   const reactRootNames = ReactComponentTreeHook.getRootIDs().map(rootID => {
     return ReactComponentTreeHook.getDisplayName(rootID);

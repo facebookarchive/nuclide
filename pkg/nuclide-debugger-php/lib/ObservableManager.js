@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,16 +9,36 @@
  * the root directory of this source tree.
  */
 
-import {getOutputService} from '../../nuclide-debugger-base';
-import utils from './utils';
-const {log, logError} = utils;
-import {Observable} from 'rxjs';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ObservableManager = undefined;
 
-type NotificationMessage = {
-  type: 'info' | 'warning' | 'error' | 'fatalError',
-  message: string,
-};
+var _nuclideDebuggerBase;
+
+function _load_nuclideDebuggerBase() {
+  return _nuclideDebuggerBase = require('../../nuclide-debugger-base');
+}
+
+var _utils;
+
+function _load_utils() {
+  return _utils = _interopRequireDefault(require('./utils'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../commons-node/UniversalDisposable'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const log = (_utils || _load_utils()).default.log;
+
+const logError = (_utils || _load_utils()).default.logError;
 
 /**
  * The ObservableManager keeps track of the streams we use to talk to the server-side nuclide
@@ -32,82 +52,55 @@ type NotificationMessage = {
  * The ObservableManager takes ownership of its observables, and disposes them when its dispose
  * method is called.
  */
-export class ObservableManager {
-  _notifications: Observable<NotificationMessage>;
-  _serverMessages: Observable<string>;
-  _outputWindowMessages: Observable<Object>;
-  _sendServerMessageToChromeUi: (message: string) => void;
-  _onSessionEnd: ?() => mixed;
-  _disposables: UniversalDisposable;
+let ObservableManager = exports.ObservableManager = class ObservableManager {
 
-  constructor(
-    notifications: Observable<NotificationMessage>,
-    serverMessages: Observable<string>,
-    outputWindowMessages: Observable<Object>,
-    sendServerMessageToChromeUi: (message: string) => void,
-    onSessionEnd?: () => mixed,
-  ) {
+  constructor(notifications, serverMessages, outputWindowMessages, sendServerMessageToChromeUi, onSessionEnd) {
     this._notifications = notifications;
     this._serverMessages = serverMessages;
     this._outputWindowMessages = outputWindowMessages;
     this._sendServerMessageToChromeUi = sendServerMessageToChromeUi;
     this._onSessionEnd = onSessionEnd;
-    this._disposables = new UniversalDisposable();
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
     this._subscribe();
   }
 
-  _subscribe(): void {
+  _subscribe() {
     const sharedNotifications = this._notifications.share();
-    this._disposables.add(sharedNotifications.subscribe(
-      this._handleNotificationMessage.bind(this),
-      this._handleNotificationError.bind(this),
-      this._handleNotificationEnd.bind(this),
-    ));
+    this._disposables.add(sharedNotifications.subscribe(this._handleNotificationMessage.bind(this), this._handleNotificationError.bind(this), this._handleNotificationEnd.bind(this)));
     const sharedServerMessages = this._serverMessages.share();
-    this._disposables.add(sharedServerMessages.subscribe(
-      this._handleServerMessage.bind(this),
-      this._handleServerError.bind(this),
-      this._handleServerEnd.bind(this),
-    ));
+    this._disposables.add(sharedServerMessages.subscribe(this._handleServerMessage.bind(this), this._handleServerError.bind(this), this._handleServerEnd.bind(this)));
     const sharedOutputWindow = this._outputWindowMessages.share();
     this._registerOutputWindowLogging(sharedOutputWindow);
-    Observable
-      .merge(sharedNotifications, sharedServerMessages, sharedOutputWindow)
-      .subscribe({
-        complete: this._onCompleted.bind(this),
-      });
+    _rxjsBundlesRxMinJs.Observable.merge(sharedNotifications, sharedServerMessages, sharedOutputWindow).subscribe({
+      complete: this._onCompleted.bind(this)
+    });
   }
 
-  _registerOutputWindowLogging(sharedOutputWindowMessages: Observable<Object>): void {
-    const api = getOutputService();
+  _registerOutputWindowLogging(sharedOutputWindowMessages) {
+    const api = (0, (_nuclideDebuggerBase || _load_nuclideDebuggerBase()).getOutputService)();
     if (api != null) {
-      const messages = sharedOutputWindowMessages
-        .filter(messageObj => messageObj.method === 'Console.messageAdded')
-        .map(messageObj => {
-          return {
-            level: messageObj.params.message.level,
-            text: messageObj.params.message.text,
-          };
-        });
-      this._disposables.add(
-        sharedOutputWindowMessages.subscribe({
-          complete: this._handleOutputWindowEnd.bind(this),
-        }),
-        api.registerOutputProvider({
-          id: 'hhvm debugger',
-          messages,
-        }),
-      );
+      const messages = sharedOutputWindowMessages.filter(messageObj => messageObj.method === 'Console.messageAdded').map(messageObj => {
+        return {
+          level: messageObj.params.message.level,
+          text: messageObj.params.message.text
+        };
+      });
+      this._disposables.add(sharedOutputWindowMessages.subscribe({
+        complete: this._handleOutputWindowEnd.bind(this)
+      }), api.registerOutputProvider({
+        id: 'hhvm debugger',
+        messages: messages
+      }));
     } else {
       logError('Cannot get output window service.');
     }
   }
 
-  _handleOutputWindowEnd(): void {
+  _handleOutputWindowEnd() {
     log('Output window observable ended.');
   }
 
-  _handleNotificationMessage(message: NotificationMessage): void {
+  _handleNotificationMessage(message) {
     switch (message.type) {
       case 'info':
         log('Notification observerable info: ' + message.message);
@@ -135,35 +128,35 @@ export class ObservableManager {
     }
   }
 
-  _handleNotificationError(error: string): void {
+  _handleNotificationError(error) {
     logError('Notification observerable error: ' + error);
   }
 
-  _handleNotificationEnd(): void {
+  _handleNotificationEnd() {
     log('Notification observerable ends.');
   }
 
-  _handleServerMessage(message: string): void {
+  _handleServerMessage(message) {
     log('Recieved server message: ' + message);
     this._sendServerMessageToChromeUi(message);
   }
 
-  _handleServerError(error: string): void {
+  _handleServerError(error) {
     logError('Received server error: ' + error);
   }
 
-  _handleServerEnd(): void {
+  _handleServerEnd() {
     log('Server observerable ends.');
   }
 
-  _onCompleted(): void {
+  _onCompleted() {
     if (this._onSessionEnd != null) {
       this._onSessionEnd();
     }
     log('All observable streams have completed and session end callback was called.');
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
   }
-}
+};

@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,22 +9,38 @@
  * the root directory of this source tree.
  */
 
-import {DebuggerLaunchAttachProvider} from '../../../nuclide-debugger-base';
-import {DebugUiComponent} from './DebugUiComponent';
-import invariant from 'assert';
-import {React} from 'react-for-atom';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ReactNativeLaunchAttachProvider = undefined;
 
-export class ReactNativeLaunchAttachProvider extends DebuggerLaunchAttachProvider {
+var _nuclideDebuggerBase;
 
-  getActions(): Array<string> {
+function _load_nuclideDebuggerBase() {
+  return _nuclideDebuggerBase = require('../../../nuclide-debugger-base');
+}
+
+var _DebugUiComponent;
+
+function _load_DebugUiComponent() {
+  return _DebugUiComponent = require('./DebugUiComponent');
+}
+
+var _reactForAtom = require('react-for-atom');
+
+let ReactNativeLaunchAttachProvider = exports.ReactNativeLaunchAttachProvider = class ReactNativeLaunchAttachProvider extends (_nuclideDebuggerBase || _load_nuclideDebuggerBase()).DebuggerLaunchAttachProvider {
+
+  getActions() {
     return ['Attach'];
   }
 
-  getComponent(action: string): ?React.Element<any> {
-    invariant(action === 'Attach');
-    return <DebugUiComponent targetUri={this.getTargetUri()} />;
+  getComponent(action) {
+    if (!(action === 'Attach')) {
+      throw new Error('Invariant violation: "action === \'Attach\'"');
+    }
+
+    return _reactForAtom.React.createElement((_DebugUiComponent || _load_DebugUiComponent()).DebugUiComponent, { targetUri: this.getTargetUri() });
   }
 
-  dispose(): void {
-  }
-}
+  dispose() {}
+};

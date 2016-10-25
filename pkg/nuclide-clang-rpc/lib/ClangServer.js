@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,41 +9,66 @@
  * the root directory of this source tree.
  */
 
-import type {Subscription} from 'rxjs';
-import typeof * as ClangProcessService from './ClangProcessService';
-import type {ClangCompileResult} from './rpc-types';
-import type {ClangServerArgs} from './find-clang-server-args';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = undefined;
 
-import nuclideUri from '../../commons-node/nuclideUri';
-import {getServerSideMarshalers} from '../../nuclide-marshalers-common';
-import {BehaviorSubject} from 'rxjs';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-import {asyncExecute, safeSpawn} from '../../commons-node/process';
-import {RpcProcess} from '../../nuclide-rpc';
-import {ServiceRegistry, loadServicesConfig} from '../../nuclide-rpc';
-import {watchFile} from '../../nuclide-filewatcher-rpc';
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-export type ClangServerStatus = 'ready' | 'compiling';
+var _class, _temp;
 
-let serviceRegistry: ?ServiceRegistry = null;
+var _nuclideUri;
 
-function getServiceRegistry(): ServiceRegistry {
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var _nuclideMarshalersCommon;
+
+function _load_nuclideMarshalersCommon() {
+  return _nuclideMarshalersCommon = require('../../nuclide-marshalers-common');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _process;
+
+function _load_process() {
+  return _process = require('../../commons-node/process');
+}
+
+var _nuclideRpc;
+
+function _load_nuclideRpc() {
+  return _nuclideRpc = require('../../nuclide-rpc');
+}
+
+var _nuclideFilewatcherRpc;
+
+function _load_nuclideFilewatcherRpc() {
+  return _nuclideFilewatcherRpc = require('../../nuclide-filewatcher-rpc');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let serviceRegistry = null;
+
+function getServiceRegistry() {
   if (serviceRegistry == null) {
-    serviceRegistry = new ServiceRegistry(
-      getServerSideMarshalers,
-      loadServicesConfig(nuclideUri.join(__dirname, '..')),
-    );
+    serviceRegistry = new (_nuclideRpc || _load_nuclideRpc()).ServiceRegistry((_nuclideMarshalersCommon || _load_nuclideMarshalersCommon()).getServerSideMarshalers, (0, (_nuclideRpc || _load_nuclideRpc()).loadServicesConfig)((_nuclideUri || _load_nuclideUri()).default.join(__dirname, '..')));
   }
   return serviceRegistry;
 }
 
-function spawnClangProcess(
-  src: string,
-  serverArgs: ClangServerArgs,
-  flags: Array<string>,
-): child_process$ChildProcess {
-  const {libClangLibraryFile, pythonPathEnv, pythonExecutable} = serverArgs;
-  const pathToLibClangServer = nuclideUri.join(__dirname, '../python/clang_server.py');
+function spawnClangProcess(src, serverArgs, flags) {
+  const libClangLibraryFile = serverArgs.libClangLibraryFile;
+  const pythonPathEnv = serverArgs.pythonPathEnv;
+  const pythonExecutable = serverArgs.pythonExecutable;
+
+  const pathToLibClangServer = (_nuclideUri || _load_nuclideUri()).default.join(__dirname, '../python/clang_server.py');
   const args = [pathToLibClangServer];
   if (libClangLibraryFile != null) {
     args.push('--libclang-file', libClangLibraryFile);
@@ -51,62 +76,32 @@ function spawnClangProcess(
   args.push('--', src);
   args.push(...flags);
   const options = {
-    cwd: nuclideUri.dirname(pathToLibClangServer),
+    cwd: (_nuclideUri || _load_nuclideUri()).default.dirname(pathToLibClangServer),
     stdio: 'pipe',
     detached: false, // When Atom is killed, clang_server.py should be killed, too.
     env: {
-      PYTHONPATH: pythonPathEnv,
-    },
+      PYTHONPATH: pythonPathEnv
+    }
   };
 
   // Note that safeSpawn() often overrides options.env.PATH, but that only happens when
   // options.env is undefined (which is not the case here). This will only be an issue if the
   // system cannot find `pythonExecutable`.
-  return safeSpawn(pythonExecutable, args, options);
+  return (0, (_process || _load_process()).safeSpawn)(pythonExecutable, args, options);
 }
 
-export type ClangServerFlags = {
-  flags: Array<string>,
-  usesDefaultFlags: boolean,
-  flagsFile: ?string,
-};
+let ClangServer = (_temp = _class = class ClangServer extends (_nuclideRpc || _load_nuclideRpc()).RpcProcess {
 
-export default class ClangServer extends RpcProcess {
-
-  static Status: {[key: string]: ClangServerStatus} = Object.freeze({
-    READY: 'ready',
-    COMPILING: 'compiling',
-  });
-
-  _usesDefaultFlags: boolean;
-  _pendingCompileRequests: number;
-  _serverStatus: BehaviorSubject<ClangServerStatus>;
-  _flagsSubscription: ?Subscription;
-  _flagsChanged: boolean;
-
-  constructor(
-    src: string,
-    serverArgs: ClangServerArgs,
-    flagsData: ClangServerFlags,
-  ) {
-    super(
-      `ClangServer-${src}`,
-      getServiceRegistry(),
-      () => spawnClangProcess(src, serverArgs, flagsData.flags),
-    );
+  constructor(src, serverArgs, flagsData) {
+    super(`ClangServer-${ src }`, getServiceRegistry(), () => spawnClangProcess(src, serverArgs, flagsData.flags));
     this._usesDefaultFlags = flagsData.usesDefaultFlags;
     this._pendingCompileRequests = 0;
-    this._serverStatus = new BehaviorSubject(ClangServer.Status.READY);
+    this._serverStatus = new _rxjsBundlesRxMinJs.BehaviorSubject(ClangServer.Status.READY);
     this._flagsChanged = false;
     if (flagsData.flagsFile != null) {
-      this._flagsSubscription =
-        watchFile(flagsData.flagsFile)
-          .refCount()
-          .take(1)
-          .subscribe(
-            x => { this._flagsChanged = true; },
-            () => {},  // ignore errors
-          );
+      this._flagsSubscription = (0, (_nuclideFilewatcherRpc || _load_nuclideFilewatcherRpc()).watchFile)(flagsData.flagsFile).refCount().take(1).subscribe(x => {
+        this._flagsChanged = true;
+      }, () => {});
     }
   }
 
@@ -118,7 +113,7 @@ export default class ClangServer extends RpcProcess {
     }
   }
 
-  getService(): Promise<ClangProcessService> {
+  getService() {
     return super.getService('ClangProcessService');
   }
 
@@ -126,55 +121,68 @@ export default class ClangServer extends RpcProcess {
    * Returns RSS of the child process in bytes.
    * Works on Unix and Mac OS X.
    */
-  async getMemoryUsage(): Promise<number> {
-    if (this._process == null) {
-      return 0;
-    }
-    const {exitCode, stdout} = await asyncExecute(
-      'ps',
-      ['-p', this._process.pid.toString(), '-o', 'rss='],
-    );
-    if (exitCode !== 0) {
-      return 0;
-    }
-    return parseInt(stdout, 10) * 1024; // ps returns KB
+  getMemoryUsage() {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      if (_this._process == null) {
+        return 0;
+      }
+
+      var _ref = yield (0, (_process || _load_process()).asyncExecute)('ps', ['-p', _this._process.pid.toString(), '-o', 'rss=']);
+
+      const exitCode = _ref.exitCode;
+      const stdout = _ref.stdout;
+
+      if (exitCode !== 0) {
+        return 0;
+      }
+      return parseInt(stdout, 10) * 1024; // ps returns KB
+    })();
   }
 
-  getFlagsChanged(): boolean {
+  getFlagsChanged() {
     return this._flagsChanged;
   }
 
   // Call this instead of using the RPC layer directly.
   // This way, we can track when the server is busy compiling.
-  async compile(contents: string): Promise<?ClangCompileResult> {
-    if (this._pendingCompileRequests++ === 0) {
-      this._serverStatus.next(ClangServer.Status.COMPILING);
-    }
-    try {
-      const service = await this.getService();
-      return await service.compile(contents)
-        .then(result => ({
-          ...result,
-          accurateFlags: !this._usesDefaultFlags,
-        }));
-    } finally {
-      if (--this._pendingCompileRequests === 0) {
-        this._serverStatus.next(ClangServer.Status.READY);
+  compile(contents) {
+    var _this2 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      if (_this2._pendingCompileRequests++ === 0) {
+        _this2._serverStatus.next(ClangServer.Status.COMPILING);
       }
-    }
+      try {
+        const service = yield _this2.getService();
+        return yield service.compile(contents).then(function (result) {
+          return _extends({}, result, {
+            accurateFlags: !_this2._usesDefaultFlags
+          });
+        });
+      } finally {
+        if (--_this2._pendingCompileRequests === 0) {
+          _this2._serverStatus.next(ClangServer.Status.READY);
+        }
+      }
+    })();
   }
 
-  getStatus(): ClangServerStatus {
+  getStatus() {
     return this._serverStatus.getValue();
   }
 
-  waitForReady(): Promise<mixed> {
+  waitForReady() {
     if (this.getStatus() === ClangServer.Status.READY) {
       return Promise.resolve();
     }
-    return this._serverStatus
-      .takeWhile(x => x !== ClangServer.Status.READY)
-      .toPromise();
+    return this._serverStatus.takeWhile(x => x !== ClangServer.Status.READY).toPromise();
   }
 
-}
+}, _class.Status = Object.freeze({
+  READY: 'ready',
+  COMPILING: 'compiling'
+}), _temp);
+exports.default = ClangServer;
+module.exports = exports['default'];

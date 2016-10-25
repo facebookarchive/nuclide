@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,30 +9,56 @@
  * the root directory of this source tree.
  */
 
-import fs from 'fs';
-import invariant from 'assert';
-import once from './once';
-import os from 'os';
-import nuclideUri from './nuclideUri';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.isRunningInTest = exports.isDevelopment = exports.OS_TYPE = undefined;
+exports.isRunningInClient = isRunningInClient;
+exports.getAtomNuclideDir = getAtomNuclideDir;
+exports.getAtomVersion = getAtomVersion;
+exports.getNuclideVersion = getNuclideVersion;
+exports.getNuclideRealDir = getNuclideRealDir;
+exports.getOsType = getOsType;
+exports.isRunningInWindows = isRunningInWindows;
+exports.getOsVersion = getOsVersion;
+exports.getRuntimePath = getRuntimePath;
+
+var _fs = _interopRequireDefault(require('fs'));
+
+var _once;
+
+function _load_once() {
+  return _once = _interopRequireDefault(require('./once'));
+}
+
+var _os = _interopRequireDefault(require('os'));
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('./nuclideUri'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const NUCLIDE_PACKAGE_JSON_PATH = require.resolve('../../package.json');
-const NUCLIDE_BASEDIR = nuclideUri.dirname(NUCLIDE_PACKAGE_JSON_PATH);
+const NUCLIDE_BASEDIR = (_nuclideUri || _load_nuclideUri()).default.dirname(NUCLIDE_PACKAGE_JSON_PATH);
 
-const pkgJson = JSON.parse(fs.readFileSync(NUCLIDE_PACKAGE_JSON_PATH, 'utf8'));
+const pkgJson = JSON.parse(_fs.default.readFileSync(NUCLIDE_PACKAGE_JSON_PATH, 'utf8'));
 
-export const OS_TYPE = {
+const OS_TYPE = exports.OS_TYPE = {
   WIN32: 'win32',
   WIN64: 'win64',
   LINUX: 'linux',
-  OSX: 'darwin',
+  OSX: 'darwin'
 };
 
 // "Development" is defined as working from source - not packaged code.
 // apm/npm and internal releases don't package the base `.flowconfig`, so
 // we use this to figure if we're packaged or not.
-export const isDevelopment = once((): boolean => {
+const isDevelopment = exports.isDevelopment = (0, (_once || _load_once()).default)(() => {
   try {
-    fs.statSync(nuclideUri.join(NUCLIDE_BASEDIR, '.flowconfig'));
+    _fs.default.statSync((_nuclideUri || _load_nuclideUri()).default.join(NUCLIDE_BASEDIR, '.flowconfig'));
     return true;
   } catch (err) {
     return false;
@@ -47,7 +73,7 @@ export const isDevelopment = once((): boolean => {
 // ensures happens only once.
 //
 // [1]: https://github.com/atom/atom/blob/v1.6.2/src/window-load-settings-helpers.coffee#L10-L14
-export const isRunningInTest = once((): boolean => {
+const isRunningInTest = exports.isRunningInTest = (0, (_once || _load_once()).default)(() => {
   if (isRunningInClient()) {
     return atom.inSpecMode();
   } else {
@@ -55,48 +81,52 @@ export const isRunningInTest = once((): boolean => {
   }
 });
 
-export function isRunningInClient(): boolean {
+function isRunningInClient() {
   return typeof atom !== 'undefined';
 }
 
 // This path may be a symlink.
-export function getAtomNuclideDir(): string {
+function getAtomNuclideDir() {
   if (!isRunningInClient()) {
     throw Error('Not running in Atom.');
   }
   const nuclidePackageModule = atom.packages.getLoadedPackage('nuclide');
-  invariant(nuclidePackageModule);
+
+  if (!nuclidePackageModule) {
+    throw new Error('Invariant violation: "nuclidePackageModule"');
+  }
+
   return nuclidePackageModule.path;
 }
 
-export function getAtomVersion(): string {
+function getAtomVersion() {
   if (!isRunningInClient()) {
     throw Error('Not running in Atom.');
   }
   return atom.getVersion();
 }
 
-export function getNuclideVersion(): string {
+function getNuclideVersion() {
   return pkgJson.version;
 }
 
-export function getNuclideRealDir(): string {
+function getNuclideRealDir() {
   return NUCLIDE_BASEDIR;
 }
 
-export function getOsType(): string {
-  return os.platform();
+function getOsType() {
+  return _os.default.platform();
 }
 
-export function isRunningInWindows(): boolean {
+function isRunningInWindows() {
   return getOsType() === OS_TYPE.WIN32 || getOsType() === OS_TYPE.WIN64;
 }
 
-export function getOsVersion(): string {
-  return os.release();
+function getOsVersion() {
+  return _os.default.release();
 }
 
-export function getRuntimePath(): string {
+function getRuntimePath() {
   // "resourcesPath" only exists in Atom. It's as close as you can get to
   // Atom's path. In the general case, it looks like this:
   // Mac: "/Applications/Atom.app/Contents/Resources"
@@ -105,9 +135,9 @@ export function getRuntimePath(): string {
   //          "C:\Atom\resources"
   if (global.atom && typeof process.resourcesPath === 'string') {
     const resourcesPath = process.resourcesPath;
-    if (os.platform() === 'darwin') {
+    if (_os.default.platform() === 'darwin') {
       return resourcesPath.replace(/\/Contents\/Resources$/, '');
-    } else if (os.platform() === 'linux') {
+    } else if (_os.default.platform() === 'linux') {
       return resourcesPath.replace(/\/resources$/, '');
     } else {
       return resourcesPath.replace(/[\\]+resources$/, '');
