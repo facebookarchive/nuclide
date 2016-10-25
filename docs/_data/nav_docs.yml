@@ -1,25 +1,29 @@
 - title: Quick Start
   items:
   - id: quick-start-getting-started
-- title: Editor
+  - id: editor-basics
+- title: About
   items:
   - id: editor-setup
-  - id: editor-basics
   - id: editor-keyboard-shortcuts
   - id: editor-uninstall
+  - id: help-faq
+  - id: help-troubleshooting
 - title: Feature Guides
   items:
   - id: feature-remote
   - id: feature-debugger
   - id: feature-task-runner
-  - id: feature-hg
-  - id: feature-toolbar
   - id: feature-quick-open
   - id: feature-working-sets
   - id: feature-outline-view
   - id: feature-context-view
-  - id: feature-buck
   - id: feature-health
+- title: Plugins
+  items:
+  - id: feature-hg
+  - id: feature-toolbar
+  - id: feature-buck
   - id: feature-format-js
 - title: Languages
   items:
