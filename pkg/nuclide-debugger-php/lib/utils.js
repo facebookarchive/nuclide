@@ -9,8 +9,63 @@
  * the root directory of this source tree.
  */
 
+import type {PhpDebuggerSessionConfig} from '../../nuclide-debugger-php-rpc';
+
+import invariant from 'assert';
+import featureConfig from '../../commons-atom/featureConfig';
 import {getCategoryLogger} from '../../nuclide-logging';
 
 const DEBUGGER_LOGGER_CATEGORY = 'nuclide-debugger-php';
-
 export default getCategoryLogger(DEBUGGER_LOGGER_CATEGORY);
+
+export function getConfig(): PhpDebuggerSessionConfig {
+  return (featureConfig.get('nuclide-debugger-php'): any);
+}
+
+// TODO: Move this to nuclide-commons.
+export function isValidRegex(value: ?string): boolean {
+  if (value == null) {
+    return false;
+  }
+  try {
+    RegExp(value);
+  } catch (e) {
+    return false;
+  }
+  return true;
+}
+
+function validateConfig(config): void {
+  if (!isValidRegex(config.scriptRegex)) {
+    invariant(config.scriptRegex != null);
+    throw Error(`config scriptRegex is not a valid regular expression: ${config.scriptRegex}`);
+  }
+
+  if (!isValidRegex(config.idekeyRegex)) {
+    invariant(config.idekeyRegex != null);
+    throw Error(`config idekeyRegex is not a valid regular expression: ${config.idekeyRegex}`);
+  }
+}
+
+export function getSessionConfig(targetUri: string, isLaunch: boolean): PhpDebuggerSessionConfig {
+  const config = getConfig();
+  validateConfig(config);
+  const sessionConfig: PhpDebuggerSessionConfig = {
+    xdebugAttachPort: config.xdebugAttachPort,
+    xdebugLaunchingPort: config.xdebugLaunchingPort,
+    targetUri,
+    logLevel: config.logLevel,
+    endDebugWhenNoRequests: false,
+    phpRuntimePath: config.phpRuntimePath,
+    phpRuntimeArgs: config.phpRuntimeArgs,
+    dummyRequestFilePath: 'php_only_xdebug_request.php',
+    stopOneStopAll: config.stopOneStopAll,
+    scriptRegex: config.scriptRegex,
+    idekeyRegex: config.idekeyRegex,
+
+  };
+  if (isLaunch) {
+    sessionConfig.xdebugAttachPort = config.xdebugLaunchingPort;
+  }
+  return sessionConfig;
+}

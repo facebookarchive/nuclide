@@ -9,10 +9,20 @@
  * the root directory of this source tree.
  */
 
+import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {
+  PhpDebuggerService as PhpDebuggerServiceType,
+} from '../../nuclide-debugger-php-rpc/lib/PhpDebuggerService';
+
+import invariant from 'assert';
 import {DebuggerProcessInfo} from '../../nuclide-debugger-base';
 import {PhpDebuggerInstance} from './PhpDebuggerInstance';
+import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
+import nuclideUri from '../../commons-node/nuclideUri';
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import utils from './utils';
+const {logInfo} = utils;
+import {getSessionConfig} from './utils';
 
 export class LaunchProcessInfo extends DebuggerProcessInfo {
   _launchTarget: string;
@@ -22,9 +32,26 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
     this._launchTarget = launchTarget;
   }
 
-  debug(): Promise<PhpDebuggerInstance> {
-    const phpDebuggerInstance = new PhpDebuggerInstance(this, this._launchTarget);
-    return Promise.resolve(phpDebuggerInstance);
+  async debug(): Promise<PhpDebuggerInstance> {
+    const rpcService = this._getRpcService();
+    const sessionConfig = getSessionConfig(nuclideUri.getPath(this.getTargetUri()), true);
+
+    // Set config related to script launching.
+    sessionConfig.endDebugWhenNoRequests = true;
+    sessionConfig.launchScriptPath = this._launchTarget;
+
+    logInfo(`Connection session config: ${JSON.stringify(sessionConfig)}`);
+
+    const result = await rpcService.debug(sessionConfig);
+    logInfo(`Launch process result: ${result}`);
+    return new PhpDebuggerInstance(this, rpcService);
+  }
+
+  _getRpcService(): PhpDebuggerServiceType {
+    const service =
+      getServiceByNuclideUri('PhpDebuggerService', this.getTargetUri());
+    invariant(service);
+    return new service.PhpDebuggerService();
   }
 
   supportThreads(): boolean {
