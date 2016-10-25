@@ -21,6 +21,9 @@ import type {
 import type {
   IwdpDebuggerService,
 } from '../../nuclide-debugger-iwdp-rpc/lib/IwdpDebuggerService';
+import type {
+  PhpDebuggerService,
+} from '../../nuclide-debugger-php-rpc/lib/PhpDebuggerService';
 import type {CategoryLogger} from '../../nuclide-logging';
 
 import {Emitter} from 'atom';
@@ -35,7 +38,8 @@ import {stringifyError} from '../../commons-node/string';
 import {getCategoryLogger} from '../../nuclide-logging';
 const SESSION_END_EVENT = 'session-end-event';
 
-export type RpcDebuggerService = NodeDebuggerService | NativeDebuggerService | IwdpDebuggerService;
+export type RpcDebuggerService =
+  NodeDebuggerService | NativeDebuggerService | IwdpDebuggerService | PhpDebuggerService;
 
 export default class DebuggerInstanceBase {
   _processInfo: DebuggerProcessInfo;

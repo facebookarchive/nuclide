@@ -34,24 +34,15 @@ type NotificationMessage = {
  */
 export class ObservableManager {
   _notifications: Observable<NotificationMessage>;
-  _serverMessages: Observable<string>;
   _outputWindowMessages: Observable<Object>;
-  _sendServerMessageToChromeUi: (message: string) => void;
-  _onSessionEnd: ?() => mixed;
   _disposables: UniversalDisposable;
 
   constructor(
     notifications: Observable<NotificationMessage>,
-    serverMessages: Observable<string>,
     outputWindowMessages: Observable<Object>,
-    sendServerMessageToChromeUi: (message: string) => void,
-    onSessionEnd?: () => mixed,
   ) {
     this._notifications = notifications;
-    this._serverMessages = serverMessages;
     this._outputWindowMessages = outputWindowMessages;
-    this._sendServerMessageToChromeUi = sendServerMessageToChromeUi;
-    this._onSessionEnd = onSessionEnd;
     this._disposables = new UniversalDisposable();
     this._subscribe();
   }
@@ -63,22 +54,10 @@ export class ObservableManager {
       this._handleNotificationError.bind(this),
       this._handleNotificationEnd.bind(this),
     ));
-    const sharedServerMessages = this._serverMessages.share();
-    this._disposables.add(sharedServerMessages.subscribe(
-      this._handleServerMessage.bind(this),
-      this._handleServerError.bind(this),
-      this._handleServerEnd.bind(this),
-    ));
-    const sharedOutputWindow = this._outputWindowMessages.share();
-    this._registerOutputWindowLogging(sharedOutputWindow);
-    Observable
-      .merge(sharedNotifications, sharedServerMessages, sharedOutputWindow)
-      .subscribe({
-        complete: this._onCompleted.bind(this),
-      });
+    this._registerConsoleLogging(this._outputWindowMessages.share());
   }
 
-  _registerOutputWindowLogging(sharedOutputWindowMessages: Observable<Object>): void {
+  _registerConsoleLogging(sharedOutputWindowMessages: Observable<Object>): void {
     const filteredMesages = sharedOutputWindowMessages
       .filter(messageObj => messageObj.method === 'Console.messageAdded')
       .map(messageObj => {
@@ -130,26 +109,6 @@ export class ObservableManager {
 
   _handleNotificationEnd(): void {
     log('Notification observerable ends.');
-  }
-
-  _handleServerMessage(message: string): void {
-    log('Recieved server message: ' + message);
-    this._sendServerMessageToChromeUi(message);
-  }
-
-  _handleServerError(error: string): void {
-    logError('Received server error: ' + error);
-  }
-
-  _handleServerEnd(): void {
-    log('Server observerable ends.');
-  }
-
-  _onCompleted(): void {
-    if (this._onSessionEnd != null) {
-      this._onSessionEnd();
-    }
-    log('All observable streams have completed and session end callback was called.');
   }
 
   dispose(): void {
