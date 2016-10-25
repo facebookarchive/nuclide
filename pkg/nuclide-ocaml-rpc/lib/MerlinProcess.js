@@ -341,7 +341,8 @@ export async function getInstance(file: NuclideUri): Promise<?MerlinProcess> {
   const merlinPath = getPathToMerlin();
   const flags = getMerlinFlags();
 
-  if (!await isInstalled(merlinPath)) {
+  const version = await getMerlinVersion(merlinPath);
+  if (version === null) {
     return null;
   }
 
@@ -353,7 +354,6 @@ export async function getInstance(file: NuclideUri): Promise<?MerlinProcess> {
 
   logger.info('Spawning new ocamlmerlin process');
   const process = await safeSpawn(merlinPath, flags, options);
-  const version = await getVersion(process);
   switch (version) {
     case '2.5.0':
       merlinProcessInstance = new MerlinProcessV2_5(process);
@@ -373,22 +373,6 @@ export async function getInstance(file: NuclideUri): Promise<?MerlinProcess> {
   }
 
   return merlinProcessInstance;
-}
-
-async function getVersion(proc: child_process$ChildProcess): Promise<string> {
-  try {
-    // TODO: Support version 3
-    const result = await runSingleCommand(proc, [
-      'protocol',
-      'version',
-      2, // default to version 2
-    ]);
-    const match = result.merlin.match(/^The Merlin toolkit version (\d+(\.\d)*),/);
-    return match != null && match[1] != null ? match[1] : '2.3.1';
-  } catch (e) {
-    // version 2.3.1 doesn't have a 'protocol' command and will throw
-    return '2.3.1';
-  }
 }
 
 /**
@@ -413,16 +397,24 @@ function getMerlinFlags(): Array<string> {
   return configItems || [];
 }
 
-let isInstalledCache: ?boolean = null;
-async function isInstalled(merlinPath: string): Promise<boolean> {
-  if (isInstalledCache == null) {
-    const result = await asyncExecute('which', [merlinPath]);
-    isInstalledCache = result.exitCode === 0;
-    if (!isInstalledCache) {
+let merlinVersionCache: ?string;
+async function getMerlinVersion(merlinPath: string): Promise<string | null> {
+  if (merlinVersionCache === undefined) {
+    const result = await asyncExecute(merlinPath, ['-version']);
+    if (result.exitCode === 0) {
+      const match = result.stdout.match(/^The Merlin toolkit version (\d+(?:\.\d)*),/);
+      if (match != null && match[1] != null) {
+        merlinVersionCache = match[1];
+      } else {
+        logger.info('unable to determine ocamlmerlin version');
+        merlinVersionCache = null;
+      }
+    } else {
       logger.info('ocamlmerlin not installed');
+      merlinVersionCache = null;
     }
   }
-  return isInstalledCache;
+  return merlinVersionCache;
 }
 
 /**
@@ -459,7 +451,7 @@ function runSingleCommand(process: child_process$ChildProcess, command: mixed): 
       const content = response[1];
 
       if (ERROR_RESPONSES.has(status)) {
-        logger.error('Ocamlmerlin raised an error: ' + line);
+        logger.error(`Ocamlmerlin raised an error: ${line}\n  command: ${commandString}`);
         reject(Error('Ocamlmerlin returned an error'));
         return;
       }
