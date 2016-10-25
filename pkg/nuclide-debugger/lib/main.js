@@ -55,6 +55,7 @@ import {setNotificationService} from '../../nuclide-debugger-base';
 import {NewDebuggerView} from './NewDebuggerView';
 import DebuggerControllerView from './DebuggerControllerView';
 import {wordAtPosition, trimRange} from '../../commons-atom/range';
+import {DebuggerLaunchAttachEventTypes} from '../../nuclide-debugger-base';
 
 export type SerializedState = {
   breakpoints: ?Array<SerializedBreakpoint>,
@@ -257,6 +258,7 @@ class Activation {
       }),
     );
     (this: any)._hideLaunchAttachDialog = this._hideLaunchAttachDialog.bind(this);
+    (this: any)._handleDefaultAction = this._handleDefaultAction.bind(this);
     this._setupView();
   }
 
@@ -367,12 +369,21 @@ class Activation {
     }
   }
 
+  _handleDefaultAction(): void {
+    const dialog = this._getLaunchAttachDialog();
+    if (dialog.isVisible()) {
+      this._model.getLaunchAttachActionEventEmitter().emit(
+        DebuggerLaunchAttachEventTypes.ENTER_KEY_PRESSED);
+    }
+  }
+
   _getLaunchAttachDialog(): atom$Panel {
     if (!this._launchAttachDialog) {
       const component = (
         <DebuggerLaunchAttachUI
           store={this._model.getDebuggerProviderStore()}
           debuggerActions={this._model.getActions()}
+          emitter={this._model.getLaunchAttachActionEventEmitter()}
         />
       );
       const host = document.createElement('div');
@@ -393,6 +404,11 @@ class Activation {
           'atom-workspace',
           'core:cancel',
           this._hideLaunchAttachDialog,
+        ),
+        atom.commands.add(
+          'atom-workspace',
+          'core:confirm',
+          this._handleDefaultAction,
         ),
       );
     }

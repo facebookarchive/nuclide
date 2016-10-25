@@ -12,7 +12,16 @@
 import type React from 'react-for-atom';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
+const EventEmitter = require('events');
+
 let uniqueKeySeed = 0;
+
+/**
+ * Event types that the EventEmitter passed to getComponent may listen on.
+ */
+export const DebuggerLaunchAttachEventTypes = Object.freeze({
+  ENTER_KEY_PRESSED: 'ENTER_KEY_PRESSED',
+});
 
 /**
  * Base class of all launch/attach providers.
@@ -59,8 +68,11 @@ export default class DebuggerLaunchAttachProvider {
 
   /**
    * Returns the UI component for input debug action.
+   * The component may use the parentDispatcher to listen for keyboard events.
    */
-  getComponent(action: string): ?React.Element<any> {
+  getComponent(
+    action: string,
+    eventEmitter: EventEmitter): ?React.Element<any> {
     throw new Error('abstract method');
   }
 

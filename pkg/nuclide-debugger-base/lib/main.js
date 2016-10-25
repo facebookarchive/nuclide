@@ -11,7 +11,10 @@
 
 export {default as DebuggerInstance} from './DebuggerInstance';
 export {default as DebuggerProcessInfo} from './DebuggerProcessInfo';
-export {default as DebuggerLaunchAttachProvider} from './DebuggerLaunchAttachProvider';
+export {
+  default as DebuggerLaunchAttachProvider,
+  DebuggerLaunchAttachEventTypes,
+} from './DebuggerLaunchAttachProvider';
 
 export {
   setOutputService,

@@ -27,6 +27,8 @@ import {DebuggerPauseController} from './DebuggerPauseController';
 
 import type {SerializedState} from '..';
 
+const EventEmitter = require('events');
+
 /**
  * Atom ViewProvider compatible model object.
  */
@@ -36,6 +38,7 @@ class DebuggerModel {
   _breakpointManager: BreakpointManager;
   _breakpointStore: BreakpointStore;
   _dispatcher: DebuggerDispatcher;
+  _emitter: EventEmitter;
   _store: DebuggerStore;
   _watchExpressionStore: WatchExpressionStore;
   _watchExpressionListStore: WatchExpressionListStore;
@@ -49,6 +52,7 @@ class DebuggerModel {
 
   constructor(state: ?SerializedState) {
     this._dispatcher = new DebuggerDispatcher();
+    this._emitter = new EventEmitter();
     this._store = new DebuggerStore(this._dispatcher, this);
     this._actions = new DebuggerActions(this._dispatcher, this._store);
     this._breakpointStore = new BreakpointStore(
@@ -90,6 +94,10 @@ class DebuggerModel {
 
   dispose() {
     this._disposables.dispose();
+  }
+
+  getLaunchAttachActionEventEmitter(): EventEmitter {
+    return this._emitter;
   }
 
   getActions(): DebuggerActions {

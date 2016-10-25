@@ -17,9 +17,12 @@ import {Dropdown} from '../../nuclide-ui/Dropdown';
 import {React} from 'react-for-atom';
 import nuclideUri from '../../commons-node/nuclideUri';
 
+const EventEmitter = require('events');
+
 type PropsType = {
   store: DebuggerProviderStore,
   debuggerActions: DebuggerActions,
+  emitter: EventEmitter,
 };
 
 type StateType = {
@@ -189,7 +192,7 @@ export class DebuggerLaunchAttachUI extends React.Component<void, PropsType, Sta
 
   // Display new customized element UI from input provider and action.
   _resetElement(provider: DebuggerLaunchAttachProvider, action: string): void {
-    let element = provider.getComponent(action);
+    let element = provider.getComponent(action, this.props.emitter);
     // Assign an unique key to element so that react treats it as a new element.
     if (element != null) {
       element = React.cloneElement(element, {key: provider.getUniqueKey()});

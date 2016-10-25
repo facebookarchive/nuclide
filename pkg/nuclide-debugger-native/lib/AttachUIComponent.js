@@ -16,6 +16,7 @@ import type {
 } from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerService';
 import type {Column} from '../../nuclide-ui/Table';
 
+import {DebuggerLaunchAttachEventTypes} from '../../nuclide-debugger-base';
 import {React} from 'react-for-atom';
 import {AtomInput} from '../../nuclide-ui/AtomInput';
 import {Table} from '../../nuclide-ui/Table';
@@ -25,9 +26,12 @@ import {
 } from '../../nuclide-ui/Button';
 import {ButtonGroup} from '../../nuclide-ui/ButtonGroup';
 
+const EventEmitter = require('events');
+
 type PropsType = {
   store: LaunchAttachStore,
   actions: LaunchAttachActions,
+  emitter: EventEmitter,
 };
 
 type StateType = {
@@ -110,10 +114,20 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
     };
   }
 
+  componentWillMount() {
+    this.props.emitter.on(
+      DebuggerLaunchAttachEventTypes.ENTER_KEY_PRESSED,
+      this._handleAttachClick);
+  }
+
   componentWillUnmount() {
     if (this.state.targetListChangeDisposable != null) {
       this.state.targetListChangeDisposable.dispose();
     }
+
+    this.props.emitter.removeListener(
+      DebuggerLaunchAttachEventTypes.ENTER_KEY_PRESSED,
+      this._handleAttachClick);
   }
 
   _updateList(): void {
