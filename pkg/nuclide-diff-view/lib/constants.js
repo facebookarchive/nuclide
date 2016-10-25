@@ -13,10 +13,10 @@ import type {
   CommitModeType,
   CommitModeStateType,
   DiffModeType,
-  DiffSectionStatusType,
+  DiffOptionType,
   PublishModeType,
   PublishModeStateType,
-  DiffOptionType,
+  NavigationSectionStatusType,
 } from './types';
 
 export const DiffMode = Object.freeze({
@@ -74,14 +74,16 @@ export const PublishModeState = Object.freeze({
 
 export const NON_MERCURIAL_REPO_DISPLAY_NAME = '[X] Non-Mercurial Repository';
 
-export const DiffSectionStatus = Object.freeze({
+export const NavigationSectionStatus = Object.freeze({
   ADDED: 'Added',
   CHANGED: 'Changed',
   REMOVED: 'Removed',
+  NEW_ELEMENT: 'New Element',
+  OLD_ELEMENT: 'Old Element',
 });
 
 // This is to work around flow's missing support of enums.
-(DiffSectionStatus: {[key: string]: DiffSectionStatusType});
+(NavigationSectionStatus: {[key: string]: NavigationSectionStatusType});
 
 export const LintErrorMessages = [
   'Usage Exception: Lint',

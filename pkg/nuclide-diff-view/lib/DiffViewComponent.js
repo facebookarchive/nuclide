@@ -10,8 +10,8 @@
  */
 
 import type {
-  DiffSection,
-  DiffSectionStatusType,
+  NavigationSection,
+  NavigationSectionStatusType,
   DiffModeType,
   EditorElementsMap,
   LineMapping,
@@ -38,13 +38,13 @@ import DiffCommitView from './DiffCommitView';
 import DiffPublishView from './DiffPublishView';
 import {
   computeDiff,
-  computeDiffSections,
+  computeNavigationSections,
 } from './diff-utils';
 import createPaneContainer from '../../commons-atom/create-pane-container';
 import {bufferForUri} from '../../commons-atom/text-editor';
 import {
   DiffMode,
-  DiffSectionStatus,
+  NavigationSectionStatus,
 } from './constants';
 import {getMultiRootFileChanges} from '../../nuclide-hg-git-bridge/lib/utils';
 import {
@@ -77,8 +77,8 @@ type State = {
   isLoadingFileDiff: boolean,
   oldEditorState: EditorState,
   newEditorState: EditorState,
-  diffSections: Array<DiffSection>,
-  selectedDiffSectionIndex: number,
+  navigationSections: Array<NavigationSection>,
+  selectedNavigationSectionIndex: number,
   lineMapping: LineMapping,
 };
 
@@ -129,13 +129,13 @@ function getDiffComponent() {
 
 function getInitialState(): State {
   return {
-    diffSections: [],
+    navigationSections: [],
     filePath: '',
     isLoadingFileDiff: false,
     mode: DiffMode.BROWSE_MODE,
     newEditorState: initialEditorState(),
     oldEditorState: initialEditorState(),
-    selectedDiffSectionIndex: -1,
+    selectedNavigationSectionIndex: -1,
     lineMapping: {oldToNew: [], newToOld: []},
   };
 }
@@ -169,12 +169,13 @@ export default class DiffViewComponent extends React.Component {
     this.state = getInitialState();
     (this: any)._updateLineDiffState = this._updateLineDiffState.bind(this);
     (this: any)._onTimelineChangeRevision = this._onTimelineChangeRevision.bind(this);
-    (this: any)._handleNavigateToDiffSection = this._handleNavigateToDiffSection.bind(this);
+    (this: any)._handleNavigateToNavigationSection =
+      this._handleNavigateToNavigationSection.bind(this);
     (this: any)._onDidUpdateTextEditorElement = this._onDidUpdateTextEditorElement.bind(this);
     (this: any)._onChangeMode = this._onChangeMode.bind(this);
     (this: any)._onSwitchToEditor = this._onSwitchToEditor.bind(this);
     (this: any)._onDidChangeScrollTop = this._onDidChangeScrollTop.bind(this);
-    (this: any)._pixelRangeForDiffSection = this._pixelRangeForDiffSection.bind(this);
+    (this: any)._pixelRangeForNavigationSection = this._pixelRangeForNavigationSection.bind(this);
     this._readonlyBuffer = new TextBuffer();
     this._subscriptions = new UniversalDisposable();
   }
@@ -257,13 +258,13 @@ export default class DiffViewComponent extends React.Component {
     // Schedule scroll to first line after all lines have been rendered.
     const scrollTimeout = setTimeout(() => {
       this._subscriptions.remove(clearScrollTimeoutSubscription);
-      const {diffSections} = this.state;
-      if (this.state.filePath !== filePath || diffSections.length === 0) {
+      const {navigationSections} = this.state;
+      if (this.state.filePath !== filePath || navigationSections.length === 0) {
         return;
       }
 
-      const {status, lineNumber} = diffSections[0];
-      this._handleNavigateToDiffSection(status, lineNumber);
+      const {status, lineNumber} = navigationSections[0];
+      this._handleNavigateToNavigationSection(status, lineNumber);
 
     }, SCROLL_FIRST_CHANGE_DELAY_MS);
     const clearScrollTimeoutSubscription = new Disposable(() => {
@@ -464,7 +465,7 @@ export default class DiffViewComponent extends React.Component {
   }
 
   _renderNavigation(): void {
-    const {diffSections} = this.state;
+    const {navigationSections} = this.state;
     const navigationPaneElement = this._getPaneElement(this._navigationPane);
     const oldEditorElement = this._oldEditorComponent.getEditorDomElement();
     const newEditorElement = this._newEditorComponent.getEditorDomElement();
@@ -475,11 +476,11 @@ export default class DiffViewComponent extends React.Component {
     );
     const component = ReactDOM.render(
       <DiffNavigationBar
-        diffSections={diffSections}
+        navigationSections={navigationSections}
         navigationScale={navigationPaneElement.clientHeight / diffViewHeight}
         editorLineHeight={oldEditorElement.getModel().getLineHeightInPixels()}
-        pixelRangeForDiffSection={this._pixelRangeForDiffSection}
-        onNavigateToDiffSection={this._handleNavigateToDiffSection}
+        pixelRangeForNavigationSection={this._pixelRangeForNavigationSection}
+        onNavigateToNavigationSection={this._handleNavigateToNavigationSection}
       />,
       navigationPaneElement,
     );
@@ -487,11 +488,11 @@ export default class DiffViewComponent extends React.Component {
     this._navigationComponent = component;
   }
 
-  _handleNavigateToDiffSection(
-    diffSectionStatus: DiffSectionStatusType,
+  _handleNavigateToNavigationSection(
+    navigationSectionStatus: NavigationSectionStatusType,
     scrollToLineNumber: number,
   ): void {
-    const textEditorElement = this._diffSectionStatusToEditorElement(diffSectionStatus);
+    const textEditorElement = this._navigationSectionStatusToEditorElement(navigationSectionStatus);
     const textEditor = textEditorElement.getModel();
     const pixelPositionTop = textEditorElement
       .pixelPositionForBufferPosition([scrollToLineNumber, 0]).top;
@@ -501,14 +502,14 @@ export default class DiffViewComponent extends React.Component {
     const scrollTop = pixelPositionTop
       + textEditor.getLineHeightInPixels() / 2
       - textEditorElement.clientHeight / 2;
-    textEditorElement.setScrollTop(scrollTop);
+    textEditorElement.setScrollTop(Math.max(scrollTop, 1));
   }
 
-  _pixelRangeForDiffSection(
-    diffSection: DiffSection,
+  _pixelRangeForNavigationSection(
+    navigationSection: NavigationSection,
   ): {top: number, bottom: number} {
-    const {status, lineNumber, lineCount} = diffSection;
-    const textEditorElement = this._diffSectionStatusToEditorElement(status);
+    const {status, lineNumber, lineCount} = navigationSection;
+    const textEditorElement = this._navigationSectionStatusToEditorElement(status);
     const lineHeight = textEditorElement.getModel().getLineHeightInPixels();
     return {
       top: textEditorElement.pixelPositionForBufferPosition([lineNumber, 0]).top,
@@ -517,14 +518,16 @@ export default class DiffViewComponent extends React.Component {
     };
   }
 
-  _diffSectionStatusToEditorElement(
-    diffSectionStatus: DiffSectionStatusType,
+  _navigationSectionStatusToEditorElement(
+    navigationSectionStatus: NavigationSectionStatusType,
   ): atom$TextEditorElement {
-    switch (diffSectionStatus) {
-      case DiffSectionStatus.ADDED:
-      case DiffSectionStatus.CHANGED:
+    switch (navigationSectionStatus) {
+      case NavigationSectionStatus.ADDED:
+      case NavigationSectionStatus.CHANGED:
+      case NavigationSectionStatus.NEW_ELEMENT:
         return this._newEditorComponent.getEditorDomElement();
-      case DiffSectionStatus.REMOVED:
+      case NavigationSectionStatus.REMOVED:
+      case NavigationSectionStatus.OLD_ELEMENT:
         return this._oldEditorComponent.getEditorDomElement();
       default:
         throw new Error('Invalid diff section status');
@@ -548,23 +551,23 @@ export default class DiffViewComponent extends React.Component {
 
   render(): React.Element<any> {
     const {
-      diffSections,
+      navigationSections,
       filePath,
       newEditorState,
       oldEditorState,
-      selectedDiffSectionIndex,
+      selectedNavigationSectionIndex,
     } = this.state;
     return (
       <div className="nuclide-diff-view-container">
         <DiffViewToolbar
-          diffSections={diffSections}
+          navigationSections={navigationSections}
           filePath={filePath}
-          selectedDiffSectionIndex={selectedDiffSectionIndex}
+          selectedNavigationSectionIndex={selectedNavigationSectionIndex}
           newRevisionTitle={newEditorState.revisionTitle}
           oldRevisionTitle={oldEditorState.revisionTitle}
           onSwitchMode={this._onChangeMode}
           onSwitchToEditor={this._onSwitchToEditor}
-          onNavigateToDiffSection={this._handleNavigateToDiffSection}
+          onNavigateToNavigationSection={this._handleNavigateToNavigationSection}
         />
         <div className="nuclide-diff-view-component" ref="paneContainer" />
       </div>
@@ -592,14 +595,14 @@ export default class DiffViewComponent extends React.Component {
       return scrollTop + editorElement.clientHeight / 2;
     });
 
-    let selectedDiffSectionIndex = -1;
+    let selectedNavigationSectionIndex = -1;
 
-    const {diffSections} = this.state;
+    const {navigationSections} = this.state;
     // TODO(most): Pre-compute the positions of the diff sections.
     // Q: when to invalidate (line edits, UI elements & diff reloads, ..etc.)
-    for (let sectionIndex = 0; sectionIndex < diffSections.length; sectionIndex++) {
-      const {status, lineNumber} = diffSections[sectionIndex];
-      const textEditorElement = this._diffSectionStatusToEditorElement(status);
+    for (let sectionIndex = 0; sectionIndex < navigationSections.length; sectionIndex++) {
+      const {status, lineNumber} = navigationSections[sectionIndex];
+      const textEditorElement = this._navigationSectionStatusToEditorElement(status);
       const sectionPixelTop = textEditorElement
         .pixelPositionForBufferPosition([lineNumber, 0]).top;
 
@@ -607,11 +610,11 @@ export default class DiffViewComponent extends React.Component {
       const sectionEditorScrollCenter = elementsScrollCenter[sectionEditorIndex];
 
       if (sectionEditorScrollCenter >= sectionPixelTop) {
-        selectedDiffSectionIndex = sectionIndex;
+        selectedNavigationSectionIndex = sectionIndex;
       }
     }
 
-    this.setState({selectedDiffSectionIndex});
+    this.setState({selectedNavigationSectionIndex});
   }
 
   /**
@@ -661,15 +664,17 @@ export default class DiffViewComponent extends React.Component {
       inlineOffsetElements: oldEditorElements,
     };
 
-    const diffSections = computeDiffSections(
+    const navigationSections = computeNavigationSections(
       addedLines,
       removedLines,
+      newEditorElements.keys(),
+      oldEditorElements.keys(),
       oldLineOffsets,
       newLineOffsets,
     );
 
     this.setState({
-      diffSections,
+      navigationSections,
       lineMapping: {oldToNew, newToOld},
       filePath,
       isLoadingFileDiff,

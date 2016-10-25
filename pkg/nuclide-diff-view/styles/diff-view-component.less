@@ -361,6 +361,7 @@ atom-text-editor, atom-text-editor::shadow {
   position: absolute;
   width: 100%;
   cursor: pointer;
+  text-align: center;
 
   &.added {
     background-color: @background-color-success;
@@ -373,7 +374,16 @@ atom-text-editor, atom-text-editor::shadow {
   &.modified {
     background-color: @background-color-warning;
   }
+
+  &.icon {
+    z-index: 1;
+  }
+
+  &.icon::before {
+    margin-right: 0;
+  }
 }
+
 
 /*
  * Animation originally taken from [atom/settings-view][1] to match its installing/uninstalling

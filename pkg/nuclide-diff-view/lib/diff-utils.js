@@ -10,15 +10,15 @@
  */
 
 import type {
-  DiffSection,
-  DiffSectionStatusType,
+  NavigationSection,
+  NavigationSectionStatusType,
   LineMapping,
   OffsetMap,
   TextDiff,
 } from './types';
 
 import {diffLines} from 'diff';
-import {DiffSectionStatus} from './constants';
+import {NavigationSectionStatus} from './constants';
 import {concatIterators} from '../../commons-node/collection';
 
 type ChunkPiece = {
@@ -155,12 +155,14 @@ function getOffsetLineNumber(lineNumber: number, offsets: OffsetMap): number {
   return offsetLineNumber;
 }
 
-export function computeDiffSections(
-  addedLines: Array<number>,
-  removedLines: Array<number>,
+export function computeNavigationSections(
+  addedLines: Iterable<number>,
+  removedLines: Iterable<number>,
+  newUiElementLines: Iterable<number>,
+  oldUiElementLines: Iterable<number>,
   oldLineOffsets: OffsetMap,
   newLineOffsets: OffsetMap,
-): Array<DiffSection> {
+): Array<NavigationSection> {
   // The old and new text editor contents use offsets to create a global line number identifier
   // being the line number with offset.
 
@@ -185,21 +187,38 @@ export function computeDiffSections(
     }
   }
 
+  const newUiElementsWithOffsets: Map<number, number> = new Map();
+  for (const lineNumber of newUiElementLines) {
+    newUiElementsWithOffsets.set(getOffsetLineNumber(lineNumber, newLineOffsets), lineNumber);
+  }
+
+  const oldUiElementsWithOffsets: Map<number, number> = new Map();
+  for (const lineNumber of oldUiElementLines) {
+    oldUiElementsWithOffsets.set(getOffsetLineNumber(lineNumber, oldLineOffsets), lineNumber);
+  }
+
   const lineSections = Array.from(concatIterators(
-    getLineSectionsWithStatus(addedLinesWithOffsets.entries(), DiffSectionStatus.ADDED),
-    getLineSectionsWithStatus(changedLinesWithOffsets.entries(), DiffSectionStatus.CHANGED),
-    getLineSectionsWithStatus(removedLinesWithOffsets.entries(), DiffSectionStatus.REMOVED),
+    getLineSectionsWithStatus(
+      addedLinesWithOffsets.entries(), NavigationSectionStatus.ADDED),
+    getLineSectionsWithStatus(
+      changedLinesWithOffsets.entries(), NavigationSectionStatus.CHANGED),
+    getLineSectionsWithStatus(
+      removedLinesWithOffsets.entries(), NavigationSectionStatus.REMOVED),
+    getLineSectionsWithStatus(
+      newUiElementsWithOffsets.entries(), NavigationSectionStatus.NEW_ELEMENT),
+    getLineSectionsWithStatus(
+      oldUiElementsWithOffsets.entries(), NavigationSectionStatus.OLD_ELEMENT),
   ));
 
-  lineSections.sort((diffSection1, diffSection2) => {
-    return diffSection1.offsetLineNumber - diffSection2.offsetLineNumber;
+  lineSections.sort((navSection1, navSection2) => {
+    return navSection1.offsetLineNumber - navSection2.offsetLineNumber;
   });
 
   // Merge line sections into region sections.
-  const diffSections = lineSections.length === 0 ? [] : [lineSections[0]];
+  const navSections = lineSections.length === 0 ? [] : [lineSections[0]];
 
   for (let i = 1; i < lineSections.length; i++) {
-    const lastSection = diffSections[diffSections.length - 1];
+    const lastSection = navSections[navSections.length - 1];
     const lineSection = lineSections[i];
     if (
       lastSection.status === lineSection.status &&
@@ -207,11 +226,11 @@ export function computeDiffSections(
     ) {
       lastSection.lineCount += 1;
     } else {
-      diffSections.push(lineSection);
+      navSections.push(lineSection);
     }
   }
 
-  return diffSections;
+  return navSections;
 }
 
 export function _computeLineDiffMapping(
@@ -272,8 +291,8 @@ export function _computeLineDiffMapping(
 
 function *getLineSectionsWithStatus(
   lineWithOffsets: Iterator<[number, number]>,
-  status: DiffSectionStatusType,
-): Iterator<DiffSection> {
+  status: NavigationSectionStatusType,
+): Iterator<NavigationSection> {
   for (const [offsetLineNumber, lineNumber] of lineWithOffsets) {
     yield {
       lineCount: 1,

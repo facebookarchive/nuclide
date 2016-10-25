@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {DiffModeType, DiffSection, DiffSectionStatusType} from './types';
+import type {DiffModeType, NavigationSection, NavigationSectionStatusType} from './types';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import {Button} from '../../nuclide-ui/Button';
@@ -22,14 +22,14 @@ import {ToolbarLeft} from '../../nuclide-ui/ToolbarLeft';
 import {ToolbarRight} from '../../nuclide-ui/ToolbarRight';
 
 type Props = {
-  diffSections: Array<DiffSection>,
+  navigationSections: Array<NavigationSection>,
   filePath: NuclideUri,
-  selectedDiffSectionIndex: number,
+  selectedNavigationSectionIndex: number,
   newRevisionTitle: ?string,
   oldRevisionTitle: ?string,
   onSwitchToEditor: () => mixed,
   onSwitchMode: (mode: DiffModeType) => mixed,
-  onNavigateToDiffSection: (diffSectionStatus: DiffSectionStatusType, lineNumber: number) => any,
+  onNavigateToNavigationSection: (section: NavigationSectionStatusType, lineNumber: number) => any,
 };
 
 export default class DiffViewToolbar extends React.Component {
@@ -58,8 +58,8 @@ export default class DiffViewToolbar extends React.Component {
   render(): React.Element<any> {
     const {filePath} = this.props;
     const hasActiveFile = filePath != null && filePath.length > 0;
-    const hasDiffsUp = this._getPreviousDiffSection() != null;
-    const hasDiffsDown = this._getNextDiffSection() != null;
+    const hasDiffsUp = this._getPreviousNavigationSection() != null;
+    const hasDiffsDown = this._getNextNavigationSection() != null;
     return (
       <Toolbar location="top">
         <ToolbarLeft />
@@ -98,35 +98,35 @@ export default class DiffViewToolbar extends React.Component {
   }
 
   _onClickNavigateUp(): void {
-    this._navigateToSection(this._getPreviousDiffSection());
+    this._navigateToSection(this._getPreviousNavigationSection());
   }
 
   _onClickNavigateDown(): void {
-    this._navigateToSection(this._getNextDiffSection());
+    this._navigateToSection(this._getNextNavigationSection());
   }
 
-  _navigateToSection(diffSection: ?DiffSection): void {
-    if (diffSection == null) {
+  _navigateToSection(section: ?NavigationSection): void {
+    if (section == null) {
       return;
     }
-    this.props.onNavigateToDiffSection(diffSection.status, diffSection.lineNumber);
+    this.props.onNavigateToNavigationSection(section.status, section.lineNumber);
   }
 
-  _getPreviousDiffSection(): ?DiffSection {
-    const {diffSections, selectedDiffSectionIndex} = this.props;
-    const previousSectionIndex = selectedDiffSectionIndex - 1;
+  _getPreviousNavigationSection(): ?NavigationSection {
+    const {navigationSections, selectedNavigationSectionIndex} = this.props;
+    const previousSectionIndex = selectedNavigationSectionIndex - 1;
     if (previousSectionIndex < 0) {
       return null;
     }
-    return diffSections[previousSectionIndex];
+    return navigationSections[previousSectionIndex];
   }
 
-  _getNextDiffSection(): ?DiffSection {
-    const {diffSections, selectedDiffSectionIndex} = this.props;
-    const nextSectionIndex = selectedDiffSectionIndex + 1;
-    if (nextSectionIndex >= diffSections.length) {
+  _getNextNavigationSection(): ?NavigationSection {
+    const {navigationSections, selectedNavigationSectionIndex} = this.props;
+    const nextSectionIndex = selectedNavigationSectionIndex + 1;
+    if (nextSectionIndex >= navigationSections.length) {
       return null;
     }
-    return diffSections[nextSectionIndex];
+    return navigationSections[nextSectionIndex];
   }
 }

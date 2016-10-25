@@ -10,19 +10,19 @@
  */
 
 import type {
-  DiffSection,
-  DiffSectionStatusType,
+  NavigationSection,
+  NavigationSectionStatusType,
 } from './types';
 
 import classnames from 'classnames';
-import {DiffSectionStatus} from './constants';
+import {NavigationSectionStatus} from './constants';
 import {React} from 'react-for-atom';
 
 type DiffNavigationBarProps = {
-  diffSections: Array<DiffSection>,
+  navigationSections: Array<NavigationSection>,
   navigationScale: number,
-  pixelRangeForDiffSection: (diffSection: DiffSection) => {top: number, bottom: number},
-  onNavigateToDiffSection: (diffSectionStatus: DiffSectionStatusType, lineNumber: number) => any,
+  pixelRangeForNavigationSection: (section: NavigationSection) => {top: number, bottom: number},
+  onNavigateToNavigationSection: (status: NavigationSectionStatusType, lineNumber: number) => any,
 };
 
 export default class DiffNavigationBar extends React.Component {
@@ -35,18 +35,18 @@ export default class DiffNavigationBar extends React.Component {
 
   render(): React.Element<any> {
     const {
-      diffSections,
-      pixelRangeForDiffSection,
+      navigationSections,
+      pixelRangeForNavigationSection,
       navigationScale,
     } = this.props;
 
-    const jumpTargets = diffSections.map(diffSection => {
+    const jumpTargets = navigationSections.map(navigationSection => {
       return (
         <NavigatonBarJumpTarget
           navigationScale={navigationScale}
-          diffSection={diffSection}
-          key={diffSection.status + diffSection.lineNumber}
-          pixelRangeForDiffSection={pixelRangeForDiffSection}
+          navigationSection={navigationSection}
+          key={navigationSection.status + navigationSection.lineNumber}
+          pixelRangeForNavigationSection={pixelRangeForNavigationSection}
           onClick={this._handleClick}
         />
       );
@@ -59,29 +59,32 @@ export default class DiffNavigationBar extends React.Component {
     );
   }
 
-  _handleClick(diffSectionStatus: DiffSectionStatusType, lineNumber: number): void {
-    this.props.onNavigateToDiffSection(diffSectionStatus, lineNumber);
+  _handleClick(navigationSectionStatus: NavigationSectionStatusType, lineNumber: number): void {
+    this.props.onNavigateToNavigationSection(navigationSectionStatus, lineNumber);
   }
 }
 
-function sectionStatusToClassName(statusType: DiffSectionStatusType): string {
+function sectionStatusToClassName(statusType: NavigationSectionStatusType): string {
   switch (statusType) {
-    case DiffSectionStatus.ADDED:
+    case NavigationSectionStatus.ADDED:
       return 'added';
-    case DiffSectionStatus.CHANGED:
+    case NavigationSectionStatus.CHANGED:
       return 'modified';
-    case DiffSectionStatus.REMOVED:
+    case NavigationSectionStatus.REMOVED:
       return 'removed';
+    case NavigationSectionStatus.NEW_ELEMENT:
+    case NavigationSectionStatus.OLD_ELEMENT:
+      return 'icon icon-comment';
     default:
-      throw new Error('Invalid diff section status');
+      throw new Error('Invalid navigation section status');
   }
 }
 
 type NavigatonBarJumpTargetProps = {
   navigationScale: number,
-  diffSection: DiffSection,
-  pixelRangeForDiffSection: (diffSection: DiffSection) => {top: number, bottom: number},
-  onClick: (diffSectionStatus: DiffSectionStatusType, lineNumber: number) => any,
+  navigationSection: NavigationSection,
+  pixelRangeForNavigationSection: (section: NavigationSection) => {top: number, bottom: number},
+  onClick: (status: NavigationSectionStatusType, lineNumber: number) => any,
 };
 
 class NavigatonBarJumpTarget extends React.Component {
@@ -93,9 +96,9 @@ class NavigatonBarJumpTarget extends React.Component {
   }
 
   render(): React.Element<any> {
-    const {diffSection, pixelRangeForDiffSection, navigationScale} = this.props;
-    const lineChangeClass = sectionStatusToClassName(diffSection.status);
-    const {top, bottom} = pixelRangeForDiffSection(diffSection);
+    const {navigationSection, pixelRangeForNavigationSection, navigationScale} = this.props;
+    const lineChangeClass = sectionStatusToClassName(navigationSection.status);
+    const {top, bottom} = pixelRangeForNavigationSection(navigationSection);
     const scaledTop = top * navigationScale;
     const scaledHeight = Math.max((bottom - top) * navigationScale, 1);
     const targetStyle = {
@@ -117,11 +120,11 @@ class NavigatonBarJumpTarget extends React.Component {
   }
 
   _handleClick(e: SyntheticMouseEvent): void {
-    const {diffSection} = this.props;
+    const {navigationSection} = this.props;
     const targetRectangle = ((e.target: any): HTMLElement).getBoundingClientRect();
     const lineHeight = (e.clientY - targetRectangle.top) / targetRectangle.height;
-    const scrollToLineNumber = diffSection.lineNumber +
-      Math.floor(diffSection.lineCount * lineHeight);
-    this.props.onClick(diffSection.status, scrollToLineNumber);
+    const scrollToLineNumber = navigationSection.lineNumber +
+      Math.floor(navigationSection.lineCount * lineHeight);
+    this.props.onClick(navigationSection.status, scrollToLineNumber);
   }
 }

@@ -75,13 +75,14 @@ export type HighlightedLines = {
   removed: Array<number>,
 };
 
-export type DiffSectionStatusType = 'Added' | 'Changed' | 'Removed';
+export type NavigationSectionStatusType =
+  'Added' | 'Changed' | 'Removed' | 'New Element' | 'Old Element';
 
-export type DiffSection = {
+export type NavigationSection = {
   lineCount: number,
   lineNumber: number,
   offsetLineNumber: number,
-  status: DiffSectionStatusType,
+  status: NavigationSectionStatusType,
 };
 
 export type EditorElementsMap = Map<number, React.Element<any>>;
