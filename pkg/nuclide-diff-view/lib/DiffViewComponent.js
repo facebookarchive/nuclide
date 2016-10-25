@@ -624,9 +624,6 @@ export default class DiffViewComponent extends React.Component {
       toRevisionTitle,
     } = fileState;
 
-    const oldEditorElements = inlineComponents.filter(component => !component.inNewEditor);
-    const newEditorElements = inlineComponents.filter(component => component.inNewEditor);
-
     const {
       addedLines,
       removedLines,
@@ -644,7 +641,7 @@ export default class DiffViewComponent extends React.Component {
         added: [],
         removed: removedLines,
       },
-      inlineElements: oldEditorElements,
+      inlineElements: inlineComponents,
     };
     const newEditorState = {
       revisionTitle: toRevisionTitle,
@@ -654,7 +651,7 @@ export default class DiffViewComponent extends React.Component {
         added: addedLines,
         removed: [],
       },
-      inlineElements: newEditorElements,
+      inlineElements: inlineComponents,
     };
 
     const diffSections = computeDiffSections(
