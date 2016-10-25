@@ -12,7 +12,7 @@
 import type {DebuggerProcessInfo} from '../../nuclide-debugger-base';
 import type {IwdpDebuggerService} from '../../nuclide-debugger-iwdp-rpc/lib/IwdpDebuggerService';
 
-import {DebuggerInstance} from '../../nuclide-debugger-base';
+import {DebuggerInstanceBase} from '../../nuclide-debugger-base';
 import WS from 'ws';
 import {stringifyError} from '../../commons-node/string';
 import {logger} from './logger';
@@ -21,7 +21,7 @@ import UniversalDisposable from '../../commons-node/UniversalDisposable';
 
 const {log, logError, logInfo} = logger;
 
-export class IwdpDebuggerInstance extends DebuggerInstance {
+export class IwdpDebuggerInstance extends DebuggerInstanceBase {
   _server: WebSocketServer;
   _webSocket: ?WS;
   _disposables: UniversalDisposable;

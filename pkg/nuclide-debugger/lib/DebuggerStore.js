@@ -13,7 +13,7 @@ import type {
   NuclideEvaluationExpressionProvider,
 } from '../../nuclide-debugger-interfaces/service';
 import type {
-  DebuggerInstance,
+  DebuggerInstanceBase,
 } from '../../nuclide-debugger-base';
 import type DebuggerModel from './DebuggerModel';
 import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';
@@ -47,7 +47,7 @@ class DebuggerStore {
 
   // Stored values
   _debuggerSettings: DebuggerSettings;
-  _debuggerInstance: ?DebuggerInstance;
+  _debuggerInstance: ?DebuggerInstanceBase;
   _error: ?string;
   _evaluationExpressionProviders: Set<NuclideEvaluationExpressionProvider>;
   _processSocket: ?string;
@@ -104,7 +104,7 @@ class DebuggerStore {
     return this._registerExecutor;
   }
 
-  getDebuggerInstance(): ?DebuggerInstance {
+  getDebuggerInstance(): ?DebuggerInstanceBase {
     return this._debuggerInstance;
   }
 

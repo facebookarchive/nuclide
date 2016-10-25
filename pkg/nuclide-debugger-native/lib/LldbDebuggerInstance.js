@@ -15,7 +15,7 @@ import type {
 import type {DebuggerProcessInfo} from '../../nuclide-debugger-base';
 
 import utils from './utils';
-import {DebuggerInstance} from '../../nuclide-debugger-base';
+import {DebuggerInstanceBase} from '../../nuclide-debugger-base';
 import {Emitter} from 'atom';
 import {translateMessageFromServer, translateMessageToServer} from './ChromeMessageRemoting';
 import nuclideUri from '../../commons-node/nuclideUri';
@@ -30,7 +30,7 @@ const {log, logInfo, logError} = utils;
 
 const SESSION_END_EVENT = 'session-end-event';
 
-export class LldbDebuggerInstance extends DebuggerInstance {
+export class LldbDebuggerInstance extends DebuggerInstanceBase {
   _rpcService: NativeDebuggerService;
   _attachPromise: ?Promise<NativeDebuggerService>;
   _chromeWebSocketServer: WebSocketServer;

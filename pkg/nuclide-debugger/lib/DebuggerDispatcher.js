@@ -14,7 +14,7 @@ import type {
   NuclideEvaluationExpressionProvider,
 } from '../../nuclide-debugger-interfaces/service';
 import type {
-  DebuggerInstance,
+  DebuggerInstanceBase,
 } from '../../nuclide-debugger-base';
 import type {
   Callstack,
@@ -32,7 +32,7 @@ import Dispatcher from '../../commons-node/Dispatcher';
 export type DebuggerAction =
   {
     actionType: 'SET_DEBUGGER_INSTANCE',
-    data: ?DebuggerInstance,
+    data: ?DebuggerInstanceBase,
   } |
   {
     actionType: 'SET_ERROR',

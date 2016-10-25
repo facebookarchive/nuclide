@@ -10,7 +10,7 @@
  */
 
 
-import type {DebuggerInstance} from '../../nuclide-debugger-base';
+import type {DebuggerInstanceBase} from '../../nuclide-debugger-base';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {
   AttachTargetInfo,
@@ -38,7 +38,7 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
     return true;
   }
 
-  async debug(): Promise<DebuggerInstance> {
+  async debug(): Promise<DebuggerInstanceBase> {
     const rpcService = this._getRpcService();
     let debugSession = null;
     let outputDisposable = registerConsoleLogging(

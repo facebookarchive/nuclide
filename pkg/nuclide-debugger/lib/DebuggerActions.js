@@ -18,7 +18,7 @@ import type {
 import type {DebuggerStore} from './DebuggerStore';
 import type {
   DebuggerProcessInfo,
-  DebuggerInstance,
+  DebuggerInstanceBase,
 } from '../../nuclide-debugger-base';
 import type {
   Callstack,
@@ -121,7 +121,7 @@ class DebuggerActions {
     });
   }
 
-  async _waitForChromeConnection(debuggerInstance: DebuggerInstance): Promise<void> {
+  async _waitForChromeConnection(debuggerInstance: DebuggerInstanceBase): Promise<void> {
     this._setDebuggerInstance(debuggerInstance);
     if (debuggerInstance.onSessionEnd != null) {
       const handler = this._handleSessionEnd.bind(this, debuggerInstance);
@@ -143,19 +143,19 @@ class DebuggerActions {
     await this._store.loaderBreakpointResumePromise;
   }
 
-  _setDebuggerInstance(debuggerInstance: ?DebuggerInstance): void {
+  _setDebuggerInstance(debuggerInstance: ?DebuggerInstanceBase): void {
     this._dispatcher.dispatch({
       actionType: ActionTypes.SET_DEBUGGER_INSTANCE,
       data: debuggerInstance,
     });
   }
 
-  _handleSessionEnd(debuggerInstance: DebuggerInstance): void {
+  _handleSessionEnd(debuggerInstance: DebuggerInstanceBase): void {
     if (this._store.getDebuggerInstance() === debuggerInstance) {
       this.stopDebugging();
     } else {
       // Do nothing, because either:
-      // 1. Another DebuggerInstnace is alive. or
+      // 1. Another DebuggerInstance is alive. or
       // 2. DebuggerInstance has been disposed.
     }
   }

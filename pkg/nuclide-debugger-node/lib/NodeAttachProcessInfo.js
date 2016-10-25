@@ -14,9 +14,9 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 import invariant from 'assert';
 import {
   DebuggerInstance,
+  DebuggerInstanceBase,
   DebuggerProcessInfo,
 } from '../../nuclide-debugger-base';
-import {NodeDebuggerInstance} from './NodeDebuggerInstance';
 import type {
   NodeAttachTargetInfo,
   NodeDebuggerService,
@@ -32,10 +32,10 @@ export class NodeAttachProcessInfo extends DebuggerProcessInfo {
     this._targetInfo = targetInfo;
   }
 
-  async debug(): Promise<DebuggerInstance> {
+  async debug(): Promise<DebuggerInstanceBase> {
     const rpcService = this._getRpcService();
     await rpcService.attach(this._targetInfo);
-    return new NodeDebuggerInstance(this, rpcService);
+    return new DebuggerInstance(this, rpcService);
   }
 
   _getRpcService(): NodeDebuggerService {

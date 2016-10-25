@@ -11,7 +11,7 @@
 
 import UniversalDisposable from '../../../commons-node/UniversalDisposable';
 import {observableFromSubscribeFunction} from '../../../commons-node/event';
-import {DebuggerInstance, DebuggerProcessInfo} from '../../../nuclide-debugger-base';
+import {DebuggerInstanceBase, DebuggerProcessInfo} from '../../../nuclide-debugger-base';
 import {DebuggerProxyClient} from './DebuggerProxyClient';
 import {Observable} from 'rxjs';
 import WS from 'ws';
@@ -28,7 +28,7 @@ const PORT = 38913;
  *    DebuggerProxyClient.
  * 2. Debugging the node process.
  */
-export class ReactNativeDebuggerInstance extends DebuggerInstance {
+export class ReactNativeDebuggerInstance extends DebuggerInstanceBase {
   _subscriptions: rxjs$ISubscription;
   _connected: Promise<void>;
 

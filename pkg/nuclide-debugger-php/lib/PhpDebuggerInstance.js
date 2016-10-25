@@ -17,7 +17,7 @@ import type {
 import utils from './utils';
 const {log, logInfo, logError, setLogLevel} = utils;
 
-import {DebuggerInstance} from '../../nuclide-debugger-base';
+import {DebuggerInstanceBase} from '../../nuclide-debugger-base';
 import {ObservableManager} from './ObservableManager';
 import {CompositeDisposable} from 'atom';
 import {translateMessageFromServer, translateMessageToServer} from './ChromeMessageRemoting';
@@ -28,7 +28,7 @@ import {stringifyError} from '../../commons-node/string';
 import {getConfig} from './utils';
 
 
-export class PhpDebuggerInstance extends DebuggerInstance {
+export class PhpDebuggerInstance extends DebuggerInstanceBase {
   _rpcService: PhpDebuggerServiceType;
   _server: ?WS.Server;
   _webSocket: ?WebSocket;

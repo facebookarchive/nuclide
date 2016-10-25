@@ -9,12 +9,13 @@
  * the root directory of this source tree.
  */
 
-export {default as DebuggerInstance} from './DebuggerInstance';
+export {default as DebuggerInstanceBase} from './DebuggerInstance';
 export {default as DebuggerProcessInfo} from './DebuggerProcessInfo';
 export {
   default as DebuggerLaunchAttachProvider,
   DebuggerLaunchAttachEventTypes,
 } from './DebuggerLaunchAttachProvider';
+export {DebuggerInstance} from './DebuggerInstance.js';
 
 export {
   setOutputService,

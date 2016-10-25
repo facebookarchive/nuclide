@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {DebuggerInstance} from '../../nuclide-debugger-base';
+import type {DebuggerInstanceBase} from '../../nuclide-debugger-base';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {
   LaunchTargetInfo,
@@ -39,7 +39,7 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
     return true;
   }
 
-  async debug(): Promise<DebuggerInstance> {
+  async debug(): Promise<DebuggerInstanceBase> {
     const rpcService = this._getRpcService();
     if (typeof this.basepath === 'string') {
       this._launchTargetInfo.basepath = this.basepath;
