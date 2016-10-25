@@ -10,9 +10,9 @@
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {HighlightedLines, LineMapping, OffsetMap, UIElement} from './types';
+import type {EditorElementsMap, HighlightedLines, LineMapper, OffsetMap} from './types';
 
-import {arrayEqual, mapEqual} from '../../commons-node/collection';
+import {mapEqual} from '../../commons-node/collection';
 import {React} from 'react-for-atom';
 import DiffViewEditor from './DiffViewEditor';
 import {AtomTextEditor} from '../../nuclide-ui/AtomTextEditor';
@@ -31,7 +31,7 @@ const DEBOUNCE_SCROLL_MS = 50;
 type Props = {
   filePath: NuclideUri,
   isLoading: boolean,
-  lineMapping: LineMapping,
+  lineMapper: LineMapper,
   textBuffer: atom$TextBuffer,
   offsets: OffsetMap,
   highlightedLines: {
@@ -39,19 +39,12 @@ type Props = {
     removed: Array<number>,
   },
   textContent?: string,
-  inlineElements: Array<UIElement>,
+  inlineElements: EditorElementsMap,
+  inlineOffsetElements: EditorElementsMap,
   readOnly: boolean,
   onDidChangeScrollTop?: () => mixed,
   onDidUpdateTextEditorElement: () => mixed,
 };
-
-function inlineElementComparator(
-  element1: UIElement,
-  element2: UIElement,
-): boolean {
-  return element1.bufferRow === element2.bufferRow
-    && element1.node === element2.node;
-}
 
 export default class DiffViewEditorPane extends React.Component {
   props: Props;
@@ -164,15 +157,13 @@ export default class DiffViewEditorPane extends React.Component {
     if (!mapEqual(oldProps.offsets, newProps.offsets)) {
       this._setOffsets(newProps.offsets);
     }
-    if (!arrayEqual(
-      oldProps.inlineElements,
-      newProps.inlineElements,
-      inlineElementComparator,
-    )) {
-      this._diffViewEditor.setUIElements(
-        newProps.inlineElements,
-        newProps.lineMapping,
-        !newProps.readOnly,
+    if (!mapEqual(oldProps.inlineElements, newProps.inlineElements)) {
+      this._diffViewEditor.setUiElements(newProps.inlineElements);
+    }
+    if (!mapEqual(oldProps.inlineOffsetElements, newProps.inlineOffsetElements)) {
+      this._diffViewEditor.setOffsetUiElements(
+        newProps.inlineOffsetElements,
+        newProps.lineMapper,
       );
     }
     this._setHighlightedLines(newProps.highlightedLines);

@@ -14,7 +14,7 @@ import type {
   DiffOptionType,
   HgDiffState,
   Store,
-  UIElement,
+  UIElements,
 } from '../types';
 import type {ActionsObservable} from '../../../commons-node/redux-observable';
 import type {CwdApi} from '../../../nuclide-current-working-directory/lib/CwdApi';
@@ -27,6 +27,7 @@ import * as Actions from './Actions';
 import invariant from 'assert';
 import {Observable, Subject} from 'rxjs';
 import {observableFromSubscribeFunction} from '../../../commons-node/event';
+import {mapUnion} from '../../../commons-node/collection';
 import {observeStatusChanges} from '../../../commons-node/vcs';
 import {
   CommitMode,
@@ -411,8 +412,9 @@ export function diffFileEpic(
                 fromRevisionTitle: '...',
                 toRevisionTitle: FILESYSTEM_REVISION_TITLE,
                 newContents: '',
+                newEditorElements: new Map(),
                 oldContents: '',
-                uiElements: [],
+                oldEditorElements: new Map(),
               }),
             );
           }
@@ -421,10 +423,13 @@ export function diffFileEpic(
           const newContents = buffer.getText();
           const oldContents = committedContents;
 
+          const fileDiff = store.getState().fileDiff;
+
           return Observable.concat(
             Observable.of(Actions.updateLoadingFileDiff(false)),
 
             Observable.of(Actions.updateFileDiff({
+              ...fileDiff, // Keep the ui elements while we refresh.
               filePath,
               fromRevisionTitle: formatFileDiffRevisionTitle(revisionInfo),
               newContents,
@@ -442,9 +447,13 @@ export function diffFileEpic(
                       return Observable.empty();
                     }),
                 ),
-            ).switchMap((uiElementsArrays: Array<Array<UIElement>>) => {
-              const flattenedUiElements = [].concat(...uiElementsArrays);
-              return Observable.of(Actions.updateFileUiElements(filePath, flattenedUiElements));
+            ).switchMap((uiElementsResults: Array<UIElements>) => {
+              const newEditorElements = mapUnion(
+                  ...uiElementsResults.map(uiElements => uiElements.newEditorElements));
+              const oldEditorElements = mapUnion(
+                ...uiElementsResults.map(uiElements => uiElements.oldEditorElements));
+              return Observable.of(
+                Actions.updateFileUiElements(filePath, newEditorElements, oldEditorElements));
             }),
           );
         })

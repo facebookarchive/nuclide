@@ -20,6 +20,7 @@ import type {
   CommitState,
   DiffFileAction,
   DiffModeType,
+  EditorElementsMap,
   FileChangeStatusValue,
   FileDiffState,
   OpenViewAction,
@@ -32,7 +33,6 @@ import type {
   SetCwdApiAction,
   SetShouldReabaseOnAmendAction,
   SetViewModeAction,
-  UIElement,
   UIProvider,
   UpdateActiveRepositoryAction,
   UpdateCommitStateAction,
@@ -204,13 +204,15 @@ export function updateFileDiff(
 
 export function updateFileUiElements(
   filePath: NuclideUri,
-  uiElements: Array<UIElement>,
+  newEditorElements: EditorElementsMap,
+  oldEditorElements: EditorElementsMap,
 ): UpdateFileUiElementsAction {
   return {
     type: ActionTypes.UPDATE_FILE_UI_ELEMENTS,
     payload: {
       filePath,
-      uiElements,
+      newEditorElements,
+      oldEditorElements,
     },
   };
 }

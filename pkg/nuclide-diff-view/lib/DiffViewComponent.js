@@ -13,9 +13,9 @@ import type {
   DiffSection,
   DiffSectionStatusType,
   DiffModeType,
+  EditorElementsMap,
   LineMapping,
   OffsetMap,
-  UIElement,
 } from './types';
 import type DiffViewModel, {State as DiffViewStateType} from './DiffViewModel';
 import type {RevisionInfo} from '../../nuclide-hg-rpc/lib/HgService';
@@ -68,7 +68,8 @@ type EditorState = {
     added: Array<number>,
     removed: Array<number>,
   },
-  inlineElements: Array<UIElement>,
+  inlineElements: EditorElementsMap,
+  inlineOffsetElements: EditorElementsMap,
 };
 
 type State = {
@@ -90,7 +91,8 @@ function initialEditorState(): EditorState {
       added: [],
       removed: [],
     },
-    inlineElements: [],
+    inlineElements: new Map(),
+    inlineOffsetElements: new Map(),
   };
 }
 
@@ -411,10 +413,11 @@ export default class DiffViewComponent extends React.Component {
           filePath={filePath}
           isLoading={isLoadingFileDiff}
           offsets={oldState.offsets}
-          lineMapping={lineMapping}
+          lineMapper={lineMapping.newToOld}
           highlightedLines={oldState.highlightedLines}
           textContent={oldState.text}
           inlineElements={oldState.inlineElements}
+          inlineOffsetElements={oldState.inlineOffsetElements}
           readOnly={true}
           onDidChangeScrollTop={this._onDidChangeScrollTop}
           onDidUpdateTextEditorElement={EMPTY_FUNCTION}
@@ -431,9 +434,10 @@ export default class DiffViewComponent extends React.Component {
           filePath={filePath}
           isLoading={isLoadingFileDiff}
           offsets={newState.offsets}
-          lineMapping={lineMapping}
+          lineMapper={lineMapping.oldToNew}
           highlightedLines={newState.highlightedLines}
           inlineElements={newState.inlineElements}
+          inlineOffsetElements={newState.inlineOffsetElements}
           onDidUpdateTextEditorElement={this._onDidUpdateTextEditorElement}
           readOnly={false}
         />,
@@ -619,7 +623,8 @@ export default class DiffViewComponent extends React.Component {
       isLoadingFileDiff,
       oldContents,
       newContents,
-      inlineComponents,
+      oldEditorElements,
+      newEditorElements,
       fromRevisionTitle,
       toRevisionTitle,
     } = fileState;
@@ -641,7 +646,8 @@ export default class DiffViewComponent extends React.Component {
         added: [],
         removed: removedLines,
       },
-      inlineElements: inlineComponents,
+      inlineElements: oldEditorElements,
+      inlineOffsetElements: newEditorElements,
     };
     const newEditorState = {
       revisionTitle: toRevisionTitle,
@@ -651,7 +657,8 @@ export default class DiffViewComponent extends React.Component {
         added: addedLines,
         removed: [],
       },
-      inlineElements: inlineComponents,
+      inlineElements: newEditorElements,
+      inlineOffsetElements: oldEditorElements,
     };
 
     const diffSections = computeDiffSections(

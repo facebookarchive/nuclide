@@ -51,6 +51,7 @@ export type RevisionsState = {
 };
 
 export type OffsetMap = Map<number, number>;
+export type LineMapper = Array<number>;
 
 export type TextDiff = LineMapping & {
   addedLines: Array<number>,
@@ -60,8 +61,8 @@ export type TextDiff = LineMapping & {
 };
 
 export type LineMapping = {
-  newToOld: Array<number>,
-  oldToNew: Array<number>,
+  newToOld: LineMapper,
+  oldToNew: LineMapper,
 };
 
 export type HgDiffState = {
@@ -83,10 +84,11 @@ export type DiffSection = {
   status: DiffSectionStatusType,
 };
 
-export type UIElement = {
-  node: React.Element<any>,
-  bufferRow: number,
-  inNewEditor: boolean,
+export type EditorElementsMap = Map<number, React.Element<any>>;
+
+export type UIElements = {
+  oldEditorElements: EditorElementsMap,
+  newEditorElements: EditorElementsMap,
 };
 
 export type UIProvider = {
@@ -94,7 +96,7 @@ export type UIProvider = {
     filePath: NuclideUri,
     oldContents: string,
     newContents: string,
-  ) => Observable<Array<UIElement>>,
+  ) => Observable<UIElements>,
 };
 
 // Redux store types.
@@ -126,7 +128,8 @@ export type FileDiffState = {
   newContents: string,
   oldContents: string,
   toRevisionTitle: string,
-  uiElements?: Array<UIElement>,
+  oldEditorElements: EditorElementsMap,
+  newEditorElements: EditorElementsMap,
 };
 
 export type AppState = {
@@ -248,9 +251,7 @@ export type UpdateFileDiffAction = {
 
 export type UpdateFileUiElementsAction = {
   type: 'UPDATE_FILE_UI_ELEMENTS',
-  payload: {
-    uiElements: Array<UIElement>,
-  },
+  payload: UIElements,
 };
 
 export type SetViewModeAction = {

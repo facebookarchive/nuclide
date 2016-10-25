@@ -146,15 +146,13 @@ export function fileDiff(
 ): FileDiffState {
   switch (action.type) {
     case ActionTypes.UPDATE_FILE_DIFF:
-      const {fileDiff: diff} = action.payload;
-      return {
-        ...diff,
-        uiElements: diff.uiElements || state.uiElements,
-      };
+      return action.payload.fileDiff;
     case ActionTypes.UPDATE_FILE_UI_ELEMENTS:
+      const {newEditorElements, oldEditorElements} = action.payload;
       return {
         ...state,
-        uiElements: action.payload.uiElements,
+        newEditorElements,
+        oldEditorElements,
       };
   }
   return state || getEmptyFileDiffState();

@@ -14,6 +14,7 @@ import type {
 } from '../../nuclide-hg-repository-client';
 import type {Message} from '../../nuclide-console/lib/types';
 import type {
+  EditorElementsMap,
   RevisionsState,
   FileChangeStatusValue,
   CommitModeType,
@@ -21,7 +22,6 @@ import type {
   PublishModeType,
   PublishModeStateType,
   DiffModeType,
-  UIElement,
 } from './types';
 import type {
   RevisionInfo,
@@ -61,7 +61,8 @@ function getInitialState(): State {
     oldContents: '',
     newContents: '',
     isLoadingFileDiff: false,
-    inlineComponents: [],
+    oldEditorElements: new Map(),
+    newEditorElements: new Map(),
     activeRepository: null,
     viewMode: DiffMode.BROWSE_MODE,
     commitMessage: null,
@@ -87,7 +88,8 @@ export type State = {
   newContents: string,
   fromRevisionTitle: string,
   toRevisionTitle: string,
-  inlineComponents: Array<UIElement>,
+  oldEditorElements: EditorElementsMap,
+  newEditorElements: EditorElementsMap,
   viewMode: DiffModeType,
   commitMessage: ?string,
   commitMode: CommitModeType,

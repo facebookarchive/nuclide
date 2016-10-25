@@ -9,83 +9,76 @@
  * the root directory of this source tree.
  */
 
-import type {LineMapping, OffsetMap, UIElement} from './types';
+import type {LineMapper, OffsetMap} from './types';
 
 import {Range} from 'atom';
 import {React} from 'react-for-atom';
 import {ReactDOM} from 'react-for-atom';
 
-type RenderedUiElement = {
-  node: React.Element<any>,
-  bufferRow: number,
-};
-
 function getOffsetBlockElements(
   offsets: OffsetMap,
   lineHeight: number,
-): Array<RenderedUiElement> {
-  return Array.from(offsets.entries())
-    .map(([bufferRow, lineCount]) => ({
-      bufferRow,
-      node: (
-        <div
-          className = "nuclide-diff-view-block-offset"
-          style={{minHeight: lineCount * lineHeight}}
-        />
-      ),
-    }));
+): Map<number, React.Element<any>> {
+  const offsetBlocks = new Map();
+  for (const [bufferRow, lineCount] of offsets) {
+    const offsetBlock = (
+      <div
+        className = "nuclide-diff-view-block-offset"
+        style={{minHeight: lineCount * lineHeight}}
+      />
+    );
+
+    offsetBlocks.set(bufferRow, offsetBlock);
+  }
+  return offsetBlocks;
 }
 
-function getInlineBlockElements(
-  inlineElements: Array<UIElement>,
-  lineMapping: LineMapping,
-  inNewEditor: boolean,
-): Array<RenderedUiElement> {
-  const elements = inlineElements.filter(element => element.inNewEditor === inNewEditor);
-
-  const lineMapper = inNewEditor ? lineMapping.oldToNew : lineMapping.newToOld;
-
-  const offsetElements = inlineElements.filter(element => element.inNewEditor !== inNewEditor)
-    .map(({bufferRow, node}) => {
-      const translatedBufferRow = lineMapper[bufferRow];
-      const hiddenOffsetNode = (
-        <div style={{position: 'relative'}}>
-          <div
-            className="nuclide-diff-view-block-offset"
-            style={{position: 'absolute', left: 0, right: 0, top: 0, bottom: 0}}
-          />
-          <div style={{visibility: 'hidden', pointerEvents: 'none'}}>
-            {node}
-          </div>
+function getOffsetInlineBlockElements(
+  offsetElements: Map<number, React.Element<any>>,
+  lineMapper: LineMapper,
+): Map<number, React.Element<any>> {
+  const offsetBlocks = new Map();
+  for (const [bufferRow, offsetElement] of offsetElements) {
+    const hiddenOffsetNode = (
+      <div style={{position: 'relative'}}>
+        <div
+          className="nuclide-diff-view-block-offset"
+          style={{position: 'absolute', left: 0, right: 0, top: 0, bottom: 0}}
+        />
+        <div style={{visibility: 'hidden', pointerEvents: 'none'}}>
+          {offsetElement}
         </div>
-      );
-      return {
-        bufferRow: translatedBufferRow,
-        node: hiddenOffsetNode,
-      };
-    });
+      </div>
+    );
 
-  return elements.concat(offsetElements);
+    offsetBlocks.set(
+      lineMapper[bufferRow],
+      hiddenOffsetNode,
+    );
+  }
+  return offsetBlocks;
 }
 
 function renderBlockElements(
   editor: atom$TextEditor,
-  elements: Array<RenderedUiElement>,
+  elements: Map<number, React.Element<any>>,
 ): Array<atom$Marker> {
-  return elements.map(({bufferRow, node}) => {
+  const markers = [];
+  for (const [bufferRow, element] of elements) {
     const marker = editor.markBufferPosition([bufferRow, 0], {invalidate: 'never'});
 
     // The position should be `after` if the element is at the end of the file.
     const position = bufferRow >= editor.getLineCount() - 1 ? 'after' : 'before';
     const container = document.createElement('div');
-    ReactDOM.render(node, container);
+    ReactDOM.render(element, container);
     editor.decorateMarker(
       marker,
       {type: 'block', item: container, position},
     );
 
-    return marker;
-  });
+    markers.push(marker);
+  }
+  return markers;
 }
 
 /**
@@ -98,6 +91,7 @@ export default class DiffViewEditor {
   _highlightMarkers: Array<atom$Marker>;
   _offsetMarkers: Array<atom$Marker>;
   _uiElementsMarkers: Array<atom$Marker>;
+  _offsetUiElementsMarkers: Array<atom$Marker>;
 
   constructor(editorElement: atom$TextEditorElement) {
     this._editorElement = editorElement;
@@ -105,16 +99,21 @@ export default class DiffViewEditor {
     this._highlightMarkers = [];
     this._offsetMarkers = [];
     this._uiElementsMarkers = [];
+    this._offsetUiElementsMarkers = [];
   }
 
-  setUIElements(
-    elements: Array<UIElement>,
-    lineMapping: LineMapping,
-    inNewEditor: boolean,
-  ): void {
+  setUiElements(elements: Map<number, React.Element<any>>): void {
     this._uiElementsMarkers.forEach(marker => marker.destroy());
-    const uiElements = getInlineBlockElements(elements, lineMapping, inNewEditor);
-    this._uiElementsMarkers = renderBlockElements(this._editor, uiElements);
+    this._uiElementsMarkers = renderBlockElements(this._editor, elements);
+  }
+
+  setOffsetUiElements(
+    offsetElements: Map<number, React.Element<any>>,
+    lineMapper: LineMapper,
+  ): void {
+    this._offsetUiElementsMarkers.forEach(marker => marker.destroy());
+    const offsetUiElements = getOffsetInlineBlockElements(offsetElements, lineMapper);
+    this._offsetUiElementsMarkers = renderBlockElements(this._editor, offsetUiElements);
   }
 
   scrollToScreenLine(screenLine: number): void {
@@ -188,6 +187,8 @@ export default class DiffViewEditor {
     this._offsetMarkers = [];
     this._uiElementsMarkers.forEach(marker => marker.destroy());
     this._uiElementsMarkers = [];
+    this._offsetUiElementsMarkers.forEach(marker => marker.destroy());
+    this._offsetUiElementsMarkers = [];
     this._editor.destroy();
   }
 
