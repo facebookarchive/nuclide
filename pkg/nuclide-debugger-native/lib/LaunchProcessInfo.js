@@ -19,13 +19,14 @@ import typeof * as NativeDebuggerService
   from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerService';
 
 import invariant from 'assert';
-import {LldbDebuggerInstance} from './LldbDebuggerInstance';
 import {
   DebuggerProcessInfo,
   registerConsoleLogging,
 } from '../../nuclide-debugger-base';
+import {DebuggerInstance} from '../../nuclide-debugger-base';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {getConfig} from './utils';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 
 export class LaunchProcessInfo extends DebuggerProcessInfo {
   _launchTargetInfo: LaunchTargetInfo;
@@ -47,14 +48,18 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
 
     let debugSession = null;
     let outputDisposable = registerConsoleLogging(
-      'C++ debugger',
+      'C++ Debugger',
       rpcService.getOutputWindowObservable().refCount(),
     );
     try {
       await rpcService.launch(this._launchTargetInfo);
       // Start websocket server with Chrome after launch completed.
       invariant(outputDisposable);
-      debugSession = new LldbDebuggerInstance(this, rpcService, outputDisposable);
+      debugSession = new DebuggerInstance(
+        this,
+        rpcService,
+        new UniversalDisposable(outputDisposable),
+      );
       outputDisposable = null;
     } finally {
       if (outputDisposable != null) {

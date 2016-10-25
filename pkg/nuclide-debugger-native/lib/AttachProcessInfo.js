@@ -22,9 +22,10 @@ import {
   registerConsoleLogging,
 } from '../../nuclide-debugger-base';
 import invariant from 'assert';
-import {LldbDebuggerInstance} from './LldbDebuggerInstance';
+import {DebuggerInstance} from '../../nuclide-debugger-base';
 import {getConfig} from './utils';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 
 export class AttachProcessInfo extends DebuggerProcessInfo {
   _targetInfo: AttachTargetInfo;
@@ -49,7 +50,11 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
       await rpcService.attach(this._targetInfo);
       // Start websocket server with Chrome after attach completed.
       invariant(outputDisposable);
-      debugSession = new LldbDebuggerInstance(this, rpcService, outputDisposable);
+      debugSession = new DebuggerInstance(
+        this,
+        rpcService,
+        new UniversalDisposable(outputDisposable),
+      );
       outputDisposable = null;
     } finally {
       if (outputDisposable != null) {

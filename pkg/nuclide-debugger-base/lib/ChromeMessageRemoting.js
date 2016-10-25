@@ -12,10 +12,7 @@
 
 import url from 'url';
 import nuclideUri from '../../commons-node/nuclideUri';
-import logger from './utils';
 import invariant from 'assert';
-
-const {log} = logger;
 
 export function translateMessageFromServer(hostname: string, message: string): string {
   return translateMessage(message, uri => translateUriFromServer(hostname, uri));
@@ -61,7 +58,6 @@ function translateUriFromServer(hostname: string, uri: string): string {
   if (components.protocol === 'file:') {
     invariant(components.pathname);
     const result = nuclideUri.createRemoteUri(hostname, decodeURI(components.pathname));
-    log(`Translated URI from ${uri} to ${result}`);
     return result;
   } else {
     return uri;
@@ -75,7 +71,6 @@ function translateUriToServer(uri: string): string {
       slashes: true,
       pathname: nuclideUri.getPath(uri),
     });
-    log(`Translated URI from ${uri} to ${result}`);
     return result;
   } else {
     return uri;
