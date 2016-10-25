@@ -108,18 +108,6 @@
       "resolved": "https://registry.npmjs.org/bcrypt-pbkdf/-/bcrypt-pbkdf-1.0.0.tgz",
       "optional": true
     },
-    "bl": {
-      "version": "1.1.2",
-      "from": "bl@>=1.1.2 <1.2.0",
-      "resolved": "https://registry.npmjs.org/bl/-/bl-1.1.2.tgz",
-      "dependencies": {
-        "readable-stream": {
-          "version": "2.0.6",
-          "from": "readable-stream@>=2.0.5 <2.1.0",
-          "resolved": "https://registry.npmjs.org/readable-stream/-/readable-stream-2.0.6.tgz"
-        }
-      }
-    },
     "boolbase": {
       "version": "1.0.0",
       "from": "boolbase@>=1.0.0 <1.1.0",
@@ -373,9 +361,9 @@
       "resolved": "https://registry.npmjs.org/forever-agent/-/forever-agent-0.6.1.tgz"
     },
     "form-data": {
-      "version": "2.0.0",
-      "from": "form-data@>=2.0.0 <2.1.0",
-      "resolved": "https://registry.npmjs.org/form-data/-/form-data-2.0.0.tgz"
+      "version": "2.1.1",
+      "from": "form-data@>=2.1.1 <2.2.0",
+      "resolved": "https://registry.npmjs.org/form-data/-/form-data-2.1.1.tgz"
     },
     "fs-plus": {
       "version": "2.9.3",
@@ -903,9 +891,9 @@
       "resolved": "https://registry.npmjs.org/pseudomap/-/pseudomap-1.0.2.tgz"
     },
     "qs": {
-      "version": "6.2.1",
-      "from": "qs@>=6.2.0 <6.3.0",
-      "resolved": "https://registry.npmjs.org/qs/-/qs-6.2.1.tgz"
+      "version": "6.3.0",
+      "from": "qs@>=6.3.0 <6.4.0",
+      "resolved": "https://registry.npmjs.org/qs/-/qs-6.3.0.tgz"
     },
     "random-seed": {
       "version": "0.2.0",
@@ -983,9 +971,9 @@
       "resolved": "https://registry.npmjs.org/redux/-/redux-3.6.0.tgz"
     },
     "request": {
-      "version": "2.75.0",
-      "from": "request@2.75.0",
-      "resolved": "https://registry.npmjs.org/request/-/request-2.75.0.tgz"
+      "version": "2.76.0",
+      "from": "request@2.76.0",
+      "resolved": "https://registry.npmjs.org/request/-/request-2.76.0.tgz"
     },
     "resolve-from": {
       "version": "2.0.0",
