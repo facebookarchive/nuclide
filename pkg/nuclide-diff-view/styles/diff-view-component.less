@@ -218,6 +218,8 @@
 }
 
 .nuclide-diff-view-block-offset {
+  width: 100%;
+
   & when (lightness(@syntax-background-color) <= 50% ) {
     @diff-block-offset-cross-color: lighten(@syntax-background-color, 3%);
     .styleBlockOffset();

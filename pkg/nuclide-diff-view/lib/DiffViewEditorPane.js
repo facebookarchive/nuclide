@@ -96,11 +96,12 @@ export default class DiffViewEditorPane extends React.Component {
     // TODO(most): Fix by listening to text editor rendering.
     editorSubscriptions.add(Observable.interval(100).first()
       .subscribe(() => this._setOffsets(this.props.offsets)));
+
+    editorSubscriptions.add(() => this._diffViewEditor.destroy());
   }
 
   componentWillUnmount(): void {
     this._subscriptions.dispose();
-    this._diffViewEditor.destroy();
   }
 
   render(): React.Element<any> {
