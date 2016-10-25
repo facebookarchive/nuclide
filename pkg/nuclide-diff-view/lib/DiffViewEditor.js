@@ -15,6 +15,7 @@ import {Range} from 'atom';
 import {React} from 'react-for-atom';
 import {concatIterators} from '../../commons-node/collection';
 import {renderReactRoot} from '../../commons-atom/renderReactRoot';
+import invariant from 'assert';
 
 type BlockElementWithProps = {
   element: React.Element<any>,
@@ -77,10 +78,16 @@ function syncBlockDecorations<Value>(
   source: Map<number, Value>,
   shouldUpdate: (value: Value, properties: Object) => boolean,
   getElementWithProps: (value: Value) => BlockElementWithProps,
+  syncWidth?: boolean = false,
 ): Array<atom$Marker> {
   const editor = editorElement.getModel();
   const decorations = editor.getDecorations({diffBlockType});
   const renderedLineNumbers = new Set();
+  const {component} = editorElement;
+  invariant(component, 'Editor not yet initialized!');
+  const editorWidthPx = syncWidth
+    ? `${component.scrollViewNode.clientWidth}px`
+    : '';
 
   const markers = [];
 
@@ -89,7 +96,9 @@ function syncBlockDecorations<Value>(
     const lineNumber = marker.getBufferRange().start.row;
     const value = source.get(lineNumber);
     const properties = decoration.getProperties();
-    if (value == null || shouldUpdate(value, properties)) {
+    const item: HTMLElement = properties.item;
+
+    if (value == null || shouldUpdate(value, properties) || item.style.width !== editorWidthPx) {
       marker.destroy();
       continue;
     }
@@ -110,6 +119,7 @@ function syncBlockDecorations<Value>(
     // The position should be `after` if the element is at the end of the file.
     const position = lineNumber >= editor.getLineCount() - 1 ? 'after' : 'before';
     const item = renderReactRoot(element);
+    item.style.width = editorWidthPx;
     editor.decorateMarker(marker, {
       ...customProps,
       type: 'block',
@@ -156,6 +166,7 @@ export default class DiffViewEditor {
         element: renderInlineElement(element, this._scrollToRow),
         customProps: {diffBlockType, element},
       }),
+      /* syncWidth */ true,
     );
   }
 

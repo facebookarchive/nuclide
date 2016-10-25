@@ -866,6 +866,7 @@ declare class atom$TextEditor extends atom$Model {
  */
 declare class atom$TextEditorComponent {
   domNode: HTMLElement,
+  scrollViewNode: HTMLElement,
   presenter: atom$TextEditorPresenter,
   linesComponent: atom$LinesComponent,
   pixelPositionForScreenPosition(
