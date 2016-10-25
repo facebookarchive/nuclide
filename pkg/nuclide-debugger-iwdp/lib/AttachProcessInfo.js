@@ -9,23 +9,23 @@
  * the root directory of this source tree.
  */
 
-import {DebuggerProcessInfo} from '../../nuclide-debugger-base';
-import {IwdpDebuggerInstance} from './IwdpDebuggerInstance';
-import invariant from 'assert';
-import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
-
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {IwdpDebuggerService} from '../../nuclide-debugger-iwdp-rpc/lib/IwdpDebuggerService';
+import type {DebuggerInstanceBase} from '../../nuclide-debugger-base';
+
+import invariant from 'assert';
+import {DebuggerProcessInfo, DebuggerInstance} from '../../nuclide-debugger-base';
+import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 export class AttachProcessInfo extends DebuggerProcessInfo {
   constructor(targetUri: NuclideUri) {
     super('iwdp', targetUri);
   }
 
-  async debug(): Promise<IwdpDebuggerInstance> {
+  async debug(): Promise<DebuggerInstanceBase> {
     const rpcService = this._getRpcService();
     await rpcService.attach();
-    return new IwdpDebuggerInstance(this, rpcService);
+    return new DebuggerInstance(this, rpcService);
   }
 
   _getRpcService(): IwdpDebuggerService {

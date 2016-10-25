@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type DebuggerInstance from './DebuggerInstance';
+import type DebuggerInstanceBase from './DebuggerInstance';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {ControlButtonSpecification} from '../../nuclide-debugger/lib/types';
 
@@ -49,7 +49,7 @@ export default class DebuggerProcessInfo {
     return [];
   }
 
-  async debug(): Promise<DebuggerInstance> {
+  async debug(): Promise<DebuggerInstanceBase> {
     throw new Error('abstract method');
   }
 }
