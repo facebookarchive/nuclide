@@ -117,7 +117,7 @@ After installation, running Atom will automatically load Nuclide.
 
 ### Recommended Packages
 
-By default, Nuclide does not install all of the recommended packages that enhance the Nuclide
+By default, Nuclide does not install all of the recommended Atom packages that enhance the Nuclide
 experience. This was done purposely in order to ensure that users have to opt-in to some features
 rather than obtrusively modify their work environment.
 
@@ -127,7 +127,6 @@ Recommended packages include:
 - [`sort-lines`](https://atom.io/packages/sort-lines) to enable sorting lines of text.
 - [`language-ocaml`](https://atom.io/packages/language-ocaml) to enable [OCaml](/docs/languages/other/#ocaml) language syntax highlighting.
 - [`language-babel`](https://atom.io/packages/language-babel) to enable language grammar for [JS, Flow and React JS](/docs/languages/flow/), etc.
-- [Watchman](https://facebook.github.io/watchman/) - version 3.2 or above. It must be in `/usr/local/bin/` or in your `$PATH` environment variable. Without Watchman, Nuclide will lose some functionality of its [Mercurial](/docs/features/hg), [Remote Development](/docs/features/remote), and [Quick Open](/docs/quick-start/getting-started/#quick-open) features.
 - ...and [others](https://github.com/facebook/nuclide/blob/master/package.json) under `package-deps`.
 
 In order to install all of the recommended packages, go to
@@ -146,6 +145,12 @@ package. Instructions can be found in the [Remote Development docs](/docs/featur
 ### Other Installations
 
 To benefit from all of Nuclide's features, we recommend you also install the following:
+
+* [Watchman](https://facebook.github.io/watchman/) - version 3.2 or above. It must be in `/usr/local/bin/` or in your `$PATH` environment variable.
+
+>Without Watchman, Nuclide will lose some functionality of its [Mercurial](/docs/features/hg), [Remote Development](/docs/features/remote), and [Quick Open](/docs/quick-start/getting-started/#quick-open) features.
+
+<br />
 
 * [Flow](/docs/languages/flow/)
 * [Hack](/docs/languages/hack/)
