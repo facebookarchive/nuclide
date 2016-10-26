@@ -15,6 +15,7 @@ import invariant from 'assert';
 import fs from 'fs';
 import nuclideUri from '../../commons-node/nuclideUri';
 import crypto from 'crypto';
+import {Subject} from 'rxjs';
 import temp from 'temp';
 import connectionMock from './connection_mock';
 import {RemoteFile} from '../lib/RemoteFile';
@@ -408,5 +409,33 @@ describe('RemoteFile', () => {
       expect(server.createDirectory).toHaveBeenCalledWith(
           'nuclide://foo.bar.com/a', null);
     });
+  });
+
+  describe('RemoteFile resubscribes after a rename', () => {
+    const changeHandler = jasmine.createSpy('onDidChange');
+    const deletionHandler = jasmine.createSpy('onDidDelete');
+    const mockWatch = new Subject();
+    const customConnectionMock: any = {
+      ...connectionMock,
+      getService() {
+        return {
+          ...connectionMock.getFsService(),
+          watchFile: () => mockWatch.publish(),
+        };
+      },
+    };
+    const file = new RemoteFile(customConnectionMock, 'test');
+
+    file.onDidChange(changeHandler);
+    file.onDidDelete(deletionHandler);
+
+    // The file tree sets the path before doing the rename.
+    file.setPath('test2');
+
+    // Simulate a Watchman rename (delete + change)
+    mockWatch.next({type: 'delete', path: 'test'});
+    mockWatch.next({type: 'change', path: 'test2'});
+    expect(deletionHandler).not.toHaveBeenCalled();
+    expect(changeHandler).toHaveBeenCalled();
   });
 });

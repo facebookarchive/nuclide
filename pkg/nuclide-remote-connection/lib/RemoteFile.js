@@ -83,6 +83,14 @@ export class RemoteFile {
     const {watchFile} = (this._getService('FileWatcherService'): FileWatcherService);
     const watchStream = watchFile(this._path).refCount();
     this._watchSubscription = watchStream.subscribe(watchUpdate => {
+      // This only happens after a `setPath` and subsequent file rename.
+      // Getting this message signifies that the new file should be ready for watching.
+      if (watchUpdate.path !== this._path) {
+        logger.debug('watchFile renamed:', this._path);
+        this._unsubscribeFromNativeChangeEvents();
+        this._subscribeToNativeChangeEvents();
+        return;
+      }
       logger.debug('watchFile update:', watchUpdate);
       switch (watchUpdate.type) {
         case 'change':
