@@ -17,7 +17,7 @@ import {Dropdown} from '../../nuclide-ui/Dropdown';
 import {React} from 'react-for-atom';
 import nuclideUri from '../../commons-node/nuclideUri';
 
-const EventEmitter = require('events');
+import type EventEmitter from 'events';
 
 type PropsType = {
   store: DebuggerProviderStore,

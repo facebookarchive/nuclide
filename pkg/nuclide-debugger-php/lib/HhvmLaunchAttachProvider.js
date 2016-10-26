@@ -15,6 +15,8 @@ import {LaunchUiComponent} from './LaunchUiComponent';
 import {AttachUiComponent} from './AttachUiComponent';
 import invariant from 'assert';
 
+import type EventEmitter from 'events';
+
 export class HhvmLaunchAttachProvider extends DebuggerLaunchAttachProvider {
   constructor(debuggingTypeName: string, targetUri: string) {
     super(debuggingTypeName, targetUri);
@@ -24,11 +26,21 @@ export class HhvmLaunchAttachProvider extends DebuggerLaunchAttachProvider {
     return ['Attach', 'Launch'];
   }
 
-  getComponent(action: string): ?React.Element<any> {
+  getComponent(action: string, parentEventEmitter: EventEmitter): ?React.Element<any> {
     if (action === 'Launch') {
-      return <LaunchUiComponent targetUri={this.getTargetUri()} />;
+      return (
+        <LaunchUiComponent
+          targetUri={this.getTargetUri()}
+          parentEmitter={parentEventEmitter}
+        />
+      );
     } else if (action === 'Attach') {
-      return <AttachUiComponent targetUri={this.getTargetUri()} />;
+      return (
+        <AttachUiComponent
+          targetUri={this.getTargetUri()}
+          parentEmitter={parentEventEmitter}
+        />
+      );
     } else {
       invariant(false, 'Unrecognized action for component.');
     }

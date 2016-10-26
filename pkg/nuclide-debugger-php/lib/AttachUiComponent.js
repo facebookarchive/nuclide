@@ -15,6 +15,7 @@ import {
   Button,
   ButtonTypes,
 } from '../../nuclide-ui/Button';
+import {DebuggerLaunchAttachEventTypes} from '../../nuclide-debugger-base';
 import {Dropdown} from '../../nuclide-ui/Dropdown';
 import {RemoteConnection} from '../../nuclide-remote-connection';
 import nuclideUri from '../../commons-node/nuclideUri';
@@ -22,8 +23,11 @@ import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
+import type EventEmitter from 'events';
+
 type PropsType = {
   targetUri: NuclideUri,
+  parentEmitter: EventEmitter,
 };
 
 type StateType = {
@@ -44,6 +48,18 @@ export class AttachUiComponent extends React.Component<void, PropsType, StateTyp
       selectedPathIndex: 0,
       pathMenuItems: this._getPathMenuItems(),
     };
+  }
+
+  componentWillMount() {
+    this.props.parentEmitter.on(
+      DebuggerLaunchAttachEventTypes.ENTER_KEY_PRESSED,
+      this._handleAttachButtonClick);
+  }
+
+  componentWillUnmount() {
+    this.props.parentEmitter.removeListener(
+      DebuggerLaunchAttachEventTypes.ENTER_KEY_PRESSED,
+      this._handleAttachButtonClick);
   }
 
   render(): React.Element<any> {

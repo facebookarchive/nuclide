@@ -17,7 +17,7 @@ import {LaunchUIComponent} from './LaunchUIComponent';
 import {AttachUIComponent} from './AttachUIComponent';
 import {LaunchAttachActions} from './LaunchAttachActions';
 
-const EventEmitter = require('events');
+import type EventEmitter from 'events';
 
 export class LLDBLaunchAttachProvider extends DebuggerLaunchAttachProvider {
   _dispatcher: LaunchAttachDispatcher;
@@ -37,16 +37,22 @@ export class LLDBLaunchAttachProvider extends DebuggerLaunchAttachProvider {
 
   getComponent(
     action: string,
-    eventEmitter: EventEmitter): ?React.Element<any> {
+    parentEventEmitter: EventEmitter): ?React.Element<any> {
     if (action === 'Launch') {
-      return <LaunchUIComponent store={this._store} actions={this._actions} />;
+      return (
+        <LaunchUIComponent
+          store={this._store}
+          actions={this._actions}
+          parentEmitter={parentEventEmitter}
+        />
+      );
     } else if (action === 'Attach') {
       this._actions.updateAttachTargetList();
       return (
         <AttachUIComponent
           store={this._store}
           actions={this._actions}
-          emitter={eventEmitter}
+          parentEmitter={parentEventEmitter}
         />
       );
     } else {

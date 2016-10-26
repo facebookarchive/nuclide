@@ -26,12 +26,12 @@ import {
 } from '../../nuclide-ui/Button';
 import {ButtonGroup} from '../../nuclide-ui/ButtonGroup';
 
-const EventEmitter = require('events');
+import type EventEmitter from 'events';
 
 type PropsType = {
   store: LaunchAttachStore,
   actions: LaunchAttachActions,
-  emitter: EventEmitter,
+  parentEmitter: EventEmitter,
 };
 
 type StateType = {
@@ -115,7 +115,7 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
   }
 
   componentWillMount() {
-    this.props.emitter.on(
+    this.props.parentEmitter.on(
       DebuggerLaunchAttachEventTypes.ENTER_KEY_PRESSED,
       this._handleAttachClick);
   }
@@ -125,7 +125,7 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
       this.state.targetListChangeDisposable.dispose();
     }
 
-    this.props.emitter.removeListener(
+    this.props.parentEmitter.removeListener(
       DebuggerLaunchAttachEventTypes.ENTER_KEY_PRESSED,
       this._handleAttachClick);
   }

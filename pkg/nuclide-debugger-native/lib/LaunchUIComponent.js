@@ -14,6 +14,7 @@ import {shellParse} from '../../commons-node/string';
 import type {LaunchAttachStore} from './LaunchAttachStore';
 import type {LaunchAttachActions} from './LaunchAttachActions';
 
+import {DebuggerLaunchAttachEventTypes} from '../../nuclide-debugger-base';
 import {React} from 'react-for-atom';
 import {AtomInput} from '../../nuclide-ui/AtomInput';
 import {
@@ -22,9 +23,12 @@ import {
 } from '../../nuclide-ui/Button';
 import {ButtonGroup} from '../../nuclide-ui/ButtonGroup';
 
+import type EventEmitter from 'events';
+
 type PropsType = {
   store: LaunchAttachStore,
   actions: LaunchAttachActions,
+  parentEmitter: EventEmitter,
 };
 
 export class LaunchUIComponent extends React.Component<void, PropsType, void> {
@@ -36,11 +40,23 @@ export class LaunchUIComponent extends React.Component<void, PropsType, void> {
     (this: any)._cancelClick = this._cancelClick.bind(this);
   }
 
+  componentWillMount() {
+    this.props.parentEmitter.on(
+      DebuggerLaunchAttachEventTypes.ENTER_KEY_PRESSED,
+      this._handleLaunchClick);
+  }
+
   componentDidMount(): void {
     const launchExecutableInput = this.refs.launchExecutable;
     if (launchExecutableInput != null) {
       launchExecutableInput.focus();
     }
+  }
+
+  componentWillUnmount() {
+    this.props.parentEmitter.removeListener(
+      DebuggerLaunchAttachEventTypes.ENTER_KEY_PRESSED,
+      this._handleLaunchClick);
   }
 
   render(): React.Element<any> {
@@ -54,35 +70,30 @@ export class LaunchUIComponent extends React.Component<void, PropsType, void> {
           ref="launchExecutable"
           tabIndex="11"
           placeholderText="Input the executable path you want to launch"
-          onConfirm={this._handleLaunchClick}
         />
         <label>Arguments: </label>
         <AtomInput
           ref="launchArguments"
           tabIndex="12"
           placeholderText="Arguments to the executable"
-          onConfirm={this._handleLaunchClick}
         />
         <label>Environment Variables: </label>
         <AtomInput
           ref="launchEnvironmentVariables"
           tabIndex="13"
           placeholderText="Environment variables (e.g., SHELL=/bin/bash PATH=/bin)"
-          onConfirm={this._handleLaunchClick}
         />
         <label>Working directory: </label>
         <AtomInput
           ref="launchWorkingDirectory"
           tabIndex="14"
           placeholderText="Working directory for the launched executable"
-          onConfirm={this._handleLaunchClick}
         />
         <label>Stdin file: </label>
         <AtomInput
           ref="stdinFilePath"
           tabIndex="15"
           placeholderText="Redirect stdin to this file"
-          onConfirm={this._handleLaunchClick}
         />
         <div style={{display: 'flex', flexDirection: 'row-reverse'}}>
           <ButtonGroup>

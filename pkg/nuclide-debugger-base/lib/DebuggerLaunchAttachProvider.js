@@ -12,7 +12,7 @@
 import type React from 'react-for-atom';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
-const EventEmitter = require('events');
+import type EventEmitter from 'events';
 
 let uniqueKeySeed = 0;
 
@@ -68,11 +68,12 @@ export default class DebuggerLaunchAttachProvider {
 
   /**
    * Returns the UI component for input debug action.
-   * The component may use the parentDispatcher to listen for keyboard events.
+   * The component may use the parentEventEmitter to listen for keyboard events
+   * defined by DebuggerLaunchAttachEventTypes.
    */
   getComponent(
     action: string,
-    eventEmitter: EventEmitter): ?React.Element<any> {
+    parentEventEmitter: EventEmitter): ?React.Element<any> {
     throw new Error('abstract method');
   }
 

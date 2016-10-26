@@ -12,13 +12,16 @@
 import {React} from 'react-for-atom';
 import {AttachProcessInfo} from './AttachProcessInfo';
 import {Button, ButtonTypes} from '../../nuclide-ui/Button';
+import {DebuggerLaunchAttachEventTypes} from '../../nuclide-debugger-base';
 import {Dropdown} from '../../nuclide-ui/Dropdown';
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 
+import type EventEmitter from 'events';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 type PropsType = {
   targetUri: NuclideUri,
+  parentEmitter: EventEmitter,
 };
 
 type StateType = {
@@ -39,6 +42,18 @@ export class AttachUiComponent extends React.Component<void, PropsType, StateTyp
       selectedPathIndex: 0,
       pathMenuItems: this._getPathMenuItems(),
     };
+  }
+
+  componentWillMount() {
+    this.props.parentEmitter.on(
+      DebuggerLaunchAttachEventTypes.ENTER_KEY_PRESSED,
+      this._handleAttachButtonClick);
+  }
+
+  componentWillUnmount() {
+    this.props.parentEmitter.removeListener(
+      DebuggerLaunchAttachEventTypes.ENTER_KEY_PRESSED,
+      this._handleAttachButtonClick);
   }
 
   render(): React.Element<any> {

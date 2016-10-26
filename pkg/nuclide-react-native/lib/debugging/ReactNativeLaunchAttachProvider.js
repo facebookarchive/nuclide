@@ -14,15 +14,17 @@ import {DebugUiComponent} from './DebugUiComponent';
 import invariant from 'assert';
 import {React} from 'react-for-atom';
 
+import type EmitterEvent from 'events';
+
 export class ReactNativeLaunchAttachProvider extends DebuggerLaunchAttachProvider {
 
   getActions(): Array<string> {
     return ['Attach'];
   }
 
-  getComponent(action: string): ?React.Element<any> {
+  getComponent(action: string, parentEventEmitter: EmitterEvent): ?React.Element<any> {
     invariant(action === 'Attach');
-    return <DebugUiComponent targetUri={this.getTargetUri()} />;
+    return <DebugUiComponent targetUri={this.getTargetUri()} parentEmitter={parentEventEmitter} />;
   }
 
   dispose(): void {

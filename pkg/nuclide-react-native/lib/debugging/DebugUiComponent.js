@@ -15,9 +15,13 @@ import {React} from 'react-for-atom';
 import {Button, ButtonTypes} from '../../../nuclide-ui/Button';
 import {ButtonGroup} from '../../../nuclide-ui/ButtonGroup';
 import {Checkbox} from '../../../nuclide-ui/Checkbox';
+import {DebuggerLaunchAttachEventTypes} from '../../../nuclide-debugger-base';
+
+import type EventEmitter from 'events';
 
 type Props = {
   targetUri: NuclideUri,
+  parentEmitter: EventEmitter,
 };
 
 // TODO: All this needs to be serialized by the package, so we're going to need to hoist it and use
@@ -42,6 +46,18 @@ export class DebugUiComponent extends React.Component {
       tailIosLogs: false,
       tailAdbLogs: false,
     };
+  }
+
+  componentWillMount() {
+    this.props.parentEmitter.on(
+      DebuggerLaunchAttachEventTypes.ENTER_KEY_PRESSED,
+      this._handleDebugButtonClick);
+  }
+
+  componentWillUnmount() {
+    this.props.parentEmitter.removeListener(
+      DebuggerLaunchAttachEventTypes.ENTER_KEY_PRESSED,
+      this._handleDebugButtonClick);
   }
 
   render(): React.Element<any> {

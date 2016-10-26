@@ -13,6 +13,7 @@ import {React} from 'react-for-atom';
 import {AtomInput} from '../../nuclide-ui/AtomInput';
 import {LaunchProcessInfo} from './LaunchProcessInfo';
 import nuclideUri from '../../commons-node/nuclideUri';
+import {DebuggerLaunchAttachEventTypes} from '../../nuclide-debugger-base';
 import {Dropdown} from '../../nuclide-ui/Dropdown';
 import {
   Button,
@@ -21,10 +22,12 @@ import {
 import {RemoteConnection} from '../../nuclide-remote-connection';
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 
+import type EventEmitter from 'events';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 type PropsType = {
   targetUri: NuclideUri,
+  parentEmitter: EventEmitter,
 };
 
 type StateType = {
@@ -46,6 +49,18 @@ export class LaunchUiComponent extends React.Component<void, PropsType, StateTyp
       pathsDropdownIndex: 0,
       pathMenuItems: this._getPathMenuItems(),
     };
+  }
+
+  componentWillMount() {
+    this.props.parentEmitter.on(
+      DebuggerLaunchAttachEventTypes.ENTER_KEY_PRESSED,
+      this._handleLaunchButtonClick);
+  }
+
+  componentWillUnmount() {
+    this.props.parentEmitter.removeListener(
+      DebuggerLaunchAttachEventTypes.ENTER_KEY_PRESSED,
+      this._handleLaunchButtonClick);
   }
 
   render(): React.Element<any> {

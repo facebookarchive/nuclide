@@ -27,7 +27,7 @@ import {DebuggerPauseController} from './DebuggerPauseController';
 
 import type {SerializedState} from '..';
 
-const EventEmitter = require('events');
+const {EventEmitter} = require('events');
 
 /**
  * Atom ViewProvider compatible model object.
