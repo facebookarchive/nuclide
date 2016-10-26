@@ -38,6 +38,12 @@ const connectionMock: ServerConnection & { getFsService(): Object } = ({
       throw new Error(`TODO: missing mock ${serviceName}`);
     }
   },
+  getFileWatch: () => {
+    throw new Error('mock me');
+  },
+  getDirectoryWatch: () => {
+    throw new Error('mock me');
+  },
 }: any);
 
 module.exports = connectionMock;

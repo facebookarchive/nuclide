@@ -14,8 +14,6 @@ import type {ServerConnection} from './ServerConnection';
 import type {HgRepositoryDescription} from '../../nuclide-source-control-helpers';
 import type {RemoteFile} from './RemoteFile';
 
-import typeof * as FileWatcherService from '../../nuclide-filewatcher-rpc';
-
 import invariant from 'assert';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {Disposable, Emitter} from 'atom';
@@ -98,8 +96,7 @@ export class RemoteDirectory {
     if (this._watchSubscription) {
       return;
     }
-    const {watchDirectory} = (this._getService('FileWatcherService'): FileWatcherService);
-    const watchStream = watchDirectory(this._uri).refCount();
+    const watchStream = this._server.getDirectoryWatch(this._uri);
     this._watchSubscription = watchStream.subscribe(watchUpdate => {
       logger.debug('watchDirectory update:', watchUpdate);
       switch (watchUpdate.type) {

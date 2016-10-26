@@ -415,16 +415,8 @@ describe('RemoteFile', () => {
     const changeHandler = jasmine.createSpy('onDidChange');
     const deletionHandler = jasmine.createSpy('onDidDelete');
     const mockWatch = new Subject();
-    const customConnectionMock: any = {
-      ...connectionMock,
-      getService() {
-        return {
-          ...connectionMock.getFsService(),
-          watchFile: () => mockWatch.publish(),
-        };
-      },
-    };
-    const file = new RemoteFile(customConnectionMock, 'test');
+    spyOn(connectionMock, 'getFileWatch').andReturn(mockWatch);
+    const file = new RemoteFile(connectionMock, 'test');
 
     file.onDidChange(changeHandler);
     file.onDidDelete(deletionHandler);

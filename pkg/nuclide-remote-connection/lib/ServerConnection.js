@@ -9,10 +9,13 @@
  * the root directory of this source tree.
  */
 
+import type {Observable} from 'rxjs';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {RemoteConnection} from './RemoteConnection';
 import type {HgRepositoryDescription} from '../../nuclide-source-control-helpers';
 import typeof * as InfoService from '../../nuclide-server/lib/services/InfoService';
+import typeof * as FileWatcherService from '../../nuclide-filewatcher-rpc';
+import type {WatchResult} from '../../nuclide-filewatcher-rpc';
 
 import invariant from 'assert';
 import {RpcConnection} from '../../nuclide-rpc';
@@ -25,6 +28,7 @@ import {getAtomSideMarshalers} from '../../nuclide-marshalers-atom';
 
 import {Emitter} from 'atom';
 import nuclideUri from '../../commons-node/nuclideUri';
+import SharedObservableCache from '../../commons-node/SharedObservableCache';
 
 import {NuclideSocket} from '../../nuclide-server/lib/NuclideSocket';
 import {getVersion} from '../../nuclide-version';
@@ -53,6 +57,8 @@ class ServerConnection {
   _healthNotifier: ?ConnectionHealthNotifier;
   _client: ?RpcConnection<NuclideSocket>;
   _connections: Array<RemoteConnection>;
+  _fileWatches: SharedObservableCache<string, WatchResult>;
+  _directoryWatches: SharedObservableCache<string, WatchResult>;
 
   static _connections: Map<string, ServerConnection> = new Map();
   static _emitter = new Emitter();
@@ -92,6 +98,14 @@ class ServerConnection {
     this._healthNotifier = null;
     this._client = null;
     this._connections = [];
+    this._fileWatches = new SharedObservableCache(path => {
+      const fileWatcherService: FileWatcherService = this.getService('FileWatcherService');
+      return fileWatcherService.watchFile(path).refCount();
+    });
+    this._directoryWatches = new SharedObservableCache(path => {
+      const fileWatcherService: FileWatcherService = this.getService('FileWatcherService');
+      return fileWatcherService.watchDirectory(path).refCount();
+    });
   }
 
   dispose(): void {
@@ -182,6 +196,14 @@ class ServerConnection {
     }
 
     return entry;
+  }
+
+  getFileWatch(path: string): Observable<WatchResult> {
+    return this._fileWatches.get(path);
+  }
+
+  getDirectoryWatch(path: string): Observable<WatchResult> {
+    return this._directoryWatches.get(path);
   }
 
   _addHandlersForEntry(entry: RemoteFile | RemoteDirectory): void {

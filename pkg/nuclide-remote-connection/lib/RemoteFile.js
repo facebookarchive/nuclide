@@ -13,7 +13,6 @@ import type {ServerConnection} from './ServerConnection';
 import type {RemoteDirectory} from './RemoteDirectory';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import typeof * as FileSystemService from '../../nuclide-server/lib/services/FileSystemService';
-import typeof * as FileWatcherService from '../../nuclide-filewatcher-rpc';
 
 import invariant from 'assert';
 import nuclideUri from '../../commons-node/nuclideUri';
@@ -80,8 +79,7 @@ export class RemoteFile {
     if (this._watchSubscription) {
       return;
     }
-    const {watchFile} = (this._getService('FileWatcherService'): FileWatcherService);
-    const watchStream = watchFile(this._path).refCount();
+    const watchStream = this._server.getFileWatch(this._path);
     this._watchSubscription = watchStream.subscribe(watchUpdate => {
       // This only happens after a `setPath` and subsequent file rename.
       // Getting this message signifies that the new file should be ready for watching.
