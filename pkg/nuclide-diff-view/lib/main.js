@@ -42,8 +42,8 @@ import typeof * as BoundActionCreators from './redux/Actions';
 import {createEmptyAppState, getEmptyRepositoryState} from './redux/createEmptyAppState';
 import * as Actions from './redux/Actions';
 import * as Epics from './redux/Epics';
-import * as Reducers from './redux/Reducers';
-import {applyMiddleware, bindActionCreators, createStore, combineReducers} from 'redux';
+import {rootReducer} from './redux/Reducers';
+import {applyMiddleware, bindActionCreators, createStore} from 'redux';
 import {combineEpics, createEpicMiddleware} from '../../commons-node/redux-observable';
 import {Observable, Subject} from 'rxjs';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
@@ -198,7 +198,6 @@ class Activation {
         })
     );
 
-    const rootReducer = combineReducers(Reducers);
     this._store = createStore(
       rootReducer,
       initialState,

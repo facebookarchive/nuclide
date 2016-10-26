@@ -11,8 +11,8 @@
 
 import type {
   Action,
+  AppState,
   CommitState,
-  DiffModeType,
   FileDiffState,
   PublishState,
   RepositoryAction,
@@ -20,33 +20,99 @@ import type {
   UIProvider,
 } from '../types';
 import type {HgRepositoryClient} from '../../../nuclide-hg-repository-client';
-import type {CwdApi} from '../../../nuclide-current-working-directory/lib/CwdApi';
 
 import * as ActionTypes from './ActionTypes';
 import invariant from 'assert';
 import {
-  getEmptyActiveRepositoryState,
-  getEmptyCommitState,
-  getEmptyFileDiffState,
-  getEmptyPublishState,
-  getEmptyRebaseOnAmendState,
-  getEmptyRepositoriesState,
+  createEmptyAppState,
   getEmptyRepositoryState,
-  getEmptyViewModeState,
 } from './createEmptyAppState';
 
-export function activeRepository(
-  state: ?HgRepositoryClient,
+export function rootReducer(
+  state: ?AppState,
   action: Action,
-): ?HgRepositoryClient {
+): AppState {
+  if (state == null) {
+    return createEmptyAppState();
+  }
   switch (action.type) {
     case ActionTypes.UPDATE_ACTIVE_REPOSITORY:
-      return action.payload.hgRepository;
+      return {
+        ...state,
+        activeRepository: action.payload.hgRepository,
+      };
+
+    case ActionTypes.ADD_REPOSITORY:
+    case ActionTypes.REMOVE_REPOSITORY:
+    case ActionTypes.SET_COMPARE_ID:
+    case ActionTypes.UPDATE_DIRTY_FILES:
+    case ActionTypes.UPDATE_SELECTED_FILES:
+    case ActionTypes.UPDATE_HEAD_TO_FORKBASE_REVISIONS:
+    case ActionTypes.UPDATE_LOADING_SELECTED_FILES: {
+      return {
+        ...state,
+        repositories: reduceRepositories(state.repositories, action),
+      };
+    }
+
+    case ActionTypes.UPDATE_COMMIT_STATE:
+    case ActionTypes.SET_COMMIT_MODE: {
+      return {
+        ...state,
+        commit: reduceCommitState(state.commit, action),
+      };
+    }
+
+    case ActionTypes.UPDATE_PUBLISH_STATE:
+      return {
+        ...state,
+        publish: reducePublishState(state.publish, action),
+      };
+
+    case ActionTypes.UPDATE_FILE_DIFF:
+    case ActionTypes.UPDATE_FILE_UI_ELEMENTS:
+      return {
+        ...state,
+        fileDiff: reduceFileDiff(state.fileDiff, action),
+      };
+
+    case ActionTypes.UPDATE_LOADING_FILE_DIFF:
+      return {
+        ...state,
+        isLoading: action.payload.isLoading,
+      };
+
+    case ActionTypes.SET_SHOULD_REBASE_ON_AMEND:
+      return {
+        ...state,
+        shouldRebaseOnAmend: action.payload.shouldRebaseOnAmend,
+      };
+
+    case ActionTypes.SET_VIEW_MODE:
+      return {
+        ...state,
+        viewMode: action.payload.viewMode,
+      };
+
+    case ActionTypes.SET_CWD_API:
+      return {
+        ...state,
+        cwdApi: action.payload.cwdApi,
+      };
+
+    case ActionTypes.ADD_UI_PROVIDER:
+    case ActionTypes.REMOVE_UI_PROVIDER:
+      return {
+        ...state,
+        uiProviders: reduceUiProviders(state.uiProviders, action),
+      };
+
+    default:
+      return state;
   }
-  return state || getEmptyActiveRepositoryState();
 }
 
-export function repositories(
+function reduceRepositories(
   state: Map<HgRepositoryClient, RepositoryState>,
   action: Action,
 ): Map<HgRepositoryClient, RepositoryState> {
@@ -74,7 +140,7 @@ export function repositories(
       return newRepositories;
     }
   }
-  return state || getEmptyRepositoriesState();
+  return state;
 }
 
 function reduceRepositoryAction(
@@ -113,7 +179,7 @@ function reduceRepositoryAction(
   }
 }
 
-export function commit(
+function reduceCommitState(
   state: CommitState,
   action: Action,
 ): CommitState {
@@ -126,10 +192,10 @@ export function commit(
         mode: action.payload.commitMode,
       };
   }
-  return state || getEmptyCommitState();
+  return state;
 }
 
-export function publish(
+function reducePublishState(
   state: PublishState,
   action: Action,
 ): PublishState {
@@ -137,10 +203,10 @@ export function publish(
     case ActionTypes.UPDATE_PUBLISH_STATE:
       return action.payload.publish;
   }
-  return state || getEmptyPublishState();
+  return state;
 }
 
-export function fileDiff(
+function reduceFileDiff(
   state: FileDiffState,
   action: Action,
 ): FileDiffState {
@@ -155,57 +221,10 @@ export function fileDiff(
         oldEditorElements,
       };
   }
-  return state || getEmptyFileDiffState();
-}
-
-export function isLoadingFileDiff(
-  state: boolean,
-  action: Action,
-): boolean {
-  switch (action.type) {
-    case ActionTypes.UPDATE_LOADING_FILE_DIFF:
-      return action.payload.isLoading;
-  }
-  return state || false;
-}
-
-export function shouldRebaseOnAmend(
-  state: boolean,
-  action: Action,
-): boolean {
-  switch (action.type) {
-    case ActionTypes.SET_SHOULD_REBASE_ON_AMEND:
-      return action.payload.shouldRebaseOnAmend;
-  }
-  if (state === undefined) {
-    return getEmptyRebaseOnAmendState();
-  }
   return state;
 }
 
-export function viewMode(
-  state: DiffModeType,
-  action: Action,
-): DiffModeType {
-  switch (action.type) {
-    case ActionTypes.SET_VIEW_MODE:
-      return action.payload.viewMode;
-  }
-  return state || getEmptyViewModeState();
-}
-
-export function cwdApi(
-  state: ?CwdApi,
-  action: Action,
-): ?CwdApi {
-  switch (action.type) {
-    case ActionTypes.SET_CWD_API:
-      return action.payload.cwdApi;
-  }
-  return state || null;
-}
-
-export function uiProviders(
+function reduceUiProviders(
   state: Array<UIProvider>,
   action: Action,
 ): Array<UIProvider> {

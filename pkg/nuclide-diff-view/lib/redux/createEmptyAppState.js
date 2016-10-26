@@ -12,7 +12,6 @@
 import type {
   AppState,
   CommitState,
-  DiffModeType,
   FileDiffState,
   PublishState,
   RepositoryState,
@@ -26,10 +25,6 @@ import {
   PublishModeState,
 } from '../constants';
 
-
-export function getEmptyActiveRepositoryState() {
-  return null;
-}
 
 export function getEmptyCommitState(): CommitState {
   return {
@@ -59,13 +54,6 @@ export function getEmptyFileDiffState(): FileDiffState {
   };
 }
 
-export function getEmptyRebaseOnAmendState() {
-  return true;
-}
-
-export function getEmptyRepositoriesState() {
-  return new Map();
-}
 
 export function getEmptyRepositoryState(): RepositoryState {
   return {
@@ -78,21 +66,17 @@ export function getEmptyRepositoryState(): RepositoryState {
   };
 }
 
-export function getEmptyViewModeState(): DiffModeType {
-  return DiffMode.BROWSE_MODE;
-}
-
 export function createEmptyAppState(): AppState {
   return {
-    activeRepository: getEmptyActiveRepositoryState(),
+    activeRepository: null,
     commit: getEmptyCommitState(),
     cwdApi: null,
     fileDiff: getEmptyFileDiffState(),
     isLoadingFileDiff: false,
     publish: getEmptyPublishState(),
-    repositories: getEmptyRepositoriesState(),
-    shouldRebaseOnAmend: getEmptyRebaseOnAmendState(),
+    repositories: new Map(),
+    shouldRebaseOnAmend: true,
     uiProviders: [],
-    viewMode: getEmptyViewModeState(),
+    viewMode: DiffMode.BROWSE_MODE,
   };
 }
