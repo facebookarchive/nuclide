@@ -42,7 +42,7 @@ class DiffViewElement extends HTMLElement {
   }
 
   _getActiveFileName(): ?string {
-    const {filePath} = this._diffModel.getState();
+    const {filePath} = this._diffModel.getState().fileDiff;
     if (filePath == null || filePath.length === 0) {
       return null;
     }

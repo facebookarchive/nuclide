@@ -224,13 +224,7 @@ class Activation {
 
         this._getDiffViewModel().injectState({
           activeRepository: state.activeRepository,
-          fromRevisionTitle: fileDiff.fromRevisionTitle,
-          toRevisionTitle: fileDiff.toRevisionTitle,
-          filePath: fileDiff.filePath,
-          oldContents: fileDiff.oldContents,
-          newContents: fileDiff.newContents,
-          oldEditorElements: fileDiff.oldEditorElements,
-          newEditorElements: fileDiff.newEditorElements,
+          fileDiff,
           compareRevisionInfo: null,
           viewMode: state.viewMode,
           commitMessage: commit.message,
@@ -310,7 +304,7 @@ class Activation {
         'nuclide-diff-view',
         'nuclide-diff-view:switch-to-editor',
         () => {
-          const {filePath} = this._getDiffViewModel().getState();
+          const {filePath} = this._getDiffViewModel().getState().fileDiff;
           if (filePath != null && filePath.length) {
             atom.workspace.open(filePath);
           }
@@ -517,10 +511,10 @@ class Activation {
         visible: false,
       };
     }
-    const {commitMode, filePath, viewMode} = this._diffViewModel.getState();
+    const {commitMode, fileDiff, viewMode} = this._diffViewModel.getState();
     return {
       visible: true,
-      activeFilePath: filePath,
+      activeFilePath: fileDiff.filePath,
       viewMode,
       commitMode,
     };

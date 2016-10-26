@@ -22,7 +22,6 @@ import type {
   DiffModeType,
   EditorElementsMap,
   FileChangeStatusValue,
-  FileDiffState,
   OpenViewAction,
   PublishDiffAction,
   PublishState,
@@ -192,25 +191,29 @@ export function diffFile(
 }
 
 export function updateFileDiff(
-  fileDiff: FileDiffState,
+  filePath: NuclideUri,
+  newContents: string,
+  oldContents: string,
+  fromRevision: ?RevisionInfo,
 ): UpdateFileDiffAction {
   return {
     type: ActionTypes.UPDATE_FILE_DIFF,
     payload: {
-      fileDiff,
+      filePath,
+      newContents,
+      oldContents,
+      fromRevision,
     },
   };
 }
 
 export function updateFileUiElements(
-  filePath: NuclideUri,
   newEditorElements: EditorElementsMap,
   oldEditorElements: EditorElementsMap,
 ): UpdateFileUiElementsAction {
   return {
     type: ActionTypes.UPDATE_FILE_UI_ELEMENTS,
     payload: {
-      filePath,
       newEditorElements,
       oldEditorElements,
     },

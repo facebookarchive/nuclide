@@ -14,7 +14,7 @@ import type {
 } from '../../nuclide-hg-repository-client';
 import type {Message} from '../../nuclide-console/lib/types';
 import type {
-  EditorElementsMap,
+  FileDiffState,
   RevisionsState,
   FileChangeStatusValue,
   CommitModeType,
@@ -49,17 +49,14 @@ import {track, trackTiming} from '../../nuclide-analytics';
 import {Subject} from 'rxjs';
 import {notifyInternalError} from './notifications';
 import {bufferForUri} from '../../commons-atom/text-editor';
+import {getEmptyFileDiffState} from './redux/createEmptyAppState';
 
 const ACTIVE_BUFFER_CHANGE_MODIFIED_EVENT = 'active-buffer-change-modified';
 const DID_UPDATE_STATE_EVENT = 'did-update-state';
 
 function getInitialState(): State {
   return {
-    fromRevisionTitle: 'No file selected',
-    toRevisionTitle: 'No file selected',
-    filePath: '',
-    oldContents: '',
-    newContents: '',
+    fileDiff: getEmptyFileDiffState(),
     isLoadingFileDiff: false,
     oldEditorElements: new Map(),
     newEditorElements: new Map(),
@@ -81,15 +78,9 @@ function getInitialState(): State {
   };
 }
 
-export type State = {
+type State = {
   activeRepository: ?HgRepositoryClient,
-  filePath: NuclideUri,
-  oldContents: string,
-  newContents: string,
-  fromRevisionTitle: string,
-  toRevisionTitle: string,
-  oldEditorElements: EditorElementsMap,
-  newEditorElements: EditorElementsMap,
+  fileDiff: FileDiffState,
   viewMode: DiffModeType,
   commitMessage: ?string,
   commitMode: CommitModeType,
@@ -149,7 +140,7 @@ export default class DiffViewModel {
   }
 
   isActiveBufferModified(): boolean {
-    const {filePath} = this._state;
+    const {filePath} = this._state.fileDiff;
     const buffer = bufferForUri(filePath);
     return buffer.isModified();
   }
@@ -166,7 +157,7 @@ export default class DiffViewModel {
 
   @trackTiming('diff-view.save-file')
   saveActiveFile(): Promise<void> {
-    const {filePath} = this._state;
+    const {filePath} = this._state.fileDiff;
     track('diff-view-save-file', {filePath});
     return this._saveFile(filePath).catch(notifyInternalError);
   }

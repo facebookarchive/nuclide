@@ -12,6 +12,7 @@
 import type {
   AppState,
   CommitState,
+  EditorState,
   FileDiffState,
   PublishState,
   RepositoryState,
@@ -42,15 +43,27 @@ export function getEmptyPublishState(): PublishState {
   };
 }
 
+function initialEditorState(): EditorState {
+  return {
+    revisionTitle: 'No file selected',
+    text: '',
+    offsets: new Map(),
+    highlightedLines: {
+      added: [],
+      removed: [],
+    },
+    inlineElements: new Map(),
+    inlineOffsetElements: new Map(),
+  };
+}
+
 export function getEmptyFileDiffState(): FileDiffState {
   return {
     filePath: '',
-    fromRevisionTitle: 'No file selected',
-    newContents: '',
-    oldContents: '',
-    toRevisionTitle: 'No file selected',
-    newEditorElements: new Map(),
-    oldEditorElements: new Map(),
+    lineMapping: {oldToNew: [], newToOld: []},
+    newEditorState: initialEditorState(),
+    oldEditorState: initialEditorState(),
+    navigationSections: [],
   };
 }
 

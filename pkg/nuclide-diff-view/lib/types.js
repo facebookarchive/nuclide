@@ -123,14 +123,24 @@ export type PublishState = {
   state: PublishModeStateType,
 };
 
+export type EditorState = {
+  revisionTitle: string,
+  text: string,
+  offsets: OffsetMap,
+  highlightedLines: {
+    added: Array<number>,
+    removed: Array<number>,
+  },
+  inlineElements: EditorElementsMap,
+  inlineOffsetElements: EditorElementsMap,
+};
+
 export type FileDiffState = {
   filePath: NuclideUri,
-  fromRevisionTitle: string,
-  newContents: string,
-  oldContents: string,
-  toRevisionTitle: string,
-  oldEditorElements: EditorElementsMap,
-  newEditorElements: EditorElementsMap,
+  lineMapping: LineMapping,
+  oldEditorState: EditorState,
+  newEditorState: EditorState,
+  navigationSections: Array<NavigationSection>,
 };
 
 export type AppState = {
@@ -246,7 +256,10 @@ export type DiffFileAction = {
 export type UpdateFileDiffAction = {
   type: 'UPDATE_FILE_DIFF',
   payload: {
-    fileDiff: FileDiffState,
+    filePath: NuclideUri,
+    newContents: string,
+    oldContents: string,
+    fromRevision: ?RevisionInfo,
   },
 };
 

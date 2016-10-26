@@ -18,6 +18,8 @@ import type {
   RepositoryAction,
   RepositoryState,
   UIProvider,
+  UpdateFileDiffAction,
+  UpdateFileUiElementsAction,
 } from '../types';
 import type {HgRepositoryClient} from '../../../nuclide-hg-repository-client';
 
@@ -27,6 +29,13 @@ import {
   createEmptyAppState,
   getEmptyRepositoryState,
 } from './createEmptyAppState';
+import {
+  computeDiff,
+  computeNavigationSections,
+} from '../diff-utils';
+import {formatFileDiffRevisionTitle} from '../utils';
+
+const FILESYSTEM_REVISION_TITLE = 'Filesystem / Editor';
 
 export function rootReducer(
   state: ?AppState,
@@ -70,10 +79,14 @@ export function rootReducer(
       };
 
     case ActionTypes.UPDATE_FILE_DIFF:
-    case ActionTypes.UPDATE_FILE_UI_ELEMENTS:
       return {
         ...state,
         fileDiff: reduceFileDiff(state.fileDiff, action),
+      };
+    case ActionTypes.UPDATE_FILE_UI_ELEMENTS:
+      return {
+        ...state,
+        fileDiff: reduceUiElements(state.fileDiff, action),
       };
 
     case ActionTypes.UPDATE_LOADING_FILE_DIFF:
@@ -208,20 +221,81 @@ function reducePublishState(
 
 function reduceFileDiff(
   state: FileDiffState,
-  action: Action,
+  action: UpdateFileDiffAction,
 ): FileDiffState {
-  switch (action.type) {
-    case ActionTypes.UPDATE_FILE_DIFF:
-      return action.payload.fileDiff;
-    case ActionTypes.UPDATE_FILE_UI_ELEMENTS:
-      const {newEditorElements, oldEditorElements} = action.payload;
-      return {
-        ...state,
-        newEditorElements,
-        oldEditorElements,
-      };
-  }
-  return state;
+  const {filePath, fromRevision, newContents, oldContents} = action.payload;
+  const {inlineElements: newEditorElements} = state.newEditorState;
+  const {inlineElements: oldEditorElements} = state.oldEditorState;
+
+  const {
+    addedLines,
+    removedLines,
+    oldLineOffsets,
+    newLineOffsets,
+    newToOld,
+    oldToNew,
+  } = computeDiff(oldContents, newContents);
+
+  const oldEditorState = {
+    revisionTitle: fromRevision == null ? '...' : formatFileDiffRevisionTitle(fromRevision),
+    text: oldContents,
+    offsets: oldLineOffsets,
+    highlightedLines: {
+      added: [],
+      removed: removedLines,
+    },
+    inlineElements: oldEditorElements,
+    inlineOffsetElements: newEditorElements,
+  };
+  const newEditorState = {
+    revisionTitle: FILESYSTEM_REVISION_TITLE,
+    text: newContents,
+    offsets: newLineOffsets,
+    highlightedLines: {
+      added: addedLines,
+      removed: [],
+    },
+    inlineElements: newEditorElements,
+    inlineOffsetElements: oldEditorElements,
+  };
+
+  const navigationSections = computeNavigationSections(
+    addedLines,
+    removedLines,
+    newEditorElements.keys(),
+    oldEditorElements.keys(),
+    oldLineOffsets,
+    newLineOffsets,
+  );
+
+  return {
+    filePath,
+    lineMapping: {newToOld, oldToNew},
+    newEditorState,
+    oldEditorState,
+    navigationSections,
+  };
+}
+
+function reduceUiElements(
+  state: FileDiffState,
+  action: UpdateFileUiElementsAction,
+): FileDiffState {
+  const {newEditorElements, oldEditorElements} = action.payload;
+  const {newEditorState, oldEditorState} = state;
+  return {
+    ...state,
+    oldEditorState: {
+      ...oldEditorState,
+      inlineElements: oldEditorElements,
+      inlineOffsetElements: newEditorElements,
+    },
+    newEditorState: {
+      ...newEditorState,
+      inlineElements: newEditorElements,
+      inlineOffsetElements: oldEditorElements,
+    },
+  };
 }
 
 function reduceUiProviders(

@@ -10,16 +10,12 @@
  */
 
 import type {
+  DiffModeType,
   NavigationSection,
   NavigationSectionStatusType,
-  DiffModeType,
-  EditorElementsMap,
-  LineMapping,
-  OffsetMap,
 } from './types';
-import type DiffViewModel, {State as DiffViewStateType} from './DiffViewModel';
+import type DiffViewModel from './DiffViewModel';
 import type {RevisionInfo} from '../../nuclide-hg-rpc/lib/HgService';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import invariant from 'assert';
 import {MultiRootChangedFilesView} from '../../nuclide-ui/MultiRootChangedFilesView';
@@ -36,10 +32,6 @@ import DiffViewToolbar from './DiffViewToolbar';
 import DiffNavigationBar from './DiffNavigationBar';
 import DiffCommitView from './DiffCommitView';
 import DiffPublishView from './DiffPublishView';
-import {
-  computeDiff,
-  computeNavigationSections,
-} from './diff-utils';
 import createPaneContainer from '../../commons-atom/create-pane-container';
 import {bufferForUri} from '../../commons-atom/text-editor';
 import {
@@ -60,41 +52,9 @@ type Props = {
   tryTriggerNux: () => void,
 };
 
-type EditorState = {
-  revisionTitle: string,
-  text: string,
-  offsets: OffsetMap,
-  highlightedLines: {
-    added: Array<number>,
-    removed: Array<number>,
-  },
-  inlineElements: EditorElementsMap,
-  inlineOffsetElements: EditorElementsMap,
-};
-
 type State = {
-  filePath: NuclideUri,
-  isLoadingFileDiff: boolean,
-  oldEditorState: EditorState,
-  newEditorState: EditorState,
-  navigationSections: Array<NavigationSection>,
   selectedNavigationSectionIndex: number,
-  lineMapping: LineMapping,
 };
-
-function initialEditorState(): EditorState {
-  return {
-    revisionTitle: '',
-    text: '',
-    offsets: new Map(),
-    highlightedLines: {
-      added: [],
-      removed: [],
-    },
-    inlineElements: new Map(),
-    inlineOffsetElements: new Map(),
-  };
-}
 
 let CachedPublishComponent;
 function getPublishComponent() {
@@ -129,14 +89,7 @@ function getDiffComponent() {
 
 function getInitialState(): State {
   return {
-    navigationSections: [],
-    filePath: '',
-    isLoadingFileDiff: false,
-    mode: DiffMode.BROWSE_MODE,
-    newEditorState: initialEditorState(),
-    oldEditorState: initialEditorState(),
     selectedNavigationSectionIndex: -1,
-    lineMapping: {oldToNew: [], newToOld: []},
   };
 }
 
@@ -167,7 +120,6 @@ export default class DiffViewComponent extends React.Component {
   constructor(props: Props) {
     super(props);
     this.state = getInitialState();
-    (this: any)._updateLineDiffState = this._updateLineDiffState.bind(this);
     (this: any)._onTimelineChangeRevision = this._onTimelineChangeRevision.bind(this);
     (this: any)._handleNavigateToNavigationSection =
       this._handleNavigateToNavigationSection.bind(this);
@@ -194,7 +146,6 @@ export default class DiffViewComponent extends React.Component {
       })
       .debounceTime(DEBOUNCE_STATE_UPDATES_MS)
       .subscribe(() => {
-        this._updateLineDiffState(diffModel.getState());
         this.forceUpdate();
       }),
     );
@@ -230,8 +181,6 @@ export default class DiffViewComponent extends React.Component {
       atom.views.getView(this._paneContainer),
     );
 
-    this._updateLineDiffState(diffModel.getState());
-
     tryTriggerNux();
   }
 
@@ -253,13 +202,13 @@ export default class DiffViewComponent extends React.Component {
     this._subscriptions.add(this._syncScroll);
   }
 
+  // TODO(most): migrate logic when it works.
   _scrollToFirstHighlightedLine(): void {
-    const {filePath} = this.state;
     // Schedule scroll to first line after all lines have been rendered.
     const scrollTimeout = setTimeout(() => {
+      const {fileDiff: {filePath, navigationSections}} = this.props.diffModel.getState();
       this._subscriptions.remove(clearScrollTimeoutSubscription);
-      const {navigationSections} = this.state;
-      if (this.state.filePath !== filePath || navigationSections.length === 0) {
+      if (filePath === '' || navigationSections.length === 0) {
         return;
       }
 
@@ -307,10 +256,7 @@ export default class DiffViewComponent extends React.Component {
 
   componentDidUpdate(prevProps: Props, prevState: State): void {
     this._renderDiffView();
-    if (this.state.filePath !== prevState.filePath) {
-      this._scrollToFirstHighlightedLine();
-      this.props.diffModel.emitActiveBufferChangeModified();
-    }
+    this.props.diffModel.emitActiveBufferChangeModified();
   }
 
   _renderCommitView(): void {
@@ -362,7 +308,7 @@ export default class DiffViewComponent extends React.Component {
     const {diffModel} = this.props;
     const {
       activeRepository,
-      filePath,
+      fileDiff,
       isLoadingSelectedFiles,
       selectedFileChanges,
     } = diffModel.getState();
@@ -390,7 +336,7 @@ export default class DiffViewComponent extends React.Component {
           <MultiRootChangedFilesView
             commandPrefix="nuclide-diff-view"
             fileChanges={getMultiRootFileChanges(selectedFileChanges, rootPaths)}
-            selectedFile={filePath}
+            selectedFile={fileDiff.filePath}
             onFileChosen={diffModel.diffFile.bind(diffModel)}
           />
         </div>
@@ -401,12 +347,16 @@ export default class DiffViewComponent extends React.Component {
 
   _renderEditors(): void {
     const {
-      filePath,
+      fileDiff,
       isLoadingFileDiff,
-      oldEditorState: oldState,
-      newEditorState: newState,
+    } = this.props.diffModel.getState();
+
+    const {
+      filePath,
       lineMapping,
-    } = this.state;
+      newEditorState: newState,
+      oldEditorState: oldState,
+    } = fileDiff;
     const oldEditorComponent = ReactDOM.render(
         <DiffViewEditorPane
           headerTitle={oldState.revisionTitle}
@@ -465,7 +415,7 @@ export default class DiffViewComponent extends React.Component {
   }
 
   _renderNavigation(): void {
-    const {navigationSections} = this.state;
+    const {fileDiff: {navigationSections}} = this.props.diffModel.getState();
     const navigationPaneElement = this._getPaneElement(this._navigationPane);
     const oldEditorElement = this._oldEditorComponent.getEditorDomElement();
     const newEditorElement = this._newEditorComponent.getEditorDomElement();
@@ -551,12 +501,15 @@ export default class DiffViewComponent extends React.Component {
 
   render(): React.Element<any> {
     const {
-      navigationSections,
+      selectedNavigationSectionIndex,
+    } = this.state;
+    const {
       filePath,
       newEditorState,
       oldEditorState,
-      selectedNavigationSectionIndex,
-    } = this.state;
+      navigationSections,
+    } = this.props.diffModel.getState().fileDiff;
+
     return (
       <div className="nuclide-diff-view-container">
         <DiffViewToolbar
@@ -597,7 +550,7 @@ export default class DiffViewComponent extends React.Component {
 
     let selectedNavigationSectionIndex = -1;
 
-    const {navigationSections} = this.state;
+    const {fileDiff: {navigationSections}} = this.props.diffModel.getState();
     // TODO(most): Pre-compute the positions of the diff sections.
     // Q: when to invalidate (line edits, UI elements & diff reloads, ..etc.)
     for (let sectionIndex = 0; sectionIndex < navigationSections.length; sectionIndex++) {
@@ -615,71 +568,5 @@ export default class DiffViewComponent extends React.Component {
     }
 
     this.setState({selectedNavigationSectionIndex});
-  }
-
-  /**
-   * Updates the line diff state on active file state change.
-   */
-  _updateLineDiffState(fileState: DiffViewStateType): void {
-    const {
-      filePath,
-      isLoadingFileDiff,
-      oldContents,
-      newContents,
-      oldEditorElements,
-      newEditorElements,
-      fromRevisionTitle,
-      toRevisionTitle,
-    } = fileState;
-
-    const {
-      addedLines,
-      removedLines,
-      oldLineOffsets,
-      newLineOffsets,
-      newToOld,
-      oldToNew,
-    } = computeDiff(oldContents, newContents);
-
-    const oldEditorState = {
-      revisionTitle: fromRevisionTitle,
-      text: oldContents,
-      offsets: oldLineOffsets,
-      highlightedLines: {
-        added: [],
-        removed: removedLines,
-      },
-      inlineElements: oldEditorElements,
-      inlineOffsetElements: newEditorElements,
-    };
-    const newEditorState = {
-      revisionTitle: toRevisionTitle,
-      text: newContents,
-      offsets: newLineOffsets,
-      highlightedLines: {
-        added: addedLines,
-        removed: [],
-      },
-      inlineElements: newEditorElements,
-      inlineOffsetElements: oldEditorElements,
-    };
-
-    const navigationSections = computeNavigationSections(
-      addedLines,
-      removedLines,
-      newEditorElements.keys(),
-      oldEditorElements.keys(),
-      oldLineOffsets,
-      newLineOffsets,
-    );
-
-    this.setState({
-      navigationSections,
-      lineMapping: {oldToNew, newToOld},
-      filePath,
-      isLoadingFileDiff,
-      newEditorState,
-      oldEditorState,
-    });
   }
 }

@@ -38,7 +38,6 @@ import {
 } from '../constants';
 import {
   createPhabricatorRevision,
-  formatFileDiffRevisionTitle,
   getAmendMode,
   getHeadRevision,
   getHeadToForkBaseRevisions,
@@ -53,7 +52,6 @@ import {repositoryForPath} from '../../../nuclide-hg-git-bridge';
 import {bufferForUri, loadBufferForUri} from '../../../commons-atom/text-editor';
 import {
   getEmptyCommitState,
-  getEmptyFileDiffState,
   getEmptyPublishState,
 } from './createEmptyAppState';
 import {getPhabricatorRevisionFromCommitMessage} from '../../../nuclide-arcanist-rpc/lib/utils';
@@ -67,7 +65,6 @@ import {
 } from '../../../commons-atom/streamProcessToConsoleMessages';
 
 const CHANGE_DEBOUNCE_DELAY_MS = 300;
-const FILESYSTEM_REVISION_TITLE = 'Filesystem / Editor';
 const SHOW_CONSOLE_ON_PROCESS_EVENTS = ['stdout', 'stderr', 'error'];
 
 function trackComplete<T>(eventName: string, operation: Observable<T>): Observable<T> {
@@ -328,7 +325,7 @@ export function diffFileEpic(
     invariant(action.type === ActionTypes.DIFF_FILE);
 
     const clearActiveDiffObservable =
-      Observable.of(Actions.updateFileDiff(getEmptyFileDiffState()));
+      Observable.of(Actions.updateFileDiff('', '', '', null));
 
     const {filePath, onChangeModified} = action.payload;
     const repository = repositoryForPath(filePath);
@@ -407,15 +404,7 @@ export function diffFileEpic(
             return Observable.of(
               Actions.updateLoadingFileDiff(true),
               // Clear Diff UI State.
-              Actions.updateFileDiff({
-                filePath,
-                fromRevisionTitle: '...',
-                toRevisionTitle: FILESYSTEM_REVISION_TITLE,
-                newContents: '',
-                newEditorElements: new Map(),
-                oldContents: '',
-                oldEditorElements: new Map(),
-              }),
+              Actions.updateFileDiff(filePath, '', '', null),
             );
           }
 
@@ -423,19 +412,15 @@ export function diffFileEpic(
           const newContents = buffer.getText();
           const oldContents = committedContents;
 
-          const fileDiff = store.getState().fileDiff;
-
           return Observable.concat(
             Observable.of(Actions.updateLoadingFileDiff(false)),
 
-            Observable.of(Actions.updateFileDiff({
-              ...fileDiff, // Keep the ui elements while we refresh.
+            Observable.of(Actions.updateFileDiff(
               filePath,
-              fromRevisionTitle: formatFileDiffRevisionTitle(revisionInfo),
               newContents,
               oldContents,
-              toRevisionTitle: FILESYSTEM_REVISION_TITLE,
-            })),
+              revisionInfo,
+            )),
 
             // TODO(most): Add loading indicators for comments.
             // $FlowFixMe flow doesn't have a good way to express that operator.
@@ -453,7 +438,7 @@ export function diffFileEpic(
               const oldEditorElements = mapUnion(
                 ...uiElementsResults.map(uiElements => uiElements.oldEditorElements));
               return Observable.of(
-                Actions.updateFileUiElements(filePath, newEditorElements, oldEditorElements));
+                Actions.updateFileUiElements(newEditorElements, oldEditorElements));
             }),
           );
         })
