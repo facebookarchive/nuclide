@@ -173,7 +173,9 @@ export class RemoteDirectory {
   }
 
   existsSync(): boolean {
-    return false;
+    // As of Atom 1.12, `atom.project.addPath` checks for project existence.
+    // We must return true to have our remote directories be addable.
+    return true;
   }
 
   _isRoot(filePath_: string): boolean {

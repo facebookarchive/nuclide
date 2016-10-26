@@ -25,7 +25,7 @@ describe('RemoteDirectory', () => {
 
   it('does have a existsSync() method', () => {
     const remoteDirectory = new RemoteDirectory(connectionMock, 'nuclide://example.com/');
-    expect(remoteDirectory.existsSync()).toBe(false);
+    expect(remoteDirectory.existsSync()).toBe(true);
   });
 
   it('does not list the property used to mark the directory as remote as one of its enumerable'
