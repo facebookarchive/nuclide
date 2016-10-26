@@ -9,16 +9,21 @@
  * the root directory of this source tree.
  */
 
+import temp from 'temp';
 import singleton from '../../commons-node/singleton';
 import projects from '../projects';
 
 const {PROJECT_PATH_WATCHER_INSTANCE_KEY} = projects.__test__;
+let firstProjectPath;
+let otherProjectPath;
 
 describe('projects', () => {
 
-  const firstProjectPath = '/absolute/project/path';
-
   beforeEach(() => {
+    temp.track();
+    // `atom.project.addPath` only works for paths that actually exist.
+    firstProjectPath = temp.mkdirSync('firstProjectPath');
+    otherProjectPath = temp.mkdirSync('otherProjectPath');
     singleton.clear(PROJECT_PATH_WATCHER_INSTANCE_KEY);
     atom.project.setPaths([firstProjectPath]);
   });
@@ -28,8 +33,8 @@ describe('projects', () => {
       const projectPaths: Array<string> = [];
       projects.observeProjectPaths(projectPath => { projectPaths.push(projectPath); });
       expect(projectPaths).toEqual([firstProjectPath]);
-      atom.project.addPath('/absolute/other/path');
-      expect(projectPaths).toEqual([firstProjectPath, '/absolute/other/path']);
+      atom.project.addPath(otherProjectPath);
+      expect(projectPaths).toEqual([firstProjectPath, otherProjectPath]);
     });
   });
 
@@ -38,8 +43,8 @@ describe('projects', () => {
       const addedProjectPaths: Array<string> = [];
       projects.onDidAddProjectPath(projectPath => { addedProjectPaths.push(projectPath); });
       expect(addedProjectPaths.length).toBe(0);
-      atom.project.addPath('/absolute/other/path');
-      expect(addedProjectPaths).toEqual(['/absolute/other/path']);
+      atom.project.addPath(otherProjectPath);
+      expect(addedProjectPaths).toEqual([otherProjectPath]);
     });
   });
 
