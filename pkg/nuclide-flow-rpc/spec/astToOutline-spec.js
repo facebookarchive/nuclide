@@ -272,6 +272,45 @@ const expectedToplevelOutline = [
     },
     children: [],
   },
+  {
+    tokenizedText: [
+      {kind: 'keyword', value: 'const'},
+      {kind: 'whitespace', value: ' '},
+      {kind: 'plain', value: '{'},
+      {kind: 'param', value: 'foo'},
+      {kind: 'plain', value: ','},
+      {kind: 'whitespace', value: ' '},
+      {kind: 'param', value: 'bar'},
+      {kind: 'plain', value: '}'},
+    ],
+    startPosition: {
+      line: 39,
+      column: 0,
+    },
+    endPosition: {
+      line: 39,
+      column: 36,
+    },
+    children: [],
+  },
+  {
+    tokenizedText: [
+      {kind: 'keyword', value: 'const'},
+      {kind: 'whitespace', value: ' '},
+      {kind: 'plain', value: '['},
+      {kind: 'param', value: 'baz'},
+      {kind: 'plain', value: ']'},
+    ],
+    startPosition: {
+      line: 40,
+      column: 0,
+    },
+    endPosition: {
+      line: 40,
+      column: 18,
+    },
+    children: [],
+  },
 ];
 
 const expectedJasmineOutline = [

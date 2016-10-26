@@ -66,7 +66,7 @@ function itemToTree(item: any): ?FlowOutlineTree {
       if (item.value && item.value.type === 'ArrowFunctionExpression') {
         paramTokens = [
           plain('('),
-          ...paramsTokenizedText(item.value.params),
+          ...declarationsTokenizedText(item.value.params),
           plain(')'),
         ];
       }
@@ -85,7 +85,7 @@ function itemToTree(item: any): ?FlowOutlineTree {
         tokenizedText: [
           method(item.key.name),
           plain('('),
-          ...paramsTokenizedText(item.value.params),
+          ...declarationsTokenizedText(item.value.params),
           plain(')'),
         ],
         representativeName: item.key.name,
@@ -130,11 +130,11 @@ function exportDeclaration(
   };
 }
 
-function paramReducer(
+function declarationReducer(
   textElements: TokenizedText,
   p: any,
   index: number,
-  params: Array<any>,
+  declarations: Array<any>,
 ): TokenizedText {
   switch (p.type) {
     case 'Identifier':
@@ -142,31 +142,31 @@ function paramReducer(
       break;
     case 'ObjectPattern':
       textElements.push(plain('{'));
-      textElements.push(...paramsTokenizedText(p.properties.map(obj => obj.key)));
+      textElements.push(...declarationsTokenizedText(p.properties.map(obj => obj.key)));
       textElements.push(plain('}'));
       break;
     case 'ArrayPattern':
       textElements.push(plain('['));
-      textElements.push(...paramsTokenizedText(p.elements));
+      textElements.push(...declarationsTokenizedText(p.elements));
       textElements.push(plain(']'));
       break;
     case 'AssignmentPattern':
-      return paramReducer(textElements, p.left, index, params);
+      return declarationReducer(textElements, p.left, index, declarations);
     case 'RestElement':
       textElements.push(plain('...'));
-      return paramReducer(textElements, p.argument, index, params);
+      return declarationReducer(textElements, p.argument, index, declarations);
     default:
       throw new Error(`encountered unexpected argument type ${p.type}`);
   }
-  if (index < params.length - 1) {
+  if (index < declarations.length - 1) {
     textElements.push(plain(','));
     textElements.push(whitespace(' '));
   }
   return textElements;
 }
 
-function paramsTokenizedText(params: Array<any>): TokenizedText {
-  return params.reduce(paramReducer, []);
+function declarationsTokenizedText(declarations: Array<any>): TokenizedText {
+  return declarations.reduce(declarationReducer, []);
 }
 
 function getExtent(item: any): Extent {
@@ -191,7 +191,7 @@ function functionOutline(name: string, params: Array<any>, extent: Extent): Flow
       whitespace(' '),
       method(name),
       plain('('),
-      ...paramsTokenizedText(params),
+      ...declarationsTokenizedText(params),
       plain(')'),
     ],
     representativeName: name,
@@ -280,7 +280,7 @@ function moduleExportsPropertyOutline(property: any): ?FlowOutlineTree {
       tokenizedText: [
         method(propName),
         plain('('),
-        ...paramsTokenizedText(property.value.params),
+        ...declarationsTokenizedText(property.value.params),
         plain(')'),
       ],
       representativeName: propName,
@@ -429,13 +429,18 @@ function variableDeclaratorOutline(
     return functionOutline(declarator.id.name, declarator.init.params, extent);
   }
 
+  const {id} = declarator;
+
+
+  const tokenizedText = [
+    keyword(kind),
+    whitespace(' '),
+    ...declarationsTokenizedText([id]),
+  ];
+  const representativeName = id.type === 'Identifier' ? id.name : undefined;
   return {
-    tokenizedText: [
-      keyword(kind),
-      whitespace(' '),
-      param(declarator.id.name),
-    ],
-    representativeName: declarator.id.name,
+    tokenizedText,
+    representativeName,
     children: [],
     ...extent,
   };

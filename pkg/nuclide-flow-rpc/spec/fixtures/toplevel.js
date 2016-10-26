@@ -36,4 +36,8 @@ let varBaz = {
     return shouldNotShowUp;
   },
 };
+
+const {foo, bar} = {foo: 4, bar: 5};
+const [baz] = [1];
+
 /* eslint-enable */
