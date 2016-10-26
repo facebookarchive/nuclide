@@ -12,18 +12,24 @@
 import {uncachedRequire} from '../../nuclide-test-helpers';
 import {Range} from 'atom';
 import featureConfig from '../../commons-atom/featureConfig';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 const TYPE_HINT_PROVIDER = '../lib/FlowTypeHintProvider';
 
+const FIXTURE = nuclideUri.join(__dirname, 'fixtures/fixture.js');
+
 describe('FlowTypeHintProvider', () => {
-  const editor = {
-    getPath() { return ''; },
-    getText() { return ''; },
-  };
+  let editor: atom$TextEditor = (null: any);
   const position = [1, 1];
   const range = new Range([1, 2], [3, 4]);
 
   let typeHintProvider;
+
+  beforeEach(() => {
+    waitsForPromise(async () => {
+      editor = await atom.workspace.open(FIXTURE);
+    });
+  });
 
   afterEach(() => {
     // we assume here that runWith is called in every spec -- otherwise these
