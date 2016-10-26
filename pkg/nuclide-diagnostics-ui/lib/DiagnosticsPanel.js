@@ -48,6 +48,8 @@ class DiagnosticsPanel extends React.Component {
     super(props);
     (this: any)._onFilterByActiveTextEditorChange =
       this._onFilterByActiveTextEditorChange.bind(this);
+    (this: any)._openAllFilesWithErrors =
+      this._openAllFilesWithErrors.bind(this);
   }
 
   render(): React.Element<any> {
@@ -117,6 +119,14 @@ class DiagnosticsPanel extends React.Component {
                 />
               </span>
               <Button
+                onClick={this._openAllFilesWithErrors}
+                size={ButtonSizes.SMALL}
+                disabled={diagnostics.length === 0}
+                className="inline-block"
+                title="Open All">
+                Open All
+              </Button>
+              <Button
                 onClick={this.props.onDismiss}
                 icon="x"
                 size={ButtonSizes.SMALL}
@@ -138,6 +148,13 @@ class DiagnosticsPanel extends React.Component {
   _onFilterByActiveTextEditorChange(isChecked: boolean) {
     track('diagnostics-panel-toggle-current-file', {isChecked: isChecked.toString()});
     this.props.onFilterByActiveTextEditorChange.call(null, isChecked);
+  }
+
+  _openAllFilesWithErrors() {
+    atom.commands.dispatch(
+      atom.views.getView(atom.workspace),
+      'nuclide-diagnostics-ui:open-all-files-with-errors',
+    );
   }
 }
 

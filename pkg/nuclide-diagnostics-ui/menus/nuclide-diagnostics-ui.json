@@ -19,6 +19,10 @@
               "command": "nuclide-diagnostics-ui:fix-all-in-current-file"
             },
             {
+              "label": "Open All Files with Errors",
+              "command": "nuclide-diagnostics-ui:open-all-files-with-errors"
+            },
+            {
               "label": "Go To First Diagnostic",
               "command": "nuclide-diagnostics-ui:go-to-first-diagnostic"
             },

@@ -38,6 +38,7 @@ const DEFAULT_HIDE_DIAGNOSTICS_PANEL = true;
 const DEFAULT_TABLE_HEIGHT = 200;
 const DEFAULT_FILTER_BY_ACTIVE_EDITOR = false;
 const LINTER_PACKAGE = 'linter';
+const MAX_OPEN_ALL_FILES = 20;
 
 let subscriptions: ?UniversalDisposable = null;
 let bottomPanel: ?atom$Panel = null;
@@ -240,12 +241,43 @@ function addAtomCommands(diagnosticUpdater: ObservableDiagnosticUpdater): void {
     diagnosticUpdater.applyFixesForFile(path);
   };
 
+  const openAllFilesWithErrors = () => {
+    track('diagnostics-panel-open-all-files-with-errors');
+    diagnosticUpdater.allMessageUpdates
+      .first()
+      .subscribe(messages => {
+        if (messages.length > MAX_OPEN_ALL_FILES) {
+          atom.notifications.addError(
+            `Diagnostics: Will not open more than ${MAX_OPEN_ALL_FILES} files`,
+          );
+          return;
+        }
+        for (let index = 0; index < messages.length; index++) {
+          const rowData = messages[index];
+          if (rowData.scope === 'file' && rowData.filePath != null) {
+            const uri = rowData.filePath;
+            // If initialLine is N, Atom will navigate to line N+1.
+            // Flow sometimes reports a row of -1, so this ensures the line is at least one.
+            const line = Math.max(rowData.range ? rowData.range.start.row : 0, 0);
+            const column = 0;
+            goToLocation(uri, line, column);
+          }
+        }
+      });
+  };
+
   invariant(subscriptions != null);
 
   subscriptions.add(atom.commands.add(
     'atom-workspace',
     'nuclide-diagnostics-ui:fix-all-in-current-file',
     fixAllInCurrentFile,
+  ));
+
+  subscriptions.add(atom.commands.add(
+    'atom-workspace',
+    'nuclide-diagnostics-ui:open-all-files-with-errors',
+    openAllFilesWithErrors,
   ));
 
   subscriptions.add(new KeyboardShortcuts(diagnosticUpdater));
