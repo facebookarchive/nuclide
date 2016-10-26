@@ -437,27 +437,26 @@ export function asyncExecute(
       (err: any /* Error */, stdoutBuf, stderrBuf) => {
         const stdout = stdoutBuf.toString('utf8');
         const stderr = stderrBuf.toString('utf8');
-        if (err != null) {
-          if (Number.isInteger(err.code)) {
-            resolve({
-              stdout,
-              stderr,
-              exitCode: err.code,
-            });
-          } else {
-            resolve({
-              stdout,
-              stderr,
-              errorCode: err.errno || 'EUNKNOWN',
-              errorMessage: err.message,
-            });
-          }
+        if (err == null) {
+          resolve({
+            stdout,
+            stderr,
+            exitCode: 0,
+          });
+        } else if (Number.isInteger(err.code)) {
+          resolve({
+            stdout,
+            stderr,
+            exitCode: err.code,
+          });
+        } else {
+          resolve({
+            stdout,
+            stderr,
+            errorCode: err.errno || 'EUNKNOWN',
+            errorMessage: err.message,
+          });
         }
-        resolve({
-          stdout,
-          stderr,
-          exitCode: 0,
-        });
       },
     );
     writeToStdin(process, options);
