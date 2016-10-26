@@ -51,7 +51,6 @@ export type ServerConnectionConfiguration = {
 // A ServerConnection keeps a list of RemoteConnections - one for each open directory on the remote
 // machine. Once all RemoteConnections have been closed, then the ServerConnection will close.
 class ServerConnection {
-  _entries: {[path: string]: RemoteFile | RemoteDirectory};
   _config: ServerConnectionConfiguration;
   _closed: boolean;
   _healthNotifier: ?ConnectionHealthNotifier;
@@ -92,7 +91,6 @@ class ServerConnection {
 
   // Do NOT call this from outside this class. Use ServerConnection.getOrCreate() instead.
   constructor(config: ServerConnectionConfiguration) {
-    this._entries = {};
     this._config = config;
     this._closed = false;
     this._healthNotifier = null;
@@ -148,54 +146,22 @@ class ServerConnection {
   ): RemoteDirectory {
     let {path} = nuclideUri.parse(uri);
     path = nuclideUri.normalize(path);
-
-    let entry = this._entries[path];
-    if (
-      !entry ||
-      entry.getLocalPath() !== path ||
-      entry.isSymbolicLink() !== symlink
-    ) {
-      this._entries[path] = entry = new RemoteDirectory(
-        this,
-        this.getUriOfRemotePath(path),
-        symlink,
-        {hgRepositoryDescription},
-      );
-      this._addHandlersForEntry(entry);
-    }
-
-    invariant(entry instanceof RemoteDirectory);
-    if (!entry.isDirectory()) {
-      throw new Error('Path is not a directory:' + uri);
-    }
-
-    return entry;
+    return new RemoteDirectory(
+      this,
+      this.getUriOfRemotePath(path),
+      symlink,
+      {hgRepositoryDescription},
+    );
   }
 
   createFile(uri: NuclideUri, symlink: boolean = false): RemoteFile {
     let {path} = nuclideUri.parse(uri);
     path = nuclideUri.normalize(path);
-
-    let entry = this._entries[path];
-    if (
-      !entry ||
-      entry.getLocalPath() !== path ||
-      entry.isSymbolicLink() !== symlink
-    ) {
-      this._entries[path] = entry = new RemoteFile(
-        this,
-        this.getUriOfRemotePath(path),
-        symlink,
-      );
-      this._addHandlersForEntry(entry);
-    }
-
-    invariant(entry instanceof RemoteFile);
-    if (entry.isDirectory()) {
-      throw new Error('Path is not a file');
-    }
-
-    return entry;
+    return new RemoteFile(
+      this,
+      this.getUriOfRemotePath(path),
+      symlink,
+    );
   }
 
   getFileWatch(path: string): Observable<WatchResult> {
@@ -204,14 +170,6 @@ class ServerConnection {
 
   getDirectoryWatch(path: string): Observable<WatchResult> {
     return this._directoryWatches.get(path);
-  }
-
-  _addHandlersForEntry(entry: RemoteFile | RemoteDirectory): void {
-    // TODO(most): Subscribe to rename events when they're implemented.
-    const deleteSubscription = entry.onDidDelete(() => {
-      delete this._entries[entry.getLocalPath()];
-      deleteSubscription.dispose();
-    });
   }
 
   async initialize(): Promise<void> {
@@ -254,11 +212,6 @@ class ServerConnection {
 
     // Future getClient calls should fail, if it has a cached ServerConnection instance.
     this._closed = true;
-
-    Object.keys(this._entries).forEach(path => {
-      this._entries[path].dispose();
-    });
-    this._entries = {};
 
     // The Rpc channel owns the socket.
     if (this._client != null) {
