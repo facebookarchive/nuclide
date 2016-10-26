@@ -487,8 +487,12 @@ export function setViewModeEpic(
         return commitModeChanges.switchMap(commitMode => {
           switch (commitMode) {
             case CommitMode.COMMIT: {
-              // TODO(asriram): load commit template in case of `COMMIT`.
-              return Observable.empty();
+              // TODO(asriram): t12228275 load commit template in case of `COMMIT`.
+              return Observable.of(Actions.updateCommitState({
+                message: null,
+                mode: commitMode,
+                state: CommitModeState.READY,
+              }));
             }
             case CommitMode.AMEND: {
               return Observable.concat(
