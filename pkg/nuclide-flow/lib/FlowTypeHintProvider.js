@@ -27,6 +27,10 @@ export class FlowTypeHintProvider {
     if (!enabled) {
       return null;
     }
+    const scopes = editor.scopeDescriptorForBufferPosition(position).getScopesArray();
+    if (scopes.find(scope => scope.includes('comment')) !== undefined) {
+      return null;
+    }
     const filePath = editor.getPath();
     if (filePath == null) {
       return null;
