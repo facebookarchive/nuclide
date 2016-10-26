@@ -63,7 +63,8 @@ export class AtomLanguageService<T: LanguageService> {
   ) {
     this._config = config;
     this._subscriptions = new UniversalDisposable();
-    this._connectionToLanguageService = new ConnectionCache(languageServiceFactory);
+    const lazy = true;
+    this._connectionToLanguageService = new ConnectionCache(languageServiceFactory, lazy);
     this._subscriptions.add(this._connectionToLanguageService);
   }
 
@@ -157,8 +158,11 @@ export class AtomLanguageService<T: LanguageService> {
   }
 
   async isFileInProject(fileUri: NuclideUri): Promise<boolean> {
-    const languageService = await this.getLanguageServiceForUri(fileUri);
-    return (languageService != null) && await languageService.isFileInProject(fileUri);
+    const languageService = this._connectionToLanguageService.getExistingForUri(fileUri);
+    if (languageService == null) {
+      return false;
+    }
+    return await (await languageService).isFileInProject(fileUri);
   }
 
   observeLanguageServices(): Observable<T> {

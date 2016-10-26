@@ -46,21 +46,41 @@ export class ConnectionCache<T: IDisposable> extends Cache<?ServerConnection, Pr
   }
 
   getForUri(filePath: ?NuclideUri): ?Promise<T> {
-    if (filePath == null) {
+    const connection = connectionOfUri(filePath);
+    if (connection == null) {
       return null;
     }
+    return this.get(connection.connection);
+  }
 
-    const connection = ServerConnection.getForUri(filePath);
-    // During startup & shutdown of connections we can have a remote uri
-    // without the corresponding connection.
-    if (connection == null && nuclideUri.isRemote(filePath)) {
+  getExistingForUri(filePath: ?NuclideUri): ?Promise<T> {
+    const connection = connectionOfUri(filePath);
+    if (connection == null) {
       return null;
     }
-    return this.get(connection);
+    return this.has(connection.connection) ? this.get(connection.connection) : null;
   }
 
   dispose(): void {
     super.dispose();
     this._subscriptions.dispose();
   }
+}
+
+// Returns null if there's no valid connection for the given filePath
+// Returns {connection: null} for a valid local filePath.
+// Returns {connection: non-null} for a valid remote filePath.
+function connectionOfUri(filePath: ?NuclideUri): ?{connection: ?ServerConnection} {
+  if (filePath == null) {
+    return null;
+  }
+
+  const connection = ServerConnection.getForUri(filePath);
+  // During startup & shutdown of connections we can have a remote uri
+  // without the corresponding connection.
+  if (connection == null && nuclideUri.isRemote(filePath)) {
+    return null;
+  }
+
+  return {connection};
 }
