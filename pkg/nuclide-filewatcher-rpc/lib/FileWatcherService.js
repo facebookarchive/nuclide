@@ -15,6 +15,7 @@ import type {FileChange} from '../../nuclide-watchman-helpers/lib/WatchmanClient
 import type {ConnectableObservable} from 'rxjs';
 
 import nuclideUri from '../../commons-node/nuclideUri';
+import SharedObservableCache from '../../commons-node/SharedObservableCache';
 import {Observable} from 'rxjs';
 import fsPromise from '../../commons-node/fsPromise';
 import {getLogger} from '../../nuclide-logging';
@@ -29,7 +30,7 @@ type WatchEvent = 'change' | 'delete';
 
 // Cache an observable for each watched entity (file or directory).
 // Multiple watches for the same entity can share the same observable.
-const entityObservable: Map<string, Observable<WatchResult>> = new Map();
+const entityWatches = new SharedObservableCache(registerWatch);
 
 // In addition, expose the observer behind each observable so we can
 // dispatch events from the root subscription.
@@ -57,22 +58,19 @@ function watchEntity(
 ): Observable<WatchResult> {
   return Observable.fromPromise(
     getRealPath(entityPath, isFile),
-  ).flatMap(realPath => {
-    let observable = entityObservable.get(realPath);
-    if (observable != null) {
-      return observable;
-    }
-    observable = Observable.create(observer => {
-      entityObserver.set(realPath, observer);
-      return () => {
-        entityObserver.delete(realPath);
-        entityObservable.delete(realPath);
-      };
-    }).map(type => ({path: realPath, type}))
-      .share();
-    entityObservable.set(realPath, observable);
-    return observable;
-  });
+  ).switchMap(
+    realPath => entityWatches.get(realPath),
+  );
+}
+
+// Register an observable for the given path.
+function registerWatch(path: string): Observable<WatchResult> {
+  return Observable.create(observer => {
+    entityObserver.set(path, observer);
+    return () => entityObserver.delete(path);
+  })
+    .map(type => ({path, type}))
+    .share();
 }
 
 async function getRealPath(entityPath: string, isFile: boolean): Promise<string> {
