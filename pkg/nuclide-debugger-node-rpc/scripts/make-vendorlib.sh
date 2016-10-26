@@ -110,12 +110,26 @@ curl https://registry.npmjs.org/truncate/-/truncate-1.0.5.tgz |
   --include='./package/package.json' \
   --include='./package/truncate.js'
 
-mkdir -p VendorLib/node_modules/node-pre-gyp
-cat <<EOF > VendorLib/node_modules/node-pre-gyp/index.js
-// "pre-binding" behaves like "node-pre-gyp"'s "find", but doesn't include
-// anything else (e.g. building).
-'use strict';
-module.exports = require('pre-binding');
+cat <<EOF | patch -p1
+--- a/VendorLib/node_modules/v8-debug/v8-debug.js
++++ b/VendorLib/node_modules/v8-debug/v8-debug.js
+@@ -1,8 +1,14 @@
+ var binary = require('node-pre-gyp');
+ var fs = require('fs');
+ var path = require('path');
+-var binding_path = binary.find(path.resolve(path.join(__dirname,'./package.json')));
+-var binding = require(binding_path);
++var pack = require('./package.json');
++var binding = require('./' + [
++  'build',
++  'debug',
++  'v' + pack.version,
++  ['node', 'v' + process.versions.modules, process.platform, process.arch].join('-'),
++  'debug.node'
++].join('/'));
+ var EventEmitter = require('events').EventEmitter;
+ var inherits = require('util').inherits;
+ var extend = require('util')._extend;
 EOF
 
 cat <<EOF | patch -p1
