@@ -92,7 +92,7 @@ export function rootReducer(
     case ActionTypes.UPDATE_LOADING_FILE_DIFF:
       return {
         ...state,
-        isLoading: action.payload.isLoading,
+        isLoadingFileDiff: action.payload.isLoading,
       };
 
     case ActionTypes.SET_SHOULD_REBASE_ON_AMEND:
