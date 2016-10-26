@@ -134,10 +134,12 @@ export default class DiffViewComponent extends React.Component {
 
   componentDidMount(): void {
     const {diffModel, tryTriggerNux} = this.props;
+    const stateUpdates = observableFromSubscribeFunction(
+      diffModel.onDidUpdateState.bind(diffModel))
+      .map(() => diffModel.getState());
     this._subscriptions.add(
       Observable.merge(
-        observableFromSubscribeFunction(
-          diffModel.onDidUpdateState.bind(diffModel)),
+        stateUpdates,
         observableFromSubscribeFunction(
           atom.workspace.onDidChangeActivePaneItem.bind(atom.workspace)),
       ).filter(() => {
@@ -148,6 +150,23 @@ export default class DiffViewComponent extends React.Component {
       .subscribe(() => {
         this.forceUpdate();
       }),
+
+      // Scroll to the first navigation section when diffing a file.
+      stateUpdates.map(({fileDiff}) => fileDiff.filePath)
+        .distinctUntilChanged()
+        .switchMap(filePath => {
+          // Clear prior subscriptions on file switch.
+          if (!filePath) {
+            return Observable.empty();
+          }
+          return Observable.concat(
+            // Wait for the diff text to load.
+            stateUpdates.filter(({fileDiff}) => fileDiff.oldEditorState.text.length > 0)
+              .first().ignoreElements(),
+            // Wait for the diff editor to render the UI state.
+            Observable.interval(SCROLL_FIRST_CHANGE_DELAY_MS).first(),
+          );
+        }).subscribe(() => this._scrollToFirstHighlightedLine()),
     );
 
     this._paneContainer = createPaneContainer();
@@ -202,24 +221,14 @@ export default class DiffViewComponent extends React.Component {
     this._subscriptions.add(this._syncScroll);
   }
 
-  // TODO(most): migrate logic when it works.
   _scrollToFirstHighlightedLine(): void {
-    // Schedule scroll to first line after all lines have been rendered.
-    const scrollTimeout = setTimeout(() => {
-      const {fileDiff: {filePath, navigationSections}} = this.props.diffModel.getState();
-      this._subscriptions.remove(clearScrollTimeoutSubscription);
-      if (filePath === '' || navigationSections.length === 0) {
-        return;
-      }
+    const {fileDiff: {navigationSections}} = this.props.diffModel.getState();
+    if (navigationSections.length === 0) {
+      return;
+    }
 
-      const {status, lineNumber} = navigationSections[0];
-      this._handleNavigateToNavigationSection(status, lineNumber);
-
-    }, SCROLL_FIRST_CHANGE_DELAY_MS);
-    const clearScrollTimeoutSubscription = new Disposable(() => {
-      clearTimeout(scrollTimeout);
-    });
-    this._subscriptions.add(clearScrollTimeoutSubscription);
+    const {status, lineNumber} = navigationSections[0];
+    this._handleNavigateToNavigationSection(status, lineNumber);
   }
 
   _onChangeMode(mode: DiffModeType): void {
