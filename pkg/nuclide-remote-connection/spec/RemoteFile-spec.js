@@ -155,34 +155,6 @@ describe('RemoteFile', () => {
     });
   });
 
-  describe('RemoteFile::rename()', () => {
-    let tempDir;
-
-    beforeEach(() => {
-      tempDir = temp.mkdirSync('rename_test');
-    });
-
-    // We only do this simple test to make sure it's delegating to the connection.
-    // Adding the other cases is misleading and incorrect since it's actually
-    // delegating to `fsPromise` here.
-    it('renames existing files', () => {
-      waitsForPromise(async () => {
-        const filePath = nuclideUri.join(tempDir, 'file_to_rename');
-        fs.writeFileSync(filePath, '');
-        const newFilePath = nuclideUri.join(tempDir, 'new_file_name');
-        expect(fs.existsSync(filePath)).toBe(true);
-
-        const file = new RemoteFile(connectionMock, `nuclide://host123${filePath}`);
-        spyOn(file, '_subscribeToNativeChangeEvents').andReturn(null);
-        await file.rename(newFilePath);
-
-        expect(fs.existsSync(filePath)).toBe(false);
-        expect(fs.existsSync(newFilePath)).toBe(true);
-        expect(file.getLocalPath()).toEqual(newFilePath);
-      });
-    });
-  });
-
   describe('copy()', () => {
     let tempDir;
 

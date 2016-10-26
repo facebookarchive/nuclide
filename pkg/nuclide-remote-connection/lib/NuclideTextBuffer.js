@@ -218,9 +218,10 @@ export default class NuclideTextBuffer extends TextBuffer {
       }
     }));
 
-    this.fileSubscriptions.add(file.onDidRename(() => {
-      this.emitter.emit('did-change-path', this.getPath());
-    }));
+    // TODO: Not supported by RemoteFile.
+    // this.fileSubscriptions.add(file.onDidRename(() => {
+    //   this.emitter.emit('did-change-path', this.getPath());
+    // }));
 
     this.fileSubscriptions.add(file.onWillThrowWatchError(errorObject => {
       this.emitter.emit('will-throw-watch-error', errorObject);

@@ -249,29 +249,6 @@ export class RemoteDirectory {
     this._handleNativeDeleteEvent();
   }
 
-  /**
-   * Renames this directory to the given absolute path.
-   */
-  async rename(newPath: string): Promise<any> {
-    await this._getFileSystemService().rename(this._localPath, newPath);
-
-    // Unsubscribe from the old `this._localPath`. This must be done before
-    // setting the new `this._localPath`.
-    this._unsubscribeFromNativeChangeEvents();
-
-    const {protocol, host} = nuclideUri.parse(this._uri);
-    this._localPath = newPath;
-    invariant(protocol);
-    invariant(host);
-    this._uri = protocol + '//' + host + this._localPath;
-
-    // Subscribe to changes for the new `this._localPath`. This must be done
-    // after setting the new `this._localPath`.
-    if (this._subscriptionCount > 0) {
-      this._subscribeToNativeChangeEvents();
-    }
-  }
-
   getEntriesSync(): Array<RemoteFile | RemoteDirectory> {
     throw new Error('not implemented');
   }

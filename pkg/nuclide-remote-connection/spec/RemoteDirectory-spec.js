@@ -312,33 +312,6 @@ describe('RemoteDirectory::isSymbolicLink()', () => {
   });
 });
 
-describe('RemoteDirectory::rename()', () => {
-  let tempDir;
-
-  beforeEach(() => {
-    tempDir = temp.mkdirSync('rename_test');
-  });
-
-  // We only do this simple test to make sure it's delegating to the connection.
-  // Adding the other cases is misleading and incorrect since it's actually
-  // delegating to `fsPromise` here.
-  it('renames existing directories', () => {
-    waitsForPromise(async () => {
-      const directoryPath = nuclideUri.join(tempDir, 'directory_to_rename');
-      fs.mkdirSync(directoryPath);
-      const newDirectoryPath = nuclideUri.join(tempDir, 'new_directory_name');
-      expect(fs.existsSync(directoryPath)).toBe(true);
-
-      const directory = new RemoteDirectory(connectionMock, `nuclide://host13${directoryPath}`);
-      await directory.rename(newDirectoryPath);
-
-      expect(fs.existsSync(directoryPath)).toBe(false);
-      expect(fs.existsSync(newDirectoryPath)).toBe(true);
-      expect(directory.getLocalPath()).toEqual(newDirectoryPath);
-    });
-  });
-});
-
 // TODO: #7344702 Re-enable and don't depend on watchman.
 // eslint-disable-next-line jasmine/no-disabled-tests
 xdescribe('RemoteDirectory::onDidChange()', () => {

@@ -62,8 +62,8 @@ export class RemoteFile {
   }
 
   onDidRename(callback: () => mixed): IDisposable {
-    this._willAddSubscription();
-    return this._trackUnsubscription(this._emitter.on('did-rename', callback));
+    // TODO: this is not supported by the Watchman API.
+    return new Disposable();
   }
 
   onDidDelete(callback: () => mixed): IDisposable {
@@ -89,8 +89,6 @@ export class RemoteFile {
           return this._handleNativeChangeEvent();
         case 'delete':
           return this._handleNativeDeleteEvent();
-        case 'rename':
-          return this._handleNativeRenameEvent(watchUpdate.path);
       }
     }, error => {
       logger.error('Failed to subscribe RemoteFile:', this._path, error);
@@ -106,17 +104,6 @@ export class RemoteFile {
     // Don't bother checking the file - this can be very expensive.
     this._emitter.emit('did-change');
     return Promise.resolve();
-  }
-
-  _handleNativeRenameEvent(newPath: string): void {
-    this._unsubscribeFromNativeChangeEvents();
-    const {protocol, host} = nuclideUri.parse(this._path);
-    this._localPath = newPath;
-    invariant(protocol);
-    invariant(host);
-    this._path = protocol + '//' + host + this._localPath;
-    this._subscribeToNativeChangeEvents();
-    this._emitter.emit('did-rename');
   }
 
   _handleNativeDeleteEvent(): void {
@@ -254,11 +241,6 @@ export class RemoteFile {
         throw error;
       }
     }
-  }
-
-  async rename(newPath: string): Promise<any> {
-    await this._getFileSystemService().rename(this._localPath, newPath);
-    this._handleNativeRenameEvent(newPath);
   }
 
   async copy(newPath: string): Promise<boolean> {
