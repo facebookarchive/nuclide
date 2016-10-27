@@ -24,6 +24,10 @@ describe('debugger-php-rpc MessageTranslator', () => {
       'connectionMultiplexer',
       ['dispose', 'onStatus', 'onNotification', 'onConnectionError'],
     );
+    const disposable = {dispose: () => {}};
+    connectionMultiplexer.onStatus = jasmine.createSpy('onStatus').andReturn(disposable);
+    connectionMultiplexer.onNotification = jasmine.createSpy('onNotification')
+      .andReturn(disposable);
     ConnectionMultiplexer = spyOn(require('../lib/ConnectionMultiplexer'), 'ConnectionMultiplexer')
       .andReturn(connectionMultiplexer);
     clientCallback = jasmine.createSpyObj(
