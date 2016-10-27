@@ -9,47 +9,54 @@
  * the root directory of this source tree.
  */
 
-import {
-  activateAllPackages,
-  deactivateAllPackages,
-  jasmineIntegrationTestSetup,
-} from './utils/integration-test-helpers';
-import {
-  dispatchKeyboardEvent,
-  setLocalProject,
-} from '../pkg/commons-atom/testHelpers';
+import {describeRemotableTest} from './utils/remotable-tests';
+import {dispatchKeyboardEvent} from '../pkg/commons-atom/testHelpers';
 import {generateHgRepo1Fixture} from '../pkg/nuclide-test-helpers';
 import nuclideUri from '../pkg/commons-node/nuclideUri';
 
-describe('Clipboard path integration test', () => {
-  it('correctly copies local paths', () => {
-    waitsForPromise({timeout: 240000}, async () => {
-      jasmineIntegrationTestSetup();
-      // Activate nuclide packages.
-      await activateAllPackages();
-      // Copy mercurial project to temp directory.
-      const repoPath = await generateHgRepo1Fixture();
-      // Add this directory as an atom project.
-      setLocalProject(nuclideUri.dirname(repoPath));
-      // Open a file in the project.
-      await atom.workspace.open(nuclideUri.join(repoPath, 'test.txt'));
-
-      // Absolute path.
-      dispatchKeyboardEvent('x', document.activeElement, {ctrl: true, shift: true});
-      const expectedPath = nuclideUri.join(repoPath, 'test.txt');
-      expect(atom.clipboard.read()).toBe(expectedPath);
-
-      // Project-relative path.
-      dispatchKeyboardEvent('x', document.activeElement, {ctrl: true, alt: true, shift: true});
-      expect(atom.clipboard.read())
-      .toBe(nuclideUri.join(nuclideUri.basename(repoPath), 'test.txt'));
-
-      // Repository-relative path.
-      dispatchKeyboardEvent('x', document.activeElement, {ctrl: true, alt: true});
-      expect(atom.clipboard.read())
-      .toBe(nuclideUri.join(nuclideUri.basename(repoPath), 'test.txt'));
-
-      deactivateAllPackages();
+describeRemotableTest('Clipboard path integration test', context => {
+  let repoPath;
+  beforeEach(() => {
+    waitsForPromise({timeout: 60000}, async () => {
+      repoPath = await generateHgRepo1Fixture();
+      await context.setProject(repoPath);
+      await atom.workspace.open(context.getProjectRelativePath('test.txt'));
     });
+  });
+
+  it('correctly copies paths', () => {
+    // Absolute path.
+    runs(() => {
+      // In 1.12 uppercase is required when shift is needed.
+      dispatchKeyboardEvent('X', document.activeElement, {ctrl: true, shift: true});
+    });
+
+    // In Atom 1.12 keyboard events are async, so we have to wait for the results.
+    waitsFor(
+      'absolute path to be copied',
+      () => atom.clipboard.read() === nuclideUri.join(repoPath, 'test.txt'),
+    );
+
+    // Project-relative path.
+    runs(() => {
+      dispatchKeyboardEvent('X', document.activeElement, {ctrl: true, alt: true, shift: true});
+    });
+
+    waitsFor(
+      'project-relative path to be copied',
+      () => atom.clipboard.read() === 'test.txt',
+    );
+
+    // Repository-relative path.
+    runs(() => {
+      // Clear the clipboard, since the two are results are the same.
+      atom.clipboard.write('');
+      dispatchKeyboardEvent('x', document.activeElement, {ctrl: true, alt: true});
+    });
+
+    waitsFor(
+      'repository-relative path to be copied',
+      () => atom.clipboard.read() === 'test.txt',
+    );
   });
 });
