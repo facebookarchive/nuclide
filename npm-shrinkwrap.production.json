@@ -251,9 +251,9 @@
       "resolved": "https://registry.npmjs.org/dequeue/-/dequeue-1.0.5.tgz"
     },
     "diff": {
-      "version": "3.0.0",
-      "from": "diff@3.0.0",
-      "resolved": "https://registry.npmjs.org/diff/-/diff-3.0.0.tgz"
+      "version": "3.0.1",
+      "from": "diff@3.0.1",
+      "resolved": "https://registry.npmjs.org/diff/-/diff-3.0.1.tgz"
     },
     "dom-serializer": {
       "version": "0.1.0",
@@ -319,9 +319,9 @@
       "resolved": "https://registry.npmjs.org/esprima/-/esprima-2.7.3.tgz"
     },
     "event-kit": {
-      "version": "2.1.0",
-      "from": "event-kit@2.1.0",
-      "resolved": "https://registry.npmjs.org/event-kit/-/event-kit-2.1.0.tgz"
+      "version": "2.2.0",
+      "from": "event-kit@2.2.0",
+      "resolved": "https://registry.npmjs.org/event-kit/-/event-kit-2.2.0.tgz"
     },
     "extend": {
       "version": "3.0.0",
@@ -1036,9 +1036,9 @@
       "resolved": "https://registry.npmjs.org/shell-quote/-/shell-quote-1.6.1.tgz"
     },
     "simple-text-buffer": {
-      "version": "9.2.10",
-      "from": "simple-text-buffer@9.2.10",
-      "resolved": "https://registry.npmjs.org/simple-text-buffer/-/simple-text-buffer-9.2.10.tgz"
+      "version": "9.2.11",
+      "from": "simple-text-buffer@9.2.11",
+      "resolved": "https://registry.npmjs.org/simple-text-buffer/-/simple-text-buffer-9.2.11.tgz"
     },
     "sntp": {
       "version": "1.0.9",
