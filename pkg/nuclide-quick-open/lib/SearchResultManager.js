@@ -21,6 +21,14 @@ import type {
 type ResultRenderer =
   (item: FileResult, serviceName: string, dirName: string) => React.Element<any>;
 
+type CachedResults = {
+  [providerName: string]: {
+    [directory: string]: {
+      [query: string]: ProviderResult,
+    },
+  },
+};
+
 import invariant from 'assert';
 import {track} from '../../nuclide-analytics';
 import {getLogger} from '../../nuclide-logging';
@@ -91,7 +99,7 @@ class SearchResultManager {
   _dispatcher: QuickSelectionDispatcher;
   _providersByDirectory: Map<atom$Directory, Set<Provider>>;
   _directories: Array<atom$Directory>;
-  _cachedResults: Object;
+  _cachedResults: CachedResults;
   // Cache the last query with results for each provider.
   // Display cached results for the last completed query until new data arrives.
   _lastCachedQuery: Map<string, string>;
@@ -301,12 +309,12 @@ class SearchResultManager {
     providerName: string,
     directory: string,
     query: string,
-    result: Array<FileResult>,
-    loading: ?boolean = false,
+    results: Array<FileResult>,
+    loading: boolean = false,
     error: ?Object = null): void {
     this.ensureCacheEntry(providerName, directory);
     this._cachedResults[providerName][directory][query] = {
-      result,
+      results,
       loading,
       error,
     };
@@ -337,7 +345,7 @@ class SearchResultManager {
     const previousResult = this._cachedResults[providerName][directory][query];
     if (!previousResult) {
       this._cachedResults[providerName][directory][query] = {
-        result: [],
+        results: [],
         error: null,
         loading: true,
       };
@@ -353,13 +361,13 @@ class SearchResultManager {
       return;
     }
     // Figure out least recently used queries, and pop them off of the `_queryLruQueue` Map.
-    const expiredQueries = [];
+    const expiredQueries: Array<string> = [];
     const keyIterator = this._queryLruQueue.keys();
     const entriesToRemove = queueSize - MAX_CACHED_QUERIES;
     for (let i = 0; i < entriesToRemove; i++) {
       const firstEntryKey = keyIterator.next().value;
-      expiredQueries.push(firstEntryKey);
       invariant(firstEntryKey != null);
+      expiredQueries.push(firstEntryKey);
       this._queryLruQueue.delete(firstEntryKey);
     }
 
@@ -482,7 +490,7 @@ class SearchResultManager {
           cachedResult = {};
         }
         const defaultResult = getDefaultResult();
-        const resultList = cachedResult.result || defaultResult.results;
+        const resultList = cachedResult.results || defaultResult.results;
         results[path] = {
           results: resultList.map(result => ({...result, sourceProvider: providerName})),
           loading: cachedResult.loading || defaultResult.loading,
