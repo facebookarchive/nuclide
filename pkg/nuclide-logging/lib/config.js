@@ -89,7 +89,7 @@ export async function getDefaultConfig(): Promise<LoggingAppender> {
     appenders: [
       {
         type: 'logLevelFilter',
-        level: 'INFO',
+        level: 'WARN',
         appender: {
           type: nuclideUri.join(__dirname, './consoleAppender'),
         },
