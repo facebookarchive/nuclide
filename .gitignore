@@ -1,8 +1,6 @@
 .DS_Store
 npm-debug.log*
 *.pyc
-.buckd
-buck-out
 /node_modules
 
 ## DOCS ##

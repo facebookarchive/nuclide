@@ -16,7 +16,5 @@ spec
 # ignore "buck/" directories without this exclusion on case-insensitive Macs.
 BUCK
 !buck/
-.buckd
-buck-out
 
 /pkg/fb-java-rpc/**/*.java
