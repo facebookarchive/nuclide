@@ -26,7 +26,11 @@ import {getHackCommand, findHackConfigDir} from './hack-config';
 import {ServiceRegistry, loadServicesConfig} from '../../nuclide-rpc';
 import {localNuclideUriMarshalers} from '../../nuclide-marshalers-common';
 import invariant from 'assert';
-import {FileCache, FileVersionNotifier} from '../../nuclide-open-files-rpc';
+import {
+  FileCache,
+  FileVersionNotifier,
+  FileEventKind,
+} from '../../nuclide-open-files-rpc';
 import {Cache, DISPOSE_VALUE} from '../../commons-node/cache';
 import {Observable} from 'rxjs';
 import {getBufferAtVersion} from '../../nuclide-open-files-rpc';
@@ -90,7 +94,7 @@ class HackProcess extends RpcProcess {
         const filePath = fileEvent.fileVersion.filePath;
         const version = fileEvent.fileVersion.version;
         switch (fileEvent.kind) {
-          case 'open':
+          case FileEventKind.OPEN:
             service.didOpenFile(filePath, version, fileEvent.contents);
             // TODO: Remove this once hack handles the initial contents in the open message.
             service.didChangeFile(
@@ -100,10 +104,10 @@ class HackProcess extends RpcProcess {
                 text: fileEvent.contents,
               }]);
             break;
-          case 'close':
+          case FileEventKind.CLOSE:
             service.didCloseFile(filePath);
             break;
-          case 'edit':
+          case FileEventKind.EDIT:
             service.didChangeFile(
               filePath,
               version,

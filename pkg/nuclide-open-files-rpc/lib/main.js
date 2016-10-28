@@ -10,11 +10,13 @@
  */
 
 import type {FileVersion} from './rpc-types';
+
 import {FileCache} from './FileCache';
 import {FileVersionNotifier} from './FileVersionNotifier';
 import {trackOperationTiming} from '../../nuclide-analytics';
 
 export {FileCache, FileVersionNotifier};
+export {FileEventKind} from './constants';
 
 import invariant from 'assert';
 

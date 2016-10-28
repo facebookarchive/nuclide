@@ -20,6 +20,7 @@ import {
 } from '../../nuclide-remote-connection';
 import {OPEN_FILES_SERVICE} from '../../nuclide-open-files-rpc';
 import {getLogger} from '../../nuclide-logging';
+import {FileEventKind} from '../../nuclide-open-files-rpc';
 
 const logger = getLogger();
 
@@ -81,7 +82,7 @@ export class NotifiersByConnection {
         try {
           const n = await notifier;
           const message = {
-            kind: 'close',
+            kind: FileEventKind.CLOSE,
             fileVersion: {
               notifier: n,
               filePath,

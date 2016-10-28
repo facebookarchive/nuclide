@@ -10,9 +10,12 @@
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {FileVersion} from './rpc-types';
-import type {LocalFileEvent} from './FileCache';
+import type {
+  LocalFileEvent,
+  FileVersion,
+} from './rpc-types';
 
+import {FileEventKind} from './constants';
 import {Deferred} from '../../commons-node/promise';
 import {MultiMap} from '../../commons-node/collection';
 
@@ -31,13 +34,13 @@ export class FileVersionNotifier {
     const filePath = event.fileVersion.filePath;
     const changeCount = event.fileVersion.version;
     switch (event.kind) {
-      case 'open':
+      case FileEventKind.OPEN:
         this._versions.set(filePath, changeCount);
         break;
-      case 'close':
+      case FileEventKind.CLOSE:
         this._versions.delete(filePath);
         break;
-      case 'edit':
+      case FileEventKind.EDIT:
         this._versions.set(filePath, changeCount);
         break;
       default:

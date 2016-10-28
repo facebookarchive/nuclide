@@ -9,13 +9,19 @@
  * the root directory of this source tree.
  */
 
-import type {FileEvent, FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
+import type {
+  FileNotifier,
+  LocalFileEvent,
+  FileSyncEvent,
+  FileEvent,
+} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {NotifiersByConnection} from './NotifiersByConnection';
 
 import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
 import {getLogger} from '../../nuclide-logging';
+import {FileEventKind} from '../../nuclide-open-files-rpc';
 
 const logger = getLogger();
 
@@ -68,7 +74,7 @@ export class BufferSubscription {
       const notifier = await this._notifier;
       if (this._sentOpen) {
         this.sendEvent({
-          kind: 'edit',
+          kind: FileEventKind.EDIT,
           fileVersion: {
             notifier,
             filePath,
@@ -105,7 +111,7 @@ export class BufferSubscription {
 
     this._sentOpen = true;
     this.sendEvent({
-      kind: 'open',
+      kind: FileEventKind.OPEN,
       fileVersion: {
         notifier,
         filePath,
@@ -115,8 +121,8 @@ export class BufferSubscription {
     });
   }
 
-  async sendEvent(event: FileEvent) {
-    invariant(event.kind !== 'sync');
+  async sendEvent(event: LocalFileEvent) {
+    invariant(event.kind !== FileEventKind.SYNC);
     try {
       await event.fileVersion.notifier.onEvent(event);
       this.updateServerVersion(event.fileVersion.version);
@@ -166,8 +172,8 @@ export class BufferSubscription {
         } else if (resyncVersion !== this._buffer.changeCount) {
           logger.error('Resync preempted by later edit');
         } else {
-          const syncEvent = {
-            kind: 'sync',
+          const syncEvent: FileSyncEvent = {
+            kind: FileEventKind.SYNC,
             fileVersion: {
               notifier,
               filePath,

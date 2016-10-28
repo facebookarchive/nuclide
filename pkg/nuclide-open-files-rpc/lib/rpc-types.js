@@ -8,6 +8,7 @@
  * @flow
  */
 
+
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 export type FileOpenEvent = {
@@ -39,6 +40,8 @@ export type FileEditEvent = {
 
 // TODO: Save Events?
 export type FileEvent = FileOpenEvent | FileCloseEvent | FileEditEvent | FileSyncEvent;
+
+export type LocalFileEvent = FileOpenEvent | FileCloseEvent | FileEditEvent;
 
 export interface FileNotifier {
   onEvent(event: FileEvent): Promise<void>,

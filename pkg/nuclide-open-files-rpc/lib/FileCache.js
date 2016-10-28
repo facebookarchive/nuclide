@@ -16,6 +16,7 @@ import type {
   FileEditEvent,
   FileEvent,
   FileVersion,
+  LocalFileEvent,
 } from './rpc-types';
 
 import TextBuffer from 'simple-text-buffer';
@@ -24,7 +25,7 @@ import {Subject, Observable} from 'rxjs';
 import {FileVersionNotifier} from './FileVersionNotifier';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 
-export type LocalFileEvent = FileOpenEvent | FileCloseEvent | FileEditEvent;
+import {FileEventKind} from './constants';
 
 export class FileCache {
   _buffers: Map<NuclideUri, atom$TextBuffer>;
@@ -49,17 +50,17 @@ export class FileCache {
     const changeCount = event.fileVersion.version;
     const buffer = this._buffers.get(filePath);
     switch (event.kind) {
-      case 'open':
+      case FileEventKind.OPEN:
         invariant(buffer == null);
         this._open(filePath, event.contents, changeCount);
         break;
-      case 'close':
+      case FileEventKind.CLOSE:
         invariant(buffer != null);
         this._buffers.delete(filePath);
         this._emitClose(filePath, buffer);
         buffer.destroy();
         break;
-      case 'edit':
+      case FileEventKind.EDIT:
         invariant(buffer != null);
         invariant(buffer.changeCount === (changeCount - 1));
         invariant(buffer.getTextInRange(event.oldRange) === event.oldText);
@@ -67,7 +68,7 @@ export class FileCache {
         invariant(buffer.changeCount === changeCount);
         this._events.next(event);
         break;
-      case 'sync':
+      case FileEventKind.SYNC:
         if (buffer == null) {
           this._open(filePath, event.contents, changeCount);
         } else {
@@ -168,7 +169,7 @@ function createOpenEvent(
   contents: string,
 ): FileOpenEvent {
   return {
-    kind: 'open',
+    kind: FileEventKind.OPEN,
     fileVersion,
     contents,
   };
@@ -178,7 +179,7 @@ function createCloseEvent(
   fileVersion: FileVersion,
 ): FileCloseEvent {
   return {
-    kind: 'close',
+    kind: FileEventKind.CLOSE,
     fileVersion,
   };
 }
@@ -191,7 +192,7 @@ function createEditEvent(
   newText: string,
 ): FileEditEvent {
   return {
-    kind: 'edit',
+    kind: FileEventKind.EDIT,
     fileVersion,
     oldRange,
     oldText,
