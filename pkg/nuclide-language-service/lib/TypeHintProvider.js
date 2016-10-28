@@ -17,7 +17,7 @@ import {getFileVersionOfEditor} from '../../nuclide-open-files';
 import {trackOperationTiming} from '../../nuclide-analytics';
 
 export type TypeHintConfig = {
-  version: string,
+  version: '0.0.0',
   priority: number,
   analyticsEventName: string,
 };

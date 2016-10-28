@@ -18,7 +18,7 @@ import loadingNotification from '../../commons-atom/loading-notification';
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
 
 export type FindReferencesConfig = {
-  version: string,
+  version: '0.0.0',
   analyticsEventName: string,
 };
 

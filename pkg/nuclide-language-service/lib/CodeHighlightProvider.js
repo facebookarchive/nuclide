@@ -17,7 +17,7 @@ import {getFileVersionOfEditor} from '../../nuclide-open-files';
 import {Range} from 'atom';
 
 export type CodeHighlightConfig = {
-  version: string,
+  version: '0.0.0',
   priority: number,
   analyticsEventName: string,
 };

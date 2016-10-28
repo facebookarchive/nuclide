@@ -17,7 +17,7 @@ import {ConnectionCache} from '../../nuclide-remote-connection';
 import {trackOperationTiming} from '../../nuclide-analytics';
 
 export type TypeCoverageConfig = {
-  version: string,
+  version: '0.0.0',
   priority: number,
   analyticsEventName: string,
 };

@@ -21,7 +21,7 @@ import {trackOperationTiming} from '../../nuclide-analytics';
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
 
 export type DefinitionConfig = {
-  version: string,
+  version: '0.0.0',
   priority: number,
   definitionEventName: string,
   definitionByIdEventName: string,

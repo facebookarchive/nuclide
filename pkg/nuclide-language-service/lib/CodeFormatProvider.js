@@ -16,7 +16,7 @@ import {trackOperationTiming} from '../../nuclide-analytics';
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
 
 export type CodeFormatConfig = {
-  version: string,
+  version: '0.0.0',
   priority: number,
   analyticsEventName: string,
 };

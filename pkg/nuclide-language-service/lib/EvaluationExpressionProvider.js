@@ -17,7 +17,7 @@ import {ConnectionCache} from '../../nuclide-remote-connection';
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
 
 export type EvaluationExpressionConfig = {
-  version: string,
+  version: '0.0.0',
   analyticsEventName: string,
 };
 

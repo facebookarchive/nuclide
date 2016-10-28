@@ -19,7 +19,7 @@ export type AutocompleteConfig = {
   inclusionPriority: number,
   suggestionPriority: number,
   excludeLowerPriority: boolean,
-  version: string,
+  version: '2.0.0',
   analyticsEventName: string,
 };
 
