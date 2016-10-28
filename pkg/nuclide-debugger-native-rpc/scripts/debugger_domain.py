@@ -20,6 +20,7 @@ class DebuggerDomain(HandlerDomain):
     def __init__(self, runtimeDomain, **kwargs):
         HandlerDomain.__init__(self, **kwargs)
         self.runtimeDomain = runtimeDomain
+        self.exceptionBreakpointId = None
 
     @property
     def name(self):
@@ -125,8 +126,21 @@ class DebuggerDomain(HandlerDomain):
 
     @handler()
     def setPauseOnExceptions(self, params):
-        # TODO(williamsc) - Support add support for pausing on exceptions
-        raise UndefinedHandlerError('setPauseOnExceptions not implemented')
+        # First, unhook the old breakpoint exceptions.
+        if self.exceptionBreakpointId is not None:
+            self.debugger_store.debugger.GetSelectedTarget().BreakpointDelete(
+                                                    self.exceptionBreakpointId)
+            self.exceptionBreakpointId = None
+        # Next, we've been asked to do one of 'none' or 'uncaught' or 'all'.
+        # But we'll treat none+uncaught as no-op since that's all LLDB can do.
+        if params['state'] == 'all':
+            breakpoint = self.debugger_store.debugger.GetSelectedTarget(
+                    ).BreakpointCreateForException(lldb.eLanguageTypeC_plus_plus,
+                                                   False,  # don't pause on catch
+                                                   True    # do pause on throw
+                                                   )
+            self.exceptionBreakpointId = breakpoint.id
+        return {}
 
     @handler()
     def setScriptSource(self, params):
