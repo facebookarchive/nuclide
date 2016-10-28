@@ -326,7 +326,7 @@ class DatatipManagerForEditor {
       return;
     }
 
-    this._setState(DatatipState.VISIBLE);
+    this._setState(DatatipState.FETCHING);
     const data = await fetchDatatip(
       this._editor,
       position,
@@ -338,7 +338,7 @@ class DatatipManagerForEditor {
       this._setState(DatatipState.HIDDEN);
       return;
     }
-    if (this._datatipState !== DatatipState.VISIBLE) {
+    if (this._datatipState !== DatatipState.FETCHING) {
       this._setState(DatatipState.HIDDEN);
     }
 
@@ -375,7 +375,7 @@ class DatatipManagerForEditor {
 
   _hideOrCancel(): void {
     if (this._datatipState === DatatipState.HIDDEN ||
-        this._datatipState === DatatipState.VISIBLE) {
+        this._datatipState === DatatipState.FETCHING) {
       this._blacklistedPosition = getBufferPosition(
         this._editor,
         this._editorView,
