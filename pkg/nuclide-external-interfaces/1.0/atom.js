@@ -772,6 +772,13 @@ declare class atom$TextEditor extends atom$Model {
   getSelectedBufferRanges(): Array<atom$Range>,
   getSelections(): Array<atom$Selection>,
   selectToBufferPosition(point: atom$Point): void,
+  setSelectedBufferRange(
+    bufferRange: atom$Range,
+    options?: {
+      reversed?: boolean,
+      preserveFolds?: boolean,
+    },
+  ): void,
 
   // Searching and Replacing
   scanInBufferRange(
@@ -1693,4 +1700,15 @@ declare class atom$Token {
 
 declare class atom$Selection {
   getText(): string,
+  insertText(
+    text: string,
+    options?: {
+      select?: boolean,
+      autoIndent?: boolean,
+      autoIndentNewLine?: boolean,
+      autoDecreaseIdent?: boolean,
+      normalizeLineEndings?: boolean,
+      undo?: boolean,
+    },
+  ): string,
 }
