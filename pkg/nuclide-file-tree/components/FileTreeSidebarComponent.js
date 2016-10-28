@@ -226,11 +226,11 @@ class FileTreeSidebarComponent extends React.Component {
         tabIndex={0}>
         {uncommittedChangesSection}
         {openFilesSection}
-        {toolbar}
         {foldersCaption}
         <PanelComponentScroller
           ref="scroller"
           onScroll={this._onScroll}>
+          {toolbar}
           <FileTree
             ref="fileTree"
             containerHeight={this.state.scrollerHeight}
