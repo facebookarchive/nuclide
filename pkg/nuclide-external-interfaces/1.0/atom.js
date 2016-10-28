@@ -220,7 +220,7 @@ declare class atom$Emitter {
   // mine, since we tend to think of `emit` as interchangeable.
   // This hack only works if the extra value is not `undefined`, so this isn't
   // full-proof, but it works for most cases.
-  emit(name: string, value: any, ...no_extra_args_allowed: Array<void>): IDisposable,
+  emit(name: string, value: any, ...no_extra_args_allowed: Array<void>): void,
 }
 
 declare class atom$Gutter {
