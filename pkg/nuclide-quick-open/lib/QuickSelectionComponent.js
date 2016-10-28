@@ -772,7 +772,9 @@ export default class QuickSelectionComponent extends React.Component {
     if (isEmpty(this.state.resultsByService)) {
       noResultsMessage = this._renderEmptyMessage('Search away!');
     } else if (numTotalResultsRendered === 0) {
-      noResultsMessage = this._renderEmptyMessage(<span>No results</span>);
+      noResultsMessage = this._renderEmptyMessage(
+        <span>{'\u00AF\\_(\u30C4)_/\u00AF'}<br />No results</span>,
+      );
     } else {
       hasSearchResult = true;
     }
