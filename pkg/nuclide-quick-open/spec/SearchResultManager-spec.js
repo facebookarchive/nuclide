@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {Provider} from '../lib/types';
+
 import SearchResultManager from '../lib/SearchResultManager';
 import {__test__} from '../lib/SearchResultManager';
 const {_getOmniSearchProviderSpec} = __test__;
@@ -43,7 +45,7 @@ const ExactStringMatchProvider = {
 
 // Promise-ify the flux cycle around SearchResultManager::executeQuery.
 function querySingleProvider(
-  searchResultManager: any,
+  searchResultManager: SearchResultManager,
   query: string,
   providerName: string,
 ): Promise<Object> {
@@ -56,7 +58,7 @@ function querySingleProvider(
 }
 
 // Helper to construct expected result objects for a global provider.
-function constructSingleProviderResult(provider: Object, result: Object) {
+function constructSingleProviderResult(provider: Provider, result: Object) {
   const wrappedResult = {};
   wrappedResult[provider.getName()] = {
     title: provider.getTabTitle(),
@@ -67,8 +69,8 @@ function constructSingleProviderResult(provider: Object, result: Object) {
   return wrappedResult;
 }
 
-let searchResultManager: any = null;
 describe('SearchResultManager', () => {
+  let searchResultManager: SearchResultManager = (null: any);
   beforeEach(() => {
     searchResultManager = new SearchResultManager();
   });
