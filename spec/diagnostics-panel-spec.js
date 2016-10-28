@@ -59,7 +59,7 @@ describe('Diagnostics panel integration test', () => {
 
     runs(() => {
       // Now show the panel with the keyboard shortcut
-      dispatchKeyboardEvent('d', document.activeElement, {alt: true, shift: true});
+      dispatchKeyboardEvent('D', document.activeElement, {alt: true, shift: true});
     });
 
     waitsFor('diagnostics panel to remove style `display: none` in the DOM', 10000, () => {
@@ -69,7 +69,7 @@ describe('Diagnostics panel integration test', () => {
 
     runs(() => {
       // Now hide the panel with the keyboard shortcut
-      dispatchKeyboardEvent('d', document.activeElement, {alt: true, shift: true});
+      dispatchKeyboardEvent('D', document.activeElement, {alt: true, shift: true});
     });
 
     waitsFor('diagnostics panel to have style `display: none` in the DOM', 10000, () => {

@@ -49,7 +49,7 @@ describe('Example Integration Test', () => {
       // Want to simulate a keyboard shortcut?  Use the dispatchKeyboardEvent function from
       // nuclide-integration-test-helpers.  Just do
       //
-      // dispatchKeyboardEvent('c', document.activeElement, {cmd: true, shift: true});
+      // dispatchKeyboardEvent('C', document.activeElement, {cmd: true, shift: true});
       //
       // Want to copy an already-made mercurial project to a temporary directory, and
       // add it as a project?  Use the fixtures library in nuclide-integration-test-helpers.

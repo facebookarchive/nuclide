@@ -29,6 +29,8 @@ export function dispatchKeyboardEvent(
   metaKeys: {alt?: boolean, cmd?: boolean, ctrl?: boolean, shift?: boolean} = {},
 ): void {
   const {alt, cmd, ctrl, shift} = metaKeys;
+  // Atom requires `key` to be uppercase when `shift` is specified.
+  invariant(shift !== true || key.toUpperCase() === key);
   const event = atom.keymaps.constructor.buildKeydownEvent(key, {
     target,
     alt: Boolean(alt),
