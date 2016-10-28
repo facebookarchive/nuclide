@@ -31,6 +31,10 @@ type DebuggerSteppingComponentProps = {
   customControlButtons: Array<ControlButtonSpecification>,
 };
 
+const defaultTooltipOptions = {
+  placement: 'bottom',
+};
+
 const STEP_OVER_ICON =
   <svg viewBox="0 0 100 100">
     <circle cx="46" cy="63" r="10" />
@@ -60,14 +64,14 @@ const STEP_OUT_ICON =
 
 function SVGButton(props: {
   onClick: () => void,
-  title: string,
+  tooltip: atom$TooltipsAddOptions,
   icon: React.Element<any>,
 }): React.Element<any> {
   return (
     <Button
       className="nuclide-debugger-stepping-svg-button"
       onClick={props.onClick}
-      title={props.title}>
+      tooltip={props.tooltip}>
       <div>
         {props.icon}
       </div>
@@ -98,7 +102,13 @@ export class DebuggerSteppingComponent extends React.Component {
         <ButtonGroup className="nuclide-debugger-stepping-buttongroup">
           <Button
             icon={isPaused ? 'playback-play' : 'playback-pause'}
-            title={isPaused ? 'continue' : 'pause'}
+            tooltip={{
+              ...defaultTooltipOptions,
+              title: isPaused ? 'Continue' : 'Pause',
+              keyBindingCommand: isPaused ?
+                'nuclide-debugger:continue-debugging' :
+                undefined,
+            }}
             onClick={
               actions.triggerDebuggerAction.bind(
                 actions,
@@ -108,28 +118,44 @@ export class DebuggerSteppingComponent extends React.Component {
           />
           <SVGButton
             icon={STEP_OVER_ICON}
-            title="step over"
+            tooltip={{
+              ...defaultTooltipOptions,
+              title: 'Step over',
+              keyBindingCommand: 'nuclide-debugger:step-over',
+            }}
             onClick={
               actions.triggerDebuggerAction.bind(actions, ChromeActionRegistryActions.STEP_OVER)
             }
           />
           <SVGButton
             icon={STEP_INTO_ICON}
-            title="step into"
+            tooltip={{
+              ...defaultTooltipOptions,
+              title: 'Step into',
+              keyBindingCommand: 'nuclide-debugger:step-into',
+            }}
             onClick={
               actions.triggerDebuggerAction.bind(actions, ChromeActionRegistryActions.STEP_INTO)
             }
           />
           <SVGButton
             icon={STEP_OUT_ICON}
-            title="step out"
+            tooltip={{
+              ...defaultTooltipOptions,
+              title: 'Step out',
+              keyBindingCommand: 'nuclide-debugger:step-out',
+            }}
             onClick={
               actions.triggerDebuggerAction.bind(actions, ChromeActionRegistryActions.STEP_OUT)
             }
           />
           <Button
             icon="primitive-square"
-            title="stop debugging"
+            tooltip={{
+              ...defaultTooltipOptions,
+              title: 'Stop debugging',
+              keyBindingCommand: 'nuclide-debugger:stop-debugging',
+            }}
             onClick={
               () => actions.stopDebugging()
             }

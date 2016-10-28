@@ -27,7 +27,9 @@ export default function addTooltip(
 ): (elementRef: React.Element<any>) => void {
   let prevRefDisposable;
 
+  let immediate = null;
   return elementRef => {
+    clearImmediate(immediate);
     if (prevRefDisposable != null) {
       prevRefDisposable.dispose();
       prevRefDisposable = null;
@@ -37,13 +39,22 @@ export default function addTooltip(
       // $FlowFixMe -- findDOMNode takes a React.Component or an HTMLElement.
       const node = ReactDOM.findDOMNode(elementRef);
 
-      prevRefDisposable = atom.tooltips.add(
-        node,
-        {
-          keyBindingTarget: node,
-          ...options,
-        },
-      );
+      // Sooooo... Atom tooltip does the keybinding lookup at creation time
+      // instead of display time. And, it uses a CSS selector to figure out
+      // if the current element matches the selector. The problem is that at
+      // this point, the element is created but not yet mounted in the DOM,
+      // so it's not going to match the selector and will not return a
+      // keybinding. By deferring it to the end of the event loop, it is now
+      // in the DOM and has the proper keybinding.
+      immediate = setImmediate(() => {
+        prevRefDisposable = atom.tooltips.add(
+          node,
+          {
+            keyBindingTarget: node,
+            ...options,
+          },
+        );
+      });
     }
   };
 }
