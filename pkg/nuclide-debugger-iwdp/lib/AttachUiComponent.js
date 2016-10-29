@@ -14,6 +14,7 @@ import {AttachProcessInfo} from './AttachProcessInfo';
 import {Button, ButtonTypes} from '../../nuclide-ui/Button';
 import {DebuggerLaunchAttachEventTypes} from '../../nuclide-debugger-base';
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
+import {track} from '../../nuclide-analytics';
 
 import type EventEmitter from 'events';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
@@ -82,6 +83,7 @@ export class AttachUiComponent extends React.Component<void, PropsType, StateTyp
   }
 
   _handleAttachButtonClick(): void {
+    track('nuclide-debugger-jsc-attach');
     const processInfo = new AttachProcessInfo(this.props.targetUri);
     consumeFirstProvider('nuclide-debugger.remote')
       .then(debuggerService => debuggerService.startDebugging(processInfo));
