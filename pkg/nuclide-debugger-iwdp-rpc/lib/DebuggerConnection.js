@@ -11,12 +11,13 @@
 
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import WS from 'ws';
-import {Observable, Subject} from 'rxjs';
+import {Observable, BehaviorSubject, Subject} from 'rxjs';
 import {createWebSocketListener} from './createWebSocketListener';
 import {logger} from './logger';
+import {RUNNING, PAUSED} from './constants';
 import invariant from 'assert';
 
-import type {IosDeviceInfo} from './types';
+import type {IosDeviceInfo, RuntimeStatus} from './types';
 
 type Id = number;
 type onResponseReceived = (response: Object) => void;
@@ -39,15 +40,17 @@ export class DebuggerConnection {
   _webSocket: ?WS;
   _webSocketPromise: Promise<WS>;
   _disposables: UniversalDisposable;
-  _events: Subject<Object>;
+  _status: BehaviorSubject<RuntimeStatus>;
   _pendingRequests: Map<Id, onResponseReceived>;
   _id: number;
+  _events: Subject<Object>;
 
   constructor(iosDeviceInfo: IosDeviceInfo) {
     this._webSocket = null;
     this._events = new Subject();
     this._id = 0;
     this._pendingRequests = new Map();
+    this._status = new BehaviorSubject(RUNNING);
     const {webSocketDebuggerUrl} = iosDeviceInfo;
     const webSocket = new WS(webSocketDebuggerUrl);
     // It's not enough to just construct the websocket -- we have to also wait for it to open.
@@ -87,7 +90,31 @@ export class DebuggerConnection {
   }
 
   _handleChromeEvent(message: Object): void {
+    switch (message.method) {
+      case 'Debugger.paused': {
+        this._status.next(PAUSED);
+        break;
+      }
+      case 'Debugger.resumed': {
+        this._status.next(RUNNING);
+        break;
+      }
+    }
     this._events.next(message);
+  }
+
+  subscribeToEvents(toFrontend: (message: Object) => void): IDisposable {
+    return new UniversalDisposable(
+      this._events.subscribe(toFrontend),
+    );
+  }
+
+  isPaused(): boolean {
+    return this._status.getValue() === PAUSED;
+  }
+
+  getStatusChanges(): Observable<RuntimeStatus> {
+    return this._status.asObservable();
   }
 
   dispose(): void {

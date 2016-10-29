@@ -18,6 +18,7 @@ export type IosDeviceInfo = {
   appId: string,
 };
 
+export type RuntimeStatus = 'RUNNING' | 'PAUSED';
 export type BreakpointId = string;
 export type BreakpointParams = {
   lineNumber: number,

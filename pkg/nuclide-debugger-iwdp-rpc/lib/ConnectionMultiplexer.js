@@ -14,8 +14,10 @@ import {logger} from './logger';
 import {DebuggerConnection} from './DebuggerConnection';
 import {PRELUDE_MESSAGES} from './prelude';
 import {FileCache} from './FileCache';
+import invariant from 'assert';
+import {RUNNING, PAUSED} from './constants';
 
-import type {IosDeviceInfo, BreakpointId, BreakpointParams} from './types';
+import type {RuntimeStatus, IosDeviceInfo, BreakpointId, BreakpointParams} from './types';
 
 const {log, logError} = logger;
 
@@ -215,6 +217,12 @@ export class ConnectionMultiplexer {
 
   _connectToContext(deviceInfo: IosDeviceInfo): DebuggerConnection {
     const connection = new DebuggerConnection(deviceInfo);
+    this._disposables.add(
+      connection
+        .getStatusChanges()
+        .subscribe(status => this._handleStatusChange(status, connection)),
+      connection.subscribeToEvents(this.sendCommand.bind(this)),
+    );
     this._connections.add(connection);
     return connection;
   }
@@ -245,6 +253,40 @@ export class ConnectionMultiplexer {
       });
     // Drop the responses on the floor.
     await Promise.all(responsePromises);
+  }
+
+  _handleStatusChange(status: RuntimeStatus, connection: DebuggerConnection): void {
+    switch (status) {
+      case RUNNING: {
+        this._handleRunningMode();
+        break;
+      }
+      case PAUSED: {
+        this._handlePausedMode(connection);
+        break;
+      }
+      default: {
+        invariant(false, `Unknown status: ${status}`);
+      }
+    }
+    log(`Switching status to: ${status}`);
+  }
+
+  _handleRunningMode(): void {
+    // We will enable another paused connection if one exists.
+    for (const candidate of this._connections) {
+      if (candidate.isPaused()) {
+        this._enabledConnection = candidate;
+        return;
+      }
+    }
+    this._enabledConnection = null;
+  }
+
+  _handlePausedMode(connection: DebuggerConnection): void {
+    if (this._enabledConnection == null) {
+      this._enabledConnection = connection;
+    }
   }
 
   dispose(): void {
