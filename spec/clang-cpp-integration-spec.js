@@ -61,7 +61,7 @@ describeRemotableTest('Clang Integration Test (C++)', context => {
       return busySignal.isBusy();
     });
 
-    waitsFor('compilation to finish', 30000, () => {
+    waitsFor('compilation to finish', 60000, () => {
       return !busySignal.isBusy();
     });
 
