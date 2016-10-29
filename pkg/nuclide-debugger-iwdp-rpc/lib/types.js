@@ -26,3 +26,4 @@ export type BreakpointParams = {
   columnNumber: number,
   condition: string,
 };
+export type PauseOnExceptionState = 'none' | 'uncaught' | 'all';
