@@ -12,8 +12,9 @@
 import type {DiagnosticMessage} from '../../nuclide-diagnostics-common';
 
 import {compareMessagesByFile} from './paneUtils';
-import {React, ReactDOM} from 'react-for-atom';
+import {React} from 'react-for-atom';
 import DiagnosticsPanel from './DiagnosticsPanel';
+import {renderReactRoot} from '../../commons-atom/renderReactRoot';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {toggle} from '../../commons-node/observable';
 import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
@@ -39,49 +40,68 @@ export default function createDiagnosticsPanel(
   onFilterByActiveTextEditorChange: (filterByActiveTextEditor: boolean) => void,
   warnAboutLinterStream: Observable<boolean>,
 ): atom$Panel {
-  const rootElement = document.createElement('div');
-  rootElement.className = 'nuclide-diagnostics-ui';
-  const item = document.createElement('div');
-  rootElement.appendChild(item);
-  const bottomPanel = atom.workspace.addBottomPanel({item: rootElement});
+  const panelVisibility = new BehaviorSubject(true);
+  const item = new DiagnosticsPanelModel(
+    diagnostics,
+    initialHeight,
+    initialfilterByActiveTextEditor,
+    showTraces,
+    disableLinter,
+    onFilterByActiveTextEditorChange,
+    warnAboutLinterStream,
+    () => { panel.hide(); },
+    panelVisibility,
+  );
+  const panel = atom.workspace.addBottomPanel({item});
+  const visibilityDisposable = panel.onDidChangeVisible(visible => {
+    panelVisibility.next(visible);
+  });
+  panel.onDidDestroy(() => { visibilityDisposable.dispose(); });
+  return panel;
+}
 
-  const panelVisibilityStream = Observable.concat(
-    Observable.of(true),
-    observableFromSubscribeFunction(bottomPanel.onDidChangeVisible.bind(bottomPanel)),
-  )
-    .distinctUntilChanged();
+class DiagnosticsPanelModel {
+  _element: ?HTMLElement;
+  _props: Observable<PanelProps>;
 
-  // When the panel becomes visible for the first time, render the component.
-  const subscription = panelVisibilityStream.filter(Boolean).take(1).subscribe(() => {
-    const propsStream = getPropsStream(
-      diagnostics,
-      warnAboutLinterStream,
-      showTraces,
-      initialHeight,
-      initialfilterByActiveTextEditor,
-      disableLinter,
-      onFilterByActiveTextEditorChange,
-      () => { bottomPanel.hide(); },
-    )
-      .publishReplay(1)
-      .refCount();
-
-    const Component = bindObservableAsProps(
-      // A stream that contains the props, but is "muted" when the panel's not visible.
-      toggle(propsStream, panelVisibilityStream),
-      DiagnosticsPanel,
+  constructor(
+    diagnostics: Observable<Array<DiagnosticMessage>>,
+    initialHeight: number,
+    initialfilterByActiveTextEditor: boolean,
+    showTraces: Observable<boolean>,
+    disableLinter: () => void,
+    onFilterByActiveTextEditorChange: (filterByActiveTextEditor: boolean) => void,
+    warnAboutLinterStream: Observable<boolean>,
+    onHide: () => void,
+    panelVisibility: Observable<boolean>,
+  ) {
+    // A stream that contains the props, but is "muted" when the panel's not visible.
+    this._props = toggle(
+      getPropsStream(
+        diagnostics,
+        warnAboutLinterStream,
+        showTraces,
+        initialHeight,
+        initialfilterByActiveTextEditor,
+        disableLinter,
+        onFilterByActiveTextEditorChange,
+        onHide,
+      )
+        .publishReplay(1)
+        .refCount(),
+      panelVisibility.distinctUntilChanged(),
     );
-    ReactDOM.render(<Component />, item);
-  });
+  }
 
-  // Currently, destroy() does not appear to be idempotent:
-  // https://github.com/atom/atom/commit/734a79b7ec9f449669e1871871fd0289397f9b60#commitcomment-12631908
-  bottomPanel.onDidDestroy(() => {
-    subscription.unsubscribe();
-    ReactDOM.unmountComponentAtNode(item);
-  });
-
-  return bottomPanel;
+  getElement(): HTMLElement {
+    if (this._element == null) {
+      const Component = bindObservableAsProps(this._props, DiagnosticsPanel);
+      const element = renderReactRoot(<Component />);
+      element.classList.add('nuclide-diagnostics-ui');
+      this._element = element;
+    }
+    return this._element;
+  }
 }
 
 function getPropsStream(
