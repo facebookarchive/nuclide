@@ -12,8 +12,8 @@
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {logger} from './logger';
 import {DebuggerConnection} from './DebuggerConnection';
-import invariant from 'assert';
 import {connectToIwdp} from './connectToIwdp';
+import {Observable} from 'rxjs';
 
 import type {ConnectableObservable} from 'rxjs';
 
@@ -45,16 +45,19 @@ export class IwdpDebuggerService {
   attach(): Promise<string> {
     return new Promise(resolve => {
       this._disposables.add(
-        connectToIwdp().subscribe(deviceInfos => {
-          log(`Got device infos: ${JSON.stringify(deviceInfos)}`);
-          invariant(deviceInfos.length > 0, 'DeviceInfo array is empty.');
-          this._debuggerConnection = new DebuggerConnection(
-            deviceInfos[0],
-            message => this._clientCallback.sendChromeMessage(message),
-          );
-          // Block resolution of this promise until we have successfully connected to the proxy.
-          resolve('IWDP connected');
-        }),
+        connectToIwdp()
+          .mergeMap(Observable.from)
+          .subscribe(deviceInfo => {
+            log(`Got device info: ${JSON.stringify(deviceInfo)}`);
+            if (this._debuggerConnection == null) {
+              this._debuggerConnection = new DebuggerConnection(
+                deviceInfo,
+                message => this._clientCallback.sendChromeMessage(message),
+              );
+              // Block resolution of this promise until we have successfully connected to the proxy.
+              resolve('IWDP connected');
+            }
+          }),
       );
     });
   }
