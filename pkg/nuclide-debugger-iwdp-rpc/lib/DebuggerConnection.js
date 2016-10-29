@@ -69,6 +69,7 @@ export class DebuggerConnection {
         return updatedMessage;
       }
       case 'Debugger.enable': {
+        this._sendSetBreakpointsActive();
         // Nuclide's debugger will auto-resume the first pause event, so we send a dummy pause
         // when the debugger initially attaches.
         this._sendFakeLoaderBreakpointPause();
@@ -78,6 +79,17 @@ export class DebuggerConnection {
         return message;
       }
     }
+  }
+
+  _sendSetBreakpointsActive(): void {
+    const debuggerMessage = {
+      id: 100000,
+      method: 'Debugger.setBreakpointsActive',
+      params: {
+        active: true,
+      },
+    };
+    this.sendCommand(JSON.stringify(debuggerMessage));
   }
 
   _sendFakeLoaderBreakpointPause(): void {
