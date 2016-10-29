@@ -13,7 +13,6 @@ import {React} from 'react-for-atom';
 import {AttachProcessInfo} from './AttachProcessInfo';
 import {Button, ButtonTypes} from '../../nuclide-ui/Button';
 import {DebuggerLaunchAttachEventTypes} from '../../nuclide-debugger-base';
-import {Dropdown} from '../../nuclide-ui/Dropdown';
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 
 import type EventEmitter from 'events';
@@ -59,15 +58,6 @@ export class AttachUiComponent extends React.Component<void, PropsType, StateTyp
   render(): React.Element<any> {
     return (
       <div className="block">
-        <div className="nuclide-debugger-iwdp-launch-attach-ui-select-project">
-          <label>Selected Project Directory: </label>
-          <Dropdown
-            className="inline-block nuclide-debugger-connection-box"
-            options={this.state.pathMenuItems}
-            onChange={this._handlePathsDropdownChange}
-            value={this.state.selectedPathIndex}
-          />
-        </div>
         <div className="padded text-right">
           <Button onClick={this._handleCancelButtonClick}>Cancel</Button>
           <Button
