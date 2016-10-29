@@ -111,6 +111,8 @@ declare class rxjs$Observable<+T> {
 
   delay(dueTime: number): rxjs$Observable<T>;
 
+  distinctKey(key: string): rxjs$Observable<T>;
+
   distinctUntilChanged(compare?: (x: T, y: T) => boolean): rxjs$Observable<T>;
 
   elementAt(index: number, defaultValue?: T): rxjs$Observable<T>;

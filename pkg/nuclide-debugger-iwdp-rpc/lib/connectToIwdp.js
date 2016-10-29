@@ -18,8 +18,9 @@ import type {IosDeviceInfo} from './types';
 
 const {log} = logger;
 const CONNECTED_TO_DEVICE_REGEX = /Connected :([0-9]+) to/;
+const POLLING_INTERVAL = 2000;
 
-export function connectToIwdp(): Observable<Array<IosDeviceInfo>> {
+export function connectToIwdp(): Observable<IosDeviceInfo> {
   return observeProcess(() => {
     // Question: why are we running the debug proxy under `script`?
     // Answer: The iwdp binary will aggressively buffer stdout, unless it thinks it is running
@@ -34,7 +35,9 @@ export function connectToIwdp(): Observable<Array<IosDeviceInfo>> {
       if (matches != null) {
         const port = Number(matches[1]);
         log(`Fetching device data because we got ${data}`);
-        return Observable.fromPromise(fetchDeviceData(port));
+        return Observable.interval(POLLING_INTERVAL).switchMap(() => {
+          return Observable.fromPromise(fetchDeviceData(port));
+        });
       }
       if (data.startsWith('Listing devices on :')) {
         log(`IWDP Connected!: ${data}`);
@@ -47,7 +50,9 @@ export function connectToIwdp(): Observable<Array<IosDeviceInfo>> {
         new Error(`Error for ios_webkit_debug_proxy: ${JSON.stringify(message)}`),
       );
     }
-  });
+  })
+    .mergeMap(deviceInfos => Observable.from(deviceInfos))
+    .distinctKey('webSocketDebuggerUrl');
 }
 
 async function fetchDeviceData(port: number): Promise<Array<IosDeviceInfo>> {
