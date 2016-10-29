@@ -37,18 +37,13 @@ export default function createDiagnosticsPanel(
   showTraces: Observable<boolean>,
   disableLinter: () => void,
   onFilterByActiveTextEditorChange: (filterByActiveTextEditor: boolean) => void,
-): {
-  atomPanel: atom$Panel,
-  setWarnAboutLinter: (warn: boolean) => void,
- } {
+  warnAboutLinterStream: Observable<boolean>,
+): atom$Panel {
   const rootElement = document.createElement('div');
   rootElement.className = 'nuclide-diagnostics-ui';
   const item = document.createElement('div');
   rootElement.appendChild(item);
   const bottomPanel = atom.workspace.addBottomPanel({item: rootElement});
-
-  const warnAboutLinterStream = new BehaviorSubject(false);
-  const setWarnAboutLinter = warn => { warnAboutLinterStream.next(warn); };
 
   const panelVisibilityStream = Observable.concat(
     Observable.of(true),
@@ -86,10 +81,7 @@ export default function createDiagnosticsPanel(
     ReactDOM.unmountComponentAtNode(item);
   });
 
-  return {
-    atomPanel: bottomPanel,
-    setWarnAboutLinter,
-  };
+  return bottomPanel;
 }
 
 function getPropsStream(

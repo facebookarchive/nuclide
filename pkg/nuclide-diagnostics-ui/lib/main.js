@@ -29,11 +29,13 @@ import type {HomeFragments} from '../../nuclide-home/lib/types';
 
 import createPackage from '../../commons-atom/createPackage';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import {observableFromSubscribeFunction} from '../../commons-node/event';
 import createDiagnosticsPanel from './createPanel';
 import StatusBarTile from './StatusBarTile';
 import {applyUpdateToEditor} from './gutter';
 import {goToLocation} from '../../commons-atom/go-to-location';
 import featureConfig from '../../commons-atom/featureConfig';
+import {Observable} from 'rxjs';
 
 const DEFAULT_HIDE_DIAGNOSTICS_PANEL = true;
 const DEFAULT_TABLE_HEIGHT = 200;
@@ -49,24 +51,6 @@ type ActivationState = {
 
 function disableLinter() {
   atom.packages.disablePackage(LINTER_PACKAGE);
-}
-
-function watchForLinter(setWarnAboutLinter: (warn: boolean) => void): IDisposable {
-  if (atom.packages.isPackageActive(LINTER_PACKAGE)) {
-    setWarnAboutLinter(true);
-  }
-  return new UniversalDisposable(
-    atom.packages.onDidActivatePackage(pkg => {
-      if (pkg.name === LINTER_PACKAGE) {
-        setWarnAboutLinter(true);
-      }
-    }),
-    atom.packages.onDidDeactivatePackage(pkg => {
-      if (pkg.name === LINTER_PACKAGE) {
-        setWarnAboutLinter(false);
-      }
-    }),
-  );
 }
 
 class Activation {
@@ -215,10 +199,7 @@ class Activation {
   }
 
   _createPanel(diagnosticUpdater: ObservableDiagnosticUpdater): IDisposable {
-    const {
-      atomPanel: panel,
-      setWarnAboutLinter,
-    } = createDiagnosticsPanel(
+    const panel = createDiagnosticsPanel(
       diagnosticUpdater.allMessageUpdates,
       this._state.diagnosticsPanelHeight,
       this._state.filterByActiveTextEditor,
@@ -229,16 +210,14 @@ class Activation {
           this._state.filterByActiveTextEditor = filterByActiveTextEditor;
         }
       },
+      observeLinterPackageEnabled(),
     );
     logPanelIsDisplayed();
     this._bottomPanel = panel;
 
-    return new UniversalDisposable(
-      panel.onDidChangeVisible((visible: boolean) => {
-        this._state.hideDiagnosticsPanel = !visible;
-      }),
-      watchForLinter(setWarnAboutLinter),
-    );
+    return panel.onDidChangeVisible((visible: boolean) => {
+      this._state.hideDiagnosticsPanel = !visible;
+    });
   }
 
   _tryRecordActivationState(): void {
@@ -473,6 +452,18 @@ class KeyboardShortcuts {
 
 function logPanelIsDisplayed() {
   track('diagnostics-show-table');
+}
+
+function observeLinterPackageEnabled(): Observable<boolean> {
+  return Observable.merge(
+    Observable.of(atom.packages.isPackageActive(LINTER_PACKAGE)),
+    observableFromSubscribeFunction(atom.packages.onDidActivatePackage.bind(atom.packages))
+      .filter(pkg => pkg.name === LINTER_PACKAGE)
+      .mapTo(true),
+    observableFromSubscribeFunction(atom.packages.onDidDeactivatePackage.bind(atom.packages))
+      .filter(pkg => pkg.name === LINTER_PACKAGE)
+      .mapTo(false),
+  );
 }
 
 module.exports = createPackage(Activation);
