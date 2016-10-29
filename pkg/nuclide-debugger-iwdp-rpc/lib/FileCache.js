@@ -42,7 +42,7 @@ export class FileCache {
     );
   }
 
-  async handleScriptParsed(obj: Object): Promise<Object> {
+  async scriptParsed(obj: Object): Promise<Object> {
     const {params} = obj;
     if (params == null) {
       return obj;
@@ -51,10 +51,10 @@ export class FileCache {
     if (urlString == null || urlString === '') {
       return obj;
     }
-    const url = new URL(urlString);
-    if (url.protocol !== 'http:') {
+    if (!urlString.startsWith('http:')) {
       return obj;
     }
+    const url = new URL(urlString);
     const fileData = this._urlToFileData.get(urlString);
     if (fileData != null) {
       updateMessageObjWithFileData(obj, fileData);
@@ -67,14 +67,12 @@ export class FileCache {
     return obj;
   }
 
-  handleSetBreakpointByUrl(obj: Object): Object {
-    const filePath = obj.params.url;
+  getUrlFromFilePath(filePath: string): string {
     const fileData = this._filePathToFileData.get(filePath);
     if (fileData == null) {
-      return obj;
+      return filePath;
     }
-    obj.params.url = fileData.url;
-    return obj;
+    return fileData.url;
   }
 
   async dispose(): Promise<void> {

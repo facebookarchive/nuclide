@@ -10,14 +10,13 @@
  */
 
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {logger} from './logger';
-import {DebuggerConnection} from './DebuggerConnection';
 import {connectToIwdp} from './connectToIwdp';
+import {ConnectionMultiplexer} from './ConnectionMultiplexer';
+import {logger} from './logger';
 
 import type {ConnectableObservable} from 'rxjs';
 
 const {log} = logger;
-
 let lastServiceObjectDispose = null;
 
 import {ClientCallback} from '../../nuclide-debugger-common/lib/main';
@@ -25,16 +24,21 @@ import {ClientCallback} from '../../nuclide-debugger-common/lib/main';
 export class IwdpDebuggerService {
   _clientCallback: ClientCallback;
   _disposables: UniversalDisposable;
-  _debuggerConnection: ?DebuggerConnection;
+  _connectionMultiplexer: ConnectionMultiplexer;
 
   constructor() {
     if (lastServiceObjectDispose != null) {
       lastServiceObjectDispose();
     }
     lastServiceObjectDispose = this.dispose.bind(this);
-    this._disposables = new UniversalDisposable();
     this._clientCallback = new ClientCallback();
-    this._disposables.add(this._clientCallback);
+    this._connectionMultiplexer = new ConnectionMultiplexer(
+      message => this._clientCallback.sendChromeMessage(JSON.stringify(message)),
+    );
+    this._disposables = new UniversalDisposable(
+      this._clientCallback,
+      this._connectionMultiplexer,
+    );
   }
 
   getServerMessageObservable(): ConnectableObservable<string> {
@@ -42,27 +46,17 @@ export class IwdpDebuggerService {
   }
 
   attach(): Promise<string> {
-    return new Promise(resolve => {
-      this._disposables.add(
-        connectToIwdp().subscribe(deviceInfo => {
-          log(`Got device info: ${JSON.stringify(deviceInfo)}`);
-          if (this._debuggerConnection == null) {
-            this._debuggerConnection = new DebuggerConnection(
-              deviceInfo,
-              message => this._clientCallback.sendChromeMessage(message),
-            );
-            // Block resolution of this promise until we have successfully connected to the proxy.
-            resolve('IWDP connected');
-          }
-        }),
-      );
-    });
+    this._disposables.add(
+      connectToIwdp().subscribe(deviceInfo => {
+        log(`Got device info: ${JSON.stringify(deviceInfo)}`);
+        this._connectionMultiplexer.add(deviceInfo);
+      }),
+    );
+    return Promise.resolve('IWDP Connected');
   }
 
   sendCommand(message: string): Promise<void> {
-    if (this._debuggerConnection != null) {
-      this._debuggerConnection.sendCommand(message);
-    }
+    this._connectionMultiplexer.sendCommand(JSON.parse(message));
     return Promise.resolve();
   }
 

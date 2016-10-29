@@ -11,100 +11,90 @@
 
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import WS from 'ws';
-import {Observable} from 'rxjs';
+import {Observable, Subject} from 'rxjs';
 import {createWebSocketListener} from './createWebSocketListener';
 import {logger} from './logger';
-import {FileCache} from './FileCache';
+import invariant from 'assert';
 
 import type {IosDeviceInfo} from './types';
 
+type Id = number;
+type onResponseReceived = (response: Object) => void;
+
 const {log} = logger;
 
+/**
+ * A connection to a JSContext on the device (or simulator/emulator).  There are 2 channels of
+ * Communication provided by this class.
+ *
+ * 1. Bi-directional communcation for Chrome Protocol (CP) requests and responses.  This is via the
+ * `sendCommand` API, which sends a CP request to the target, and returns a promise which resolves
+ * with the response when it's received.
+ *
+ * 2. One-way communication for CP events that are emitted by the target, for example
+ * `Debugger.paused` events.  Interested parties can subscribe to these events via the
+ * `subscribeToEvents` API, which accepts a callback called when events are emitted from the target.
+ */
 export class DebuggerConnection {
-  _webSocket: WS;
+  _webSocket: ?WS;
+  _webSocketPromise: Promise<WS>;
   _disposables: UniversalDisposable;
-  _fileCache: FileCache;
-  _sendMessageToClient: (message: string) => void;
+  _events: Subject<Object>;
+  _pendingRequests: Map<Id, onResponseReceived>;
+  _id: number;
 
-  constructor(iosDeviceInfo: IosDeviceInfo, sendMessageToClient: (message: string) => void) {
-    this._sendMessageToClient = sendMessageToClient;
-    this._fileCache = new FileCache();
+  constructor(iosDeviceInfo: IosDeviceInfo) {
+    this._webSocket = null;
+    this._events = new Subject();
+    this._id = 0;
+    this._pendingRequests = new Map();
     const {webSocketDebuggerUrl} = iosDeviceInfo;
     const webSocket = new WS(webSocketDebuggerUrl);
-    this._webSocket = webSocket;
-    const socketMessages = createWebSocketListener(webSocket);
-    const translatedMessages = this._translateMessagesForClient(socketMessages);
+    // It's not enough to just construct the websocket -- we have to also wait for it to open.
+    this._webSocketPromise = new Promise(resolve => webSocket.on('open', () => resolve(webSocket)));
+    const socketMessages: Observable<string> = createWebSocketListener(webSocket);
     this._disposables = new UniversalDisposable(
-      translatedMessages.subscribe(sendMessageToClient),
       () => webSocket.close(),
-      this._fileCache,
+      socketMessages.subscribe(message => this._handleSocketMessage(message)),
     );
     log(`DebuggerConnection created with device info: ${JSON.stringify(iosDeviceInfo)}`);
   }
 
-  sendCommand(message: string): void {
-    this._webSocket.send(this._translateMessageForServer(message));
+  async sendCommand(message: Object): Promise<Object> {
+    if (this._webSocket == null) {
+      this._webSocket = await this._webSocketPromise;
+    }
+    const webSocket = this._webSocket;
+    if (message.id == null) {
+      message.id = this._id++;
+    }
+    return new Promise(resolve => {
+      this._pendingRequests.set(message.id, resolve);
+      webSocket.send(JSON.stringify(message));
+    });
   }
 
-  _translateMessagesForClient(socketMessages: Observable<string>): Observable<string> {
-    return socketMessages
-      .map(JSON.parse)
-      .mergeMap((message: {method: string}) => {
-        if (message.method === 'Debugger.scriptParsed') {
-          return Observable.fromPromise(this._fileCache.handleScriptParsed(message));
-        } else {
-          return Observable.of(message);
-        }
-      })
-      .map(JSON.stringify);
-  }
-
-  _translateMessageForServer(message: string): string {
+  _handleSocketMessage(message: string): void {
     const obj = JSON.parse(message);
-    switch (obj.method) {
-      case 'Debugger.setBreakpointByUrl': {
-        const updatedObj = this._fileCache.handleSetBreakpointByUrl(obj);
-        const updatedMessage = JSON.stringify(updatedObj);
-        log(`Sending message to proxy: ${updatedMessage}`);
-        return updatedMessage;
-      }
-      case 'Debugger.enable': {
-        this._sendSetBreakpointsActive();
-        // Nuclide's debugger will auto-resume the first pause event, so we send a dummy pause
-        // when the debugger initially attaches.
-        this._sendFakeLoaderBreakpointPause();
-        return message;
-      }
-      default: {
-        return message;
-      }
+    if (isEvent(obj)) {
+      this._handleChromeEvent(obj);
+    } else {
+      const resolve = this._pendingRequests.get(obj.id);
+      invariant(resolve != null, `Got response for a request that wasn't sent: ${message}`);
+      this._pendingRequests.delete(obj.id);
+      resolve(obj);
     }
   }
 
-  _sendSetBreakpointsActive(): void {
-    const debuggerMessage = {
-      id: 100000,
-      method: 'Debugger.setBreakpointsActive',
-      params: {
-        active: true,
-      },
-    };
-    this.sendCommand(JSON.stringify(debuggerMessage));
-  }
-
-  _sendFakeLoaderBreakpointPause(): void {
-    const debuggerPausedMessage = {
-      method: 'Debugger.paused',
-      params: {
-        callFrames: [],
-        reason: 'breakpoint',
-        data: {},
-      },
-    };
-    this._sendMessageToClient(JSON.stringify(debuggerPausedMessage));
+  _handleChromeEvent(message: Object): void {
+    this._events.next(message);
   }
 
   dispose(): void {
     this._disposables.dispose();
   }
+}
+
+function isEvent(obj: Object): boolean {
+  return obj.id == null;
 }

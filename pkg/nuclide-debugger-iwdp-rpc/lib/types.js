@@ -17,3 +17,11 @@ export type IosDeviceInfo = {
   webSocketDebuggerUrl: string,
   appId: string,
 };
+
+export type BreakpointId = string;
+export type BreakpointParams = {
+  lineNumber: number,
+  url: string,
+  columnNumber: number,
+  condition: string,
+};
