@@ -283,7 +283,7 @@ function _createProcessStream(
         complete: () => { finished = true; },
       })
       .finally(() => {
-        if (!finished) {
+        if (!process.wasKilled && !finished) {
           killProcess(process, killTreeOnComplete);
         }
       });
@@ -304,9 +304,10 @@ export function killProcess(
 }
 
 async function _killProcess(
-  childProcess: child_process$ChildProcess,
+  childProcess: child_process$ChildProcess & {wasKilled?: boolean},
   killTree: boolean,
 ): Promise<void> {
+  childProcess.wasKilled = true;
   if (!killTree) {
     childProcess.kill();
     return;
