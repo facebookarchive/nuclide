@@ -71,7 +71,7 @@ class FileTreeActions {
     }
   }
 
-  clearFilter() : void {
+  clearFilter(): void {
     this._dispatcher.dispatch({
       actionType: ActionTypes.CLEAR_FILTER,
     });

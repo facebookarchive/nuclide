@@ -166,7 +166,7 @@ type HyperclickMatch = {
   range: atom$Range,
 };
 
-const TARGET_REGEX = /(\/(?:\/[\w\-\.]*)*){0,1}:([\w\-\.]+)/;
+const TARGET_REGEX = /(\/(?:\/[\w.-]*)*){0,1}:([\w.-]+)/;
 
 /**
  * @return HyperclickMatch if (textEditor, position) identifies a build target.

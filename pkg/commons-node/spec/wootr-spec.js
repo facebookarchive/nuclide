@@ -378,8 +378,8 @@ describe('wootr', () => {
     it('should work', () => {
       const wstring = new WString(1, 4);
 
-      expect(wstring.subseq(wstring.ith(1), wstring.ith(4))).toEqual(
-        [{
+      expect(wstring.subseq(wstring.ith(1), wstring.ith(4))).toEqual([
+        {
           id: {
             site: 1,
             h: 2,

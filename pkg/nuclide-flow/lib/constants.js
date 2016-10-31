@@ -27,4 +27,4 @@ const regexStrings = [].concat(strRegexes, [identifierOrNumber]).map(s => `(${s}
 export const JAVASCRIPT_WORD_REGEX = new RegExp(regexStrings.join('|'), 'g');
 
 // A simple heuristic for identifier names in JavaScript.
-export const JAVASCRIPT_IDENTIFIER_REGEX = /[\$_a-zA-Z][\$_\w]*/gi;
+export const JAVASCRIPT_IDENTIFIER_REGEX = /[$_a-zA-Z][$_\w]*/gi;

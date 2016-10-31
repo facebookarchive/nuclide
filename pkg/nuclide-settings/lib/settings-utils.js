@@ -66,7 +66,7 @@ export function valueToString(value: any): string {
 
 // Remove spaces and hypens
 export function strip(str: string): string {
-  return str.replace(/\s+/g, '').replace(/\-+/g, '');
+  return str.replace(/\s+/g, '').replace(/-+/g, '');
 }
 
 /** Returns true if filter matches search string. Return true if filter is empty. */

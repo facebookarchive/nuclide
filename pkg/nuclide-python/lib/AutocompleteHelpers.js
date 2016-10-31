@@ -19,7 +19,7 @@ import {TYPES} from './constants';
 import {getAutocompleteArguments, getIncludeOptionalArguments} from './config';
 
 const VALID_EMPTY_SUFFIX = /(\.|\()$/;
-const TRIGGER_COMPLETION_REGEX = /([\. ]|[a-zA-Z_][a-zA-Z0-9_]*)$/;
+const TRIGGER_COMPLETION_REGEX = /([. ]|[a-zA-Z_][a-zA-Z0-9_]*)$/;
 
 /**
  * Generate a function-signature line string if completion is a function.

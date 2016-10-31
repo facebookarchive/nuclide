@@ -592,14 +592,14 @@
       "resolved": "https://registry.npmjs.org/lcid/-/lcid-1.0.0.tgz"
     },
     "lodash": {
-      "version": "4.16.4",
+      "version": "4.16.5",
       "from": "lodash@>=4.2.1 <5.0.0",
-      "resolved": "https://registry.npmjs.org/lodash/-/lodash-4.16.4.tgz"
+      "resolved": "https://registry.npmjs.org/lodash/-/lodash-4.16.5.tgz"
     },
     "lodash-es": {
-      "version": "4.16.4",
+      "version": "4.16.5",
       "from": "lodash-es@>=4.2.1 <5.0.0",
-      "resolved": "https://registry.npmjs.org/lodash-es/-/lodash-es-4.16.4.tgz"
+      "resolved": "https://registry.npmjs.org/lodash-es/-/lodash-es-4.16.5.tgz"
     },
     "lodash._getnative": {
       "version": "3.9.1",
@@ -1053,7 +1053,7 @@
     "split": {
       "version": "1.0.0",
       "from": "split@1.0.0",
-      "resolved": "https://registry.npmjs.org/split/-/split-1.0.0.tgz"
+      "resolved": "http://registry.npmjs.org/split/-/split-1.0.0.tgz"
     },
     "sprintf-js": {
       "version": "1.0.3",

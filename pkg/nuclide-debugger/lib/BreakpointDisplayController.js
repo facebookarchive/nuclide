@@ -41,10 +41,10 @@ class BreakpointDisplayController {
   _lastShadowBreakpointMarker: ?atom$Marker;
 
   constructor(
-      delegate: BreakpointDisplayControllerDelegate,
-      breakpointStore: BreakpointStore,
-      editor: atom$TextEditor,
-      debuggerActions: DebuggerActions,
+    delegate: BreakpointDisplayControllerDelegate,
+    breakpointStore: BreakpointStore,
+    editor: atom$TextEditor,
+    debuggerActions: DebuggerActions,
   ) {
     this._delegate = delegate;
     this._disposables = new CompositeDisposable();
@@ -115,7 +115,7 @@ class BreakpointDisplayController {
   /**
    * Update the display with the current set of breakpoints for this editor.
    */
-  _update() : void {
+  _update(): void {
     const gutter = this._gutter;
     if (gutter == null) {
       return;

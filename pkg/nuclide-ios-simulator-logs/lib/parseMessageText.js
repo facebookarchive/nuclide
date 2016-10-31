@@ -17,7 +17,7 @@ type Parsed = {
   tags: ?Array<string>,
 };
 
-const TAG_RE = /\[([^\[\]]*)\]/g;
+const TAG_RE = /\[([^[\]]*)]/g;
 const TAG_PATTERN = '\\[[^\\[\\]]*\\]'; // The same as TAG_RE but without capturing, for embedding.
 const DATETIME_PATTERN = '\\d{4}-\\d{2}-\\d{2} \\d+:\\d+:\\d+\\.\\d+';
 const PARTS_PATTERN = `${DATETIME_PATTERN}( (?:${TAG_PATTERN})+ ?)?([\\s\\S]*)`;

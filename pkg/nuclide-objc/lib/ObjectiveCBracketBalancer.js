@@ -110,7 +110,7 @@ class ObjectiveCBracketBalancer {
       return Point.fromObject([closeBracketPosition.row, stringLiteralMatch.index]);
     } else if (characterCount['['] < characterCount[']']) {
       // Check if we're at the bottom of a multi-line method.
-      const multiLineMethodRegex = /^[\s\w\[]*:.*[^;{];?$/;
+      const multiLineMethodRegex = /^[\s\w[]*:.*[^;{];?$/;
       let currentRow = closeBracketPosition.row;
       let currentRowPlusOne = null;
       let match = multiLineMethodRegex.exec(buffer.lineForRow(currentRow));

@@ -15,7 +15,7 @@
  * and here: http://www.artima.com/weblogs/viewpost.jsp?thread=164293.
  */
 const HUNK_DIFF_REGEX = /@@ .* @@/g;
-const HUNK_OLD_INFO_REGEX = /\-([0-9]+)((?:,[0-9]+)?)/;
+const HUNK_OLD_INFO_REGEX = /-([0-9]+)((?:,[0-9]+)?)/;
 const HUNK_NEW_INFO_REGEX = /\+([0-9]+)((?:,[0-9]+)?)/;
 
 import os from 'os';

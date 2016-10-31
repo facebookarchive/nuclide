@@ -168,9 +168,9 @@
       "dev": true
     },
     "babel-eslint": {
-      "version": "7.0.0",
-      "from": "babel-eslint@7.0.0",
-      "resolved": "https://registry.npmjs.org/babel-eslint/-/babel-eslint-7.0.0.tgz",
+      "version": "7.1.0",
+      "from": "babel-eslint@7.1.0",
+      "resolved": "https://registry.npmjs.org/babel-eslint/-/babel-eslint-7.1.0.tgz",
       "dev": true
     },
     "babel-generator": {
@@ -786,9 +786,9 @@
       "dev": true
     },
     "eslint": {
-      "version": "3.8.1",
-      "from": "eslint@3.8.1",
-      "resolved": "https://registry.npmjs.org/eslint/-/eslint-3.8.1.tgz",
+      "version": "3.9.1",
+      "from": "eslint@3.9.1",
+      "resolved": "https://registry.npmjs.org/eslint/-/eslint-3.9.1.tgz",
       "dev": true
     },
     "eslint-plugin-babel": {
@@ -798,9 +798,9 @@
       "dev": true
     },
     "eslint-plugin-flowtype": {
-      "version": "2.23.1",
-      "from": "eslint-plugin-flowtype@2.23.1",
-      "resolved": "https://registry.npmjs.org/eslint-plugin-flowtype/-/eslint-plugin-flowtype-2.23.1.tgz",
+      "version": "2.25.0",
+      "from": "eslint-plugin-flowtype@2.25.0",
+      "resolved": "https://registry.npmjs.org/eslint-plugin-flowtype/-/eslint-plugin-flowtype-2.25.0.tgz",
       "dev": true
     },
     "eslint-plugin-jasmine": {
@@ -1185,6 +1185,12 @@
       "resolved": "https://registry.npmjs.org/inquirer/-/inquirer-0.12.0.tgz",
       "dev": true
     },
+    "interpret": {
+      "version": "1.0.1",
+      "from": "interpret@>=1.0.0 <2.0.0",
+      "resolved": "https://registry.npmjs.org/interpret/-/interpret-1.0.1.tgz",
+      "dev": true
+    },
     "invariant": {
       "version": "2.2.1",
       "from": "invariant@>=2.2.0 <3.0.0",
@@ -1400,14 +1406,14 @@
       "dev": true
     },
     "lodash": {
-      "version": "4.16.4",
+      "version": "4.16.5",
       "from": "lodash@>=4.2.1 <5.0.0",
-      "resolved": "https://registry.npmjs.org/lodash/-/lodash-4.16.4.tgz"
+      "resolved": "https://registry.npmjs.org/lodash/-/lodash-4.16.5.tgz"
     },
     "lodash-es": {
-      "version": "4.16.4",
+      "version": "4.16.5",
       "from": "lodash-es@>=4.2.1 <5.0.0",
-      "resolved": "https://registry.npmjs.org/lodash-es/-/lodash-es-4.16.4.tgz"
+      "resolved": "https://registry.npmjs.org/lodash-es/-/lodash-es-4.16.5.tgz"
     },
     "lodash._getnative": {
       "version": "3.9.1",
@@ -1863,6 +1869,12 @@
       "resolved": "https://registry.npmjs.org/readline2/-/readline2-1.0.1.tgz",
       "dev": true
     },
+    "rechoir": {
+      "version": "0.6.2",
+      "from": "rechoir@>=0.6.2 <0.7.0",
+      "resolved": "https://registry.npmjs.org/rechoir/-/rechoir-0.6.2.tgz",
+      "dev": true
+    },
     "redux": {
       "version": "3.6.0",
       "from": "redux@3.6.0",
@@ -1938,9 +1950,9 @@
       "dev": true
     },
     "resolve": {
-      "version": "1.1.6",
-      "from": "resolve@1.1.6",
-      "resolved": "https://registry.npmjs.org/resolve/-/resolve-1.1.6.tgz",
+      "version": "1.1.7",
+      "from": "resolve@>=1.1.6 <2.0.0",
+      "resolved": "https://registry.npmjs.org/resolve/-/resolve-1.1.7.tgz",
       "dev": true
     },
     "resolve-from": {
@@ -1980,7 +1992,15 @@
       "version": "0.8.0",
       "from": "sabor@0.8.0",
       "resolved": "https://registry.npmjs.org/sabor/-/sabor-0.8.0.tgz",
-      "dev": true
+      "dev": true,
+      "dependencies": {
+        "resolve": {
+          "version": "1.1.6",
+          "from": "resolve@1.1.6",
+          "resolved": "https://registry.npmjs.org/resolve/-/resolve-1.1.6.tgz",
+          "dev": true
+        }
+      }
     },
     "sax": {
       "version": "1.2.1",
@@ -2028,9 +2048,9 @@
       "resolved": "https://registry.npmjs.org/shell-quote/-/shell-quote-1.6.1.tgz"
     },
     "shelljs": {
-      "version": "0.6.1",
-      "from": "shelljs@>=0.6.0 <0.7.0",
-      "resolved": "https://registry.npmjs.org/shelljs/-/shelljs-0.6.1.tgz",
+      "version": "0.7.5",
+      "from": "shelljs@>=0.7.5 <0.8.0",
+      "resolved": "https://registry.npmjs.org/shelljs/-/shelljs-0.7.5.tgz",
       "dev": true
     },
     "sigmund": {
@@ -2068,9 +2088,9 @@
       "dev": true
     },
     "source-map-support": {
-      "version": "0.4.5",
+      "version": "0.4.6",
       "from": "source-map-support@>=0.4.2 <0.5.0",
-      "resolved": "https://registry.npmjs.org/source-map-support/-/source-map-support-0.4.5.tgz",
+      "resolved": "https://registry.npmjs.org/source-map-support/-/source-map-support-0.4.6.tgz",
       "dev": true
     },
     "span-skip-list": {
@@ -2081,7 +2101,7 @@
     "split": {
       "version": "1.0.0",
       "from": "split@1.0.0",
-      "resolved": "https://registry.npmjs.org/split/-/split-1.0.0.tgz"
+      "resolved": "http://registry.npmjs.org/split/-/split-1.0.0.tgz"
     },
     "sprintf-js": {
       "version": "1.0.3",

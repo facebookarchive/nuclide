@@ -209,8 +209,8 @@ export class MerlinProcessV2_3_1 extends MerlinProcessBase {
   async complete(file: NuclideUri, line: number, col: number, prefix: string): Promise<mixed> {
     return await this._promiseQueue.submit(
       () => this.runSingleCommand(
-        ['complete', 'prefix', prefix, 'at', {line: line + 1, col: col + 1},
-      ]),
+        ['complete', 'prefix', prefix, 'at', {line: line + 1, col: col + 1}],
+      ),
     );
   }
 

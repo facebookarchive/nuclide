@@ -59,7 +59,7 @@ import url from 'url';
 import {maybeToString} from './string';
 
 const REMOTE_PATH_URI_PREFIX = 'nuclide://';
-const URI_PREFIX_REGEX = /^[A-Za-z0-9_\-]+:\/\/.*/;
+const URI_PREFIX_REGEX = /^[A-Za-z0-9_-]+:\/\/.*/;
 
 function isRemote(uri: NuclideUri): boolean {
   return uri.startsWith(REMOTE_PATH_URI_PREFIX);

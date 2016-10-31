@@ -707,11 +707,11 @@ export default class QuickSelectionComponent extends React.Component {
             dirName === this.state.selectedDirectory &&
             itemIndex === this.state.selectedItemIndex
           );
-          filesToOpen.push(
-            {selectedService: serviceName,
-             selectedDirectory: dirName,
-             selectedItemIndex: itemIndex,
-           });
+          filesToOpen.push({
+            selectedService: serviceName,
+            selectedDirectory: dirName,
+            selectedItemIndex: itemIndex,
+          });
           return (
             <li
               className={classnames({

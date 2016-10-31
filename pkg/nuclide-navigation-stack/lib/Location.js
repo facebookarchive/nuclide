@@ -43,7 +43,7 @@ export function getLocationOfEditor(editor: atom$TextEditor): EditorLocation {
   };
 }
 
-export async function editorOfLocation(location: Location) : Promise<atom$TextEditor> {
+export async function editorOfLocation(location: Location): Promise<atom$TextEditor> {
   if (location.type === 'uri') {
     return await atom.workspace.open(location.uri, {
       searchAllPanes: true,

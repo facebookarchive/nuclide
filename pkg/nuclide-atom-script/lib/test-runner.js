@@ -44,7 +44,7 @@ const STDERR_FILTERS = [
   // then this error gets logged. It's because we set `--user-data-dir`, and
   // our process can't get a lock on the IndexedDB file.
   // https://github.com/atom/atom/blob/v1.7.3/src/state-store.js#L16
-  /^Could not connect to indexedDB Event { isTrusted: \[Getter\] }\n$/i,
+  /^Could not connect to indexedDB Event { isTrusted: \[Getter] }\n$/i,
 ];
 
 // eslint-disable-next-line no-unused-vars

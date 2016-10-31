@@ -69,7 +69,7 @@ export class WorkingSet {
     }
   }
 
-  containsFile(uri: NuclideUri) : boolean {
+  containsFile(uri: NuclideUri): boolean {
     if (this.isEmpty()) {
       return true;
     }
@@ -82,7 +82,7 @@ export class WorkingSet {
     }
   }
 
-  containsFileBySplitPath(tokens: Array<string>) : boolean {
+  containsFileBySplitPath(tokens: Array<string>): boolean {
     if (this.isEmpty()) {
       return true;
     }

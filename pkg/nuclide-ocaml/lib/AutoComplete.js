@@ -40,7 +40,7 @@ module.exports = {
     // to make sure that the existing dot doesn't get clobbered when autocompleting.
     let linePrefix = editor.lineTextForBufferRow(line).substring(0, col);
     if (linePrefix.length > 0) {
-      linePrefix = linePrefix.split(/([ \t\[\](){}<>,+*\/-])/).slice(-1)[0];
+      linePrefix = linePrefix.split(/([ \t[\](){}<>,+*/-])/).slice(-1)[0];
     }
     let replacementPrefix = prefix;
     if (replacementPrefix.startsWith('.')) {

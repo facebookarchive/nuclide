@@ -25,7 +25,7 @@ const POLL_ELEMENT_TIMEOUT = 100; // milliseconds
 
 const logger = getLogger();
 
-function validatePlacement(position: string) : boolean {
+function validatePlacement(position: string): boolean {
   return VALID_NUX_POSITIONS.has(position);
 }
 
@@ -72,7 +72,7 @@ export class NuxView {
     completePredicate: ?(() => boolean) = null,
     indexInTour: number,
     tourSize: number,
-  ) : void {
+  ): void {
     this._tourId = tourId;
     if (selectorFunction != null) {
       this._selector = selectorFunction;
@@ -175,12 +175,12 @@ export class NuxView {
     }));
   }
 
-  _handleWindowResize() : void {
+  _handleWindowResize(): void {
     this._tooltipDisposable.dispose();
     this._createDisposableTooltip();
   }
 
-  _createDisposableTooltip() : void {
+  _createDisposableTooltip(): void {
     const LINK_ENABLED = 'nuclide-nux-link-enabled';
     const LINK_DISABLED = 'nuclide-nux-link-disabled';
 
@@ -278,7 +278,7 @@ export class NuxView {
     this._onNuxComplete(success);
   }
 
-  showNux() : void {
+  showNux(): void {
     this._createNux();
   }
 
@@ -298,7 +298,7 @@ export class NuxView {
     return success;
   }
 
-  dispose() : void {
+  dispose(): void {
     this._disposables.dispose();
   }
 

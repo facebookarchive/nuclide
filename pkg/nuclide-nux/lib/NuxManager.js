@@ -289,7 +289,7 @@ export class NuxManager {
     });
   }
 
-  dispose() : void {
+  dispose(): void {
     this._disposables.dispose();
   }
 

@@ -136,7 +136,7 @@ class ObjectiveCColonIndenter {
     let numberOfUnclosedBrackets = 0;
     buffer.backwardsScanInRange(
         // Only stop at the key characters: `:[]+-`.
-        /:|\[|\]|\+|-/g,
+        /:|\[|]|\+|-/g,
         Range.fromObject([
           startPosition.translate([-NUMBER_OF_PREVIOUS_LINES_TO_SEARCH_FOR_COLONS, 0]),
           startPosition.translate([0, -1]),

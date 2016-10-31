@@ -50,8 +50,9 @@ export function get_declaration_info(
   throw new Error('Rpc Stub');
 }
 
-export function get_outline(contents: string)
-    : Promise<?Array<ClangOutlineTree>> {
+export function get_outline(
+  contents: string,
+): Promise<?Array<ClangOutlineTree>> {
   throw new Error('Rpc Stub');
 }
 
