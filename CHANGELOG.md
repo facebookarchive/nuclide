@@ -1,5 +1,36 @@
 # Nuclide Changelog
 
+## v0.178.0
+
+### Highlights
+
+* Diagnostics: Added an "Open All" button that opens all files with errors.
+* Improved datatip UX.
+
+### General
+
+* Add grammars for the [Reason](https://facebook.github.io/reason/) language.
+* Numerous quality, stability and performance improvements.
+* Numerous updates to our extensive public docs at [nuclide.io](https://nuclide.io).
+
+### Fixes
+
+* Don't close files when they're renamed from the file tree.
+* Numerous Atom 1.12 compatibility fixes.
+
+### Flow
+
+* Don't show Flow type hints for comments.
+* Support default exports for Flow outline view.
+* Support destructuring in top-level assignments in Flow outline view.
+
+### Debugger
+
+* C++ debug tab now lets you pause on all exceptions (i.e. when they're thrown). The other options (don't pause / pause on uncaught exceptions) continue to pause only on `SIGABRT`, i.e. unhandled exceptions.
+* Add keybinding tooltip for debugger icons.
+* Update all Debugger Launch/Attach dialogs to handle 'ENTER' keypress.
+
+
 ## v0.177.0
 
 ### General
