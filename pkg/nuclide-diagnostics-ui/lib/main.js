@@ -17,6 +17,7 @@ import type {
   FileDiagnosticMessage,
   Trace,
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
+import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
 import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 
 import invariant from 'assert';
@@ -29,22 +30,17 @@ import type {HomeFragments} from '../../nuclide-home/lib/types';
 import createPackage from '../../commons-atom/createPackage';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
-import createDiagnosticsPanel from './createPanel';
+import {DiagnosticsPanelModel} from './DiagnosticsPanelModel';
 import StatusBarTile from './StatusBarTile';
 import {applyUpdateToEditor} from './gutter';
 import {goToLocation} from '../../commons-atom/go-to-location';
 import featureConfig from '../../commons-atom/featureConfig';
-import {Observable} from 'rxjs';
+import {BehaviorSubject, Observable} from 'rxjs';
 
-const DEFAULT_HIDE_DIAGNOSTICS_PANEL = true;
-const DEFAULT_TABLE_HEIGHT = 200;
-const DEFAULT_FILTER_BY_ACTIVE_EDITOR = false;
 const LINTER_PACKAGE = 'linter';
 const MAX_OPEN_ALL_FILES = 20;
 
 type ActivationState = {
-  hideDiagnosticsPanel: boolean,
-  diagnosticsPanelHeight: number,
   filterByActiveTextEditor: boolean,
 };
 
@@ -54,30 +50,18 @@ function disableLinter() {
 
 class Activation {
   _bottomPanel: ?atom$Panel;
-  _consumeUpdatesCalled: boolean;
+  _diagnosticUpdaters: BehaviorSubject<?ObservableDiagnosticUpdater>;
   _subscriptions: UniversalDisposable;
   _state: ActivationState;
   _statusBarTile: ?StatusBarTile;
 
   constructor(state_: ?Object): void {
-    this._consumeUpdatesCalled = false;
+    this._diagnosticUpdaters = new BehaviorSubject(null);
     this._subscriptions = new UniversalDisposable();
-    let state = state_;
-
-    // Ensure the integrity of the ActivationState created from state.
-    if (!state) {
-      state = {};
-    }
-    if (typeof state.hideDiagnosticsPanel !== 'boolean') {
-      state.hideDiagnosticsPanel = DEFAULT_HIDE_DIAGNOSTICS_PANEL;
-    }
-    if (typeof state.diagnosticsPanelHeight !== 'number') {
-      state.diagnosticsPanelHeight = DEFAULT_TABLE_HEIGHT;
-    }
-    if (typeof state.filterByActiveTextEditor !== 'boolean') {
-      state.filterByActiveTextEditor = DEFAULT_FILTER_BY_ACTIVE_EDITOR;
-    }
-    this._state = state;
+    const state = state_ || {};
+    this._state = {
+      filterByActiveTextEditor: state.filterByActiveTextEditor === true,
+    };
   }
 
   consumeDiagnosticUpdates(diagnosticUpdater: ObservableDiagnosticUpdater): void {
@@ -85,13 +69,18 @@ class Activation {
     this._subscriptions.add(gutterConsumeDiagnosticUpdates(diagnosticUpdater));
 
     // Currently, the DiagnosticsPanel is designed to work with only one DiagnosticUpdater.
-    if (this._consumeUpdatesCalled) {
+    if (this._diagnosticUpdaters.getValue() != null) {
       return;
     }
-    this._consumeUpdatesCalled = true;
-
-    this._tableConsumeDiagnosticUpdates(diagnosticUpdater);
-    this._subscriptions.add(addAtomCommands(diagnosticUpdater));
+    this._diagnosticUpdaters.next(diagnosticUpdater);
+    this._subscriptions.add(
+      addAtomCommands(diagnosticUpdater),
+      () => {
+        if (this._diagnosticUpdaters.getValue() === diagnosticUpdater) {
+          this._diagnosticUpdaters.next(null);
+        }
+      },
+    );
   }
 
   consumeStatusBar(statusBar: atom$StatusBar): void {
@@ -113,22 +102,13 @@ class Activation {
 
   dispose(): void {
     this._subscriptions.dispose();
-
-    if (this._bottomPanel) {
-      this._bottomPanel.destroy();
-      this._bottomPanel = null;
-    }
-
     if (this._statusBarTile) {
       this._statusBarTile.dispose();
       this._statusBarTile = null;
     }
-
-    this._consumeUpdatesCalled = false;
   }
 
   serialize(): ActivationState {
-    this._tryRecordActivationState(this._state);
     return this._state;
   }
 
@@ -144,70 +124,32 @@ class Activation {
     };
   }
 
-  _tableConsumeDiagnosticUpdates(diagnosticUpdater: ObservableDiagnosticUpdater): void {
-    const toggleTable = () => {
-      const bottomPanelRef = this._bottomPanel;
-      if (bottomPanelRef == null) {
-        this._subscriptions.add(this._createPanel(diagnosticUpdater));
-      } else if (bottomPanelRef.isVisible()) {
-        this._tryRecordActivationState(this._state);
-        bottomPanelRef.hide();
-      } else {
-        logPanelIsDisplayed();
-        bottomPanelRef.show();
-      }
-    };
-
-    const showTable = () => {
-      if (this._bottomPanel == null || !this._bottomPanel.isVisible()) {
-        toggleTable();
-      }
-    };
-
+  consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
     this._subscriptions.add(
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-diagnostics-ui:toggle-table',
-        toggleTable,
-      ),
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-diagnostics-ui:show-table',
-        showTable,
-      ),
+      api.registerFactory({
+        id: 'nuclide-diagnostics-ui',
+        name: 'Diagnostics',
+        iconName: 'law',
+        toggleCommand: 'nuclide-diagnostics-ui:toggle-table',
+        defaultLocation: 'bottom-panel',
+        create: () => new DiagnosticsPanelModel(
+          this._diagnosticUpdaters
+            .switchMap(updater => (
+              updater == null ? Observable.of([]) : updater.allMessageUpdates
+            )),
+          this._state.filterByActiveTextEditor,
+          featureConfig.observeAsStream('nuclide-diagnostics-ui.showDiagnosticTraces'),
+          disableLinter,
+          filterByActiveTextEditor => {
+            if (this._state != null) {
+              this._state.filterByActiveTextEditor = filterByActiveTextEditor;
+            }
+          },
+          observeLinterPackageEnabled(),
+        ),
+        isInstance: item => item instanceof DiagnosticsPanelModel,
+      }),
     );
-
-    if (!this._state.hideDiagnosticsPanel) {
-      this._subscriptions.add(this._createPanel(diagnosticUpdater));
-    }
-  }
-
-  _createPanel(diagnosticUpdater: ObservableDiagnosticUpdater): IDisposable {
-    const panel = createDiagnosticsPanel(
-      diagnosticUpdater.allMessageUpdates,
-      this._state.diagnosticsPanelHeight,
-      this._state.filterByActiveTextEditor,
-      featureConfig.observeAsStream('nuclide-diagnostics-ui.showDiagnosticTraces'),
-      disableLinter,
-      filterByActiveTextEditor => {
-        if (this._state != null) {
-          this._state.filterByActiveTextEditor = filterByActiveTextEditor;
-        }
-      },
-      observeLinterPackageEnabled(),
-    );
-    logPanelIsDisplayed();
-    this._bottomPanel = panel;
-
-    return panel.onDidChangeVisible((visible: boolean) => {
-      this._state.hideDiagnosticsPanel = !visible;
-    });
-  }
-
-  _tryRecordActivationState(): void {
-    if (this._bottomPanel && this._bottomPanel.isVisible()) {
-      this._state.diagnosticsPanelHeight = this._bottomPanel.getItem().clientHeight;
-    }
   }
 
   _getStatusBarTile(): StatusBarTile {
@@ -432,10 +374,6 @@ class KeyboardShortcuts {
   dispose(): void {
     this._subscriptions.dispose();
   }
-}
-
-function logPanelIsDisplayed() {
-  track('diagnostics-show-table');
 }
 
 function observeLinterPackageEnabled(): Observable<boolean> {

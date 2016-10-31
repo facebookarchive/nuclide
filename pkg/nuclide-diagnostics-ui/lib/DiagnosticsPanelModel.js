@@ -31,66 +31,52 @@ type PanelProps = {
   disableLinter: () => void,
 };
 
-export default function createDiagnosticsPanel(
-  diagnostics: Observable<Array<DiagnosticMessage>>,
-  initialHeight: number,
-  initialfilterByActiveTextEditor: boolean,
-  showTraces: Observable<boolean>,
-  disableLinter: () => void,
-  onFilterByActiveTextEditorChange: (filterByActiveTextEditor: boolean) => void,
-  warnAboutLinterStream: Observable<boolean>,
-): atom$Panel {
-  const panelVisibility = new BehaviorSubject(true);
-  const item = new DiagnosticsPanelModel(
-    diagnostics,
-    initialHeight,
-    initialfilterByActiveTextEditor,
-    showTraces,
-    disableLinter,
-    onFilterByActiveTextEditorChange,
-    warnAboutLinterStream,
-    () => { panel.hide(); },
-    panelVisibility,
-  );
-  const panel = atom.workspace.addBottomPanel({item});
-  const visibilityDisposable = panel.onDidChangeVisible(visible => {
-    panelVisibility.next(visible);
-  });
-  panel.onDidDestroy(() => { visibilityDisposable.dispose(); });
-  return panel;
-}
-
-class DiagnosticsPanelModel {
+export class DiagnosticsPanelModel {
   _element: ?HTMLElement;
   _props: Observable<PanelProps>;
+  _visibility: BehaviorSubject<boolean>;
 
   constructor(
     diagnostics: Observable<Array<DiagnosticMessage>>,
-    initialHeight: number,
     initialfilterByActiveTextEditor: boolean,
     showTraces: Observable<boolean>,
     disableLinter: () => void,
     onFilterByActiveTextEditorChange: (filterByActiveTextEditor: boolean) => void,
     warnAboutLinterStream: Observable<boolean>,
-    onHide: () => void,
-    panelVisibility: Observable<boolean>,
   ) {
+    this._visibility = new BehaviorSubject(true);
     // A stream that contains the props, but is "muted" when the panel's not visible.
     this._props = toggle(
       getPropsStream(
         diagnostics,
         warnAboutLinterStream,
         showTraces,
-        initialHeight,
         initialfilterByActiveTextEditor,
         disableLinter,
         onFilterByActiveTextEditorChange,
-        onHide,
+        () => {
+          atom.commands.dispatch(
+            atom.views.getView(atom.workspace),
+            'nuclide-diagnostics-ui:toggle-table',
+          );
+        },
       )
         .publishReplay(1)
         .refCount(),
-      panelVisibility.distinctUntilChanged(),
+      this._visibility.distinctUntilChanged(),
     );
+  }
+
+  getTitle(): string {
+    return 'Diagnostics';
+  }
+
+  getIconName(): atom$Octicon {
+    return 'law';
+  }
+
+  didChangeVisibility(visible: boolean): void {
+    this._visibility.next(visible);
   }
 
   getElement(): HTMLElement {
@@ -108,7 +94,6 @@ function getPropsStream(
   diagnosticsStream: Observable<Array<DiagnosticMessage>>,
   warnAboutLinterStream: Observable<boolean>,
   showTraces: Observable<boolean>,
-  initialHeight: number,
   initialfilterByActiveTextEditor: boolean,
   disableLinter: () => void,
   onFilterByActiveTextEditorChange: (filterByActiveTextEditor: boolean) => void,
@@ -152,7 +137,6 @@ function getPropsStream(
       disableLinter,
       filterByActiveTextEditor: filter,
       onFilterByActiveTextEditorChange: handleFilterByActiveTextEditorChange,
-      initialHeight,
       onDismiss,
     }));
 }

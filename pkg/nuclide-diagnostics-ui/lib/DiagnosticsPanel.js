@@ -14,7 +14,6 @@ import type {DiagnosticMessage} from '../../nuclide-diagnostics-common';
 
 import DiagnosticsPane from './DiagnosticsPane';
 import {Checkbox} from '../../nuclide-ui/Checkbox';
-import {PanelComponent} from '../../nuclide-ui/PanelComponent';
 import {Toolbar} from '../../nuclide-ui/Toolbar';
 import {ToolbarCenter} from '../../nuclide-ui/ToolbarCenter';
 import {ToolbarLeft} from '../../nuclide-ui/ToolbarLeft';
@@ -28,7 +27,6 @@ import {track} from '../../nuclide-analytics';
 
 type Props = {
   diagnostics: Array<DiagnosticMessage>,
-  height: number,
   onDismiss: () => mixed,
   pathToActiveTextEditor: ?NuclideUri,
   filterByActiveTextEditor: boolean,
@@ -90,58 +88,49 @@ class DiagnosticsPanel extends React.Component {
     const errorSpanClassName = `inline-block ${errorCount > 0 ? 'text-error' : ''}`;
     const warningSpanClassName = `inline-block ${warningCount > 0 ? 'text-warning' : ''}`;
 
-    // We hide the horizontal overflow in the PanelComponent because the presence of the scrollbar
-    // throws off our height calculations.
     return (
-      <PanelComponent
-        ref="panel"
-        dock="bottom"
-        initialLength={this.props.height}
-        noScroll={true}
-        overflowX="hidden">
-        <div style={{display: 'flex', flex: 1, flexDirection: 'column'}}>
-          {linterWarning}
-          <Toolbar location="top">
-            <ToolbarLeft>
-              <span className={errorSpanClassName}>
-                Errors: {errorCount}
-              </span>
-              <span className={warningSpanClassName}>
-                Warnings: {warningCount}
-              </span>
-            </ToolbarLeft>
-            <ToolbarRight>
-              <span className="inline-block">
-                <Checkbox
-                  checked={this.props.filterByActiveTextEditor}
-                  label="Show only diagnostics for current file"
-                  onChange={this._onFilterByActiveTextEditorChange}
-                />
-              </span>
-              <Button
-                onClick={this._openAllFilesWithErrors}
-                size={ButtonSizes.SMALL}
-                disabled={diagnostics.length === 0}
-                className="inline-block"
-                title="Open All">
-                Open All
-              </Button>
-              <Button
-                onClick={this.props.onDismiss}
-                icon="x"
-                size={ButtonSizes.SMALL}
-                className="inline-block"
-                title="Close Panel"
+      <div style={{display: 'flex', flex: 1, flexDirection: 'column'}}>
+        {linterWarning}
+        <Toolbar location="top">
+          <ToolbarLeft>
+            <span className={errorSpanClassName}>
+              Errors: {errorCount}
+            </span>
+            <span className={warningSpanClassName}>
+              Warnings: {warningCount}
+            </span>
+          </ToolbarLeft>
+          <ToolbarRight>
+            <span className="inline-block">
+              <Checkbox
+                checked={this.props.filterByActiveTextEditor}
+                label="Show only diagnostics for current file"
+                onChange={this._onFilterByActiveTextEditorChange}
               />
-            </ToolbarRight>
-          </Toolbar>
-          <DiagnosticsPane
-            showFileName={!this.props.filterByActiveTextEditor}
-            diagnostics={diagnostics}
-            showTraces={showTraces}
-          />
-        </div>
-      </PanelComponent>
+            </span>
+            <Button
+              onClick={this._openAllFilesWithErrors}
+              size={ButtonSizes.SMALL}
+              disabled={diagnostics.length === 0}
+              className="inline-block"
+              title="Open All">
+              Open All
+            </Button>
+            <Button
+              onClick={this.props.onDismiss}
+              icon="x"
+              size={ButtonSizes.SMALL}
+              className="inline-block"
+              title="Close Panel"
+            />
+          </ToolbarRight>
+        </Toolbar>
+        <DiagnosticsPane
+          showFileName={!this.props.filterByActiveTextEditor}
+          diagnostics={diagnostics}
+          showTraces={showTraces}
+        />
+      </div>
     );
   }
 

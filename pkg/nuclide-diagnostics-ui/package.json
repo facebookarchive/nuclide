@@ -29,6 +29,11 @@
         "0.2.0": "consumeDiagnosticUpdates"
       }
     },
+    "nuclide.workspace-views": {
+      "versions": {
+        "0.0.0": "consumeWorkspaceViewsService"
+      }
+    },
     "status-bar": {
       "versions": {
         "^1.0.0": "consumeStatusBar"

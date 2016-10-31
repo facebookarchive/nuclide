@@ -35,11 +35,17 @@ export function expectGutterDiagnosticToContain(message: string): void {
 }
 
 export function isDiagnosticsPanelShowing(): boolean {
-  const rootNode = getDiagnosticsPanelElement();
-  if (rootNode == null) {
+  let node = getDiagnosticsPanelElement();
+  if (node == null) {
     return false;
   }
-  return (rootNode.style.getPropertyValue('display') !== 'none');
+  while (node != null) {
+    if (node.style.getPropertyValue('display') === 'none') {
+      return false;
+    }
+    node = ((node.parentElement: any): HTMLElement);
+  }
+  return true;
 }
 
 export function waitsForStatusBarItem(): void {
