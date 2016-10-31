@@ -22,7 +22,9 @@ import invariant from 'assert';
 
 export const OPEN_FILES_SERVICE = 'OpenFilesService';
 
-export function getBufferAtVersion(fileVersion: FileVersion): Promise<?atom$TextBuffer> {
+export function getBufferAtVersion(
+  fileVersion: FileVersion,
+): Promise<?simpleTextBuffer$TextBuffer> {
   return trackOperationTiming(
     'getBufferAtVersion',
     () => {

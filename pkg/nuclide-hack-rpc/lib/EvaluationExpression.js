@@ -17,7 +17,7 @@ import {HACK_WORD_REGEX} from './HackHelpers';
 
 export function getEvaluationExpression(
   filePath: NuclideUri,
-  buffer: atom$TextBuffer,
+  buffer: simpleTextBuffer$TextBuffer,
   position: atom$Point,
 ): ?NuclideEvaluationExpression {
   // TODO: Replace RegExp with AST-based, more accurate approach.

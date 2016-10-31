@@ -14,7 +14,7 @@ import {FileCache} from '../lib/FileCache';
 import {Point as ServerPoint, Range as ServerRange} from 'simple-text-buffer';
 import {addMatchers} from '../../nuclide-test-helpers';
 
-function bufferToObject(buffer: atom$TextBuffer): Object {
+function bufferToObject(buffer: simpleTextBuffer$TextBuffer): Object {
   return {
     text: buffer.getText(),
     changeCount: buffer.changeCount,

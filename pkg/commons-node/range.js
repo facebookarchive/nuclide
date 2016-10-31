@@ -10,7 +10,7 @@
  */
 
 export function wordAtPositionFromBuffer(
-  buffer: atom$TextBuffer,
+  buffer: atom$TextBuffer | simpleTextBuffer$TextBuffer,
   position: atom$PointObject,
   wordRegex: RegExp,
 ): ?{wordMatch: Array<string>, range: atom$Range} {

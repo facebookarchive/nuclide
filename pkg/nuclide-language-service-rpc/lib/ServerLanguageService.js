@@ -35,21 +35,21 @@ import {FileCache} from '../../nuclide-open-files-rpc';
 export type LanguageAnalyzer = {
   getDiagnostics(
     filePath: NuclideUri,
-    buffer: atom$TextBuffer,
+    buffer: simpleTextBuffer$TextBuffer,
   ): Promise<?DiagnosticProviderUpdate>,
 
   observeDiagnostics(): Observable<FileDiagnosticUpdate>,
 
   getAutocompleteSuggestions(
     filePath: NuclideUri,
-    buffer: atom$TextBuffer,
+    buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
     activatedManually: boolean,
   ): Promise<Array<Completion>>,
 
   getDefinition(
     filePath: NuclideUri,
-    buffer: atom$TextBuffer,
+    buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
   ): Promise<?DefinitionQueryResult>,
 
@@ -60,7 +60,7 @@ export type LanguageAnalyzer = {
 
   findReferences(
     filePath: NuclideUri,
-    buffer: atom$TextBuffer,
+    buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
   ): Promise<?FindReferencesReturn>,
 
@@ -70,30 +70,30 @@ export type LanguageAnalyzer = {
 
   getOutline(
     filePath: NuclideUri,
-    buffer: atom$TextBuffer,
+    buffer: simpleTextBuffer$TextBuffer,
   ): Promise<?Outline>,
 
   typeHint(
     filePath: NuclideUri,
-    buffer: atom$TextBuffer,
+    buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
   ): Promise<?TypeHint>,
 
   highlight(
     filePath: NuclideUri,
-    buffer: atom$TextBuffer,
+    buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
   ): Promise<Array<atom$Range>>,
 
   formatSource(
     filePath: NuclideUri,
-    buffer: atom$TextBuffer,
+    buffer: simpleTextBuffer$TextBuffer,
     range: atom$Range,
   ): Promise<?string>,
 
   getEvaluationExpression(
     filePath: NuclideUri,
-    buffer: atom$TextBuffer,
+    buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
   ): Promise<?NuclideEvaluationExpression>,
 

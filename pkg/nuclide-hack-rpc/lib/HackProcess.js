@@ -131,7 +131,7 @@ class HackProcess extends RpcProcess {
     return this.getService('HackConnectionService');
   }
 
-  async getBufferAtVersion(fileVersion: FileVersion): Promise<?atom$TextBuffer> {
+  async getBufferAtVersion(fileVersion: FileVersion): Promise<?simpleTextBuffer$TextBuffer> {
     const buffer = await getBufferAtVersion(fileVersion);
     // Must also wait for edits to be sent to Hack
     if (!(await this._fileVersionNotifier.waitForBufferAtVersion(fileVersion))) {

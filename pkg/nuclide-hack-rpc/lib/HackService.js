@@ -155,7 +155,7 @@ class HackLanguageAnalyzer {
 
   async getDiagnostics(
     filePath: NuclideUri,
-    buffer: atom$TextBuffer,
+    buffer: simpleTextBuffer$TextBuffer,
   ): Promise<?DiagnosticProviderUpdate> {
     const hhResult: ?HackDiagnosticsResult = (await retryLimit(
       () => callHHClient(
@@ -191,7 +191,7 @@ class HackLanguageAnalyzer {
 
   async getAutocompleteSuggestions(
     filePath: NuclideUri,
-    buffer: atom$TextBuffer,
+    buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
     activatedManually: boolean,
   ): Promise<Array<Completion>> {
@@ -215,7 +215,7 @@ class HackLanguageAnalyzer {
 
   async getDefinition(
     filePath: NuclideUri,
-    buffer: atom$TextBuffer,
+    buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
   ): Promise<?DefinitionQueryResult> {
     const contents = buffer.getText();
@@ -270,7 +270,7 @@ class HackLanguageAnalyzer {
 
   async findReferences(
     filePath: NuclideUri,
-    buffer: atom$TextBuffer,
+    buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
   ): Promise<?FindReferencesReturn> {
     const contents = buffer.getText();
@@ -305,7 +305,7 @@ class HackLanguageAnalyzer {
 
   async getOutline(
     filePath: NuclideUri,
-    buffer: atom$TextBuffer,
+    buffer: simpleTextBuffer$TextBuffer,
   ): Promise<?Outline> {
     const contents = buffer.getText();
 
@@ -324,7 +324,7 @@ class HackLanguageAnalyzer {
 
   async typeHint(
     filePath: NuclideUri,
-    buffer: atom$TextBuffer,
+    buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
   ): Promise<?TypeHint> {
     const contents = buffer.getText();
@@ -354,7 +354,7 @@ class HackLanguageAnalyzer {
 
   async highlight(
     filePath: NuclideUri,
-    buffer: atom$TextBuffer,
+    buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
   ): Promise<Array<atom$Range>> {
     const contents = buffer.getText();
@@ -377,7 +377,7 @@ class HackLanguageAnalyzer {
 
   async formatSource(
     filePath: NuclideUri,
-    buffer: atom$TextBuffer,
+    buffer: simpleTextBuffer$TextBuffer,
     range: atom$Range,
   ): Promise<?string> {
     const contents = buffer.getText();
@@ -403,7 +403,7 @@ class HackLanguageAnalyzer {
 
   async getEvaluationExpression(
     filePath: NuclideUri,
-    buffer: atom$TextBuffer,
+    buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
   ): Promise<?NuclideEvaluationExpression> {
     return getEvaluationExpression(filePath, buffer, position);
@@ -442,7 +442,7 @@ function markFileForCompletion(contents: string, offset: number): string {
 }
 
 function getIdentifierAndRange(
-  buffer: atom$TextBuffer,
+  buffer: simpleTextBuffer$TextBuffer,
   position: atom$PointObject,
 ): ?{id: string, range: atom$Range} {
   const matchData = wordAtPositionFromBuffer(buffer, position, HACK_WORD_REGEX);
@@ -451,7 +451,7 @@ function getIdentifierAndRange(
 }
 
 function getIdentifierAtPosition(
-  buffer: atom$TextBuffer,
+  buffer: simpleTextBuffer$TextBuffer,
   position: atom$PointObject,
 ): ?string {
   const result = getIdentifierAndRange(buffer, position);

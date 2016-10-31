@@ -192,7 +192,7 @@ const PREFIX_LOOKBACK = Math.max.apply(null, FIELD_ACCESSORS.map(prefix => prefi
  * Returns true if `bufferPosition` is prefixed with any of the passed `checkPrefixes`.
  */
 export function hasPrefix(
-    buffer: atom$TextBuffer,
+    buffer: simpleTextBuffer$TextBuffer,
     bufferPosition: atom$Point,
   ): boolean {
   const priorChars = buffer.getTextInRange(new Range(
@@ -203,7 +203,7 @@ export function hasPrefix(
 }
 
 export function findHackPrefix(
-  buffer: atom$TextBuffer,
+  buffer: simpleTextBuffer$TextBuffer,
   position: atom$Point,
 ): string {
   // We use custom wordRegex to adopt php variables starting with $.

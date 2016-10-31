@@ -28,7 +28,7 @@ import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {FileEventKind} from './constants';
 
 export class FileCache {
-  _buffers: Map<NuclideUri, atom$TextBuffer>;
+  _buffers: Map<NuclideUri, simpleTextBuffer$TextBuffer>;
   _requests: FileVersionNotifier;
   _events: Subject<LocalFileEvent>;
   _resources: UniversalDisposable;
@@ -83,7 +83,7 @@ export class FileCache {
 
   _syncEdit(
     filePath: NuclideUri,
-    buffer: atom$TextBuffer,
+    buffer: simpleTextBuffer$TextBuffer,
     contents: string,
     changeCount: number,
   ): void {
@@ -109,7 +109,7 @@ export class FileCache {
   _open(filePath: NuclideUri, contents: string, changeCount: number): void {
     // We never call setPath on these TextBuffers as that will
     // start the TextBuffer attempting to sync with the file system.
-    const newBuffer: atom$TextBuffer = new TextBuffer(contents);
+    const newBuffer = new TextBuffer(contents);
     newBuffer.changeCount = changeCount;
     this._buffers.set(filePath, newBuffer);
     this._events.next(createOpenEvent(this.createFileVersion(filePath, changeCount), contents));
@@ -125,11 +125,11 @@ export class FileCache {
     this._events.complete();
   }
 
-  getBuffer(filePath: NuclideUri): ?atom$TextBuffer {
+  getBuffer(filePath: NuclideUri): ?simpleTextBuffer$TextBuffer {
     return this._buffers.get(filePath);
   }
 
-  async getBufferAtVersion(fileVersion: FileVersion): Promise<?atom$TextBuffer> {
+  async getBufferAtVersion(fileVersion: FileVersion): Promise<?simpleTextBuffer$TextBuffer> {
     if (!(await this._requests.waitForBufferAtVersion(fileVersion))) {
       return null;
     }
@@ -147,7 +147,7 @@ export class FileCache {
       })).concat(this._events);
   }
 
-  _emitClose(filePath: NuclideUri, buffer: atom$TextBuffer): void {
+  _emitClose(filePath: NuclideUri, buffer: simpleTextBuffer$TextBuffer): void {
     this._events.next(createCloseEvent(
       this.createFileVersion(filePath, buffer.changeCount)));
   }
