@@ -35,6 +35,7 @@ java_library(
 
 java_test(
   name = 'two-tests',
+  srcs = [ 'one.java' ],
   deps = [ ':two' ],
 )
 

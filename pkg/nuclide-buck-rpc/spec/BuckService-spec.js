@@ -168,7 +168,10 @@ describe('BuckService (buck-query-project)', () => {
     it('gets the owner', () => {
       // First expensive buck operation gets a large timeout.
       waitsForPromise({timeout: 15000}, async () => {
-        const owners = await BuckService.getOwners(buckRoot, 'examples/one.java');
+        let owners = await BuckService.getOwners(buckRoot, 'examples/one.java');
+        expect(owners.sort()).toEqual(['//examples:one', '//examples:two-tests']);
+
+        owners = await BuckService.getOwners(buckRoot, 'examples/one.java', '.*_library');
         expect(owners).toEqual(['//examples:one']);
       });
     });

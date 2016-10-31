@@ -40,6 +40,15 @@ const CLANG_FLAGS_THAT_TAKE_PATHS = new Set([
   '-isystem',
 ]);
 
+const TARGET_KIND_REGEX = [
+  'apple_binary',
+  'apple_library',
+  'apple_test',
+  'cxx_binary',
+  'cxx_library',
+  'cxx_test',
+].join('|');
+
 const SINGLE_LETTER_CLANG_FLAGS_THAT_TAKE_PATHS = new Set(
   Array.from(CLANG_FLAGS_THAT_TAKE_PATHS)
     .filter(item => item.length === 2),
@@ -225,7 +234,7 @@ export default class ClangFlagsManager {
       return new Map();
     }
 
-    const target = (await BuckService.getOwners(buckRoot, src))
+    const target = (await BuckService.getOwners(buckRoot, src, TARGET_KIND_REGEX))
       .find(x => x.indexOf(DEFAULT_HEADERS_TARGET) === -1);
 
     if (target == null) {

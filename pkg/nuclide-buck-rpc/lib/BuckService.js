@@ -217,14 +217,22 @@ function _getBuckCommandAndOptions(
  *
  *     buck query owner(<path>)
  *
+ * If `kindFilter` is provided, `kind(kindFilter, owner(..))` will be used.
+ *
  * @param filePath absolute path or a local or a remote file.
+ * @param kindFilter filter for specific build target kinds.
  * @return Promise that resolves to an array of build targets.
  */
 export async function getOwners(
   rootPath: NuclideUri,
   filePath: NuclideUri,
+  kindFilter?: string,
 ): Promise<Array<string>> {
-  return query(rootPath, `owner(${quote([filePath])})`);
+  let queryString = `owner(${quote([filePath])})`;
+  if (kindFilter != null) {
+    queryString = `kind(${JSON.stringify(kindFilter)}, ${queryString})`;
+  }
+  return query(rootPath, queryString);
 }
 
 /**
