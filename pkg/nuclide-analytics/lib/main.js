@@ -105,26 +105,6 @@ export function trackTiming(eventName_: ?string = null): any {
   };
 }
 
-/**
- * Obtain a monotonically increasing timestamp in milliseconds, if possible.
- * If `window.performance` is unavailable (e.g. in Node), use process.hrtime.
- * Fall back to `Date.now` otherwise – note that `Date.now` does not guarantee timestamps to
- * increase monotonically, and is thus subject to system clock updates.
- *
- * Wrapped in a function rather than a module constant to facilitate testing.
- */
-const getTimestamp = (): number => {
-  const timingFunction = (global.performance != null)
-    ? () => Math.round(global.performance.now())
-    : (process != null && typeof process.hrtime === 'function')
-      ? () => {
-        const hr = process.hrtime();
-        return Math.round((hr[0] * 1e9 + hr[1]) / 1e6);
-      }
-      : Date.now;
-  return timingFunction();
-};
-
 const PERFORMANCE_EVENT = 'performance';
 
 export class TimingTracker {
@@ -133,7 +113,7 @@ export class TimingTracker {
 
   constructor(eventName: string) {
     this._eventName = eventName;
-    this._startTime = getTimestamp();
+    this._startTime = this._getTimestamp();
   }
 
   onError(error: Error): void {
@@ -146,11 +126,16 @@ export class TimingTracker {
 
   _trackTimingEvent(exception: ?Error): void {
     track(PERFORMANCE_EVENT, {
-      duration: (getTimestamp() - this._startTime).toString(),
+      duration: (this._getTimestamp() - this._startTime).toString(),
       eventName: this._eventName,
       error: exception ? '1' : '0',
       exception: exception ? exception.toString() : '',
     });
+  }
+
+  // Obtain a monotonically increasing timestamp in milliseconds.
+  _getTimestamp(): number {
+    return Math.round(process.uptime() * 1000);
   }
 }
 

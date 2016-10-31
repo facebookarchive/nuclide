@@ -16,17 +16,15 @@ import invariant from 'assert';
 describe('startTracking', () => {
   let trackKey;
   let trackValues;
-  let originalProcessHrTime = null;
-  let originalWindowPerformance = null;
+  let startTime;
 
   beforeEach(() => {
-    // `advanceClock` relies on Date.now exclusively. Ensure fallback to Date.now in tests.
-    originalProcessHrTime = (process: any).hrtime;
-    (process: any).hrtime = null;
-    if (window && window.performance) {
-      originalWindowPerformance = window.performance;
-      window.performance = null;
-    }
+    spyOn(process, 'uptime').andCallFake(() => {
+      if (startTime == null) {
+        startTime = Date.now();
+      }
+      return (Date.now() - startTime) / 1000;
+    });
 
     // Clear intercepted tracking data.
     trackKey = null;
@@ -37,17 +35,6 @@ describe('startTracking', () => {
       trackValues = values;
       return Promise.resolve();
     });
-
-  });
-
-  afterEach(() => {
-    (process: any).hrtime = originalProcessHrTime;
-    if (originalWindowPerformance) {
-      window.performance = originalWindowPerformance;
-    }
-    // Reset for subsequent tests.
-    originalProcessHrTime = null;
-    originalWindowPerformance = null;
   });
 
   it('startTracking - success', () => {
