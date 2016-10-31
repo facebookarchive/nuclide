@@ -21,14 +21,6 @@ import type {
 type ResultRenderer =
   (item: FileResult, serviceName: string, dirName: string) => React.Element<any>;
 
-type CachedResults = {
-  [providerName: string]: {
-    [directory: string]: {
-      [query: string]: ProviderResult,
-    },
-  },
-};
-
 import invariant from 'assert';
 import {track} from '../../nuclide-analytics';
 import {getLogger} from '../../nuclide-logging';
@@ -43,6 +35,7 @@ import debounce from '../../commons-node/debounce';
 import QuickSelectionDispatcher, {ActionTypes} from './QuickSelectionDispatcher';
 import QuickSelectionActions from './QuickSelectionActions';
 import FileResultComponent from './FileResultComponent';
+import ResultCache from './ResultCache';
 
 const {performance} = global;
 
@@ -71,9 +64,6 @@ const OMNISEARCH_PROVIDER = {
   title: 'OmniSearch',
   priority: 0,
 };
-// Number of elements in the cache before periodic cleanup kicks in. Includes partial query strings.
-const MAX_CACHED_QUERIES = 100;
-const CACHE_CLEAN_DEBOUNCE_DELAY = 5000;
 const UPDATE_DIRECTORIES_DEBOUNCE_DELAY = 100;
 const GLOBAL_KEY = 'global';
 const DIRECTORY_KEY = 'directory';
@@ -99,14 +89,7 @@ class SearchResultManager {
   _dispatcher: QuickSelectionDispatcher;
   _providersByDirectory: Map<atom$Directory, Set<Provider>>;
   _directories: Array<atom$Directory>;
-  _cachedResults: CachedResults;
-  // Cache the last query with results for each provider.
-  // Display cached results for the last completed query until new data arrives.
-  _lastCachedQuery: Map<string, string>;
-  // List of most recently used query strings, used for pruning the result cache.
-  // Makes use of `Map`'s insertion ordering, so values are irrelevant and always set to `null`.
-  _queryLruQueue: Map<string, ?Number>;
-  _debouncedCleanCache: Function;
+  _resultCache: ResultCache;
   _debouncedUpdateDirectories: Function;
   _emitter: Emitter;
   _subscriptions: CompositeDisposable;
@@ -130,13 +113,10 @@ class SearchResultManager {
     this._registeredProviders[GLOBAL_KEY] = new Map();
     this._providersByDirectory = new Map();
     this._directories = [];
-    this._cachedResults = {};
-    this._lastCachedQuery = new Map();
-    this._debouncedCleanCache = debounce(
-      () => this._cleanCache(),
-      CACHE_CLEAN_DEBOUNCE_DELAY,
-      /* immediate */false,
-    );
+    this._resultCache = new ResultCache(() => {
+      // on result changed
+      this._emitter.emit(RESULTS_CHANGED);
+    });
     // `updateDirectories` joins providers and directories, which don't know anything about each
     // other. Debounce this call to reduce churn at startup, and when new providers get activated or
     // a new directory gets mounted.
@@ -145,7 +125,6 @@ class SearchResultManager {
       UPDATE_DIRECTORIES_DEBOUNCE_DELAY,
       /* immediate */false,
     );
-    this._queryLruQueue = new Map();
     this._emitter = new Emitter();
     this._subscriptions = new CompositeDisposable();
     this._dispatcher = QuickSelectionDispatcher.getInstance();
@@ -282,7 +261,7 @@ class SearchResultManager {
       if (serviceName === this._activeProviderName) {
         this._activeProviderName = OMNISEARCH_PROVIDER.name;
       }
-      this._removeResultsForProvider(serviceName);
+      this._resultCache.removeResultsForProvider(serviceName);
       this._emitter.emit(PROVIDERS_CHANGED);
     }));
     // If the provider is renderable and specifies a keybinding, wire it up with the toggle command.
@@ -297,88 +276,22 @@ class SearchResultManager {
     return disposable;
   }
 
-  _removeResultsForProvider(providerName: string): void {
-    if (this._cachedResults[providerName]) {
-      delete this._cachedResults[providerName];
-      this._emitter.emit(RESULTS_CHANGED);
-    }
-    this._lastCachedQuery.delete(providerName);
-  }
-
-  setCacheResult(
-    providerName: string,
-    directory: string,
-    query: string,
-    results: Array<FileResult>,
-    loading: boolean = false,
-    error: ?Object = null): void {
-    this.ensureCacheEntry(providerName, directory);
-    this._cachedResults[providerName][directory][query] = {
-      results,
-      loading,
-      error,
-    };
-    this._lastCachedQuery.set(providerName, query);
-    // Refresh the usage for the current query.
-    this._queryLruQueue.delete(query);
-    this._queryLruQueue.set(query, null);
-    setImmediate(this._debouncedCleanCache);
-  }
-
-  ensureCacheEntry(providerName: string, directory: string): void {
-    if (!this._cachedResults[providerName]) {
-      this._cachedResults[providerName] = {};
-    }
-    if (!this._cachedResults[providerName][directory]) {
-      this._cachedResults[providerName][directory] = {};
-    }
-  }
-
   cacheResult(query: string, result: Array<FileResult>, directory: string, provider: Object): void {
     const providerName = provider.getName();
-    this.setCacheResult(providerName, directory, query, result, false, null);
+    this._resultCache.setCacheResult(providerName, directory, query, result, false, null);
   }
 
   _setLoading(query: string, directory: string, provider: Object): void {
     const providerName = provider.getName();
-    this.ensureCacheEntry(providerName, directory);
-    const previousResult = this._cachedResults[providerName][directory][query];
+    const previousResult = this._resultCache.getCacheResult(providerName, directory, query);
+
     if (!previousResult) {
-      this._cachedResults[providerName][directory][query] = {
+      this._resultCache.rawSetCacheResult(providerName, directory, query, {
         results: [],
         error: null,
         loading: true,
-      };
+      });
     }
-  }
-
-  /**
-   * Release the oldest cached results once the cache is full.
-   */
-  _cleanCache(): void {
-    const queueSize = this._queryLruQueue.size;
-    if (queueSize <= MAX_CACHED_QUERIES) {
-      return;
-    }
-    // Figure out least recently used queries, and pop them off of the `_queryLruQueue` Map.
-    const expiredQueries: Array<string> = [];
-    const keyIterator = this._queryLruQueue.keys();
-    const entriesToRemove = queueSize - MAX_CACHED_QUERIES;
-    for (let i = 0; i < entriesToRemove; i++) {
-      const firstEntryKey = keyIterator.next().value;
-      invariant(firstEntryKey != null);
-      expiredQueries.push(firstEntryKey);
-      this._queryLruQueue.delete(firstEntryKey);
-    }
-
-    // For each (provider|directory) pair, remove results for all expired queries from the cache.
-    for (const providerName in this._cachedResults) {
-      for (const directory in this._cachedResults[providerName]) {
-        const queryResults = this._cachedResults[providerName][directory];
-        expiredQueries.forEach(query => delete queryResults[query]);
-      }
-    }
-    this._emitter.emit(RESULTS_CHANGED);
   }
 
   processResult(
@@ -471,7 +384,7 @@ class SearchResultManager {
       ? [GLOBAL_KEY]
       : this._directories.map(d => d.getPath());
     const provider = this._getProviderByName(providerName);
-    const lastCachedQuery = this._lastCachedQuery.get(providerName);
+    const lastCachedQuery = this._resultCache.getLastCachedQuery(providerName);
     return {
       title: provider.getTabTitle(),
       results: providerPaths.reduce((results, path) => {
@@ -479,7 +392,7 @@ class SearchResultManager {
         let cachedQueries;
         let cachedResult;
         if (!(
-          (cachedPaths = this._cachedResults[providerName]) &&
+          (cachedPaths = this._resultCache.getAllCachedResults()[providerName]) &&
           (cachedQueries = cachedPaths[path]) &&
           (
             (cachedResult = cachedQueries[query]) ||
@@ -505,7 +418,7 @@ class SearchResultManager {
     const sanitizedQuery = this.sanitizeQuery(query);
     if (activeProviderName === OMNISEARCH_PROVIDER.name) {
       const omniSearchResults = [{}];
-      for (const providerName in this._cachedResults) {
+      for (const providerName in this._resultCache.getAllCachedResults()) {
         const resultForProvider = this._getResultsForProvider(sanitizedQuery, providerName);
         // TODO replace this with a ranking algorithm.
         for (const dir in resultForProvider.results) {
