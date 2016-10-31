@@ -9,10 +9,11 @@ Set of lldb commands for serializing debug information into JSON.
 """
 
 import file_manager
-import lldb
+from find_lldb import get_lldb
 
 
 def _BreakpointEventType_to_string(event):
+    lldb = get_lldb()
     """Converts lldb.BreakpointEventType to a string"""
     return {
       lldb.eBreakpointEventTypeAdded: 'added',
@@ -31,22 +32,24 @@ def _BreakpointEventType_to_string(event):
 
 
 def _WatchpointEventType_to_string(event):
-  """Converts lldb.BreakpointEventType to a string"""
-  return {
-    lldb.eWatchpointEventTypeAdded: 'added',
-    lldb.eWatchpointEventTypeCommandChanged: 'command-changed',
-    lldb.eWatchpointEventTypeConditionChanged: 'condition-changed',
-    lldb.eWatchpointEventTypeDisabled: 'disabled',
-    lldb.eWatchpointEventTypeEnabled: 'enabled',
-    lldb.eWatchpointEventTypeIgnoreChanged: 'ignore-changed',
-    lldb.eWatchpointEventTypeInvalidType: 'invalid-type',
-    lldb.eWatchpointEventTypeRemoved: 'removed',
-    lldb.eWatchpointEventTypeThreadChanged: 'thread-changed',
-    lldb.eWatchpointEventTypeTypeChanged: 'type-changed',
-  }[event]
+    lldb = get_lldb()
+    """Converts lldb.BreakpointEventType to a string"""
+    return {
+        lldb.eWatchpointEventTypeAdded: 'added',
+        lldb.eWatchpointEventTypeCommandChanged: 'command-changed',
+        lldb.eWatchpointEventTypeConditionChanged: 'condition-changed',
+        lldb.eWatchpointEventTypeDisabled: 'disabled',
+        lldb.eWatchpointEventTypeEnabled: 'enabled',
+        lldb.eWatchpointEventTypeIgnoreChanged: 'ignore-changed',
+        lldb.eWatchpointEventTypeInvalidType: 'invalid-type',
+        lldb.eWatchpointEventTypeRemoved: 'removed',
+        lldb.eWatchpointEventTypeThreadChanged: 'thread-changed',
+        lldb.eWatchpointEventTypeTypeChanged: 'type-changed',
+    }[event]
 
 
 def StopReason_to_string(reason):
+    lldb = get_lldb()
     """Converts lldb.StopReason to a string"""
     return {
       lldb.eStopReasonInvalid: 'invalid',

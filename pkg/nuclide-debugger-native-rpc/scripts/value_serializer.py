@@ -6,7 +6,7 @@
 
 """In charge of expression evaluation handling and serialization.
 """
-import lldb
+from find_lldb import get_lldb
 import remote_objects
 
 
@@ -102,6 +102,7 @@ class CppStructValueHandler(ValueHandler):
     """
     @classmethod
     def handle(cls, value, add_object_func):
+        lldb = get_lldb()
         if (value.type.type == lldb.eTypeClassStruct or
                 ((value.type.type == lldb.eTypeClassTypedef) and
                  (value.type.GetCanonicalType().type == lldb.eTypeClassStruct))):
@@ -135,18 +136,19 @@ class CppStructSBValueRemoteObject(ExpandableSBValueRemoteObject):
 
 
 class DereferenceableValueHandler(ValueHandler):
-    """ValueHandler for dereferenceable types
-    """
-    DEREF_TYPE_CLASSES = [
-        lldb.eTypeClassPointer,
-        #TODO[jeffreytan]: I do not think ObjectC/C++ support reference yet
-        # so disable for now(enable it when we support classic C++).
-        #lldb.eTypeClassReference,
-    ]
-
     @classmethod
     def handle(cls, value, add_object_func):
-        if value.type.type in cls.DEREF_TYPE_CLASSES:
+        lldb = get_lldb()
+        """ValueHandler for dereferenceable types
+        """
+        DEREF_TYPE_CLASSES = [
+            lldb.eTypeClassPointer,
+            # TODO[jeffreytan]: I do not think ObjectC/C++ support reference yet
+            # so disable for now(enable it when we support classic C++).
+            # lldb.eTypeClassReference,
+        ]
+
+        if value.type.type in DEREF_TYPE_CLASSES:
             obj = add_object_func(DereferenceableSBValueRemoteObject(value, add_object_func))
             return obj.serialized_value
         return None

@@ -8,7 +8,7 @@
 Defines methods for the Runtime domain.
 https://developer.chrome.com/devtools/docs/protocol/1.1/runtime#command-evaluate
 """
-import lldb
+from find_lldb import get_lldb
 import sys
 
 from handler import HandlerDomain, handler
@@ -42,7 +42,7 @@ class RuntimeDomain(HandlerDomain):
         # the request. We use these names to disambiguate LLDB commands from
         # C-style expressions.
         if params['objectGroup'] == 'console':
-            result = lldb.SBCommandReturnObject()
+            result = get_lldb().SBCommandReturnObject()
             self.debugger_store.debugger.GetCommandInterpreter().HandleCommand(expression, result)
 
             return {

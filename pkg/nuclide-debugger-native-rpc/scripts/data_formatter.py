@@ -4,11 +4,7 @@
 # This source code is licensed under the license found in the LICENSE file in
 # the root directory of this source tree.
 
-import lldb
-
-
-target_byte_order = lldb.target.GetByteOrder()
-
+from find_lldb import get_lldb
 
 def get_category_value(category_sbvalue, category_extract_mask):
     return category_sbvalue.unsigned & category_extract_mask
@@ -26,6 +22,7 @@ def folly_fbstring_core_formatter(valobj, internal_dict):
     Please refer to https://github.com/facebook/folly/blob/master/folly/FBString.h
     for implementation details.
     '''
+    target_byte_order = get_lldb().target.GetByteOrder()
     capacity_sbvalue = valobj.GetValueForExpressionPath('.ml_.capacity_')
     category_extract_mask = 0x3 if target_byte_order == lldb.eByteOrderBig else \
         (0xC0000000 if capacity_sbvalue.size == 4 else 0xC000000000000000)

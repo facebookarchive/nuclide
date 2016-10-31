@@ -7,7 +7,7 @@
 import os
 import sys
 import urlparse
-import lldb
+from find_lldb import get_lldb
 from handler import HandlerDomain, UndefinedHandlerError, handler
 from logging_helper import log_debug
 import file_manager
@@ -179,6 +179,7 @@ class DebuggerDomain(HandlerDomain):
         }
 
     def _getSteppingFlag(self):
+        lldb = get_lldb()
         if self.debugger_store.getDebuggerSettings()['singleThreadStepping']:
             return lldb.eOnlyThisThread
         return lldb.eOnlyDuringStepping

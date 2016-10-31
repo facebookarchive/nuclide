@@ -5,26 +5,10 @@
 # the root directory of this source tree.
 
 import sys
-import lldb
 import serialize
+from find_lldb import get_lldb
 from threading import Thread
 from logging_helper import log_debug, log_error
-
-
-breakpoint_event_type_to_name_map = {
-    lldb.eBreakpointEventTypeAdded: 'Added',
-    lldb.eBreakpointEventTypeCommandChanged: 'Command Changed',
-    lldb.eBreakpointEventTypeConditionChanged: 'Condition Changed',
-    lldb.eBreakpointEventTypeDisabled: 'Disabled',
-    lldb.eBreakpointEventTypeEnabled: 'Enabled',
-    lldb.eBreakpointEventTypeIgnoreChanged: 'Ignore Changed',
-    lldb.eBreakpointEventTypeInvalidType: 'Invalid Type',
-    lldb.eBreakpointEventTypeLocationsAdded: 'Location Added',
-    lldb.eBreakpointEventTypeLocationsRemoved: 'Location Removed',
-    lldb.eBreakpointEventTypeLocationsResolved: 'Location Resolved',
-    lldb.eBreakpointEventTypeRemoved: 'Removed',
-    lldb.eBreakpointEventTypeThreadChanged: 'Thread Changed',
-}
 
 
 class LLDBListenerThread(Thread):
@@ -39,6 +23,23 @@ class LLDBListenerThread(Thread):
         self._debugger_store = debugger_store
         self._app = app
         self._listener = debugger_store.debugger.GetListener()
+        lldb = get_lldb()
+        self.breakpoint_event_type_to_name_map = {
+            lldb.eBreakpointEventTypeAdded: 'Added',
+            lldb.eBreakpointEventTypeCommandChanged: 'Command Changed',
+            lldb.eBreakpointEventTypeConditionChanged: 'Condition Changed',
+            lldb.eBreakpointEventTypeDisabled: 'Disabled',
+            lldb.eBreakpointEventTypeEnabled: 'Enabled',
+            lldb.eBreakpointEventTypeIgnoreChanged: 'Ignore Changed',
+            lldb.eBreakpointEventTypeInvalidType: 'Invalid Type',
+            lldb.eBreakpointEventTypeLocationsAdded: 'Location Added',
+            lldb.eBreakpointEventTypeLocationsRemoved: 'Location Removed',
+            lldb.eBreakpointEventTypeLocationsResolved: 'Location Resolved',
+            lldb.eBreakpointEventTypeRemoved: 'Removed',
+            lldb.eBreakpointEventTypeThreadChanged: 'Thread Changed',
+        }
+
+
 
         process = debugger_store.debugger.GetSelectedTarget().process
         self._add_listener_to_process(process)
@@ -56,6 +57,7 @@ class LLDBListenerThread(Thread):
     def _add_listener_to_target(self, target):
         # Listen for breakpoint/watchpoint events (Added/Removed/Disabled/etc).
         broadcaster = target.GetBroadcaster()
+        lldb = get_lldb()
         mask = lldb.SBTarget.eBroadcastBitBreakpointChanged | \
             lldb.SBTarget.eBroadcastBitWatchpointChanged | \
             lldb.SBTarget.eBroadcastBitModulesLoaded | \
@@ -66,6 +68,7 @@ class LLDBListenerThread(Thread):
     def _add_listener_to_process(self, process):
         # Listen for process events (Start/Stop/Interrupt/etc).
         broadcaster = process.GetBroadcaster()
+        lldb = get_lldb()
         mask = lldb.SBProcess.eBroadcastBitStateChanged | \
             lldb.SBProcess.eBroadcastBitSTDOUT | \
             lldb.SBProcess.eBroadcastBitSTDERR | \
@@ -73,6 +76,7 @@ class LLDBListenerThread(Thread):
         broadcaster.AddListener(self._listener, mask)
 
     def _handle_target_event(self, event):
+        lldb = get_lldb()
         if event.GetType() == lldb.SBTarget.eBroadcastBitModulesLoaded:
             self._handle_module_load_event(event)
         elif event.GetType() == lldb.SBTarget.eBroadcastBitModulesUnloaded:
@@ -89,6 +93,7 @@ class LLDBListenerThread(Thread):
         self._send_module_event_notification(event, is_load=False)
 
     def _send_module_event_notification(self, event, is_load):
+        lldb = get_lldb()
         module_count = lldb.SBTarget.GetNumModulesFromEvent(event)
         for i in range(module_count):
             module = lldb.SBTarget.GetModuleAtIndexFromEvent(i, event)
@@ -100,6 +105,7 @@ class LLDBListenerThread(Thread):
         self._debugger_store.ipc_channel.send_output_message_async(level, text)
 
     def _handle_process_event(self, event):
+        lldb = get_lldb()
         # Ignore non-stopping events.
         if lldb.SBProcess.GetRestartedFromEvent(event):
             log_debug('Non stopping event: %s' % str(event))
@@ -165,6 +171,7 @@ class LLDBListenerThread(Thread):
         TODO: remove this when lldb fixes this on Linux.
         '''
         thread = process.GetSelectedThread()
+        lldb = get_lldb()
         if thread.GetStopReason() != lldb.eStopReasonNone:
             return
         for thread in process.threads:
@@ -173,10 +180,11 @@ class LLDBListenerThread(Thread):
                 return
 
     def _handle_breakpoint_event(self, event):
+        lldb = get_lldb()
         breakpoint = lldb.SBBreakpoint.GetBreakpointFromEvent(event)
         event_type = lldb.SBBreakpoint.GetBreakpointEventTypeFromEvent(event)
         log_debug('Breakpoint event: [%s] %s ' % (
-            breakpoint_event_type_to_name_map[event_type],
+            self.breakpoint_event_type_to_name_map[event_type],
             self._get_description_from_object(breakpoint)))
         if event_type == lldb.eBreakpointEventTypeLocationsResolved:
             for location in \
@@ -191,7 +199,7 @@ class LLDBListenerThread(Thread):
             pass
 
     def _get_description_from_object(self, lldb_object):
-        description_stream = lldb.SBStream()
+        description_stream = get_lldb().SBStream()
         lldb_object.GetDescription(description_stream)
         return description_stream.GetData()
 
@@ -205,10 +213,11 @@ class LLDBListenerThread(Thread):
     def _handle_unknown_event(self, event):
         log_error('Unknown event: %d %s %s' % (
             event.GetType(),
-            lldb.SBEvent.GetCStringFromEvent(event),
+            get_lldb().SBEvent.GetCStringFromEvent(event),
             self._get_description_from_object(event)))
 
     def run(self):
+        lldb = get_lldb()
         while not self.should_quit:
             event = lldb.SBEvent()
             if self._listener.WaitForEvent(1, event):

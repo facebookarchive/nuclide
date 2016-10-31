@@ -14,7 +14,7 @@ import sys
 from logging_helper import log_debug, log_error
 
 
-def _get_lldb_python_path():
+def _get_default_lldb_python_path():
     if sys.platform == 'darwin':
         try:
             # Update pythonpath with likely location in the active Xcode app bundle.
@@ -28,27 +28,29 @@ def _get_lldb_python_path():
     elif sys.platform.startswith('linux'):
         # Assume to be Facebook linux devserver.
         # TODO: make this configurable.
-        return '/mnt/gvfs/third-party2/lldb/d51c341932343d3657b9fa997f3ed7d72775d98d/' \
-            '3.8.0.rc3/centos6-native/ff04b3a/lib/python2.7/site-packages'
+        return '/mnt/gvfs/third-party2/lldb/d51c341932343d3657b9fa997f3ed7d72775d98d/3.8.0.rc3/' \
+            'centos6-native/ff04b3a/lib/python2.7/site-packages'
     else:
         raise Exception('Failure to find lldb python binding: unknown platform.')
 
+_custom_lldb_python_path = None
 
-def find_lldb():
-    # Try to import, perhaps the paths are set up.
-    try:
-        import lldb
-        return lldb
-    except:
-        pass
 
-    # Search python binding with heuristics.
-    lldb_pythonpath = _get_lldb_python_path()
-    sys.path.append(lldb_pythonpath)
+def set_custom_lldb_path(lldb_python_path):
+    global _custom_lldb_python_path
+    _custom_lldb_python_path = lldb_python_path
 
-    # Try again.
+_lldb = None
+
+
+def get_lldb():
+    global _lldb
+    if _lldb:
+        return _lldb
+
+    lldb_python_path = _custom_lldb_python_path if _custom_lldb_python_path \
+        else _get_default_lldb_python_path()
+    sys.path.insert(0, lldb_python_path)
     import lldb
-    log_debug('find_lldb: %s' % str(lldb))
-    return lldb
-
-lldb = find_lldb()
+    _lldb = lldb
+    return _lldb

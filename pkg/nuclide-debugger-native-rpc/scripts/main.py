@@ -10,8 +10,8 @@ stand-alone application.
 
 from __future__ import print_function
 
-# Should be first for LLDB package to be added to search path.
-from find_lldb import lldb
+from find_lldb import set_custom_lldb_path
+from find_lldb import get_lldb
 
 from shlex import split
 from chromedebugger import ChromeDevToolsDebuggerApp
@@ -28,7 +28,6 @@ from debugger_store import DebuggerStore
 from chrome_channel import ChromeChannel
 from ipc_channel import IpcChannel
 import time
-
 
 def parse_args():
     '''Parse command line arguments.
@@ -48,6 +47,8 @@ def parse_args():
                         help='Interactive mode.')
     parser.add_argument('--arguments_in_json', '-json', action='store_true',
                         help='Receive the attach/launch arguments in JSON.')
+    parser.add_argument('--lldb_python_path', type=str,
+                        help='Path of the lldb python packages')
 
     attach_group = parser.add_mutually_exclusive_group()
     attach_group.add_argument('--pname', '-n', type=str,
@@ -117,6 +118,7 @@ def interactive_loop(debugger):
 
 
 def start_debugging(debugger, arguments, ipc_channel, is_attach):
+    lldb = get_lldb()
     listener = lldb.SBListener('Chrome Dev Tools Listener')
     error = lldb.SBError()
     if getattr(arguments, 'executable_path', None):
@@ -181,7 +183,7 @@ def register_signal_handler(lldb_debugger):
         if lldb_debugger.GetSelectedTarget() is not None and \
             lldb_debugger.GetSelectedTarget().process is not None and \
                 lldb_debugger.GetSelectedTarget().process.state == \
-                lldb.eStateStopped:
+                get_lldb().eStateStopped:
             lldb_debugger.GetSelectedTarget().process.Detach()
         os._exit(0)
     signal.signal(signal.SIGTERM, handle_stop_debugging_signal)
@@ -189,6 +191,10 @@ def register_signal_handler(lldb_debugger):
 
 def main():
     arguments = parse_args()
+    lldb_python_path = getattr(arguments, 'lldb_python_path', None)
+    if lldb_python_path is not None:
+        set_custom_lldb_path(lldb_python_path)
+    lldb = get_lldb()
     debugger = lldb.SBDebugger.Create()
 
     is_attach = (getattr(arguments, 'executable_path', None) == None)

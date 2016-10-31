@@ -4,7 +4,7 @@
 # This source code is licensed under the license found in the LICENSE file in
 # the root directory of this source tree.
 
-import lldb
+from find_lldb import get_lldb
 from remote_objects import ValueListRemoteObject
 
 
@@ -27,6 +27,7 @@ class ThreadManager(object):
     def update(self, process):
         """Update threads status for input process."""
         threads_array = []
+        lldb = get_lldb()
         for thread in process.threads:
             description_stream = lldb.SBStream()
             thread.GetDescription(description_stream)
