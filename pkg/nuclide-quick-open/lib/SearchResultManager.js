@@ -90,7 +90,7 @@ class SearchResultManager {
   _providersByDirectory: Map<atom$Directory, Set<Provider>>;
   _directories: Array<atom$Directory>;
   _resultCache: ResultCache;
-  _debouncedUpdateDirectories: Function;
+  _debouncedUpdateDirectories: () => mixed;
   _emitter: Emitter;
   _subscriptions: CompositeDisposable;
   _registeredProviders: {[key: string]: Map<string, Provider>};
@@ -225,8 +225,8 @@ class SearchResultManager {
     this._emitter.emit(PROVIDERS_CHANGED);
   }
 
-  on(name: string, value: any): IDisposable {
-    return this._emitter.on(name, value);
+  on(name: string, callback: (v: any) => mixed): IDisposable {
+    return this._emitter.on(name, callback);
   }
 
   registerProvider(service: Provider): IDisposable {
@@ -276,12 +276,17 @@ class SearchResultManager {
     return disposable;
   }
 
-  cacheResult(query: string, result: Array<FileResult>, directory: string, provider: Object): void {
+  cacheResult(
+    query: string,
+    result: Array<FileResult>,
+    directory: string,
+    provider: Provider,
+  ): void {
     const providerName = provider.getName();
     this._resultCache.setCacheResult(providerName, directory, query, result, false, null);
   }
 
-  _setLoading(query: string, directory: string, provider: Object): void {
+  _setLoading(query: string, directory: string, provider: Provider): void {
     const providerName = provider.getName();
     const previousResult = this._resultCache.getCacheResult(providerName, directory, query);
 
@@ -298,9 +303,9 @@ class SearchResultManager {
     query: string,
     result: Array<FileResult>,
     directory: string,
-    provider: Object,
+    provider: Provider,
   ): void {
-    this.cacheResult(...arguments);
+    this.cacheResult(query, result, directory, provider);
     this._emitter.emit(RESULTS_CHANGED);
   }
 
