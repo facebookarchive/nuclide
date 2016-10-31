@@ -24,7 +24,6 @@ import type {
   FunctionImplementation,
 } from './ServiceRegistry';
 import type {TimingTracker} from '../../nuclide-analytics';
-import type {Observer} from 'rxjs';
 import type {PredefinedTransformer} from './index';
 
 import invariant from 'assert';
@@ -56,9 +55,9 @@ type RpcConnectionKind = 'server' | 'client';
 
 class Subscription {
   _message: Object;
-  _observer: Observer<any>;
+  _observer: rxjs$Observer<any>;
 
-  constructor(message: Object, observer: Observer<any>) {
+  constructor(message: Object, observer: rxjs$Observer<any>) {
     this._message = message;
     this._observer = observer;
   }

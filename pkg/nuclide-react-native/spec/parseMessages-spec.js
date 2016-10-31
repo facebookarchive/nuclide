@@ -22,7 +22,8 @@ describe('parseMessages', () => {
 
     describe(fixtureName, () => {
 
-      const lines = getLines(fixtureName).cache();
+      const lines = getLines(fixtureName).publishReplay();
+      lines.connect();
 
       it('parses the preamble (skipping the ceremony)', () => {
         waitsForPromise(async () => {

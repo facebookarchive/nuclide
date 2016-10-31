@@ -25,6 +25,7 @@ import createPackage from '../../commons-atom/createPackage';
 import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
 import featureConfig from '../../commons-atom/featureConfig';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import {cacheWhileSubscribed} from '../../commons-node/observable';
 
 // Imports from within this Nuclide package.
 import HealthPaneItem from './HealthPaneItem';
@@ -60,11 +61,12 @@ class Activation {
       .switchMap(getChildProcessesTree)
       .share();
 
-    const packageStates = statsStream
-      .withLatestFrom(toolbarJewels)
-      .map(([stats, toolbarJewel]) => ({stats, toolbarJewel}))
-      .share()
-      .cache(1);
+    const packageStates = cacheWhileSubscribed(
+      statsStream
+        .withLatestFrom(toolbarJewels)
+        .map(([stats, toolbarJewel]) => ({stats, toolbarJewel}))
+        .share(),
+    );
 
     const updateToolbarJewel = value => {
       featureConfig.set('nuclide-health.toolbarJewel', value);

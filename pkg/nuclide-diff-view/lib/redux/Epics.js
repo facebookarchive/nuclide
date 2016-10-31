@@ -28,6 +28,7 @@ import invariant from 'assert';
 import {Observable, Subject} from 'rxjs';
 import {observableFromSubscribeFunction} from '../../../commons-node/event';
 import {mapUnion} from '../../../commons-node/collection';
+import {cacheWhileSubscribed} from '../../../commons-node/observable';
 import {observeStatusChanges} from '../../../commons-node/vcs';
 import {
   CommitMode,
@@ -212,10 +213,12 @@ export function addRepositoryEpic(
 function observeViewOpen(
   actions: ActionsObservable<Action>,
 ): Observable<boolean> {
-  return Observable.merge(
-    actions.ofType(ActionTypes.OPEN_VIEW).map(() => true),
-    actions.ofType(ActionTypes.CLOSE_VIEW).map(() => false),
-  ).startWith(false).cache(1);
+  return cacheWhileSubscribed(
+    Observable.merge(
+      actions.ofType(ActionTypes.OPEN_VIEW).mapTo(true),
+      actions.ofType(ActionTypes.CLOSE_VIEW).mapTo(false),
+    ),
+  ).startWith(false);
 }
 
 // A repository is considered activated only when the Diff View is open.

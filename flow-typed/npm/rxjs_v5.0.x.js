@@ -1,5 +1,5 @@
-// flow-typed signature: 28d5a68375584e9fbde05ad067e7f94f
-// flow-typed version: 06376b2f92/rxjs_v5.0.x/flow_>=v0.29.0_<=v0.32.x
+// flow-typed signature: c1a6c0ec6a8b18680f14d6d9abda956d
+// flow-typed version: 1628ebe09e/rxjs_v5.0.x/flow_>=v0.29.0
 
 // FIXME(samgoldman) Remove top-level interface once Babel supports
 // `declare interface` syntax.
@@ -95,8 +95,6 @@ declare class rxjs$Observable<+T> {
 
   buffer(bufferBoundaries: rxjs$Observable<any>): rxjs$Observable<Array<T>>;
 
-  cache(bufferSize?: number, windowTime?: number): rxjs$Observable<T>;
-
   catch<U>(selector: (err: any, caught: rxjs$Observable<T>) => rxjs$Observable<U>): rxjs$Observable<U>;
 
   concat(...sources: rxjs$Observable<T>[]): rxjs$Observable<T>;
@@ -141,6 +139,13 @@ declare class rxjs$Observable<+T> {
   ): rxjs$Observable<rxjs$Observable<T>>;
 
   ignoreElements<U>(): rxjs$Observable<U>;
+
+  let<U>(project: (self: rxjs$Observable<T>) => rxjs$Observable<U>): rxjs$Observable<U>;
+
+  // Alias for `let`
+  letBind<U>(project: (self: rxjs$Observable<T>) => rxjs$Observable<U>): rxjs$Observable<U>;
+
+  switch(): T; // assumption: T is Observable
 
   // Alias for `mergeMap`
   flatMap<U>(
@@ -593,14 +598,6 @@ declare class rxjs$ConnectableObservable<T> extends rxjs$Observable<T> {
 }
 
 declare class rxjs$Observer<T> {
-  static create(
-    onNext?: (value: T) => mixed,
-    onError?: (error: any) => mixed,
-    onCompleted?: () => mixed,
-  ): rxjs$Observer<T>;
-
-  asrxjs$Observer(): rxjs$Observer<T>;
-
   next(value: T): mixed;
 
   error(error: any): mixed;
@@ -650,7 +647,6 @@ declare module 'rxjs' {
   declare module.exports: {
     Observable: typeof rxjs$Observable,
     ConnectableObservable: typeof rxjs$ConnectableObservable,
-    Observer: typeof rxjs$Observer,
     Subject: typeof rxjs$Subject,
     BehaviorSubject: typeof rxjs$BehaviorSubject,
     ReplaySubject: typeof rxjs$ReplaySubject,

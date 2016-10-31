@@ -29,6 +29,7 @@ import {PanelComponentScroller} from '../../nuclide-ui/PanelComponentScroller';
 import {toggle} from '../../commons-node/observable';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
+import {cacheWhileSubscribed} from '../../commons-node/observable';
 import {Section} from '../../nuclide-ui/Section';
 import featureConfig from '../../commons-atom/featureConfig';
 import {track} from '../../nuclide-analytics';
@@ -81,9 +82,12 @@ class FileTreeSidebarComponent extends React.Component {
       hasUncommittedChanges: false,
       uncommittedFileChanges: new Map(),
     };
-    this._showOpenConfigValues = featureConfig.observeAsStream(SHOW_OPEN_FILE_CONFIG_KEY).cache(1);
-    this._showUncommittedConfigValue =
-      featureConfig.observeAsStream(SHOW_UNCOMMITTED_CHANGES_CONFIG_KEY).cache(1);
+    this._showOpenConfigValues = cacheWhileSubscribed(
+      featureConfig.observeAsStream(SHOW_OPEN_FILE_CONFIG_KEY),
+    );
+    this._showUncommittedConfigValue = cacheWhileSubscribed(
+      featureConfig.observeAsStream(SHOW_UNCOMMITTED_CHANGES_CONFIG_KEY),
+    );
 
     this._disposables = new UniversalDisposable();
     this._afRequestId = null;

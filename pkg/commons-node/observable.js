@@ -81,9 +81,8 @@ export function bufferUntil<T>(
 }
 
 /**
- * Like Observable.prototype.cache(1) except it forgets the cached value when there are no
- * subscribers. This is useful so that if consumers unsubscribe and then subscribe much later, they
- * do not get an ancient cached value.
+ * Caches the latest element as long as there are subscribers. This is useful so that if consumers
+ * unsubscribe and then subscribe much later, they do not get an ancient cached value.
  *
  * This is intended to be used with cold Observables. If you have a hot Observable, `cache(1)` will
  * be just fine because the hot Observable will continue producing values even when there are no

@@ -9,7 +9,6 @@
  * the root directory of this source tree.
  */
 
-import type {Observer} from 'rxjs';
 import type {ProcessExitMessage, ProcessMessage, ProcessInfo} from './process-rpc-types';
 
 import child_process from 'child_process';
@@ -206,7 +205,7 @@ export function scriptSafeSpawnAndObserveOutput(
   options?: Object = {},
   killTreeOnComplete?: boolean = false,
 ): Observable<{stderr?: string, stdout?: string}> {
-  return Observable.create((observer: Observer<any>) => {
+  return Observable.create((observer: rxjs$Observer<any>) => {
     let childProcess = scriptSafeSpawn(command, args, options);
 
     childProcess.stdout.on('data', data => {

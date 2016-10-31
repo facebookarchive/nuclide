@@ -9,7 +9,6 @@
  * the root directory of this source tree.
  */
 
-import type {Observer} from 'rxjs';
 import type {DebuggerEvent, Message} from './types';
 
 import {Observable} from 'rxjs';
@@ -34,7 +33,7 @@ export function launchDebugger(
   pathToPythonExecutable: string,
   pythonArgs: Array<string>,
 ): Observable<DebuggerEvent> {
-  return Observable.create((observer: Observer<DebuggerEvent>) => {
+  return Observable.create((observer: rxjs$Observer<DebuggerEvent>) => {
     function log(message: string) {
       observer.next({event: 'log', message});
     }
