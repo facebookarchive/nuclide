@@ -17,7 +17,6 @@ import type {
   FileDiagnosticMessage,
   Trace,
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
-import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
 import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 
 import invariant from 'assert';
@@ -142,21 +141,6 @@ class Activation {
         command: 'nuclide-diagnostics-ui:show-table',
       },
       priority: 4,
-    };
-  }
-
-  getDistractionFreeModeProvider(): DistractionFreeModeProvider {
-    return {
-      name: 'nuclide-diagnostics-ui',
-      isVisible: () => {
-        return this._bottomPanel != null && this._bottomPanel.isVisible();
-      },
-      toggle(): void {
-        atom.commands.dispatch(
-          atom.views.getView(atom.workspace),
-          'nuclide-diagnostics-ui:toggle-table',
-        );
-      },
     };
   }
 

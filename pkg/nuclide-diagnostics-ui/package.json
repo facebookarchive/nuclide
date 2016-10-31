@@ -45,11 +45,6 @@
       "versions": {
         "0.0.0": "getHomeFragments"
       }
-    },
-    "nuclide-distraction-free-mode": {
-      "versions": {
-        "0.0.0": "getDistractionFreeModeProvider"
-      }
     }
   }
 }
