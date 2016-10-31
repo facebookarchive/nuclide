@@ -16,12 +16,15 @@ import type {ServerConnection} from '../../nuclide-remote-connection';
 import type {
   AtomLanguageServiceConfig,
 } from '../../nuclide-language-service/lib/AtomLanguageService';
+import typeof * as FileSystemService from '../../nuclide-server/lib/services/FileSystemService';
 
 import {getServiceByConnection} from '../../nuclide-remote-connection';
 import {getConfig} from './config';
 import {getNotifierByConnection} from '../../nuclide-open-files';
 import {AtomLanguageService} from '../../nuclide-language-service';
 import {HACK_GRAMMARS} from '../../nuclide-hack-common';
+import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 const HACK_SERVICE_NAME = 'HackService';
 
@@ -121,6 +124,11 @@ export function getHackLanguageForUri(uri: ?NuclideUri): Promise<?HackLanguageSe
   return hackLanguageService.getLanguageServiceForUri(uri);
 }
 
-export function isFileInHackProject(fileUri: NuclideUri): Promise<boolean> {
-  return hackLanguageService.isFileInProject(fileUri);
+export async function isFileInHackProject(fileUri: NuclideUri): Promise<boolean> {
+  const fileSystemService: FileSystemService = getFileSystemServiceByNuclideUri(fileUri);
+  const foundDir = await fileSystemService.findNearestFile(
+    '.hhconfig',
+    nuclideUri.getPath(fileUri),
+  );
+  return foundDir != null;
 }
