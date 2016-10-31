@@ -17,6 +17,7 @@ import DiagnosticsPanel from './DiagnosticsPanel';
 import {renderReactRoot} from '../../commons-atom/renderReactRoot';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {toggle} from '../../commons-node/observable';
+import {track} from '../../nuclide-analytics';
 import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
 import {BehaviorSubject, Observable} from 'rxjs';
 
@@ -34,6 +35,7 @@ export class DiagnosticsPanelModel {
   _element: ?HTMLElement;
   _props: Observable<PanelProps>;
   _visibility: BehaviorSubject<boolean>;
+  _visibilitySubscription: rxjs$ISubscription;
 
   constructor(
     diagnostics: Observable<Array<DiagnosticMessage>>,
@@ -44,6 +46,13 @@ export class DiagnosticsPanelModel {
     warnAboutLinterStream: Observable<boolean>,
   ) {
     this._visibility = new BehaviorSubject(true);
+
+    this._visibilitySubscription = this._visibility
+      .debounceTime(1000)
+      .distinctUntilChanged()
+      .filter(Boolean)
+      .subscribe(() => { track('diagnostics-show-table'); });
+
     // A stream that contains the props, but is "muted" when the panel's not visible.
     this._props = toggle(
       getPropsStream(
@@ -58,6 +67,10 @@ export class DiagnosticsPanelModel {
         .refCount(),
       this._visibility.distinctUntilChanged(),
     );
+  }
+
+  destroy(): void {
+    this._visibilitySubscription.unsubscribe();
   }
 
   getTitle(): string {
