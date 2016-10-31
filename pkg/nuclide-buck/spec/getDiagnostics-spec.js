@@ -26,10 +26,13 @@ describe('getDiagnostics', () => {
     waitsForPromise(async () => {
       const message =
         'good_file.cpp:1:2: test error\n' +
+        'good_file.cpp:1:3: note: trace\n' +
+        'good_file.cpp:1:4: note: trace2\n' +
         'good_file.cpp:1:2 bad line\n' +
         'good_file.cpp:12: bad line2\n' +
         ':12:2: bad line3\n' +
-        'good_file2.cpp:2:3: test error2\n';
+        'good_file2.cpp:2:3: test error2\n' +
+        'good_file2.cpp:2:4: note: trace\n';
 
       expect(await getDiagnostics(message, 'error', '/')).toEqual([
         {
@@ -39,6 +42,20 @@ describe('getDiagnostics', () => {
           filePath: '/good_file.cpp',
           text: 'test error',
           range: new Range([0, 0], [1, 0]),
+          trace: [
+            {
+              type: 'Trace',
+              text: 'note: trace',
+              filePath: '/good_file.cpp',
+              range: new Range([0, 2], [0, 2]),
+            },
+            {
+              type: 'Trace',
+              text: 'note: trace2',
+              filePath: '/good_file.cpp',
+              range: new Range([0, 3], [0, 3]),
+            },
+          ],
         },
         {
           scope: 'file',
@@ -47,6 +64,14 @@ describe('getDiagnostics', () => {
           filePath: '/good_file2.cpp',
           text: 'test error2',
           range: new Range([1, 0], [2, 0]),
+          trace: [
+            {
+              type: 'Trace',
+              text: 'note: trace',
+              filePath: '/good_file2.cpp',
+              range: new Range([1, 3], [1, 3]),
+            },
+          ],
         },
       ]);
     });
