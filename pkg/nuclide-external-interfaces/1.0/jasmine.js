@@ -129,10 +129,10 @@ declare var jasmine: {
    */
   attachToDOM(element: Element): ?HTMLElement,
 
-  createSpy(name?: string): JasmineSpy,
-  createSpyObj(name: string, spyNames: Array<string>): {[key: string]: JasmineSpy},
-  getEnv(): JasmineEnvironment,
-  pp(value: mixed): string,
-  unspy(obj: Object, methodName: string): void,
-  useRealClock(): void,
+  createSpy: (name?: string) => JasmineSpy,
+  createSpyObj: (name: string, spyNames: Array<string>) => {[key: string]: JasmineSpy},
+  getEnv: () => JasmineEnvironment,
+  pp: (value: mixed) => string,
+  unspy: (obj: Object, methodName: string) => void,
+  useRealClock: () => void,
 };

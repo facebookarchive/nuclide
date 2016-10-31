@@ -23,8 +23,8 @@ export type DistractionFreeModeProvider = {
   // Should be the unique to all providers. Recommended to be the package name. This string is not
   // user-facing.
   name: string,
-  isVisible: () => boolean,
-  toggle: () => void,
+  isVisible(): boolean,
+  toggle(): void,
 };
 
 export type DistractionFreeModeState = {

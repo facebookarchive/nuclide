@@ -21,13 +21,11 @@ class ReactMountRootElement extends HTMLElement {
     this._reactElement = reactElement;
   }
 
-  // $FlowIssue -- readonly props: t10620219
   attachedCallback(): mixed {
     if (this._reactElement == null) { return; }
     ReactDOM.render(this._reactElement, this);
   }
 
-  // $FlowIssue -- readonly props: t10620219
   detachedCallback(): mixed {
     if (this._reactElement == null) { return; }
     ReactDOM.unmountComponentAtNode(this);

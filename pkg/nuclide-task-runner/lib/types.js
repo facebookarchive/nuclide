@@ -58,15 +58,15 @@ export type AnnotatedTaskMetadata = TaskMetadata & {
   taskRunnerName: string,
 };
 
-export interface TaskRunner {
-  id: string,
-  name: string,
-  getExtraUi?: () => ReactClass<any>, // activeTaskType will be provided as a nullable property.
-  observeTaskList: (callback: (taskList: Array<TaskMetadata>) => mixed) => IDisposable,
-  getIcon(): ReactClass<any>,
-  runTask(taskName: string): Task,
-  setProjectRoot?: (projectRoot: ?Directory) => void,
-}
+export type TaskRunner = {
+  +id: string,
+  +name: string,
+  +getExtraUi?: () => ReactClass<any>, // activeTaskType will be provided as a nullable property.
+  +observeTaskList: (callback: (taskList: Array<TaskMetadata>) => mixed) => IDisposable,
+  +getIcon: () => ReactClass<any>,
+  +runTask: (taskName: string) => Task,
+  +setProjectRoot?: (projectRoot: ?Directory) => void,
+};
 
 export type TaskRunnerInfo = {
   id: string,

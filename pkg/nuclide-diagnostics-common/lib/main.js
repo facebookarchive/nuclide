@@ -25,8 +25,8 @@ export type MessageInvalidationCallback = (message: InvalidationMessage) => mixe
 // it was just activated and wants diagnostic messages without having to wait
 // for an event to occur)
 export type CallbackDiagnosticProvider = {
-  onMessageUpdate: (callback: MessageUpdateCallback) => IDisposable,
-  onMessageInvalidation: (callback: MessageInvalidationCallback) => IDisposable,
+  onMessageUpdate(callback: MessageUpdateCallback): IDisposable,
+  onMessageInvalidation(callback: MessageInvalidationCallback): IDisposable,
 };
 
 export type ObservableDiagnosticProvider = {

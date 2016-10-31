@@ -26,7 +26,6 @@ class FindReferencesElement extends HTMLElement {
     return 'Symbol References: ' + this._model.getSymbolName();
   }
 
-  // $FlowIssue -- readonly props: t10620219
   attachedCallback(): mixed {
     ReactDOM.render(
       <FindReferencesView model={this._model} />,
@@ -34,7 +33,6 @@ class FindReferencesElement extends HTMLElement {
     );
   }
 
-  // $FlowIssue -- readonly props: t10620219
   detachedCallback(): mixed {
     ReactDOM.unmountComponentAtNode(this);
   }

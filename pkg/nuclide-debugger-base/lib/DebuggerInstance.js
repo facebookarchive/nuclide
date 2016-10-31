@@ -43,7 +43,7 @@ export type RpcDebuggerService =
 
 export default class DebuggerInstanceBase {
   _processInfo: DebuggerProcessInfo;
-  onSessionEnd: ?(callback: () => void) => IDisposable;
+  +onSessionEnd: ?(callback: () => void) => IDisposable;
 
   constructor(processInfo: DebuggerProcessInfo) {
     this._processInfo = processInfo;

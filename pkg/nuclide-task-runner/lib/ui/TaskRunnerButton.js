@@ -33,7 +33,6 @@ export function TaskRunnerButton(props: Props): React.Element<any> {
     ? null
     : <Icon icon={props.icon} className="nuclide-task-runner-system-task-icon" />;
   return (
-    // $FlowFixMe
     <Button
       {...buttonProps}
       className="nuclide-task-runner-system-task-button">

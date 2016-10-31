@@ -29,6 +29,7 @@ export function sortDiagnostics(
       ? displayDiagnostic.data.description.text
       : displayDiagnostic.data[sortedColumnName]
     );
+  // $FlowFixMe -- this whole thing is poorly typed
   return [...diagnostics].sort((a, b) => {
     return cmp(getter(a), getter(b), !sortDescending);
   });

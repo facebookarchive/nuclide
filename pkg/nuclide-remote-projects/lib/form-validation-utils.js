@@ -17,11 +17,11 @@ import type {
 } from './connection-types';
 
 export type NuclideNewConnectionProfileValidationResult =
-  {errorMessage: string} |
-  {
+  {|errorMessage: string|} |
+  {|
     validatedProfile: NuclideRemoteConnectionProfile,
     warningMessage?: string,
-  };
+  |};
 
 /*
  * This function checks that the required inputs to a connection profile are non-empty

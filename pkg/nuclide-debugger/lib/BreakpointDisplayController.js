@@ -23,7 +23,7 @@ import {CompositeDisposable, Disposable} from 'atom';
  * Disposable objects.
  */
 type BreakpointDisplayControllerDelegate = {
-  handleTextEditorDestroyed: (controller: BreakpointDisplayController) => void,
+  +handleTextEditorDestroyed: (controller: BreakpointDisplayController) => void,
 };
 
 /**

@@ -16,14 +16,14 @@ import shallowequal from 'shallowequal';
  * Wraps DecoratedComponent in a special `span` with a configurable classname whenever the
  * component's props change.
  */
-export function highlightOnUpdate<T : ReactClass<any>>(
+export function highlightOnUpdate<T : ReactClass<any>, P: {+[key: string]: mixed}>(
   ComposedComponent: T,
   /**
    * The result of this function determines whether to apply the highlight or not.
    */
   arePropsEqual?: (
-    p1: {[key: string]: mixed},
-    p2: {[key: string]: mixed}
+    p1: P,
+    p2: P,
   ) => boolean = shallowequal,
   /**
    * className used in the wrapper. You can style both `className` and `<className>-highlight`.
@@ -37,7 +37,7 @@ export function highlightOnUpdate<T : ReactClass<any>>(
 ): T {
   // $FlowIssue The return type is guaranteed to be the same as the type of ComposedComponent.
   return class extends React.Component {
-    props: {[key: string]: mixed};
+    props: P;
     showFlash: boolean;
     timeout: ?number;
 
@@ -46,7 +46,7 @@ export function highlightOnUpdate<T : ReactClass<any>>(
       this.showFlash = false;
     }
 
-    componentWillUpdate(nextProps: {[key: string]: mixed}, nextState: void): void {
+    componentWillUpdate(nextProps: P, nextState: void): void {
       if (arePropsEqual(nextProps, this.props)) {
         // Skip if prop values didn't actually change.
         return;

@@ -37,13 +37,9 @@ export type ViewableFactory = {
  */
 export type Viewable = atom$PaneItem & {
   // Used by PanelLocation to get an initial size for the panel.
-  getPreferredInitialHeight?: () => number,
-  /* $FlowFixMe: Class methods won't match this because of the nullability constraint. Fix this
-     when we get readonly props. */
-  getPreferredInitialWidth?: () => number,
-  /* $FlowFixMe: Class methods won't match this because of the nullability constraint. Fix this
-     when we get readonly props. */
-  didChangeVisibility?: (visible: boolean) => void,
+  +getPreferredInitialHeight?: () => number,
+  +getPreferredInitialWidth?: () => number,
+  +didChangeVisibility?: (visible: boolean) => void,
 };
 
 export type Location = {

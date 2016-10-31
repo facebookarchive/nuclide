@@ -399,14 +399,15 @@ declare class atom$Pane {
   setFlexScale(flexScale: number): number,
 }
 
-// TODO improve this type
-declare interface atom$PaneItem {
-  getTitle(): string,
-  getLongTitle?: () => string,
-  getIconName?: () => atom$Octicon,
-  onDidChangeIcon?: (cb: (icon: atom$Octicon) => void) => IDisposable,
-  onDidChangeTitle?: (cb: (title: string) => void) => IDisposable,
-  serialize?: () => Object,
+declare type atom$PaneItem = {
+  // These are all covariant, meaning that these props are read-only. Therefore we can assign an
+  // object with more strict requirements to an variable of this type.
+  +getTitle: () => string,
+  +getLongTitle?: () => string,
+  +getIconName?: () => atom$Octicon,
+  +onDidChangeIcon?: (cb: (icon: atom$Octicon) => void) => IDisposable,
+  +onDidChangeTitle?: (cb: (title: string) => void) => IDisposable,
+  +serialize?: () => Object,
 }
 
 // Undocumented class
