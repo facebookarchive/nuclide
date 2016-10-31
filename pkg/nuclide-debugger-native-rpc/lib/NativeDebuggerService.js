@@ -23,6 +23,7 @@ import {observeStream} from '../../commons-node/stream';
 import {splitStream} from '../../commons-node/observable';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {checkOutput} from '../../commons-node/process';
+import {Observable} from 'rxjs';
 
 export type AttachTargetInfo = {
   pid: number,
@@ -137,16 +138,16 @@ export class NativeDebuggerService {
     return this._clientCallback.getServerMessageObservable().publish();
   }
 
-  async attach(attachInfo: AttachTargetInfo): Promise<void> {
+  attach(attachInfo: AttachTargetInfo): ConnectableObservable<void> {
     log(`attach process: ${JSON.stringify(attachInfo)}`);
     const inferiorArguments = {
       pid: String(attachInfo.pid),
       basepath: attachInfo.basepath ? attachInfo.basepath : this._config.buckConfigRootFile,
     };
-    await this._startDebugging(inferiorArguments);
+    return Observable.fromPromise(this._startDebugging(inferiorArguments)).publish();
   }
 
-  async launch(launchInfo: LaunchTargetInfo): Promise<void> {
+  launch(launchInfo: LaunchTargetInfo): ConnectableObservable<void> {
     log(`launch process: ${JSON.stringify(launchInfo)}`);
     const inferiorArguments = {
       executable_path: launchInfo.executablePath,
@@ -156,7 +157,7 @@ export class NativeDebuggerService {
       stdin_filepath: launchInfo.stdinFilePath ? launchInfo.stdinFilePath : '',
       basepath: launchInfo.basepath ? launchInfo.basepath : this._config.buckConfigRootFile,
     };
-    await this._startDebugging(inferiorArguments);
+    return Observable.fromPromise(this._startDebugging(inferiorArguments)).publish();
   }
 
   async _startDebugging(
