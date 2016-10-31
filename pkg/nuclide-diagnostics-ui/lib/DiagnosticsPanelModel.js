@@ -22,7 +22,6 @@ import {BehaviorSubject, Observable} from 'rxjs';
 
 type PanelProps = {
   diagnostics: Array<DiagnosticMessage>,
-  onDismiss: () => void,
   pathToActiveTextEditor: ?string,
   filterByActiveTextEditor: boolean,
   onFilterByActiveTextEditorChange: (isChecked: boolean) => void,
@@ -54,12 +53,6 @@ export class DiagnosticsPanelModel {
         initialfilterByActiveTextEditor,
         disableLinter,
         onFilterByActiveTextEditorChange,
-        () => {
-          atom.commands.dispatch(
-            atom.views.getView(atom.workspace),
-            'nuclide-diagnostics-ui:toggle-table',
-          );
-        },
       )
         .publishReplay(1)
         .refCount(),
@@ -97,7 +90,6 @@ function getPropsStream(
   initialfilterByActiveTextEditor: boolean,
   disableLinter: () => void,
   onFilterByActiveTextEditorChange: (filterByActiveTextEditor: boolean) => void,
-  onDismiss: () => void,
 ): Observable<PanelProps> {
   const activeTextEditorPaths = observableFromSubscribeFunction(
     atom.workspace.observeActivePaneItem.bind(atom.workspace),
@@ -137,6 +129,5 @@ function getPropsStream(
       disableLinter,
       filterByActiveTextEditor: filter,
       onFilterByActiveTextEditorChange: handleFilterByActiveTextEditorChange,
-      onDismiss,
     }));
 }

@@ -27,7 +27,6 @@ import {track} from '../../nuclide-analytics';
 
 type Props = {
   diagnostics: Array<DiagnosticMessage>,
-  onDismiss: () => mixed,
   pathToActiveTextEditor: ?NuclideUri,
   filterByActiveTextEditor: boolean,
   onFilterByActiveTextEditorChange: (isChecked: boolean) => mixed,
@@ -116,13 +115,6 @@ class DiagnosticsPanel extends React.Component {
               title="Open All">
               Open All
             </Button>
-            <Button
-              onClick={this.props.onDismiss}
-              icon="x"
-              size={ButtonSizes.SMALL}
-              className="inline-block"
-              title="Close Panel"
-            />
           </ToolbarRight>
         </Toolbar>
         <DiagnosticsPane
