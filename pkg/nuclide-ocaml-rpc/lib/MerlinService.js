@@ -41,6 +41,16 @@ export type MerlinOutline = {
   children: Array<MerlinOutline>,
 };
 
+export type MerlinCases = [
+  {
+    start: MerlinPosition,
+    end: MerlinPosition,
+  },
+  // this is the content to replace the start-end by. Merlin has an awkawrd API
+  // for case analysis.
+  string,
+];
+
 export async function pushDotMerlinPath(path: NuclideUri): Promise<?any> {
   const instance = await getInstance(path);
   return instance ? instance.pushDotMerlinPath(path) : null;
@@ -102,6 +112,21 @@ export async function outline(
 ): Promise<?Array<MerlinOutline>> {
   const instance = await getInstance(path);
   return instance ? instance.outline(path) : null;
+}
+
+export async function cases(
+  path: NuclideUri,
+  position: atom$Point,
+): Promise<?MerlinCases> {
+  const instance = await getInstance(path);
+  if (!instance) {
+    return null;
+  }
+  const result = await instance.enclosingType(path, position.row, position.column);
+  if (result && result[0]) {
+    return instance.cases(path, result[0].start, result[0].end);
+  }
+  return null;
 }
 
 /**

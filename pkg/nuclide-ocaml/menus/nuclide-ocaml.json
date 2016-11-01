@@ -1,0 +1,18 @@
+{
+  "menu": [
+    {
+      "label": "Nuclide",
+      "submenu": [
+        {
+          "label": "OCaml",
+          "submenu": [
+            {
+              "label": "Destructure",
+              "command": "nuclide-ocaml:destructure"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

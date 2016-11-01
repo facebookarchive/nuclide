@@ -20,6 +20,8 @@ import {GRAMMARS} from './constants';
 import MerlinLinterProvider from './LinterProvider';
 import {getOutline} from './OutlineProvider';
 import TypeHintProvider from './TypeHintProvider';
+import {cases} from './DestructureHelpers';
+import {CompositeDisposable} from 'atom';
 
 export function getHyperclickProvider() {
   return HyperclickProvider;
@@ -63,4 +65,28 @@ export function createTypeHintProvider(): TypeHintProviderType {
     selector: Array.from(GRAMMARS).join(', '),
     typeHint,
   };
+}
+
+let disposables: ?atom$CompositeDisposable;
+
+export function activate() {
+  if (!disposables) {
+    disposables = new CompositeDisposable();
+
+    disposables.add(atom.commands.add(
+      'atom-workspace',
+      'nuclide-ocaml:destructure',
+      () => {
+        const editor = atom.workspace.getActiveTextEditor();
+        if (editor) {
+          cases(editor, editor.getCursorScreenPosition());
+        }
+      },
+    ));
+  }
+}
+
+export function deactivate(): void {
+  disposables && disposables.dispose();
+  disposables = null;
 }
