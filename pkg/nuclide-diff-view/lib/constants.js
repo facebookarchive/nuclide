@@ -89,3 +89,5 @@ export const LintErrorMessages = [
   'Usage Exception: Lint',
   'ESLint reported a warning',
 ];
+
+export const DIFF_VIEW_NAVIGATOR_TOGGLE_COMMAND = 'experimental-diff-view-navigator:toggle';

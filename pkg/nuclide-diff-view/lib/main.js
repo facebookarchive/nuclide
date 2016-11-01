@@ -17,6 +17,7 @@ import type {HomeFragments} from '../../nuclide-home/lib/types';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 import type {OutputService, Message} from '../../nuclide-console/lib/types';
+import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
 
 import type {RegisterNux, TriggerNux} from '../../nuclide-nux/lib/main';
 
@@ -26,7 +27,11 @@ import {React, ReactDOM} from 'react-for-atom';
 import url from 'url';
 import uiTreePath from '../../commons-atom/ui-tree-path';
 import {repositoryForPath, getHgRepositoryStream} from '../../nuclide-hg-git-bridge';
-import {DiffMode, CommitMode} from './constants';
+import {
+  CommitMode,
+  DiffMode,
+  DIFF_VIEW_NAVIGATOR_TOGGLE_COMMAND,
+} from './constants';
 import DiffViewElement from './DiffViewElement';
 import DiffViewComponent from './DiffViewComponent';
 import DiffViewModel from './DiffViewModel';
@@ -35,8 +40,12 @@ import {track} from '../../nuclide-analytics';
 import {createDiffViewNux, NUX_DIFF_VIEW_ID} from './diffViewNux';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import SplitDiffView from './new-ui/SplitDiffView';
-import passesGK from '../../commons-node/passesGK';
+import DiffViewNavigatorGadget from './new-ui/DiffViewNavigatorGadget';
+import DiffViewNavigatorComponent from './new-ui/DiffViewNavigatorComponent';
 import invariant from 'assert';
+import passesGK from '../../commons-node/passesGK';
+import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
+import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
 
 // Redux store
 import type {Store} from './types';
@@ -67,6 +76,14 @@ const DIFF_VIEW_FILE_TREE_CONTEXT_MENU_PRIORITY = 1000;
 const COMMIT_FILE_TREE_CONTEXT_MENU_PRIORITY = 1100;
 const AMEND_FILE_TREE_CONTEXT_MENU_PRIORITY = 1200;
 const PUBLISH_FILE_TREE_CONTEXT_MENU_PRIORITY = 1300;
+
+function dispatchDiffNavigatorToggle(visible: boolean): void {
+  atom.commands.dispatch(
+    atom.views.getView(atom.workspace),
+    DIFF_VIEW_NAVIGATOR_TOGGLE_COMMAND,
+    {visible},
+  );
+}
 
 function formatDiffViewUrl(diffEntityOptions_?: ?DiffEntityOptions): string {
   let diffEntityOptions = diffEntityOptions_;
@@ -396,6 +413,10 @@ class Activation {
       this._subscriptions.add(this._splitDiffView);
     }
     this._activateDiffPath(diffEntityOptions);
+
+    // Show the Diff Navigator section.
+    dispatchDiffNavigatorToggle(true);
+
     invariant(diffEntityOptions.file, 'the new diff view can only diff files');
     const filePath = diffEntityOptions.file;
     this._actionCreators.diffFile(filePath, () => {});
@@ -648,6 +669,35 @@ class Activation {
 
   consumeTriggerNuxService(triggerNuxService: TriggerNux): void {
     this._tryTriggerNuxService = triggerNuxService;
+  }
+
+  consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
+    this._subscriptions.add(
+      api.registerFactory({
+        id: 'nuclide-diff-view-timeline',
+        name: 'Diff Navigator (WIP)',
+        // WIP.
+        // eslint-disable-next-line nuclide-internal/atom-commands
+        toggleCommand: DIFF_VIEW_NAVIGATOR_TOGGLE_COMMAND,
+        defaultLocation: 'bottom-panel',
+        create: () => {
+          const boundComponent = bindObservableAsProps(
+            this._appState.map(state => ({
+              ...state,
+              actionCreators: this._actionCreators,
+            })),
+            DiffViewNavigatorComponent,
+          );
+
+          return viewableFromReactElement(
+            <DiffViewNavigatorGadget
+              component={boundComponent}
+            />,
+          );
+        },
+        isInstance: item => item instanceof DiffViewNavigatorGadget,
+      }),
+    );
   }
 
   dispose(): void {
