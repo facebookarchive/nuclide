@@ -42,7 +42,6 @@ import {observableFromSubscribeFunction} from '../../commons-node/event';
 import SplitDiffView from './new-ui/SplitDiffView';
 import DiffViewNavigatorGadget from './new-ui/DiffViewNavigatorGadget';
 import DiffViewNavigatorComponent from './new-ui/DiffViewNavigatorComponent';
-import invariant from 'assert';
 import passesGK from '../../commons-node/passesGK';
 import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
 import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
@@ -405,22 +404,25 @@ class Activation {
     };
   }
 
-  _openNewSplitView(diffEntityOptions: DiffEntityOptions): Promise<atom$TextEditor> {
+  async _openNewSplitView(diffEntityOptions: DiffEntityOptions): Promise<atom$TextEditor> {
     if (this._splitDiffView == null) {
       this._splitDiffView = new SplitDiffView(
         this._appState.asObservable(), this._actionCreators);
       this._subscriptions.add(this._splitDiffView);
     }
-    this._activateDiffPath(diffEntityOptions);
 
     // Show the Diff Navigator section.
     dispatchDiffNavigatorToggle(true);
 
-    invariant(diffEntityOptions.file, 'the new diff view can only diff files');
+    if (!diffEntityOptions.file) {
+      atom.notifications.addError('Split Diff View can only diff files');
+      throw new Error('Split Diff View can only diff files');
+    }
     const filePath = diffEntityOptions.file;
-    this._actionCreators.diffFile(filePath, () => {});
     // Activate the text editor of the file to be diffed.
-    return atom.workspace.open(filePath, {searchAllPanes: true});
+    const textEditor = await atom.workspace.open(filePath, {searchAllPanes: true});
+    this._activateDiffPath(diffEntityOptions);
+    return textEditor;
   }
 
   _getDiffViewModel(): DiffViewModel {

@@ -19,6 +19,8 @@ import SyncScroll from '../SyncScroll';
 import {Observable} from 'rxjs';
 import invariant from 'assert';
 import {observableFromSubscribeFunction} from '../../../commons-node/event';
+import {nextTick} from '../../../commons-node/promise';
+import {notifyInternalError} from '../notifications';
 
 const READ_ONLY_EDITOR_PATH = 'nuclide-diff-view-read-olnly-path';
 
@@ -75,6 +77,9 @@ async function getDiffEditors(
   let oldEditor: atom$TextEditor;
   const disposables = new UniversalDisposable();
 
+  // Wait for next tick to allow the atom workspace panes to update its
+  // state with the possibly just-opened editor.
+  await nextTick();
   const newEditorPane = atom.workspace.paneForURI(filePath);
   if (newEditorPane != null) {
     const newEditorItem = newEditorPane.itemForURI(filePath);
@@ -84,6 +89,9 @@ async function getDiffEditors(
       newEditor.setSoftWrapped((atom.config.get('editor.softWrap'): any)));
   } else {
     newEditor = ((await atom.workspace.open(filePath): any): atom$TextEditor);
+    // Allow the atom workspace to update its state before querying for
+    // the new editor's pane.
+    await nextTick();
     disposables.add(() => cleanUpEditor(newEditor));
   }
 
@@ -102,7 +110,7 @@ async function getDiffEditors(
     oldEditor = atom.workspace.buildTextEditor({});
     forceReadOnly(oldEditor);
     const rightPane = atom.workspace.paneForItem(newEditor);
-    invariant(rightPane != null, 'editor1 pane cannot be found!');
+    invariant(rightPane != null, `editor1 pane cannot be found! ${newEditor.getPath() || ''}`);
     const leftPane = rightPane.splitLeft();
     leftPane.addItem(oldEditor);
     disposables.add(() => cleanUpEditor(oldEditor));
@@ -167,6 +175,7 @@ function wrapDiffEditorObservable(
           observableFromSubscribeFunction(oldEditor.onDidDestroy.bind(oldEditor)),
         )).concat(Observable.of(null));
     })
+    .startWith(null)
     .finally(() => {
       if (result != null) {
         result.disposables.dispose();
@@ -188,7 +197,11 @@ export default class SplitDiffView {
         if (!filePath) {
           return Observable.empty();
         } else {
-          return wrapDiffEditorObservable(getDiffEditors(filePath));
+          return wrapDiffEditorObservable(getDiffEditors(filePath))
+            .catch(error => {
+              notifyInternalError(error);
+              return Observable.empty();
+            });
         }
       });
 
@@ -202,14 +215,18 @@ export default class SplitDiffView {
           // One or both editors were destroyed.
           return;
         }
-        const {newDiffEditor, oldDiffEditor} = diffEditors;
-        const {filePath, oldEditorState, newEditorState} = fileDiff;
-        oldDiffEditor.setFileContents(filePath, oldEditorState.text);
-        oldDiffEditor.setHighlightedLines([], oldEditorState.highlightedLines.removed);
-        oldDiffEditor.setOffsets(oldEditorState.offsets);
+        try {
+          const {newDiffEditor, oldDiffEditor} = diffEditors;
+          const {filePath, oldEditorState, newEditorState} = fileDiff;
+          oldDiffEditor.setFileContents(filePath, oldEditorState.text);
+          oldDiffEditor.setHighlightedLines([], oldEditorState.highlightedLines.removed);
+          oldDiffEditor.setOffsets(oldEditorState.offsets);
 
-        newDiffEditor.setHighlightedLines(newEditorState.highlightedLines.added, []);
-        newDiffEditor.setOffsets(newEditorState.offsets);
+          newDiffEditor.setHighlightedLines(newEditorState.highlightedLines.added, []);
+          newDiffEditor.setOffsets(newEditorState.offsets);
+        } catch (error) {
+          notifyInternalError(error);
+        }
       }).subscribe();
 
     this._disposables.add(updateDiffSubscriptions);
