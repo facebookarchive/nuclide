@@ -73,6 +73,9 @@ async function getRefactorings(
   if (editor == null) {
     return Actions.gotRefactoringsError();
   }
+  if (editor.getPath() == null) {
+    return Actions.gotRefactoringsError();
+  }
   const cursor = editor.getLastCursor();
   const provider = providers.getProviderForEditor(editor);
   if (provider == null) {

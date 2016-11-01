@@ -185,6 +185,23 @@ describe('refactorStore', () => {
         });
       });
 
+      it('does not allow refactoring of an unsaved file', () => {
+        waitsForPromise(async () => {
+          await atom.workspace.open();
+          store.dispatch(Actions.open());
+          await expectObservableToStartWith(stateStream, [
+            {type: 'closed'},
+            {
+              type: 'open',
+              phase: {type: 'get-refactorings'},
+            },
+            {type: 'closed'},
+          ]);
+          await nextTick();
+          expectNoUncaughtErrors();
+        });
+      });
+
       it('tolerates a provider returning available refactorings after a close action', () => {
         waitsForPromise(async () => {
           const deferred = new Deferred();
