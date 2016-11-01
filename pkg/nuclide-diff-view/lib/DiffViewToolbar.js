@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {DiffModeType, NavigationSection, NavigationSectionStatusType} from './types';
+import type {NavigationSection, NavigationSectionStatusType} from './types';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import {Button} from '../../nuclide-ui/Button';
@@ -28,7 +28,6 @@ type Props = {
   newRevisionTitle: ?string,
   oldRevisionTitle: ?string,
   onSwitchToEditor: () => mixed,
-  onSwitchMode: (mode: DiffModeType) => mixed,
   onNavigateToNavigationSection: (section: NavigationSectionStatusType, lineNumber: number) => any,
 };
 

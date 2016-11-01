@@ -33,7 +33,10 @@ import {
   computeDiff,
   computeNavigationSections,
 } from '../diff-utils';
-import {formatFileDiffRevisionTitle} from '../utils';
+import {
+  getHeadRevision,
+  formatFileDiffRevisionTitle,
+} from '../utils';
 
 const FILESYSTEM_REVISION_TITLE = 'Filesystem / Editor';
 
@@ -45,11 +48,14 @@ export function rootReducer(
     return createEmptyAppState();
   }
   switch (action.type) {
-    case ActionTypes.UPDATE_ACTIVE_REPOSITORY:
+    case ActionTypes.UPDATE_ACTIVE_REPOSITORY: {
+      const {hgRepository} = action.payload;
       return {
         ...state,
-        activeRepository: action.payload.hgRepository,
+        activeRepository: hgRepository,
+        activeRepositoryState: reduceActiveRepositoryState(state.repositories, hgRepository),
       };
+    }
 
     case ActionTypes.ADD_REPOSITORY:
     case ActionTypes.REMOVE_REPOSITORY:
@@ -58,9 +64,12 @@ export function rootReducer(
     case ActionTypes.UPDATE_SELECTED_FILES:
     case ActionTypes.UPDATE_HEAD_TO_FORKBASE_REVISIONS:
     case ActionTypes.UPDATE_LOADING_SELECTED_FILES: {
+      const repositories = reduceRepositories(state.repositories, action);
+
       return {
         ...state,
-        repositories: reduceRepositories(state.repositories, action),
+        activeRepositoryState: reduceActiveRepositoryState(repositories, state.activeRepository),
+        repositories,
       };
     }
 
@@ -136,35 +145,46 @@ export function rootReducer(
   }
 }
 
+function reduceActiveRepositoryState(
+  repositories: Map<HgRepositoryClient, RepositoryState>,
+  activeRepository: ?HgRepositoryClient,
+): RepositoryState {
+  if (activeRepository == null || !repositories.has(activeRepository)) {
+    return getEmptyRepositoryState();
+  }
+  const activeRepositoryState = repositories.get(activeRepository);
+  invariant(activeRepositoryState != null);
+  return activeRepositoryState;
+}
+
 function reduceRepositories(
-  state: Map<HgRepositoryClient, RepositoryState>,
-  action: Action,
+  repositories: Map<HgRepositoryClient, RepositoryState>,
+  action: RepositoryAction,
 ): Map<HgRepositoryClient, RepositoryState> {
+  const newRepositories = new Map(repositories);
+  const {repository} = action.payload;
+
   switch (action.type) {
     case ActionTypes.SET_COMPARE_ID:
     case ActionTypes.UPDATE_DIRTY_FILES:
     case ActionTypes.UPDATE_SELECTED_FILES:
     case ActionTypes.UPDATE_HEAD_TO_FORKBASE_REVISIONS:
     case ActionTypes.UPDATE_LOADING_SELECTED_FILES: {
-      const {repository} = action.payload;
-      const oldRepositoryState = state.get(repository);
+      const oldRepositoryState = repositories.get(repository);
       invariant(oldRepositoryState != null);
-      return new Map(state)
-        .set(repository, reduceRepositoryAction(oldRepositoryState, action));
+      newRepositories.set(repository, reduceRepositoryAction(oldRepositoryState, action));
+      break;
     }
     case ActionTypes.ADD_REPOSITORY: {
-      const {repository} = action.payload;
-      return new Map(state)
-          .set(repository, getEmptyRepositoryState());
+      newRepositories.set(repository, getEmptyRepositoryState());
+      break;
     }
     case ActionTypes.REMOVE_REPOSITORY: {
-      const {repository} = action.payload;
-      const newRepositories = new Map(state);
       newRepositories.delete(repository);
-      return newRepositories;
+      break;
     }
   }
-  return state;
+  return newRepositories;
 }
 
 function reduceRepositoryAction(
@@ -187,12 +207,15 @@ function reduceRepositoryAction(
         ...repositoryState,
         selectedFiles: action.payload.selectedFiles,
       };
-    case ActionTypes.UPDATE_HEAD_TO_FORKBASE_REVISIONS:
+    case ActionTypes.UPDATE_HEAD_TO_FORKBASE_REVISIONS: {
+      const {headToForkBaseRevisions} = action.payload;
       return {
         ...repositoryState,
-        headToForkBaseRevisions: action.payload.headToForkBaseRevisions,
+        headToForkBaseRevisions,
+        headRevision: getHeadRevision(headToForkBaseRevisions),
         revisionStatuses: action.payload.revisionStatuses,
       };
+    }
     case ActionTypes.UPDATE_LOADING_SELECTED_FILES:
       return {
         ...repositoryState,

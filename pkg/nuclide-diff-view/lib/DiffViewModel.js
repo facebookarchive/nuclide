@@ -9,18 +9,10 @@
  * the root directory of this source tree.
  */
 
-import type {
-  HgRepositoryClient,
-} from '../../nuclide-hg-repository-client';
 import type {Message} from '../../nuclide-console/lib/types';
 import type {
-  FileDiffState,
-  RevisionsState,
-  FileChangeStatusValue,
+  AppState,
   CommitModeType,
-  CommitModeStateType,
-  PublishModeType,
-  PublishModeStateType,
   DiffModeType,
 } from './types';
 import type {
@@ -37,71 +29,20 @@ export type DiffEntityOptions = {
 };
 
 import {Emitter} from 'atom';
-import {
-  DiffMode,
-  CommitMode,
-  CommitModeState,
-  PublishMode,
-  PublishModeState,
-} from './constants';
 import invariant from 'assert';
 import {track, trackTiming} from '../../nuclide-analytics';
 import {Subject} from 'rxjs';
 import {notifyInternalError} from './notifications';
 import {bufferForUri} from '../../commons-atom/text-editor';
-import {getEmptyFileDiffState} from './redux/createEmptyAppState';
+import {createEmptyAppState} from './redux/createEmptyAppState';
 
 const ACTIVE_BUFFER_CHANGE_MODIFIED_EVENT = 'active-buffer-change-modified';
 const DID_UPDATE_STATE_EVENT = 'did-update-state';
 
-function getInitialState(): State {
-  return {
-    fileDiff: getEmptyFileDiffState(),
-    isLoadingFileDiff: false,
-    oldEditorElements: new Map(),
-    newEditorElements: new Map(),
-    activeRepository: null,
-    viewMode: DiffMode.BROWSE_MODE,
-    commitMessage: null,
-    commitMode: CommitMode.COMMIT,
-    commitModeState: CommitModeState.READY,
-    shouldRebaseOnAmend: true,
-    publishMessage: null,
-    publishMode: PublishMode.CREATE,
-    publishModeState: PublishModeState.READY,
-    headCommitMessage: null,
-    dirtyFileChanges: new Map(),
-    selectedFileChanges: new Map(),
-    isLoadingSelectedFiles: false,
-    showNonHgRepos: true,
-    revisionsState: null,
-  };
-}
-
-type State = {
-  activeRepository: ?HgRepositoryClient,
-  fileDiff: FileDiffState,
-  viewMode: DiffModeType,
-  commitMessage: ?string,
-  commitMode: CommitModeType,
-  commitModeState: CommitModeStateType,
-  shouldRebaseOnAmend: boolean,
-  publishMessage: ?string,
-  publishMode: PublishModeType,
-  publishModeState: PublishModeStateType,
-  headCommitMessage: ?string,
-  dirtyFileChanges: Map<NuclideUri, FileChangeStatusValue>,
-  selectedFileChanges: Map<NuclideUri, FileChangeStatusValue>,
-  isLoadingFileDiff: boolean,
-  isLoadingSelectedFiles: boolean,
-  showNonHgRepos: boolean,
-  revisionsState: ?RevisionsState,
-};
-
 export default class DiffViewModel {
 
   _emitter: Emitter;
-  _state: State;
+  _state: AppState;
   _publishUpdates: Subject<any>;
   _progressUpdates: Subject<Message>;
   _actionCreators: BoundActionCreators;
@@ -111,7 +52,7 @@ export default class DiffViewModel {
     this._progressUpdates = progressUpdates;
     this._emitter = new Emitter();
     this._publishUpdates = new Subject();
-    this._state = getInitialState();
+    this._state = createEmptyAppState();
   }
 
   diffFile(filePath: NuclideUri): void {
@@ -121,8 +62,9 @@ export default class DiffViewModel {
     );
   }
 
-  getActiveStackDirtyFileChanges(): Map<NuclideUri, FileChangeStatusValue> {
-    return this._state.dirtyFileChanges;
+  getDirtyFileChangesCount(): number {
+    const {activeRepositoryState: {dirtyFiles}} = this._state;
+    return dirtyFiles.size;
   }
 
   setViewMode(viewMode: DiffModeType): void {
@@ -205,12 +147,12 @@ export default class DiffViewModel {
     this._actionCreators.commit(activeRepository, message, this._progressUpdates);
   }
 
-  injectState(newState: State): void {
+  injectState(newState: AppState): void {
     this._state = newState;
     this._emitter.emit(DID_UPDATE_STATE_EVENT);
   }
 
-  getState(): State {
+  getState(): AppState {
     return this._state;
   }
 

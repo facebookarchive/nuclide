@@ -106,6 +106,7 @@ export type RepositoryState = {
   compareRevisionId: ?number,
   dirtyFiles: Map<NuclideUri, FileChangeStatusValue>,
   headToForkBaseRevisions: Array<RevisionInfo>,
+  headRevision: ?RevisionInfo,
   revisionStatuses: RevisionStatuses,
   selectedFiles: Map<NuclideUri, FileChangeStatusValue>,
   isLoadingSelectedFiles: boolean,
@@ -145,6 +146,7 @@ export type FileDiffState = {
 
 export type AppState = {
   activeRepository: ?HgRepositoryClient,
+  activeRepositoryState: RepositoryState,
   commit: CommitState,
   cwdApi: ?CwdApi,
   diffEditorsVisible: boolean,

@@ -73,6 +73,7 @@ export function getEmptyRepositoryState(): RepositoryState {
     revisionStatuses: new Map(),
     dirtyFiles: new Map(),
     headToForkBaseRevisions: [],
+    headRevision: null,
     isLoadingSelectedFiles: false,
     compareRevisionId: null,
     selectedFiles: new Map(),
@@ -82,6 +83,7 @@ export function getEmptyRepositoryState(): RepositoryState {
 export function createEmptyAppState(): AppState {
   return {
     activeRepository: null,
+    activeRepositoryState: getEmptyRepositoryState(),
     commit: getEmptyCommitState(),
     cwdApi: null,
     diffEditorsVisible: false,

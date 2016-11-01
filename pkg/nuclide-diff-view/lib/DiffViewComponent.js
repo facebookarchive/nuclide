@@ -10,7 +10,6 @@
  */
 
 import type {
-  DiffModeType,
   NavigationSection,
   NavigationSectionStatusType,
 } from './types';
@@ -88,18 +87,16 @@ function getCommitComponent() {
 
 export function renderPublishView(diffModel: DiffViewModel): React.Element<any> {
   const {
-    publishMode,
-    publishModeState,
-    publishMessage,
-    headCommitMessage,
+    publish: {message, mode, state},
+    activeRepositoryState: {headRevision},
   } = diffModel.getState();
   const PublishComponent = getPublishComponent();
   return (
     <PublishComponent
-      publishModeState={publishModeState}
-      message={publishMessage}
-      publishMode={publishMode}
-      headCommitMessage={headCommitMessage}
+      publishModeState={state}
+      message={message}
+      publishMode={mode}
+      headCommitMessage={headRevision == null ? '' : headRevision.description}
       diffModel={diffModel}
     />
   );
@@ -107,18 +104,16 @@ export function renderPublishView(diffModel: DiffViewModel): React.Element<any> 
 
 export function renderCommitView(diffModel: DiffViewModel): React.Element<any> {
   const {
-    commitMessage,
-    commitMode,
-    commitModeState,
+    commit: {message, mode, state},
     shouldRebaseOnAmend,
   } = diffModel.getState();
 
   const CommitComponent = getCommitComponent();
   return (
     <CommitComponent
-      commitMessage={commitMessage}
-      commitMode={commitMode}
-      commitModeState={commitModeState}
+      commitMessage={message}
+      commitMode={mode}
+      commitModeState={state}
       shouldRebaseOnAmend={shouldRebaseOnAmend}
       // `diffModel` is acting as the action creator for commit view and needs to be passed so
       // methods can be called on it.
@@ -140,9 +135,11 @@ export function renderTimelineView(diffModel: DiffViewModel): React.Element<any>
 export function renderFileChanges(diffModel: DiffViewModel): React.Element<any> {
   const {
     activeRepository,
+    activeRepositoryState: {
+      isLoadingSelectedFiles,
+      selectedFiles,
+    },
     fileDiff,
-    isLoadingSelectedFiles,
-    selectedFileChanges,
   } = diffModel.getState();
   const rootPaths = activeRepository != null ? [activeRepository.getWorkingDirectory()] : [];
 
@@ -161,7 +158,7 @@ export function renderFileChanges(diffModel: DiffViewModel): React.Element<any> 
     );
   }
 
-  const emptyMessage = !isLoadingSelectedFiles && selectedFileChanges.size === 0
+  const emptyMessage = !isLoadingSelectedFiles && selectedFiles.size === 0
     ? 'No file changes selected'
     : null;
 
@@ -170,7 +167,7 @@ export function renderFileChanges(diffModel: DiffViewModel): React.Element<any> 
       {spinnerElement}
       <MultiRootChangedFilesView
         commandPrefix="nuclide-diff-view"
-        fileChanges={getMultiRootFileChanges(selectedFileChanges, rootPaths)}
+        fileChanges={getMultiRootFileChanges(selectedFiles, rootPaths)}
         selectedFile={fileDiff.filePath}
         onFileChosen={diffModel.diffFile.bind(diffModel)}
       />
@@ -215,7 +212,6 @@ export default class DiffViewComponent extends React.Component {
     (this: any)._handleNavigateToNavigationSection =
       this._handleNavigateToNavigationSection.bind(this);
     (this: any)._onDidUpdateTextEditorElement = this._onDidUpdateTextEditorElement.bind(this);
-    (this: any)._onChangeMode = this._onChangeMode.bind(this);
     (this: any)._onSwitchToEditor = this._onSwitchToEditor.bind(this);
     (this: any)._onDidChangeScrollTop = this._onDidChangeScrollTop.bind(this);
     (this: any)._pixelRangeForNavigationSection = this._pixelRangeForNavigationSection.bind(this);
@@ -320,10 +316,6 @@ export default class DiffViewComponent extends React.Component {
 
     const {status, lineNumber} = navigationSections[0];
     this._handleNavigateToNavigationSection(status, lineNumber);
-  }
-
-  _onChangeMode(mode: DiffModeType): void {
-    this.props.diffModel.setViewMode(mode);
   }
 
   _renderDiffView(): void {
@@ -548,7 +540,6 @@ export default class DiffViewComponent extends React.Component {
           selectedNavigationSectionIndex={selectedNavigationSectionIndex}
           newRevisionTitle={newEditorState.revisionTitle}
           oldRevisionTitle={oldEditorState.revisionTitle}
-          onSwitchMode={this._onChangeMode}
           onSwitchToEditor={this._onSwitchToEditor}
           onNavigateToNavigationSection={this._handleNavigateToNavigationSection}
         />

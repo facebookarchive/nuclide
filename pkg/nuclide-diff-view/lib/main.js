@@ -35,7 +35,6 @@ import {
 import DiffViewElement from './DiffViewElement';
 import DiffViewComponent from './DiffViewComponent';
 import DiffViewModel from './DiffViewModel';
-import {getHeadRevision} from './utils';
 import {track} from '../../nuclide-analytics';
 import {createDiffViewNux, NUX_DIFF_VIEW_ID} from './diffViewNux';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
@@ -50,7 +49,7 @@ import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElem
 import type {Store} from './types';
 import typeof * as BoundActionCreators from './redux/Actions';
 
-import {createEmptyAppState, getEmptyRepositoryState} from './redux/createEmptyAppState';
+import {createEmptyAppState} from './redux/createEmptyAppState';
 import * as Actions from './redux/Actions';
 import * as Epics from './redux/Epics';
 import {rootReducer} from './redux/Reducers';
@@ -232,45 +231,7 @@ class Activation {
       // TODO(most): Remove Diff View model and use stream of props for the views instead.
       states.subscribe(_state => {
         const state: AppState = (_state: any);
-        const {commit, fileDiff, publish} = state;
-
-        let activeRepositoryState;
-        if (state.activeRepository != null) {
-          activeRepositoryState = state.repositories.get(state.activeRepository);
-        }
-        activeRepositoryState = activeRepositoryState || getEmptyRepositoryState();
-
-        const headRevision = getHeadRevision(activeRepositoryState.headToForkBaseRevisions);
-        const headCommitMessage = headRevision == null
-          ? null : headRevision.description;
-
-        this._getDiffViewModel().injectState({
-          activeRepository: state.activeRepository,
-          fileDiff,
-          compareRevisionInfo: null,
-          viewMode: state.viewMode,
-          commitMessage: commit.message,
-          commitMode: commit.mode,
-          commitModeState: commit.state,
-          shouldRebaseOnAmend: state.shouldRebaseOnAmend,
-          publishMessage: publish.message,
-          publishMode: publish.mode,
-          publishModeState: publish.state,
-          headCommitMessage,
-          dirtyFileChanges: activeRepositoryState.dirtyFiles,
-          selectedFileChanges: activeRepositoryState.selectedFiles,
-          isLoadingFileDiff: state.isLoadingFileDiff,
-          isLoadingSelectedFiles: activeRepositoryState.isLoadingSelectedFiles,
-          showNonHgRepos: true,
-          revisionsState: headRevision == null ? null : {
-            compareCommitId: activeRepositoryState.compareRevisionId,
-            revisionStatuses: activeRepositoryState.revisionStatuses,
-            headCommitId: headRevision.id,
-            headToForkBaseRevisions: activeRepositoryState.headToForkBaseRevisions,
-            revisions: [],
-          },
-        });
-
+        this._getDiffViewModel().injectState(state);
         this._appState.next(state);
       }),
       getHgRepositoryStream().subscribe(repository => {
@@ -518,7 +479,7 @@ class Activation {
     const diffModel = this._getDiffViewModel();
     let lastCount = null;
     const updateToolbarCount = () => {
-      const count = diffModel.getState().dirtyFileChanges.size;
+      const count = diffModel.getDirtyFileChangesCount();
       if (count !== lastCount) {
         button.classList.toggle('positive-count', count > 0);
         button.classList.toggle('max-count', count > 99);
@@ -559,7 +520,7 @@ class Activation {
         visible: false,
       };
     }
-    const {commitMode, fileDiff, viewMode} = this._diffViewModel.getState();
+    const {commit: {mode: commitMode}, fileDiff, viewMode} = this._diffViewModel.getState();
     return {
       visible: true,
       activeFilePath: fileDiff.filePath,
