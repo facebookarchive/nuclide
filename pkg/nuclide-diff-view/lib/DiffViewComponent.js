@@ -161,7 +161,7 @@ export function renderFileChanges(diffModel: DiffViewModel): React.Element<any> 
     : null;
 
   return (
-    <div className="nuclide-diff-view-tree padded">
+    <div className="nuclide-diff-view-tree">
       {spinnerElement}
       <MultiRootChangedFilesView
         commandPrefix="nuclide-diff-view"

@@ -78,14 +78,19 @@ export default class DiffViewNavigatorComponent extends React.Component {
 
     return (
       <div className="nuclide-diff-view-navigator-root">
-        <div className="nuclide-diff-view-navigator-file-changes-container">
-          {sectionNavigator}
-          {renderFileChanges(this.props.diffModel)}
-        </div>
-        <div className="nuclide-diff-view-navigator-selector" />
         <div className="nuclide-diff-view-navigator-timeline-container">
           {this._renderNavigationState()}
         </div>
+        <div className="nuclide-diff-view-navigator-vertical-selector" />
+        <div className="nuclide-diff-view-navigator-file-changes-container">
+          {sectionNavigator}
+          <div className="nuclide-diff-view-navigator-horizontal-selector" />
+          <div className="padded">
+            <div>File Changes</div>
+            {renderFileChanges(this.props.diffModel)}
+          </div>
+        </div>
+
       </div>
     );
   }

@@ -51,9 +51,10 @@ import {
 
 const DIFF_VIEW_NAVIGATION_TARGET = 'nuclide-diff-view-navigation-target';
 const NAVIGATION_GUTTER_NAME = 'nuclide-diff-split-navigation';
-const READ_ONLY_EDITOR_PATH = 'nuclide-diff-view-read-olnly-path';
+const READ_ONLY_EDITOR_PATH = 'nuclide-diff-view-read-only-path';
 const NUCLIDE_DIFF_EDITOR_LOADING_CLASSNAME = 'nuclide-diff-view-editor-loading';
 const NUCLIDE_DIFF_LOADING_INDICATOR_CLASSNAME = 'nuclide-diff-view-pane-loading-indicator';
+const READ_ONLY_EDITOR_CLASS = 'nuclide-diff-view-read-only-editor';
 const DIFF_SPINNER_DELAY_MS = 50;
 
 function cleanUpEditor(editor: atom$TextEditor): void {
@@ -73,7 +74,7 @@ function getReadOnlyEditor(): atom$TextEditor {
   const textEditor = atom.workspace.buildTextEditor({});
   enforceReadOnly(textEditor);
 
-  textEditor.getTitle = () => 'Diff View / Read Only';
+  textEditor.getTitle = () => 'Original (Read Only)';
   textEditor.isModified = () => false;
   textEditor.getURI = () => READ_ONLY_EDITOR_PATH;
   return textEditor;
@@ -162,6 +163,7 @@ async function getDiffEditors(
 
   // Add marker classes to be used for atom command registeration.
   newEditorElement.classList.add(DIFF_EDITOR_MARKER_CLASS);
+  oldEditorElement.classList.add(READ_ONLY_EDITOR_CLASS);
   oldEditorElement.classList.add(DIFF_EDITOR_MARKER_CLASS);
   disposables.add(() => newEditorElement.classList.remove(DIFF_EDITOR_MARKER_CLASS));
 

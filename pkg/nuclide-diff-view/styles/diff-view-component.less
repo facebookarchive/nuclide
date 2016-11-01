@@ -33,6 +33,10 @@
   opacity: 0.5;
 }
 
+.nuclide-diff-view-read-only-editor {
+  opacity: 0.8;
+}
+
 .nuclide-diff-view-pane-loading-indicator {
   align-items: center;
   display: flex;
@@ -41,19 +45,6 @@
   position: absolute;
   top: 0;
   width: 100%;
-}
-
-.nuclide-diff-view-tree {
-  z-index: 3;
-  border-top: 1px solid @pane-item-border-color;
-  -webkit-user-select: none;
-  white-space: nowrap;
-  overflow: auto;
-  cursor: default;
-
-  // Fill vertical and horizontal space if tree is smaller than panel.
-  min-width: 100%;
-  min-height: 100%;
 }
 
 .nuclide-diff-timeline {
@@ -418,13 +409,19 @@ atom-text-editor, atom-text-editor::shadow {
 }
 
 .nuclide-diff-view-navigator-timeline-container {
-  flex-grow: 6;
+  flex-grow: 1;
   overflow: scroll;
   display: flex;
 }
 
-.nuclide-diff-view-navigator-selector {
+.nuclide-diff-view-navigator-vertical-selector {
   min-height: 100%;
   width: 1px;
+  background-color: @base-border-color;
+}
+
+.nuclide-diff-view-navigator-horizontal-selector {
+  min-width: 100%;
+  height: 1px;
   background-color: @base-border-color;
 }
