@@ -18,6 +18,7 @@ import {
 } from 'react-for-atom';
 import semver from 'semver';
 import {TextBuffer} from 'atom';
+import {enforceReadOnly} from '../commons-atom/text-editor';
 
 const doNothing = () => {};
 
@@ -47,28 +48,8 @@ function setupTextEditor(props: Props): atom$TextEditor {
     textEditor.setPlaceholderText(props.placeholderText);
   }
 
-  // As of the introduction of atom.workspace.buildTextEditor(), it is no longer possible to
-  // subclass TextEditor to create a ReadOnlyTextEditor. Instead, the way to achieve this effect
-  // is to create an ordinary TextEditor and then override any methods that would allow it to
-  // change its contents.
-  // TODO: https://github.com/atom/atom/issues/9237.
   if (props.readOnly) {
-    // Cancel insert events to prevent typing in the text editor and disallow editing (read-only).
-    textEditor.onWillInsertText(event => {
-      event.cancel();
-    });
-
-    // Make pasting in the text editor a no-op to disallow editing (read-only).
-    textEditor.pasteText = doNothing;
-
-    // Make delete key presses in the text editor a no-op to disallow editing (read-only).
-    textEditor.delete = doNothing;
-
-    // Make backspace key presses in the text editor a no-op to disallow editing (read-only).
-    textEditor.backspace = doNothing;
-
-    // Make duplicate lines a no-op to disallow editing (read-only).
-    textEditor.duplicateLines = doNothing;
+    enforceReadOnly(textEditor);
 
     // Remove the cursor line decorations because that's distracting in read-only mode.
     textEditor.getDecorations({class: 'cursor-line'}).forEach(decoration => {

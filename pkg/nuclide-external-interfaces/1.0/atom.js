@@ -1406,7 +1406,7 @@ declare class atom$TextBuffer {
   nextNonBlankRow(startRow: number): ?number,
 
   // Mutating Text
-  setText(text: string): atom$Range,
+  setText: (text: string) => atom$Range,
   setTextInRange(range: atom$RangeLike, text: string, options?: Object): atom$Range,
   setTextViaDiff(text: string): void,
   insert(
@@ -1469,6 +1469,7 @@ declare class atom$TextBuffer {
   emitModifiedStatusChanged(changed: boolean): void,
   destroy(): void,
   isDestroyed(): boolean,
+  applyChange: () => void,
 }
 
 declare class atom$Notification {

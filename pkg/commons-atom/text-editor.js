@@ -147,3 +147,40 @@ export function observeEditorDestroy(editor: atom$TextEditor): Observable<atom$T
     .map(event => editor)
     .take(1);
 }
+
+// As of the introduction of atom.workspace.buildTextEditor(), it is no longer possible to
+// subclass TextEditor to create a ReadOnlyTextEditor. Instead, the way to achieve this effect
+// is to create an ordinary TextEditor and then override any methods that would allow it to
+// change its contents.
+// TODO: https://github.com/atom/atom/issues/9237.
+export function enforceReadOnly(textEditor: atom$TextEditor): void {
+  const noop = () => {};
+
+  // Cancel insert events to prevent typing in the text editor and disallow editing (read-only).
+  textEditor.onWillInsertText(event => {
+    event.cancel();
+  });
+
+  const textBuffer = textEditor.getBuffer();
+
+  // All user edits use `transact` - so, mocking this will effectively make the editor read-only.
+  const originalApplyChange = textBuffer.applyChange;
+  textBuffer.applyChange = noop;
+
+  // `setText` & `append` are the only exceptions that's used to set the read-only text.
+  passReadOnlyException('append');
+  passReadOnlyException('setText');
+
+  function passReadOnlyException(functionName: string) {
+    const buffer: any = textBuffer;
+    const originalFunction = buffer[functionName];
+
+    buffer[functionName] = function() {
+      textBuffer.applyChange = originalApplyChange;
+      const result = originalFunction.apply(textBuffer, arguments);
+      textBuffer.applyChange = noop;
+      return result;
+    };
+  }
+
+}

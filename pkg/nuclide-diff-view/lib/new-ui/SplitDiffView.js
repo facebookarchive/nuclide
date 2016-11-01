@@ -39,6 +39,7 @@ import {bindObservableAsProps} from '../../../nuclide-ui/bindObservableAsProps';
 import {renderReactRoot} from '../../../commons-atom/renderReactRoot';
 import {getLogger} from '../../../nuclide-logging';
 import {compact} from '../../../commons-node/observable';
+import {enforceReadOnly} from '../../../commons-atom/text-editor';
 
 const DIFF_VIEW_NAVIGATION_TARGET = 'nuclide-diff-view-navigation-target';
 const NAVIGATION_GUTTER_NAME = 'nuclide-diff-split-navigation';
@@ -57,28 +58,14 @@ function cleanUpEditor(editor: atom$TextEditor): void {
   }
 }
 
-function forceReadOnly(textEditor: atom$TextEditor): void {
-  const noop = () => {};
-  // Cancel insert events to prevent typing in the text editor and disallow editing (read-only).
-  textEditor.onWillInsertText(event => {
-    event.cancel();
-  });
-
-  // Make pasting in the text editor a no-op to disallow editing (read-only).
-  textEditor.pasteText = noop;
-
-  // Make delete key presses in the text editor a no-op to disallow editing (read-only).
-  textEditor.delete = noop;
-
-  // Make backspace key presses in the text editor a no-op to disallow editing (read-only).
-  textEditor.backspace = noop;
-
-  // Make duplicate lines a no-op to disallow editing (read-only).
-  textEditor.duplicateLines = noop;
+function getReadOnlyEditor(): atom$TextEditor {
+  const textEditor = atom.workspace.buildTextEditor({});
+  enforceReadOnly(textEditor);
 
   textEditor.getTitle = () => 'Diff View / Read Only';
   textEditor.isModified = () => false;
   textEditor.getURI = () => READ_ONLY_EDITOR_PATH;
+  return textEditor;
 }
 
 type DiffEditorsResult = {
@@ -140,8 +127,7 @@ async function getDiffEditors(
     oldEditorPane.activateItem(oldEditorItem);
     oldEditor = ((oldEditorItem: any): atom$TextEditor);
   } else {
-    oldEditor = atom.workspace.buildTextEditor({});
-    forceReadOnly(oldEditor);
+    oldEditor = getReadOnlyEditor();
     const rightPane = atom.workspace.paneForItem(newEditor);
     invariant(rightPane != null, `editor1 pane cannot be found! ${newEditor.getPath() || ''}`);
     const leftPane = rightPane.splitLeft();
