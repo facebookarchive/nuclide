@@ -44,7 +44,10 @@ export default class DiffViewNavigatorComponent extends React.Component {
   }
 
   render(): React.Element<any> {
-    const {fileDiff: {filePath, navigationSections}, isLoadingFileDiff} = this.props;
+    const {
+      fileDiff: {activeSectionIndex, filePath, navigationSections},
+      isLoadingFileDiff,
+    } = this.props;
 
     let sectionNavigator;
     if (isLoadingFileDiff) {
@@ -63,8 +66,7 @@ export default class DiffViewNavigatorComponent extends React.Component {
             commandTarget="something-should-exist"
             filePath={filePath}
             navigationSections={navigationSections}
-            // TODO(most): manage the state of `selectedNavigationSectionIndex`.
-            selectedNavigationSectionIndex={-1}
+            selectedNavigationSectionIndex={activeSectionIndex}
             onNavigateToNavigationSection={this._handleNavigateToSection}
           />
         </div>

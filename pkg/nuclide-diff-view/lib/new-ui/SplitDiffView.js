@@ -26,6 +26,7 @@ import {observableFromSubscribeFunction} from '../../../commons-node/event';
 import {nextTick} from '../../../commons-node/promise';
 import {notifyInternalError} from '../notifications';
 import {
+  getCenterScrollSelectedNavigationIndex,
   centerScrollToBufferLine,
   pixelRangeForNavigationSection,
   navigationSectionStatusToEditorElement,
@@ -333,14 +334,43 @@ export default class SplitDiffView {
         actionCreators.updateDiffEditors(diffEditors);
       }).subscribe();
 
+    const activeSectionUpdates = diffEditorsStream
+      .switchMap(diffEditors => {
+        if (diffEditors == null) {
+          return Observable.empty();
+        }
+        const {newDiffEditor, oldDiffEditor} = diffEditors;
+        const newEditorElement = newDiffEditor.getEditorDomElement();
+        const oldEditorElement = oldDiffEditor.getEditorDomElement();
+
+        return Observable.combineLatest(
+          fileDiffs,
+          Observable.merge(
+            observableFromSubscribeFunction(
+              newEditorElement.onDidChangeScrollTop.bind(newEditorElement)),
+            observableFromSubscribeFunction(
+              oldEditorElement.onDidChangeScrollTop.bind(oldEditorElement)),
+          ),
+        )
+        .debounceTime(100)
+        .map(([fileDiff]) => {
+          return getCenterScrollSelectedNavigationIndex(
+            [oldEditorElement, newEditorElement], fileDiff.navigationSections);
+        })
+        .distinctUntilChanged();
+      }).subscribe((sectionIndex: number) => {
+        actionCreators.updateActiveNavigationSection(sectionIndex);
+      });
+
     const navigationGutterUpdates = compact(diffEditorsStream)
       .do(diffEditors => renderNavigationBarAtGutter(diffEditors, fileDiffs))
       .subscribe();
 
     this._disposables.add(
-      updateDiffSubscriptions,
+      activeSectionUpdates,
       diffEditorsUpdates,
       navigationGutterUpdates,
+      updateDiffSubscriptions,
     );
   }
 
