@@ -94,7 +94,7 @@ export async function errors(
   path: NuclideUri,
 ): Promise<?Array<MerlinError>> {
   const instance = await getInstance(path);
-  return instance ? instance.errors() : null;
+  return instance ? instance.errors(path) : null;
 }
 
 export async function outline(
@@ -113,5 +113,5 @@ export async function runSingleCommand(
   command: mixed,
 ): Promise<any> {
   const instance = await getInstance(path);
-  return instance ? instance.runSingleCommand(command) : null;
+  return instance ? instance.runSingleCommand(command, path) : null;
 }

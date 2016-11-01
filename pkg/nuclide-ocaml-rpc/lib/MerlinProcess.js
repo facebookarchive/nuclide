@@ -80,7 +80,7 @@ export type MerlinProcess = {
 
   complete(file: NuclideUri, line: number, col: number, prefix: string): Promise<mixed>,
 
-  errors(): Promise<Array<MerlinError>>,
+  errors(file: NuclideUri): Promise<Array<MerlinError>>,
 
   outline(file: NuclideUri): Promise<Array<MerlinOutline>>,
 
@@ -89,7 +89,7 @@ export type MerlinProcess = {
    * that merlin's protocol is line-based (results are json objects rendered
    * on a single line).
    */
-  runSingleCommand(command: mixed): Promise<Object>,
+  runSingleCommand(command: mixed, file: NuclideUri): Promise<Object>,
 
   dispose(): void,
 };
@@ -108,10 +108,6 @@ class MerlinProcessBase {
 
   isRunning(): boolean {
     return this._running;
-  }
-
-  runSingleCommand(command: mixed): Promise<Object> {
-    return runSingleCommand(this._proc, command);
   }
 
   dispose() {
@@ -133,33 +129,27 @@ export class MerlinProcessV2_3_1 extends MerlinProcessBase {
     super(proc);
   }
 
+  runSingleCommand(command: mixed, file: NuclideUri): Promise<Object> {
+    // v2.3.x don't support Reason, so the file path isn't used; it's used by
+    // v2.5.1+ though, so we have the variable here for typing consistency
+    // purpose.
+    return runSingleCommandImpl(this._proc, command);
+  }
+
   async pushDotMerlinPath(file: NuclideUri): Promise<mixed> {
     return await this._promiseQueue.submit(
-      () => this.runSingleCommand(['reset', 'dot_merlin', [file], 'auto']),
+      () => this.runSingleCommand(['reset', 'dot_merlin', [file], 'auto'], file),
     );
   }
 
   async pushNewBuffer(name: NuclideUri, content: string): Promise<mixed> {
     return await this._promiseQueue.submit(async () => {
-      await this.runSingleCommand([
-        'reset',
-        'auto', // one of {ml, mli, auto}
-        name,
-      ]);
-
+      await this.runSingleCommand(['reset', 'auto', name], name);
       // Clear the buffer.
-      await this.runSingleCommand([
-        'seek',
-        'exact',
-        {line: 1, col: 0},
-      ]);
-      await this.runSingleCommand(['drop']);
+      await this.runSingleCommand(['seek', 'exact', {line: 1, col: 0}], name);
+      await this.runSingleCommand(['drop'], name);
 
-      const result = await this.runSingleCommand([
-        'tell',
-        'source-eof',
-        content,
-      ]);
+      const result = await this.runSingleCommand(['tell', 'source-eof', content], name);
 
       return result;
     });
@@ -172,13 +162,10 @@ export class MerlinProcessV2_3_1 extends MerlinProcessBase {
     kind: string,
   ): Promise<?{file: string, pos: {line: number, col: number}}> {
     return await this._promiseQueue.submit(async () => {
-      const location = await this.runSingleCommand([
-        'locate',
-        /* identifier name */ '',
-        kind,
-        'at',
-        {line: line + 1, col},
-      ]);
+      const location = await this.runSingleCommand(
+        ['locate', /* identifier name */ '', kind, 'at', {line: line + 1, col}],
+        file,
+      );
 
       if (typeof location === 'string') {
         throw new Error(location);
@@ -200,9 +187,7 @@ export class MerlinProcessV2_3_1 extends MerlinProcessBase {
     col: number,
   ): Promise<Array<MerlinType>> {
     return await this._promiseQueue.submit(
-      () => this.runSingleCommand(
-        ['type', 'enclosing', 'at', {line: line + 1, col}],
-      ),
+      () => this.runSingleCommand(['type', 'enclosing', 'at', {line: line + 1, col}], file),
     );
   }
 
@@ -210,19 +195,20 @@ export class MerlinProcessV2_3_1 extends MerlinProcessBase {
     return await this._promiseQueue.submit(
       () => this.runSingleCommand(
         ['complete', 'prefix', prefix, 'at', {line: line + 1, col: col + 1}],
+        file,
       ),
     );
   }
 
-  async errors(): Promise<Array<MerlinError>> {
+  async errors(path: NuclideUri): Promise<Array<MerlinError>> {
     return await this._promiseQueue.submit(
-      () => this.runSingleCommand(['errors']),
+      () => this.runSingleCommand(['errors'], path),
     );
   }
 
   async outline(path: NuclideUri): Promise<Array<MerlinOutline>> {
     return await this._promiseQueue.submit(
-      () => this.runSingleCommand(['outline']),
+      () => this.runSingleCommand(['outline'], path),
     );
   }
 }
@@ -241,9 +227,18 @@ export class MerlinProcessV2_5 extends MerlinProcessBase {
     super(proc);
   }
 
+  runSingleCommand(command: mixed, file: NuclideUri, wrapForContext?: boolean): Promise<Object> {
+    // contextify is important needed for Reason support.
+    // https://github.com/the-lambda-church/merlin/blob/d98a08d318ca14d9c702bbd6eeadbb762d325ce7/doc/dev/PROTOCOL.md#contextual-commands
+    const wrappedCommand = wrapForContext === false
+      ? command
+      : {query: command, context: ['auto', file]};
+    return runSingleCommandImpl(this._proc, wrappedCommand);
+  }
+
   async pushDotMerlinPath(file: NuclideUri): Promise<mixed> {
     return await this._promiseQueue.submit(
-      () => this.runSingleCommand(['reset', 'dot_merlin', [file], 'auto']),
+      () => this.runSingleCommand(['reset', 'dot_merlin', [file], 'auto'], file, false),
     );
   }
 
@@ -256,7 +251,7 @@ export class MerlinProcessV2_5 extends MerlinProcessBase {
    */
   async pushNewBuffer(name: NuclideUri, content: string): Promise<mixed> {
     return await this._promiseQueue.submit(
-      () => this.runSingleCommand(['tell', 'start', 'end', content]),
+      () => this.runSingleCommand(['tell', 'start', 'end', content], name),
     );
   }
 
@@ -276,13 +271,10 @@ export class MerlinProcessV2_5 extends MerlinProcessBase {
     kind: string,
   ): Promise<?{file: string, pos: {line: number, col: number}}> {
     return await this._promiseQueue.submit(async () => {
-      const location = await this.runSingleCommand([
-        'locate',
-        /* identifier name */ '',
-        kind,
-        'at',
-        {line: line + 1, col},
-      ]);
+      const location = await this.runSingleCommand(
+        ['locate', /* identifier name */ '', kind, 'at', {line: line + 1, col}],
+        file,
+      );
 
       if (typeof location === 'string') {
         throw new Error(location);
@@ -306,27 +298,34 @@ export class MerlinProcessV2_5 extends MerlinProcessBase {
     return await this._promiseQueue.submit(
       () => this.runSingleCommand(
         ['type', 'enclosing', 'at', {line: line + 1, col}],
+        file,
       ),
     );
   }
 
-  async complete(file: NuclideUri, line: number, col: number, prefix: string): Promise<mixed> {
+  async complete(
+    file: NuclideUri,
+    line: number,
+    col: number,
+    prefix: string,
+  ): Promise<mixed> {
     return await this._promiseQueue.submit(
       () => this.runSingleCommand(
         ['complete', 'prefix', prefix, 'at', {line: line + 1, col: col + 1}],
+        file,
       ),
     );
   }
 
-  async errors(): Promise<Array<MerlinError>> {
+  async errors(path: NuclideUri): Promise<Array<MerlinError>> {
     return await this._promiseQueue.submit(
-      () => this.runSingleCommand(['errors']),
+      () => this.runSingleCommand(['errors'], path),
     );
   }
 
   async outline(path: NuclideUri): Promise<Array<MerlinOutline>> {
     return await this._promiseQueue.submit(
-      () => this.runSingleCommand(['outline']),
+      () => this.runSingleCommand(['outline'], path),
     );
   }
 }
@@ -432,7 +431,10 @@ async function getMerlinVersion(merlinPath: string): Promise<string | null> {
  * that merlin's protocol is line-based (results are json objects rendered
  * on a single line).
  */
-function runSingleCommand(process: child_process$ChildProcess, command: mixed): Promise<Object> {
+function runSingleCommandImpl(
+  process: child_process$ChildProcess,
+  command: mixed,
+): Promise<Object> {
   const commandString = JSON.stringify(command);
   const stdin = process.stdin;
   const stdout = process.stdout;
