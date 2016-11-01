@@ -44,10 +44,17 @@ import {enforceReadOnly} from '../../../commons-atom/text-editor';
 import {
   DIFF_EDITOR_MARKER_CLASS,
 } from '../constants';
+import {
+  LoadingSpinner,
+  LoadingSpinnerSizes,
+} from '../../../nuclide-ui/LoadingSpinner';
 
 const DIFF_VIEW_NAVIGATION_TARGET = 'nuclide-diff-view-navigation-target';
 const NAVIGATION_GUTTER_NAME = 'nuclide-diff-split-navigation';
 const READ_ONLY_EDITOR_PATH = 'nuclide-diff-view-read-olnly-path';
+const NUCLIDE_DIFF_EDITOR_LOADING_CLASSNAME = 'nuclide-diff-view-editor-loading';
+const NUCLIDE_DIFF_LOADING_INDICATOR_CLASSNAME = 'nuclide-diff-view-pane-loading-indicator';
+const DIFF_SPINNER_DELAY_MS = 50;
 
 function cleanUpEditor(editor: atom$TextEditor): void {
   // if the pane that this editor was in is now empty, we will destroy it.
@@ -374,9 +381,40 @@ export default class SplitDiffView {
       .do(diffEditors => renderNavigationBarAtGutter(diffEditors, fileDiffs))
       .subscribe();
 
+    const diffLoadingIndicatorUpdates = compact(diffEditorsStream)
+      .switchMap(diffEditors => {
+        return states.map(({isLoadingFileDiff}) => isLoadingFileDiff)
+          .distinctUntilChanged()
+          .do(isLoading => {
+            const editorElement = diffEditors.oldDiffEditor.getEditorDomElement();
+            // Adding to the parent because the atom-text-editor isn't relatively positioned.
+            const editorParent: HTMLElement = (editorElement.parentNode: any);
+
+            if (isLoading) {
+              // Fade the editor and show the loading spinner with delay.
+              editorElement.classList.add(NUCLIDE_DIFF_EDITOR_LOADING_CLASSNAME);
+              const loadingElement = renderReactRoot(
+                <LoadingSpinner delay={DIFF_SPINNER_DELAY_MS} size={LoadingSpinnerSizes.LARGE} />,
+              );
+              loadingElement.classList.add(NUCLIDE_DIFF_LOADING_INDICATOR_CLASSNAME);
+              editorParent.appendChild(loadingElement);
+            } else {
+              // Unfade the editor and hide the loading spinner with delay.
+              editorElement.classList.remove(NUCLIDE_DIFF_EDITOR_LOADING_CLASSNAME);
+              const loadingElement = editorParent
+                .querySelector(`.${NUCLIDE_DIFF_LOADING_INDICATOR_CLASSNAME}`);
+              if (loadingElement != null) {
+                editorParent.removeChild(loadingElement);
+              }
+            }
+          });
+      })
+      .subscribe();
+
     this._disposables.add(
       activeSectionUpdates,
       diffEditorsUpdates,
+      diffLoadingIndicatorUpdates,
       navigationGutterUpdates,
       updateDiffSubscriptions,
     );
