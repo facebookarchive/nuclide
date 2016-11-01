@@ -93,13 +93,12 @@ async function getDiffEditors(
   filePath: NuclideUri,
 ): Promise<DiffEditorsResult> {
   let newEditor: atom$TextEditor;
-  let oldEditor: atom$TextEditor;
   const disposables = new UniversalDisposable();
 
   // Wait for next tick to allow the atom workspace panes to update its
   // state with the possibly just-opened editor.
   await nextTick();
-  const newEditorPane = atom.workspace.paneForURI(filePath);
+  let newEditorPane = atom.workspace.paneForURI(filePath);
   if (newEditorPane != null) {
     const newEditorItem = newEditorPane.itemForURI(filePath);
     newEditorPane.activateItem(newEditorItem);
@@ -111,6 +110,8 @@ async function getDiffEditors(
     // Allow the atom workspace to update its state before querying for
     // the new editor's pane.
     await nextTick();
+    newEditorPane = atom.workspace.paneForURI(filePath);
+    invariant(newEditorPane != null, 'Cannot find a pane for the opened text editor');
     disposables.add(() => cleanUpEditor(newEditor));
   }
 
@@ -126,25 +127,19 @@ async function getDiffEditors(
     }
   });
 
-  const oldEditorPane = atom.workspace.paneForURI(READ_ONLY_EDITOR_PATH);
-  if (oldEditorPane == null && atom.workspace.getPanes().length > 1) {
-    throw new Error(
-      'Workspace have multiple panes\n' +
-      'Please close your split panes before opening the Diff View',
-    );
-  }
-  if (oldEditorPane != null) {
-    const oldEditorItem = oldEditorPane.itemForURI(READ_ONLY_EDITOR_PATH);
-    oldEditorPane.activateItem(oldEditorItem);
-    oldEditor = ((oldEditorItem: any): atom$TextEditor);
-  } else {
-    oldEditor = getReadOnlyEditor();
-    const rightPane = atom.workspace.paneForItem(newEditor);
-    invariant(rightPane != null, `editor1 pane cannot be found! ${newEditor.getPath() || ''}`);
-    const leftPane = rightPane.splitLeft();
-    leftPane.addItem(oldEditor);
-    disposables.add(() => cleanUpEditor(oldEditor));
-  }
+  const oldEditor = getReadOnlyEditor();
+  newEditorPane.addItem(oldEditor);
+  newEditorPane.activateItem(oldEditor);
+  atom.commands.dispatch(
+    atom.views.getView(oldEditor),
+    'nuclide-move-item-to-available-pane:left',
+  );
+  // Allow the atom workspace to update its state before querying the views for the editor.
+  await nextTick();
+  disposables.add(() => cleanUpEditor(oldEditor));
+
+  newEditorPane.activateItem(newEditor);
+  newEditorPane.activate();
 
   // Unfold all lines so diffs properly align.
   newEditor.unfoldAll();
@@ -172,8 +167,8 @@ async function getDiffEditors(
 
   disposables.add(
     new SyncScroll(
-      newEditorElement,
       oldEditorElement,
+      newEditorElement,
     ),
   );
 
@@ -244,8 +239,6 @@ function renderNavigationBarAtGutter(
   };
 
   const navigationGutterView = atom.views.getView(navigationGutter);
-  const gutterContainer: HTMLElement = (navigationGutterView.parentNode: any);
-
   const BoundNavigationBarComponent = bindObservableAsProps(
     fileDiffs
       // Debounce diff sections rendering to avoid blocking the UI.
@@ -257,6 +250,8 @@ function renderNavigationBarAtGutter(
           newEditorElement.getScrollHeight(),
           1, // Protect against zero scroll height while initializring editors.
         );
+
+        const gutterContainer: HTMLElement = (navigationGutterView.parentNode: any);
         const navigationScale = gutterContainer.clientHeight / diffEditorsHeight;
 
         return {
