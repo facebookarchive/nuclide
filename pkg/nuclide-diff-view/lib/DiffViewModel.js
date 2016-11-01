@@ -100,7 +100,7 @@ export default class DiffViewModel {
   @trackTiming('diff-view.save-file')
   saveActiveFile(): Promise<void> {
     const {filePath} = this._state.fileDiff;
-    track('diff-view-save-file', {filePath});
+    track('diff-view-save-file');
     return this._saveFile(filePath).catch(notifyInternalError);
   }
 

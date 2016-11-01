@@ -353,6 +353,9 @@ class Activation {
   }
 
   async _openNewSplitView(diffEntityOptions: DiffEntityOptions): Promise<atom$TextEditor> {
+    track('diff-view-open');
+    track('diff-view-split-open');
+
     if (this._splitDiffView == null) {
       this._splitDiffView = new SplitDiffView(
         this._appState.asObservable(), this._actionCreators);
@@ -424,6 +427,7 @@ class Activation {
     );
 
     track('diff-view-open');
+    track('diff-view-old-open');
     return hostElement;
   }
 
@@ -638,6 +642,7 @@ class Activation {
   }
 
   _createDiffViewNavigatorElement(): Viewable {
+    track('diff-view-navigator-open');
     const diffModel = this._getDiffViewModel();
     const actionCreators = this._actionCreators;
 

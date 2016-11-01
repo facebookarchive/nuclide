@@ -49,6 +49,7 @@ import {
   LoadingSpinner,
   LoadingSpinnerSizes,
 } from '../../../nuclide-ui/LoadingSpinner';
+import {track} from '../../../nuclide-analytics';
 
 const DIFF_VIEW_NAVIGATION_TARGET = 'nuclide-diff-view-navigation-target';
 const NAVIGATION_GUTTER_NAME = 'nuclide-diff-split-navigation';
@@ -484,12 +485,23 @@ export default class SplitDiffView {
         });
     }).subscribe();
 
+    const trackSavingInSplit = diffEditorsStream
+      .switchMap(diffEditors => {
+        if (diffEditors == null) {
+          return Observable.empty();
+        }
+
+        const newEditor = diffEditors.newDiffEditor.getEditor();
+        return observableFromSubscribeFunction(newEditor.onDidSave.bind(newEditor));
+      }).subscribe(() => track('diff-view-save-file'));
+
     this._disposables.add(
       activeSectionUpdates,
       diffEditorsUpdates,
       diffLoadingIndicatorUpdates,
       navigationGutterUpdates,
       scrollToFirstChange,
+      trackSavingInSplit,
       updateDiffSubscriptions,
     );
   }
