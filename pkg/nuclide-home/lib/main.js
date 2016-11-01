@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,75 +9,99 @@
  * the root directory of this source tree.
  */
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.activate = activate;
+exports.setHomeFragments = setHomeFragments;
+exports.deactivate = deactivate;
+exports.consumeWorkspaceViewsService = consumeWorkspaceViewsService;
 
-import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
-import type {HomeFragments} from './types';
+var _atom = require('atom');
 
-import {CompositeDisposable, Disposable} from 'atom';
-import createUtmUrl from './createUtmUrl';
-import featureConfig from '../../commons-atom/featureConfig';
-import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
-import HomePaneItem from './HomePaneItem';
-import Immutable from 'immutable';
-import {React} from 'react-for-atom';
-import {BehaviorSubject} from 'rxjs';
-import {shell} from 'electron';
+var _createUtmUrl;
 
-let subscriptions: CompositeDisposable = (null: any);
-
-// A stream of all of the fragments. This is essentially the state of our panel.
-const allHomeFragmentsStream: BehaviorSubject<Immutable.Set<HomeFragments>> =
-  new BehaviorSubject(Immutable.Set());
-
-export function activate(state: ?Object): void {
-  considerDisplayingHome();
-  subscriptions = new CompositeDisposable();
-  subscriptions.add(
-    // eslint-disable-next-line nuclide-internal/atom-commands
-    atom.commands.add('atom-workspace', 'nuclide-docs:open', e => {
-      const url = createUtmUrl('http://nuclide.io/docs', 'help');
-      shell.openExternal(url);
-    }),
-  );
+function _load_createUtmUrl() {
+  return _createUtmUrl = _interopRequireDefault(require('./createUtmUrl'));
 }
 
-export function setHomeFragments(homeFragments: HomeFragments): Disposable {
+var _featureConfig;
+
+function _load_featureConfig() {
+  return _featureConfig = _interopRequireDefault(require('../../commons-atom/featureConfig'));
+}
+
+var _viewableFromReactElement;
+
+function _load_viewableFromReactElement() {
+  return _viewableFromReactElement = require('../../commons-atom/viewableFromReactElement');
+}
+
+var _HomePaneItem;
+
+function _load_HomePaneItem() {
+  return _HomePaneItem = _interopRequireDefault(require('./HomePaneItem'));
+}
+
+var _immutable;
+
+function _load_immutable() {
+  return _immutable = _interopRequireDefault(require('immutable'));
+}
+
+var _reactForAtom = require('react-for-atom');
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _electron = require('electron');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let subscriptions = null;
+
+// A stream of all of the fragments. This is essentially the state of our panel.
+const allHomeFragmentsStream = new _rxjsBundlesRxMinJs.BehaviorSubject((_immutable || _load_immutable()).default.Set());
+
+function activate(state) {
+  considerDisplayingHome();
+  subscriptions = new _atom.CompositeDisposable();
+  subscriptions.add(
+  // eslint-disable-next-line nuclide-internal/atom-commands
+  atom.commands.add('atom-workspace', 'nuclide-docs:open', e => {
+    const url = (0, (_createUtmUrl || _load_createUtmUrl()).default)('http://nuclide.io/docs', 'help');
+    _electron.shell.openExternal(url);
+  }));
+}
+
+function setHomeFragments(homeFragments) {
   allHomeFragmentsStream.next(allHomeFragmentsStream.getValue().add(homeFragments));
-  return new Disposable(() => {
+  return new _atom.Disposable(() => {
     allHomeFragmentsStream.next(allHomeFragmentsStream.getValue().remove(homeFragments));
   });
 }
 
 function considerDisplayingHome() {
-  const showHome = featureConfig.get('nuclide-home.showHome');
+  const showHome = (_featureConfig || _load_featureConfig()).default.get('nuclide-home.showHome');
   if (showHome) {
-    atom.commands.dispatch(
-      atom.views.getView(atom.workspace),
-      'nuclide-home:toggle',
-      {visible: true},
-    );
+    atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-home:toggle', { visible: true });
   }
 }
 
-export function deactivate(): void {
-  allHomeFragmentsStream.next(Immutable.Set());
+function deactivate() {
+  allHomeFragmentsStream.next((_immutable || _load_immutable()).default.Set());
   subscriptions.dispose();
-  subscriptions = (null: any);
+  subscriptions = null;
 }
 
-export function consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
-  subscriptions.add(
-    api.registerFactory({
-      id: 'nuclide-home',
-      name: 'Home',
-      iconName: 'home',
-      toggleCommand: 'nuclide-home:toggle',
-      defaultLocation: 'pane',
-      create: () => (
-        viewableFromReactElement(<HomePaneItem allHomeFragmentsStream={allHomeFragmentsStream} />)
-      ),
-      isInstance: item => item instanceof HomePaneItem,
-    }),
-  );
+function consumeWorkspaceViewsService(api) {
+  subscriptions.add(api.registerFactory({
+    id: 'nuclide-home',
+    name: 'Home',
+    iconName: 'home',
+    toggleCommand: 'nuclide-home:toggle',
+    defaultLocation: 'pane',
+    create: () => (0, (_viewableFromReactElement || _load_viewableFromReactElement()).viewableFromReactElement)(_reactForAtom.React.createElement((_HomePaneItem || _load_HomePaneItem()).default, { allHomeFragmentsStream: allHomeFragmentsStream })),
+    isInstance: item => item instanceof (_HomePaneItem || _load_HomePaneItem()).default
+  }));
   considerDisplayingHome();
 }

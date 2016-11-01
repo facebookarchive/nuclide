@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,34 +9,37 @@
  * the root directory of this source tree.
  */
 
-import classnames from 'classnames';
-import {React} from 'react-for-atom';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = undefined;
 
-type Props = {
-  onClick: () => mixed,
-  visible: boolean,
-};
+var _classnames;
 
-export default class NewMessagesNotification extends React.Component {
-  props: Props;
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
 
-  render(): React.Element<any> {
-    const className = classnames(
-      'nuclide-console-new-messages-notification',
-      'badge',
-      'badge-info',
+var _reactForAtom = require('react-for-atom');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let NewMessagesNotification = class NewMessagesNotification extends _reactForAtom.React.Component {
+
+  render() {
+    const className = (0, (_classnames || _load_classnames()).default)('nuclide-console-new-messages-notification', 'badge', 'badge-info', {
+      visible: this.props.visible
+    });
+    return _reactForAtom.React.createElement(
+      'div',
       {
-        visible: this.props.visible,
-      },
-    );
-    return (
-      <div
-        className={className}
-        onClick={this.props.onClick}>
-        <span className="nuclide-console-new-messages-notification-icon icon icon-arrow-down" />
-        New Messages
-      </div>
+        className: className,
+        onClick: this.props.onClick },
+      _reactForAtom.React.createElement('span', { className: 'nuclide-console-new-messages-notification-icon icon icon-arrow-down' }),
+      'New Messages'
     );
   }
 
-}
+};
+exports.default = NewMessagesNotification;
+module.exports = exports['default'];

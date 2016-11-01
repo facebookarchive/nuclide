@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,44 +9,51 @@
  * the root directory of this source tree.
  */
 
-import {CwdApi} from './CwdApi';
-import {CompositeDisposable} from 'atom';
-import {getAtomProjectRootPath} from '../../commons-atom/projects';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Activation = undefined;
 
-export class Activation {
-  _cwdApi: CwdApi;
-  _disposables: CompositeDisposable;
+var _CwdApi;
 
-  constructor(rawState: ?Object) {
+function _load_CwdApi() {
+  return _CwdApi = require('./CwdApi');
+}
+
+var _atom = require('atom');
+
+var _projects;
+
+function _load_projects() {
+  return _projects = require('../../commons-atom/projects');
+}
+
+let Activation = exports.Activation = class Activation {
+
+  constructor(rawState) {
     const state = rawState || {};
-    const {initialCwdPath} = state;
-    this._cwdApi = new CwdApi(initialCwdPath);
-    this._disposables = new CompositeDisposable(
-      this._cwdApi,
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-current-working-root:set-from-active-file',
-        this._setFromActiveFile.bind(this),
-      ),
-    );
+    const initialCwdPath = state.initialCwdPath;
+
+    this._cwdApi = new (_CwdApi || _load_CwdApi()).CwdApi(initialCwdPath);
+    this._disposables = new _atom.CompositeDisposable(this._cwdApi, atom.commands.add('atom-workspace', 'nuclide-current-working-root:set-from-active-file', this._setFromActiveFile.bind(this)));
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
   }
 
-  provideApi(): CwdApi {
+  provideApi() {
     return this._cwdApi;
   }
 
-  serialize(): Object {
+  serialize() {
     const cwd = this._cwdApi.getCwd();
     return {
-      initialCwdPath: cwd == null ? null : cwd.getPath(),
+      initialCwdPath: cwd == null ? null : cwd.getPath()
     };
   }
 
-  _setFromActiveFile(): void {
+  _setFromActiveFile() {
     const editor = atom.workspace.getActiveTextEditor();
     if (editor == null) {
       atom.notifications.addError('No file is currently active.');
@@ -59,7 +66,7 @@ export class Activation {
       return;
     }
 
-    const projectRoot = getAtomProjectRootPath(path);
+    const projectRoot = (0, (_projects || _load_projects()).getAtomProjectRootPath)(path);
     if (projectRoot == null) {
       atom.notifications.addError('Active file does not belong to a project.');
       return;
@@ -68,4 +75,4 @@ export class Activation {
     this._cwdApi.setCwd(projectRoot);
   }
 
-}
+};

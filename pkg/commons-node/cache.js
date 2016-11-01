@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,30 +9,30 @@
  * the root directory of this source tree.
  */
 
-import {Observable, Subject} from 'rxjs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DISPOSE_VALUE = exports.Cache = undefined;
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
 // A Cache mapping keys to values which creates entries as they are requested.
-export class Cache<KeyType, ValueType> {
-  _values: Map<KeyType, ValueType>;
-  _factory: (key: KeyType) => ValueType;
-  _disposeValue: (value: ValueType) => mixed;
-  _entriesSubject: Subject<[KeyType, ValueType]>;
+let Cache = exports.Cache = class Cache {
 
-  constructor(
-    factory: (key: KeyType) => ValueType,
-    disposeValue: (value: ValueType) => mixed = value => {},
-  ) {
+  constructor(factory) {
+    let disposeValue = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : value => {};
+
     this._values = new Map();
     this._factory = factory;
     this._disposeValue = disposeValue;
-    this._entriesSubject = new Subject();
+    this._entriesSubject = new _rxjsBundlesRxMinJs.Subject();
   }
 
-  has(key: KeyType): boolean {
+  has(key) {
     return this._values.has(key);
   }
 
-  get(key: KeyType): ValueType {
+  get(key) {
     if (!this._values.has(key)) {
       const newValue = this._factory(key);
       this._values.set(key, newValue);
@@ -40,29 +40,27 @@ export class Cache<KeyType, ValueType> {
       return newValue;
     } else {
       // Cannot use invariant as ValueType may include null/undefined.
-      return (this._values.get(key): any);
+      return this._values.get(key);
     }
   }
 
-  values(): Iterator<ValueType> {
+  values() {
     return this._values.values();
   }
 
-  observeValues(): Observable<ValueType> {
+  observeValues() {
     return this.observeEntries().map(entry => entry[1]);
   }
 
-  observeEntries(): Observable<[KeyType, ValueType]> {
-    return Observable.concat(
-      Observable.from(this._values.entries()),
-      this._entriesSubject);
+  observeEntries() {
+    return _rxjsBundlesRxMinJs.Observable.concat(_rxjsBundlesRxMinJs.Observable.from(this._values.entries()), this._entriesSubject);
   }
 
-  observeKeys(): Observable<KeyType> {
+  observeKeys() {
     return this.observeEntries().map(entry => entry[0]);
   }
 
-  delete(key: KeyType): boolean {
+  delete(key) {
     if (this.has(key)) {
       const value = this.get(key);
       this._values.delete(key);
@@ -73,7 +71,7 @@ export class Cache<KeyType, ValueType> {
     }
   }
 
-  clear(): void {
+  clear() {
     // Defend against a dispose call removing elements from the Cache.
     const values = this._values;
     this._values = new Map();
@@ -82,11 +80,14 @@ export class Cache<KeyType, ValueType> {
     }
   }
 
-  dispose(): void {
+  dispose() {
     this.clear();
     this._entriesSubject.complete();
   }
-}
+};
 
 // Useful for optional second parameter to Cache constructor.
-export const DISPOSE_VALUE = (value: IDisposable) => { value.dispose; };
+
+const DISPOSE_VALUE = exports.DISPOSE_VALUE = value => {
+  value.dispose;
+};

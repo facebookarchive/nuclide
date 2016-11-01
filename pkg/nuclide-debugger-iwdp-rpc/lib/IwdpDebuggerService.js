@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,59 +9,78 @@
  * the root directory of this source tree.
  */
 
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {connectToIwdp} from './connectToIwdp';
-import {ConnectionMultiplexer} from './ConnectionMultiplexer';
-import {logger} from './logger';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.IwdpDebuggerService = undefined;
 
-import type {ConnectableObservable} from 'rxjs';
+var _UniversalDisposable;
 
-const {log} = logger;
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../commons-node/UniversalDisposable'));
+}
+
+var _connectToIwdp;
+
+function _load_connectToIwdp() {
+  return _connectToIwdp = require('./connectToIwdp');
+}
+
+var _ConnectionMultiplexer;
+
+function _load_ConnectionMultiplexer() {
+  return _ConnectionMultiplexer = require('./ConnectionMultiplexer');
+}
+
+var _logger;
+
+function _load_logger() {
+  return _logger = require('./logger');
+}
+
+var _main;
+
+function _load_main() {
+  return _main = require('../../nuclide-debugger-common/lib/main');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const log = (_logger || _load_logger()).logger.log;
+
 let lastServiceObjectDispose = null;
 
-import {ClientCallback} from '../../nuclide-debugger-common/lib/main';
-
-export class IwdpDebuggerService {
-  _clientCallback: ClientCallback;
-  _disposables: UniversalDisposable;
-  _connectionMultiplexer: ConnectionMultiplexer;
+let IwdpDebuggerService = exports.IwdpDebuggerService = class IwdpDebuggerService {
 
   constructor() {
     if (lastServiceObjectDispose != null) {
       lastServiceObjectDispose();
     }
     lastServiceObjectDispose = this.dispose.bind(this);
-    this._clientCallback = new ClientCallback();
-    this._connectionMultiplexer = new ConnectionMultiplexer(
-      message => this._clientCallback.sendChromeMessage(JSON.stringify(message)),
-    );
-    this._disposables = new UniversalDisposable(
-      this._clientCallback,
-      this._connectionMultiplexer,
-    );
+    this._clientCallback = new (_main || _load_main()).ClientCallback();
+    this._connectionMultiplexer = new (_ConnectionMultiplexer || _load_ConnectionMultiplexer()).ConnectionMultiplexer(message => this._clientCallback.sendChromeMessage(JSON.stringify(message)));
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default(this._clientCallback, this._connectionMultiplexer);
   }
 
-  getServerMessageObservable(): ConnectableObservable<string> {
+  getServerMessageObservable() {
     return this._clientCallback.getServerMessageObservable().publish();
   }
 
-  attach(): Promise<string> {
-    this._disposables.add(
-      connectToIwdp().subscribe(deviceInfo => {
-        log(`Got device info: ${JSON.stringify(deviceInfo)}`);
-        this._connectionMultiplexer.add(deviceInfo);
-      }),
-    );
+  attach() {
+    this._disposables.add((0, (_connectToIwdp || _load_connectToIwdp()).connectToIwdp)().subscribe(deviceInfo => {
+      log(`Got device info: ${ JSON.stringify(deviceInfo) }`);
+      this._connectionMultiplexer.add(deviceInfo);
+    }));
     return Promise.resolve('IWDP Connected');
   }
 
-  sendCommand(message: string): Promise<void> {
+  sendCommand(message) {
     this._connectionMultiplexer.sendCommand(JSON.parse(message));
     return Promise.resolve();
   }
 
-  dispose(): Promise<void> {
+  dispose() {
     this._disposables.dispose();
     return Promise.resolve();
   }
-}
+};

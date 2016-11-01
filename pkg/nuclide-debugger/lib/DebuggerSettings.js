@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,27 +9,27 @@
  * the root directory of this source tree.
  */
 
-export class DebuggerSettings {
-  _settings: {
-    SupportThreadsWindow: boolean,
-  };
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+let DebuggerSettings = exports.DebuggerSettings = class DebuggerSettings {
 
   constructor() {
     this._settings = {
       SupportThreadsWindow: false,
-      SingleThreadStepping: false,
+      SingleThreadStepping: false
     };
   }
 
-  set(key: string, value: mixed): void {
+  set(key, value) {
     this._settings[key] = value;
   }
 
-  get(key: string): ?mixed {
+  get(key) {
     return this._settings[key];
   }
 
-  getSerializedData(): string {
+  getSerializedData() {
     return JSON.stringify(this._settings);
   }
-}
+};

@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,46 +9,68 @@
  * the root directory of this source tree.
  */
 
-import type {
-  Store,
-  PickPhase,
-} from '../types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.PickRefactorComponent = undefined;
 
-import type {AvailableRefactoring} from '../..';
+var _reactForAtom = require('react-for-atom');
 
-import {React} from 'react-for-atom';
+var _Button;
 
-import {Button} from '../../../nuclide-ui/Button';
+function _load_Button() {
+  return _Button = require('../../../nuclide-ui/Button');
+}
 
-import * as Actions from '../refactorActions';
+var _refactorActions;
 
-export class PickRefactorComponent extends React.Component {
-  props: {
-    pickPhase: PickPhase,
-    store: Store,
-  };
+function _load_refactorActions() {
+  return _refactorActions = _interopRequireWildcard(require('../refactorActions'));
+}
 
-  render(): React.Element<any> {
-    const {availableRefactorings} = this.props.pickPhase;
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+let PickRefactorComponent = exports.PickRefactorComponent = class PickRefactorComponent extends _reactForAtom.React.Component {
+
+  render() {
+    const availableRefactorings = this.props.pickPhase.availableRefactorings;
+
     if (availableRefactorings.length === 0) {
-      return <div>No refactorings available at this location</div>;
+      return _reactForAtom.React.createElement(
+        'div',
+        null,
+        'No refactorings available at this location'
+      );
     }
 
-    const elements = availableRefactorings
-      .map((r, i) => <div key={i}>{this._renderRefactorOption(r)}</div>);
-    return <div>{elements}</div>;
+    const elements = availableRefactorings.map((r, i) => _reactForAtom.React.createElement(
+      'div',
+      { key: i },
+      this._renderRefactorOption(r)
+    ));
+    return _reactForAtom.React.createElement(
+      'div',
+      null,
+      elements
+    );
   }
 
-  _pickRefactor(refactoring: AvailableRefactoring): void {
-    this.props.store.dispatch(Actions.pickedRefactor(refactoring));
+  _pickRefactor(refactoring) {
+    this.props.store.dispatch((_refactorActions || _load_refactorActions()).pickedRefactor(refactoring));
   }
 
-  _renderRefactorOption(refactoring: AvailableRefactoring): React.Element<any> {
+  _renderRefactorOption(refactoring) {
     switch (refactoring.kind) {
       case 'rename':
-        return <Button onClick={() => { this._pickRefactor(refactoring); }}>Rename</Button>;
+        return _reactForAtom.React.createElement(
+          (_Button || _load_Button()).Button,
+          { onClick: () => {
+              this._pickRefactor(refactoring);
+            } },
+          'Rename'
+        );
       default:
-        throw new Error(`Unknown refactoring kind ${refactoring.kind}`);
+        throw new Error(`Unknown refactoring kind ${ refactoring.kind }`);
     }
   }
-}
+};

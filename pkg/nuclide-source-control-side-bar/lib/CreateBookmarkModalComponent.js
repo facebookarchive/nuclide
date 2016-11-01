@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,60 +9,78 @@
  * the root directory of this source tree.
  */
 
-import {CompositeDisposable} from 'atom';
-import {React, ReactDOM} from 'react-for-atom';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = undefined;
 
-type Props = {
-  onCancel: () => mixed,
-  onCreate: (name: string, repo: atom$Repository) => mixed,
-  repo: atom$Repository,
-};
+var _atom = require('atom');
 
-export default class CreateBookmarkModal extends React.Component {
-  disposables: CompositeDisposable;
-  props: Props;
+var _reactForAtom = require('react-for-atom');
 
-  constructor(props: Props): void {
+let CreateBookmarkModal = class CreateBookmarkModal extends _reactForAtom.React.Component {
+
+  constructor(props) {
     super(props);
-    this.disposables = new CompositeDisposable();
+    this.disposables = new _atom.CompositeDisposable();
 
-    (this: any)._handleCreateClick = this._handleCreateClick.bind(this);
+    this._handleCreateClick = this._handleCreateClick.bind(this);
   }
 
-  componentDidMount(): void {
-    this.disposables.add(
-      atom.commands.add(ReactDOM.findDOMNode(this), 'core:confirm', this._handleCreateClick),
-    );
+  componentDidMount() {
+    this.disposables.add(atom.commands.add(_reactForAtom.ReactDOM.findDOMNode(this), 'core:confirm', this._handleCreateClick));
     this.refs.atomTextEditor.focus();
   }
 
-  componentWillUnmount(): void {
+  componentWillUnmount() {
     this.disposables.dispose();
   }
 
-  _handleCreateClick(): void {
+  _handleCreateClick() {
     this.props.onCreate(this.refs.atomTextEditor.getModel().getText(), this.props.repo);
   }
 
-  render(): React.Element<any> {
-    return (
-      <div>
-        <h6 style={{marginTop: 0}}><strong>Create bookmark</strong></h6>
-        <label>Bookmark name:</label>
-        <atom-text-editor mini ref="atomTextEditor" tabIndex="0" />
-        <div className="text-right">
-          <div className="btn-group btn-group-sm">
-            <button className="btn" onClick={this.props.onCancel}>
-              Cancel
-            </button>
-            <button
-              className="btn btn-primary"
-              onClick={this._handleCreateClick}>
-              Create
-            </button>
-          </div>
-        </div>
-      </div>
+  render() {
+    return _reactForAtom.React.createElement(
+      'div',
+      null,
+      _reactForAtom.React.createElement(
+        'h6',
+        { style: { marginTop: 0 } },
+        _reactForAtom.React.createElement(
+          'strong',
+          null,
+          'Create bookmark'
+        )
+      ),
+      _reactForAtom.React.createElement(
+        'label',
+        null,
+        'Bookmark name:'
+      ),
+      _reactForAtom.React.createElement('atom-text-editor', { mini: true, ref: 'atomTextEditor', tabIndex: '0' }),
+      _reactForAtom.React.createElement(
+        'div',
+        { className: 'text-right' },
+        _reactForAtom.React.createElement(
+          'div',
+          { className: 'btn-group btn-group-sm' },
+          _reactForAtom.React.createElement(
+            'button',
+            { className: 'btn', onClick: this.props.onCancel },
+            'Cancel'
+          ),
+          _reactForAtom.React.createElement(
+            'button',
+            {
+              className: 'btn btn-primary',
+              onClick: this._handleCreateClick },
+            'Create'
+          )
+        )
+      )
     );
   }
-}
+};
+exports.default = CreateBookmarkModal;
+module.exports = exports['default'];

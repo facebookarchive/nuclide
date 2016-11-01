@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,31 +9,37 @@
  * the root directory of this source tree.
  */
 
-import WebInspector from '../../lib/WebInspector';
+var _WebInspector;
+
+function _load_WebInspector() {
+  return _WebInspector = _interopRequireDefault(require('../../lib/WebInspector'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Wrapper around `WebInspector.Object` to act like `atom.Emitter`.
  */
-class Emitter {
-  _underlying: WebInspector.Object;
+let Emitter = class Emitter {
 
   constructor() {
-    this._underlying = new WebInspector.Object();
+    this._underlying = new (_WebInspector || _load_WebInspector()).default.Object();
   }
 
-  on(eventType: string, callback: (value?: any) => void): {dispose: () => void} {
+  on(eventType, callback) {
     const listener = event => callback(event.data);
     this._underlying.addEventListener(eventType, listener);
     return {
       dispose: () => {
         this._underlying.removeEventListener(eventType, listener);
-      },
+      }
     };
   }
 
-  emit(eventType: string, value?: any): void {
+  emit(eventType, value) {
     this._underlying.dispatchEventToListeners(eventType, value);
   }
-}
+};
+
 
 module.exports = Emitter;

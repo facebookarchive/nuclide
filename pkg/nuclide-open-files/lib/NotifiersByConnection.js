@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,25 +9,39 @@
  * the root directory of this source tree.
  */
 
-import typeof * as OpenFilesService from '../../nuclide-open-files-rpc/lib/OpenFilesService';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.NotifiersByConnection = undefined;
 
-import {
-  getServiceByConnection,
-  ServerConnection,
-  ConnectionCache,
-} from '../../nuclide-remote-connection';
-import {OPEN_FILES_SERVICE} from '../../nuclide-open-files-rpc';
-import {getLogger} from '../../nuclide-logging';
-import {FileEventKind} from '../../nuclide-open-files-rpc';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-const logger = getLogger();
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+var _nuclideOpenFilesRpc;
+
+function _load_nuclideOpenFilesRpc() {
+  return _nuclideOpenFilesRpc = require('../../nuclide-open-files-rpc');
+}
+
+var _nuclideLogging;
+
+function _load_nuclideLogging() {
+  return _nuclideLogging = require('../../nuclide-logging');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const logger = (0, (_nuclideLogging || _load_nuclideLogging()).getLogger)();
 
 const RESYNC_TIMEOUT_MS = 2000;
 
-function getOpenFilesService(connection: ?ServerConnection): OpenFilesService {
-  return getServiceByConnection(OPEN_FILES_SERVICE, connection);
+function getOpenFilesService(connection) {
+  return (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getServiceByConnection)((_nuclideOpenFilesRpc || _load_nuclideOpenFilesRpc()).OPEN_FILES_SERVICE, connection);
 }
 
 // Keeps a FileNotifier around per ServerConnection.
@@ -35,15 +49,13 @@ function getOpenFilesService(connection: ?ServerConnection): OpenFilesService {
 // Also handles sending 'close' events to the FileNotifier so that
 // the per-Buffer BufferSubscription does not need to live past
 // the buffer being destroyed.
-export class NotifiersByConnection {
-  _notifiers: ConnectionCache<FileNotifier>;
-  _getService: (connection: ?ServerConnection) => OpenFilesService;
+let NotifiersByConnection = exports.NotifiersByConnection = class NotifiersByConnection {
 
-  constructor(
-    getService: (connection: ?ServerConnection) => OpenFilesService = getOpenFilesService,
-  ) {
+  constructor() {
+    let getService = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : getOpenFilesService;
+
     this._getService = getService;
-    this._notifiers = new ConnectionCache(connection => this._getService(connection).initialize());
+    this._notifiers = new (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).ConnectionCache(connection => this._getService(connection).initialize());
   }
 
   dispose() {
@@ -52,52 +64,60 @@ export class NotifiersByConnection {
 
   // Returns null for a buffer to a file on a closed remote connection
   // or a new buffer which has not been saved.
-  get(buffer: atom$TextBuffer): ?Promise<FileNotifier> {
+  get(buffer) {
     return this.getForUri(buffer.getPath());
   }
 
-  getForConnection(connection: ?ServerConnection): Promise<FileNotifier> {
+  getForConnection(connection) {
     return this._notifiers.get(connection);
   }
 
   // Returns null for a buffer to a file on a closed remote connection
   // or a new buffer which has not been saved.
-  getForUri(path: ?NuclideUri): ?Promise<FileNotifier> {
+  getForUri(path) {
     return this._notifiers.getForUri(path);
   }
 
   // Sends the close message to the appropriate FileNotifier.
   // Will keep trying to send until the send succeeds or
   // the corresponding ServerConnection is closed.
-  sendClose(filePath: NuclideUri, version: number): void {
+  sendClose(filePath, version) {
+    var _this = this;
+
     if (filePath === '') {
       return;
     }
 
     // Keep trying until either the close completes, or
     // the remote connection goes away
-    const sendMessage = async () => {
-      const notifier = this.getForUri(filePath);
-      if (notifier != null) {
-        try {
-          const n = await notifier;
-          const message = {
-            kind: FileEventKind.CLOSE,
-            fileVersion: {
-              notifier: n,
-              filePath,
-              version,
-            },
-          };
+    const sendMessage = (() => {
+      var _ref = (0, _asyncToGenerator.default)(function* () {
+        const notifier = _this.getForUri(filePath);
+        if (notifier != null) {
+          try {
+            const n = yield notifier;
+            const message = {
+              kind: (_nuclideOpenFilesRpc || _load_nuclideOpenFilesRpc()).FileEventKind.CLOSE,
+              fileVersion: {
+                notifier: n,
+                filePath: filePath,
+                version: version
+              }
+            };
 
-          await message.fileVersion.notifier.onEvent(message);
-        } catch (e) {
-          logger.error(`Error sending file close event: ${filePath} ${version}`, e);
-          setTimeout(sendMessage, RESYNC_TIMEOUT_MS);
+            yield message.fileVersion.notifier.onEvent(message);
+          } catch (e) {
+            logger.error(`Error sending file close event: ${ filePath } ${ version }`, e);
+            setTimeout(sendMessage, RESYNC_TIMEOUT_MS);
+          }
         }
-      }
-    };
+      });
+
+      return function sendMessage() {
+        return _ref.apply(this, arguments);
+      };
+    })();
 
     sendMessage();
   }
-}
+};

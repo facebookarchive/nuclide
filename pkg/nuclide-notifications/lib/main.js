@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,63 +9,71 @@
  * the root directory of this source tree.
  */
 
-import invariant from 'assert';
-import electron from 'electron';
-import {CompositeDisposable} from 'atom';
-import featureConfig from '../../commons-atom/featureConfig';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.activate = activate;
+exports.provideRaiseNativeNotification = provideRaiseNativeNotification;
+exports.deactivate = deactivate;
 
-const {remote} = electron;
-invariant(remote != null);
+var _electron = _interopRequireDefault(require('electron'));
 
-let subscriptions: CompositeDisposable = (null: any);
+var _atom = require('atom');
 
-export function activate(state: ?Object): void {
-  subscriptions = new CompositeDisposable(
-    // Listen for Atom notifications:
-    atom.notifications.onDidAddNotification(proxyToNativeNotification),
-  );
+var _featureConfig;
+
+function _load_featureConfig() {
+  return _featureConfig = _interopRequireDefault(require('../../commons-atom/featureConfig'));
 }
 
-function proxyToNativeNotification(notification: atom$Notification): void {
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const remote = _electron.default.remote;
+
+if (!(remote != null)) {
+  throw new Error('Invariant violation: "remote != null"');
+}
+
+let subscriptions = null;
+
+function activate(state) {
+  subscriptions = new _atom.CompositeDisposable(
+  // Listen for Atom notifications:
+  atom.notifications.onDidAddNotification(proxyToNativeNotification));
+}
+
+function proxyToNativeNotification(notification) {
   const options = notification.getOptions();
 
   // Don't proceed if user only wants 'nativeFriendly' proxied notifications and this isn't one.
-  if (!options.nativeFriendly &&
-      featureConfig.get('nuclide-notifications.onlyNativeFriendly')) {
+  if (!options.nativeFriendly && (_featureConfig || _load_featureConfig()).default.get('nuclide-notifications.onlyNativeFriendly')) {
     return;
   }
 
-  raiseNativeNotification(
-    `${upperCaseFirst(notification.getType())}: ${notification.getMessage()}`,
-    options.detail,
-  );
-
+  raiseNativeNotification(`${ upperCaseFirst(notification.getType()) }: ${ notification.getMessage() }`, options.detail);
 }
 
-function raiseNativeNotification(title: string, body: string): void {
-  if (!featureConfig.get('nuclide-notifications.whenFocused') &&
-      remote.getCurrentWindow().isFocused()) {
+function raiseNativeNotification(title, body) {
+  if (!(_featureConfig || _load_featureConfig()).default.get('nuclide-notifications.whenFocused') && remote.getCurrentWindow().isFocused()) {
     return;
   }
 
   // eslint-disable-next-line no-new, no-undef
-  new Notification(
-    title, {
-      body,
-      icon: 'atom://nuclide/pkg/nuclide-notifications/notification.png',
-    },
-  );
+  new Notification(title, {
+    body: body,
+    icon: 'atom://nuclide/pkg/nuclide-notifications/notification.png'
+  });
 }
 
-export function provideRaiseNativeNotification(): typeof raiseNativeNotification {
+function provideRaiseNativeNotification() {
   return raiseNativeNotification;
 }
 
-export function deactivate(): void {
+function deactivate() {
   subscriptions.dispose();
-  subscriptions = (null: any);
+  subscriptions = null;
 }
 
-function upperCaseFirst(str: string): string {
-  return `${str[0].toUpperCase()}${str.slice(1)}`;
+function upperCaseFirst(str) {
+  return `${ str[0].toUpperCase() }${ str.slice(1) }`;
 }

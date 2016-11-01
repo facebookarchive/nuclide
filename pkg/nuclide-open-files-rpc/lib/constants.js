@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,10 +9,13 @@
  * the root directory of this source tree.
  */
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-export const FileEventKind = Object.freeze({
+const FileEventKind = exports.FileEventKind = Object.freeze({
   OPEN: 'open',
   SYNC: 'sync',
   CLOSE: 'close',
-  EDIT: 'edit',
+  EDIT: 'edit'
 });

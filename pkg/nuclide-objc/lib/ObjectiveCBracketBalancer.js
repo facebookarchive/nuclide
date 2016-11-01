@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,39 +9,41 @@
  * the root directory of this source tree.
  */
 
-import {Point} from 'atom';
+var _atom = require('atom');
 
-import {trackOperationTiming} from '../../nuclide-analytics';
-import observeLanguageTextEditors from
-  '../../commons-atom/observe-language-text-editors';
+var _nuclideAnalytics;
 
-const GRAMMARS = [
-  'source.objc',
-  'source.objcpp',
-];
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _observeLanguageTextEditors;
+
+function _load_observeLanguageTextEditors() {
+  return _observeLanguageTextEditors = _interopRequireDefault(require('../../commons-atom/observe-language-text-editors'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const GRAMMARS = ['source.objc', 'source.objcpp'];
 
 /**
  * This closes square brackets for Objective-C message calls.
  * Clients must call `disable()` once they're done with an instance.
  */
-class ObjectiveCBracketBalancer {
-  _editingSubscriptionsMap: Map<TextEditor, IDisposable>;
-  _languageListener: ?IDisposable;
+let ObjectiveCBracketBalancer = class ObjectiveCBracketBalancer {
 
-  enable(): void {
+  enable() {
     // The feature is already enabled.
     if (this._languageListener) {
       return;
     }
 
     this._editingSubscriptionsMap = new Map();
-    this._languageListener = observeLanguageTextEditors(
-        GRAMMARS,
-        textEditor => this._enableInTextEditor(textEditor),
-        textEditor => this._disableInTextEditor(textEditor));
+    this._languageListener = (0, (_observeLanguageTextEditors || _load_observeLanguageTextEditors()).default)(GRAMMARS, textEditor => this._enableInTextEditor(textEditor), textEditor => this._disableInTextEditor(textEditor));
   }
 
-  disable(): void {
+  disable() {
     // The feature is already disabled.
     if (!this._languageListener) {
       return;
@@ -53,14 +55,15 @@ class ObjectiveCBracketBalancer {
     this._editingSubscriptionsMap.clear();
   }
 
-  _enableInTextEditor(textEditor: TextEditor): void {
+  _enableInTextEditor(textEditor) {
     const insertTextSubscription = textEditor.onDidInsertText(event => {
-      trackOperationTiming('objc:balance-bracket', () => {
-        const {range, text} = event;
+      (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackOperationTiming)('objc:balance-bracket', () => {
+        const range = event.range,
+              text = event.text;
+
         if (text === ']') {
           const buffer = textEditor.getBuffer();
-          const leftBracketInsertPosition = ObjectiveCBracketBalancer
-            .getOpenBracketInsertPosition(buffer, range.start);
+          const leftBracketInsertPosition = ObjectiveCBracketBalancer.getOpenBracketInsertPosition(buffer, range.start);
           if (leftBracketInsertPosition) {
             buffer.insert(leftBracketInsertPosition, '[');
           }
@@ -70,7 +73,7 @@ class ObjectiveCBracketBalancer {
     this._editingSubscriptionsMap.set(textEditor, insertTextSubscription);
   }
 
-  _disableInTextEditor(textEditor: TextEditor): void {
+  _disableInTextEditor(textEditor) {
     const subscription = this._editingSubscriptionsMap.get(textEditor);
     if (subscription) {
       subscription.dispose();
@@ -78,16 +81,13 @@ class ObjectiveCBracketBalancer {
     }
   }
 
-  static getOpenBracketInsertPosition(
-    buffer: atom$TextBuffer,
-    closeBracketPosition: Point,
-  ): ?Point {
+  static getOpenBracketInsertPosition(buffer, closeBracketPosition) {
     const startingLine = buffer.lineForRow(closeBracketPosition.row);
     let singleQuoteCount = 0;
     let doubleQuoteCount = 0;
     const characterCount = {
       '[': 0,
-      ']': 0,
+      ']': 0
     };
 
     // Iterate through the line, determining if we have balanced brackets.
@@ -107,7 +107,7 @@ class ObjectiveCBracketBalancer {
 
     const stringLiteralMatch = /@".*"\s.*]/.exec(startingLine);
     if (stringLiteralMatch) {
-      return Point.fromObject([closeBracketPosition.row, stringLiteralMatch.index]);
+      return _atom.Point.fromObject([closeBracketPosition.row, stringLiteralMatch.index]);
     } else if (characterCount['['] < characterCount[']']) {
       // Check if we're at the bottom of a multi-line method.
       const multiLineMethodRegex = /^[\s\w\[]*:.*[^;{];?$/;
@@ -127,7 +127,7 @@ class ObjectiveCBracketBalancer {
         if (targetLine[targetMatch.index] === '[') {
           return null;
         } else {
-          return Point.fromObject([currentRowPlusOne, targetMatch.index]);
+          return _atom.Point.fromObject([currentRowPlusOne, targetMatch.index]);
         }
       } else {
         // We need a bracket on this line - at this point it's either
@@ -145,12 +145,13 @@ class ObjectiveCBracketBalancer {
           column = 0;
         }
 
-        return Point.fromObject([closeBracketPosition.row, column]);
+        return _atom.Point.fromObject([closeBracketPosition.row, column]);
       }
     } else {
       return null;
     }
   }
-}
+};
+
 
 module.exports = ObjectiveCBracketBalancer;

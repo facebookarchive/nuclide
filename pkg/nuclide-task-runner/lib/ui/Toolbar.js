@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,86 +9,115 @@
  * the root directory of this source tree.
  */
 
-import type {AnnotatedTaskMetadata, TaskId, TaskRunnerInfo} from '../types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Toolbar = undefined;
 
-import {TaskButton} from './TaskButton';
-import {ProgressBar} from './ProgressBar';
-import {getTaskMetadata} from '../getTaskMetadata';
-import {React} from 'react-for-atom';
+var _TaskButton;
 
-type Props = {
-  taskRunnerInfo: Array<TaskRunnerInfo>,
-  getActiveTaskRunnerIcon: () => ?ReactClass<any>,
-  getExtraUi: ?() => ReactClass<any>,
-  progress: ?number,
-  runTask: (taskId?: TaskId) => void,
-  activeTaskId: ?TaskId,
-  selectTask: (taskId: TaskId) => void,
-  stopTask: () => void,
-  taskIsRunning: boolean,
-  taskLists: Map<string, Array<AnnotatedTaskMetadata>>,
-};
+function _load_TaskButton() {
+  return _TaskButton = require('./TaskButton');
+}
 
-export class Toolbar extends React.Component {
-  props: Props;
+var _ProgressBar;
 
-  _renderExtraUi(): ?React.Element<any> {
+function _load_ProgressBar() {
+  return _ProgressBar = require('./ProgressBar');
+}
+
+var _getTaskMetadata;
+
+function _load_getTaskMetadata() {
+  return _getTaskMetadata = require('../getTaskMetadata');
+}
+
+var _reactForAtom = require('react-for-atom');
+
+let Toolbar = exports.Toolbar = class Toolbar extends _reactForAtom.React.Component {
+
+  _renderExtraUi() {
     if (this.props.activeTaskId) {
       const ExtraUi = this.props.getExtraUi && this.props.getExtraUi();
-      return ExtraUi ? <ExtraUi activeTaskType={this.props.activeTaskId.type} /> : null;
+      return ExtraUi ? _reactForAtom.React.createElement(ExtraUi, { activeTaskType: this.props.activeTaskId.type }) : null;
     }
     const runnerCount = this.props.taskRunnerInfo.length;
     if (runnerCount === 0) {
-      return <span>Please install and enable a task runner</span>;
+      return _reactForAtom.React.createElement(
+        'span',
+        null,
+        'Please install and enable a task runner'
+      );
     } else {
-      const waitingForTasks = !Array.from(this.props.taskLists.values())
-        .some(taskList => taskList.length > 0);
+      const waitingForTasks = !Array.from(this.props.taskLists.values()).some(taskList => taskList.length > 0);
       if (waitingForTasks) {
         if (runnerCount === 1) {
           const runnerName = this.props.taskRunnerInfo[0].name;
-          return <span>Waiting for tasks from {runnerName}...</span>;
+          return _reactForAtom.React.createElement(
+            'span',
+            null,
+            'Waiting for tasks from ',
+            runnerName,
+            '...'
+          );
         }
-        return <span>Waiting for tasks from {runnerCount} task runners...</span>;
+        return _reactForAtom.React.createElement(
+          'span',
+          null,
+          'Waiting for tasks from ',
+          runnerCount,
+          ' task runners...'
+        );
       }
-      return <span>No available tasks</span>;
+      return _reactForAtom.React.createElement(
+        'span',
+        null,
+        'No available tasks'
+      );
     }
   }
 
-  render(): ?React.Element<any> {
+  render() {
     const activeTaskId = this.props.activeTaskId;
-    const activeTask = activeTaskId == null
-      ? null
-      : getTaskMetadata(activeTaskId, this.props.taskLists);
+    const activeTask = activeTaskId == null ? null : (0, (_getTaskMetadata || _load_getTaskMetadata()).getTaskMetadata)(activeTaskId, this.props.taskLists);
 
-    return (
-      <div className="nuclide-task-runner-toolbar">
-        <div className="nuclide-task-runner-toolbar-contents padded">
-          <div className="inline-block">
-            <TaskButton
-              activeTask={activeTask}
-              getActiveTaskRunnerIcon={this.props.getActiveTaskRunnerIcon}
-              taskRunnerInfo={this.props.taskRunnerInfo}
-              runTask={this.props.runTask}
-              selectTask={this.props.selectTask}
-              taskIsRunning={this.props.taskIsRunning}
-              taskLists={this.props.taskLists}
-            />
-          </div>
-          <div className="inline-block">
-            <button
-              className="btn btn-sm icon icon-primitive-square"
-              disabled={!this.props.taskIsRunning || !activeTask || activeTask.cancelable === false}
-              onClick={() => { this.props.stopTask(); }}
-            />
-          </div>
-          {this._renderExtraUi()}
-        </div>
-        <ProgressBar
-          progress={this.props.progress}
-          visible={this.props.taskIsRunning}
-        />
-      </div>
+    return _reactForAtom.React.createElement(
+      'div',
+      { className: 'nuclide-task-runner-toolbar' },
+      _reactForAtom.React.createElement(
+        'div',
+        { className: 'nuclide-task-runner-toolbar-contents padded' },
+        _reactForAtom.React.createElement(
+          'div',
+          { className: 'inline-block' },
+          _reactForAtom.React.createElement((_TaskButton || _load_TaskButton()).TaskButton, {
+            activeTask: activeTask,
+            getActiveTaskRunnerIcon: this.props.getActiveTaskRunnerIcon,
+            taskRunnerInfo: this.props.taskRunnerInfo,
+            runTask: this.props.runTask,
+            selectTask: this.props.selectTask,
+            taskIsRunning: this.props.taskIsRunning,
+            taskLists: this.props.taskLists
+          })
+        ),
+        _reactForAtom.React.createElement(
+          'div',
+          { className: 'inline-block' },
+          _reactForAtom.React.createElement('button', {
+            className: 'btn btn-sm icon icon-primitive-square',
+            disabled: !this.props.taskIsRunning || !activeTask || activeTask.cancelable === false,
+            onClick: () => {
+              this.props.stopTask();
+            }
+          })
+        ),
+        this._renderExtraUi()
+      ),
+      _reactForAtom.React.createElement((_ProgressBar || _load_ProgressBar()).ProgressBar, {
+        progress: this.props.progress,
+        visible: this.props.taskIsRunning
+      })
     );
   }
 
-}
+};

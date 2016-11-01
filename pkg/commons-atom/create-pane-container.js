@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,12 +9,18 @@
  * the root directory of this source tree.
  */
 
-export default function createPaneContainer(): Object {
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = createPaneContainer;
+
+function createPaneContainer() {
   const PaneContainer = atom.workspace.paneContainer.constructor;
   return new PaneContainer({
     config: atom.config,
     applicationDelegate: atom.applicationDelegate,
     notificationManager: atom.notifications,
-    deserializerManager: atom.deserializers,
+    deserializerManager: atom.deserializers
   });
 }
+module.exports = exports['default'];

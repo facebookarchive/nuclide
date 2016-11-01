@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,83 +9,73 @@
  * the root directory of this source tree.
  */
 
-import type {
-  CommitModeType,
-  CommitModeStateType,
-  DiffModeType,
-  DiffOptionType,
-  PublishModeType,
-  PublishModeStateType,
-  NavigationSectionStatusType,
-} from './types';
-
-export const DiffMode = Object.freeze({
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+const DiffMode = exports.DiffMode = Object.freeze({
   BROWSE_MODE: '1. Browse',
   COMMIT_MODE: '2. Commit',
-  PUBLISH_MODE: '3. Publish',
+  PUBLISH_MODE: '3. Publish'
 });
 
 // This is to work around flow's missing support of enums.
-(DiffMode: {[key: string]: DiffModeType});
+DiffMode;
 
-export const DiffOption = Object.freeze({
+const DiffOption = exports.DiffOption = Object.freeze({
   DIRTY: 'Dirty',
   LAST_COMMIT: 'Last Commit',
-  COMPARE_COMMIT: 'Compare Commit',
+  COMPARE_COMMIT: 'Compare Commit'
 });
 
 // This is to work around flow's missing support of enums.
-(DiffOption: {[key: string]: DiffOptionType});
+DiffOption;
 
-export const CommitMode = Object.freeze({
+const CommitMode = exports.CommitMode = Object.freeze({
   COMMIT: 'Commit',
-  AMEND: 'Amend',
+  AMEND: 'Amend'
 });
 
 // This is to work around flow's missing support of enums.
-(CommitMode: {[key: string]: CommitModeType});
+CommitMode;
 
-export const CommitModeState = Object.freeze({
+const CommitModeState = exports.CommitModeState = Object.freeze({
   READY: 'Ready',
   LOADING_COMMIT_MESSAGE: 'Loading Commit Message',
-  AWAITING_COMMIT: 'Awaiting Commit',
+  AWAITING_COMMIT: 'Awaiting Commit'
 });
 
 // This is to work around flow's missing support of enums.
-(CommitModeState: {[key: string]: CommitModeStateType});
+CommitModeState;
 
-export const PublishMode = Object.freeze({
+const PublishMode = exports.PublishMode = Object.freeze({
   CREATE: 'Create',
-  UPDATE: 'Update',
+  UPDATE: 'Update'
 });
 
 // This is to work around flow's missing support of enums.
-(PublishMode: {[key: string]: PublishModeType});
+PublishMode;
 
-export const PublishModeState = Object.freeze({
+const PublishModeState = exports.PublishModeState = Object.freeze({
   READY: 'Ready',
   LOADING_PUBLISH_MESSAGE: 'Loading Publish Message',
   AWAITING_PUBLISH: 'Awaiting Publish',
-  PUBLISH_ERROR: 'Publish Error',
+  PUBLISH_ERROR: 'Publish Error'
 });
 
 // This is to work around flow's missing support of enums.
-(PublishModeState: {[key: string]: PublishModeStateType});
+PublishModeState;
 
-export const NON_MERCURIAL_REPO_DISPLAY_NAME = '[X] Non-Mercurial Repository';
+const NON_MERCURIAL_REPO_DISPLAY_NAME = exports.NON_MERCURIAL_REPO_DISPLAY_NAME = '[X] Non-Mercurial Repository';
 
-export const NavigationSectionStatus = Object.freeze({
+const NavigationSectionStatus = exports.NavigationSectionStatus = Object.freeze({
   ADDED: 'Added',
   CHANGED: 'Changed',
   REMOVED: 'Removed',
   NEW_ELEMENT: 'New Element',
-  OLD_ELEMENT: 'Old Element',
+  OLD_ELEMENT: 'Old Element'
 });
 
 // This is to work around flow's missing support of enums.
-(NavigationSectionStatus: {[key: string]: NavigationSectionStatusType});
+NavigationSectionStatus;
 
-export const LintErrorMessages = [
-  'Usage Exception: Lint',
-  'ESLint reported a warning',
-];
+const LintErrorMessages = exports.LintErrorMessages = ['Usage Exception: Lint', 'ESLint reported a warning'];

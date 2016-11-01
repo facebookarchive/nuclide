@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,20 +9,15 @@
  * the root directory of this source tree.
  */
 
-import type {TestClassSummary, TestRunInfo} from './types';
+let TestSuiteModel = class TestSuiteModel {
 
-class TestSuiteModel {
-
-  testClasses: Map<number, TestClassSummary>;
-  testRuns: Map<number, TestRunInfo>;
-
-  constructor(testClasses: Array<TestClassSummary>) {
+  constructor(testClasses) {
     this.testClasses = new Map();
     this.testRuns = new Map();
     testClasses.forEach(testClass => this.testClasses.set(testClass.id, testClass));
   }
 
-  addTestRun(testRun: TestRunInfo): void {
+  addTestRun(testRun) {
     if (testRun.hasOwnProperty('test_json')) {
       // $FlowFixMe(rossallen)
       this.testRuns.set(testRun.test_json.id, testRun);
@@ -33,7 +28,7 @@ class TestSuiteModel {
    * @return `null` if there are no test classes to run, otherwise 0 - 100 indicating percent
    * completion of this test suite.
    */
-  progressPercent(): ?number {
+  progressPercent() {
     if (this.testClasses.size === 0) {
       return null;
     } else {
@@ -41,6 +36,7 @@ class TestSuiteModel {
     }
   }
 
-}
+};
+
 
 module.exports = TestSuiteModel;

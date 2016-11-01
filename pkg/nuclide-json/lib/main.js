@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,66 +9,85 @@
  * the root directory of this source tree.
  */
 
-import type {HyperclickProvider} from '../../hyperclick/lib/types';
-import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
-import type {OutlineProvider} from '../../nuclide-outline-view';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.provideOutlines = provideOutlines;
+exports.getHyperclickProvider = getHyperclickProvider;
+exports.provideCodeFormat = provideCodeFormat;
 
-import {CompositeDisposable} from 'atom';
+var _atom = require('atom');
 
-import {getOutline} from './JSONOutlineProvider';
-import {getNPMHyperclickProvider} from './NPMHyperclickProvider';
+var _JSONOutlineProvider;
 
-import type {CodeFormatProvider} from '../../nuclide-code-format/lib/types';
-import CodeFormatHelpers from './CodeFormatHelpers';
-
-class Activation {
-  _disposables: CompositeDisposable;
-
-  constructor(state: ?Object) {
-    this._disposables = new CompositeDisposable();
-  }
-
-  dispose(): void {
-    this._disposables.dispose();
-  }
+function _load_JSONOutlineProvider() {
+  return _JSONOutlineProvider = require('./JSONOutlineProvider');
 }
 
-let activation: ?Activation = null;
+var _NPMHyperclickProvider;
 
-export function activate(state: ?Object): void {
+function _load_NPMHyperclickProvider() {
+  return _NPMHyperclickProvider = require('./NPMHyperclickProvider');
+}
+
+var _CodeFormatHelpers;
+
+function _load_CodeFormatHelpers() {
+  return _CodeFormatHelpers = _interopRequireDefault(require('./CodeFormatHelpers'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let Activation = class Activation {
+
+  constructor(state) {
+    this._disposables = new _atom.CompositeDisposable();
+  }
+
+  dispose() {
+    this._disposables.dispose();
+  }
+};
+
+
+let activation = null;
+
+function activate(state) {
   if (activation == null) {
     activation = new Activation(state);
   }
 }
 
-export function deactivate(): void {
+function deactivate() {
   if (activation != null) {
     activation.dispose();
     activation = null;
   }
 }
 
-export function provideOutlines(): OutlineProvider {
+function provideOutlines() {
   return {
     grammarScopes: ['source.json'],
     priority: 1,
     name: 'Nuclide JSON',
-    getOutline(editor: atom$TextEditor): Promise<?Outline> {
-      return Promise.resolve(getOutline(editor.getText()));
-    },
+    getOutline: function (editor) {
+      return Promise.resolve((0, (_JSONOutlineProvider || _load_JSONOutlineProvider()).getOutline)(editor.getText()));
+    }
   };
 }
 
-export function getHyperclickProvider(): HyperclickProvider {
-  return getNPMHyperclickProvider();
+function getHyperclickProvider() {
+  return (0, (_NPMHyperclickProvider || _load_NPMHyperclickProvider()).getNPMHyperclickProvider)();
 }
 
-export function provideCodeFormat(): CodeFormatProvider {
+function provideCodeFormat() {
   return {
     selector: 'source.json',
     inclusionPriority: 1,
-    formatEntireFile(editor, range) {
-      return CodeFormatHelpers.formatEntireFile(editor, range);
-    },
+    formatEntireFile: function (editor, range) {
+      return (_CodeFormatHelpers || _load_CodeFormatHelpers()).default.formatEntireFile(editor, range);
+    }
   };
 }

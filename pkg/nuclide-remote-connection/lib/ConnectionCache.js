@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,43 +9,77 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ConnectionCache = undefined;
 
-import {ServerConnection} from './ServerConnection';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import nuclideUri from '../../commons-node/nuclideUri';
-import {Cache} from '../../commons-node/cache';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
+var _ServerConnection;
+
+function _load_ServerConnection() {
+  return _ServerConnection = require('./ServerConnection');
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../commons-node/UniversalDisposable'));
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var _cache;
+
+function _load_cache() {
+  return _cache = require('../../commons-node/cache');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // A cache of values by ServerConnection.
 // Will lazily create the values when requested for each connection.
 // Note that an entry is added for local with connection == null.
-export class ConnectionCache<T: IDisposable> extends Cache<?ServerConnection, Promise<T>> {
-  _subscriptions: UniversalDisposable;
+let ConnectionCache = exports.ConnectionCache = class ConnectionCache extends (_cache || _load_cache()).Cache {
 
   // If lazy is true, then entries will only be created when get() is called.
   // Otherwise, entries will be created as soon as ServerConnection's are
   // established.
-  constructor(factory: (connection: ?ServerConnection) => Promise<T>, lazy: boolean = false) {
-    super(factory, valuePromise => valuePromise.then(value => value.dispose()));
-    this._subscriptions = new UniversalDisposable();
-    this._subscriptions.add(
-      ServerConnection.onDidCloseServerConnection(async connection => {
-        const value = this.get(connection);
+  constructor(factory) {
+    var _this;
+
+    let lazy = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
+    _this = super(factory, valuePromise => valuePromise.then(value => value.dispose()));
+    this._subscriptions = new (_UniversalDisposable || _load_UniversalDisposable()).default();
+    this._subscriptions.add((_ServerConnection || _load_ServerConnection()).ServerConnection.onDidCloseServerConnection((() => {
+      var _ref = (0, _asyncToGenerator.default)(function* (connection) {
+        const value = _this.get(connection);
         if (value != null) {
-          this.delete(connection);
-          (await value).dispose();
+          _this.delete(connection);
+          (yield value).dispose();
         }
-      }));
+      });
+
+      return function (_x2) {
+        return _ref.apply(this, arguments);
+      };
+    })()));
 
     if (!lazy) {
       this.get(null);
-      this._subscriptions.add(
-        ServerConnection.observeConnections(connection => { this.get(connection); }));
+      this._subscriptions.add((_ServerConnection || _load_ServerConnection()).ServerConnection.observeConnections(connection => {
+        this.get(connection);
+      }));
     }
   }
 
-  getForUri(filePath: ?NuclideUri): ?Promise<T> {
+  getForUri(filePath) {
     const connection = connectionOfUri(filePath);
     if (connection == null) {
       return null;
@@ -53,7 +87,7 @@ export class ConnectionCache<T: IDisposable> extends Cache<?ServerConnection, Pr
     return this.get(connection.connection);
   }
 
-  getExistingForUri(filePath: ?NuclideUri): ?Promise<T> {
+  getExistingForUri(filePath) {
     const connection = connectionOfUri(filePath);
     if (connection == null) {
       return null;
@@ -61,26 +95,27 @@ export class ConnectionCache<T: IDisposable> extends Cache<?ServerConnection, Pr
     return this.has(connection.connection) ? this.get(connection.connection) : null;
   }
 
-  dispose(): void {
+  dispose() {
     super.dispose();
     this._subscriptions.dispose();
   }
-}
+};
 
 // Returns null if there's no valid connection for the given filePath
 // Returns {connection: null} for a valid local filePath.
 // Returns {connection: non-null} for a valid remote filePath.
-function connectionOfUri(filePath: ?NuclideUri): ?{connection: ?ServerConnection} {
+
+function connectionOfUri(filePath) {
   if (filePath == null) {
     return null;
   }
 
-  const connection = ServerConnection.getForUri(filePath);
+  const connection = (_ServerConnection || _load_ServerConnection()).ServerConnection.getForUri(filePath);
   // During startup & shutdown of connections we can have a remote uri
   // without the corresponding connection.
-  if (connection == null && nuclideUri.isRemote(filePath)) {
+  if (connection == null && (_nuclideUri || _load_nuclideUri()).default.isRemote(filePath)) {
     return null;
   }
 
-  return {connection};
+  return { connection: connection };
 }

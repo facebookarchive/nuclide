@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,38 +9,58 @@
  * the root directory of this source tree.
  */
 
-import type FileTreeContextMenu from '../../nuclide-file-tree/lib/FileTreeContextMenu';
-import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.activate = activate;
+exports.addItemsToFileTreeContextMenu = addItemsToFileTreeContextMenu;
+exports.deactivate = deactivate;
+exports.createHgRepositoryProvider = createHgRepositoryProvider;
 
-import invariant from 'assert';
-import registerGrammar from '../../commons-atom/register-grammar';
-import {CompositeDisposable, Disposable} from 'atom';
-import {repositoryForPath} from '../../nuclide-hg-git-bridge';
-import {revertPath, addPath} from './actions';
-import HgRepositoryProvider from './HgRepositoryProvider';
+var _registerGrammar;
+
+function _load_registerGrammar() {
+  return _registerGrammar = _interopRequireDefault(require('../../commons-atom/register-grammar'));
+}
+
+var _atom = require('atom');
+
+var _nuclideHgGitBridge;
+
+function _load_nuclideHgGitBridge() {
+  return _nuclideHgGitBridge = require('../../nuclide-hg-git-bridge');
+}
+
+var _actions;
+
+function _load_actions() {
+  return _actions = require('./actions');
+}
+
+var _HgRepositoryProvider;
+
+function _load_HgRepositoryProvider() {
+  return _HgRepositoryProvider = _interopRequireDefault(require('./HgRepositoryProvider'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const HG_ADD_TREE_CONTEXT_MENU_PRIORITY = 400;
 const HG_REVERT_FILE_TREE_CONTEXT_MENU_PRIORITY = 1050;
 
-let subscriptions: ?CompositeDisposable = null;
-
-type HgContenxtMenuAction = 'Revert' | 'Add';
+let subscriptions = null;
 
 // A file is revertable if it's changed or added.
 // A file is addable if it's untracked.
 // A directory is revertable if it contains changed files.
-function shouldDisplayActionTreeItem(
-  contextMenu: FileTreeContextMenu,
-  action: HgContenxtMenuAction,
-): boolean {
+function shouldDisplayActionTreeItem(contextMenu, action) {
   const node = contextMenu.getSingleSelectedNode();
   if (node == null || node.repo == null || node.repo.getType() !== 'hg') {
     return false;
   }
-  const hgRepository: HgRepositoryClient = (node.repo: any);
+  const hgRepository = node.repo;
   if (action === 'Revert') {
-    return hgRepository.isStatusModified(node.vcsStatusCode) ||
-      hgRepository.isStatusAdded(node.vcsStatusCode);
+    return hgRepository.isStatusModified(node.vcsStatusCode) || hgRepository.isStatusAdded(node.vcsStatusCode);
   } else if (action === 'Add') {
     return hgRepository.isStatusUntracked(node.vcsStatusCode);
   } else {
@@ -48,131 +68,116 @@ function shouldDisplayActionTreeItem(
   }
 }
 
-function getActivePathAndHgRepository(): ?{activePath: string, repository: HgRepositoryClient} {
+function getActivePathAndHgRepository() {
   const editor = atom.workspace.getActiveTextEditor();
   if (editor == null || !editor.getPath()) {
     return null;
   }
   const filePath = editor.getPath() || '';
-  const repository = repositoryForPath(filePath);
+  const repository = (0, (_nuclideHgGitBridge || _load_nuclideHgGitBridge()).repositoryForPath)(filePath);
   if (repository == null || repository.getType() !== 'hg') {
     return null;
   }
-  const hgRepository: HgRepositoryClient = (repository: any);
+  const hgRepository = repository;
   return {
     repository: hgRepository,
-    activePath: filePath,
+    activePath: filePath
   };
 }
 
-function isActivePathRevertable(): boolean {
+function isActivePathRevertable() {
   const activeRepositoryInfo = getActivePathAndHgRepository();
   if (activeRepositoryInfo == null) {
     return false;
   }
-  const {repository, activePath} = activeRepositoryInfo;
+  const repository = activeRepositoryInfo.repository,
+        activePath = activeRepositoryInfo.activePath;
+
   return repository.isPathModified(activePath);
 }
 
-function isActivePathAddable(): boolean {
+function isActivePathAddable() {
   const activeRepositoryInfo = getActivePathAndHgRepository();
   if (activeRepositoryInfo == null) {
     return false;
   }
-  const {repository, activePath} = activeRepositoryInfo;
+  const repository = activeRepositoryInfo.repository,
+        activePath = activeRepositoryInfo.activePath;
+
   return repository.isPathUntracked(activePath);
 }
 
-export function activate(state: any): void {
-  subscriptions = new CompositeDisposable();
+function activate(state) {
+  subscriptions = new _atom.CompositeDisposable();
 
-  subscriptions.add(atom.commands.add(
-    'atom-text-editor',
-    'nuclide-hg-repository:revert',
-    event => {
-      const editorElement: atom$TextEditorElement = (event.target: any);
-      revertPath(editorElement.getModel().getPath());
-    },
-  ));
+  subscriptions.add(atom.commands.add('atom-text-editor', 'nuclide-hg-repository:revert', event => {
+    const editorElement = event.target;
+    (0, (_actions || _load_actions()).revertPath)(editorElement.getModel().getPath());
+  }));
 
-  subscriptions.add(atom.commands.add(
-    'atom-text-editor',
-    'nuclide-hg-repository:add',
-    event => {
-      const editorElement: atom$TextEditorElement = (event.target: any);
-      addPath(editorElement.getModel().getPath());
-    },
-  ));
+  subscriptions.add(atom.commands.add('atom-text-editor', 'nuclide-hg-repository:add', event => {
+    const editorElement = event.target;
+    (0, (_actions || _load_actions()).addPath)(editorElement.getModel().getPath());
+  }));
 
   // Text editor context menu items.
   subscriptions.add(atom.contextMenu.add({
-    'atom-text-editor': [
-      {type: 'separator'},
-      {
-        label: 'Source Control',
-        submenu: [
-          {
-            label: 'Revert',
-            command: 'nuclide-hg-repository:revert',
-            shouldDisplay() {
-              return isActivePathRevertable();
-            },
-          },
-          {
-            label: 'Add to Mercurial',
-            command: 'nuclide-hg-repository:revert',
-            shouldDisplay() {
-              return isActivePathAddable();
-            },
-          },
-        ],
-        shouldDisplay() {
-          return getActivePathAndHgRepository() != null;
-        },
-      },
-      {type: 'separator'},
-    ],
+    'atom-text-editor': [{ type: 'separator' }, {
+      label: 'Source Control',
+      submenu: [{
+        label: 'Revert',
+        command: 'nuclide-hg-repository:revert',
+        shouldDisplay: function () {
+          return isActivePathRevertable();
+        }
+      }, {
+        label: 'Add to Mercurial',
+        command: 'nuclide-hg-repository:revert',
+        shouldDisplay: function () {
+          return isActivePathAddable();
+        }
+      }],
+      shouldDisplay: function () {
+        return getActivePathAndHgRepository() != null;
+      }
+    }, { type: 'separator' }]
   }));
 
-  registerGrammar('source.ini', '.hgrc');
+  (0, (_registerGrammar || _load_registerGrammar()).default)('source.ini', '.hgrc');
 }
 
-export function addItemsToFileTreeContextMenu(contextMenu: FileTreeContextMenu): IDisposable {
-  invariant(subscriptions);
+function addItemsToFileTreeContextMenu(contextMenu) {
+  if (!subscriptions) {
+    throw new Error('Invariant violation: "subscriptions"');
+  }
 
-  const revertContextDisposable = contextMenu.addItemToSourceControlMenu(
-    {
-      label: 'Revert',
-      callback() {
-        // TODO(most): support reverting multiple nodes at once.
-        const revertNode = contextMenu.getSingleSelectedNode();
-        revertPath(revertNode == null ? null : revertNode.uri);
-      },
-      shouldDisplay() {
-        return shouldDisplayActionTreeItem(contextMenu, 'Revert');
-      },
+  const revertContextDisposable = contextMenu.addItemToSourceControlMenu({
+    label: 'Revert',
+    callback: function () {
+      // TODO(most): support reverting multiple nodes at once.
+      const revertNode = contextMenu.getSingleSelectedNode();
+      (0, (_actions || _load_actions()).revertPath)(revertNode == null ? null : revertNode.uri);
     },
-    HG_REVERT_FILE_TREE_CONTEXT_MENU_PRIORITY,
-  );
+    shouldDisplay: function () {
+      return shouldDisplayActionTreeItem(contextMenu, 'Revert');
+    }
+  }, HG_REVERT_FILE_TREE_CONTEXT_MENU_PRIORITY);
   subscriptions.add(revertContextDisposable);
 
-  const addContextDisposable = contextMenu.addItemToSourceControlMenu(
-    {
-      label: 'Add to Mercurial',
-      callback() {
-        // TODO(most): support adding multiple nodes at once.
-        const addNode = contextMenu.getSingleSelectedNode();
-        addPath(addNode == null ? null : addNode.uri);
-      },
-      shouldDisplay() {
-        return shouldDisplayActionTreeItem(contextMenu, 'Add');
-      },
+  const addContextDisposable = contextMenu.addItemToSourceControlMenu({
+    label: 'Add to Mercurial',
+    callback: function () {
+      // TODO(most): support adding multiple nodes at once.
+      const addNode = contextMenu.getSingleSelectedNode();
+      (0, (_actions || _load_actions()).addPath)(addNode == null ? null : addNode.uri);
     },
-    HG_ADD_TREE_CONTEXT_MENU_PRIORITY,
-  );
+    shouldDisplay: function () {
+      return shouldDisplayActionTreeItem(contextMenu, 'Add');
+    }
+  }, HG_ADD_TREE_CONTEXT_MENU_PRIORITY);
   subscriptions.add(addContextDisposable);
 
-  return new Disposable(() => {
+  return new _atom.Disposable(() => {
     if (subscriptions != null) {
       subscriptions.remove(revertContextDisposable);
       subscriptions.remove(addContextDisposable);
@@ -180,13 +185,13 @@ export function addItemsToFileTreeContextMenu(contextMenu: FileTreeContextMenu):
   });
 }
 
-export function deactivate(state: any): void {
+function deactivate(state) {
   if (subscriptions != null) {
     subscriptions.dispose();
     subscriptions = null;
   }
 }
 
-export function createHgRepositoryProvider() {
-  return new HgRepositoryProvider();
+function createHgRepositoryProvider() {
+  return new (_HgRepositoryProvider || _load_HgRepositoryProvider()).default();
 }

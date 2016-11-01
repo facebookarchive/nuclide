@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,29 +9,52 @@
  * the root directory of this source tree.
  */
 
-import type {DebugMode} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.debug = undefined;
 
-import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {LaunchProcessInfo} from '../../nuclide-debugger-php/lib/LaunchProcessInfo';
+let debug = exports.debug = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (debugMode, currentFilePath, target) {
+    let processInfo = null;
+    if (debugMode === 'script') {
+      processInfo = new (_LaunchProcessInfo || _load_LaunchProcessInfo()).LaunchProcessInfo(currentFilePath, target);
+    } else {
+      processInfo = new (_AttachProcessInfo || _load_AttachProcessInfo()).AttachProcessInfo(currentFilePath);
+    }
+
+    // Use commands here to trigger package activation.
+    atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
+    const debuggerService = yield (0, (_consumeFirstProvider || _load_consumeFirstProvider()).default)('nuclide-debugger.remote');
+    yield debuggerService.startDebugging(processInfo);
+  });
+
+  return function debug(_x, _x2, _x3) {
+    return _ref.apply(this, arguments);
+  };
+})();
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {AttachProcessInfo} from '../../nuclide-debugger-php/lib/AttachProcessInfo';
 
-export async function debug(
-  debugMode: DebugMode,
-  currentFilePath: string,
-  target: string,
-): Promise<void> {
-  let processInfo = null;
-  if (debugMode === 'script') {
-    processInfo = new LaunchProcessInfo(currentFilePath, target);
-  } else {
-    processInfo = new AttachProcessInfo(currentFilePath);
-  }
 
-  // Use commands here to trigger package activation.
-  atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
-  const debuggerService = await consumeFirstProvider('nuclide-debugger.remote');
-  await debuggerService.startDebugging(processInfo);
+var _consumeFirstProvider;
+
+function _load_consumeFirstProvider() {
+  return _consumeFirstProvider = _interopRequireDefault(require('../../commons-atom/consumeFirstProvider'));
 }
+
+var _LaunchProcessInfo;
+
+function _load_LaunchProcessInfo() {
+  return _LaunchProcessInfo = require('../../nuclide-debugger-php/lib/LaunchProcessInfo');
+}
+
+var _AttachProcessInfo;
+
+function _load_AttachProcessInfo() {
+  return _AttachProcessInfo = require('../../nuclide-debugger-php/lib/AttachProcessInfo');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }

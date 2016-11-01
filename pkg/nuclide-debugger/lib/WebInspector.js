@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -11,11 +11,14 @@
 
 // Use this module to import the global `WebInspector` with types.
 
-import type {WebInspector as WebInspectorType} from './types';
-
-import invariant from 'assert';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
 // Prevent accidental import for this file when `WebInspector` is not in scope.
-invariant(global.WebInspector != null);
+if (!(global.WebInspector != null)) {
+  throw new Error('Invariant violation: "global.WebInspector != null"');
+}
 
-export default (global.WebInspector: WebInspectorType);
+exports.default = global.WebInspector;
+module.exports = exports['default'];

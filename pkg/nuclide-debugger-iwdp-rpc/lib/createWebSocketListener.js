@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,13 +9,23 @@
  * the root directory of this source tree.
  */
 
-import WS from 'ws';
-import {Subject} from 'rxjs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.createWebSocketListener = createWebSocketListener;
 
-import type {Observable} from 'rxjs';
+var _ws;
 
-export function createWebSocketListener(webSocket: WS): Observable<string> {
-  const subject = new Subject();
+function _load_ws() {
+  return _ws = _interopRequireDefault(require('ws'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function createWebSocketListener(webSocket) {
+  const subject = new _rxjsBundlesRxMinJs.Subject();
   webSocket.on('message', message => subject.next(message));
   webSocket.on('error', error => subject.error(error));
   webSocket.on('close', () => subject.complete());

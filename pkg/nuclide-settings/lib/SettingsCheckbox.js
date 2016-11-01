@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,48 +9,63 @@
  * the root directory of this source tree.
  */
 
-import type {SettingsPropsDefault} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = undefined;
 
-import {normalizeIdentifier} from './settings-utils';
-import {React} from 'react-for-atom';
+var _settingsUtils;
 
-type Props = SettingsPropsDefault & {
-  value: boolean,
-};
+function _load_settingsUtils() {
+  return _settingsUtils = require('./settings-utils');
+}
 
-export default class SettingsCheckbox extends React.Component {
-  props: Props;
+var _reactForAtom = require('react-for-atom');
 
-  constructor(props: Object) {
+let SettingsCheckbox = class SettingsCheckbox extends _reactForAtom.React.Component {
+
+  constructor(props) {
     super(props);
-    (this: any)._handleChange = this._handleChange.bind(this);
+    this._handleChange = this._handleChange.bind(this);
   }
 
-  _handleChange(event: SyntheticEvent) {
-    const isChecked = ((event.target: any): HTMLInputElement).checked;
+  _handleChange(event) {
+    const isChecked = event.target.checked;
     this.props.onChange(isChecked);
   }
 
-  render(): React.Element<any> {
+  render() {
     const keyPath = this.props.keyPath;
-    const id = normalizeIdentifier(keyPath);
+    const id = (0, (_settingsUtils || _load_settingsUtils()).normalizeIdentifier)(keyPath);
     const title = this.props.title;
     const description = this.props.description;
     const value = this.props.value;
 
-    return (
-      <div className="checkbox">
-        <label htmlFor={id}>
-          <input
-            checked={value}
-            id={id}
-            onChange={this._handleChange}
-            type="checkbox"
-          />
-          <div className="setting-title">{title}</div>
-        </label>
-        <div className="setting-description">{description}</div>
-      </div>
+    return _reactForAtom.React.createElement(
+      'div',
+      { className: 'checkbox' },
+      _reactForAtom.React.createElement(
+        'label',
+        { htmlFor: id },
+        _reactForAtom.React.createElement('input', {
+          checked: value,
+          id: id,
+          onChange: this._handleChange,
+          type: 'checkbox'
+        }),
+        _reactForAtom.React.createElement(
+          'div',
+          { className: 'setting-title' },
+          title
+        )
+      ),
+      _reactForAtom.React.createElement(
+        'div',
+        { className: 'setting-description' },
+        description
+      )
     );
   }
-}
+};
+exports.default = SettingsCheckbox;
+module.exports = exports['default'];

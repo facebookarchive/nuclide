@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,72 +9,93 @@
  * the root directory of this source tree.
  */
 
-import type {OutputService} from '../../nuclide-console/lib/types';
-import type {TaskRunnerServiceApi} from '../../nuclide-task-runner/lib/types';
-import type {SwiftPMTaskRunner as SwiftPMTaskRunnerType} from './taskrunner/SwiftPMTaskRunner';
-import type {SwiftPMTaskRunnerStoreState} from './taskrunner/SwiftPMTaskRunnerStoreState';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.consumeTaskRunnerServiceApi = consumeTaskRunnerServiceApi;
+exports.consumeOutputService = consumeOutputService;
+exports.serialize = serialize;
+exports.createAutocompleteProvider = createAutocompleteProvider;
 
-import invariant from 'assert';
-import {CompositeDisposable, Disposable} from 'atom';
-import {SwiftPMTaskRunner} from './taskrunner/SwiftPMTaskRunner';
+var _atom = require('atom');
 
-let _disposables: ?CompositeDisposable = null;
-let _taskRunner: ?SwiftPMTaskRunnerType = null;
-let _initialState: ?Object = null;
+var _SwiftPMTaskRunner;
 
-export function activate(rawState: ?Object): void {
-  invariant(_disposables == null);
-  _initialState = rawState;
-  _disposables = new CompositeDisposable(
-    new Disposable(() => { _taskRunner = null; }),
-    new Disposable(() => { _initialState = null; }),
-  );
+function _load_SwiftPMTaskRunner() {
+  return _SwiftPMTaskRunner = require('./taskrunner/SwiftPMTaskRunner');
 }
 
-export function deactivate(): void {
-  invariant(_disposables != null);
+let _disposables = null;
+let _taskRunner = null;
+let _initialState = null;
+
+function activate(rawState) {
+  if (!(_disposables == null)) {
+    throw new Error('Invariant violation: "_disposables == null"');
+  }
+
+  _initialState = rawState;
+  _disposables = new _atom.CompositeDisposable(new _atom.Disposable(() => {
+    _taskRunner = null;
+  }), new _atom.Disposable(() => {
+    _initialState = null;
+  }));
+}
+
+function deactivate() {
+  if (!(_disposables != null)) {
+    throw new Error('Invariant violation: "_disposables != null"');
+  }
+
   _disposables.dispose();
   _disposables = null;
 }
 
-export function consumeTaskRunnerServiceApi(
-  serviceApi: TaskRunnerServiceApi,
-): void {
-  invariant(_disposables != null);
+function consumeTaskRunnerServiceApi(serviceApi) {
+  if (!(_disposables != null)) {
+    throw new Error('Invariant violation: "_disposables != null"');
+  }
+
   _disposables.add(serviceApi.register(_getTaskRunner()));
 }
 
-export function consumeOutputService(service: OutputService): void {
-  invariant(_disposables != null);
+function consumeOutputService(service) {
+  if (!(_disposables != null)) {
+    throw new Error('Invariant violation: "_disposables != null"');
+  }
+
   _disposables.add(service.registerOutputProvider({
     messages: _getTaskRunner().getOutputMessages(),
-    id: 'swift',
+    id: 'swift'
   }));
 }
 
-export function serialize(): ?SwiftPMTaskRunnerStoreState {
+function serialize() {
   if (_taskRunner != null) {
     return _taskRunner.serialize();
   }
 }
 
-export function createAutocompleteProvider(): atom$AutocompleteProvider {
+function createAutocompleteProvider() {
   return {
     selector: '.source.swift',
     inclusionPriority: 1,
     disableForSelector: '.source.swift .comment',
-    getSuggestions(
-      request: atom$AutocompleteRequest,
-    ): Promise<?Array<atom$AutocompleteSuggestion>> {
+    getSuggestions: function (request) {
       return _getTaskRunner().getAutocompletionProvider().getAutocompleteSuggestions(request);
-    },
+    }
   };
 }
 
-function _getTaskRunner(): SwiftPMTaskRunner {
+function _getTaskRunner() {
   if (_taskRunner == null) {
-    invariant(_disposables != null);
-    _taskRunner = new SwiftPMTaskRunner(_initialState);
+    if (!(_disposables != null)) {
+      throw new Error('Invariant violation: "_disposables != null"');
+    }
+
+    _taskRunner = new (_SwiftPMTaskRunner || _load_SwiftPMTaskRunner()).SwiftPMTaskRunner(_initialState);
     _disposables.add(_taskRunner);
   }
   return _taskRunner;

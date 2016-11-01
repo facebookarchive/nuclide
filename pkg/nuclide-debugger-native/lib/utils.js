@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,13 +9,28 @@
  * the root directory of this source tree.
  */
 
-import featureConfig from '../../commons-atom/featureConfig';
-import {getCategoryLogger} from '../../nuclide-logging';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getConfig = getConfig;
+
+var _featureConfig;
+
+function _load_featureConfig() {
+  return _featureConfig = _interopRequireDefault(require('../../commons-atom/featureConfig'));
+}
+
+var _nuclideLogging;
+
+function _load_nuclideLogging() {
+  return _nuclideLogging = require('../../nuclide-logging');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const DEBUGGER_LOGGER_CATEGORY = 'nuclide-lldb-client-debugger';
 
-export default getCategoryLogger(DEBUGGER_LOGGER_CATEGORY);
-
-export function getConfig(): any {
-  return (featureConfig.get('nuclide-debugger-native'): any);
+exports.default = (0, (_nuclideLogging || _load_nuclideLogging()).getCategoryLogger)(DEBUGGER_LOGGER_CATEGORY);
+function getConfig() {
+  return (_featureConfig || _load_featureConfig()).default.get('nuclide-debugger-native');
 }

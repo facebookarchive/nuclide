@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,55 +9,57 @@
  * the root directory of this source tree.
  */
 
-import logger from './utils';
-import {ClientCallback} from './ClientCallback';
-import type {UserMessageType} from './ClientCallback';
+var _utils;
 
-class Handler {
-  _domain: string;
-  _clientCallback: ClientCallback;
+function _load_utils() {
+  return _utils = _interopRequireDefault(require('./utils'));
+}
 
-  constructor(
-    domain: string,
-    clientCallback: ClientCallback,
-  ) {
+var _ClientCallback;
+
+function _load_ClientCallback() {
+  return _ClientCallback = require('./ClientCallback');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let Handler = class Handler {
+
+  constructor(domain, clientCallback) {
     this._domain = domain;
     this._clientCallback = clientCallback;
   }
 
-  getDomain(): string {
+  getDomain() {
     return this._domain;
   }
 
-  handleMethod(id: number, method: string, params: Object): Promise<any> {
+  handleMethod(id, method, params) {
     throw new Error('absrtact');
   }
 
-  unknownMethod(id: number, method: string, params: ?Object): void {
+  unknownMethod(id, method, params) {
     const message = 'Unknown chrome dev tools method: ' + this.getDomain() + '.' + method;
-    logger.log(message);
+    (_utils || _load_utils()).default.log(message);
     this.replyWithError(id, message);
   }
 
-  replyWithError(id: number, error: string): void {
+  replyWithError(id, error) {
     this._clientCallback.replyWithError(id, error);
   }
 
-  replyToCommand(id: number, result: Object, error: ?string): void {
+  replyToCommand(id, result, error) {
     this._clientCallback.replyToCommand(id, result, error);
   }
 
-  sendMethod(method: string, params: ?Object): void {
-    this._clientCallback.sendMethod(
-      this._clientCallback.getServerMessageObservable(),
-      method,
-      params,
-    );
+  sendMethod(method, params) {
+    this._clientCallback.sendMethod(this._clientCallback.getServerMessageObservable(), method, params);
   }
 
-  sendUserMessage(type: UserMessageType, message: Object): void {
+  sendUserMessage(type, message) {
     this._clientCallback.sendUserMessage(type, message);
   }
-}
+};
+
 
 module.exports = Handler;

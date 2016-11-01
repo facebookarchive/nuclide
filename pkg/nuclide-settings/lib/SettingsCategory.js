@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,75 +9,95 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
-import SettingsControl from './SettingsControl';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = undefined;
 
-type Props = {
-  name: string,
-  packages: Object,
-};
+var _reactForAtom = require('react-for-atom');
 
-export default class SettingsCategory extends React.Component {
-  props: Props;
+var _SettingsControl;
 
-  render(): ?React.Element<any> {
+function _load_SettingsControl() {
+  return _SettingsControl = _interopRequireDefault(require('./SettingsControl'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let SettingsCategory = class SettingsCategory extends _reactForAtom.React.Component {
+
+  render() {
 
     const children = Object.keys(this.props.packages).sort().map(pkgName => {
       const pkgData = this.props.packages[pkgName];
       const settingsArray = getSortedSettingsArray(pkgData.settings, pkgName);
       const elements = settingsArray.map(settingName => {
         const settingData = pkgData.settings[settingName];
-        return (
-          <ControlGroup key={settingName}>
-            <SettingsControl
-              keyPath={settingData.keyPath}
-              value={settingData.value}
-              onChange={settingData.onChange}
-              schema={settingData.schema}
-            />
-          </ControlGroup>
+        return _reactForAtom.React.createElement(
+          ControlGroup,
+          { key: settingName },
+          _reactForAtom.React.createElement((_SettingsControl || _load_SettingsControl()).default, {
+            keyPath: settingData.keyPath,
+            value: settingData.value,
+            onChange: settingData.onChange,
+            schema: settingData.schema
+          })
         );
       });
       // We create a control group for the whole group of controls and then another for each
       // individual one. Why? Because that's what Atom does in its settings view.
-      return (
-        <ControlGroup key={pkgName}>
-          <section className="sub-section">
-            {/* Package title. */}
-            <h2 className="sub-section-heading">{pkgData.title}</h2>
-            <div className="sub-section-body">
-              {elements}
-            </div>
-          </section>
-        </ControlGroup>
+      return _reactForAtom.React.createElement(
+        ControlGroup,
+        { key: pkgName },
+        _reactForAtom.React.createElement(
+          'section',
+          { className: 'sub-section' },
+          _reactForAtom.React.createElement(
+            'h2',
+            { className: 'sub-section-heading' },
+            pkgData.title
+          ),
+          _reactForAtom.React.createElement(
+            'div',
+            { className: 'sub-section-body' },
+            elements
+          )
+        )
       );
     });
-    return (
-      <section className="section settings-panel">
-        {/* Category Title */}
-        <h1 className="block section-heading icon icon-gear">{this.props.name} Settings</h1>
-        {children}
-      </section>
+    return _reactForAtom.React.createElement(
+      'section',
+      { className: 'section settings-panel' },
+      _reactForAtom.React.createElement(
+        'h1',
+        { className: 'block section-heading icon icon-gear' },
+        this.props.name,
+        ' Settings'
+      ),
+      children
     );
   }
 
-}
+};
+exports.default = SettingsCategory;
 
-function ControlGroup(props: {children?: React.Children}): React.Element<any> {
-  return (
-    <div className="control-group">
-      <div className="controls">
-        {props.children}
-      </div>
-    </div>
+
+function ControlGroup(props) {
+  return _reactForAtom.React.createElement(
+    'div',
+    { className: 'control-group' },
+    _reactForAtom.React.createElement(
+      'div',
+      { className: 'controls' },
+      props.children
+    )
   );
 }
 
-function getSortedSettingsArray(settings: Object, pkgName: string): Array<string> {
+function getSortedSettingsArray(settings, pkgName) {
   // Sort the package's settings by name, then by order.
   const settingsArray = Object.keys(settings);
-  settingsArray
-    .sort()
-    .sort((a, b) => settings[a].order - settings[b].order);
+  settingsArray.sort().sort((a, b) => settings[a].order - settings[b].order);
   return settingsArray;
 }
+module.exports = exports['default'];
