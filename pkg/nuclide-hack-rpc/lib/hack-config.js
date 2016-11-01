@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import fsPromise from '../../commons-node/fsPromise';
+import {ConfigCache} from '../../commons-node/ConfigCache';
 import {asyncExecute} from '../../commons-node/process';
 import {getCategoryLogger} from '../../nuclide-logging';
 
@@ -26,11 +26,13 @@ const PATH_TO_HH_CLIENT = 'hh_client';
 const DEFAULT_HACK_COMMAND: Promise<string> = findHackCommand();
 let hackCommand = DEFAULT_HACK_COMMAND;
 
+const configCache = new ConfigCache(HACK_CONFIG_FILE_NAME);
+
 /**
 * If this returns null, then it is not safe to run hack.
 */
 export function findHackConfigDir(localFile: string): Promise<?string> {
-  return fsPromise.findNearestFile(HACK_CONFIG_FILE_NAME, localFile);
+  return configCache.getConfigDir(localFile);
 }
 
 // Returns the empty string on failure

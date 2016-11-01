@@ -16,7 +16,7 @@ import {CompositeDisposable} from 'event-kit';
 
 import nuclideUri from '../../commons-node/nuclideUri';
 import which from '../../commons-node/which';
-import fsPromise from '../../commons-node/fsPromise';
+import {ConfigCache} from '../../commons-node/ConfigCache';
 
 // All the information needed to execute Flow in a given root. The path to the Flow binary we want
 // to use may vary per root -- for now, only if we are using the version of Flow from `flow-bin`.
@@ -30,7 +30,7 @@ export class FlowExecInfoContainer {
 
   // Map from file path to the closest ancestor directory containing a .flowconfig file (the file's
   // Flow root)
-  _flowConfigDirCache: LRUCache<string, ?string>;
+  _flowConfigDirCache: ConfigCache;
 
   // Map from Flow root directory (or null for "no root" e.g. files outside of a Flow root, or
   // unsaved files. Useful for outline view) to FlowExecInfo. A null value means that the Flow
@@ -44,10 +44,7 @@ export class FlowExecInfoContainer {
   _canUseFlowBin: boolean;
 
   constructor() {
-    this._flowConfigDirCache = LRU({
-      max: 10,
-      maxAge: 1000 * 30, // 30 seconds
-    });
+    this._flowConfigDirCache = new ConfigCache('.flowconfig');
 
     this._flowExecInfoCache = LRU({
       max: 10,
@@ -61,7 +58,7 @@ export class FlowExecInfoContainer {
 
   dispose() {
     this._disposables.dispose();
-    this._flowConfigDirCache.reset();
+    this._flowConfigDirCache.dispose();
     this._flowExecInfoCache.reset();
   }
 
@@ -114,12 +111,7 @@ export class FlowExecInfoContainer {
   }
 
   async findFlowConfigDir(localFile: string): Promise<?string> {
-    if (!this._flowConfigDirCache.has(localFile)) {
-      const flowConfigDir =
-        await fsPromise.findNearestFile('.flowconfig', nuclideUri.dirname(localFile));
-      this._flowConfigDirCache.set(localFile, flowConfigDir);
-    }
-    return this._flowConfigDirCache.get(localFile);
+    return this._flowConfigDirCache.getConfigDir(localFile);
   }
 
   _observeSettings(): void {
