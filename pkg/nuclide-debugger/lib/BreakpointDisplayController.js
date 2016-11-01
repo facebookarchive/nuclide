@@ -63,30 +63,33 @@ class BreakpointDisplayController {
       visible: false,
     });
     this._gutter = gutter;
+    this._registerGutterMouseHandlers(
+      (atom.views.getView(editor): any)
+        .component.gutterContainerComponent.getDomNode(),
+    );
+
     this._disposables.add(
       gutter.onDidDestroy(this._handleGutterDestroyed.bind(this)),
-      editor.observeGutters(this._registerGutterMouseHandlers.bind(this)),
       this._breakpointStore.onNeedUIUpdate(this._handleBreakpointsChanged.bind(this)),
       this._editor.onDidDestroy(this._handleTextEditorDestroyed.bind(this)),
     );
     this._update();
   }
 
-  _registerGutterMouseHandlers(gutter: atom$Gutter): void {
-    const gutterView = atom.views.getView(gutter);
+  _registerGutterMouseHandlers(gutterView: HTMLElement): void {
     const boundClickHandler = this._handleGutterClick.bind(this);
     const boundMouseMoveHandler =
       this._handleGutterMouseMove.bind(this);
-    const boundMouseOutHandler =
-      this._handleGutterMouseOut.bind(this);
+    const boundMouseLeaveHandler =
+      this._handleGutterMouseLeave.bind(this);
     // Add mouse listeners gutter for setting breakpoints.
     gutterView.addEventListener('click', boundClickHandler);
     gutterView.addEventListener('mousemove', boundMouseMoveHandler);
-    gutterView.addEventListener('mouseout', boundMouseOutHandler);
+    gutterView.addEventListener('mouseleave', boundMouseLeaveHandler);
     this._disposables.add(new Disposable(() => {
       gutterView.removeEventListener('click', boundClickHandler);
       gutterView.removeEventListener('mousemove', boundMouseMoveHandler);
-      gutterView.removeEventListener('mouseout', boundMouseOutHandler);
+      gutterView.removeEventListener('mouseleave', boundMouseLeaveHandler);
     }));
   }
 
@@ -231,7 +234,7 @@ class BreakpointDisplayController {
     this._createShadowBreakpointAtLine(this._editor, curLine);
   }
 
-  _handleGutterMouseOut(event: Event): void {
+  _handleGutterMouseLeave(event: Event): void {
     this._removeLastShadowBreakpoint();
   }
 
