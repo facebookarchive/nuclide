@@ -32,9 +32,9 @@ export function createAutocompleteProvider(): mixed {
       () => AutoComplete.getAutocompleteSuggestions(request));
   };
   return {
-    selector: '.source.ocaml',
+    selector: '.source.ocaml, .source.reason',
     inclusionPriority: 1,
-    disableForSelector: '.source.ocaml .comment',
+    disableForSelector: '.source.ocaml .comment, .source.reason .comment',
     getSuggestions,
   };
 }
@@ -44,6 +44,7 @@ export function provideLinter(): LinterProvider {
 }
 
 export function provideOutlines(): OutlineProvider {
+  // TODO: (chenglou) get back the ability to output Reason outline.
   return {
     grammarScopes: Array.from(GRAMMARS),
     priority: 1,

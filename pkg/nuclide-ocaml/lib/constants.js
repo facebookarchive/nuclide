@@ -11,4 +11,5 @@
 
 export const GRAMMARS = new Set([
   'source.ocaml',
+  'source.reason',
 ]);

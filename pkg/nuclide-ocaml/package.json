@@ -24,7 +24,8 @@
     "testRunner": "apm"
   },
   "activationHooks": [
-    "language-ocaml:grammar-used"
+    "language-ocaml:grammar-used",
+    "nuclide-language-reason:grammar-used"
   ],
   "providedServices": {
     "autocomplete.provider": {
