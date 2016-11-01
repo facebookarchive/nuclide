@@ -134,6 +134,12 @@ export function rootReducer(
         ...state,
         diffEditorsVisible: action.payload.visible,
       };
+
+    case ActionTypes.UPDATE_DIFF_EDITORS:
+      return {
+        ...state,
+        diffEditors: action.payload,
+      };
     case ActionTypes.UPDATE_DIFF_NAVIGATOR_VISIBILITY:
       return {
         ...state,

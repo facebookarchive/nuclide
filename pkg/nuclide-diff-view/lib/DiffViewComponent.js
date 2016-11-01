@@ -14,6 +14,7 @@ import type {
   NavigationSectionStatusType,
 } from './types';
 import type DiffViewModel from './DiffViewModel';
+import typeof * as BoundActionCreators from './redux/Actions';
 
 import invariant from 'assert';
 import {MultiRootChangedFilesView} from '../../nuclide-ui/MultiRootChangedFilesView';
@@ -46,6 +47,7 @@ import {Observable} from 'rxjs';
 
 type Props = {
   diffModel: DiffViewModel,
+  actionCreators: BoundActionCreators,
   // A bound function that when invoked will try to trigger the Diff View NUX
   tryTriggerNux: () => void,
 };
@@ -476,6 +478,10 @@ export default class DiffViewComponent extends React.Component {
   }
 
   _onDidUpdateTextEditorElement(): void {
+    this.props.actionCreators.updateDiffEditors({
+      newDiffEditor: this._newEditorComponent.getDiffEditor(),
+      oldDiffEditor: this._oldEditorComponent.getDiffEditor(),
+    });
     this._setupSyncScroll();
   }
 

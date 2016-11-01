@@ -15,6 +15,7 @@ import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import type {RevisionStatuses} from '../../nuclide-hg-repository-client/lib/HgRepositoryClient';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {Observable, Subject} from 'rxjs';
+import type DiffViewEditor from './DiffViewEditor';
 
 import {React} from 'react-for-atom';
 
@@ -144,11 +145,17 @@ export type FileDiffState = {
   navigationSections: Array<NavigationSection>,
 };
 
+export type DiffEditorsState = {
+  newDiffEditor: DiffViewEditor,
+  oldDiffEditor: DiffViewEditor,
+};
+
 export type AppState = {
   activeRepository: ?HgRepositoryClient,
   activeRepositoryState: RepositoryState,
   commit: CommitState,
   cwdApi: ?CwdApi,
+  diffEditors: ?DiffEditorsState,
   diffEditorsVisible: boolean,
   diffNavigatorVisible: boolean,
   fileDiff: FileDiffState,
@@ -347,6 +354,11 @@ export type UpdateDiffNavigatorVisibilityAction = {
   },
 };
 
+export type UpdateDiffEditorsAction = {
+  type: 'UPDATE_DIFF_EDITORS',
+  payload: ?DiffEditorsState,
+};
+
 export type Action = AddRepositoryAction
   | AddUiProviderAction
   | CommitAction
@@ -361,6 +373,7 @@ export type Action = AddRepositoryAction
   | SetViewModeAction
   | UpdateActiveRepositoryAction
   | UpdateCommitStateAction
+  | UpdateDiffEditorsAction
   | UpdateDiffEditorsVisibilityAction
   | UpdateDiffNavigatorVisibilityAction
   | UpdateDirtyFilesAction

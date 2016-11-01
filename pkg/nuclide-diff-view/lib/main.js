@@ -412,6 +412,7 @@ class Activation {
       .initialize(diffModel, NUCLIDE_DIFF_VIEW_URI);
     this._diffViewComponent = ReactDOM.render(
       <DiffViewComponent
+        actionCreators={this._actionCreators}
         diffModel={diffModel}
         tryTriggerNux={this.tryTriggerNux.bind(this, NUX_DIFF_VIEW_ID)}
       />,
@@ -423,6 +424,7 @@ class Activation {
       ReactDOM.unmountComponentAtNode(hostElement);
       this._actionCreators.updateDiffEditorsVisibility(false);
       this._actionCreators.updateDiffNavigatorVisibility(false);
+      this._actionCreators.updateDiffEditors(null);
       destroySubscription.dispose();
       this._subscriptions.remove(destroySubscription);
       this._diffViewElement = null;

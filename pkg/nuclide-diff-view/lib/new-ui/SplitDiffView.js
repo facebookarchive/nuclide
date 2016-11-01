@@ -326,11 +326,11 @@ export default class SplitDiffView {
         }
       }).subscribe();
 
-    const diffEditorsVisibility = diffEditorsStream
+    const diffEditorsUpdates = diffEditorsStream
       .debounceTime(100)
-      .map(diffEditors => diffEditors != null)
-      .do(visible => {
-        actionCreators.updateDiffEditorsVisibility(visible);
+      .do(diffEditors => {
+        actionCreators.updateDiffEditorsVisibility(diffEditors != null);
+        actionCreators.updateDiffEditors(diffEditors);
       }).subscribe();
 
     const navigationGutterUpdates = compact(diffEditorsStream)
@@ -339,7 +339,7 @@ export default class SplitDiffView {
 
     this._disposables.add(
       updateDiffSubscriptions,
-      diffEditorsVisibility,
+      diffEditorsUpdates,
       navigationGutterUpdates,
     );
   }

@@ -186,6 +186,10 @@ export default class DiffViewEditorPane extends React.Component {
     return this.refs.editor.getModel();
   }
 
+  getDiffEditor(): DiffViewEditor {
+    return this._diffViewEditor;
+  }
+
   getEditorDomElement(): atom$TextEditorElement {
     return this.refs.editor.getElement();
   }

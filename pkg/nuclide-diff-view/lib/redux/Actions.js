@@ -17,6 +17,7 @@ import type {
   CommitAction,
   CommitModeType,
   CommitState,
+  DiffEditorsState,
   DiffFileAction,
   DiffModeType,
   EditorElementsMap,
@@ -33,6 +34,7 @@ import type {
   UIProvider,
   UpdateActiveRepositoryAction,
   UpdateCommitStateAction,
+  UpdateDiffEditorsAction,
   UpdateDiffEditorsVisibilityAction,
   UpdateDiffNavigatorVisibilityAction,
   UpdateDirtyFilesAction,
@@ -338,6 +340,15 @@ export function updateDiffEditorsVisibility(
     payload: {
       visible,
     },
+  };
+}
+
+export function updateDiffEditors(
+  diffEditors: ?DiffEditorsState,
+): UpdateDiffEditorsAction {
+  return {
+    type: ActionTypes.UPDATE_DIFF_EDITORS,
+    payload: diffEditors,
   };
 }
 
