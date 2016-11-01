@@ -38,10 +38,10 @@ import type {
   FileDiagnosticUpdate,
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
 import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
-import type {Observable} from 'rxjs';
 import type {Completion} from '../../nuclide-language-service/lib/LanguageService';
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
 
+import {Observable} from 'rxjs';
 import {wordAtPositionFromBuffer} from '../../commons-node/range';
 import invariant from 'assert';
 import {retryLimit} from '../../commons-node/promise';
@@ -181,11 +181,17 @@ class HackLanguageAnalyzer {
     return observeConnections(this._fileCache)
       .mergeMap(connection => {
         logger.logTrace('notifyDiagnostics');
-        return connection.notifyDiagnostics().refCount().map(diagnostics => ({
-          filePath: diagnostics.filename,
-          messages: diagnostics.errors.map(diagnostic =>
-            hackMessageToDiagnosticMessage(diagnostic.message)),
-        }));
+        return connection.notifyDiagnostics()
+          .refCount()
+          .catch(error => {
+            logger.logError(`Error: notifyDiagnostics ${error}`);
+            return Observable.empty();
+          })
+          .map(diagnostics => ({
+            filePath: diagnostics.filename,
+            messages: diagnostics.errors.map(diagnostic =>
+              hackMessageToDiagnosticMessage(diagnostic.message)),
+          }));
       });
   }
 
