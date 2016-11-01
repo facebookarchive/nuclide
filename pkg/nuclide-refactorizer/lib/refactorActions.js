@@ -32,6 +32,7 @@ export function open(): OpenAction {
 
 export function gotRefactorings(
   editor: atom$TextEditor,
+  originalPoint: atom$Point,
   provider: RefactorProvider,
   availableRefactorings: Array<AvailableRefactoring>,
 ): GotRefactoringsAction {
@@ -39,6 +40,7 @@ export function gotRefactorings(
     type: 'got-refactorings',
     payload: {
       editor,
+      originalPoint,
       provider,
       availableRefactorings,
     },

@@ -54,10 +54,11 @@ export class RenameComponent extends React.Component {
 
   _runRename(): void {
     const {newName} = this.state;
-    const {symbolAtPoint, editor} = this.props.phase;
+    const {symbolAtPoint, editor, originalPoint} = this.props.phase;
     const refactoring = {
       kind: 'rename',
       newName,
+      originalPoint,
       symbolAtPoint,
       editor,
     };

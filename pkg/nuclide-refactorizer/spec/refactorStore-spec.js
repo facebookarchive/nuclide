@@ -23,7 +23,7 @@ import type {
 } from '../lib/types';
 
 import {Observable, BehaviorSubject} from 'rxjs';
-import {Range} from 'atom';
+import {Range, Point} from 'atom';
 
 import ProviderRegistry from '../../commons-atom/ProviderRegistry';
 import nuclideUri from '../../commons-node/nuclideUri';
@@ -175,6 +175,7 @@ describe('refactorStore', () => {
           await waitForPhase('rename');
           const rename: RenameRequest = {
             kind: 'rename',
+            originalPoint: TEST_FILE_POINT,
             symbolAtPoint: TEST_FILE_SYMBOL_AT_POINT,
             editor: openEditor,
             newName: 'bar',
@@ -229,6 +230,7 @@ describe('refactorStore', () => {
           await waitForPhase('rename');
           const rename: RenameRequest = {
             kind: 'rename',
+            originalPoint: TEST_FILE_POINT,
             symbolAtPoint: TEST_FILE_SYMBOL_AT_POINT,
             editor: openEditor,
             newName: 'bar',
@@ -270,6 +272,7 @@ describe('refactorStore', () => {
           await waitForPhase('rename');
           const rename: RenameRequest = {
             kind: 'rename',
+            originalPoint: TEST_FILE_POINT,
             symbolAtPoint: TEST_FILE_SYMBOL_AT_POINT,
             editor: openEditor,
             newName: 'bar',
@@ -293,6 +296,7 @@ describe('refactorStore', () => {
           await waitForPhase('rename');
           const rename: RenameRequest = {
             kind: 'rename',
+            originalPoint: TEST_FILE_POINT,
             symbolAtPoint: TEST_FILE_SYMBOL_AT_POINT,
             editor: openEditor,
             newName: 'bar',
@@ -326,6 +330,7 @@ describe('refactorStore', () => {
           await waitForPhase('rename');
           const rename: RenameRequest = {
             kind: 'rename',
+            originalPoint: TEST_FILE_POINT,
             symbolAtPoint: TEST_FILE_SYMBOL_AT_POINT,
             editor: openEditor,
             newName: 'bar',
@@ -350,6 +355,7 @@ describe('refactorStore', () => {
 // This is all just dummy data, so I'm keeping it down here to avoid drawing attention to it over
 // the important test logic.
 const TEST_FILE = nuclideUri.join(__dirname, 'fixtures', 'refactor-fixture.txt');
+const TEST_FILE_POINT = new Point(0, 1);
 const TEST_FILE_SYMBOL_AT_POINT = {
   text: 'foo',
   range: new Range([0, 0], [0, 3]),

@@ -46,6 +46,7 @@ export type GetRefactoringsPhase = {|
 export type PickPhase = {|
   type: 'pick',
   provider: RefactorProvider,
+  originalPoint: atom$Point,
   editor: atom$TextEditor,
   availableRefactorings: Array<AvailableRefactoring>,
 |};
@@ -54,6 +55,7 @@ export type RenamePhase = {|
   type: 'rename',
   provider: RefactorProvider,
   editor: atom$TextEditor,
+  originalPoint: atom$Point,
   symbolAtPoint: {
     text: string,
     range: atom$Range,
@@ -79,6 +81,7 @@ export type OpenAction = {|
 export type GotRefactoringsAction = {|
   type: 'got-refactorings',
   payload: {
+    originalPoint: atom$Point,
     editor: atom$TextEditor,
     provider: RefactorProvider,
     availableRefactorings: Array<AvailableRefactoring>,

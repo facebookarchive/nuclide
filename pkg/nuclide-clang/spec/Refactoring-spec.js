@@ -58,6 +58,7 @@ describe('Refactoring', () => {
   describe('Refactoring.refactor', () => {
     it('refactors a parameter', () => {
       waitsForPromise({timeout: 15000}, async () => {
+        // $FlowFixMe (pass originalPoint)
         const response = await Refactoring.refactor({
           editor: fakeEditor,
           kind: 'rename',

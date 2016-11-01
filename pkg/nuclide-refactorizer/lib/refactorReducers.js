@@ -66,7 +66,7 @@ function gotRefactorings(state: RefactorState, action: GotRefactoringsAction): R
   invariant(state.type === 'open');
   invariant(state.phase.type === 'get-refactorings');
 
-  const editor = action.payload.editor;
+  const {editor, originalPoint} = action.payload;
 
   return {
     type: 'open',
@@ -74,6 +74,7 @@ function gotRefactorings(state: RefactorState, action: GotRefactoringsAction): R
       type: 'pick',
       provider: action.payload.provider,
       editor,
+      originalPoint,
       availableRefactorings: action.payload.availableRefactorings,
     },
   };
@@ -91,12 +92,13 @@ function pickedRefactor(state: RefactorState, action: PickedRefactorAction): Ref
   invariant(state.phase.type === 'pick');
 
   const refactoring = action.payload.refactoring;
-  const editor = state.phase.editor;
+  const {editor, originalPoint} = state.phase;
   return {
     type: 'open',
     phase: {
       type: 'rename',
       provider: state.phase.provider,
+      originalPoint,
       symbolAtPoint: refactoring.symbolAtPoint,
       editor,
     },

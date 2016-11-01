@@ -51,6 +51,7 @@ export type AvailableRefactoring = RenameRefactoring;
 export type RenameRequest = {
   kind: RenameRefactorKind,
   editor: atom$TextEditor,
+  originalPoint: atom$Point,
   symbolAtPoint: {
     text: string,
     range: atom$Range,

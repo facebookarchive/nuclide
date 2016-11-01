@@ -82,9 +82,10 @@ async function getRefactorings(
     return Actions.gotRefactoringsError();
   }
   try {
+    const cursorPosition = cursor.getBufferPosition();
     const availableRefactorings =
-      await provider.refactoringsAtPoint(editor, cursor.getBufferPosition());
-    return Actions.gotRefactorings(editor, provider, availableRefactorings);
+      await provider.refactoringsAtPoint(editor, cursorPosition);
+    return Actions.gotRefactorings(editor, cursorPosition, provider, availableRefactorings);
   } catch (e) {
     return Actions.gotRefactoringsError();
   }
