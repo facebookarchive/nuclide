@@ -101,6 +101,20 @@ export function mapEqual<T, X>(
   return true;
 }
 
+export function areSetsEqual<T>(a: Set<T>, b: Set<T>): boolean {
+  return a.size === b.size && every(a, element => b.has(element));
+}
+
+// Array.every but for any iterable.
+export function every<T>(values: Iterable<T>, predicate: (element: T) => boolean): boolean {
+  for (const element of values) {
+    if (!predicate(element)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 export function setIntersect<T>(a: Set<T>, b: Set<T>): Set<T> {
   return new Set(Array.from(a).filter(e => b.has(e)));
 }

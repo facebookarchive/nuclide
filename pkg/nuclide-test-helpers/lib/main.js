@@ -137,23 +137,6 @@ function arePropertiesEqual(obj1: Object, obj2: Object): boolean {
 }
 
 /**
- * Checks if the contents of two sets are identical
- */
-function areSetsEqual(set1: Set<any>, set2: Set<any>): boolean {
-  for (const v1 of set1) {
-    if (!set2.has(v1)) {
-      return false;
-    }
-  }
-  for (const v2 of set2) {
-    if (!set1.has(v2)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-/**
  * Warning: Callsites *must* await the resulting promise, or test failures may go unreported or
  * misattributed.
  */
@@ -168,7 +151,6 @@ async function expectObservableToStartWith<T>(
 export {
   addMatchers,
   arePropertiesEqual,
-  areSetsEqual,
   clearRequireCache,
   copyFixture,
   copyBuildFixture,

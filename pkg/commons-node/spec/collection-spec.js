@@ -23,6 +23,7 @@ import {
   objectEntries,
   objectFromMap,
   concatIterators,
+  areSetsEqual,
 } from '../collection';
 
 describe('arrayRemove', () => {
@@ -313,4 +314,23 @@ describe('concatIterators', () => {
     ))).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
   });
 
+});
+
+describe('areSetsEqual', () => {
+  it('correctly compares empty sets', () => {
+    expect(areSetsEqual(new Set(), new Set())).toBe(true);
+  });
+
+  it('correctly compares sets with the same properties', () => {
+    expect(areSetsEqual(new Set(['foo']), new Set(['foo']))).toBe(true);
+  });
+
+  it('returns false when properties are not equal', () => {
+    expect(areSetsEqual(new Set(['foo']), new Set(['bar']))).toBe(false);
+  });
+
+  it('returns false when an item exists in one set but not the other', () => {
+    expect(areSetsEqual(new Set(['foo']), new Set())).toBe(false);
+    expect(areSetsEqual(new Set(), new Set(['foo']))).toBe(false);
+  });
 });
