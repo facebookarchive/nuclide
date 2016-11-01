@@ -224,7 +224,7 @@ class Activation {
       initialState,
       applyMiddleware(createEpicMiddleware(rootEpic)),
     );
-    const states = Observable.from(this._store).share();
+    const states: Observable<AppState> = Observable.from(this._store).share();
     this._appState = new BehaviorSubject(initialState);
     this._actionCreators = bindActionCreators(Actions, this._store.dispatch);
 
@@ -411,6 +411,7 @@ class Activation {
       this._subscriptions.add(this._splitDiffView);
     }
 
+    this._actionCreators.updateDiffEditorsVisibility(true);
     // Show the Diff Navigator section.
     dispatchDiffNavigatorToggle(true);
 
@@ -429,7 +430,6 @@ class Activation {
     let diffViewModel = this._diffViewModel;
     if (diffViewModel == null) {
       diffViewModel = new DiffViewModel(this._actionCreators, this._progressUpdates);
-      this._subscriptions.add(diffViewModel);
       this._diffViewModel = diffViewModel;
     }
     return diffViewModel;
@@ -445,8 +445,8 @@ class Activation {
     }
 
     const diffModel = this._getDiffViewModel();
-    diffModel.activate();
     this._actionCreators.updateDiffEditorsVisibility(true);
+    this._actionCreators.updateDiffNavigatorVisibility(true);
     const hostElement = this._diffViewElement = new DiffViewElement()
       .initialize(diffModel, NUCLIDE_DIFF_VIEW_URI);
     this._diffViewComponent = ReactDOM.render(
@@ -460,8 +460,8 @@ class Activation {
 
     const destroySubscription = hostElement.onDidDestroy(() => {
       ReactDOM.unmountComponentAtNode(hostElement);
-      diffModel.deactivate();
       this._actionCreators.updateDiffEditorsVisibility(false);
+      this._actionCreators.updateDiffNavigatorVisibility(false);
       destroySubscription.dispose();
       this._subscriptions.remove(destroySubscription);
       this._diffViewElement = null;
@@ -685,7 +685,6 @@ class Activation {
         defaultLocation: 'bottom-panel',
         create: () => {
           const diffModel = this._getDiffViewModel();
-          diffModel.activate();
           const actionCreators = this._actionCreators;
 
           const boundComponent = bindObservableAsProps(

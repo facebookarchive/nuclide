@@ -28,7 +28,6 @@ import invariant from 'assert';
 import {Observable, Subject} from 'rxjs';
 import {observableFromSubscribeFunction} from '../../../commons-node/event';
 import {mapUnion} from '../../../commons-node/collection';
-import {cacheWhileSubscribed} from '../../../commons-node/observable';
 import {observeStatusChanges} from '../../../commons-node/vcs';
 import {
   CommitMode,
@@ -210,31 +209,19 @@ export function addRepositoryEpic(
   });
 }
 
-function observeViewOpen(
-  actions: ActionsObservable<Action>,
-): Observable<boolean> {
-  return cacheWhileSubscribed(
-    Observable.merge(
-      actions.ofType(ActionTypes.OPEN_VIEW).mapTo(true),
-      actions.ofType(ActionTypes.CLOSE_VIEW).mapTo(false),
-    ),
-  ).startWith(false);
-}
-
 // A repository is considered activated only when the Diff View is open.
 // This allows to not bother with loading revision info and changes when not needed.
 export function updateActiveRepositoryEpic(
   actions: ActionsObservable<Action>,
   store: Store,
 ): Observable<Action> {
-  return Observable.combineLatest(
+  return Observable.merge(
     actions.ofType(ActionTypes.UPDATE_ACTIVE_REPOSITORY),
-    observeViewOpen(actions),
-  ).switchMap(([action, isViewOpen]) => {
-    invariant(action.type === ActionTypes.UPDATE_ACTIVE_REPOSITORY);
-    const {hgRepository: repository} = action.payload;
+    actions.ofType(ActionTypes.UPDATE_DIFF_NAVIGATOR_VISIBILITY),
+  ).switchMap(() => {
+    const {activeRepository: repository, diffNavigatorVisible} = store.getState();
 
-    if (!isViewOpen || repository == null) {
+    if (!diffNavigatorVisible || repository == null) {
       return Observable.empty();
     }
 
@@ -448,7 +435,9 @@ export function diffFileEpic(
         .takeUntil(Observable.merge(
           observableFromSubscribeFunction(buffer.onDidDestroy.bind(buffer)),
           deactiveRepsitory,
-          actions.ofType(ActionTypes.CLOSE_VIEW),
+          actions.filter(a =>
+            a.type === ActionTypes.UPDATE_DIFF_EDITORS_VISIBILITY && !a.payload.visible,
+          ),
         ))
         .concat(clearActiveDiffObservable),
     );
@@ -567,7 +556,7 @@ export function setViewModeEpic(
 
       notifyInternalError(new Error(`Invalid Diff View Mode: ${viewMode}`));
       return Observable.empty();
-    }).takeUntil(actions.ofType(ActionTypes.CLOSE_VIEW));
+    });
   });
 }
 

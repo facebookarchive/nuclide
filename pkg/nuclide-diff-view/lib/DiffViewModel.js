@@ -221,16 +221,4 @@ export default class DiffViewModel {
   setShouldAmendRebase(shouldRebaseOnAmend: boolean): void {
     this._actionCreators.setShouldRebaseOnAmend(shouldRebaseOnAmend);
   }
-
-  activate(): void {
-    this._actionCreators.openView();
-  }
-
-  deactivate(): void {
-    this._actionCreators.closeView();
-  }
-
-  dispose(): void {
-    this.deactivate();
-  }
 }

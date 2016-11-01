@@ -14,7 +14,6 @@ import type {NuclideUri} from '../../../commons-node/nuclideUri';
 import type {
   AddRepositoryAction,
   AddUiProviderAction,
-  CloseViewAction,
   CommitAction,
   CommitModeType,
   CommitState,
@@ -22,7 +21,6 @@ import type {
   DiffModeType,
   EditorElementsMap,
   FileChangeStatusValue,
-  OpenViewAction,
   PublishDiffAction,
   PublishState,
   RemoveRepositoryAction,
@@ -55,18 +53,6 @@ import type {CwdApi} from '../../../nuclide-current-working-directory/lib/CwdApi
 import type {Subject} from 'rxjs';
 
 import * as ActionTypes from './ActionTypes';
-
-export function openView(): OpenViewAction {
-  return {
-    type: ActionTypes.OPEN_VIEW,
-  };
-}
-
-export function closeView(): CloseViewAction {
-  return {
-    type: ActionTypes.CLOSE_VIEW,
-  };
-}
 
 export function addRepository(
   repository: HgRepositoryClient,
