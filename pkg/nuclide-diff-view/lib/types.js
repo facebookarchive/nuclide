@@ -143,6 +143,7 @@ export type FileDiffState = {
   oldEditorState: EditorState,
   newEditorState: EditorState,
   navigationSections: Array<NavigationSection>,
+  activeSectionIndex: number,
 };
 
 export type DiffEditorsState = {
@@ -359,6 +360,13 @@ export type UpdateDiffEditorsAction = {
   payload: ?DiffEditorsState,
 };
 
+export type UpdateActiveNavigationSectionAction = {
+  type: 'UPDATE_ACTIVE_NAVIGATION_SECTION',
+  payload: {
+    sectionIndex: number,
+  },
+};
+
 export type Action = AddRepositoryAction
   | AddUiProviderAction
   | CommitAction
@@ -371,6 +379,7 @@ export type Action = AddRepositoryAction
   | SetCwdApiAction
   | SetShouldReabaseOnAmendAction
   | SetViewModeAction
+  | UpdateActiveNavigationSectionAction
   | UpdateActiveRepositoryAction
   | UpdateCommitStateAction
   | UpdateDiffEditorsAction

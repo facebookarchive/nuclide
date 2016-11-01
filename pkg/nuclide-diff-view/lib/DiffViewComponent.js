@@ -52,10 +52,6 @@ type Props = {
   tryTriggerNux: () => void,
 };
 
-type State = {
-  selectedNavigationSectionIndex: number,
-};
-
 let CachedPublishComponent;
 function getPublishComponent() {
   if (CachedPublishComponent == null) {
@@ -228,10 +224,38 @@ export function navigationSectionStatusToEditorElement(
   }
 }
 
-function getInitialState(): State {
-  return {
-    selectedNavigationSectionIndex: -1,
-  };
+export function getCenterScrollSelectedNavigationIndex(
+  editorElements: [atom$TextEditorElement, atom$TextEditorElement],
+  navigationSections: Array<NavigationSection>,
+): number {
+  const elementsScrollCenter = editorElements.map(editorElement => {
+    const scrollTop = editorElement.getScrollTop();
+    return scrollTop + editorElement.clientHeight / 2;
+  });
+
+  let selectedSectionIndex = -1;
+
+  // TODO(most): Pre-compute the positions of the diff sections.
+  // Q: when to invalidate (line edits, UI elements & diff reloads, ..etc.)
+  for (let sectionIndex = 0; sectionIndex < navigationSections.length; sectionIndex++) {
+    const {status, lineNumber} = navigationSections[sectionIndex];
+    const textEditorElement = navigationSectionStatusToEditorElement(
+      editorElements[0],
+      editorElements[1],
+      status,
+    );
+    const sectionPixelTop = textEditorElement
+      .pixelPositionForBufferPosition([lineNumber, 0]).top;
+
+    const sectionEditorIndex = editorElements.indexOf(textEditorElement);
+    const sectionEditorScrollCenter = elementsScrollCenter[sectionEditorIndex];
+
+    if (sectionEditorScrollCenter >= sectionPixelTop) {
+      selectedSectionIndex = sectionIndex;
+    }
+  }
+
+  return selectedSectionIndex;
 }
 
 const EMPTY_FUNCTION = () => {};
@@ -240,7 +264,6 @@ const DEBOUNCE_STATE_UPDATES_MS = 50;
 
 export default class DiffViewComponent extends React.Component {
   props: Props;
-  state: State;
 
   _subscriptions: UniversalDisposable;
   _syncScroll: SyncScroll;
@@ -260,7 +283,6 @@ export default class DiffViewComponent extends React.Component {
 
   constructor(props: Props) {
     super(props);
-    this.state = getInitialState();
     (this: any)._handleNavigateToNavigationSection =
       this._handleNavigateToNavigationSection.bind(this);
     (this: any)._onDidUpdateTextEditorElement = this._onDidUpdateTextEditorElement.bind(this);
@@ -398,7 +420,7 @@ export default class DiffViewComponent extends React.Component {
     }
   }
 
-  componentDidUpdate(prevProps: Props, prevState: State): void {
+  componentDidUpdate(prevProps: Props): void {
     this._renderDiffView();
     this.props.diffModel.emitActiveBufferChangeModified();
   }
@@ -561,9 +583,7 @@ export default class DiffViewComponent extends React.Component {
 
   render(): React.Element<any> {
     const {
-      selectedNavigationSectionIndex,
-    } = this.state;
-    const {
+      activeSectionIndex,
       filePath,
       newEditorState,
       oldEditorState,
@@ -575,7 +595,7 @@ export default class DiffViewComponent extends React.Component {
         <DiffViewToolbar
           navigationSections={navigationSections}
           filePath={filePath}
-          selectedNavigationSectionIndex={selectedNavigationSectionIndex}
+          selectedNavigationSectionIndex={activeSectionIndex}
           newRevisionTitle={newEditorState.revisionTitle}
           oldRevisionTitle={oldEditorState.revisionTitle}
           onSwitchToEditor={this._onSwitchToEditor}
@@ -597,31 +617,14 @@ export default class DiffViewComponent extends React.Component {
       this._oldEditorComponent.getEditorDomElement(),
       this._newEditorComponent.getEditorDomElement(),
     ];
+    const {fileDiff: {navigationSections, activeSectionIndex}} = this.props.diffModel.getState();
+    const selectedNavigationSectionIndex = getCenterScrollSelectedNavigationIndex(
+      editorElements,
+      navigationSections,
+    );
 
-    const elementsScrollCenter = editorElements.map(editorElement => {
-      const scrollTop = editorElement.getScrollTop();
-      return scrollTop + editorElement.clientHeight / 2;
-    });
-
-    let selectedNavigationSectionIndex = -1;
-
-    const {fileDiff: {navigationSections}} = this.props.diffModel.getState();
-    // TODO(most): Pre-compute the positions of the diff sections.
-    // Q: when to invalidate (line edits, UI elements & diff reloads, ..etc.)
-    for (let sectionIndex = 0; sectionIndex < navigationSections.length; sectionIndex++) {
-      const {status, lineNumber} = navigationSections[sectionIndex];
-      const textEditorElement = this._navigationSectionStatusToEditorElement(status);
-      const sectionPixelTop = textEditorElement
-        .pixelPositionForBufferPosition([lineNumber, 0]).top;
-
-      const sectionEditorIndex = editorElements.indexOf(textEditorElement);
-      const sectionEditorScrollCenter = elementsScrollCenter[sectionEditorIndex];
-
-      if (sectionEditorScrollCenter >= sectionPixelTop) {
-        selectedNavigationSectionIndex = sectionIndex;
-      }
+    if (activeSectionIndex !== selectedNavigationSectionIndex) {
+      this.props.actionCreators.updateActiveNavigationSection(selectedNavigationSectionIndex);
     }
-
-    this.setState({selectedNavigationSectionIndex});
   }
 }

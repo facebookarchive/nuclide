@@ -92,7 +92,7 @@ export default class DiffViewEditorPane extends React.Component {
       );
     }
 
-    this.props.onDidUpdateTextEditorElement();
+    process.nextTick(() => this.props.onDidUpdateTextEditorElement());
     // TODO(most): Fix by listening to text editor rendering.
     editorSubscriptions.add(Observable.interval(100).first()
       .subscribe(() => this._setOffsets(this.props.offsets)));

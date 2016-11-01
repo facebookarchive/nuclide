@@ -18,6 +18,7 @@ import type {
   RepositoryAction,
   RepositoryState,
   UIProvider,
+  UpdateActiveNavigationSectionAction,
   UpdateFileDiffAction,
   UpdateFileUiElementsAction,
 } from '../types';
@@ -97,6 +98,13 @@ export function rootReducer(
         ...state,
         fileDiff: reduceUiElements(state.fileDiff, action),
       };
+
+    case ActionTypes.UPDATE_ACTIVE_NAVIGATION_SECTION:
+      return {
+        ...state,
+        fileDiff: reduceNavigationSectionIndex(state.fileDiff, action),
+      };
+
 
     case ActionTypes.UPDATE_LOADING_FILE_DIFF:
       return {
@@ -264,8 +272,16 @@ function reduceFileDiff(
   action: UpdateFileDiffAction,
 ): FileDiffState {
   const {filePath, fromRevision, newContents, oldContents} = action.payload;
-  const {inlineElements: newEditorElements} = state.newEditorState;
-  const {inlineElements: oldEditorElements} = state.oldEditorState;
+  let {inlineElements: newEditorElements} = state.newEditorState;
+  let {inlineElements: oldEditorElements} = state.oldEditorState;
+  let {activeSectionIndex} = state;
+
+  if (state.filePath !== filePath) {
+    // Clear the ui elements and section index.
+    activeSectionIndex = -1;
+    newEditorElements = new Map();
+    oldEditorElements = new Map();
+  }
 
   const {
     addedLines,
@@ -309,6 +325,7 @@ function reduceFileDiff(
   );
 
   return {
+    activeSectionIndex,
     filePath,
     lineMapping: {newToOld, oldToNew},
     newEditorState,
@@ -335,6 +352,16 @@ function reduceUiElements(
       inlineElements: newEditorElements,
       inlineOffsetElements: oldEditorElements,
     },
+  };
+}
+
+function reduceNavigationSectionIndex(
+  state: FileDiffState,
+  action: UpdateActiveNavigationSectionAction,
+): FileDiffState {
+  return {
+    ...state,
+    activeSectionIndex: action.payload.sectionIndex,
   };
 }
 

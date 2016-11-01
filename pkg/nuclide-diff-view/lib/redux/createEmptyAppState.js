@@ -64,6 +64,7 @@ export function getEmptyFileDiffState(): FileDiffState {
     newEditorState: initialEditorState(),
     oldEditorState: initialEditorState(),
     navigationSections: [],
+    activeSectionIndex: -1,
   };
 }
 

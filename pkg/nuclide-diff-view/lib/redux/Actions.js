@@ -32,6 +32,7 @@ import type {
   SetShouldReabaseOnAmendAction,
   SetViewModeAction,
   UIProvider,
+  UpdateActiveNavigationSectionAction,
   UpdateActiveRepositoryAction,
   UpdateCommitStateAction,
   UpdateDiffEditorsAction,
@@ -359,6 +360,17 @@ export function updateDiffNavigatorVisibility(
     type: ActionTypes.UPDATE_DIFF_NAVIGATOR_VISIBILITY,
     payload: {
       visible,
+    },
+  };
+}
+
+export function updateActiveNavigationSection(
+  sectionIndex: number,
+): UpdateActiveNavigationSectionAction {
+  return {
+    type: ActionTypes.UPDATE_ACTIVE_NAVIGATION_SECTION,
+    payload: {
+      sectionIndex,
     },
   };
 }
