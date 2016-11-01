@@ -1,0 +1,46 @@
+@import 'ui-variables';
+@import "octicon-mixins.less";
+@import "octicon-utf-codes.less";
+
+
+.nuclide-diff-view-split-navigation-gutter {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 0;
+}
+
+// Copied from `diff-view-component.less` because gutter decorations
+// need a seperate domain style file.
+.nuclide-diff-view-navigation-bar {
+  height: 100%;
+  width: 100%;
+}
+
+.nuclide-diff-view-navigation-target {
+  position: absolute;
+  width: 100%;
+  cursor: pointer;
+  text-align: center;
+
+  &.added {
+    background-color: @background-color-success;
+  }
+
+  &.removed {
+    background-color: @background-color-error;
+  }
+
+  &.modified {
+    background-color: @background-color-warning;
+  }
+
+  &.icon {
+    z-index: 1;
+  }
+
+  &.icon::before {
+    margin-right: 0;
+  }
+}

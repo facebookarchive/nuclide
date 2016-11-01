@@ -16,7 +16,7 @@ import type {
 
 import classnames from 'classnames';
 import {NavigationSectionStatus} from './constants';
-import {React} from 'react-for-atom';
+import {React, ReactDOM} from 'react-for-atom';
 
 type DiffNavigationBarProps = {
   navigationSections: Array<NavigationSection>,
@@ -104,6 +104,14 @@ class NavigatonBarJumpTarget extends React.Component {
   constructor(props: NavigatonBarJumpTargetProps) {
     super(props);
     (this: any)._handleClick = this._handleClick.bind(this);
+  }
+
+  componentDidMount() {
+    const {navigationSection: {status, lineNumber, lineCount}} = this.props;
+    const domElement = ReactDOM.findDOMNode(this);
+    domElement.setAttribute('nav-status', status);
+    domElement.setAttribute('nav-line-count', lineCount);
+    domElement.setAttribute('nav-line-number', lineNumber);
   }
 
   render(): React.Element<any> {

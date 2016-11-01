@@ -10,7 +10,11 @@
  */
 
 import type {NuclideUri} from '../../../commons-node/nuclideUri';
-import type {AppState} from '../types';
+import type {
+  AppState,
+  FileDiffState,
+  NavigationSectionStatusType,
+} from '../types';
 import typeof * as BoundActionCreators from '../redux/Actions';
 
 import UniversalDisposable from '../../../commons-node/UniversalDisposable';
@@ -21,7 +25,23 @@ import invariant from 'assert';
 import {observableFromSubscribeFunction} from '../../../commons-node/event';
 import {nextTick} from '../../../commons-node/promise';
 import {notifyInternalError} from '../notifications';
+import {
+  centerScrollToBufferLine,
+  pixelRangeForNavigationSection,
+  navigationSectionStatusToEditorElement,
+} from '../DiffViewComponent';
+import {React} from 'react-for-atom';
+import {
+  clickEventToScrollLineNumber,
+  DiffNavigationBar,
+} from '../DiffNavigationBar';
+import {bindObservableAsProps} from '../../../nuclide-ui/bindObservableAsProps';
+import {renderReactRoot} from '../../../commons-atom/renderReactRoot';
+import {getLogger} from '../../../nuclide-logging';
+import {compact} from '../../../commons-node/observable';
 
+const DIFF_VIEW_NAVIGATION_TARGET = 'nuclide-diff-view-navigation-target';
+const NAVIGATION_GUTTER_NAME = 'nuclide-diff-split-navigation';
 const READ_ONLY_EDITOR_PATH = 'nuclide-diff-view-read-olnly-path';
 
 function cleanUpEditor(editor: atom$TextEditor): void {
@@ -62,6 +82,7 @@ function forceReadOnly(textEditor: atom$TextEditor): void {
 }
 
 type DiffEditorsResult = {
+  navigationGutter: atom$Gutter,
   newDiffEditor: DiffViewEditor,
   oldDiffEditor: DiffViewEditor,
   disposables: UniversalDisposable,
@@ -94,6 +115,18 @@ async function getDiffEditors(
     await nextTick();
     disposables.add(() => cleanUpEditor(newEditor));
   }
+
+  const navigationGutter = newEditor.gutterWithName(NAVIGATION_GUTTER_NAME) || newEditor.addGutter({
+    name: NAVIGATION_GUTTER_NAME,
+    visible: false,
+  });
+
+  disposables.add(() => {
+    const addedGutter = newEditor.gutterWithName(NAVIGATION_GUTTER_NAME);
+    if (addedGutter != null) {
+      addedGutter.destroy();
+    }
+  });
 
   const oldEditorPane = atom.workspace.paneForURI(READ_ONLY_EDITOR_PATH);
   if (oldEditorPane == null && atom.workspace.getPanes().length > 1) {
@@ -143,6 +176,7 @@ async function getDiffEditors(
   );
 
   return {
+    navigationGutter,
     newDiffEditor,
     oldDiffEditor,
     disposables,
@@ -183,6 +217,83 @@ function wrapDiffEditorObservable(
     });
 }
 
+function renderNavigationBarAtGutter(
+  diffEditors: DiffEditorsResult,
+  fileDiffs: Observable<FileDiffState>,
+): void {
+  const {oldDiffEditor, newDiffEditor, navigationGutter} = diffEditors;
+  const oldEditorElement = oldDiffEditor.getEditorDomElement();
+  const newEditorElement = newDiffEditor.getEditorDomElement();
+  const boundPixelRangeForNavigationSection = pixelRangeForNavigationSection
+    .bind(null, oldEditorElement, newEditorElement);
+
+  const onNavigateToNavigationSection = (
+    navigationSectionStatus: NavigationSectionStatusType,
+    scrollToLineNumber: number,
+  ) => {
+    const textEditorElement = navigationSectionStatusToEditorElement(
+      oldEditorElement, newEditorElement, navigationSectionStatus);
+    centerScrollToBufferLine(textEditorElement, scrollToLineNumber);
+  };
+
+  const fakeNavigationHandler = () => {
+    // TODO(most): use the React handler instead of DOM when it's fixed in the editor gutter.
+    getLogger().warn('Gutter click events never go through!');
+  };
+
+  const navigationGutterView = atom.views.getView(navigationGutter);
+  const gutterContainer: HTMLElement = (navigationGutterView.parentNode: any);
+
+  const BoundNavigationBarComponent = bindObservableAsProps(
+    fileDiffs
+      // Debounce diff sections rendering to avoid blocking the UI.
+      .debounceTime(50)
+      .map(({navigationSections}) => {
+        const editorLineHeight = oldDiffEditor.getEditor().getLineHeightInPixels();
+        const diffEditorsHeight = Math.max(
+          oldEditorElement.getScrollHeight(),
+          newEditorElement.getScrollHeight(),
+          1, // Protect against zero scroll height while initializring editors.
+        );
+        const navigationScale = gutterContainer.clientHeight / diffEditorsHeight;
+
+        return {
+          navigationSections,
+          navigationScale,
+          editorLineHeight,
+          pixelRangeForNavigationSection: boundPixelRangeForNavigationSection,
+          onNavigateToNavigationSection: fakeNavigationHandler,
+        };
+      }),
+    DiffNavigationBar,
+  );
+
+  const navigationElement = renderReactRoot(<BoundNavigationBarComponent />);
+  navigationElement.className = 'nuclide-diff-view-split-navigation-gutter';
+  navigationGutterView.style.position = 'relative';
+  navigationGutterView.appendChild(navigationElement);
+
+  // The gutter elements don't receive the click.
+  // Hence, the need to inject DOM attributes in navigation targets,
+  // and use  here for
+  navigationGutterView.addEventListener('click', event => {
+    // classList isn't in the defs of EventTarget...
+    const target: HTMLElement = (event.target: any);
+    if (!target.classList.contains(DIFF_VIEW_NAVIGATION_TARGET)) {
+      return;
+    }
+    const navigationStatus: NavigationSectionStatusType =
+      (target.getAttribute('nav-status'): any);
+    const navigationLineCount = parseInt(target.getAttribute('nav-line-count'), 10);
+    const navigationLineNumber = parseInt(target.getAttribute('nav-line-number'), 10);
+    const scrollToLineNumber = clickEventToScrollLineNumber(
+      navigationLineNumber, navigationLineCount, (event: any));
+    onNavigateToNavigationSection(navigationStatus, scrollToLineNumber);
+  });
+
+  navigationGutter.show();
+}
+
 export default class SplitDiffView {
 
   _disposables: UniversalDisposable;
@@ -190,7 +301,7 @@ export default class SplitDiffView {
   constructor(states: Observable<AppState>, actionCreators: BoundActionCreators) {
     this._disposables = new UniversalDisposable();
 
-    const diffEditorsStream = states
+    const diffEditorsStream: Observable<?DiffEditorsResult> = states
       .map(state => state.fileDiff.filePath)
       .distinctUntilChanged()
       .switchMap(filePath => {
@@ -203,7 +314,7 @@ export default class SplitDiffView {
               return Observable.empty();
             });
         }
-      });
+      }).share();
 
     const fileDiffs = states
       .map(({fileDiff}) => fileDiff)
@@ -232,13 +343,18 @@ export default class SplitDiffView {
     const diffEditorsVisibility = diffEditorsStream
       .debounceTime(100)
       .map(diffEditors => diffEditors != null)
-      .subscribe(visible => {
+      .do(visible => {
         actionCreators.updateDiffEditorsVisibility(visible);
-      });
+      }).subscribe();
+
+    const navigationGutterUpdates = compact(diffEditorsStream)
+      .do(diffEditors => renderNavigationBarAtGutter(diffEditors, fileDiffs))
+      .subscribe();
 
     this._disposables.add(
       updateDiffSubscriptions,
       diffEditorsVisibility,
+      navigationGutterUpdates,
     );
   }
 

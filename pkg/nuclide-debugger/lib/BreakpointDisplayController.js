@@ -15,6 +15,9 @@ import type DebuggerActions from './DebuggerActions';
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
 
+const DIFF_VIEW_NAVIGATION_TARGET = 'nuclide-diff-view-navigation-target';
+const DIFF_VIEW_NAVIGATION_BAR = 'nuclide-diff-view-navigation-bar';
+
 /**
  * A single delegate which handles events from the object.
  *
@@ -185,11 +188,14 @@ class BreakpointDisplayController {
     // Filter out clicks to the folding chevron.
     const FOLDING_CHEVRON_CLASS_NAME = 'icon-right';
     const BLAME_HASH_CLICKABLE_CLASS_NAME = 'nuclide-blame-hash-clickable';
-    const target: Object = event.target; // classList isn't in the defs of HTMLElement...
-    if (
-      target.classList.contains(FOLDING_CHEVRON_CLASS_NAME) ||
-      target.classList.contains(BLAME_HASH_CLICKABLE_CLASS_NAME)
-    ) {
+    // classList isn't in the defs of EventTarget...
+    const target: HTMLElement = (event.target: any);
+    const ignoreClickClassNames = [
+      FOLDING_CHEVRON_CLASS_NAME,
+      BLAME_HASH_CLICKABLE_CLASS_NAME,
+      DIFF_VIEW_NAVIGATION_TARGET,
+    ];
+    if (ignoreClickClassNames.some(className => target.classList.contains(className))) {
       return;
     }
 
@@ -210,7 +216,13 @@ class BreakpointDisplayController {
 
   _handleGutterMouseMove(event: Event): void {
     const curLine = this._getCurrentMouseEventLine(event);
-    if (this._isLineOverLastShadowBreakpoint(curLine)) {
+    // classList isn't in the defs of EventTarget...
+    const target: HTMLElement = (event.target: any);
+    const ignoreMouseMoveClassNames = [DIFF_VIEW_NAVIGATION_TARGET, DIFF_VIEW_NAVIGATION_BAR];
+    if (
+      this._isLineOverLastShadowBreakpoint(curLine) ||
+      ignoreMouseMoveClassNames.some(className => target.classList.contains(className))
+    ) {
       return;
     }
     // User moves to a new line we need to delete the old shadow breakpoint
