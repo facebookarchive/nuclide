@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import type {DiffEntityOptions} from './DiffViewModel';
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {
@@ -41,6 +42,7 @@ import {getLogger} from '../../nuclide-logging';
 import {Observable, Subject} from 'rxjs';
 import stripAnsi from 'strip-ansi';
 import {shell} from 'electron';
+import url from 'url';
 
 const MAX_DIALOG_FILE_STATUS_COUNT = 20;
 
@@ -534,14 +536,28 @@ function notifyRevisionStatus(
     atom.notifications.addSuccess(message, {nativeFriendly: true});
     return;
   }
-  const {name, url} = phabRevision;
+  const {name, url: revisionUrl} = phabRevision;
   message = `Revision '${name}' ${statusMessage}`;
   atom.notifications.addSuccess(message, {
     buttons: [{
       className: 'icon icon-globe',
-      onDidClick() { shell.openExternal(url); },
+      onDidClick() { shell.openExternal(revisionUrl); },
       text: 'Open in Phabricator',
     }],
     nativeFriendly: true,
+  });
+}
+
+export function formatDiffViewUrl(diffEntityOptions_?: ?DiffEntityOptions): string {
+  let diffEntityOptions = diffEntityOptions_;
+  if (diffEntityOptions == null) {
+    diffEntityOptions = {file: ''};
+  }
+  return url.format({
+    protocol: 'atom',
+    host: 'nuclide',
+    pathname: 'diff-view',
+    slashes: true,
+    query: diffEntityOptions,
   });
 }

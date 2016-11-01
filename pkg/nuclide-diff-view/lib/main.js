@@ -23,6 +23,7 @@ import type {RegisterNux, TriggerNux} from '../../nuclide-nux/lib/main';
 
 import {Disposable} from 'atom';
 import createPackage from '../../commons-atom/createPackage';
+import {formatDiffViewUrl} from './utils';
 import {React, ReactDOM} from 'react-for-atom';
 import url from 'url';
 import uiTreePath from '../../commons-atom/ui-tree-path';
@@ -81,20 +82,6 @@ function dispatchDiffNavigatorToggle(visible: boolean): void {
     DIFF_VIEW_NAVIGATOR_TOGGLE_COMMAND,
     {visible},
   );
-}
-
-function formatDiffViewUrl(diffEntityOptions_?: ?DiffEntityOptions): string {
-  let diffEntityOptions = diffEntityOptions_;
-  if (diffEntityOptions == null) {
-    diffEntityOptions = {file: ''};
-  }
-  return url.format({
-    protocol: 'atom',
-    host: 'nuclide',
-    pathname: 'diff-view',
-    slashes: true,
-    query: diffEntityOptions,
-  });
 }
 
 function diffActivePath(diffOptions?: Object): void {

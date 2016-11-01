@@ -44,6 +44,7 @@ import {
 } from '../../nuclide-ui/LoadingSpinner';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {Observable} from 'rxjs';
+import {formatDiffViewUrl} from './utils';
 
 type Props = {
   diffModel: DiffViewModel,
@@ -160,6 +161,12 @@ export function renderFileChanges(diffModel: DiffViewModel): React.Element<any> 
     ? 'No file changes selected'
     : null;
 
+  // Open the view, if not previously open as well as issue a diff command.
+  // TODO(most): Switch to an action after migration complete to the new split UI.
+  const diffFilePath = filePath => {
+    atom.workspace.open(formatDiffViewUrl({file: filePath}));
+  };
+
   return (
     <div className="nuclide-diff-view-tree">
       {spinnerElement}
@@ -167,7 +174,7 @@ export function renderFileChanges(diffModel: DiffViewModel): React.Element<any> 
         commandPrefix="nuclide-diff-view"
         fileChanges={getMultiRootFileChanges(selectedFiles, rootPaths)}
         selectedFile={fileDiff.filePath}
-        onFileChosen={diffModel.diffFile.bind(diffModel)}
+        onFileChosen={diffFilePath}
       />
       {emptyMessage}
     </div>
