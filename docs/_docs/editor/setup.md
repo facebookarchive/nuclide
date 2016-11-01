@@ -41,7 +41,7 @@ prerequisites.
 
 ### Prerequisites
 
-Nuclide requires the version of Atom specified in [Atom's dependencies under "atom"](https://github.com/facebook/nuclide/blob/master/package.json). You can follow the [instructions on the Atom website](https://atom.io/docs/v0.191.0/getting-started-installing-atom#atom-on-mac). Essentially,
+Nuclide requires the version of Atom specified in [Atom's dependencies under "atom"](https://github.com/facebook/nuclide/blob/master/package.json). You can follow the [instructions on the Atom website](http://flight-manual.atom.io/getting-started/sections/installing-atom/#platform-mac). Essentially,
 if you go to [Atom.io](https://atom.io/), there will be direct link to download Atom.
 
 ### Installation
@@ -67,7 +67,7 @@ $ apm install nuclide
 
 ### Prerequisites
 
-Nuclide requires the version of Atom specified in [Atom's dependencies under "atom"](https://github.com/facebook/nuclide/blob/master/package.json) (which requires Git). There are [instructions on the Atom website](https://atom.io/download/deb#atom-on-linux) for installing Atom on Linux, but it doesn't mention the Git requirement.
+Nuclide requires the version of Atom specified in [Atom's dependencies under "atom"](https://github.com/facebook/nuclide/blob/master/package.json) (which requires Git). There are [instructions on the Atom website](http://flight-manual.atom.io/getting-started/sections/installing-atom/#platform-linux) for installing Atom on Linux, but it doesn't mention the Git requirement.
 
 Instead, follow the command-line process below which shows you the installation of all the
 necessary prerequisites, including Git.
@@ -109,7 +109,7 @@ $ apm install nuclide
 
 ### Prerequisites
 
-Atom can be installed on Windows. Nuclide requires the version of Atom specified in [Atom's dependencies under "atom"](https://github.com/facebook/nuclide/blob/master/package.json). You can follow the [instructions on the Atom website](https://atom.io/docs/v0.191.0/getting-started-installing-atom#atom-on-mac). Essentially,
+Atom can be installed on Windows. Nuclide requires the version of Atom specified in [Atom's dependencies under "atom"](https://github.com/facebook/nuclide/blob/master/package.json). You can follow the [instructions on the Atom website](http://flight-manual.atom.io/getting-started/sections/installing-atom/#platform-windows). Essentially,
 if you go to [Atom.io](https://atom.io/), there will be direct link to download Atom.
 
 >Some features of Nuclide may work on Windows, but the full Nuclide experience is [not yet supported](https://github.com/facebook/nuclide/issues/321).  
