@@ -41,6 +41,9 @@ import {renderReactRoot} from '../../../commons-atom/renderReactRoot';
 import {getLogger} from '../../../nuclide-logging';
 import {compact} from '../../../commons-node/observable';
 import {enforceReadOnly} from '../../../commons-atom/text-editor';
+import {
+  DIFF_EDITOR_MARKER_CLASS,
+} from '../constants';
 
 const DIFF_VIEW_NAVIGATION_TARGET = 'nuclide-diff-view-navigation-target';
 const NAVIGATION_GUTTER_NAME = 'nuclide-diff-split-navigation';
@@ -154,6 +157,11 @@ async function getDiffEditors(
     () => newDiffEditor.destroyMarkers(),
     () => oldDiffEditor.destroyMarkers(),
   );
+
+  // Add marker classes to be used for atom command registeration.
+  newEditorElement.classList.add(DIFF_EDITOR_MARKER_CLASS);
+  oldEditorElement.classList.add(DIFF_EDITOR_MARKER_CLASS);
+  disposables.add(() => newEditorElement.classList.remove(DIFF_EDITOR_MARKER_CLASS));
 
   disposables.add(
     new SyncScroll(

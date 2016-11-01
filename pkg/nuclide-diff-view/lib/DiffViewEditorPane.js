@@ -24,6 +24,9 @@ import {
   LoadingSpinnerSizes,
 } from '../../nuclide-ui/LoadingSpinner';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
+import {
+  DIFF_EDITOR_MARKER_CLASS,
+} from './constants';
 
 const SPINNER_DELAY_MS = 50;
 const DEBOUNCE_SCROLL_MS = 50;
@@ -67,6 +70,7 @@ export default class DiffViewEditorPane extends React.Component {
     this._subscriptions.add(editorSubscriptions);
 
     const editorDomElement = this.getEditorDomElement();
+    editorDomElement.classList.add(DIFF_EDITOR_MARKER_CLASS);
     this._diffViewEditor = new DiffViewEditor(editorDomElement);
     const textEditor = this.getEditorModel();
 

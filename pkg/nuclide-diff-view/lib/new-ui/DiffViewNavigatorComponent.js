@@ -17,7 +17,10 @@ import type DiffViewModel from '../DiffViewModel';
 import typeof * as BoundActionCreators from '../redux/Actions';
 
 import {React} from 'react-for-atom';
-import {DiffMode} from '../constants';
+import {
+  DiffMode,
+  DIFF_EDITOR_MARKER_CLASS,
+} from '../constants';
 import {
   centerScrollToBufferLine,
   navigationSectionStatusToEditorElement,
@@ -63,7 +66,7 @@ export default class DiffViewNavigatorComponent extends React.Component {
         <div className="padded">
           <span>Changed Sections: </span>
           <SectionDirectionNavigator
-            commandTarget="something-should-exist"
+            commandTarget={`.${DIFF_EDITOR_MARKER_CLASS}`}
             filePath={filePath}
             navigationSections={navigationSections}
             selectedNavigationSectionIndex={activeSectionIndex}
