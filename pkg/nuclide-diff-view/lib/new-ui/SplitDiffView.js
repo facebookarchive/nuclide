@@ -229,7 +229,17 @@ export default class SplitDiffView {
         }
       }).subscribe();
 
-    this._disposables.add(updateDiffSubscriptions);
+    const diffEditorsVisibility = diffEditorsStream
+      .debounceTime(100)
+      .map(diffEditors => diffEditors != null)
+      .subscribe(visible => {
+        actionCreators.updateDiffEditorsVisibility(visible);
+      });
+
+    this._disposables.add(
+      updateDiffSubscriptions,
+      diffEditorsVisibility,
+    );
   }
 
   dispose(): void {

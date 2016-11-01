@@ -147,6 +147,8 @@ export type AppState = {
   activeRepository: ?HgRepositoryClient,
   commit: CommitState,
   cwdApi: ?CwdApi,
+  diffEditorsVisible: boolean,
+  diffNavigatorVisible: boolean,
   fileDiff: FileDiffState,
   isLoadingFileDiff: boolean,
   publish: PublishState,
@@ -337,6 +339,20 @@ export type RemoveUiProviderAction = {
   },
 };
 
+export type UpdateDiffEditorsVisibilityAction = {
+  type: 'UPDATE_DIFF_EDITORS_VISIBILITY',
+  payload: {
+    visible: boolean,
+  },
+};
+
+export type UpdateDiffNavigatorVisibilityAction = {
+  type: 'UPDATE_DIFF_NAVIGATOR_VISIBILITY',
+  payload: {
+    visible: boolean,
+  },
+};
+
 export type Action = AddRepositoryAction
   | AddUiProviderAction
   | CloseViewAction
@@ -353,6 +369,8 @@ export type Action = AddRepositoryAction
   | SetViewModeAction
   | UpdateActiveRepositoryAction
   | UpdateCommitStateAction
+  | UpdateDiffEditorsVisibilityAction
+  | UpdateDiffNavigatorVisibilityAction
   | UpdateDirtyFilesAction
   | UpdateFileDiffAction
   | UpdateFileUiElementsAction

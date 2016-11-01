@@ -9,9 +9,12 @@
  * the root directory of this source tree.
  */
 
+import typeof * as BoundActionCreators from '../redux/Actions';
+
 import {React} from 'react-for-atom';
 
 type Props = {
+  actionCreators: BoundActionCreators,
   component: ReactClass<any>,
 };
 
@@ -24,6 +27,10 @@ export default class DiffViewNavigatorGadget extends React.Component {
 
   getPreferredInitialHeight(): number {
     return 300;
+  }
+
+  didChangeVisibility(visible: boolean) {
+    this.props.actionCreators.updateDiffNavigatorVisibility(visible);
   }
 
   render(): React.Element<any> {

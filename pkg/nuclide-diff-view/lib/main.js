@@ -446,6 +446,7 @@ class Activation {
 
     const diffModel = this._getDiffViewModel();
     diffModel.activate();
+    this._actionCreators.updateDiffEditorsVisibility(true);
     const hostElement = this._diffViewElement = new DiffViewElement()
       .initialize(diffModel, NUCLIDE_DIFF_VIEW_URI);
     this._diffViewComponent = ReactDOM.render(
@@ -460,6 +461,7 @@ class Activation {
     const destroySubscription = hostElement.onDidDestroy(() => {
       ReactDOM.unmountComponentAtNode(hostElement);
       diffModel.deactivate();
+      this._actionCreators.updateDiffEditorsVisibility(false);
       destroySubscription.dispose();
       this._subscriptions.remove(destroySubscription);
       this._diffViewElement = null;
@@ -684,11 +686,12 @@ class Activation {
         create: () => {
           const diffModel = this._getDiffViewModel();
           diffModel.activate();
+          const actionCreators = this._actionCreators;
 
           const boundComponent = bindObservableAsProps(
             this._appState.map(state => ({
               ...state,
-              actionCreators: this._actionCreators,
+              actionCreators,
               diffModel,
             })),
             DiffViewNavigatorComponent,
@@ -696,6 +699,7 @@ class Activation {
 
           return viewableFromReactElement(
             <DiffViewNavigatorGadget
+              actionCreators={actionCreators}
               component={boundComponent}
             />,
           );

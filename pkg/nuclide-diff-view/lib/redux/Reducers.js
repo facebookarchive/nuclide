@@ -120,6 +120,17 @@ export function rootReducer(
         uiProviders: reduceUiProviders(state.uiProviders, action),
       };
 
+    case ActionTypes.UPDATE_DIFF_EDITORS_VISIBILITY:
+      return {
+        ...state,
+        diffEditorsVisible: action.payload.visible,
+      };
+    case ActionTypes.UPDATE_DIFF_NAVIGATOR_VISIBILITY:
+      return {
+        ...state,
+        diffNavigatorVisible: action.payload.visible,
+      };
+
     default:
       return state;
   }

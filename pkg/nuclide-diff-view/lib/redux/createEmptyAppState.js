@@ -84,6 +84,8 @@ export function createEmptyAppState(): AppState {
     activeRepository: null,
     commit: getEmptyCommitState(),
     cwdApi: null,
+    diffEditorsVisible: false,
+    diffNavigatorVisible: false,
     fileDiff: getEmptyFileDiffState(),
     isLoadingFileDiff: false,
     publish: getEmptyPublishState(),

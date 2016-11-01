@@ -35,6 +35,8 @@ import type {
   UIProvider,
   UpdateActiveRepositoryAction,
   UpdateCommitStateAction,
+  UpdateDiffEditorsVisibilityAction,
+  UpdateDiffNavigatorVisibilityAction,
   UpdateDirtyFilesAction,
   UpdateFileDiffAction,
   UpdateFileUiElementsAction,
@@ -338,6 +340,28 @@ export function updateLoadingFileDiff(
     type: ActionTypes.UPDATE_LOADING_FILE_DIFF,
     payload: {
       isLoading,
+    },
+  };
+}
+
+export function updateDiffEditorsVisibility(
+  visible: boolean,
+): UpdateDiffEditorsVisibilityAction {
+  return {
+    type: ActionTypes.UPDATE_DIFF_EDITORS_VISIBILITY,
+    payload: {
+      visible,
+    },
+  };
+}
+
+export function updateDiffNavigatorVisibility(
+  visible: boolean,
+): UpdateDiffNavigatorVisibilityAction {
+  return {
+    type: ActionTypes.UPDATE_DIFF_NAVIGATOR_VISIBILITY,
+    payload: {
+      visible,
     },
   };
 }
