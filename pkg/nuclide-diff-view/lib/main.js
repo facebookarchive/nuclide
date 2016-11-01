@@ -508,12 +508,17 @@ class Activation {
   }
 
   serialize(): SerializedDiffViewState {
-    if (this._diffViewElement == null || this._diffViewModel == null) {
+    const {
+      commit: {mode: commitMode},
+      diffEditorsVisible,
+      fileDiff,
+      viewMode,
+    } = this._appState.getValue();
+    if (!diffEditorsVisible) {
       return {
         visible: false,
       };
     }
-    const {commit: {mode: commitMode}, fileDiff, viewMode} = this._diffViewModel.getState();
     return {
       visible: true,
       activeFilePath: fileDiff.filePath,

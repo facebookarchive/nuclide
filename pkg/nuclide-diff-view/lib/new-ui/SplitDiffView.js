@@ -80,6 +80,8 @@ function getReadOnlyEditor(): atom$TextEditor {
   textEditor.getTitle = () => 'Original (Read Only)';
   textEditor.isModified = () => false;
   textEditor.getURI = () => READ_ONLY_EDITOR_PATH;
+  textEditor.serialize = () => null;
+
   return textEditor;
 }
 

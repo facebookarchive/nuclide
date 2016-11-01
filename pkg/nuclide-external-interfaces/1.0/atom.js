@@ -870,6 +870,7 @@ declare class atom$TextEditor extends atom$Model {
   moveToTop(): void,
   tokenForBufferPosition(position: atom$Point | [?number, ?number]): atom$Token,
   onDidConflict(callback: () => void): IDisposable,
+  serialize: () => mixed,
 }
 
 /**
