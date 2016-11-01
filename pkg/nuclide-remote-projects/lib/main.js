@@ -377,7 +377,6 @@ export function activate(
       // Atom ensures that each pane only has one item per unique URI.
       // Null out the existing pane item's URI so we can insert the new one
       // without closing the pane.
-      /* $FlowFixMe */
       editor.getURI = () => null;
       // Cleanup the old pane item on successful opening or when no connection could be
       // established.

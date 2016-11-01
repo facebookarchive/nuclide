@@ -34,6 +34,9 @@ import {getHeadRevision} from './utils';
 import {track} from '../../nuclide-analytics';
 import {createDiffViewNux, NUX_DIFF_VIEW_ID} from './diffViewNux';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
+import SplitDiffView from './new-ui/SplitDiffView';
+import passesGK from '../../commons-node/passesGK';
+import invariant from 'assert';
 
 // Redux store
 import type {Store} from './types';
@@ -45,7 +48,7 @@ import * as Epics from './redux/Epics';
 import {rootReducer} from './redux/Reducers';
 import {applyMiddleware, bindActionCreators, createStore} from 'redux';
 import {combineEpics, createEpicMiddleware} from '../../commons-node/redux-observable';
-import {Observable, Subject} from 'rxjs';
+import {BehaviorSubject, Observable, Subject} from 'rxjs';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {getLogger} from '../../nuclide-logging';
 
@@ -176,6 +179,8 @@ class Activation {
   _diffViewComponent: ?React.Component<DiffViewComponent, any, any>;
   _tryTriggerNuxService: ?TriggerNux;
   _progressUpdates: Subject<Message>;
+  _splitDiffView: ?SplitDiffView;
+  _appState: BehaviorSubject<AppState>;
 
   _store: Store;
   _actionCreators: BoundActionCreators;
@@ -203,13 +208,15 @@ class Activation {
       initialState,
       applyMiddleware(createEpicMiddleware(rootEpic)),
     );
-    const states = Observable.from(this._store);
+    const states = Observable.from(this._store).share();
+    this._appState = new BehaviorSubject(initialState);
     this._actionCreators = bindActionCreators(Actions, this._store.dispatch);
 
     this._subscriptions.add(
       // TODO(most): Remove Diff View model and use stream of props for the views instead.
       states.subscribe(_state => {
         const state: AppState = (_state: any);
+
         const {commit, fileDiff, publish} = state;
 
         let activeRepositoryState;
@@ -248,6 +255,8 @@ class Activation {
             revisions: [],
           },
         });
+
+        this._appState.next(state);
       }),
       getHgRepositoryStream().subscribe(repository => {
         this._actionCreators.addRepository(repository);
@@ -328,9 +337,13 @@ class Activation {
       atom.workspace.addOpener(uri => {
         if (uri.startsWith(NUCLIDE_DIFF_VIEW_URI)) {
           const {query: diffEntityOptions} = url.parse(uri, true);
-          return this._getDiffViewElement(
-            (diffEntityOptions: any),
-          );
+          return passesGK('nuclide_diff_view_new_ui').then(useNewUi => {
+            if (useNewUi) {
+              return this._openNewSplitView((diffEntityOptions: any));
+            } else {
+              return this._getDiffViewElement((diffEntityOptions: any));
+            }
+          });
         }
       }),
     );
@@ -374,6 +387,20 @@ class Activation {
         }));
       }
     };
+  }
+
+  _openNewSplitView(diffEntityOptions: DiffEntityOptions): Promise<atom$TextEditor> {
+    if (this._splitDiffView == null) {
+      this._splitDiffView = new SplitDiffView(
+        this._appState.asObservable(), this._actionCreators);
+      this._subscriptions.add(this._splitDiffView);
+    }
+    this._activateDiffPath(diffEntityOptions);
+    invariant(diffEntityOptions.file, 'the new diff view can only diff files');
+    const filePath = diffEntityOptions.file;
+    this._actionCreators.diffFile(filePath, () => {});
+    // Activate the text editor of the file to be diffed.
+    return atom.workspace.open(filePath, {searchAllPanes: true});
   }
 
   _getDiffViewModel(): DiffViewModel {
@@ -427,10 +454,7 @@ class Activation {
   }
 
   _activateDiffPath(diffEntityOptions: DiffEntityOptions): void {
-    if (this._diffViewModel == null) {
-      return;
-    }
-    if (diffEntityOptions.file) {
+    if (diffEntityOptions.file && this._diffViewModel != null) {
       this._diffViewModel.diffFile(diffEntityOptions.file);
     }
     const {viewMode, commit: {mode: commitMode}} = this._store.getState();

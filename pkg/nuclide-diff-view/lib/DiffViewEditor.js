@@ -267,7 +267,7 @@ export default class DiffViewEditor {
     );
   }
 
-  _destroyMarkers(): void {
+  destroyMarkers(): void {
     const allMarkers = concatIterators(
       this._highlightMarkers,
       this._offsetMarkers,
@@ -284,8 +284,16 @@ export default class DiffViewEditor {
   }
 
   destroy(): void {
-    this._destroyMarkers();
+    this.destroyMarkers();
     this._editor.destroy();
+  }
+
+  getEditor(): atom$TextEditor {
+    return this._editor;
+  }
+
+  getEditorDomElement(): atom$TextEditorElement {
+    return this._editorElement;
   }
 
   _scrollToRow(row: number): void {

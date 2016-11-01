@@ -676,7 +676,7 @@ declare class atom$TextEditor extends atom$Model {
   onDidInsertText(callback: (event: {text: string, range: atom$Range}) => mixed): IDisposable,
 
   // File Details
-  getTitle(): string,
+  getTitle: () => string,
   getLongTitle(): string,
   /**
    * If you open Atom via Spotlight such that it opens with a tab named
@@ -684,8 +684,9 @@ declare class atom$TextEditor extends atom$Model {
    * null.
    */
   getPath(): ?string,
+  getURI: () => ?string,
   insertNewline(): void,
-  isModified(): boolean,
+  isModified: () => boolean,
   isEmpty(): boolean,
   getEncoding(): buffer$Encoding,
   setEncoding(encoding: string): void,
@@ -780,6 +781,9 @@ declare class atom$TextEditor extends atom$Model {
       preserveFolds?: boolean,
     },
   ): void,
+
+  // Folds
+  unfoldAll(): void,
 
   // Searching and Replacing
   scanInBufferRange(
