@@ -25,7 +25,18 @@ type DiffNavigationBarProps = {
   onNavigateToNavigationSection: (status: NavigationSectionStatusType, lineNumber: number) => any,
 };
 
-export default class DiffNavigationBar extends React.Component {
+export function clickEventToScrollLineNumber(
+  sectionLineNumber: number,
+  sectionLineCount: number,
+  e: SyntheticMouseEvent,
+): number {
+  const targetRectangle = ((e.target: any): HTMLElement).getBoundingClientRect();
+  const lineHeight = (e.clientY - targetRectangle.top) / targetRectangle.height;
+  return sectionLineNumber +
+    Math.floor(sectionLineCount * lineHeight);
+}
+
+export class DiffNavigationBar extends React.Component {
   props: DiffNavigationBarProps;
 
   constructor(props: DiffNavigationBarProps) {
@@ -120,11 +131,8 @@ class NavigatonBarJumpTarget extends React.Component {
   }
 
   _handleClick(e: SyntheticMouseEvent): void {
-    const {navigationSection} = this.props;
-    const targetRectangle = ((e.target: any): HTMLElement).getBoundingClientRect();
-    const lineHeight = (e.clientY - targetRectangle.top) / targetRectangle.height;
-    const scrollToLineNumber = navigationSection.lineNumber +
-      Math.floor(navigationSection.lineCount * lineHeight);
-    this.props.onClick(navigationSection.status, scrollToLineNumber);
+    const {navigationSection: {status, lineNumber, lineCount}} = this.props;
+    const scrollToLineNumber = clickEventToScrollLineNumber(lineNumber, lineCount, e);
+    this.props.onClick(status, scrollToLineNumber);
   }
 }

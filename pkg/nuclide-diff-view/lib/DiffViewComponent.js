@@ -27,7 +27,7 @@ import DiffViewEditorPane from './DiffViewEditorPane';
 import SyncScroll from './SyncScroll';
 import DiffTimelineView from './DiffTimelineView';
 import DiffViewToolbar from './DiffViewToolbar';
-import DiffNavigationBar from './DiffNavigationBar';
+import {DiffNavigationBar} from './DiffNavigationBar';
 import DiffCommitView from './DiffCommitView';
 import DiffPublishView from './DiffPublishView';
 import createPaneContainer from '../../commons-atom/create-pane-container';
@@ -174,6 +174,56 @@ export function renderFileChanges(diffModel: DiffViewModel): React.Element<any> 
       {emptyMessage}
     </div>
   );
+}
+
+export function centerScrollToBufferLine(
+  textEditorElement: atom$TextEditorElement,
+  bufferLineNumber: number,
+): void {
+  const textEditor = textEditorElement.getModel();
+  const pixelPositionTop = textEditorElement
+    .pixelPositionForBufferPosition([bufferLineNumber, 0]).top;
+  // Manually calculate the scroll location, instead of using
+  // `textEditor.scrollToBufferPosition([lineNumber, 0], {center: true})`
+  // because that API to wouldn't center the line if it was in the visible screen range.
+  const scrollTop = pixelPositionTop
+    + textEditor.getLineHeightInPixels() / 2
+    - textEditorElement.clientHeight / 2;
+  textEditorElement.setScrollTop(Math.max(scrollTop, 1));
+}
+
+export function pixelRangeForNavigationSection(
+  oldEditorElement: atom$TextEditorElement,
+  newEditorElement: atom$TextEditorElement,
+  navigationSection: NavigationSection,
+): {top: number, bottom: number} {
+  const {status, lineNumber, lineCount} = navigationSection;
+  const textEditorElement = navigationSectionStatusToEditorElement(
+    oldEditorElement, newEditorElement, status);
+  const lineHeight = textEditorElement.getModel().getLineHeightInPixels();
+  return {
+    top: textEditorElement.pixelPositionForBufferPosition([lineNumber, 0]).top,
+    bottom: textEditorElement.pixelPositionForBufferPosition([lineNumber + lineCount - 1, 0]).top
+      + lineHeight,
+  };
+}
+
+export function navigationSectionStatusToEditorElement(
+  oldEditorElement: atom$TextEditorElement,
+  newEditorElement: atom$TextEditorElement,
+  navigationSectionStatus: NavigationSectionStatusType,
+): atom$TextEditorElement {
+  switch (navigationSectionStatus) {
+    case NavigationSectionStatus.ADDED:
+    case NavigationSectionStatus.CHANGED:
+    case NavigationSectionStatus.NEW_ELEMENT:
+      return newEditorElement;
+    case NavigationSectionStatus.REMOVED:
+    case NavigationSectionStatus.OLD_ELEMENT:
+      return oldEditorElement;
+    default:
+      throw new Error('Invalid diff section status');
+  }
 }
 
 function getInitialState(): State {
@@ -465,45 +515,27 @@ export default class DiffViewComponent extends React.Component {
     scrollToLineNumber: number,
   ): void {
     const textEditorElement = this._navigationSectionStatusToEditorElement(navigationSectionStatus);
-    const textEditor = textEditorElement.getModel();
-    const pixelPositionTop = textEditorElement
-      .pixelPositionForBufferPosition([scrollToLineNumber, 0]).top;
-    // Manually calculate the scroll location, instead of using
-    // `textEditor.scrollToBufferPosition([lineNumber, 0], {center: true})`
-    // because that API to wouldn't center the line if it was in the visible screen range.
-    const scrollTop = pixelPositionTop
-      + textEditor.getLineHeightInPixels() / 2
-      - textEditorElement.clientHeight / 2;
-    textEditorElement.setScrollTop(Math.max(scrollTop, 1));
+    centerScrollToBufferLine(textEditorElement, scrollToLineNumber);
   }
 
   _pixelRangeForNavigationSection(
     navigationSection: NavigationSection,
   ): {top: number, bottom: number} {
-    const {status, lineNumber, lineCount} = navigationSection;
-    const textEditorElement = this._navigationSectionStatusToEditorElement(status);
-    const lineHeight = textEditorElement.getModel().getLineHeightInPixels();
-    return {
-      top: textEditorElement.pixelPositionForBufferPosition([lineNumber, 0]).top,
-      bottom: textEditorElement.pixelPositionForBufferPosition([lineNumber + lineCount - 1, 0]).top
-        + lineHeight,
-    };
+    return pixelRangeForNavigationSection(
+      this._oldEditorComponent.getEditorDomElement(),
+      this._newEditorComponent.getEditorDomElement(),
+      navigationSection,
+    );
   }
 
   _navigationSectionStatusToEditorElement(
     navigationSectionStatus: NavigationSectionStatusType,
   ): atom$TextEditorElement {
-    switch (navigationSectionStatus) {
-      case NavigationSectionStatus.ADDED:
-      case NavigationSectionStatus.CHANGED:
-      case NavigationSectionStatus.NEW_ELEMENT:
-        return this._newEditorComponent.getEditorDomElement();
-      case NavigationSectionStatus.REMOVED:
-      case NavigationSectionStatus.OLD_ELEMENT:
-        return this._oldEditorComponent.getEditorDomElement();
-      default:
-        throw new Error('Invalid diff section status');
-    }
+    return navigationSectionStatusToEditorElement(
+      this._oldEditorComponent.getEditorDomElement(),
+      this._newEditorComponent.getEditorDomElement(),
+      navigationSectionStatus,
+    );
   }
 
   _getPaneElement(pane: atom$Pane): HTMLElement {
