@@ -14,9 +14,9 @@
  * APIs listed in this file are ones that should be built into Flow and need to be upstreamed.
  */
 
-interface IDisposable {
+type IDisposable = {
   dispose(): mixed,
-}
+};
 
 /*
  * These Notification & NotificationOptions definitions are not exhaustive while standardization,
