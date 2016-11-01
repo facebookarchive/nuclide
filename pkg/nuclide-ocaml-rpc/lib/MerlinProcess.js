@@ -16,7 +16,7 @@ import nuclideUri from '../../commons-node/nuclideUri';
 import readline from 'readline';
 
 import fsPromise from '../../commons-node/fsPromise';
-import {asyncExecute, safeSpawn} from '../../commons-node/process';
+import {asyncExecute, safeSpawn, getOriginalEnvironment} from '../../commons-node/process';
 import {PromiseQueue} from '../../commons-node/promise-executors';
 import {getLogger} from '../../nuclide-logging';
 
@@ -350,15 +350,23 @@ export async function getInstance(file: NuclideUri): Promise<?MerlinProcess> {
 
   const options = {
     cwd: (dotMerlinPath ? nuclideUri.dirname(dotMerlinPath) : '.'),
+    // Starts the process with the user's bashrc, which might contain a
+    // different ocamlmerlin. See `getMerlinVersion` for the same consistent
+    // logic. This also implies .nucliderc isn't considered, if there's any
+    // extra override; to simulate the same behavior, do this in your bashrc:
+    // if [ "$TERM" = "nuclide"]; then someOverrideLogic if
+    env: getOriginalEnvironment(),
   };
 
-  logger.info('Spawning new ocamlmerlin process');
+  logger.info('Spawning new ocamlmerlin process version ' + version);
   const process = await safeSpawn(merlinPath, flags, options);
-  switch (version) {
-    case '2.5.0':
+  // Turns 2.5.1 into 2.5
+  const majorMinor = version.split('.').slice(0, 2).join('.');
+  switch (majorMinor) {
+    case '2.5':
       merlinProcessInstance = new MerlinProcessV2_5(process);
       break;
-    case '2.3.1':
+    case '2.3':
       merlinProcessInstance = new MerlinProcessV2_3_1(process);
       break;
     default:
@@ -400,7 +408,9 @@ function getMerlinFlags(): Array<string> {
 let merlinVersionCache: ?string;
 async function getMerlinVersion(merlinPath: string): Promise<string | null> {
   if (merlinVersionCache === undefined) {
-    const result = await asyncExecute(merlinPath, ['-version']);
+    const result = await asyncExecute(merlinPath, ['-version'], {
+      env: getOriginalEnvironment(),
+    });
     if (result.exitCode === 0) {
       const match = result.stdout.match(/^The Merlin toolkit version (\d+(?:\.\d)*),/);
       if (match != null && match[1] != null) {
