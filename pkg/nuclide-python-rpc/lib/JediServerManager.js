@@ -14,6 +14,7 @@ import typeof * as JediService from './JediService';
 import LRUCache from 'lru-cache';
 import fsPromise from '../../commons-node/fsPromise';
 import nuclideUri from '../../commons-node/nuclideUri';
+import {getOriginalEnvironment} from '../../commons-node/process';
 import JediServer from './JediServer';
 import LinkTreeManager from './LinkTreeManager';
 
@@ -26,6 +27,12 @@ async function getServerArgs(src: string) {
     overrides = await require('./fb/find-jedi-server-args')(src);
   } catch (e) {
     // Ignore.
+  }
+
+  // Append the user's PYTHONPATH if it exists.
+  const {PYTHONPATH} = getOriginalEnvironment();
+  if (PYTHONPATH != null && PYTHONPATH.trim() !== '') {
+    overrides.paths = (overrides.paths || []).concat(nuclideUri.splitPathList(PYTHONPATH));
   }
 
   return {
