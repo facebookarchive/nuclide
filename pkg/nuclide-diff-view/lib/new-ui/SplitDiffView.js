@@ -13,6 +13,7 @@ import type {NuclideUri} from '../../../commons-node/nuclideUri';
 import type {
   AppState,
   FileDiffState,
+  NavigationSection,
   NavigationSectionStatusType,
 } from '../types';
 import typeof * as BoundActionCreators from '../redux/Actions';
@@ -56,6 +57,7 @@ const NUCLIDE_DIFF_EDITOR_LOADING_CLASSNAME = 'nuclide-diff-view-editor-loading'
 const NUCLIDE_DIFF_LOADING_INDICATOR_CLASSNAME = 'nuclide-diff-view-pane-loading-indicator';
 const READ_ONLY_EDITOR_CLASS = 'nuclide-diff-view-read-only-editor';
 const DIFF_SPINNER_DELAY_MS = 50;
+const SCROLL_FIRST_CHANGE_DELAY_MS = 100;
 
 function cleanUpEditor(editor: atom$TextEditor): void {
   // if the pane that this editor was in is now empty, we will destroy it.
@@ -331,6 +333,25 @@ function updateEditorLoadingIndicator(
   }
 }
 
+function centerScrollToFirstChange(
+  diffEditors: DiffEditorsResult,
+  navigationSections: Array<NavigationSection>,
+): void {
+  if (navigationSections.length === 0) {
+    return;
+  }
+
+  const {oldDiffEditor, newDiffEditor} = diffEditors;
+  const firstSection = navigationSections[0];
+  const editorElement = navigationSectionStatusToEditorElement(
+    oldDiffEditor.getEditorDomElement(),
+    newDiffEditor.getEditorDomElement(),
+    firstSection.status,
+  );
+
+  centerScrollToBufferLine(editorElement, firstSection.lineNumber);
+}
+
 export default class SplitDiffView {
 
   _disposables: UniversalDisposable;
@@ -442,11 +463,33 @@ export default class SplitDiffView {
       })
       .subscribe();
 
+
+    const scrollToFirstChange = diffEditorsStream.switchMap(diffEditors => {
+      if (diffEditors == null) {
+        return Observable.empty();
+      }
+
+      // Wait for the diff text to load.
+      return states
+        .filter(({fileDiff}) => fileDiff.oldEditorState.text.length > 0)
+        .first()
+        // Wait for the diff editor to render the UI state.
+        .delay(SCROLL_FIRST_CHANGE_DELAY_MS)
+        .do(({fileDiff: {navigationSections}}) => {
+          try {
+            centerScrollToFirstChange(diffEditors, navigationSections);
+          } catch (error) {
+            getLogger().error('Split Diff Error: Could not scroll to first change', error);
+          }
+        });
+    }).subscribe();
+
     this._disposables.add(
       activeSectionUpdates,
       diffEditorsUpdates,
       diffLoadingIndicatorUpdates,
       navigationGutterUpdates,
+      scrollToFirstChange,
       updateDiffSubscriptions,
     );
   }
