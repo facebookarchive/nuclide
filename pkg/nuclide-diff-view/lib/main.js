@@ -17,7 +17,7 @@ import type {HomeFragments} from '../../nuclide-home/lib/types';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 import type {OutputService, Message} from '../../nuclide-console/lib/types';
-import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
+import type {Viewable, WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
 
 import type {RegisterNux, TriggerNux} from '../../nuclide-nux/lib/main';
 
@@ -627,35 +627,39 @@ class Activation {
   consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
     this._subscriptions.add(
       api.registerFactory({
-        id: 'nuclide-diff-view-timeline',
-        name: 'Diff Navigator (WIP)',
-        // WIP.
-        // eslint-disable-next-line nuclide-internal/atom-commands
+        id: 'nuclide-diff-view-navigator',
+        name: 'Source Control Navigator',
         toggleCommand: DIFF_VIEW_NAVIGATOR_TOGGLE_COMMAND,
         defaultLocation: 'bottom-panel',
-        create: () => {
-          const diffModel = this._getDiffViewModel();
-          const actionCreators = this._actionCreators;
-
-          const boundComponent = bindObservableAsProps(
-            this._appState.map(state => ({
-              ...state,
-              actionCreators,
-              diffModel,
-            })),
-            DiffViewNavigatorComponent,
-          );
-
-          return viewableFromReactElement(
-            <DiffViewNavigatorGadget
-              actionCreators={actionCreators}
-              component={boundComponent}
-            />,
-          );
-        },
+        create: () => this._createDiffViewNavigatorElement(),
         isInstance: item => item instanceof DiffViewNavigatorGadget,
       }),
     );
+  }
+
+  _createDiffViewNavigatorElement(): Viewable {
+    const diffModel = this._getDiffViewModel();
+    const actionCreators = this._actionCreators;
+
+    const boundComponent = bindObservableAsProps(
+      this._appState.map(state => ({
+        ...state,
+        actionCreators,
+        diffModel,
+      })),
+      DiffViewNavigatorComponent,
+    );
+
+    return viewableFromReactElement(
+      <DiffViewNavigatorGadget
+        actionCreators={actionCreators}
+        component={boundComponent}
+      />,
+    );
+  }
+
+  deserializeDiffViewNavigator(): Viewable {
+    return this._createDiffViewNavigatorElement();
   }
 
   dispose(): void {

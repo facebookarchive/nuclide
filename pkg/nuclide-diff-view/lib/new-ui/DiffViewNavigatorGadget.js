@@ -22,7 +22,11 @@ export default class DiffViewNavigatorGadget extends React.Component {
   props: Props;
 
   getTitle(): string {
-    return 'Diff Navigator (WIP)';
+    return 'Source Control Navigator';
+  }
+
+  getIconName(): string {
+    return 'git-branch';
   }
 
   getPreferredInitialHeight(): number {
@@ -36,5 +40,11 @@ export default class DiffViewNavigatorGadget extends React.Component {
   render(): React.Element<any> {
     const {component: Component} = this.props;
     return <Component />;
+  }
+
+  serialize(): mixed {
+    return {
+      deserializer: 'nuclide.DiffViewNavigator',
+    };
   }
 }

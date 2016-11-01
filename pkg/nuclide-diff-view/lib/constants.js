@@ -90,5 +90,5 @@ export const LintErrorMessages = [
   'ESLint reported a warning',
 ];
 
-export const DIFF_VIEW_NAVIGATOR_TOGGLE_COMMAND = 'experimental-diff-view-navigator:toggle';
+export const DIFF_VIEW_NAVIGATOR_TOGGLE_COMMAND = 'diff-view-navigator:toggle';
 export const DIFF_EDITOR_MARKER_CLASS = 'nuclide-diff-editor-marker';

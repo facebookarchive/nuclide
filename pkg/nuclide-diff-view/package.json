@@ -5,6 +5,9 @@
   "version": "0.0.0",
   "description": "Provides Diff Viewer agnostic to the source control type of a project",
   "atomTestRunner": "../../lib/test-runner.js",
+  "deserializers": {
+    "nuclide.DiffViewNavigator": "deserializeDiffViewNavigator"
+  },
   "nuclide": {
     "packageType": "Atom",
     "testRunner": "apm"
