@@ -392,9 +392,9 @@ export function diffFileEpic(
         .switchMap(([hgDiff]) => {
           if (hgDiff == null) {
             return Observable.of(
-              Actions.updateLoadingFileDiff(true),
               // Clear Diff UI State.
               Actions.updateFileDiff(filePath, '', '', null),
+              Actions.updateLoadingFileDiff(true),
             );
           }
 

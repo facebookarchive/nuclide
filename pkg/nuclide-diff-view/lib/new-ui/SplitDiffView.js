@@ -245,24 +245,28 @@ function renderNavigationBarAtGutter(
     fileDiffs
       // Debounce diff sections rendering to avoid blocking the UI.
       .debounceTime(50)
-      .map(({navigationSections}) => {
+      .switchMap(({navigationSections}) => {
+        const gutterContainer: HTMLElement = (navigationGutterView.parentNode: any);
+        if (gutterContainer == null) {
+          getLogger().error('Split Diff Error: Navigation gutter is not mounted!');
+          return Observable.empty();
+        }
+
         const editorLineHeight = oldDiffEditor.getEditor().getLineHeightInPixels();
         const diffEditorsHeight = Math.max(
           oldEditorElement.getScrollHeight(),
           newEditorElement.getScrollHeight(),
           1, // Protect against zero scroll height while initializring editors.
         );
-
-        const gutterContainer: HTMLElement = (navigationGutterView.parentNode: any);
         const navigationScale = gutterContainer.clientHeight / diffEditorsHeight;
 
-        return {
+        return Observable.of({
           navigationSections,
           navigationScale,
           editorLineHeight,
           pixelRangeForNavigationSection: boundPixelRangeForNavigationSection,
           onNavigateToNavigationSection: fakeNavigationHandler,
-        };
+        });
       }),
     DiffNavigationBar,
   );
@@ -291,6 +295,40 @@ function renderNavigationBarAtGutter(
   });
 
   navigationGutter.show();
+}
+
+function updateEditorLoadingIndicator(
+  editorElement: atom$TextEditorElement,
+  isLoading: boolean,
+) {
+  // Adding to the parent because the atom-text-editor isn't relatively positioned.
+  const editorParent: HTMLElement = (editorElement.parentNode: any);
+  if (editorParent == null) {
+    getLogger().error('Split Diff Error: Editor is not yet mounted!');
+    return;
+  }
+
+  function removeLoadingIndicator() {
+    // Unfade the editor and hide the loading spinner with delay.
+    editorElement.classList.remove(NUCLIDE_DIFF_EDITOR_LOADING_CLASSNAME);
+    const loadingElement = editorParent
+      .querySelector(`.${NUCLIDE_DIFF_LOADING_INDICATOR_CLASSNAME}`);
+    if (loadingElement != null) {
+      editorParent.removeChild(loadingElement);
+    }
+  }
+
+  removeLoadingIndicator();
+
+  if (isLoading) {
+    // Fade the editor and show the loading spinner with delay.
+    editorElement.classList.add(NUCLIDE_DIFF_EDITOR_LOADING_CLASSNAME);
+    const loadingElement = renderReactRoot(
+      <LoadingSpinner delay={DIFF_SPINNER_DELAY_MS} size={LoadingSpinnerSizes.LARGE} />,
+    );
+    loadingElement.classList.add(NUCLIDE_DIFF_LOADING_INDICATOR_CLASSNAME);
+    editorParent.appendChild(loadingElement);
+  }
 }
 
 export default class SplitDiffView {
@@ -375,34 +413,30 @@ export default class SplitDiffView {
       });
 
     const navigationGutterUpdates = compact(diffEditorsStream)
-      .do(diffEditors => renderNavigationBarAtGutter(diffEditors, fileDiffs))
+      .debounceTime(50)
+      .do(diffEditors => {
+        try {
+          renderNavigationBarAtGutter(diffEditors, fileDiffs);
+        } catch (error) {
+          notifyInternalError(error);
+        }
+      })
       .subscribe();
 
-    const diffLoadingIndicatorUpdates = compact(diffEditorsStream)
+    const diffLoadingIndicatorUpdates = diffEditorsStream
       .switchMap(diffEditors => {
-        return states.map(({isLoadingFileDiff}) => isLoadingFileDiff)
+        if (diffEditors == null) {
+          return Observable.empty();
+        }
+        return states
+          .map(({isLoadingFileDiff}) => isLoadingFileDiff)
           .distinctUntilChanged()
           .do(isLoading => {
             const editorElement = diffEditors.oldDiffEditor.getEditorDomElement();
-            // Adding to the parent because the atom-text-editor isn't relatively positioned.
-            const editorParent: HTMLElement = (editorElement.parentNode: any);
-
-            if (isLoading) {
-              // Fade the editor and show the loading spinner with delay.
-              editorElement.classList.add(NUCLIDE_DIFF_EDITOR_LOADING_CLASSNAME);
-              const loadingElement = renderReactRoot(
-                <LoadingSpinner delay={DIFF_SPINNER_DELAY_MS} size={LoadingSpinnerSizes.LARGE} />,
-              );
-              loadingElement.classList.add(NUCLIDE_DIFF_LOADING_INDICATOR_CLASSNAME);
-              editorParent.appendChild(loadingElement);
-            } else {
-              // Unfade the editor and hide the loading spinner with delay.
-              editorElement.classList.remove(NUCLIDE_DIFF_EDITOR_LOADING_CLASSNAME);
-              const loadingElement = editorParent
-                .querySelector(`.${NUCLIDE_DIFF_LOADING_INDICATOR_CLASSNAME}`);
-              if (loadingElement != null) {
-                editorParent.removeChild(loadingElement);
-              }
+            try {
+              updateEditorLoadingIndicator(editorElement, isLoading);
+            } catch (error) {
+              getLogger().error('Split Diff Error: Could not update loading indicator', error);
             }
           });
       })
