@@ -303,6 +303,7 @@ atom-text-editor, atom-text-editor::shadow {
 .nuclide-diff-mode {
   z-index: 3;
   display: flex;
+  width: 100%;
   flex-direction: column;
   border-top: 1px solid @pane-item-border-color;
 
@@ -404,4 +405,26 @@ atom-text-editor, atom-text-editor::shadow {
   background-image: linear-gradient(to right, transparent 50%, hsla(0,0%,0%,.15) 50%);
   background-size: 10px 100%;
   animation: btn-progress .5s linear infinite;
+}
+
+.nuclide-diff-view-navigator-root {
+  display: flex;
+  width: 100%;
+}
+
+.nuclide-diff-view-navigator-file-changes-container {
+  flex-grow: 1;
+  overflow: scroll;
+}
+
+.nuclide-diff-view-navigator-timeline-container {
+  flex-grow: 6;
+  overflow: scroll;
+  display: flex;
+}
+
+.nuclide-diff-view-navigator-selector {
+  min-height: 100%;
+  width: 1px;
+  background-color: @base-border-color;
 }

@@ -15,7 +15,6 @@ import type {
   NavigationSectionStatusType,
 } from './types';
 import type DiffViewModel from './DiffViewModel';
-import type {RevisionInfo} from '../../nuclide-hg-rpc/lib/HgService';
 
 import invariant from 'assert';
 import {MultiRootChangedFilesView} from '../../nuclide-ui/MultiRootChangedFilesView';
@@ -71,20 +70,113 @@ function getPublishComponent() {
   return CachedPublishComponent;
 }
 
-let CachedDiffComponent;
-function getDiffComponent() {
-  if (CachedDiffComponent == null) {
+let CachedCommitComponent;
+function getCommitComponent() {
+  if (CachedCommitComponent == null) {
     // Try requiring private module
     try {
       // $FlowFB
       const {DiffViewCreateForm} = require('./fb/DiffViewCreateForm');
-      CachedDiffComponent = DiffViewCreateForm;
+      CachedCommitComponent = DiffViewCreateForm;
     } catch (ex) {
-      CachedDiffComponent = DiffCommitView;
+      CachedCommitComponent = DiffCommitView;
     }
   }
 
-  return CachedDiffComponent;
+  return CachedCommitComponent;
+}
+
+export function renderPublishView(diffModel: DiffViewModel): React.Element<any> {
+  const {
+    publishMode,
+    publishModeState,
+    publishMessage,
+    headCommitMessage,
+  } = diffModel.getState();
+  const PublishComponent = getPublishComponent();
+  return (
+    <PublishComponent
+      publishModeState={publishModeState}
+      message={publishMessage}
+      publishMode={publishMode}
+      headCommitMessage={headCommitMessage}
+      diffModel={diffModel}
+    />
+  );
+}
+
+export function renderCommitView(diffModel: DiffViewModel): React.Element<any> {
+  const {
+    commitMessage,
+    commitMode,
+    commitModeState,
+    shouldRebaseOnAmend,
+  } = diffModel.getState();
+
+  const CommitComponent = getCommitComponent();
+  return (
+    <CommitComponent
+      commitMessage={commitMessage}
+      commitMode={commitMode}
+      commitModeState={commitModeState}
+      shouldRebaseOnAmend={shouldRebaseOnAmend}
+      // `diffModel` is acting as the action creator for commit view and needs to be passed so
+      // methods can be called on it.
+      diffModel={diffModel}
+    />
+  );
+}
+
+export function renderTimelineView(diffModel: DiffViewModel): React.Element<any> {
+  const onSelectionChange = revision => diffModel.setCompareRevision(revision);
+  return (
+    <DiffTimelineView
+      diffModel={diffModel}
+      onSelectionChange={onSelectionChange}
+    />
+  );
+}
+
+export function renderFileChanges(diffModel: DiffViewModel): React.Element<any> {
+  const {
+    activeRepository,
+    fileDiff,
+    isLoadingSelectedFiles,
+    selectedFileChanges,
+  } = diffModel.getState();
+  const rootPaths = activeRepository != null ? [activeRepository.getWorkingDirectory()] : [];
+
+  let spinnerElement = null;
+  if (isLoadingSelectedFiles) {
+    spinnerElement = (
+      <div className="nuclide-diff-view-loading inline-block">
+        <LoadingSpinner
+          className="inline-block"
+          size={LoadingSpinnerSizes.EXTRA_SMALL}
+        />
+        <div className="inline-block">
+          Refreshing Selected Files …
+        </div>
+      </div>
+    );
+  }
+
+  const emptyMessage = !isLoadingSelectedFiles && selectedFileChanges.size === 0
+    ? 'No file changes selected'
+    : null;
+
+  return (
+    <div className="nuclide-diff-view-tree padded">
+      {spinnerElement}
+      <MultiRootChangedFilesView
+        commandPrefix="nuclide-diff-view"
+        fileChanges={getMultiRootFileChanges(selectedFileChanges, rootPaths)}
+        selectedFile={fileDiff.filePath}
+        onFileChosen={diffModel.diffFile.bind(diffModel)}
+      />
+      {emptyMessage}
+    </div>
+  );
 }
 
 function getInitialState(): State {
@@ -109,7 +201,7 @@ export default class DiffViewComponent extends React.Component {
   _newEditorPane: atom$Pane;
   _newEditorComponent: DiffViewEditorPane;
   _bottomRightPane: atom$Pane;
-  _timelineComponent: ?DiffTimelineView;
+  _timelineComponent: ?React.Component<any, any, any>;
   _treePane: atom$Pane;
   _treeComponent: React.Component<any, any, any>;
   _navigationPane: atom$Pane;
@@ -120,7 +212,6 @@ export default class DiffViewComponent extends React.Component {
   constructor(props: Props) {
     super(props);
     this.state = getInitialState();
-    (this: any)._onTimelineChangeRevision = this._onTimelineChangeRevision.bind(this);
     (this: any)._handleNavigateToNavigationSection =
       this._handleNavigateToNavigationSection.bind(this);
     (this: any)._onDidUpdateTextEditorElement = this._onDidUpdateTextEditorElement.bind(this);
@@ -269,87 +360,22 @@ export default class DiffViewComponent extends React.Component {
   }
 
   _renderCommitView(): void {
-    const {
-      commitMessage,
-      commitMode,
-      commitModeState,
-      shouldRebaseOnAmend,
-    } = this.props.diffModel.getState();
-
-    const DiffComponent = getDiffComponent();
     ReactDOM.render(
-      <DiffComponent
-        commitMessage={commitMessage}
-        commitMode={commitMode}
-        commitModeState={commitModeState}
-        shouldRebaseOnAmend={shouldRebaseOnAmend}
-        // `diffModel` is acting as the action creator for commit view and needs to be passed so
-        // methods can be called on it.
-        diffModel={this.props.diffModel}
-      />,
+      renderCommitView(this.props.diffModel),
       this._getPaneElement(this._bottomRightPane),
     );
   }
 
   _renderPublishView(): void {
-    const {diffModel} = this.props;
-    const {
-      publishMode,
-      publishModeState,
-      publishMessage,
-      headCommitMessage,
-    } = diffModel.getState();
-    const PublishComponent = getPublishComponent();
-    const component = ReactDOM.render(
-      <PublishComponent
-        publishModeState={publishModeState}
-        message={publishMessage}
-        publishMode={publishMode}
-        headCommitMessage={headCommitMessage}
-        diffModel={diffModel}
-      />,
+    this._publishComponent = ReactDOM.render(
+      renderPublishView(this.props.diffModel),
       this._getPaneElement(this._bottomRightPane),
     );
-    this._publishComponent = component;
   }
 
   _renderTree(): void {
-    const {diffModel} = this.props;
-    const {
-      activeRepository,
-      fileDiff,
-      isLoadingSelectedFiles,
-      selectedFileChanges,
-    } = diffModel.getState();
-    const rootPaths = activeRepository != null ? [activeRepository.getWorkingDirectory()] : [];
-
-    let spinnerElement = null;
-    if (isLoadingSelectedFiles) {
-      spinnerElement = (
-        <div className="nuclide-diff-view-loading inline-block">
-          <LoadingSpinner
-            className="inline-block"
-            size={LoadingSpinnerSizes.EXTRA_SMALL}
-          />
-          <div className="inline-block">
-            Refreshing Selected Files …
-          </div>
-        </div>
-      );
-    }
-
     this._treeComponent = ReactDOM.render(
-      (
-        <div className="nuclide-diff-view-tree padded">
-          {spinnerElement}
-          <MultiRootChangedFilesView
-            commandPrefix="nuclide-diff-view"
-            fileChanges={getMultiRootFileChanges(selectedFileChanges, rootPaths)}
-            selectedFile={fileDiff.filePath}
-            onFileChosen={diffModel.diffFile.bind(diffModel)}
-          />
-        </div>
-      ),
+      renderFileChanges(this.props.diffModel),
       this._getPaneElement(this._treePane),
     );
   }
@@ -412,15 +438,10 @@ export default class DiffViewComponent extends React.Component {
   }
 
   _renderTimelineView(): void {
-    const component = ReactDOM.render(
-      <DiffTimelineView
-        diffModel={this.props.diffModel}
-        onSelectionChange={this._onTimelineChangeRevision}
-      />,
+    this._timelineComponent = ReactDOM.render(
+      renderTimelineView(this.props.diffModel),
       this._getPaneElement(this._bottomRightPane),
     );
-    invariant(component instanceof DiffTimelineView);
-    this._timelineComponent = component;
   }
 
   _renderNavigation(): void {
@@ -540,10 +561,6 @@ export default class DiffViewComponent extends React.Component {
     const diffViewNode = ReactDOM.findDOMNode(this);
     invariant(diffViewNode, 'Diff View DOM needs to be attached to switch to editor mode');
     atom.commands.dispatch(diffViewNode, 'nuclide-diff-view:switch-to-editor');
-  }
-
-  _onTimelineChangeRevision(revision: RevisionInfo): void {
-    this.props.diffModel.setCompareRevision(revision);
   }
 
   _onDidChangeScrollTop(): void {

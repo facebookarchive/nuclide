@@ -233,7 +233,6 @@ class Activation {
       // TODO(most): Remove Diff View model and use stream of props for the views instead.
       states.subscribe(_state => {
         const state: AppState = (_state: any);
-
         const {commit, fileDiff, publish} = state;
 
         let activeRepositoryState;
@@ -681,10 +680,14 @@ class Activation {
         toggleCommand: DIFF_VIEW_NAVIGATOR_TOGGLE_COMMAND,
         defaultLocation: 'bottom-panel',
         create: () => {
+          const diffModel = this._getDiffViewModel();
+          diffModel.activate();
+
           const boundComponent = bindObservableAsProps(
             this._appState.map(state => ({
               ...state,
               actionCreators: this._actionCreators,
+              diffModel,
             })),
             DiffViewNavigatorComponent,
           );

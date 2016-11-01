@@ -22,6 +22,10 @@ export default class DiffViewNavigatorGadget extends React.Component {
     return 'Diff Navigator (WIP)';
   }
 
+  getPreferredInitialHeight(): number {
+    return 300;
+  }
+
   render(): React.Element<any> {
     const {component: Component} = this.props;
     return <Component />;
