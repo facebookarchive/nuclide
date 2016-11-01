@@ -9,18 +9,25 @@
  * the root directory of this source tree.
  */
 
-import type {AppState} from '../types';
+import type {
+  AppState,
+  NavigationSectionStatusType,
+} from '../types';
 import type DiffViewModel from '../DiffViewModel';
 import typeof * as BoundActionCreators from '../redux/Actions';
 
 import {React} from 'react-for-atom';
 import {DiffMode} from '../constants';
 import {
+  centerScrollToBufferLine,
+  navigationSectionStatusToEditorElement,
   renderCommitView,
   renderFileChanges,
   renderPublishView,
   renderTimelineView,
 } from '../DiffViewComponent';
+import SectionDirectionNavigator from './SectionDirectionNavigator';
+import {notifyInternalError} from '../notifications';
 
 type Props = AppState & {
   actionCreators: BoundActionCreators,
@@ -31,10 +38,43 @@ type Props = AppState & {
 export default class DiffViewNavigatorComponent extends React.Component {
   props: Props;
 
+  constructor(props: Props) {
+    super(props);
+    (this: any)._handleNavigateToSection = this._handleNavigateToSection.bind(this);
+  }
+
   render(): React.Element<any> {
+    const {fileDiff: {filePath, navigationSections}, isLoadingFileDiff} = this.props;
+
+    let sectionNavigator;
+    if (isLoadingFileDiff) {
+      sectionNavigator = (
+        <div className="padded">
+          Loading Changes ...
+        </div>
+      );
+    } else if (navigationSections.length === 0) {
+      sectionNavigator = null;
+    } else {
+      sectionNavigator = (
+        <div className="padded">
+          <span>Changed Sections: </span>
+          <SectionDirectionNavigator
+            commandTarget="something-should-exist"
+            filePath={filePath}
+            navigationSections={navigationSections}
+            // TODO(most): manage the state of `selectedNavigationSectionIndex`.
+            selectedNavigationSectionIndex={-1}
+            onNavigateToNavigationSection={this._handleNavigateToSection}
+          />
+        </div>
+      );
+    }
+
     return (
       <div className="nuclide-diff-view-navigator-root">
         <div className="nuclide-diff-view-navigator-file-changes-container">
+          {sectionNavigator}
           {renderFileChanges(this.props.diffModel)}
         </div>
         <div className="nuclide-diff-view-navigator-selector" />
@@ -43,6 +83,24 @@ export default class DiffViewNavigatorComponent extends React.Component {
         </div>
       </div>
     );
+  }
+
+  _handleNavigateToSection(
+    status: NavigationSectionStatusType,
+    lineNumber: number,
+  ): void {
+    const {diffEditors} = this.props;
+    if (diffEditors == null) {
+      notifyInternalError(new Error('diffEditors cannot be null while navigating!'));
+      return;
+    }
+    const {newDiffEditor, oldDiffEditor} = diffEditors;
+    const textEditorElement = navigationSectionStatusToEditorElement(
+      oldDiffEditor.getEditorDomElement(),
+      newDiffEditor.getEditorDomElement(),
+      status,
+    );
+    centerScrollToBufferLine(textEditorElement, lineNumber);
   }
 
   _renderNavigationState(): React.Element<any> {

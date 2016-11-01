@@ -53,13 +53,15 @@ export default class DiffViewToolbar extends React.Component {
           {this.props.newRevisionTitle == null ? '?' : this.props.newRevisionTitle}
         </ToolbarCenter>
         <ToolbarRight>
-          <SectionDirectionNavigator
-            commandTarget=".nuclide-diff-editor-container"
-            filePath={filePath}
-            navigationSections={navigationSections}
-            selectedNavigationSectionIndex={selectedNavigationSectionIndex}
-            onNavigateToNavigationSection={onNavigateToNavigationSection}
-          />
+          <ButtonGroup className="padded" size="SMALL">
+            <SectionDirectionNavigator
+              commandTarget=".nuclide-diff-editor-container"
+              filePath={filePath}
+              navigationSections={navigationSections}
+              selectedNavigationSectionIndex={selectedNavigationSectionIndex}
+              onNavigateToNavigationSection={onNavigateToNavigationSection}
+            />
+          </ButtonGroup>
           <ButtonGroup size="SMALL">
             <Button
               className="nuclide-diff-view-goto-editor-button"

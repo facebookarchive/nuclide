@@ -13,7 +13,6 @@ import type {NavigationSection, NavigationSectionStatusType} from '../types';
 import type {NuclideUri} from '../../../commons-node/nuclideUri';
 
 import {Button} from '../../../nuclide-ui/Button';
-import {ButtonGroup} from '../../../nuclide-ui/ButtonGroup';
 import {CompositeDisposable} from 'atom';
 import {React} from 'react-for-atom';
 
@@ -56,20 +55,22 @@ export default class SectionDirectionNavigator extends React.Component {
     const hasDiffsDown = this._getNextNavigationSection() != null;
 
     return (
-      <ButtonGroup className="padded" size="SMALL">
+      <span>
         <Button
           disabled={!hasActiveFile || !hasDiffsDown}
           icon="arrow-down"
           onClick={this._onClickNavigateDown}
+          size="SMALL"
           title="Jump to next section"
         />
         <Button
           disabled={!hasActiveFile || !hasDiffsUp}
           icon="arrow-up"
           onClick={this._onClickNavigateUp}
+          size="SMALL"
           title="Jump to previous section"
         />
-      </ButtonGroup>
+      </span>
     );
   }
 
