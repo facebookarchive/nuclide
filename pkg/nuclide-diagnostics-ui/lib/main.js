@@ -100,6 +100,10 @@ class Activation {
     return disposable;
   }
 
+  deserializeDiagnosticsPanelModel(): DiagnosticsPanelModel {
+    return this._createDiagnosticsPanelModel();
+  }
+
   dispose(): void {
     this._subscriptions.dispose();
     if (this._statusBarTile) {
@@ -124,6 +128,24 @@ class Activation {
     };
   }
 
+  _createDiagnosticsPanelModel(): DiagnosticsPanelModel {
+    return new DiagnosticsPanelModel(
+      this._diagnosticUpdaters
+        .switchMap(updater => (
+          updater == null ? Observable.of([]) : updater.allMessageUpdates
+        )),
+      this._state.filterByActiveTextEditor,
+      featureConfig.observeAsStream('nuclide-diagnostics-ui.showDiagnosticTraces'),
+      disableLinter,
+      filterByActiveTextEditor => {
+        if (this._state != null) {
+          this._state.filterByActiveTextEditor = filterByActiveTextEditor;
+        }
+      },
+      observeLinterPackageEnabled(),
+    );
+  }
+
   consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
     this._subscriptions.add(
       api.registerFactory({
@@ -132,21 +154,7 @@ class Activation {
         iconName: 'law',
         toggleCommand: 'nuclide-diagnostics-ui:toggle-table',
         defaultLocation: 'bottom-panel',
-        create: () => new DiagnosticsPanelModel(
-          this._diagnosticUpdaters
-            .switchMap(updater => (
-              updater == null ? Observable.of([]) : updater.allMessageUpdates
-            )),
-          this._state.filterByActiveTextEditor,
-          featureConfig.observeAsStream('nuclide-diagnostics-ui.showDiagnosticTraces'),
-          disableLinter,
-          filterByActiveTextEditor => {
-            if (this._state != null) {
-              this._state.filterByActiveTextEditor = filterByActiveTextEditor;
-            }
-          },
-          observeLinterPackageEnabled(),
-        ),
+        create: () => this._createDiagnosticsPanelModel(),
         isInstance: item => item instanceof DiagnosticsPanelModel,
       }),
     );

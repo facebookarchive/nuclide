@@ -31,6 +31,10 @@ type PanelProps = {
   disableLinter: () => void,
 };
 
+type SerializedDiagnosticsPanelModel = {
+  deserializer: 'nuclide.DiagnosticsPanelModel',
+};
+
 export class DiagnosticsPanelModel {
   _element: ?HTMLElement;
   _props: Observable<PanelProps>;
@@ -79,6 +83,12 @@ export class DiagnosticsPanelModel {
 
   getIconName(): atom$Octicon {
     return 'law';
+  }
+
+  serialize(): SerializedDiagnosticsPanelModel {
+    return {
+      deserializer: 'nuclide.DiagnosticsPanelModel',
+    };
   }
 
   didChangeVisibility(visible: boolean): void {

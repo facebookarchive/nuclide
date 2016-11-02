@@ -5,6 +5,9 @@
   "version": "0.0.0",
   "description": "Displays diagnostics in context in a TextEditor",
   "atomTestRunner": "../../lib/test-runner.js",
+  "deserializers": {
+    "nuclide.DiagnosticsPanelModel": "deserializeDiagnosticsPanelModel"
+  },
   "nuclide": {
     "configMetadata": {
       "pathComponents": [
