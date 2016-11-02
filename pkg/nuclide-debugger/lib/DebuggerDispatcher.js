@@ -187,7 +187,7 @@ export type DebuggerAction =
     data: {id: number, response: GetPropertiesResult},
   } |
   {
-    actionType: 'ADD_CUSTOM_CONTROL_BUTTONS',
+    actionType: 'UPDATE_CUSTOM_CONTROL_BUTTONS',
     data: Array<ControlButtonSpecification>,
   };
 
@@ -231,7 +231,7 @@ export const ActionTypes = Object.freeze({
   TOGGLE_SINGLE_THREAD_STEPPING: 'TOGGLE_SINGLE_THREAD_STEPPING',
   RECEIVED_EXPRESSION_EVALUATION_RESPONSE: 'RECEIVED_EXPRESSION_EVALUATION_RESPONSE',
   RECEIVED_GET_PROPERTIES_RESPONSE: 'RECEIVED_GET_PROPERTIES_RESPONSE',
-  ADD_CUSTOM_CONTROL_BUTTONS: 'ADD_CUSTOM_CONTROL_BUTTONS',
+  UPDATE_CUSTOM_CONTROL_BUTTONS: 'UPDATE_CUSTOM_CONTROL_BUTTONS',
 });
 
 // Flow hack: Every DebuggerAction actionType must be in ActionTypes.

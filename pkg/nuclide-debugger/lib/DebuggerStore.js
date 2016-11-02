@@ -218,7 +218,7 @@ class DebuggerStore {
           this._consoleDisposable = null;
         }
         break;
-      case ActionTypes.ADD_CUSTOM_CONTROL_BUTTONS:
+      case ActionTypes.UPDATE_CUSTOM_CONTROL_BUTTONS:
         this._customControlButtons = payload.data;
         break;
       default:

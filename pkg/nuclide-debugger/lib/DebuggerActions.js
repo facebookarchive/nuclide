@@ -93,7 +93,9 @@ class DebuggerActions {
       if (processInfo.getServiceName() !== 'hhvm' || await passesGK(GK_DEBUGGER_REQUEST_SENDER)) {
         const customControlButtons = processInfo.customControlButtons();
         if (customControlButtons.length > 0) {
-          this.addControlButtons(customControlButtons);
+          this.updateControlButtons(customControlButtons);
+        } else {
+          this.updateControlButtons([]);
         }
       }
       await this._waitForChromeConnection(debuggerInstance);
@@ -211,9 +213,9 @@ class DebuggerActions {
     });
   }
 
-  addControlButtons(buttons: Array<ControlButtonSpecification>): void {
+  updateControlButtons(buttons: Array<ControlButtonSpecification>): void {
     this._dispatcher.dispatch({
-      actionType: ActionTypes.ADD_CUSTOM_CONTROL_BUTTONS,
+      actionType: ActionTypes.UPDATE_CUSTOM_CONTROL_BUTTONS,
       data: buttons,
     });
   }
