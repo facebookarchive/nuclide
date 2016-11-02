@@ -26,6 +26,7 @@ export type EvaluationResult = {
   // Or:
   description?: string,
   objectId?: string,
+  subtype?: string,
 };
 
 export type ExpansionResult = Array<{

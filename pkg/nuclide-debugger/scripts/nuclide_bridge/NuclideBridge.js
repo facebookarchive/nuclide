@@ -14,6 +14,8 @@ import type {
   WebInspector$CallFrame,
   WebInspector$Event,
   IPCBreakpoint,
+  EvaluationResult,
+  ExpansionResult,
 } from '../../lib/types';
 
 import invariant from 'assert';
@@ -177,19 +179,7 @@ class NuclideBridge {
             return;
           }
           this.updateProperties(properties, internalProperties);
-          const neededProperties = properties.map(({name, value}) => {
-            const {type, subtype, objectId, value: innerValue, description} = value;
-            return {
-              name,
-              value: {
-                type,
-                subtype,
-                objectId,
-                value: innerValue,
-                description,
-              },
-            };
-          });
+          const neededProperties = getIpcExpansionResult(properties);
           ipcRenderer.sendToHost('notification', 'LocalsUpdate', neededProperties);
         }
         // $FlowFixMe.
@@ -374,8 +364,9 @@ class NuclideBridge {
       false, // accessorPropertiesOnly
       false, // generatePreview
       (error, properties, internalProperties) => {
+        const result = getIpcExpansionResult(properties);
         ipcRenderer.sendToHost('notification', 'GetPropertiesResponse', {
-          result: properties,
+          result,
           error,
           objectId,
           id,
@@ -397,8 +388,9 @@ class NuclideBridge {
       false,  /* returnByValue */
       false, /* generatePreview */
       (remoteObject, wasThrown, error) => {
+        const result = getIpcEvaluationResult(wasThrown, remoteObject);
         ipcRenderer.sendToHost('notification', 'ExpressionEvaluationResponse', {
-          result: wasThrown ? null : remoteObject,
+          result,
           error: wasThrown ? error : null,
           expression,
           id,
@@ -425,8 +417,9 @@ class NuclideBridge {
       false,  /* returnByValue */
       false, /* generatePreview */
       (remoteObject, wasThrown, error) => {
+        const result = getIpcEvaluationResult(wasThrown, remoteObject);
         ipcRenderer.sendToHost('notification', 'ExpressionEvaluationResponse', {
-          result: wasThrown ? null : remoteObject,
+          result,
           error: wasThrown ? error : null,
           expression,
           id,
@@ -736,6 +729,43 @@ class NuclideBridge {
   _handleThreadUpdated(event: WebInspector.Event): void {
     ipcRenderer.sendToHost('notification', 'ThreadUpdate', event.data);
   }
+}
+
+function getIpcEvaluationResult(
+  wasThrown: boolean,
+  remoteObject: ?EvaluationResult,
+): ?EvaluationResult {
+  if (wasThrown || remoteObject == null) {
+    return null;
+  }
+  return {
+    type: remoteObject.type,
+    subtype: remoteObject.subtype,
+    description: remoteObject.description,
+    objectId: remoteObject.objectId,
+    value: remoteObject.value,
+  };
+}
+
+function getIpcExpansionResult(properties: ?ExpansionResult): ?ExpansionResult {
+  if (properties == null) {
+    return null;
+  }
+  return properties
+    .filter(({name, value}) => value != null)
+    .map(({name, value}) => {
+      const {type, subtype, objectId, value: innerValue, description} = value;
+      return {
+        name,
+        value: {
+          type,
+          subtype,
+          objectId,
+          value: innerValue,
+          description,
+        },
+      };
+    });
 }
 
 module.exports = new NuclideBridge();
