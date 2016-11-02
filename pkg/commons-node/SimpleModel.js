@@ -16,7 +16,7 @@ import $$observable from 'symbol-observable';
  * Exposes a simple, React-like OO API for a stateful model. Implements `Symbol.observable` so you
  * can easily convert to an observable stream.
  */
-export class SimpleModel<State> {
+export class SimpleModel<State: {}> {
   state: State;
   _states: Subject<State>;
 
