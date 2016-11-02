@@ -58,16 +58,15 @@ describe('Refactoring', () => {
   describe('Refactoring.refactor', () => {
     it('refactors a parameter', () => {
       waitsForPromise({timeout: 15000}, async () => {
-        // $FlowFixMe (pass originalPoint)
         const response = await Refactoring.refactor({
           editor: fakeEditor,
           kind: 'rename',
           newName: 'new_var',
           symbolAtPoint: {
-            range: new Range([1, 25], [1, 28]),
+            range: new Range([1, 21], [1, 28]),
             text: 'var1',
           },
-          point: new Point(1, 25),
+          originalPoint: new Point(1, 25),
         });
         invariant(response != null, 'Expected edits');
         expect(Array.from(response.edits)).toEqual([[

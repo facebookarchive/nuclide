@@ -62,16 +62,14 @@ export default class RefactoringHelpers {
   @trackTiming('nuclide-clang:refactor')
   static async refactor(request: RefactorRequest): Promise<?RefactorResponse> {
     invariant(request.kind === 'rename');
-    const {editor, symbolAtPoint, newName} = request;
+    const {editor, originalPoint, newName} = request;
     const path = editor.getPath();
     if (path == null || !(await checkDiagnostics(editor))) {
       return null;
     }
 
-    const startPoint = symbolAtPoint.range.start;
-
     // TODO(hansonw): We should disallow renames that conflict with an existing variable.
-    const refs = await getLocalReferences(editor, startPoint.row, startPoint.column);
+    const refs = await getLocalReferences(editor, originalPoint.row, originalPoint.column);
     if (refs == null) {
       return null;
     }
