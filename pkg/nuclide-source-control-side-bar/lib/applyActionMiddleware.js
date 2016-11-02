@@ -18,8 +18,11 @@ import invariant from 'assert';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
 import {Observable} from 'rxjs';
+import featureConfig from '../../commons-atom/featureConfig';
+import {STACKED_CONFIG_KEY} from './constants';
 
 const HANDLED_ACTION_TYPES = [
+  ActionType.CREATE_BOOKMARK,
   ActionType.DELETE_BOOKMARK,
   ActionType.FETCH_PROJECT_REPOSITORIES,
   ActionType.RENAME_BOOKMARK,
@@ -33,6 +36,39 @@ export function applyActionMiddleware(
   const output = Observable.merge(
     // Skip unhandled ActionTypes.
     actions.filter(action => HANDLED_ACTION_TYPES.indexOf(action.type) === -1),
+
+    actions.filter(action => action.type === ActionType.CREATE_BOOKMARK)
+      .switchMap(action => {
+        invariant(action.type === ActionType.CREATE_BOOKMARK);
+
+        const {name, repository} = action.payload;
+        if (repository.getType() !== 'hg') {
+          return Observable.empty();
+        }
+
+        invariant(repository instanceof HgRepositoryClient);
+
+        const stacked: boolean = (featureConfig.get(STACKED_CONFIG_KEY): any);
+        let createBookmarkTask;
+
+        if (stacked) {
+          createBookmarkTask = Observable.fromPromise(repository.createBookmark(name));
+        } else {
+          createBookmarkTask = Observable.fromPromise(repository.checkoutForkBase())
+            .switchMap(() => Observable.fromPromise(repository.createBookmark(name)));
+        }
+
+        // TODO(most): Add loading indicators.
+        return createBookmarkTask
+          .catch(error => {
+            atom.notifications.addWarning('Failed to create bookmark', {
+              detail: error,
+              dismissable: true,
+            });
+            return Observable.empty();
+          })
+          .ignoreElements();
+      }),
 
     // Fetch and subscribe to repositories and their bookmarks.
     actions.filter(action => action.type === ActionType.FETCH_PROJECT_REPOSITORIES)

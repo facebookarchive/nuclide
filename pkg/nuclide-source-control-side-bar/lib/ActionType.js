@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+export const CREATE_BOOKMARK = 'create-bookmark';
 export const DELETE_BOOKMARK = 'delete-bookmark';
 export const FETCH_PROJECT_REPOSITORIES = 'fetch-project-repositories';
 export const RENAME_BOOKMARK = 'rename-bookmark';

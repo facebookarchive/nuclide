@@ -825,6 +825,15 @@ export class HgService {
     return this._runSimpleInWorkingDirectory('checkout', [revision]);
   }
 
+  /**
+   * @param revision This could be a changeset ID, name of a bookmark, revision number, etc.
+   * @param create Currently, this parameter is ignored.
+   */
+  async checkoutForkBase(): Promise<void> {
+    const forkBaseName = await getForkBaseName(this._workingDirectory);
+    await this._runSimpleInWorkingDirectory('checkout', [forkBaseName]);
+  }
+
   /*
    * Silence errors from hg calls that don't include any tracked files - these
    * are generally harmless and should not create an error notification.

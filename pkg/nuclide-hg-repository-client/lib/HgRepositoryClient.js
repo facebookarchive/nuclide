@@ -678,6 +678,10 @@ export class HgRepositoryClient {
     return this._service.checkout(reference, create);
   }
 
+  checkoutForkBase(): Promise<void> {
+    return this._service.checkoutForkBase();
+  }
+
   /**
    *
    * Section: Bookmarks

@@ -14,7 +14,6 @@ import type {AppState} from '..';
 import type {BookmarkInfo} from '../../nuclide-hg-rpc/lib/HgService';
 
 import * as ActionType from './ActionType';
-import {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import {track} from '../../nuclide-analytics';
 
 type dispatchType = (action: Action) => void;
@@ -36,15 +35,14 @@ export default class Commands {
   }
 
   createBookmark(name: string, repository: atom$Repository): void {
-    if (repository.getType() !== 'hg') {
-      return;
-    }
-
-    // Type was checked with `getType`. Downcast to safely access members with Flow.
-    const hgRepository: HgRepositoryClient = (repository: any);
-
     track('scsidebar-create-bookmark');
-    hgRepository.createBookmark(name);
+    this._dispatch({
+      payload: {
+        name,
+        repository,
+      },
+      type: ActionType.CREATE_BOOKMARK,
+    });
   }
 
   deleteBookmark(bookmark: BookmarkInfo, repository: atom$Repository): void {

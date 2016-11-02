@@ -11,6 +11,9 @@
 
 import {CompositeDisposable} from 'atom';
 import {React, ReactDOM} from 'react-for-atom';
+import {Checkbox} from '../../nuclide-ui/Checkbox';
+import featureConfig from '../../commons-atom/featureConfig';
+import {STACKED_CONFIG_KEY} from './constants';
 
 type Props = {
   onCancel: () => mixed,
@@ -32,6 +35,7 @@ export default class CreateBookmarkModal extends React.Component {
   componentDidMount(): void {
     this.disposables.add(
       atom.commands.add(ReactDOM.findDOMNode(this), 'core:confirm', this._handleCreateClick),
+      featureConfig.observe(STACKED_CONFIG_KEY, () => this.forceUpdate()),
     );
     this.refs.atomTextEditor.focus();
   }
@@ -50,6 +54,11 @@ export default class CreateBookmarkModal extends React.Component {
         <h6 style={{marginTop: 0}}><strong>Create bookmark</strong></h6>
         <label>Bookmark name:</label>
         <atom-text-editor mini ref="atomTextEditor" tabIndex="0" />
+        <Checkbox
+          label="Stack the feature on top of the current one"
+          checked={(featureConfig.get(STACKED_CONFIG_KEY): any)}
+          onChange={stacked => featureConfig.set(STACKED_CONFIG_KEY, stacked)}
+        />
         <div className="text-right">
           <div className="btn-group btn-group-sm">
             <button className="btn" onClick={this.props.onCancel}>
