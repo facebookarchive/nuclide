@@ -9,55 +9,57 @@
  * the root directory of this source tree.
  */
 
+import type {DebuggerActionUIProvider} from './actions/DebuggerActionUIProvider';
+import type EventEmitter from 'events';
+
 import {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
 import {React} from 'react-for-atom';
 import {LaunchAttachStore} from './LaunchAttachStore';
 import LaunchAttachDispatcher from './LaunchAttachDispatcher';
-import {LaunchUIComponent} from './LaunchUIComponent';
-import {AttachUIComponent} from './AttachUIComponent';
 import {LaunchAttachActions} from './LaunchAttachActions';
+import LaunchActionUIProvider from './actions/LaunchActionUIProvider';
+import AttachActionUIProvider from './actions/AttachActionUIProvider';
 
-import type EventEmitter from 'events';
 
 export class LLDBLaunchAttachProvider extends DebuggerLaunchAttachProvider {
   _dispatcher: LaunchAttachDispatcher;
   _actions: LaunchAttachActions;
   _store: LaunchAttachStore;
+  _uiProviderMap: Map<string, DebuggerActionUIProvider>;
 
   constructor(debuggingTypeName: string, targetUri: string) {
     super(debuggingTypeName, targetUri);
     this._dispatcher = new LaunchAttachDispatcher();
     this._actions = new LaunchAttachActions(this._dispatcher, this.getTargetUri());
     this._store = new LaunchAttachStore(this._dispatcher);
+
+    this._uiProviderMap = new Map();
+    this._loadAction(AttachActionUIProvider);
+    this._loadAction(LaunchActionUIProvider);
+    try {
+      // $FBFlow $FlowIgnore
+      this._loadAction(require('./actions/fb-omActionUIProvider'));
+    } catch (_) {}
+  }
+
+  _loadAction(actionProvider: ?DebuggerActionUIProvider): void {
+    if (actionProvider != null) {
+      this._uiProviderMap.set(actionProvider.name, actionProvider);
+    }
   }
 
   getActions(): Array<string> {
-    return ['Attach', 'Launch'];
+    return Array.from(this._uiProviderMap.keys());
   }
 
   getComponent(
-    action: string,
+    actionName: string,
     parentEventEmitter: EventEmitter): ?React.Element<any> {
-    if (action === 'Launch') {
-      return (
-        <LaunchUIComponent
-          store={this._store}
-          actions={this._actions}
-          parentEmitter={parentEventEmitter}
-        />
-      );
-    } else if (action === 'Attach') {
-      this._actions.updateAttachTargetList();
-      return (
-        <AttachUIComponent
-          store={this._store}
-          actions={this._actions}
-          parentEmitter={parentEventEmitter}
-        />
-      );
-    } else {
-      return null;
+    const action = this._uiProviderMap.get(actionName);
+    if (action) {
+      return action.getComponent(this._store, this._actions, parentEventEmitter);
     }
+    return null;
   }
 
   dispose(): void {
