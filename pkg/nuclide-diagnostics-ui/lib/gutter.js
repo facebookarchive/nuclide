@@ -73,6 +73,8 @@ export function applyUpdateToEditor(
     gutter = editor.addGutter({
       name: GUTTER_ID,
       visible: false,
+      // Priority is -200 by default and 0 is the line number
+      priority: -1000,
     });
   }
 
@@ -158,8 +160,7 @@ function createGutterItem(
   gutterMarkerCssClass: string,
   fixer: (message: FileDiagnosticMessage) => void,
 ): {item: HTMLElement, dispose: () => void} {
-  const item = window.document.createElement('span');
-  item.innerText = '\uf05a'; // The triangle-right icon in the octicon font.
+  const item = window.document.createElement('a');
   item.className = gutterMarkerCssClass;
   let popupElement = null;
   let paneItemSubscription = null;

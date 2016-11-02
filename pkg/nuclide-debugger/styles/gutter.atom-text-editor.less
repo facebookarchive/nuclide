@@ -2,19 +2,20 @@
 @import "octicon-mixins.less";
 @import "octicon-utf-codes.less";
 
-.nuclide-debugger-breakpoint-icon {
+.nuclide-debugger-breakpoint-icon,
+.nuclide-debugger-shadow-breakpoint-icon {
+  // Needs to match .nuclide-diagnostics-gutter-ui-gutter-error
   .octicon(primitive-dot, @size: 130%);
   text-align: center;
   display: block;
   width: 0.8em;
+}
+
+.nuclide-debugger-breakpoint-icon {
   color: @text-color-info;
 }
 
 .nuclide-debugger-shadow-breakpoint-icon {
-  .octicon(primitive-dot, @size: 130%);
-  text-align: center;
-  display: block;
-  width: 0.8em;
   color: fade(@text-color-info, 40%);
 }
 

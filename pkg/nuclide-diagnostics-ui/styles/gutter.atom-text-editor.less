@@ -1,13 +1,25 @@
 @import "ui-variables";
-
-// The height of the gutter glyph.
-@glyph-height: 15px;
+@import "octicon-mixins.less";
+@import "octicon-utf-codes.less";
 
 // Styles for gutter glyphs.
 
+.gutter[gutter-name=nuclide-diagnostics-gutter] {
+  min-width: 0.5em;
+}
+
 .nuclide-diagnostics-gutter-ui-gutter-error,
 .nuclide-diagnostics-gutter-ui-gutter-warning {
-  font-family: "Octicons Regular";
+  // Needs to match .nuclide-debugger-breakpoint-icon
+  .octicon(triangle-right, @size: 130%);
+  text-align: left;
+  display: block;
+  width: 0.8em;
+  color: @text-color-info;
+
+  // Makes it smaller, but respects the line-height :)
+  transform: scale(0.7);
+  transform-origin: left;
 }
 
 .nuclide-diagnostics-gutter-ui-gutter-error {

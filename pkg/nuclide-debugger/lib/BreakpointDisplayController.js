@@ -61,6 +61,8 @@ class BreakpointDisplayController {
     const gutter = editor.addGutter({
       name: 'nuclide-breakpoint',
       visible: false,
+      // Priority is -200 by default and 0 is the line number
+      priority: -1100,
     });
     this._gutter = gutter;
     this._registerGutterMouseHandlers(
