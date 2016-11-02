@@ -1,5 +1,9 @@
 # Nuclide Changelog
 
+## v0.179.0
+
+Hotfix to prevent debugger serialization performance regression Atom 1.12.
+
 ## v0.178.0
 
 ### Highlights
