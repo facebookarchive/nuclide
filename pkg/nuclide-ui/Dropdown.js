@@ -69,59 +69,39 @@ export class Dropdown extends React.Component {
     (this: any)._handleDropdownClick = this._handleDropdownClick.bind(this);
   }
 
-  _getButtonSize(size: ?ShortButtonSize): ButtonSize {
-    switch (size) {
-      case 'xs': return 'EXTRA_SMALL';
-      case 'sm': return 'SMALL';
-      case 'lg': return 'LARGE';
-      default: return 'SMALL';
-    }
-  }
-
   render(): React.Element<any> {
     const selectedOption = this.props.options.find(option => (
       option.type !== 'separator' && option.value === this.props.value),
     ) || this.props.options[0];
 
-    const ButtonComponent = this.props.buttonComponent || Button;
-    const className = classnames(
-      'nuclide-ui-dropdown',
-      this.props.className,
-      {
-        'nuclide-ui-dropdown-flat': this.props.isFlat === true,
-      },
+    return (
+      <DropdownButton
+        className={this.props.className}
+        disabled={this.props.disabled}
+        isFlat={this.props.isFlat}
+        title={this.props.title}
+        buttonComponent={this.props.buttonComponent}
+        onExpand={this._handleDropdownClick}
+        size={this.props.size}
+        tooltip={this.props.tooltip}>
+        {this._renderSelectedLabel(selectedOption)}
+      </DropdownButton>
     );
 
-    return (
-      <ButtonComponent
-        tooltip={this.props.tooltip}
-        size={this._getButtonSize(this.props.size)}
-        className={className}
-        disabled={this.props.disabled === true}
-        onClick={this._handleDropdownClick}>
-        {this._renderSelectedLabel(selectedOption)}
-        <Icon
-          icon="triangle-down"
-          className="nuclide-ui-dropdown-icon"
-        />
-      </ButtonComponent>
-    );
   }
 
-  _renderSelectedLabel(option: Option): ?React.Element<any> {
-    let text;
+  _renderSelectedLabel(option: Option): ?string {
+    let text = null;
     if (option == null) {
       text = '';
-    } else if (option.selectedLabel != null) {
+    } else if (typeof option.selectedLabel === 'string') {
       text = option.selectedLabel;
-    } else if (option.label != null) {
+    } else if (typeof option.label === 'string') {
       text = option.label;
     }
 
     if (text == null || text === '') { return null; }
-    return (
-      <span className="nuclide-dropdown-label-text-wrapper">{text}</span>
-    );
+    return text;
   }
 
   _handleDropdownClick(event: SyntheticMouseEvent): void {
@@ -147,6 +127,63 @@ export class Dropdown extends React.Component {
     menu.popup(currentWindow, event.clientX, event.clientY);
   }
 
+}
+
+type DropdownButtonProps = {
+  buttonComponent?: ReactClass<any>,
+  children?: any,
+  className: string,
+  disabled?: boolean,
+  isFlat?: boolean,
+  title?: string,
+  size?: ShortButtonSize,
+  tooltip?: atom$TooltipsAddOptions,
+  onExpand?: (event: SyntheticMouseEvent) => void,
+};
+
+const noop = () => {};
+
+/**
+ * Just the button part. This is useful for when you want to customize the dropdown behavior (e.g.)
+ * show it asynchronously.
+ */
+export function DropdownButton(props: DropdownButtonProps): React.Element<any> {
+  const ButtonComponent = props.buttonComponent || Button;
+  const className = classnames(
+    'nuclide-ui-dropdown',
+    props.className,
+    {
+      'nuclide-ui-dropdown-flat': props.isFlat === true,
+    },
+  );
+
+  const label = props.children == null
+    ? null
+    : <span className="nuclide-dropdown-label-text-wrapper">{props.children}</span>;
+
+  return (
+    <ButtonComponent
+      tooltip={props.tooltip}
+      size={getButtonSize(props.size)}
+      className={className}
+      disabled={props.disabled === true}
+      onClick={props.onExpand || noop}>
+      {label}
+      <Icon
+        icon="triangle-down"
+        className="nuclide-ui-dropdown-icon"
+      />
+    </ButtonComponent>
+  );
+}
+
+function getButtonSize(size: ?ShortButtonSize): ButtonSize {
+  switch (size) {
+    case 'xs': return 'EXTRA_SMALL';
+    case 'sm': return 'SMALL';
+    case 'lg': return 'LARGE';
+    default: return 'SMALL';
+  }
 }
 
 export {ButtonSizes};
