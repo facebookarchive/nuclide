@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,38 +9,49 @@
  * the root directory of this source tree.
  */
 
-import type {TaskRunnerServiceApi} from '../../nuclide-task-runner/lib/types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {CompositeDisposable} from 'atom';
-import createPackage from '../../commons-atom/createPackage';
+var _atom = require('atom');
 
-import HhvmBuildSystem from './HhvmBuildSystem';
+var _createPackage;
 
-class Activation {
-  _buildSystem: ?HhvmBuildSystem;
-  _disposables: CompositeDisposable;
+function _load_createPackage() {
+  return _createPackage = _interopRequireDefault(require('../../commons-atom/createPackage'));
+}
 
-  constructor(state: ?Object) {
-    this._disposables = new CompositeDisposable();
+var _HhvmBuildSystem;
+
+function _load_HhvmBuildSystem() {
+  return _HhvmBuildSystem = _interopRequireDefault(require('./HhvmBuildSystem'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let Activation = class Activation {
+
+  constructor(state) {
+    this._disposables = new _atom.CompositeDisposable();
   }
 
   dispose() {
     this._disposables.dispose();
   }
 
-  consumeBuildSystemRegistry(registry: TaskRunnerServiceApi): void {
+  consumeBuildSystemRegistry(registry) {
     this._disposables.add(registry.register(this._getBuildSystem()));
   }
 
-  _getBuildSystem(): HhvmBuildSystem {
+  _getBuildSystem() {
     if (this._buildSystem == null) {
-      const buildSystem = new HhvmBuildSystem();
+      const buildSystem = new (_HhvmBuildSystem || _load_HhvmBuildSystem()).default();
       this._disposables.add(buildSystem);
       this._buildSystem = buildSystem;
     }
     return this._buildSystem;
   }
 
-}
-
-export default createPackage(Activation);
+};
+exports.default = (0, (_createPackage || _load_createPackage()).default)(Activation);
+module.exports = exports['default'];

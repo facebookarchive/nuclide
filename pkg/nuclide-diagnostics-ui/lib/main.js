@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,33 +9,65 @@
  * the root directory of this source tree.
  */
 
-import type {
-  FileMessageUpdate,
-  ObservableDiagnosticUpdater,
-} from '../../nuclide-diagnostics-common';
-import type {
-  FileDiagnosticMessage,
-  Trace,
-} from '../../nuclide-diagnostics-common/lib/rpc-types';
-import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
-import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
+var _atom = require('atom');
 
-import invariant from 'assert';
-import {Disposable} from 'atom';
+var _nuclideAnalytics;
 
-import {track} from '../../nuclide-analytics';
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
 
-import type {HomeFragments} from '../../nuclide-home/lib/types';
+var _createPackage;
 
-import createPackage from '../../commons-atom/createPackage';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
-import createDiagnosticsPanel from './createPanel';
-import StatusBarTile from './StatusBarTile';
-import {applyUpdateToEditor} from './gutter';
-import {goToLocation} from '../../commons-atom/go-to-location';
-import featureConfig from '../../commons-atom/featureConfig';
-import {Observable} from 'rxjs';
+function _load_createPackage() {
+  return _createPackage = _interopRequireDefault(require('../../commons-atom/createPackage'));
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../commons-node/UniversalDisposable'));
+}
+
+var _event;
+
+function _load_event() {
+  return _event = require('../../commons-node/event');
+}
+
+var _createPanel;
+
+function _load_createPanel() {
+  return _createPanel = _interopRequireDefault(require('./createPanel'));
+}
+
+var _StatusBarTile;
+
+function _load_StatusBarTile() {
+  return _StatusBarTile = _interopRequireDefault(require('./StatusBarTile'));
+}
+
+var _gutter;
+
+function _load_gutter() {
+  return _gutter = require('./gutter');
+}
+
+var _goToLocation;
+
+function _load_goToLocation() {
+  return _goToLocation = require('../../commons-atom/go-to-location');
+}
+
+var _featureConfig;
+
+function _load_featureConfig() {
+  return _featureConfig = _interopRequireDefault(require('../../commons-atom/featureConfig'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const DEFAULT_HIDE_DIAGNOSTICS_PANEL = true;
 const DEFAULT_TABLE_HEIGHT = 200;
@@ -43,26 +75,15 @@ const DEFAULT_FILTER_BY_ACTIVE_EDITOR = false;
 const LINTER_PACKAGE = 'linter';
 const MAX_OPEN_ALL_FILES = 20;
 
-type ActivationState = {
-  hideDiagnosticsPanel: boolean,
-  diagnosticsPanelHeight: number,
-  filterByActiveTextEditor: boolean,
-};
-
 function disableLinter() {
   atom.packages.disablePackage(LINTER_PACKAGE);
 }
 
-class Activation {
-  _bottomPanel: ?atom$Panel;
-  _consumeUpdatesCalled: boolean;
-  _subscriptions: UniversalDisposable;
-  _state: ActivationState;
-  _statusBarTile: ?StatusBarTile;
+let Activation = class Activation {
 
-  constructor(state_: ?Object): void {
+  constructor(state_) {
     this._consumeUpdatesCalled = false;
-    this._subscriptions = new UniversalDisposable();
+    this._subscriptions = new (_UniversalDisposable || _load_UniversalDisposable()).default();
     let state = state_;
 
     // Ensure the integrity of the ActivationState created from state.
@@ -81,7 +102,7 @@ class Activation {
     this._state = state;
   }
 
-  consumeDiagnosticUpdates(diagnosticUpdater: ObservableDiagnosticUpdater): void {
+  consumeDiagnosticUpdates(diagnosticUpdater) {
     this._getStatusBarTile().consumeDiagnosticUpdates(diagnosticUpdater);
     this._subscriptions.add(gutterConsumeDiagnosticUpdates(diagnosticUpdater));
 
@@ -95,24 +116,26 @@ class Activation {
     this._subscriptions.add(addAtomCommands(diagnosticUpdater));
   }
 
-  consumeStatusBar(statusBar: atom$StatusBar): void {
+  consumeStatusBar(statusBar) {
     this._getStatusBarTile().consumeStatusBar(statusBar);
   }
 
-  consumeToolBar(getToolBar: GetToolBar): IDisposable {
+  consumeToolBar(getToolBar) {
     const toolBar = getToolBar('nuclide-diagnostics-ui');
     toolBar.addButton({
       icon: 'law',
       callback: 'nuclide-diagnostics-ui:toggle-table',
       tooltip: 'Toggle Diagnostics Table',
-      priority: 100,
+      priority: 100
     });
-    const disposable = new Disposable(() => { toolBar.removeItems(); });
+    const disposable = new _atom.Disposable(() => {
+      toolBar.removeItems();
+    });
     this._subscriptions.add(disposable);
     return disposable;
   }
 
-  dispose(): void {
+  dispose() {
     this._subscriptions.dispose();
 
     if (this._bottomPanel) {
@@ -128,39 +151,36 @@ class Activation {
     this._consumeUpdatesCalled = false;
   }
 
-  serialize(): ActivationState {
+  serialize() {
     this._tryRecordActivationState(this._state);
     return this._state;
   }
 
-  getHomeFragments(): HomeFragments {
+  getHomeFragments() {
     return {
       feature: {
         title: 'Diagnostics',
         icon: 'law',
         description: 'Displays diagnostics, errors, and lint warnings for your files and projects.',
-        command: 'nuclide-diagnostics-ui:show-table',
+        command: 'nuclide-diagnostics-ui:show-table'
       },
-      priority: 4,
+      priority: 4
     };
   }
 
-  getDistractionFreeModeProvider(): DistractionFreeModeProvider {
+  getDistractionFreeModeProvider() {
     return {
       name: 'nuclide-diagnostics-ui',
       isVisible: () => {
         return this._bottomPanel != null && this._bottomPanel.isVisible();
       },
-      toggle(): void {
-        atom.commands.dispatch(
-          atom.views.getView(atom.workspace),
-          'nuclide-diagnostics-ui:toggle-table',
-        );
-      },
+      toggle: function () {
+        atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-diagnostics-ui:toggle-table');
+      }
     };
   }
 
-  _tableConsumeDiagnosticUpdates(diagnosticUpdater: ObservableDiagnosticUpdater): void {
+  _tableConsumeDiagnosticUpdates(diagnosticUpdater) {
     const toggleTable = () => {
       const bottomPanelRef = this._bottomPanel;
       if (bottomPanelRef == null) {
@@ -180,89 +200,67 @@ class Activation {
       }
     };
 
-    this._subscriptions.add(
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-diagnostics-ui:toggle-table',
-        toggleTable,
-      ),
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-diagnostics-ui:show-table',
-        showTable,
-      ),
-    );
+    this._subscriptions.add(atom.commands.add('atom-workspace', 'nuclide-diagnostics-ui:toggle-table', toggleTable), atom.commands.add('atom-workspace', 'nuclide-diagnostics-ui:show-table', showTable));
 
     if (!this._state.hideDiagnosticsPanel) {
       this._subscriptions.add(this._createPanel(diagnosticUpdater));
     }
   }
 
-  _createPanel(diagnosticUpdater: ObservableDiagnosticUpdater): IDisposable {
-    const panel = createDiagnosticsPanel(
-      diagnosticUpdater.allMessageUpdates,
-      this._state.diagnosticsPanelHeight,
-      this._state.filterByActiveTextEditor,
-      featureConfig.observeAsStream('nuclide-diagnostics-ui.showDiagnosticTraces'),
-      disableLinter,
-      filterByActiveTextEditor => {
-        if (this._state != null) {
-          this._state.filterByActiveTextEditor = filterByActiveTextEditor;
-        }
-      },
-      observeLinterPackageEnabled(),
-    );
+  _createPanel(diagnosticUpdater) {
+    const panel = (0, (_createPanel || _load_createPanel()).default)(diagnosticUpdater.allMessageUpdates, this._state.diagnosticsPanelHeight, this._state.filterByActiveTextEditor, (_featureConfig || _load_featureConfig()).default.observeAsStream('nuclide-diagnostics-ui.showDiagnosticTraces'), disableLinter, filterByActiveTextEditor => {
+      if (this._state != null) {
+        this._state.filterByActiveTextEditor = filterByActiveTextEditor;
+      }
+    }, observeLinterPackageEnabled());
     logPanelIsDisplayed();
     this._bottomPanel = panel;
 
-    return panel.onDidChangeVisible((visible: boolean) => {
+    return panel.onDidChangeVisible(visible => {
       this._state.hideDiagnosticsPanel = !visible;
     });
   }
 
-  _tryRecordActivationState(): void {
+  _tryRecordActivationState() {
     if (this._bottomPanel && this._bottomPanel.isVisible()) {
       this._state.diagnosticsPanelHeight = this._bottomPanel.getItem().clientHeight;
     }
   }
 
-  _getStatusBarTile(): StatusBarTile {
+  _getStatusBarTile() {
     if (!this._statusBarTile) {
-      this._statusBarTile = new StatusBarTile();
+      this._statusBarTile = new (_StatusBarTile || _load_StatusBarTile()).default();
     }
     return this._statusBarTile;
   }
 
-}
+};
 
-function gutterConsumeDiagnosticUpdates(
-  diagnosticUpdater: ObservableDiagnosticUpdater,
-): IDisposable {
+
+function gutterConsumeDiagnosticUpdates(diagnosticUpdater) {
   const fixer = diagnosticUpdater.applyFix.bind(diagnosticUpdater);
-  return atom.workspace.observeTextEditors((editor: TextEditor) => {
+  return atom.workspace.observeTextEditors(editor => {
     const filePath = editor.getPath();
     if (!filePath) {
       return; // The file is likely untitled.
     }
 
-    const callback = (update: FileMessageUpdate) => {
+    const callback = update => {
       // Although the subscription below should be cleaned up on editor destroy,
       // the very act of destroying the editor can trigger diagnostic updates.
       // Thus this callback can still be triggered after the editor is destroyed.
       if (!editor.isDestroyed()) {
-        applyUpdateToEditor(editor, update, fixer);
+        (0, (_gutter || _load_gutter()).applyUpdateToEditor)(editor, update, fixer);
       }
     };
-    const disposable = new UniversalDisposable(
-      diagnosticUpdater.getFileMessageUpdates(filePath).subscribe(callback),
-    );
+    const disposable = new (_UniversalDisposable || _load_UniversalDisposable()).default(diagnosticUpdater.getFileMessageUpdates(filePath).subscribe(callback));
 
     // Be sure to remove the subscription on the DiagnosticStore once the editor is closed.
     editor.onDidDestroy(() => disposable.dispose());
   });
 }
 
-function addAtomCommands(diagnosticUpdater: ObservableDiagnosticUpdater): IDisposable {
+function addAtomCommands(diagnosticUpdater) {
   const fixAllInCurrentFile = () => {
     const editor = atom.workspace.getActiveTextEditor();
     if (editor == null) {
@@ -272,107 +270,61 @@ function addAtomCommands(diagnosticUpdater: ObservableDiagnosticUpdater): IDispo
     if (path == null) {
       return;
     }
-    track('diagnostics-autofix-all-in-file');
+    (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('diagnostics-autofix-all-in-file');
     diagnosticUpdater.applyFixesForFile(path);
   };
 
   const openAllFilesWithErrors = () => {
-    track('diagnostics-panel-open-all-files-with-errors');
-    diagnosticUpdater.allMessageUpdates
-      .first()
-      .subscribe(messages => {
-        if (messages.length > MAX_OPEN_ALL_FILES) {
-          atom.notifications.addError(
-            `Diagnostics: Will not open more than ${MAX_OPEN_ALL_FILES} files`,
-          );
-          return;
+    (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('diagnostics-panel-open-all-files-with-errors');
+    diagnosticUpdater.allMessageUpdates.first().subscribe(messages => {
+      if (messages.length > MAX_OPEN_ALL_FILES) {
+        atom.notifications.addError(`Diagnostics: Will not open more than ${ MAX_OPEN_ALL_FILES } files`);
+        return;
+      }
+      for (let index = 0; index < messages.length; index++) {
+        const rowData = messages[index];
+        if (rowData.scope === 'file' && rowData.filePath != null) {
+          const uri = rowData.filePath;
+          // If initialLine is N, Atom will navigate to line N+1.
+          // Flow sometimes reports a row of -1, so this ensures the line is at least one.
+          const line = Math.max(rowData.range ? rowData.range.start.row : 0, 0);
+          const column = 0;
+          (0, (_goToLocation || _load_goToLocation()).goToLocation)(uri, line, column);
         }
-        for (let index = 0; index < messages.length; index++) {
-          const rowData = messages[index];
-          if (rowData.scope === 'file' && rowData.filePath != null) {
-            const uri = rowData.filePath;
-            // If initialLine is N, Atom will navigate to line N+1.
-            // Flow sometimes reports a row of -1, so this ensures the line is at least one.
-            const line = Math.max(rowData.range ? rowData.range.start.row : 0, 0);
-            const column = 0;
-            goToLocation(uri, line, column);
-          }
-        }
-      });
+      }
+    });
   };
 
-  return new UniversalDisposable(
-    atom.commands.add(
-      'atom-workspace',
-      'nuclide-diagnostics-ui:fix-all-in-current-file',
-      fixAllInCurrentFile,
-    ),
-    atom.commands.add(
-      'atom-workspace',
-      'nuclide-diagnostics-ui:open-all-files-with-errors',
-      openAllFilesWithErrors,
-    ),
-    new KeyboardShortcuts(diagnosticUpdater),
-  );
+  return new (_UniversalDisposable || _load_UniversalDisposable()).default(atom.commands.add('atom-workspace', 'nuclide-diagnostics-ui:fix-all-in-current-file', fixAllInCurrentFile), atom.commands.add('atom-workspace', 'nuclide-diagnostics-ui:open-all-files-with-errors', openAllFilesWithErrors), new KeyboardShortcuts(diagnosticUpdater));
 }
 
 // TODO(peterhal): The current index should really live in the DiagnosticStore.
-class KeyboardShortcuts {
-  _subscriptions: UniversalDisposable;
-  _diagnostics: Array<FileDiagnosticMessage>;
-  _index: ?number;
-  _traceIndex: ?number;
+let KeyboardShortcuts = class KeyboardShortcuts {
 
-  constructor(diagnosticUpdater: ObservableDiagnosticUpdater) {
+  constructor(diagnosticUpdater) {
     this._index = null;
     this._diagnostics = [];
 
-    this._subscriptions = new UniversalDisposable();
+    this._subscriptions = new (_UniversalDisposable || _load_UniversalDisposable()).default();
 
     const first = () => this.setIndex(0);
     const last = () => this.setIndex(this._diagnostics.length - 1);
-    this._subscriptions.add(
-      diagnosticUpdater.allMessageUpdates.subscribe(
-        diagnostics => {
-          this._diagnostics = (diagnostics
-            .filter(diagnostic => diagnostic.scope === 'file'): any);
-          this._index = null;
-          this._traceIndex = null;
-        }),
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-diagnostics-ui:go-to-first-diagnostic',
-        first,
-      ),
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-diagnostics-ui:go-to-last-diagnostic',
-        last,
-      ),
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-diagnostics-ui:go-to-next-diagnostic',
-        () => { this._index == null ? first() : this.setIndex(this._index + 1); },
-      ),
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-diagnostics-ui:go-to-previous-diagnostic',
-        () => { this._index == null ? last() : this.setIndex(this._index - 1); },
-      ),
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-diagnostics-ui:go-to-next-diagnostic-trace',
-        () => { this.nextTrace(); },
-      ),
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-diagnostics-ui:go-to-previous-diagnostic-trace',
-        () => { this.previousTrace(); },
-      ),
-    );
+    this._subscriptions.add(diagnosticUpdater.allMessageUpdates.subscribe(diagnostics => {
+      this._diagnostics = diagnostics.filter(diagnostic => diagnostic.scope === 'file');
+      this._index = null;
+      this._traceIndex = null;
+    }), atom.commands.add('atom-workspace', 'nuclide-diagnostics-ui:go-to-first-diagnostic', first), atom.commands.add('atom-workspace', 'nuclide-diagnostics-ui:go-to-last-diagnostic', last), atom.commands.add('atom-workspace', 'nuclide-diagnostics-ui:go-to-next-diagnostic', () => {
+      this._index == null ? first() : this.setIndex(this._index + 1);
+    }), atom.commands.add('atom-workspace', 'nuclide-diagnostics-ui:go-to-previous-diagnostic', () => {
+      this._index == null ? last() : this.setIndex(this._index - 1);
+    }), atom.commands.add('atom-workspace', 'nuclide-diagnostics-ui:go-to-next-diagnostic-trace', () => {
+      this.nextTrace();
+    }), atom.commands.add('atom-workspace', 'nuclide-diagnostics-ui:go-to-previous-diagnostic-trace', () => {
+      this.previousTrace();
+    }));
   }
 
-  setIndex(index: number): void {
+  setIndex(index) {
     this._traceIndex = null;
     if (this._diagnostics.length === 0) {
       this._index = null;
@@ -382,19 +334,25 @@ class KeyboardShortcuts {
     this.gotoCurrentIndex();
   }
 
-  gotoCurrentIndex(): void {
-    invariant(this._index != null);
-    invariant(this._traceIndex == null);
+  gotoCurrentIndex() {
+    if (!(this._index != null)) {
+      throw new Error('Invariant violation: "this._index != null"');
+    }
+
+    if (!(this._traceIndex == null)) {
+      throw new Error('Invariant violation: "this._traceIndex == null"');
+    }
+
     const diagnostic = this._diagnostics[this._index];
     const range = diagnostic.range;
     if (range == null) {
-      goToLocation(diagnostic.filePath);
+      (0, (_goToLocation || _load_goToLocation()).goToLocation)(diagnostic.filePath);
     } else {
-      goToLocation(diagnostic.filePath, range.start.row, range.start.column);
+      (0, (_goToLocation || _load_goToLocation()).goToLocation)(diagnostic.filePath, range.start.row, range.start.column);
     }
   }
 
-  nextTrace(): void {
+  nextTrace() {
     const traces = this.currentTraces();
     if (traces == null) {
       return;
@@ -410,7 +368,7 @@ class KeyboardShortcuts {
     this.gotoCurrentIndex();
   }
 
-  previousTrace(): void {
+  previousTrace() {
     const traces = this.currentTraces();
     if (traces == null) {
       return;
@@ -426,7 +384,7 @@ class KeyboardShortcuts {
     this.gotoCurrentIndex();
   }
 
-  currentTraces(): ?Array<Trace> {
+  currentTraces() {
     if (this._index == null) {
       return null;
     }
@@ -435,35 +393,28 @@ class KeyboardShortcuts {
   }
 
   // TODO: Should filter out traces whose location matches the main diagnostic's location?
-  trySetCurrentTrace(traces: Array<Trace>, traceIndex: number): boolean {
+  trySetCurrentTrace(traces, traceIndex) {
     const trace = traces[traceIndex];
     if (trace.filePath != null && trace.range != null) {
       this._traceIndex = traceIndex;
-      goToLocation(trace.filePath, trace.range.start.row, trace.range.start.column);
+      (0, (_goToLocation || _load_goToLocation()).goToLocation)(trace.filePath, trace.range.start.row, trace.range.start.column);
       return true;
     }
     return false;
   }
 
-  dispose(): void {
+  dispose() {
     this._subscriptions.dispose();
   }
-}
+};
+
 
 function logPanelIsDisplayed() {
-  track('diagnostics-show-table');
+  (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('diagnostics-show-table');
 }
 
-function observeLinterPackageEnabled(): Observable<boolean> {
-  return Observable.merge(
-    Observable.of(atom.packages.isPackageActive(LINTER_PACKAGE)),
-    observableFromSubscribeFunction(atom.packages.onDidActivatePackage.bind(atom.packages))
-      .filter(pkg => pkg.name === LINTER_PACKAGE)
-      .mapTo(true),
-    observableFromSubscribeFunction(atom.packages.onDidDeactivatePackage.bind(atom.packages))
-      .filter(pkg => pkg.name === LINTER_PACKAGE)
-      .mapTo(false),
-  );
+function observeLinterPackageEnabled() {
+  return _rxjsBundlesRxMinJs.Observable.merge(_rxjsBundlesRxMinJs.Observable.of(atom.packages.isPackageActive(LINTER_PACKAGE)), (0, (_event || _load_event()).observableFromSubscribeFunction)(atom.packages.onDidActivatePackage.bind(atom.packages)).filter(pkg => pkg.name === LINTER_PACKAGE).mapTo(true), (0, (_event || _load_event()).observableFromSubscribeFunction)(atom.packages.onDidDeactivatePackage.bind(atom.packages)).filter(pkg => pkg.name === LINTER_PACKAGE).mapTo(false));
 }
 
-module.exports = createPackage(Activation);
+module.exports = (0, (_createPackage || _load_createPackage()).default)(Activation);

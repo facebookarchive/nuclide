@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,34 +9,46 @@
  * the root directory of this source tree.
  */
 
-import {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
-import {React} from 'react-for-atom';
-import {AttachUiComponent} from './AttachUiComponent';
-import invariant from 'assert';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.IwdpLaunchAttachProvider = undefined;
 
-import type EventEmitter from 'events';
+var _nuclideDebuggerBase;
 
-export class IwdpLaunchAttachProvider extends DebuggerLaunchAttachProvider {
-  constructor(debuggingTypeName: string, targetUri: string) {
+function _load_nuclideDebuggerBase() {
+  return _nuclideDebuggerBase = require('../../nuclide-debugger-base');
+}
+
+var _reactForAtom = require('react-for-atom');
+
+var _AttachUiComponent;
+
+function _load_AttachUiComponent() {
+  return _AttachUiComponent = require('./AttachUiComponent');
+}
+
+let IwdpLaunchAttachProvider = exports.IwdpLaunchAttachProvider = class IwdpLaunchAttachProvider extends (_nuclideDebuggerBase || _load_nuclideDebuggerBase()).DebuggerLaunchAttachProvider {
+  constructor(debuggingTypeName, targetUri) {
     super(debuggingTypeName, targetUri);
   }
 
-  getActions(): Array<string> {
+  getActions() {
     return ['Attach'];
   }
 
-  getComponent(action: string, parentEventEmitter: EventEmitter): ?React.Element<any> {
+  getComponent(action, parentEventEmitter) {
     if (action === 'Attach') {
-      return (
-        <AttachUiComponent
-          targetUri={this.getTargetUri()}
-          parentEmitter={parentEventEmitter}
-        />
-      );
+      return _reactForAtom.React.createElement((_AttachUiComponent || _load_AttachUiComponent()).AttachUiComponent, {
+        targetUri: this.getTargetUri(),
+        parentEmitter: parentEventEmitter
+      });
     } else {
-      invariant(false, 'Unrecognized action for component.');
+      if (!false) {
+        throw new Error('Unrecognized action for component.');
+      }
     }
   }
 
-  dispose(): void {}
-}
+  dispose() {}
+};

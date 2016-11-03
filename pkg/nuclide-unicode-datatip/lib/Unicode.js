@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,12 +9,19 @@
  * the root directory of this source tree.
  */
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.zeroPaddedHex = zeroPaddedHex;
+exports.decodeSurrogateCodePoints = decodeSurrogateCodePoints;
+exports.extractCodePoints = extractCodePoints;
+
 const HIGH_SURROGATE_START = 0xD800;
 const HIGH_SURROGATE_END = 0xDBFF;
 const LOW_SURROGATE_START = 0xDC00;
 const LOW_SURROGATE_END = 0xDFFF;
 
-export function zeroPaddedHex(codePoint: number, len: number): string {
+function zeroPaddedHex(codePoint, len) {
   const codePointHex = codePoint.toString(16).toUpperCase();
   const numZeros = Math.max(0, len - codePointHex.length);
   let result = '';
@@ -25,24 +32,18 @@ export function zeroPaddedHex(codePoint: number, len: number): string {
   return result;
 }
 
-export function decodeSurrogateCodePoints(codePoints: Array<number>): Array<number> {
+function decodeSurrogateCodePoints(codePoints) {
   let highSurrogate = -1;
   const result = [];
   for (const codePoint of codePoints) {
-    if (codePoint >= HIGH_SURROGATE_START &&
-        codePoint <= HIGH_SURROGATE_END) {
+    if (codePoint >= HIGH_SURROGATE_START && codePoint <= HIGH_SURROGATE_END) {
       if (highSurrogate !== -1) {
         // Double high surrogate
         result.push(highSurrogate);
       }
       highSurrogate = codePoint;
-    } else if (codePoint >= LOW_SURROGATE_START &&
-               codePoint <= LOW_SURROGATE_END &&
-               highSurrogate !== -1) {
-      const decoded =
-        0x10000 +
-        ((highSurrogate - HIGH_SURROGATE_START) * 0x400) +
-        (codePoint - LOW_SURROGATE_START);
+    } else if (codePoint >= LOW_SURROGATE_START && codePoint <= LOW_SURROGATE_END && highSurrogate !== -1) {
+      const decoded = 0x10000 + (highSurrogate - HIGH_SURROGATE_START) * 0x400 + (codePoint - LOW_SURROGATE_START);
       result.push(decoded);
       highSurrogate = -1;
     } else {
@@ -63,9 +64,8 @@ export function decodeSurrogateCodePoints(codePoints: Array<number>): Array<numb
   return result;
 }
 
-export function extractCodePoints(word: string): Array<number> {
-  const escapeRe =
-    /(?:\\u([0-9a-fA-F]{4})|\\U([0-9a-fA-F]{8})|\\u{([0-9a-fA-F]{1,8})}|([a-zA-Z0-9_-]+))/g;
+function extractCodePoints(word) {
+  const escapeRe = /(?:\\u([0-9a-fA-F]{4})|\\U([0-9a-fA-F]{8})|\\u{([0-9a-fA-F]{1,8})}|([a-zA-Z0-9_-]+))/g;
   let result = [];
   let matches;
   while ((matches = escapeRe.exec(word)) !== null) {

@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,36 +9,55 @@
  * the root directory of this source tree.
  */
 
-import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.consumeWorkspaceViewsService = consumeWorkspaceViewsService;
 
-import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
-import Inspector from './ui/Inspector';
-import invariant from 'assert';
-import {CompositeDisposable} from 'atom';
-import {React} from 'react-for-atom';
+var _viewableFromReactElement;
 
-let disposables: ?CompositeDisposable = null;
-
-export function activate(): void {
-  disposables = new CompositeDisposable();
+function _load_viewableFromReactElement() {
+  return _viewableFromReactElement = require('../../commons-atom/viewableFromReactElement');
 }
 
-export function deactivate(): void {
-  invariant(disposables != null);
+var _Inspector;
+
+function _load_Inspector() {
+  return _Inspector = _interopRequireDefault(require('./ui/Inspector'));
+}
+
+var _atom = require('atom');
+
+var _reactForAtom = require('react-for-atom');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let disposables = null;function activate() {
+  disposables = new _atom.CompositeDisposable();
+}
+
+function deactivate() {
+  if (!(disposables != null)) {
+    throw new Error('Invariant violation: "disposables != null"');
+  }
+
   disposables.dispose();
   disposables = null;
 }
 
-export function consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
-  invariant(disposables != null);
-  disposables.add(
-    api.registerFactory({
-      id: 'nuclide-react-inspector',
-      name: 'React Inspector',
-      toggleCommand: 'nuclide-react-inspector:toggle',
-      defaultLocation: 'pane',
-      create: () => viewableFromReactElement(<Inspector />),
-      isInstance: item => item instanceof Inspector,
-    }),
-  );
+function consumeWorkspaceViewsService(api) {
+  if (!(disposables != null)) {
+    throw new Error('Invariant violation: "disposables != null"');
+  }
+
+  disposables.add(api.registerFactory({
+    id: 'nuclide-react-inspector',
+    name: 'React Inspector',
+    toggleCommand: 'nuclide-react-inspector:toggle',
+    defaultLocation: 'pane',
+    create: () => (0, (_viewableFromReactElement || _load_viewableFromReactElement()).viewableFromReactElement)(_reactForAtom.React.createElement((_Inspector || _load_Inspector()).default, null)),
+    isInstance: item => item instanceof (_Inspector || _load_Inspector()).default
+  }));
 }

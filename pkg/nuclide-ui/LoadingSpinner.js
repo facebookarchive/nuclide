@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,78 +9,67 @@
  * the root directory of this source tree.
  */
 
-import classnames from 'classnames';
-import {React} from 'react-for-atom';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.LoadingSpinner = exports.LoadingSpinnerSizes = undefined;
 
-type LoadingSpinnerSize = 'EXTRA_SMALL' | 'SMALL' | 'MEDIUM' | 'LARGE';
-type Props = {
-  className?: string,
-  /** The size of the LoadingSpinner. Defaults to MEDIUM. */
-  size?: LoadingSpinnerSize,
-  /**
-   * An optional delay (in milliseconds) between mounting the component and actually rendering
-   * the spinner to avoid UI churn.
-   */
-  delay?: number,
-};
+var _classnames;
 
-export const LoadingSpinnerSizes = Object.freeze({
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
+
+var _reactForAtom = require('react-for-atom');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const LoadingSpinnerSizes = exports.LoadingSpinnerSizes = Object.freeze({
   EXTRA_SMALL: 'EXTRA_SMALL',
   SMALL: 'SMALL',
   MEDIUM: 'MEDIUM',
-  LARGE: 'LARGE',
+  LARGE: 'LARGE'
 });
 
 const LoadingSpinnerClassnames = Object.freeze({
   EXTRA_SMALL: 'loading-spinner-tiny',
   SMALL: 'loading-spinner-small',
   MEDIUM: 'loading-spinner-medium',
-  LARGE: 'loading-spinner-large',
+  LARGE: 'loading-spinner-large'
 });
 
 /**
  * Shows an indefinite, animated LoadingSpinner.
  */
-export class LoadingSpinner extends React.Component {
-  props: Props;
-  state: {shouldRender: boolean};
-  _timeout: ?number;
+let LoadingSpinner = exports.LoadingSpinner = class LoadingSpinner extends _reactForAtom.React.Component {
 
-  constructor(props: Props) {
+  constructor(props) {
     super(props);
-    this.state = {shouldRender: false};
+    this.state = { shouldRender: false };
   }
 
-  componentDidMount(): void {
+  componentDidMount() {
     const delay = this.props.delay == null ? 0 : this.props.delay;
-    this._timeout = setTimeout(() => this.setState({shouldRender: true}), delay);
+    this._timeout = setTimeout(() => this.setState({ shouldRender: true }), delay);
   }
 
-  componentWillUnmount(): void {
+  componentWillUnmount() {
     if (this._timeout != null) {
       clearTimeout(this._timeout);
     }
   }
 
-  render(): ?React.Element<any> {
-    const {
-      className,
-      size,
-    } = this.props;
+  render() {
+    var _props = this.props;
+    const className = _props.className,
+          size = _props.size;
+
     if (!this.state.shouldRender) {
       return null;
     }
-    const safeSize = size != null && LoadingSpinnerSizes.hasOwnProperty(size)
-      ? size
-      : LoadingSpinnerSizes.MEDIUM;
+    const safeSize = size != null && LoadingSpinnerSizes.hasOwnProperty(size) ? size : LoadingSpinnerSizes.MEDIUM;
     const sizeClassname = LoadingSpinnerClassnames[safeSize];
-    const newClassName = classnames(
-      className,
-      'loading',
-      sizeClassname,
-    );
-    return (
-      <div className={newClassName} />
-    );
+    const newClassName = (0, (_classnames || _load_classnames()).default)(className, 'loading', sizeClassname);
+    return _reactForAtom.React.createElement('div', { className: newClassName });
   }
-}
+};

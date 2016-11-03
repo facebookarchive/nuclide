@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,7 +9,11 @@
  * the root directory of this source tree.
  */
 
-import invariant from 'assert';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = createPackage;
+
 
 /**
  * Create an Atom package from an Activation constructor.
@@ -20,7 +24,7 @@ import invariant from 'assert';
  * sense to build packages as instances, constructed when a package is activated and destroyed when
  * the package is deactivated.
  */
-export default function createPackage(Activation: Class<any>): Object {
+function createPackage(Activation) {
   let activation = null;
   const pkg = {};
 
@@ -33,48 +37,52 @@ export default function createPackage(Activation: Class<any>): Object {
       continue;
     }
     if (property === 'activate') {
-      throw new Error(
-        'Your activation class contains an "activate" method, but that work should be done in the'
-        + ' constructor.',
-      );
+      throw new Error('Your activation class contains an "activate" method, but that work should be done in the' + ' constructor.');
     }
     if (property === 'deactivate') {
-      throw new Error(
-        'Your activation class contains an "deactivate" method. Please use "dispose" instead.',
-      );
+      throw new Error('Your activation class contains an "deactivate" method. Please use "dispose" instead.');
     }
 
-    pkg[property] = function(...args) {
-      invariant(activation != null, 'Package not activated');
-      return activation[property](...args);
+    pkg[property] = function () {
+      if (!(activation != null)) {
+        throw new Error('Package not activated');
+      }
+
+      return activation[property](...arguments);
     };
   }
 
-  return {
-    ...pkg,
+  return Object.assign({}, pkg, {
 
     /**
      * Calling `activate()` creates a new instance.
      */
-    activate(initialState: ?Object): void {
-      invariant(activation == null, 'Package already activated');
+    activate: function (initialState) {
+      if (!(activation == null)) {
+        throw new Error('Package already activated');
+      }
+
       activation = new Activation(initialState);
     },
+
 
     /**
      * The `deactivate()` method is special-cased to null our activation instance reference.
      */
-    deactivate(): void {
-      invariant(activation != null, 'Package not activated');
+    deactivate: function () {
+      if (!(activation != null)) {
+        throw new Error('Package not activated');
+      }
+
       if (typeof activation.dispose === 'function') {
         activation.dispose();
       }
       activation = null;
-    },
-  };
+    }
+  });
 }
 
-function getPrototypeChain(prototype: Class<any>): Array<Class<any>> {
+function getPrototypeChain(prototype) {
   let currentPrototype = prototype;
   const prototypes = [];
   while (currentPrototype != null) {
@@ -88,10 +96,10 @@ function getPrototypeChain(prototype: Class<any>): Array<Class<any>> {
  * List the properties (including inherited ones) of the provided prototype, excluding the ones
  * inherited from `Object`.
  */
-function getPropertyList(prototype: Class<any>): Array<string> {
+function getPropertyList(prototype) {
   const properties = [];
   for (const proto of getPrototypeChain(prototype)) {
-    if (proto === (Object: any).prototype) {
+    if (proto === Object.prototype) {
       break;
     }
     for (const property of Object.getOwnPropertyNames(proto)) {
@@ -100,3 +108,4 @@ function getPropertyList(prototype: Class<any>): Array<string> {
   }
   return properties;
 }
+module.exports = exports['default'];

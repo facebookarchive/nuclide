@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,335 +9,263 @@
  * the root directory of this source tree.
  */
 
-import type {Message} from '../../../nuclide-console/lib/types';
-import type {NuclideUri} from '../../../commons-node/nuclideUri';
-import type {
-  AddRepositoryAction,
-  AddUiProviderAction,
-  CloseViewAction,
-  CommitAction,
-  CommitModeType,
-  CommitState,
-  DiffFileAction,
-  DiffModeType,
-  EditorElementsMap,
-  FileChangeStatusValue,
-  OpenViewAction,
-  PublishDiffAction,
-  PublishState,
-  RemoveRepositoryAction,
-  RemoveUiProviderAction,
-  SetCommitModeAction,
-  SetCompareIdAction,
-  SetCwdApiAction,
-  SetShouldReabaseOnAmendAction,
-  SetViewModeAction,
-  UIProvider,
-  UpdateActiveRepositoryAction,
-  UpdateCommitStateAction,
-  UpdateDirtyFilesAction,
-  UpdateFileDiffAction,
-  UpdateFileUiElementsAction,
-  UpdateHeadToForkBaseRevisions,
-  UpdateLoadingFileDiffAction,
-  UpdateLoadingSelectedFilesAction,
-  UpdatePublishStateAction,
-  UpdateSelectedFilesAction,
-} from '../types';
-import type {HgRepositoryClient} from '../../../nuclide-hg-repository-client';
-import type {RevisionStatuses} from '../../../nuclide-hg-repository-client/lib/HgRepositoryClient';
-import type {
-  RevisionInfo,
-} from '../../../nuclide-hg-rpc/lib/HgService';
-import type {CwdApi} from '../../../nuclide-current-working-directory/lib/CwdApi';
-import type {Subject} from 'rxjs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.openView = openView;
+exports.closeView = closeView;
+exports.addRepository = addRepository;
+exports.setCompareId = setCompareId;
+exports.updateDirtyFiles = updateDirtyFiles;
+exports.removeRepository = removeRepository;
+exports.updateSelectedFiles = updateSelectedFiles;
+exports.updateLoadingSelectedFiles = updateLoadingSelectedFiles;
+exports.updateHeadToForkBaseRevisionsState = updateHeadToForkBaseRevisionsState;
+exports.updateActiveRepository = updateActiveRepository;
+exports.setCwdApi = setCwdApi;
+exports.diffFile = diffFile;
+exports.updateFileDiff = updateFileDiff;
+exports.updateFileUiElements = updateFileUiElements;
+exports.setViewMode = setViewMode;
+exports.setCommitMode = setCommitMode;
+exports.updateCommitState = updateCommitState;
+exports.updatePublishState = updatePublishState;
+exports.setShouldRebaseOnAmend = setShouldRebaseOnAmend;
+exports.commit = commit;
+exports.publishDiff = publishDiff;
+exports.addUiProvider = addUiProvider;
+exports.removeUiProvider = removeUiProvider;
+exports.updateLoadingFileDiff = updateLoadingFileDiff;
 
-import * as ActionTypes from './ActionTypes';
+var _ActionTypes;
 
-export function openView(): OpenViewAction {
+function _load_ActionTypes() {
+  return _ActionTypes = _interopRequireWildcard(require('./ActionTypes'));
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function openView() {
   return {
-    type: ActionTypes.OPEN_VIEW,
+    type: (_ActionTypes || _load_ActionTypes()).OPEN_VIEW
+  };
+}function closeView() {
+  return {
+    type: (_ActionTypes || _load_ActionTypes()).CLOSE_VIEW
   };
 }
 
-export function closeView(): CloseViewAction {
+function addRepository(repository) {
   return {
-    type: ActionTypes.CLOSE_VIEW,
-  };
-}
-
-export function addRepository(
-  repository: HgRepositoryClient,
-): AddRepositoryAction {
-  return {
-    type: ActionTypes.ADD_REPOSITORY,
+    type: (_ActionTypes || _load_ActionTypes()).ADD_REPOSITORY,
     payload: {
-      repository,
-    },
+      repository: repository
+    }
   };
 }
 
-export function setCompareId(
-  repository: HgRepositoryClient,
-  compareId: ?number,
-): SetCompareIdAction {
+function setCompareId(repository, compareId) {
   return {
-    type: ActionTypes.SET_COMPARE_ID,
+    type: (_ActionTypes || _load_ActionTypes()).SET_COMPARE_ID,
     payload: {
-      repository,
-      compareId,
-    },
+      repository: repository,
+      compareId: compareId
+    }
   };
 }
 
-export function updateDirtyFiles(
-  repository: HgRepositoryClient,
-  dirtyFiles: Map<NuclideUri, FileChangeStatusValue>,
-): UpdateDirtyFilesAction {
+function updateDirtyFiles(repository, dirtyFiles) {
   return {
-    type: ActionTypes.UPDATE_DIRTY_FILES,
+    type: (_ActionTypes || _load_ActionTypes()).UPDATE_DIRTY_FILES,
     payload: {
-      repository,
-      dirtyFiles,
-    },
+      repository: repository,
+      dirtyFiles: dirtyFiles
+    }
   };
 }
 
-export function removeRepository(
-  repository: HgRepositoryClient,
-): RemoveRepositoryAction {
+function removeRepository(repository) {
   return {
-    type: ActionTypes.REMOVE_REPOSITORY,
+    type: (_ActionTypes || _load_ActionTypes()).REMOVE_REPOSITORY,
     payload: {
-      repository,
-    },
+      repository: repository
+    }
   };
 }
 
-export function updateSelectedFiles(
-  repository: HgRepositoryClient,
-  selectedFiles: Map<NuclideUri, FileChangeStatusValue>,
-): UpdateSelectedFilesAction {
+function updateSelectedFiles(repository, selectedFiles) {
   return {
-    type: ActionTypes.UPDATE_SELECTED_FILES,
+    type: (_ActionTypes || _load_ActionTypes()).UPDATE_SELECTED_FILES,
     payload: {
-      repository,
-      selectedFiles,
-    },
+      repository: repository,
+      selectedFiles: selectedFiles
+    }
   };
 }
 
-export function updateLoadingSelectedFiles(
-  repository: HgRepositoryClient,
-  isLoading: boolean,
-): UpdateLoadingSelectedFilesAction {
+function updateLoadingSelectedFiles(repository, isLoading) {
   return {
-    type: ActionTypes.UPDATE_LOADING_SELECTED_FILES,
+    type: (_ActionTypes || _load_ActionTypes()).UPDATE_LOADING_SELECTED_FILES,
     payload: {
-      repository,
-      isLoading,
-    },
+      repository: repository,
+      isLoading: isLoading
+    }
   };
 }
 
-export function updateHeadToForkBaseRevisionsState(
-  repository: HgRepositoryClient,
-  headToForkBaseRevisions: Array<RevisionInfo>,
-  revisionStatuses: RevisionStatuses,
-): UpdateHeadToForkBaseRevisions {
+function updateHeadToForkBaseRevisionsState(repository, headToForkBaseRevisions, revisionStatuses) {
   return {
-    type: ActionTypes.UPDATE_HEAD_TO_FORKBASE_REVISIONS,
+    type: (_ActionTypes || _load_ActionTypes()).UPDATE_HEAD_TO_FORKBASE_REVISIONS,
     payload: {
-      repository,
-      headToForkBaseRevisions,
-      revisionStatuses,
-    },
+      repository: repository,
+      headToForkBaseRevisions: headToForkBaseRevisions,
+      revisionStatuses: revisionStatuses
+    }
   };
 }
 
-export function updateActiveRepository(
-  hgRepository: ?HgRepositoryClient,
-): UpdateActiveRepositoryAction {
+function updateActiveRepository(hgRepository) {
   return {
-    type: ActionTypes.UPDATE_ACTIVE_REPOSITORY,
+    type: (_ActionTypes || _load_ActionTypes()).UPDATE_ACTIVE_REPOSITORY,
     payload: {
-      hgRepository,
-    },
+      hgRepository: hgRepository
+    }
   };
 }
 
-export function setCwdApi(
-  cwdApi: ?CwdApi,
-): SetCwdApiAction {
+function setCwdApi(cwdApi) {
   return {
-    type: ActionTypes.SET_CWD_API,
+    type: (_ActionTypes || _load_ActionTypes()).SET_CWD_API,
     payload: {
-      cwdApi,
-    },
+      cwdApi: cwdApi
+    }
   };
 }
 
-export function diffFile(
-  filePath: NuclideUri,
-  onChangeModified: () => mixed,
-): DiffFileAction {
+function diffFile(filePath, onChangeModified) {
   return {
-    type: ActionTypes.DIFF_FILE,
+    type: (_ActionTypes || _load_ActionTypes()).DIFF_FILE,
     payload: {
-      filePath,
-      onChangeModified,
-    },
+      filePath: filePath,
+      onChangeModified: onChangeModified
+    }
   };
 }
 
-export function updateFileDiff(
-  filePath: NuclideUri,
-  newContents: string,
-  oldContents: string,
-  fromRevision: ?RevisionInfo,
-): UpdateFileDiffAction {
+function updateFileDiff(filePath, newContents, oldContents, fromRevision) {
   return {
-    type: ActionTypes.UPDATE_FILE_DIFF,
+    type: (_ActionTypes || _load_ActionTypes()).UPDATE_FILE_DIFF,
     payload: {
-      filePath,
-      newContents,
-      oldContents,
-      fromRevision,
-    },
+      filePath: filePath,
+      newContents: newContents,
+      oldContents: oldContents,
+      fromRevision: fromRevision
+    }
   };
 }
 
-export function updateFileUiElements(
-  newEditorElements: EditorElementsMap,
-  oldEditorElements: EditorElementsMap,
-): UpdateFileUiElementsAction {
+function updateFileUiElements(newEditorElements, oldEditorElements) {
   return {
-    type: ActionTypes.UPDATE_FILE_UI_ELEMENTS,
+    type: (_ActionTypes || _load_ActionTypes()).UPDATE_FILE_UI_ELEMENTS,
     payload: {
-      newEditorElements,
-      oldEditorElements,
-    },
+      newEditorElements: newEditorElements,
+      oldEditorElements: oldEditorElements
+    }
   };
 }
 
-export function setViewMode(
-  viewMode: DiffModeType,
-): SetViewModeAction {
+function setViewMode(viewMode) {
   return {
-    type: ActionTypes.SET_VIEW_MODE,
+    type: (_ActionTypes || _load_ActionTypes()).SET_VIEW_MODE,
     payload: {
-      viewMode,
-    },
+      viewMode: viewMode
+    }
   };
 }
 
-export function setCommitMode(
-  commitMode: CommitModeType,
-): SetCommitModeAction {
+function setCommitMode(commitMode) {
   return {
-    type: ActionTypes.SET_COMMIT_MODE,
+    type: (_ActionTypes || _load_ActionTypes()).SET_COMMIT_MODE,
     payload: {
-      commitMode,
-    },
+      commitMode: commitMode
+    }
   };
 }
 
-export function updateCommitState(
-  commitState: CommitState,
-): UpdateCommitStateAction {
+function updateCommitState(commitState) {
   return {
-    type: ActionTypes.UPDATE_COMMIT_STATE,
+    type: (_ActionTypes || _load_ActionTypes()).UPDATE_COMMIT_STATE,
     payload: {
-      commit: commitState,
-    },
+      commit: commitState
+    }
   };
 }
 
-export function updatePublishState(
-  publish: PublishState,
-): UpdatePublishStateAction {
+function updatePublishState(publish) {
   return {
-    type: ActionTypes.UPDATE_PUBLISH_STATE,
+    type: (_ActionTypes || _load_ActionTypes()).UPDATE_PUBLISH_STATE,
     payload: {
-      publish,
-    },
+      publish: publish
+    }
   };
 }
 
-export function setShouldRebaseOnAmend(
-  shouldRebaseOnAmend: boolean,
-): SetShouldReabaseOnAmendAction {
+function setShouldRebaseOnAmend(shouldRebaseOnAmend) {
   return {
-    type: ActionTypes.SET_SHOULD_REBASE_ON_AMEND,
+    type: (_ActionTypes || _load_ActionTypes()).SET_SHOULD_REBASE_ON_AMEND,
     payload: {
-      shouldRebaseOnAmend,
-    },
+      shouldRebaseOnAmend: shouldRebaseOnAmend
+    }
   };
 }
 
-export function commit(
-  repository: HgRepositoryClient,
-  message: string,
-  publishUpdates: Subject<Message>,
-): CommitAction {
+function commit(repository, message, publishUpdates) {
   return {
-    type: ActionTypes.COMMIT,
+    type: (_ActionTypes || _load_ActionTypes()).COMMIT,
     payload: {
-      message,
-      repository,
-      publishUpdates,
-    },
+      message: message,
+      repository: repository,
+      publishUpdates: publishUpdates
+    }
   };
 }
 
-export function publishDiff(
-  repository: HgRepositoryClient,
-  message: string,
-  isPrepareMode: boolean,
-  lintExcuse: ?string,
-  publishUpdates: Subject<any>,
-): PublishDiffAction {
+function publishDiff(repository, message, isPrepareMode, lintExcuse, publishUpdates) {
   return {
-    type: ActionTypes.PUBLISH_DIFF,
+    type: (_ActionTypes || _load_ActionTypes()).PUBLISH_DIFF,
     payload: {
-      isPrepareMode,
-      lintExcuse,
-      message,
-      publishUpdates,
-      repository,
-    },
+      isPrepareMode: isPrepareMode,
+      lintExcuse: lintExcuse,
+      message: message,
+      publishUpdates: publishUpdates,
+      repository: repository
+    }
   };
 }
 
-export function addUiProvider(
-  uiProvider: UIProvider,
-): AddUiProviderAction {
+function addUiProvider(uiProvider) {
   return {
-    type: ActionTypes.ADD_UI_PROVIDER,
+    type: (_ActionTypes || _load_ActionTypes()).ADD_UI_PROVIDER,
     payload: {
-      uiProvider,
-    },
+      uiProvider: uiProvider
+    }
   };
 }
 
-export function removeUiProvider(
-  uiProvider: UIProvider,
-): RemoveUiProviderAction {
+function removeUiProvider(uiProvider) {
   return {
-    type: ActionTypes.REMOVE_UI_PROVIDER,
+    type: (_ActionTypes || _load_ActionTypes()).REMOVE_UI_PROVIDER,
     payload: {
-      uiProvider,
-    },
+      uiProvider: uiProvider
+    }
   };
 }
 
-export function updateLoadingFileDiff(
-  isLoading: boolean,
-): UpdateLoadingFileDiffAction {
+function updateLoadingFileDiff(isLoading) {
   return {
-    type: ActionTypes.UPDATE_LOADING_FILE_DIFF,
+    type: (_ActionTypes || _load_ActionTypes()).UPDATE_LOADING_FILE_DIFF,
     payload: {
-      isLoading,
-    },
+      isLoading: isLoading
+    }
   };
 }

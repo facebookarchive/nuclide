@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -11,15 +11,33 @@
 
 /* eslint-disable no-console */
 
-import type {ExitCode} from '../lib/types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-export default async function runCommand(args: Array<string>): Promise<ExitCode> {
-  const commands = [];
-  for (const keybinding of atom.keymaps.getKeyBindings()) {
-    commands.push(keybinding.command);
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (args) {
+    const commands = [];
+    for (const keybinding of atom.keymaps.getKeyBindings()) {
+      commands.push(keybinding.command);
+    }
+
+    commands.sort();
+    commands.forEach(function (command) {
+      return console.log(command);
+    });
+    return 0;
+  });
+
+  function runCommand(_x) {
+    return _ref.apply(this, arguments);
   }
 
-  commands.sort();
-  commands.forEach(command => console.log(command));
-  return 0;
-}
+  return runCommand;
+})();
+
+module.exports = exports['default'];

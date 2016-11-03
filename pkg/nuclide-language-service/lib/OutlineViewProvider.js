@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,33 +9,36 @@
  * the root directory of this source tree.
  */
 
-import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
-import type {LanguageService} from './LanguageService';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.OutlineViewProvider = undefined;
 
-import {ConnectionCache} from '../../nuclide-remote-connection';
-import {getFileVersionOfEditor} from '../../nuclide-open-files';
-import {trackOperationTiming} from '../../nuclide-analytics';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-export type OutlineViewConfig = {
-  version: '0.0.0',
-  priority: number,
-  analyticsEventName: string,
-};
+var _nuclideRemoteConnection;
 
-export class OutlineViewProvider<T: LanguageService> {
-  grammarScopes: string;
-  priority: number;
-  name: string;
-  _analyticsEventName: string;
-  _connectionToLanguageService: ConnectionCache<T>;
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
 
-  constructor(
-    name: string,
-    selector: string,
-    priority: number,
-    analyticsEventName: string,
-    connectionToLanguageService: ConnectionCache<T>,
-  ) {
+var _nuclideOpenFiles;
+
+function _load_nuclideOpenFiles() {
+  return _nuclideOpenFiles = require('../../nuclide-open-files');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let OutlineViewProvider = exports.OutlineViewProvider = class OutlineViewProvider {
+
+  constructor(name, selector, priority, analyticsEventName, connectionToLanguageService) {
     this.name = name;
     this.grammarScopes = selector;
     this.priority = priority;
@@ -43,33 +46,21 @@ export class OutlineViewProvider<T: LanguageService> {
     this._connectionToLanguageService = connectionToLanguageService;
   }
 
-  static register(
-    name: string,
-    selector: string,
-    config: OutlineViewConfig,
-    connectionToLanguageService: ConnectionCache<T>,
-  ): IDisposable {
-    return atom.packages.serviceHub.provide(
-      'nuclide-outline-view',
-      config.version,
-      new OutlineViewProvider(
-        name,
-        selector,
-        config.priority,
-        config.analyticsEventName,
-        connectionToLanguageService,
-      ));
+  static register(name, selector, config, connectionToLanguageService) {
+    return atom.packages.serviceHub.provide('nuclide-outline-view', config.version, new OutlineViewProvider(name, selector, config.priority, config.analyticsEventName, connectionToLanguageService));
   }
 
-  getOutline(editor: atom$TextEditor): Promise<?Outline> {
-    return trackOperationTiming(this._analyticsEventName, async () => {
-      const fileVersion = await getFileVersionOfEditor(editor);
-      const languageService = this._connectionToLanguageService.getForUri(editor.getPath());
+  getOutline(editor) {
+    var _this = this;
+
+    return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackOperationTiming)(this._analyticsEventName, (0, _asyncToGenerator.default)(function* () {
+      const fileVersion = yield (0, (_nuclideOpenFiles || _load_nuclideOpenFiles()).getFileVersionOfEditor)(editor);
+      const languageService = _this._connectionToLanguageService.getForUri(editor.getPath());
       if (languageService == null || fileVersion == null) {
         return null;
       }
 
-      return await (await languageService).getOutline(fileVersion);
-    });
+      return yield (yield languageService).getOutline(fileVersion);
+    }));
   }
-}
+};

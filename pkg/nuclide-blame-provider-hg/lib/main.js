@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,10 +9,19 @@
  * the root directory of this source tree.
  */
 
-import type {BlameProvider} from '../../nuclide-blame/lib/types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.provideHgBlameProvider = provideHgBlameProvider;
 
-import HgBlameProvider from './HgBlameProvider';
+var _HgBlameProvider;
 
-export function provideHgBlameProvider(): BlameProvider {
-  return HgBlameProvider;
+function _load_HgBlameProvider() {
+  return _HgBlameProvider = _interopRequireDefault(require('./HgBlameProvider'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function provideHgBlameProvider() {
+  return (_HgBlameProvider || _load_HgBlameProvider()).default;
 }

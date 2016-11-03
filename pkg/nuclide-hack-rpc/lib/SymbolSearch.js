@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,21 +9,75 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {HackSearchPosition} from './HackService-types';
-import type {HHSearchPosition} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.executeQuery = undefined;
 
-import {findHackConfigDir} from './hack-config';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-import {
-  callHHClient,
-} from './HackHelpers';
+let executeQuery = exports.executeQuery = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (filePath, queryString_) {
+    const hackRoot = yield (0, (_hackConfig || _load_hackConfig()).findHackConfigDir)(filePath);
+    if (hackRoot == null) {
+      return [];
+    }
 
-const pendingSearchPromises: Map<string, Promise<any>> = new Map();
+    var _parseQueryString = parseQueryString(queryString_);
 
-export function parseQueryString(
-  queryString_: string,
-): {searchPostfix: ?string, queryString: string} {
+    const queryString = _parseQueryString.queryString,
+          searchPostfix = _parseQueryString.searchPostfix;
+
+    if (queryString === '') {
+      return [];
+    }
+
+    // `pendingSearchPromises` is used to temporally cache search result promises.
+    // So, when a matching search query is done in parallel, it will wait and resolve
+    // with the original search call.
+    let searchPromise = pendingSearchPromises.get(queryString);
+    if (!searchPromise) {
+      searchPromise = (0, (_HackHelpers || _load_HackHelpers()).callHHClient)(
+      /* args */['--search' + (searchPostfix || ''), queryString],
+      /* errorStream */false,
+      /* processInput */null,
+      /* file */filePath);
+      pendingSearchPromises.set(queryString, searchPromise);
+    }
+
+    let searchResponse = null;
+    try {
+      searchResponse = yield searchPromise;
+    } finally {
+      pendingSearchPromises.delete(queryString);
+    }
+
+    return convertSearchResults(hackRoot, searchResponse);
+  });
+
+  return function executeQuery(_x, _x2) {
+    return _ref.apply(this, arguments);
+  };
+})();
+
+exports.parseQueryString = parseQueryString;
+exports.convertSearchResults = convertSearchResults;
+
+var _hackConfig;
+
+function _load_hackConfig() {
+  return _hackConfig = require('./hack-config');
+}
+
+var _HackHelpers;
+
+function _load_HackHelpers() {
+  return _HackHelpers = require('./HackHelpers');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const pendingSearchPromises = new Map();function parseQueryString(queryString_) {
   let queryString;
   let searchPostfix;
   switch (queryString_[0]) {
@@ -45,59 +99,18 @@ export function parseQueryString(
       break;
   }
   return {
-    searchPostfix,
-    queryString,
+    searchPostfix: searchPostfix,
+    queryString: queryString
   };
 }
 
-export async function executeQuery(
-  filePath: NuclideUri,
-  queryString_: string,
-): Promise<Array<HackSearchPosition>> {
-  const hackRoot = await findHackConfigDir(filePath);
-  if (hackRoot == null) {
-    return [];
-  }
-
-  const {queryString, searchPostfix} = parseQueryString(queryString_);
-  if (queryString === '') {
-    return [];
-  }
-
-  // `pendingSearchPromises` is used to temporally cache search result promises.
-  // So, when a matching search query is done in parallel, it will wait and resolve
-  // with the original search call.
-  let searchPromise = pendingSearchPromises.get(queryString);
-  if (!searchPromise) {
-    searchPromise = callHHClient(
-        /* args */ ['--search' + (searchPostfix || ''), queryString],
-        /* errorStream */ false,
-        /* processInput */ null,
-        /* file */ filePath,
-    );
-    pendingSearchPromises.set(queryString, searchPromise);
-  }
-
-  let searchResponse: ?Array<HHSearchPosition> = null;
-  try {
-    searchResponse = ((await searchPromise): any);
-  } finally {
-    pendingSearchPromises.delete(queryString);
-  }
-
-  return convertSearchResults(hackRoot, searchResponse);
-}
-
-export function convertSearchResults(
-  hackRoot: NuclideUri,
-  searchResponse: ?Array<HHSearchPosition>,
-): Array<HackSearchPosition> {
+function convertSearchResults(hackRoot, searchResponse) {
   if (searchResponse == null) {
     return [];
   }
 
   const searchResult = searchResponse;
-  const result: Array<HackSearchPosition> = [];
+  const result = [];
   for (const entry of searchResult) {
     const resultFile = entry.filename;
     if (!resultFile.startsWith(hackRoot)) {
@@ -111,7 +124,7 @@ export function convertSearchResults(
       path: resultFile,
       length: entry.char_end - entry.char_start + 1,
       scope: entry.scope,
-      additionalInfo: entry.desc,
+      additionalInfo: entry.desc
     });
   }
 

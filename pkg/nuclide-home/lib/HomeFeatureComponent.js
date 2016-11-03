@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,30 +9,27 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
-import {
-  Button,
-  ButtonSizes,
-} from '../../nuclide-ui/Button';
+var _reactForAtom = require('react-for-atom');
 
-type Props = {
-  title: string,
-  icon: string,
-  description: string | React.Element<any>,
-  command: ?(string | () => void),
-};
+var _Button;
 
-class HomeFeatureComponent extends React.Component {
-  props: Props;
+function _load_Button() {
+  return _Button = require('../../nuclide-ui/Button');
+}
 
-  constructor(props: Props) {
+let HomeFeatureComponent = class HomeFeatureComponent extends _reactForAtom.React.Component {
+
+  constructor(props) {
     super(props);
-    (this: any)._tryIt = this._tryIt.bind(this);
+    this._tryIt = this._tryIt.bind(this);
   }
 
-  _tryIt(): void {
-    const {command} = this.props;
-    if (command == null) { return; }
+  _tryIt() {
+    const command = this.props.command;
+
+    if (command == null) {
+      return;
+    }
     switch (typeof command) {
       case 'string':
         atom.commands.dispatch(atom.views.getView(atom.workspace), command);
@@ -45,25 +42,35 @@ class HomeFeatureComponent extends React.Component {
     }
   }
 
-  render(): React.Element<any> {
-    const {title, command} = this.props;
-    return (
-      <details className="nuclide-home-card">
-        <summary className={`nuclide-home-summary icon icon-${this.props.icon}`}>
-          {title}
-          {command ? <Button
-            className="pull-right nuclide-home-tryit"
-            size={ButtonSizes.SMALL}
-            onClick={this._tryIt}>
-            Try it
-          </Button> : null}
-        </summary>
-        <div className="nuclide-home-detail">
-          {this.props.description}
-        </div>
-      </details>
+  render() {
+    var _props = this.props;
+    const title = _props.title,
+          command = _props.command;
+
+    return _reactForAtom.React.createElement(
+      'details',
+      { className: 'nuclide-home-card' },
+      _reactForAtom.React.createElement(
+        'summary',
+        { className: `nuclide-home-summary icon icon-${ this.props.icon }` },
+        title,
+        command ? _reactForAtom.React.createElement(
+          (_Button || _load_Button()).Button,
+          {
+            className: 'pull-right nuclide-home-tryit',
+            size: (_Button || _load_Button()).ButtonSizes.SMALL,
+            onClick: this._tryIt },
+          'Try it'
+        ) : null
+      ),
+      _reactForAtom.React.createElement(
+        'div',
+        { className: 'nuclide-home-detail' },
+        this.props.description
+      )
     );
   }
-}
+};
+
 
 module.exports = HomeFeatureComponent;

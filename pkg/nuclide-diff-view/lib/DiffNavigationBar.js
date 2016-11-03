@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,122 +9,126 @@
  * the root directory of this source tree.
  */
 
-import type {
-  NavigationSection,
-  NavigationSectionStatusType,
-} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = undefined;
 
-import classnames from 'classnames';
-import {NavigationSectionStatus} from './constants';
-import {React} from 'react-for-atom';
+var _classnames;
 
-type DiffNavigationBarProps = {
-  navigationSections: Array<NavigationSection>,
-  navigationScale: number,
-  pixelRangeForNavigationSection: (section: NavigationSection) => {top: number, bottom: number},
-  onNavigateToNavigationSection: (status: NavigationSectionStatusType, lineNumber: number) => any,
-};
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
 
-export default class DiffNavigationBar extends React.Component {
-  props: DiffNavigationBarProps;
+var _constants;
 
-  constructor(props: DiffNavigationBarProps) {
+function _load_constants() {
+  return _constants = require('./constants');
+}
+
+var _reactForAtom = require('react-for-atom');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let DiffNavigationBar = class DiffNavigationBar extends _reactForAtom.React.Component {
+
+  constructor(props) {
     super(props);
-    (this: any)._handleClick = this._handleClick.bind(this);
+    this._handleClick = this._handleClick.bind(this);
   }
 
-  render(): React.Element<any> {
-    const {
-      navigationSections,
-      pixelRangeForNavigationSection,
-      navigationScale,
-    } = this.props;
+  render() {
+    var _props = this.props;
+    const navigationSections = _props.navigationSections,
+          pixelRangeForNavigationSection = _props.pixelRangeForNavigationSection,
+          navigationScale = _props.navigationScale;
+
 
     const jumpTargets = navigationSections.map(navigationSection => {
-      return (
-        <NavigatonBarJumpTarget
-          navigationScale={navigationScale}
-          navigationSection={navigationSection}
-          key={navigationSection.status + navigationSection.lineNumber}
-          pixelRangeForNavigationSection={pixelRangeForNavigationSection}
-          onClick={this._handleClick}
-        />
-      );
+      return _reactForAtom.React.createElement(NavigatonBarJumpTarget, {
+        navigationScale: navigationScale,
+        navigationSection: navigationSection,
+        key: navigationSection.status + navigationSection.lineNumber,
+        pixelRangeForNavigationSection: pixelRangeForNavigationSection,
+        onClick: this._handleClick
+      });
     });
 
-    return (
-      <div className="nuclide-diff-view-navigation-bar">
-        {jumpTargets}
-      </div>
+    return _reactForAtom.React.createElement(
+      'div',
+      { className: 'nuclide-diff-view-navigation-bar' },
+      jumpTargets
     );
   }
 
-  _handleClick(navigationSectionStatus: NavigationSectionStatusType, lineNumber: number): void {
+  _handleClick(navigationSectionStatus, lineNumber) {
     this.props.onNavigateToNavigationSection(navigationSectionStatus, lineNumber);
   }
-}
+};
+exports.default = DiffNavigationBar;
 
-function sectionStatusToClassName(statusType: NavigationSectionStatusType): string {
+
+function sectionStatusToClassName(statusType) {
   switch (statusType) {
-    case NavigationSectionStatus.ADDED:
+    case (_constants || _load_constants()).NavigationSectionStatus.ADDED:
       return 'added';
-    case NavigationSectionStatus.CHANGED:
+    case (_constants || _load_constants()).NavigationSectionStatus.CHANGED:
       return 'modified';
-    case NavigationSectionStatus.REMOVED:
+    case (_constants || _load_constants()).NavigationSectionStatus.REMOVED:
       return 'removed';
-    case NavigationSectionStatus.NEW_ELEMENT:
-    case NavigationSectionStatus.OLD_ELEMENT:
+    case (_constants || _load_constants()).NavigationSectionStatus.NEW_ELEMENT:
+    case (_constants || _load_constants()).NavigationSectionStatus.OLD_ELEMENT:
       return 'icon icon-comment';
     default:
       throw new Error('Invalid navigation section status');
   }
 }
 
-type NavigatonBarJumpTargetProps = {
-  navigationScale: number,
-  navigationSection: NavigationSection,
-  pixelRangeForNavigationSection: (section: NavigationSection) => {top: number, bottom: number},
-  onClick: (status: NavigationSectionStatusType, lineNumber: number) => any,
-};
+let NavigatonBarJumpTarget = class NavigatonBarJumpTarget extends _reactForAtom.React.Component {
 
-class NavigatonBarJumpTarget extends React.Component {
-  props: NavigatonBarJumpTargetProps;
-
-  constructor(props: NavigatonBarJumpTargetProps) {
+  constructor(props) {
     super(props);
-    (this: any)._handleClick = this._handleClick.bind(this);
+    this._handleClick = this._handleClick.bind(this);
   }
 
-  render(): React.Element<any> {
-    const {navigationSection, pixelRangeForNavigationSection, navigationScale} = this.props;
+  render() {
+    var _props2 = this.props;
+    const navigationSection = _props2.navigationSection,
+          pixelRangeForNavigationSection = _props2.pixelRangeForNavigationSection,
+          navigationScale = _props2.navigationScale;
+
     const lineChangeClass = sectionStatusToClassName(navigationSection.status);
-    const {top, bottom} = pixelRangeForNavigationSection(navigationSection);
+
+    var _pixelRangeForNavigat = pixelRangeForNavigationSection(navigationSection);
+
+    const top = _pixelRangeForNavigat.top,
+          bottom = _pixelRangeForNavigat.bottom;
+
     const scaledTop = top * navigationScale;
     const scaledHeight = Math.max((bottom - top) * navigationScale, 1);
     const targetStyle = {
-      top: `${scaledTop}px`,
-      height: `${scaledHeight}px`,
+      top: `${ scaledTop }px`,
+      height: `${ scaledHeight }px`
     };
-    const targetClassName = classnames({
+    const targetClassName = (0, (_classnames || _load_classnames()).default)({
       'nuclide-diff-view-navigation-target': true,
-      [lineChangeClass]: true,
+      [lineChangeClass]: true
     });
 
-    return (
-      <div
-        className={targetClassName}
-        style={targetStyle}
-        onClick={this._handleClick}
-      />
-    );
+    return _reactForAtom.React.createElement('div', {
+      className: targetClassName,
+      style: targetStyle,
+      onClick: this._handleClick
+    });
   }
 
-  _handleClick(e: SyntheticMouseEvent): void {
-    const {navigationSection} = this.props;
-    const targetRectangle = ((e.target: any): HTMLElement).getBoundingClientRect();
+  _handleClick(e) {
+    const navigationSection = this.props.navigationSection;
+
+    const targetRectangle = e.target.getBoundingClientRect();
     const lineHeight = (e.clientY - targetRectangle.top) / targetRectangle.height;
-    const scrollToLineNumber = navigationSection.lineNumber +
-      Math.floor(navigationSection.lineCount * lineHeight);
+    const scrollToLineNumber = navigationSection.lineNumber + Math.floor(navigationSection.lineCount * lineHeight);
     this.props.onClick(navigationSection.status, scrollToLineNumber);
   }
-}
+};
+module.exports = exports['default'];

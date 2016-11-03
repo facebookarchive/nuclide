@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,81 +9,90 @@
  * the root directory of this source tree.
  */
 
-import type {DOMMeasurements} from './MeasuredComponent';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ShowMoreComponent = undefined;
 
-import {React} from 'react-for-atom';
-import {MeasuredComponent} from './MeasuredComponent';
-import {Button} from './Button';
+var _reactForAtom = require('react-for-atom');
 
-type Props = {
-  children?: React.Element<any>,
-  maxHeight: number, // Maximum height of the component in px
-  showMoreByDefault?: boolean,
-};
+var _MeasuredComponent;
 
-type State = {
-  showingMore: boolean,
-  currentHeight: number,
-};
+function _load_MeasuredComponent() {
+  return _MeasuredComponent = require('./MeasuredComponent');
+}
+
+var _Button;
+
+function _load_Button() {
+  return _Button = require('./Button');
+}
 
 /** A component which sets a max height and includes a "Show More" button
  * aligned at the bottom. Clicking "Show More" will remove the max height restriction
  * and expand the component to full height.
  */
-export class ShowMoreComponent extends React.Component {
+let ShowMoreComponent = exports.ShowMoreComponent = class ShowMoreComponent extends _reactForAtom.React.Component {
 
-  props: Props;
-  state: State;
-
-  constructor(props: Props) {
+  constructor(props) {
     super(props);
     this.state = {
       // Defaults to false if showMoreByDefault not specified
       showingMore: this.props.showMoreByDefault != null && this.props.showMoreByDefault,
-      currentHeight: 0,
+      currentHeight: 0
     };
-    (this: any)._toggleShowMore = this._toggleShowMore.bind(this);
-    (this: any)._updateMeasurements = this._updateMeasurements.bind(this);
+    this._toggleShowMore = this._toggleShowMore.bind(this);
+    this._updateMeasurements = this._updateMeasurements.bind(this);
   }
 
-  _updateMeasurements(newMeasurements: DOMMeasurements): void {
+  _updateMeasurements(newMeasurements) {
     if (newMeasurements.scrollHeight !== this.state.currentHeight) {
       this.setState({
-        currentHeight: newMeasurements.scrollHeight,
+        currentHeight: newMeasurements.scrollHeight
       });
     }
   }
 
-  render(): React.Element<any> {
-    const {showingMore, currentHeight} = this.state;
-    const {maxHeight} = this.props;
+  render() {
+    var _state = this.state;
+    const showingMore = _state.showingMore,
+          currentHeight = _state.currentHeight;
+    const maxHeight = this.props.maxHeight;
+
 
     const showMessage = showingMore ? 'Show Less' : 'Show More';
-    const conditionalStyle = !showingMore
-      ? {'max-height': `${maxHeight}px`, 'overflow-y': 'hidden'}
-      : {};
-    const displayNoneIfBelowMaxHeight = currentHeight <= maxHeight ? {display: 'none'} : {};
-    const showMoreButton =
-      <div
-        className="nuclide-ui-show-more-button-container"
-        style={displayNoneIfBelowMaxHeight}>
-        <Button onClick={this._toggleShowMore} size="EXTRA_SMALL">{showMessage}</Button>
-      </div>;
+    const conditionalStyle = !showingMore ? { 'max-height': `${ maxHeight }px`, 'overflow-y': 'hidden' } : {};
+    const displayNoneIfBelowMaxHeight = currentHeight <= maxHeight ? { display: 'none' } : {};
+    const showMoreButton = _reactForAtom.React.createElement(
+      'div',
+      {
+        className: 'nuclide-ui-show-more-button-container',
+        style: displayNoneIfBelowMaxHeight },
+      _reactForAtom.React.createElement(
+        (_Button || _load_Button()).Button,
+        { onClick: this._toggleShowMore, size: 'EXTRA_SMALL' },
+        showMessage
+      )
+    );
 
-    return (
-      <div>
-        <div className="nuclide-ui-show-more-component" style={conditionalStyle}>
-          <div className="nuclide-ui-show-more-gradient" style={displayNoneIfBelowMaxHeight} />
-          <MeasuredComponent onMeasurementsChanged={this._updateMeasurements}>
-            {this.props.children}
-          </MeasuredComponent>
-        </div>
-        {showMoreButton}
-      </div>
+    return _reactForAtom.React.createElement(
+      'div',
+      null,
+      _reactForAtom.React.createElement(
+        'div',
+        { className: 'nuclide-ui-show-more-component', style: conditionalStyle },
+        _reactForAtom.React.createElement('div', { className: 'nuclide-ui-show-more-gradient', style: displayNoneIfBelowMaxHeight }),
+        _reactForAtom.React.createElement(
+          (_MeasuredComponent || _load_MeasuredComponent()).MeasuredComponent,
+          { onMeasurementsChanged: this._updateMeasurements },
+          this.props.children
+        )
+      ),
+      showMoreButton
     );
   }
 
-  _toggleShowMore(): void {
-    this.setState({showingMore: !this.state.showingMore});
+  _toggleShowMore() {
+    this.setState({ showingMore: !this.state.showingMore });
   }
-}
+};

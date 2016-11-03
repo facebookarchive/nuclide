@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,18 +9,36 @@
  * the root directory of this source tree.
  */
 
-import type {
-  NuclideDebuggerProvider,
-} from '../../nuclide-debugger-interfaces/service';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.activate = activate;
+exports.createDebuggerProvider = createDebuggerProvider;
 
-import logger from './utils';
-import {getConfig} from './utils';
-import DebuggerProvider from './DebuggerProvider';
+var _utils;
 
-export function activate(state: mixed): void {
-  logger.setLogLevel(getConfig().clientLogLevel);
+function _load_utils() {
+  return _utils = _interopRequireDefault(require('./utils'));
 }
 
-export function createDebuggerProvider(): NuclideDebuggerProvider {
-  return DebuggerProvider;
+var _utils2;
+
+function _load_utils2() {
+  return _utils2 = require('./utils');
+}
+
+var _DebuggerProvider;
+
+function _load_DebuggerProvider() {
+  return _DebuggerProvider = _interopRequireDefault(require('./DebuggerProvider'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function activate(state) {
+  (_utils || _load_utils()).default.setLogLevel((0, (_utils2 || _load_utils2()).getConfig)().clientLogLevel);
+}
+
+function createDebuggerProvider() {
+  return (_DebuggerProvider || _load_DebuggerProvider()).default;
 }

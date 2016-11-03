@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,73 +9,49 @@
  * the root directory of this source tree.
  */
 
-import type {Datatip} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.PinnedDatatip = undefined;
 
-type Position = {
-  x: number,
-  y: number,
-};
+var _atom = require('atom');
 
-import {CompositeDisposable, Disposable} from 'atom';
-import {
-  React,
-  ReactDOM,
-} from 'react-for-atom';
-import {Observable} from 'rxjs';
-import invariant from 'assert';
+var _reactForAtom = require('react-for-atom');
 
-import {DatatipComponent, DATATIP_ACTIONS} from './DatatipComponent';
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _DatatipComponent;
+
+function _load_DatatipComponent() {
+  return _DatatipComponent = require('./DatatipComponent');
+}
 
 const LINE_END_MARGIN = 20;
 
 let _mouseMove$;
-function documentMouseMove$(): Observable<MouseEvent> {
+function documentMouseMove$() {
   if (_mouseMove$ == null) {
-    _mouseMove$ = Observable.fromEvent(document, 'mousemove');
+    _mouseMove$ = _rxjsBundlesRxMinJs.Observable.fromEvent(document, 'mousemove');
   }
   return _mouseMove$;
 }
 
 let _mouseUp$;
-function documentMouseUp$(): Observable<MouseEvent> {
+function documentMouseUp$() {
   if (_mouseUp$ == null) {
-    _mouseUp$ = Observable.fromEvent(document, 'mouseup');
+    _mouseUp$ = _rxjsBundlesRxMinJs.Observable.fromEvent(document, 'mouseup');
   }
   return _mouseUp$;
 }
 
-export class PinnedDatatip {
-  _boundDispose: Function;
-  _boundHandleMouseDown: Function;
-  _boundHandleMouseEnter: Function;
-  _boundHandleMouseLeave: Function;
-  _boundHandleCapturedClick: Function;
-  _mouseUpTimeout: ?number;
-  _hostElement: HTMLElement;
-  _marker: ?atom$Marker;
-  _rangeDecoration: ?atom$Decoration;
-  _mouseSubscription: ?rxjs$ISubscription;
-  _subscriptions: atom$CompositeDisposable;
-  _range: atom$Range;
-  _component: ReactClass<any>;
-  _editor: TextEditor;
-  _hostElement: HTMLElement;
-  _boundDispose: Function;
-  _dragOrigin: ?Position;
-  _isDragging: boolean;
-  _offset: Position;
-  _isHovering: boolean;
+let PinnedDatatip = exports.PinnedDatatip = class PinnedDatatip {
 
-  constructor(
-    datatip: Datatip,
-    editor: TextEditor,
-    onDispose: (pinnedDatatip: PinnedDatatip) => void) {
-    const {
-      component,
-      range,
-    } = datatip;
-    this._subscriptions = new CompositeDisposable();
-    this._subscriptions.add(new Disposable(() => onDispose(this)));
+  constructor(datatip, editor, onDispose) {
+    const component = datatip.component,
+          range = datatip.range;
+
+    this._subscriptions = new _atom.CompositeDisposable();
+    this._subscriptions.add(new _atom.Disposable(() => onDispose(this)));
     this._range = range;
     this._component = component;
     this._editor = editor;
@@ -90,41 +66,45 @@ export class PinnedDatatip {
     this._boundHandleCapturedClick = this.handleCapturedClick.bind(this);
     this._hostElement.addEventListener('mouseenter', this._boundHandleMouseEnter);
     this._hostElement.addEventListener('mouseleave', this._boundHandleMouseLeave);
-    this._subscriptions.add(new Disposable(() => {
+    this._subscriptions.add(new _atom.Disposable(() => {
       this._hostElement.removeEventListener('mouseenter', this._boundHandleMouseEnter);
       this._hostElement.removeEventListener('mouseleave', this._boundHandleMouseLeave);
     }));
     this._mouseUpTimeout = null;
-    this._offset = {x: 0, y: 0};
+    this._offset = { x: 0, y: 0 };
     this._isDragging = false;
     this._dragOrigin = null;
     this._isHovering = false;
     this.render();
   }
 
-  handleMouseEnter(event: MouseEvent): void {
+  handleMouseEnter(event) {
     this._isHovering = true;
     this.render();
   }
 
-  handleMouseLeave(event: MouseEvent): void {
+  handleMouseLeave(event) {
     this._isHovering = false;
     this.render();
   }
 
-  handleGlobalMouseMove(event: Event): void {
-    const evt: MouseEvent = (event: any);
-    const {_dragOrigin} = this;
-    invariant(_dragOrigin);
+  handleGlobalMouseMove(event) {
+    const evt = event;
+    const _dragOrigin = this._dragOrigin;
+
+    if (!_dragOrigin) {
+      throw new Error('Invariant violation: "_dragOrigin"');
+    }
+
     this._isDragging = true;
     this._offset = {
       x: evt.clientX - _dragOrigin.x,
-      y: evt.clientY - _dragOrigin.y,
+      y: evt.clientY - _dragOrigin.y
     };
     this.render();
   }
 
-  handleGlobalMouseUp(): void {
+  handleGlobalMouseUp() {
     // If the datatip was moved, push the effects of mouseUp to the next tick,
     // in order to allow cancelation of captured events (e.g. clicks on child components).
     this._mouseUpTimeout = setTimeout(() => {
@@ -136,72 +116,67 @@ export class PinnedDatatip {
     }, 0);
   }
 
-  _ensureMouseSubscriptionDisposed(): void {
+  _ensureMouseSubscriptionDisposed() {
     if (this._mouseSubscription != null) {
       this._mouseSubscription.unsubscribe();
       this._mouseSubscription = null;
     }
   }
 
-  handleMouseDown(event: Event): void {
-    const evt: MouseEvent = (event: any);
+  handleMouseDown(event) {
+    const evt = event;
     this._dragOrigin = {
       x: evt.clientX - this._offset.x,
-      y: evt.clientY - this._offset.y,
+      y: evt.clientY - this._offset.y
     };
     this._ensureMouseSubscriptionDisposed();
-    this._mouseSubscription =
-      documentMouseMove$().takeUntil(documentMouseUp$()).subscribe(
-      (e: MouseEvent) => { this.handleGlobalMouseMove(e); },
-      (error: any) => {},
-      () => { this.handleGlobalMouseUp(); },
-    );
+    this._mouseSubscription = documentMouseMove$().takeUntil(documentMouseUp$()).subscribe(e => {
+      this.handleGlobalMouseMove(e);
+    }, error => {}, () => {
+      this.handleGlobalMouseUp();
+    });
   }
 
-  handleCapturedClick(event: SyntheticEvent): void {
+  handleCapturedClick(event) {
     if (this._isDragging) {
       event.stopPropagation();
     }
   }
 
   // Ensure positioning of the Datatip at the end of the current line.
-  _updateHostElementPosition(): void {
-    const {
-      _editor,
-      _range,
-      _hostElement,
-      _offset,
-    } = this;
+  _updateHostElementPosition() {
+    const _editor = this._editor,
+          _range = this._range,
+          _hostElement = this._hostElement,
+          _offset = this._offset;
+
     const charWidth = _editor.getDefaultCharWidth();
     const lineLength = _editor.getBuffer().getLines()[_range.start.row].length;
     _hostElement.style.display = 'block';
     _hostElement.style.top = -_editor.getLineHeightInPixels() + _offset.y + 'px';
-    _hostElement.style.left =
-      (lineLength - _range.end.column) * charWidth + LINE_END_MARGIN + _offset.x + 'px';
+    _hostElement.style.left = (lineLength - _range.end.column) * charWidth + LINE_END_MARGIN + _offset.x + 'px';
   }
 
-  render(): void {
-    const {
-      _editor,
-      _range,
-      _component: ProvidedComponent,
-      _hostElement,
-      _isDragging,
-      _isHovering,
-    } = this;
+  render() {
+    const _editor = this._editor,
+          _range = this._range,
+          ProvidedComponent = this._component,
+          _hostElement = this._hostElement,
+          _isDragging = this._isDragging,
+          _isHovering = this._isHovering;
+
     this._updateHostElementPosition();
-    ReactDOM.render(
-      <DatatipComponent
-        action={DATATIP_ACTIONS.CLOSE}
-        actionTitle="Close this datatip"
-        className={_isDragging ? 'nuclide-datatip-dragging' : ''}
-        onActionClick={this._boundDispose}
-        onMouseDown={this._boundHandleMouseDown}
-        onClickCapture={this._boundHandleCapturedClick}>
-        <ProvidedComponent />
-      </DatatipComponent>,
-      _hostElement,
-    );
+    _reactForAtom.ReactDOM.render(_reactForAtom.React.createElement(
+      (_DatatipComponent || _load_DatatipComponent()).DatatipComponent,
+      {
+        action: (_DatatipComponent || _load_DatatipComponent()).DATATIP_ACTIONS.CLOSE,
+        actionTitle: 'Close this datatip',
+        className: _isDragging ? 'nuclide-datatip-dragging' : '',
+        onActionClick: this._boundDispose,
+        onMouseDown: this._boundHandleMouseDown,
+        onClickCapture: this._boundHandleCapturedClick },
+      _reactForAtom.React.createElement(ProvidedComponent, null)
+    ), _hostElement);
 
     let rangeClassname = 'nuclide-datatip-highlight-region';
     if (_isHovering) {
@@ -209,34 +184,31 @@ export class PinnedDatatip {
     }
 
     if (this._marker == null) {
-      const marker: atom$Marker = _editor.markBufferRange(_range, {invalidate: 'never'});
+      const marker = _editor.markBufferRange(_range, { invalidate: 'never' });
       this._marker = marker;
-      _editor.decorateMarker(
-        marker,
-        {
-          type: 'overlay',
-          position: 'head',
-          item: this._hostElement,
-        },
-      );
-      this._rangeDecoration = _editor.decorateMarker(
-        marker,
-        {
-          type: 'highlight',
-          class: rangeClassname,
-        },
-      );
+      _editor.decorateMarker(marker, {
+        type: 'overlay',
+        position: 'head',
+        item: this._hostElement
+      });
+      this._rangeDecoration = _editor.decorateMarker(marker, {
+        type: 'highlight',
+        class: rangeClassname
+      });
     } else {
       // `this._rangeDecoration` is guaranteed to exist iff `this._marker` exists.
-      invariant(this._rangeDecoration);
+      if (!this._rangeDecoration) {
+        throw new Error('Invariant violation: "this._rangeDecoration"');
+      }
+
       this._rangeDecoration.setProperties({
         type: 'highlight',
-        class: rangeClassname,
+        class: rangeClassname
       });
     }
   }
 
-  dispose(): void {
+  dispose() {
     if (this._mouseUpTimeout != null) {
       clearTimeout(this._mouseUpTimeout);
     }
@@ -246,9 +218,9 @@ export class PinnedDatatip {
     if (this._mouseSubscription != null) {
       this._mouseSubscription.unsubscribe();
     }
-    ReactDOM.unmountComponentAtNode(this._hostElement);
+    _reactForAtom.ReactDOM.unmountComponentAtNode(this._hostElement);
     this._hostElement.remove();
     this._subscriptions.dispose();
   }
 
-}
+};

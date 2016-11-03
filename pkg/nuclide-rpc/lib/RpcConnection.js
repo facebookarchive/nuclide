@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,101 +9,91 @@
  * the root directory of this source tree.
  */
 
-import type {ConfigEntry, Transport} from './index';
-import type {ReturnType, Type, Parameter} from './types';
-import type {TypeRegistry} from './TypeRegistry';
-import type {
-  ResponseMessage,
-  RequestMessage,
-  CallMessage,
-  CallObjectMessage,
-  NewObjectMessage,
-} from './messages';
-import type {
-  ClassDefinition,
-  FunctionImplementation,
-} from './ServiceRegistry';
-import type {TimingTracker} from '../../nuclide-analytics';
-import type {Observer} from 'rxjs';
-import type {PredefinedTransformer} from './index';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.RpcConnection = undefined;
 
-import invariant from 'assert';
-import {Observable, ConnectableObservable} from 'rxjs';
-import {ServiceRegistry} from './ServiceRegistry';
-import {ObjectRegistry} from './ObjectRegistry';
-import {
-  createCallMessage,
-  createCallObjectMessage,
-  createNewObjectMessage,
-  createDisposeMessage,
-  createUnsubscribeMessage,
-  createPromiseMessage,
-  createErrorResponseMessage,
-  createNextMessage,
-  createCompleteMessage,
-  createObserveErrorMessage,
-  decodeError,
-} from './messages';
-import {builtinLocation, voidType} from './builtin-types';
-import {startTracking, trackOperationTiming} from '../../nuclide-analytics';
-import {getLogger} from '../../nuclide-logging';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-const logger = getLogger();
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _ServiceRegistry;
+
+function _load_ServiceRegistry() {
+  return _ServiceRegistry = require('./ServiceRegistry');
+}
+
+var _ObjectRegistry;
+
+function _load_ObjectRegistry() {
+  return _ObjectRegistry = require('./ObjectRegistry');
+}
+
+var _messages;
+
+function _load_messages() {
+  return _messages = require('./messages');
+}
+
+var _builtinTypes;
+
+function _load_builtinTypes() {
+  return _builtinTypes = require('./builtin-types');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _nuclideLogging;
+
+function _load_nuclideLogging() {
+  return _nuclideLogging = require('../../nuclide-logging');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const logger = (0, (_nuclideLogging || _load_nuclideLogging()).getLogger)();
 
 const SERVICE_FRAMEWORK_RPC_TIMEOUT_MS = 60 * 1000;
 
-type RpcConnectionKind = 'server' | 'client';
+let Subscription = class Subscription {
 
-class Subscription {
-  _message: Object;
-  _observer: Observer<any>;
-
-  constructor(message: Object, observer: Observer<any>) {
+  constructor(message, observer) {
     this._message = message;
     this._observer = observer;
   }
 
-  error(error): void {
+  error(error) {
     try {
-      this._observer.error(decodeError(this._message, error));
+      this._observer.error((0, (_messages || _load_messages()).decodeError)(this._message, error));
     } catch (e) {
-      logger.error(`Caught exception in Subscription.error: ${e.toString()}`);
+      logger.error(`Caught exception in Subscription.error: ${ e.toString() }`);
     }
   }
 
-  next(data: any): void {
+  next(data) {
     try {
       this._observer.next(data);
     } catch (e) {
-      logger.error(`Caught exception in Subscription.next: ${e.toString()}`);
+      logger.error(`Caught exception in Subscription.next: ${ e.toString() }`);
     }
   }
 
-  complete(): void {
+  complete() {
     try {
       this._observer.complete();
     } catch (e) {
-      logger.error(`Caught exception in Subscription.complete: ${e.toString()}`);
+      logger.error(`Caught exception in Subscription.complete: ${ e.toString() }`);
     }
   }
-}
+};
+let Call = class Call {
 
-class Call {
-  _message: RequestMessage;
-  _timeoutMessage: string;
-  _reject: (error: any) => void;
-  _resolve: (result: any) => void;
-  _cleanup: () => void;
-  _complete: boolean;
-  _timerId: ?number;
-
-  constructor(
-    message: RequestMessage,
-    timeoutMessage: string,
-    resolve: (result: any) => void,
-    reject: (error: any) => void,
-    cleanup: () => void,
-  ) {
+  constructor(message, timeoutMessage, resolve, reject, cleanup) {
     this._message = message;
     this._timeoutMessage = timeoutMessage;
     this._resolve = resolve;
@@ -115,21 +105,21 @@ class Call {
     }, SERVICE_FRAMEWORK_RPC_TIMEOUT_MS);
   }
 
-  reject(error): void {
+  reject(error) {
     if (!this._complete) {
       this.cleanup();
-      this._reject(decodeError(this._message, error));
+      this._reject((0, (_messages || _load_messages()).decodeError)(this._message, error));
     }
   }
 
-  resolve(result): void {
+  resolve(result) {
     if (!this._complete) {
       this.cleanup();
       this._resolve(result);
     }
   }
 
-  cleanup(): void {
+  cleanup() {
     if (!this._complete) {
       this._complete = true;
       clearTimeout(this._timerId);
@@ -138,108 +128,74 @@ class Call {
     }
   }
 
-  _timeout(): void {
+  _timeout() {
     if (!this._complete) {
       this.cleanup();
-      this._reject(new Error(
-        `Timeout after ${SERVICE_FRAMEWORK_RPC_TIMEOUT_MS} for id: ` +
-        `${this._message.id}, ${this._timeoutMessage}.`,
-      ));
+      this._reject(new Error(`Timeout after ${ SERVICE_FRAMEWORK_RPC_TIMEOUT_MS } for id: ` + `${ this._message.id }, ${ this._timeoutMessage }.`));
     }
   }
-}
-
-export class RpcConnection<TransportType: Transport> {
-  _rpcRequestId: number;
-  _transport: TransportType;
-  _serviceRegistry: ServiceRegistry;
-  _objectRegistry: ObjectRegistry;
-  _subscriptions: Map<number, Subscription>;
-  _calls: Map<number, Call>;
+};
+let RpcConnection = exports.RpcConnection = class RpcConnection {
 
   // Do not call this directly, use factory methods below.
-  constructor(
-    kind: RpcConnectionKind,
-    serviceRegistry: ServiceRegistry,
-    transport: TransportType,
-  ) {
+  constructor(kind, serviceRegistry, transport) {
     this._transport = transport;
     this._rpcRequestId = 1;
     this._serviceRegistry = serviceRegistry;
-    this._objectRegistry = new ObjectRegistry(kind, this._serviceRegistry, this);
-    this._transport.onMessage().subscribe(message => { this._handleMessage(message); });
+    this._objectRegistry = new (_ObjectRegistry || _load_ObjectRegistry()).ObjectRegistry(kind, this._serviceRegistry, this);
+    this._transport.onMessage().subscribe(message => {
+      this._handleMessage(message);
+    });
     this._subscriptions = new Map();
     this._calls = new Map();
   }
 
   // Creates a connection on the server side.
-  static createServer(
-    serviceRegistry: ServiceRegistry,
-    transport: TransportType,
-  ): RpcConnection<TransportType> {
-    return new RpcConnection(
-      'server',
-      serviceRegistry,
-      transport);
+  static createServer(serviceRegistry, transport) {
+    return new RpcConnection('server', serviceRegistry, transport);
   }
 
   // Creates a client side connection to a server on another machine.
-  static createRemote(
-    transport: TransportType,
-    predefinedTypes: Array<PredefinedTransformer>,
-    services: Array<ConfigEntry>,
-  ): RpcConnection<TransportType> {
-    return new RpcConnection(
-      'client',
-      new ServiceRegistry(predefinedTypes, services),
-      transport);
+  static createRemote(transport, predefinedTypes, services) {
+    return new RpcConnection('client', new (_ServiceRegistry || _load_ServiceRegistry()).ServiceRegistry(predefinedTypes, services), transport);
   }
 
   // Creates a client side connection to a server on the same machine.
-  static createLocal(
-    transport: TransportType,
-    predefinedTypes: Array<PredefinedTransformer>,
-    services: Array<ConfigEntry>,
-  ): RpcConnection<TransportType> {
-    return new RpcConnection(
-      'client',
-      new ServiceRegistry(predefinedTypes, services),
-      transport);
+  static createLocal(transport, predefinedTypes, services) {
+    return new RpcConnection('client', new (_ServiceRegistry || _load_ServiceRegistry()).ServiceRegistry(predefinedTypes, services), transport);
   }
 
-  getService(serviceName: string): Object {
+  getService(serviceName) {
     const service = this._objectRegistry.getService(serviceName);
-    invariant(service != null, `No config found for service ${serviceName}`);
+
+    if (!(service != null)) {
+      throw new Error(`No config found for service ${ serviceName }`);
+    }
+
     return service;
   }
 
-  addServices(services: Array<ConfigEntry>): void {
+  addServices(services) {
     services.forEach(this.addService, this);
   }
 
-  addService(service: ConfigEntry): void {
+  addService(service) {
     this._serviceRegistry.addService(service);
   }
 
   // Delegate marshalling to the type registry.
-  marshal(value: any, type: Type): any {
+  marshal(value, type) {
     return this._getTypeRegistry().marshal(this._objectRegistry, value, type);
   }
-  unmarshal(value: any, type: Type): any {
+  unmarshal(value, type) {
     return this._getTypeRegistry().unmarshal(this._objectRegistry, value, type);
   }
 
-  marshalArguments(
-    args: Array<any>,
-    argTypes: Array<Parameter>,
-  ): Promise<Object> {
+  marshalArguments(args, argTypes) {
     return this._getTypeRegistry().marshalArguments(this._objectRegistry, args, argTypes);
   }
 
-  unmarshalArguments(
-    args: Object,
-    argTypes: Array<Parameter>,
-  ): Promise<Array<any>> {
+  unmarshalArguments(args, argTypes) {
     return this._getTypeRegistry().unmarshalArguments(this._objectRegistry, args, argTypes);
   }
 
@@ -250,12 +206,8 @@ export class RpcConnection<TransportType: Transport> {
    *   layer can register the appropriate listeners.
    * @param args - The serialized arguments to invoke the remote function with.
    */
-  callRemoteFunction(functionName: string, returnType: ReturnType, args: Object): any {
-    return this._sendMessageAndListenForResult(
-      createCallMessage(functionName, this._generateRequestId(), args),
-      returnType,
-      `Calling function ${functionName}`,
-    );
+  callRemoteFunction(functionName, returnType, args) {
+    return this._sendMessageAndListenForResult((0, (_messages || _load_messages()).createCallMessage)(functionName, this._generateRequestId(), args), returnType, `Calling function ${ functionName }`);
   }
 
   /**
@@ -266,17 +218,8 @@ export class RpcConnection<TransportType: Transport> {
    *   layer can register the appropriate listeners.
    * @param args - The serialized arguments to invoke the remote method with.
    */
-  callRemoteMethod(
-    objectId: number,
-    methodName: string,
-    returnType: ReturnType,
-    args: Object,
-  ): any {
-    return this._sendMessageAndListenForResult(
-      createCallObjectMessage(methodName, objectId, this._generateRequestId(), args),
-      returnType,
-      `Calling remote method ${methodName}.`,
-    );
+  callRemoteMethod(objectId, methodName, returnType, args) {
+    return this._sendMessageAndListenForResult((0, (_messages || _load_messages()).createCallObjectMessage)(methodName, objectId, this._generateRequestId(), args), returnType, `Calling remote method ${ methodName }.`);
   }
 
   /**
@@ -287,20 +230,12 @@ export class RpcConnection<TransportType: Transport> {
    * @param unmarshalledArgs - Unmarshalled arguments to pass to the remote constructor.
    * @param argTypes - Types of arguments.
    */
-  createRemoteObject(
-    interfaceName: string,
-    thisArg: Object,
-    unmarshalledArgs: Array<any>,
-    argTypes: Array<Parameter>,
-  ): void {
-    const idPromise = (async () => {
-      const marshalledArgs = await this._getTypeRegistry().marshalArguments(
-        this._objectRegistry, unmarshalledArgs, argTypes);
-      return this._sendMessageAndListenForResult(
-        createNewObjectMessage(interfaceName, this._generateRequestId(), marshalledArgs),
-        'promise',
-        `Creating instance of ${interfaceName}`,
-      );
+  createRemoteObject(interfaceName, thisArg, unmarshalledArgs, argTypes) {
+    var _this = this;
+
+    const idPromise = (0, _asyncToGenerator.default)(function* () {
+      const marshalledArgs = yield _this._getTypeRegistry().marshalArguments(_this._objectRegistry, unmarshalledArgs, argTypes);
+      return _this._sendMessageAndListenForResult((0, (_messages || _load_messages()).createNewObjectMessage)(interfaceName, _this._generateRequestId(), marshalledArgs), 'promise', `Creating instance of ${ interfaceName }`);
     })();
     this._objectRegistry.addProxy(thisArg, interfaceName, idPromise);
   }
@@ -311,17 +246,19 @@ export class RpcConnection<TransportType: Transport> {
    * @param object - The remote object.
    * @returns A Promise that resolves when the object disposal has completed.
    */
-  async disposeRemoteObject(object: Object): Promise<void> {
-    const objectId = await this._objectRegistry.disposeProxy(object);
-    if (objectId == null) {
-      logger.info('Duplicate dispose call on remote proxy');
-    } else if (this._transport.isClosed()) {
-      logger.info('Dispose call on remote proxy after connection closed');
-    } else {
-      return await this._sendMessageAndListenForResult(
-        createDisposeMessage(this._generateRequestId(), objectId),
-        'promise', `Disposing object ${objectId}`);
-    }
+  disposeRemoteObject(object) {
+    var _this2 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const objectId = yield _this2._objectRegistry.disposeProxy(object);
+      if (objectId == null) {
+        logger.info('Duplicate dispose call on remote proxy');
+      } else if (_this2._transport.isClosed()) {
+        logger.info('Dispose call on remote proxy after connection closed');
+      } else {
+        return yield _this2._sendMessageAndListenForResult((0, (_messages || _load_messages()).createDisposeMessage)(_this2._generateRequestId(), objectId), 'promise', `Disposing object ${ objectId }`);
+      }
+    })();
   }
 
   /**
@@ -332,11 +269,7 @@ export class RpcConnection<TransportType: Transport> {
    * @returns Depending on the expected return type, this function either returns undefined, a
    *   Promise, or an Observable.
    */
-  _sendMessageAndListenForResult(
-    message: RequestMessage,
-    returnType: ReturnType,
-    timeoutMessage: string,
-  ): any {
+  _sendMessageAndListenForResult(message, returnType, timeoutMessage) {
     const operation = () => {
       switch (returnType) {
         case 'void':
@@ -346,120 +279,111 @@ export class RpcConnection<TransportType: Transport> {
           // Listen for a single message, and resolve or reject a promise on that message.
           return new Promise((resolve, reject) => {
             this._transport.send(JSON.stringify(message));
-            this._calls.set(message.id, new Call(
-              message,
-              timeoutMessage,
-              resolve,
-              reject,
-              () => {
-                this._calls.delete(message.id);
-              },
-            ));
+            this._calls.set(message.id, new Call(message, timeoutMessage, resolve, reject, () => {
+              this._calls.delete(message.id);
+            }));
           });
-        case 'observable': {
-          const id = message.id;
-          invariant(!this._subscriptions.has(id));
+        case 'observable':
+          {
+            const id = message.id;
 
-          const sendSubscribe = () => {
-            this._transport.send(JSON.stringify(message));
-          };
-          const sendUnsubscribe = () => {
-            if (!this._transport.isClosed()) {
-              this._transport.send(JSON.stringify(createUnsubscribeMessage(id)));
+            if (!!this._subscriptions.has(id)) {
+              throw new Error('Invariant violation: "!this._subscriptions.has(id)"');
             }
-          };
-          let hadSubscription = false;
-          const observable = Observable.create(observer => {
-            // Only allow a single subscription. This will be the common case,
-            // and adding this restriction allows disposing of the observable
-            // on the remote side after the initial subscription is complete.
-            if (hadSubscription) {
-              throw new Error('Attempt to re-connect with a remote Observable.');
-            }
-            hadSubscription = true;
 
-            const subscription = new Subscription(message, observer);
-            this._subscriptions.set(id, subscription);
-            sendSubscribe();
-
-            // Observable dispose function, which is called on subscription dispose, on stream
-            // completion, and on stream error.
-            return {
-              unsubscribe: () => {
-                if (!this._subscriptions.has(id)) {
-                  // guard against multiple unsubscribe calls
-                  return;
-                }
-                this._subscriptions.delete(id);
-
-                sendUnsubscribe();
-              },
+            const sendSubscribe = () => {
+              this._transport.send(JSON.stringify(message));
             };
-          });
+            const sendUnsubscribe = () => {
+              if (!this._transport.isClosed()) {
+                this._transport.send(JSON.stringify((0, (_messages || _load_messages()).createUnsubscribeMessage)(id)));
+              }
+            };
+            let hadSubscription = false;
+            const observable = _rxjsBundlesRxMinJs.Observable.create(observer => {
+              // Only allow a single subscription. This will be the common case,
+              // and adding this restriction allows disposing of the observable
+              // on the remote side after the initial subscription is complete.
+              if (hadSubscription) {
+                throw new Error('Attempt to re-connect with a remote Observable.');
+              }
+              hadSubscription = true;
 
-          // Conversion to ConnectableObservable happens in the generated
-          // proxies.
-          return observable;
-        }
+              const subscription = new Subscription(message, observer);
+              this._subscriptions.set(id, subscription);
+              sendSubscribe();
+
+              // Observable dispose function, which is called on subscription dispose, on stream
+              // completion, and on stream error.
+              return {
+                unsubscribe: () => {
+                  if (!this._subscriptions.has(id)) {
+                    // guard against multiple unsubscribe calls
+                    return;
+                  }
+                  this._subscriptions.delete(id);
+
+                  sendUnsubscribe();
+                }
+              };
+            });
+
+            // Conversion to ConnectableObservable happens in the generated
+            // proxies.
+            return observable;
+          }
         default:
-          throw new Error(`Unkown return type: ${returnType}.`);
+          throw new Error(`Unkown return type: ${ returnType }.`);
       }
     };
-    return trackOperationTiming(
-      trackingIdOfMessageAndNetwork(this._objectRegistry, message),
-      operation);
+    return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackOperationTiming)(trackingIdOfMessageAndNetwork(this._objectRegistry, message), operation);
   }
 
-  _returnPromise(
-    id: number,
-    timingTracker: TimingTracker,
-    candidate: any,
-    type: Type,
-  ): void {
+  _returnPromise(id, timingTracker, candidate, type) {
     let returnVal = candidate;
     // Ensure that the return value is a promise.
     if (!isThenable(returnVal)) {
-      returnVal = Promise.reject(
-        new Error('Expected a Promise, but the function returned something else.'));
+      returnVal = Promise.reject(new Error('Expected a Promise, but the function returned something else.'));
     }
 
     // Marshal the result, to send over the network.
-    invariant(returnVal != null);
-    returnVal = returnVal.then(value => this._getTypeRegistry().marshal(
-      this._objectRegistry, value, type));
+
+    if (!(returnVal != null)) {
+      throw new Error('Invariant violation: "returnVal != null"');
+    }
+
+    returnVal = returnVal.then(value => this._getTypeRegistry().marshal(this._objectRegistry, value, type));
 
     // Send the result of the promise across the socket.
     returnVal.then(result => {
-      this._transport.send(JSON.stringify(createPromiseMessage(id, result)));
+      this._transport.send(JSON.stringify((0, (_messages || _load_messages()).createPromiseMessage)(id, result)));
       timingTracker.onSuccess();
     }, error => {
-      this._transport.send(JSON.stringify(createErrorResponseMessage(id, error)));
+      this._transport.send(JSON.stringify((0, (_messages || _load_messages()).createErrorResponseMessage)(id, error)));
       timingTracker.onError(error == null ? new Error() : error);
     });
   }
 
-  _returnObservable(id: number, returnVal: any, elementType: Type): void {
-    let result: ConnectableObservable<any>;
+  _returnObservable(id, returnVal, elementType) {
+    let result;
     // Ensure that the return value is an observable.
     if (!isConnectableObservable(returnVal)) {
-      result = Observable.throw(new Error(
-        'Expected an Observable, but the function returned something else.')).publish();
+      result = _rxjsBundlesRxMinJs.Observable.throw(new Error('Expected an Observable, but the function returned something else.')).publish();
     } else {
       result = returnVal;
     }
 
     // Marshal the result, to send over the network.
-    result.concatMap(value => this._getTypeRegistry().marshal(
-      this._objectRegistry, value, elementType))
+    result.concatMap(value => this._getTypeRegistry().marshal(this._objectRegistry, value, elementType))
 
     // Send the next, error, and completion events of the observable across the socket.
     .subscribe(data => {
-      this._transport.send(JSON.stringify(createNextMessage(id, data)));
+      this._transport.send(JSON.stringify((0, (_messages || _load_messages()).createNextMessage)(id, data)));
     }, error => {
-      this._transport.send(JSON.stringify(createObserveErrorMessage(id, error)));
+      this._transport.send(JSON.stringify((0, (_messages || _load_messages()).createObserveErrorMessage)(id, error)));
       this._objectRegistry.removeSubscription(id);
     }, completed => {
-      this._transport.send(JSON.stringify(createCompleteMessage(id)));
+      this._transport.send(JSON.stringify((0, (_messages || _load_messages()).createCompleteMessage)(id)));
       this._objectRegistry.removeSubscription(id);
     });
 
@@ -467,7 +391,7 @@ export class RpcConnection<TransportType: Transport> {
   }
 
   // Returns true if a promise was returned.
-  _returnValue(id: number, timingTracker: TimingTracker, value: any, type: Type): boolean {
+  _returnValue(id, timingTracker, value, type) {
     switch (type.kind) {
       case 'void':
         break; // No need to send anything back to the user.
@@ -478,102 +402,104 @@ export class RpcConnection<TransportType: Transport> {
         this._returnObservable(id, value, type.type);
         break;
       default:
-        throw new Error(`Unkown return type ${type.kind}.`);
+        throw new Error(`Unkown return type ${ type.kind }.`);
     }
     return false;
   }
 
-  async _callFunction(
-    id: number,
-    timingTracker: TimingTracker,
-    call: CallMessage,
-  ): Promise<boolean> {
-    const {
-      localImplementation,
-      type,
-    } = this._getFunctionImplemention(call.method);
-    const marshalledArgs = await this._getTypeRegistry().unmarshalArguments(
-      this._objectRegistry, call.args, type.argumentTypes);
+  _callFunction(id, timingTracker, call) {
+    var _this3 = this;
 
-    return this._returnValue(
-      id,
-      timingTracker,
-      localImplementation.apply(this, marshalledArgs),
-      type.returnType);
+    return (0, _asyncToGenerator.default)(function* () {
+      var _getFunctionImplement = _this3._getFunctionImplemention(call.method);
+
+      const localImplementation = _getFunctionImplement.localImplementation,
+            type = _getFunctionImplement.type;
+
+      const marshalledArgs = yield _this3._getTypeRegistry().unmarshalArguments(_this3._objectRegistry, call.args, type.argumentTypes);
+
+      return _this3._returnValue(id, timingTracker, localImplementation.apply(_this3, marshalledArgs), type.returnType);
+    })();
   }
 
-  async _callMethod(
-    id: number,
-    timingTracker: TimingTracker,
-    call: CallObjectMessage,
-  ): Promise<boolean> {
-    const object = this._objectRegistry.unmarshal(call.objectId);
-    invariant(object != null);
+  _callMethod(id, timingTracker, call) {
+    var _this4 = this;
 
-    const interfaceName = this._objectRegistry.getInterface(call.objectId);
-    const classDefinition = this._getClassDefinition(interfaceName);
-    invariant(classDefinition != null);
-    const type = classDefinition.definition.instanceMethods.get(call.method);
-    invariant(type != null);
+    return (0, _asyncToGenerator.default)(function* () {
+      const object = _this4._objectRegistry.unmarshal(call.objectId);
 
-    const marshalledArgs = await this._getTypeRegistry().unmarshalArguments(
-      this._objectRegistry, call.args, type.argumentTypes);
+      if (!(object != null)) {
+        throw new Error('Invariant violation: "object != null"');
+      }
 
-    return this._returnValue(
-      id,
-      timingTracker,
-      object[call.method](...marshalledArgs),
-      type.returnType);
+      const interfaceName = _this4._objectRegistry.getInterface(call.objectId);
+      const classDefinition = _this4._getClassDefinition(interfaceName);
+
+      if (!(classDefinition != null)) {
+        throw new Error('Invariant violation: "classDefinition != null"');
+      }
+
+      const type = classDefinition.definition.instanceMethods.get(call.method);
+
+      if (!(type != null)) {
+        throw new Error('Invariant violation: "type != null"');
+      }
+
+      const marshalledArgs = yield _this4._getTypeRegistry().unmarshalArguments(_this4._objectRegistry, call.args, type.argumentTypes);
+
+      return _this4._returnValue(id, timingTracker, object[call.method](...marshalledArgs), type.returnType);
+    })();
   }
 
-  async _callConstructor(
-    id: number,
-    timingTracker: TimingTracker,
-    constructorMessage: NewObjectMessage,
-  ): Promise<void> {
-    const classDefinition = this._getClassDefinition(constructorMessage.interface);
-    invariant(classDefinition != null);
-    const {
-      localImplementation,
-      definition,
-    } = classDefinition;
-    const constructorArgs = definition.constructorArgs;
-    invariant(constructorArgs != null);
+  _callConstructor(id, timingTracker, constructorMessage) {
+    var _this5 = this;
 
-    const marshalledArgs = await this._getTypeRegistry().unmarshalArguments(
-      this._objectRegistry, constructorMessage.args, constructorArgs);
+    return (0, _asyncToGenerator.default)(function* () {
+      const classDefinition = _this5._getClassDefinition(constructorMessage.interface);
 
-    // Create a new object and put it in the registry.
-    const newObject = new localImplementation(...marshalledArgs);
+      if (!(classDefinition != null)) {
+        throw new Error('Invariant violation: "classDefinition != null"');
+      }
 
-    // Return the object, which will automatically be converted to an id through the
-    // marshalling system.
-    this._returnPromise(
-      id,
-      timingTracker,
-      Promise.resolve(newObject),
-      {
+      const localImplementation = classDefinition.localImplementation,
+            definition = classDefinition.definition;
+
+      const constructorArgs = definition.constructorArgs;
+
+      if (!(constructorArgs != null)) {
+        throw new Error('Invariant violation: "constructorArgs != null"');
+      }
+
+      const marshalledArgs = yield _this5._getTypeRegistry().unmarshalArguments(_this5._objectRegistry, constructorMessage.args, constructorArgs);
+
+      // Create a new object and put it in the registry.
+      const newObject = new localImplementation(...marshalledArgs);
+
+      // Return the object, which will automatically be converted to an id through the
+      // marshalling system.
+      _this5._returnPromise(id, timingTracker, Promise.resolve(newObject), {
         kind: 'named',
         name: constructorMessage.interface,
-        location: builtinLocation,
+        location: (_builtinTypes || _load_builtinTypes()).builtinLocation
       });
+    })();
   }
 
-  getTransport(): TransportType {
+  getTransport() {
     return this._transport;
   }
 
-  _parseMessage(value: string): ?Object {
+  _parseMessage(value) {
     try {
       return JSON.parse(value);
     } catch (e) {
-      logger.error(`Recieved invalid JSON message: '${value}'`);
+      logger.error(`Recieved invalid JSON message: '${ value }'`);
       return null;
     }
   }
 
-  _handleMessage(value: string): void {
-    const message: ?(RequestMessage | ResponseMessage) = this._parseMessage(value);
+  _handleMessage(value) {
+    const message = this._parseMessage(value);
     if (message == null) {
       return;
     }
@@ -601,117 +527,129 @@ export class RpcConnection<TransportType: Transport> {
     }
   }
 
-  _handleResponseMessage(message: ResponseMessage): void {
+  _handleResponseMessage(message) {
     const id = message.id;
     switch (message.type) {
-      case 'response': {
-        const call = this._calls.get(id);
-        if (call != null) {
-          const {result} = message;
-          call.resolve(result);
+      case 'response':
+        {
+          const call = this._calls.get(id);
+          if (call != null) {
+            const result = message.result;
+
+            call.resolve(result);
+          }
+          break;
         }
-        break;
-      }
-      case 'error-response': {
-        const call = this._calls.get(id);
-        if (call != null) {
-          const {error} = message;
-          call.reject(error);
+      case 'error-response':
+        {
+          const call = this._calls.get(id);
+          if (call != null) {
+            const error = message.error;
+
+            call.reject(error);
+          }
+          break;
         }
-        break;
-      }
-      case 'next': {
-        const subscription = this._subscriptions.get(id);
-        if (subscription != null) {
-          const {value} = message;
-          subscription.next(value);
+      case 'next':
+        {
+          const subscription = this._subscriptions.get(id);
+          if (subscription != null) {
+            const value = message.value;
+
+            subscription.next(value);
+          }
+          break;
         }
-        break;
-      }
-      case 'complete': {
-        const subscription = this._subscriptions.get(id);
-        if (subscription != null) {
-          subscription.complete();
-          this._subscriptions.delete(id);
+      case 'complete':
+        {
+          const subscription = this._subscriptions.get(id);
+          if (subscription != null) {
+            subscription.complete();
+            this._subscriptions.delete(id);
+          }
+          break;
         }
-        break;
-      }
-      case 'error': {
-        const subscription = this._subscriptions.get(id);
-        if (subscription != null) {
-          const {error} = message;
-          subscription.error(error);
-          this._subscriptions.delete(id);
+      case 'error':
+        {
+          const subscription = this._subscriptions.get(id);
+          if (subscription != null) {
+            const error = message.error;
+
+            subscription.error(error);
+            this._subscriptions.delete(id);
+          }
+          break;
         }
-        break;
-      }
       default:
-        throw new Error(`Unexpected message type ${JSON.stringify(message)}`);
+        throw new Error(`Unexpected message type ${ JSON.stringify(message) }`);
     }
   }
 
-  async _handleRequestMessage(message: RequestMessage): Promise<void> {
-    const id = message.id;
+  _handleRequestMessage(message) {
+    var _this6 = this;
 
-    // Track timings of all function calls, method calls, and object creations.
-    // Note: for Observables we only track how long it takes to create the initial Observable.
-    // while for Promises we track the length of time it takes to resolve or reject.
-    // For returning void, we track the time for the call to complete.
-    const timingTracker: TimingTracker
-      = startTracking(trackingIdOfMessage(this._objectRegistry, message));
+    return (0, _asyncToGenerator.default)(function* () {
+      const id = message.id;
 
-    // Here's the main message handler ...
-    try {
-      let returnedPromise = false;
-      switch (message.type) {
-        case 'call':
-          returnedPromise = await this._callFunction(id, timingTracker, message);
-          break;
-        case 'call-object':
-          returnedPromise = await this._callMethod(id, timingTracker, message);
-          break;
-        case 'new':
-          await this._callConstructor(id, timingTracker, message);
-          returnedPromise = true;
-          break;
-        case 'dispose':
-          await this._objectRegistry.disposeObject(message.objectId);
-          this._returnPromise(id, timingTracker, Promise.resolve(), voidType);
-          returnedPromise = true;
-          break;
-        case 'unsubscribe':
-          this._objectRegistry.disposeSubscription(id);
-          break;
-        default:
-          throw new Error(`Unknown message type ${message.type}`);
+      // Track timings of all function calls, method calls, and object creations.
+      // Note: for Observables we only track how long it takes to create the initial Observable.
+      // while for Promises we track the length of time it takes to resolve or reject.
+      // For returning void, we track the time for the call to complete.
+      const timingTracker = (0, (_nuclideAnalytics || _load_nuclideAnalytics()).startTracking)(trackingIdOfMessage(_this6._objectRegistry, message));
+
+      // Here's the main message handler ...
+      try {
+        let returnedPromise = false;
+        switch (message.type) {
+          case 'call':
+            returnedPromise = yield _this6._callFunction(id, timingTracker, message);
+            break;
+          case 'call-object':
+            returnedPromise = yield _this6._callMethod(id, timingTracker, message);
+            break;
+          case 'new':
+            yield _this6._callConstructor(id, timingTracker, message);
+            returnedPromise = true;
+            break;
+          case 'dispose':
+            yield _this6._objectRegistry.disposeObject(message.objectId);
+            _this6._returnPromise(id, timingTracker, Promise.resolve(), (_builtinTypes || _load_builtinTypes()).voidType);
+            returnedPromise = true;
+            break;
+          case 'unsubscribe':
+            _this6._objectRegistry.disposeSubscription(id);
+            break;
+          default:
+            throw new Error(`Unknown message type ${ message.type }`);
+        }
+        if (!returnedPromise) {
+          timingTracker.onSuccess();
+        }
+      } catch (e) {
+        logger.error(`Error handling RPC ${ message.type } message`, e);
+        timingTracker.onError(e == null ? new Error() : e);
+        _this6._transport.send(JSON.stringify((0, (_messages || _load_messages()).createErrorResponseMessage)(id, e)));
       }
-      if (!returnedPromise) {
-        timingTracker.onSuccess();
-      }
-    } catch (e) {
-      logger.error(`Error handling RPC ${message.type} message`, e);
-      timingTracker.onError(e == null ? new Error() : e);
-      this._transport.send(JSON.stringify(createErrorResponseMessage(id, e)));
-    }
+    })();
   }
 
-  _getFunctionImplemention(name: string): FunctionImplementation {
+  _getFunctionImplemention(name) {
     return this._serviceRegistry.getFunctionImplemention(name);
   }
 
-  _getClassDefinition(className: string): ClassDefinition {
+  _getClassDefinition(className) {
     return this._serviceRegistry.getClassDefinition(className);
   }
 
-  _generateRequestId(): number {
+  _generateRequestId() {
     return this._rpcRequestId++;
   }
 
-  _getTypeRegistry(): TypeRegistry {
+  _getTypeRegistry() {
     return this._serviceRegistry.getTypeRegistry();
   }
 
-  dispose(): void {
+  dispose() {
     this._transport.close();
     this._objectRegistry.dispose();
     this._calls.forEach(call => {
@@ -722,41 +660,42 @@ export class RpcConnection<TransportType: Transport> {
     });
     this._subscriptions.clear();
   }
-}
+};
 
-function trackingIdOfMessage(registry: ObjectRegistry, message: RequestMessage): string {
+
+function trackingIdOfMessage(registry, message) {
   switch (message.type) {
     case 'call':
-      return `service-framework:${message.method}`;
+      return `service-framework:${ message.method }`;
     case 'call-object':
       const callInterface = registry.getInterface(message.objectId);
-      return `service-framework:${callInterface}.${message.method}`;
+      return `service-framework:${ callInterface }.${ message.method }`;
     case 'new':
-      return `service-framework:new:${message.interface}`;
+      return `service-framework:new:${ message.interface }`;
     case 'dispose':
       const interfaceName = registry.getInterface(message.objectId);
-      return `service-framework:dispose:${interfaceName}`;
+      return `service-framework:dispose:${ interfaceName }`;
     case 'unsubscribe':
       return 'service-framework:disposeObservable';
     default:
-      throw new Error(`Unknown message type ${message.type}`);
+      throw new Error(`Unknown message type ${ message.type }`);
   }
 }
 
-function trackingIdOfMessageAndNetwork(registry: ObjectRegistry, message: RequestMessage): string {
+function trackingIdOfMessageAndNetwork(registry, message) {
   return trackingIdOfMessage(registry, message) + ':plus-network';
 }
 
 /**
  * A helper function that checks if an object is thenable (Promise-like).
  */
-function isThenable(object: any): boolean {
+function isThenable(object) {
   return Boolean(object && object.then);
 }
 
 /**
  * A helper function that checks if an object is an Observable.
  */
-function isConnectableObservable(object: any): boolean {
+function isConnectableObservable(object) {
   return Boolean(object && object.concatMap && object.subscribe && object.connect);
 }

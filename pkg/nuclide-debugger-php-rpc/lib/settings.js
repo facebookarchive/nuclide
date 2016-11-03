@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,26 +9,30 @@
  * the root directory of this source tree.
  */
 
-export type HhvmDebuggerSettings = {
-   singleThreadStepping: boolean,
- };
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getSettings = getSettings;
+exports.updateSettings = updateSettings;
+exports.clearSettings = clearSettings;
 
-const defaultSettings: HhvmDebuggerSettings = {
-  singleThreadStepping: false,
+
+const defaultSettings = {
+  singleThreadStepping: false
 };
 
-let settings: HhvmDebuggerSettings = defaultSettings;
+let settings = defaultSettings;
 
-export function getSettings(): HhvmDebuggerSettings {
+function getSettings() {
   return settings;
 }
 
-export function updateSettings(newSettings: Object): void {
+function updateSettings(newSettings) {
   for (const key in newSettings) {
     settings[key] = newSettings[key];
   }
 }
 
-export function clearSettings(): void {
+function clearSettings() {
   settings = defaultSettings;
 }

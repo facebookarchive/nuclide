@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,24 +9,30 @@
  * the root directory of this source tree.
  */
 
+var _helpers;
 
-import {DUMMY_FRAME_ID} from './helpers';
-import Handler from './Handler';
+function _load_helpers() {
+  return _helpers = require('./helpers');
+}
 
-import type {ClientCallback} from './ClientCallback';
+var _Handler;
+
+function _load_Handler() {
+  return _Handler = _interopRequireDefault(require('./Handler'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // Handles all 'Page.*' Chrome dev tools messages
-class PageHandler extends Handler {
-  constructor(
-    clientCallback: ClientCallback,
-  ) {
+let PageHandler = class PageHandler extends (_Handler || _load_Handler()).default {
+  constructor(clientCallback) {
     super('Page', clientCallback);
   }
 
-  handleMethod(id: number, method: string, params: ?Object): Promise<void> {
+  handleMethod(id, method, params) {
     switch (method) {
       case 'canScreencast':
-        this.replyToCommand(id, {result: false});
+        this.replyToCommand(id, { result: false });
         break;
 
       case 'enable':
@@ -35,22 +41,22 @@ class PageHandler extends Handler {
 
       case 'getResourceTree':
         this.replyToCommand(id,
-          // For now, return a dummy resource tree so various initializations in
-          // client happens.
-          {
-            frameTree: {
-              childFrames: [],
-              resources: [],
-              frame: {
-                id: DUMMY_FRAME_ID,
-                loaderId: 'Loader.0',
-                mimeType: '',
-                name: 'HHVM',
-                securityOrigin: '',
-                url: 'hhvm:///',
-              },
-            },
-          });
+        // For now, return a dummy resource tree so various initializations in
+        // client happens.
+        {
+          frameTree: {
+            childFrames: [],
+            resources: [],
+            frame: {
+              id: (_helpers || _load_helpers()).DUMMY_FRAME_ID,
+              loaderId: 'Loader.0',
+              mimeType: '',
+              name: 'HHVM',
+              securityOrigin: '',
+              url: 'hhvm:///'
+            }
+          }
+        });
         break;
 
       default:
@@ -59,6 +65,7 @@ class PageHandler extends Handler {
     }
     return Promise.resolve();
   }
-}
+};
+
 
 module.exports = PageHandler;

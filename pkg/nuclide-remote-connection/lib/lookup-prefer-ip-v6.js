@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,26 +9,38 @@
  * the root directory of this source tree.
  */
 
-import dns from 'dns';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-type DnsFamily = 4 | 6;
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-export default async function lookupPreferIpv6(
-  host: string,
-): Promise<string> {
-  try {
-    return await lookup(host, 6);
-  } catch (e) {
-    if (e.code === 'ENOTFOUND') {
-      return await lookup(host, 4);
+var _dns = _interopRequireDefault(require('dns'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (host) {
+    try {
+      return yield lookup(host, 6);
+    } catch (e) {
+      if (e.code === 'ENOTFOUND') {
+        return yield lookup(host, 4);
+      }
+      throw e;
     }
-    throw e;
-  }
-}
+  });
 
-function lookup(host: string, family: DnsFamily): Promise<string> {
+  function lookupPreferIpv6(_x) {
+    return _ref.apply(this, arguments);
+  }
+
+  return lookupPreferIpv6;
+})();
+
+function lookup(host, family) {
   return new Promise((resolve, reject) => {
-    dns.lookup(host, family, (error: ?Error, address: ?string) => {
+    _dns.default.lookup(host, family, (error, address) => {
       if (error) {
         reject(error);
       } else if (address != null) {
@@ -39,3 +51,4 @@ function lookup(host: string, family: DnsFamily): Promise<string> {
     });
   });
 }
+module.exports = exports['default'];

@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,15 +9,17 @@
  * the root directory of this source tree.
  */
 
-import type {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import {LLDBLaunchAttachProvider} from './LLDBLaunchAttachProvider';
+var _LLDBLaunchAttachProvider;
 
-function getLaunchAttachProvider(connection: NuclideUri): ?DebuggerLaunchAttachProvider {
-  return new LLDBLaunchAttachProvider('C++', connection);
+function _load_LLDBLaunchAttachProvider() {
+  return _LLDBLaunchAttachProvider = require('./LLDBLaunchAttachProvider');
+}
+
+function getLaunchAttachProvider(connection) {
+  return new (_LLDBLaunchAttachProvider || _load_LLDBLaunchAttachProvider()).LLDBLaunchAttachProvider('C++', connection);
 }
 
 module.exports = {
   name: 'lldb',
-  getLaunchAttachProvider,
+  getLaunchAttachProvider: getLaunchAttachProvider
 };
