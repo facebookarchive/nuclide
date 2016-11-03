@@ -124,13 +124,8 @@ export class PackagerActivation {
 
 class NoReactNativeProjectError extends Error {
   constructor() {
-    // TODO: Remove `captureStackTrace()` call and `this.message` assignment when we remove our
-    // class transform and switch to native classes.
-    const message = 'No React Native Project found';
-    super(message);
+    super('No React Native Project found');
     this.name = 'NoReactNativeProjectError';
-    this.message = message;
-    Error.captureStackTrace(this, this.constructor);
   }
 }
 
@@ -138,15 +133,10 @@ class PackagerError extends Error {
   exitMessage: string;
   stderr: string;
   constructor(exitMessage: string, stderr: string) {
-    // TODO: Remove `captureStackTrace()` call and `this.message` assignment when we remove our
-    // class transform and switch to native classes.
-    const message = 'An error occurred while running the packager';
-    super(message);
+    super('An error occurred while running the packager');
     this.name = 'PackagerError';
-    this.message = message;
     this.exitMessage = exitMessage;
     this.stderr = stderr;
-    Error.captureStackTrace(this, this.constructor);
   }
 }
 

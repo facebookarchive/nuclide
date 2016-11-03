@@ -90,12 +90,7 @@ function connectToRnApp(): Observable<WS> {
 
 class PrematureCloseError extends Error {
   constructor() {
-    // TODO: Remove `captureStackTrace()` call and `this.message` assignment when we remove our
-    // class transform and switch to native classes.
-    const message = 'Web socket closed prematurely';
-    super(message);
+    super('Web socket closed prematurely');
     this.name = 'PrematureCloseError';
-    this.message = message;
-    Error.captureStackTrace(this, this.constructor);
   }
 }
