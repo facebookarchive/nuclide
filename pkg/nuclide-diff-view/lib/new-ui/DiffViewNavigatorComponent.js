@@ -60,10 +60,14 @@ export default class DiffViewNavigatorComponent extends React.Component {
         </div>
       );
     } else if (navigationSections.length === 0) {
-      sectionNavigator = null;
-    } else {
       sectionNavigator = (
         <div className="padded">
+          No active diff changes
+        </div>
+      );
+    } else {
+      sectionNavigator = (
+        <div className="nuclide-diff-view-section-navigator-container">
           <span>Changed Sections: </span>
           <SectionDirectionNavigator
             commandTarget={`.${DIFF_EDITOR_MARKER_CLASS}`}
@@ -85,8 +89,8 @@ export default class DiffViewNavigatorComponent extends React.Component {
         <div className="nuclide-diff-view-navigator-file-changes-container">
           {sectionNavigator}
           <div className="nuclide-diff-view-navigator-horizontal-selector" />
-          <div className="padded">
-            <div>File Changes</div>
+          <div>
+            <div className="padded">File Changes</div>
             {renderFileChanges(this.props.diffModel)}
           </div>
         </div>
