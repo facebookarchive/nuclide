@@ -211,4 +211,4 @@ language specific debugging workflows that require discussion and illustration.
 - [iOS](/docs/platforms/ios/#debugging)
 - [Android](/docs/platforms/android/#debugging)
 
-Buck projects can be more easily debugged via the [Buck toolbar](/docs/features/buck#debug).
+Buck projects can be more easily debugged via the [Task Runner](/docs/features/task-runner/#buck).
