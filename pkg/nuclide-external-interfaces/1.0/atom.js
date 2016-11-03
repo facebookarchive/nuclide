@@ -674,6 +674,7 @@ declare class atom$TextEditor extends atom$Model {
       IDisposable,
   // Note that the range property of the event is undocumented.
   onDidInsertText(callback: (event: {text: string, range: atom$Range}) => mixed): IDisposable,
+  onDidChangeSoftWrapped(callback: (softWrapped: boolean) => mixed): IDisposable,
 
   // File Details
   getTitle: () => string,

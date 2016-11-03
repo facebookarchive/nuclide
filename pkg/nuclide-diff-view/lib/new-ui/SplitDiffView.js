@@ -92,6 +92,19 @@ type DiffEditorsResult = {
   disposables: UniversalDisposable,
 };
 
+// Turn off soft wrap setting for these editors so diffs properly align.
+// Some text editor register sometimes override the set soft wrapping
+// after mounting an editor to the workspace - here, that's watched and reset to `false`.
+function ensureNoSoftWrap(editor: atom$TextEditor): IDisposable {
+  editor.setSoftWrapped(false);
+  return editor.onDidChangeSoftWrapped(softWrapped => {
+    if (softWrapped) {
+      // Reset the overridden softWrap to `false` once the operation completes.
+      process.nextTick(() => editor.setSoftWrapped(false));
+    }
+  });
+}
+
 /**
  * Split the pane items, if not already split.
  */
@@ -109,8 +122,11 @@ async function getDiffEditors(
     const newEditorItem = newEditorPane.itemForURI(filePath);
     newEditorPane.activateItem(newEditorItem);
     newEditor = ((newEditorItem: any): atom$TextEditor);
-    disposables.add(() =>
-      newEditor.setSoftWrapped((atom.config.get('editor.softWrap'): any)));
+    newEditor.setSoftWrapped(false);
+    disposables.add(
+      ensureNoSoftWrap(newEditor),
+      () => newEditor.setSoftWrapped((atom.config.get('editor.softWrap'): any)),
+    );
   } else {
     newEditor = ((await atom.workspace.open(filePath): any): atom$TextEditor);
     // Allow the atom workspace to update its state before querying for
@@ -118,7 +134,10 @@ async function getDiffEditors(
     await nextTick();
     newEditorPane = atom.workspace.paneForURI(filePath);
     invariant(newEditorPane != null, 'Cannot find a pane for the opened text editor');
-    disposables.add(() => cleanUpEditor(newEditor));
+    disposables.add(
+      ensureNoSoftWrap(newEditor),
+      () => cleanUpEditor(newEditor),
+    );
   }
 
   const navigationGutter = newEditor.gutterWithName(NAVIGATION_GUTTER_NAME) || newEditor.addGutter({
@@ -142,7 +161,11 @@ async function getDiffEditors(
   );
   // Allow the atom workspace to update its state before querying the views for the editor.
   await nextTick();
-  disposables.add(() => cleanUpEditor(oldEditor));
+
+  disposables.add(
+    ensureNoSoftWrap(oldEditor),
+    () => cleanUpEditor(oldEditor),
+  );
 
   newEditorPane.activateItem(newEditor);
   newEditorPane.activate();
@@ -150,10 +173,6 @@ async function getDiffEditors(
   // Unfold all lines so diffs properly align.
   newEditor.unfoldAll();
   oldEditor.unfoldAll();
-
-  // Turn off soft wrap setting for these editors so diffs properly align.
-  newEditor.setSoftWrapped(false);
-  oldEditor.setSoftWrapped(false);
 
   const newEditorElement = atom.views.getView(newEditor);
   const oldEditorElement = atom.views.getView(oldEditor);
