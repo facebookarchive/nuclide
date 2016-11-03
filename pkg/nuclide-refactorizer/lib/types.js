@@ -26,6 +26,8 @@ export type Store = {
   getState(): RefactorState,
 };
 
+export type RefactorUIFactory = (store: Store) => IDisposable;
+
 // State
 
 export type ClosedState = {|

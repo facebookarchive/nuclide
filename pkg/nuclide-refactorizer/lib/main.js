@@ -22,7 +22,6 @@ import type {
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import {Disposable} from 'atom';
-import {React, ReactDOM} from 'react-for-atom';
 
 import ProviderRegistry from '../../commons-atom/ProviderRegistry';
 import createPackage from '../../commons-atom/createPackage';
@@ -30,7 +29,7 @@ import UniversalDisposable from '../../commons-node/UniversalDisposable';
 
 import * as Actions from './refactorActions';
 import {getStore} from './refactorStore';
-import {MainRefactorComponent} from './components/MainRefactorComponent';
+import {initRefactorUIs} from './refactorUIs';
 
 export type RenameRefactorKind = 'rename';
 
@@ -86,30 +85,8 @@ class Activation {
 
     this._store = getStore(this._providerRegistry);
 
-    let panel = null;
     this._disposables = new UniversalDisposable(
-      this._store.subscribe(() => {
-        const state = this._store.getState();
-        if (state.type === 'open') {
-          if (panel == null) {
-            const element = document.createElement('div');
-            panel = atom.workspace.addModalPanel({item: element});
-          }
-          ReactDOM.render(
-            <MainRefactorComponent
-              appState={state}
-              store={this._store}
-            />,
-            panel.getItem(),
-          );
-        } else {
-          if (panel != null) {
-            ReactDOM.unmountComponentAtNode(panel.getItem());
-            panel.destroy();
-            panel = null;
-          }
-        }
-      }),
+      initRefactorUIs(this._store),
       atom.commands.add('atom-workspace', 'nuclide-refactorizer:refactorize', () => {
         this._store.dispatch(Actions.open());
       }),
