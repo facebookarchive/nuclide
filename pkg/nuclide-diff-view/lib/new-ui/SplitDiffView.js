@@ -61,16 +61,10 @@ const DIFF_SPINNER_DELAY_MS = 50;
 const SCROLL_FIRST_CHANGE_DELAY_MS = 100;
 
 function cleanUpEditor(editor: atom$TextEditor): void {
-  // if the pane that this editor was in is now empty, we will destroy it.
-  const editorPane = atom.workspace.paneForItem(editor);
-  if (typeof editorPane !== 'undefined'
-    && editorPane != null
-    && editorPane.getItems().length === 1
-  ) {
-    editorPane.destroy();
-  } else {
-    editor.destroy();
-  }
+  // When one of the editors gets destroyed by Atom pane item change,
+  // Atom will error with further mutations at the same process cycle.
+  // Hence, this delays the cleanup by one cycle to avoid the error.
+  process.nextTick(() => editor.destroy());
 }
 
 function getReadOnlyEditor(): atom$TextEditor {
