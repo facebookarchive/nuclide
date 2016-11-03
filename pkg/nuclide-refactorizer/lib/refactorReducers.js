@@ -56,6 +56,7 @@ function open(state: RefactorState, action: OpenAction): RefactorState {
 
   return {
     type: 'open',
+    ui: action.ui,
     phase: {
       type: 'get-refactorings',
     },
@@ -70,6 +71,7 @@ function gotRefactorings(state: RefactorState, action: GotRefactoringsAction): R
 
   return {
     type: 'open',
+    ui: state.ui,
     phase: {
       type: 'pick',
       provider: action.payload.provider,
@@ -95,6 +97,7 @@ function pickedRefactor(state: RefactorState, action: PickedRefactorAction): Ref
   const {editor, originalPoint} = state.phase;
   return {
     type: 'open',
+    ui: state.ui,
     phase: {
       type: 'rename',
       provider: state.phase.provider,
@@ -109,6 +112,7 @@ function executeRefactor(state: RefactorState, action: ExecuteAction): RefactorS
   invariant(state.type === 'open');
   return {
     type: 'open',
+    ui: state.ui,
     phase: {
       type: 'execute',
     },

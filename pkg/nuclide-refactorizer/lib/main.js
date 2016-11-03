@@ -88,7 +88,7 @@ class Activation {
     this._disposables = new UniversalDisposable(
       initRefactorUIs(this._store),
       atom.commands.add('atom-workspace', 'nuclide-refactorizer:refactorize', () => {
-        this._store.dispatch(Actions.open());
+        this._store.dispatch(Actions.open('generic'));
       }),
     );
   }

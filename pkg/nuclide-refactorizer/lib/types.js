@@ -28,6 +28,8 @@ export type Store = {
 
 export type RefactorUIFactory = (store: Store) => IDisposable;
 
+export type RefactorUI = 'generic' | 'simple-rename';
+
 // State
 
 export type ClosedState = {|
@@ -36,6 +38,7 @@ export type ClosedState = {|
 
 export type OpenState = {|
   type: 'open',
+  ui: RefactorUI,
   phase: Phase,
 |};
 
@@ -78,6 +81,7 @@ export type Phase =
 
 export type OpenAction = {|
   type: 'open',
+  ui: RefactorUI,
 |};
 
 export type GotRefactoringsAction = {|

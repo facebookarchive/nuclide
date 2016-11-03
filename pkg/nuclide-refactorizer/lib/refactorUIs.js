@@ -32,7 +32,7 @@ function genericRefactorUI(store: Store): IDisposable {
   let panel;
   const disposeFn: () => void = store.subscribe(() => {
     const state = store.getState();
-    if (state.type === 'open') {
+    if (state.type === 'open' && state.ui === 'generic') {
       if (panel == null) {
         const element = document.createElement('div');
         panel = atom.workspace.addModalPanel({item: element});

@@ -122,11 +122,12 @@ describe('refactorStore', () => {
 
   it('handles a missing editor', () => {
     waitsForPromise(async () => {
-      store.dispatch(Actions.open());
+      store.dispatch(Actions.open('generic'));
       await expectObservableToStartWith(stateStream, [
         {type: 'closed'},
         {
           type: 'open',
+          ui: 'generic',
           phase: {type: 'get-refactorings'},
         },
         {type: 'closed'},
@@ -143,11 +144,12 @@ describe('refactorStore', () => {
     });
     it('handles a missing provider', () => {
       waitsForPromise(async () => {
-        store.dispatch(Actions.open());
+        store.dispatch(Actions.open('generic'));
         await expectObservableToStartWith(stateStream, [
           {type: 'closed'},
           {
             type: 'open',
+            ui: 'generic',
             phase: {type: 'get-refactorings'},
           },
           {type: 'closed'},
@@ -169,7 +171,7 @@ describe('refactorStore', () => {
             edits: new Map([[TEST_FILE, TEST_FILE_EDITS]]),
           });
 
-          store.dispatch(Actions.open());
+          store.dispatch(Actions.open('generic'));
           await waitForPhase('pick');
           store.dispatch(Actions.pickedRefactor(TEST_FILE_RENAME));
           await waitForPhase('rename');
@@ -189,11 +191,12 @@ describe('refactorStore', () => {
       it('does not allow refactoring of an unsaved file', () => {
         waitsForPromise(async () => {
           await atom.workspace.open();
-          store.dispatch(Actions.open());
+          store.dispatch(Actions.open('generic'));
           await expectObservableToStartWith(stateStream, [
             {type: 'closed'},
             {
               type: 'open',
+              ui: 'generic',
               phase: {type: 'get-refactorings'},
             },
             {type: 'closed'},
@@ -207,7 +210,7 @@ describe('refactorStore', () => {
         waitsForPromise(async () => {
           const deferred = new Deferred();
           refactoringsAtPointReturn = deferred.promise;
-          store.dispatch(Actions.open());
+          store.dispatch(Actions.open('generic'));
           await waitForPhase('get-refactorings');
           store.dispatch(Actions.close());
           await waitForClose();
@@ -224,7 +227,7 @@ describe('refactorStore', () => {
             TEST_FILE_RENAME,
           ]);
           refactorReturn = deferred.promise;
-          store.dispatch(Actions.open());
+          store.dispatch(Actions.open('generic'));
           await waitForPhase('pick');
           store.dispatch(Actions.pickedRefactor(TEST_FILE_RENAME));
           await waitForPhase('rename');
@@ -251,7 +254,7 @@ describe('refactorStore', () => {
       it('tolerates a provider throwing in refactoringsAtPoint', () => {
         waitsForPromise(async () => {
           refactoringsAtPointReturn = Promise.reject();
-          store.dispatch(Actions.open());
+          store.dispatch(Actions.open('generic'));
           await waitForPhase('get-refactorings');
           await waitForClose();
           await nextTick();
@@ -266,7 +269,7 @@ describe('refactorStore', () => {
             TEST_FILE_RENAME,
           ]);
           refactorReturn = Promise.reject();
-          store.dispatch(Actions.open());
+          store.dispatch(Actions.open('generic'));
           await waitForPhase('pick');
           store.dispatch(Actions.pickedRefactor(TEST_FILE_RENAME));
           await waitForPhase('rename');
@@ -290,7 +293,7 @@ describe('refactorStore', () => {
             TEST_FILE_RENAME,
           ]);
           refactorReturn = Promise.resolve(null);
-          store.dispatch(Actions.open());
+          store.dispatch(Actions.open('generic'));
           await waitForPhase('pick');
           store.dispatch(Actions.pickedRefactor(TEST_FILE_RENAME));
           await waitForPhase('rename');
@@ -324,7 +327,7 @@ describe('refactorStore', () => {
             edits: new Map([[TEST_FILE, edits]]),
           });
 
-          store.dispatch(Actions.open());
+          store.dispatch(Actions.open('generic'));
           await waitForPhase('pick');
           store.dispatch(Actions.pickedRefactor(TEST_FILE_RENAME));
           await waitForPhase('rename');

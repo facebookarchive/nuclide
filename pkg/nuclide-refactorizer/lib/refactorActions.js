@@ -22,11 +22,13 @@ import type {
   CloseAction,
   PickedRefactorAction,
   ExecuteAction,
+  RefactorUI,
 } from './types';
 
-export function open(): OpenAction {
+export function open(ui: RefactorUI): OpenAction {
   return {
     type: 'open',
+    ui,
   };
 }
 
