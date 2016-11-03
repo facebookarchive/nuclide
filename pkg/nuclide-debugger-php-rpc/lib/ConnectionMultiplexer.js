@@ -426,6 +426,7 @@ export class ConnectionMultiplexer {
       type: 'error',
       message: error,
     });
+    this._emitStatus(MULTIPLEXER_STATUS.END);
   }
 
   _emitStatus(status: string): void {
