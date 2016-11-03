@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import type {Directory} from '../../nuclide-remote-connection';
 import type {
   Provider,
   ProviderResult,
@@ -90,6 +91,7 @@ class SearchResultManager {
   _providersByDirectory: Map<atom$Directory, Set<Provider>>;
   _directories: Array<atom$Directory>;
   _resultCache: ResultCache;
+  _currentWorkingRoot: ?Directory;
   _debouncedUpdateDirectories: () => mixed;
   _emitter: Emitter;
   _subscriptions: CompositeDisposable;
@@ -113,6 +115,7 @@ class SearchResultManager {
     this._registeredProviders[GLOBAL_KEY] = new Map();
     this._providersByDirectory = new Map();
     this._directories = [];
+    this._currentWorkingRoot = null;
     this._resultCache = new ResultCache(() => {
       // on result changed
       this._emitter.emit(RESULTS_CHANGED);
@@ -227,6 +230,44 @@ class SearchResultManager {
 
   on(name: string, callback: (v: any) => mixed): IDisposable {
     return this._emitter.on(name, callback);
+  }
+
+  setCurrentWorkingRoot(newRoot: ?Directory): void {
+    this._currentWorkingRoot = newRoot;
+  }
+
+  _sortDirectories(): Array<atom$Directory> {
+    const currentWorkingRoot = this._currentWorkingRoot;
+    if (currentWorkingRoot == null) {
+      // Don't sort
+      return this._directories;
+    }
+    let topDir = null;
+    for (const dir of this._directories) {
+      // The current working root can be a subdirectory of an open project. For now, we'll only sort
+      // if the current working root is actually a project root. Otherwise we fall through so that
+      // no sorting takes place. It would be nice to the project root that contains the current
+      // working root on top. But Directory::contains includes code that synchronously queries the
+      // filesystem so I want to avoid it for now.
+      if (dir.getPath() === currentWorkingRoot.getPath()) {
+        // This *not* currentWorkingRoot. It's the directory from this._directories. That's because
+        // currentWorkingRoot uses the Directory type (which explicitly includes remote directory
+        // objects), whereas this module uses atom$Directory. That should probably be addressed.
+        topDir = dir;
+      }
+    }
+    if (topDir == null) {
+      return this._directories;
+    }
+    // Unfortunately we can't easily use Array::sort here because it is not guaranteed to be a
+    // stable sort. The comparison function would probably end up being more complicated than this.
+    const directories = [topDir];
+    for (const dir of this._directories) {
+      if (dir !== topDir) {
+        directories.push(dir);
+      }
+    }
+    return directories;
   }
 
   registerProvider(service: Provider): IDisposable {
@@ -387,7 +428,7 @@ class SearchResultManager {
   _getResultsForProvider(query: string, providerName: string): Object {
     const providerPaths = this._isGlobalProvider(providerName)
       ? [GLOBAL_KEY]
-      : this._directories.map(d => d.getPath());
+      : this._sortDirectories().map(d => d.getPath());
     const provider = this._getProviderByName(providerName);
     const lastCachedQuery = this._resultCache.getLastCachedQuery(providerName);
     return {

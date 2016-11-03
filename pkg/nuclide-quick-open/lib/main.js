@@ -11,6 +11,7 @@
 
 import type {Provider} from './types';
 import type {HomeFragments} from '../../nuclide-home/lib/types';
+import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 
 import invariant from 'assert';
 import {
@@ -333,4 +334,13 @@ export function deactivate(): void {
     listeners = null;
   }
   getSearchResultManager().dispose();
+}
+
+export function consumeCWD(cwd: CwdApi): IDisposable {
+  const disposable = cwd.observeCwd(dir => {
+    getSearchResultManager().setCurrentWorkingRoot(dir);
+  });
+  invariant(listeners != null);
+  listeners.add(disposable);
+  return disposable;
 }

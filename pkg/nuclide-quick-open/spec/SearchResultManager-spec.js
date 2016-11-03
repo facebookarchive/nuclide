@@ -11,9 +11,15 @@
 
 import type {Provider} from '../lib/types';
 
+import nuclideUri from '../../commons-node/nuclideUri';
+
 import SearchResultManager from '../lib/SearchResultManager';
 import {__test__} from '../lib/SearchResultManager';
 const {_getOmniSearchProviderSpec} = __test__;
+
+const PROJECT_ROOT1 = nuclideUri.join(__dirname, 'fixtures/root1');
+const PROJECT_ROOT2 = nuclideUri.join(__dirname, 'fixtures/root2');
+const PROJECT_ROOT3 = nuclideUri.join(__dirname, 'fixtures/root3');
 
 const FakeProvider = {
   getProviderType: () => 'GLOBAL',
@@ -150,6 +156,44 @@ describe('SearchResultManager', () => {
             },
           ));
         }));
+      });
+    });
+  });
+
+  describe('directory sorting', () => {
+    beforeEach(() => {
+      waitsForPromise(async () => {
+        // Something adds paths automatically. I've seen both the `fixtures` directory and the
+        // `spec` directory. Remove them here so they don't pollute the tests below.
+        atom.project.getPaths().forEach(path => atom.project.removePath(path));
+
+        atom.project.addPath(PROJECT_ROOT1);
+        atom.project.addPath(PROJECT_ROOT2);
+        atom.project.addPath(PROJECT_ROOT3);
+
+        // Call _updateDirectories immediately here because it is debounced by default, so it won't
+        // execute for a little while.
+        await searchResultManager._updateDirectories();
+      });
+    });
+
+    describe('with no current working root', () => {
+      it('should return the same order as Atom', () => {
+        const sortedPaths = searchResultManager._sortDirectories().map(dir => dir.getPath());
+        expect(sortedPaths).toEqual([PROJECT_ROOT1, PROJECT_ROOT2, PROJECT_ROOT3]);
+      });
+    });
+
+    describe('with a current working root', () => {
+      beforeEach(() => {
+        // mocking the directory -- if this becomes a problem it shouldn't be too hard to get the
+        // actual Directory object from Atom
+        const fakeDir: any = {getPath: () => PROJECT_ROOT3};
+        searchResultManager.setCurrentWorkingRoot(fakeDir);
+      });
+      it('should put that root first, without disturbing the relative order of other roots', () => {
+        const sortedPaths = searchResultManager._sortDirectories().map(dir => dir.getPath());
+        expect(sortedPaths).toEqual([PROJECT_ROOT3, PROJECT_ROOT1, PROJECT_ROOT2]);
       });
     });
   });

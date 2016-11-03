@@ -28,6 +28,11 @@
       "versions": {
         "0.0.0": "registerProvider"
       }
+    },
+    "nuclide-current-working-directory": {
+      "versions": {
+        "0.0.0": "consumeCWD"
+      }
     }
   },
   "providedServices": {
