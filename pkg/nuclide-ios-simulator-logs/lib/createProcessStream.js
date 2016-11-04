@@ -16,12 +16,15 @@ import os from 'os';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {Observable} from 'rxjs';
 
+const VALID_UDID = /^[a-f0-9-]+$/i;
+
 export function createProcessStream(): Observable<string> {
-  // Get a list of devices and their states from `xcrun simctl`.
-  const simctlOutput$ = observeProcess(spawnSimctlList)
+  const currentDeviceUdids = observeProcess(spawnCurrentDeviceMonitor)
     .map(event => {
       if (event.kind === 'error') {
         throw event.error;
+      } else if (event.kind === 'exit' && event.exitCode !== 0) {
+        throw new Error('Error getting active iOS Simulator');
       }
       return event;
     })
@@ -30,27 +33,13 @@ export function createProcessStream(): Observable<string> {
       invariant(typeof event.data === 'string');
       return event.data;
     })
-    .reduce((acc, next) => acc + next, '')
-    .map(rawJson => {
-      invariant(typeof rawJson === 'string');
-      return JSON.parse(rawJson);
-    });
+    .map(output => output.trim())
+    .filter(udid => VALID_UDID.test(udid))
+    .distinctUntilChanged();
 
-  const udid$ = simctlOutput$
-    .map(json => {
-      const {devices} = json;
-      const device = _findAvailableDevice(devices);
-      if (device == null) {
-        throw new Error('No active iOS simulator found');
-      }
-      return device.udid;
-    })
-    // Retry every second until we find an active device.
-    .retryWhen(error$ => error$.delay(1000));
-
-  return udid$
-    .first()
-    .flatMap(udid => (
+  // Whenever the current device changes, start tailing that device's logs.
+  return currentDeviceUdids
+    .switchMap(udid => (
       observeProcess(() => tailDeviceLogs(udid))
         .map(event => {
           if (event.kind === 'error') {
@@ -66,27 +55,17 @@ export function createProcessStream(): Observable<string> {
     ));
 }
 
-/**
- * Finds the first booted available device in a list of devices (formatted in the output style of
- * `simctl`.). Exported for testing only.
- */
-export function _findAvailableDevice(devices: Object): ?Object {
-  for (const key of Object.keys(devices)) {
-    for (const device of devices[key]) {
-      if (device.availability === '(available)' && device.state === 'Booted') {
-        return device;
-      }
-    }
-  }
-}
+// A small shell script for polling the current device UDID. This allows us to avoid spawning a new
+// process every interval.
+const WATCH_CURRENT_UDID_SCRIPT = `
+  set -e;
+  while true; do
+    defaults read com.apple.iphonesimulator CurrentDeviceUDID;
+    sleep 2;
+  done;
+`;
 
-function spawnSimctlList(): child_process$ChildProcess {
-  return safeSpawn('xcrun', [
-    'simctl',
-    'list',
-    '--json',
-  ]);
-}
+const spawnCurrentDeviceMonitor = () => safeSpawn('bash', ['-c', WATCH_CURRENT_UDID_SCRIPT]);
 
 function tailDeviceLogs(udid: string): child_process$ChildProcess {
   const logDir = nuclideUri.join(
