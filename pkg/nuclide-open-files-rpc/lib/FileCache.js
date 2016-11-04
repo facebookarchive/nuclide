@@ -144,6 +144,14 @@ export class FileCache {
     return buffer != null && buffer.changeCount === fileVersion.version ? buffer : null;
   }
 
+  getOpenDirectories(): Set<NuclideUri> {
+    return this._directoryEvents.getValue();
+  }
+
+  getOpenFiles(): Iterator<NuclideUri> {
+    return this._buffers.keys();
+  }
+
   observeFileEvents(): Observable<LocalFileEvent> {
     return Observable.from(
       Array.from(this._buffers.entries()).map(([filePath, buffer]) => {
