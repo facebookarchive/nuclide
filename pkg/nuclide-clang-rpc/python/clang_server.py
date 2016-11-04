@@ -343,6 +343,7 @@ class Server:
                 'cursor_usr': cursor.get_usr(),
                 'file': resolve_file(file),
                 'extent': range_dict_relative(cursor.extent),
+                'is_definition': cursor.is_definition(),
             })
             cursor = cursor.semantic_parent
 

@@ -174,6 +174,7 @@ describe('ClangServer', () => {
       expect(response[0].type).toBe('FUNCTION_DECL');
       // May not be consistent between clang versions.
       expect(response[0].cursor_usr).not.toBe(null);
+      expect(response[0].is_definition).toBe(true);
 
       response = await service.get_outline(
         FILE_CONTENTS,

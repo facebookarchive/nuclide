@@ -84,6 +84,7 @@ export type ClangCursor = {
   cursor_usr: string,
   file: ?NuclideUri,
   extent: atom$Range,
+  is_definition: boolean,
 };
 
 export type ClangOutlineTree = {
