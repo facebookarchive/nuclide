@@ -1,1 +1,1 @@
-[{"directory":"spec/fixtures","file":"references.cpp","arguments":["g++","-fPIC","-O3"],"command":"g++ -fPIC -O3 references.cpp"}]
+[{"directory":".","file":"references.cpp","arguments":["g++","-fPIC","-O3"],"command":"g++ -fPIC -O3 references.cpp"}]

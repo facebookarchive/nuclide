@@ -203,9 +203,15 @@ export default class ClangFlagsManager {
       const contents = await fsPromise.readFile(dbFile, 'utf8');
       const data = JSON.parse(contents);
       invariant(data instanceof Array);
+      const dbDir = nuclideUri.dirname(dbFile);
       await Promise.all(data.map(async entry => {
         const {command, file} = entry;
-        const directory = await fsPromise.realpath(entry.directory, this._realpathCache);
+        const directory = await fsPromise.realpath(
+          // Relative directories aren't part of the spec, but resolving them
+          // relative to the compile_commands.json location seems reasonable.
+          nuclideUri.resolve(dbDir, entry.directory),
+          this._realpathCache,
+        );
         const filename = nuclideUri.resolve(directory, file);
         if (await fsPromise.exists(filename)) {
           const realpath = await fsPromise.realpath(filename, this._realpathCache);
