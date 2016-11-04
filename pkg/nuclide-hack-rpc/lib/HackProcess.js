@@ -22,7 +22,7 @@ import nuclideUri from '../../commons-node/nuclideUri';
 import {asyncExecute, safeSpawn} from '../../commons-node/process';
 import {maybeToString} from '../../commons-node/string';
 import {RpcProcess} from '../../nuclide-rpc';
-import {getHackCommand, findHackConfigDir} from './hack-config';
+import {getHackCommand, findHackConfigDir, HACK_FILE_EXTENSIONS} from './hack-config';
 import {ServiceRegistry, loadServicesConfig} from '../../nuclide-rpc';
 import {localNuclideUriMarshalers} from '../../nuclide-marshalers-common';
 import invariant from 'assert';
@@ -56,15 +56,6 @@ function getServiceRegistry(): ServiceRegistry {
 function logMessage(direction: string, message: string): void {
   logger.logInfo(`Hack Connection message ${direction}: '${message}'`);
 }
-
-// From hack/src/utils/findUtils.ml
-const HACK_FILE_EXTENSIONS: Array<string> = [
-  '.php',  // normal php file
-  '.hh',   // Hack extension some open source code is starting to use
-  '.phpt', // our php template files
-  '.hhi',  // interface files only visible to the type checker
-  '.xhp',  // XHP extensions
-];
 
 class HackProcess extends RpcProcess {
   _hhconfigPath: string;
@@ -237,6 +228,13 @@ export async function getHackProcess(
     }
   });
   return await hackProcess;
+}
+
+// Ensures that the only attached HackProcesses are those for the given configPaths.
+// Closes all HackProcesses not in configPaths, and starts new HackProcesses for any
+// paths in configPaths.
+export function ensureProcesses(fileCache: FileCache, configPaths: Set<NuclideUri>): void {
+  processes.get(fileCache).setKeys(configPaths);
 }
 
 async function createHackProcess(

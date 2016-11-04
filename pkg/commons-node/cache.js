@@ -44,6 +44,21 @@ export class Cache<KeyType, ValueType> {
     }
   }
 
+  // After this method this._values.keys() === newKeys.
+  // deletes all keys not in newKeys
+  // gets all keys in newKeys
+  setKeys(newKeys: Set<KeyType>): void {
+    for (const existingKey of this._values.keys()) {
+      if (!newKeys.has(existingKey)) {
+        this.delete(existingKey);
+      }
+    }
+
+    for (const newKey of newKeys) {
+      this.get(newKey);
+    }
+  }
+
   values(): Iterator<ValueType> {
     return this._values.values();
   }

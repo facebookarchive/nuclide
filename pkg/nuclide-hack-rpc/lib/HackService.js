@@ -54,8 +54,13 @@ import {
   setHackCommand,
   getHackCommand,
   logger,
+  HACK_FILE_EXTENSIONS,
 } from './hack-config';
-import {getHackProcess, observeConnections} from './HackProcess';
+import {
+  getHackProcess,
+  observeConnections,
+  ensureProcesses,
+} from './HackProcess';
 import {convertDefinitions} from './Definitions';
 import {
   hackRangeToAtomRange,
@@ -70,9 +75,10 @@ import {
   convertDiagnostics,
 } from './Diagnostics';
 import {executeQuery} from './SymbolSearch';
-import {FileCache} from '../../nuclide-open-files-rpc';
+import {FileCache, ConfigObserver} from '../../nuclide-open-files-rpc';
 import {getEvaluationExpression} from './EvaluationExpression';
 import {ServerLanguageService} from '../../nuclide-language-service-rpc';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 
 export type SymbolTypeValue = 0 | 1 | 2 | 3 | 4;
 
@@ -106,10 +112,25 @@ export async function initialize(
 
 class HackLanguageServiceImpl extends ServerLanguageService {
   _useIdeConnection: boolean;
+  _resources: UniversalDisposable;
 
   constructor(useIdeConnection: boolean, fileNotifier: FileNotifier) {
     super(fileNotifier, new HackLanguageAnalyzer(useIdeConnection, fileNotifier));
     this._useIdeConnection = useIdeConnection;
+    this._resources = new UniversalDisposable();
+    if (useIdeConnection) {
+      invariant(fileNotifier instanceof FileCache);
+      const configObserver = new ConfigObserver(
+        fileNotifier,
+        HACK_FILE_EXTENSIONS,
+        findHackConfigDir,
+      );
+      this._resources.add(
+        configObserver,
+        configObserver.observeConfigs().subscribe(configs => {
+          ensureProcesses(fileNotifier, configs);
+        }));
+    }
   }
 
   async getAutocompleteSuggestions(
@@ -140,6 +161,11 @@ class HackLanguageServiceImpl extends ServerLanguageService {
     queryString: string,
   ): Promise<Array<HackSearchPosition>> {
     return executeQuery(rootDirectory, queryString);
+  }
+
+  dispose(): void {
+    this._resources.dispose();
+    super.dispose();
   }
 }
 

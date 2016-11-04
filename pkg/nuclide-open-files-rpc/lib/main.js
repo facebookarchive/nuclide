@@ -17,6 +17,7 @@ import {trackOperationTiming} from '../../nuclide-analytics';
 
 export {FileCache, FileVersionNotifier};
 export {FileEventKind} from './constants';
+export {ConfigObserver} from './ConfigObserver';
 
 import invariant from 'assert';
 
