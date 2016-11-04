@@ -52,7 +52,7 @@ export class MainRefactorComponent extends React.Component {
     const appState = this.props.appState;
     invariant(appState.type === 'open');
     return (
-      <div>
+      <div className="nuclide-refactorizer-header">
         <span>Refactor</span>
         <Button onClick={() => this.props.store.dispatch(Actions.close())}>Close</Button>
       </div>
