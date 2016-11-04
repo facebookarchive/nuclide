@@ -48,7 +48,7 @@ export class RenameComponent extends React.Component {
         onDidChange={text => this.setState({newName: text})}
         onConfirm={() => this._runRename()}
       />
-      <Button onClick={() => this._runRename()}>Rename</Button>
+      <Button onClick={() => this._runRename()}>Execute</Button>
     </div>);
   }
 
