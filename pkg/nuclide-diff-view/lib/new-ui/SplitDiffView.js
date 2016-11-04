@@ -402,13 +402,19 @@ export default class SplitDiffView {
         }
         try {
           const {newDiffEditor, oldDiffEditor} = diffEditors;
-          const {filePath, oldEditorState, newEditorState} = fileDiff;
+          const {filePath, lineMapping, oldEditorState, newEditorState} = fileDiff;
           oldDiffEditor.setFileContents(filePath, oldEditorState.text);
           oldDiffEditor.setHighlightedLines([], oldEditorState.highlightedLines.removed);
           oldDiffEditor.setOffsets(oldEditorState.offsets);
+          oldDiffEditor.setUiElements(oldEditorState.inlineElements);
+          oldDiffEditor.setOffsetUiElements(
+            oldEditorState.inlineOffsetElements, lineMapping.newToOld);
 
           newDiffEditor.setHighlightedLines(newEditorState.highlightedLines.added, []);
           newDiffEditor.setOffsets(newEditorState.offsets);
+          newDiffEditor.setUiElements(newEditorState.inlineElements);
+          newDiffEditor.setOffsetUiElements(
+            newEditorState.inlineOffsetElements, lineMapping.oldToNew);
         } catch (error) {
           notifyInternalError(error);
         }

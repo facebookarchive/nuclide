@@ -340,6 +340,16 @@ function reduceUiElements(
 ): FileDiffState {
   const {newEditorElements, oldEditorElements} = action.payload;
   const {newEditorState, oldEditorState} = state;
+
+  const navigationSections = computeNavigationSections(
+    newEditorState.highlightedLines.added,
+    oldEditorState.highlightedLines.removed,
+    newEditorElements.keys(),
+    oldEditorElements.keys(),
+    oldEditorState.offsets,
+    newEditorState.offsets,
+  );
+
   return {
     ...state,
     oldEditorState: {
@@ -352,6 +362,7 @@ function reduceUiElements(
       inlineElements: newEditorElements,
       inlineOffsetElements: oldEditorElements,
     },
+    navigationSections,
   };
 }
 
