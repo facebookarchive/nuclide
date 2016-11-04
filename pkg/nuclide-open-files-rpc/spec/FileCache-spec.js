@@ -38,6 +38,7 @@ describe('FileCache', () => {
   let cache: FileCache = (null: any);
   // Initialize with a placeholder
   let finishEvents: () => Promise<Array<Object>> = async () => [];
+  let finishDirEvents: () => Promise<Array<Array<string>>> = async () => [];
 
   async function getFileContentsByVersion(filePath, changeCount): Promise<?string> {
     const buffer = await cache.getBufferAtVersion(cache.createFileVersion(filePath, changeCount));
@@ -66,11 +67,19 @@ describe('FileCache', () => {
       done.complete();
       return events;
     };
+    const dirEvents = cache.observeDirectoryEvents().takeUntil(done)
+      .map(dirs => Array.from(dirs))
+      .toArray().toPromise();
+    finishDirEvents = () => {
+      done.next();
+      done.complete();
+      return dirEvents;
+    };
   });
 
   it('open', () => {
     waitsForPromise(async () => {
-      cache.onEvent({
+      cache.onFileEvent({
         kind: 'open',
         fileVersion: {
           notifier: cache,
@@ -95,7 +104,7 @@ describe('FileCache', () => {
   });
   it('open/close', () => {
     waitsForPromise(async () => {
-      cache.onEvent({
+      cache.onFileEvent({
         kind: 'open',
         fileVersion: {
           notifier: cache,
@@ -104,7 +113,7 @@ describe('FileCache', () => {
         },
         contents: 'contents1',
       });
-      cache.onEvent({
+      cache.onFileEvent({
         kind: 'close',
         fileVersion: {
           notifier: cache,
@@ -128,7 +137,7 @@ describe('FileCache', () => {
   });
   it('edit', () => {
     waitsForPromise(async () => {
-      cache.onEvent({
+      cache.onFileEvent({
         kind: 'open',
         fileVersion: {
           notifier: cache,
@@ -137,7 +146,7 @@ describe('FileCache', () => {
         },
         contents: 'contents1',
       });
-      cache.onEvent({
+      cache.onFileEvent({
         kind: 'edit',
         fileVersion: {
           notifier: cache,
@@ -180,7 +189,7 @@ describe('FileCache', () => {
   });
   it('sync closed file', () => {
     waitsForPromise(async () => {
-      cache.onEvent({
+      cache.onFileEvent({
         kind: 'sync',
         fileVersion: {
           notifier: cache,
@@ -205,7 +214,7 @@ describe('FileCache', () => {
   });
   it('sync opened file', () => {
     waitsForPromise(async () => {
-      cache.onEvent({
+      cache.onFileEvent({
         kind: 'open',
         fileVersion: {
           notifier: cache,
@@ -214,7 +223,7 @@ describe('FileCache', () => {
         },
         contents: 'blip',
       });
-      cache.onEvent({
+      cache.onFileEvent({
         kind: 'sync',
         fileVersion: {
           notifier: cache,
@@ -255,7 +264,7 @@ describe('FileCache', () => {
   });
   it('out of date sync', () => {
     waitsForPromise(async () => {
-      cache.onEvent({
+      cache.onFileEvent({
         kind: 'open',
         fileVersion: {
           notifier: cache,
@@ -264,7 +273,7 @@ describe('FileCache', () => {
         },
         contents: 'blip',
       });
-      cache.onEvent({
+      cache.onFileEvent({
         kind: 'sync',
         fileVersion: {
           notifier: cache,
@@ -292,7 +301,7 @@ describe('FileCache', () => {
   // Unexpected Operations Should Throw
   it('open existing file', () => {
     waitsForPromise(async () => {
-      cache.onEvent({
+      cache.onFileEvent({
         kind: 'open',
         fileVersion: {
           notifier: cache,
@@ -302,7 +311,7 @@ describe('FileCache', () => {
         contents: 'contents1',
       });
       expect(() => {
-        cache.onEvent({
+        cache.onFileEvent({
           kind: 'open',
           fileVersion: {
             notifier: cache,
@@ -323,7 +332,7 @@ describe('FileCache', () => {
   it('close non-existing file', () => {
     waitsForPromise(async () => {
       expect(() => {
-        cache.onEvent({
+        cache.onFileEvent({
           kind: 'close',
           fileVersion: {
             notifier: cache,
@@ -338,7 +347,7 @@ describe('FileCache', () => {
   it('edit closed file', () => {
     waitsForPromise(async () => {
       expect(() => {
-        cache.onEvent({
+        cache.onFileEvent({
           kind: 'edit',
           fileVersion: {
             notifier: cache,
@@ -362,7 +371,7 @@ describe('FileCache', () => {
   });
   it('edit with non-sequential version', () => {
     waitsForPromise(async () => {
-      cache.onEvent({
+      cache.onFileEvent({
         kind: 'open',
         fileVersion: {
           notifier: cache,
@@ -376,7 +385,7 @@ describe('FileCache', () => {
         contents: 'contents1',
       });
       expect(() => {
-        cache.onEvent({
+        cache.onFileEvent({
           kind: 'edit',
           fileVersion: {
             notifier: cache,
@@ -405,7 +414,7 @@ describe('FileCache', () => {
   });
   it('edit with incorrect oldText', () => {
     waitsForPromise(async () => {
-      cache.onEvent({
+      cache.onFileEvent({
         kind: 'open',
         fileVersion: {
           notifier: cache,
@@ -415,7 +424,7 @@ describe('FileCache', () => {
         contents: 'contents1',
       });
       expect(() => {
-        cache.onEvent({
+        cache.onFileEvent({
           kind: 'edit',
           fileVersion: {
             notifier: cache,
@@ -446,7 +455,7 @@ describe('FileCache', () => {
   // getBufferAtVersion
   it('getBufferAtVersion on current version', () => {
     waitsForPromise(async () => {
-      cache.onEvent({
+      cache.onFileEvent({
         kind: 'open',
         fileVersion: {
           notifier: cache,
@@ -461,7 +470,7 @@ describe('FileCache', () => {
   });
   it('getBufferAtVersion on out of date version', () => {
     waitsForPromise(async () => {
-      cache.onEvent({
+      cache.onFileEvent({
         kind: 'open',
         fileVersion: {
           notifier: cache,
@@ -476,7 +485,7 @@ describe('FileCache', () => {
   });
   it('getBufferAtVersion on next version', () => {
     waitsForPromise(async () => {
-      cache.onEvent({
+      cache.onFileEvent({
         kind: 'open',
         fileVersion: {
           notifier: cache,
@@ -486,7 +495,7 @@ describe('FileCache', () => {
         contents: 'contents1',
       });
       const result = getFileContentsByVersion('f1', 4);
-      cache.onEvent({
+      cache.onFileEvent({
         kind: 'edit',
         fileVersion: {
           notifier: cache,
@@ -511,7 +520,7 @@ describe('FileCache', () => {
   it('getBufferAtVersion before open', () => {
     waitsForPromise(async () => {
       const result = getFileContentsByVersion('f1', 3);
-      cache.onEvent({
+      cache.onFileEvent({
         kind: 'open',
         fileVersion: {
           notifier: cache,
@@ -527,7 +536,7 @@ describe('FileCache', () => {
   it('getBufferAtVersion on out of date version before open', () => {
     const result = getFileContentsByVersion('f1', 2);
     waitsForPromise(async () => {
-      cache.onEvent({
+      cache.onFileEvent({
         kind: 'open',
         fileVersion: {
           notifier: cache,
@@ -542,7 +551,7 @@ describe('FileCache', () => {
   it('getBufferAtVersion on sync open', () => {
     waitsForPromise(async () => {
       const result = getFileContentsByVersion('f1', 3);
-      cache.onEvent({
+      cache.onFileEvent({
         kind: 'sync',
         fileVersion: {
           notifier: cache,
@@ -558,7 +567,7 @@ describe('FileCache', () => {
   it('getBufferAtVersion on sync edit', () => {
     waitsForPromise(async () => {
       const result = getFileContentsByVersion('f1', 6);
-      cache.onEvent({
+      cache.onFileEvent({
         kind: 'open',
         fileVersion: {
           notifier: cache,
@@ -567,7 +576,7 @@ describe('FileCache', () => {
         },
         contents: 'contents1',
       });
-      cache.onEvent({
+      cache.onFileEvent({
         kind: 'sync',
         fileVersion: {
           notifier: cache,
@@ -583,7 +592,7 @@ describe('FileCache', () => {
   it('getBufferAtVersion on reopened file', () => {
     waitsForPromise(async () => {
       const result1 = getFileContentsByVersion('f1', 3);
-      cache.onEvent({
+      cache.onFileEvent({
         kind: 'open',
         fileVersion: {
           notifier: cache,
@@ -593,7 +602,7 @@ describe('FileCache', () => {
         contents: 'contents1',
       });
       expect(await result1).toBe('contents1');
-      cache.onEvent({
+      cache.onFileEvent({
         kind: 'close',
         fileVersion: {
           notifier: cache,
@@ -603,7 +612,7 @@ describe('FileCache', () => {
       });
 
       const result2 = getFileContentsByVersion('f1', 4);
-      cache.onEvent({
+      cache.onFileEvent({
         kind: 'open',
         fileVersion: {
           notifier: cache,
@@ -613,6 +622,17 @@ describe('FileCache', () => {
         contents: 'contents-reopened',
       });
       expect(await result2).toBe('contents-reopened');
+    });
+  });
+  it('Initial dirs', () => {
+    waitsForPromise(async () => {
+      expect((await finishDirEvents())).toEqual([[]]);
+    });
+  });
+  it('Single dir', () => {
+    waitsForPromise(async () => {
+      cache.onDirectoriesChanged(new Set(['abc']));
+      expect((await finishDirEvents())).toEqual([[], ['abc']]);
     });
   });
 

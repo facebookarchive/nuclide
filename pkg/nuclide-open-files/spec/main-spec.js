@@ -274,6 +274,57 @@ describe('nuclide-open-files', () => {
     });
   });
 
+  describe('observeDirectoryEvents', () => {
+
+    beforeEach(() => {
+      waitsForPromise(async () => {
+        reset();
+        notifier = await getFileCache();
+      });
+    });
+
+    let finishDirEvents: () => Promise<Array<Array<string>>> = async () => [];
+
+    let eventCount: number = (null: any);
+
+    beforeEach(() => {
+      waitsForPromise(async () => {
+        eventCount = 0;
+        const done = new Subject();
+        const dirEvents = (await getFileCache()).observeDirectoryEvents().takeUntil(done)
+          // apm test adds a directory with a name like:
+          // '/Applications/Atom.app/Contents/Resources/app.asar/spec'
+          .map(dirs => Array.from(dirs).filter(dir => !dir.includes('asar')))
+          .do(dirs => { eventCount++; })
+          .toArray().toPromise();
+        finishDirEvents = () => {
+          done.next();
+          done.complete();
+          return dirEvents;
+        };
+      });
+    });
+
+    it('Initially', () => {
+      waitsFor(() => eventCount >= 1);
+
+      waitsForPromise(async () => {
+        expect(await finishDirEvents()).toEqual([[]]);
+      });
+    });
+
+    it('open a dir', () => {
+      runs(() => {
+        atom.project.addPath('/local/path');
+      });
+      waitsFor(() => eventCount >= 2);
+
+      waitsForPromise(async () => {
+        expect(await finishDirEvents()).toEqual([[], ['/local/path']]);
+      });
+    });
+  });
+
   describe('getBufferAtVersion', () => {
 
     beforeEach(() => {

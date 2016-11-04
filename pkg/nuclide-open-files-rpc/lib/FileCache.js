@@ -21,7 +21,7 @@ import type {
 
 import TextBuffer from 'simple-text-buffer';
 import invariant from 'assert';
-import {Subject, Observable} from 'rxjs';
+import {BehaviorSubject, Subject, Observable} from 'rxjs';
 import {FileVersionNotifier} from './FileVersionNotifier';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 
@@ -30,22 +30,24 @@ import {FileEventKind} from './constants';
 export class FileCache {
   _buffers: Map<NuclideUri, simpleTextBuffer$TextBuffer>;
   _requests: FileVersionNotifier;
-  _events: Subject<LocalFileEvent>;
+  _fileEvents: Subject<LocalFileEvent>;
+  _directoryEvents: BehaviorSubject<Set<NuclideUri>>;
   _resources: UniversalDisposable;
 
   constructor() {
     this._buffers = new Map();
-    this._events = new Subject();
+    this._fileEvents = new Subject();
+    this._directoryEvents = new BehaviorSubject(new Set());
     this._requests = new FileVersionNotifier();
 
     this._resources = new UniversalDisposable();
     this._resources.add(this._requests);
-    this._resources.add(this._events.subscribe(event => { this._requests.onEvent(event); }));
+    this._resources.add(this._fileEvents.subscribe(event => { this._requests.onEvent(event); }));
   }
 
   // If any out of sync state is detected then an Error is thrown.
   // This will force the client to send a 'sync' event to get back on track.
-  onEvent(event: FileEvent): Promise<void> {
+  onFileEvent(event: FileEvent): Promise<void> {
     const filePath = event.fileVersion.filePath;
     const changeCount = event.fileVersion.version;
     const buffer = this._buffers.get(filePath);
@@ -66,7 +68,7 @@ export class FileCache {
         invariant(buffer.getTextInRange(event.oldRange) === event.oldText);
         buffer.setTextInRange(event.oldRange, event.newText);
         invariant(buffer.changeCount === changeCount);
-        this._events.next(event);
+        this._fileEvents.next(event);
         break;
       case FileEventKind.SYNC:
         if (buffer == null) {
@@ -79,6 +81,10 @@ export class FileCache {
         throw new Error(`Unexpected FileEvent.kind: ${event.kind}`);
     }
     return Promise.resolve(undefined);
+  }
+
+  async onDirectoriesChanged(openDirectories: Set<NuclideUri>): Promise<void> {
+    this._directoryEvents.next(openDirectories);
   }
 
   _syncEdit(
@@ -97,7 +103,7 @@ export class FileCache {
     buffer.setText(contents);
     const newRange = buffer.getRange();
     buffer.changeCount = changeCount;
-    this._events.next(createEditEvent(
+    this._fileEvents.next(createEditEvent(
       this.createFileVersion(filePath, changeCount),
       oldRange,
       oldText,
@@ -112,7 +118,7 @@ export class FileCache {
     const newBuffer = new TextBuffer(contents);
     newBuffer.changeCount = changeCount;
     this._buffers.set(filePath, newBuffer);
-    this._events.next(createOpenEvent(this.createFileVersion(filePath, changeCount), contents));
+    this._fileEvents.next(createOpenEvent(this.createFileVersion(filePath, changeCount), contents));
   }
 
   dispose(): void {
@@ -122,7 +128,8 @@ export class FileCache {
     }
     this._buffers.clear();
     this._resources.dispose();
-    this._events.complete();
+    this._fileEvents.complete();
+    this._directoryEvents.complete();
   }
 
   getBuffer(filePath: NuclideUri): ?simpleTextBuffer$TextBuffer {
@@ -144,11 +151,15 @@ export class FileCache {
         return createOpenEvent(
           this.createFileVersion(filePath, buffer.changeCount),
           buffer.getText());
-      })).concat(this._events);
+      })).concat(this._fileEvents);
+  }
+
+  observeDirectoryEvents(): Observable<Set<NuclideUri>> {
+    return this._directoryEvents;
   }
 
   _emitClose(filePath: NuclideUri, buffer: simpleTextBuffer$TextBuffer): void {
-    this._events.next(createCloseEvent(
+    this._fileEvents.next(createCloseEvent(
       this.createFileVersion(filePath, buffer.changeCount)));
   }
 

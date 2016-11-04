@@ -124,7 +124,7 @@ export class BufferSubscription {
   async sendEvent(event: LocalFileEvent) {
     invariant(event.kind !== FileEventKind.SYNC);
     try {
-      await event.fileVersion.notifier.onEvent(event);
+      await event.fileVersion.notifier.onFileEvent(event);
       this.updateServerVersion(event.fileVersion.version);
     } catch (e) {
       logger.error(`Error sending file event: ${eventToString(event)}`, e);
@@ -182,7 +182,7 @@ export class BufferSubscription {
             contents: this._buffer.getText(),
           };
           try {
-            await notifier.onEvent(syncEvent);
+            await notifier.onFileEvent(syncEvent);
             this.updateServerVersion(resyncVersion);
 
             logger.error(`Successful resync event: ${eventToString(syncEvent)}`);

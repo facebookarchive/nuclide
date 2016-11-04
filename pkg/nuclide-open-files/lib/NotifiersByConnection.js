@@ -21,6 +21,10 @@ import {
 import {OPEN_FILES_SERVICE} from '../../nuclide-open-files-rpc';
 import {getLogger} from '../../nuclide-logging';
 import {FileEventKind} from '../../nuclide-open-files-rpc';
+import nuclideUri from '../../commons-node/nuclideUri';
+import {observableFromSubscribeFunction} from '../../commons-node/event';
+import {Disposable} from 'atom';
+import {areSetsEqual} from '../../commons-node/collection';
 
 const logger = getLogger();
 
@@ -30,6 +34,14 @@ function getOpenFilesService(connection: ?ServerConnection): OpenFilesService {
   return getServiceByConnection(OPEN_FILES_SERVICE, connection);
 }
 
+function uriMatchesConnection(uri: NuclideUri, connection: ?ServerConnection): boolean {
+  if (connection == null) {
+    return nuclideUri.isLocal(uri);
+  } else {
+    return connection.getRemoteHostname() === nuclideUri.getHostnameOpt(uri);
+  }
+}
+
 // Keeps a FileNotifier around per ServerConnection.
 //
 // Also handles sending 'close' events to the FileNotifier so that
@@ -37,17 +49,41 @@ function getOpenFilesService(connection: ?ServerConnection): OpenFilesService {
 // the buffer being destroyed.
 export class NotifiersByConnection {
   _notifiers: ConnectionCache<FileNotifier>;
+  _subscriptions: ConnectionCache<IDisposable>;
   _getService: (connection: ?ServerConnection) => OpenFilesService;
 
   constructor(
     getService: (connection: ?ServerConnection) => OpenFilesService = getOpenFilesService,
   ) {
     this._getService = getService;
-    this._notifiers = new ConnectionCache(connection => this._getService(connection).initialize());
+    const filterByConnection =
+      (connection, dirs) => new Set(dirs.filter(dir => uriMatchesConnection(dir, connection)));
+    this._notifiers = new ConnectionCache(connection => {
+      const result = this._getService(connection).initialize();
+      result.then(notifier => {
+        const dirs = filterByConnection(connection, atom.project.getPaths());
+        notifier.onDirectoriesChanged(dirs);
+      });
+      return result;
+    });
+    this._subscriptions = new ConnectionCache(
+      connection => {
+        const subscription =
+          observableFromSubscribeFunction(cb => atom.project.onDidChangePaths(cb))
+            .map(dirs => filterByConnection(connection, dirs))
+            .distinctUntilChanged(areSetsEqual)
+            .subscribe(dirs => {
+              this._notifiers.get(connection).then(notifier => {
+                notifier.onDirectoriesChanged(dirs);
+              });
+            });
+        return Promise.resolve(new Disposable(() => subscription.unsubscribe()));
+      });
   }
 
   dispose() {
     this._notifiers.dispose();
+    this._subscriptions.dispose();
   }
 
   // Returns null for a buffer to a file on a closed remote connection
@@ -90,7 +126,7 @@ export class NotifiersByConnection {
             },
           };
 
-          await message.fileVersion.notifier.onEvent(message);
+          await message.fileVersion.notifier.onFileEvent(message);
         } catch (e) {
           logger.error(`Error sending file close event: ${filePath} ${version}`, e);
           setTimeout(sendMessage, RESYNC_TIMEOUT_MS);

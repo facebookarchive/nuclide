@@ -44,7 +44,8 @@ export type FileEvent = FileOpenEvent | FileCloseEvent | FileEditEvent | FileSyn
 export type LocalFileEvent = FileOpenEvent | FileCloseEvent | FileEditEvent;
 
 export interface FileNotifier {
-  onEvent(event: FileEvent): Promise<void>,
+  onFileEvent(event: FileEvent): Promise<void>,
+  onDirectoriesChanged(openDirectories: Set<NuclideUri>): Promise<void>,
   dispose(): void,
 }
 
