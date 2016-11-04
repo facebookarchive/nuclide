@@ -140,8 +140,11 @@ function restorePaneItemState(
       // Close the open files from the old short head.
       .map(textEditor => {
         const editorPane = atom.workspace.paneForItem(textEditor);
-        invariant(editorPane);
-        editorPane.destroyItem(textEditor);
+        if (editorPane != null) {
+          editorPane.destroyItem(textEditor);
+        } else {
+          textEditor.destroy();
+        }
       })
       .ignoreElements(),
     // Note: the reloading step can be omitted if the file watchers are proven to be robust.
