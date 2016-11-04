@@ -136,6 +136,7 @@ async function getDiffEditors(
 
   const navigationGutter = newEditor.gutterWithName(NAVIGATION_GUTTER_NAME) || newEditor.addGutter({
     name: NAVIGATION_GUTTER_NAME,
+    priority: -1500,
     visible: false,
   });
 
