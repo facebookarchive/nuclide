@@ -30,7 +30,7 @@
     }
   },
   "consumedServices": {
-    "nuclide.build-system-registry": {
+    "nuclide.task-runner": {
       "versions": {
         "0.0.0": "consumeTaskRunnerServiceApi"
       }

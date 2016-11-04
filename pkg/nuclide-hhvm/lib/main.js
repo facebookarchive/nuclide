@@ -28,8 +28,8 @@ class Activation {
     this._disposables.dispose();
   }
 
-  consumeBuildSystemRegistry(registry: TaskRunnerServiceApi): void {
-    this._disposables.add(registry.register(this._getBuildSystem()));
+  consumeTaskRunnerServiceApi(api: TaskRunnerServiceApi): void {
+    this._disposables.add(api.register(this._getBuildSystem()));
   }
 
   _getBuildSystem(): HhvmBuildSystem {

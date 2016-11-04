@@ -9,9 +9,9 @@
     "testRunner": "apm"
   },
   "consumedServices": {
-    "nuclide.build-system-registry": {
+    "nuclide.task-runner": {
       "versions": {
-        "0.0.0": "consumeBuildSystemRegistry"
+        "0.0.0": "consumeTaskRunnerServiceApi"
       }
     }
   },

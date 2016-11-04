@@ -56,8 +56,8 @@ class Activation {
     return provider;
   }
 
-  consumeBuildSystemRegistry(registry: TaskRunnerServiceApi): void {
-    this._disposables.add(registry.register(this._getBuildSystem()));
+  consumeTaskRunnerServiceApi(api: TaskRunnerServiceApi): void {
+    this._disposables.add(api.register(this._getBuildSystem()));
   }
 
   consumeOutputService(api: OutputService): void {

@@ -44,9 +44,9 @@ export function deactivate(): void {
   disposables = null;
 }
 
-export function consumeBuildSystemRegistry(registry: TaskRunnerServiceApi): void {
+export function consumeTaskRunnerServiceApi(api: TaskRunnerServiceApi): void {
   invariant(disposables != null);
-  disposables.add(registry.register(getBuildSystem()));
+  disposables.add(api.register(getBuildSystem()));
 }
 
 function getBuildSystem(): BuckBuildSystem {
