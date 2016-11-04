@@ -30,11 +30,11 @@ export class ConnectionCache<T: IDisposable> extends Cache<?ServerConnection, Pr
     super(factory, valuePromise => valuePromise.then(value => value.dispose()));
     this._subscriptions = new UniversalDisposable();
     this._subscriptions.add(
-      ServerConnection.onDidCloseServerConnection(async connection => {
-        const value = this.get(connection);
-        if (value != null) {
+      ServerConnection.onDidCloseServerConnection(connection => {
+        if (this.has(connection)) {
+          const value = this.get(connection);
           this.delete(connection);
-          (await value).dispose();
+          value.then(element => element.dispose());
         }
       }));
 
