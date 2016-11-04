@@ -21,6 +21,7 @@ import type {RefactorProvider} from '..';
 import invariant from 'assert';
 import {Observable} from 'rxjs';
 
+import {track} from '../../nuclide-analytics';
 import applyTextEdits from '../../nuclide-textedit';
 
 import * as Actions from './refactorActions';
@@ -69,6 +70,7 @@ export function getEpics(
 async function getRefactorings(
   providers: ProviderRegistry<RefactorProvider>,
 ): Promise<RefactorAction> {
+  track('nuclide-refactorizer:get-refactorings');
   const editor = atom.workspace.getActiveTextEditor();
   if (editor == null) {
     return Actions.gotRefactoringsError();
@@ -118,5 +120,6 @@ async function executeRefactoring(
   // TODO check the return value to see if the edits were applied correctly. if not, display an
   // appropriate message.
   applyTextEdits(path, ...fileEdits);
+  track('nuclide-refactorizer:success');
   return Actions.close();
 }
