@@ -430,8 +430,6 @@ class Server:
         for arg in self.flags:
             if arg == self.src:
                 # Including the input file as an argument causes index.parse() to fail.
-                # Surprisingly, including the path to the clang binary
-                # as the first argument does not cause any issues.
                 pass
             elif arg == '-c':
                 # No need to generate a .o file.
