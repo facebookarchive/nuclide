@@ -12,6 +12,7 @@
 import typeof * as BoundActionCreators from '../redux/Actions';
 
 import {React} from 'react-for-atom';
+import {track} from '../../../nuclide-analytics';
 
 type Props = {
   actionCreators: BoundActionCreators,
@@ -34,6 +35,7 @@ export default class DiffViewNavigatorGadget extends React.Component {
   }
 
   didChangeVisibility(visible: boolean) {
+    track('diff-view-navigator-toggle', {visible});
     this.props.actionCreators.updateDiffNavigatorVisibility(visible);
   }
 
