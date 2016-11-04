@@ -57,10 +57,11 @@ export class FileCache {
         this._open(filePath, event.contents, changeCount);
         break;
       case FileEventKind.CLOSE:
-        invariant(buffer != null);
-        this._buffers.delete(filePath);
-        this._emitClose(filePath, buffer);
-        buffer.destroy();
+        if (buffer != null) {
+          this._buffers.delete(filePath);
+          this._emitClose(filePath, buffer);
+          buffer.destroy();
+        }
         break;
       case FileEventKind.EDIT:
         invariant(buffer != null);

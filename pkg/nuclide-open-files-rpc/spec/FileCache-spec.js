@@ -340,7 +340,7 @@ describe('FileCache', () => {
             version: 3,
           },
         });
-      }).toThrow();
+      }).not.toThrow();
       expect(await finishEvents()).toEqual([]);
     });
   });
