@@ -10,9 +10,10 @@
  */
 
 import type {EditorElementsMap, LineMapper, OffsetMap} from './types';
+import type ReactMountRootElement from '../../nuclide-ui/ReactMountRootElement';
 
 import {Range} from 'atom';
-import {React} from 'react-for-atom';
+import {React, ReactDOM} from 'react-for-atom';
 import {concatIterators} from '../../commons-node/collection';
 import {renderReactRoot} from '../../commons-atom/renderReactRoot';
 import invariant from 'assert';
@@ -33,7 +34,6 @@ function renderLineOffset(
     />
   );
 }
-
 function renderInlineElement(
   inlineElement: React.Element<any>,
   scrollToRow: (buffeRow: number) => void,
@@ -98,9 +98,25 @@ function syncBlockDecorations<Value>(
     const properties = decoration.getProperties();
     const item: HTMLElement = properties.item;
 
-    if (value == null || shouldUpdate(value, properties) || item.style.width !== editorWidthPx) {
+    if (value == null) {
       marker.destroy();
       continue;
+    }
+
+    if (shouldUpdate(value, properties) || item.style.width !== editorWidthPx) {
+      // Refresh the  rendered element.
+      const reactRoot: ReactMountRootElement = (item: any);
+
+      ReactDOM.unmountComponentAtNode(reactRoot);
+      const {element, customProps} = getElementWithProps(value);
+      ReactDOM.render(element, reactRoot);
+
+      reactRoot.setReactElement(element);
+      reactRoot.style.width = editorWidthPx;
+      Object.assign(properties, customProps);
+
+      // Invalidate the block decoration measurements.
+      component.invalidateBlockDecorationDimensions(decoration);
     }
 
     // The item is already up to date.

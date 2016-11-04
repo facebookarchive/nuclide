@@ -892,6 +892,7 @@ declare class atom$TextEditorComponent {
     event: MouseEvent,
     linesClientRect?: {top: number, left: number, bottom: number, right: number},
   ): {top: number, left: number, bottom: number, right: number},
+  invalidateBlockDecorationDimensions(decoration: atom$Decoration): void,
 }
 
 /**
