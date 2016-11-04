@@ -169,6 +169,21 @@ export default class DiffViewEditor {
     this._uiElementsMarkers = [];
     this._offsetUiElementsMarkers = [];
     (this: any)._scrollToRow = this._scrollToRow.bind(this);
+
+    this._cleanupInvisibleDecorations();
+  }
+
+  // This is now to work around Atom 1.12.x not clearing removed block decorations.
+  // TODO(most): Remove this when upgrading to Atom 1.13.x.
+  _cleanupInvisibleDecorations(): void {
+    if (this._editor.isDestroyed()) {
+      return;
+    }
+    const removedElements = Array.from(
+      this._editorElement.getElementsByClassName('atom--invisible-block-decoration'));
+    for (const element of removedElements) {
+      ReactDOM.unmountComponentAtNode(element);
+    }
   }
 
   setUiElements(elements: EditorElementsMap): void {
@@ -297,6 +312,7 @@ export default class DiffViewEditor {
     this._offsetMarkers = [];
     this._uiElementsMarkers = [];
     this._offsetUiElementsMarkers = [];
+    this._cleanupInvisibleDecorations();
   }
 
   destroy(): void {
