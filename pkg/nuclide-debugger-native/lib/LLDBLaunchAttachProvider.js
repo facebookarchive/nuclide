@@ -48,8 +48,8 @@ export class LLDBLaunchAttachProvider extends DebuggerLaunchAttachProvider {
     }
   }
 
-  getActions(): Array<string> {
-    return Array.from(this._uiProviderMap.keys());
+  getActions(): Promise<Array<string>> {
+    return Promise.resolve(Array.from(this._uiProviderMap.keys()));
   }
 
   getComponent(

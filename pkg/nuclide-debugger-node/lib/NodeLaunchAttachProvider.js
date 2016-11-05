@@ -30,8 +30,8 @@ export class NodeLaunchAttachProvider extends DebuggerLaunchAttachProvider {
     this._store = new LaunchAttachStore(this._dispatcher);
   }
 
-  getActions(): Array<string> {
-    return ['Attach'];
+  getActions(): Promise<Array<string>> {
+    return Promise.resolve(['Attach']);
   }
 
   getComponent(action: string, parentEventEmitter: EventEmitter): ?React.Element<any> {

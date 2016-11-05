@@ -21,8 +21,8 @@ export class IwdpLaunchAttachProvider extends DebuggerLaunchAttachProvider {
     super(debuggingTypeName, targetUri);
   }
 
-  getActions(): Array<string> {
-    return ['Attach'];
+  getActions(): Promise<Array<string>> {
+    return Promise.resolve(['Attach']);
   }
 
   getComponent(action: string, parentEventEmitter: EventEmitter): ?React.Element<any> {

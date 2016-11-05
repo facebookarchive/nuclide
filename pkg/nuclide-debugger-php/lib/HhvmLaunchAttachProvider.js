@@ -22,8 +22,8 @@ export class HhvmLaunchAttachProvider extends DebuggerLaunchAttachProvider {
     super(debuggingTypeName, targetUri);
   }
 
-  getActions(): Array<string> {
-    return ['Attach', 'Launch'];
+  getActions(): Promise<Array<string>> {
+    return Promise.resolve(['Attach', 'Launch']);
   }
 
   getComponent(action: string, parentEventEmitter: EventEmitter): ?React.Element<any> {

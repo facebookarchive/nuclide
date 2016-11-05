@@ -171,12 +171,13 @@ export class DebuggerLaunchAttachUI extends React.Component<void, PropsType, Sta
 
   // Reset actions dropdown for input DebuggerLaunchAttachProvider.
   _resetProviderActions(provider: DebuggerLaunchAttachProvider): void {
-    const providerActions = provider.getActions();
-    this.setState({
-      providerActions,
-      providerActionsDropdownIndex: 0,
+    provider.getActions().then(providerActions => {
+      this.setState({
+        providerActions,
+        providerActionsDropdownIndex: 0,
+      });
+      this._resetElement(provider, providerActions[0]);
     });
-    this._resetElement(provider, providerActions[0]);
   }
 
   _handleProviderActionsDropdownChange(newIndex: number): void {

@@ -18,8 +18,8 @@ import type EmitterEvent from 'events';
 
 export class ReactNativeLaunchAttachProvider extends DebuggerLaunchAttachProvider {
 
-  getActions(): Array<string> {
-    return ['Attach'];
+  getActions(): Promise<Array<string>> {
+    return Promise.resolve(['Attach']);
   }
 
   getComponent(action: string, parentEventEmitter: EmitterEvent): ?React.Element<any> {

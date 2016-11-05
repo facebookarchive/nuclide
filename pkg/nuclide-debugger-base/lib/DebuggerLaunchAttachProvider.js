@@ -62,8 +62,8 @@ export default class DebuggerLaunchAttachProvider {
   /**
    * Returns a list of supported debugger actions.
    */
-  getActions(): Array<string> {
-    throw new Error('abstract method');
+  getActions(): Promise<Array<string>> {
+    return Promise.reject(new Error('abstract method'));
   }
 
   /**
