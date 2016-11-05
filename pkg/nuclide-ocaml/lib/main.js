@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import type {CodeFormatProvider} from '../../nuclide-code-format/lib/types';
 import type {LinterProvider} from '../../nuclide-diagnostics-common';
 import type {OutlineProvider} from '../../nuclide-outline-view/lib/main';
 import type {TypeHintProvider as TypeHintProviderType} from '../../nuclide-type-hint/lib/types';
@@ -21,6 +22,7 @@ import MerlinLinterProvider from './LinterProvider';
 import {getOutline} from './OutlineProvider';
 import TypeHintProvider from './TypeHintProvider';
 import {cases} from './DestructureHelpers';
+import {getEntireFormatting} from './CodeFormatHelpers';
 import {CompositeDisposable} from 'atom';
 
 export function getHyperclickProvider() {
@@ -51,7 +53,7 @@ export function provideOutlines(): OutlineProvider {
     grammarScopes: Array.from(GRAMMARS),
     priority: 1,
     name: 'OCaml',
-    getOutline,
+    getOutline: editor => getOutline(editor),
   };
 }
 
@@ -64,6 +66,16 @@ export function createTypeHintProvider(): TypeHintProviderType {
     providerName: 'nuclide-ocaml',
     selector: Array.from(GRAMMARS).join(', '),
     typeHint,
+  };
+}
+
+export function createCodeFormatProvider(): CodeFormatProvider {
+  return {
+    selector: Array.from(GRAMMARS).join(', '),
+    inclusionPriority: 1,
+    formatEntireFile: (editor, range) => getEntireFormatting(editor, range),
+    // TODO: (chenglou) see implementation file. Re-enable this.
+    // formatCode: getPartialFormatting,
   };
 }
 

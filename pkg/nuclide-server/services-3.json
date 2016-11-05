@@ -52,6 +52,10 @@
     "name": "MerlinService"
   },
   {
+    "implementation": "../nuclide-ocaml-rpc/lib/ReasonService.js",
+    "name": "ReasonService"
+  },
+  {
     "implementation": "../nuclide-debugger-native-rpc/lib/NativeDebuggerService.js",
     "name": "NativeDebuggerService"
   },

@@ -15,9 +15,19 @@
     },
     "config": {
       "pathToMerlin": {
-        "title": "Path to Merlin Executable",
+        "title": "Path to Merlin Executable. Note that Atom configs aren't used for remote Nuclide.",
         "type": "string",
         "default": "ocamlmerlin"
+      },
+      "pathToRefmt": {
+        "title": "Path to refmt, the Reason formatter.",
+        "type": "string",
+        "default": "refmt"
+      },
+      "refmtFlags": {
+        "title": "Additional flags to pass to refmt",
+        "type": "string",
+        "default": ""
       }
     },
     "packageType": "Atom",
@@ -41,6 +51,11 @@
     "linter": {
       "versions": {
         "1.0.0": "provideLinter"
+      }
+    },
+    "nuclide-code-format.provider": {
+      "versions": {
+        "0.0.0": "createCodeFormatProvider"
       }
     },
     "nuclide-outline-view": {
