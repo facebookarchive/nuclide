@@ -16,7 +16,7 @@ import {LaunchAttachStore} from '../LaunchAttachStore';
 
 import type EventEmitter from 'events';
 
-function _getComponent(
+export function getComponent(
   store: LaunchAttachStore,
   actions: LaunchAttachActions,
   parentEventEmitter: EventEmitter): React.Element<any> {
@@ -30,7 +30,8 @@ function _getComponent(
   );
 }
 
-module.exports = {
-  getComponent: _getComponent,
-  name: 'Attach',
-};
+export function isEnabled(): Promise<boolean> {
+  return Promise.resolve(true);
+}
+
+export const name = 'Attach';

@@ -20,4 +20,5 @@ export type DebuggerActionUIProvider = {
     actions: LaunchAttachActions,
     parentEventEmitter: EventEmitter) => React.Element<any>,
   name: string,
+  isEnabled: () => Promise<boolean>,
 };

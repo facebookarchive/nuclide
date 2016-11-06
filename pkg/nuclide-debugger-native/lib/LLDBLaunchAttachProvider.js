@@ -12,13 +12,14 @@
 import type {DebuggerActionUIProvider} from './actions/DebuggerActionUIProvider';
 import type EventEmitter from 'events';
 
+import {asyncFilter} from '../../commons-node/promise';
 import {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
 import {React} from 'react-for-atom';
 import {LaunchAttachStore} from './LaunchAttachStore';
 import LaunchAttachDispatcher from './LaunchAttachDispatcher';
 import {LaunchAttachActions} from './LaunchAttachActions';
-import LaunchActionUIProvider from './actions/LaunchActionUIProvider';
-import AttachActionUIProvider from './actions/AttachActionUIProvider';
+import * as LaunchActionUIProvider from './actions/LaunchActionUIProvider';
+import * as AttachActionUIProvider from './actions/AttachActionUIProvider';
 
 
 export class LLDBLaunchAttachProvider extends DebuggerLaunchAttachProvider {
@@ -48,8 +49,12 @@ export class LLDBLaunchAttachProvider extends DebuggerLaunchAttachProvider {
     }
   }
 
-  getActions(): Promise<Array<string>> {
-    return Promise.resolve(Array.from(this._uiProviderMap.keys()));
+  async getActions(): Promise<Array<string>> {
+    const providers = await asyncFilter(
+      Array.from(this._uiProviderMap.values()),
+      provider => provider.isEnabled(),
+    );
+    return providers.map(provider => provider.name);
   }
 
   getComponent(
