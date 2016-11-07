@@ -36,7 +36,8 @@ export class PickRefactorComponent extends React.Component {
 
     const elements = availableRefactorings
       .map((r, i) => <div key={i}>{this._renderRefactorOption(r)}</div>);
-    return <div>{elements}</div>;
+    // Class used to identify this element in integration tests
+    return <div className="nuclide-refactorizer-pick-refactor">{elements}</div>;
   }
 
   _pickRefactor(refactoring: AvailableRefactoring): void {
@@ -46,7 +47,14 @@ export class PickRefactorComponent extends React.Component {
   _renderRefactorOption(refactoring: AvailableRefactoring): React.Element<any> {
     switch (refactoring.kind) {
       case 'rename':
-        return <Button onClick={() => { this._pickRefactor(refactoring); }}>Rename</Button>;
+        return (
+          <Button
+              // Used to identify this element in integration tests
+              className="nuclide-refactorizer-pick-rename"
+              onClick={() => { this._pickRefactor(refactoring); }}>
+            Rename
+          </Button>
+        );
       default:
         throw new Error(`Unknown refactoring kind ${refactoring.kind}`);
     }

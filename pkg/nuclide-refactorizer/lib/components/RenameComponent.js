@@ -44,11 +44,17 @@ export class RenameComponent extends React.Component {
   render(): React.Element<any> {
     return (<div>
       <AtomInput
+        className="nuclide-refactorizer-rename-editor"
         initialValue={this.props.phase.symbolAtPoint.text}
         onDidChange={text => this.setState({newName: text})}
         onConfirm={() => this._runRename()}
       />
-      <Button onClick={() => this._runRename()}>Execute</Button>
+      <Button
+          // Used to identify this element in integration tests
+          className="nuclide-refactorizer-execute-button"
+          onClick={() => this._runRename()}>
+        Execute
+      </Button>
     </div>);
   }
 
