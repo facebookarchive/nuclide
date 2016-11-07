@@ -23,6 +23,7 @@
   "homepage": "https://nuclide.io/",
   "license": "SEE LICENSE IN LICENSE",
   "main": "./lib/pre-main.js",
+  "urlMain": "./lib/pre-url-main.js",
   "bin": {
     "nuclide-start-server": "./pkg/nuclide-server/nuclide-start-server"
   },

@@ -1597,6 +1597,12 @@ type AtomGlobal = {
     message: string,
   }): ?number,
 
+  open(params: {
+    pathsToOpen?: Array<string>,
+    newWindow?: boolean,
+    devMode?: boolean,
+    safeMode?: boolean,
+  }): void,
   reload(): void,
 
   // Undocumented Methods

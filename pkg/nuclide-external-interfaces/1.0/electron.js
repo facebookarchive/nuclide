@@ -515,7 +515,9 @@ declare class electron$Tray {}
  * https://github.com/electron/electron/blob/master/docs/api/web-contents.md
  */
 
-declare class electron$WebContents {}
+declare class electron$WebContents extends events$EventEmitter {
+  send(channel: string, ...args: Array<any>): void,
+}
 
 type electron$webContents = {
   getAllWebContents(): Array<electron$WebContents>,
