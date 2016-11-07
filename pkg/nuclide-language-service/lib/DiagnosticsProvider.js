@@ -20,6 +20,7 @@ import type {
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
 import type {LanguageService} from './LanguageService';
 
+import {Cache} from '../../commons-node/Cache';
 import {ConnectionCache} from '../../nuclide-remote-connection';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {track, trackOperationTiming} from '../../nuclide-analytics';
@@ -34,6 +35,7 @@ import {observableFromSubscribeFunction} from '../../commons-node/event';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {BusySignalProviderBase} from '../../nuclide-busy-signal';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
+const logger = getLogger();
 
 export type DiagnosticsConfig = FileDiagnosticsConfig | ObservableDiagnosticsConfig;
 
@@ -154,7 +156,7 @@ export class FileDiagnosticsProvider<T: LanguageService> {
       // the `HackWorker` model will diagnose with the updated editor contents.
       const diagnosisResult = await this._requestSerializer.run(this.findDiagnostics(textEditor));
       if (diagnosisResult.status === 'success' && diagnosisResult.result == null) {
-        getLogger().error('hh_client could not be reached');
+        logger.error('hh_client could not be reached');
       }
       if (diagnosisResult.status === 'outdated' || diagnosisResult.result == null) {
         return;
@@ -283,34 +285,43 @@ export class ObservableDiagnosticProvider<T: LanguageService> {
   invalidations: Observable<InvalidationMessage>;
   _analyticsEventName: string;
   _connectionToLanguageService: ConnectionCache<T>;
+  _connectionToFiles: Cache<?ServerConnection, Set<NuclideUri>>;
 
   constructor(
     analyticsEventName: string,
     connectionToLanguageService: ConnectionCache<T>,
   ) {
     this._analyticsEventName = analyticsEventName;
+    this._connectionToFiles = new Cache(connection => new Set());
     this._connectionToLanguageService = connectionToLanguageService;
-    this.updates = this._connectionToLanguageService.observeValues()
-      .switchMap(languageService => {
-        return Observable.fromPromise(languageService);
-      })
-      .mergeMap(language => language.observeDiagnostics().refCount())
-      .map(({filePath, messages}) => {
-        track(this._analyticsEventName);
-        return {
-          filePathToMessages: new Map([[filePath, messages]]),
-        };
+    this.updates = this._connectionToLanguageService.observeEntries()
+      .mergeMap(([connection, languageService]) => {
+        return Observable.fromPromise(languageService).catch(error => Observable.empty())
+          .mergeMap(language => {
+            return language.observeDiagnostics().refCount().catch(error => Observable.empty());
+          })
+          .map(({filePath, messages}) => {
+            track(this._analyticsEventName);
+            const fileCache = this._connectionToFiles.get(connection);
+            if (messages.length === 0) {
+              fileCache.delete(filePath);
+            } else {
+              fileCache.add(filePath);
+            }
+            return {
+              filePathToMessages: new Map([[filePath, messages]]),
+            };
+          });
       });
 
-    // TODO: Per file invalidations?
     this.invalidations = observableFromSubscribeFunction(
       ServerConnection.onDidCloseServerConnection)
         .map(connection => {
+          const files = Array.from(this._connectionToFiles.get(connection));
+          this._connectionToFiles.delete(connection);
           return {
             scope: 'file',
-            // TODO: Does this work for invalidating an entire ServerConnection?
-            // TODO: What about windows?
-            filePaths: [connection.getUriOfRemotePath('/')],
+            filePaths: files,
           };
         });
   }
