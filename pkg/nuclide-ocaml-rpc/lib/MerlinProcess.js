@@ -10,7 +10,9 @@
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {MerlinError, MerlinOutline, MerlinType, MerlinCases, MerlinPosition} from '..';
+import type {
+  MerlinError, MerlinOutline, MerlinType, MerlinCases, MerlinPosition, MerlinOccurrences,
+} from '..';
 
 import nuclideUri from '../../commons-node/nuclideUri';
 import readline from 'readline';
@@ -85,6 +87,9 @@ export type MerlinProcess = {
   outline(file: NuclideUri): Promise<Array<MerlinOutline>>,
 
   cases(file: NuclideUri, start: MerlinPosition, end: MerlinPosition): Promise<MerlinCases>,
+
+  // This is currently unused; waiting for the refactoring front-end to finish.
+  occurrences(file: NuclideUri, line: number, col: number): Promise<MerlinOccurrences>,
 
   /**
    * Run a command; parse the json output, return an object. This assumes
@@ -219,6 +224,15 @@ export class MerlinProcessV2_3_1 extends MerlinProcessBase {
       () => this.runSingleCommand(['case', 'analysis', 'from', start, 'to', end], path),
     );
   }
+
+  async occurrences(path: NuclideUri, line: number, col: number): Promise<MerlinOccurrences> {
+    return await this._promiseQueue.submit(
+      () => this.runSingleCommand(
+        ['occurrences', 'ident', 'at', {line: line + 1, col: col + 1}],
+        path,
+      ),
+    );
+  }
 }
 
 /**
@@ -340,6 +354,15 @@ export class MerlinProcessV2_5 extends MerlinProcessBase {
   async cases(path: NuclideUri, start: MerlinPosition, end: MerlinPosition): Promise<MerlinCases> {
     return await this._promiseQueue.submit(
       () => this.runSingleCommand(['case', 'analysis', 'from', start, 'to', end], path),
+    );
+  }
+
+  async occurrences(path: NuclideUri, line: number, col: number): Promise<MerlinOccurrences> {
+    return await this._promiseQueue.submit(
+      () => this.runSingleCommand(
+        ['occurrences', 'ident', 'at', {line: line + 1, col: col + 1}],
+        path,
+      ),
     );
   }
 }

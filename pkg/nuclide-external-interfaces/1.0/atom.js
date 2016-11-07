@@ -782,6 +782,13 @@ declare class atom$TextEditor extends atom$Model {
       preserveFolds?: boolean,
     },
   ): void,
+  setSelectedBufferRanges(
+    bufferRanges: Array<atom$Range>,
+    options?: {
+      reversed?: boolean,
+      preserveFolds?: boolean,
+    },
+  ): void,
 
   // Folds
   unfoldAll(): void,

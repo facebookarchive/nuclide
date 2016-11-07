@@ -51,6 +51,11 @@ export type MerlinCases = [
   string,
 ];
 
+export type MerlinOccurrences = Array<{
+  start: MerlinPosition,
+  end: MerlinPosition,
+}>;
+
 export async function pushDotMerlinPath(path: NuclideUri): Promise<?any> {
   const instance = await getInstance(path);
   return instance ? instance.pushDotMerlinPath(path) : null;
@@ -127,6 +132,15 @@ export async function cases(
     return instance.cases(path, result[0].start, result[0].end);
   }
   return null;
+}
+
+// This is currently unused; waiting for the refactoring front-end to finish.
+export async function occurrences(
+  path: NuclideUri,
+  position: atom$Point,
+): Promise<?MerlinOccurrences> {
+  const instance = await getInstance(path);
+  return instance ? instance.occurrences(path, position.row, position.column) : null;
 }
 
 /**
