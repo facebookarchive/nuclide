@@ -270,7 +270,7 @@ export class ConnectionMultiplexer {
         } else {
           this._emitRequestUpdate(connection);
         }
-        return;
+        break;
       case CONNECTION_STATUS.STOPPING:
         // TODO: May want to enable post-mortem features?
         if (this._isPaused()) {
@@ -352,7 +352,9 @@ export class ConnectionMultiplexer {
   }
 
   _shouldEnableConnection(connection: Connection): boolean {
-    return connection.getStatus() === CONNECTION_STATUS.BREAK &&
+    // If no connections are available and we async break, enable a connection in starting mode.
+    return this._isFirstStartingConnection(connection) || (
+      connection.getStatus() === CONNECTION_STATUS.BREAK &&
       // Only enable connection paused by async_break if user has explicitly issued an async_break.
       (connection.getStopReason() !== ASYNC_BREAK ||
       this._status === MULTIPLEXER_STATUS.USER_ASYNC_BREAK_SENT) &&
@@ -360,7 +362,15 @@ export class ConnectionMultiplexer {
       (!getSettings().singleThreadStepping || this._lastEnabledConnection === null
         || connection === this._lastEnabledConnection) &&
       // Respect the visibility of the dummy connection.
-      (!connection.isDummyConnection() || connection.isViewable());
+      (!connection.isDummyConnection() || connection.isViewable())
+    );
+  }
+
+  _isFirstStartingConnection(connection: Connection): boolean {
+    return this._status === MULTIPLEXER_STATUS.USER_ASYNC_BREAK_SENT
+      && connection.getStatus() === CONNECTION_STATUS.STARTING
+      && this._connections.size === 2 // Dummy connection + first connection.
+      && !connection.isDummyConnection();
   }
 
   _enableConnection(connection: Connection): void {
@@ -480,12 +490,17 @@ export class ConnectionMultiplexer {
     return this._breakpointStore.removeBreakpoint(breakpointId);
   }
 
-  getStackFrames(): Promise<{stack: Object}> {
-    if (this._enabledConnection) {
-      return this._enabledConnection.getStackFrames();
-    } else {
+  async getStackFrames(): Promise<{stack: Array<Object>}> {
+    if (this._enabledConnection == null) {
       // This occurs on startup with the loader breakpoint.
-      return Promise.resolve({stack: {}});
+      return {stack: []};
+    }
+    const frames = await this._enabledConnection.getStackFrames();
+    if (frames.stack == null) {
+      // This occurs when the enabled connection is in starting mode.
+      return {stack: []};
+    } else {
+      return frames;
     }
   }
 
