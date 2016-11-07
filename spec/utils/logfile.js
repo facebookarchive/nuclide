@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {getPathToLogFileForToday} from '../../pkg/nuclide-logging';
+import {getPathToLogFile} from '../../pkg/nuclide-logging';
 import {asyncExecute} from '../../pkg/commons-node/process';
 
 /**
@@ -18,7 +18,7 @@ import {asyncExecute} from '../../pkg/commons-node/process';
  * @returns A promise that resolves to the number of lines that match the search token.
  */
 export async function getNumberOfMatches(searchToken: string): Promise<number> {
-  const logFilePath = getPathToLogFileForToday();
+  const logFilePath = getPathToLogFile();
   const args = ['--count', searchToken, logFilePath];
   try {
     const result = (await asyncExecute('grep', args)).stdout.trim();
@@ -32,7 +32,7 @@ export async function getNumberOfMatches(searchToken: string): Promise<number> {
  * Modifies the logfile by removing lines matching the provided searchToken.
  */
 export async function deleteLogLinesMatching(searchToken: string): Promise<void> {
-  const logFilePath = getPathToLogFileForToday();
+  const logFilePath = getPathToLogFile();
   const args = ['-i', '', `/${searchToken}/d`, logFilePath];
   try {
     await asyncExecute('sed', args);

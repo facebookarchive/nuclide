@@ -17,7 +17,6 @@ import userInfo from '../../commons-node/userInfo';
 
 import os from 'os';
 import nuclideUri from '../../commons-node/nuclideUri';
-import {asString as log4jsFormatter} from 'log4js/lib/date_format';
 
 const LOG_DIRECTORY = nuclideUri.join(os.tmpdir(), `/nuclide-${userInfo().username}-logs`);
 export const LOG_FILE_PATH = nuclideUri.join(LOG_DIRECTORY, 'nuclide.log');
@@ -25,7 +24,8 @@ export const LOG_FILE_PATH = nuclideUri.join(LOG_DIRECTORY, 'nuclide.log');
 let logDirectoryInitialized = false;
 const scribeAppenderPath = nuclideUri.join(__dirname, '../fb/scribeAppender.js');
 
-const LOG4JS_DATE_FORMAT = '-yyyy-MM-dd';
+const MAX_LOG_SIZE = 1024 * 1024;
+const MAX_LOG_BACKUPS = 10;
 
 export async function getServerLogAppenderConfig(): Promise<?Object> {
   // Skip config scribe_cat logger if
@@ -47,26 +47,15 @@ export async function getServerLogAppenderConfig(): Promise<?Object> {
   };
 }
 
-/**
- * @return The absolute path to the log file for the specified date.
- */
-export function getPathToLogFileForDate(targetDate: Date): string {
-  return LOG_FILE_PATH + log4jsFormatter(LOG4JS_DATE_FORMAT, targetDate);
+export function getPathToLogFile(): string {
+  return LOG_FILE_PATH;
 }
 
-/**
- * @return The absolute path to the log file for today.
- */
-export function getPathToLogFileForToday(): string {
-  return getPathToLogFileForDate(new Date());
-}
-
-export const CurrentDateFileAppender: Object = {
-  type: 'dateFile',
-  alwaysIncludePattern: true,
-  absolute: true,
+export const FileAppender: Object = {
+  type: 'file',
   filename: LOG_FILE_PATH,
-  pattern: LOG4JS_DATE_FORMAT,
+  logSize: MAX_LOG_SIZE,
+  numBackups: MAX_LOG_BACKUPS,
   layout: {
     type: 'pattern',
     // Format log in following pattern:
@@ -91,7 +80,7 @@ export async function getDefaultConfig(): Promise<LoggingAppender> {
           type: nuclideUri.join(__dirname, './nuclideConsoleAppender'),
         },
       },
-      CurrentDateFileAppender,
+      FileAppender,
     ],
   };
 

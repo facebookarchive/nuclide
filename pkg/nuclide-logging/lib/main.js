@@ -21,8 +21,8 @@ import invariant from 'assert';
 import singleton from '../../commons-node/singleton';
 import {
   getDefaultConfig,
-  getPathToLogFileForToday,
-  CurrentDateFileAppender,
+  getPathToLogFile,
+  FileAppender,
   getServerLogAppenderConfig,
 } from './config';
 import log4js from 'log4js';
@@ -32,8 +32,8 @@ import type {Logger} from './types';
 
 export {
   getDefaultConfig,
-  getPathToLogFileForToday,
-  CurrentDateFileAppender,
+  getPathToLogFile,
+  FileAppender,
   getServerLogAppenderConfig,
 };
 

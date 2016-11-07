@@ -10,7 +10,7 @@
  */
 
 import {
-  CurrentDateFileAppender,
+  FileAppender,
   getServerLogAppenderConfig,
   updateConfig,
   initialUpdateConfig,
@@ -48,7 +48,7 @@ export async function setupLogging() {
 
   const config = {
     appenders: [
-      CurrentDateFileAppender,
+      FileAppender,
     ],
   };
 
