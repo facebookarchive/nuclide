@@ -29,20 +29,17 @@ const LOG4JS_DATE_FORMAT = '-yyyy-MM-dd';
 
 export async function getServerLogAppenderConfig(): Promise<?Object> {
   // Skip config scribe_cat logger if
-  // 1) running in test environment
-  // 2) or running in Atom client
-  // 3) or running in open sourced version of nuclide
-  // 4) or the scribe_cat command is missing.
-  if (isRunningInTest() ||
-      isRunningInClient() ||
-      !(await fsPromise.exists(scribeAppenderPath)) ||
+  // 1) or running in open sourced version of nuclide
+  // 2) or the scribe_cat command is missing.
+  if (!(await fsPromise.exists(scribeAppenderPath)) ||
       !(await ScribeProcess.isScribeCatOnPath())) {
     return null;
   }
 
   return {
     type: 'logLevelFilter',
-    level: 'DEBUG',
+    // Anything less than ERROR is ignored by the backend anyway.
+    level: 'ERROR',
     appender: {
       type: scribeAppenderPath,
       scribeCategory: 'errorlog_arsenal',
@@ -89,13 +86,6 @@ export async function getDefaultConfig(): Promise<LoggingAppender> {
     appenders: [
       {
         type: 'logLevelFilter',
-        level: 'WARN',
-        appender: {
-          type: nuclideUri.join(__dirname, './consoleAppender'),
-        },
-      },
-      {
-        type: 'logLevelFilter',
         level: 'ALL',
         appender: {
           type: nuclideUri.join(__dirname, './nuclideConsoleAppender'),
@@ -105,9 +95,22 @@ export async function getDefaultConfig(): Promise<LoggingAppender> {
     ],
   };
 
-  const serverLogAppenderConfig = await getServerLogAppenderConfig();
-  if (serverLogAppenderConfig) {
-    config.appenders.push(serverLogAppenderConfig);
+  // Do not print server logs to stdout/stderr.
+  // These are normally just piped to a .nohup.out file, so doing this just causes
+  // the log files to be duplicated.
+  if (isRunningInTest() || isRunningInClient()) {
+    config.appenders.push({
+      type: 'logLevelFilter',
+      level: 'WARN',
+      appender: {
+        type: nuclideUri.join(__dirname, './consoleAppender'),
+      },
+    });
+  } else {
+    const serverLogAppenderConfig = await getServerLogAppenderConfig();
+    if (serverLogAppenderConfig) {
+      config.appenders.push(serverLogAppenderConfig);
+    }
   }
 
   return config;
