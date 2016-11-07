@@ -1,5 +1,22 @@
 # Nuclide Changelog
 
+## v0.180.0
+
+### General
+
+* Put quick-open results for the current working directory at the top.
+* Diagnostics now appears in a tab, which users can manage.
+* The blue dot in the gutter should no longer be stuck.
+
+### Python
+
+* Respect the user `PYTHONPATH` when resolving modules.
+
+### PHP/Hack
+
+* End PHP debugger session when we have a fatal socket error.
+
+
 ## v0.179.0
 
 Hotfix to prevent debugger serialization performance regression Atom 1.12.
