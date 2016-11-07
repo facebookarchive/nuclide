@@ -22,7 +22,8 @@ def folly_fbstring_core_formatter(valobj, internal_dict):
     Please refer to https://github.com/facebook/folly/blob/master/folly/FBString.h
     for implementation details.
     '''
-    target_byte_order = get_lldb().target.GetByteOrder()
+    lldb = get_lldb()
+    target_byte_order = lldb.target.GetByteOrder()
     capacity_sbvalue = valobj.GetValueForExpressionPath('.ml_.capacity_')
     category_extract_mask = 0x3 if target_byte_order == lldb.eByteOrderBig else \
         (0xC0000000 if capacity_sbvalue.size == 4 else 0xC000000000000000)
