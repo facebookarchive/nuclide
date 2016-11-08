@@ -107,13 +107,18 @@ export function trackTiming(eventName_: ?string = null): any {
 
 const PERFORMANCE_EVENT = 'performance';
 
+// Obtain a monotonically increasing timestamp in milliseconds.
+const getTimestamp = global.performance ?
+  () => global.performance.now() :
+  () => process.uptime() * 1000;
+
 export class TimingTracker {
   _eventName: string;
   _startTime: number;
 
   constructor(eventName: string) {
     this._eventName = eventName;
-    this._startTime = this._getTimestamp();
+    this._startTime = getTimestamp();
   }
 
   onError(error: Error): void {
@@ -126,16 +131,11 @@ export class TimingTracker {
 
   _trackTimingEvent(exception: ?Error): void {
     track(PERFORMANCE_EVENT, {
-      duration: (this._getTimestamp() - this._startTime).toString(),
+      duration: Math.round(getTimestamp() - this._startTime).toString(),
       eventName: this._eventName,
       error: exception ? '1' : '0',
       exception: exception ? exception.toString() : '',
     });
-  }
-
-  // Obtain a monotonically increasing timestamp in milliseconds.
-  _getTimestamp(): number {
-    return Math.round(process.uptime() * 1000);
   }
 }
 
