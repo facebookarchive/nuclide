@@ -352,7 +352,7 @@ class Activation {
     };
   }
 
-  async _openNewSplitView(diffEntityOptions: DiffEntityOptions): Promise<atom$TextEditor> {
+  async _openNewSplitView(diffEntityOptions: DiffEntityOptions): Promise<?atom$TextEditor> {
     track('diff-view-open');
     track('diff-view-split-open');
 
@@ -366,13 +366,15 @@ class Activation {
     // Show the Diff Navigator section.
     dispatchDiffNavigatorToggle(true);
 
-    if (!diffEntityOptions.file) {
-      atom.notifications.addError('Split Diff View can only diff files');
-      throw new Error('Split Diff View can only diff files');
+    let textEditor;
+    if (diffEntityOptions.file) {
+      const filePath = diffEntityOptions.file;
+      // Activate the text editor of the file to be diffed.
+      textEditor = await atom.workspace.open(filePath, {searchAllPanes: true});
+    } else {
+      getLogger().warn('Split Diff View can only diff files');
     }
-    const filePath = diffEntityOptions.file;
-    // Activate the text editor of the file to be diffed.
-    const textEditor = await atom.workspace.open(filePath, {searchAllPanes: true});
+
     this._activateDiffPath(diffEntityOptions);
     return textEditor;
   }
