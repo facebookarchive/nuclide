@@ -39,6 +39,7 @@ export type LaunchTargetInfo = {
   workingDirectory: string,
   stdinFilePath?: string,
   basepath?: string,
+  lldbPythonPath: ?string,
 };
 
 export type DebuggerConfig = {
@@ -59,6 +60,7 @@ type LaunchInfoArgsType = {
   working_directory: string,
   stdin_filepath: string,
   basepath: string,
+  lldb_python_path: ?string,
 };
 
 type LaunchAttachArgsType = AttachInfoArgsType | LaunchInfoArgsType;
@@ -156,6 +158,7 @@ export class NativeDebuggerService {
       working_directory: launchInfo.workingDirectory,
       stdin_filepath: launchInfo.stdinFilePath ? launchInfo.stdinFilePath : '',
       basepath: launchInfo.basepath ? launchInfo.basepath : this._config.buckConfigRootFile,
+      lldb_python_path: launchInfo.lldbPythonPath,
     };
     return Observable.fromPromise(this._startDebugging(inferiorArguments)).publish();
   }

@@ -73,6 +73,7 @@ async function debugBuckTarget(
     environmentVariables: env,
     workingDirectory: '', // use the default
     basepath: remoteBuckRoot,
+    lldbPythonPath: null,
   });
 
   const debuggerService = await getDebuggerService();
