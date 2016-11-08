@@ -18,18 +18,28 @@ import {
 } from 'react-for-atom';
 import semver from 'semver';
 import {TextBuffer} from 'atom';
-import {enforceReadOnly} from '../commons-atom/text-editor';
+import {
+  enforceReadOnly,
+  enforceSoftWrap,
+} from '../commons-atom/text-editor';
+import UniversalDisposable from '../commons-node/UniversalDisposable';
 
 const doNothing = () => {};
 
-function setupTextEditor(props: Props): atom$TextEditor {
+type TextEditorSetup = {
+  disposables: IDisposable,
+  textEditor: atom$TextEditor,
+};
+
+function setupTextEditor(props: Props): TextEditorSetup {
   const textBuffer = props.textBuffer || new TextBuffer();
   if (props.path) {
     textBuffer.setPath(props.path);
   }
 
+  const disposables = new UniversalDisposable();
   if (props.onDidTextBufferChange != null) {
-    textBuffer.onDidChange(props.onDidTextBufferChange);
+    disposables.add(textBuffer.onDidChange(props.onDidTextBufferChange));
   }
 
   const textEditorParams = {
@@ -42,7 +52,7 @@ function setupTextEditor(props: Props): atom$TextEditor {
   if (props.grammar != null) {
     textEditor.setGrammar(props.grammar);
   }
-  textEditor.setSoftWrapped(props.softWrapped);
+  disposables.add(enforceSoftWrap(textEditor, props.softWrapped));
 
   if (props.placeholderText) {
     textEditor.setPlaceholderText(props.placeholderText);
@@ -57,7 +67,10 @@ function setupTextEditor(props: Props): atom$TextEditor {
     });
   }
 
-  return textEditor;
+  return {
+    disposables,
+    textEditor,
+  };
 }
 
 type DefaultProps = {
@@ -102,15 +115,21 @@ export class AtomTextEditor extends React.Component {
   };
 
   props: Props;
-  _onDidAttachDisposable: ?IDisposable;
   _textEditorElement: ?atom$TextEditorElement;
+  _editorDisposables: UniversalDisposable;
 
   componentDidMount(): void {
+    this._editorDisposables = new UniversalDisposable();
     this._updateTextEditor(setupTextEditor(this.props));
     this._onDidUpdateTextEditorElement(this.props);
   }
 
-  _updateTextEditor(textEditor: atom$TextEditor): void {
+  _updateTextEditor(setup: TextEditorSetup): void {
+    this._editorDisposables.dispose();
+    const {textEditor, disposables} = setup;
+
+    this._editorDisposables = new UniversalDisposable(disposables);
+
     const container = ReactDOM.findDOMNode(this);
     const textEditorElement: atom$TextEditorElement = this._textEditorElement =
       (document.createElement('atom-text-editor'): any);
@@ -133,8 +152,8 @@ export class AtomTextEditor extends React.Component {
     if (semver.lt(atom.getVersion(), '1.9.0')) {
       return;
     }
-    this._ensureDidAttachDisposableDisposed();
-    this._onDidAttachDisposable = textEditorElement.onDidAttach(() => {
+
+    this._editorDisposables.add(textEditorElement.onDidAttach(() => {
       const correctlySizedElement = textEditorElement.querySelector(
         '* /deep/ .lines > :first-child > :first-child',
       );
@@ -143,7 +162,7 @@ export class AtomTextEditor extends React.Component {
       }
       const {width} = correctlySizedElement.style;
       container.style.width = width;
-    });
+    }));
   }
 
   componentWillReceiveProps(nextProps: Object): void {
@@ -156,11 +175,12 @@ export class AtomTextEditor extends React.Component {
         ? nextProps.textBuffer
         : nextProps.textBuffer.getText();
       if (nextProps._alwaysUpdate || nextTextContents !== previousTextContents) {
-        const textEditor = setupTextEditor(nextProps);
+        const textEditorSetup = setupTextEditor(nextProps);
+
         if (nextProps.syncTextContents) {
-          textEditor.setText(previousTextContents);
+          textEditorSetup.textEditor.setText(previousTextContents);
         }
-        this._updateTextEditor(textEditor);
+        this._updateTextEditor(textEditorSetup);
         this._onDidUpdateTextEditorElement(nextProps);
       }
     }
@@ -225,13 +245,7 @@ export class AtomTextEditor extends React.Component {
   }
 
   componentWillUnmount(): void {
-    this._ensureDidAttachDisposableDisposed();
-  }
-
-  _ensureDidAttachDisposableDisposed(): void {
-    if (this._onDidAttachDisposable != null) {
-      this._onDidAttachDisposable.dispose();
-    }
+    this._editorDisposables.dispose();
   }
 
 }
