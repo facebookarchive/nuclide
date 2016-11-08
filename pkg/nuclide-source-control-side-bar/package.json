@@ -8,8 +8,8 @@
   "nuclide": {
     "configMetadata": {
       "pathComponents": [
-        "Language",
-        "Flow"
+        "Source Control",
+        "Sidebar"
       ]
     },
     "config": {
