@@ -153,7 +153,7 @@ describe('LinterAdapter', () => {
     // If we call it once with a larger value, the first promise will resolve
     // first, even though the timeout is larger
     window.advanceClock(30);
-    // window.advanceClock(30);
+    window.advanceClock(30);
     waitsFor(() => {
       return numMessages === 1 && lastMessage && lastMessage.filePathToMessages.has('baz');
     }, 'There should be only the latest message', 100);
