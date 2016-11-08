@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,7 +9,11 @@
  * the root directory of this source tree.
  */
 
-import invariant from 'assert';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = registerGrammar;
+
 
 /**
  * Utility to make it easier to register a file extension with a grammar,
@@ -26,15 +30,16 @@ import invariant from 'assert';
  *   the grammar is available.
  * @return whether the extension was registered or not.
  */
-export default function registerGrammar(
-  scopeName: string,
-  extension: string,
-): boolean {
+function registerGrammar(scopeName, extension) {
   let customFileTypes = atom.config.get('core.customFileTypes');
   if (!customFileTypes || typeof customFileTypes !== 'object') {
     customFileTypes = {};
   }
-  invariant(customFileTypes);
+
+  if (!customFileTypes) {
+    throw new Error('Invariant violation: "customFileTypes"');
+  }
+
   let customFileType = customFileTypes[scopeName];
   if (!Array.isArray(customFileType)) {
     customFileType = [];
@@ -45,4 +50,4 @@ export default function registerGrammar(
     return true;
   }
   return false;
-}
+}module.exports = exports['default'];

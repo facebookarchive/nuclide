@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,50 +9,64 @@
  * the root directory of this source tree.
  */
 
-import {observeProcess, safeSpawn} from '../../commons-node/process';
-import featureConfig from '../../commons-atom/featureConfig';
-import invariant from 'assert';
-import os from 'os';
-import nuclideUri from '../../commons-node/nuclideUri';
-import {Observable} from 'rxjs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.createProcessStream = createProcessStream;
 
-const VALID_UDID = /^[a-f0-9-]+$/i;
+var _process;
 
-export function createProcessStream(): Observable<string> {
-  const currentDeviceUdids = observeProcess(spawnCurrentDeviceMonitor)
-    .map(event => {
-      if (event.kind === 'error') {
-        throw event.error;
-      } else if (event.kind === 'exit' && event.exitCode !== 0) {
-        throw new Error('Error getting active iOS Simulator');
-      }
-      return event;
-    })
-    .filter(event => event.kind === 'stdout')
-    .map(event => {
-      invariant(typeof event.data === 'string');
-      return event.data;
-    })
-    .map(output => output.trim())
-    .filter(udid => VALID_UDID.test(udid))
-    .distinctUntilChanged();
+function _load_process() {
+  return _process = require('../../commons-node/process');
+}
+
+var _featureConfig;
+
+function _load_featureConfig() {
+  return _featureConfig = _interopRequireDefault(require('../../commons-atom/featureConfig'));
+}
+
+var _os = _interopRequireDefault(require('os'));
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const VALID_UDID = /^[a-f0-9-]+$/i;function createProcessStream() {
+  const currentDeviceUdids = (0, (_process || _load_process()).observeProcess)(spawnCurrentDeviceMonitor).map(event => {
+    if (event.kind === 'error') {
+      throw event.error;
+    } else if (event.kind === 'exit' && event.exitCode !== 0) {
+      throw new Error('Error getting active iOS Simulator');
+    }
+    return event;
+  }).filter(event => event.kind === 'stdout').map(event => {
+    if (!(typeof event.data === 'string')) {
+      throw new Error('Invariant violation: "typeof event.data === \'string\'"');
+    }
+
+    return event.data;
+  }).map(output => output.trim()).filter(udid => VALID_UDID.test(udid)).distinctUntilChanged();
 
   // Whenever the current device changes, start tailing that device's logs.
-  return currentDeviceUdids
-    .switchMap(udid => (
-      observeProcess(() => tailDeviceLogs(udid))
-        .map(event => {
-          if (event.kind === 'error') {
-            throw event.error;
-          }
-          return event;
-        })
-        .filter(event => event.kind === 'stdout')
-        .map(event => {
-          invariant(typeof event.data === 'string');
-          return event.data;
-        })
-    ));
+  return currentDeviceUdids.switchMap(udid => (0, (_process || _load_process()).observeProcess)(() => tailDeviceLogs(udid)).map(event => {
+    if (event.kind === 'error') {
+      throw event.error;
+    }
+    return event;
+  }).filter(event => event.kind === 'stdout').map(event => {
+    if (!(typeof event.data === 'string')) {
+      throw new Error('Invariant violation: "typeof event.data === \'string\'"');
+    }
+
+    return event.data;
+  }));
 }
 
 // A small shell script for polling the current device UDID. This allows us to avoid spawning a new
@@ -65,23 +79,9 @@ const WATCH_CURRENT_UDID_SCRIPT = `
   done;
 `;
 
-const spawnCurrentDeviceMonitor = () => safeSpawn('bash', ['-c', WATCH_CURRENT_UDID_SCRIPT]);
+const spawnCurrentDeviceMonitor = () => (0, (_process || _load_process()).safeSpawn)('bash', ['-c', WATCH_CURRENT_UDID_SCRIPT]);
 
-function tailDeviceLogs(udid: string): child_process$ChildProcess {
-  const logDir = nuclideUri.join(
-    os.homedir(),
-    'Library',
-    'Logs',
-    'CoreSimulator',
-    udid,
-    'asl',
-  );
-  return safeSpawn(
-    ((featureConfig.get('nuclide-ios-simulator-logs.pathToSyslog'): any): string),
-    [
-      '-w',
-      '-F', 'xml',
-      '-d', logDir,
-    ],
-  );
+function tailDeviceLogs(udid) {
+  const logDir = (_nuclideUri || _load_nuclideUri()).default.join(_os.default.homedir(), 'Library', 'Logs', 'CoreSimulator', udid, 'asl');
+  return (0, (_process || _load_process()).safeSpawn)((_featureConfig || _load_featureConfig()).default.get('nuclide-ios-simulator-logs.pathToSyslog'), ['-w', '-F', 'xml', '-d', logDir]);
 }

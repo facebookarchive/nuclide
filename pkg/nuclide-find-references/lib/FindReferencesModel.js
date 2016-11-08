@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,62 +9,70 @@
  * the root directory of this source tree.
  */
 
-import type {
-  FileReferences,
-  ReferenceGroup,
-} from './types';
-import type {
-  Reference,
-} from './rpc-types';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-type FindReferencesOptions = {
-  // Lines of context to show around each preview block. Defaults to 1.
-  previewContext?: number,
-};
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
-import {arrayCompact} from '../../commons-node/collection';
-import {getLogger} from '../../nuclide-logging';
-import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
-import nuclideUri from '../../commons-node/nuclideUri';
+let readFileContents = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (uri) {
+    const localPath = (_nuclideUri || _load_nuclideUri()).default.getPath(uri);
+    let contents;
+    try {
+      contents = (yield (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getFileSystemServiceByNuclideUri)(uri).readFile(localPath)).toString('utf8');
+    } catch (e) {
+      (0, (_nuclideLogging || _load_nuclideLogging()).getLogger)().error(`find-references: could not load file ${ uri }`, e);
+      return null;
+    }
+    return contents;
+  });
+
+  return function readFileContents(_x) {
+    return _ref.apply(this, arguments);
+  };
+})();
+
+var _collection;
+
+function _load_collection() {
+  return _collection = require('../../commons-node/collection');
+}
+
+var _nuclideLogging;
+
+function _load_nuclideLogging() {
+  return _nuclideLogging = require('../../nuclide-logging');
+}
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const FRAGMENT_GRAMMARS = {
   'text.html.hack': 'source.hackfragment',
-  'text.html.php': 'source.hackfragment',
+  'text.html.php': 'source.hackfragment'
 };
 
-function compareReference(x: Reference, y: Reference): number {
+function compareReference(x, y) {
   return x.range.compare(y.range);
 }
 
-async function readFileContents(uri: string): Promise<?string> {
-  const localPath = nuclideUri.getPath(uri);
-  let contents;
-  try {
-    contents = (await getFileSystemServiceByNuclideUri(uri).readFile(localPath)).toString('utf8');
-  } catch (e) {
-    getLogger().error(`find-references: could not load file ${uri}`, e);
-    return null;
-  }
-  return contents;
-}
-
-function addReferenceGroup(
-  groups: Array<ReferenceGroup>,
-  references: Array<Reference>,
-  startLine: number,
-  endLine: number,
-) {
+function addReferenceGroup(groups, references, startLine, endLine) {
   if (references.length) {
-    groups.push({references, startLine, endLine});
+    groups.push({ references: references, startLine: startLine, endLine: endLine });
   }
 }
 
-class FindReferencesModel {
-  _basePath: string;
-  _symbolName: string;
-  _references: Array<[string, Array<ReferenceGroup>]>;
-  _referenceCount: number;
-  _options: FindReferencesOptions;
+let FindReferencesModel = class FindReferencesModel {
 
   /**
    * @param basePath    Base path of the project. Used to display paths in a friendly way.
@@ -72,12 +80,7 @@ class FindReferencesModel {
    * @param references  A list of references to `symbolName`.
    * @param options     See `FindReferencesOptions`.
    */
-  constructor(
-    basePath: string,
-    symbolName: string,
-    references: Array<Reference>,
-    options?: FindReferencesOptions,
-  ) {
+  constructor(basePath, symbolName, references, options) {
     this._basePath = basePath;
     this._symbolName = symbolName;
     this._referenceCount = references.length;
@@ -92,39 +95,36 @@ class FindReferencesModel {
    * according to the given offset and limit.
    * References in each file are grouped together if they're adjacent.
    */
-  async getFileReferences(
-    offset: number,
-    limit: number,
-  ): Promise<Array<FileReferences>> {
-    const fileReferences: Array<?FileReferences> = await Promise.all(
-      this._references.slice(offset, offset + limit).map(
-        this._makeFileReferences.bind(this),
-      ),
-    );
-    return arrayCompact(fileReferences);
+  getFileReferences(offset, limit) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const fileReferences = yield Promise.all(_this._references.slice(offset, offset + limit).map(_this._makeFileReferences.bind(_this)));
+      return (0, (_collection || _load_collection()).arrayCompact)(fileReferences);
+    })();
   }
 
-  getBasePath(): string {
+  getBasePath() {
     return this._basePath;
   }
 
-  getSymbolName(): string {
+  getSymbolName() {
     return this._symbolName;
   }
 
-  getReferenceCount(): number {
+  getReferenceCount() {
     return this._referenceCount;
   }
 
-  getFileCount(): number {
+  getFileCount() {
     return this._references.length;
   }
 
-  getPreviewContext(): number {
+  getPreviewContext() {
     return this._options.previewContext || 1;
   }
 
-  _groupReferencesByFile(references: Array<Reference>): void {
+  _groupReferencesByFile(references) {
     // 1. Group references by file.
     const refsByFile = new Map();
     for (const reference of references) {
@@ -138,7 +138,11 @@ class FindReferencesModel {
     // 2. Group references within each file.
     this._references = [];
     for (const entry of refsByFile) {
-      const [fileUri, entryReferences] = entry;
+      var _entry = _slicedToArray(entry, 2);
+
+      const fileUri = _entry[0],
+            entryReferences = _entry[1];
+
       entryReferences.sort(compareReference);
       // Group references that are <= 1 line apart together.
       const groups = [];
@@ -173,47 +177,52 @@ class FindReferencesModel {
   /**
    * Fetch file previews and expand line ranges with context.
    */
-  async _makeFileReferences(
-    fileReferences: [string, Array<ReferenceGroup>],
-  ): Promise<?FileReferences> {
-    const uri = fileReferences[0];
-    let refGroups = fileReferences[1];
-    const fileContents = await readFileContents(uri);
-    if (!fileContents) {
-      return null;
-    }
-    const fileLines = fileContents.split('\n');
-    const previewText = [];
-    refGroups = refGroups.map(group => {
-      const {references} = group;
-      let {startLine, endLine} = group;
-      // Expand start/end lines with context.
-      startLine = Math.max(startLine - this.getPreviewContext(), 0);
-      endLine = Math.min(endLine + this.getPreviewContext(), fileLines.length - 1);
-      // However, don't include blank lines.
-      while (startLine < endLine && fileLines[startLine] === '') {
-        startLine++;
-      }
-      while (startLine < endLine && fileLines[endLine] === '') {
-        endLine--;
-      }
+  _makeFileReferences(fileReferences) {
+    var _this2 = this;
 
-      previewText.push(fileLines.slice(startLine, endLine + 1).join('\n'));
-      return {references, startLine, endLine};
-    });
-    let grammar = atom.grammars.selectGrammar(uri, fileContents);
-    const fragmentGrammar = FRAGMENT_GRAMMARS[grammar.scopeName];
-    if (fragmentGrammar) {
-      grammar = atom.grammars.grammarForScopeName(fragmentGrammar) || grammar;
-    }
-    return {
-      uri,
-      grammar,
-      previewText,
-      refGroups,
-    };
+    return (0, _asyncToGenerator.default)(function* () {
+      const uri = fileReferences[0];
+      let refGroups = fileReferences[1];
+      const fileContents = yield readFileContents(uri);
+      if (!fileContents) {
+        return null;
+      }
+      const fileLines = fileContents.split('\n');
+      const previewText = [];
+      refGroups = refGroups.map(function (group) {
+        const references = group.references;
+        let startLine = group.startLine,
+            endLine = group.endLine;
+        // Expand start/end lines with context.
+
+        startLine = Math.max(startLine - _this2.getPreviewContext(), 0);
+        endLine = Math.min(endLine + _this2.getPreviewContext(), fileLines.length - 1);
+        // However, don't include blank lines.
+        while (startLine < endLine && fileLines[startLine] === '') {
+          startLine++;
+        }
+        while (startLine < endLine && fileLines[endLine] === '') {
+          endLine--;
+        }
+
+        previewText.push(fileLines.slice(startLine, endLine + 1).join('\n'));
+        return { references: references, startLine: startLine, endLine: endLine };
+      });
+      let grammar = atom.grammars.selectGrammar(uri, fileContents);
+      const fragmentGrammar = FRAGMENT_GRAMMARS[grammar.scopeName];
+      if (fragmentGrammar) {
+        grammar = atom.grammars.grammarForScopeName(fragmentGrammar) || grammar;
+      }
+      return {
+        uri: uri,
+        grammar: grammar,
+        previewText: previewText,
+        refGroups: refGroups
+      };
+    })();
   }
 
-}
+};
+
 
 module.exports = FindReferencesModel;

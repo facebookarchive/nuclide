@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,24 +9,38 @@
  * the root directory of this source tree.
  */
 
-import type {OutputService} from '../../nuclide-console/lib/types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.consumeOutputService = consumeOutputService;
 
-import invariant from 'assert';
-import Activation from './Activation';
+var _Activation;
 
-let activation: ?Activation = null;
-
-export function activate(state: ?Object) {
-  activation = new Activation(state);
+function _load_Activation() {
+  return _Activation = _interopRequireDefault(require('./Activation'));
 }
 
-export function deactivate() {
-  invariant(activation != null);
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let activation = null;function activate(state) {
+  activation = new (_Activation || _load_Activation()).default(state);
+}
+
+function deactivate() {
+  if (!(activation != null)) {
+    throw new Error('Invariant violation: "activation != null"');
+  }
+
   activation.dispose();
   activation = null;
 }
 
-export function consumeOutputService(api: OutputService): void {
-  invariant(activation);
+function consumeOutputService(api) {
+  if (!activation) {
+    throw new Error('Invariant violation: "activation"');
+  }
+
   activation.consumeOutputService(api);
 }

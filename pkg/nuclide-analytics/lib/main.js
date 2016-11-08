@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,19 +9,56 @@
  * the root directory of this source tree.
  */
 
-import type {Observable} from 'rxjs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.TimingTracker = exports.HistogramTracker = undefined;
 
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {isPromise} from '../../commons-node/promise';
-import {maybeToString} from '../../commons-node/string';
-import {track as rawTrack} from './track';
+var _HistogramTracker;
 
-export {HistogramTracker} from './HistogramTracker';
+function _load_HistogramTracker() {
+  return _HistogramTracker = require('./HistogramTracker');
+}
 
-export type TrackingEvent = {
-  type: string,
-  data?: Object,
-};
+Object.defineProperty(exports, 'HistogramTracker', {
+  enumerable: true,
+  get: function () {
+    return (_HistogramTracker || _load_HistogramTracker()).HistogramTracker;
+  }
+});
+exports.track = track;
+exports.trackImmediate = trackImmediate;
+exports.trackEvent = trackEvent;
+exports.trackEvents = trackEvents;
+exports.trackTiming = trackTiming;
+exports.startTracking = startTracking;
+exports.trackOperationTiming = trackOperationTiming;
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../commons-node/UniversalDisposable'));
+}
+
+var _promise;
+
+function _load_promise() {
+  return _promise = require('../../commons-node/promise');
+}
+
+var _string;
+
+function _load_string() {
+  return _string = require('../../commons-node/string');
+}
+
+var _track;
+
+function _load_track() {
+  return _track = require('./track');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Track a set of values against a named event.
@@ -30,34 +67,31 @@ export type TrackingEvent = {
  * @param eventName Name of the event to be tracked.
  * @param values The object containing the data to track.
  */
-export function track(eventName: string, values?: {[key: string]: mixed}): void {
-  rawTrack(eventName, values || {});
+function track(eventName, values) {
+  (0, (_track || _load_track()).track)(eventName, values || {});
 }
 
 /**
  * Same as `track`, except this is guaranteed to send immediately.
  * The returned promise will resolve when the request completes (or reject on failure).
  */
-export function trackImmediate(
-  eventName: string,
-  values?: {[key: string]: mixed},
-): Promise<mixed> {
-  return rawTrack(eventName, values || {}, true) || Promise.resolve();
+function trackImmediate(eventName, values) {
+  return (0, (_track || _load_track()).track)(eventName, values || {}, true) || Promise.resolve();
 }
 
 /**
  * An alternative interface for `track` that accepts a single event object. This is particularly
  * useful when dealing with streams (Observables).
  */
-export function trackEvent(event: TrackingEvent): void {
+function trackEvent(event) {
   track(event.type, event.data);
 }
 
 /**
  * Track each event in a stream of TrackingEvents.
  */
-export function trackEvents(events: Observable<TrackingEvent>): IDisposable {
-  return new UniversalDisposable(events.subscribe(trackEvent));
+function trackEvents(events) {
+  return new (_UniversalDisposable || _load_UniversalDisposable()).default(events.subscribe(trackEvent));
 }
 
 /**
@@ -84,62 +118,65 @@ export function trackEvents(events: Observable<TrackingEvent>): IDisposable {
  *    `$className.$methodName` for Class method or `Object.$methodName` for Object method.
  * @returns A decorator.
  */
-export function trackTiming(eventName_: ?string = null): any {
+function trackTiming() {
+  let eventName_ = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+
   let eventName = eventName_;
 
-  return (target: any, name: string, descriptor: any) => {
+  return (target, name, descriptor) => {
     const originalMethod = descriptor.value;
 
     // We can't use arrow function here as it will bind `this` to the context of enclosing function
     // which is trackTiming, whereas what needed is context of originalMethod.
-    descriptor.value = function(...args) {
+    descriptor.value = function () {
+      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+        args[_key] = arguments[_key];
+      }
+
       if (!eventName) {
         const constructorName = this.constructor ? this.constructor.name : undefined;
-        eventName = `${maybeToString(constructorName)}.${name}`;
+        eventName = `${ (0, (_string || _load_string()).maybeToString)(constructorName) }.${ name }`;
       }
 
       return trackOperationTiming(eventName,
-        // Must use arrow here to get correct 'this'
-        () => originalMethod.apply(this, args));
+      // Must use arrow here to get correct 'this'
+      () => originalMethod.apply(this, args));
     };
   };
 }
 
 const PERFORMANCE_EVENT = 'performance';
 
-export class TimingTracker {
-  _eventName: string;
-  _startTime: number;
+let TimingTracker = exports.TimingTracker = class TimingTracker {
 
-  constructor(eventName: string) {
+  constructor(eventName) {
     this._eventName = eventName;
     this._startTime = this._getTimestamp();
   }
 
-  onError(error: Error): void {
+  onError(error) {
     this._trackTimingEvent(error);
   }
 
-  onSuccess(): void {
-    this._trackTimingEvent(/* error */ null);
+  onSuccess() {
+    this._trackTimingEvent( /* error */null);
   }
 
-  _trackTimingEvent(exception: ?Error): void {
+  _trackTimingEvent(exception) {
     track(PERFORMANCE_EVENT, {
       duration: (this._getTimestamp() - this._startTime).toString(),
       eventName: this._eventName,
       error: exception ? '1' : '0',
-      exception: exception ? exception.toString() : '',
+      exception: exception ? exception.toString() : ''
     });
   }
 
   // Obtain a monotonically increasing timestamp in milliseconds.
-  _getTimestamp(): number {
+  _getTimestamp() {
     return Math.round(process.uptime() * 1000);
   }
-}
-
-export function startTracking(eventName: string): TimingTracker {
+};
+function startTracking(eventName) {
   return new TimingTracker(eventName);
 }
 
@@ -152,18 +189,18 @@ export function startTracking(eventName: string): TimingTracker {
  *
  * Returns (or throws) the result of the operation.
  */
-export function trackOperationTiming<T>(eventName: string, operation: () => T): T {
+function trackOperationTiming(eventName, operation) {
   const tracker = startTracking(eventName);
 
   try {
     const result = operation();
 
-    if (isPromise(result)) {
+    if ((0, (_promise || _load_promise()).isPromise)(result)) {
       // Atom uses a different Promise implementation than Nuclide, so the following is not true:
       // invariant(result instanceof Promise);
 
       // For the method returning a Promise, track the time after the promise is resolved/rejected.
-      return (result: any).then(value => {
+      return result.then(value => {
         tracker.onSuccess();
         return value;
       }, reason => {

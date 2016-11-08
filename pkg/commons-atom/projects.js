@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,39 +9,48 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../commons-node/nuclideUri';
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
-import {Emitter, Directory} from 'atom';
-import nuclideUri from '../commons-node/nuclideUri';
-import singleton from '../commons-node/singleton';
+var _atom = require('atom');
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../commons-node/nuclideUri'));
+}
+
+var _singleton;
+
+function _load_singleton() {
+  return _singleton = _interopRequireDefault(require('../commons-node/singleton'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const REMOVE_PROJECT_EVENT = 'did-remove-project';
 const ADD_PROJECT_EVENT = 'did-add-project';
 const PROJECT_PATH_WATCHER_INSTANCE_KEY = '_nuclide_project_path_watcher';
 
-function getValidProjectPaths(): Array<string> {
+function getValidProjectPaths() {
   return atom.project.getDirectories().filter(directory => {
     // If a remote directory path is a local `Directory` instance, the project path
     // isn't yet ready for consumption.
-    if (nuclideUri.isRemote(directory.getPath()) && directory instanceof Directory) {
+    if ((_nuclideUri || _load_nuclideUri()).default.isRemote(directory.getPath()) && directory instanceof _atom.Directory) {
       return false;
     }
     return true;
   }).map(directory => directory.getPath());
 }
 
-class ProjectManager {
-
-  _emitter: Emitter;
-  _projectPaths: Set<string>;
+let ProjectManager = class ProjectManager {
 
   constructor() {
-    this._emitter = new Emitter();
+    this._emitter = new _atom.Emitter();
     this._projectPaths = new Set(getValidProjectPaths());
     atom.project.onDidChangePaths(this._updateProjectPaths.bind(this));
   }
 
-  _updateProjectPaths(newProjectPaths: Array<string>): void {
+  _updateProjectPaths(newProjectPaths) {
     const oldProjectPathSet = this._projectPaths;
     const newProjectPathSet = new Set(getValidProjectPaths());
     for (const oldProjectPath of oldProjectPathSet) {
@@ -57,60 +66,66 @@ class ProjectManager {
     this._projectPaths = newProjectPathSet;
   }
 
-  observeProjectPaths(callback: (projectPath: string) => void): IDisposable {
+  observeProjectPaths(callback) {
     for (const projectPath of this._projectPaths) {
       callback(projectPath);
     }
     return this._emitter.on(ADD_PROJECT_EVENT, callback);
   }
 
-  onDidAddProjectPath(callback: (projectPath: string) => void): IDisposable {
+  onDidAddProjectPath(callback) {
     return this._emitter.on(ADD_PROJECT_EVENT, callback);
   }
 
-  onDidRemoveProjectPath(callback: (projectPath: string) => void): IDisposable {
+  onDidRemoveProjectPath(callback) {
     return this._emitter.on(REMOVE_PROJECT_EVENT, callback);
   }
+};
+
+
+function getProjectManager() {
+  return (_singleton || _load_singleton()).default.get(PROJECT_PATH_WATCHER_INSTANCE_KEY, () => new ProjectManager());
 }
 
-function getProjectManager(): ProjectManager {
-  return singleton.get(
-    PROJECT_PATH_WATCHER_INSTANCE_KEY,
-    () => new ProjectManager(),
-  );
-}
+function getAtomProjectRelativePath(path) {
+  var _atom$project$relativ = atom.project.relativizePath(path),
+      _atom$project$relativ2 = _slicedToArray(_atom$project$relativ, 2);
 
-function getAtomProjectRelativePath(path: NuclideUri): ?string {
-  const [projectPath, relativePath] = atom.project.relativizePath(path);
+  const projectPath = _atom$project$relativ2[0],
+        relativePath = _atom$project$relativ2[1];
+
   if (!projectPath) {
     return null;
   }
   return relativePath;
 }
 
-function getAtomProjectRootPath(path: NuclideUri): ?string {
-  const [projectPath] = atom.project.relativizePath(path);
+function getAtomProjectRootPath(path) {
+  var _atom$project$relativ3 = atom.project.relativizePath(path),
+      _atom$project$relativ4 = _slicedToArray(_atom$project$relativ3, 1);
+
+  const projectPath = _atom$project$relativ4[0];
+
   return projectPath;
 }
 
 module.exports = {
-  getAtomProjectRelativePath,
+  getAtomProjectRelativePath: getAtomProjectRelativePath,
 
-  getAtomProjectRootPath,
+  getAtomProjectRootPath: getAtomProjectRootPath,
 
-  observeProjectPaths(callback: (projectPath: string) => void): IDisposable {
+  observeProjectPaths: function (callback) {
     return getProjectManager().observeProjectPaths(callback);
   },
-
-  onDidAddProjectPath(callback: (projectPath: string) => void): IDisposable {
+  onDidAddProjectPath: function (callback) {
     return getProjectManager().onDidAddProjectPath(callback);
   },
-
-  onDidRemoveProjectPath(callback: (projectPath: string) => void): IDisposable {
+  onDidRemoveProjectPath: function (callback) {
     return getProjectManager().onDidRemoveProjectPath(callback);
   },
 
+
   __test__: {
-    PROJECT_PATH_WATCHER_INSTANCE_KEY,
-  },
+    PROJECT_PATH_WATCHER_INSTANCE_KEY: PROJECT_PATH_WATCHER_INSTANCE_KEY
+  }
 };

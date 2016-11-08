@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,47 +9,89 @@
  * the root directory of this source tree.
  */
 
-import type {Store, TaskRunner} from '../types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.createPanelItem = createPanelItem;
 
-import {bindObservableAsProps} from '../../../nuclide-ui/bindObservableAsProps';
-import {viewableFromReactElement} from '../../../commons-atom/viewableFromReactElement';
-import * as Actions from '../redux/Actions';
-import {getActiveTaskId, getActiveTaskRunner} from '../redux/Selectors';
-import {Toolbar} from './Toolbar';
-import memoize from 'lodash.memoize';
-import {React} from 'react-for-atom';
-import {Observable} from 'rxjs';
+var _bindObservableAsProps;
 
-export function createPanelItem(store: Store): Object {
+function _load_bindObservableAsProps() {
+  return _bindObservableAsProps = require('../../../nuclide-ui/bindObservableAsProps');
+}
+
+var _viewableFromReactElement;
+
+function _load_viewableFromReactElement() {
+  return _viewableFromReactElement = require('../../../commons-atom/viewableFromReactElement');
+}
+
+var _Actions;
+
+function _load_Actions() {
+  return _Actions = _interopRequireWildcard(require('../redux/Actions'));
+}
+
+var _Selectors;
+
+function _load_Selectors() {
+  return _Selectors = require('../redux/Selectors');
+}
+
+var _Toolbar;
+
+function _load_Toolbar() {
+  return _Toolbar = require('./Toolbar');
+}
+
+var _lodash;
+
+function _load_lodash() {
+  return _lodash = _interopRequireDefault(require('lodash.memoize'));
+}
+
+var _reactForAtom = require('react-for-atom');
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function createPanelItem(store) {
   const staticProps = {
-    runTask: taskId => { store.dispatch(Actions.runTask(taskId)); },
-    selectTask: taskId => { store.dispatch(Actions.selectTask(taskId)); },
-    stopTask: () => { store.dispatch(Actions.stopTask()); },
-    getActiveTaskRunnerIcon: () => {
-      const activeTaskRunner = getActiveTaskRunner(store.getState());
-      return activeTaskRunner && activeTaskRunner.getIcon();
+    runTask: taskId => {
+      store.dispatch((_Actions || _load_Actions()).runTask(taskId));
     },
+    selectTask: taskId => {
+      store.dispatch((_Actions || _load_Actions()).selectTask(taskId));
+    },
+    stopTask: () => {
+      store.dispatch((_Actions || _load_Actions()).stopTask());
+    },
+    getActiveTaskRunnerIcon: () => {
+      const activeTaskRunner = (0, (_Selectors || _load_Selectors()).getActiveTaskRunner)(store.getState());
+      return activeTaskRunner && activeTaskRunner.getIcon();
+    }
   };
 
   // Delay the inital render. This way we (probably) won't wind up rendering the wrong task
   // runner before the correct one is registered.
-  const props = Observable.interval(300).first()
-    // $FlowFixMe: We need to teach Flow about Symbol.observable
-    .switchMap(() => Observable.from(store))
-    .map(state => {
-      const activeTaskRunner = getActiveTaskRunner(state);
-      return {
-        ...staticProps,
-        taskRunnerInfo: Array.from(state.taskRunners.values()),
-        getExtraUi: getExtraUiFactory(activeTaskRunner),
-        progress: state.runningTaskInfo && state.runningTaskInfo.progress,
-        activeTaskId: getActiveTaskId(state),
-        taskIsRunning: state.runningTaskInfo != null,
-        taskLists: state.taskLists,
-      };
+  const props = _rxjsBundlesRxMinJs.Observable.interval(300).first()
+  // $FlowFixMe: We need to teach Flow about Symbol.observable
+  .switchMap(() => _rxjsBundlesRxMinJs.Observable.from(store)).map(state => {
+    const activeTaskRunner = (0, (_Selectors || _load_Selectors()).getActiveTaskRunner)(state);
+    return Object.assign({}, staticProps, {
+      taskRunnerInfo: Array.from(state.taskRunners.values()),
+      getExtraUi: getExtraUiFactory(activeTaskRunner),
+      progress: state.runningTaskInfo && state.runningTaskInfo.progress,
+      activeTaskId: (0, (_Selectors || _load_Selectors()).getActiveTaskId)(state),
+      taskIsRunning: state.runningTaskInfo != null,
+      taskLists: state.taskLists
     });
-  const StatefulToolbar = bindObservableAsProps(props, Toolbar);
-  return viewableFromReactElement(<StatefulToolbar />);
+  });
+  const StatefulToolbar = (0, (_bindObservableAsProps || _load_bindObservableAsProps()).bindObservableAsProps)(props, (_Toolbar || _load_Toolbar()).Toolbar);
+  return (0, (_viewableFromReactElement || _load_viewableFromReactElement()).viewableFromReactElement)(_reactForAtom.React.createElement(StatefulToolbar, null));
 }
 
 /**
@@ -57,12 +99,18 @@ export function createPanelItem(store: Store): Object {
  * it once. To do that, we memoize the function and cache the result.
  */
 const extraUiFactories = new WeakMap();
-function getExtraUiFactory(taskRunner: ?TaskRunner): ?() => ReactClass<any> {
+function getExtraUiFactory(taskRunner) {
   let getExtraUi = extraUiFactories.get(taskRunner);
-  if (getExtraUi != null) { return getExtraUi; }
-  if (taskRunner == null) { return null; }
-  if (taskRunner.getExtraUi == null) { return null; }
-  getExtraUi = memoize(taskRunner.getExtraUi.bind(taskRunner));
+  if (getExtraUi != null) {
+    return getExtraUi;
+  }
+  if (taskRunner == null) {
+    return null;
+  }
+  if (taskRunner.getExtraUi == null) {
+    return null;
+  }
+  getExtraUi = (0, (_lodash || _load_lodash()).default)(taskRunner.getExtraUi.bind(taskRunner));
   extraUiFactories.set(taskRunner, getExtraUi);
   return getExtraUi;
 }

@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,20 +9,48 @@
  * the root directory of this source tree.
  */
 
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import WS from 'ws';
-import {Observable, BehaviorSubject, Subject} from 'rxjs';
-import {createWebSocketListener} from './createWebSocketListener';
-import {logger} from './logger';
-import {RUNNING, PAUSED} from './constants';
-import invariant from 'assert';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DebuggerConnection = undefined;
 
-import type {IosDeviceInfo, RuntimeStatus} from './types';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-type Id = number;
-type onResponseReceived = (response: Object) => void;
+var _UniversalDisposable;
 
-const {log} = logger;
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../commons-node/UniversalDisposable'));
+}
+
+var _ws;
+
+function _load_ws() {
+  return _ws = _interopRequireDefault(require('ws'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _createWebSocketListener;
+
+function _load_createWebSocketListener() {
+  return _createWebSocketListener = require('./createWebSocketListener');
+}
+
+var _logger;
+
+function _load_logger() {
+  return _logger = require('./logger');
+}
+
+var _constants;
+
+function _load_constants() {
+  return _constants = require('./constants');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const log = (_logger || _load_logger()).logger.log;
 
 /**
  * A connection to a JSContext on the device (or simulator/emulator).  There are 2 channels of
@@ -36,92 +64,94 @@ const {log} = logger;
  * `Debugger.paused` events.  Interested parties can subscribe to these events via the
  * `subscribeToEvents` API, which accepts a callback called when events are emitted from the target.
  */
-export class DebuggerConnection {
-  _webSocket: ?WS;
-  _webSocketPromise: Promise<WS>;
-  _disposables: UniversalDisposable;
-  _status: BehaviorSubject<RuntimeStatus>;
-  _pendingRequests: Map<Id, onResponseReceived>;
-  _id: number;
-  _events: Subject<Object>;
 
-  constructor(iosDeviceInfo: IosDeviceInfo) {
+
+let DebuggerConnection = exports.DebuggerConnection = class DebuggerConnection {
+
+  constructor(iosDeviceInfo) {
     this._webSocket = null;
-    this._events = new Subject();
+    this._events = new _rxjsBundlesRxMinJs.Subject();
     this._id = 0;
     this._pendingRequests = new Map();
-    this._status = new BehaviorSubject(RUNNING);
-    const {webSocketDebuggerUrl} = iosDeviceInfo;
-    const webSocket = new WS(webSocketDebuggerUrl);
+    this._status = new _rxjsBundlesRxMinJs.BehaviorSubject((_constants || _load_constants()).RUNNING);
+    const webSocketDebuggerUrl = iosDeviceInfo.webSocketDebuggerUrl;
+
+    const webSocket = new (_ws || _load_ws()).default(webSocketDebuggerUrl);
     // It's not enough to just construct the websocket -- we have to also wait for it to open.
     this._webSocketPromise = new Promise(resolve => webSocket.on('open', () => resolve(webSocket)));
-    const socketMessages: Observable<string> = createWebSocketListener(webSocket);
-    this._disposables = new UniversalDisposable(
-      () => webSocket.close(),
-      socketMessages.subscribe(message => this._handleSocketMessage(message)),
-    );
-    log(`DebuggerConnection created with device info: ${JSON.stringify(iosDeviceInfo)}`);
+    const socketMessages = (0, (_createWebSocketListener || _load_createWebSocketListener()).createWebSocketListener)(webSocket);
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default(() => webSocket.close(), socketMessages.subscribe(message => this._handleSocketMessage(message)));
+    log(`DebuggerConnection created with device info: ${ JSON.stringify(iosDeviceInfo) }`);
   }
 
-  async sendCommand(message: Object): Promise<Object> {
-    if (this._webSocket == null) {
-      this._webSocket = await this._webSocketPromise;
-    }
-    const webSocket = this._webSocket;
-    if (message.id == null) {
-      message.id = this._id++;
-    }
-    return new Promise(resolve => {
-      this._pendingRequests.set(message.id, resolve);
-      webSocket.send(JSON.stringify(message));
-    });
+  sendCommand(message) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      if (_this._webSocket == null) {
+        _this._webSocket = yield _this._webSocketPromise;
+      }
+      const webSocket = _this._webSocket;
+      if (message.id == null) {
+        message.id = _this._id++;
+      }
+      return new Promise(function (resolve) {
+        _this._pendingRequests.set(message.id, resolve);
+        webSocket.send(JSON.stringify(message));
+      });
+    })();
   }
 
-  _handleSocketMessage(message: string): void {
+  _handleSocketMessage(message) {
     const obj = JSON.parse(message);
     if (isEvent(obj)) {
       this._handleChromeEvent(obj);
     } else {
       const resolve = this._pendingRequests.get(obj.id);
-      invariant(resolve != null, `Got response for a request that wasn't sent: ${message}`);
+
+      if (!(resolve != null)) {
+        throw new Error(`Got response for a request that wasn't sent: ${ message }`);
+      }
+
       this._pendingRequests.delete(obj.id);
       resolve(obj);
     }
   }
 
-  _handleChromeEvent(message: Object): void {
+  _handleChromeEvent(message) {
     switch (message.method) {
-      case 'Debugger.paused': {
-        this._status.next(PAUSED);
-        break;
-      }
-      case 'Debugger.resumed': {
-        this._status.next(RUNNING);
-        break;
-      }
+      case 'Debugger.paused':
+        {
+          this._status.next((_constants || _load_constants()).PAUSED);
+          break;
+        }
+      case 'Debugger.resumed':
+        {
+          this._status.next((_constants || _load_constants()).RUNNING);
+          break;
+        }
     }
     this._events.next(message);
   }
 
-  subscribeToEvents(toFrontend: (message: Object) => void): IDisposable {
-    return new UniversalDisposable(
-      this._events.subscribe(toFrontend),
-    );
+  subscribeToEvents(toFrontend) {
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default(this._events.subscribe(toFrontend));
   }
 
-  isPaused(): boolean {
-    return this._status.getValue() === PAUSED;
+  isPaused() {
+    return this._status.getValue() === (_constants || _load_constants()).PAUSED;
   }
 
-  getStatusChanges(): Observable<RuntimeStatus> {
+  getStatusChanges() {
     return this._status.asObservable();
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
   }
-}
+};
 
-function isEvent(obj: Object): boolean {
+
+function isEvent(obj) {
   return obj.id == null;
 }

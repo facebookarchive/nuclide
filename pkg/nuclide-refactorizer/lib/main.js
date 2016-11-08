@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -13,96 +13,78 @@
  * WARNING: This package is still experimental and in early development. Use it at your own risk.
  */
 
-import type {TextEdit} from '../../nuclide-textedit/lib/rpc-types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import type {
-  Store,
-} from './types';
+var _atom = require('atom');
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+var _ProviderRegistry;
 
-import {Disposable} from 'atom';
+function _load_ProviderRegistry() {
+  return _ProviderRegistry = _interopRequireDefault(require('../../commons-atom/ProviderRegistry'));
+}
 
-import ProviderRegistry from '../../commons-atom/ProviderRegistry';
-import createPackage from '../../commons-atom/createPackage';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+var _createPackage;
 
-import * as Actions from './refactorActions';
-import {getStore} from './refactorStore';
-import {initRefactorUIs} from './refactorUIs';
+function _load_createPackage() {
+  return _createPackage = _interopRequireDefault(require('../../commons-atom/createPackage'));
+}
 
-export type RenameRefactorKind = 'rename';
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../commons-node/UniversalDisposable'));
+}
+
+var _refactorActions;
+
+function _load_refactorActions() {
+  return _refactorActions = _interopRequireWildcard(require('./refactorActions'));
+}
+
+var _refactorStore;
+
+function _load_refactorStore() {
+  return _refactorStore = require('./refactorStore');
+}
+
+var _refactorUIs;
+
+function _load_refactorUIs() {
+  return _refactorUIs = require('./refactorUIs');
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // Will be a union type when we add more
-export type RefactorKind = RenameRefactorKind;
 
-export type RenameRefactoring = {
-  kind: RenameRefactorKind,
-  symbolAtPoint: {
-    text: string,
-    range: atom$Range,
-  },
-};
 
 // Will be a union type when we add more
-export type AvailableRefactoring = RenameRefactoring;
-
-export type RenameRequest = {
-  kind: RenameRefactorKind,
-  editor: atom$TextEditor,
-  originalPoint: atom$Point,
-  symbolAtPoint: {
-    text: string,
-    range: atom$Range,
-  },
-  newName: string,
-};
-
-export type RefactorRequest = RenameRequest;
-
-export type RefactorResponse = {
-  edits: Map<NuclideUri, Array<TextEdit>>,
-};
-
-export type RefactorProvider = {
-  priority: number,
-  grammarScopes: Array<string>,
-
-  refactoringsAtPoint(
-    editor: atom$TextEditor,
-    point: atom$Point,
-  ): Promise<Array<AvailableRefactoring>>,
-  refactor(request: RefactorRequest): Promise<?RefactorResponse>,
-};
-
-class Activation {
-  _disposables: UniversalDisposable;
-  _store: Store;
-  _providerRegistry: ProviderRegistry<RefactorProvider>;
+let Activation = class Activation {
 
   constructor() {
-    this._providerRegistry = new ProviderRegistry();
+    this._providerRegistry = new (_ProviderRegistry || _load_ProviderRegistry()).default();
 
-    this._store = getStore(this._providerRegistry);
+    this._store = (0, (_refactorStore || _load_refactorStore()).getStore)(this._providerRegistry);
 
-    this._disposables = new UniversalDisposable(
-      initRefactorUIs(this._store),
-      atom.commands.add('atom-workspace', 'nuclide-refactorizer:refactorize', () => {
-        this._store.dispatch(Actions.open('generic'));
-      }),
-    );
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default((0, (_refactorUIs || _load_refactorUIs()).initRefactorUIs)(this._store), atom.commands.add('atom-workspace', 'nuclide-refactorizer:refactorize', () => {
+      this._store.dispatch((_refactorActions || _load_refactorActions()).open('generic'));
+    }));
   }
 
   dispose() {
     this._disposables.dispose();
   }
 
-  consumeRefactorProvider(provider: RefactorProvider): IDisposable {
+  consumeRefactorProvider(provider) {
     this._providerRegistry.addProvider(provider);
-    return new Disposable(() => {
+    return new _atom.Disposable(() => {
       this._providerRegistry.removeProvider(provider);
     });
   }
-}
-
-export default createPackage(Activation);
+};
+exports.default = (0, (_createPackage || _load_createPackage()).default)(Activation);
+module.exports = exports['default'];

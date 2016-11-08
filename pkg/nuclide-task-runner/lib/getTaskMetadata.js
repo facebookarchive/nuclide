@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,14 +9,11 @@
  * the root directory of this source tree.
  */
 
-import type {AnnotatedTaskMetadata, TaskId} from './types';
-
-export function getTaskMetadata(
-  taskId: TaskId,
-  taskLists: Map<string, Array<AnnotatedTaskMetadata>>,
-): ?AnnotatedTaskMetadata {
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getTaskMetadata = getTaskMetadata;
+function getTaskMetadata(taskId, taskLists) {
   const taskListsForRunner = taskLists.get(taskId.taskRunnerId);
-  return taskListsForRunner == null
-    ? null
-    : taskListsForRunner.find(taskMeta => taskMeta.type === taskId.type);
+  return taskListsForRunner == null ? null : taskListsForRunner.find(taskMeta => taskMeta.type === taskId.type);
 }

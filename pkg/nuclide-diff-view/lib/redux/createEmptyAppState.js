@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,67 +9,63 @@
  * the root directory of this source tree.
  */
 
-import type {
-  AppState,
-  CommitState,
-  EditorState,
-  FileDiffState,
-  PublishState,
-  RepositoryState,
-} from '../types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getEmptyCommitState = getEmptyCommitState;
+exports.getEmptyPublishState = getEmptyPublishState;
+exports.getEmptyFileDiffState = getEmptyFileDiffState;
+exports.getEmptyRepositoryState = getEmptyRepositoryState;
+exports.createEmptyAppState = createEmptyAppState;
 
-import {
-  CommitMode,
-  CommitModeState,
-  DiffMode,
-  PublishMode,
-  PublishModeState,
-} from '../constants';
+var _constants;
 
+function _load_constants() {
+  return _constants = require('../constants');
+}
 
-export function getEmptyCommitState(): CommitState {
+function getEmptyCommitState() {
   return {
     message: null,
-    mode: CommitMode.COMMIT,
-    state: CommitModeState.READY,
+    mode: (_constants || _load_constants()).CommitMode.COMMIT,
+    state: (_constants || _load_constants()).CommitModeState.READY
   };
 }
 
-export function getEmptyPublishState(): PublishState {
+function getEmptyPublishState() {
   return {
     message: null,
-    mode: PublishMode.CREATE,
-    state: PublishModeState.READY,
+    mode: (_constants || _load_constants()).PublishMode.CREATE,
+    state: (_constants || _load_constants()).PublishModeState.READY
   };
 }
 
-function initialEditorState(): EditorState {
+function initialEditorState() {
   return {
     revisionTitle: 'No file selected',
     text: '',
     offsets: new Map(),
     highlightedLines: {
       added: [],
-      removed: [],
+      removed: []
     },
     inlineElements: new Map(),
-    inlineOffsetElements: new Map(),
+    inlineOffsetElements: new Map()
   };
 }
 
-export function getEmptyFileDiffState(): FileDiffState {
+function getEmptyFileDiffState() {
   return {
     filePath: '',
-    lineMapping: {oldToNew: [], newToOld: []},
+    lineMapping: { oldToNew: [], newToOld: [] },
     newEditorState: initialEditorState(),
     oldEditorState: initialEditorState(),
     navigationSections: [],
-    activeSectionIndex: -1,
+    activeSectionIndex: -1
   };
 }
 
-
-export function getEmptyRepositoryState(): RepositoryState {
+function getEmptyRepositoryState() {
   return {
     revisionStatuses: new Map(),
     dirtyFiles: new Map(),
@@ -77,11 +73,11 @@ export function getEmptyRepositoryState(): RepositoryState {
     headRevision: null,
     isLoadingSelectedFiles: false,
     compareRevisionId: null,
-    selectedFiles: new Map(),
+    selectedFiles: new Map()
   };
 }
 
-export function createEmptyAppState(): AppState {
+function createEmptyAppState() {
   return {
     activeRepository: null,
     activeRepositoryState: getEmptyRepositoryState(),
@@ -96,6 +92,6 @@ export function createEmptyAppState(): AppState {
     repositories: new Map(),
     shouldRebaseOnAmend: true,
     uiProviders: [],
-    viewMode: DiffMode.BROWSE_MODE,
+    viewMode: (_constants || _load_constants()).DiffMode.BROWSE_MODE
   };
 }

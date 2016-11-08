@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,13 +9,16 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Block = undefined;
 
-type Props = {
-  children?: mixed,
-};
+var _reactForAtom = require('react-for-atom');
 
 /** A Block. */
-export const Block = (props: Props) => (
-  <div className="block">{props.children}</div>
+const Block = exports.Block = props => _reactForAtom.React.createElement(
+  'div',
+  { className: 'block' },
+  props.children
 );

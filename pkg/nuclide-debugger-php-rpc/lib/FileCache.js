@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,48 +9,62 @@
  * the root directory of this source tree.
  */
 
-import invariant from 'assert';
+var _helpers;
 
-import {uriToPath} from './helpers';
-import {ClientCallback} from './ClientCallback';
-import File from './File';
+function _load_helpers() {
+  return _helpers = require('./helpers');
+}
+
+var _ClientCallback;
+
+function _load_ClientCallback() {
+  return _ClientCallback = require('./ClientCallback');
+}
+
+var _File;
+
+function _load_File() {
+  return _File = _interopRequireDefault(require('./File'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Handles registering files encountered during debugging with the Chrome debugger
  */
-class FileCache {
-  _callback: ClientCallback;
-  _files: Map<string, File>;
+let FileCache = class FileCache {
 
-  constructor(callback: ClientCallback) {
+  constructor(callback) {
     this._callback = callback;
     this._files = new Map();
   }
 
-  registerFile(fileUrl: string): File {
-    const filepath = uriToPath(fileUrl);
+  registerFile(fileUrl) {
+    const filepath = (0, (_helpers || _load_helpers()).uriToPath)(fileUrl);
     if (!this._files.has(filepath)) {
-      this._files.set(filepath, new File(filepath));
-      this._callback.sendMethod(
-        this._callback.getServerMessageObservable(),
-        'Debugger.scriptParsed',
-        {
-          scriptId: filepath,
-          url: fileUrl,
-          startLine: 0,
-          startColumn: 0,
-          endLine: 0,
-          endColumn: 0,
-        });
+      this._files.set(filepath, new (_File || _load_File()).default(filepath));
+      this._callback.sendMethod(this._callback.getServerMessageObservable(), 'Debugger.scriptParsed', {
+        scriptId: filepath,
+        url: fileUrl,
+        startLine: 0,
+        startColumn: 0,
+        endLine: 0,
+        endColumn: 0
+      });
     }
     const result = this._files.get(filepath);
-    invariant(result != null);
+
+    if (!(result != null)) {
+      throw new Error('Invariant violation: "result != null"');
+    }
+
     return result;
   }
 
-  getFileSource(filepath: string): Promise<string> {
+  getFileSource(filepath) {
     return this.registerFile(filepath).getSource();
   }
-}
+};
+
 
 module.exports = FileCache;

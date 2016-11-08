@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,37 +9,54 @@
  * the root directory of this source tree.
  */
 
-import type {AtomCommands} from './rpc-types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.RemoteCommandService = undefined;
 
-import {CompositeDisposable} from 'event-kit';
-import {CommandServer} from './CommandServer';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _eventKit;
+
+function _load_eventKit() {
+  return _eventKit = require('event-kit');
+}
+
+var _CommandServer;
+
+function _load_CommandServer() {
+  return _CommandServer = require('./CommandServer');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // This interface is exposed by the nuclide server process to the client side
 // Atom process.
-export class RemoteCommandService {
-  _port: number;
-  _disposables: CompositeDisposable;
+let RemoteCommandService = exports.RemoteCommandService = class RemoteCommandService {
 
-  constructor(port: number) {
+  constructor(port) {
     this._port = port;
-    this._disposables = new CompositeDisposable();
+    this._disposables = new (_eventKit || _load_eventKit()).CompositeDisposable();
   }
 
-  async _registerAtomCommands(atomCommands: AtomCommands): Promise<void> {
-    this._disposables.add(await CommandServer.create(this._port, atomCommands));
+  _registerAtomCommands(atomCommands) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      _this._disposables.add((yield (_CommandServer || _load_CommandServer()).CommandServer.create(_this._port, atomCommands)));
+    })();
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
   }
 
   // Called by Atom once for each new remote connection.
-  static async registerAtomCommands(
-    port: number,
-    atomCommands: AtomCommands,
-  ): Promise<RemoteCommandService> {
-    const result = new RemoteCommandService(port);
-    await result._registerAtomCommands(atomCommands);
-    return result;
+  static registerAtomCommands(port, atomCommands) {
+    return (0, _asyncToGenerator.default)(function* () {
+      const result = new RemoteCommandService(port);
+      yield result._registerAtomCommands(atomCommands);
+      return result;
+    })();
   }
-}
+};

@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,38 +9,36 @@
  * the root directory of this source tree.
  */
 
-import {CompositeDisposable, Emitter} from 'atom';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = observeGrammarForTextEditors;
+
+var _atom = require('atom');
 
 const GRAMMAR_CHANGE_EVENT = 'grammar-change';
 
 /**
  * A singleton that listens to grammar changes in all text editors.
  */
-class GrammarForTextEditorsListener {
-  _emitter: Emitter;
-  _subscriptions: CompositeDisposable;
+let GrammarForTextEditorsListener = class GrammarForTextEditorsListener {
 
   constructor() {
-    this._emitter = new Emitter();
-    this._subscriptions = new CompositeDisposable();
-    this._subscriptions.add(
-      this._emitter,
-      atom.workspace.observeTextEditors(textEditor => {
-        const grammarSubscription = textEditor.observeGrammar(grammar => {
-          this._emitter.emit(GRAMMAR_CHANGE_EVENT, textEditor);
-        });
-        const destroySubscription = textEditor.onDidDestroy(() => {
-          grammarSubscription.dispose();
-          destroySubscription.dispose();
-        });
-        this._subscriptions.add(grammarSubscription, destroySubscription);
-      }),
-    );
+    this._emitter = new _atom.Emitter();
+    this._subscriptions = new _atom.CompositeDisposable();
+    this._subscriptions.add(this._emitter, atom.workspace.observeTextEditors(textEditor => {
+      const grammarSubscription = textEditor.observeGrammar(grammar => {
+        this._emitter.emit(GRAMMAR_CHANGE_EVENT, textEditor);
+      });
+      const destroySubscription = textEditor.onDidDestroy(() => {
+        grammarSubscription.dispose();
+        destroySubscription.dispose();
+      });
+      this._subscriptions.add(grammarSubscription, destroySubscription);
+    }));
   }
 
-  observeGrammarForTextEditors(
-    fn: (textEditor: TextEditor, grammar: atom$Grammar) => void,
-  ): IDisposable {
+  observeGrammarForTextEditors(fn) {
     function fnWithGrammar(textEditor) {
       fn(textEditor, textEditor.getGrammar());
     }
@@ -51,12 +49,13 @@ class GrammarForTextEditorsListener {
     return this._emitter.on(GRAMMAR_CHANGE_EVENT, fnWithGrammar);
   }
 
-  dispose(): void {
+  dispose() {
     this._subscriptions.dispose();
   }
-}
+};
 
-let grammarForTextEditorsListener: ?GrammarForTextEditorsListener;
+
+let grammarForTextEditorsListener;
 
 /**
  * Use this to perform an action on every text editor with its latest grammar.
@@ -64,9 +63,7 @@ let grammarForTextEditorsListener: ?GrammarForTextEditorsListener;
  * @param fn This is called once for every text editor, and then again every
  * time it changes to a grammar.
  */
-export default function observeGrammarForTextEditors(
-  fn: (textEditor: TextEditor, grammar: atom$Grammar) => void,
-): IDisposable {
+function observeGrammarForTextEditors(fn) {
   if (!grammarForTextEditorsListener) {
     grammarForTextEditorsListener = new GrammarForTextEditorsListener();
   }
@@ -74,10 +71,11 @@ export default function observeGrammarForTextEditors(
 }
 
 if (atom.inSpecMode()) {
-  observeGrammarForTextEditors.__reset__ = function() {
+  observeGrammarForTextEditors.__reset__ = function () {
     if (grammarForTextEditorsListener) {
       grammarForTextEditorsListener.dispose();
       grammarForTextEditorsListener = null;
     }
   };
 }
+module.exports = exports['default'];

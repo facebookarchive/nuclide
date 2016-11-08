@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -14,7 +14,7 @@ const Ansi = Object.freeze({
   GREEN: '\u001B[32m',
   RED: '\u001B[31m',
   RESET: '\u001B[39m',
-  YELLOW: '\u001B[33m',
+  YELLOW: '\u001B[33m'
 });
 
 module.exports = Ansi;

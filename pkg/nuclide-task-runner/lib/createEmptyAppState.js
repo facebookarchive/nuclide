@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,9 +9,11 @@
  * the root directory of this source tree.
  */
 
-import type {AppState} from './types';
-
-export function createEmptyAppState(): AppState {
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.createEmptyAppState = createEmptyAppState;
+function createEmptyAppState() {
   return {
     activeTaskId: null,
     previousSessionActiveTaskId: null,
@@ -19,6 +21,6 @@ export function createEmptyAppState(): AppState {
     projectRoot: null,
     taskLists: new Map(),
     runningTaskInfo: null,
-    visible: true,
+    visible: true
   };
 }

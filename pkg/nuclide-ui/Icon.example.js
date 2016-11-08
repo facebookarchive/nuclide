@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,41 +9,81 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
-import {Block} from './Block';
-import {Icon} from './Icon';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.IconExamples = undefined;
 
-const IconExample = (): React.Element<any> => (
-  <div>
-    <Block>
-      <Icon icon="gift" />
-      <Icon icon="heart" />
-      <Icon icon="info" />
-    </Block>
-  </div>
+var _reactForAtom = require('react-for-atom');
+
+var _Block;
+
+function _load_Block() {
+  return _Block = require('./Block');
+}
+
+var _Icon;
+
+function _load_Icon() {
+  return _Icon = require('./Icon');
+}
+
+const IconExample = () => _reactForAtom.React.createElement(
+  'div',
+  null,
+  _reactForAtom.React.createElement(
+    (_Block || _load_Block()).Block,
+    null,
+    _reactForAtom.React.createElement((_Icon || _load_Icon()).Icon, { icon: 'gift' }),
+    _reactForAtom.React.createElement((_Icon || _load_Icon()).Icon, { icon: 'heart' }),
+    _reactForAtom.React.createElement((_Icon || _load_Icon()).Icon, { icon: 'info' })
+  )
 );
 
-const IconWithTextExample = (): React.Element<any> => (
-  <div>
-    <Block>
-      <div><Icon icon="gift">gift</Icon></div>
-      <div><Icon icon="heart">heart</Icon></div>
-      <div><Icon icon="info">info</Icon></div>
-    </Block>
-  </div>
+const IconWithTextExample = () => _reactForAtom.React.createElement(
+  'div',
+  null,
+  _reactForAtom.React.createElement(
+    (_Block || _load_Block()).Block,
+    null,
+    _reactForAtom.React.createElement(
+      'div',
+      null,
+      _reactForAtom.React.createElement(
+        (_Icon || _load_Icon()).Icon,
+        { icon: 'gift' },
+        'gift'
+      )
+    ),
+    _reactForAtom.React.createElement(
+      'div',
+      null,
+      _reactForAtom.React.createElement(
+        (_Icon || _load_Icon()).Icon,
+        { icon: 'heart' },
+        'heart'
+      )
+    ),
+    _reactForAtom.React.createElement(
+      'div',
+      null,
+      _reactForAtom.React.createElement(
+        (_Icon || _load_Icon()).Icon,
+        { icon: 'info' },
+        'info'
+      )
+    )
+  )
 );
 
-export const IconExamples = {
+const IconExamples = exports.IconExamples = {
   sectionName: 'Icons',
   description: 'Octicons with optional text.',
-  examples: [
-    {
-      title: 'Icons',
-      component: IconExample,
-    },
-    {
-      title: 'You can pass optional text as children.',
-      component: IconWithTextExample,
-    },
-  ],
+  examples: [{
+    title: 'Icons',
+    component: IconExample
+  }, {
+    title: 'You can pass optional text as children.',
+    component: IconWithTextExample
+  }]
 };

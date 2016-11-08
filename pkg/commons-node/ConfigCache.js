@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,34 +9,44 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from './nuclideUri';
-import type {LRUCache} from 'lru-cache';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ConfigCache = undefined;
 
-import LRU from 'lru-cache';
-import fsPromise from './fsPromise';
+var _lruCache;
 
-export class ConfigCache {
-  _configFileName: string;
-  _configCache: LRUCache<NuclideUri, Promise<?NuclideUri>>;
+function _load_lruCache() {
+  return _lruCache = _interopRequireDefault(require('lru-cache'));
+}
 
-  constructor(configFileName: string) {
+var _fsPromise;
+
+function _load_fsPromise() {
+  return _fsPromise = _interopRequireDefault(require('./fsPromise'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let ConfigCache = exports.ConfigCache = class ConfigCache {
+
+  constructor(configFileName) {
     this._configFileName = configFileName;
-    this._configCache = LRU({
+    this._configCache = (0, (_lruCache || _load_lruCache()).default)({
       max: 200, // Want this to exceed the maximum expected number of open files + dirs.
-      maxAge: 1000 * 30, // 30 seconds
-    });
+      maxAge: 1000 * 30 });
   }
 
-  getConfigDir(path: NuclideUri): Promise<?NuclideUri> {
+  getConfigDir(path) {
     if (!this._configCache.has(path)) {
-      const result = fsPromise.findNearestFile(this._configFileName, path);
+      const result = (_fsPromise || _load_fsPromise()).default.findNearestFile(this._configFileName, path);
       this._configCache.set(path, result);
       return result;
     }
     return this._configCache.get(path);
   }
 
-  dispose(): void {
+  dispose() {
     this._configCache.reset();
   }
-}
+};

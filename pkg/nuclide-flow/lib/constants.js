@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,22 +9,26 @@
  * the root directory of this source tree.
  */
 
-export const JS_GRAMMARS = Object.freeze(['source.js', 'source.js.jsx']);
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+const JS_GRAMMARS = exports.JS_GRAMMARS = Object.freeze(['source.js', 'source.js.jsx']);
 
 const identifierOrNumber = '[a-zA-Z0-9_$]+';
 
-function makeStrRegex(delimiter: string): string {
+function makeStrRegex(delimiter) {
   const d = delimiter;
   // Each run of four backslashes ends up as just one backslash. We need to escape once for the
   // string literal here, and once for the RegExp compilation.
-  return `${d}(\\\\.|[^${d}\\\\])*${d}`;
+  return `${ d }(\\\\.|[^${ d }\\\\])*${ d }`;
 }
 
 const strRegexes = ['`', "'", '"'].map(makeStrRegex);
 
-const regexStrings = [].concat(strRegexes, [identifierOrNumber]).map(s => `(${s})`);
+const regexStrings = [].concat(strRegexes, [identifierOrNumber]).map(s => `(${ s })`);
 
-export const JAVASCRIPT_WORD_REGEX = new RegExp(regexStrings.join('|'), 'g');
+const JAVASCRIPT_WORD_REGEX = exports.JAVASCRIPT_WORD_REGEX = new RegExp(regexStrings.join('|'), 'g');
 
 // A simple heuristic for identifier names in JavaScript.
-export const JAVASCRIPT_IDENTIFIER_REGEX = /[$_a-zA-Z][$_\w]*/gi;
+const JAVASCRIPT_IDENTIFIER_REGEX = exports.JAVASCRIPT_IDENTIFIER_REGEX = /[$_a-zA-Z][$_\w]*/gi;

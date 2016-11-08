@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,66 +9,103 @@
  * the root directory of this source tree.
  */
 
-import type {Store, BoundActionCreators, PartialAppState} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {Disposable, CompositeDisposable} from 'atom';
-import createPackage from '../../commons-atom/createPackage';
-import {React, ReactDOM} from 'react-for-atom';
-import {RequestEditDialog} from './RequestEditDialog';
-import {applyMiddleware, bindActionCreators, createStore} from 'redux';
-import * as Actions from './Actions';
-import * as Epics from './Epics';
-import * as Reducers from './Reducers';
-import {combineEpics, createEpicMiddleware} from '../../commons-node/redux-observable';
-import {Observable} from 'rxjs';
-import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
-import {track} from '../../nuclide-analytics';
+var _atom = require('atom');
 
-export type HttpRequestSenderApi = {
-  updateRequestEditDialogDefaults(defaults: PartialAppState): void,
-};
+var _createPackage;
 
-class Activation {
-  _disposables: CompositeDisposable;
-  _requestEditDialog: ?atom$Panel;
-  _store: Store;
-  _actionCreators: BoundActionCreators;
+function _load_createPackage() {
+  return _createPackage = _interopRequireDefault(require('../../commons-atom/createPackage'));
+}
 
-  constructor(): void {
+var _reactForAtom = require('react-for-atom');
+
+var _RequestEditDialog;
+
+function _load_RequestEditDialog() {
+  return _RequestEditDialog = require('./RequestEditDialog');
+}
+
+var _redux;
+
+function _load_redux() {
+  return _redux = require('redux');
+}
+
+var _Actions;
+
+function _load_Actions() {
+  return _Actions = _interopRequireWildcard(require('./Actions'));
+}
+
+var _Epics;
+
+function _load_Epics() {
+  return _Epics = _interopRequireWildcard(require('./Epics'));
+}
+
+var _Reducers;
+
+function _load_Reducers() {
+  return _Reducers = _interopRequireWildcard(require('./Reducers'));
+}
+
+var _reduxObservable;
+
+function _load_reduxObservable() {
+  return _reduxObservable = require('../../commons-node/redux-observable');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _bindObservableAsProps;
+
+function _load_bindObservableAsProps() {
+  return _bindObservableAsProps = require('../../nuclide-ui/bindObservableAsProps');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let Activation = class Activation {
+
+  constructor() {
     const initialState = {
       uri: 'example.com',
       method: 'GET',
       headers: {
-        cookie: '',
+        cookie: ''
       },
-      body: null,
+      body: null
     };
-    const epics = Object.keys(Epics)
-      .map(k => Epics[k])
-      .filter(epic => typeof epic === 'function');
-    const rootEpic = combineEpics(...epics);
-    this._store = createStore(
-      Reducers.app,
-      initialState,
-      applyMiddleware(createEpicMiddleware(rootEpic)),
-    );
-    this._actionCreators = bindActionCreators(Actions, this._store.dispatch);
+    const epics = Object.keys(_Epics || _load_Epics()).map(k => (_Epics || _load_Epics())[k]).filter(epic => typeof epic === 'function');
+    const rootEpic = (0, (_reduxObservable || _load_reduxObservable()).combineEpics)(...epics);
+    this._store = (0, (_redux || _load_redux()).createStore)((_Reducers || _load_Reducers()).app, initialState, (0, (_redux || _load_redux()).applyMiddleware)((0, (_reduxObservable || _load_reduxObservable()).createEpicMiddleware)(rootEpic)));
+    this._actionCreators = (0, (_redux || _load_redux()).bindActionCreators)(_Actions || _load_Actions(), this._store.dispatch);
     this._requestEditDialog = null;
-    this._disposables = new CompositeDisposable(
-      atom.commands.add('atom-workspace', {
-        'nuclide-http-request-sender:toggle-http-request-edit-dialog': () => {
-          track('nuclide-http-request-sender:toggle-http-request-edit-dialog');
-          this._toggleRequestEditDialog();
-        },
-        'nuclide-http-request-sender:send-http-request': () => {
-          track('nuclide-http-request-sender:send-http-request');
-          this._actionCreators.sendHttpRequest();
-        },
-      }),
-    );
+    this._disposables = new _atom.CompositeDisposable(atom.commands.add('atom-workspace', {
+      'nuclide-http-request-sender:toggle-http-request-edit-dialog': () => {
+        (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('nuclide-http-request-sender:toggle-http-request-edit-dialog');
+        this._toggleRequestEditDialog();
+      },
+      'nuclide-http-request-sender:send-http-request': () => {
+        (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('nuclide-http-request-sender:send-http-request');
+        this._actionCreators.sendHttpRequest();
+      }
+    }));
   }
 
-  _toggleRequestEditDialog(): void {
+  _toggleRequestEditDialog() {
     const dialog = this._createModalIfNeeded();
     if (dialog.isVisible()) {
       dialog.hide();
@@ -77,38 +114,36 @@ class Activation {
     }
   }
 
-  _createModalIfNeeded(): atom$Panel {
+  _createModalIfNeeded() {
     if (this._requestEditDialog != null) {
       return this._requestEditDialog;
     }
     // $FlowFixMe -- Flow doesn't know about the Observable symbol used by from().
-    const BoundEditDialog = bindObservableAsProps(Observable.from(this._store), RequestEditDialog);
+    const BoundEditDialog = (0, (_bindObservableAsProps || _load_bindObservableAsProps()).bindObservableAsProps)(_rxjsBundlesRxMinJs.Observable.from(this._store), (_RequestEditDialog || _load_RequestEditDialog()).RequestEditDialog);
     const container = document.createElement('div');
     const requestEditDialog = atom.workspace.addModalPanel({
       item: container,
-      visible: false,
+      visible: false
     });
-    ReactDOM.render(<BoundEditDialog actionCreators={this._actionCreators} />, container);
-    this._disposables.add(
-      new Disposable(() => {
-        requestEditDialog.destroy();
-        this._requestEditDialog = null;
-        ReactDOM.unmountComponentAtNode(container);
-      }),
-    );
+    _reactForAtom.ReactDOM.render(_reactForAtom.React.createElement(BoundEditDialog, { actionCreators: this._actionCreators }), container);
+    this._disposables.add(new _atom.Disposable(() => {
+      requestEditDialog.destroy();
+      this._requestEditDialog = null;
+      _reactForAtom.ReactDOM.unmountComponentAtNode(container);
+    }));
     this._requestEditDialog = requestEditDialog;
     return requestEditDialog;
   }
 
-  provideHttpRequestSender(): HttpRequestSenderApi {
+  provideHttpRequestSender() {
     return {
-      updateRequestEditDialogDefaults: this._actionCreators.updateState,
+      updateRequestEditDialogDefaults: this._actionCreators.updateState
     };
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
   }
-}
-
-export default createPackage(Activation);
+};
+exports.default = (0, (_createPackage || _load_createPackage()).default)(Activation);
+module.exports = exports['default'];
