@@ -63,7 +63,10 @@ export default class HealthPaneItem extends React.Component {
     }
 
     return (
-      <div className="pane-item padded nuclide-health-pane-item">
+      <div
+        // Need native-key-bindings and tabIndex={-1} to be able to copy paste
+        className="pane-item padded nuclide-health-pane-item native-key-bindings"
+        tabIndex={-1}>
         <HealthPaneItemComponent
           toolbarJewel={toolbarJewel}
           updateToolbarJewel={updateToolbarJewel}
