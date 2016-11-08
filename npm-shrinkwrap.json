@@ -1984,9 +1984,9 @@
       "dev": true
     },
     "rxjs": {
-      "version": "5.0.0-rc.1",
-      "from": "rxjs@5.0.0-rc.1",
-      "resolved": "https://registry.npmjs.org/rxjs/-/rxjs-5.0.0-rc.1.tgz"
+      "version": "5.0.0-rc.2",
+      "from": "rxjs@5.0.0-rc.2",
+      "resolved": "https://registry.npmjs.org/rxjs/-/rxjs-5.0.0-rc.2.tgz"
     },
     "sabor": {
       "version": "0.8.0",

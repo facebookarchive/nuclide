@@ -986,9 +986,9 @@
       "resolved": "https://registry.npmjs.org/rimraf/-/rimraf-2.5.4.tgz"
     },
     "rxjs": {
-      "version": "5.0.0-rc.1",
-      "from": "rxjs@5.0.0-rc.1",
-      "resolved": "https://registry.npmjs.org/rxjs/-/rxjs-5.0.0-rc.1.tgz"
+      "version": "5.0.0-rc.2",
+      "from": "rxjs@5.0.0-rc.2",
+      "resolved": "https://registry.npmjs.org/rxjs/-/rxjs-5.0.0-rc.2.tgz"
     },
     "sax": {
       "version": "1.2.1",

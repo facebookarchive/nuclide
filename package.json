@@ -74,7 +74,7 @@
     "request": "2.78.0",
     "resolve-from": "2.0.0",
     "rimraf": "2.5.4",
-    "rxjs": "5.0.0-rc.1",
+    "rxjs": "5.0.0-rc.2",
     "semver": "5.3.0",
     "shallowequal": "0.2.2",
     "shell-quote": "1.6.1",
