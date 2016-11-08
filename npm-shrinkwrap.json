@@ -162,9 +162,9 @@
       "dev": true
     },
     "babel-core": {
-      "version": "6.18.0",
-      "from": "babel-core@6.18.0",
-      "resolved": "https://registry.npmjs.org/babel-core/-/babel-core-6.18.0.tgz",
+      "version": "6.18.2",
+      "from": "babel-core@6.18.2",
+      "resolved": "https://registry.npmjs.org/babel-core/-/babel-core-6.18.2.tgz",
       "dev": true
     },
     "babel-eslint": {
@@ -532,9 +532,9 @@
       "dev": true
     },
     "code-point-at": {
-      "version": "1.0.1",
+      "version": "1.1.0",
       "from": "code-point-at@>=1.0.0 <2.0.0",
-      "resolved": "https://registry.npmjs.org/code-point-at/-/code-point-at-1.0.1.tgz"
+      "resolved": "https://registry.npmjs.org/code-point-at/-/code-point-at-1.1.0.tgz"
     },
     "coffee-script": {
       "version": "1.11.1",
@@ -988,9 +988,9 @@
       "resolved": "https://registry.npmjs.org/form-data/-/form-data-2.1.1.tgz"
     },
     "fs-extra": {
-      "version": "0.30.0",
-      "from": "fs-extra@0.30.0",
-      "resolved": "https://registry.npmjs.org/fs-extra/-/fs-extra-0.30.0.tgz",
+      "version": "1.0.0",
+      "from": "fs-extra@1.0.0",
+      "resolved": "https://registry.npmjs.org/fs-extra/-/fs-extra-1.0.0.tgz",
       "dev": true
     },
     "fs-plus": {
@@ -1080,9 +1080,9 @@
       "dev": true
     },
     "graceful-fs": {
-      "version": "4.1.9",
+      "version": "4.1.10",
       "from": "graceful-fs@>=4.1.2 <5.0.0",
-      "resolved": "https://registry.npmjs.org/graceful-fs/-/graceful-fs-4.1.9.tgz",
+      "resolved": "https://registry.npmjs.org/graceful-fs/-/graceful-fs-4.1.10.tgz",
       "dev": true
     },
     "graceful-readlink": {
@@ -1406,14 +1406,14 @@
       "dev": true
     },
     "lodash": {
-      "version": "4.16.5",
+      "version": "4.16.6",
       "from": "lodash@>=4.2.1 <5.0.0",
-      "resolved": "https://registry.npmjs.org/lodash/-/lodash-4.16.5.tgz"
+      "resolved": "https://registry.npmjs.org/lodash/-/lodash-4.16.6.tgz"
     },
     "lodash-es": {
-      "version": "4.16.5",
+      "version": "4.16.6",
       "from": "lodash-es@>=4.2.1 <5.0.0",
-      "resolved": "https://registry.npmjs.org/lodash-es/-/lodash-es-4.16.5.tgz"
+      "resolved": "https://registry.npmjs.org/lodash-es/-/lodash-es-4.16.6.tgz"
     },
     "lodash._getnative": {
       "version": "3.9.1",
@@ -1887,9 +1887,9 @@
       "dev": true
     },
     "regenerator-runtime": {
-      "version": "0.9.5",
+      "version": "0.9.6",
       "from": "regenerator-runtime@>=0.9.5 <0.10.0",
-      "resolved": "https://registry.npmjs.org/regenerator-runtime/-/regenerator-runtime-0.9.5.tgz",
+      "resolved": "https://registry.npmjs.org/regenerator-runtime/-/regenerator-runtime-0.9.6.tgz",
       "dev": true
     },
     "regexpu-core": {
@@ -1925,14 +1925,14 @@
       "dev": true
     },
     "request": {
-      "version": "2.76.0",
-      "from": "request@2.76.0",
-      "resolved": "https://registry.npmjs.org/request/-/request-2.76.0.tgz"
+      "version": "2.78.0",
+      "from": "request@2.78.0",
+      "resolved": "https://registry.npmjs.org/request/-/request-2.78.0.tgz"
     },
     "require-uncached": {
-      "version": "1.0.2",
+      "version": "1.0.3",
       "from": "require-uncached@>=1.0.2 <2.0.0",
-      "resolved": "https://registry.npmjs.org/require-uncached/-/require-uncached-1.0.2.tgz",
+      "resolved": "https://registry.npmjs.org/require-uncached/-/require-uncached-1.0.3.tgz",
       "dev": true,
       "dependencies": {
         "resolve-from": {
@@ -2109,14 +2109,14 @@
       "resolved": "https://registry.npmjs.org/sprintf-js/-/sprintf-js-1.0.3.tgz"
     },
     "ssh2": {
-      "version": "0.5.2",
-      "from": "ssh2@0.5.2",
-      "resolved": "https://registry.npmjs.org/ssh2/-/ssh2-0.5.2.tgz"
+      "version": "0.5.3",
+      "from": "ssh2@0.5.3",
+      "resolved": "https://registry.npmjs.org/ssh2/-/ssh2-0.5.3.tgz"
     },
     "ssh2-streams": {
-      "version": "0.1.12",
-      "from": "ssh2-streams@>=0.1.9 <0.2.0",
-      "resolved": "https://registry.npmjs.org/ssh2-streams/-/ssh2-streams-0.1.12.tgz"
+      "version": "0.1.14",
+      "from": "ssh2-streams@>=0.1.13 <0.2.0",
+      "resolved": "https://registry.npmjs.org/ssh2-streams/-/ssh2-streams-0.1.14.tgz"
     },
     "sshpk": {
       "version": "1.10.1",
@@ -2272,9 +2272,9 @@
       "dev": true
     },
     "ua-parser-js": {
-      "version": "0.7.10",
+      "version": "0.7.11",
       "from": "ua-parser-js@>=0.7.9 <0.8.0",
-      "resolved": "https://registry.npmjs.org/ua-parser-js/-/ua-parser-js-0.7.10.tgz"
+      "resolved": "https://registry.npmjs.org/ua-parser-js/-/ua-parser-js-0.7.11.tgz"
     },
     "ultron": {
       "version": "1.0.2",
