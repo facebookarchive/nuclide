@@ -41,7 +41,10 @@ import {bindObservableAsProps} from '../../../nuclide-ui/bindObservableAsProps';
 import {renderReactRoot} from '../../../commons-atom/renderReactRoot';
 import {getLogger} from '../../../nuclide-logging';
 import {compact} from '../../../commons-node/observable';
-import {enforceReadOnly} from '../../../commons-atom/text-editor';
+import {
+  enforceReadOnly,
+  enforceSoftWrap,
+} from '../../../commons-atom/text-editor';
 import {
   DIFF_EDITOR_MARKER_CLASS,
 } from '../constants';
@@ -86,19 +89,6 @@ type DiffEditorsResult = {
   disposables: UniversalDisposable,
 };
 
-// Turn off soft wrap setting for these editors so diffs properly align.
-// Some text editor register sometimes override the set soft wrapping
-// after mounting an editor to the workspace - here, that's watched and reset to `false`.
-function ensureNoSoftWrap(editor: atom$TextEditor): IDisposable {
-  editor.setSoftWrapped(false);
-  return editor.onDidChangeSoftWrapped(softWrapped => {
-    if (softWrapped) {
-      // Reset the overridden softWrap to `false` once the operation completes.
-      process.nextTick(() => editor.setSoftWrapped(false));
-    }
-  });
-}
-
 /**
  * Split the pane items, if not already split.
  */
@@ -116,9 +106,8 @@ async function getDiffEditors(
     const newEditorItem = newEditorPane.itemForURI(filePath);
     newEditorPane.activateItem(newEditorItem);
     newEditor = ((newEditorItem: any): atom$TextEditor);
-    newEditor.setSoftWrapped(false);
     disposables.add(
-      ensureNoSoftWrap(newEditor),
+      enforceSoftWrap(newEditor, false),
       () => newEditor.setSoftWrapped((atom.config.get('editor.softWrap'): any)),
     );
   } else {
@@ -129,7 +118,7 @@ async function getDiffEditors(
     newEditorPane = atom.workspace.paneForURI(filePath);
     invariant(newEditorPane != null, 'Cannot find a pane for the opened text editor');
     disposables.add(
-      ensureNoSoftWrap(newEditor),
+      enforceSoftWrap(newEditor, false),
       () => cleanUpEditor(newEditor),
     );
   }
@@ -158,7 +147,7 @@ async function getDiffEditors(
   await nextTick();
 
   disposables.add(
-    ensureNoSoftWrap(oldEditor),
+    enforceSoftWrap(oldEditor, false),
     () => cleanUpEditor(oldEditor),
   );
 

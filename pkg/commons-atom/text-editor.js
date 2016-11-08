@@ -184,3 +184,23 @@ export function enforceReadOnly(textEditor: atom$TextEditor): void {
   }
 
 }
+
+// Turn off soft wrap setting for these editors so diffs properly align.
+// Some text editor register sometimes override the set soft wrapping
+// after mounting an editor to the workspace - here, that's watched and reset to `false`.
+export function enforceSoftWrap(
+  editor: atom$TextEditor,
+  enforcedSoftWrap: boolean,
+): IDisposable {
+  editor.setSoftWrapped(enforcedSoftWrap);
+  return editor.onDidChangeSoftWrapped(softWrapped => {
+    if (softWrapped !== enforcedSoftWrap) {
+      // Reset the overridden softWrap to `false` once the operation completes.
+      process.nextTick(() => {
+        if (!editor.isDestroyed()) {
+          editor.setSoftWrapped(enforcedSoftWrap);
+        }
+      });
+    }
+  });
+}
