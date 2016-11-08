@@ -206,12 +206,25 @@ class WatchmanClient {
    * List all (watched) files in the given directory.
    * Paths will be relative.
    */
-  async listFiles(entryPath: string): Promise<Array<string>> {
+  async listFiles(
+    entryPath: string,
+    options?: {[name: string]: any} = {},
+  ): Promise<Array<string>> {
     const {watch, relative_path} = await this._watchProject(entryPath);
     const result = await this._command('query', watch, {
-      expression: ['type', 'f'], // all files
+      expression: [
+        'allof',
+        ['type', 'f'], // all files
+        ['exists'],
+      ],
+      // Providing `path` will let watchman use path generator, and will perform
+      // a tree walk with respect to the relative_root and path provided.
+      // Path generator will do less work unless the root path of the repository
+      // is passed in as an entry path.
+      path: ['.'],
       fields: ['name'],          // names only
       relative_root: relative_path,
+      ...options,
     });
     return result.files;
   }
