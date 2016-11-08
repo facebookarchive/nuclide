@@ -93,8 +93,18 @@ function addRemoteFolderToProject(connection: RemoteConnection) {
 
   atom.project.addPath(workingDirectoryUri);
 
-  const subscription = atom.project.onDidChangePaths(() => {
-    // When removing a project in an integration test, skip the cleanup.
+  const subscription = atom.project.onDidChangePaths(paths => {
+    if (paths.indexOf(workingDirectoryUri) !== -1) {
+      return;
+    }
+
+    // The project was removed from the tree.
+    subscription.dispose();
+    if (connection.isOnlyConnection()) {
+      closeOpenFilesForRemoteProject(connection);
+    }
+
+    // Integration tests close the connection manually, so skip the rest.
     if (atom.inSpecMode()) {
       return;
     }
@@ -102,21 +112,10 @@ function addRemoteFolderToProject(connection: RemoteConnection) {
     // Delay closing the underlying socket connection until registered subscriptions have closed.
     // We should never depend on the order of registration of the `onDidChangePaths` event,
     // which also dispose consumed service's resources.
-    setTimeout(checkClosedProject, CLOSE_PROJECT_DELAY_MS);
+    setTimeout(closeRemoteConnection, CLOSE_PROJECT_DELAY_MS);
   });
 
-  function checkClosedProject() {
-    // The project paths may have changed during the delay time.
-    // Hence, the latest project paths are fetched here.
-    const paths = atom.project.getPaths();
-    if (paths.indexOf(workingDirectoryUri) !== -1) {
-      return;
-    }
-    // The project was removed from the tree.
-    subscription.dispose();
-
-    closeOpenFilesForRemoteProject(connection);
-
+  function closeRemoteConnection() {
     const hostname = connection.getRemoteHostname();
     const closeConnection = (shutdownIfLast: boolean) => {
       connection.close(shutdownIfLast);
