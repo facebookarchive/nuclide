@@ -16,10 +16,10 @@ for anything a file might contain.
 
 There are three ways to toggle the **Quick Open** window.
 
-- The `Cmd-T` (macOS) or `Ctrl-T` (Linux) keyboard shortcuts.
+- The `Cmd-T` (macOS) or `Ctrl-T` (Linux) keyboard shortcuts
 - [Command palette](/docs/editor/basics/#command-palette) searching for
-`Nuclide Quick Open: Find Anything Via Omni Search`.
-- [Quick Launch](docs/quick-start/getting-started/#quick-launch-menu) menu.
+`Nuclide Quick Open: Find Anything Via Omni Search`
+- [Quick Launch Menu](/docs/quick-start/getting-started/#quick-launch-menu)
 
 ![](/static/images/docs/feature-quick-open-toggle-window.png)
 
