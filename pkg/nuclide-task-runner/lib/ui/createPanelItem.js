@@ -36,6 +36,7 @@ export function createPanelItem(store: Store): Object {
   const props = Observable.interval(300).first()
     // $FlowFixMe: We need to teach Flow about Symbol.observable
     .switchMap(() => Observable.from(store))
+    .distinctUntilChanged()
     .map(state => {
       const activeTaskRunner = getActiveTaskRunner(state);
       return {
