@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,20 +9,32 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../../commons-node/nuclideUri';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ReactNativeProcessInfo = undefined;
 
-import {DebuggerProcessInfo} from '../../../nuclide-debugger-base';
-import {ReactNativeDebuggerInstance} from './ReactNativeDebuggerInstance';
+var _nuclideDebuggerBase;
 
-export class ReactNativeProcessInfo extends DebuggerProcessInfo {
+function _load_nuclideDebuggerBase() {
+  return _nuclideDebuggerBase = require('../../../nuclide-debugger-base');
+}
 
-  constructor(targetUri: NuclideUri) {
+var _ReactNativeDebuggerInstance;
+
+function _load_ReactNativeDebuggerInstance() {
+  return _ReactNativeDebuggerInstance = require('./ReactNativeDebuggerInstance');
+}
+
+let ReactNativeProcessInfo = exports.ReactNativeProcessInfo = class ReactNativeProcessInfo extends (_nuclideDebuggerBase || _load_nuclideDebuggerBase()).DebuggerProcessInfo {
+
+  constructor(targetUri) {
     super('react-native', targetUri);
   }
 
-  debug(): Promise<ReactNativeDebuggerInstance> {
+  debug() {
     // This is the port that the V8 debugger usually listens on.
     // TODO(matthewwithanm): Provide a way to override this in the UI.
-    return Promise.resolve(new ReactNativeDebuggerInstance(this, 5858));
+    return Promise.resolve(new (_ReactNativeDebuggerInstance || _load_ReactNativeDebuggerInstance()).ReactNativeDebuggerInstance(this, 5858));
   }
-}
+};

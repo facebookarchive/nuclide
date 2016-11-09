@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,30 +9,37 @@
  * the root directory of this source tree.
  */
 
-import {React, ReactDOM} from 'react-for-atom';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _reactForAtom = require('react-for-atom');
 
 /**
  * A custom HTMLElement we render React elements into.
  */
-class ReactMountRootElement extends HTMLElement {
-  _reactElement: ?React.Element<any>;
+let ReactMountRootElement = class ReactMountRootElement extends HTMLElement {
 
-  setReactElement(reactElement: React.Element<any>): void {
+  setReactElement(reactElement) {
     this._reactElement = reactElement;
   }
 
-  attachedCallback(): mixed {
-    if (this._reactElement == null) { return; }
-    ReactDOM.render(this._reactElement, this);
+  attachedCallback() {
+    if (this._reactElement == null) {
+      return;
+    }
+    _reactForAtom.ReactDOM.render(this._reactElement, this);
   }
 
-  detachedCallback(): mixed {
-    if (this._reactElement == null) { return; }
-    ReactDOM.unmountComponentAtNode(this);
+  detachedCallback() {
+    if (this._reactElement == null) {
+      return;
+    }
+    _reactForAtom.ReactDOM.unmountComponentAtNode(this);
   }
 
-}
-
-export default document.registerElement('nuclide-react-mount-root', {
-  prototype: ReactMountRootElement.prototype,
+};
+exports.default = document.registerElement('nuclide-react-mount-root', {
+  prototype: ReactMountRootElement.prototype
 });
+module.exports = exports['default'];

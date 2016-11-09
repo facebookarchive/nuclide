@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,29 +9,31 @@
  * the root directory of this source tree.
  */
 
-import type {Observable} from 'rxjs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.QueuedTransport = undefined;
 
-import invariant from 'assert';
-import {Subject} from 'rxjs';
-import {getLogger} from '../../nuclide-logging';
-const logger = getLogger();
-import {Emitter} from 'event-kit';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-// An unreliable transport for sending JSON formatted messages
-//
-// onClose handlers are guaranteed to be called exactly once.
-// onMessage handlers are guaranteed to not be called after onClose has been called.
-// send(data) yields false if the message failed to send, true on success.
-// onClose handlers will be called before close() returns.
-// May not call send() after transport has closed..
-export type UnreliableTransport = {
-  send(message: string): Promise<boolean>,
-  onClose(callback: () => mixed): IDisposable,
-  onMessage(): Observable<string>,
-  onError(callback: (error: Object) => mixed): IDisposable,
-  close(): void,
-  isClosed(): boolean,
-};
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _nuclideLogging;
+
+function _load_nuclideLogging() {
+  return _nuclideLogging = require('../../nuclide-logging');
+}
+
+var _eventKit;
+
+function _load_eventKit() {
+  return _eventKit = require('event-kit');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const logger = (0, (_nuclideLogging || _load_nuclideLogging()).getLogger)();
+
 
 // Adapter to make an UnreliableTransport a reliable Transport
 // by queuing messages.
@@ -45,43 +47,51 @@ export type UnreliableTransport = {
 // While disconnected, reconnect can be called to return to the open state.
 // close() closes the underlying transport and transitions to closed state.
 // Once closed, reconnect may not be called and no other events will be emitted.
-export class QueuedTransport {
-  id: string;
-  _isClosed: boolean;
-  _transport: ?UnreliableTransport;
-  _messageQueue: Array<string>;
-  _emitter: Emitter;
-  _messages: Subject<string>;
 
-  constructor(clientId: string, transport: ?UnreliableTransport) {
+
+// An unreliable transport for sending JSON formatted messages
+//
+// onClose handlers are guaranteed to be called exactly once.
+// onMessage handlers are guaranteed to not be called after onClose has been called.
+// send(data) yields false if the message failed to send, true on success.
+// onClose handlers will be called before close() returns.
+// May not call send() after transport has closed..
+let QueuedTransport = exports.QueuedTransport = class QueuedTransport {
+
+  constructor(clientId, transport) {
     this.id = clientId;
     this._isClosed = false;
     this._transport = null;
     this._messageQueue = [];
-    this._messages = new Subject();
-    this._emitter = new Emitter();
+    this._messages = new _rxjsBundlesRxMinJs.Subject();
+    this._emitter = new (_eventKit || _load_eventKit()).Emitter();
 
     if (transport != null) {
       this._connect(transport);
     }
   }
 
-  getState(): 'open' | 'disconnected' | 'closed' {
-    return this._isClosed
-      ? 'closed'
-      : (this._transport == null ? 'disconnected' : 'open');
+  getState() {
+    return this._isClosed ? 'closed' : this._transport == null ? 'disconnected' : 'open';
   }
 
-  _connect(transport: UnreliableTransport): void {
-    invariant(!transport.isClosed());
+  _connect(transport) {
+    if (!!transport.isClosed()) {
+      throw new Error('Invariant violation: "!transport.isClosed()"');
+    }
+
     logger.info('Client #%s connecting with a new socket!', this.id);
-    invariant(this._transport == null);
+
+    if (!(this._transport == null)) {
+      throw new Error('Invariant violation: "this._transport == null"');
+    }
+
     this._transport = transport;
     transport.onMessage().subscribe(message => this._messages.next(message));
     transport.onClose(() => this._onClose(transport));
   }
 
-  _onMessage(transport: UnreliableTransport, message: Object): void {
+  _onMessage(transport, message) {
     if (this._isClosed) {
       logger.error('Received socket message after connection closed', new Error());
       return;
@@ -94,8 +104,10 @@ export class QueuedTransport {
     this._emitter.emit('message', message);
   }
 
-  _onClose(transport: UnreliableTransport): void {
-    invariant(transport.isClosed());
+  _onClose(transport) {
+    if (!transport.isClosed()) {
+      throw new Error('Invariant violation: "transport.isClosed()"');
+    }
 
     if (this._isClosed) {
       // This happens when close() is called and we have an open transport.
@@ -112,15 +124,23 @@ export class QueuedTransport {
   }
 
   // Reconnecting, when in an open state will cause a disconnect event.
-  reconnect(transport: UnreliableTransport): void {
-    invariant(!transport.isClosed());
-    invariant(!this._isClosed);
+  reconnect(transport) {
+    if (!!transport.isClosed()) {
+      throw new Error('Invariant violation: "!transport.isClosed()"');
+    }
+
+    if (!!this._isClosed) {
+      throw new Error('Invariant violation: "!this._isClosed"');
+    }
 
     if (this._transport != null) {
       // This will cause a disconnect event...
       this._transport.close();
     }
-    invariant(this._transport == null);
+
+    if (!(this._transport == null)) {
+      throw new Error('Invariant violation: "this._transport == null"');
+    }
 
     this._connect(transport);
 
@@ -130,59 +150,68 @@ export class QueuedTransport {
     queuedMessages.forEach(message => this.send(message));
   }
 
-  disconnect(): void {
-    invariant(!this._isClosed);
+  disconnect() {
+    if (!!this._isClosed) {
+      throw new Error('Invariant violation: "!this._isClosed"');
+    }
+
     this._disconnect();
   }
 
-  _disconnect(): void {
+  _disconnect() {
     const transport = this._transport;
     if (transport != null) {
       transport.close();
     }
   }
 
-  onMessage(): Observable<string> {
+  onMessage() {
     return this._messages;
   }
 
-  onDisconnect(callback: (transport: UnreliableTransport) => mixed): IDisposable {
+  onDisconnect(callback) {
     return this._emitter.on('disconnect', callback);
   }
 
-  send(message: string): void {
+  send(message) {
     this._send(message);
   }
 
-  async _send(message: string): Promise<void> {
-    invariant(!this._isClosed, 'Attempt to send socket message after connection closed');
+  _send(message) {
+    var _this = this;
 
-    this._messageQueue.push(message);
-    if (this._transport == null) {
-      return;
-    }
-
-    const sent = await this._transport.send(message);
-    if (!sent) {
-      logger.warn('Failed sending socket message to client:', this.id, JSON.parse(message));
-    } else {
-      // This may remove a different (but equivalent) message from the Q,
-      // but that's ok because we don't guarantee message ordering.
-      const messageIndex = this._messageQueue.indexOf(message);
-      if (messageIndex !== -1) {
-        this._messageQueue.splice(messageIndex, 1);
+    return (0, _asyncToGenerator.default)(function* () {
+      if (!!_this._isClosed) {
+        throw new Error('Attempt to send socket message after connection closed');
       }
-    }
+
+      _this._messageQueue.push(message);
+      if (_this._transport == null) {
+        return;
+      }
+
+      const sent = yield _this._transport.send(message);
+      if (!sent) {
+        logger.warn('Failed sending socket message to client:', _this.id, JSON.parse(message));
+      } else {
+        // This may remove a different (but equivalent) message from the Q,
+        // but that's ok because we don't guarantee message ordering.
+        const messageIndex = _this._messageQueue.indexOf(message);
+        if (messageIndex !== -1) {
+          _this._messageQueue.splice(messageIndex, 1);
+        }
+      }
+    })();
   }
 
-  close(): void {
+  close() {
     this._disconnect();
     if (!this._isClosed) {
       this._isClosed = true;
     }
   }
 
-  isClosed(): boolean {
+  isClosed() {
     return this._isClosed;
   }
-}
+};

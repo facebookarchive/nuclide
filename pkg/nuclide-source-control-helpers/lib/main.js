@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,13 +9,17 @@
  * the root directory of this source tree.
  */
 
-export type HgRepositoryDescription = {
-  repoPath: string,
-  originURL: ?string,
-  workingDirectoryPath: string,
-};
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.findHgRepository = undefined;
 
+var _hgRepository;
 
-import findHgRepository from './hg-repository';
+function _load_hgRepository() {
+  return _hgRepository = _interopRequireDefault(require('./hg-repository'));
+}
 
-export {findHgRepository};
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.findHgRepository = (_hgRepository || _load_hgRepository()).default;

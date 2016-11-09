@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,23 +9,32 @@
  * the root directory of this source tree.
  */
 
-import WS from 'ws';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ShellMessageManager = undefined;
+
+var _ws;
+
+function _load_ws() {
+  return _ws = _interopRequireDefault(require('ws'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const EXECUTOR_PORT = 8081;
-const WS_URL = `ws://localhost:${EXECUTOR_PORT}/message?role=interface&name=Nuclide`;
+const WS_URL = `ws://localhost:${ EXECUTOR_PORT }/message?role=interface&name=Nuclide`;
 
-export class ShellMessageManager {
-  _url: string;
-  _ws: ?WS;
+let ShellMessageManager = exports.ShellMessageManager = class ShellMessageManager {
 
   constructor() {
     this._url = WS_URL;
   }
 
-  send(message: Object): void {
+  send(message) {
     if (this._ws == null) {
       // Currently, use cases only require a simple fire-and-forget interaction
-      const ws = new WS(this._url);
+      const ws = new (_ws || _load_ws()).default(this._url);
       this._ws = ws;
       ws.onopen = () => {
         ws.send(JSON.stringify(message));
@@ -40,4 +49,4 @@ export class ShellMessageManager {
     }
   }
 
-}
+};

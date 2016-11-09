@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -10,9 +10,10 @@
  */
 
 // This is a stubbed implementation that other packages use to record analytics data & performance.
-export function track(
-  eventName: string,
-  values?: {[key: string]: mixed},
-  immediate?: boolean,
-): ?Promise<mixed> {
-}
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.track = track;
+
+function track(eventName, values, immediate) {}

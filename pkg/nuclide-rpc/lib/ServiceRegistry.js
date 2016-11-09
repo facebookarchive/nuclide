@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,54 +9,39 @@
  * the root directory of this source tree.
  */
 
-import type {PredefinedTransformer} from './index';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ServiceRegistry = undefined;
 
-import {createProxyFactory} from './main';
-import {TypeRegistry} from './TypeRegistry';
-import type {
-  FunctionType,
-  Definition,
-  InterfaceDefinition,
-  Type,
-} from './types';
-import type {ProxyFactory} from './main';
-import invariant from 'assert';
-import type {ConfigEntry} from './index';
-import type {ObjectRegistry} from './ObjectRegistry';
-import {getLogger} from '../../nuclide-logging';
+var _main;
 
-const logger = getLogger();
+function _load_main() {
+  return _main = require('./main');
+}
 
-export type FunctionImplementation = {localImplementation: Function, type: FunctionType};
-export type ClassDefinition = {localImplementation: any, definition: InterfaceDefinition};
-export type ServiceDefinition = {
-  name: string,
-  factory: ProxyFactory, // Maps from RpcContext to proxy
-};
+var _TypeRegistry;
 
-export class ServiceRegistry {
-  _typeRegistry: TypeRegistry;
+function _load_TypeRegistry() {
+  return _TypeRegistry = require('./TypeRegistry');
+}
+
+var _nuclideLogging;
+
+function _load_nuclideLogging() {
+  return _nuclideLogging = require('../../nuclide-logging');
+}
+
+const logger = (0, (_nuclideLogging || _load_nuclideLogging()).getLogger)();
+
+let ServiceRegistry = exports.ServiceRegistry = class ServiceRegistry {
 
   /**
    * Store a mapping from function name to a structure holding both the local implementation and
    * the type definition of the function.
    */
-  _functionsByName: Map<string, FunctionImplementation>;
-
-  /**
-   * Store a mapping from a class name to a struct containing it's local constructor and it's
-   * interface definition.
-   */
-  _classesByName: Map<string, ClassDefinition>;
-
-  _predefinedTypes: Array<string>;
-  _services: Map<string, ServiceDefinition>;
-
-  constructor(
-    predefinedTypes: Array<PredefinedTransformer>,
-    services: Array<ConfigEntry>,
-  ) {
-    this._typeRegistry = new TypeRegistry(predefinedTypes);
+  constructor(predefinedTypes, services) {
+    this._typeRegistry = new (_TypeRegistry || _load_TypeRegistry()).TypeRegistry(predefinedTypes);
     this._predefinedTypes = predefinedTypes.map(predefinedType => predefinedType.typeName);
     this._functionsByName = new Map();
     this._classesByName = new Map();
@@ -65,108 +50,112 @@ export class ServiceRegistry {
     this.addServices(services);
   }
 
-  addServices(services: Array<ConfigEntry>): void {
+  /**
+   * Store a mapping from a class name to a struct containing it's local constructor and it's
+   * interface definition.
+   */
+
+
+  addServices(services) {
     services.forEach(this.addService, this);
   }
 
-  addService(service: ConfigEntry): void {
-    const preserveFunctionNames = service.preserveFunctionNames != null
-      && service.preserveFunctionNames;
+  addService(service) {
+    const preserveFunctionNames = service.preserveFunctionNames != null && service.preserveFunctionNames;
     try {
-      const factory = createProxyFactory(
-        service.name,
-        preserveFunctionNames,
-        service.definition,
-        this._predefinedTypes,
-      );
+      const factory = (0, (_main || _load_main()).createProxyFactory)(service.name, preserveFunctionNames, service.definition, this._predefinedTypes);
       // $FlowIssue - the parameter passed to require must be a literal string.
       const localImpl = require(service.implementation);
       this._services.set(service.name, {
         name: service.name,
-        factory,
+        factory: factory
       });
 
       // Register type aliases.
-      factory.defs.forEach((definition: Definition) => {
+      factory.defs.forEach(definition => {
         const name = definition.name;
         switch (definition.kind) {
           case 'alias':
             if (definition.definition != null) {
-              this._typeRegistry.registerAlias(
-                name, definition.location, (definition.definition: Type));
+              this._typeRegistry.registerAlias(name, definition.location, definition.definition);
             }
             break;
           case 'function':
             // Register module-level functions.
-            const functionName = service.preserveFunctionNames
-              ? name : `${service.name}/${name}`;
+            const functionName = service.preserveFunctionNames ? name : `${ service.name }/${ name }`;
             this._registerFunction(functionName, localImpl[name], definition.type);
             break;
           case 'interface':
             // Register interfaces.
             this._classesByName.set(name, {
               localImplementation: localImpl[name],
-              definition,
+              definition: definition
             });
 
-            this._typeRegistry.registerType(
-              name,
-              definition.location,
-              (object, context: ObjectRegistry) => context.marshal(name, object),
-              (objectId, context: ObjectRegistry) =>
-                context.unmarshal(objectId, name, context.getService(service.name)[name]));
+            this._typeRegistry.registerType(name, definition.location, (object, context) => context.marshal(name, object), (objectId, context) => context.unmarshal(objectId, name, context.getService(service.name)[name]));
 
             // Register all of the static methods as remote functions.
             definition.staticMethods.forEach((funcType, funcName) => {
-              this._registerFunction(`${name}/${funcName}`, localImpl[name][funcName], funcType);
+              this._registerFunction(`${ name }/${ funcName }`, localImpl[name][funcName], funcType);
             });
             break;
         }
       });
-
     } catch (e) {
-      logger.error(`Failed to load service ${service.name}. Stack Trace:\n${e.stack}`);
+      logger.error(`Failed to load service ${ service.name }. Stack Trace:\n${ e.stack }`);
       throw e;
     }
   }
 
-  _registerFunction(name: string, localImpl: Function, type: FunctionType): void {
+  _registerFunction(name, localImpl, type) {
     if (this._functionsByName.has(name)) {
-      throw new Error(`Duplicate RPC function: ${name}`);
+      throw new Error(`Duplicate RPC function: ${ name }`);
     }
     this._functionsByName.set(name, {
       localImplementation: localImpl,
-      type,
+      type: type
     });
   }
 
-  getFunctionImplemention(name: string): FunctionImplementation {
+  getFunctionImplemention(name) {
     const result = this._functionsByName.get(name);
-    invariant(result);
+
+    if (!result) {
+      throw new Error('Invariant violation: "result"');
+    }
+
     return result;
   }
 
-  getClassDefinition(className: string): ClassDefinition {
+  getClassDefinition(className) {
     const result = this._classesByName.get(className);
-    invariant(result != null);
+
+    if (!(result != null)) {
+      throw new Error('Invariant violation: "result != null"');
+    }
+
     return result;
   }
 
-  getTypeRegistry(): TypeRegistry {
+  getTypeRegistry() {
     return this._typeRegistry;
   }
 
-  getServices(): Iterator<ServiceDefinition> {
+  getServices() {
     return this._services.values();
   }
 
-  hasService(serviceName: string): boolean {
+  hasService(serviceName) {
     return this._services.has(serviceName);
   }
 
-  getService(serviceName: string): ServiceDefinition {
+  getService(serviceName) {
     const result = this._services.get(serviceName);
-    invariant(result != null);
+
+    if (!(result != null)) {
+      throw new Error('Invariant violation: "result != null"');
+    }
+
     return result;
   }
-}
+};

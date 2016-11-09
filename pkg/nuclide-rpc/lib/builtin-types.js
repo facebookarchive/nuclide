@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,82 +9,72 @@
  * the root directory of this source tree.
  */
 
-import type {
-  BuiltinLocation,
-  StringType,
-  NumberType,
-  BooleanType,
-  AnyType,
-  MixedType,
-  NamedType,
-  VoidType,
-} from './types';
-
-export const builtinLocation: BuiltinLocation = {
-  type: 'builtin',
-};
-
-export const voidType: VoidType = {
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+const builtinLocation = exports.builtinLocation = {
+  type: 'builtin'
+};const voidType = exports.voidType = {
   location: builtinLocation,
-  kind: 'void',
+  kind: 'void'
 };
 
-export const anyType: AnyType = {
+const anyType = exports.anyType = {
   location: builtinLocation,
-  kind: 'any',
+  kind: 'any'
 };
 
-export const mixedType: MixedType = {
+const mixedType = exports.mixedType = {
   location: builtinLocation,
-  kind: 'mixed',
+  kind: 'mixed'
 };
 
-export const stringType: StringType = {
+const stringType = exports.stringType = {
   location: builtinLocation,
-  kind: 'string',
+  kind: 'string'
 };
 
-export const booleanType: BooleanType = {
+const booleanType = exports.booleanType = {
   location: builtinLocation,
-  kind: 'boolean',
+  kind: 'boolean'
 };
 
-export const numberType: NumberType = {
+const numberType = exports.numberType = {
   location: builtinLocation,
-  kind: 'number',
+  kind: 'number'
 };
 
-export const objectType: NamedType = {
+const objectType = exports.objectType = {
   location: builtinLocation,
   kind: 'named',
-  name: 'Object',
+  name: 'Object'
 };
 
-export const dateType: NamedType = {
+const dateType = exports.dateType = {
   location: builtinLocation,
   kind: 'named',
-  name: 'Date',
+  name: 'Date'
 };
 
-export const regExpType: NamedType = {
+const regExpType = exports.regExpType = {
   location: builtinLocation,
   kind: 'named',
-  name: 'RegExp',
+  name: 'RegExp'
 };
 
-export const bufferType: NamedType = {
+const bufferType = exports.bufferType = {
   location: builtinLocation,
   kind: 'named',
-  name: 'Buffer',
+  name: 'Buffer'
 };
 
-export const fsStatsType: NamedType = {
+const fsStatsType = exports.fsStatsType = {
   location: builtinLocation,
   kind: 'named',
-  name: 'fs.Stats',
+  name: 'fs.Stats'
 };
 
-export const namedBuiltinTypes: Set<string> = new Set();
+const namedBuiltinTypes = exports.namedBuiltinTypes = new Set();
 
 namedBuiltinTypes.add(objectType.name);
 namedBuiltinTypes.add(dateType.name);

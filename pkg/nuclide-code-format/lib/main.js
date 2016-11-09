@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,25 +9,40 @@
  * the root directory of this source tree.
  */
 
-import type CodeFormatManagerType from './CodeFormatManager';
-import type {CodeFormatProvider} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.activate = activate;
+exports.consumeProvider = consumeProvider;
+exports.deactivate = deactivate;
 
-import invariant from 'assert';
-import CodeFormatManager from './CodeFormatManager';
+var _CodeFormatManager;
 
-let codeFormatManager: ?CodeFormatManagerType = null;
-
-export function activate(state: ?any): void {
-  codeFormatManager = new CodeFormatManager();
+function _load_CodeFormatManager() {
+  return _CodeFormatManager = _interopRequireDefault(require('./CodeFormatManager'));
 }
 
-export function consumeProvider(provider: CodeFormatProvider) {
-  invariant(codeFormatManager != null);
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let codeFormatManager = null;
+
+function activate(state) {
+  codeFormatManager = new (_CodeFormatManager || _load_CodeFormatManager()).default();
+}
+
+function consumeProvider(provider) {
+  if (!(codeFormatManager != null)) {
+    throw new Error('Invariant violation: "codeFormatManager != null"');
+  }
+
   codeFormatManager.addProvider(provider);
 }
 
-export function deactivate() {
-  invariant(codeFormatManager != null);
+function deactivate() {
+  if (!(codeFormatManager != null)) {
+    throw new Error('Invariant violation: "codeFormatManager != null"');
+  }
+
   codeFormatManager.dispose();
   codeFormatManager = null;
 }

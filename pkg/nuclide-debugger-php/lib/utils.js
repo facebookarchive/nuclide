@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,21 +9,35 @@
  * the root directory of this source tree.
  */
 
-import type {PhpDebuggerSessionConfig} from '../../nuclide-debugger-php-rpc';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getConfig = getConfig;
+exports.isValidRegex = isValidRegex;
+exports.getSessionConfig = getSessionConfig;
 
-import invariant from 'assert';
-import featureConfig from '../../commons-atom/featureConfig';
-import {getCategoryLogger} from '../../nuclide-logging';
+var _featureConfig;
+
+function _load_featureConfig() {
+  return _featureConfig = _interopRequireDefault(require('../../commons-atom/featureConfig'));
+}
+
+var _nuclideLogging;
+
+function _load_nuclideLogging() {
+  return _nuclideLogging = require('../../nuclide-logging');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const DEBUGGER_LOGGER_CATEGORY = 'nuclide-debugger-php';
-export default getCategoryLogger(DEBUGGER_LOGGER_CATEGORY);
-
-export function getConfig(): PhpDebuggerSessionConfig {
-  return (featureConfig.get('nuclide-debugger-php'): any);
+exports.default = (0, (_nuclideLogging || _load_nuclideLogging()).getCategoryLogger)(DEBUGGER_LOGGER_CATEGORY);
+function getConfig() {
+  return (_featureConfig || _load_featureConfig()).default.get('nuclide-debugger-php');
 }
 
 // TODO: Move this to nuclide-commons.
-export function isValidRegex(value: ?string): boolean {
+function isValidRegex(value) {
   if (value == null) {
     return false;
   }
@@ -35,25 +49,31 @@ export function isValidRegex(value: ?string): boolean {
   return true;
 }
 
-function validateConfig(config): void {
+function validateConfig(config) {
   if (!isValidRegex(config.scriptRegex)) {
-    invariant(config.scriptRegex != null);
-    throw Error(`config scriptRegex is not a valid regular expression: ${config.scriptRegex}`);
+    if (!(config.scriptRegex != null)) {
+      throw new Error('Invariant violation: "config.scriptRegex != null"');
+    }
+
+    throw Error(`config scriptRegex is not a valid regular expression: ${ config.scriptRegex }`);
   }
 
   if (!isValidRegex(config.idekeyRegex)) {
-    invariant(config.idekeyRegex != null);
-    throw Error(`config idekeyRegex is not a valid regular expression: ${config.idekeyRegex}`);
+    if (!(config.idekeyRegex != null)) {
+      throw new Error('Invariant violation: "config.idekeyRegex != null"');
+    }
+
+    throw Error(`config idekeyRegex is not a valid regular expression: ${ config.idekeyRegex }`);
   }
 }
 
-export function getSessionConfig(targetUri: string, isLaunch: boolean): PhpDebuggerSessionConfig {
+function getSessionConfig(targetUri, isLaunch) {
   const config = getConfig();
   validateConfig(config);
-  const sessionConfig: PhpDebuggerSessionConfig = {
+  const sessionConfig = {
     xdebugAttachPort: config.xdebugAttachPort,
     xdebugLaunchingPort: config.xdebugLaunchingPort,
-    targetUri,
+    targetUri: targetUri,
     logLevel: config.logLevel,
     endDebugWhenNoRequests: false,
     phpRuntimePath: config.phpRuntimePath,
@@ -61,7 +81,7 @@ export function getSessionConfig(targetUri: string, isLaunch: boolean): PhpDebug
     dummyRequestFilePath: 'php_only_xdebug_request.php',
     stopOneStopAll: config.stopOneStopAll,
     scriptRegex: config.scriptRegex,
-    idekeyRegex: config.idekeyRegex,
+    idekeyRegex: config.idekeyRegex
 
   };
   if (isLaunch) {

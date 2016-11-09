@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,33 +9,42 @@
  * the root directory of this source tree.
  */
 
-import {Observable, Subject} from 'rxjs';
-import $$observable from 'symbol-observable';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.SimpleModel = undefined;
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _symbolObservable;
+
+function _load_symbolObservable() {
+  return _symbolObservable = _interopRequireDefault(require('symbol-observable'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Exposes a simple, React-like OO API for a stateful model. Implements `Symbol.observable` so you
  * can easily convert to an observable stream.
  */
-export class SimpleModel<State: {}> {
-  state: State;
-  _states: Subject<State>;
+let SimpleModel = exports.SimpleModel = class SimpleModel {
 
   constructor() {
-    this._states = new Subject();
-    this._states.subscribe(state => { this.state = state; });
+    this._states = new _rxjsBundlesRxMinJs.Subject();
+    this._states.subscribe(state => {
+      this.state = state;
+    });
 
     // Create an observable that contains the current, and all future, states. Since the initial
     // state is set directly (assigned to `this.state`), we can't just use a ReplaySubject
     // TODO: Use a computed property key when that's supported.
-    (this: any)[$$observable] = () => Observable.of(this.state).concat(this._states);
+    this[(_symbolObservable || _load_symbolObservable()).default] = () => _rxjsBundlesRxMinJs.Observable.of(this.state).concat(this._states);
   }
 
-  setState(newState: Object): void {
-    const nextState = {
-      ...this.state,
-      ...newState,
-    };
+  setState(newState) {
+    const nextState = Object.assign({}, this.state, newState);
     this._states.next(nextState);
   }
 
-}
+};

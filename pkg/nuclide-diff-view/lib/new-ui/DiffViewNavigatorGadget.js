@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,44 +9,49 @@
  * the root directory of this source tree.
  */
 
-import typeof * as BoundActionCreators from '../redux/Actions';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = undefined;
 
-import {React} from 'react-for-atom';
-import {track} from '../../../nuclide-analytics';
+var _reactForAtom = require('react-for-atom');
 
-type Props = {
-  actionCreators: BoundActionCreators,
-  component: ReactClass<any>,
-};
+var _nuclideAnalytics;
 
-export default class DiffViewNavigatorGadget extends React.Component {
-  props: Props;
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../../nuclide-analytics');
+}
 
-  getTitle(): string {
+let DiffViewNavigatorGadget = class DiffViewNavigatorGadget extends _reactForAtom.React.Component {
+
+  getTitle() {
     return 'Source Control Navigator';
   }
 
-  getIconName(): string {
+  getIconName() {
     return 'git-branch';
   }
 
-  getPreferredInitialHeight(): number {
+  getPreferredInitialHeight() {
     return 300;
   }
 
-  didChangeVisibility(visible: boolean) {
-    track('diff-view-navigator-toggle', {visible});
+  didChangeVisibility(visible) {
+    (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('diff-view-navigator-toggle', { visible: visible });
     this.props.actionCreators.updateDiffNavigatorVisibility(visible);
   }
 
-  render(): React.Element<any> {
-    const {component: Component} = this.props;
-    return <Component />;
+  render() {
+    const Component = this.props.component;
+
+    return _reactForAtom.React.createElement(Component, null);
   }
 
-  serialize(): mixed {
+  serialize() {
     return {
-      deserializer: 'nuclide.DiffViewNavigator',
+      deserializer: 'nuclide.DiffViewNavigator'
     };
   }
-}
+};
+exports.default = DiffViewNavigatorGadget;
+module.exports = exports['default'];

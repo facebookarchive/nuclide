@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,4 +9,8 @@
  * the root directory of this source tree.
  */
 
-export const STACKED_CONFIG_KEY = 'nuclide-source-control-side-bar.createStacked';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+const STACKED_CONFIG_KEY = exports.STACKED_CONFIG_KEY = 'nuclide-source-control-side-bar.createStacked';

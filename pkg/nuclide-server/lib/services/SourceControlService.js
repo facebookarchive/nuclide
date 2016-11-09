@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,18 +9,21 @@
  * the root directory of this source tree.
  */
 
-import {findHgRepository} from '../../../nuclide-source-control-helpers';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getHgRepository = getHgRepository;
+
+var _nuclideSourceControlHelpers;
+
+function _load_nuclideSourceControlHelpers() {
+  return _nuclideSourceControlHelpers = require('../../../nuclide-source-control-helpers');
+}
 
 /**
  * This is a workaround that should be removed when Atom 2.0 comes out.
  * See t6913624.
  */
-export type HgRepositoryDescription = {
-  repoPath: string,
-  originURL: ?string,
-  workingDirectoryPath: string,
-};
-
-export function getHgRepository(directoryPath: string): Promise<?HgRepositoryDescription> {
-  return Promise.resolve(findHgRepository(directoryPath));
+function getHgRepository(directoryPath) {
+  return Promise.resolve((0, (_nuclideSourceControlHelpers || _load_nuclideSourceControlHelpers()).findHgRepository)(directoryPath));
 }

@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,5 +9,9 @@
  * the root directory of this source tree.
  */
 
-export const RUNNING = 'RUNNING';
-export const PAUSED = 'PAUSED';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+const RUNNING = exports.RUNNING = 'RUNNING';
+const PAUSED = exports.PAUSED = 'PAUSED';

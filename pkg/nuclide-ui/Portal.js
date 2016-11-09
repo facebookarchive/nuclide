@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,45 +9,39 @@
  * the root directory of this source tree.
  */
 
-import {React, ReactDOM} from 'react-for-atom';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Portal = undefined;
 
-type Props = {
-  container: HTMLElement,
-
-  // Must be a single React element. We do this (instead of wrapping in this component) to provide
-  // maximum control to the owner.
-  children?: any,
-};
+var _reactForAtom = require('react-for-atom');
 
 /**
  * Renders a single React element into a different part of the DOM. This allows you to maintain the
  * declarative nature of React components.
  */
-export class Portal extends React.Component {
-  props: Props;
-  _container: HTMLElement;
-  _renderedChildren: ?React.Element<any>;
+let Portal = exports.Portal = class Portal extends _reactForAtom.React.Component {
 
-  componentDidMount(): void {
+  componentDidMount() {
     // Do the initial render.
     this._render(this.props.children, this.props.container);
   }
 
-  componentWillUnmount(): void {
+  componentWillUnmount() {
     this._render(null, this.props.container);
   }
 
-  componentDidUpdate(): void {
+  componentDidUpdate() {
     this._render(this.props.children, this.props.container);
   }
 
-  _render(element: ?React.Element<any>, container: HTMLElement): void {
+  _render(element, container) {
     if (this._container != null && (container !== this._container || element == null)) {
-      ReactDOM.unmountComponentAtNode(this._container);
+      _reactForAtom.ReactDOM.unmountComponentAtNode(this._container);
     }
 
     if (element != null) {
-      ReactDOM.render(React.Children.only(element), container);
+      _reactForAtom.ReactDOM.render(_reactForAtom.React.Children.only(element), container);
     }
 
     this._container = container;
@@ -59,4 +53,4 @@ export class Portal extends React.Component {
     return null;
   }
 
-}
+};

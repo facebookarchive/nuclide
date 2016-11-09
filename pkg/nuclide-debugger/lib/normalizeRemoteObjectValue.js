@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,19 +9,23 @@
  * the root directory of this source tree.
  */
 
-import type {EvaluationResult} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.normalizeRemoteObjectValue = normalizeRemoteObjectValue;
 
-import invariant from 'assert';
-
-export function normalizeRemoteObjectValue(remoteObject: ?Object): ?EvaluationResult {
+function normalizeRemoteObjectValue(remoteObject) {
   if (remoteObject == null) {
     return null;
   }
   const modifiedProperties = {};
   const normalizeUnderscores = field => {
-    invariant(remoteObject != null);
+    if (!(remoteObject != null)) {
+      throw new Error('Invariant violation: "remoteObject != null"');
+    }
+
     modifiedProperties[field] = remoteObject[field];
-    const underscoreField = `_${field}`;
+    const underscoreField = `_${ field }`;
     if (remoteObject.hasOwnProperty(underscoreField) && remoteObject[underscoreField] != null) {
       modifiedProperties[field] = String(remoteObject[underscoreField]);
     } else if (remoteObject.hasOwnProperty(field) && remoteObject[field] != null) {
@@ -29,8 +33,5 @@ export function normalizeRemoteObjectValue(remoteObject: ?Object): ?EvaluationRe
     }
   };
   ['type', 'description', 'objectId', 'value'].forEach(normalizeUnderscores);
-  return {
-    ...remoteObject,
-    ...modifiedProperties,
-  };
+  return Object.assign({}, remoteObject, modifiedProperties);
 }

@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,73 +9,92 @@
  * the root directory of this source tree.
  */
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.AttachProcessInfo = undefined;
 
-import type {DebuggerInstanceBase} from '../../nuclide-debugger-base';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {
-  AttachTargetInfo,
-  NativeDebuggerService as NativeDebuggerServiceType,
-} from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerService';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-import {
-  DebuggerProcessInfo,
-  registerConsoleLogging,
-} from '../../nuclide-debugger-base';
-import invariant from 'assert';
-import {DebuggerInstance} from '../../nuclide-debugger-base';
-import {getConfig} from './utils';
-import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+var _nuclideDebuggerBase;
 
-export class AttachProcessInfo extends DebuggerProcessInfo {
-  _targetInfo: AttachTargetInfo;
+function _load_nuclideDebuggerBase() {
+  return _nuclideDebuggerBase = require('../../nuclide-debugger-base');
+}
 
-  constructor(targetUri: NuclideUri, targetInfo: AttachTargetInfo) {
+var _utils;
+
+function _load_utils() {
+  return _utils = require('./utils');
+}
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../commons-node/UniversalDisposable'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let AttachProcessInfo = exports.AttachProcessInfo = class AttachProcessInfo extends (_nuclideDebuggerBase || _load_nuclideDebuggerBase()).DebuggerProcessInfo {
+
+  constructor(targetUri, targetInfo) {
     super('lldb', targetUri);
     this._targetInfo = targetInfo;
   }
 
-  supportThreads(): boolean {
+  supportThreads() {
     return true;
   }
 
-  async debug(): Promise<DebuggerInstanceBase> {
-    const rpcService = this._getRpcService();
-    let debugSession = null;
-    let outputDisposable = registerConsoleLogging(
-      'C++ Debugger',
-      rpcService.getOutputWindowObservable().refCount(),
-    );
-    try {
-      await rpcService.attach(this._targetInfo).refCount().toPromise();
-      // Start websocket server with Chrome after attach completed.
-      invariant(outputDisposable);
-      debugSession = new DebuggerInstance(
-        this,
-        rpcService,
-        new UniversalDisposable(outputDisposable),
-      );
-      outputDisposable = null;
-    } finally {
-      if (outputDisposable != null) {
-        outputDisposable.dispose();
+  debug() {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const rpcService = _this._getRpcService();
+      let debugSession = null;
+      let outputDisposable = (0, (_nuclideDebuggerBase || _load_nuclideDebuggerBase()).registerConsoleLogging)('C++ Debugger', rpcService.getOutputWindowObservable().refCount());
+      try {
+        yield rpcService.attach(_this._targetInfo).refCount().toPromise();
+        // Start websocket server with Chrome after attach completed.
+
+        if (!outputDisposable) {
+          throw new Error('Invariant violation: "outputDisposable"');
+        }
+
+        debugSession = new (_nuclideDebuggerBase || _load_nuclideDebuggerBase()).DebuggerInstance(_this, rpcService, new (_UniversalDisposable || _load_UniversalDisposable()).default(outputDisposable));
+        outputDisposable = null;
+      } finally {
+        if (outputDisposable != null) {
+          outputDisposable.dispose();
+        }
       }
-    }
-    return debugSession;
+      return debugSession;
+    })();
   }
 
-  _getRpcService(): NativeDebuggerServiceType {
+  _getRpcService() {
     const debuggerConfig = {
-      logLevel: getConfig().serverLogLevel,
-      pythonBinaryPath: getConfig().pythonBinaryPath,
-      buckConfigRootFile: getConfig().buckConfigRootFile,
+      logLevel: (0, (_utils || _load_utils()).getConfig)().serverLogLevel,
+      pythonBinaryPath: (0, (_utils || _load_utils()).getConfig)().pythonBinaryPath,
+      buckConfigRootFile: (0, (_utils || _load_utils()).getConfig)().buckConfigRootFile
     };
-    const service = getServiceByNuclideUri('NativeDebuggerService', this.getTargetUri());
-    invariant(service);
+    const service = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getServiceByNuclideUri)('NativeDebuggerService', this.getTargetUri());
+
+    if (!service) {
+      throw new Error('Invariant violation: "service"');
+    }
+
     return new service.NativeDebuggerService(debuggerConfig);
   }
 
-  supportSingleThreadStepping(): boolean {
+  supportSingleThreadStepping() {
     return true;
   }
-}
+};

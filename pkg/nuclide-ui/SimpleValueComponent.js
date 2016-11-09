@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -10,86 +10,92 @@
  */
 
 // TODO @jxg export debugger typedefs from main module. (t11406963)
-import type {
-  EvaluationResult,
-} from '../nuclide-debugger/lib/types';
 
-import {React} from 'react-for-atom';
-import {ValueComponentClassNames} from './ValueComponentClassNames';
-import {TextRenderer} from './TextRenderer';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = undefined;
 
-type SimpleValueComponentProps = {
-  expression: ?string,
-  evaluationResult: EvaluationResult,
-};
+var _reactForAtom = require('react-for-atom');
 
-function renderNullish(evaluationResult: EvaluationResult): ?React.Element<any> {
-  const {type} = evaluationResult;
-  return (
-    type === 'undefined' || type === 'null'
-      ? <span className={ValueComponentClassNames.nullish}>{type}</span>
-      : null
-  );
+var _ValueComponentClassNames;
+
+function _load_ValueComponentClassNames() {
+  return _ValueComponentClassNames = require('./ValueComponentClassNames');
 }
 
-function renderString(evaluationResult: EvaluationResult): ?React.Element<any> {
-  const {
-    type,
+var _TextRenderer;
+
+function _load_TextRenderer() {
+  return _TextRenderer = require('./TextRenderer');
+}
+
+function renderNullish(evaluationResult) {
+  const type = evaluationResult.type;
+
+  return type === 'undefined' || type === 'null' ? _reactForAtom.React.createElement(
+    'span',
+    { className: (_ValueComponentClassNames || _load_ValueComponentClassNames()).ValueComponentClassNames.nullish },
+    type
+  ) : null;
+}
+
+function renderString(evaluationResult) {
+  const type = evaluationResult.type,
+        value = evaluationResult.value;
+
+  return type === 'string' ? _reactForAtom.React.createElement(
+    'span',
+    { className: (_ValueComponentClassNames || _load_ValueComponentClassNames()).ValueComponentClassNames.string },
+    _reactForAtom.React.createElement(
+      'span',
+      { className: (_ValueComponentClassNames || _load_ValueComponentClassNames()).ValueComponentClassNames.stringOpeningQuote },
+      '"'
+    ),
     value,
-  } = evaluationResult;
-  return (
-    type === 'string'
-      ? <span className={ValueComponentClassNames.string}>
-          <span className={ValueComponentClassNames.stringOpeningQuote}>"</span>
-          {value}
-          <span className={ValueComponentClassNames.stringClosingQuote}>"</span>
-        </span>
-      : null
-  );
+    _reactForAtom.React.createElement(
+      'span',
+      { className: (_ValueComponentClassNames || _load_ValueComponentClassNames()).ValueComponentClassNames.stringClosingQuote },
+      '"'
+    )
+  ) : null;
 }
 
-function renderNumber(evaluationResult: EvaluationResult): ?React.Element<any> {
-  const {
-    type,
-    value,
-  } = evaluationResult;
-  return (
-    type === 'number'
-      ? <span className={ValueComponentClassNames.number}>{value}</span>
-      : null
-  );
+function renderNumber(evaluationResult) {
+  const type = evaluationResult.type,
+        value = evaluationResult.value;
+
+  return type === 'number' ? _reactForAtom.React.createElement(
+    'span',
+    { className: (_ValueComponentClassNames || _load_ValueComponentClassNames()).ValueComponentClassNames.number },
+    value
+  ) : null;
 }
 
-function renderBoolean(evaluationResult: EvaluationResult): ?React.Element<any> {
-  const {type, value} = evaluationResult;
-  return (
-    type === 'boolean'
-      ? <span className={ValueComponentClassNames.boolean}>{String(value)}</span>
-      : null
-  );
+function renderBoolean(evaluationResult) {
+  const type = evaluationResult.type,
+        value = evaluationResult.value;
+
+  return type === 'boolean' ? _reactForAtom.React.createElement(
+    'span',
+    { className: (_ValueComponentClassNames || _load_ValueComponentClassNames()).ValueComponentClassNames.boolean },
+    String(value)
+  ) : null;
 }
 
-function renderDefault(evaluationResult: EvaluationResult): ?string {
+function renderDefault(evaluationResult) {
   return evaluationResult.value;
 }
 
-const valueRenderers = [
-  TextRenderer,
-  renderString,
-  renderNumber,
-  renderNullish,
-  renderBoolean,
-  renderDefault,
-];
+const valueRenderers = [(_TextRenderer || _load_TextRenderer()).TextRenderer, renderString, renderNumber, renderNullish, renderBoolean, renderDefault];
 
-export default class SimpleValueComponent extends React.Component {
-  props: SimpleValueComponentProps;
+let SimpleValueComponent = class SimpleValueComponent extends _reactForAtom.React.Component {
 
-  render(): ?React.Element<any> {
-    const {
-      expression,
-      evaluationResult,
-    } = this.props;
+  render() {
+    var _props = this.props;
+    const expression = _props.expression,
+          evaluationResult = _props.evaluationResult;
+
     let displayValue;
     for (const renderer of valueRenderers) {
       displayValue = renderer(evaluationResult);
@@ -101,20 +107,27 @@ export default class SimpleValueComponent extends React.Component {
       displayValue = evaluationResult.description || '(N/A)';
     }
     if (expression == null) {
-      return <span>{displayValue}</span>;
+      return _reactForAtom.React.createElement(
+        'span',
+        null,
+        displayValue
+      );
     }
     // TODO @jxg use a text editor to apply proper syntax highlighting for expressions
     // (t11408154)
-    const renderedExpression = (
-      <span className={ValueComponentClassNames.identifier}>
-        {expression}
-      </span>
+    const renderedExpression = _reactForAtom.React.createElement(
+      'span',
+      { className: (_ValueComponentClassNames || _load_ValueComponentClassNames()).ValueComponentClassNames.identifier },
+      expression
     );
-    return (
-      <span>
-        {renderedExpression}
-        : {displayValue}
-      </span>
+    return _reactForAtom.React.createElement(
+      'span',
+      null,
+      renderedExpression,
+      ': ',
+      displayValue
     );
   }
-}
+};
+exports.default = SimpleValueComponent;
+module.exports = exports['default'];

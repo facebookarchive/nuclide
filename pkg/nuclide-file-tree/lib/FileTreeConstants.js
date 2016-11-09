@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,4 +9,8 @@
  * the root directory of this source tree.
  */
 
-export const EVENT_HANDLER_SELECTOR = '.nuclide-file-tree';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+const EVENT_HANDLER_SELECTOR = exports.EVENT_HANDLER_SELECTOR = '.nuclide-file-tree';

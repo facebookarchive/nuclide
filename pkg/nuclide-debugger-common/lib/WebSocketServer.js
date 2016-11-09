@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,22 +9,32 @@
  * the root directory of this source tree.
  */
 
-import WS from 'ws';
-import EventEmitter from 'events';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.WebSocketServer = undefined;
 
-export class WebSocketServer {
-  _webSocketServer: ?WS.Server;
-  _eventEmitter: EventEmitter;
+var _ws;
+
+function _load_ws() {
+  return _ws = _interopRequireDefault(require('ws'));
+}
+
+var _events = _interopRequireDefault(require('events'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let WebSocketServer = exports.WebSocketServer = class WebSocketServer {
 
   constructor() {
     this._webSocketServer = null;
-    this._eventEmitter = new EventEmitter();
+    this._eventEmitter = new _events.default();
   }
 
   // Promise only resolves when one WebSocket client connect to it.
-  start(port: number): Promise<WS> {
+  start(port) {
     return new Promise((resolve, reject) => {
-      const server = new WS.Server({port});
+      const server = new (_ws || _load_ws()).default.Server({ port: port });
       this._webSocketServer = server;
       server.on('error', error => {
         reject(error);
@@ -35,9 +45,9 @@ export class WebSocketServer {
     });
   }
 
-  dispose(): void {
+  dispose() {
     if (this._webSocketServer != null) {
       this._webSocketServer.close();
     }
   }
-}
+};

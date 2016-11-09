@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -34,37 +34,37 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import {Observable, Subject} from 'rxjs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ActionsObservable = undefined;
+exports.combineEpics = combineEpics;
+exports.createEpicMiddleware = createEpicMiddleware;
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
 // This should be { type: readonly string } when we get readonly props. Because this is used with
 // disjoint unions we can't use `string` here due to mutation concerns. Flow doesn't know that we
 // aren't going to mutate the objects with a random string value so it can't allow us to pass a
 // specific action type into something of type { type: string }
-type Action = {type: any};
-type Store<T: Action, U> = {
-  dispatch(action: T): void,
-  getState(): U,
-};
-type Next<T: Action> = (action: T) => T;
-export type Epic<T: Action, U> =
-  (actions: ActionsObservable<T>, store: Store<T, U>) => Observable<T>;
+function combineEpics() {
+  for (var _len = arguments.length, epics = Array(_len), _key = 0; _key < _len; _key++) {
+    epics[_key] = arguments[_key];
+  }
 
-export function combineEpics<T: Action, U>(...epics: Array<Epic<T, U>>): Epic<T, U> {
-  return (actions: ActionsObservable<T>, store: Store<T, U>) => {
-    const streams: Array<Observable<T>> = epics.map(epic => epic(actions, store));
-    return Observable.merge(...streams);
+  return (actions, store) => {
+    const streams = epics.map(epic => epic(actions, store));
+    return _rxjsBundlesRxMinJs.Observable.merge(...streams);
   };
-}
-
-export function createEpicMiddleware<T: Action, U>(rootEpic?: Epic<T, U>) {
-  const actions = new Subject();
+}function createEpicMiddleware(rootEpic) {
+  const actions = new _rxjsBundlesRxMinJs.Subject();
   const actionsObs = new ActionsObservable(actions);
 
-  return (store: Store<T, U>) => (next: Next<T>) => {
+  return store => next => {
     if (rootEpic != null) {
       rootEpic(actionsObs, store).subscribe(store.dispatch);
     }
-    return (action: T) => {
+    return action => {
       const result = next(action);
       actions.next(action);
       return result;
@@ -72,23 +72,27 @@ export function createEpicMiddleware<T: Action, U>(rootEpic?: Epic<T, U>) {
   };
 }
 
-export class ActionsObservable<T: Action> extends Observable<T> {
-  source: Observable<any>;
-  operator: any;
+let ActionsObservable = exports.ActionsObservable = class ActionsObservable extends _rxjsBundlesRxMinJs.Observable {
 
-  constructor(actionsSubject: Observable<any>) {
+  constructor(actionsSubject) {
     super();
     this.source = actionsSubject;
   }
 
-  lift(operator: any): Observable<T> {
+  lift(operator) {
     const observable = new ActionsObservable(this);
     observable.operator = operator;
     return observable;
   }
 
-  ofType(...keys: Array<any>): ActionsObservable<T> {
-    const result = this.filter(({type}) => {
+  ofType() {
+    for (var _len2 = arguments.length, keys = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+      keys[_key2] = arguments[_key2];
+    }
+
+    const result = this.filter((_ref) => {
+      let type = _ref.type;
+
       const len = keys.length;
       if (len === 1) {
         return type === keys[0];
@@ -101,6 +105,6 @@ export class ActionsObservable<T: Action> extends Observable<T> {
       }
       return false;
     });
-    return ((result: any): ActionsObservable<T>);
+    return result;
   }
-}
+};

@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,105 +9,138 @@
  * the root directory of this source tree.
  */
 
-import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
-import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
-import type {HealthStats, PaneItemState} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
 // Imports from non-Nuclide modules.
-import invariant from 'assert';
-import {Disposable} from 'atom';
-import {React} from 'react-for-atom';
-import {Observable} from 'rxjs';
+
 
 // Imports from other Nuclide packages.
-import {track} from '../../nuclide-analytics';
-import createPackage from '../../commons-atom/createPackage';
-import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
-import featureConfig from '../../commons-atom/featureConfig';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {cacheWhileSubscribed} from '../../commons-node/observable';
+
 
 // Imports from within this Nuclide package.
-import HealthPaneItem from './HealthPaneItem';
-import getChildProcessesTree from './getChildProcessesTree';
-import getStats from './getStats';
 
-class Activation {
-  _paneItemStates: Observable<PaneItemState>;
-  _subscriptions: UniversalDisposable;
 
-  _healthButton: ?HTMLElement;
+var _atom = require('atom');
 
-  constructor(state: ?Object): void {
-    (this: any)._updateAnalytics = this._updateAnalytics.bind(this);
-    (this: any)._updateToolbarJewel = this._updateToolbarJewel.bind(this);
+var _reactForAtom = require('react-for-atom');
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _createPackage;
+
+function _load_createPackage() {
+  return _createPackage = _interopRequireDefault(require('../../commons-atom/createPackage'));
+}
+
+var _viewableFromReactElement;
+
+function _load_viewableFromReactElement() {
+  return _viewableFromReactElement = require('../../commons-atom/viewableFromReactElement');
+}
+
+var _featureConfig;
+
+function _load_featureConfig() {
+  return _featureConfig = _interopRequireDefault(require('../../commons-atom/featureConfig'));
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../commons-node/UniversalDisposable'));
+}
+
+var _observable;
+
+function _load_observable() {
+  return _observable = require('../../commons-node/observable');
+}
+
+var _HealthPaneItem;
+
+function _load_HealthPaneItem() {
+  return _HealthPaneItem = _interopRequireDefault(require('./HealthPaneItem'));
+}
+
+var _getChildProcessesTree;
+
+function _load_getChildProcessesTree() {
+  return _getChildProcessesTree = _interopRequireDefault(require('./getChildProcessesTree'));
+}
+
+var _getStats;
+
+function _load_getStats() {
+  return _getStats = _interopRequireDefault(require('./getStats'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let Activation = class Activation {
+
+  constructor(state) {
+    this._updateAnalytics = this._updateAnalytics.bind(this);
+    this._updateToolbarJewel = this._updateToolbarJewel.bind(this);
 
     // Observe all of the settings.
-    const configs = featureConfig.observeAsStream('nuclide-health');
+    const configs = (_featureConfig || _load_featureConfig()).default.observeAsStream('nuclide-health');
     const viewTimeouts = configs.map(config => config.viewTimeout * 1000).distinctUntilChanged();
-    const analyticsTimeouts = configs
-      .map(config => config.analyticsTimeout * 60 * 1000)
-      .distinctUntilChanged();
+    const analyticsTimeouts = configs.map(config => config.analyticsTimeout * 60 * 1000).distinctUntilChanged();
     const toolbarJewels = configs.map(config => config.toolbarJewel || '').distinctUntilChanged();
 
     // Update the stats immediately, and then periodically based on the config.
-    const statsStream = Observable.of(null)
-      .concat(viewTimeouts.switchMap(Observable.interval))
-      .map(getStats)
-      .share();
+    const statsStream = _rxjsBundlesRxMinJs.Observable.of(null).concat(viewTimeouts.switchMap(_rxjsBundlesRxMinJs.Observable.interval)).map((_getStats || _load_getStats()).default).share();
 
-    const childProcessesTreeStream = Observable.of(null)
-      .concat(viewTimeouts.switchMap(Observable.interval))
-      .switchMap(getChildProcessesTree)
-      .share();
+    const childProcessesTreeStream = _rxjsBundlesRxMinJs.Observable.of(null).concat(viewTimeouts.switchMap(_rxjsBundlesRxMinJs.Observable.interval)).switchMap((_getChildProcessesTree || _load_getChildProcessesTree()).default).share();
 
-    const packageStates = cacheWhileSubscribed(
-      statsStream
-        .withLatestFrom(toolbarJewels)
-        .map(([stats, toolbarJewel]) => ({stats, toolbarJewel}))
-        .share(),
-    );
+    const packageStates = (0, (_observable || _load_observable()).cacheWhileSubscribed)(statsStream.withLatestFrom(toolbarJewels).map((_ref) => {
+      var _ref2 = _slicedToArray(_ref, 2);
+
+      let stats = _ref2[0],
+          toolbarJewel = _ref2[1];
+      return { stats: stats, toolbarJewel: toolbarJewel };
+    }).share());
 
     const updateToolbarJewel = value => {
-      featureConfig.set('nuclide-health.toolbarJewel', value);
+      (_featureConfig || _load_featureConfig()).default.set('nuclide-health.toolbarJewel', value);
     };
-    this._paneItemStates = Observable.combineLatest(
-      packageStates,
-      Observable.of(null).concat(childProcessesTreeStream),
-      (packageState, childProcessesTree) => ({
-        ...packageState,
-        childProcessesTree,
-        updateToolbarJewel,
-      }),
-    );
+    this._paneItemStates = _rxjsBundlesRxMinJs.Observable.combineLatest(packageStates, _rxjsBundlesRxMinJs.Observable.of(null).concat(childProcessesTreeStream), (packageState, childProcessesTree) => Object.assign({}, packageState, {
+      childProcessesTree: childProcessesTree,
+      updateToolbarJewel: updateToolbarJewel
+    }));
 
-    this._subscriptions = new UniversalDisposable(
-      // Keep the toolbar jewel up-to-date.
-      packageStates
-        .map(formatToolbarJewelLabel)
-        .subscribe(this._updateToolbarJewel),
+    this._subscriptions = new (_UniversalDisposable || _load_UniversalDisposable()).default(
+    // Keep the toolbar jewel up-to-date.
+    packageStates.map(formatToolbarJewelLabel).subscribe(this._updateToolbarJewel),
 
-      // Buffer the stats and send analytics periodically.
-      statsStream
-        .buffer(analyticsTimeouts.switchMap(Observable.interval))
-        .subscribe(this._updateAnalytics),
-    );
+    // Buffer the stats and send analytics periodically.
+    statsStream.buffer(analyticsTimeouts.switchMap(_rxjsBundlesRxMinJs.Observable.interval)).subscribe(this._updateAnalytics));
   }
 
-  dispose(): void {
+  dispose() {
     this._subscriptions.dispose();
   }
 
-  consumeToolBar(getToolBar: GetToolBar): IDisposable {
+  consumeToolBar(getToolBar) {
     const toolBar = getToolBar('nuclide-health');
     this._healthButton = toolBar.addButton({
       icon: 'dashboard',
       callback: 'nuclide-health:toggle',
       tooltip: 'Toggle Nuclide health stats',
-      priority: -400,
+      priority: -400
     }).element;
     this._healthButton.classList.add('nuclide-health-jewel');
-    const disposable = new Disposable(() => {
+    const disposable = new _atom.Disposable(() => {
       this._healthButton = null;
       toolBar.removeItems();
     });
@@ -115,25 +148,29 @@ class Activation {
     return disposable;
   }
 
-  consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
-    invariant(this._paneItemStates);
-    this._subscriptions.add(
-      api.registerFactory({
-        id: 'nuclide-health',
-        name: 'Health',
-        iconName: 'dashboard',
-        toggleCommand: 'nuclide-health:toggle',
-        defaultLocation: 'pane',
-        create: () => {
-          invariant(this._paneItemStates != null);
-          return viewableFromReactElement(<HealthPaneItem stateStream={this._paneItemStates} />);
-        },
-        isInstance: item => item instanceof HealthPaneItem,
-      }),
-    );
+  consumeWorkspaceViewsService(api) {
+    if (!this._paneItemStates) {
+      throw new Error('Invariant violation: "this._paneItemStates"');
+    }
+
+    this._subscriptions.add(api.registerFactory({
+      id: 'nuclide-health',
+      name: 'Health',
+      iconName: 'dashboard',
+      toggleCommand: 'nuclide-health:toggle',
+      defaultLocation: 'pane',
+      create: () => {
+        if (!(this._paneItemStates != null)) {
+          throw new Error('Invariant violation: "this._paneItemStates != null"');
+        }
+
+        return (0, (_viewableFromReactElement || _load_viewableFromReactElement()).viewableFromReactElement)(_reactForAtom.React.createElement((_HealthPaneItem || _load_HealthPaneItem()).default, { stateStream: this._paneItemStates }));
+      },
+      isInstance: item => item instanceof (_HealthPaneItem || _load_HealthPaneItem()).default
+    }));
   }
 
-  _updateToolbarJewel(label: string): void {
+  _updateToolbarJewel(label) {
     const healthButton = this._healthButton;
     if (healthButton != null) {
       healthButton.classList.toggle('updated', healthButton.dataset.jewelValue !== label);
@@ -141,8 +178,10 @@ class Activation {
     }
   }
 
-  _updateAnalytics(analyticsBuffer: Array<HealthStats>): void {
-    if (analyticsBuffer.length === 0) { return; }
+  _updateAnalytics(analyticsBuffer) {
+    if (analyticsBuffer.length === 0) {
+      return;
+    }
 
     // Aggregates the buffered stats up by suffixing avg, min, max to their names.
     const aggregateStats = {};
@@ -155,52 +194,50 @@ class Activation {
         return;
       }
 
-      const aggregates = aggregate(
-        analyticsBuffer.map(
-          stats => (typeof stats[statsKey] === 'number' ? stats[statsKey] : 0),
-        ),
-      );
+      const aggregates = aggregate(analyticsBuffer.map(stats => typeof stats[statsKey] === 'number' ? stats[statsKey] : 0));
       Object.keys(aggregates).forEach(aggregatesKey => {
         const value = aggregates[aggregatesKey];
         if (value !== null && value !== undefined) {
-          aggregateStats[`${statsKey}_${aggregatesKey}`] = value.toFixed(2);
+          aggregateStats[`${ statsKey }_${ aggregatesKey }`] = value.toFixed(2);
         }
       });
     });
-    track('nuclide-health', aggregateStats);
+    (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('nuclide-health', aggregateStats);
   }
 
-}
+};
 
-function aggregate(
-  values: Array<number>,
-): {avg: ?number, min: ?number, max: ?number} {
+
+function aggregate(values) {
   const avg = values.reduce((prevValue, currValue, index) => {
     return prevValue + (currValue - prevValue) / (index + 1);
   }, 0);
   const min = Math.min(...values);
   const max = Math.max(...values);
-  return {avg, min, max};
+  return { avg: avg, min: min, max: max };
 }
 
-function formatToolbarJewelLabel(opts: {stats: HealthStats, toolbarJewel: string}): string {
-  const {stats, toolbarJewel} = opts;
+function formatToolbarJewelLabel(opts) {
+  const stats = opts.stats,
+        toolbarJewel = opts.toolbarJewel;
+
   switch (toolbarJewel) {
     case 'CPU':
-      return `${stats.cpuPercentage.toFixed(0)}%`;
+      return `${ stats.cpuPercentage.toFixed(0) }%`;
     case 'Heap':
-      return `${stats.heapPercentage.toFixed(0)}%`;
+      return `${ stats.heapPercentage.toFixed(0) }%`;
     case 'Memory':
-      return `${Math.floor(stats.rss / 1024 / 1024)}M`;
+      return `${ Math.floor(stats.rss / 1024 / 1024) }M`;
     case 'Handles':
-      return `${stats.activeHandles}`;
+      return `${ stats.activeHandles }`;
     case 'Child processes':
-      return `${stats.activeHandlesByType.childprocess.length}`;
+      return `${ stats.activeHandlesByType.childprocess.length }`;
     case 'Event loop':
-      return `${stats.activeRequests}`;
+      return `${ stats.activeRequests }`;
     default:
       return '';
   }
 }
 
-export default createPackage(Activation);
+exports.default = (0, (_createPackage || _load_createPackage()).default)(Activation);
+module.exports = exports['default'];

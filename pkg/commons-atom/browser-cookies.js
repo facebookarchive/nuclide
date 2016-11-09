@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,18 +9,26 @@
  * the root directory of this source tree.
  */
 
-import invariant from 'assert';
-import electron from 'electron';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-const {remote} = electron;
-invariant(remote != null);
+var _electron = _interopRequireDefault(require('electron'));
 
-export default {
-  getCookies(domain: string): Promise<{[key: string]: string}> {
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const remote = _electron.default.remote;
+
+if (!(remote != null)) {
+  throw new Error('Invariant violation: "remote != null"');
+}
+
+exports.default = {
+  getCookies: function (domain) {
     return new Promise((resolve, reject) => {
       // $FlowFixMe: Add types for electron$WebContents
       remote.getCurrentWindow().webContents.session.cookies.get({
-        domain,
+        domain: domain
       }, (error, cookies) => {
         if (error) {
           reject(error);
@@ -34,15 +42,14 @@ export default {
       });
     });
   },
-
-  setCookie(url: string, domain: string, name: string, value: string): Promise<void> {
+  setCookie: function (url, domain, name, value) {
     return new Promise((resolve, reject) => {
       // $FlowFixMe: Add types for electron$WebContents
       remote.getCurrentWindow().webContents.session.cookies.set({
-        url,
-        domain,
-        name,
-        value,
+        url: url,
+        domain: domain,
+        name: name,
+        value: value
       }, error => {
         if (error) {
           reject(error);
@@ -51,5 +58,6 @@ export default {
         }
       });
     });
-  },
+  }
 };
+module.exports = exports['default'];
