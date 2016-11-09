@@ -98,7 +98,9 @@ function syncBlockDecorations<Value>(
     const properties = decoration.getProperties();
     const item: HTMLElement = properties.item;
 
-    if (value == null) {
+    // If the decoration should no longer exist or it has already been rendered,
+    // it needs to be destroyed.
+    if (value == null || renderedLineNumbers.has(lineNumber)) {
       marker.destroy();
       continue;
     }
