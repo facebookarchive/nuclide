@@ -229,6 +229,10 @@ class Activation {
       atom.commands.add('atom-workspace', {
         'nuclide-debugger:add-to-watch': this._addToWatch.bind(this),
       }),
+      atom.commands.add('.nuclide-debugger-root', {
+        'nuclide-debugger:copy-debugger-expression-value':
+            this._copyDebuggerExpressionValue.bind(this),
+      }),
 
       // Context Menu Items.
       atom.contextMenu.add({
@@ -236,6 +240,12 @@ class Activation {
           {
             label: 'Remove All Breakpoints',
             command: 'nuclide-debugger:remove-all-breakpoints',
+          },
+        ],
+        '.nuclide-debugger-expression-value-list .list-item': [
+          {
+            label: 'Copy',
+            command: 'nuclide-debugger:copy-debugger-expression-value',
           },
         ],
         'atom-text-editor': [
@@ -449,6 +459,11 @@ class Activation {
     if (watchExpression) {
       this._model.getActions().addWatchExpression(watchExpression);
     }
+  }
+
+  _copyDebuggerExpressionValue(event: Event) {
+    const clickedElement: HTMLElement = (event.target: any);
+    atom.clipboard.write(clickedElement.textContent);
   }
 }
 
