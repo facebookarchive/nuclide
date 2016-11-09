@@ -50,6 +50,15 @@
   padding-right: 0.5em;
 }
 
+.nuclide-debugger-section-header {
+  border-bottom: 1px @base-border-color solid;
+  padding-bottom: 2px;
+}
+
+.nuclide-debugger-section-header:last-of-type {
+  border-bottom: none;
+}
+
 .nuclide-debugger-webview-hidden {
   height: 0;
   overflow: hidden;
@@ -87,6 +96,7 @@ Use flexbox cross-axis stretch to fill the vertical space.
 .nuclide-debugger-section-content {
   max-height: 20em;
   overflow-y: auto;
+  margin-bottom: 15px;
 }
 
 /* Watch Expressions */
