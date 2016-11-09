@@ -15,7 +15,7 @@ import {CompositeDisposable} from 'atom';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {BusySignalProviderBase} from '../../nuclide-busy-signal';
 import createPackage from '../../commons-atom/createPackage';
-import scheduleIdleCallback from '../../commons-atom/scheduleIdleCallback';
+import scheduleIdleCallback from '../../commons-node/scheduleIdleCallback';
 import {getFuzzyFileSearchServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {getLogger} from '../../nuclide-logging';
 import FuzzyFileNameProvider from './FuzzyFileNameProvider';

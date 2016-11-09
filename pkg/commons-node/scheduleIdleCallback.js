@@ -29,8 +29,18 @@ type RequestIdleCallback = (
 ) => number;
 type CancelIdleCallback = (id: number) => void ;
 
-const requestIdleCallback: RequestIdleCallback = global.requestIdleCallback;
-const cancelIdleCallback: CancelIdleCallback = global.cancelIdleCallback;
+const requestIdleCallback: RequestIdleCallback =
+  global.requestIdleCallback ||
+  // Polyfill for node environment
+  function requestIdleCallbackPolyfill(cb, opts) {
+    return global.setImmediate(() => {
+      cb({didTimeout: false, timeRemaining: () => 16});
+    });
+  };
+
+const cancelIdleCallback: CancelIdleCallback =
+  global.cancelIdleCallback ||
+  global.clearImmediate;
 
 export default function scheduleIdleCallback(
   callback_: () => void,
