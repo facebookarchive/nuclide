@@ -314,13 +314,15 @@ describe('nuclide-open-files', () => {
     });
 
     it('open a dir', () => {
+      const dir = __dirname;
+
       runs(() => {
-        atom.project.addPath('/local/path');
+        atom.project.addPath(dir);
       });
       waitsFor(() => eventCount >= 2);
 
       waitsForPromise(async () => {
-        expect(await finishDirEvents()).toEqual([[], ['/local/path']]);
+        expect(await finishDirEvents()).toEqual([[], [dir]]);
       });
     });
   });
