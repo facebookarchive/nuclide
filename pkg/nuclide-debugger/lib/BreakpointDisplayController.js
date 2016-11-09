@@ -13,7 +13,7 @@ import type BreakpointStore from './BreakpointStore';
 import type DebuggerActions from './DebuggerActions';
 
 import invariant from 'assert';
-import {CompositeDisposable, Disposable} from 'atom';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 
 const DIFF_VIEW_NAVIGATION_TARGET = 'nuclide-diff-view-navigation-target';
 const DIFF_VIEW_NAVIGATION_BAR = 'nuclide-diff-view-navigation-bar';
@@ -37,7 +37,7 @@ class BreakpointDisplayController {
   _breakpointStore: BreakpointStore;
   _debuggerActions: DebuggerActions;
   _delegate: BreakpointDisplayControllerDelegate;
-  _disposables: CompositeDisposable;
+  _disposables: UniversalDisposable;
   _editor: atom$TextEditor;
   _gutter: ?atom$Gutter;
   _markers: Array<atom$Marker>;
@@ -50,7 +50,7 @@ class BreakpointDisplayController {
     debuggerActions: DebuggerActions,
   ) {
     this._delegate = delegate;
-    this._disposables = new CompositeDisposable();
+    this._disposables = new UniversalDisposable();
     this._breakpointStore = breakpointStore;
     this._debuggerActions = debuggerActions;
     this._editor = editor;
@@ -65,34 +65,29 @@ class BreakpointDisplayController {
       priority: -1100,
     });
     this._gutter = gutter;
-    this._registerGutterMouseHandlers(
-      (atom.views.getView(editor): any)
-        .component.gutterContainerComponent.getDomNode(),
-    );
-
     this._disposables.add(
       gutter.onDidDestroy(this._handleGutterDestroyed.bind(this)),
+      editor.observeGutters(this._registerGutterMouseHandlers.bind(this)),
       this._breakpointStore.onNeedUIUpdate(this._handleBreakpointsChanged.bind(this)),
       this._editor.onDidDestroy(this._handleTextEditorDestroyed.bind(this)),
     );
     this._update();
   }
 
-  _registerGutterMouseHandlers(gutterView: HTMLElement): void {
+  _registerGutterMouseHandlers(gutter: atom$Gutter): void {
+    const gutterView = atom.views.getView(gutter);
     const boundClickHandler = this._handleGutterClick.bind(this);
-    const boundMouseMoveHandler =
-      this._handleGutterMouseMove.bind(this);
-    const boundMouseLeaveHandler =
-      this._handleGutterMouseLeave.bind(this);
+    const boundMouseMoveHandler = this._handleGutterMouseMove.bind(this);
+    const boundMouseLeaveHandler = this._handleGutterMouseLeave.bind(this);
     // Add mouse listeners gutter for setting breakpoints.
     gutterView.addEventListener('click', boundClickHandler);
     gutterView.addEventListener('mousemove', boundMouseMoveHandler);
     gutterView.addEventListener('mouseleave', boundMouseLeaveHandler);
-    this._disposables.add(new Disposable(() => {
-      gutterView.removeEventListener('click', boundClickHandler);
-      gutterView.removeEventListener('mousemove', boundMouseMoveHandler);
-      gutterView.removeEventListener('mouseleave', boundMouseLeaveHandler);
-    }));
+    this._disposables.add(
+      () => gutterView.removeEventListener('click', boundClickHandler),
+      () => gutterView.removeEventListener('mousemove', boundMouseMoveHandler),
+      () => gutterView.removeEventListener('mouseleave', boundMouseLeaveHandler),
+    );
   }
 
   dispose() {
