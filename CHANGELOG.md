@@ -1,5 +1,9 @@
 # Nuclide Changelog
 
+## v0.181.0
+
+Hotfix for gutter breakpoint click-listener regression.
+
 ## v0.180.0
 
 ### General
