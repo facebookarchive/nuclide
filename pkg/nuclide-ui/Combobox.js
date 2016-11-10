@@ -27,6 +27,7 @@ type DefaultProps = {
   onChange: (newValue: string) => mixed,
   onSelect: (newValue: string) => mixed,
   width: ?number,
+  disabled: boolean,
 };
 
 type Props = DefaultProps & {
@@ -38,6 +39,7 @@ type Props = DefaultProps & {
   onBlur?: (text: string) => void,
   requestOptions: (inputText: string) => Observable<Array<string>>,
   size: 'xs' | 'sm' | 'lg',
+  disabled: boolean,
 };
 
 type State = {
@@ -77,6 +79,7 @@ export class Combobox extends React.Component {
     onChange: (newValue: string) => {},
     onSelect: (newValue: string) => {},
     width: 200,
+    disabled: false,
   };
 
   constructor(props: Props) {
@@ -414,6 +417,7 @@ export class Combobox extends React.Component {
           ref="freeformInput"
           size={size}
           width={width}
+          disabled={this.props.disabled}
         />
         {optionsContainer}
       </div>
