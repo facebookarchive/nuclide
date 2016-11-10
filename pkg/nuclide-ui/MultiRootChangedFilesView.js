@@ -16,13 +16,17 @@ import {
  FileChangeStatus,
  RevertibleStatusCodes,
 } from '../nuclide-hg-git-bridge/lib/constants';
+import {getFileSystemServiceByNuclideUri} from '../nuclide-remote-connection';
+import {HgRepositoryClient} from '../nuclide-hg-repository-client/lib/HgRepositoryClient';
 import invariant from 'assert';
 import nuclideUri from '../commons-node/nuclideUri';
 import {React} from 'react-for-atom';
+import {repositoryForPath} from '../nuclide-hg-git-bridge';
 import UniversalDisposable from '../commons-node/UniversalDisposable';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {addPath, revertPath} from '../nuclide-hg-repository/lib/actions';
 import ChangedFilesList from './ChangedFilesList';
+
 
 type Props = {
   fileChanges: Map<NuclideUri, Map<NuclideUri, FileChangeStatusValue>>,
@@ -74,6 +78,15 @@ export class MultiRootChangedFilesView extends React.Component {
           },
         },
         {
+          label: 'Delete',
+          command: `${commandPrefix}:delete-file`,
+          shouldDisplay: event => {
+            const filePath = event.target.getAttribute('data-path');
+            const fsService = getFileSystemServiceByNuclideUri(filePath);
+            return fsService.exists(filePath);
+          },
+        },
+        {
           label: 'Goto File',
           command: `${commandPrefix}:goto-file`,
         },
@@ -105,6 +118,23 @@ export class MultiRootChangedFilesView extends React.Component {
       `${commandPrefix}:copy-full-path`,
       event => {
         atom.clipboard.write(nuclideUri.getPath(this._getFilePathFromEvent(event) || ''));
+      },
+    ));
+    this._subscriptions.add(atom.commands.add(
+      `.${commandPrefix}-file-entry`,
+      `${commandPrefix}:delete-file`,
+      event => {
+        const nuclideFilePath = this._getFilePathFromEvent(event);
+        const filePath = nuclideUri.getPath(nuclideFilePath);
+        const fsService = getFileSystemServiceByNuclideUri(nuclideFilePath);
+        fsService.unlink(filePath);
+
+        const repository = repositoryForPath(nuclideFilePath);
+        if (repository == null || repository.getType() !== 'hg') {
+          return;
+        }
+
+        ((repository: any): HgRepositoryClient).remove([filePath], true);
       },
     ));
     this._subscriptions.add(atom.commands.add(
