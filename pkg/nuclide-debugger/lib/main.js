@@ -584,12 +584,13 @@ export function consumeEvaluationExpressionProvider(
 
 export function consumeToolBar(getToolBar: GetToolBar): IDisposable {
   const toolBar = getToolBar('nuclide-debugger');
-  toolBar.addButton({
-    icon: 'plug',
+  const button = toolBar.addButton({
+    icon: 'bug',
     callback: 'nuclide-debugger:toggle',
     tooltip: 'Toggle Debugger',
     priority: 500,
-  });
+  }).element;
+  button.classList.add('nuclide-debugger-toolbar-button-circle-slash');
   const disposable = new Disposable(() => { toolBar.removeItems(); });
   invariant(activation);
   activation._disposables.add(disposable);
