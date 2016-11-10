@@ -76,7 +76,11 @@ export default class NuclideSettingsPaneItem extends React.Component {
       if (nuclide.config && nuclide.configMetadata) {
         const {pathComponents} = nuclide.configMetadata;
         const categoryName = pathComponents[0];
-        const packageTitle = pathComponents[1];
+        const packageTitle = pathComponents[1] || pkgName;
+        const categoryMatches = this.state == null
+          || matchesFilter(this.state.filter, categoryName);
+        const packageMatches = this.state == null
+          || matchesFilter(this.state.filter, packageTitle);
 
         // Group packages according to their category.
         let packages = configData[categoryName];
@@ -93,6 +97,8 @@ export default class NuclideSettingsPaneItem extends React.Component {
           const title = getTitle(schema, settingName);
           const description = getDescription(schema);
           if (this.state == null
+            || categoryMatches
+            || packageMatches
             || matchesFilter(this.state.filter, title)
             || matchesFilter(this.state.filter, description)) {
             settings[settingName] = {
@@ -115,7 +121,7 @@ export default class NuclideSettingsPaneItem extends React.Component {
 
         if (Object.keys(settings).length !== 0) {
           packages[pkgName] = {
-            title: packageTitle || pkgName,
+            title: packageTitle,
             settings,
           };
         }
