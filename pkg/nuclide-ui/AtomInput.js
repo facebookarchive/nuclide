@@ -18,6 +18,7 @@ import {maybeToString} from '../commons-node/string';
 
 type DefaultProps = {
   disabled: boolean,
+  autofocus: boolean,
   initialValue: string,
   tabIndex: string,
   onClick: (event: SyntheticMouseEvent) => mixed,
@@ -30,6 +31,7 @@ type DefaultProps = {
 type Props = {
   className?: string,
   disabled: boolean,
+  autofocus: boolean,
   initialValue: string,
   placeholderText?: string,
   tabIndex: string,
@@ -62,6 +64,7 @@ export class AtomInput extends React.Component {
 
   static defaultProps: DefaultProps = {
     disabled: false,
+    autofocus: false,
     initialValue: '',
     tabIndex: '0', // Default to all <AtomInput /> components being in tab order
     onClick: event => {},
@@ -87,6 +90,9 @@ export class AtomInput extends React.Component {
     // event.
     const textEditor = this.getTextEditor();
     const textEditorElement = this.getTextEditorElement();
+    if (this.props.autofocus) {
+      this.focus();
+    }
     disposables.add(
       atom.commands.add(textEditorElement, {
         'core:confirm': () => {
