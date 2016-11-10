@@ -14,6 +14,7 @@ import type {Observable} from 'rxjs';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {isPromise} from '../../commons-node/promise';
 import {maybeToString} from '../../commons-node/string';
+import performanceNow from '../../commons-node/performanceNow';
 import {track as rawTrack} from './track';
 
 export {HistogramTracker} from './HistogramTracker';
@@ -107,18 +108,13 @@ export function trackTiming(eventName_: ?string = null): any {
 
 const PERFORMANCE_EVENT = 'performance';
 
-// Obtain a monotonically increasing timestamp in milliseconds.
-const getTimestamp = global.performance ?
-  () => global.performance.now() :
-  () => process.uptime() * 1000;
-
 export class TimingTracker {
   _eventName: string;
   _startTime: number;
 
   constructor(eventName: string) {
     this._eventName = eventName;
-    this._startTime = getTimestamp();
+    this._startTime = performanceNow();
   }
 
   onError(error: Error): void {
@@ -131,7 +127,7 @@ export class TimingTracker {
 
   _trackTimingEvent(exception: ?Error): void {
     track(PERFORMANCE_EVENT, {
-      duration: Math.round(getTimestamp() - this._startTime).toString(),
+      duration: Math.round(performanceNow() - this._startTime).toString(),
       eventName: this._eventName,
       error: exception ? '1' : '0',
       exception: exception ? exception.toString() : '',

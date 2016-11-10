@@ -19,11 +19,14 @@ describe('startTracking', () => {
   let startTime;
 
   beforeEach(() => {
-    spyOn(process, 'uptime').andCallFake(() => {
+    spyOn(process, 'hrtime').andCallFake(() => {
       if (startTime == null) {
         startTime = Date.now();
       }
-      return (Date.now() - startTime) / 1000;
+      const milliseconds = Date.now() - startTime;
+      const seconds = Math.floor(milliseconds / 1000);
+      const nanoseconds = (milliseconds - seconds * 1000) * 1000000;
+      return [seconds, nanoseconds];
     });
 
     // Clear intercepted tracking data.
