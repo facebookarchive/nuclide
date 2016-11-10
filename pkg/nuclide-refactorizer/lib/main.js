@@ -25,6 +25,7 @@ import {Disposable} from 'atom';
 
 import ProviderRegistry from '../../commons-atom/ProviderRegistry';
 import createPackage from '../../commons-atom/createPackage';
+import observeGrammarForTextEditors from '../../commons-atom/observe-grammar-for-text-editors';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 
 import * as Actions from './refactorActions';
@@ -75,6 +76,8 @@ export type RefactorProvider = {
   refactor(request: RefactorRequest): Promise<?RefactorResponse>,
 };
 
+const CONTEXT_MENU_CLASS = 'enable-nuclide-refactorizer';
+
 class Activation {
   _disposables: UniversalDisposable;
   _store: Store;
@@ -90,6 +93,7 @@ class Activation {
       atom.commands.add('atom-workspace', 'nuclide-refactorizer:refactorize', () => {
         this._store.dispatch(Actions.open('generic'));
       }),
+      observeGrammarForTextEditors(editor => this._addContextMenuIfEligible(editor)),
     );
   }
 
@@ -97,10 +101,25 @@ class Activation {
     this._disposables.dispose();
   }
 
+  _addContextMenuIfEligible(editor: atom$TextEditor): void {
+    const element = atom.views.getView(editor);
+    if (this._providerRegistry.getProviderForEditor(editor) != null) {
+      element.classList.add(CONTEXT_MENU_CLASS);
+    } else {
+      element.classList.remove(CONTEXT_MENU_CLASS);
+    }
+  }
+
+  _checkAllEditorContextMenus(): void {
+    atom.workspace.getTextEditors().forEach(editor => this._addContextMenuIfEligible(editor));
+  }
+
   consumeRefactorProvider(provider: RefactorProvider): IDisposable {
     this._providerRegistry.addProvider(provider);
+    this._checkAllEditorContextMenus();
     return new Disposable(() => {
       this._providerRegistry.removeProvider(provider);
+      this._checkAllEditorContextMenus();
     });
   }
 }

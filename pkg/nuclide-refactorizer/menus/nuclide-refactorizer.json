@@ -14,5 +14,13 @@
         }
       ]
     }
-  ]
+  ],
+  "context-menu": {
+    "atom-text-editor:not(.mini).enable-nuclide-refactorizer": [
+      {
+        "label": "Refactor",
+        "command": "nuclide-refactorizer:refactorize"
+      }
+    ]
+  }
 }
