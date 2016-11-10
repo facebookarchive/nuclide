@@ -56,7 +56,8 @@
     "name": "ReasonService"
   },
   {
-    "implementation": "../nuclide-debugger-native-rpc/lib/NativeDebuggerService.js",
+    "definition": "../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface.js",
+    "implementation": "../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceImplementation.js",
     "name": "NativeDebuggerService"
   },
   {

@@ -10,3 +10,8 @@
  */
 
 export {default as ClientCallback} from './ClientCallback';
+
+export {
+  DebuggerRpcServiceBase,
+  DebuggerRpcWebSocketService,
+} from './DebuggerRpcServiceBase';

@@ -13,11 +13,11 @@ import type LaunchAttachDispatcher from './LaunchAttachDispatcher';
 import type {
   AttachTargetInfo,
   LaunchTargetInfo,
-} from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerService';
+} from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {DebuggerProcessInfo} from '../../nuclide-debugger-base';
 import typeof * as NativeDebuggerService
-  from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerService';
+  from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
 
 import invariant from 'assert';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';

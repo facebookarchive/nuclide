@@ -11,7 +11,7 @@
 
 import type {
   AttachTargetInfo,
-} from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerService';
+} from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
 import type LaunchAttachDispatcher, {LaunchAttachAction} from './LaunchAttachDispatcher';
 
 import {Emitter} from 'atom';

@@ -17,7 +17,7 @@ import type {
 } from '../../nuclide-debugger-node-rpc/lib/NodeDebuggerService';
 import type {
   NativeDebuggerService,
-} from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerService';
+} from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
 import type {
   IwdpDebuggerService,
 } from '../../nuclide-debugger-iwdp-rpc/lib/IwdpDebuggerService';

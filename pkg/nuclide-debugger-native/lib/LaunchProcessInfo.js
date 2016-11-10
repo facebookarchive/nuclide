@@ -14,9 +14,9 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {
   LaunchTargetInfo,
   NativeDebuggerService as NativeDebuggerServiceType,
-} from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerService';
+} from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
 import typeof * as NativeDebuggerService
-  from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerService';
+  from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
 
 import invariant from 'assert';
 import {

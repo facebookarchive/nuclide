@@ -13,7 +13,7 @@ import type {LaunchAttachStore} from './LaunchAttachStore';
 import type {LaunchAttachActions} from './LaunchAttachActions';
 import type {
   AttachTargetInfo,
-} from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerService';
+} from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
 import type {Column} from '../../nuclide-ui/Table';
 
 import {DebuggerLaunchAttachEventTypes} from '../../nuclide-debugger-base';

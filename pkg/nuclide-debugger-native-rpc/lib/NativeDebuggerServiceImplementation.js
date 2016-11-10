@@ -9,44 +9,23 @@
  * the root directory of this source tree.
  */
 
-import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
 import type {ConnectableObservable} from 'rxjs';
+import type {
+  DebuggerConfig,
+  AttachTargetInfo,
+  LaunchTargetInfo,
+} from './NativeDebuggerServiceInterface.js';
 
 import child_process from 'child_process';
 import invariant from 'assert';
 import nuclideUri from '../../commons-node/nuclideUri';
 import utils from './utils';
-import WS from 'ws';
 const {log, logTrace, logError, logInfo, setLogLevel} = utils;
-import {ClientCallback} from '../../nuclide-debugger-common';
+import {DebuggerRpcWebSocketService} from '../../nuclide-debugger-common';
 import {observeStream} from '../../commons-node/stream';
 import {splitStream} from '../../commons-node/observable';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {checkOutput} from '../../commons-node/process';
 import {Observable} from 'rxjs';
-
-export type AttachTargetInfo = {
-  pid: number,
-  name: string,
-  commandName: string,
-  basepath?: string,
-};
-
-export type LaunchTargetInfo = {
-  executablePath: string,
-  arguments: Array<string>,
-  environmentVariables: Array<string>,
-  workingDirectory: string,
-  stdinFilePath?: string,
-  basepath?: string,
-  lldbPythonPath: ?string,
-};
-
-export type DebuggerConfig = {
-  logLevel: LogLevel,
-  pythonBinaryPath: string,
-  buckConfigRootFile: string,
-};
 
 type AttachInfoArgsType = {
   pid: string,
@@ -64,6 +43,7 @@ type LaunchInfoArgsType = {
 };
 
 type LaunchAttachArgsType = AttachInfoArgsType | LaunchInfoArgsType;
+
 
 export async function getAttachTargetInfoList(
   targetPid: ?number,
@@ -119,25 +99,13 @@ export async function getAttachTargetInfoList(
   });
 }
 
-export class NativeDebuggerService {
-  _clientCallback: ClientCallback;
-  _lldbWebSocket: ?WS;
+export class NativeDebuggerService extends DebuggerRpcWebSocketService {
   _config: DebuggerConfig;
-  _subscriptions: UniversalDisposable;
 
   constructor(config: DebuggerConfig) {
-    this._clientCallback = new ClientCallback();
+    super('native');
     this._config = config;
     setLogLevel(config.logLevel);
-    this._subscriptions = new UniversalDisposable(this._clientCallback);
-  }
-
-  getOutputWindowObservable(): ConnectableObservable<string> {
-    return this._clientCallback.getOutputWindowObservable().publish();
-  }
-
-  getServerMessageObservable(): ConnectableObservable<string> {
-    return this._clientCallback.getServerMessageObservable().publish();
   }
 
   attach(attachInfo: AttachTargetInfo): ConnectableObservable<void> {
@@ -170,17 +138,20 @@ export class NativeDebuggerService {
     lldbProcess.on('exit', this._handleLLDBExit.bind(this));
     this._registerIpcChannel(lldbProcess);
     this._sendArgumentsToPythonBackend(lldbProcess, inferiorArguments);
-    const lldbWebSocket = await this._connectWithLLDB(lldbProcess);
-    this._lldbWebSocket = lldbWebSocket;
-    this._subscriptions.add(() => lldbWebSocket.terminate());
-    lldbWebSocket.on('message', this._handleLLDBMessage.bind(this));
+    const lldbWebSocketListeningPort = await this._connectWithLLDB(lldbProcess);
+
+    // TODO[jeffreytan]: explicitly use ipv4 address 127.0.0.1 for now.
+    // Investigate if we can use localhost and match protocol version between client/server.
+    const lldbWebSocketAddress = `ws://127.0.0.1:${lldbWebSocketListeningPort}/`;
+    await this.connectToWebSocketServer(lldbWebSocketAddress);
+    log(`Connected with lldb at address: ${lldbWebSocketAddress}`);
   }
 
   _registerIpcChannel(lldbProcess: child_process$ChildProcess): void {
     const IPC_CHANNEL_FD = 4;
     /* $FlowFixMe - update Flow defs for ChildProcess */
     const ipcStream = lldbProcess.stdio[IPC_CHANNEL_FD];
-    this._subscriptions.add(
+    this.getSubscriptions().add(
       splitStream(observeStream(ipcStream)).subscribe(
         this._handleIpcMessage.bind(this, ipcStream),
         error => logError(`ipcStream error: ${JSON.stringify(error)}`),
@@ -198,7 +169,7 @@ export class NativeDebuggerService {
           message_id: messageJson.id,
         }) + '\n');
       }
-      this._clientCallback.sendUserOutputMessage(JSON.stringify(messageJson.message));
+      this.getClientCallback().sendUserOutputMessage(JSON.stringify(messageJson.message));
     } else {
       logError(`Unknown message: ${message}`);
     }
@@ -220,7 +191,7 @@ export class NativeDebuggerService {
       python_args,
       options,
     );
-    this._subscriptions.add(() => lldbProcess.kill());
+    this.getSubscriptions().add(() => lldbProcess.kill());
     return lldbProcess;
   }
 
@@ -234,7 +205,7 @@ export class NativeDebuggerService {
     // Make sure the bidirectional communication channel is set up before
     // sending data.
     argumentsStream.write('init\n');
-    this._subscriptions.add(
+    this.getSubscriptions().add(
       observeStream(argumentsStream).first().subscribe(
         text => {
           if (text.startsWith('ready')) {
@@ -251,7 +222,7 @@ export class NativeDebuggerService {
     );
   }
 
-  _connectWithLLDB(lldbProcess: child_process$ChildProcess): Promise<WS> {
+  _connectWithLLDB(lldbProcess: child_process$ChildProcess): Promise<string> {
     log('connecting with lldb');
     return new Promise((resolve, reject) => {
       // Async handle parsing websocket address from the stdout of the child.
@@ -264,20 +235,12 @@ export class NativeDebuggerService {
         if (result != null) {
           // $FlowIssue - flow has wrong typing for it(t9649946).
           lldbProcess.stdout.removeAllListeners(['data', 'error', 'exit']);
-          // TODO[jeffreytan]: explicitly use ipv4 address 127.0.0.1 for now.
-          // Investigate if we can use localhost and match protocol version between client/server.
-          const lldbWebSocketAddress = `ws://127.0.0.1:${result[1]}/`;
-          log(`Connecting lldb with address: ${lldbWebSocketAddress}`);
-          const ws = new WS(lldbWebSocketAddress);
-          ws.on('open', () => {
-            // Successfully connected with lldb python process, fulfill the promise.
-            resolve(ws);
-          });
+          resolve(result[1]);
         }
       });
       lldbProcess.stderr.on('data', chunk => {
         const errorMessage = chunk.toString();
-        this._clientCallback.sendUserOutputMessage(JSON.stringify({
+        this.getClientCallback().sendUserOutputMessage(JSON.stringify({
           level: 'error',
           text: errorMessage,
         }));
@@ -292,30 +255,8 @@ export class NativeDebuggerService {
     });
   }
 
-  _handleLLDBMessage(message: string): void {
-    logTrace(`lldb message: ${message}`);
-    this._clientCallback.sendChromeMessage(message);
-  }
-
   _handleLLDBExit(): void {
     // Fire and forget.
     this.dispose();
-  }
-
-  sendCommand(message: string): Promise<void> {
-    const lldbWebSocket = this._lldbWebSocket;
-    if (lldbWebSocket != null) {
-      logTrace(`forward client message to lldb: ${message}`);
-      lldbWebSocket.send(message);
-    } else {
-      logInfo(`Nuclide sent message to LLDB after socket closed: ${message}`);
-    }
-    return Promise.resolve();
-  }
-
-  dispose(): Promise<void> {
-    logInfo('NativeDebuggerService disposed');
-    this._subscriptions.dispose();
-    return Promise.resolve();
   }
 }
