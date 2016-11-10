@@ -2,9 +2,9 @@
   "atom": {
     "clientOnly": true,
     "version-cmd": ["atom", "--version"],
-    "version-output": "Atom    : 1.11.2\nElectron: 0.37.8\nChrome  : 49.0.2623.75\nNode    : 5.10.0",
-    "url": "https://github.com/atom/atom/releases/download/v1.11.2/atom-mac.zip",
-    "shasum": "931285cb1cd6989ec632f01f60fe6dd22129f255cd724bfd891c40ab6bd52194"
+    "version-output": "Atom    : 1.12.0\nElectron: 1.3.6\nChrome  : 52.0.2743.82\nNode    : 6.3.0",
+    "url": "https://github.com/atom/atom/releases/download/v1.12.0/atom-mac.zip",
+    "shasum": "b53cabe691fcc3f9181ab8b0a701d6bd4db19060784ad6e410709c0b45424c25"
   },
   "flow": {
     "clientOnly": false,
@@ -16,14 +16,14 @@
   "node": {
     "clientOnly": false,
     "version-cmd": ["node", "--version"],
-    "version-output": "v5.10.0",
-    "url": "https://nodejs.org/dist/v5.10.0/node-v5.10.0-darwin-x64.tar.xz",
-    "shasum": "32bb55aa33da388e0ffb653678b1598511a12e9664ff42ff80e9072e75cbad3a"
+    "version-output": "v6.3.0",
+    "url": "https://nodejs.org/dist/v6.3.0/node-v6.3.0-darwin-x64.tar.xz",
+    "shasum": "4f9a19b5688092d5652e8748093cb9c90fa503ea13b976e51dbd53c2fa07c116"
   },
   "npm": {
     "clientOnly": false,
     "version-cmd": ["npm", "--version"],
-    "version-output": "3.8.3",
+    "version-output": "3.10.3",
     "url": null,
     "shasum": null
   }

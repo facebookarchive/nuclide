@@ -33,13 +33,13 @@ You can verify all the appropriate dependencies. All the following should be in 
 $ git --version
 git version 2.5.4 (Apple Git-61)
 $ node --version
-v5.10.0
+v6.3.0
 $ npm --version
-3.8.3
+3.10.3
 $ apm --version
-apm  1.10.0
-npm  2.13.3
-node 0.10.40
+apm  1.12.5
+npm  3.10.5
+node 4.4.5
 python 2.7.10
 git 2.5.4
 ```
@@ -85,13 +85,13 @@ You can verify all the appropriate dependencies. All the following should be in 
 $ git --version
 git version 1.9.1
 $ node --version
-v5.10.0
+v6.3.0
 $ npm --version
-3.8.3
+3.10.3
 $ apm --version
-apm  1.10.0
-npm  2.13.3
-node 0.10.40
+apm  1.12.5
+npm  3.10.5
+node 4.4.5
 python 2.7.6
 git 1.9.1
 ```
