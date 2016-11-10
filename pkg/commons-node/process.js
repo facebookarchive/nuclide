@@ -18,9 +18,31 @@ import {maybeToString} from './string';
 import {Observable} from 'rxjs';
 import invariant from 'assert';
 import {quote} from 'shell-quote';
+import performanceNow from './performanceNow';
 
 // Node crashes if we allow buffers that are too large.
 const DEFAULT_MAX_BUFFER = 100 * 1024 * 1024;
+
+const MAX_LOGGED_CALLS = 100;
+const PREVERVED_HISTORY_CALLS = 50;
+
+export const loggedCalls = [];
+function logCall(duration, command, args) {
+  // Trim the history once in a while, to avoid doing expensive array
+  // manipulation all the time after we reached the end of the history
+  if (loggedCalls.length > MAX_LOGGED_CALLS) {
+    loggedCalls.splice(
+      0,
+      loggedCalls.length - PREVERVED_HISTORY_CALLS,
+      {time: new Date(), duration: 0, command: '... history stripped ...'},
+    );
+  }
+  loggedCalls.push({
+    duration,
+    command: [command, ...args].join(' '),
+    time: new Date(),
+  });
+}
 
 export type AsyncExecuteReturn = {
   // If the process fails to even start up, exitCode will not be set
@@ -97,6 +119,7 @@ export type ProcessError = ProcessSystemError | ProcessExitError;
 export type AsyncExecuteOptions = child_process$execFileOpts & {
   // The contents to write to stdin.
   stdin?: ?string,
+  dontLogInNuclide?: ?boolean,
 };
 
 const STREAM_NAMES = ['stdin', 'stdout', 'stderr'];
@@ -145,11 +168,17 @@ export function safeSpawn(
   args?: Array<string> = [],
   options?: child_process$spawnOpts = {},
 ): child_process$ChildProcess {
+  const now = performanceNow();
   const child = child_process.spawn(command, args, options);
   monitorStreamErrors(child, command, args, options);
   child.on('error', error => {
     logError('error with command:', command, args, options, 'error:', error);
   });
+  if (!options || !options.dontLogInNuclide) {
+    child.on('close', () => {
+      logCall(Math.round(performanceNow() - now), command, args);
+    });
+  }
   writeToStdin(child, options);
   return child;
 }
@@ -416,6 +445,7 @@ export function asyncExecute(
   args: Array<string>,
   options?: AsyncExecuteOptions = {},
 ): Promise<AsyncExecuteReturn> {
+  const now = performanceNow();
   return new Promise((resolve, reject) => {
     const process = child_process.execFile(
       command,
@@ -426,6 +456,9 @@ export function asyncExecute(
       },
       // Node embeds various properties like code/errno in the Error object.
       (err: any /* Error */, stdoutBuf, stderrBuf) => {
+        if (!options || !options.dontLogInNuclide) {
+          logCall(Math.round(performanceNow() - now), command, args);
+        }
         const stdout = stdoutBuf.toString('utf8');
         const stderr = stderrBuf.toString('utf8');
         if (err == null) {

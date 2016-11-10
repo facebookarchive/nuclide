@@ -35,7 +35,11 @@ export default function getChildProcessesTree(): Observable<?ChildProcessInfo> {
     return Observable.of(null);
   }
 
-  return runCommand('ps', ['axo', 'ppid,pid,pcpu,command'])
+  return runCommand(
+    'ps',
+    ['axo', 'ppid,pid,pcpu,command'],
+    {dontLogInNuclide: true},
+  )
     .map(parsePSOutput)
     .map(ps => buildTree(ps, process.pid));
 }

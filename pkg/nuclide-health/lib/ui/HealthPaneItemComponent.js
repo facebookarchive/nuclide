@@ -15,6 +15,7 @@ import {React} from 'react-for-atom';
 import BasicStatsSectionComponent from './sections/BasicStatsSectionComponent';
 import ActiveHandlesSectionComponent from './sections/ActiveHandlesSectionComponent';
 import ChildProcessTreeComponent from './sections/ChildProcessTreeComponent';
+import CommandsSectionComponent from './sections/CommandsSectionComponent';
 
 type Props = {
   toolbarJewel: string,
@@ -40,6 +41,8 @@ export default class HealthPaneItemComponent extends React.Component {
         <ChildProcessTreeComponent childProcessesTree={this.props.childProcessesTree} />,
       Handles:
         <ActiveHandlesSectionComponent activeHandlesByType={this.props.activeHandlesByType} />,
+      Commands:
+        <CommandsSectionComponent />,
     };
 
     // For each section, we use settings-view to get a familiar look for table cells.
