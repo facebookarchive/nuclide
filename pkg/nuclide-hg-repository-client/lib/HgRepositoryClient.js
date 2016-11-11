@@ -69,6 +69,7 @@ export type RevisionStatuses = Map<number, RevisionStatusDisplay>;
 type RevisionStatusCache = {
   getCachedRevisionStatuses(): Map<number, RevisionStatusDisplay>,
   observeRevisionStatusesChanges(): Observable<RevisionStatuses>,
+  refresh(): void,
 };
 
 function getRevisionStatusCache(
@@ -83,6 +84,7 @@ function getRevisionStatusCache(
     return {
       getCachedRevisionStatuses() { return new Map(); },
       observeRevisionStatusesChanges() { return Observable.empty(); },
+      refresh() {},
     };
   }
 }
@@ -779,6 +781,10 @@ export class HgRepositoryClient {
 
   refreshRevisions(): void {
     this._revisionsCache.refreshRevisions();
+  }
+
+  refreshRevisionsStatuses(): void {
+    this._revisionStatusCache.refresh();
   }
 
   getCachedRevisions(): Array<RevisionInfo> {
