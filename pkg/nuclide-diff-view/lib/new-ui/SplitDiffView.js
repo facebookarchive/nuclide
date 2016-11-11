@@ -287,7 +287,7 @@ function renderNavigationBarAtGutter(
   // The gutter elements don't receive the click.
   // Hence, the need to inject DOM attributes in navigation targets,
   // and use  here for
-  navigationGutterView.addEventListener('click', event => {
+  navigationGutterView.addEventListener('click', (event: MouseEvent) => {
     // classList isn't in the defs of EventTarget...
     const target: HTMLElement = (event.target: any);
     if (!target.classList.contains(DIFF_VIEW_NAVIGATION_TARGET)) {
