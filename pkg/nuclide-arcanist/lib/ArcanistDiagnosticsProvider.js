@@ -30,8 +30,8 @@ import onWillDestroyTextBuffer from '../../commons-atom/on-will-destroy-text-buf
 import {RequestSerializer} from '../../commons-node/promise';
 import {removeCommonSuffix} from '../../commons-node/string';
 import invariant from 'assert';
-import aggregateFindDiagnostics from './aggregateFindDiagnostics';
 import {getLogger} from '../../nuclide-logging';
+import {getArcanistServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 const logger = getLogger();
 
@@ -86,8 +86,9 @@ export class ArcanistDiagnosticsProvider {
     try {
       const blacklistedLinters: Array<string> =
         (featureConfig.get('nuclide-arcanist.blacklistedLinters'): any);
+      const arcService = getArcanistServiceByNuclideUri(filePath);
       const result = await this._requestSerializer.run(
-        aggregateFindDiagnostics([filePath], blacklistedLinters),
+        arcService.findDiagnostics(filePath, blacklistedLinters),
       );
       if (result.status === 'outdated') {
         return;

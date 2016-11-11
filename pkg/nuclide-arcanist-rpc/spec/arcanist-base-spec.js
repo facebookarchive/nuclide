@@ -12,7 +12,6 @@
 import * as arcanist from '..';
 import nuclideUri from '../../commons-node/nuclideUri';
 import fsPromise from '../../commons-node/fsPromise';
-import invariant from 'assert';
 import {copyFixture} from '../../nuclide-test-helpers';
 
 const rootConfig = {
@@ -163,33 +162,11 @@ describe('nuclide-arcanist-rpc', () => {
 
     it('should call `arc lint` with the paths', () => {
       waitsForPromise(async () => {
-        const filePaths = filePathMap.get('/fake/path/one');
-        invariant(filePaths != null);
-        expect(filePaths.length).toBe(3);
-        await arcanist.findDiagnostics(filePaths, []);
+        const filePath = 'path1';
+        await arcanist.findDiagnostics(filePath, []);
         // Expect arc lint to be called once
         expect(execArgs.length).toBe(1);
-        for (const filePath of filePaths) {
-          expect(execArgs[0].indexOf(filePath)).toBeGreaterThan(-1);
-        }
-      });
-    });
-
-    it('should call `arc lint` separately for paths in different arc config dirs', () => {
-      waitsForPromise(async () => {
-        const filePaths = ['path1', 'foo'];
-        await arcanist.findDiagnostics(filePaths, []);
-        // Expect arc lint to be called twice.
-        expect(execArgs.length).toBe(2);
-        let path1Args;
-        let fooArgs;
-        if (execArgs[0].indexOf('path1') !== -1) {
-          [path1Args, fooArgs] = execArgs;
-        } else {
-          [fooArgs, path1Args] = execArgs;
-        }
-        expect(path1Args.indexOf('path1')).toBeGreaterThan(-1);
-        expect(fooArgs.indexOf('foo')).toBeGreaterThan(-1);
+        expect(execArgs[0].indexOf(filePath)).toBeGreaterThan(-1);
       });
     });
 
@@ -198,7 +175,7 @@ describe('nuclide-arcanist-rpc', () => {
         setResult({
           path1: [fakeLint],
         });
-        const lints = await arcanist.findDiagnostics(['/fake/path/one/path1'], []);
+        const lints = await arcanist.findDiagnostics('/fake/path/one/path1', []);
         expect(lints).toEqual([fakeLintResult]);
       });
     });
@@ -207,7 +184,7 @@ describe('nuclide-arcanist-rpc', () => {
       waitsForPromise(async () => {
         const fakeArcResult = {path1: [fakeLint]};
         setResult(fakeArcResult, fakeArcResult);
-        const lints = await arcanist.findDiagnostics(['/fake/path/one/path1'], []);
+        const lints = await arcanist.findDiagnostics('/fake/path/one/path1', []);
         expect(lints).toEqual([fakeLintResult, fakeLintResult]);
       });
     });

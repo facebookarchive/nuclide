@@ -89,32 +89,14 @@ export async function getProjectRelativePath(fileName: NuclideUri): Promise<?str
 }
 
 export async function findDiagnostics(
-  pathToFiles: Array<NuclideUri>,
+  path: NuclideUri,
   skip: Array<string>,
 ): Promise<Array<ArcDiagnostic>> {
-  const arcConfigDirToFiles: Map<string, Array<string>> = new Map();
-  await Promise.all(
-    pathToFiles.map(async file => {
-      const arcConfigDir = await findArcConfigDirectory(file);
-      if (arcConfigDir) {
-        let files = arcConfigDirToFiles.get(arcConfigDir);
-        if (files == null) {
-          files = [];
-          arcConfigDirToFiles.set(arcConfigDir, files);
-        }
-        files.push(file);
-      }
-    }),
-  );
-
-  // Kick off all the arc execs at once, then await later so they all happen in parallel.
-  const results: Array<Promise<Array<ArcDiagnostic>>> = [];
-  for (const [arcDir, files] of arcConfigDirToFiles) {
-    results.push(execArcLint(arcDir, files, skip));
+  const arcDir = await findArcConfigDirectory(path);
+  if (arcDir == null) {
+    return [];
   }
-
-  // Flatten the resulting array
-  return [].concat(...(await Promise.all(results)));
+  return execArcLint(arcDir, [path], skip);
 }
 
 
