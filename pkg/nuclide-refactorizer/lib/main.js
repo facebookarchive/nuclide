@@ -22,6 +22,7 @@ import type {
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import {Disposable} from 'atom';
+import invariant from 'assert';
 
 import ProviderRegistry from '../../commons-atom/ProviderRegistry';
 import createPackage from '../../commons-atom/createPackage';
@@ -88,10 +89,45 @@ class Activation {
 
     this._store = getStore(this._providerRegistry);
 
+    let lastMouseEvent = null;
     this._disposables = new UniversalDisposable(
       initRefactorUIs(this._store),
       atom.commands.add('atom-workspace', 'nuclide-refactorizer:refactorize', () => {
         this._store.dispatch(Actions.open('generic'));
+      }),
+      atom.commands.add(
+        'atom-text-editor',
+        // We don't actually want people calling this directly.
+        // eslint-disable-next-line nuclide-internal/atom-commands
+        'nuclide-refactorizer:refactorize-from-context-menu',
+        () => {
+          const mouseEvent = lastMouseEvent;
+          lastMouseEvent = null;
+          invariant(
+            mouseEvent != null,
+            'No mouse event found. Do not invoke this command directly. ' +
+            'If you did use the context menu, please report this issue.',
+          );
+          const editor = atom.workspace.getActiveTextEditor();
+          invariant(editor != null);
+          const view = atom.views.getView(editor);
+          const component = view.component;
+          invariant(component != null);
+          const screenPosition = component.screenPositionForMouseEvent(mouseEvent);
+          const bufferPosition = editor.bufferPositionForScreenPosition(screenPosition);
+          editor.setCursorBufferPosition(bufferPosition);
+
+          this._store.dispatch(Actions.open('generic'));
+        },
+      ),
+      atom.contextMenu.add({
+        'atom-text-editor:not(.mini).enable-nuclide-refactorizer': [
+          {
+            label: 'Refactor',
+            command: 'nuclide-refactorizer:refactorize-from-context-menu',
+            created: event => { lastMouseEvent = event; },
+          },
+        ],
       }),
       atom.commands.add('atom-workspace', 'nuclide-refactorizer:rename', () => {
         this._store.dispatch(Actions.open('rename'));
