@@ -54,11 +54,16 @@ class DiagnosticsPanel extends React.Component {
     let errorCount = 0;
     let {diagnostics} = this.props;
     const {showTraces} = this.props;
-    if (this.props.filterByActiveTextEditor && this.props.pathToActiveTextEditor) {
+    if (this.props.filterByActiveTextEditor) {
       const pathToFilterBy = this.props.pathToActiveTextEditor;
-      diagnostics = diagnostics.filter(
-        diagnostic => diagnostic.scope === 'file' && diagnostic.filePath === pathToFilterBy,
-      );
+      if (pathToFilterBy !== null) {
+        diagnostics = diagnostics.filter(
+          diagnostic => diagnostic.scope === 'file' && diagnostic.filePath === pathToFilterBy,
+        );
+      } else {
+        // Current pane is not a text editor; do not show diagnostics.
+        diagnostics = [];
+      }
     }
     diagnostics.forEach(diagnostic => {
       if (diagnostic.type === 'Error') {
