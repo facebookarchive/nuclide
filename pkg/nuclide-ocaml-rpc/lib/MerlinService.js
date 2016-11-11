@@ -26,8 +26,8 @@ export type MerlinType = {
 };
 
 export type MerlinError = {
-  start: MerlinPosition,
-  end: MerlinPosition,
+  start?: MerlinPosition,
+  end?: MerlinPosition,
   valid: boolean,
   message: string,
   type: 'type' | 'parser' | 'env' | 'warning' | 'unknown',

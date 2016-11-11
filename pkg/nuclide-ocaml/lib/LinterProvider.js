@@ -41,13 +41,14 @@ module.exports = {
         return [];
       }
       return diagnostics.map((diagnostic: MerlinError): LinterMessage => {
+        const {start, end} = diagnostic;
         return {
           type: diagnostic.type === 'warning' ? 'Warning' : 'Error',
           filePath,
           text: diagnostic.message,
           range: new Range(
-            [diagnostic.start.line - 1, diagnostic.start.col],
-            [diagnostic.end.line - 1, diagnostic.end.col],
+            start == null ? [0, 0] : [start.line - 1, start.col],
+            end == null ? [0, 0] : [end.line - 1, end.col],
           ),
         };
       });
