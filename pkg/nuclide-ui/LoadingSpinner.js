@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import addTooltip from './add-tooltip';
 import classnames from 'classnames';
 import {React} from 'react-for-atom';
 
@@ -22,6 +23,7 @@ type Props = {
    * the spinner to avoid UI churn.
    */
   delay?: number,
+  tooltip?: atom$TooltipsAddOptions,
 };
 
 export const LoadingSpinnerSizes = Object.freeze({
@@ -66,10 +68,13 @@ export class LoadingSpinner extends React.Component {
     const {
       className,
       size,
+      tooltip,
     } = this.props;
     if (!this.state.shouldRender) {
       return null;
     }
+
+    const ref = tooltip ? addTooltip(tooltip) : null;
     const safeSize = size != null && LoadingSpinnerSizes.hasOwnProperty(size)
       ? size
       : LoadingSpinnerSizes.MEDIUM;
@@ -80,7 +85,7 @@ export class LoadingSpinner extends React.Component {
       sizeClassname,
     );
     return (
-      <div className={newClassName} />
+      <div className={newClassName} ref={ref} />
     );
   }
 }
