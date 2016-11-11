@@ -9,6 +9,10 @@
             {
               "label": "Refactor",
               "command": "nuclide-refactorizer:refactorize"
+            },
+            {
+              "label": "Rename",
+              "command": "nuclide-refactorizer:rename"
             }
           ]
         }

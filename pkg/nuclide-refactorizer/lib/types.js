@@ -28,7 +28,7 @@ export type Store = {
 
 export type RefactorUIFactory = (store: Store) => IDisposable;
 
-export type RefactorUI = 'generic' | 'simple-rename';
+export type RefactorUI = 'generic' | 'simple-rename' | 'rename';
 
 // State
 

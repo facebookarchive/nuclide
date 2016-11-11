@@ -93,6 +93,9 @@ class Activation {
       atom.commands.add('atom-workspace', 'nuclide-refactorizer:refactorize', () => {
         this._store.dispatch(Actions.open('generic'));
       }),
+      atom.commands.add('atom-workspace', 'nuclide-refactorizer:rename', () => {
+        this._store.dispatch(Actions.open('rename'));
+      }),
       observeGrammarForTextEditors(editor => this._addContextMenuIfEligible(editor)),
     );
   }
