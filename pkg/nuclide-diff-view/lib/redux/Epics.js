@@ -9,8 +9,6 @@
  * the root directory of this source tree.
  */
 
-import typeof * as PhabricatorService from '../../../fb-phabricator-rpc';
-
 import type {
   Action,
   DiffOptionType,
@@ -65,9 +63,9 @@ import {
   dispatchConsoleToggle,
   pipeProcessMessagesToConsole,
 } from '../../../commons-atom/streamProcessToConsoleMessages';
-import {getServiceByNuclideUri} from '../../../nuclide-remote-connection';
 import {getInternUserFromUnixName} from '../../../commons-node/fb-vcs-utils';
 import userInfo from '../../../commons-node/userInfo';
+import {performGraphQLQuery} from '../../../commons-node/fb-interngraph';
 
 const CHANGE_DEBOUNCE_DELAY_MS = 300;
 const SHOW_CONSOLE_ON_PROCESS_EVENTS = ['stdout', 'stderr', 'error'];
@@ -449,13 +447,23 @@ export function diffFileEpic(
   });
 }
 
-function getPhabricatorService(path: string): PhabricatorService {
-  const service = getServiceByNuclideUri('PhabricatorService', path);
-  invariant(service);
-  return service;
-}
+const MAX_FILES_TO_SEND_FOR_SUGGESTED_REVIEWERS = 30;
+const SUGGESTED_REVIEWERS_GRAPHQL_QUERY = `\
+Query AnonymousQuery {
+  differential_reviewer_predictor({author: <author>, paths: <paths>}) {
+    suggestions,
+  }
+}`;
 
-const MAX_FILES_TO_SEND_FOR_SUGGESTED_REVIEWERS = 10;
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const temp = array[i];
+    array[i] = array[j];
+    array[j] = temp;
+  }
+  return array;
+}
 
 export function populateSuggestedReviewersEpic(
   actions: ActionsObservable<Action>,
@@ -477,45 +485,19 @@ export function populateSuggestedReviewersEpic(
         activeRepository == null) {
       return Observable.of(Actions.updateSuggestedReviewers([]));
     }
-
-    const directoryPath = activeRepository.getWorkingDirectory();
-    const files = {};
-    Array.from(selectedFiles.keys())
+    const files = shuffleArray(Array.from(selectedFiles.keys()))
       .slice(0, MAX_FILES_TO_SEND_FOR_SUGGESTED_REVIEWERS)
-      .forEach(absolutePath => {
-        const relativePath = activeRepository.relativize(absolutePath);
-        files[relativePath] = 1;
-      });
+      .map(absolutePath => activeRepository.relativize(absolutePath));
 
-    const phabricatorService = getPhabricatorService(
-      activeRepository.getWorkingDirectory(),
-    );
-
-    return phabricatorService
-      .getSuggestedReviewers(directoryPath, userInfo().username, files)
-      .refCount()
+    return Observable.fromPromise(performGraphQLQuery(
+        SUGGESTED_REVIEWERS_GRAPHQL_QUERY,
+        {author: userInfo().username, paths: files},
+      ))
       .map(response => {
-        // Ugly hack until we can use the GraphQL API is available D4156910
-        // The response looks like
-        //
-        //   ...
-        //   (empty line)
-        //   # Looking for reviewers? most (D1234567, D1234567, D1234567,
-        //   # D1234567, D1234567) jxg (D1234567, D1234567, D1234567),
-        //   # asriram (D1234567, D1234567)
-        //   (empty line)
-        //   ...
-        const match = response.match(/# Looking for reviewers\? ([\s\S]*?)\n\n/);
-        if (!match) {
-          return Actions.updateSuggestedReviewers([]);
-        }
-        const suggestedReviewers = match[1]
-          .replace(/[\n# ]+/g, '') // remove all \n, # and whitespaces
-          .replace(/\([^)]+\)/g, '') // everything in ()
-          .split(',')
-          .map(unixName => getInternUserFromUnixName(unixName));
-
-        return Actions.updateSuggestedReviewers(suggestedReviewers);
+        return Actions.updateSuggestedReviewers(
+          (response[0] && response[0].suggestions || [])
+            .map(unixName => getInternUserFromUnixName(unixName)),
+        );
       })
       .catch(error => {
         getLogger().error('Could not fetch suggested reviewers:', error);
