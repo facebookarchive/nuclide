@@ -63,9 +63,6 @@ import {
   dispatchConsoleToggle,
   pipeProcessMessagesToConsole,
 } from '../../../commons-atom/streamProcessToConsoleMessages';
-import {getInternUserFromUnixName} from '../../../commons-node/fb-vcs-utils';
-import userInfo from '../../../commons-node/userInfo';
-import {performGraphQLQuery} from '../../../commons-node/fb-interngraph';
 
 const CHANGE_DEBOUNCE_DELAY_MS = 300;
 const SHOW_CONSOLE_ON_PROCESS_EVENTS = ['stdout', 'stderr', 'error'];
@@ -447,65 +444,6 @@ export function diffFileEpic(
   });
 }
 
-const MAX_FILES_TO_SEND_FOR_SUGGESTED_REVIEWERS = 30;
-const SUGGESTED_REVIEWERS_GRAPHQL_QUERY = `\
-Query AnonymousQuery {
-  differential_reviewer_predictor({author: <author>, paths: <paths>}) {
-    suggestions,
-  }
-}`;
-
-function shuffleArray(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    const temp = array[i];
-    array[i] = array[j];
-    array[j] = temp;
-  }
-  return array;
-}
-
-export function populateSuggestedReviewersEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return Observable.combineLatest(
-    actions.ofType(ActionTypes.SET_VIEW_MODE),
-    actions.ofType(ActionTypes.UPDATE_SELECTED_FILES),
-  ).switchMap(([viewModeAction, selectedFilesAction]) => {
-    invariant(viewModeAction.type === ActionTypes.SET_VIEW_MODE);
-    const {viewMode} = viewModeAction.payload;
-
-    invariant(selectedFilesAction.type === ActionTypes.UPDATE_SELECTED_FILES);
-    const {selectedFiles} = selectedFilesAction.payload;
-
-    const {activeRepository} = store.getState();
-    if (viewMode === DiffMode.BROWSE_MODE ||
-        selectedFiles.size === 0 ||
-        activeRepository == null) {
-      return Observable.of(Actions.updateSuggestedReviewers([]));
-    }
-    const files = shuffleArray(Array.from(selectedFiles.keys()))
-      .slice(0, MAX_FILES_TO_SEND_FOR_SUGGESTED_REVIEWERS)
-      .map(absolutePath => activeRepository.relativize(absolutePath));
-
-    return Observable.fromPromise(performGraphQLQuery(
-        SUGGESTED_REVIEWERS_GRAPHQL_QUERY,
-        {author: userInfo().username, paths: files},
-      ))
-      .map(response => {
-        return Actions.updateSuggestedReviewers(
-          (response[0] && response[0].suggestions || [])
-            .map(unixName => getInternUserFromUnixName(unixName)),
-        );
-      })
-      .catch(error => {
-        getLogger().error('Could not fetch suggested reviewers:', error);
-        return Observable.of(Actions.updateSuggestedReviewers([]));
-      });
-  });
-}
-
 export function setViewModeEpic(
   actions: ActionsObservable<Action>,
   store: Store,
@@ -756,3 +694,7 @@ export function publishDiff(
     );
   });
 }
+
+try { // $FlowFB
+  Object.assign(module.exports, require('../fb/Epics'));
+} catch (e) {}
