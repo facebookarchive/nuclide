@@ -33,6 +33,9 @@ import invariant from 'assert';
 import {getLogger} from '../../nuclide-logging';
 import {getArcanistServiceByNuclideUri} from '../../nuclide-remote-connection';
 
+// TODO(hansonw): Make this a configurable value.
+const ARC_LINT_TIMEOUT = 60000;
+
 const logger = getLogger();
 
 export class ArcanistDiagnosticsProvider {
@@ -88,7 +91,11 @@ export class ArcanistDiagnosticsProvider {
         (featureConfig.get('nuclide-arcanist.blacklistedLinters'): any);
       const arcService = getArcanistServiceByNuclideUri(filePath);
       const result = await this._requestSerializer.run(
-        arcService.findDiagnostics(filePath, blacklistedLinters),
+        arcService.findDiagnostics(filePath, blacklistedLinters)
+          .refCount()
+          .toArray()
+          .timeout(ARC_LINT_TIMEOUT)
+          .toPromise(),
       );
       if (result.status === 'outdated') {
         return;

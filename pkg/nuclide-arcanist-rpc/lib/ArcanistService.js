@@ -19,12 +19,14 @@ import invariant from 'assert';
 import {Observable} from 'rxjs';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {
+  exitEventToMessage,
   getOriginalEnvironment,
+  getOutputStream,
   observeProcess,
   safeSpawn,
   scriptSafeSpawnAndObserveOutput,
 } from '../../commons-node/process';
-import {niceCheckOutput} from '../../commons-node/nice';
+import {niceSafeSpawn} from '../../commons-node/nice';
 import fsPromise from '../../commons-node/fsPromise';
 import {
   fetchFilesChangedAtRevision,
@@ -88,17 +90,19 @@ export async function getProjectRelativePath(fileName: NuclideUri): Promise<?str
   return arcPath && fileName ? nuclideUri.relative(arcPath, fileName) : null;
 }
 
-export async function findDiagnostics(
+export function findDiagnostics(
   path: NuclideUri,
   skip: Array<string>,
-): Promise<Array<ArcDiagnostic>> {
-  const arcDir = await findArcConfigDirectory(path);
-  if (arcDir == null) {
-    return [];
-  }
-  return execArcLint(arcDir, [path], skip);
+): ConnectableObservable<ArcDiagnostic> {
+  return Observable.fromPromise(findArcConfigDirectory(path))
+    .switchMap(arcDir => {
+      if (arcDir == null) {
+        return Observable.empty();
+      }
+      return execArcLint(arcDir, [path], skip);
+    })
+    .publish();
 }
-
 
 async function getMercurialHeadCommitChanges(filePath: string): Promise<?RevisionFileChanges> {
   const hgRepoDetails = findHgRepository(filePath);
@@ -243,56 +247,69 @@ export function execArcPatch(
     .publish();
 }
 
-async function execArcLint(
+function execArcLint(
   cwd: string,
   filePaths: Array<NuclideUri>,
   skip: Array<string>,
-): Promise<Array<ArcDiagnostic>> {
+): Observable<ArcDiagnostic> {
   const args: Array<string> = ['lint', '--output', 'json', ...filePaths];
   if (skip.length > 0) {
     args.push('--skip', skip.join(','));
   }
-  const result = await niceCheckOutput('arc', args, getArcExecOptions(cwd));
-
-  const output: Map<string, Array<Object>> = new Map();
-  // Arc lint outputs multiple JSON objects on mutliple lines. Split them, then merge the
-  // results.
-  for (const line of result.stdout.trim().split('\n')) {
-    let json;
-    try {
-      json = JSON.parse(line);
-    } catch (error) {
-      getLogger().warn('Error parsing `arc lint` JSON output', line);
-      continue;
-    }
-    for (const file of Object.keys(json)) {
-      const errorsToAdd = json[file];
-
-      let errors = output.get(file);
-      if (errors == null) {
-        errors = [];
-        output.set(file, errors);
+  return Observable.fromPromise(niceSafeSpawn('arc', args, getArcExecOptions(cwd)))
+    .switchMap(arcProcess => getOutputStream(arcProcess, /* killTreeOnComplete */ true))
+    .mergeMap(event => {
+      if (event.kind === 'error') {
+        return Observable.throw(event.error);
+      } else if (event.kind === 'exit') {
+        if (event.exitCode !== 0) {
+          return Observable.throw(Error(exitEventToMessage(event)));
+        }
+        return Observable.empty();
+      } else if (event.kind === 'stderr') {
+        return Observable.empty();
       }
-      for (const error of errorsToAdd) {
-        errors.push(error);
+      // Arc lint outputs multiple JSON objects on multiple lines.
+      const stdout = event.data;
+      if (stdout === '') {
+        return Observable.empty();
       }
-    }
-  }
+      let json;
+      try {
+        json = JSON.parse(stdout);
+      } catch (error) {
+        getLogger().warn('Error parsing `arc lint` JSON output', stdout);
+        return Observable.empty();
+      }
+      const output = new Map();
+      for (const file of Object.keys(json)) {
+        const errorsToAdd = json[file];
+        let errors = output.get(file);
+        if (errors == null) {
+          errors = [];
+          output.set(file, errors);
+        }
+        for (const error of errorsToAdd) {
+          errors.push(error);
+        }
+      }
 
-  const lints = [];
-  for (const file of filePaths) {
-    // TODO(7876450): For some reason, this does not work for particular values of pathToFile.
-    // Depending on the location of .arcconfig, we may get a key that is different from what `arc
-    // lint` actually returns, and end up without any lints for this path.
-    const key = nuclideUri.relative(cwd, file);
-    const rawLints = output.get(key);
-    if (rawLints) {
-      for (const lint of convertLints(file, rawLints)) {
-        lints.push(lint);
+      const lints = [];
+      for (const file of filePaths) {
+        // TODO(7876450): For some reason, this does not work for particular
+        // values of pathToFile. Depending on the location of .arcconfig, we may
+        // get a key that is different from what `arc lint` actually returns,
+        // and end up without any lints for this path.
+        const key = nuclideUri.relative(cwd, file);
+        const rawLints = output.get(key);
+        if (rawLints) {
+          for (const lint of convertLints(file, rawLints)) {
+            lints.push(lint);
+          }
+        }
       }
-    }
-  }
-  return lints;
+      return Observable.from(lints);
+    });
 }
 
 function convertLints(

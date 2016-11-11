@@ -138,18 +138,20 @@ describe('nuclide-arcanist-rpc', () => {
     function setResult(...results) {
       // This mimics the output that `arc lint` can provide. Sometimes it provides results as valid
       // JSON objects separated by a newline. The result is not valid JSON but it's what we get.
-      arcResult = {stdout: results.map(result => JSON.stringify(result)).join('\n')};
+      arcResult = results.map(result => JSON.stringify(result));
     }
 
     beforeEach(() => {
       setResult({});
       execArgs = [];
-      spyOn(require('../../commons-node/nice'), 'niceCheckOutput')
-        .andCallFake((command, args, options) => {
+      spyOn(require('../../commons-node/nice'), 'niceSafeSpawn')
+        .andCallFake(async (command, args, options) => {
           execArgs.push(args);
-          return arcResult;
-        },
-      );
+        });
+      spyOn(require('../../commons-node/process'), 'getOutputStream')
+        .andCallFake(() => {
+          return arcResult.map(line => ({kind: 'stdout', data: line}));
+        });
       arcanist.__TEST__.reset();
       // Add these paths to the arcConfigDirectoryMap as a roundabout way to mock
       // findArcConfigDirectory.
@@ -163,7 +165,8 @@ describe('nuclide-arcanist-rpc', () => {
     it('should call `arc lint` with the paths', () => {
       waitsForPromise(async () => {
         const filePath = 'path1';
-        await arcanist.findDiagnostics(filePath, []);
+        await arcanist.findDiagnostics(filePath, [])
+          .refCount().toPromise();
         // Expect arc lint to be called once
         expect(execArgs.length).toBe(1);
         expect(execArgs[0].indexOf(filePath)).toBeGreaterThan(-1);
@@ -175,7 +178,8 @@ describe('nuclide-arcanist-rpc', () => {
         setResult({
           path1: [fakeLint],
         });
-        const lints = await arcanist.findDiagnostics('/fake/path/one/path1', []);
+        const lints = await arcanist.findDiagnostics('/fake/path/one/path1', [])
+          .refCount().toArray().toPromise();
         expect(lints).toEqual([fakeLintResult]);
       });
     });
@@ -184,7 +188,8 @@ describe('nuclide-arcanist-rpc', () => {
       waitsForPromise(async () => {
         const fakeArcResult = {path1: [fakeLint]};
         setResult(fakeArcResult, fakeArcResult);
-        const lints = await arcanist.findDiagnostics('/fake/path/one/path1', []);
+        const lints = await arcanist.findDiagnostics('/fake/path/one/path1', [])
+          .refCount().toArray().toPromise();
         expect(lints).toEqual([fakeLintResult, fakeLintResult]);
       });
     });
