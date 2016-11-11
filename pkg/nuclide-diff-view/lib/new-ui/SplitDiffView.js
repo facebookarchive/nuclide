@@ -26,6 +26,7 @@ import invariant from 'assert';
 import {observableFromSubscribeFunction} from '../../../commons-node/event';
 import {nextTick} from '../../../commons-node/promise';
 import {notifyInternalError} from '../notifications';
+import {observeElementDimensions} from '../../../commons-atom/observe-element-dimensions';
 import {
   getCenterScrollSelectedNavigationIndex,
   centerScrollToBufferLine,
@@ -126,7 +127,7 @@ async function getDiffEditors(
   const navigationGutter = newEditor.gutterWithName(NAVIGATION_GUTTER_NAME) || newEditor.addGutter({
     name: NAVIGATION_GUTTER_NAME,
     priority: -1500,
-    visible: false,
+    visible: true,
   });
 
   disposables.add(() => {
@@ -227,6 +228,7 @@ function wrapDiffEditorObservable(
 function renderNavigationBarAtGutter(
   diffEditors: DiffEditorsResult,
   fileDiffs: Observable<FileDiffState>,
+  dimesionsUpdates: Observable<null>,
 ): void {
   const {oldDiffEditor, newDiffEditor, navigationGutter} = diffEditors;
   const oldEditorElement = oldDiffEditor.getEditorDomElement();
@@ -250,10 +252,10 @@ function renderNavigationBarAtGutter(
 
   const navigationGutterView = atom.views.getView(navigationGutter);
   const BoundNavigationBarComponent = bindObservableAsProps(
-    fileDiffs
+    Observable.combineLatest(fileDiffs, dimesionsUpdates)
       // Debounce diff sections rendering to avoid blocking the UI.
       .debounceTime(50)
-      .switchMap(({navigationSections}) => {
+      .switchMap(([{navigationSections}]) => {
         const gutterContainer: HTMLElement = (navigationGutterView.parentNode: any);
         if (gutterContainer == null) {
           getLogger().error('Split Diff Error: Navigation gutter is not mounted!');
@@ -301,8 +303,6 @@ function renderNavigationBarAtGutter(
       navigationLineNumber, navigationLineCount, (event: any));
     onNavigateToNavigationSection(navigationStatus, scrollToLineNumber);
   });
-
-  navigationGutter.show();
 }
 
 function updateEditorLoadingIndicator(
@@ -448,8 +448,17 @@ export default class SplitDiffView {
     const navigationGutterUpdates = compact(diffEditorsStream)
       .debounceTime(50)
       .do(diffEditors => {
+        const dimesionsUpdates = Observable.merge(
+          observeElementDimensions(diffEditors.newDiffEditor.getEditorDomElement()),
+          observeElementDimensions(diffEditors.oldDiffEditor.getEditorDomElement()),
+        ).debounceTime(20)
+        .mapTo(null);
         try {
-          renderNavigationBarAtGutter(diffEditors, fileDiffs);
+          renderNavigationBarAtGutter(
+            diffEditors,
+            fileDiffs,
+            dimesionsUpdates,
+          );
         } catch (error) {
           notifyInternalError(error);
         }
