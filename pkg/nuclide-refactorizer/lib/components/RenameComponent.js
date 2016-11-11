@@ -44,6 +44,8 @@ export class RenameComponent extends React.Component {
   render(): React.Element<any> {
     return (<div>
       <AtomInput
+        autofocus={true}
+        startSelected={true}
         className="nuclide-refactorizer-rename-editor"
         initialValue={this.props.phase.symbolAtPoint.text}
         onDidChange={text => this.setState({newName: text})}
