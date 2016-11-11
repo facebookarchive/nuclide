@@ -17,7 +17,6 @@ import {Disposable} from 'atom';
 import {renderReactRoot} from '../../commons-atom/renderReactRoot';
 import {Button} from '../../nuclide-ui/Button';
 import {ButtonGroup} from '../../nuclide-ui/ButtonGroup';
-import {Block} from '../../nuclide-ui/Block';
 import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
 
 // Since this is a button which can change the current file, place it where
@@ -39,7 +38,7 @@ export function consumeStatusBar(
     }));
   const Tile = bindObservableAsProps(props, NavStackStatusBarTile);
   const item = renderReactRoot(<Tile />);
-  item.className = 'inline-block';
+  item.className = 'nuclide-navigation-stack-tile inline-block';
 
   const statusBarTile = statusBar.addLeftTile({
     item,
@@ -57,20 +56,20 @@ type Props = {
 };
 
 function NavStackStatusBarTile(props: Props): React.Element<any> {
-  return <Block>
-      <ButtonGroup>
-        <Button
-          icon="chevron-left"
-          onClick={props.onBack}
-          disabled={!props.enableBack}
-          title="Navigate Backwards"
-        />
-        <Button
-          icon="chevron-right"
-          onClick={props.onForward}
-          disabled={!props.enableForward}
-          title="Navigate Forwards"
-        />
-      </ButtonGroup>
-    </Block>;
+  return (
+    <ButtonGroup>
+      <Button
+        icon="chevron-left"
+        onClick={props.onBack}
+        disabled={!props.enableBack}
+        title="Navigate Backwards"
+      />
+      <Button
+        icon="chevron-right"
+        onClick={props.onForward}
+        disabled={!props.enableForward}
+        title="Navigate Forwards"
+      />
+    </ButtonGroup>
+  );
 }
