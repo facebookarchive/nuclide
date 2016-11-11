@@ -91,7 +91,7 @@ export default class HhvmBuildSystem {
     return taskFromObservable(
       Observable.fromPromise(debug(
         this._projectStore.getDebugMode(),
-        this._projectStore.getCurrentFilePath(),
+        this._projectStore.getProjectRoot(),
         this._projectStore.getDebugTarget(),
       ))
         .ignoreElements(),

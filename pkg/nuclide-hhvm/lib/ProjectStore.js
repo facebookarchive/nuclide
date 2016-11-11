@@ -99,6 +99,10 @@ class ProjectStore {
     this._projectRoot.next(root);
   }
 
+  getProjectRoot(): ?string {
+    return this._projectRoot.getValue();
+  }
+
   getProjectType(): ProjectType {
     return this._projectType;
   }

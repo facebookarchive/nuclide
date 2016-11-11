@@ -17,17 +17,19 @@ import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 import {LaunchProcessInfo} from '../../nuclide-debugger-php/lib/LaunchProcessInfo';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {AttachProcessInfo} from '../../nuclide-debugger-php/lib/AttachProcessInfo';
+import invariant from 'assert';
 
 export async function debug(
   debugMode: DebugMode,
-  currentFilePath: string,
+  activeProjectRoot: ?string,
   target: string,
 ): Promise<void> {
   let processInfo = null;
+  invariant(activeProjectRoot != null, 'Active project is null');
   if (debugMode === 'script') {
-    processInfo = new LaunchProcessInfo(currentFilePath, target);
+    processInfo = new LaunchProcessInfo(activeProjectRoot, target);
   } else {
-    processInfo = new AttachProcessInfo(currentFilePath);
+    processInfo = new AttachProcessInfo(activeProjectRoot);
   }
 
   // Use commands here to trigger package activation.
