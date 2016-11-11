@@ -20,7 +20,7 @@ import type {
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
 import type {LanguageService} from './LanguageService';
 
-import {Cache} from '../../commons-node/Cache';
+import {Cache} from '../../commons-node/cache';
 import {ConnectionCache} from '../../nuclide-remote-connection';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {track, trackOperationTiming} from '../../nuclide-analytics';
