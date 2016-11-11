@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import typeof * as PhabricatorService from '../../../fb-phabricator-rpc';
+
 import type {
   Action,
   DiffOptionType,
@@ -63,6 +65,9 @@ import {
   dispatchConsoleToggle,
   pipeProcessMessagesToConsole,
 } from '../../../commons-atom/streamProcessToConsoleMessages';
+import {getServiceByNuclideUri} from '../../../nuclide-remote-connection';
+import {getInternUserFromUnixName} from '../../../commons-node/fb-vcs-utils';
+import userInfo from '../../../commons-node/userInfo';
 
 const CHANGE_DEBOUNCE_DELAY_MS = 300;
 const SHOW_CONSOLE_ON_PROCESS_EVENTS = ['stdout', 'stderr', 'error'];
@@ -441,6 +446,81 @@ export function diffFileEpic(
         ))
         .concat(clearActiveDiffObservable),
     );
+  });
+}
+
+function getPhabricatorService(path: string): PhabricatorService {
+  const service = getServiceByNuclideUri('PhabricatorService', path);
+  invariant(service);
+  return service;
+}
+
+const MAX_FILES_TO_SEND_FOR_SUGGESTED_REVIEWERS = 10;
+
+export function populateSuggestedReviewersEpic(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Action> {
+  return Observable.combineLatest(
+    actions.ofType(ActionTypes.SET_VIEW_MODE),
+    actions.ofType(ActionTypes.UPDATE_SELECTED_FILES),
+  ).switchMap(([viewModeAction, selectedFilesAction]) => {
+    invariant(viewModeAction.type === ActionTypes.SET_VIEW_MODE);
+    const {viewMode} = viewModeAction.payload;
+
+    invariant(selectedFilesAction.type === ActionTypes.UPDATE_SELECTED_FILES);
+    const {selectedFiles} = selectedFilesAction.payload;
+
+    const {activeRepository} = store.getState();
+    if (viewMode === DiffMode.BROWSE_MODE ||
+        selectedFiles.size === 0 ||
+        activeRepository == null) {
+      return Observable.of(Actions.updateSuggestedReviewers([]));
+    }
+
+    const directoryPath = activeRepository.getWorkingDirectory();
+    const files = {};
+    Array.from(selectedFiles.keys())
+      .slice(0, MAX_FILES_TO_SEND_FOR_SUGGESTED_REVIEWERS)
+      .forEach(absolutePath => {
+        const relativePath = activeRepository.relativize(absolutePath);
+        files[relativePath] = 1;
+      });
+
+    const phabricatorService = getPhabricatorService(
+      activeRepository.getWorkingDirectory(),
+    );
+
+    return phabricatorService
+      .getSuggestedReviewers(directoryPath, userInfo().username, files)
+      .refCount()
+      .map(response => {
+        // Ugly hack until we can use the GraphQL API is available D4156910
+        // The response looks like
+        //
+        //   ...
+        //   (empty line)
+        //   # Looking for reviewers? most (D1234567, D1234567, D1234567,
+        //   # D1234567, D1234567) jxg (D1234567, D1234567, D1234567),
+        //   # asriram (D1234567, D1234567)
+        //   (empty line)
+        //   ...
+        const match = response.match(/# Looking for reviewers\? ([\s\S]*?)\n\n/);
+        if (!match) {
+          return Actions.updateSuggestedReviewers([]);
+        }
+        const suggestedReviewers = match[1]
+          .replace(/[\n# ]+/g, '') // remove all \n, # and whitespaces
+          .replace(/\([^)]+\)/g, '') // everything in ()
+          .split(',')
+          .map(unixName => getInternUserFromUnixName(unixName));
+
+        return Actions.updateSuggestedReviewers(suggestedReviewers);
+      })
+      .catch(error => {
+        getLogger().error('Could not fetch suggested reviewers:', error);
+        return Observable.of(Actions.updateSuggestedReviewers([]));
+      });
   });
 }
 

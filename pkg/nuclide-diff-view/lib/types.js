@@ -16,6 +16,7 @@ import type {RevisionStatuses} from '../../nuclide-hg-repository-client/lib/HgRe
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {Observable, Subject} from 'rxjs';
 import type DiffViewEditor from './DiffViewEditor';
+import type {FbInternUserInfo} from '../../commons-node/fb-vcs-utils';
 
 import {React} from 'react-for-atom';
 
@@ -166,6 +167,7 @@ export type AppState = {
   shouldRebaseOnAmend: boolean,
   uiProviders: Array<UIProvider>,
   viewMode: DiffModeType,
+  suggestedReviewers: Array<FbInternUserInfo>,
 };
 
 export type Store = {
@@ -286,6 +288,13 @@ export type UpdateCommitStateAction = {
   },
 };
 
+export type UpdateSuggestedReviewersAction = {
+  type: 'UPDATE_SUGGESTED_REVIEWERS',
+  payload: {
+    suggestedReviewers: Array<FbInternUserInfo>,
+  },
+};
+
 export type UpdatePublishStateAction = {
   type: 'UPDATE_PUBLISH_STATE',
   payload: {
@@ -381,6 +390,7 @@ export type Action = AddRepositoryAction
   | SetViewModeAction
   | UpdateActiveNavigationSectionAction
   | UpdateActiveRepositoryAction
+  | UpdateSuggestedReviewersAction
   | UpdateCommitStateAction
   | UpdateDiffEditorsAction
   | UpdateDiffEditorsVisibilityAction

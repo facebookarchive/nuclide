@@ -35,6 +35,7 @@ import type {
   UpdateActiveNavigationSectionAction,
   UpdateActiveRepositoryAction,
   UpdateCommitStateAction,
+  UpdateSuggestedReviewersAction,
   UpdateDiffEditorsAction,
   UpdateDiffEditorsVisibilityAction,
   UpdateDiffNavigatorVisibilityAction,
@@ -54,6 +55,7 @@ import type {
 } from '../../../nuclide-hg-rpc/lib/HgService';
 import type {CwdApi} from '../../../nuclide-current-working-directory/lib/CwdApi';
 import type {Subject} from 'rxjs';
+import type {FbInternUserInfo} from '../../../commons-node/fb-vcs-utils';
 
 import * as ActionTypes from './ActionTypes';
 
@@ -240,6 +242,17 @@ export function updateCommitState(
     type: ActionTypes.UPDATE_COMMIT_STATE,
     payload: {
       commit: commitState,
+    },
+  };
+}
+
+export function updateSuggestedReviewers(
+  suggestedReviewers: Array<FbInternUserInfo>,
+): UpdateSuggestedReviewersAction {
+  return {
+    type: ActionTypes.UPDATE_SUGGESTED_REVIEWERS,
+    payload: {
+      suggestedReviewers,
     },
   };
 }

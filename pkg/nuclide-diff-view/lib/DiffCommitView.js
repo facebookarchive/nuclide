@@ -11,6 +11,7 @@
 
 import type {CommitModeStateType} from './types';
 import type DiffViewModel from './DiffViewModel';
+import type {FbInternUserInfo} from '../../commons-node/fb-vcs-utils';
 
 import {AtomTextEditor} from '../../nuclide-ui/AtomTextEditor';
 import {Checkbox} from '../../nuclide-ui/Checkbox';
@@ -33,6 +34,7 @@ type Props = {
   commitModeState: CommitModeStateType,
   diffModel: DiffViewModel,
   shouldRebaseOnAmend: boolean,
+  suggestedReviewers: Array<FbInternUserInfo>,
 };
 
 export default class DiffCommitView extends React.Component {

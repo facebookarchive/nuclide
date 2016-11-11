@@ -74,6 +74,13 @@ export function rootReducer(
       };
     }
 
+    case ActionTypes.UPDATE_SUGGESTED_REVIEWERS: {
+      return {
+        ...state,
+        suggestedReviewers: action.payload.suggestedReviewers,
+      };
+    }
+
     case ActionTypes.UPDATE_COMMIT_STATE:
     case ActionTypes.SET_COMMIT_MODE: {
       return {

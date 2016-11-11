@@ -97,5 +97,6 @@ export function createEmptyAppState(): AppState {
     shouldRebaseOnAmend: true,
     uiProviders: [],
     viewMode: DiffMode.BROWSE_MODE,
+    suggestedReviewers: [],
   };
 }

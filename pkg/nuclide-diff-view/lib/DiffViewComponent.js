@@ -88,10 +88,12 @@ export function renderPublishView(diffModel: DiffViewModel): React.Element<any> 
   const {
     publish: {message, mode, state},
     activeRepositoryState: {headRevision},
+    suggestedReviewers,
   } = diffModel.getState();
   const PublishComponent = getPublishComponent();
   return (
     <PublishComponent
+      suggestedReviewers={suggestedReviewers}
       publishModeState={state}
       message={message}
       publishMode={mode}
@@ -105,11 +107,13 @@ export function renderCommitView(diffModel: DiffViewModel): React.Element<any> {
   const {
     commit: {message, mode, state},
     shouldRebaseOnAmend,
+    suggestedReviewers,
   } = diffModel.getState();
 
   const CommitComponent = getCommitComponent();
   return (
     <CommitComponent
+      suggestedReviewers={suggestedReviewers}
       commitMessage={message}
       commitMode={mode}
       commitModeState={state}
