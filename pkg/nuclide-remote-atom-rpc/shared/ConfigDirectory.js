@@ -21,6 +21,8 @@ import os from 'os';
 
 const logger = getLogger();
 
+export const RPC_PROTOCOL = 'atom_rpc_protocol';
+
 const NUCLIDE_DIR = '.nuclide';
 const NUCLIDE_SERVER_INFO_DIR = 'command-server';
 const SERVER_INFO_FILE = 'serverInfo.json';

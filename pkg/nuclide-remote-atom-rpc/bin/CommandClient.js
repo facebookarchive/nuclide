@@ -12,7 +12,7 @@
 import typeof * as CommandService from '../lib/CommandService';
 import type {AtomCommands} from '../lib/rpc-types';
 
-import {getServer} from '../shared/ConfigDirectory';
+import {getServer, RPC_PROTOCOL} from '../shared/ConfigDirectory';
 import net from 'net';
 import {loadServicesConfig, RpcConnection, SocketTransport} from '../../nuclide-rpc';
 import nuclideUri from '../../commons-node/nuclideUri';
@@ -54,7 +54,8 @@ export async function startCommands(commandPort: number, family: string): Promis
     // ... indicating that there was a nuclide-server but it is now shutdown.
     reportConnectionErrorAndExit('Could not find a nuclide-server with a connected Atom');
   }
-  const connection = RpcConnection.createLocal(transport, [localNuclideUriMarshalers], services);
+  const connection = RpcConnection.createLocal(
+    transport, [localNuclideUriMarshalers], services, RPC_PROTOCOL);
 
   // Get the command interface
   const service: CommandService = connection.getService('CommandService');

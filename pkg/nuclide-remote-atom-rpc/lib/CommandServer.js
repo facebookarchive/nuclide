@@ -14,7 +14,7 @@ import type {AtomCommands, ConnectionDetails} from './rpc-types';
 import invariant from 'assert';
 import {loadServicesConfig, ServiceRegistry, SocketServer} from '../../nuclide-rpc';
 import nuclideUri from '../../commons-node/nuclideUri';
-import {createNewEntry} from '../shared/ConfigDirectory';
+import {createNewEntry, RPC_PROTOCOL} from '../shared/ConfigDirectory';
 import {localNuclideUriMarshalers} from '../../nuclide-marshalers-common';
 
 // Ties the AtomCommands registered via RemoteCommandService to
@@ -38,7 +38,8 @@ export class CommandServer {
     const services = loadServicesConfig(nuclideUri.join(__dirname, '..'));
     const registry = new ServiceRegistry(
       [localNuclideUriMarshalers],
-      services);
+      services,
+      RPC_PROTOCOL);
     this._server = new SocketServer(registry);
   }
 
