@@ -35,7 +35,10 @@ temp.track();
 // Simulates what Atom does when it creates a new BrowserWindow.
 function createAtomWindow(urlToOpen: string) {
   const loadSettings = getLoadSettings();
-  const newWindow = new remote.BrowserWindow({show: false});
+  const newWindow = new remote.BrowserWindow({
+    show: false,
+    parent: remote.getCurrentWindow(),
+  });
   newWindow.loadURL(url.format({
     protocol: 'file',
     slashes: true,
