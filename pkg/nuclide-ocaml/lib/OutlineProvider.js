@@ -61,19 +61,23 @@ function makeTokens(data) {
 }
 
 function convertMerlinOutlines(outlines) {
-  return outlines.reverse().map(data => {
-    const tokenizedText = makeTokens(data);
-    const children = convertMerlinOutlines(data.children);
-    const startPosition = new Point(data.start.line - 1, data.start.col);
-    const endPosition = new Point(data.end.line - 1, data.end.col);
+  return outlines
+    .map(data => {
+      const tokenizedText = makeTokens(data);
+      const children = convertMerlinOutlines(data.children);
+      const startPosition = new Point(data.start.line - 1, data.start.col);
+      const endPosition = new Point(data.end.line - 1, data.end.col);
 
-    return {
-      tokenizedText,
-      children,
-      startPosition,
-      endPosition,
-    };
-  });
+      return {
+        tokenizedText,
+        children,
+        startPosition,
+        endPosition,
+      };
+    })
+    .sort((a, b) => {
+      return a.startPosition.compare(b.startPosition);
+    });
 }
 
 export async function getOutline(editor: atom$TextEditor): Promise<?Outline> {
