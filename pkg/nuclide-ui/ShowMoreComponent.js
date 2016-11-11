@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {DOMMeasurements} from './MeasuredComponent';
+import type {DOMMeasurements} from '../commons-atom/observe-element-dimensions';
 
 import {React} from 'react-for-atom';
 import {MeasuredComponent} from './MeasuredComponent';

@@ -11,23 +11,9 @@
 
 import {React} from 'react-for-atom';
 
-const observerConfig = {
-  childList: true,
-  attributes: true,
-  characterData: true,
-  subtree: true,
-  attributeOldValue: true,
-  characterDataOldValue: true,
-};
+import type {DOMMeasurements} from '../commons-atom/observe-element-dimensions';
 
-export type DOMMeasurements = {
-  clientHeight: number,
-  clientWidth: number,
-  offsetHeight: number,
-  offsetWidth: number,
-  scrollHeight: number,
-  scrollWidth: number,
-};
+import {observeElementDimensions} from '../commons-atom/observe-element-dimensions';
 
 type Props = {
   onMeasurementsChanged: (measurements: DOMMeasurements) => void,
@@ -42,70 +28,25 @@ export class MeasuredComponent extends React.Component {
 
   props: Props;
   // Listens to the container DOM node for mutations
-  _mutationObserver: MutationObserver;
-  _previousMeasurements: ?DOMMeasurements;
+  _mutationObserverSubscription: rxjs$ISubscription;
   _domNode: ?HTMLElement;
 
   constructor(props: Props) {
     super(props);
-    this._previousMeasurements = null;
     (this: any)._updateDomNode = this._updateDomNode.bind(this);
-  }
-
-  componentDidMount(): void {
-    // MutationObserver.observe() doesn't invoke its callback, so explicitly invoke it here
-    this._considerInvokingMutationCallback();
-  }
-
-  _considerInvokingMutationCallback(): void {
-    if (this._domNode == null) {
-      return;
-    }
-    const {
-      clientHeight,
-      clientWidth,
-      offsetHeight,
-      offsetWidth,
-      scrollHeight,
-      scrollWidth,
-    } = this._domNode;
-    if (this._previousMeasurements != null
-      && clientHeight === this._previousMeasurements.clientHeight
-      && clientWidth === this._previousMeasurements.clientWidth
-      && offsetHeight === this._previousMeasurements.offsetHeight
-      && offsetWidth === this._previousMeasurements.offsetWidth
-      && scrollHeight === this._previousMeasurements.scrollHeight
-      && scrollWidth === this._previousMeasurements.scrollWidth) {
-      return; // Because the measurements are all the same
-    }
-    const measurements = {
-      clientHeight,
-      clientWidth,
-      offsetHeight,
-      offsetWidth,
-      scrollHeight,
-      scrollWidth,
-    };
-    // Measurements changed, so invoke callback
-    this.props.onMeasurementsChanged({...measurements});
-    // Update measurements
-    this._previousMeasurements = measurements;
   }
 
   _updateDomNode(node: ?HTMLElement): void {
     if (node == null) {
       this._domNode = null;
-      // _updateDomNode is called before component unmount, so don't need to disconect()
+      // _updateDomNode is called before component unmount, so don't need to unsubscribe()
       // in componentWillUnmount()
-      this._mutationObserver.disconnect();
+      this._mutationObserverSubscription.unsubscribe();
       return;
     }
-    this._mutationObserver = new MutationObserver((mutations: Array<MutationRecord>) => {
-      // Invoke callback and update _previousMeasurements if measurements have changed
-      this._considerInvokingMutationCallback();
-    });
+    this._mutationObserverSubscription = observeElementDimensions(node)
+      .subscribe(this.props.onMeasurementsChanged);
     this._domNode = node;
-    this._mutationObserver.observe(this._domNode, observerConfig);
   }
 
   render(): React.Element<any> {
