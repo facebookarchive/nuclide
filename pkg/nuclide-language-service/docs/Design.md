@@ -60,12 +60,12 @@ For each request from an Atom service, the `AtomLanguageService` uses the `getFi
 The `ServerLanguageService` implements the `LanguageService` RPC interface and lives in the
 Nuclide Server process. It receives all calls from the `AtomLanguageService`, maps from `FileVersion`
 back to NuclideUri and atom$TextBuffer using the `getBufferAtVersion` API from `nuclide-open-files-rpc`.
-Then it forwards the request to the language specific `LanguageAnalyzer`. If the request is stale,
+Then it forwards the request to the language specific `SingleFileLanguageService`. If the request is stale,
 meaning the buffer is older than the requested version, then the request is aborted.
 
-To implement a new language an implementation of the `LanguageAnalyzer` interface must be provided.
+To implement a new language an implementation of the `SingleFileLanguageService` interface must be provided.
 This interface does not need to be aware of the RPC layer or the file synchronization protocol.
-All requests to the `LanguageAnalyzer` interface use atom$TextBuffers to communicate current editor
+All requests to the `SingleFileLanguageService` interface use atom$TextBuffers to communicate current editor
 contents.
 
 ## Stage 2

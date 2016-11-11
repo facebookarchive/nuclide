@@ -32,7 +32,11 @@ import invariant from 'assert';
 import {getBufferAtVersion} from '../../nuclide-open-files-rpc';
 import {FileCache} from '../../nuclide-open-files-rpc';
 
-export type LanguageAnalyzer = {
+// This is a version of the LanguageService interface which operates on a
+// single modified file at a time. This provides a simplified interface
+// for LanguageService implementors, at the cost of providing language analysis
+// which can not reflect multiple edited files.
+export type SingleFileLanguageService = {
   getDiagnostics(
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
@@ -106,12 +110,12 @@ export type LanguageAnalyzer = {
 
 export class ServerLanguageService {
   _fileCache: FileCache;
-  _analyzer: LanguageAnalyzer;
+  _service: SingleFileLanguageService;
 
-  constructor(fileNotifier: FileNotifier, analyzer: LanguageAnalyzer) {
+  constructor(fileNotifier: FileNotifier, service: SingleFileLanguageService) {
     invariant(fileNotifier instanceof FileCache);
     this._fileCache = fileNotifier;
-    this._analyzer = analyzer;
+    this._service = service;
   }
 
   async getDiagnostics(
@@ -122,11 +126,11 @@ export class ServerLanguageService {
     if (buffer == null) {
       return null;
     }
-    return await this._analyzer.getDiagnostics(filePath, buffer);
+    return await this._service.getDiagnostics(filePath, buffer);
   }
 
   observeDiagnostics(): ConnectableObservable<FileDiagnosticUpdate> {
-    return this._analyzer.observeDiagnostics().publish();
+    return this._service.observeDiagnostics().publish();
   }
 
   async getAutocompleteSuggestions(
@@ -139,7 +143,7 @@ export class ServerLanguageService {
     if (buffer == null) {
       return [];
     }
-    return await this._analyzer.getAutocompleteSuggestions(
+    return await this._service.getAutocompleteSuggestions(
       filePath, buffer, position, activatedManually);
   }
 
@@ -152,14 +156,14 @@ export class ServerLanguageService {
     if (buffer == null) {
       return null;
     }
-    return await this._analyzer.getDefinition(filePath, buffer, position);
+    return await this._service.getDefinition(filePath, buffer, position);
   }
 
   getDefinitionById(
     file: NuclideUri,
     id: string,
   ): Promise<?Definition> {
-    return this._analyzer.getDefinitionById(file, id);
+    return this._service.getDefinitionById(file, id);
   }
 
   async findReferences(
@@ -171,13 +175,13 @@ export class ServerLanguageService {
     if (buffer == null) {
       return null;
     }
-    return await this._analyzer.findReferences(filePath, buffer, position);
+    return await this._service.findReferences(filePath, buffer, position);
   }
 
   getCoverage(
     filePath: NuclideUri,
   ): Promise<?CoverageResult> {
-    return this._analyzer.getCoverage(filePath);
+    return this._service.getCoverage(filePath);
   }
 
   async getOutline(
@@ -188,7 +192,7 @@ export class ServerLanguageService {
     if (buffer == null) {
       return null;
     }
-    return await this._analyzer.getOutline(filePath, buffer);
+    return await this._service.getOutline(filePath, buffer);
   }
 
   async typeHint(fileVersion: FileVersion, position: atom$Point): Promise<?TypeHint> {
@@ -197,7 +201,7 @@ export class ServerLanguageService {
     if (buffer == null) {
       return null;
     }
-    return await this._analyzer.typeHint(filePath, buffer, position);
+    return await this._service.typeHint(filePath, buffer, position);
   }
 
   async highlight(
@@ -209,7 +213,7 @@ export class ServerLanguageService {
     if (buffer == null) {
       return [];
     }
-    return await this._analyzer.highlight(filePath, buffer, position);
+    return await this._service.highlight(filePath, buffer, position);
   }
 
   async formatSource(
@@ -221,7 +225,7 @@ export class ServerLanguageService {
     if (buffer == null) {
       return null;
     }
-    return await this._analyzer.formatSource(filePath, buffer, range);
+    return await this._service.formatSource(filePath, buffer, range);
   }
 
   async getEvaluationExpression(
@@ -233,18 +237,18 @@ export class ServerLanguageService {
     if (buffer == null) {
       return null;
     }
-    return await this._analyzer.getEvaluationExpression(filePath, buffer, position);
+    return await this._service.getEvaluationExpression(filePath, buffer, position);
   }
 
   getProjectRoot(fileUri: NuclideUri): Promise<?NuclideUri> {
-    return this._analyzer.getProjectRoot(fileUri);
+    return this._service.getProjectRoot(fileUri);
   }
 
   async isFileInProject(fileUri: NuclideUri): Promise<boolean> {
-    return this._analyzer.isFileInProject(fileUri);
+    return this._service.isFileInProject(fileUri);
   }
 
   dispose(): void {
-    this._analyzer.dispose();
+    this._service.dispose();
   }
 }

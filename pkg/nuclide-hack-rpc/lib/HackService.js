@@ -115,7 +115,7 @@ class HackLanguageServiceImpl extends ServerLanguageService {
   _resources: UniversalDisposable;
 
   constructor(useIdeConnection: boolean, fileNotifier: FileNotifier) {
-    super(fileNotifier, new HackLanguageAnalyzer(useIdeConnection, fileNotifier));
+    super(fileNotifier, new HackSingleFileLanguageService(useIdeConnection, fileNotifier));
     this._useIdeConnection = useIdeConnection;
     this._resources = new UniversalDisposable();
     if (useIdeConnection) {
@@ -169,7 +169,7 @@ class HackLanguageServiceImpl extends ServerLanguageService {
   }
 }
 
-class HackLanguageAnalyzer {
+class HackSingleFileLanguageService {
   _useIdeConnection: boolean;
   _fileCache: FileCache;
 
