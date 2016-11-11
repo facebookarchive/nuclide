@@ -12,8 +12,9 @@
 import type {NavigationStackController} from './NavigationStackController';
 import type {Observable} from 'rxjs';
 
-import {React, ReactDOM} from 'react-for-atom';
+import {React} from 'react-for-atom';
 import {Disposable} from 'atom';
+import {renderReactRoot} from '../../commons-atom/renderReactRoot';
 import {Button} from '../../nuclide-ui/Button';
 import {ButtonGroup} from '../../nuclide-ui/ButtonGroup';
 import {Block} from '../../nuclide-ui/Block';
@@ -27,17 +28,8 @@ export function consumeStatusBar(
   statusBar: atom$StatusBar,
   controller: NavigationStackController,
 ): IDisposable {
-  const item = document.createElement('div');
-  item.className = 'inline-block';
-
-  const statusBarTile = statusBar.addLeftTile({
-    item,
-    priority: STATUS_BAR_PRIORITY,
-  });
-
   const onBack = () => controller.navigateBackwards();
   const onForward = () => controller.navigateForwards();
-
   const props: Observable<Props> = controller.observeStackChanges()
     .map(stack => ({
       enableBack: stack.hasPrevious(),
@@ -45,15 +37,16 @@ export function consumeStatusBar(
       onBack,
       onForward,
     }));
-
   const Tile = bindObservableAsProps(props, NavStackStatusBarTile);
-  ReactDOM.render(<Tile />,
+  const item = renderReactRoot(<Tile />);
+  item.className = 'inline-block';
+
+  const statusBarTile = statusBar.addLeftTile({
     item,
-  );
-  return new Disposable(() => {
-    ReactDOM.unmountComponentAtNode(item);
-    statusBarTile.destroy();
+    priority: STATUS_BAR_PRIORITY,
   });
+
+  return new Disposable(() => { statusBarTile.destroy(); });
 }
 
 type Props = {
