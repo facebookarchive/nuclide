@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Action, AppState, Store, TaskId, TaskMetadata, TaskRunner} from '../types';
+import type {Action, AppState, Store, TaskMetadata, TaskRunner} from '../types';
 import type {ActionsObservable} from '../../../commons-node/redux-observable';
 
 import {observableFromTask} from '../../../commons-node/tasks';
@@ -17,6 +17,7 @@ import {observableFromSubscribeFunction} from '../../../commons-node/event';
 import {getLogger} from '../../../nuclide-logging';
 import {getTaskMetadata} from '../getTaskMetadata';
 import {getActiveTaskId, getActiveTaskRunner} from '../redux/Selectors';
+import {taskIdsAreEqual} from '../taskIdsAreEqual';
 import * as Actions from './Actions';
 import invariant from 'assert';
 import {Observable} from 'rxjs';
@@ -242,9 +243,4 @@ function createTaskObservable(
       });
     })
     .share();
-}
-
-function taskIdsAreEqual(a: ?TaskId, b: ?TaskId): boolean {
-  if (a == null || b == null) { return false; }
-  return a.type === b.type && a.taskRunnerId === b.taskRunnerId;
 }
