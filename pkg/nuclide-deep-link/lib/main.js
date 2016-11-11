@@ -9,18 +9,29 @@
  * the root directory of this source tree.
  */
 
+import type {DeepLinkService} from './types';
+
 import createPackage from '../../commons-atom/createPackage';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import {default as DeepLinkServiceImpl} from './DeepLinkService';
 
 class Activation {
-  _disposable: UniversalDisposable;
+  _service: DeepLinkServiceImpl;
 
   constructor(state: ?Object): void {
-    this._disposable = new UniversalDisposable();
+    this._service = new DeepLinkServiceImpl();
   }
 
   dispose() {
-    this._disposable.dispose();
+    this._service.dispose();
+  }
+
+  provideDeepLinkService(): DeepLinkService {
+    // Only expose the public methods of the service.
+    return {
+      subscribeToPath: (path, callback) => {
+        return this._service.subscribeToPath(path, callback);
+      },
+    };
   }
 }
 

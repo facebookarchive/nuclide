@@ -8,5 +8,12 @@
   "nuclide": {
     "packageType": "Atom",
     "testRunner": "apm"
+  },
+  "providedServices": {
+    "nuclide-deep-link.provider": {
+      "versions": {
+        "0.0.0": "provideDeepLinkService"
+      }
+    }
   }
 }
