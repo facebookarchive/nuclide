@@ -22,12 +22,12 @@ import type {
 import type {ArcDiagnostic} from '../../nuclide-arcanist-rpc';
 
 import {CompositeDisposable, Range} from 'atom';
+import {Subject} from 'rxjs';
 import {DiagnosticsProviderBase} from '../../nuclide-diagnostics-provider-base';
 
 import featureConfig from '../../commons-atom/featureConfig';
 import {trackTiming} from '../../nuclide-analytics';
 import onWillDestroyTextBuffer from '../../commons-atom/on-will-destroy-text-buffer';
-import {RequestSerializer} from '../../commons-node/promise';
 import {removeCommonSuffix} from '../../commons-node/string';
 import invariant from 'assert';
 import {getLogger} from '../../nuclide-logging';
@@ -40,7 +40,7 @@ const logger = getLogger();
 
 export class ArcanistDiagnosticsProvider {
   _providerBase: DiagnosticsProviderBase;
-  _requestSerializer: RequestSerializer<Array<ArcDiagnostic>>;
+  _runningProcess: Map<string, Subject<Array<ArcDiagnostic>>>;
   _subscriptions: atom$CompositeDisposable;
   _busySignalProvider: BusySignalProviderBase;
 
@@ -54,11 +54,15 @@ export class ArcanistDiagnosticsProvider {
     };
     this._providerBase = new DiagnosticsProviderBase(baseOptions);
     this._subscriptions.add(this._providerBase);
-    this._requestSerializer = new RequestSerializer();
+    this._runningProcess = new Map();
     this._subscriptions.add(onWillDestroyTextBuffer(buffer => {
       const path: ?string = buffer.getPath();
       if (!path) {
         return;
+      }
+      const runningProcess = this._runningProcess.get(path);
+      if (runningProcess != null) {
+        runningProcess.complete();
       }
       this._providerBase.publishMessageInvalidation({scope: 'file', filePaths: [path]});
     }));
@@ -87,20 +91,11 @@ export class ArcanistDiagnosticsProvider {
     const filePath = textEditor.getPath();
     invariant(filePath);
     try {
-      const blacklistedLinters: Array<string> =
-        (featureConfig.get('nuclide-arcanist.blacklistedLinters'): any);
-      const arcService = getArcanistServiceByNuclideUri(filePath);
-      const result = await this._requestSerializer.run(
-        arcService.findDiagnostics(filePath, blacklistedLinters)
-          .refCount()
-          .toArray()
-          .timeout(ARC_LINT_TIMEOUT)
-          .toPromise(),
-      );
-      if (result.status === 'outdated') {
+      const diagnostics = await this._findDiagnostics(filePath);
+      if (diagnostics == null) {
         return;
       }
-      const diagnostics = result.result;
+
       const fileDiagnostics = diagnostics.map(diagnostic => {
         const range = new Range(
           [diagnostic.row, diagnostic.col],
@@ -146,6 +141,30 @@ export class ArcanistDiagnosticsProvider {
       logger.error(error);
       return;
     }
+  }
+
+  async _findDiagnostics(filePath: string): Promise<?Array<ArcDiagnostic>> {
+    const blacklistedLinters: Array<string> =
+      (featureConfig.get('nuclide-arcanist.blacklistedLinters'): any);
+    const runningProcess = this._runningProcess.get(filePath);
+    if (runningProcess != null) {
+      // This will cause the previous lint run to resolve with `undefined`.
+      runningProcess.complete();
+    }
+    const arcService = getArcanistServiceByNuclideUri(filePath);
+    const subject = new Subject();
+    this._runningProcess.set(filePath, subject);
+    const subscription = arcService.findDiagnostics(filePath, blacklistedLinters)
+      .refCount()
+      .toArray()
+      .timeout(ARC_LINT_TIMEOUT)
+      .subscribe(subject);
+    return subject
+      .finally(() => {
+        subscription.unsubscribe();
+        this._runningProcess.delete(filePath);
+      })
+      .toPromise();
   }
 
   // This type is a bit different than an ArcDiagnostic since original and replacement are

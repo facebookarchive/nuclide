@@ -15,6 +15,8 @@ import {ArcanistDiagnosticsProvider} from '../lib/ArcanistDiagnosticsProvider';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {generateFixture} from '../../nuclide-test-helpers';
 import {Range} from 'atom';
+import invariant from 'assert';
+import {Observable} from 'rxjs';
 
 describe('ArcanistDiagnosticsProvider', () => {
   let provider: ArcanistDiagnosticsProvider = (null: any);
@@ -106,6 +108,47 @@ describe('ArcanistDiagnosticsProvider', () => {
         oldRange: new Range([1, 3], [1, 6]),
         oldText: 'foo',
         newText: 'f',
+      });
+    });
+  });
+
+  describe('_findDiagnostics', () => {
+    it('cancels prior invocations', () => {
+      waitsForPromise(async () => {
+        let mockObserver;
+        const disposeSpy = jasmine.createSpy('dispose');
+        spyOn(require('../../nuclide-remote-connection'), 'getArcanistServiceByNuclideUri')
+          .andReturn({
+            findDiagnostics: () => {
+              return Observable.create(observer => {
+                mockObserver = observer;
+                return disposeSpy;
+              }).publish();
+            },
+          });
+
+        const run1 = provider._findDiagnostics('test');
+        const run2 = provider._findDiagnostics('test');
+        // The first run should be cancelled as soon as the second run is triggered.
+        expect(await run1).toBeUndefined();
+        expect(disposeSpy).toHaveBeenCalled();
+
+        // Make sure the second run follows through with results.
+        invariant(mockObserver);
+        mockObserver.next({a: 'test'});
+        mockObserver.complete();
+        expect(await run2).toEqual([{a: 'test'}]);
+        expect(disposeSpy.callCount).toBe(2);
+
+        jasmine.Clock.useMock();
+        const rejectSpy = jasmine.createSpy('reject');
+        const run3 = provider._findDiagnostics('test').catch(rejectSpy);
+        jasmine.Clock.tick(100000);
+        await run3;
+        expect(rejectSpy).toHaveBeenCalled();
+
+        // Ensure that the subject cache cleans itself up.
+        expect(provider._runningProcess.size).toBe(0);
       });
     });
   });
