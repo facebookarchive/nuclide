@@ -204,6 +204,9 @@ class NuclideServer(object):
 
         # Start Nuclide server.
         js_cmd = '%s --port %d' % (NuclideServer.script_path, self.port)
+        # Increase stack trace limit for better debug logs.
+        # For reference, Atom/Electron does not have a stack trace limit.
+        js_cmd += ' --stack-trace-limit=50'
         if cert and key and ca:
             js_cmd += ' --cert %s --key %s --ca %s' % (cert, key, ca)
         if abort_on_uncaught_exception:
