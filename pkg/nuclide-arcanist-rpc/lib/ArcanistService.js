@@ -270,7 +270,7 @@ function execArcLint(
         return Observable.empty();
       }
       // Arc lint outputs multiple JSON objects on multiple lines.
-      const stdout = event.data;
+      const stdout = event.data.trim();
       if (stdout === '') {
         return Observable.empty();
       }
