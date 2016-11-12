@@ -12,6 +12,7 @@
 import type {Provider} from './types';
 import type {HomeFragments} from '../../nuclide-home/lib/types';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
+import type {DeepLinkService, DeepLinkParams} from '../../nuclide-deep-link/lib/types';
 
 import invariant from 'assert';
 import {
@@ -23,6 +24,7 @@ import {CompositeDisposable} from 'atom';
 import featureConfig from '../../commons-atom/featureConfig';
 import {track} from '../../nuclide-analytics';
 import debounce from '../../commons-node/debounce';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import SearchResultManager from './SearchResultManager';
 import QuickSelectionActions from './QuickSelectionActions';
 import QuickSelectionDispatcher, {ActionTypes} from './QuickSelectionDispatcher';
@@ -94,6 +96,7 @@ class Activation {
     );
 
     (this: any).closeSearchPanel = this.closeSearchPanel.bind(this);
+    (this: any)._handleDeepLink = this._handleDeepLink.bind(this);
   }
 
   _render(): void {
@@ -217,7 +220,7 @@ class Activation {
     this.showSearchPanel();
   }
 
-  showSearchPanel() {
+  showSearchPanel(initialQuery?: string) {
     this._previousFocus = document.activeElement;
     const {_searchComponent, _searchPanel} = this;
     if (_searchComponent != null && _searchPanel != null) {
@@ -232,7 +235,9 @@ class Activation {
       const isAlreadyVisible = _searchPanel.isVisible();
       _searchPanel.show();
       _searchComponent.focus();
-      if (featureConfig.get('nuclide-quick-open.useSelection') && !isAlreadyVisible) {
+      if (initialQuery != null) {
+        _searchComponent.setInputValue(initialQuery);
+      } else if (featureConfig.get('nuclide-quick-open.useSelection') && !isAlreadyVisible) {
         const selectedText = this._getFirstSelectionText();
         if (selectedText && selectedText.length <= MAX_SELECTION_LENGTH) {
           _searchComponent.setInputValue(selectedText.split('\n')[0]);
@@ -267,6 +272,23 @@ class Activation {
     if (editor) {
       return editor.getSelections()[0].getText();
     }
+  }
+
+  _handleDeepLink(message: DeepLinkParams): void {
+    const {query} = message;
+    if (query != null) {
+      if (this._searchComponent == null) {
+        this._render();
+      }
+      this.showSearchPanel(query);
+    }
+  }
+
+  consumeDeepLinkService(service: DeepLinkService): void {
+    const subscription = new UniversalDisposable(
+      service.subscribeToPath('quick-open-query', this._handleDeepLink),
+    );
+    this._subscriptions.add(subscription);
   }
 
   dispose(): void {
@@ -322,6 +344,10 @@ export function getHomeFragments(): HomeFragments {
     },
     priority: 10,
   };
+}
+
+export function consumeDeepLinkService(service: DeepLinkService): void {
+  return getActivation().consumeDeepLinkService(service);
 }
 
 export function deactivate(): void {
