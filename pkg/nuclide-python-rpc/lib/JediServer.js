@@ -36,6 +36,7 @@ function getServiceRegistry(): ServiceRegistry {
     serviceRegistry = new ServiceRegistry(
       [localNuclideUriMarshalers],
       loadServicesConfig(nuclideUri.join(__dirname, '..')),
+      'python_language_service',
     );
   }
   return serviceRegistry;
