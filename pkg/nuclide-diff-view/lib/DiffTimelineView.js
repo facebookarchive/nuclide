@@ -125,10 +125,15 @@ function RevisionsTimelineComponent(props: RevisionsComponentProps): React.Eleme
       <div className="revision-selector">
         <div className="revisions">
           <UncommittedChangesTimelineNode
+            selectedIndex={selectedIndex}
             diffModel={props.diffModel}
             dirtyFileCount={props.dirtyFileCount}
+            revisionsCount={revisions.length}
+            onSelectionChange={() => {
+              props.onSelectionChange(latestToOldestRevisions[0]);
+            }}
           />
-          {latestToOldestRevisions.map((revision, i) =>
+          {latestToOldestRevisions.slice(0, -1).map((revision, i) =>
             <RevisionTimelineNode
               index={i}
               key={revision.hash}
@@ -136,7 +141,9 @@ function RevisionsTimelineComponent(props: RevisionsComponentProps): React.Eleme
               revision={revision}
               revisionStatus={revisionStatuses.get(revision.id)}
               revisionsCount={revisions.length}
-              onSelectionChange={props.onSelectionChange}
+              onSelectionChange={() => {
+                props.onSelectionChange(latestToOldestRevisions[i + 1]);
+              }}
             />,
           )}
         </div>

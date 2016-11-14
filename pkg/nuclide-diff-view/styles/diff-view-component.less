@@ -60,6 +60,7 @@
 
   .revision {
     position: relative;
+    cursor: pointer;
   }
 
   .revision-timeline-wrap {
@@ -79,10 +80,6 @@
     position: relative;
   }
 
-  .revision--actionable {
-    cursor: pointer;
-  }
-
   .revision:hover .revision-label {
     font-weight: bold;
   }
@@ -99,14 +96,6 @@
 
   .nuclide-diff-rev-side-button {
     margin-left: 0.4em;
-  }
-
-  .revision:hover .revision-bubble--no-changes {
-    /*
-     * Match the app background color to give the illusion of transparency while properly cutting
-     * off the underlying line that connects this bubble to the one below it.
-     */
-    background-color: @app-background-color;
   }
 
   .revision-bubble {
@@ -134,14 +123,6 @@
     background-color: @text-color-warning;
   }
 
-  .revision-bubble--no-changes {
-    /*
-     * Match the app background color to give the illusion of transparency while properly cutting
-     * off the underlying line that connects this bubble to the one below it.
-     */
-    background-color: @app-background-color;
-  }
-
   .selected-revision-inrange .revision-bubble:after {
     background: @text-color-info;
     content: " ";
@@ -150,7 +131,7 @@
     width: 8px;
   }
 
-  .selected-revision-inrange .revision-bubble--uncommitted:after {
+  .revision-bubble--uncommitted:after {
     background: linear-gradient(to bottom, @text-color-warning, @text-color-info);
   }
 
@@ -172,20 +153,16 @@
     .revision-label {
       color: @text-color-info;
     }
-
-    .revision-label--uncommitted {
-      color: @text-color-warning;
-    }
+  }
+  .selected-revision-start .revision-label {
+    color: @text-color-warning;
   }
 
-  .selected-revision-start .revision-bubble,
+  .selected-revision-start .revision-bubble {
+    box-shadow: 0 0 0 @revisionBubbleShadowRadius fade(@text-color-warning, 25%);
+  }
   .selected-revision-end .revision-bubble {
     box-shadow: 0 0 0 @revisionBubbleShadowRadius fade(@text-color-info, 25%);
-  }
-
-  .selected-revision-start .revision-bubble--uncommitted,
-  .selected-revision-end .revision-bubble--uncommitted {
-    box-shadow: 0 0 0 2px @text-color-warning;
   }
 }
 

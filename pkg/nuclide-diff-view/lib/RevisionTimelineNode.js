@@ -23,7 +23,7 @@ import {track} from '../../nuclide-analytics';
 type RevisionTimelineNodeProps = {
   revisionStatus: ?RevisionStatusDisplay,
   index: number,
-  onSelectionChange: (revisionInfo: RevisionInfo) => any,
+  onSelectionChange: () => any,
   revision: RevisionInfo,
   revisionsCount: number,
   selectedIndex: number,
@@ -35,7 +35,6 @@ export default class RevisionTimelineNode extends React.Component {
   constructor(props: RevisionTimelineNodeProps) {
     super(props);
     (this: any)._handlePhabricatorRevisionClick = this._handlePhabricatorRevisionClick.bind(this);
-    (this: any)._handleSelectionChange = this._handleSelectionChange.bind(this);
   }
 
   _handlePhabricatorRevisionClick(event: SyntheticMouseEvent): void {
@@ -47,17 +46,13 @@ export default class RevisionTimelineNode extends React.Component {
     track('diff-view-phabricator-diff-open', {revision});
   }
 
-  _handleSelectionChange(): void {
-    this.props.onSelectionChange(this.props.revision);
-  }
-
   render(): React.Element<any> {
     const {revisionStatus, index, revision, revisionsCount, selectedIndex} = this.props;
     const {author, bookmarks, date, description, hash, title} = revision;
-    const revisionClassName = classnames('revision revision--actionable', {
-      'selected-revision-inrange': index < selectedIndex,
-      'selected-revision-end': index === selectedIndex,
-      'selected-revision-last': index === revisionsCount - 1,
+    const revisionClassName = classnames('revision', {
+      'selected-revision-inrange': index < selectedIndex - 1,
+      'selected-revision-end': index === selectedIndex - 1,
+      'selected-revision-last': index === revisionsCount - 2,
     });
     const tooltip = `${hash}: ${title}
   Author: ${author}
@@ -127,7 +122,7 @@ export default class RevisionTimelineNode extends React.Component {
     return (
       <div
         className={revisionClassName}
-        onClick={this._handleSelectionChange}
+        onClick={this.props.onSelectionChange}
         title={tooltip}>
         <div className="revision-bubble" />
         <div className="revision-label text-monospace">

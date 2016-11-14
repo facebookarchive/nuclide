@@ -22,6 +22,9 @@ import {DiffMode, CommitMode} from './constants';
 type Props = {
   dirtyFileCount: number,
   diffModel: DiffViewModel,
+  onSelectionChange: () => any,
+  selectedIndex: number,
+  revisionsCount: number,
 };
 
 export default class UncommittedChangesTimelineNode extends React.Component {
@@ -35,21 +38,26 @@ export default class UncommittedChangesTimelineNode extends React.Component {
   }
 
   render(): React.Element<any> {
-    const {dirtyFileCount} = this.props;
+    const {dirtyFileCount, selectedIndex, revisionsCount} = this.props;
     const hasChanges = dirtyFileCount > 0;
-    const bubbleClassName = classnames('revision-bubble revision-bubble--uncommitted', {
-      'revision-bubble--no-changes': !hasChanges,
-    });
     let filesMessage;
     if (hasChanges) {
       filesMessage = `${dirtyFileCount} Uncommitted Change${dirtyFileCount > 1 ? 's' : ''}`;
     } else {
       filesMessage = 'No Uncommitted Changes';
     }
+
+    const revisionClassName = classnames('revision selected-revision-start', {
+      'selected-revision-inrange': selectedIndex !== 0,
+      'selected-revision-last': revisionsCount === 1,
+    });
+
     return (
-      <div className="revision selected-revision-inrange selected-revision-start">
-        <div className={bubbleClassName} />
-        <div className="revision-label revision-label--uncommitted">
+      <div
+        className={revisionClassName}
+        onClick={() => { this.props.onSelectionChange(); }}>
+        <div className="revision-bubble revision-bubble--uncommitted" />
+        <div className="revision-label">
           <span className="revision-title text-monospace">{filesMessage}</span>
           <Button
             className="nuclide-diff-rev-side-button"

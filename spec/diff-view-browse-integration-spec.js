@@ -92,10 +92,10 @@ describe('Diff View Browse Mode Integration Test', () => {
     });
 
     runs(() => {
-      // Should be the number of revisions + 1 to account for the permanent "Uncommitted" node.
-      expect(revisionLabels.length).toBe(4);
+      // Should be the number of revisions and account for the permanent "Uncommitted" node.
+      expect(revisionLabels.length).toBe(3);
       // Click on the commit below head to include the HEAD commit changes.
-      revisionLabels[2].click();
+      revisionLabels[1].click();
     });
 
     let diffFiles = [];
