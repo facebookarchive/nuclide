@@ -15,7 +15,12 @@ export {
   default as DebuggerLaunchAttachProvider,
   DebuggerLaunchAttachEventTypes,
 } from './DebuggerLaunchAttachProvider';
-export {DebuggerInstance} from './DebuggerInstance.js';
+export {DebuggerInstance} from './DebuggerInstance';
+
+export {
+  translateMessageFromServer,
+  translateMessageToServer,
+} from './ChromeMessageRemoting';
 
 export {
   setOutputService,

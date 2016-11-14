@@ -16,7 +16,7 @@ import type {
 
 import {DebuggerInstance} from '../../nuclide-debugger-base';
 import {ObservableManager} from './ObservableManager';
-import {translateMessageFromServer} from './ChromeMessageRemoting';
+import {translateMessageFromServer} from '../../nuclide-debugger-base';
 import nuclideUri from '../../commons-node/nuclideUri';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 

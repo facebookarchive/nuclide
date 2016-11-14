@@ -9,9 +9,12 @@
  * the root directory of this source tree.
  */
 
-import {translateMessageFromServer, translateMessageToServer} from '../lib/ChromeMessageRemoting';
+import {
+  translateMessageFromServer,
+  translateMessageToServer,
+} from '../lib/ChromeMessageRemoting';
 
-describe('debugger-php ChromeMessageRemoting', () => {
+describe('debugger-base ChromeMessageRemoting', () => {
 
   it('translateMessageFromServer', () => {
     expect(translateMessageFromServer(
@@ -19,8 +22,8 @@ describe('debugger-php ChromeMessageRemoting', () => {
         JSON.stringify({
           method: 'Debugger.scriptParsed',
           params: {
-            scriptId: '/home/test.php',
-            url: 'file:///home/test.php',
+            scriptId: '/home/test.extension',
+            url: 'file:///home/test.extension',
             startLine: 0,
             startColumn: 0,
             endLine: 0,
@@ -29,8 +32,8 @@ describe('debugger-php ChromeMessageRemoting', () => {
         }))).toBe(JSON.stringify({
           method: 'Debugger.scriptParsed',
           params: {
-            scriptId: '/home/test.php',
-            url: 'nuclide://myhost/home/test.php',
+            scriptId: '/home/test.extension',
+            url: 'nuclide://myhost/home/test.extension',
             startLine: 0,
             startColumn: 0,
             endLine: 0,
@@ -45,8 +48,8 @@ describe('debugger-php ChromeMessageRemoting', () => {
         JSON.stringify({
           method: 'Debugger.scriptParsed',
           params: {
-            scriptId: '/home/te st.php',
-            url: 'file:///home/te st.php',
+            scriptId: '/home/te st.extension',
+            url: 'file:///home/te st.extension',
             startLine: 0,
             startColumn: 0,
             endLine: 0,
@@ -55,8 +58,8 @@ describe('debugger-php ChromeMessageRemoting', () => {
         }))).toBe(JSON.stringify({
           method: 'Debugger.scriptParsed',
           params: {
-            scriptId: '/home/te st.php',
-            url: 'nuclide://myhost/home/te st.php',
+            scriptId: '/home/te st.extension',
+            url: 'nuclide://myhost/home/te st.extension',
             startLine: 0,
             startColumn: 0,
             endLine: 0,
@@ -71,7 +74,7 @@ describe('debugger-php ChromeMessageRemoting', () => {
           method: 'Debugger.setBreakpointByUrl',
           params: {
             lineNumber: 3,
-            url: 'nuclide://myhost/home/test.php',
+            url: 'nuclide://myhost/home/test.extension',
             columnNumber: 0,
             condition: '',
           },
@@ -79,7 +82,7 @@ describe('debugger-php ChromeMessageRemoting', () => {
           method: 'Debugger.setBreakpointByUrl',
           params: {
             lineNumber: 3,
-            url: 'file:///home/test.php',
+            url: 'file:///home/test.extension',
             columnNumber: 0,
             condition: '',
           },
