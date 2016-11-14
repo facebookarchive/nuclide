@@ -14,6 +14,7 @@ import type {BusySignalProviderBase} from '../../nuclide-busy-signal';
 import type {TaskRunnerServiceApi} from '../../nuclide-task-runner/lib/types';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {OutputService} from '../../nuclide-console/lib/types';
+import type {DeepLinkService} from '../../nuclide-deep-link/lib/types';
 
 import {CompositeDisposable, Disposable} from 'atom';
 import createPackage from '../../commons-atom/createPackage';
@@ -22,6 +23,7 @@ import registerGrammar from '../../commons-atom/register-grammar';
 import {DedupedBusySignalProviderBase} from '../../nuclide-busy-signal';
 import {ArcanistDiagnosticsProvider} from './ArcanistDiagnosticsProvider';
 import ArcBuildSystem from './ArcBuildSystem';
+import {openArcDeepLink} from './openArcDeepLink';
 
 class Activation {
   _disposables: CompositeDisposable;
@@ -81,6 +83,17 @@ class Activation {
         pkg.setCwdApi(null);
       }
     });
+  }
+
+  /**
+   * Files can be opened relative to Arcanist directories via
+   *   atom://nuclide/open-arc?project=<project_id>&path=<relative_path>
+   * `line` and `column` can also be optionally provided as 1-based integers.
+   */
+  consumeDeepLinkService(deepLink: DeepLinkService): void {
+    this._disposables.add(
+      deepLink.subscribeToPath('open-arc', openArcDeepLink),
+    );
   }
 
   _getBuildSystem(): ArcBuildSystem {

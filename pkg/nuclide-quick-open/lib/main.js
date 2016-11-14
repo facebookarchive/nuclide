@@ -276,7 +276,7 @@ class Activation {
 
   _handleDeepLink(message: DeepLinkParams): void {
     const {query} = message;
-    if (query != null) {
+    if (typeof query === 'string') {
       if (this._searchComponent == null) {
         this._render();
       }

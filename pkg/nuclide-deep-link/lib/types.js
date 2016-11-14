@@ -8,7 +8,7 @@
  * @flow
  */
 
-export type DeepLinkParams = {[key: string]: string};
+export type DeepLinkParams = {[key: string]: string | Array<string>};
 
 export type DeepLinkService = {
 
