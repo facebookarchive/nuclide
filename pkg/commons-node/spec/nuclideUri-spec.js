@@ -349,27 +349,24 @@ describe('nuclide-uri', () => {
   });
 
   it('detects Windows and Posix paths properly', () => {
-    const win32Path = {...path.win32, isAbsolute: __TEST__._win32PathIsAbsolute};
-    const posixPath = path.posix;
-
-    expect(__TEST__._pathModuleFor('/')).toEqual(posixPath);
-    expect(__TEST__._pathModuleFor('/abc')).toEqual(posixPath);
-    expect(__TEST__._pathModuleFor('/abc/def')).toEqual(posixPath);
-    expect(__TEST__._pathModuleFor('/abc.txt')).toEqual(posixPath);
-    expect(__TEST__._pathModuleFor('nuclide://host')).toEqual(posixPath);
-    expect(__TEST__._pathModuleFor('nuclide://host/')).toEqual(posixPath);
-    expect(__TEST__._pathModuleFor('nuclide://host/abc')).toEqual(posixPath);
-    expect(__TEST__._pathModuleFor('nuclide://host/abc/def')).toEqual(posixPath);
-    expect(__TEST__._pathModuleFor('nuclide://host/abc/def.txt')).toEqual(posixPath);
-    expect(__TEST__._pathModuleFor('C:\\')).toEqual(win32Path);
-    expect(__TEST__._pathModuleFor('C:\\abc')).toEqual(win32Path);
-    expect(__TEST__._pathModuleFor('C:\\abc\\def')).toEqual(win32Path);
-    expect(__TEST__._pathModuleFor('C:\\abc\\def.txt')).toEqual(win32Path);
-    expect(__TEST__._pathModuleFor('D:\\abc\\aaa bbb')).toEqual(win32Path);
-    expect(__TEST__._pathModuleFor('\\abc\\def')).toEqual(win32Path);
+    expect(__TEST__._pathModuleFor('/')).toEqual(path.posix);
+    expect(__TEST__._pathModuleFor('/abc')).toEqual(path.posix);
+    expect(__TEST__._pathModuleFor('/abc/def')).toEqual(path.posix);
+    expect(__TEST__._pathModuleFor('/abc.txt')).toEqual(path.posix);
+    expect(__TEST__._pathModuleFor('nuclide://host')).toEqual(path.posix);
+    expect(__TEST__._pathModuleFor('nuclide://host/')).toEqual(path.posix);
+    expect(__TEST__._pathModuleFor('nuclide://host/abc')).toEqual(path.posix);
+    expect(__TEST__._pathModuleFor('nuclide://host/abc/def')).toEqual(path.posix);
+    expect(__TEST__._pathModuleFor('nuclide://host/abc/def.txt')).toEqual(path.posix);
+    expect(__TEST__._pathModuleFor('C:\\')).toEqual(path.win32);
+    expect(__TEST__._pathModuleFor('C:\\abc')).toEqual(path.win32);
+    expect(__TEST__._pathModuleFor('C:\\abc\\def')).toEqual(path.win32);
+    expect(__TEST__._pathModuleFor('C:\\abc\\def.txt')).toEqual(path.win32);
+    expect(__TEST__._pathModuleFor('D:\\abc\\aaa bbb')).toEqual(path.win32);
+    expect(__TEST__._pathModuleFor('\\abc\\def')).toEqual(path.win32);
 
     // Default to Posix
-    expect(__TEST__._pathModuleFor('abcdef')).toEqual(posixPath);
+    expect(__TEST__._pathModuleFor('abcdef')).toEqual(path.posix);
   });
 
   it('properly handles backslash-containing remote URIs', () => {

@@ -471,7 +471,7 @@ function expandHomeDir(uri: NuclideUri): NuclideUri {
     return uri;
   }
 
-  return posixPath.resolve(HOME, uri.replace('~', '.'));
+  return pathModule.posix.resolve(HOME, uri.replace('~', '.'));
 }
 
 /**
@@ -550,52 +550,21 @@ function split(uri: string): Array<string> {
   return parts;
 }
 
-/**
- * win32.isAbsolute is buggy in Node 5.10.0, but not in Node 5.1.1 or 6.0.0+.
- * As long as we support Node 5, we'll use the fixed version of win32.isAbsolute.
- * https://github.com/nodejs/node/commit/3072546feb9d7f78f12d75bec28ef00e5958f7be
- */
-
-function _win32PathIsAbsolute(path: string): boolean {
-  if (typeof path !== 'string') {
-    throw new TypeError('Path must be a string. Received ' + String(path));
-  }
-  const len = path.length;
-  if (len === 0) {
-    return false;
-  }
-  let code = path.charCodeAt(0);
-  if (code === 47 || code === 92) {
-    return true;
-  } else if ((code >= 65 && code <= 90) || (code >= 97 && code <= 122)) {
-    if (len > 2 && path.charCodeAt(1) === 58) {
-      code = path.charCodeAt(2);
-      if (code === 47 || code === 92) {
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
-const posixPath: typeof pathModule = {...pathModule.posix};
-const win32Path: typeof pathModule = {...pathModule.win32, isAbsolute: _win32PathIsAbsolute};
-
 function _pathModuleFor(uri: NuclideUri): typeof pathModule {
-  if (uri.startsWith(posixPath.sep)) {
-    return posixPath;
+  if (uri.startsWith(pathModule.posix.sep)) {
+    return pathModule.posix;
   }
   if (uri.indexOf('://') > -1) {
-    return posixPath;
+    return pathModule.posix;
   }
-  if (uri[1] === ':' && uri[2] === win32Path.sep) {
-    return win32Path;
+  if (uri[1] === ':' && uri[2] === pathModule.win32.sep) {
+    return pathModule.win32;
   }
 
-  if (uri.split(win32Path.sep).length > uri.split(posixPath.sep).length) {
-    return win32Path;
+  if (uri.split(pathModule.win32.sep).length > uri.split(pathModule.posix.sep).length) {
+    return pathModule.win32;
   } else {
-    return posixPath;
+    return pathModule.posix;
   }
 }
 
@@ -669,5 +638,4 @@ export default {
 
 export const __TEST__ = {
   _pathModuleFor,
-  _win32PathIsAbsolute,
 };
