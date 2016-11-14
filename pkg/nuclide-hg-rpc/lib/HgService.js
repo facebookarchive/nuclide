@@ -1068,6 +1068,18 @@ export class HgService {
       .publish();
   }
 
+  pull(options: Array<string>): ConnectableObservable<ProcessMessage> {
+    const args = ['pull', ...options];
+    const execOptions = {
+      cwd: this._workingDirectory,
+    };
+
+    return this._hgObserveExecution(
+      args,
+      execOptions,
+    ).publish();
+  }
+
   /**
    * Copy files versioned under Hg.
    * @param filePaths Which files should be copied.

@@ -893,6 +893,10 @@ export class HgRepositoryClient {
     return this._service.rebase(destination, source).refCount();
   }
 
+  pull(options?: Array<string> = []): Observable<ProcessMessage> {
+    return this._service.pull(options).refCount();
+  }
+
   _clearClientCache(): void {
     this._hgDiffCache = {};
     this._hgStatusCache = {};
