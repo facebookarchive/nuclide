@@ -171,12 +171,18 @@ export function renderFileChanges(diffModel: DiffViewModel): React.Element<any> 
     atom.workspace.open(formatDiffViewUrl({file: filePath}));
   };
 
+  const getCompareRevision = () => {
+    const {compareRevisionId} = diffModel.getState().activeRepositoryState;
+    return compareRevisionId == null ? null : `${compareRevisionId}`;
+  };
+
   return (
     <div className="nuclide-diff-view-tree">
       {spinnerElement}
       <MultiRootChangedFilesView
         commandPrefix="nuclide-diff-view"
         fileChanges={getMultiRootFileChanges(selectedFiles, rootPaths)}
+        getRevertTargetRevision={getCompareRevision}
         selectedFile={fileDiff.filePath}
         onFileChosen={diffFilePath}
       />

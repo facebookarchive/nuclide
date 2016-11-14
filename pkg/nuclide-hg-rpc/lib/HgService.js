@@ -791,8 +791,12 @@ export class HgService {
     return this._commitCode(message, args).publish();
   }
 
-  revert(filePaths: Array<NuclideUri>): Promise<void> {
-    return this._runSimpleInWorkingDirectory('revert', filePaths);
+  revert(filePaths: Array<NuclideUri>, toRevision: ?string): Promise<void> {
+    const args = [...filePaths];
+    if (toRevision != null) {
+      args.push('--rev', toRevision);
+    }
+    return this._runSimpleInWorkingDirectory('revert', args);
   }
 
   async _runSimpleInWorkingDirectory(

@@ -30,7 +30,7 @@ export function addPath(nodePath: ?NuclideUri): Promise<void> {
   );
 }
 
-export function revertPath(nodePath: ?NuclideUri): Promise<void> {
+export function revertPath(nodePath: ?NuclideUri, toRevision?: ?string): Promise<void> {
   return hgActionToPath(
     nodePath,
     'revert',
@@ -38,7 +38,7 @@ export function revertPath(nodePath: ?NuclideUri): Promise<void> {
     async (hgRepository: HgRepositoryClient) => {
       invariant(nodePath);
       track('hg-repository-revert', {nodePath});
-      await hgRepository.checkoutHead(nodePath);
+      await hgRepository.revert([nodePath], toRevision);
     },
   );
 }

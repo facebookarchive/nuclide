@@ -27,13 +27,13 @@ import UniversalDisposable from '../commons-node/UniversalDisposable';
 import {addPath, revertPath} from '../nuclide-hg-repository/lib/actions';
 import ChangedFilesList from './ChangedFilesList';
 
-
 type Props = {
   fileChanges: Map<NuclideUri, Map<NuclideUri, FileChangeStatusValue>>,
   commandPrefix: string,
   selectedFile: ?NuclideUri,
   hideEmptyFolders?: boolean,
   onFileChosen: (filePath: NuclideUri) => void,
+  getRevertTargetRevision?: () => ?string,
 };
 
 export class MultiRootChangedFilesView extends React.Component {
@@ -42,7 +42,7 @@ export class MultiRootChangedFilesView extends React.Component {
 
   componentDidMount(): void {
     this._subscriptions = new UniversalDisposable();
-    const {commandPrefix} = this.props;
+    const {commandPrefix, getRevertTargetRevision} = this.props;
     this._subscriptions.add(atom.contextMenu.add({
       [`.${commandPrefix}-file-entry`]: [
         {type: 'separator'},
@@ -160,7 +160,11 @@ export class MultiRootChangedFilesView extends React.Component {
       event => {
         const filePath = this._getFilePathFromEvent(event);
         if (filePath != null && filePath.length) {
-          revertPath(filePath);
+          let targetRevision = null;
+          if (getRevertTargetRevision != null) {
+            targetRevision = getRevertTargetRevision();
+          }
+          revertPath(filePath, targetRevision);
         }
       },
     ));

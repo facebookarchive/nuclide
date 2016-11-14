@@ -870,8 +870,8 @@ export class HgRepositoryClient {
       .finally(this._clearClientCache.bind(this));
   }
 
-  revert(filePaths: Array<NuclideUri>): Promise<void> {
-    return this._service.revert(filePaths);
+  revert(filePaths: Array<NuclideUri>, toRevision?: ?string): Promise<void> {
+    return this._service.revert(filePaths, toRevision);
   }
 
   log(filePaths: Array<NuclideUri>, limit?: ?number): Promise<VcsLogResponse> {
