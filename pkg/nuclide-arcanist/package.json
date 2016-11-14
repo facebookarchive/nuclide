@@ -53,6 +53,11 @@
       "versions": {
         "0.0.0": "consumeDeepLinkService"
       }
+    },
+    "nuclide-remote-projects": {
+      "versions": {
+        "0.0.0": "consumeRemoteProjectsService"
+      }
     }
   },
   "providedServices": {

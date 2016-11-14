@@ -10,6 +10,7 @@
  */
 
 import type {DeepLinkParams} from '../../nuclide-deep-link/lib/types';
+import type {RemoteProjectsService} from '../../nuclide-remote-projects';
 
 import invariant from 'assert';
 import {goToLocation} from '../../commons-atom/go-to-location';
@@ -20,12 +21,18 @@ function ensureArray(x: string | Array<string>): Array<string> {
   return typeof x === 'string' ? [x] : x;
 }
 
-export async function openArcDeepLink(params: DeepLinkParams): Promise<void> {
-  // TODO: wait for remote projects to initialize
+export async function openArcDeepLink(
+  params: DeepLinkParams,
+  remoteProjectsService: ?RemoteProjectsService,
+): Promise<void> {
   const {project, path, line, column} = params;
   try {
     invariant(typeof project === 'string', 'Must provide an Arcanist project');
     invariant(path, 'Must provide a valid path');
+
+    if (remoteProjectsService != null) {
+      await new Promise(resolve => remoteProjectsService.waitForRemoteProjectReload(resolve));
+    }
 
     // Fetch the Arcanist project of each open project.
     // This also gets parent projects, in case we have a child project mounted.

@@ -15,6 +15,7 @@ import type {TaskRunnerServiceApi} from '../../nuclide-task-runner/lib/types';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {OutputService} from '../../nuclide-console/lib/types';
 import type {DeepLinkService} from '../../nuclide-deep-link/lib/types';
+import type {RemoteProjectsService} from '../../nuclide-remote-projects';
 
 import {CompositeDisposable, Disposable} from 'atom';
 import createPackage from '../../commons-atom/createPackage';
@@ -30,6 +31,7 @@ class Activation {
   _busySignalProvider: BusySignalProviderBase;
   _buildSystem: ?ArcBuildSystem;
   _cwdApi: ?CwdApi;
+  _remoteProjectsService: ?RemoteProjectsService;
 
   constructor(state: ?Object) {
     this._disposables = new CompositeDisposable();
@@ -92,8 +94,17 @@ class Activation {
    */
   consumeDeepLinkService(deepLink: DeepLinkService): void {
     this._disposables.add(
-      deepLink.subscribeToPath('open-arc', openArcDeepLink),
+      deepLink.subscribeToPath('open-arc', params => {
+        openArcDeepLink(params, this._remoteProjectsService);
+      }),
     );
+  }
+
+  consumeRemoteProjectsService(service: RemoteProjectsService): IDisposable {
+    this._remoteProjectsService = service;
+    return new Disposable(() => {
+      this._remoteProjectsService = null;
+    });
   }
 
   _getBuildSystem(): ArcBuildSystem {
