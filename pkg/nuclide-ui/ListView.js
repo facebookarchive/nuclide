@@ -12,6 +12,8 @@
 import classnames from 'classnames';
 import {React} from 'react-for-atom';
 
+import ignoreTextSelectionEvents from './ignoreTextSelectionEvents';
+
 type ListViewItemProps = {
   index: number,
   value?: ?Object,
@@ -41,7 +43,9 @@ export class ListViewItem extends React.Component {
       <div
         className="nuclide-ui-listview-item"
         {...remainingProps}
-        onClick={this._select.bind(this, value, index)}>
+        onClick={
+          ignoreTextSelectionEvents(this._select.bind(this, value, index))
+        }>
         {children}
       </div>
     );

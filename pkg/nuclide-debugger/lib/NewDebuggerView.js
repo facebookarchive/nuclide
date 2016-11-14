@@ -160,7 +160,10 @@ export class NewDebuggerView extends React.Component {
         </Section>
       : null;
     return (
-      <div className="nuclide-debugger-container-new">
+      <div
+        // Need native-key-bindings and tabIndex={-1} to be able to copy
+        className="nuclide-debugger-container-new native-key-bindings"
+        tabIndex={-1}>
         <Section collapsable={true} headline="Debugger Controls"
                  className="nuclide-debugger-section-header">
           <div className="nuclide-debugger-section-content">

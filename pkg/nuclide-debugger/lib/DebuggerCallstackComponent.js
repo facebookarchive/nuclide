@@ -58,12 +58,12 @@ export class DebuggerCallstackComponent extends React.Component {
         const path = nuclideUri.basename(location.path);
         const content = (
           <div className="nuclide-debugger-callstack-item" key={i}>
-            <div className="nuclide-debugger-callstack-name">
+            <span className="nuclide-debugger-callstack-name">
               {name}
-            </div>
-            <div>
+            </span>
+            <span>
               {path}:{location.line + 1}
-            </div>
+            </span>
           </div>
         );
         return <ListViewItem key={i} value={callstackItem}>{content}</ListViewItem>;

@@ -12,6 +12,8 @@
 import {React, ReactDOM} from 'react-for-atom';
 import classnames from 'classnames';
 
+import ignoreTextSelectionEvents from './ignoreTextSelectionEvents';
+
 type DefaultProps = {
   disabled: boolean,
   indeterminate: boolean,
@@ -86,7 +88,7 @@ export class Checkbox extends React.PureComponent {
         className={classnames(className, 'nuclide-ui-checkbox-label', {
           'nuclide-ui-checkbox-disabled': disabled,
         })}
-        onClick={onClick}>
+        onClick={onClick && ignoreTextSelectionEvents(onClick)}>
         <input
           checked={checked}
           className="input-checkbox nuclide-ui-checkbox"

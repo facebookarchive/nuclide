@@ -27,6 +27,7 @@ import {
   NestedTreeItem,
 } from './Tree';
 import {LoadingSpinner} from './LoadingSpinner';
+import ignoreTextSelectionEvents from './ignoreTextSelectionEvents';
 
 const SPINNER_DELAY = 100; /* ms */
 const NOT_AVAILABLE_MESSAGE = '<not available>';
@@ -142,13 +143,17 @@ class ValueComponent extends React.Component {
   props: LazyNestedValueComponentProps;
   state: LazyNestedValueComponentState;
 
+  _toggleExpandFiltered: (e: SyntheticMouseEvent) => void;
+
   constructor(props: LazyNestedValueComponentProps) {
     super(props);
     this.state = {
       isExpanded: false,
       children: null,
     };
-    (this: any)._toggleExpand = this._toggleExpand.bind(this);
+    (this: any)._toggleExpandFiltered = ignoreTextSelectionEvents(
+      this._toggleExpand.bind(this),
+    );
   }
 
   componentDidMount(): void {
@@ -300,7 +305,7 @@ class ValueComponent extends React.Component {
       <TreeList showArrows={true} className="nuclide-ui-lazy-nested-value-treelist">
         <NestedTreeItem
           collapsed={!this.state.isExpanded}
-          onClick={this._toggleExpand}
+          onClick={this._toggleExpandFiltered}
           title={title}>
           {childListElement}
         </NestedTreeItem>
