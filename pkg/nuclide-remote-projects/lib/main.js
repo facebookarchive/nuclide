@@ -35,8 +35,18 @@ import nuclideUri from '../../commons-node/nuclideUri';
 import RemoteDirectorySearcher from './RemoteDirectorySearcher';
 import RemoteDirectoryProvider from './RemoteDirectoryProvider';
 import RemoteProjectsController from './RemoteProjectsController';
+import RemoteProjectsServiceImpl from './RemoteProjectsService';
 
 const logger = getLogger();
+
+export type RemoteProjectsService = {
+  /**
+   * A simple way to wait for remote projects to finish reloading after startup.
+   * Resolves with a list of successfully reloaded project paths.
+   * If reloading has already finished, this immediately resolves.
+   */
+  waitForRemoteProjectReload(callback: (loadedProjects: Array<string>) => mixed): IDisposable,
+};
 
 /**
  * Stores the host and cwd of a remote connection.
@@ -49,6 +59,7 @@ type SerializableRemoteConnectionConfiguration = {
 
 let packageSubscriptions: ?CompositeDisposable = null;
 let controller: ?RemoteProjectsController = null;
+let remoteProjectsService: ?RemoteProjectsServiceImpl = null;
 
 const CLOSE_PROJECT_DELAY_MS = 100;
 const pendingFiles = {};
@@ -279,6 +290,7 @@ async function reloadRemoteProjects(
   // This is intentionally serial.
   // The 90% use case is to have multiple remote projects for a single connection;
   // after the first one succeeds the rest should require no user action.
+  const reloadedProjects: Array<string> = [];
   for (const config of remoteProjects) {
     // eslint-disable-next-line babel/no-await-in-loop
     const connection = await createRemoteConnection(config);
@@ -322,9 +334,18 @@ async function reloadRemoteProjects(
       if (connection.getPathForInitialWorkingDirectory() !== cwd &&
           connection.getRemoteHostname() === host) {
         // eslint-disable-next-line babel/no-await-in-loop
-        await RemoteConnection.createConnectionBySavedConfig(host, cwd, displayTitle);
+        const subConnection = await RemoteConnection.createConnectionBySavedConfig(
+          host, cwd, displayTitle);
+        if (subConnection != null) {
+          reloadedProjects.push(subConnection.getUriForInitialWorkingDirectory());
+        }
+      } else {
+        reloadedProjects.push(connection.getUriForInitialWorkingDirectory());
       }
     }
+  }
+  if (remoteProjectsService != null) {
+    remoteProjectsService._reloadFinished(reloadedProjects);
   }
 }
 
@@ -354,6 +375,7 @@ export function activate(
   const subscriptions = new CompositeDisposable();
 
   controller = new RemoteProjectsController();
+  remoteProjectsService = new RemoteProjectsServiceImpl();
 
   subscriptions.add(RemoteConnection.onDidAddRemoteConnection(connection => {
     addRemoteFolderToProject(connection);
@@ -488,6 +510,11 @@ export function deactivate(): void {
     controller.destroy();
     controller = null;
   }
+
+  if (remoteProjectsService != null) {
+    remoteProjectsService.dispose();
+    remoteProjectsService = null;
+  }
 }
 
 export function createRemoteDirectoryProvider(): RemoteDirectoryProvider {
@@ -512,4 +539,9 @@ export function getHomeFragments(): HomeFragments {
     },
     priority: 8,
   };
+}
+
+export function provideRemoteProjectsService(): RemoteProjectsService {
+  invariant(remoteProjectsService != null);
+  return remoteProjectsService;
 }

@@ -52,6 +52,11 @@
       "versions": {
         "0.0.0": "getHomeFragments"
       }
+    },
+    "nuclide-remote-projects": {
+      "versions": {
+        "0.0.0": "provideRemoteProjectsService"
+      }
     }
   },
   "consumedServices": {
