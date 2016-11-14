@@ -13,6 +13,7 @@ import type {FileTreeControllerState} from './FileTreeController';
 import type FileTreeContextMenu from './FileTreeContextMenu';
 import type {NuclideSideBarService} from '../../nuclide-side-bar';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
+import type {RemoteProjectsService} from '../../nuclide-remote-projects';
 
 import {Disposable, CompositeDisposable} from 'atom';
 import invariant from 'assert';
@@ -74,6 +75,14 @@ class Activation {
     controller.setCwdApi(cwdApi);
     this._cwdApiSubscription = new Disposable(() => controller.setCwdApi(null));
     return this._cwdApiSubscription;
+  }
+
+  consumeRemoteProjectsService(service: RemoteProjectsService): IDisposable {
+    const controller = this._fileTreeController;
+    controller.setRemoteProjectsService(service);
+    return new Disposable(() => {
+      controller.setRemoteProjectsService(null);
+    });
   }
 
   dispose() {
@@ -314,4 +323,9 @@ export function consumeWorkingSetsStore(workingSetsStore: WorkingSetsStore): ?ID
 export function consumeCwdApi(cwdApi: CwdApi): IDisposable {
   invariant(activation);
   return activation.consumeCwdApi(cwdApi);
+}
+
+export function consumeRemoteProjectsService(service: RemoteProjectsService): IDisposable {
+  invariant(activation);
+  return activation.consumeRemoteProjectsService(service);
 }

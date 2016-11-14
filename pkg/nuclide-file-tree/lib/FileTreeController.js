@@ -10,6 +10,7 @@
  */
 
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
+import type {RemoteProjectsService} from '../../nuclide-remote-projects';
 import type {ExportStoreData} from './FileTreeStore';
 
 import {CompositeDisposable, Disposable} from 'atom';
@@ -43,6 +44,7 @@ class FileTreeController {
   _actions: FileTreeActions;
   _contextMenu: FileTreeContextMenu;
   _cwdApi: ?CwdApi;
+  _remoteProjectsService: ?RemoteProjectsService;
   _cwdApiSubscription: ?IDisposable;
   _repositories: Immutable.Set<atom$Repository>;
   _store: FileTreeStore;
@@ -74,21 +76,6 @@ class FileTreeController {
         // NOTE: This is specifically for use in Diff View, so don't expose a menu item.
         // eslint-disable-next-line nuclide-internal/atom-commands
         'nuclide-file-tree:reveal-text-editor': this._revealTextEditor.bind(this),
-        // This command is to workaround the initialization order problem between the
-        // nuclide-remote-projects and nuclide-file-tree packages.
-        // The file-tree starts up and restores its state, which can have a (remote) project root.
-        // But at this point it's not a real directory. It is not present in
-        // atom.project.getDirectories() and essentially it's a fake, but a useful one, as it has
-        // the state (open folders, selection etc.) serialized in it. So we don't want to discard
-        // it. In most cases, after a successful reconnect the real directory instance will be
-        // added to the atom.project.directories and the previously fake root would become real.
-        // The problem happens when the connection fails, or is canceled.
-        // The fake root just stays in the file tree. To workaround that, this command can be used
-        // to force the file-tree reflect the actual state of the projects.
-        // Ideally, we'd like a service dependency between the two packages, but I (advinskyt) don't
-        // see it happening any time soon.
-        // eslint-disable-next-line nuclide-internal/atom-commands
-        'nuclide-file-tree:force-refresh-roots': this._updateRootDirectories.bind(this),
         'nuclide-file-tree:reveal-active-file': this.revealActiveFile.bind(this, undefined),
         'nuclide-file-tree:recursive-collapse-all': this._collapseAll.bind(this),
       }),
@@ -329,6 +316,26 @@ class FileTreeController {
     }
 
     this._cwdApi = cwdApi;
+  }
+
+  setRemoteProjectsService(service: ?RemoteProjectsService): void {
+    if (service != null) {
+      // This is to workaround the initialization order problem between the
+      // nuclide-remote-projects and nuclide-file-tree packages.
+      // The file-tree starts up and restores its state, which can have a (remote) project root.
+      // But at this point it's not a real directory. It is not present in
+      // atom.project.getDirectories() and essentially it's a fake, but a useful one, as it has
+      // the state (open folders, selection etc.) serialized in it. So we don't want to discard
+      // it. In most cases, after a successful reconnect the real directory instance will be
+      // added to the atom.project.directories and the previously fake root would become real.
+      // The problem happens when the connection fails, or is canceled.
+      // The fake root just stays in the file tree.
+      // After remote projects have been reloaded, force a refresh to clear out the fake roots.
+      this._subscriptions.add(
+        service.waitForRemoteProjectReload(this._updateRootDirectories.bind(this)),
+      );
+    }
+    this._remoteProjectsService = service;
   }
 
   setExcludeVcsIgnoredPaths(excludeVcsIgnoredPaths: boolean): void {

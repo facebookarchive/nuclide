@@ -300,10 +300,6 @@ async function reloadRemoteProjects(
         config.host,
         config.cwd,
       );
-      atom.commands.dispatch(
-        atom.views.getView(atom.workspace),
-        'nuclide-file-tree:force-refresh-roots',
-      );
 
       // Atom restores remote files with a malformed URIs, which somewhat resemble local paths.
       // If after an unsuccessful connection user modifies and saves them he's presented
