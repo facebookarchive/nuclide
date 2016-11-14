@@ -16,6 +16,7 @@ import type {
   FileDiffState,
   PublishState,
   RepositoryState,
+  SuggestedReviewersState,
 } from '../types';
 
 import {
@@ -40,6 +41,12 @@ export function getEmptyPublishState(): PublishState {
     message: null,
     mode: PublishMode.CREATE,
     state: PublishModeState.READY,
+  };
+}
+
+export function getEmptySuggestedReviewerState(): SuggestedReviewersState {
+  return {
+    status: 'not-initialized',
   };
 }
 
@@ -97,6 +104,6 @@ export function createEmptyAppState(): AppState {
     shouldRebaseOnAmend: true,
     uiProviders: [],
     viewMode: DiffMode.BROWSE_MODE,
-    suggestedReviewers: [],
+    suggestedReviewers: getEmptySuggestedReviewerState(),
   };
 }

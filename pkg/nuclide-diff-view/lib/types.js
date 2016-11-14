@@ -151,6 +151,20 @@ export type DiffEditorsState = {
   oldDiffEditor: DiffViewEditor,
 };
 
+export type SuggestedReviewersState = {
+  status: 'success',
+  suggestedReviewers: Array<string>,
+  paths: Array<string>,
+  author: string,
+} | {
+  status: 'error',
+  paths: Array<string>,
+  author: string,
+  error: string,
+} | {
+  status: 'not-initialized',
+};
+
 export type AppState = {
   activeRepository: ?HgRepositoryClient,
   activeRepositoryState: RepositoryState,
@@ -166,7 +180,7 @@ export type AppState = {
   shouldRebaseOnAmend: boolean,
   uiProviders: Array<UIProvider>,
   viewMode: DiffModeType,
-  suggestedReviewers: Array<string>,
+  suggestedReviewers: SuggestedReviewersState,
 };
 
 export type Store = {
@@ -290,7 +304,7 @@ export type UpdateCommitStateAction = {
 export type UpdateSuggestedReviewersAction = {
   type: 'UPDATE_SUGGESTED_REVIEWERS',
   payload: {
-    suggestedReviewers: Array<string>,
+    suggestedReviewers: SuggestedReviewersState,
   },
 };
 

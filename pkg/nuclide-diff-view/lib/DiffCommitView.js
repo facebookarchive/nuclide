@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {CommitModeStateType} from './types';
+import type {CommitModeStateType, SuggestedReviewersState} from './types';
 import type DiffViewModel from './DiffViewModel';
 
 import {AtomTextEditor} from '../../nuclide-ui/AtomTextEditor';
@@ -33,7 +33,7 @@ type Props = {
   commitModeState: CommitModeStateType,
   diffModel: DiffViewModel,
   shouldRebaseOnAmend: boolean,
-  suggestedReviewers: Array<string>,
+  suggestedReviewers: SuggestedReviewersState,
 };
 
 export default class DiffCommitView extends React.Component {

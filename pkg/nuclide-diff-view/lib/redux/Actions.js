@@ -47,6 +47,7 @@ import type {
   UpdateLoadingSelectedFilesAction,
   UpdatePublishStateAction,
   UpdateSelectedFilesAction,
+  SuggestedReviewersState,
 } from '../types';
 import type {HgRepositoryClient} from '../../../nuclide-hg-repository-client';
 import type {RevisionStatuses} from '../../../nuclide-hg-repository-client/lib/HgRepositoryClient';
@@ -246,7 +247,7 @@ export function updateCommitState(
 }
 
 export function updateSuggestedReviewers(
-  suggestedReviewers: Array<string>,
+  suggestedReviewers: SuggestedReviewersState,
 ): UpdateSuggestedReviewersAction {
   return {
     type: ActionTypes.UPDATE_SUGGESTED_REVIEWERS,

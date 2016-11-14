@@ -10,7 +10,11 @@
  */
 
 import type DiffViewModel from './DiffViewModel';
-import type {PublishModeType, PublishModeStateType} from './types';
+import type {
+  PublishModeType,
+  PublishModeStateType,
+  SuggestedReviewersState,
+} from './types';
 
 import {getPhabricatorRevisionFromCommitMessage} from '../../nuclide-arcanist-rpc/lib/utils';
 import {AtomTextEditor} from '../../nuclide-ui/AtomTextEditor';
@@ -58,7 +62,7 @@ type Props = {
   publishModeState: PublishModeStateType,
   headCommitMessage: ?string,
   diffModel: DiffViewModel,
-  suggestedReviewers: Array<string>,
+  suggestedReviewers: SuggestedReviewersState,
 };
 
 type State = {
