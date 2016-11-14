@@ -23,6 +23,7 @@ export default class BuckToolbarStore {
   _emitter: Emitter;
   _currentProjectRoot: ?string;
   _currentBuckRoot: ?string;
+  _isLoadingBuckProject: boolean;
   _isLoadingRule: boolean;
   _buildTarget: string;
   _buildRuleType: ?string;
@@ -39,6 +40,7 @@ export default class BuckToolbarStore {
 
   _initState(initialState: ?SerializedState) {
     this._devices = [];
+    this._isLoadingBuckProject = true;
     this._isLoadingRule = false;
     this._buildTarget = initialState && initialState.buildTarget || '';
     this._buildRuleType = null;
@@ -51,8 +53,14 @@ export default class BuckToolbarStore {
     this._dispatcher.register(action => {
       switch (action.actionType) {
         case ActionTypes.UPDATE_BUCK_ROOT:
-          this._currentProjectRoot = action.projectRoot;
           this._currentBuckRoot = action.buckRoot;
+          this._isLoadingBuckProject = false;
+          break;
+        case ActionTypes.UPDATE_PROJECT_ROOT:
+          this._currentProjectRoot = action.projectRoot;
+          // Null the Buck root since we don't know what it is yet.
+          this._currentBuckRoot = null;
+          this._isLoadingBuckProject = true;
           break;
         case ActionTypes.UPDATE_BUILD_TARGET:
           this._buildTarget = action.buildTarget;
@@ -115,6 +123,10 @@ export default class BuckToolbarStore {
 
   getDevices(): Array<Device> {
     return this._devices;
+  }
+
+  isLoadingBuckProject(): boolean {
+    return this._isLoadingBuckProject;
   }
 
   isLoadingRule(): boolean {

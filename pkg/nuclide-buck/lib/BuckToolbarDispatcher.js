@@ -17,8 +17,11 @@ import Dispatcher from '../../commons-node/Dispatcher';
 type BuckToolbarAction =
   {
     actionType: 'UPDATE_BUCK_ROOT',
-    projectRoot: ?string,
     buckRoot: ?string,
+  } |
+  {
+    actionType: 'UPDATE_PROJECT_ROOT',
+    projectRoot: ?string,
   } |
   {
     actionType: 'UPDATE_BUILD_TARGET',
@@ -52,6 +55,7 @@ type BuckToolbarAction =
 
 export const ActionTypes = Object.freeze({
   UPDATE_BUCK_ROOT: 'UPDATE_BUCK_ROOT',
+  UPDATE_PROJECT_ROOT: 'UPDATE_PROJECT_ROOT',
   UPDATE_BUILD_TARGET: 'UPDATE_BUILD_TARGET',
   UPDATE_DEVICES: 'UPDATE_DEVICES',
   UPDATE_IS_LOADING_RULE: 'UPDATE_IS_LOADING_RULE',

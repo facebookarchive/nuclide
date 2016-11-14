@@ -127,14 +127,14 @@ export class BuckBuildSystem {
       }));
   }
 
-  observeTaskList(cb: (taskLIst: Array<TaskMetadata>) => mixed): IDisposable {
+  observeTaskList(cb: (taskList: Array<TaskMetadata>) => mixed): IDisposable {
     if (this._tasks == null) {
       const {store} = this._getFlux();
-      this._tasks = Observable.concat(
-        Observable.of(this.getTaskList()),
-        observableFromSubscribeFunction(store.subscribe.bind(store))
-          .map(() => this.getTaskList()),
-      );
+      this._tasks = observableFromSubscribeFunction(store.subscribe.bind(store))
+        .startWith(null)
+        // Wait until we're done loading the buck project.
+        .filter(() => !store.isLoadingBuckProject())
+        .map(() => this.getTaskList());
     }
     return new UniversalDisposable(
       this._tasks.subscribe({next: cb}),

@@ -35,10 +35,15 @@ export default class BuckToolbarActions {
   }
 
   async updateProjectRoot(path: ?string): Promise<void> {
+    this._dispatcher.dispatch({
+      actionType: ActionTypes.UPDATE_PROJECT_ROOT,
+      projectRoot: path,
+    });
+    // Get the Buck root for this project. Technically we have a race here since we're using
+    // uncancellable promises but, in practice, we're probably fine.
     const buckRoot = path == null ? null : await getBuckProjectRoot(path);
     this._dispatcher.dispatch({
       actionType: ActionTypes.UPDATE_BUCK_ROOT,
-      projectRoot: path,
       buckRoot,
     });
     // Update the build target information as well.
