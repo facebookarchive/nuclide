@@ -12,7 +12,7 @@
 import type {FindReferencesReturn} from './rpc-types';
 
 import crypto from 'crypto';
-import {CompositeDisposable} from 'atom';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {arrayCompact} from '../../commons-node/collection';
 import {track} from '../../nuclide-analytics';
 import FindReferencesElement from './FindReferencesElement';
@@ -32,7 +32,7 @@ export type FindReferencesProvider = {
 
 const FIND_REFERENCES_URI = 'atom://nuclide/find-references/';
 
-let subscriptions: ?CompositeDisposable = null;
+let subscriptions: ?UniversalDisposable = null;
 let providers: Array<FindReferencesProvider> = [];
 const supportedProviders: Map<TextEditor, Array<FindReferencesProvider>> = new Map();
 
@@ -103,8 +103,13 @@ function enableForEditor(editor: TextEditor): void {
   elem.classList.add('enable-nuclide-find-references');
 }
 
+function disableForEditor(editor: TextEditor): void {
+  const elem = atom.views.getView(editor);
+  elem.classList.remove('enable-nuclide-find-references');
+}
+
 export function activate(state: ?any): void {
-  subscriptions = new CompositeDisposable();
+  subscriptions = new UniversalDisposable();
   subscriptions.add(atom.commands.add(
     'atom-text-editor',
     'nuclide-find-references:activate',
@@ -176,7 +181,7 @@ export function deactivate(): void {
   providers = [];
 }
 
-export function consumeProvider(provider: FindReferencesProvider): void {
+export function consumeProvider(provider: FindReferencesProvider): IDisposable {
   providers.push(provider);
   // Editors are often open before providers load, so update existing ones too.
   supportedProviders.forEach(async (supported, editor) => {
@@ -186,5 +191,19 @@ export function consumeProvider(provider: FindReferencesProvider): void {
       }
       supported.push(provider);
     }
+  });
+
+  return new UniversalDisposable(() => {
+    providers = providers.filter(p => p !== provider);
+
+    supportedProviders.forEach((supported, editor) => {
+      const providerIdx = supported.indexOf(provider);
+      if (providerIdx !== -1) {
+        supported.splice(providerIdx, 1);
+        if (supported.length === 0) {
+          disableForEditor(editor);
+        }
+      }
+    });
   });
 }
