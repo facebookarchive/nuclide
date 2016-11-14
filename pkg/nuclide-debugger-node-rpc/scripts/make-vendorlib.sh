@@ -4,6 +4,9 @@
 # It'll download the relevant parts of "node-inspector" used by
 # "nuclide-debugger-node", and its dependencies. It'll also stub "node-pre-gyp".
 
+# Pro-tip: To generate patches use:
+#   hg diff -U 3 --reverse --root ./pkg/nuclide-debugger-node-rpc
+
 mkdir -p VendorLib/node-inspector
 curl https://registry.npmjs.org/node-inspector/-/node-inspector-0.12.8.tgz |
   tar -xz -C VendorLib/node-inspector --strip-components=1 \
@@ -146,4 +149,24 @@ cat <<EOF | patch -p1
        }
      });
    },
+EOF
+
+# Fix from https://github.com/node-inspector/node-inspector/pull/932
+cat <<EOF | patch -p1
+--- a/VendorLib/node-inspector/lib/InjectorClient.js
++++ b/VendorLib/node-inspector/lib/InjectorClient.js
+@@ -105,10 +105,10 @@
+         return prop.name == 'NativeModule';
+       });
+
+-      if (!NM.length)
+-        error = new Error('No NativeModule in target scope');
++      if (!NM.length || !NM[0])
++        return cb(new Error('No NativeModule in target scope'));
+
+-      cb(error, NM[0].ref);
++      cb(null, NM[0].ref);
+     }.bind(this));
+ };
+
 EOF

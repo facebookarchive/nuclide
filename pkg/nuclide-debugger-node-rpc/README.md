@@ -67,3 +67,22 @@ VendorLib
      });
    },
 ```
+
+```diff
+--- a/VendorLib/node-inspector/lib/InjectorClient.js
++++ b/VendorLib/node-inspector/lib/InjectorClient.js
+@@ -105,10 +105,10 @@
+         return prop.name == 'NativeModule';
+       });
+
+-      if (!NM.length)
+-        error = new Error('No NativeModule in target scope');
++      if (!NM.length || !NM[0])
++        return cb(new Error('No NativeModule in target scope'));
+
+-      cb(error, NM[0].ref);
++      cb(null, NM[0].ref);
+     }.bind(this));
+ };
+
+```
