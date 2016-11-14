@@ -149,20 +149,15 @@ export function renderFileChanges(diffModel: DiffViewModel): React.Element<any> 
   let spinnerElement = null;
   if (isLoadingSelectedFiles) {
     spinnerElement = (
-      <div className="nuclide-diff-view-loading inline-block">
-        <LoadingSpinner
-          className="inline-block"
-          size={LoadingSpinnerSizes.EXTRA_SMALL}
-        />
-        <div className="inline-block">
-          Refreshing Selected Files …
-        </div>
-      </div>
+      <LoadingSpinner
+        className="inline-block nuclide-diff-view-file-change-spinner"
+        size={LoadingSpinnerSizes.EXTRA_SMALL}
+      />
     );
   }
 
   const emptyMessage = !isLoadingSelectedFiles && selectedFiles.size === 0
-    ? 'No file changes selected'
+    ? <div className="nuclide-diff-view-padded">No file changes selected</div>
     : null;
 
   // Open the view, if not previously open as well as issue a diff command.
@@ -177,16 +172,18 @@ export function renderFileChanges(diffModel: DiffViewModel): React.Element<any> 
   };
 
   return (
-    <div className="nuclide-diff-view-tree">
-      {spinnerElement}
-      <MultiRootChangedFilesView
-        commandPrefix="nuclide-diff-view"
-        fileChanges={getMultiRootFileChanges(selectedFiles, rootPaths)}
-        getRevertTargetRevision={getCompareRevision}
-        selectedFile={fileDiff.filePath}
-        onFileChosen={diffFilePath}
-      />
-      {emptyMessage}
+    <div>
+      <div className="padded">File Changes{spinnerElement}</div>
+      <div className="nuclide-diff-view-tree">
+        <MultiRootChangedFilesView
+          commandPrefix="nuclide-diff-view"
+          fileChanges={getMultiRootFileChanges(selectedFiles, rootPaths)}
+          getRevertTargetRevision={getCompareRevision}
+          selectedFile={fileDiff.filePath}
+          onFileChosen={diffFilePath}
+        />
+        {emptyMessage}
+      </div>
     </div>
   );
 }

@@ -55,7 +55,7 @@ export default class SectionDirectionNavigator extends React.Component {
     const hasDiffsDown = this._getNextNavigationSection() != null;
 
     return (
-      <span>
+      <span className="nuclide-diff-view-direction">
         <Button
           disabled={!hasActiveFile || !hasDiffsDown}
           icon="arrow-down"

@@ -67,7 +67,7 @@ export default class DiffViewNavigatorComponent extends React.Component {
       );
     } else {
       sectionNavigator = (
-        <div className="nuclide-diff-view-section-navigator-container">
+        <div className="padded">
           <span>Changed Sections: </span>
           <SectionDirectionNavigator
             commandTarget={`.${DIFF_EDITOR_MARKER_CLASS}`}
@@ -89,10 +89,7 @@ export default class DiffViewNavigatorComponent extends React.Component {
         <div className="nuclide-diff-view-navigator-file-changes-container">
           {sectionNavigator}
           <div className="nuclide-diff-view-navigator-horizontal-selector" />
-          <div>
-            <div className="padded">File Changes</div>
-            {renderFileChanges(this.props.diffModel)}
-          </div>
+          {renderFileChanges(this.props.diffModel)}
         </div>
 
       </div>
