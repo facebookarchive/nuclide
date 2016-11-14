@@ -53,7 +53,7 @@ export function failConnection(socket: Socket, errorMessage: string): void {
 }
 
 export function isCorrectConnection(isAttachConnection: boolean, message: Object): boolean {
-  const {pid, idekeyRegex, scriptRegex, launchScriptPath} = getConfig();
+  const {pid, idekeyRegex, attachScriptRegex, launchScriptPath} = getConfig();
   if (!message || !message.init || !message.init.$) {
     logger.logError('Incorrect init');
     return false;
@@ -91,5 +91,5 @@ export function isCorrectConnection(isAttachConnection: boolean, message: Object
   // regex for launching.
   return (!pid || attributes.appid === String(pid)) &&
     (!idekeyRegex || new RegExp(idekeyRegex).test(attributes.idekey)) &&
-    (!scriptRegex || new RegExp(scriptRegex).test(requestScriptPath));
+    (!attachScriptRegex || new RegExp(attachScriptRegex).test(requestScriptPath));
 }

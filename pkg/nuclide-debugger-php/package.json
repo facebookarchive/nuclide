@@ -13,17 +13,17 @@
       ]
     },
     "config": {
-      "scriptRegex": {
+      "attachScriptRegex": {
         "title": "Script Path Filter Regexp",
         "type": "string",
         "default": "^(?!/var.*)",
-        "description": "Regular expression to filter connection script path."
+        "description": "Regular expression to filter connection script path.  Only applies to connections when in attach mode."
       },
       "idekeyRegex": {
         "title": "Connection IDE Key Regexp",
         "type": "string",
         "default": "",
-        "description": "Regular expression to filter connection idekey. Usually your OS user id."
+        "description": "Regular expression to filter connection idekey. Usually your OS user id.  Only applies to connections when in attach mode."
       },
       "xdebugAttachPort": {
         "title": "DBGP Attach Port",

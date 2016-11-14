@@ -36,9 +36,10 @@ export function isValidRegex(value: ?string): boolean {
 }
 
 function validateConfig(config): void {
-  if (!isValidRegex(config.scriptRegex)) {
-    invariant(config.scriptRegex != null);
-    throw Error(`config scriptRegex is not a valid regular expression: ${config.scriptRegex}`);
+  const {attachScriptRegex} = config;
+  if (!isValidRegex(attachScriptRegex)) {
+    invariant(attachScriptRegex != null);
+    throw Error(`config scriptRegex is not a valid regular expression: ${attachScriptRegex}`);
   }
 
   if (!isValidRegex(config.idekeyRegex)) {
@@ -60,9 +61,8 @@ export function getSessionConfig(targetUri: string, isLaunch: boolean): PhpDebug
     phpRuntimeArgs: config.phpRuntimeArgs,
     dummyRequestFilePath: 'php_only_xdebug_request.php',
     stopOneStopAll: config.stopOneStopAll,
-    scriptRegex: config.scriptRegex,
+    attachScriptRegex: config.attachScriptRegex,
     idekeyRegex: config.idekeyRegex,
-
   };
   if (isLaunch) {
     sessionConfig.xdebugAttachPort = config.xdebugLaunchingPort;

@@ -24,7 +24,7 @@ export type PhpDebuggerSessionConfig = {
   xdebugLaunchingPort: number,
   launchScriptPath?: string,
   pid?: number,
-  scriptRegex?: string,
+  attachScriptRegex?: string,
   idekeyRegex?: string,
   endDebugWhenNoRequests?: boolean,
   logLevel: LogLevel,
