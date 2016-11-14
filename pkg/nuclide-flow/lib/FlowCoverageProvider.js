@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,37 +9,49 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
-import type {FlowCoverageResult} from '../../nuclide-flow-rpc';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getCoverage = undefined;
 
-import invariant from 'assert';
-import {Range} from 'atom';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-import {getFlowServiceByNuclideUri} from './FlowServiceFactory';
+let getCoverage = exports.getCoverage = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (path) {
+    const flowService = yield (0, (_FlowServiceFactory || _load_FlowServiceFactory()).getFlowServiceByNuclideUri)(path);
 
-export async function getCoverage(path: NuclideUri): Promise<?CoverageResult> {
-  const flowService = await getFlowServiceByNuclideUri(path);
-  invariant(flowService != null);
+    if (!(flowService != null)) {
+      throw new Error('Invariant violation: "flowService != null"');
+    }
 
-  const flowCoverage: ?FlowCoverageResult = await flowService.flowGetCoverage(path);
-  return flowCoverageToCoverage(flowCoverage);
+    const flowCoverage = yield flowService.flowGetCoverage(path);
+    return flowCoverageToCoverage(flowCoverage);
+  });
+
+  return function getCoverage(_x) {
+    return _ref.apply(this, arguments);
+  };
+})();
+
+var _atom = require('atom');
+
+var _FlowServiceFactory;
+
+function _load_FlowServiceFactory() {
+  return _FlowServiceFactory = require('./FlowServiceFactory');
 }
 
-function flowCoverageToCoverage(flowCoverage: ?FlowCoverageResult): ?CoverageResult {
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function flowCoverageToCoverage(flowCoverage) {
   if (flowCoverage == null) {
     return null;
   }
 
   return {
     percentage: flowCoverage.percentage,
-    uncoveredRegions: flowCoverage.uncoveredRanges.map(
-      flowRange => ({
-        range: new Range(
-          [flowRange.start.line, flowRange.start.column],
-          [flowRange.end.line, flowRange.end.column],
-        ),
-      }),
-    ),
+    uncoveredRegions: flowCoverage.uncoveredRanges.map(flowRange => ({
+      range: new _atom.Range([flowRange.start.line, flowRange.start.column], [flowRange.end.line, flowRange.end.column])
+    }))
   };
 }

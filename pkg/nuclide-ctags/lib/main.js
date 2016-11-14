@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,42 +9,56 @@
  * the root directory of this source tree.
  */
 
-import type {HyperclickProvider} from '../../hyperclick/lib/types';
-import type {Provider as QuickOpenProviderType} from '../../nuclide-quick-open/lib/types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.activate = activate;
+exports.getHyperclickProvider = getHyperclickProvider;
+exports.getQuickOpenProvider = getQuickOpenProvider;
+exports.deactivate = deactivate;
 
-import HyperclickHelpers from './HyperclickHelpers';
-import QuickOpenHelpers from './QuickOpenHelpers';
+var _HyperclickHelpers;
 
-export function activate(state: ?Object) {
+function _load_HyperclickHelpers() {
+  return _HyperclickHelpers = _interopRequireDefault(require('./HyperclickHelpers'));
 }
 
-export function getHyperclickProvider(): HyperclickProvider {
+var _QuickOpenHelpers;
+
+function _load_QuickOpenHelpers() {
+  return _QuickOpenHelpers = _interopRequireDefault(require('./QuickOpenHelpers'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function activate(state) {}
+
+function getHyperclickProvider() {
   return {
     priority: 1, // Should be lower than all language-specific providers.
     providerName: 'nuclide-ctags',
-    getSuggestionForWord(editor, text, range) {
-      return HyperclickHelpers.getSuggestionForWord(editor, text, range);
-    },
+    getSuggestionForWord: function (editor, text, range) {
+      return (_HyperclickHelpers || _load_HyperclickHelpers()).default.getSuggestionForWord(editor, text, range);
+    }
   };
 }
 
-export function getQuickOpenProvider(): QuickOpenProviderType {
+function getQuickOpenProvider() {
   return {
     getProviderType: () => 'DIRECTORY',
     getName: () => 'CtagsSymbolProvider',
     isRenderable: () => true,
     getTabTitle: () => 'Ctags',
-    isEligibleForDirectory(directory) {
-      return QuickOpenHelpers.isEligibleForDirectory(directory);
+    isEligibleForDirectory: function (directory) {
+      return (_QuickOpenHelpers || _load_QuickOpenHelpers()).default.isEligibleForDirectory(directory);
     },
-    getComponentForItem(item) {
-      return QuickOpenHelpers.getComponentForItem(item);
+    getComponentForItem: function (item) {
+      return (_QuickOpenHelpers || _load_QuickOpenHelpers()).default.getComponentForItem(item);
     },
-    executeQuery(query, directory) {
-      return QuickOpenHelpers.executeQuery(query, directory);
-    },
+    executeQuery: function (query, directory) {
+      return (_QuickOpenHelpers || _load_QuickOpenHelpers()).default.executeQuery(query, directory);
+    }
   };
 }
 
-export function deactivate() {
-}
+function deactivate() {}

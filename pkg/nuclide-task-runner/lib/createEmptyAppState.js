@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,22 +9,25 @@
  * the root directory of this source tree.
  */
 
-import type {AppState} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.createEmptyAppState = createEmptyAppState;
 
-import {ReplaySubject} from 'rxjs';
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
-export function createEmptyAppState(): AppState {
+function createEmptyAppState() {
   return {
     activeTaskId: null,
     previousSessionActiveTaskId: null,
     taskRunners: new Map(),
     projectRoot: null,
-    states: new ReplaySubject(1),
+    states: new _rxjsBundlesRxMinJs.ReplaySubject(1),
     tasksAreReady: false,
     taskLists: new Map(),
     runningTaskInfo: null,
     viewIsInitialized: false,
     visible: false,
-    previousSessionVisible: null,
+    previousSessionVisible: null
   };
 }

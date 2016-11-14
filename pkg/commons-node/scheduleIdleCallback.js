@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -21,36 +21,33 @@
  * `requestIdleCallback` for so much time to become available.
  */
 
-import invariant from 'assert';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = scheduleIdleCallback;
 
-type RequestIdleCallback = (
-  cb: (deadline: {didTimeout: boolean, timeRemaining: () => number}) => void,
-  opts?: {timeout: number},
-) => number;
-type CancelIdleCallback = (id: number) => void ;
 
-const requestIdleCallback: RequestIdleCallback =
-  global.requestIdleCallback ||
-  // Polyfill for node environment
-  function requestIdleCallbackPolyfill(cb, opts) {
-    return global.setImmediate(() => {
-      cb({didTimeout: false, timeRemaining: () => 16});
-    });
-  };
+const requestIdleCallback = global.requestIdleCallback ||
+// Polyfill for node environment
+function requestIdleCallbackPolyfill(cb, opts) {
+  return global.setImmediate(() => {
+    cb({ didTimeout: false, timeRemaining: () => 16 });
+  });
+};
 
-const cancelIdleCallback: CancelIdleCallback =
-  global.cancelIdleCallback ||
-  global.clearImmediate;
+const cancelIdleCallback = global.cancelIdleCallback || global.clearImmediate;
 
-export default function scheduleIdleCallback(
-  callback_: () => void,
-  afterRemainingTime?: 30 | 40 | 49 = 49,
-): IDisposable {
+function scheduleIdleCallback(callback_) {
+  let afterRemainingTime = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 49;
+
   let callback = callback_;
   let id;
   function fn(deadline) {
     if (deadline.timeRemaining() >= afterRemainingTime) {
-      invariant(callback != null);
+      if (!(callback != null)) {
+        throw new Error('Invariant violation: "callback != null"');
+      }
+
       callback(deadline);
       id = callback = null;
     } else {
@@ -59,11 +56,12 @@ export default function scheduleIdleCallback(
   }
   id = requestIdleCallback(fn);
   return {
-    dispose() {
+    dispose: function () {
       if (id != null) {
         cancelIdleCallback(id);
         id = callback = null;
       }
-    },
+    }
   };
 }
+module.exports = exports['default'];

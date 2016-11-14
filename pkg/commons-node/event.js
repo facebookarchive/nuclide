@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,31 +9,37 @@
  * the root directory of this source tree.
  */
 
-import {Disposable} from 'event-kit';
-import {Observable} from 'rxjs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.attachEvent = attachEvent;
+exports.observableFromSubscribeFunction = observableFromSubscribeFunction;
+
+var _eventKit;
+
+function _load_eventKit() {
+  return _eventKit = require('event-kit');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
 /**
  * Add an event listener an return a disposable for removing it. Note that this function assumes
  * node EventEmitter semantics: namely, that adding the same combination of eventName and callback
  * adds a second listener.
  */
-export function attachEvent(
-  emitter: events$EventEmitter,
-  eventName: string,
-  callback: Function,
-): Disposable {
+function attachEvent(emitter, eventName, callback) {
   emitter.addListener(eventName, callback);
-  return new Disposable(() => {
+  return new (_eventKit || _load_eventKit()).Disposable(() => {
     emitter.removeListener(eventName, callback);
   });
 }
 
-type SubscribeCallback<T> = (item: T) => any;
-type SubscribeFunction<T> = (callback: SubscribeCallback<T>) => IDisposable;
-
-export function observableFromSubscribeFunction<T>(fn: SubscribeFunction<T>): Observable<T> {
-  return Observable.create(observer => {
+function observableFromSubscribeFunction(fn) {
+  return _rxjsBundlesRxMinJs.Observable.create(observer => {
     const disposable = fn(observer.next.bind(observer));
-    return () => { disposable.dispose(); };
+    return () => {
+      disposable.dispose();
+    };
   });
 }

@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,10 +9,18 @@
  * the root directory of this source tree.
  */
 
-import type {PackagerEvent} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.parseMessages = parseMessages;
 
-import {parseRegularLine} from './parseRegularLine';
-import {Observable} from 'rxjs';
+var _parseRegularLine;
+
+function _load_parseRegularLine() {
+  return _parseRegularLine = require('./parseRegularLine');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
 const PORT_LINE = /.*Running.*on port\s+(\d+)/;
 const SOURCE_LIST_START = /Looking for JS files in/;
@@ -21,8 +29,8 @@ const READY_LINE = /(packager|server) ready/i;
 /**
  * Parses output from the packager into messages.
  */
-export function parseMessages(raw: Observable<string>): Observable<PackagerEvent> {
-  return Observable.create(observer => {
+function parseMessages(raw) {
+  return _rxjsBundlesRxMinJs.Observable.create(observer => {
     let sawPreamble = false;
     let sawPortLine = false;
     let sawSourcesStart = false;
@@ -35,7 +43,7 @@ export function parseMessages(raw: Observable<string>): Observable<PackagerEvent
         // If we've seen the port and the sources, that's the preamble! Or, if we get to a line that
         // starts with a "[", we probably missed the closing of the preamble somehow. (Like the
         // packager output changed).
-        sawPreamble = sawPreamble || (sawPortLine && sawSourcesEnd) || line.startsWith('[');
+        sawPreamble = sawPreamble || sawPortLine && sawSourcesEnd || line.startsWith('[');
         if (!sawPortLine && !sawPreamble) {
           const match = line.match(PORT_LINE);
           if (match != null) {
@@ -44,8 +52,8 @@ export function parseMessages(raw: Observable<string>): Observable<PackagerEvent
               kind: 'message',
               message: {
                 level: 'info',
-                text: `Running packager on port ${match[1]}.`,
-              },
+                text: `Running packager on port ${ match[1] }.`
+              }
             });
             return;
           }
@@ -69,8 +77,8 @@ export function parseMessages(raw: Observable<string>): Observable<PackagerEvent
               kind: 'message',
               message: {
                 level: 'info',
-                text: `Looking for JS files in: ${sourceDirectories.join(',')}`,
-              },
+                text: `Looking for JS files in: ${ sourceDirectories.join(',') }`
+              }
             });
             return;
           }
@@ -78,13 +86,15 @@ export function parseMessages(raw: Observable<string>): Observable<PackagerEvent
 
         if (sawPreamble) {
           // Drop all blank lines that come after the preamble.
-          if (isBlankLine(line)) { return; }
+          if (isBlankLine(line)) {
+            return;
+          }
 
-          observer.next({kind: 'message', message: parseRegularLine(line)});
+          observer.next({ kind: 'message', message: (0, (_parseRegularLine || _load_parseRegularLine()).parseRegularLine)(line) });
 
           if (!sawReadyMessage && READY_LINE.test(line)) {
             sawReadyMessage = true;
-            observer.next({kind: 'ready'});
+            observer.next({ kind: 'ready' });
           }
 
           return;
@@ -94,7 +104,7 @@ export function parseMessages(raw: Observable<string>): Observable<PackagerEvent
         // the lines we want to ignore, so don't do anything.
       },
       error: observer.error.bind(observer),
-      complete: observer.complete.bind(observer),
+      complete: observer.complete.bind(observer)
     });
   });
 }

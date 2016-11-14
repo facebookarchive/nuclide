@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,71 +9,73 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.LinterAdapter = undefined;
 
-import type {
-  DiagnosticMessage,
-  LinterMessage,
-  LinterProvider,
-  MessageUpdateCallback,
-  MessageInvalidationCallback,
-} from '../../nuclide-diagnostics-common';
-import type {
-  DiagnosticProviderUpdate,
-  FileDiagnosticMessage,
-  ProjectDiagnosticMessage,
-} from '../../nuclide-diagnostics-common/lib/rpc-types';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-import {Range} from 'atom';
-import {DiagnosticsProviderBase} from '../../nuclide-diagnostics-provider-base';
-import {RequestSerializer} from '../../commons-node/promise';
+exports.linterMessageToDiagnosticMessage = linterMessageToDiagnosticMessage;
+exports.linterMessagesToDiagnosticUpdate = linterMessagesToDiagnosticUpdate;
+
+var _atom = require('atom');
+
+var _nuclideDiagnosticsProviderBase;
+
+function _load_nuclideDiagnosticsProviderBase() {
+  return _nuclideDiagnosticsProviderBase = require('../../nuclide-diagnostics-provider-base');
+}
+
+var _promise;
+
+function _load_promise() {
+  return _promise = require('../../commons-node/promise');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // Exported for testing.
-export function linterMessageToDiagnosticMessage(
-  msg: LinterMessage,
-  providerName: string,
-): DiagnosticMessage {
+function linterMessageToDiagnosticMessage(msg, providerName) {
   // The types are slightly different, so we need to copy to make Flow happy. Basically, a Trace
   // does not need a filePath property, but a LinterTrace does. Trace is a subtype of LinterTrace,
   // so copying works but aliasing does not. For a detailed explanation see
   // https://github.com/facebook/flow/issues/908
-  const trace = msg.trace ? msg.trace.map(component => ({...component})) : undefined;
+  const trace = msg.trace ? msg.trace.map(component => Object.assign({}, component)) : undefined;
   if (msg.filePath) {
-    return ({
+    return {
       scope: 'file',
       providerName: msg.name != null ? msg.name : providerName,
       type: msg.type,
       filePath: msg.filePath,
       text: msg.text,
       html: msg.html,
-      range: msg.range && Range.fromObject(msg.range),
-      trace,
+      range: msg.range && _atom.Range.fromObject(msg.range),
+      trace: trace,
       fix: msg.fix == null ? undefined : {
         oldRange: msg.fix.range,
         oldText: msg.fix.oldText,
-        newText: msg.fix.newText,
-      },
-    }: FileDiagnosticMessage);
+        newText: msg.fix.newText
+      }
+    };
   } else {
-    return ({
+    return {
       scope: 'project',
       providerName: msg.name != null ? msg.name : providerName,
       type: msg.type,
       text: msg.text,
       html: msg.html,
-      range: msg.range && Range.fromObject(msg.range),
-      trace,
-    }: ProjectDiagnosticMessage);
+      range: msg.range && _atom.Range.fromObject(msg.range),
+      trace: trace
+    };
   }
 }
 
 // Exported for testing.
-export function linterMessagesToDiagnosticUpdate(
-  currentPath: ?NuclideUri,
-  msgs: Array<LinterMessage>,
-  providerName?: string = 'Unnamed Linter',
-): DiagnosticProviderUpdate {
-  const filePathToMessages: Map<NuclideUri, Array<FileDiagnosticMessage>> = new Map();
+function linterMessagesToDiagnosticUpdate(currentPath, msgs) {
+  let providerName = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'Unnamed Linter';
+
+  const filePathToMessages = new Map();
   if (currentPath) {
     // Make sure we invalidate the messages for the current path. We may want to
     // figure out which other paths we want to invalidate if it turns out that
@@ -91,13 +93,14 @@ export function linterMessagesToDiagnosticUpdate(
         filePathToMessages.set(path, messages);
       }
       messages.push(diagnosticMessage);
-    } else { // Project scope.
+    } else {
+      // Project scope.
       projectMessages.push(diagnosticMessage);
     }
   }
   return {
-    filePathToMessages,
-    projectMessages,
+    filePathToMessages: filePathToMessages,
+    projectMessages: projectMessages
   };
 }
 
@@ -112,115 +115,105 @@ export function linterMessagesToDiagnosticUpdate(
  * optional additional field, providerName, to indicate the display name of the
  * linter.
  */
-export class LinterAdapter {
-  _provider: LinterProvider;
-
-  _enabled: boolean;
-
-  _requestSerializer: RequestSerializer<any>;
-
-  _providerUtils: DiagnosticsProviderBase;
+let LinterAdapter = exports.LinterAdapter = class LinterAdapter {
 
   /**
    * Keep track of the files with diagnostics for each text buffer.
    * This way we can accurately invalidate diagnostics when files are renamed.
    */
-  _filesForBuffer: WeakMap<atom$TextBuffer, Array<NuclideUri>>;
-  _onDestroyDisposables: Map<atom$TextBuffer, IDisposable>;
+  constructor(provider) {
+    let ProviderBase = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : (_nuclideDiagnosticsProviderBase || _load_nuclideDiagnosticsProviderBase()).DiagnosticsProviderBase;
 
-  constructor(
-    provider: LinterProvider,
-    ProviderBase?: typeof DiagnosticsProviderBase = DiagnosticsProviderBase,
-  ) {
     const utilsOptions = {
       grammarScopes: new Set(provider.grammarScopes),
       enableForAllGrammars: provider.allGrammarScopes,
       shouldRunOnTheFly: provider.lintOnFly,
       onTextEditorEvent: editor => this._runLint(editor),
-      onNewUpdateSubscriber: callback => this._newUpdateSubscriber(callback),
+      onNewUpdateSubscriber: callback => this._newUpdateSubscriber(callback)
     };
     this._providerUtils = new ProviderBase(utilsOptions);
     this._provider = provider;
     this._enabled = true;
-    this._requestSerializer = new RequestSerializer();
+    this._requestSerializer = new (_promise || _load_promise()).RequestSerializer();
     this._filesForBuffer = new WeakMap();
     this._onDestroyDisposables = new Map();
   }
 
-  async _runLint(editor: TextEditor): Promise<void> {
-    if (this._enabled) {
-      const result = await this._requestSerializer.run(this._provider.lint(editor));
-      if (result.status === 'success') {
-        const buffer = editor.getBuffer();
-        if (buffer.isDestroyed()) {
-          return;
-        }
+  _runLint(editor) {
+    var _this = this;
 
-        if (this._provider.invalidateOnClose && !this._onDestroyDisposables.has(buffer)) {
-          const disposable = buffer.onDidDestroy(() => {
-            this._invalidateBuffer(buffer);
-            this._onDestroyDisposables.delete(buffer);
-            disposable.dispose();
-          });
-          this._onDestroyDisposables.set(buffer, disposable);
-        }
+    return (0, _asyncToGenerator.default)(function* () {
+      if (_this._enabled) {
+        const result = yield _this._requestSerializer.run(_this._provider.lint(editor));
+        if (result.status === 'success') {
+          const buffer = editor.getBuffer();
+          if (buffer.isDestroyed()) {
+            return;
+          }
 
-        const linterMessages = result.result;
-        const diagnosticUpdate = linterMessagesToDiagnosticUpdate(
-          editor.getPath(),
-          linterMessages, this._provider.providerName || this._provider.name,
-        );
-        this._invalidateBuffer(buffer);
-        this._providerUtils.publishMessageUpdate(diagnosticUpdate);
-        const {filePathToMessages} = diagnosticUpdate;
-        if (filePathToMessages != null) {
-          this._filesForBuffer.set(buffer, Array.from(filePathToMessages.keys()));
+          if (_this._provider.invalidateOnClose && !_this._onDestroyDisposables.has(buffer)) {
+            const disposable = buffer.onDidDestroy(function () {
+              _this._invalidateBuffer(buffer);
+              _this._onDestroyDisposables.delete(buffer);
+              disposable.dispose();
+            });
+            _this._onDestroyDisposables.set(buffer, disposable);
+          }
+
+          const linterMessages = result.result;
+          const diagnosticUpdate = linterMessagesToDiagnosticUpdate(editor.getPath(), linterMessages, _this._provider.providerName || _this._provider.name);
+          _this._invalidateBuffer(buffer);
+          _this._providerUtils.publishMessageUpdate(diagnosticUpdate);
+          const filePathToMessages = diagnosticUpdate.filePathToMessages;
+
+          if (filePathToMessages != null) {
+            _this._filesForBuffer.set(buffer, Array.from(filePathToMessages.keys()));
+          }
         }
       }
-    }
+    })();
   }
 
-  _newUpdateSubscriber(callback: MessageUpdateCallback): void {
+  _newUpdateSubscriber(callback) {
     const activeTextEditor = atom.workspace.getActiveTextEditor();
     if (activeTextEditor) {
-      const matchesGrammar =
-        this._provider.grammarScopes.indexOf(activeTextEditor.getGrammar().scopeName) !== -1;
+      const matchesGrammar = this._provider.grammarScopes.indexOf(activeTextEditor.getGrammar().scopeName) !== -1;
       if (!this._lintInProgress() && matchesGrammar) {
         this._runLint(activeTextEditor);
       }
     }
   }
 
-  setEnabled(enabled: boolean): void {
+  setEnabled(enabled) {
     this._enabled = enabled;
   }
 
-  setLintOnFly(lintOnFly: boolean): void {
+  setLintOnFly(lintOnFly) {
     this._providerUtils.setRunOnTheFly(lintOnFly && this._provider.lintOnFly);
   }
 
-  dispose(): void {
+  dispose() {
     this._providerUtils.dispose();
     this._onDestroyDisposables.forEach(disposable => disposable.dispose());
     this._onDestroyDisposables.clear();
   }
 
-  _lintInProgress(): boolean {
+  _lintInProgress() {
     return this._requestSerializer.isRunInProgress();
   }
 
-  onMessageUpdate(callback: MessageUpdateCallback): IDisposable {
+  onMessageUpdate(callback) {
     return this._providerUtils.onMessageUpdate(callback);
   }
 
-  onMessageInvalidation(callback: MessageInvalidationCallback): IDisposable {
+  onMessageInvalidation(callback) {
     return this._providerUtils.onMessageInvalidation(callback);
   }
 
-  _invalidateBuffer(buffer: atom$TextBuffer): void {
+  _invalidateBuffer(buffer) {
     const filePaths = this._filesForBuffer.get(buffer);
     if (filePaths != null) {
-      this._providerUtils.publishMessageInvalidation({scope: 'file', filePaths});
+      this._providerUtils.publishMessageInvalidation({ scope: 'file', filePaths: filePaths });
     }
   }
-}
+};

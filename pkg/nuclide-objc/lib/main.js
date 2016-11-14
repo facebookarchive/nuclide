@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,23 +9,40 @@
  * the root directory of this source tree.
  */
 
-import featureConfig from '../../commons-atom/featureConfig';
-import ObjectiveCColonIndenter from './ObjectiveCColonIndenter';
-import ObjectiveCBracketBalancer from './ObjectiveCBracketBalancer';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.activate = activate;
+exports.deactivate = deactivate;
 
-class Activation {
-  _indentFeature: ObjectiveCColonIndenter;
-  _bracketFeature: ObjectiveCBracketBalancer;
-  _configSubscription: IDisposable;
+var _featureConfig;
+
+function _load_featureConfig() {
+  return _featureConfig = _interopRequireDefault(require('../../commons-atom/featureConfig'));
+}
+
+var _ObjectiveCColonIndenter;
+
+function _load_ObjectiveCColonIndenter() {
+  return _ObjectiveCColonIndenter = _interopRequireDefault(require('./ObjectiveCColonIndenter'));
+}
+
+var _ObjectiveCBracketBalancer;
+
+function _load_ObjectiveCBracketBalancer() {
+  return _ObjectiveCBracketBalancer = _interopRequireDefault(require('./ObjectiveCBracketBalancer'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let Activation = class Activation {
 
   constructor() {
-    this._indentFeature = new ObjectiveCColonIndenter();
+    this._indentFeature = new (_ObjectiveCColonIndenter || _load_ObjectiveCColonIndenter()).default();
     this._indentFeature.enable();
 
-    this._bracketFeature = new ObjectiveCBracketBalancer();
-    this._configSubscription = featureConfig.observe(
-        'nuclide-objc.enableAutomaticSquareBracketInsertion',
-        enabled => (enabled ? this._bracketFeature.enable() : this._bracketFeature.disable()));
+    this._bracketFeature = new (_ObjectiveCBracketBalancer || _load_ObjectiveCBracketBalancer()).default();
+    this._configSubscription = (_featureConfig || _load_featureConfig()).default.observe('nuclide-objc.enableAutomaticSquareBracketInsertion', enabled => enabled ? this._bracketFeature.enable() : this._bracketFeature.disable());
   }
 
   dispose() {
@@ -33,17 +50,18 @@ class Activation {
     this._bracketFeature.disable();
     this._indentFeature.disable();
   }
-}
+};
 
-let activation: ?Activation;
 
-export function activate(state: ?mixed): void {
+let activation;
+
+function activate(state) {
   if (!activation) {
     activation = new Activation();
   }
 }
 
-export function deactivate(): void {
+function deactivate() {
   if (activation) {
     activation.dispose();
     activation = null;

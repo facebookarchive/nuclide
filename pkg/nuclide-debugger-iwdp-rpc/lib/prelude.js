@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,24 +9,24 @@
  * the root directory of this source tree.
  */
 
-export const PRELUDE_MESSAGES = [
-  {
-    method: 'Console.enable',
-  },
-  {
-    method: 'Debugger.enable',
-  },
-  {
-    method: 'Runtime.enable',
-  },
-  {
-    method: 'Debugger.setBreakpointsActive',
-    params: {
-      active: true,
-    },
-  },
-];
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.isPreludeMessage = isPreludeMessage;
 
-export function isPreludeMessage(method: string): boolean {
+const PRELUDE_MESSAGES = exports.PRELUDE_MESSAGES = [{
+  method: 'Console.enable'
+}, {
+  method: 'Debugger.enable'
+}, {
+  method: 'Runtime.enable'
+}, {
+  method: 'Debugger.setBreakpointsActive',
+  params: {
+    active: true
+  }
+}];
+
+function isPreludeMessage(method) {
   return PRELUDE_MESSAGES.some(message => message.method === method);
 }

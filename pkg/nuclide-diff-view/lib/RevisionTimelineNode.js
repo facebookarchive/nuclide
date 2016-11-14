@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,82 +9,105 @@
  * the root directory of this source tree.
  */
 
-import type {RevisionInfo} from '../../nuclide-hg-rpc/lib/HgService';
-import type {
-  RevisionStatusDisplay,
-} from '../../nuclide-hg-repository-client/lib/HgRepositoryClient';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = undefined;
 
-import classnames from 'classnames';
-import {getPhabricatorRevisionFromCommitMessage} from '../../nuclide-arcanist-rpc/lib/utils';
-import {getCommitAuthorFromAuthorEmail} from '../../nuclide-arcanist-rpc/lib/utils';
-import {React} from 'react-for-atom';
-import {track} from '../../nuclide-analytics';
+var _classnames;
 
-type RevisionTimelineNodeProps = {
-  revisionStatus: ?RevisionStatusDisplay,
-  index: number,
-  onSelectionChange: () => any,
-  revision: RevisionInfo,
-  revisionsCount: number,
-  selectedIndex: number,
-};
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
 
-export default class RevisionTimelineNode extends React.Component {
-  props: RevisionTimelineNodeProps;
+var _utils;
 
-  constructor(props: RevisionTimelineNodeProps) {
+function _load_utils() {
+  return _utils = require('../../nuclide-arcanist-rpc/lib/utils');
+}
+
+var _reactForAtom = require('react-for-atom');
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let RevisionTimelineNode = class RevisionTimelineNode extends _reactForAtom.React.Component {
+
+  constructor(props) {
     super(props);
-    (this: any)._handlePhabricatorRevisionClick = this._handlePhabricatorRevisionClick.bind(this);
+    this._handlePhabricatorRevisionClick = this._handlePhabricatorRevisionClick.bind(this);
   }
 
-  _handlePhabricatorRevisionClick(event: SyntheticMouseEvent): void {
+  _handlePhabricatorRevisionClick(event) {
     // Clicking an anchor opens the `href` in the browser. Stop propagation so it doesn't affect
     // the node selection in the Timeline.
     event.stopPropagation();
 
-    const revision = getPhabricatorRevisionFromCommitMessage(this.props.revision.description);
-    track('diff-view-phabricator-diff-open', {revision});
+    const revision = (0, (_utils || _load_utils()).getPhabricatorRevisionFromCommitMessage)(this.props.revision.description);
+    (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('diff-view-phabricator-diff-open', { revision: revision });
   }
 
-  render(): React.Element<any> {
-    const {revisionStatus, index, revision, revisionsCount, selectedIndex} = this.props;
-    const {author, bookmarks, date, description, hash, title} = revision;
-    const revisionClassName = classnames('revision', {
+  render() {
+    var _props = this.props;
+    const revisionStatus = _props.revisionStatus,
+          index = _props.index,
+          revision = _props.revision,
+          revisionsCount = _props.revisionsCount,
+          selectedIndex = _props.selectedIndex;
+    const author = revision.author,
+          bookmarks = revision.bookmarks,
+          date = revision.date,
+          description = revision.description,
+          hash = revision.hash,
+          title = revision.title;
+
+    const revisionClassName = (0, (_classnames || _load_classnames()).default)('revision', {
       'selected-revision-inrange': index < selectedIndex - 1,
       'selected-revision-end': index === selectedIndex - 1,
-      'selected-revision-last': index === revisionsCount - 2,
+      'selected-revision-last': index === revisionsCount - 2
     });
-    const tooltip = `${hash}: ${title}
-  Author: ${author}
-  Date: ${date.toString()}`;
+    const tooltip = `${ hash }: ${ title }
+  Author: ${ author }
+  Date: ${ date.toString() }`;
 
-    const commitAuthor = getCommitAuthorFromAuthorEmail(author);
+    const commitAuthor = (0, (_utils || _load_utils()).getCommitAuthorFromAuthorEmail)(author);
     let commitAuthorElement;
     if (commitAuthor != null) {
-      commitAuthorElement = (
-        <span className="inline-block">{commitAuthor}</span>
+      commitAuthorElement = _reactForAtom.React.createElement(
+        'span',
+        { className: 'inline-block' },
+        commitAuthor
       );
     }
 
-    const phabricatorRevision = getPhabricatorRevisionFromCommitMessage(description);
+    const phabricatorRevision = (0, (_utils || _load_utils()).getPhabricatorRevisionFromCommitMessage)(description);
     let phabricatorRevisionElement;
     if (phabricatorRevision != null) {
-      phabricatorRevisionElement = (
-        <a
-          className="inline-block"
-          href={phabricatorRevision.url}
-          onClick={this._handlePhabricatorRevisionClick}>
-          <strong>{phabricatorRevision.name}</strong>
-        </a>
+      phabricatorRevisionElement = _reactForAtom.React.createElement(
+        'a',
+        {
+          className: 'inline-block',
+          href: phabricatorRevision.url,
+          onClick: this._handlePhabricatorRevisionClick },
+        _reactForAtom.React.createElement(
+          'strong',
+          null,
+          phabricatorRevision.name
+        )
       );
     }
 
     let revisionStatusElement;
     if (revisionStatus != null) {
-      revisionStatusElement = (
-        <span className={classnames('inline-block', revisionStatus.className)}>
-          {revisionStatus.name}
-        </span>
+      revisionStatusElement = _reactForAtom.React.createElement(
+        'span',
+        { className: (0, (_classnames || _load_classnames()).default)('inline-block', revisionStatus.className) },
+        revisionStatus.name
       );
     }
 
@@ -94,8 +117,10 @@ export default class RevisionTimelineNode extends React.Component {
       const diffUtils = require('../../commons-node/fb-vcs-utils.js');
       const taskIds = diffUtils.getFbCommitTaskInfoFromCommitMessage(description);
       associatedExtraElement = taskIds.map(task => {
-        return (
-          <a key={task.id} className="inline-block" href={task.url}>{task.name}</a>
+        return _reactForAtom.React.createElement(
+          'a',
+          { key: task.id, className: 'inline-block', href: task.url },
+          task.name
         );
       });
     } catch (ex) {
@@ -112,32 +137,42 @@ export default class RevisionTimelineNode extends React.Component {
 
     let bookmarksElement;
     if (bookmarksToRender.length > 0) {
-      bookmarksElement = (
-        <span className="inline-block text-success">
-          {bookmarksToRender.join(' ')}
-        </span>
+      bookmarksElement = _reactForAtom.React.createElement(
+        'span',
+        { className: 'inline-block text-success' },
+        bookmarksToRender.join(' ')
       );
     }
 
-    return (
-      <div
-        className={revisionClassName}
-        onClick={this.props.onSelectionChange}
-        title={tooltip}>
-        <div className="revision-bubble" />
-        <div className="revision-label text-monospace">
-          <span className="inline-block">{hash.substr(0, 7)}</span>
-          {commitAuthorElement}
-          {phabricatorRevisionElement}
-          {revisionStatusElement}
-          {associatedExtraElement}
-          {bookmarksElement}
-          <br />
-          <span className="revision-title">
-            {title}
-          </span>
-        </div>
-      </div>
+    return _reactForAtom.React.createElement(
+      'div',
+      {
+        className: revisionClassName,
+        onClick: this.props.onSelectionChange,
+        title: tooltip },
+      _reactForAtom.React.createElement('div', { className: 'revision-bubble' }),
+      _reactForAtom.React.createElement(
+        'div',
+        { className: 'revision-label text-monospace' },
+        _reactForAtom.React.createElement(
+          'span',
+          { className: 'inline-block' },
+          hash.substr(0, 7)
+        ),
+        commitAuthorElement,
+        phabricatorRevisionElement,
+        revisionStatusElement,
+        associatedExtraElement,
+        bookmarksElement,
+        _reactForAtom.React.createElement('br', null),
+        _reactForAtom.React.createElement(
+          'span',
+          { className: 'revision-title' },
+          title
+        )
+      )
     );
   }
-}
+};
+exports.default = RevisionTimelineNode;
+module.exports = exports['default'];

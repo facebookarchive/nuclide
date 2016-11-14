@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,27 +9,24 @@
  * the root directory of this source tree.
  */
 
-import type {TextBuffer} from 'atom';
+var _AtomTextEditor;
 
-import {AtomTextEditor} from '../../../nuclide-ui/AtomTextEditor';
-import {React} from 'react-for-atom';
+function _load_AtomTextEditor() {
+  return _AtomTextEditor = require('../../../nuclide-ui/AtomTextEditor');
+}
 
-type Props = {
-  textBuffer: TextBuffer,
+var _reactForAtom = require('react-for-atom');
+
+let Console = class Console extends _reactForAtom.React.Component {
+  render() {
+    return _reactForAtom.React.createElement((_AtomTextEditor || _load_AtomTextEditor()).AtomTextEditor, {
+      gutterHidden: true,
+      path: '.ansi',
+      readOnly: true,
+      textBuffer: this.props.textBuffer
+    });
+  }
 };
 
-class Console extends React.Component {
-  props: Props;
-  render() {
-    return (
-      <AtomTextEditor
-        gutterHidden={true}
-        path=".ansi"
-        readOnly={true}
-        textBuffer={this.props.textBuffer}
-      />
-    );
-  }
-}
 
 module.exports = Console;

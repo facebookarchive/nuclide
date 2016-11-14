@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,7 +9,13 @@
  * the root directory of this source tree.
  */
 
-import type {QueryScore} from './QueryScore';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.valueComparator = valueComparator;
+exports.scoreComparator = scoreComparator;
+exports.inverseScoreComparator = inverseScoreComparator;
+
 
 /**
  * String comparator that lists the capitalized verson of a string before the lowercase version.
@@ -25,7 +31,7 @@ import type {QueryScore} from './QueryScore';
  *
  * @return <0 if a should appear before b in a list; >0 if b should appear before a in a list
  */
-export function valueComparator(a: string, b: string): number {
+function valueComparator(a, b) {
   const len = Math.min(a.length, b.length);
   for (let i = 0; i < len; i++) {
     const charA = a.charAt(i);
@@ -53,7 +59,7 @@ export function valueComparator(a: string, b: string): number {
 /**
  * @return >0 if a is the greater QueryScore; <0 if b is the greater QueryScore.
  */
-export function scoreComparator(a: QueryScore, b: QueryScore): number {
+function scoreComparator(a, b) {
   const cmp = a.score - b.score;
   if (cmp !== 0) {
     return cmp;
@@ -62,6 +68,6 @@ export function scoreComparator(a: QueryScore, b: QueryScore): number {
   }
 }
 
-export function inverseScoreComparator(a: QueryScore, b: QueryScore): number {
+function inverseScoreComparator(a, b) {
   return scoreComparator(b, a);
 }

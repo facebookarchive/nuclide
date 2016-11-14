@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,43 +9,59 @@
  * the root directory of this source tree.
  */
 
-import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
-import type {ConflictsApi} from '../';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.MercurialConflictDetector = undefined;
 
-import {MercurialConflictContext} from './MercurialConflictContext';
-import {CompositeDisposable} from 'atom';
-import {getLogger} from '../../nuclide-logging';
-import {track} from '../../nuclide-analytics';
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
-export class MercurialConflictDetector {
-  _subscriptions: CompositeDisposable;
-  _conflictsApi: ?ConflictsApi;
-  _repositorySubscriptions: Map<HgRepositoryClient, CompositeDisposable>;
-  _mercurialConflictContext: MercurialConflictContext;
+var _MercurialConflictContext;
+
+function _load_MercurialConflictContext() {
+  return _MercurialConflictContext = require('./MercurialConflictContext');
+}
+
+var _atom = require('atom');
+
+var _nuclideLogging;
+
+function _load_nuclideLogging() {
+  return _nuclideLogging = require('../../nuclide-logging');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+let MercurialConflictDetector = exports.MercurialConflictDetector = class MercurialConflictDetector {
 
   constructor() {
-    this._subscriptions = new CompositeDisposable();
+    this._subscriptions = new _atom.CompositeDisposable();
     this._repositorySubscriptions = new Map();
-    this._mercurialConflictContext = new MercurialConflictContext();
+    this._mercurialConflictContext = new (_MercurialConflictContext || _load_MercurialConflictContext()).MercurialConflictContext();
     this._subscriptions.add(atom.project.onDidChangePaths(this._updateRepositories.bind(this)));
   }
 
-  setConflictsApi(conflictsApi: ConflictsApi): void {
+  setConflictsApi(conflictsApi) {
     this._conflictsApi = conflictsApi;
     conflictsApi.registerContextApi({
-      getContext: () => Promise.resolve(this._mercurialConflictContext),
+      getContext: () => Promise.resolve(this._mercurialConflictContext)
     });
     this._updateRepositories();
   }
 
-  _updateRepositories(): void {
-    const repositories = new Set(
-      atom.project.getRepositories().filter(
-        repository => repository != null && repository.getType() === 'hg',
-      ),
-    );
+  _updateRepositories() {
+    const repositories = new Set(atom.project.getRepositories().filter(repository => repository != null && repository.getType() === 'hg'));
     // Dispose removed projects repositories, if any.
-    for (const [repository, repositorySubscription] of this._repositorySubscriptions) {
+    for (const _ref of this._repositorySubscriptions) {
+      var _ref2 = _slicedToArray(_ref, 2);
+
+      const repository = _ref2[0];
+      const repositorySubscription = _ref2[1];
+
       if (repositories.has(repository)) {
         continue;
       }
@@ -62,46 +78,42 @@ export class MercurialConflictDetector {
     }
   }
 
-  _watchRepository(repository: HgRepositoryClient): void {
-    const subscriptions = new CompositeDisposable();
+  _watchRepository(repository) {
+    const subscriptions = new _atom.CompositeDisposable();
     this._conflictStateChanged(repository);
-    subscriptions.add(
-      repository.onDidChangeConflictState(() => this._conflictStateChanged(repository)),
-    );
+    subscriptions.add(repository.onDidChangeConflictState(() => this._conflictStateChanged(repository)));
     this._repositorySubscriptions.set(repository, subscriptions);
   }
 
-  _conflictStateChanged(repository: HgRepositoryClient): void {
+  _conflictStateChanged(repository) {
     const conflictsApi = this._conflictsApi;
     if (conflictsApi == null || conflictsApi.showForContext == null) {
-      getLogger().info('No compatible "merge-conflicts" API found.');
+      (0, (_nuclideLogging || _load_nuclideLogging()).getLogger)().info('No compatible "merge-conflicts" API found.');
       return;
     }
     if (repository.isInConflict()) {
-      track('hg-conflict-detctor.detected-conflicts');
+      (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('hg-conflict-detctor.detected-conflicts');
       this._mercurialConflictContext.setConflictingRepository(repository);
       conflictsApi.showForContext(this._mercurialConflictContext);
-      atom.notifications.addWarning(
-        'Nuclide detected merge conflicts in your active project\'s repository', {
-          detail: 'Use the conflicts resolver UI below to help resolve them',
-          nativeFriendly: true,
-        },
-      );
+      atom.notifications.addWarning('Nuclide detected merge conflicts in your active project\'s repository', {
+        detail: 'Use the conflicts resolver UI below to help resolve them',
+        nativeFriendly: true
+      });
     } else {
       const toClear = this._mercurialConflictContext.getConflictingRepository() === repository;
       if (toClear) {
-        track('hg-conflict-detctor.resolved-outside-nuclide');
+        (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('hg-conflict-detctor.resolved-outside-nuclide');
         this._mercurialConflictContext.clearConflictState();
         conflictsApi.hideForContext(this._mercurialConflictContext);
         atom.notifications.addInfo('Conflicts resolved outside of Nuclide');
-        getLogger().info('Conflicts resolved outside of Nuclide');
+        (0, (_nuclideLogging || _load_nuclideLogging()).getLogger)().info('Conflicts resolved outside of Nuclide');
       } else {
-        track('hg-conflict-detctor.resolved-in-nuclide');
+        (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('hg-conflict-detctor.resolved-in-nuclide');
       }
     }
   }
 
-  dispose(): void {
+  dispose() {
     this._subscriptions.dispose();
     for (const repositorySubscription of this._repositorySubscriptions.values()) {
       repositorySubscription.dispose();
@@ -109,4 +121,4 @@ export class MercurialConflictDetector {
     this._repositorySubscriptions.clear();
   }
 
-}
+};

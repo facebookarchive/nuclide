@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,11 +9,27 @@
  * the root directory of this source tree.
  */
 
-import {refmt} from './ReasonProcess';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.format = undefined;
 
-export type refmtResult =
-  {type: 'result', formattedResult: string} | {type: 'error', error: string};
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-export async function format(content: string, flags: Array<string>): Promise<refmtResult> {
-  return refmt(content, flags);
+let format = exports.format = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (content, flags) {
+    return (0, (_ReasonProcess || _load_ReasonProcess()).refmt)(content, flags);
+  });
+
+  return function format(_x, _x2) {
+    return _ref.apply(this, arguments);
+  };
+})();
+
+var _ReasonProcess;
+
+function _load_ReasonProcess() {
+  return _ReasonProcess = require('./ReasonProcess');
 }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }

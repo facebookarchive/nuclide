@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,17 +9,24 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = undefined;
+
+var _reactForAtom = require('react-for-atom');
 
 /**
  * Component to entertain the user while he is waiting to hear back from the server.
  */
-export default class IndeterminateProgressBar extends React.Component {
-  render(): React.Element<any> {
-    return (
-      <div className="text-center padded">
-        <span className="loading loading-spinner-medium inline-block" />
-      </div>
+let IndeterminateProgressBar = class IndeterminateProgressBar extends _reactForAtom.React.Component {
+  render() {
+    return _reactForAtom.React.createElement(
+      'div',
+      { className: 'text-center padded' },
+      _reactForAtom.React.createElement('span', { className: 'loading loading-spinner-medium inline-block' })
     );
   }
-}
+};
+exports.default = IndeterminateProgressBar;
+module.exports = exports['default'];

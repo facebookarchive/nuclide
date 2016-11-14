@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,7 +9,12 @@
  * the root directory of this source tree.
  */
 
-export function getIgnoredNames(): Array<string> {
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getIgnoredNames = getIgnoredNames;
+
+function getIgnoredNames() {
   const ignoredNames = atom.config.get('core.ignoredNames');
   if (Array.isArray(ignoredNames)) {
     // $FlowIssue: Filter predicates

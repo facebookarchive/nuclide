@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,88 +9,74 @@
  * the root directory of this source tree.
  */
 
-import {Button, ButtonSizes} from './Button';
-import {Icon} from './Icon';
-import classnames from 'classnames';
-import invariant from 'assert';
-import electron from 'electron';
-import {React} from 'react-for-atom';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ButtonSizes = exports.Dropdown = undefined;
 
-const {remote} = electron;
-invariant(remote != null);
+var _class, _temp;
+
+exports.DropdownButton = DropdownButton;
+
+var _Button;
+
+function _load_Button() {
+  return _Button = require('./Button');
+}
+
+var _Icon;
+
+function _load_Icon() {
+  return _Icon = require('./Icon');
+}
+
+var _classnames;
+
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
+
+var _electron = _interopRequireDefault(require('electron'));
+
+var _reactForAtom = require('react-for-atom');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const remote = _electron.default.remote;
+
+if (!(remote != null)) {
+  throw new Error('Invariant violation: "remote != null"');
+}
 
 // For backwards compat, we have to do some conversion here.
-type ShortButtonSize = 'xs' | 'sm' | 'lg';
-type ButtonSize = 'EXTRA_SMALL' | 'SMALL' | 'LARGE';
 
-type Separator = {
-  type: 'separator',
-};
 
-export type Option = Separator | {
-  type?: void,
-  value: any,
-  label: string,
-  selectedLabel?: string,
-  icon?: atom$Octicon,
-  disabled?: boolean,
-};
+let Dropdown = exports.Dropdown = (_temp = _class = class Dropdown extends _reactForAtom.React.Component {
 
-type Props = {
-  className: string,
-  disabled?: boolean,
-
-  // Normally, a dropdown is styled like a button. This prop allows you to avoid that.
-  isFlat: boolean,
-
-  title: string,
-  value: any,
-  buttonComponent?: ReactClass<any>,
-  options: Array<Option>,
-  onChange?: (value: any) => mixed,
-  size?: ShortButtonSize,
-  tooltip?: atom$TooltipsAddOptions,
-};
-
-export class Dropdown extends React.Component {
-  props: Props;
-
-  static defaultProps = {
-    className: '',
-    disabled: false,
-    isFlat: false,
-    options: [],
-    value: (null: any),
-    title: '',
-  };
-
-  constructor(props: Props) {
+  constructor(props) {
     super(props);
-    (this: any)._handleDropdownClick = this._handleDropdownClick.bind(this);
+    this._handleDropdownClick = this._handleDropdownClick.bind(this);
   }
 
-  render(): React.Element<any> {
-    const selectedOption = this.props.options.find(option => (
-      option.type !== 'separator' && option.value === this.props.value),
-    ) || this.props.options[0];
+  render() {
+    const selectedOption = this.props.options.find(option => option.type !== 'separator' && option.value === this.props.value) || this.props.options[0];
 
-    return (
-      <DropdownButton
-        className={this.props.className}
-        disabled={this.props.disabled}
-        isFlat={this.props.isFlat}
-        title={this.props.title}
-        buttonComponent={this.props.buttonComponent}
-        onExpand={this._handleDropdownClick}
-        size={this.props.size}
-        tooltip={this.props.tooltip}>
-        {this._renderSelectedLabel(selectedOption)}
-      </DropdownButton>
+    return _reactForAtom.React.createElement(
+      DropdownButton,
+      {
+        className: this.props.className,
+        disabled: this.props.disabled,
+        isFlat: this.props.isFlat,
+        title: this.props.title,
+        buttonComponent: this.props.buttonComponent,
+        onExpand: this._handleDropdownClick,
+        size: this.props.size,
+        tooltip: this.props.tooltip },
+      this._renderSelectedLabel(selectedOption)
     );
-
   }
 
-  _renderSelectedLabel(option: Option): ?string {
+  _renderSelectedLabel(option) {
     let text = null;
     if (option == null) {
       text = '';
@@ -100,16 +86,18 @@ export class Dropdown extends React.Component {
       text = option.label;
     }
 
-    if (text == null || text === '') { return null; }
+    if (text == null || text === '') {
+      return null;
+    }
     return text;
   }
 
-  _handleDropdownClick(event: SyntheticMouseEvent): void {
+  _handleDropdownClick(event) {
     const currentWindow = remote.getCurrentWindow();
     const menu = new remote.Menu();
     this.props.options.forEach(option => {
       if (option.type === 'separator') {
-        menu.append(new remote.MenuItem({type: 'separator'}));
+        menu.append(new remote.MenuItem({ type: 'separator' }));
         return;
       }
       menu.append(new remote.MenuItem({
@@ -121,25 +109,21 @@ export class Dropdown extends React.Component {
           if (this.props.onChange != null) {
             this.props.onChange(option.value);
           }
-        },
+        }
       }));
     });
     menu.popup(currentWindow, event.clientX, event.clientY);
   }
 
-}
+}, _class.defaultProps = {
+  className: '',
+  disabled: false,
+  isFlat: false,
+  options: [],
+  value: null,
+  title: ''
+}, _temp);
 
-type DropdownButtonProps = {
-  buttonComponent?: ReactClass<any>,
-  children?: any,
-  className: string,
-  disabled?: boolean,
-  isFlat?: boolean,
-  title?: string,
-  size?: ShortButtonSize,
-  tooltip?: atom$TooltipsAddOptions,
-  onExpand?: (event: SyntheticMouseEvent) => void,
-};
 
 const noop = () => {};
 
@@ -147,43 +131,45 @@ const noop = () => {};
  * Just the button part. This is useful for when you want to customize the dropdown behavior (e.g.)
  * show it asynchronously.
  */
-export function DropdownButton(props: DropdownButtonProps): React.Element<any> {
-  const ButtonComponent = props.buttonComponent || Button;
-  const className = classnames(
-    'nuclide-ui-dropdown',
-    props.className,
-    {
-      'nuclide-ui-dropdown-flat': props.isFlat === true,
-    },
+function DropdownButton(props) {
+  const ButtonComponent = props.buttonComponent || (_Button || _load_Button()).Button;
+  const className = (0, (_classnames || _load_classnames()).default)('nuclide-ui-dropdown', props.className, {
+    'nuclide-ui-dropdown-flat': props.isFlat === true
+  });
+
+  const label = props.children == null ? null : _reactForAtom.React.createElement(
+    'span',
+    { className: 'nuclide-dropdown-label-text-wrapper' },
+    props.children
   );
 
-  const label = props.children == null
-    ? null
-    : <span className="nuclide-dropdown-label-text-wrapper">{props.children}</span>;
-
-  return (
-    <ButtonComponent
-      tooltip={props.tooltip}
-      size={getButtonSize(props.size)}
-      className={className}
-      disabled={props.disabled === true}
-      onClick={props.onExpand || noop}>
-      {label}
-      <Icon
-        icon="triangle-down"
-        className="nuclide-ui-dropdown-icon"
-      />
-    </ButtonComponent>
+  return _reactForAtom.React.createElement(
+    ButtonComponent,
+    {
+      tooltip: props.tooltip,
+      size: getButtonSize(props.size),
+      className: className,
+      disabled: props.disabled === true,
+      onClick: props.onExpand || noop },
+    label,
+    _reactForAtom.React.createElement((_Icon || _load_Icon()).Icon, {
+      icon: 'triangle-down',
+      className: 'nuclide-ui-dropdown-icon'
+    })
   );
 }
 
-function getButtonSize(size: ?ShortButtonSize): ButtonSize {
+function getButtonSize(size) {
   switch (size) {
-    case 'xs': return 'EXTRA_SMALL';
-    case 'sm': return 'SMALL';
-    case 'lg': return 'LARGE';
-    default: return 'SMALL';
+    case 'xs':
+      return 'EXTRA_SMALL';
+    case 'sm':
+      return 'SMALL';
+    case 'lg':
+      return 'LARGE';
+    default:
+      return 'SMALL';
   }
 }
 
-export {ButtonSizes};
+exports.ButtonSizes = (_Button || _load_Button()).ButtonSizes;
