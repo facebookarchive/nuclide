@@ -111,7 +111,7 @@ describe('Epics', () => {
         taskEvents.complete();
 
         const result = await output.toArray().toPromise();
-        expect(result.map(action => action.type)).toEqual([
+        expect(result.map(action => action.type).slice(-2)).toEqual([
           Actions.TASK_STARTED,
           Actions.TASK_COMPLETED,
         ]);

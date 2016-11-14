@@ -9,11 +9,19 @@
  * the root directory of this source tree.
  */
 
-import type {Action, AppState, Store, TaskMetadata, TaskRunner} from '../types';
+import type {
+  AnnotatedTaskMetadata,
+  Action,
+  AppState,
+  Store,
+  TaskMetadata,
+  TaskRunner,
+} from '../types';
 import type {ActionsObservable} from '../../../commons-node/redux-observable';
 
 import {observableFromTask} from '../../../commons-node/tasks';
 import {observableFromSubscribeFunction} from '../../../commons-node/event';
+import {diffSets} from '../../../commons-node/observable';
 import {getLogger} from '../../../nuclide-logging';
 import {getTaskMetadata} from '../getTaskMetadata';
 import {getActiveTaskId, getActiveTaskRunner} from '../redux/Selectors';
@@ -22,35 +30,105 @@ import * as Actions from './Actions';
 import invariant from 'assert';
 import {Observable} from 'rxjs';
 
-export function registerTaskRunnerEpic(
+export function aggregateTaskListsEpic(
   actions: ActionsObservable<Action>,
   store: Store,
 ): Observable<Action> {
-  return actions.ofType(Actions.REGISTER_TASK_RUNNER).flatMap(action => {
-    invariant(action.type === Actions.REGISTER_TASK_RUNNER);
-    const {taskRunner} = action.payload;
+  // Wait until the initial packages have loaded.
+  return actions.ofType(Actions.DID_LOAD_INITIAL_PACKAGES)
+    // Then, whenever the project root changes...
+    .switchMap(() => store.getState().states.map(state => state.projectRoot))
+    .distinctUntilChanged((a, b) => {
+      const aPath = a && a.getPath();
+      const bPath = b && b.getPath();
+      return aPath === bPath;
+    })
 
-    // Set the project root on the new task runner.
-    const {setProjectRoot} = taskRunner;
-    if (typeof setProjectRoot === 'function') {
-      const projectRoot = store.getState().projectRoot;
-      setProjectRoot.call(taskRunner, projectRoot);
-    }
+    .switchMap(projectRoot => {
+      // We get the state stream from the state. Ideally, we'd just use `Observable.from(store)`,
+      // but Redux gives us a partial store so we have to work around it.
+      // See redux-observable/redux-observable#56
+      const {states} = store.getState();
+      const taskRunnersByIdStream: Observable<Map<string, TaskRunner>> = states
+        .map(state => state.taskRunners)
+        .distinctUntilChanged();
 
-    const taskListToAction = taskList => ({
-      type: Actions.TASK_LIST_UPDATED,
-      payload: {
-        taskRunnerId: taskRunner.id,
-        taskList,
-      },
+      // We want to make sure that we don't call `observeTaskList()` when nothing's changed, so we
+      // use `diffSets()` to identify changes.
+      const diffs = diffSets(
+        taskRunnersByIdStream.map(taskRunnersById => new Set(taskRunnersById.keys())),
+      )
+        .share();
+
+      // Create a stream containing the task list updates, tagged by task runner id.
+      const taskListsByIdStream: Observable<Map<string, Array<AnnotatedTaskMetadata>>> = diffs
+        .mergeMap(({added}) => (
+          // Get an observable of task lists for each task runner. Tag it with the task runner id
+          // so that we can tie them back later.
+          Observable.from(added).mergeMap(taskRunnerId => {
+            const taskRunner = store.getState().taskRunners.get(taskRunnerId);
+            invariant(taskRunner != null);
+            const taskLists = observableFromSubscribeFunction(cb => taskRunner.observeTaskList(cb))
+              // When the task runner is removed, stop listening to its task list.
+              .takeUntil(diffs.filter(diff => diff.removed.has(taskRunnerId)))
+              .map(taskList => {
+                // Annotate each task with some info about its runner.
+                const annotatedTaskList = taskList.map(task => ({
+                  ...task,
+                  taskRunnerId,
+                  taskRunnerName: taskRunner.name,
+                }));
+                // Tag each task list with the id of its runner for adding to the map.
+                return {taskRunnerId, taskList: annotatedTaskList};
+              })
+              // When it completes, null the task list.
+              .concat(Observable.of({taskRunnerId, taskList: null}))
+              .share();
+            // If it takes too long to get a task list, start with an empty list.
+            const timeout = Observable.of({taskRunnerId, taskList: []})
+              .delay(2000)
+              .takeUntil(taskLists.take(1));
+            return Observable.merge(timeout, taskLists);
+          })
+        ))
+        .scan(
+          // Combine the lists from each task runner into a single map.
+          // Watch out! We're mutating the map.
+          (acc, {taskRunnerId, taskList}) => {
+            if (taskList == null) {
+              acc.delete(taskRunnerId);
+            } else {
+              acc.set(taskRunnerId, taskList);
+            }
+            return acc;
+          },
+          new Map(),
+        );
+
+      return Observable.concat(
+        Observable.of(Actions.setProjectRoot(projectRoot)),
+        taskListsByIdStream.map(taskListsById => Actions.setTaskLists(taskListsById)),
+      );
+
     });
-    const unregistrationEvents = actions.filter(a => (
-      a.type === Actions.UNREGISTER_TASK_RUNNER && a.payload.id === taskRunner.id
-    ));
-    return observableFromSubscribeFunction(taskRunner.observeTaskList.bind(taskRunner))
-      .map(taskListToAction)
-      .takeUntil(unregistrationEvents);
-  });
+}
+
+export function setProjectRootEpic(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Action> {
+  return actions.ofType(Actions.SET_PROJECT_ROOT)
+    .do(action => {
+      invariant(action.type === Actions.SET_PROJECT_ROOT);
+      const {projectRoot} = action.payload;
+      for (const taskRunner of store.getState().taskRunners.values()) {
+        if (taskRunner.setProjectRoot != null) {
+          taskRunner.setProjectRoot(projectRoot);
+        }
+      }
+    })
+    // This is just for side-effects.
+    .ignoreElements();
 }
 
 export function runTaskEpic(
@@ -97,41 +175,6 @@ export function runTaskEpic(
             );
         }),
       );
-    });
-}
-
-export function setProjectRootEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions.ofType(Actions.SET_PROJECT_ROOT)
-    .do(action => {
-      invariant(action.type === Actions.SET_PROJECT_ROOT);
-      const {projectRoot} = action.payload;
-
-      // Set the project root on all registered task runners.
-      store.getState().taskRunners.forEach(taskRunner => {
-        if (typeof taskRunner.setProjectRoot === 'function') {
-          taskRunner.setProjectRoot(projectRoot);
-        }
-      });
-    })
-    // This is just for side-effects
-    .ignoreElements();
-}
-
-export function setToolbarVisibilityEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions.ofType(Actions.SET_TOOLBAR_VISIBILITY)
-    .map(action => {
-      invariant(action.type === Actions.SET_TOOLBAR_VISIBILITY);
-      const {visible} = action.payload;
-      return {
-        type: Actions.TOOLBAR_VISIBILITY_UPDATED,
-        payload: {visible},
-      };
     });
 }
 

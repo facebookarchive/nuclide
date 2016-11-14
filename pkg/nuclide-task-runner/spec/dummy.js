@@ -13,18 +13,18 @@ import type {Task} from '../../commons-node/tasks';
 import type {TaskMetadata} from '../lib/types';
 
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {BehaviorSubject} from 'rxjs';
+import {Subject} from 'rxjs';
 
 export class TaskRunner {
-  _taskLists: BehaviorSubject<Array<TaskMetadata>>;
+  _taskLists: Subject<Array<TaskMetadata>>;
 
   id: string;
   name: string;
 
-  constructor() {
-    this.id = 'build-system';
-    this.name = 'Build System';
-    this._taskLists = new BehaviorSubject([]);
+  constructor(id?: string) {
+    this.id = id || 'build-system';
+    this.name = id || 'Build System';
+    this._taskLists = new Subject();
   }
 
   getIcon(): ReactClass<any> {

@@ -10,6 +10,7 @@
 
 import type {Task} from '../../commons-node/tasks';
 import type {Directory} from '../../nuclide-remote-connection';
+import type {Observable} from 'rxjs';
 
 export type AppState = {
   // The explicitly selected task. If we're using a fallback, this will be null. Always use the
@@ -17,18 +18,22 @@ export type AppState = {
   activeTaskId: ?TaskId,
   taskRunners: Map<string, TaskRunner>,
   previousSessionActiveTaskId: ?TaskId,
+  previousSessionVisible: ?boolean,
   projectRoot: ?Directory,
+  states: Observable<AppState>,
   taskLists: Map<string, Array<AnnotatedTaskMetadata>>,
   runningTaskInfo: ?{
     task: Task,
     progress: ?number,
   },
+  tasksAreReady: boolean,
+  viewIsInitialized: boolean,
   visible: boolean,
 };
 
 export type SerializedAppState = {
   previousSessionActiveTaskId: ?TaskId,
-  visible: boolean,
+  previousSessionVisible: ?boolean,
   version?: number,
 };
 
@@ -93,6 +98,10 @@ export type BoundActionCreators = {
 // Action types.
 //
 
+export type DidLoadInitialPackagesAction = {
+  type: 'DID_LOAD_INITIAL_PACKAGES',
+};
+
 export type SelectTaskAction = {
   type: 'SELECT_TASK',
   payload: {
@@ -136,13 +145,6 @@ export type TaskStoppedAction = {
   },
 };
 
-export type ToolbarVisibilityUpdatedAction = {
-  type: 'TOOLBAR_VISIBILITY_UPDATED',
-  payload: {
-    visible: boolean,
-  },
-};
-
 export type RegisterTaskRunnerAction = {
   type: 'REGISTER_TASK_RUNNER',
   payload: {
@@ -182,11 +184,10 @@ export type ToggleToolbarVisibilityAction = {
   },
 };
 
-export type TaskListUpdatedAction = {
-  type: 'TASK_LIST_UPDATED',
+export type SetTaskListsAction = {
+  type: 'SET_TASK_LISTS',
   payload: {
-    taskRunnerId: string,
-    taskList: Array<TaskMetadata>,
+    taskLists: Map<string, Array<AnnotatedTaskMetadata>>,
   },
 };
 
@@ -198,19 +199,19 @@ export type UnregisterTaskRunnerAction = {
 };
 
 export type Action =
-  RunTaskAction
+  DidLoadInitialPackagesAction
+  | RunTaskAction
   | SelectTaskAction
   | SetProjectRootAction
+  | SetTaskListsAction
   | SetToolbarVisibilityAction
   | StopTaskAction
   | TaskCompletedAction
   | TaskProgressAction
   | TaskErroredAction
-  | TaskListUpdatedAction
   | TaskStartedAction
   | TaskStoppedAction
   | ToggleToolbarVisibilityAction
-  | ToolbarVisibilityUpdatedAction
   | RegisterTaskRunnerAction
   | UnregisterTaskRunnerAction;
 

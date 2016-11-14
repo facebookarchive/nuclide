@@ -50,7 +50,7 @@ export class Toolbar extends React.Component {
         }
         return <span>Waiting for tasks from {runnerCount} task runners...</span>;
       }
-      return <span>No available tasks</span>;
+      return <span>No Task Selected</span>;
     }
   }
 

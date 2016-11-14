@@ -74,7 +74,7 @@ class Activation {
       initialState,
       applyMiddleware(createEpicMiddleware(rootEpic), trackingMiddleware),
     );
-    const states = Observable.from(this._store);
+    const states = Observable.from(this._store).filter(state => state != null);
     this._actionCreators = bindActionCreators(Actions, this._store.dispatch);
     this._panelRenderer = new PanelRenderer({
       location: 'top',
@@ -82,6 +82,16 @@ class Activation {
     });
 
     this._disposables = new UniversalDisposable(
+      // We stick a stream of states onto the store so that epics can use them. This is less than
+      // ideal. See redux-observable/redux-observable#56
+      // $FlowFixMe: Teach flow about Symbol.observable
+      Observable.from(this._store).subscribe(initialState.states),
+
+      // A stand-in for `atom.packages.didLoadInitialPackages` until atom/atom#12897
+      Observable.interval(0).take(1)
+        .map(() => Actions.didLoadInitialPackages())
+        .subscribe(this._store.dispatch),
+
       this._panelRenderer,
       atom.commands.add('atom-workspace', {
         'nuclide-task-runner:toggle-toolbar-visibility': event => {
@@ -265,7 +275,9 @@ class Activation {
     const state = this._store.getState();
     return {
       previousSessionActiveTaskId: state.activeTaskId || state.previousSessionActiveTaskId,
-      visible: state.visible,
+      previousSessionVisible: state.previousSessionVisible == null
+        ? state.visible
+        : state.previousSessionVisible,
       version: SERIALIZED_VERSION,
     };
   }

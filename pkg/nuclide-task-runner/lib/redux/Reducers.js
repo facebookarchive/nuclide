@@ -9,11 +9,11 @@
  * the root directory of this source tree.
  */
 
-import type {Action, AppState} from '../types';
+import type {Action, AnnotatedTaskMetadata, AppState, TaskId} from '../types';
 
-import {arrayEqual} from '../../../commons-node/collection';
+import {areSetsEqual} from '../../../commons-node/collection';
 import * as Actions from './Actions';
-import shallowEqual from 'shallowequal';
+import {taskIdsAreEqual} from '../taskIdsAreEqual';
 
 // Normally there would be more than one reducer. Since we were using a single reducer here before
 // we ported to Redux, we just left it this way.
@@ -65,18 +65,67 @@ export function app(state: AppState, action: Action): AppState {
         runningTaskInfo: null,
       };
     }
-    case Actions.TOOLBAR_VISIBILITY_UPDATED: {
-      return {
-        ...state,
-        visible: action.payload.visible,
-      };
+    case Actions.SET_TOOLBAR_VISIBILITY: {
+      const {visible} = action.payload;
+      if (state.viewIsInitialized) {
+        return {...state, visible};
+      } else {
+        // If you toggle before we've initialized, don't actually show the toolbar; just update the
+        // value we'll use when we eventually initialize.
+        return {...state, previousSessionVisible: visible};
+      }
     }
     case Actions.SET_PROJECT_ROOT: {
       const {projectRoot} = action.payload;
       return {
         ...state,
         projectRoot,
+        tasksAreReady: false,
       };
+    }
+    case Actions.SET_TASK_LISTS: {
+      const {taskLists} = action.payload;
+      const tasksAreReady = state.tasksAreReady || areSetsEqual(
+        new Set(taskLists.keys()),
+        new Set(state.taskRunners.keys()),
+      );
+
+      let newState = {...state, tasksAreReady, taskLists};
+
+      if (tasksAreReady && !state.tasksAreReady) {
+        const initialTaskMeta = getInitialTaskMeta(
+          state.previousSessionActiveTaskId,
+          state.activeTaskId,
+          taskLists,
+        );
+
+        // Update the active task whenever tasks become ready.
+        newState = {
+          ...newState,
+          activeTaskId: initialTaskMeta == null
+            ? null
+            : {taskRunnerId: initialTaskMeta.taskRunnerId, type: initialTaskMeta.type},
+          previousSessionActiveTaskId: null,
+        };
+
+        if (!state.viewIsInitialized) {
+          // Initialize the view if we've yet to do so.
+          newState = {
+            ...newState,
+            viewIsInitialized: true,
+            visible: state.previousSessionVisible != null
+              // Use the last known state, if we have one.
+              ? state.previousSessionVisible
+              // Otherwise, only show the toolbar if the initial task is enabled. (It's okay if a
+              // task runner doesn't give us a "disabled" property for now, but we're not going to
+              // show the bar for possibly irrelevant tasks.)
+              : initialTaskMeta != null && initialTaskMeta.disabled === false,
+            previousSessionVisible: null,
+          };
+        }
+      }
+
+      return validateActiveTask(newState);
     }
     case Actions.REGISTER_TASK_RUNNER: {
       const {taskRunner} = action.payload;
@@ -97,41 +146,6 @@ export function app(state: AppState, action: Action): AppState {
         taskLists,
       });
     }
-    case Actions.TASK_LIST_UPDATED: {
-      const {taskList, taskRunnerId} = action.payload;
-      const taskRunner = state.taskRunners.get(taskRunnerId);
-      const taskRunnerName = taskRunner && taskRunner.name;
-      const annotatedTaskList = taskList
-        .map(taskMeta => ({...taskMeta, taskRunnerId, taskRunnerName}));
-
-      // If the task list hasn't changed, ignore it.
-      if (arrayEqual(annotatedTaskList, state.taskLists.get(taskRunnerId) || [], shallowEqual)) {
-        return state;
-      }
-
-      const newState = {
-        ...state,
-        taskLists: new Map(state.taskLists).set(taskRunnerId, annotatedTaskList),
-      };
-
-      const prevTaskId = state.previousSessionActiveTaskId;
-
-      // If the new tasks contain the one we were waiting to restore from the user's previous
-      // session make it the active one.
-      if (
-        prevTaskId != null
-        && taskRunnerId === prevTaskId.taskRunnerId
-        && annotatedTaskList.some(taskMeta => taskMeta.type === prevTaskId.type)
-      ) {
-        return {
-          ...newState,
-          activeTaskId: state.previousSessionActiveTaskId,
-          previousSessionActiveTaskId: null,
-        };
-      }
-
-      return validateActiveTask(newState);
-    }
   }
 
   return state;
@@ -145,8 +159,6 @@ function validateActiveTask(state: AppState): AppState {
   return {
     ...state,
     activeTaskId: null,
-    // Remember what we really wanted, so we can return to it later.
-    previousSessionActiveTaskId: state.previousSessionActiveTaskId || state.activeTaskId,
   };
 }
 
@@ -168,4 +180,72 @@ function activeTaskIsValid(state: AppState): boolean {
     }
   }
   return false;
+}
+
+const flatten = arr => Array.prototype.concat.apply([], arr);
+
+function getInitialTaskMeta(
+  previousSessionActiveTaskId: ?TaskId,
+  activeTaskId: ?TaskId,
+  taskLists: Map<string, Array<AnnotatedTaskMetadata>>,
+): ?AnnotatedTaskMetadata {
+  const allTaskMetadatas = flatten(Array.from(taskLists.values()));
+  let candidate;
+
+  for (const taskMeta of allTaskMetadatas) {
+    // No disabled tasks.
+    if (taskMeta.disabled) {
+      continue;
+    }
+
+    // If the task we're waiting to restore is present, use that.
+    if (previousSessionActiveTaskId && taskIdsAreEqual(taskMeta, previousSessionActiveTaskId)) {
+      return taskMeta;
+    }
+
+    // If the task that's already active is present, use that.
+    if (activeTaskId && taskIdsAreEqual(taskMeta, activeTaskId)) {
+      return taskMeta;
+    }
+
+    if (candidate == null) {
+      candidate = taskMeta;
+      continue;
+    }
+
+    // Prefer tasks that are explicitly enabled over those that aren't.
+    if (taskMeta.disabled === false && candidate.disabled == null) {
+      candidate = taskMeta;
+      continue;
+    }
+
+    // Prefer tasks with higher priority.
+    const priorityDiff = (taskMeta.priority || 0) - (candidate.priority || 0);
+    if (priorityDiff !== 0) {
+      if (priorityDiff > 0) {
+        candidate = taskMeta;
+      }
+      continue;
+    }
+
+    // Prefer task runner names that come first alphabetically.
+    const nameDiff = taskMeta.taskRunnerName.localeCompare(candidate.taskRunnerName);
+    if (nameDiff !== 0) {
+      if (nameDiff > 0) {
+        candidate = taskMeta;
+      }
+      continue;
+    }
+
+    // Prefer task types that come first alphabetically.
+    const typeDiff = taskMeta.type.localeCompare(candidate.type);
+    if (typeDiff !== 0) {
+      if (typeDiff > 0) {
+        candidate = taskMeta;
+      }
+      continue;
+    }
+  }
+
+  return candidate;
 }
