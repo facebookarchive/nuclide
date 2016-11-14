@@ -50,12 +50,16 @@ export class LoadingSpinner extends React.Component {
 
   constructor(props: Props) {
     super(props);
-    this.state = {shouldRender: false};
+    this.state = {shouldRender: !this.props.delay};
   }
 
   componentDidMount(): void {
-    const delay = this.props.delay == null ? 0 : this.props.delay;
-    this._timeout = setTimeout(() => this.setState({shouldRender: true}), delay);
+    if (!this.state.shouldRender) {
+      this._timeout = setTimeout(
+        () => this.setState({shouldRender: true}),
+        this.props.delay,
+      );
+    }
   }
 
   componentWillUnmount(): void {
