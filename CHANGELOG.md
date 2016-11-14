@@ -1,5 +1,32 @@
 # Nuclide Changelog
 
+## v0.182.0
+
+### Highlights
+
+* You can now open files with [atom://nuclide/open-arc?project=<project_id>&path=<path>](http:) URLs.
+
+### General
+
+* Arc Lint processes can no longer stack - saving a file while a lint is running will kill the old lint process.
+* Nuclide settings filter now matches on Section and Package names.
+* Arc lint timeout is now configurable in Nuclide Settings.
+
+### Health
+
+* Add list of calls to external processes and their duration.
+* You can now use cmd-c to copy the content.
+
+### Source Control
+
+* No longer display some random stranger commit and now clicking on a commit shows its own changes.
+* Lots of small tweaks to make the UI stop jumping around all the time.
+
+### Debugger
+
+* Add support for selecting text and copy/paste.
+* PHP debugger can be started if active file is not remote.
+
 ## v0.181.0
 
 Hotfix for gutter breakpoint click-listener regression.
