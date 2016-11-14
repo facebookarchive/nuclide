@@ -211,7 +211,7 @@ async function createEditorForNuclide(
     try {
       buffer = await loadingNotification(
         loadBufferForUri(uri),
-        `Opening ${nuclideUri.nuclideUriToDisplayString(uri)}...`,
+        `Opening \`${nuclideUri.nuclideUriToDisplayString(uri)}\`...`,
         1000, /* delay */
       );
     } catch (err) {
