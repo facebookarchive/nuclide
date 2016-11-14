@@ -17,7 +17,7 @@ require('jasmine-node');
  */
 jasmine.unspy = function unspy(object: Object, methodName: string) {
   if (!object[methodName].hasOwnProperty('originalValue')) {
-    throw new Error('Not a spy');
+    throw new Error('Not a spy ' + methodName);
   }
   object[methodName] = object[methodName].originalValue;
 };

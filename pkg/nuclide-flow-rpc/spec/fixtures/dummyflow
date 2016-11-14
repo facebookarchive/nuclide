@@ -1,2 +1,2 @@
-# Intentionally left blank. Just needs the execute bit set so that `which`
-# thinks it's a valid executable.
+#!/bin/bash
+echo '{"binary":"'"$0"'"}'

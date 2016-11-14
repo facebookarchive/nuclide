@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+
 import type {Observable} from 'rxjs';
 
 import type {ServerStatusType} from '..';
@@ -16,12 +17,11 @@ import type {FlowProcess as FlowProcessType} from '../lib/FlowProcess';
 
 import os from 'os';
 
-import {FLOW_RETURN_CODES} from '../lib/FlowProcess';
-import {FlowExecInfoContainer} from '../lib/FlowExecInfoContainer';
-
-import {uncachedRequire} from '../../nuclide-test-helpers';
-
-const flowProcessPath = '../lib/FlowProcess';
+function resetModules() {
+  for (const key in require.cache) {
+    delete require.cache[key];
+  }
+}
 
 describe('FlowProcess', () => {
   let fakeCheckOutput: () => Object = (null: any);
@@ -30,24 +30,42 @@ describe('FlowProcess', () => {
   // methods).
   let childSpy: any;
 
-  let FlowProcess: Class<FlowProcessType> = (null: any);
   let flowProcess: FlowProcessType = (null: any);
 
   let niceSpy: JasmineSpy = (null: any);
-
-  const root = '/path/to/flow/root';
+  let root: string;
+  let binary: string;
 
   function execFlow(waitForServer = true) {
     return flowProcess.execFlow([], {}, waitForServer);
   }
 
+  let FLOW_RETURN_CODES;
+  let FlowProcess;
+  let FlowExecInfoContainer;
+
   beforeEach(() => {
-    // We need this level of indirection to ensure that if fakeCheckOutput is rebound, the new one
-    // gets executed.
-    const runFakeCheckOutput = (...args) => fakeCheckOutput(...args);
-    spyOn(require('../../commons-node/process'), 'asyncExecute')
-      .andCallFake(runFakeCheckOutput);
-    fakeCheckOutput = jasmine.createSpy().andReturn({exitCode: FLOW_RETURN_CODES.ok});
+    resetModules();
+
+    const processModule = require('../../commons-node/process');
+    const checkOutput = processModule.checkOutput;
+
+    spyOn(processModule, 'checkOutput')
+      .andCallFake(async function(command, args, options) {
+        if (args && args[0] === 'version' && args[1] === '--json') {
+          return new Promise(resolve => resolve({
+            stdout: JSON.stringify({binary}),
+            stderr: '',
+            exitCode: 0,
+          }));
+        }
+        return checkOutput.call(this, command, args, options);
+      });
+
+    spyOn(processModule, 'asyncExecute')
+      // We need this level of indirection to ensure that if fakeCheckOutput
+      // is rebound, the new one gets executed.
+      .andCallFake((...args) => fakeCheckOutput(...args));
 
     childSpy = {
       stdout: {on() {}},
@@ -56,18 +74,30 @@ describe('FlowProcess', () => {
       kill() {},
     };
 
-    niceSpy = spyOn(require('../../commons-node/nice'), 'niceSafeSpawn').andCallFake(() => {
-      return childSpy;
-    });
-    // we have to create another flow service here since we've mocked modules
-    // we depend on since the outer beforeEach ran.
-    FlowProcess =
-      ((uncachedRequire(require, flowProcessPath): any).FlowProcess: Class<FlowProcessType>);
+    const niceModule = require('../../commons-node/nice');
+    niceSpy = spyOn(niceModule, 'niceSafeSpawn')
+      .andCallFake(() => {
+        return childSpy;
+      });
+
+    const nuclideUri = require('../../commons-node/nuclideUri').default;
+    root = nuclideUri.join(__dirname, 'fixtures/with-flow-bin');
+    binary = nuclideUri.join(root, 'node_modules/.bin/flow');
+
+    const FlowProcessModule = require('../lib/FlowProcess');
+    FLOW_RETURN_CODES = FlowProcessModule.FLOW_RETURN_CODES;
+    FlowProcess = FlowProcessModule.FlowProcess;
+
+    const FlowExecInfoContainerModule = require('../lib/FlowExecInfoContainer');
+    FlowExecInfoContainer = FlowExecInfoContainerModule.FlowExecInfoContainer;
+
+    fakeCheckOutput = jasmine.createSpy().andReturn({exitCode: FLOW_RETURN_CODES.ok});
+
     flowProcess = new FlowProcess(root, new FlowExecInfoContainer());
   });
 
   afterEach(() => {
-    jasmine.unspy(require('../../commons-node/process'), 'asyncExecute');
+    resetModules();
   });
 
   describe('Server startup and teardown', () => {
@@ -98,13 +128,13 @@ describe('FlowProcess', () => {
       it('should spawn a new Flow server', () => {
         const expectedWorkers = os.cpus().length - 2;
         const args: Array<any> = niceSpy.mostRecentCall.args;
-        expect(args[0]).toEqual('flow');
+        expect(args[0]).toEqual(binary);
         expect(args[1]).toEqual(
           [
             'server',
             '--from', 'nuclide',
             '--max-workers', expectedWorkers.toString(),
-            '/path/to/flow/root',
+            root,
           ],
         );
         expect(args[2].cwd).toEqual(root);
@@ -171,6 +201,9 @@ describe('FlowProcess', () => {
       expect(currentStatus).toEqual('unknown');
     });
 
+    resetModules();
+    FLOW_RETURN_CODES = require('../lib/FlowProcess').FLOW_RETURN_CODES;
+
     const exitCodeStatusPairs = [
       [FLOW_RETURN_CODES.ok, 'ready'],
       [FLOW_RETURN_CODES.typeError, 'ready'],
@@ -221,7 +254,7 @@ describe('FlowProcess', () => {
       waitsForPromise(async () => {
         await FlowProcess.execFlowClient(['arg'], null, new FlowExecInfoContainer());
         const [asyncExecuteArgs] = fakeCheckOutput.argsForCall;
-        expect(asyncExecuteArgs[0]).toEqual('flow');
+        expect(asyncExecuteArgs[0]).toEqual(binary);
         expect(asyncExecuteArgs[1]).toEqual(['arg', '--from', 'nuclide']);
       });
     });

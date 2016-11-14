@@ -16,6 +16,7 @@ import {CompositeDisposable} from 'event-kit';
 
 import nuclideUri from '../../commons-node/nuclideUri';
 import which from '../../commons-node/which';
+import {checkOutput} from '../../commons-node/process';
 import {ConfigCache} from '../../commons-node/ConfigCache';
 
 // All the information needed to execute Flow in a given root. The path to the Flow binary we want
@@ -24,6 +25,7 @@ import {ConfigCache} from '../../commons-node/ConfigCache';
 export type FlowExecInfo = {
   pathToFlow: string,
   execOptions: Object,
+  flowVersion: string,
 };
 
 export class FlowExecInfoContainer {
@@ -76,8 +78,13 @@ export class FlowExecInfoContainer {
     if (flowPath == null) {
       return null;
     }
+    const versionInfo = await getFlowVersionInformation(flowPath);
+    if (versionInfo == null) {
+      return null;
+    }
     return {
-      pathToFlow: flowPath,
+      pathToFlow: versionInfo.pathToFlow,
+      flowVersion: versionInfo.flowVersion,
       execOptions: getFlowExecOptions(root),
     };
   }
@@ -132,6 +139,21 @@ export class FlowExecInfoContainer {
         }),
       );
     }
+  }
+}
+
+async function getFlowVersionInformation(
+  flowPath: string,
+): Promise<?{flowVersion: string, pathToFlow: string}> {
+  try {
+    const result = await checkOutput(flowPath, ['version', '--json']);
+    const json = JSON.parse(result.stdout);
+    return {
+      flowVersion: json.semver,
+      pathToFlow: json.binary,
+    };
+  } catch (e) {
+    return null;
   }
 }
 

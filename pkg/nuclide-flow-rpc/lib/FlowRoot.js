@@ -50,7 +50,13 @@ export class FlowRoot {
     this._root = root;
     this._execInfoContainer = execInfoContainer;
     this._process = new FlowProcess(root, execInfoContainer);
-    this._version = new FlowVersion(() => this._flowGetVersion());
+    this._version = new FlowVersion(async () => {
+      const execInfo = await execInfoContainer.getFlowExecInfo(root);
+      if (!execInfo) {
+        return null;
+      }
+      return execInfo.flowVersion;
+    });
     this._process.getServerStatusUpdates()
       .filter(state => state === 'not running')
       .subscribe(() => this._version.invalidateVersion());
@@ -363,22 +369,6 @@ export class FlowRoot {
       // earlier versions, until we want to break support for earlier version.
       return false;
     }
-  }
-
-  async _flowGetVersion(): Promise<?string> {
-    const args = ['version', '--json'];
-    let json;
-    try {
-      const result = await FlowProcess.execFlowClient(args, this._root, this._execInfoContainer);
-      if (result == null) {
-        return null;
-      }
-      json = parseJSON(args, result.stdout);
-    } catch (e) {
-      logger.warn(e);
-      return null;
-    }
-    return json.semver;
   }
 
   // This static function takes an optional FlowRoot instance so that *if* it is part of a Flow
