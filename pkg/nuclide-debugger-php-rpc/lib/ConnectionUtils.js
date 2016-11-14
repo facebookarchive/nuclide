@@ -11,7 +11,7 @@
 
 import logger from './utils';
 import {getConfig} from './config';
-import {launchScriptForDummyConnection, uriToPath} from './helpers';
+import {launchScriptForDummyConnection, uriToPath, getMode} from './helpers';
 import fsPromise from '../../commons-node/fsPromise';
 import {maybeToString} from '../../commons-node/string';
 import nuclideUri from '../../commons-node/nuclideUri';
@@ -52,8 +52,8 @@ export function failConnection(socket: Socket, errorMessage: string): void {
   socket.destroy();
 }
 
-export function isCorrectConnection(message: Object): boolean {
-  const {pid, idekeyRegex, scriptRegex} = getConfig();
+export function isCorrectConnection(isAttachConnection: boolean, message: Object): boolean {
+  const {pid, idekeyRegex, scriptRegex, launchScriptPath} = getConfig();
   if (!message || !message.init || !message.init.$) {
     logger.logError('Incorrect init');
     return false;
@@ -73,7 +73,23 @@ export function isCorrectConnection(message: Object): boolean {
     return false;
   }
 
+  if (isDummyConnection(message)) {
+    return true;
+  }
+
+  // Reject connections via the launch port when attached.
+  if (getMode() === 'attach' && !isAttachConnection) {
+    return false;
+  }
+
+  const requestScriptPath = uriToPath(attributes.fileuri);
+  if (getMode() === 'launch') {
+    return launchScriptPath === requestScriptPath;
+  }
+
+  // The regex is only applied to connections coming in during attach mode.  We do not use the
+  // regex for launching.
   return (!pid || attributes.appid === String(pid)) &&
     (!idekeyRegex || new RegExp(idekeyRegex).test(attributes.idekey)) &&
-    (!scriptRegex || new RegExp(scriptRegex).test(uriToPath(attributes.fileuri)));
+    (!scriptRegex || new RegExp(scriptRegex).test(requestScriptPath));
 }

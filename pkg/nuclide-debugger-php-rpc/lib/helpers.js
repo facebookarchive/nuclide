@@ -10,6 +10,7 @@
  */
 
 import type {Breakpoint} from './BreakpointStore';
+import type {DebuggerMode} from './types';
 
 import child_process from 'child_process';
 import url from 'url';
@@ -145,4 +146,9 @@ export function launchPhpScriptWithXDebugEnabled(
     }
   });
   return proc;
+}
+
+export function getMode(): DebuggerMode {
+  const {launchScriptPath} = getConfig();
+  return launchScriptPath == null ? 'attach' : 'launch';
 }

@@ -87,8 +87,10 @@ function convertMessageIntoJson(payload: string): Object {
   return getDbgpMessageHandlerInstance().parseMessages(makeDbgpMessage(payload))[0];
 }
 
+const xdebugAttachPort = 1234;
+
 const config = {
-  xdebugAttachPort: 1234,
+  xdebugAttachPort,
   pid: 0,
   idekeyRegex: 'username2',
   scriptRegex: 'test2.php',
@@ -111,13 +113,13 @@ describe('debugger-php-rpc ConnectionUtils', () => {
   describe('isCorrectConnection', () => {
     it('reject', () => {
       const message = convertMessageIntoJson(payload1);
-      const result = isCorrectConnection(message);
+      const result = isCorrectConnection(true /* isAttachConnection */, message);
       expect(result).toBe(false);
     });
 
     it('pass', () => {
       const message = convertMessageIntoJson(payload2);
-      const result = isCorrectConnection(message);
+      const result = isCorrectConnection(true /* isAttachConnection */, message);
       expect(result).toBe(true);
     });
   });

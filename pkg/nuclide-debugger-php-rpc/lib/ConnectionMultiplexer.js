@@ -144,24 +144,12 @@ export class ConnectionMultiplexer {
   }
 
   listen(): void {
-    const {xdebugAttachPort, xdebugLaunchingPort, launchScriptPath} = getConfig();
-    if (launchScriptPath == null) {
-      // When in attach mode we are guaranteed that the two ports are not equal.
-      invariant(xdebugAttachPort !== xdebugLaunchingPort, 'xdebug ports are equal in attach mode');
-      // In this case we need to listen for incoming connections to attach to, as well as on the
-      // port that the dummy connection will use.
-      this._attachConnector = this._setupConnector(
-        xdebugAttachPort,
-        this._disposeAttachConnector.bind(this),
-      );
+    const {launchScriptPath} = getConfig();
+    if (launchScriptPath != null) {
+      this._launchModeListen();
+    } else {
+      this._attachModeListen();
     }
-
-    // If we are only doing script debugging, then the dummy connection listener's port can also be
-    // used to listen for the script's xdebug requests.
-    this._launchConnector = this._setupConnector(
-      xdebugLaunchingPort,
-      this._disposeLaunchConnector.bind(this),
-    );
 
     this._status = MULTIPLEXER_STATUS.RUNNING;
 
@@ -183,10 +171,36 @@ export class ConnectionMultiplexer {
     }
   }
 
-  _setupConnector(port: number, disposeConnector: () => void): DbgpConnector {
+  _attachModeListen(): void {
+    const {xdebugAttachPort, xdebugLaunchingPort} = getConfig();
+    // When in attach mode we are guaranteed that the two ports are not equal.
+    invariant(xdebugAttachPort !== xdebugLaunchingPort, 'xdebug ports are equal in attach mode');
+    // In this case we need to listen for incoming connections to attach to, as well as on the
+    // port that the dummy connection will use.
+    this._attachConnector = this._setupConnector(
+      xdebugAttachPort,
+      this._disposeAttachConnector.bind(this),
+    );
+    this._launchConnector = this._setupConnector(
+      xdebugLaunchingPort,
+      this._disposeLaunchConnector.bind(this),
+    );
+  }
+
+  _launchModeListen(): void {
+    const {xdebugLaunchingPort} = getConfig();
+    // If we are only doing script debugging, then the dummy connection listener's port can also be
+    // used to listen for the script's xdebug requests.
+    this._launchConnector = this._setupConnector(
+      xdebugLaunchingPort,
+      this._disposeLaunchConnector.bind(this),
+    );
+  }
+
+  _setupConnector(port: number, onClose: () => void): DbgpConnector {
     const connector = new DbgpConnector(port);
     connector.onAttach(this._onAttach.bind(this));
-    connector.onClose(disposeConnector);
+    connector.onClose(onClose);
     connector.onError(this._handleAttachError.bind(this));
     connector.listen();
     return connector;
@@ -197,9 +211,10 @@ export class ConnectionMultiplexer {
     return this._dummyConnection;
   }
 
-  async _onAttach(params: {socket: Socket, message: Object}): Promise<any> {
+  async _onAttach(params: {socket: Socket, message: Object}): Promise<void> {
     const {socket, message} = params;
-    if (!isCorrectConnection(message)) {
+    const isAttachConnection = socket.localPort === getConfig().xdebugAttachPort;
+    if (!isCorrectConnection(isAttachConnection, message)) {
       failConnection(socket, 'Discarding connection ' + JSON.stringify(message));
       return;
     }
