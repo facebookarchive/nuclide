@@ -85,6 +85,20 @@ export async function findArcProjectIdOfPath(fileName: NuclideUri): Promise<?str
   return project ? project.project_id : null;
 }
 
+export async function findArcProjectIdAndDirectory(fileName: NuclideUri): Promise<?{
+  projectId: string,
+  directory: NuclideUri,
+}> {
+  const directory = await findArcConfigDirectory(fileName);
+  if (directory != null) {
+    // This will hit the directory map cache.
+    const projectId = await findArcProjectIdOfPath(fileName);
+    invariant(projectId != null);
+    return {projectId, directory};
+  }
+  return null;
+}
+
 export async function getProjectRelativePath(fileName: NuclideUri): Promise<?string> {
   const arcPath = await findArcConfigDirectory(fileName);
   return arcPath && fileName ? nuclideUri.relative(arcPath, fileName) : null;
