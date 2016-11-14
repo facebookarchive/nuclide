@@ -211,6 +211,7 @@ class Server:
                          method, time.time() - start_time)
 
         response = {
+            'protocol': 'clang_language_service',
             'id': reqid,
         }
         if error is not None:

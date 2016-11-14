@@ -32,6 +32,7 @@ function getServiceRegistry(): ServiceRegistry {
     serviceRegistry = new ServiceRegistry(
       getServerSideMarshalers,
       loadServicesConfig(nuclideUri.join(__dirname, '..')),
+      'clang_language_service',
     );
   }
   return serviceRegistry;
