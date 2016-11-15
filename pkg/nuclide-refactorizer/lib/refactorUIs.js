@@ -17,12 +17,14 @@ import type {
 
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {React, ReactDOM} from 'react-for-atom';
+import invariant from 'assert';
 
 import {MainRefactorComponent} from './components/MainRefactorComponent';
 import * as Actions from './refactorActions';
 
 const refactorUIFactories: Array<RefactorUIFactory> = [
   genericRefactorUI,
+  closeOnEscape,
   renameShortcut,
 ];
 
@@ -40,6 +42,24 @@ function genericRefactorUI(store: Store): IDisposable {
     }
   });
   return new UniversalDisposable(disposeFn);
+}
+
+function closeOnEscape(store: Store): IDisposable {
+  let escapeSubscription: ?IDisposable = null;
+  return new UniversalDisposable(
+    store.subscribe(() => {
+      const state = store.getState();
+      if (state.type === 'open' && escapeSubscription == null) {
+        escapeSubscription = atom.commands.add('body', 'core:cancel', () => {
+          store.dispatch(Actions.close());
+        });
+      } else if (state.type === 'closed') {
+        invariant(escapeSubscription != null);
+        escapeSubscription.dispose();
+        escapeSubscription = null;
+      }
+    }),
+  );
 }
 
 function renameShortcut(store: Store): IDisposable {
