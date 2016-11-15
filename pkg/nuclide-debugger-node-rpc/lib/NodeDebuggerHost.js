@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import Rx from 'rxjs';
+import {Subject, Observable} from 'rxjs';
 import {
   WebSocketServer,
 } from '../../nuclide-debugger-common/lib/WebSocketServer';
@@ -24,13 +24,13 @@ const {log} = utils;
 export class NodeDebuggerHost {
   _subscriptions: UniversalDisposable;
   _nodeSocketServer: WebSocketServer;
-  _close$: Rx.Subject<mixed>;
+  _close$: Subject<mixed>;
 
   constructor() {
     this._subscriptions = new UniversalDisposable();
     this._nodeSocketServer = new WebSocketServer();
     this._subscriptions.add(this._nodeSocketServer);
-    this._close$ = new Rx.Subject();
+    this._close$ = new Subject();
     this._close$.first().subscribe(() => { this.dispose(); });
   }
 
@@ -47,7 +47,7 @@ export class NodeDebuggerHost {
         preload: false, // This makes the node inspector not load all the source files on startup.
       };
       const session = new Session(config, debugPort, websocket);
-      Rx.Observable.fromEvent(session, 'close').subscribe(this._close$);
+      Observable.fromEvent(session, 'close').subscribe(this._close$);
     });
     return `ws://127.0.0.1:${wsPort}/`;
   }
