@@ -1,6 +1,6 @@
-<section id="fb_hhvm" class="featureBlock {{ include.gridtype }} fbossFontLight">
+<section id="oss_nuclide" class="featureBlock {{ include.gridtype }} {% if item.center %} centerInGrid {% endif %} fbossFontLight">
   {% if item.image %}
-  <img src="/static/{{ item.image }}" alt="{{ item.title }}" title="{{ item.title }}" />
+    <img src="/static/{{ item.image }}" alt="{{ item.title }}" title="{{ item.title }}" />
   {% endif %}
   <h3>{{ item.title }}</h3>
   {{ item.text | markdownify }}

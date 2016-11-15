@@ -603,7 +603,9 @@ a.blockButton {
 
     img {
       margin-top: 6vh;
-      max-width: 100%;
+      width: 750px;
+      height: 400px;
+      object-fit: fill;
     }
 
     &.featureBlock  h3 {
@@ -696,6 +698,10 @@ a.blockButton {
       padding: 20px;
       text-align: center;
       width: 50%;
+    }
+
+    .centerInGrid {
+      margin-left: 25%;
     }
 
     .leftBlock {
