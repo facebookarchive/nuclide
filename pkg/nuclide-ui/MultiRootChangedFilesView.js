@@ -50,27 +50,14 @@ export class MultiRootChangedFilesView extends React.Component {
           label: 'Add to Mercurial',
           command: `${commandPrefix}:add`,
           shouldDisplay: event => {
-            // The context menu has the `currentTarget` set to `document`.
-            // Hence, use `target` instead.
-            const filePath = event.target.getAttribute('data-path');
-            const rootPath = event.target.getAttribute('data-root');
-            const fileChangesForRoot = this.props.fileChanges.get(rootPath);
-            invariant(fileChangesForRoot, 'Invalid rootpath');
-            const statusCode = fileChangesForRoot.get(filePath);
-            return statusCode === FileChangeStatus.UNTRACKED;
+            return this._getStatusCodeForFile(event) === FileChangeStatus.UNTRACKED;
           },
         },
         {
           label: 'Revert',
           command: `${commandPrefix}:revert`,
           shouldDisplay: event => {
-            // The context menu has the `currentTarget` set to `document`.
-            // Hence, use `target` instead.
-            const filePath = event.target.getAttribute('data-path');
-            const rootPath = event.target.getAttribute('data-root');
-            const fileChangesForRoot = this.props.fileChanges.get(rootPath);
-            invariant(fileChangesForRoot, 'Invalid rootpath');
-            const statusCode = fileChangesForRoot.get(filePath);
+            const statusCode = this._getStatusCodeForFile(event);
             if (statusCode == null) {
               return false;
             }
@@ -81,9 +68,8 @@ export class MultiRootChangedFilesView extends React.Component {
           label: 'Delete',
           command: `${commandPrefix}:delete-file`,
           shouldDisplay: event => {
-            const filePath = event.target.getAttribute('data-path');
-            const fsService = getFileSystemServiceByNuclideUri(filePath);
-            return fsService.exists(filePath);
+            const statusCode = this._getStatusCodeForFile(event);
+            return statusCode !== FileChangeStatus.REMOVED;
           },
         },
         {
@@ -123,20 +109,24 @@ export class MultiRootChangedFilesView extends React.Component {
     this._subscriptions.add(atom.commands.add(
       `.${commandPrefix}-file-entry`,
       `${commandPrefix}:delete-file`,
-      event => {
+      async event => {
         const nuclideFilePath = this._getFilePathFromEvent(event);
         const filePath = nuclideUri.getPath(nuclideFilePath);
         const fsService = getFileSystemServiceByNuclideUri(nuclideFilePath);
-        fsService.unlink(filePath);
-
-        const repository = repositoryForPath(nuclideFilePath);
-        if (repository == null || repository.getType() !== 'hg') {
-          return;
+        try {
+          await fsService.unlink(filePath);
+          const repository = repositoryForPath(nuclideFilePath);
+          if (repository == null || repository.getType() !== 'hg') {
+            return;
+          }
+          await ((repository: any): HgRepositoryClient).remove([filePath], true);
+        } catch (error) {
+          atom.notifications.addError('Failed to delete file', {
+            detail: error,
+          });
         }
-
-        ((repository: any): HgRepositoryClient).remove([filePath], true);
-      },
-    ));
+      }),
+    );
     this._subscriptions.add(atom.commands.add(
       `.${commandPrefix}-file-entry`,
       `${commandPrefix}:copy-file-name`,
@@ -168,6 +158,18 @@ export class MultiRootChangedFilesView extends React.Component {
         }
       },
     ));
+  }
+
+  _getStatusCodeForFile(event: MouseEvent): ?number {
+    // The context menu has the `currentTarget` set to `document`.
+    // Hence, use `target` instead.
+    const target = ((event.target: any): HTMLElement);
+    const filePath = target.getAttribute('data-path');
+    const rootPath = target.getAttribute('data-root');
+    const fileChangesForRoot = this.props.fileChanges.get(rootPath);
+    invariant(fileChangesForRoot, 'Invalid rootpath');
+    const statusCode = fileChangesForRoot.get(filePath);
+    return statusCode;
   }
 
   _getFilePathFromEvent(event: Event): NuclideUri {
