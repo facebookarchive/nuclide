@@ -14,7 +14,7 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 import {LLDBLaunchAttachProvider} from './LLDBLaunchAttachProvider';
 
 function getLaunchAttachProvider(connection: NuclideUri): ?DebuggerLaunchAttachProvider {
-  return new LLDBLaunchAttachProvider('C++', connection);
+  return new LLDBLaunchAttachProvider('Native', connection);
 }
 
 module.exports = {

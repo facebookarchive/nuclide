@@ -48,7 +48,7 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
 
     let debugSession = null;
     let outputDisposable = registerConsoleLogging(
-      'C++ Debugger',
+      'LLDB',
       rpcService.getOutputWindowObservable().refCount(),
     );
     try {
