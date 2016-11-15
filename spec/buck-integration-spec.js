@@ -20,7 +20,6 @@ import {
 import {copyBuildFixture} from '../pkg/nuclide-test-helpers';
 import {setLocalProject} from '../pkg/commons-atom/testHelpers';
 import invariant from 'assert';
-import nuclideUri from '../pkg/commons-node/nuclideUri';
 
 describe('Buck building via toolbar', () => {
 
@@ -46,7 +45,10 @@ describe('Buck building via toolbar', () => {
     waitsForPromise(async () => {
       const projectPath = await copyBuildFixture('objc_project_1', __dirname);
       setLocalProject(projectPath);
-      await atom.workspace.open(nuclideUri.join(projectPath, '.buckconfig'));
+
+      // Wait for the Buck project to load. (hacky)
+      // The enabled state of the tasks depends on this.
+      await sleep(1000);
     });
 
     runs(() => {
@@ -78,10 +80,6 @@ describe('Buck building via toolbar', () => {
         combobox = buildToolbar.querySelector('.nuclide-buck-target-combobox')
       ),
     );
-
-    // Wait for the Buck project to load. This is a hack, obviously, around the issue that Combobox
-    // will only load aliases for the Buck project that is currently loaded when you click on it.
-    waitsForPromise(() => sleep(1000));
 
     // Focus on the build toolbar target combobox field.
     let targetField: HTMLElement;
