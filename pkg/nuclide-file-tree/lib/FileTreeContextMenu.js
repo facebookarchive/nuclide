@@ -20,19 +20,19 @@ import {FileTreeStore} from './FileTreeStore';
 import nuclideUri from '../../commons-node/nuclideUri';
 
 type MenuItemSingle = {
-  label: string,
-  command: string,
+  +label: string,
+  +command: string,
   shouldDisplay?: (event: MouseEvent) => boolean,
 };
 
 type MenuItemGroup = {
-  label: string,
-  submenu: Array<atom$ContextMenuItem>,
+  +label: string,
+  +submenu: Array<atom$ContextMenuItem>,
   shouldDisplay?: (event: MouseEvent) => boolean,
 };
 
 type MenuItemSeparator = {
-  type: string,
+  +type: string,
 };
 
 type MenuItemDefinition = MenuItemSingle | MenuItemGroup | MenuItemSeparator;

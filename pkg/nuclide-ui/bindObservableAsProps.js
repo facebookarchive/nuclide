@@ -23,7 +23,7 @@ import {React} from 'react-for-atom';
  * otherwise, the wrapper component renders `null`.
  */
 export function bindObservableAsProps<T : ReactClass<any>, U : T>(
-  stream: Observable<{[key: string]: any}>,
+  stream: Observable<{+[key: string]: any}>,
   ComposedComponent: T,
 ): U {
   // $FlowIssue The return type is guaranteed to be the same as the type of ComposedComponent.

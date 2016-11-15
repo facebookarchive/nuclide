@@ -22,13 +22,13 @@ import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
 import {BehaviorSubject, Observable} from 'rxjs';
 
 type PanelProps = {
-  diagnostics: Array<DiagnosticMessage>,
-  pathToActiveTextEditor: ?string,
-  filterByActiveTextEditor: boolean,
-  onFilterByActiveTextEditorChange: (isChecked: boolean) => void,
-  warnAboutLinter: boolean,
-  showTraces: boolean,
-  disableLinter: () => void,
+  +diagnostics: Array<DiagnosticMessage>,
+  +pathToActiveTextEditor: ?string,
+  +filterByActiveTextEditor: boolean,
+  +onFilterByActiveTextEditorChange: (isChecked: boolean) => void,
+  +warnAboutLinter: boolean,
+  +showTraces: boolean,
+  +disableLinter: () => void,
 };
 
 type SerializedDiagnosticsPanelModel = {
