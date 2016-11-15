@@ -101,6 +101,7 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
     (this: any)._handleSelectTableRow = this._handleSelectTableRow.bind(this);
     (this: any)._handleCancelButtonClick = this._handleCancelButtonClick.bind(this);
     (this: any)._handleAttachClick = this._handleAttachClick.bind(this);
+    (this: any)._handleParentVisibilityChanged = this._handleParentVisibilityChanged.bind(this);
     (this: any)._updateAttachTargetList = this._updateAttachTargetList.bind(this);
     (this: any)._updateList = this._updateList.bind(this);
     (this: any)._handleSort = this._handleSort.bind(this);
@@ -118,13 +119,20 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
     this.props.parentEmitter.on(
       DebuggerLaunchAttachEventTypes.ENTER_KEY_PRESSED,
       this._handleAttachClick);
+    this.props.parentEmitter.on(
+      DebuggerLaunchAttachEventTypes.VISIBILITY_CHANGED,
+      this._handleParentVisibilityChanged);
+    this.props.actions.updateAttachUIVisibility(true);
   }
 
   componentWillUnmount() {
+    this.props.actions.updateAttachUIVisibility(false);
     if (this.state.targetListChangeDisposable != null) {
       this.state.targetListChangeDisposable.dispose();
     }
-
+    this.props.parentEmitter.removeListener(
+      DebuggerLaunchAttachEventTypes.VISIBILITY_CHANGED,
+      this._handleParentVisibilityChanged);
     this.props.parentEmitter.removeListener(
       DebuggerLaunchAttachEventTypes.ENTER_KEY_PRESSED,
       this._handleAttachClick);
@@ -241,6 +249,10 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
 
   _handleAttachClick(): void {
     this._attachToProcess();
+  }
+
+  _handleParentVisibilityChanged(visible: boolean): void {
+    this.props.actions.updateParentUIVisibility(visible);
   }
 
   _handleCancelButtonClick(): void {

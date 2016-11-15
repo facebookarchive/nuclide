@@ -355,6 +355,7 @@ class Activation {
     } else {
       dialog.show();
     }
+    this._emitLaunchAttachVisibilityChangedEvent();
   }
 
   _hideLaunchAttachDialog(): void {
@@ -362,6 +363,15 @@ class Activation {
     if (dialog.isVisible()) {
       dialog.hide();
     }
+    this._emitLaunchAttachVisibilityChangedEvent();
+  }
+
+  _emitLaunchAttachVisibilityChangedEvent() {
+    const dialog = this._getLaunchAttachDialog();
+    this._model.getLaunchAttachActionEventEmitter().emit(
+      DebuggerLaunchAttachEventTypes.VISIBILITY_CHANGED,
+      dialog.isVisible(),
+    );
   }
 
   _handleDefaultAction(): void {

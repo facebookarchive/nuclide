@@ -21,6 +21,7 @@ let uniqueKeySeed = 0;
  */
 export const DebuggerLaunchAttachEventTypes = Object.freeze({
   ENTER_KEY_PRESSED: 'ENTER_KEY_PRESSED',
+  VISIBILITY_CHANGED: 'VISIBILITY_CHANGED',
 });
 
 /**

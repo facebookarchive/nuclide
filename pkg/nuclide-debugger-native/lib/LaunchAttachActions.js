@@ -20,7 +20,6 @@ import typeof * as NativeDebuggerService
   from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
 
 import invariant from 'assert';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {AttachProcessInfo} from './AttachProcessInfo';
 import {LaunchProcessInfo} from './LaunchProcessInfo';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
@@ -33,46 +32,45 @@ export class LaunchAttachActions {
   _dispatcher: LaunchAttachDispatcher;
   _targetUri: NuclideUri;
   _refreshTimerId: ?number;
-  _dialogVisible: boolean;
-  _subscriptions: IDisposable;
+  _parentUIVisible: boolean;
+  _attachUIVisible: boolean;
 
   constructor(dispatcher: LaunchAttachDispatcher, targetUri: NuclideUri) {
     this._dispatcher = dispatcher;
     this._targetUri = targetUri;
     this._refreshTimerId = null;
-    this._dialogVisible = true; // visible by default.
+    this._parentUIVisible = true;   // Visible by default.
+    this._attachUIVisible = false;
     (this: any).updateAttachTargetList = this.updateAttachTargetList.bind(this);
-    (this: any)._handleLaunchAttachDialogToggle = this._handleLaunchAttachDialogToggle.bind(this);
-    this._subscriptions = new UniversalDisposable(
-      atom.commands.add('atom-workspace', {
-        // eslint-disable-next-line nuclide-internal/atom-commands
-        'nuclide-debugger:toggle-launch-attach': this._handleLaunchAttachDialogToggle,
-      }),
-      () => {
-        if (this._refreshTimerId != null) {
-          clearTimeout(this._refreshTimerId);
-          this._refreshTimerId = null;
-        }
-      },
-    );
-    this._setTimerEnabledState(true);
+    (this: any).updateParentUIVisibility = this.updateParentUIVisibility.bind(this);
+    (this: any).updateAttachUIVisibility = this.updateAttachUIVisibility.bind(this);
   }
 
-  _handleLaunchAttachDialogToggle(): void {
-    this._dialogVisible = !this._dialogVisible;
-    this._setTimerEnabledState(this._dialogVisible);
-    // Fire and forget.
-    this.updateAttachTargetList();
+  updateParentUIVisibility(visible: boolean): void {
+    this._parentUIVisible = visible;
+    this._updateAutoRefresh();
   }
 
-  _setTimerEnabledState(enabled: boolean): void {
-    if (enabled) {
+  updateAttachUIVisibility(visible: boolean): void {
+    this._attachUIVisible = visible;
+    this._updateAutoRefresh();
+  }
+
+  _updateAutoRefresh(): void {
+    if (this._parentUIVisible && this._attachUIVisible) {
       this._refreshTimerId = setInterval(
         this.updateAttachTargetList,
         ATTACH_TARGET_LIST_REFRESH_INTERVAL,
       );
-    } else if (this._refreshTimerId != null) {
+    } else {
+      this._killAutoRefreshTimer();
+    }
+  }
+
+  _killAutoRefreshTimer(): void {
+    if (this._refreshTimerId != null) {
       clearTimeout(this._refreshTimerId);
+      this._refreshTimerId = null;
     }
   }
 
@@ -117,6 +115,6 @@ export class LaunchAttachActions {
   }
 
   dispose(): void {
-    this._subscriptions.dispose();
+    this._killAutoRefreshTimer();
   }
 }
