@@ -3,14 +3,14 @@
     {
       "label": "View",
       "submenu": [
-        {"command": "nuclide-side-bar:toggle", "label": "Toggle Side Bar"}
+        {"command": "nuclide-side-bar:toggle", "label": "Toggle Project Explorer"}
       ]
     },
     {
       "label": "Nuclide",
       "submenu": [
         {
-          "label": "Side Bar",
+          "label": "Project Explorer",
           "submenu": [
             {
               "command": "nuclide-side-bar:toggle",
