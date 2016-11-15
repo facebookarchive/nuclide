@@ -17,6 +17,9 @@
       }
     }
   },
+  "viewProviders": [
+    "createDebuggerView"
+  ],
   "consumedServices": {
     "nuclide.registerExecutor": {
       "versions": {

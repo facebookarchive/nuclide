@@ -13,6 +13,7 @@ import type {HyperclickProvider} from '../lib/types';
 import type HyperclickForTextEditor from '../lib/HyperclickForTextEditor';
 
 import {Point, Range} from 'atom';
+import {provideHyperclickView} from '../lib/main';
 import Hyperclick from '../lib/Hyperclick';
 import invariant from 'assert';
 
@@ -23,6 +24,8 @@ describe('Hyperclick', () => {
   let hyperclickForTextEditor: HyperclickForTextEditor = (null: any);
 
   async function setup() {
+    atom.views.addViewProvider(provideHyperclickView);
+
     textEditor = await atom.workspace.open('hyperclick.txt');
     textEditorView = atom.views.getView(textEditor);
 

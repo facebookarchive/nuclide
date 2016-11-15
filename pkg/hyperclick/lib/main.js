@@ -13,6 +13,8 @@ import type {HyperclickProvider} from './types';
 
 import {Disposable} from 'atom';
 import Hyperclick from './Hyperclick';
+import SuggestionList from './SuggestionList';
+import SuggestionListElement from './SuggestionListElement';
 
 let hyperclick: ?Hyperclick = null;
 
@@ -62,4 +64,11 @@ export function observeTextEditor(): (textEditor: atom$TextEditor) => void {
       hyperclick.observeTextEditor(textEditor);
     }
   };
+}
+
+export function provideHyperclickView(model: mixed): ?SuggestionListElement {
+  if (!(model instanceof SuggestionList)) {
+    return;
+  }
+  return new SuggestionListElement().initialize(model);
 }

@@ -16,7 +16,6 @@ import type {
 
 import HyperclickForTextEditor from './HyperclickForTextEditor';
 import SuggestionList from './SuggestionList';
-import SuggestionListElement from './SuggestionListElement';
 import {
   defaultWordRegExpForEditor,
   getWordTextAndRange,
@@ -44,7 +43,6 @@ async function findTruthyReturnValue(fns: Array<void | () => Promise<any>>): Pro
 export default class Hyperclick {
   _consumedProviders: Array<HyperclickProvider>;
   _suggestionList: SuggestionList;
-  _suggestionListViewSubscription: IDisposable;
   _hyperclickForTextEditors: Set<HyperclickForTextEditor>;
   _textEditorSubscription: IDisposable;
 
@@ -52,10 +50,6 @@ export default class Hyperclick {
     this._consumedProviders = [];
 
     this._suggestionList = new SuggestionList();
-    this._suggestionListViewSubscription = atom.views.addViewProvider(
-        SuggestionList,
-        model => new SuggestionListElement().initialize(model));
-
     this._hyperclickForTextEditors = new Set();
     this._textEditorSubscription = atom.workspace.observeTextEditors(
       this.observeTextEditor.bind(this));
@@ -72,9 +66,6 @@ export default class Hyperclick {
 
   dispose() {
     this._suggestionList.hide();
-    if (this._suggestionListViewSubscription) {
-      this._suggestionListViewSubscription.dispose();
-    }
     if (this._textEditorSubscription) {
       this._textEditorSubscription.dispose();
     }

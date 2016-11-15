@@ -152,7 +152,10 @@ class DebuggerView extends React.Component {
   }
 }
 
-function createDebuggerView(model: DebuggerModel): HTMLElement {
+export function createDebuggerView(model: mixed): ?HTMLElement {
+  if (!(model instanceof DebuggerModel)) {
+    return;
+  }
   const elem = document.createElement('div');
   elem.className = 'nuclide-debugger-container';
   ReactDOM.render(
@@ -269,16 +272,6 @@ class Activation {
     );
     (this: any)._hideLaunchAttachDialog = this._hideLaunchAttachDialog.bind(this);
     (this: any)._handleDefaultAction = this._handleDefaultAction.bind(this);
-    this._setupView();
-  }
-
-  _setupView(): void {
-    this._disposables.add(
-      atom.views.addViewProvider(
-        DebuggerModel,
-        (model: DebuggerModel) => createDebuggerView(model),
-      ),
-    );
   }
 
   serialize(): SerializedState {
