@@ -45,6 +45,7 @@ import {
 } from './messages';
 import {builtinLocation, voidType} from './builtin-types';
 import {startTracking, trackOperationTiming} from '../../nuclide-analytics';
+import {SERVICE_FRAMEWORK3_PROTOCOL} from './config';
 import {getLogger} from '../../nuclide-logging';
 
 const logger = getLogger();
@@ -187,10 +188,11 @@ export class RpcConnection<TransportType: Transport> {
     transport: TransportType,
     predefinedTypes: Array<PredefinedTransformer>,
     services: Array<ConfigEntry>,
+    protocol: string = SERVICE_FRAMEWORK3_PROTOCOL,
   ): RpcConnection<TransportType> {
     return new RpcConnection(
       'client',
-      new ServiceRegistry(predefinedTypes, services),
+      new ServiceRegistry(predefinedTypes, services, protocol),
       transport);
   }
 
@@ -199,10 +201,11 @@ export class RpcConnection<TransportType: Transport> {
     transport: TransportType,
     predefinedTypes: Array<PredefinedTransformer>,
     services: Array<ConfigEntry>,
+    protocol: string = SERVICE_FRAMEWORK3_PROTOCOL,
   ): RpcConnection<TransportType> {
     return new RpcConnection(
       'client',
-      new ServiceRegistry(predefinedTypes, services),
+      new ServiceRegistry(predefinedTypes, services, protocol),
       transport);
   }
 
@@ -251,7 +254,7 @@ export class RpcConnection<TransportType: Transport> {
    */
   callRemoteFunction(functionName: string, returnType: ReturnType, args: Object): any {
     return this._sendMessageAndListenForResult(
-      createCallMessage(functionName, this._generateRequestId(), args),
+      createCallMessage(this._getProtocol(), functionName, this._generateRequestId(), args),
       returnType,
       `Calling function ${functionName}`,
     );
@@ -272,7 +275,8 @@ export class RpcConnection<TransportType: Transport> {
     args: Object,
   ): any {
     return this._sendMessageAndListenForResult(
-      createCallObjectMessage(methodName, objectId, this._generateRequestId(), args),
+      createCallObjectMessage(
+        this._getProtocol(), methodName, objectId, this._generateRequestId(), args),
       returnType,
       `Calling remote method ${methodName}.`,
     );
@@ -295,8 +299,8 @@ export class RpcConnection<TransportType: Transport> {
     const idPromise = (async () => {
       const marshalledArgs = await this._getTypeRegistry().marshalArguments(
         this._objectRegistry, unmarshalledArgs, argTypes);
-      return this._sendMessageAndListenForResult(
-        createNewObjectMessage(interfaceName, this._generateRequestId(), marshalledArgs),
+      return this._sendMessageAndListenForResult(createNewObjectMessage(
+          this._getProtocol(), interfaceName, this._generateRequestId(), marshalledArgs),
         'promise',
         `Creating instance of ${interfaceName}`,
       );
@@ -318,7 +322,7 @@ export class RpcConnection<TransportType: Transport> {
       logger.info('Dispose call on remote proxy after connection closed');
     } else {
       return await this._sendMessageAndListenForResult(
-        createDisposeMessage(this._generateRequestId(), objectId),
+        createDisposeMessage(this._getProtocol(), this._generateRequestId(), objectId),
         'promise', `Disposing object ${objectId}`);
     }
   }
@@ -364,7 +368,8 @@ export class RpcConnection<TransportType: Transport> {
           };
           const sendUnsubscribe = () => {
             if (!this._transport.isClosed()) {
-              this._transport.send(JSON.stringify(createUnsubscribeMessage(id)));
+              this._transport.send(JSON.stringify(
+                createUnsubscribeMessage(this._getProtocol(), id)));
             }
           };
           let hadSubscription = false;
@@ -429,10 +434,11 @@ export class RpcConnection<TransportType: Transport> {
 
     // Send the result of the promise across the socket.
     returnVal.then(result => {
-      this._transport.send(JSON.stringify(createPromiseMessage(id, result)));
+      this._transport.send(JSON.stringify(createPromiseMessage(this._getProtocol(), id, result)));
       timingTracker.onSuccess();
     }, error => {
-      this._transport.send(JSON.stringify(createErrorResponseMessage(id, error)));
+      this._transport.send(JSON.stringify(
+        createErrorResponseMessage(this._getProtocol(), id, error)));
       timingTracker.onError(error == null ? new Error() : error);
     });
   }
@@ -453,12 +459,13 @@ export class RpcConnection<TransportType: Transport> {
 
     // Send the next, error, and completion events of the observable across the socket.
     .subscribe(data => {
-      this._transport.send(JSON.stringify(createNextMessage(id, data)));
+      this._transport.send(JSON.stringify(createNextMessage(this._getProtocol(), id, data)));
     }, error => {
-      this._transport.send(JSON.stringify(createObserveErrorMessage(id, error)));
+      this._transport.send(JSON.stringify(
+        createObserveErrorMessage(this._getProtocol(), id, error)));
       this._objectRegistry.removeSubscription(id);
     }, completed => {
-      this._transport.send(JSON.stringify(createCompleteMessage(id)));
+      this._transport.send(JSON.stringify(createCompleteMessage(this._getProtocol(), id)));
       this._objectRegistry.removeSubscription(id);
     });
 
@@ -564,11 +571,25 @@ export class RpcConnection<TransportType: Transport> {
 
   _parseMessage(value: string): ?Object {
     try {
-      return JSON.parse(value);
+      const result = JSON.parse(value);
+      if (result == null) {
+        return null;
+      }
+      /* TODO: Uncomment this when the Hack service updates their protocol.
+      if (result.protocol !== this._getProtocol()) {
+        logger.error(`Recieved message with unexpected protocol: '${value}'`);
+        return null;
+      }
+      */
+      return result;
     } catch (e) {
       logger.error(`Recieved invalid JSON message: '${value}'`);
       return null;
     }
+  }
+
+  _getProtocol(): string {
+    return this._serviceRegistry.getProtocol();
   }
 
   _handleMessage(value: string): void {
@@ -576,9 +597,6 @@ export class RpcConnection<TransportType: Transport> {
     if (message == null) {
       return;
     }
-
-    // TODO: advinsky uncomment after version 0.136 and below are phased out
-    // invariant(message.protocol === SERVICE_FRAMEWORK3_PROTOCOL);
 
     switch (message.type) {
       case 'response':
@@ -690,7 +708,7 @@ export class RpcConnection<TransportType: Transport> {
     } catch (e) {
       logger.error(`Error handling RPC ${message.type} message`, e);
       timingTracker.onError(e == null ? new Error() : e);
-      this._transport.send(JSON.stringify(createErrorResponseMessage(id, e)));
+      this._transport.send(JSON.stringify(createErrorResponseMessage(this._getProtocol(), id, e)));
     }
   }
 

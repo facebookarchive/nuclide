@@ -27,7 +27,7 @@ describe('ImportService', () => {
         name: 'ImportService',
         definition: nuclideUri.join(__dirname, 'ImportService.js'),
         implementation: nuclideUri.join(__dirname, 'ImportService.js'),
-      }]);
+      }], 'import_protocol');
     });
 
     runs(() => {

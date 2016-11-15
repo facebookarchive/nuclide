@@ -24,7 +24,7 @@ describe('ErrorServer', () => {
         name: 'ErrorService',
         definition: nuclideUri.join(__dirname, 'ErrorService.def'),
         implementation: nuclideUri.join(__dirname, 'ErrorService.js'),
-      }]);
+      }], 'error_protocol');
     });
 
     runs(() => {
@@ -42,7 +42,7 @@ describe('ErrorServer', () => {
       } catch (e) {
         expect(e instanceof Error).toBe(true);
         expect(e.message.startsWith(
-          'Remote Error: msg processing message {"protocol":"service_framework3_rpc","type":' +
+          'Remote Error: msg processing message {"protocol":"error_protocol","type":' +
           '"call","method":"ErrorService/promiseError","id":1,"args":{"message":"msg"}}'))
           .toBe(true);
       }
@@ -95,7 +95,7 @@ describe('ErrorServer', () => {
       () => { expect(true).toBe(false); },
       e => {
         expect(e.message.startsWith(
-          'Remote Error: msg processing message {"protocol":"service_framework3_rpc","type":' +
+          'Remote Error: msg processing message {"protocol":"error_protocol","type":' +
           '"call","method":"ErrorService/observableError","id":1,"args":{"message":"msg"}}'))
           .toBe(true);
         completed = true;

@@ -22,18 +22,20 @@ export class ServiceTester {
   _client: RpcConnection<Transport>;
   _clientConnection: RpcConnection<Transport>;
 
-  async start(customServices: Array<ConfigEntry>): Promise<void> {
+  async start(customServices: Array<ConfigEntry>, protocol: string): Promise<void> {
     const transports = new LoopbackTransports();
     this._serviceRegistry = new ServiceRegistry(
       [localNuclideUriMarshalers],
-      customServices);
+      customServices,
+      protocol);
     this._clientConnection = RpcConnection.createServer(
       this._serviceRegistry, transports.serverTransport);
 
     this._client = RpcConnection.createRemote(
       transports.clientTransport,
       [getRemoteNuclideUriMarshalers('localhost')],
-      customServices);
+      customServices,
+      protocol);
   }
 
   stop(): void {

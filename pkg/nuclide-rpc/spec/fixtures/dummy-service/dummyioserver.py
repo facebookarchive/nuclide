@@ -28,7 +28,10 @@ class DummyIOServer:
         req = json.loads(line)
         id, data = req['id'], req['args']
         method = req['method']
-        res = {'id': id}
+        res = {
+            'protocol': 'service_framework3_rpc',
+            'id': id,
+        }
 
         if method == 'kill':
             sys.exit(0)

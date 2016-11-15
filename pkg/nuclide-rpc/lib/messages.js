@@ -9,14 +9,12 @@
  * the root directory of this source tree.
  */
 
-import {SERVICE_FRAMEWORK3_PROTOCOL} from './config';
-
 // Encodes the structure of messages that can be sent from the client to the server.
 export type RequestMessage = CallMessage | NewObjectMessage |
   CallObjectMessage | DisposeMessage | UnsubscribeMessage;
 
 export type CallMessage = {
-  protocol: 'service_framework3_rpc',
+  protocol: string,
   type: 'call',
   method: string,
   id: number,
@@ -24,7 +22,7 @@ export type CallMessage = {
 };
 
 export type NewObjectMessage = {
-  protocol: 'service_framework3_rpc',
+  protocol: string,
   type: 'new',
   interface: string,
   id: number,
@@ -32,7 +30,7 @@ export type NewObjectMessage = {
 };
 
 export type CallObjectMessage = {
-  protocol: 'service_framework3_rpc',
+  protocol: string,
   type: 'call-object',
   method: string,
   id: number,
@@ -41,14 +39,14 @@ export type CallObjectMessage = {
 };
 
 export type DisposeMessage = {
-  protocol: 'service_framework3_rpc',
+  protocol: string,
   type: 'dispose',
   id: number,
   objectId: number,
 };
 
 export type UnsubscribeMessage = {
-  protocol: 'service_framework3_rpc',
+  protocol: string,
   type: 'unsubscribe',
   id: number,
 };
@@ -58,34 +56,34 @@ export type ResponseMessage = PromiseResponseMessage | ErrorResponseMessage
   | NextMessage | CompleteMessage | ErrorMessage;
 
 export type ErrorResponseMessage = {
-  protocol: 'service_framework3_rpc',
+  protocol: string,
   type: 'error-response',
   id: number,
   error: any,
 };
 
 export type PromiseResponseMessage = {
-  protocol: 'service_framework3_rpc',
+  protocol: string,
   type: 'response',
   id: number,
   result: any,
 };
 
 export type NextMessage = {
-  protocol: 'service_framework3_rpc',
+  protocol: string,
   type: 'next',
   id: number,
   value: any,
 };
 
 export type CompleteMessage = {
-  protocol: 'service_framework3_rpc',
+  protocol: string,
   type: 'complete',
   id: number,
 };
 
 export type ErrorMessage = {
-  protocol: 'service_framework3_rpc',
+  protocol: string,
   type: 'error',
   id: number,
   error: any,
@@ -108,12 +106,13 @@ export function decodeError(message: Object, encodedError: ?(Object | string)): 
 }
 
 export function createCallMessage(
+  protocol: string,
   functionName: string,
   id: number,
   args: Object,
 ): CallMessage {
   return {
-    protocol: SERVICE_FRAMEWORK3_PROTOCOL,
+    protocol,
     type: 'call',
     method: functionName,
     id,
@@ -122,13 +121,14 @@ export function createCallMessage(
 }
 
 export function createCallObjectMessage(
+  protocol: string,
   methodName: string,
   objectId: number,
   id: number,
   args: Object,
 ): CallObjectMessage {
   return {
-    protocol: SERVICE_FRAMEWORK3_PROTOCOL,
+    protocol,
     type: 'call-object',
     method: methodName,
     objectId,
@@ -138,12 +138,13 @@ export function createCallObjectMessage(
 }
 
 export function createNewObjectMessage(
+  protocol: string,
   interfaceName: string,
   id: number,
   args: Object,
 ): NewObjectMessage {
   return {
-    protocol: SERVICE_FRAMEWORK3_PROTOCOL,
+    protocol,
     type: 'new',
     interface: interfaceName,
     id,
@@ -151,64 +152,77 @@ export function createNewObjectMessage(
   };
 }
 
-export function createPromiseMessage(id: number, result: any): PromiseResponseMessage {
+export function createPromiseMessage(
+  protocol: string,
+  id: number,
+  result: any,
+): PromiseResponseMessage {
   return {
-    protocol: SERVICE_FRAMEWORK3_PROTOCOL,
+    protocol,
     type: 'response',
     id,
     result,
   };
 }
 
-export function createNextMessage(id: number, value: any): NextMessage {
+export function createNextMessage(protocol: string, id: number, value: any): NextMessage {
   return {
-    protocol: SERVICE_FRAMEWORK3_PROTOCOL,
+    protocol,
     type: 'next',
     id,
     value,
   };
 }
 
-export function createCompleteMessage(id: number): CompleteMessage {
+export function createCompleteMessage(protocol: string, id: number): CompleteMessage {
   return {
-    protocol: SERVICE_FRAMEWORK3_PROTOCOL,
+    protocol,
     type: 'complete',
     id,
   };
 }
 
 export function createObserveErrorMessage(
+  protocol: string,
   id: number,
   error: any,
 ): ErrorMessage {
   return {
-    protocol: SERVICE_FRAMEWORK3_PROTOCOL,
+    protocol,
     type: 'error',
     id,
     error: formatError(error),
   };
 }
 
-export function createDisposeMessage(id: number, objectId: number): DisposeMessage {
+export function createDisposeMessage(
+  protocol: string,
+  id: number,
+  objectId: number,
+): DisposeMessage {
   return {
-    protocol: SERVICE_FRAMEWORK3_PROTOCOL,
+    protocol,
     type: 'dispose',
     id,
     objectId,
   };
 }
 
-export function createUnsubscribeMessage(id: number): UnsubscribeMessage {
+export function createUnsubscribeMessage(protocol: string, id: number): UnsubscribeMessage {
   return {
-    protocol: SERVICE_FRAMEWORK3_PROTOCOL,
+    protocol,
     type: 'unsubscribe',
     id,
   };
 }
 
-export function createErrorResponseMessage(id: number, error: any): ErrorResponseMessage {
+export function createErrorResponseMessage(
+  protocol: string,
+  id: number,
+  error: any,
+): ErrorResponseMessage {
   return {
-    protocol: SERVICE_FRAMEWORK3_PROTOCOL,
+    protocol,
     type: 'error-response',
     id,
     error: formatError(error),

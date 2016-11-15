@@ -22,7 +22,7 @@ describe('CounterService', () => {
       name: 'CounterService',
       definition: nuclideUri.join(__dirname, 'CounterService.def'),
       implementation: nuclideUri.join(__dirname, 'CounterService.js'),
-    }]));
+    }], 'counter_protocol'));
 
     runs(() => {
       service = testHelper.getRemoteService('CounterService');

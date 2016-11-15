@@ -37,7 +37,7 @@ describe('BidiService', () => {
         name: 'BidiService',
         definition: nuclideUri.join(__dirname, 'BidiService.def'),
         implementation: nuclideUri.join(__dirname, 'BidiService.js'),
-      }]);
+      }], 'bidi_protocol');
       service = testHelper.getRemoteService('BidiService');
     });
   });

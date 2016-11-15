@@ -25,7 +25,7 @@ describe('EchoServer', () => {
       name: 'EchoService',
       definition: nuclideUri.join(__dirname, 'EchoService.js'),
       implementation: nuclideUri.join(__dirname, 'EchoService.js'),
-    }]));
+    }], 'echo_protocol'));
 
     runs(() => {
       service = testHelper.getRemoteService('EchoService');

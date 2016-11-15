@@ -24,6 +24,7 @@ import invariant from 'assert';
 import type {ConfigEntry} from './index';
 import type {ObjectRegistry} from './ObjectRegistry';
 import {getLogger} from '../../nuclide-logging';
+import {SERVICE_FRAMEWORK3_PROTOCOL} from './config';
 
 const logger = getLogger();
 
@@ -35,6 +36,8 @@ export type ServiceDefinition = {
 };
 
 export class ServiceRegistry {
+  _protocol: string;
+
   _typeRegistry: TypeRegistry;
 
   /**
@@ -55,7 +58,9 @@ export class ServiceRegistry {
   constructor(
     predefinedTypes: Array<PredefinedTransformer>,
     services: Array<ConfigEntry>,
+    protocol: string = SERVICE_FRAMEWORK3_PROTOCOL,
   ) {
+    this._protocol = protocol;
     this._typeRegistry = new TypeRegistry(predefinedTypes);
     this._predefinedTypes = predefinedTypes.map(predefinedType => predefinedType.typeName);
     this._functionsByName = new Map();
@@ -63,6 +68,10 @@ export class ServiceRegistry {
     this._services = new Map();
 
     this.addServices(services);
+  }
+
+  getProtocol(): string {
+    return this._protocol;
   }
 
   addServices(services: Array<ConfigEntry>): void {
