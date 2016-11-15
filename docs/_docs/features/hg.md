@@ -75,7 +75,18 @@ untracked.
 This is a built-in Atom feature that displays in the [gutter](/docs/editor/basics/#gutter) showing any lines
 that have been modified since the last commit.
 
-If a line has been modified, you will see an orange vertical line in the gutter. If a new line of
+>This feature is not enabled by default.
+
+To enable this setting:
+
+1. Open the [Nuclide Settings](/docs/editor/basics/#preferences-pane) tab either by pressing `Cmd+,` (`Ctrl-,` on Linux) or by going to `Package | Settings View | Open`.  
+2. Select **Packages** from the list at the left, and search for `nuclide`.  
+3. Click on the **Settings** button for the `nuclide` package.
+4. Scroll down until you find `nuclide-hg-repository`, and select the **Enables `git-diff` and `status-bar` diff stats to display added, changed, or removed lines in the editor gutter and status bar** checkbox.
+
+![](/static/images/docs/feature-hg-line-mod-gutter-setting.png)
+
+Then, if a line has been modified, you will see an orange vertical line in the gutter, and if a new line of
 content has been added, you will see a green vertical line.
 
 ![](/static/images/docs/feature-hg-line-modifications.png)
