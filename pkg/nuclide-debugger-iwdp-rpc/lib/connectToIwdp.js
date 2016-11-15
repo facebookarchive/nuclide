@@ -35,9 +35,7 @@ export function connectToIwdp(): Observable<IosDeviceInfo> {
       if (matches != null) {
         const port = Number(matches[1]);
         log(`Fetching device data because we got ${data}`);
-        return Observable.interval(POLLING_INTERVAL).switchMap(() => {
-          return Observable.fromPromise(fetchDeviceData(port));
-        });
+        return Observable.interval(POLLING_INTERVAL).switchMap(() => fetchDeviceData(port));
       }
       if (data.startsWith('Listing devices on :')) {
         log(`IWDP Connected!: ${data}`);
@@ -51,8 +49,9 @@ export function connectToIwdp(): Observable<IosDeviceInfo> {
       );
     }
   })
-    .mergeMap(deviceInfos => Observable.from(deviceInfos))
-    .distinctKey('webSocketDebuggerUrl');
+    .mergeMap(deviceInfos => deviceInfos)
+    // $FlowFixMe -- PR for adding types for distinct.
+    .distinct(deviceInfo => deviceInfo.webSocketDebuggerUrl);
 }
 
 async function fetchDeviceData(port: number): Promise<Array<IosDeviceInfo>> {
