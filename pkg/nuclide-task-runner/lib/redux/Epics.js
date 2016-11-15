@@ -22,6 +22,7 @@ import type {ActionsObservable} from '../../../commons-node/redux-observable';
 import {observableFromTask} from '../../../commons-node/tasks';
 import {observableFromSubscribeFunction} from '../../../commons-node/event';
 import {diffSets} from '../../../commons-node/observable';
+import UniversalDisposable from '../../../commons-node/UniversalDisposable';
 import {getLogger} from '../../../nuclide-logging';
 import {getTaskMetadata} from '../getTaskMetadata';
 import {getActiveTaskId, getActiveTaskRunner} from '../redux/Selectors';
@@ -36,27 +37,36 @@ export function aggregateTaskListsEpic(
 ): Observable<Action> {
   // Wait until the initial packages have loaded.
   return actions.ofType(Actions.DID_LOAD_INITIAL_PACKAGES)
-    // Then, whenever the project root changes...
-    .switchMap(() => store.getState().states.map(state => state.projectRoot))
-    .distinctUntilChanged((a, b) => {
-      const aPath = a && a.getPath();
-      const bPath = b && b.getPath();
-      return aPath === bPath;
-    })
-
-    .switchMap(projectRoot => {
+    .switchMap(() => {
       // We get the state stream from the state. Ideally, we'd just use `Observable.from(store)`,
       // but Redux gives us a partial store so we have to work around it.
       // See redux-observable/redux-observable#56
       const {states} = store.getState();
+
+      const projectRoots = store.getState().states.map(state => state.projectRoot)
+        .distinctUntilChanged((a, b) => {
+          const aPath = a && a.getPath();
+          const bPath = b && b.getPath();
+          return aPath === bPath;
+        });
       const taskRunnersByIdStream: Observable<Map<string, TaskRunner>> = states
         .map(state => state.taskRunners)
         .distinctUntilChanged();
 
-      // We want to make sure that we don't call `observeTaskList()` when nothing's changed, so we
-      // use `diffSets()` to identify changes.
-      const diffs = diffSets(
-        taskRunnersByIdStream.map(taskRunnersById => new Set(taskRunnersById.keys())),
+      const diffs = Observable.merge(
+        // We want to make sure that we don't call `observeTaskList()` when nothing's changed, so we
+        // use `diffSets()` to identify changes.
+        diffSets(taskRunnersByIdStream.map(taskRunnersById => new Set(taskRunnersById.keys()))),
+        // If the project root changes, get tasks from all of them.
+        projectRoots
+          .skip(1)
+          .switchMap(() => {
+            const taskRunnerIds = new Set(store.getState().taskRunners.keys());
+            return Observable.of(
+              {added: new Set(), removed: taskRunnerIds},
+              {added: taskRunnerIds, removed: new Set()},
+            );
+          }),
       )
         .share();
 
@@ -68,8 +78,16 @@ export function aggregateTaskListsEpic(
           Observable.from(added).mergeMap(taskRunnerId => {
             const taskRunner = store.getState().taskRunners.get(taskRunnerId);
             invariant(taskRunner != null);
-            const taskLists = observableFromSubscribeFunction(cb => taskRunner.observeTaskList(cb))
-              // When the task runner is removed, stop listening to its task list.
+            const taskLists = observableFromSubscribeFunction(cb => {
+              if (taskRunner.setProjectRoot != null) {
+                const {projectRoot} = store.getState();
+                invariant(taskRunner.setProjectRoot != null);
+                taskRunner.setProjectRoot(projectRoot);
+              }
+              return taskRunner.observeTaskList(cb);
+            })
+              // Stop listening to the task list when the runner's removed or the project root
+              // changes.
               .takeUntil(diffs.filter(diff => diff.removed.has(taskRunnerId)))
               .map(taskList => {
                 // Annotate each task with some info about its runner.
@@ -81,14 +99,24 @@ export function aggregateTaskListsEpic(
                 // Tag each task list with the id of its runner for adding to the map.
                 return {taskRunnerId, taskList: annotatedTaskList};
               })
-              // When it completes, null the task list.
+              // When it completes, null the task list for this task runner.
               .concat(Observable.of({taskRunnerId, taskList: null}))
-              .share();
-            // If it takes too long to get a task list, start with an empty list.
-            const timeout = Observable.of({taskRunnerId, taskList: []})
-              .delay(2000)
-              .takeUntil(taskLists.take(1));
-            return Observable.merge(timeout, taskLists);
+              .publish();
+
+            // Use `Observable.create()` to make sure we only have one subscription to taskLists and
+            // that we don't miss any elements.
+            return Observable.create(observer => (
+              new UniversalDisposable(
+                Observable.merge(
+                  taskLists,
+                  Observable.of({taskRunnerId, taskList: []})
+                    .delay(2000)
+                    .takeUntil(taskLists.take(1)),
+                )
+                  .subscribe(observer),
+                taskLists.connect(),
+              )
+            ));
           })
         ))
         .scan(
@@ -105,30 +133,8 @@ export function aggregateTaskListsEpic(
           new Map(),
         );
 
-      return Observable.concat(
-        Observable.of(Actions.setProjectRoot(projectRoot)),
-        taskListsByIdStream.map(taskListsById => Actions.setTaskLists(taskListsById)),
-      );
-
+      return taskListsByIdStream.map(taskListsById => Actions.setTaskLists(taskListsById));
     });
-}
-
-export function setProjectRootEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions.ofType(Actions.SET_PROJECT_ROOT)
-    .do(action => {
-      invariant(action.type === Actions.SET_PROJECT_ROOT);
-      const {projectRoot} = action.payload;
-      for (const taskRunner of store.getState().taskRunners.values()) {
-        if (taskRunner.setProjectRoot != null) {
-          taskRunner.setProjectRoot(projectRoot);
-        }
-      }
-    })
-    // This is just for side-effects.
-    .ignoreElements();
 }
 
 export function runTaskEpic(
