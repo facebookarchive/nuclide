@@ -283,7 +283,10 @@ export class ConnectionMultiplexer {
         if (!this._shouldPauseAllConnections()) {
           connection.sendContinuationCommand(COMMAND_RUN);
         } else {
-          this._emitRequestUpdate(connection);
+          // Debugger is in paused mode, wait for user resume.
+          // Don't show starting requests in UI because:
+          // 1. They do not have interesting information to users.
+          // 2. They cause bounce in debugger UI.
         }
         break;
       case CONNECTION_STATUS.STOPPING:
