@@ -43,11 +43,9 @@ import {
 import RemoteControlService from './RemoteControlService';
 import DebuggerModel from './DebuggerModel';
 import {debuggerDatatip} from './DebuggerDatatip';
-import {
-  React,
-  ReactDOM,
-} from 'react-for-atom';
+import {React} from 'react-for-atom';
 import {DebuggerLaunchAttachUI} from './DebuggerLaunchAttachUI';
+import {renderReactRoot} from '../../commons-atom/renderReactRoot';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {ServerConnection} from '../../nuclide-remote-connection';
 import {PanelComponent} from '../../nuclide-ui/PanelComponent';
@@ -156,14 +154,8 @@ export function createDebuggerView(model: mixed): ?HTMLElement {
   if (!(model instanceof DebuggerModel)) {
     return;
   }
-  const elem = document.createElement('div');
+  const elem = renderReactRoot(<DebuggerView model={model} />);
   elem.className = 'nuclide-debugger-container';
-  ReactDOM.render(
-    <DebuggerView
-      model={model}
-    />,
-    elem,
-  );
   return elem;
 }
 
@@ -389,8 +381,7 @@ class Activation {
           emitter={this._model.getLaunchAttachActionEventEmitter()}
         />
       );
-      const host = document.createElement('div');
-      ReactDOM.render(component, host);
+      const host = renderReactRoot(component);
       this._launchAttachDialog = atom.workspace.addModalPanel({
         item: host,
         visible: false, // Hide first so that caller can toggle it visible.
