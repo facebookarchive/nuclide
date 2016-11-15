@@ -32,6 +32,10 @@ export class LaunchAttachActionsBase {
     (this: any).updateAttachUIVisibility = this.updateAttachUIVisibility.bind(this);
   }
 
+  getTargetUri(): NuclideUri {
+    return this._targetUri;
+  }
+
   updateParentUIVisibility(visible: boolean): void {
     this._parentUIVisible = visible;
     this._updateAutoRefresh();
@@ -53,7 +57,7 @@ export class LaunchAttachActionsBase {
     }
   }
 
-  updateAttachTargetList(): void {
+  updateAttachTargetList(): Promise<void> {
     throw Error('Not implemented');
   }
 

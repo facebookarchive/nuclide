@@ -21,6 +21,7 @@ export {
   translateMessageFromServer,
   translateMessageToServer,
 } from './ChromeMessageRemoting';
+export {LaunchAttachActionsBase} from './LaunchAttachActionsBase';
 
 export {
   setOutputService,
