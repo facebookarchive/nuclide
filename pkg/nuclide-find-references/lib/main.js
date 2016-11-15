@@ -61,21 +61,21 @@ async function getProviderData(): Promise<?FindReferencesReturn> {
   return providerData.filter(x => Boolean(x))[0];
 }
 
-function showError(message: string): void {
-  atom.notifications.addError('nuclide-find-references: ' + message, {dismissable: true});
+function showWarning(message: string): void {
+  atom.notifications.addWarning('nuclide-find-references: ' + message, {dismissable: true});
 }
 
 async function tryCreateView(): Promise<?HTMLElement> {
   try {
     const data = await getProviderData();
     if (data == null) {
-      showError('Symbol references are not available for this project.');
+      showWarning('Symbol references are not available for this project.');
     } else if (data.type === 'error') {
       track('find-references:error', {message: data.message});
-      showError(data.message);
+      showWarning(data.message);
     } else if (!data.references.length) {
       track('find-references:success', {resultCount: '0'});
-      showError('No references found.');
+      showWarning('No references found.');
     } else {
       const {baseUri, referencedSymbolName, references} = data;
       track('find-references:success', {
@@ -94,7 +94,7 @@ async function tryCreateView(): Promise<?HTMLElement> {
   } catch (e) {
     // TODO(peterhal): Remove this when unhandled rejections have a default handler.
     logger.error('Exception in nuclide-find-references', e);
-    showError(e);
+    atom.notifications.addError(`nuclide-find-references: ${e}`, {dismissable: true});
   }
 }
 
