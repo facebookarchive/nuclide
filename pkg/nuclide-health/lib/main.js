@@ -43,7 +43,7 @@ class Activation {
     (this: any)._updateToolbarJewel = this._updateToolbarJewel.bind(this);
 
     // Observe all of the settings.
-    const configs = featureConfig.observeAsStream('nuclide-health');
+    const configs: Observable<any> = featureConfig.observeAsStream('nuclide-health');
     const viewTimeouts = configs.map(config => config.viewTimeout * 1000).distinctUntilChanged();
     const analyticsTimeouts = configs
       .map(config => config.analyticsTimeout * 60 * 1000)

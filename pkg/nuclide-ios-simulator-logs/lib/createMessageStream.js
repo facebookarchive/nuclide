@@ -52,7 +52,7 @@ export function createMessageStream(line$: Observable<string>): Observable<Messa
 
 function filter(messages: Observable<Message>): Observable<Message> {
   const patterns = featureConfig.observeAsStream('nuclide-ios-simulator-logs.whitelistedTags')
-    .map(source => {
+    .map((source: any) => {
       try {
         return new RegExp(source);
       } catch (err) {

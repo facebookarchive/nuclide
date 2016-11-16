@@ -161,8 +161,8 @@ export class HgRepositoryClient {
     this._hgDiffCacheFilesUpdating = new Set();
     this._hgDiffCacheFilesToClear = new Set();
 
-    const diffStatsSubscription = featureConfig
-      .observeAsStream('nuclide-hg-repository.enableDiffStats')
+    const diffStatsSubscription = (featureConfig
+      .observeAsStream('nuclide-hg-repository.enableDiffStats'): Observable<any>)
       .switchMap((enableDiffStats: boolean) => {
         if (!enableDiffStats) {
           // TODO(most): rewrite fetching structures avoiding side effects

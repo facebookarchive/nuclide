@@ -135,7 +135,10 @@ class Activation {
           updater == null ? Observable.of([]) : updater.allMessageUpdates
         )),
       this._state.filterByActiveTextEditor,
-      featureConfig.observeAsStream('nuclide-diagnostics-ui.showDiagnosticTraces'),
+      // https://github.com/gajus/eslint-plugin-flowtype/pull/131
+      // eslint-disable-next-line flowtype/space-after-type-colon
+      (featureConfig.observeAsStream('nuclide-diagnostics-ui.showDiagnosticTraces'):
+          Observable<any>),
       disableLinter,
       filterByActiveTextEditor => {
         if (this._state != null) {

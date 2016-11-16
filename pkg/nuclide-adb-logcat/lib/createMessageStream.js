@@ -94,7 +94,8 @@ export default function createMessageStream(
 }
 
 function filter(messages: Observable<Message>): Observable<Message> {
-  const patterns = featureConfig.observeAsStream('nuclide-adb-logcat.whitelistedTags')
+  const patterns =
+      (featureConfig.observeAsStream('nuclide-adb-logcat.whitelistedTags'): Observable<any>)
     .map(source => {
       try {
         return new RegExp(source);

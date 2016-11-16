@@ -83,10 +83,10 @@ class FileTreeSidebarComponent extends React.Component {
       uncommittedFileChanges: new Map(),
     };
     this._showOpenConfigValues = cacheWhileSubscribed(
-      featureConfig.observeAsStream(SHOW_OPEN_FILE_CONFIG_KEY),
+      (featureConfig.observeAsStream(SHOW_OPEN_FILE_CONFIG_KEY): Observable<any>),
     );
     this._showUncommittedConfigValue = cacheWhileSubscribed(
-      featureConfig.observeAsStream(SHOW_UNCOMMITTED_CHANGES_CONFIG_KEY),
+      (featureConfig.observeAsStream(SHOW_UNCOMMITTED_CHANGES_CONFIG_KEY): Observable<any>),
     );
 
     this._disposables = new UniversalDisposable();

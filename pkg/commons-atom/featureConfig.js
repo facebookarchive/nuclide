@@ -66,7 +66,7 @@ function observe(
  * Behaves similarly to the `observe` function, but returns a stream of values, rather
  * then receiving a callback.
  */
-function observeAsStream(keyPath: string): Observable<any> {
+function observeAsStream(keyPath: string): Observable<mixed> {
   return Observable.create(observer => {
     const disposable = observe(keyPath, observer.next.bind(observer));
     return disposable.dispose.bind(disposable);
