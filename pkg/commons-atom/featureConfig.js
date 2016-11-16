@@ -51,24 +51,24 @@ function getSchema(
 }
 
 /*
- * Takes and returns the same types as `atom.config.observe` except `keyPath` is not optional.
+ * Similar to `atom.config.observe` except arguments are required, and options cannot be given.
+ *
  * To observe changes on the entire config, use `atom.config.observe`.
  */
 function observe(
   keyPath: string,
-  optionsOrCallback: (Object | (value: any) => void),
-  callback?: (value: any) => mixed,
+  callback: (value: any) => mixed,
 ): IDisposable {
-  return atom.config.observe(formatKeyPath(keyPath), ...Array.prototype.slice.call(arguments, 1));
+  return atom.config.observe(formatKeyPath(keyPath), callback);
 }
 
 /*
  * Behaves similarly to the `observe` function, but returns a stream of values, rather
  * then receiving a callback.
  */
-function observeAsStream(keyPath: string, options: Object = {}): Observable<any> {
+function observeAsStream(keyPath: string): Observable<any> {
   return Observable.create(observer => {
-    const disposable = observe(keyPath, options, observer.next.bind(observer));
+    const disposable = observe(keyPath, observer.next.bind(observer));
     return disposable.dispose.bind(disposable);
   });
 }
