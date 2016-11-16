@@ -90,7 +90,7 @@ export class DebuggerLaunchAttachUI extends React.Component<void, PropsType, Sta
     }));
 
     return (
-      <div className="padded">
+      <div className="padded nuclide-debugger-launch-attach-container">
         <div className="nuclide-debugger-launch-attach-header">
           <label className="inline-block">Connection: </label>
           <Dropdown
