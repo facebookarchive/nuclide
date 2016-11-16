@@ -16,7 +16,7 @@ import {makeMessage} from '../lib/helpers';
 import {
   DbgpSocket,
   COMMAND_STEP_OVER,
-  CONNECTION_STATUS,
+  ConnectionStatus,
   COMMAND_RUN,
 } from '../lib/DbgpSocket';
 import {idOfFrame, functionOfFrame, fileOfFrame, locationOfFrame} from '../lib/frame';
@@ -80,12 +80,12 @@ describe('debugger-php-rpc DbgpSocket', () => {
 
   it('error', () => {
     onError({code: 42});
-    expect(onStatus).toHaveBeenCalledWith(CONNECTION_STATUS.ERROR, 42);
+    expect(onStatus).toHaveBeenCalledWith(ConnectionStatus.Error, 42);
   });
 
   it('end', () => {
     onEnd();
-    expect(onStatus).toHaveBeenCalledWith(CONNECTION_STATUS.END);
+    expect(onStatus).toHaveBeenCalledWith(ConnectionStatus.End);
   });
 
   it('getStatus', () => {
@@ -107,7 +107,7 @@ describe('debugger-php-rpc DbgpSocket', () => {
     waitsForPromise(async () => {
       expect(dbgpSocket._lastContinuationCommandTransactionId).toBe(null);
       const resultPromise = dbgpSocket.sendContinuationCommand(COMMAND_STEP_OVER);
-      expect(onStatus).toHaveBeenCalledWith(CONNECTION_STATUS.RUNNING);
+      expect(onStatus).toHaveBeenCalledWith(ConnectionStatus.Running);
       expect(dbgpSocket._lastContinuationCommandTransactionId).toBe(1);
       await testCall(
           resultPromise,
@@ -118,8 +118,8 @@ describe('debugger-php-rpc DbgpSocket', () => {
           command: 'step_over',
           transaction_id: '1',
         },
-          CONNECTION_STATUS.BREAK);
-      expect(onStatus).toHaveBeenCalledWith(CONNECTION_STATUS.BREAK);
+          ConnectionStatus.Break);
+      expect(onStatus).toHaveBeenCalledWith(ConnectionStatus.Break);
       expect(dbgpSocket._lastContinuationCommandTransactionId).toBe(null);
     });
   });
@@ -128,7 +128,7 @@ describe('debugger-php-rpc DbgpSocket', () => {
     waitsForPromise(async () => {
       expect(dbgpSocket._lastContinuationCommandTransactionId).toBe(null);
       const resultPromise = dbgpSocket.sendContinuationCommand(COMMAND_STEP_OVER);
-      expect(onStatus).toHaveBeenCalledWith(CONNECTION_STATUS.RUNNING);
+      expect(onStatus).toHaveBeenCalledWith(ConnectionStatus.Running);
       expect(dbgpSocket._lastContinuationCommandTransactionId).toBe(1);
       await testCall(
           resultPromise,
@@ -139,8 +139,8 @@ describe('debugger-php-rpc DbgpSocket', () => {
           command: 'step_over',
           transaction_id: '1',
         },
-          CONNECTION_STATUS.STOPPING);
-      expect(onStatus).toHaveBeenCalledWith(CONNECTION_STATUS.STOPPING);
+          ConnectionStatus.Stopping);
+      expect(onStatus).toHaveBeenCalledWith(ConnectionStatus.Stopping);
       expect(dbgpSocket._lastContinuationCommandTransactionId).toBe(null);
     });
   });
@@ -182,7 +182,7 @@ describe('debugger-php-rpc DbgpSocket', () => {
       );
       expect(dbgpSocket._pendingEvalTransactionIdStack[0]).toBe(1);
       dbgpSocket.sendContinuationCommand(COMMAND_RUN);
-      expect(onStatus).toHaveBeenCalledWith(CONNECTION_STATUS.RUNNING);
+      expect(onStatus).toHaveBeenCalledWith(ConnectionStatus.Running);
       await testCallResult(
         'run -i 2',
         {

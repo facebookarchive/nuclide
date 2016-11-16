@@ -20,7 +20,7 @@ import {
   pagedObjectId,
   singlePageObjectId,
 } from '../lib/ObjectId';
-import {CONNECTION_STATUS} from '../lib/DbgpSocket';
+import {ConnectionStatus} from '../lib/DbgpSocket';
 
 const PROPERTIES = [{$: {fullname: 'pizza'}}];
 const CONVERTED_PROPERTIES = ['converted-properties'];
@@ -79,11 +79,11 @@ describe('debugger-php-rpc DataCache', () => {
   });
   function enable() {
     invariant(statusCallback);
-    statusCallback(CONNECTION_STATUS.BREAK);
+    statusCallback(ConnectionStatus.Break);
   }
   function disable() {
     invariant(statusCallback);
-    statusCallback(CONNECTION_STATUS.RUNNING);
+    statusCallback(ConnectionStatus.Running);
   }
 
   it('no enable', () => {

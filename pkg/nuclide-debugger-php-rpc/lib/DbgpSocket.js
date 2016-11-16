@@ -18,26 +18,26 @@ import {attachEvent} from '../../commons-node/event';
 import invariant from 'assert';
 import type {Socket} from 'net';
 
-export const CONNECTION_STATUS = {
+export const ConnectionStatus = {
   // Responses to the DBGP 'status' command
-  STARTING: 'starting',
-  STOPPING: 'stopping',
-  STOPPED: 'stopped',
-  RUNNING: 'running',
-  BREAK: 'break',
+  Starting: 'starting',
+  Stopping: 'stopping',
+  Stopped: 'stopped',
+  Running: 'running',
+  Break: 'break',
   // Error and End are not dbgp status codes, they relate to socket states.
-  ERROR: 'error',
-  END: 'end',
+  Error: 'error',
+  End: 'end',
   // stdout and stderr are emitted when DBGP sends the corresponding message packets.
-  STDOUT: 'stdout',
-  STDERR: 'stderr',
+  Stdout: 'stdout',
+  Stderr: 'stderr',
   // Break message statuses allow us to identify whether a connection stopped because of a break
   // message or a breakpoint
-  BREAK_MESSAGE_RECEIVED: 'status_break_message_received',
-  BREAK_MESSAGE_SENT: 'status_break_message_sent',
+  BreakMessageReceived: 'status_break_message_received',
+  BreakMessageSent: 'status_break_message_sent',
   // Indicates if the dummy connection should be shown in the UI.
-  DUMMY_IS_VIEWABLE: 'dummy is viewable',
-  DUMMY_IS_HIDDEN: 'dummy is hidden',
+  DummyIsViewable: 'dummy is viewable',
+  DummyIsHidden: 'dummy is hidden',
 };
 
 // Notifications.
@@ -164,13 +164,13 @@ export class DbgpSocket {
     // Not sure if hhvm is alive or not
     // do not set _isClosed flag so that detach will be sent before dispose().
     logger.logError('socket error ' + error.code);
-    this._emitStatus(CONNECTION_STATUS.ERROR, error.code);
+    this._emitStatus(ConnectionStatus.Error, error.code);
   }
 
   _onEnd(): void {
     this._isClosed = true;
     this.dispose();
-    this._emitStatus(CONNECTION_STATUS.END);
+    this._emitStatus(ConnectionStatus.End);
   }
 
   _onData(data: Buffer | string): void {
@@ -182,7 +182,7 @@ export class DbgpSocket {
     } catch (e) {
       // If message parsing fails, then our contract with HHVM is violated and we need to kill the
       // connection.
-      this._emitStatus(CONNECTION_STATUS.ERROR, e.message);
+      this._emitStatus(ConnectionStatus.Error, e.message);
       return;
     }
     responses.forEach(r => {
@@ -210,7 +210,7 @@ export class DbgpSocket {
     }
     // We handle evaluation commands specially since they can trigger breakpoints.
     if (isEvaluationCommand(command)) {
-      if (status === CONNECTION_STATUS.BREAK) {
+      if (status === ConnectionStatus.Break) {
         // The eval command's response with a `break` status is special because the backend will
         // send two responses for one xdebug eval request.  One when we hit a breakpoint in the
         // code being eval'd, and another when we finish executing the code being eval'd.
@@ -218,10 +218,10 @@ export class DbgpSocket {
         // record this response ID on our stack, so we can later identify the second response.
         // Then send a user-friendly message to the console, and trigger a UI update by moving to
         // running status briefly, and then back to break status.
-        this._emitStatus(CONNECTION_STATUS.DUMMY_IS_VIEWABLE);
-        this._emitStatus(CONNECTION_STATUS.STDOUT, 'Hit breakpoint in evaluated code.');
-        this._emitStatus(CONNECTION_STATUS.RUNNING);
-        this._emitStatus(CONNECTION_STATUS.BREAK);
+        this._emitStatus(ConnectionStatus.DummyIsViewable);
+        this._emitStatus(ConnectionStatus.Stdout, 'Hit breakpoint in evaluated code.');
+        this._emitStatus(ConnectionStatus.Running);
+        this._emitStatus(ConnectionStatus.Break);
         return;  // Return early so that we don't complete any request.
       }
       this._handleEvaluationCommand(transactionId, message);
@@ -246,13 +246,13 @@ export class DbgpSocket {
     if (this._pendingEvalTransactionIdStack.length === 0) {
       // This is the last eval command before returning to the dummy connection entry-point, so
       // we will signal to the CM that the dummy connection is now un-viewable.
-      this._emitStatus(CONNECTION_STATUS.DUMMY_IS_HIDDEN);
+      this._emitStatus(ConnectionStatus.DummyIsHidden);
     }
     const continuationCommandCall = this._calls.get(continuationId);
     invariant(continuationCommandCall != null, 'no pending continuation command request');
     this._completeRequest(
       message,
-      {$: {status: CONNECTION_STATUS.BREAK}},
+      {$: {status: ConnectionStatus.Break}},
       continuationCommandCall,
       continuationCommandCall.command,
       continuationId,
@@ -264,7 +264,7 @@ export class DbgpSocket {
     // The body of the `stream` XML can be omitted, e.g. `echo null`, so we defend against this.
     const outputText = stream._ != null ? base64Decode(stream._) : '';
     logger.log(`${outputType} message received: ${outputText}`);
-    const status = outputType === 'stdout' ? CONNECTION_STATUS.STDOUT : CONNECTION_STATUS.STDERR;
+    const status = outputType === 'stdout' ? ConnectionStatus.Stdout : ConnectionStatus.Stderr;
     // TODO: t13439903 -- add a way to fetch the rest of the data.
     const truncatedOutputText = outputText.slice(0, STREAM_MESSAGE_MAX_SIZE);
     this._emitStatus(status, truncatedOutputText);
@@ -392,7 +392,7 @@ export class DbgpSocket {
   // Continuation commands get a response, but that response
   // is a status message which occurs after execution stops.
   async sendContinuationCommand(command: string): Promise<string> {
-    this._emitStatus(CONNECTION_STATUS.RUNNING);
+    this._emitStatus(ConnectionStatus.Running);
     const response = await this._callDebugger(command);
     const status = response.$.status;
     this._emitStatus(status);
@@ -402,7 +402,7 @@ export class DbgpSocket {
   async sendBreakCommand(): Promise<boolean> {
     const response = await this._callDebugger('break');
     if (response.$.success !== '0') {
-      this._emitStatus(CONNECTION_STATUS.BREAK_MESSAGE_RECEIVED);
+      this._emitStatus(ConnectionStatus.BreakMessageReceived);
     }
     return response.$.success !== '0';
   }

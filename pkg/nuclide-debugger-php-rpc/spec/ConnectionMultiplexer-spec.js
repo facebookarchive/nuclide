@@ -18,12 +18,12 @@ import type {BreakpointStore as BreakpointStoreType} from '../lib/BreakpointStor
 import type {
   ConnectionMultiplexer as ConnectionMultiplexerType,
 } from '../lib/ConnectionMultiplexer';
-import {MULTIPLEXER_STATUS} from '../lib/ConnectionMultiplexer';
+import {ConnectionMultiplexerStatus} from '../lib/ConnectionMultiplexer';
 import {uncachedRequire, clearRequireCache} from '../../nuclide-test-helpers';
 import {updateSettings} from '../lib/settings';
 
 import {
-  CONNECTION_STATUS,
+  ConnectionStatus,
   COMMAND_RUN,
 } from '../lib/DbgpSocket';
 
@@ -167,11 +167,11 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
       // $FlowFixMe override instance method.
       connection.getId = () => id;
 
-      connection._status = CONNECTION_STATUS.STARTING;
+      connection._status = ConnectionStatus.Starting;
 
       // $FlowFixMe override instance method.
       connection.isViewable = jasmine.createSpy('isViewable')
-        .andReturn(connection._status === CONNECTION_STATUS.BREAK);
+        .andReturn(connection._status === ConnectionStatus.Break);
       // $FlowFixMe override instance method.
       connection.isDummyConnection = jasmine.createSpy('isDummyConnection').andReturn(isDummy);
       // $FlowFixMe override instance method.
@@ -255,7 +255,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     expect(DbgpConnector).toHaveBeenCalled();
     expect(connector.onAttach).toHaveBeenCalledWith(onDbgpConnectorAttach);
     expect(connector.onClose).toHaveBeenCalledWith(onDbgpConnectorClose);
-    expect(connectionMultiplexer.getStatus()).toBe(MULTIPLEXER_STATUS.RUNNING);
+    expect(connectionMultiplexer.getStatus()).toBe(ConnectionMultiplexerStatus.Running);
     expect(ConnectionUtils.sendDummyRequest).toHaveBeenCalled();
   }
 
@@ -265,7 +265,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
 
   it('constructor', () => {
     expect(BreakpointStore).toHaveBeenCalledWith();
-    expect(connectionMultiplexer.getStatus()).toBe(MULTIPLEXER_STATUS.STARTING);
+    expect(connectionMultiplexer.getStatus()).toBe(ConnectionMultiplexerStatus.Init);
   });
 
   it('listen', () => {
@@ -289,7 +289,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     expect(breakpointStore.addConnection).toHaveBeenCalledWith(connections[0]);
     expect(connections[0].onStatus).toHaveBeenCalledWith(connectionSpys[0].onStatus);
     expect(connections[0].sendContinuationCommand).toHaveBeenCalledWith(COMMAND_RUN);
-    expect(connectionMultiplexer.getStatus()).toBe(MULTIPLEXER_STATUS.RUNNING);
+    expect(connectionMultiplexer.getStatus()).toBe(ConnectionMultiplexerStatus.Running);
   }
   it('attach', () => {
     waitsForPromise(doAttach);
@@ -297,7 +297,8 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
 
   let enabledIndex = 0;
   function expectEnabled(connectionIndex): void {
-    expect(connectionMultiplexer.getStatus()).toBe(MULTIPLEXER_STATUS.BREAK);
+    expect(connectionMultiplexer.getStatus()).toBe(
+      ConnectionMultiplexerStatus.SingleConnectionPaused);
     connectionMultiplexer.getProperties(enabledIndex);
     expect(connections[connectionIndex].getProperties).toHaveBeenCalledWith(enabledIndex);
     enabledIndex++;
@@ -306,9 +307,9 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
   async function doEnable(): Promise<any> {
     await doAttach();
 
-    sendConnectionStatus(0, CONNECTION_STATUS.BREAK);
+    sendConnectionStatus(0, ConnectionStatus.Break);
 
-    expect(onStatus).toHaveBeenCalledWith(MULTIPLEXER_STATUS.BREAK);
+    expect(onStatus).toHaveBeenCalledWith(ConnectionMultiplexerStatus.SingleConnectionPaused);
     expectEnabled(0);
   }
 
@@ -321,10 +322,10 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
   it('enable to run', () => {
     waitsForPromise(async () => {
       await doEnable();
-      sendConnectionStatus(0, CONNECTION_STATUS.RUNNING);
+      sendConnectionStatus(0, ConnectionStatus.Running);
 
-      expect(onStatus).toHaveBeenCalledWith(MULTIPLEXER_STATUS.RUNNING);
-      expect(connectionMultiplexer.getStatus()).toBe(MULTIPLEXER_STATUS.RUNNING);
+      expect(onStatus).toHaveBeenCalledWith(ConnectionMultiplexerStatus.Running);
+      expect(connectionMultiplexer.getStatus()).toBe(ConnectionMultiplexerStatus.Running);
     });
   });
 
@@ -382,7 +383,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     waitsForPromise(async () => {
       await doAttach();
 
-      sendConnectionStatus(0, CONNECTION_STATUS.BREAK);
+      sendConnectionStatus(0, ConnectionStatus.Break);
 
       expectEnabled(0);
     });
@@ -391,18 +392,18 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     waitsForPromise(async () => {
       await doAttach();
 
-      sendConnectionStatus(0, CONNECTION_STATUS.RUNNING);
+      sendConnectionStatus(0, ConnectionStatus.Running);
 
-      expect(connectionMultiplexer.getStatus()).toBe(MULTIPLEXER_STATUS.RUNNING);
+      expect(connectionMultiplexer.getStatus()).toBe(ConnectionMultiplexerStatus.Running);
     });
   });
   it('TFF: Detach-Enabled', () => {
     waitsForPromise(async () => {
       await doAttach();
 
-      sendConnectionStatus(0, CONNECTION_STATUS.END);
+      sendConnectionStatus(0, ConnectionStatus.End);
 
-      expect(connectionMultiplexer.getStatus()).toBe(MULTIPLEXER_STATUS.RUNNING);
+      expect(connectionMultiplexer.getStatus()).toBe(ConnectionMultiplexerStatus.Running);
       expectDetached(0);
     });
   });
@@ -421,13 +422,13 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     });
     expect(connectionCount).toBe(3);
     expect(connectionSpys[2]).not.toBe(undefined);
-    expect(connectionMultiplexer.getStatus()).toBe(MULTIPLEXER_STATUS.RUNNING);
+    expect(connectionMultiplexer.getStatus()).toBe(ConnectionMultiplexerStatus.Running);
   }
   it('FFT: Break-Running', () => {
     waitsForPromise(async () => {
       await gotoFFT();
 
-      sendConnectionStatus(2, CONNECTION_STATUS.BREAK);
+      sendConnectionStatus(2, ConnectionStatus.Break);
 
       expectEnabled(2);
     });
@@ -436,24 +437,24 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     waitsForPromise(async () => {
       await gotoFFT();
 
-      sendConnectionStatus(1, CONNECTION_STATUS.RUNNING);
+      sendConnectionStatus(1, ConnectionStatus.Running);
 
-      expect(connectionMultiplexer.getStatus()).toBe(MULTIPLEXER_STATUS.RUNNING);
+      expect(connectionMultiplexer.getStatus()).toBe(ConnectionMultiplexerStatus.Running);
     });
   });
   it('FFT: Detach-Running', () => {
     waitsForPromise(async () => {
       await gotoFFT();
 
-      sendConnectionStatus(1, CONNECTION_STATUS.END);
+      sendConnectionStatus(1, ConnectionStatus.End);
 
-      expect(connectionMultiplexer.getStatus()).toBe(MULTIPLEXER_STATUS.RUNNING);
+      expect(connectionMultiplexer.getStatus()).toBe(ConnectionMultiplexerStatus.Running);
       expectDetached(1);
     });
   });
   async function gotoTFT(): Promise<any> {
     await gotoFFT();
-    sendConnectionStatus(2, CONNECTION_STATUS.BREAK);
+    sendConnectionStatus(2, ConnectionStatus.Break);
 
     expectEnabled(2);
   }
@@ -461,16 +462,16 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     waitsForPromise(async () => {
       await gotoTFT();
 
-      sendConnectionStatus(2, CONNECTION_STATUS.RUNNING);
+      sendConnectionStatus(2, ConnectionStatus.Running);
 
-      expect(connectionMultiplexer.getStatus()).toBe(MULTIPLEXER_STATUS.RUNNING);
+      expect(connectionMultiplexer.getStatus()).toBe(ConnectionMultiplexerStatus.Running);
     });
   });
   it('TFT: Break-Running', () => {
     waitsForPromise(async () => {
       await gotoTFT();
 
-      sendConnectionStatus(0, CONNECTION_STATUS.BREAK);
+      sendConnectionStatus(0, ConnectionStatus.Break);
 
       expectEnabled(2);
     });
@@ -479,7 +480,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     waitsForPromise(async () => {
       await gotoTFT();
 
-      sendConnectionStatus(2, CONNECTION_STATUS.BREAK);
+      sendConnectionStatus(2, ConnectionStatus.Break);
 
       expectEnabled(2);
     });
@@ -488,7 +489,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     waitsForPromise(async () => {
       await gotoTFT();
 
-      sendConnectionStatus(1, CONNECTION_STATUS.RUNNING);
+      sendConnectionStatus(1, ConnectionStatus.Running);
 
       expectEnabled(2);
     });
@@ -497,7 +498,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     waitsForPromise(async () => {
       await gotoTFT();
 
-      sendConnectionStatus(0, CONNECTION_STATUS.END);
+      sendConnectionStatus(0, ConnectionStatus.End);
 
       expectEnabled(2);
       expectDetached(0);
@@ -507,16 +508,16 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     waitsForPromise(async () => {
       await gotoTFT();
 
-      sendConnectionStatus(2, CONNECTION_STATUS.END);
+      sendConnectionStatus(2, ConnectionStatus.End);
 
-      expect(connectionMultiplexer.getStatus()).toBe(MULTIPLEXER_STATUS.RUNNING);
+      expect(connectionMultiplexer.getStatus()).toBe(ConnectionMultiplexerStatus.Running);
       expectDetached(2);
     });
   });
   async function gotoTTT(): Promise<any> {
     await gotoFFT();
-    sendConnectionStatus(0, CONNECTION_STATUS.BREAK);
-    sendConnectionStatus(2, CONNECTION_STATUS.BREAK);
+    sendConnectionStatus(0, ConnectionStatus.Break);
+    sendConnectionStatus(2, ConnectionStatus.Break);
 
     expectEnabled(0);
   }
@@ -524,7 +525,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     waitsForPromise(async () => {
       await gotoTTT();
 
-      sendConnectionStatus(2, CONNECTION_STATUS.BREAK);
+      sendConnectionStatus(2, ConnectionStatus.Break);
 
       expectEnabled(0);
     });
@@ -533,7 +534,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     waitsForPromise(async () => {
       await gotoTTT();
 
-      sendConnectionStatus(0, CONNECTION_STATUS.BREAK);
+      sendConnectionStatus(0, ConnectionStatus.Break);
 
       expectEnabled(0);
     });
@@ -542,7 +543,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     waitsForPromise(async () => {
       await gotoTTT();
 
-      sendConnectionStatus(1, CONNECTION_STATUS.BREAK);
+      sendConnectionStatus(1, ConnectionStatus.Break);
 
       expectEnabled(0);
     });
@@ -551,7 +552,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     waitsForPromise(async () => {
       await gotoTTT();
 
-      sendConnectionStatus(2, CONNECTION_STATUS.RUNNING);
+      sendConnectionStatus(2, ConnectionStatus.Running);
 
       expectEnabled(0);
     });
@@ -560,7 +561,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     waitsForPromise(async () => {
       await gotoTTT();
 
-      sendConnectionStatus(0, CONNECTION_STATUS.RUNNING);
+      sendConnectionStatus(0, ConnectionStatus.Running);
 
       expectEnabled(2);
     });
@@ -569,7 +570,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     waitsForPromise(async () => {
       await gotoTTT();
 
-      sendConnectionStatus(1, CONNECTION_STATUS.RUNNING);
+      sendConnectionStatus(1, ConnectionStatus.Running);
 
       expectEnabled(0);
     });
@@ -578,7 +579,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     waitsForPromise(async () => {
       await gotoTTT();
 
-      sendConnectionStatus(1, CONNECTION_STATUS.END);
+      sendConnectionStatus(1, ConnectionStatus.End);
 
       expectEnabled(0);
       expectDetached(1);
@@ -588,7 +589,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     waitsForPromise(async () => {
       await gotoTTT();
 
-      sendConnectionStatus(2, CONNECTION_STATUS.END);
+      sendConnectionStatus(2, ConnectionStatus.End);
 
       expectEnabled(0);
       expectDetached(2);
@@ -598,7 +599,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     waitsForPromise(async () => {
       await gotoTTT();
 
-      sendConnectionStatus(0, CONNECTION_STATUS.END);
+      sendConnectionStatus(0, ConnectionStatus.End);
 
       expectEnabled(2);
       expectDetached(0);
@@ -606,9 +607,9 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
   });
   async function gotoTTF(): Promise<any> {
     await gotoFFT();
-    sendConnectionStatus(1, CONNECTION_STATUS.BREAK);
-    sendConnectionStatus(0, CONNECTION_STATUS.BREAK);
-    sendConnectionStatus(2, CONNECTION_STATUS.BREAK);
+    sendConnectionStatus(1, ConnectionStatus.Break);
+    sendConnectionStatus(0, ConnectionStatus.Break);
+    sendConnectionStatus(2, ConnectionStatus.Break);
 
     expectEnabled(1);
   }
@@ -616,7 +617,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     waitsForPromise(async () => {
       await gotoTTF();
 
-      sendConnectionStatus(0, CONNECTION_STATUS.BREAK);
+      sendConnectionStatus(0, ConnectionStatus.Break);
 
       expectEnabled(1);
     });
@@ -625,7 +626,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     waitsForPromise(async () => {
       await gotoTTF();
 
-      sendConnectionStatus(1, CONNECTION_STATUS.BREAK);
+      sendConnectionStatus(1, ConnectionStatus.Break);
 
       expectEnabled(1);
     });
@@ -634,7 +635,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     waitsForPromise(async () => {
       await gotoTTF();
 
-      sendConnectionStatus(2, CONNECTION_STATUS.RUNNING);
+      sendConnectionStatus(2, ConnectionStatus.Running);
 
       expectEnabled(1);
     });
@@ -643,7 +644,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     waitsForPromise(async () => {
       await gotoTTF();
 
-      sendConnectionStatus(1, CONNECTION_STATUS.RUNNING);
+      sendConnectionStatus(1, ConnectionStatus.Running);
 
       expectEnabled(0);
     });
@@ -652,7 +653,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     waitsForPromise(async () => {
       await gotoTTF();
 
-      sendConnectionStatus(1, CONNECTION_STATUS.END);
+      sendConnectionStatus(1, ConnectionStatus.End);
 
       expectEnabled(0);
       expectDetached(1);
@@ -662,7 +663,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     waitsForPromise(async () => {
       await gotoTTF();
 
-      sendConnectionStatus(2, CONNECTION_STATUS.END);
+      sendConnectionStatus(2, ConnectionStatus.End);
 
       expectEnabled(1);
       expectDetached(2);
@@ -747,7 +748,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
   it('sendBreakCommand', () => {
     waitsForPromise(async () => {
       await doEnable();
-      connections[0]._status = CONNECTION_STATUS.RUNNING;
+      connections[0]._status = ConnectionStatus.Running;
       connectionMultiplexer._asyncBreak();
       expect(connections[0].sendBreakCommand).toHaveBeenCalledWith();
     });
@@ -770,8 +771,8 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
         socket,
         message: 'dummy connection',
       });
-      sendConnectionStatus(0, CONNECTION_STATUS.END);
-      expect(onStatus).toHaveBeenCalledWith(MULTIPLEXER_STATUS.END);
+      sendConnectionStatus(0, ConnectionStatus.End);
+      expect(onStatus).toHaveBeenCalledWith(ConnectionMultiplexerStatus.End);
     });
   });
 
@@ -779,8 +780,8 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     waitsForPromise(async () => {
       config.endDebugWhenNoRequests = false;
       await doEnable();
-      sendConnectionStatus(0, CONNECTION_STATUS.END);
-      expect(onStatus).not.toHaveBeenCalledWith(MULTIPLEXER_STATUS.END);
+      sendConnectionStatus(0, ConnectionStatus.End);
+      expect(onStatus).not.toHaveBeenCalledWith(ConnectionMultiplexerStatus.End);
     });
   });
 

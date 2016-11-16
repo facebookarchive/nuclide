@@ -15,7 +15,7 @@ import type {
 } from '../lib/ConnectionMultiplexer';
 
 
-import {MULTIPLEXER_STATUS} from '../lib/ConnectionMultiplexer';
+import {ConnectionMultiplexerStatus} from '../lib/ConnectionMultiplexer';
 import {DebuggerHandler} from '../lib/DebuggerHandler';
 
 describe('debugger-php-rpc DebuggerHandler', () => {
@@ -118,7 +118,7 @@ describe('debugger-php-rpc DebuggerHandler', () => {
           ],
         }));
 
-      await onStatus(MULTIPLEXER_STATUS.BREAK);
+      await onStatus(ConnectionMultiplexerStatus.SingleConnectionPaused);
 
       expect(connectionMultiplexer.getStackFrames).toHaveBeenCalledWith();
       expect(connectionMultiplexer.getScopesForFrame).toHaveBeenCalledWith(0);
@@ -207,14 +207,14 @@ describe('debugger-php-rpc DebuggerHandler', () => {
 
       expect(connectionMultiplexer.sendContinuationCommand).toHaveBeenCalledWith(dbgpCommand);
 
-      await onStatus(MULTIPLEXER_STATUS.RUNNING);
+      await onStatus(ConnectionMultiplexerStatus.Running);
       expect(clientCallback.sendMethod).toHaveBeenCalledWith(
         observableSpy,
         'Debugger.resumed',
         undefined,
       );
 
-      await onStatus(MULTIPLEXER_STATUS.BREAK);
+      await onStatus(ConnectionMultiplexerStatus.SingleConnectionPaused);
       expect(connectionMultiplexer.getStackFrames).toHaveBeenCalledWith();
       expect(clientCallback.sendMethod).toHaveBeenCalledWith(
         observableSpy,
@@ -249,14 +249,14 @@ describe('debugger-php-rpc DebuggerHandler', () => {
 
       expect(connectionMultiplexer.resume).toHaveBeenCalledWith();
 
-      await onStatus(MULTIPLEXER_STATUS.RUNNING);
+      await onStatus(ConnectionMultiplexerStatus.Running);
       expect(clientCallback.sendMethod).toHaveBeenCalledWith(
         observableSpy,
         'Debugger.resumed',
         undefined,
       );
 
-      await onStatus(MULTIPLEXER_STATUS.BREAK);
+      await onStatus(ConnectionMultiplexerStatus.SingleConnectionPaused);
       expect(connectionMultiplexer.getStackFrames).toHaveBeenCalledWith();
       expect(clientCallback.sendMethod).toHaveBeenCalledWith(
         observableSpy,
@@ -295,7 +295,7 @@ describe('debugger-php-rpc DebuggerHandler', () => {
       const onSessionEnd = jasmine.createSpy('onSessionEnd');
       handler.onSessionEnd(onSessionEnd);
 
-      await onStatus(MULTIPLEXER_STATUS.END);
+      await onStatus(ConnectionMultiplexerStatus.End);
       expect(onSessionEnd).toHaveBeenCalledWith();
       expect(onStatusSubscription.dispose).toHaveBeenCalledWith();
     });

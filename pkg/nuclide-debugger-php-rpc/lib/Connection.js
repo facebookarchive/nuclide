@@ -11,7 +11,7 @@
 
 import {DbgpSocket} from './DbgpSocket';
 import {DataCache} from './DataCache';
-import {CONNECTION_STATUS} from './DbgpSocket';
+import {ConnectionStatus} from './DbgpSocket';
 
 import {CompositeDisposable} from 'event-kit';
 
@@ -58,7 +58,7 @@ export class Connection {
     this._socket = dbgpSocket;
     this._dataCache = new DataCache(dbgpSocket);
     this._id = connectionCount++;
-    this._status = CONNECTION_STATUS.STARTING;
+    this._status = ConnectionStatus.Starting;
     this._isDummyConnection = isDummyConnection;
     this._isDummyViewable = false;
     this._disposables = new CompositeDisposable();
@@ -92,26 +92,26 @@ export class Connection {
   ): mixed {
     const prevStatus = this._status;
     switch (newStatus) {
-      case CONNECTION_STATUS.RUNNING:
+      case ConnectionStatus.Running:
         this._stopReason = null;
         break;
-      case CONNECTION_STATUS.BREAK:
-        if (prevStatus === CONNECTION_STATUS.BREAK_MESSAGE_RECEIVED) {
+      case ConnectionStatus.Break:
+        if (prevStatus === ConnectionStatus.BreakMessageReceived) {
           this._stopReason = ASYNC_BREAK;
-        } else if (prevStatus !== CONNECTION_STATUS.BREAK) {
+        } else if (prevStatus !== ConnectionStatus.Break) {
           // TODO(dbonafilia): investigate why we sometimes receive two BREAK_MESSAGES
           this._stopReason = BREAKPOINT;
         }
         break;
-      case CONNECTION_STATUS.DUMMY_IS_VIEWABLE:
+      case ConnectionStatus.DummyIsViewable:
         this._isDummyViewable = true;
         return;
-      case CONNECTION_STATUS.DUMMY_IS_HIDDEN:
+      case ConnectionStatus.DummyIsHidden:
         this._isDummyViewable = false;
         return;
     }
-    if (newStatus === CONNECTION_STATUS.BREAK_MESSAGE_RECEIVED &&
-      prevStatus !== CONNECTION_STATUS.BREAK_MESSAGE_SENT) {
+    if (newStatus === ConnectionStatus.BreakMessageReceived &&
+      prevStatus !== ConnectionStatus.BreakMessageSent) {
       return;
     }
     this._status = newStatus;
@@ -124,10 +124,10 @@ export class Connection {
 
   _isInternalStatus(status: string) {
     return [
-      CONNECTION_STATUS.BREAK_MESSAGE_RECEIVED,
-      CONNECTION_STATUS.BREAK_MESSAGE_SENT,
-      CONNECTION_STATUS.DUMMY_IS_HIDDEN,
-      CONNECTION_STATUS.DUMMY_IS_VIEWABLE,
+      ConnectionStatus.BreakMessageReceived,
+      ConnectionStatus.BreakMessageSent,
+      ConnectionStatus.DummyIsHidden,
+      ConnectionStatus.DummyIsViewable,
     ].some(internalStatus => internalStatus === status);
   }
 
@@ -137,9 +137,9 @@ export class Connection {
    */
   isViewable(): boolean {
     if (this._isDummyConnection) {
-      return this._status === CONNECTION_STATUS.BREAK && this._isDummyViewable;
+      return this._status === ConnectionStatus.Break && this._isDummyViewable;
     } else {
-      return this._status === CONNECTION_STATUS.BREAK;
+      return this._status === ConnectionStatus.Break;
     }
   }
 
@@ -196,7 +196,7 @@ export class Connection {
   }
 
   sendBreakCommand(): Promise<boolean> {
-    this._status = CONNECTION_STATUS.BREAK_MESSAGE_SENT;
+    this._status = ConnectionStatus.BreakMessageSent;
     return this._socket.sendBreakCommand();
   }
 

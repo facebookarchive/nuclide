@@ -24,7 +24,7 @@ import {
 import {BreakpointStore} from './BreakpointStore';
 import {DbgpConnector} from './DbgpConnector';
 import {
-  CONNECTION_STATUS,
+  ConnectionStatus,
   BREAKPOINT_RESOLVED_NOTIFICATION,
   COMMAND_RUN,
 } from './DbgpSocket';
@@ -43,17 +43,17 @@ const CONNECTION_MUX_STATUS_EVENT = 'connection-mux-status';
 const CONNECTION_MUX_NOTIFICATION_EVENT = 'connection-mux-notification';
 
 
-export const MULTIPLEXER_STATUS = {
-  STARTING: 'multiplexer_starting',
-  RUNNING: 'multiplexer_running',
-  BREAK: 'multiplexer_break',
-  END: 'multiplexer_end',
-  ALL_CONNECTIONS_BREAK: 'all_connections_break',
-  USER_ASYNC_BREAK_SENT: 'async_break_sent',
+export const ConnectionMultiplexerStatus = {
+  Init: 'Init',
+  Running: 'Running',
+  SingleConnectionPaused: 'SingleConnectionPaused',
+  AllConnectionsPaused: 'AllConnectionsPaused',
+  UserAsyncBreakSent: 'UserAsyncBreakSent',
+  End: 'End',
 };
 
-export const CONNECTION_MUX_NOTIFICATION = {
-  REQUEST_UPDATE: 'notification_request_update',
+export const ConnectionMultiplexerNotification = {
+  RequestUpdate: 'RequestUpdate',
 };
 
 
@@ -117,7 +117,7 @@ export class ConnectionMultiplexer {
 
   constructor(clientCallback: ClientCallback) {
     this._clientCallback = clientCallback;
-    this._status = MULTIPLEXER_STATUS.STARTING;
+    this._status = ConnectionMultiplexerStatus.Init;
     this._connectionStatusEmitter = new EventEmitter();
     this._previousConnection = null;
     this._enabledConnection = null;
@@ -151,7 +151,7 @@ export class ConnectionMultiplexer {
       this._attachModeListen();
     }
 
-    this._status = MULTIPLEXER_STATUS.RUNNING;
+    this._status = ConnectionMultiplexerStatus.Running;
 
     const pleaseWaitMessage = {
       level: 'warning',
@@ -268,15 +268,15 @@ export class ConnectionMultiplexer {
   }
 
   _shouldPauseAllConnections(): boolean {
-    return this._status === MULTIPLEXER_STATUS.USER_ASYNC_BREAK_SENT ||
-      this._status === MULTIPLEXER_STATUS.ALL_CONNECTIONS_BREAK;
+    return this._status === ConnectionMultiplexerStatus.UserAsyncBreakSent ||
+      this._status === ConnectionMultiplexerStatus.AllConnectionsPaused;
   }
 
   _connectionOnStatus(connection: Connection, status: string, ...args: Array<string>): void {
     logger.log(`Mux got status: ${status} on connection ${connection.getId()}`);
 
     switch (status) {
-      case CONNECTION_STATUS.STARTING:
+      case ConnectionStatus.Starting:
         // Starting status has no stack.
         // step before reporting initial status to get to the first instruction.
         // TODO: Use loader breakpoint configuration to choose between step/run.
@@ -289,28 +289,28 @@ export class ConnectionMultiplexer {
           // 2. They cause bounce in debugger UI.
         }
         break;
-      case CONNECTION_STATUS.STOPPING:
+      case ConnectionStatus.Stopping:
         // TODO: May want to enable post-mortem features?
         if (this._isPaused()) {
           this._emitRequestUpdate(connection);
         }
         connection.sendContinuationCommand(COMMAND_RUN);
         return;
-      case CONNECTION_STATUS.RUNNING:
+      case ConnectionStatus.Running:
         if (connection === this._enabledConnection) {
           this._disableConnection();
         } else if (this._isPaused()) {
           this._emitRequestUpdate(connection);
         }
         break;
-      case CONNECTION_STATUS.BREAK:
+      case ConnectionStatus.Break:
         if (this._isPaused()) {
           // We don't want to send the first threads updated message until the debugger is
           // paused.
           this._emitRequestUpdate(connection);
         }
         break;
-      case CONNECTION_STATUS.ERROR:
+      case ConnectionStatus.Error:
         let message = 'The debugger encountered a problem and the connection had to be shut down.';
         if (args[0] != null) {
           message = `${message}  Error message: ${args[0]}`;
@@ -324,17 +324,17 @@ export class ConnectionMultiplexer {
         }
         this._removeConnection(connection);
         break;
-      case CONNECTION_STATUS.STOPPED:
-      case CONNECTION_STATUS.END:
+      case ConnectionStatus.Stopped:
+      case ConnectionStatus.End:
         if (this._isPaused()) {
           this._emitRequestUpdate(connection);
         }
         this._removeConnection(connection);
         break;
-      case CONNECTION_STATUS.STDOUT:
+      case ConnectionStatus.Stdout:
         this._sendOutput(args[0], 'log');
         break;
-      case CONNECTION_STATUS.STDERR:
+      case ConnectionStatus.Stderr:
         this._sendOutput(args[0], 'info');
         break;
     }
@@ -350,12 +350,12 @@ export class ConnectionMultiplexer {
   }
 
   _updateStatus(): void {
-    if (this._status === MULTIPLEXER_STATUS.END) {
+    if (this._status === ConnectionMultiplexerStatus.End) {
       return;
     }
 
-    if (this._status === MULTIPLEXER_STATUS.BREAK ||
-      this._status === MULTIPLEXER_STATUS.ALL_CONNECTIONS_BREAK) {
+    if (this._status === ConnectionMultiplexerStatus.SingleConnectionPaused ||
+      this._status === ConnectionMultiplexerStatus.AllConnectionsPaused) {
       logger.log('Mux already in break status');
       return;
     }
@@ -372,10 +372,10 @@ export class ConnectionMultiplexer {
   _shouldEnableConnection(connection: Connection): boolean {
     // If no connections are available and we async break, enable a connection in starting mode.
     return this._isFirstStartingConnection(connection) || (
-      connection.getStatus() === CONNECTION_STATUS.BREAK &&
+      connection.getStatus() === ConnectionStatus.Break &&
       // Only enable connection paused by async_break if user has explicitly issued an async_break.
       (connection.getStopReason() !== ASYNC_BREAK ||
-      this._status === MULTIPLEXER_STATUS.USER_ASYNC_BREAK_SENT) &&
+      this._status === ConnectionMultiplexerStatus.UserAsyncBreakSent) &&
       // Don't switch threads unnecessarily in single thread stepping mode.
       (!getSettings().singleThreadStepping || this._lastEnabledConnection === null
         || connection === this._lastEnabledConnection) &&
@@ -385,8 +385,8 @@ export class ConnectionMultiplexer {
   }
 
   _isFirstStartingConnection(connection: Connection): boolean {
-    return this._status === MULTIPLEXER_STATUS.USER_ASYNC_BREAK_SENT
-      && connection.getStatus() === CONNECTION_STATUS.STARTING
+    return this._status === ConnectionMultiplexerStatus.UserAsyncBreakSent
+      && connection.getStatus() === ConnectionStatus.Starting
       && this._connections.size === 2 // Dummy connection + first connection.
       && !connection.isDummyConnection();
   }
@@ -402,15 +402,20 @@ export class ConnectionMultiplexer {
   }
 
   _pauseConnectionsIfNeeded(): void {
-    if (getConfig().stopOneStopAll && this._status !== MULTIPLEXER_STATUS.USER_ASYNC_BREAK_SENT) {
+    if (getConfig().stopOneStopAll &&
+      this._status !== ConnectionMultiplexerStatus.UserAsyncBreakSent
+    ) {
       this._asyncBreak();
     }
   }
 
   _setBreakStatus(): void {
     this._setStatus(
-      (this._status === MULTIPLEXER_STATUS.USER_ASYNC_BREAK_SENT || getConfig().stopOneStopAll) ?
-        MULTIPLEXER_STATUS.ALL_CONNECTIONS_BREAK : MULTIPLEXER_STATUS.BREAK);
+      (this._status === ConnectionMultiplexerStatus.UserAsyncBreakSent ||
+        getConfig().stopOneStopAll)
+        ? ConnectionMultiplexerStatus.AllConnectionsPaused
+        : ConnectionMultiplexerStatus.SingleConnectionPaused,
+      );
   }
 
   _sendRequestInfo(connection: Connection): void {
@@ -424,7 +429,7 @@ export class ConnectionMultiplexer {
       // Only show dummy connection in requests UI if it is viewable.
       return;
     }
-    this._emitNotification(CONNECTION_MUX_NOTIFICATION.REQUEST_UPDATE,
+    this._emitNotification(ConnectionMultiplexerNotification.RequestUpdate,
       {
         id: connection.getId(),
         status: connection.getStatus(),
@@ -454,7 +459,7 @@ export class ConnectionMultiplexer {
       type: 'error',
       message: error,
     });
-    this._emitStatus(MULTIPLEXER_STATUS.END);
+    this._emitStatus(ConnectionMultiplexerStatus.End);
   }
 
   _emitStatus(status: string): void {
@@ -524,7 +529,7 @@ export class ConnectionMultiplexer {
 
   getConnectionStackFrames(id: number): Promise<{stack: Object}> {
     const connection = this._connections.get(id);
-    if (connection != null && connection.getStatus() === CONNECTION_STATUS.BREAK) {
+    if (connection != null && connection.getStatus() === ConnectionStatus.Break) {
       return connection.getStackFrames();
     } else {
       // This occurs on startup with the loader breakpoint.
@@ -559,7 +564,7 @@ export class ConnectionMultiplexer {
       if (
         connection !== this._enabledConnection &&
         (connection.getStopReason() === ASYNC_BREAK ||
-        connection.getStatus() === CONNECTION_STATUS.STARTING)
+        connection.getStatus() === ConnectionStatus.Starting)
       ) {
         connection.sendContinuationCommand(COMMAND_RUN);
       }
@@ -568,14 +573,14 @@ export class ConnectionMultiplexer {
 
   _asyncBreak(): void {
     for (const connection of this._connections.values()) {
-      if (connection.getStatus() === CONNECTION_STATUS.RUNNING) {
+      if (connection.getStatus() === ConnectionStatus.Running) {
         connection.sendBreakCommand();
       }
     }
   }
 
   pause(): void {
-    this._status = MULTIPLEXER_STATUS.USER_ASYNC_BREAK_SENT;
+    this._status = ConnectionMultiplexerStatus.UserAsyncBreakSent;
     // allow a connection that hasnt hit a breakpoint to be enabled, then break all connections.
     this._asyncBreak();
   }
@@ -610,7 +615,7 @@ export class ConnectionMultiplexer {
   _disableConnection(): void {
     logger.log('Mux disabling connection');
     this._enabledConnection = null;
-    this._setStatus(MULTIPLEXER_STATUS.RUNNING);
+    this._setStatus(ConnectionMultiplexerStatus.Running);
   }
 
   _disposeAttachConnector(): void {
@@ -644,7 +649,7 @@ export class ConnectionMultiplexer {
         this._launchedScriptProcessPromise = null;
       }
 
-      this._setStatus(MULTIPLEXER_STATUS.END);
+      this._setStatus(ConnectionMultiplexerStatus.End);
     }
   }
 
@@ -699,8 +704,8 @@ export class ConnectionMultiplexer {
   }
 
   _isPaused(): boolean {
-    return this._status === MULTIPLEXER_STATUS.BREAK ||
-           this._status === MULTIPLEXER_STATUS.ALL_CONNECTIONS_BREAK;
+    return this._status === ConnectionMultiplexerStatus.SingleConnectionPaused ||
+           this._status === ConnectionMultiplexerStatus.AllConnectionsPaused;
   }
 
   getRequestSwitchMessage(): ?string {
@@ -721,7 +726,7 @@ export class ConnectionMultiplexer {
 
   selectThread(id: number): void {
     const connection = this._connections.get(id);
-    if (connection != null && connection.getStatus() === CONNECTION_STATUS.BREAK) {
+    if (connection != null && connection.getStatus() === ConnectionStatus.Break) {
       this._enabledConnection = connection;
     }
   }
