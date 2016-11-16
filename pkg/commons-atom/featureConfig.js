@@ -57,7 +57,7 @@ function getSchema(
  */
 function observe(
   keyPath: string,
-  callback: (value: any) => mixed,
+  callback: (value: mixed) => mixed,
 ): IDisposable {
   return atom.config.observe(formatKeyPath(keyPath), callback);
 }

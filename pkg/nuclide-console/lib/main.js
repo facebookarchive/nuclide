@@ -66,7 +66,9 @@ class Activation {
       ),
       featureConfig.observe(
         'nuclide-console.maximumMessageCount',
-        maxMessageCount => this._getStore().dispatch(Actions.setMaxMessageCount(maxMessageCount)),
+        (maxMessageCount: any) => {
+          this._getStore().dispatch(Actions.setMaxMessageCount(maxMessageCount));
+        },
       ),
     );
   }

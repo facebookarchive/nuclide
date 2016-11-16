@@ -91,7 +91,7 @@ export function activate(state: ?Object): void {
 
   // Returns mixed so a cast is necessary.
   consumeLegacyLinters = ((featureConfig.get(legacyLinterSetting): any): boolean);
-  featureConfig.observe(legacyLinterSetting, newValue => {
+  featureConfig.observe(legacyLinterSetting, (newValue: any) => {
     // To make this really solid, we should also probably trigger the linter
     // for the active text editor. Possibly more trouble than it's worth,
     // though, since this may be a temporary option.
@@ -100,7 +100,7 @@ export function activate(state: ?Object): void {
   });
 
   lintOnTheFly = ((featureConfig.get(legacyLintOnTheFlySetting): any): boolean);
-  featureConfig.observe(legacyLintOnTheFlySetting, newValue => {
+  featureConfig.observe(legacyLintOnTheFlySetting, (newValue: any) => {
     lintOnTheFly = newValue;
     allLinterAdapters.forEach(adapter => adapter.setLintOnFly(newValue));
   });

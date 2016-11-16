@@ -19,7 +19,7 @@ type DefinitionsObserver = (definitions: Array<WorkingSetDefinition>) => void;
 
 export class WorkingSetsConfig {
   observeDefinitions(callback: DefinitionsObserver): IDisposable {
-    const wrapped = definitions => {
+    const wrapped = (definitions: any) => {
       // Got to create a deep copy, otherwise atom.config invariants might break
       const copiedDefinitions = definitions.map(def => {
         return {

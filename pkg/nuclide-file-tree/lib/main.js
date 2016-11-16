@@ -54,10 +54,13 @@ class Activation {
     const allowPendingPaneItems = 'core.allowPendingPaneItems';
 
     this._subscriptions.add(
-      featureConfig.observe(prefixKeyNavSetting, this._setPrefixKeyNavSetting.bind(this)),
-      featureConfig.observe(REVEAL_FILE_ON_SWITCH_SETTING, this._setRevealOnFileSwitch.bind(this)),
-      atom.config.observe(ignoredNamesSetting, this._setIgnoredNames.bind(this)),
-      featureConfig.observe(hideIgnoredNamesSetting, this._setHideIgnoredNames.bind(this)),
+      featureConfig.observe(prefixKeyNavSetting, (x: any) => this._setPrefixKeyNavSetting(x)),
+      featureConfig.observe(
+        REVEAL_FILE_ON_SWITCH_SETTING,
+        (x: any) => this._setRevealOnFileSwitch(x),
+      ),
+      atom.config.observe(ignoredNamesSetting, (x: any) => this._setIgnoredNames(x)),
+      featureConfig.observe(hideIgnoredNamesSetting, (x: any) => this._setHideIgnoredNames(x)),
       atom.config.observe(
         excludeVcsIgnoredPathsSetting,
         this._setExcludeVcsIgnoredPaths.bind(this),

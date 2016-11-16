@@ -58,7 +58,7 @@ export class DefinitionPreviewView extends React.Component {
     };
     this._settingsChangeDisposable = featureConfig.observe(
       'nuclide-definition-preview.editorHeight',
-      (newHeight: number) => this._setEditorHeight(newHeight),
+      (newHeight: any) => this._setEditorHeight((newHeight: number)),
     );
 
     (this: any)._openCurrentDefinitionInMainEditor =
