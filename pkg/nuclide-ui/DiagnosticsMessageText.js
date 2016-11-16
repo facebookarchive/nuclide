@@ -9,7 +9,9 @@
  * the root directory of this source tree.
  */
 
+import invariant from 'assert';
 import {React} from 'react-for-atom';
+import {shell} from 'electron';
 
 type DiagnosticsMessageTextProps = {
   message: {
@@ -18,6 +20,54 @@ type DiagnosticsMessageTextProps = {
   },
 };
 
+type UrlOrText = {
+  isUrl: true,
+  url: string,
+} | {
+  isUrl: false,
+  text: string,
+};
+
+// Exported for testing.
+export function separateUrls(message: string): Array<UrlOrText> {
+  // Don't match periods at the end of URLs, because those are usually just to
+  // end the sentence and not actually part of the URL.
+  const urlRegex = /https?:\/\/[a-zA-Z0-9/._-]*[a-zA-Z0-9/_-]/g;
+
+  const urls = message.match(urlRegex);
+  const nonUrls = message.split(urlRegex);
+
+  const parts: Array<UrlOrText> = [{
+    isUrl: false,
+    text: nonUrls[0],
+  }];
+  for (let i = 1; i < nonUrls.length; i++) {
+    invariant(urls != null);
+    parts.push({
+      isUrl: true,
+      url: urls[i - 1],
+    });
+    parts.push({
+      isUrl: false,
+      text: nonUrls[i],
+    });
+  }
+  return parts;
+}
+
+function renderTextWithLinks(message: string): React.Element<any> {
+  const parts = separateUrls(message).map((part, index) => {
+    if (!part.isUrl) {
+      return part.text;
+    } else {
+      const openUrl = () => { shell.openExternal(part.url); };
+      return <a href="#" key={index} onClick={openUrl}>{part.url}</a>;
+    }
+  });
+
+  return <span>{parts}</span>;
+}
+
 export const DiagnosticsMessageText = (props: DiagnosticsMessageTextProps) => {
   const {
     message,
@@ -25,7 +75,7 @@ export const DiagnosticsMessageText = (props: DiagnosticsMessageTextProps) => {
   if (message.html != null) {
     return <span dangerouslySetInnerHTML={{__html: message.html}} />;
   } else if (message.text != null) {
-    return <span>{message.text}</span>;
+    return <span>{renderTextWithLinks(message.text)}</span>;
   } else {
     return <span>Diagnostic lacks message.</span>;
   }
