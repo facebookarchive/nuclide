@@ -45,6 +45,7 @@ const PARSABLE_EXTENSIONS = [
   '.js',
   '.m',
   '.mm',
+  '.java',
 ];
 
 
