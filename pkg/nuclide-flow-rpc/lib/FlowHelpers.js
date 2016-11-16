@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {FlowLocNoSource} from './flowOutputTypes';
+import type {FlowLocNoSource, FlowAutocompleteItem} from './flowOutputTypes';
 
 import invariant from 'assert';
 
@@ -26,7 +26,10 @@ export function insertAutocompleteToken(contents: string, line: number, col: num
  * response, as documented here:
  * https://github.com/atom/autocomplete-plus/wiki/Provider-API
  */
-export function processAutocompleteItem(replacementPrefix: string, flowItem: Object): Object {
+export function processAutocompleteItem(
+  replacementPrefix: string,
+  flowItem: FlowAutocompleteItem,
+): atom$AutocompleteSuggestion {
   // Truncate long types for readability
   const description = flowItem.type.length < 80
     ? flowItem.type

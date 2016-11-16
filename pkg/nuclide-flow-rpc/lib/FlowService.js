@@ -143,7 +143,9 @@ export function flowGetAutocompleteSuggestions(
   column: number,
   prefix: string,
   activatedManually: boolean,
-): Promise<any> {
+// TODO instead of Object, should be atom$AutocompleteSuggestion, but the RPC framework can't handle
+// that.
+): Promise<?Array<Object>> {
   return getState().getRootContainer().runWithRoot(
     file,
     root => root.flowGetAutocompleteSuggestions(

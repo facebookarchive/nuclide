@@ -13,6 +13,7 @@ import type {Observable} from 'rxjs';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {ServerStatusType, FlowCoverageResult} from '..';
 import type {FlowExecInfoContainer} from './FlowExecInfoContainer';
+import type {FlowAutocompleteItem} from './flowOutputTypes';
 
 import type {
   Diagnostics,
@@ -179,7 +180,7 @@ export class FlowRoot {
     column: number,
     prefix: string,
     activatedManually: boolean,
-  ): Promise<any> {
+  ): Promise<Array<atom$AutocompleteSuggestion>> {
     // We may want to make this configurable, but if it is ever higher than one we need to make sure
     // it works properly when the user manually activates it (e.g. with ctrl+space). See
     // https://github.com/atom/autocomplete-plus/issues/597
@@ -212,7 +213,7 @@ export class FlowRoot {
         return [];
       }
       const json = parseJSON(args, result.stdout);
-      let resultsArray;
+      let resultsArray: Array<FlowAutocompleteItem>;
       if (Array.isArray(json)) {
         // Flow < v0.20.0
         resultsArray = json;

@@ -50,3 +50,23 @@ export type FlowPoint = {
   column: number,
   line: number,
 };
+
+/* AUTOCOMPLETE */
+
+export type FlowAutocompleteOutput = {
+  result: Array<FlowAutocompleteItem>,
+};
+
+export type FlowAutocompleteItem = {
+  name: string,
+  type: string,
+  func_details: null | {
+    return_type: string,
+    params: Array<{name: string, type: string}>,
+  },
+  path: string,
+  line: number,
+  endline: number,
+  start: number,
+  end: number,
+};
