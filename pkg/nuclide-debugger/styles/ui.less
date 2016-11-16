@@ -165,6 +165,16 @@ Use flexbox cross-axis stretch to fill the vertical space.
 .nuclide-debugger-callstack-item {
   display: flex;
   justify-content: space-between;
+  cursor: pointer;
+  &:hover {
+    color: @text-color-highlight;
+  }
+}
+
+.nuclide-debugger-callstack-item-selected {
+  background-color: @background-color-info;
+  color: @text-color-highlight;
+  font-weight: bold;
 }
 
 .nuclide-debugger-callstack-name {
