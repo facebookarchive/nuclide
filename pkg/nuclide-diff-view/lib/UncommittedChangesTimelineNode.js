@@ -69,6 +69,7 @@ export default class UncommittedChangesTimelineNode extends React.Component {
           <Button
             className="nuclide-diff-rev-side-button"
             size={ButtonSizes.SMALL}
+            disabled={revisionsCount === 1}
             onClick={this._handleClickAmend}>
             Amend
           </Button>
