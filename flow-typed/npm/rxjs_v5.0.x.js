@@ -1,5 +1,5 @@
-// flow-typed signature: c1a6c0ec6a8b18680f14d6d9abda956d
-// flow-typed version: 1628ebe09e/rxjs_v5.0.x/flow_>=v0.29.0
+// flow-typed signature: 7283ced467e12d0e5c8a108df1039dde
+// flow-typed version: 466c7c5950/rxjs_v5.0.x/flow_>=v0.34.x
 
 // FIXME(samgoldman) Remove top-level interface once Babel supports
 // `declare interface` syntax.
@@ -10,12 +10,22 @@ interface rxjs$IObserver<-T> {
   complete(): mixed;
 }
 
-// FIXME: Technically at least one of these is required.
-interface rxjs$PartialObserver<-T> {
-  +next?: (value: T) => mixed;
-  +error?: (error: any) => mixed;
-  +complete?: () => mixed;
-}
+type rxjs$PartialObserver<-T> =
+  | {
+    +next: (value: T) => mixed;
+    +error?: (error: any) => mixed;
+    +complete?: () => mixed;
+  }
+  | {
+    +next?: (value: T) => mixed;
+    +error: (error: any) => mixed;
+    +complete?: () => mixed;
+  }
+  | {
+    +next?: (value: T) => mixed;
+    +error?: (error: any) => mixed;
+    +complete: () => mixed;
+  }
 
 interface rxjs$ISubscription {
   unsubscribe(): void;
@@ -109,9 +119,9 @@ declare class rxjs$Observable<+T> {
 
   delay(dueTime: number): rxjs$Observable<T>;
 
-  distinctKey(key: string): rxjs$Observable<T>;
-
   distinctUntilChanged(compare?: (x: T, y: T) => boolean): rxjs$Observable<T>;
+
+  distinctUntilKeyChanged(key: string, compare?: (x: mixed, y: mixed) => boolean): rxjs$Observable<T>;
 
   elementAt(index: number, defaultValue?: T): rxjs$Observable<T>;
 
@@ -154,6 +164,10 @@ declare class rxjs$Observable<+T> {
 
   switchMap<U>(
     project: (value: T) => rxjs$Observable<U> | Promise<U> | Iterable<U>
+  ): rxjs$Observable<U>;
+
+  switchMapTo<U>(
+    innerObservable: rxjs$Observable<U>,
   ): rxjs$Observable<U>;
 
   map<U>(f: (value: T) => U): rxjs$Observable<U>;
@@ -590,6 +604,11 @@ declare class rxjs$Observable<+T> {
     g: rxjs$Observable<G>,
     resultSelector: (a: A, b: B, c: C, d: D, e: E, f: F, g: G) => H,
   ): rxjs$Observable<H>;
+
+  static using<R: rxjs$ISubscription>(
+    resourceFactory: () => ?R,
+    observableFactory: (resource: R) => rxjs$Observable<T> | Promise<T> | void,
+  ): rxjs$Observable<T>;
 }
 
 declare class rxjs$ConnectableObservable<T> extends rxjs$Observable<T> {

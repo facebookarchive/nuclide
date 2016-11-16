@@ -209,7 +209,6 @@ export function combineEventStreams(
       mergedEvents,
       finiteSocketEvents
         .filter(isBuildFinishEvent)
-        // $FlowFixMe: add switchMapTo to flow-typed
         .switchMapTo(
           Observable.of(
             {

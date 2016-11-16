@@ -10,7 +10,7 @@
  */
 
 import type {HomeFragments} from './types';
-import type {BehaviorSubject} from 'rxjs';
+import type {Observable, BehaviorSubject} from 'rxjs';
 
 import Immutable from 'immutable';
 import {React} from 'react-for-atom';
@@ -73,7 +73,7 @@ export default class HomePaneItem extends React.Component {
       this.props.allHomeFragmentsStream.subscribe(
         allHomeFragments => this.setState({allHomeFragments}),
       ),
-      featureConfig.observeAsStream('nuclide-home.showHome').subscribe(
+      (featureConfig.observeAsStream('nuclide-home.showHome'): Observable<any>).subscribe(
         showOnStartup => { this.setState({showOnStartup}); },
       ),
     );

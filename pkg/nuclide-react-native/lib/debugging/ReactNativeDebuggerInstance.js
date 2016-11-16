@@ -87,7 +87,6 @@ export class ReactNativeDebuggerInstance extends DebuggerInstanceBase {
  * A stream of PIDs to debug, obtained by connecting to the packager via the DebuggerProxyClient.
  * This stream is shared so that only one client is created when there is more than one subscriber.
  */
-// $FlowFixMe(matthewwithanm): Type this.
 const pid$ = Observable.using(
   () => {
     const client = new DebuggerProxyClient();
@@ -105,7 +104,6 @@ const pid$ = Observable.using(
  * Connections from the Chrome UI. There will only be one connection at a time. This stream won't
  * complete unless the connection closes.
  */
-// $FlowFixMe(matthewwithanm): Type this.
 const uiConnection$ = Observable.using(
   () => {
     // TODO(natthu): Assign random port instead.

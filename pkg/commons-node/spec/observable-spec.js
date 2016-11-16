@@ -46,8 +46,8 @@ describe('commons-node/observable', () => {
     it('completes the stream when something matches the predicate', () => {
       const source = new Subject();
       const result = takeWhileInclusive(source, x => x !== 2);
-      const next = jasmine.createSpy();
-      const complete = jasmine.createSpy();
+      const next: (n: number) => mixed = jasmine.createSpy();
+      const complete: () => mixed = jasmine.createSpy();
       result.subscribe({next, complete});
       source.next(1);
       source.next(2);

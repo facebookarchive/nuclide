@@ -43,7 +43,6 @@ export function runApp(executorResults: Observable<ExecutorResult>): Observable<
 
 
 function connectToRnApp(): Observable<WS> {
-  // $FlowIssue: Add this to Rx defs
   const websockets = Observable.using(
     () => {
       const ws = new WS(WS_URL);

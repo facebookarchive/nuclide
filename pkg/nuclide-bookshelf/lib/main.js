@@ -74,6 +74,7 @@ class Activation {
     const commands = new Commands(dispatch, () => states.getValue());
 
     const addedRepoSubscription = getHgRepositoryStream().subscribe(repository => {
+      // $FlowFixMe wrong repository type
       commands.addProjectRepository(repository);
     });
 

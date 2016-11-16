@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import type {WatchResult} from '..';
 import {Emitter} from 'event-kit';
 import fsPromise from '../../commons-node/fsPromise';
 import * as watchmanHelpers from '../../nuclide-watchman-helpers';
@@ -54,9 +55,9 @@ describe('FileWatcherService', () => {
 
     waitsFor(() => watchReady.wasCalled);
 
-    const nextMock = jasmine.createSpy('next');
+    const nextMock: (result: WatchResult) => mixed = jasmine.createSpy('next');
     const parentNextMock = jasmine.createSpy('parentNext');
-    const completeMock = jasmine.createSpy('complete');
+    const completeMock: () => mixed = jasmine.createSpy('complete');
     runs(() => {
       expect(watchReady).toHaveBeenCalledWith('SUCCESS');
       watchFile(TEST_FILE).refCount()

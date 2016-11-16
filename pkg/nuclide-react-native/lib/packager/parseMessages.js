@@ -31,7 +31,7 @@ export function parseMessages(raw: Observable<string>): Observable<PackagerEvent
     const sourceDirectories = [];
 
     return raw.subscribe({
-      next: line => {
+      next: (line: string) => {
         // If we've seen the port and the sources, that's the preamble! Or, if we get to a line that
         // starts with a "[", we probably missed the closing of the preamble somehow. (Like the
         // packager output changed).
@@ -93,8 +93,8 @@ export function parseMessages(raw: Observable<string>): Observable<PackagerEvent
         // If we've gotten here, it means that we have an unhandled line in the preamble. Those are
         // the lines we want to ignore, so don't do anything.
       },
-      error: observer.error.bind(observer),
-      complete: observer.complete.bind(observer),
+      error: (observer.error.bind(observer): (e: mixed) => mixed),
+      complete: (observer.complete.bind(observer): () => mixed),
     });
   });
 }
