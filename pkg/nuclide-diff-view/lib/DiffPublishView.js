@@ -28,6 +28,10 @@ import {
   ButtonSizes,
   ButtonTypes,
 } from '../../nuclide-ui/Button';
+import {
+  ButtonGroup,
+  ButtonGroupSizes,
+} from '../../nuclide-ui/ButtonGroup';
 import {Toolbar} from '../../nuclide-ui/Toolbar';
 import {ToolbarLeft} from '../../nuclide-ui/ToolbarLeft';
 import {ToolbarRight} from '../../nuclide-ui/ToolbarRight';
@@ -262,7 +266,7 @@ export default class DiffPublishView extends React.Component {
       <Button
         className={classnames({'btn-progress': isBusy})}
         size={ButtonSizes.SMALL}
-        buttonType={ButtonTypes.SUCCESS}
+        buttonType={ButtonTypes.PRIMARY}
         onClick={this.__onClickPublish}
         disabled={isBusy}>
         {publishMessage}
@@ -291,12 +295,14 @@ export default class DiffPublishView extends React.Component {
             {this.__getExcuseInput()}
           </ToolbarLeft>
           <ToolbarRight>
-            <Button
-              size={ButtonSizes.SMALL}
-              onClick={this._onClickBack}>
-              Back
-            </Button>
-            {publishButton}
+            <ButtonGroup size={ButtonGroupSizes.SMALL}>
+              <Button
+                size={ButtonSizes.SMALL}
+                onClick={this._onClickBack}>
+                Back
+              </Button>
+              {publishButton}
+            </ButtonGroup>
           </ToolbarRight>
         </Toolbar>
       </div>

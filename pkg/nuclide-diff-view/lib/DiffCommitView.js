@@ -23,6 +23,10 @@ import {
   ButtonSizes,
   ButtonTypes,
 } from '../../nuclide-ui/Button';
+import {
+  ButtonGroup,
+  ButtonGroupSizes,
+} from '../../nuclide-ui/ButtonGroup';
 import {Toolbar} from '../../nuclide-ui/Toolbar';
 import {ToolbarLeft} from '../../nuclide-ui/ToolbarLeft';
 import {ToolbarRight} from '../../nuclide-ui/ToolbarRight';
@@ -132,19 +136,21 @@ export default class DiffCommitView extends React.Component {
           {rebaseOptionElement}
         </ToolbarLeft>
         <ToolbarRight>
-          <Button
-            size={ButtonSizes.SMALL}
-            onClick={this._onClickBack}>
-            Back
-          </Button>
-          <Button
-            className={btnClassname}
-            size={ButtonSizes.SMALL}
-            buttonType={ButtonTypes.SUCCESS}
-            disabled={isLoading}
-            onClick={this.__onClickCommit}>
-            {message}
-          </Button>
+          <ButtonGroup size={ButtonGroupSizes.SMALL}>
+            <Button
+              size={ButtonSizes.SMALL}
+              onClick={this._onClickBack}>
+              Back
+            </Button>
+            <Button
+              className={btnClassname}
+              size={ButtonSizes.SMALL}
+              buttonType={ButtonTypes.PRIMARY}
+              disabled={isLoading}
+              onClick={this.__onClickCommit}>
+              {message}
+            </Button>
+          </ButtonGroup>
         </ToolbarRight>
       </Toolbar>);
   }
