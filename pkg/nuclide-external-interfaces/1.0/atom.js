@@ -310,6 +310,7 @@ declare class atom$PackageManager {
   deactivatePackage(name: string): void,
   loadPackage(name: string): void,
   loadPackages(): void,
+  serializePackage(pkg: atom$Package): void,
   serviceHub: atom$ServiceHub,
   packageDirPaths: Array<string>,
   triggerActivationHook(hook: string): void,
