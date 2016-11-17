@@ -1,5 +1,9 @@
 # Nuclide Changelog
 
+## v0.183.0
+
+* Fix inadvertent infinite loop in work deferral queue.
+
 ## v0.182.0
 
 ### Highlights
