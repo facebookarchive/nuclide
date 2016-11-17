@@ -81,6 +81,7 @@ export default class RepositorySectionComponent extends React.Component {
     let bookmarksBranchesHeader;
     let bookmarksBranchesList;
     let createButton;
+    let uncommittedChangesSection;
     if (repository != null) {
       if (repository.getType() === 'hg') {
         bookmarksBranchesHeader = 'BOOKMARKS';
@@ -183,6 +184,22 @@ export default class RepositorySectionComponent extends React.Component {
             {bookmarksBranchesListItems}
           </ul>
         );
+
+        const uncommittedChangesClassName = classnames(
+          'list-item nuclide-source-control-side-bar--list-item',
+          {
+            selected: selectedItem != null && selectedItem.type === 'uncommitted',
+          },
+        );
+        uncommittedChangesSection = (
+          <li
+            className={uncommittedChangesClassName}
+            onClick={this._handleUncommittedChangesClick}>
+            <span>
+              Uncommitted Changes
+            </span>
+          </li>
+        );
       } else {
         bookmarksBranchesList = (
           <div className="nuclide-source-control-side-bar--header text-info">
@@ -197,12 +214,6 @@ export default class RepositorySectionComponent extends React.Component {
       separator = <HR />;
     }
 
-    const uncommittedChangesClassName = classnames(
-      'list-item nuclide-source-control-side-bar--list-item',
-      {
-        selected: selectedItem != null && selectedItem.type === 'uncommitted',
-      },
-    );
     return (
       <li>
         {separator}
@@ -210,13 +221,7 @@ export default class RepositorySectionComponent extends React.Component {
           {this.props.title}
         </h6>
         <ul className="list-group">
-          <li
-            className={uncommittedChangesClassName}
-            onClick={this._handleUncommittedChangesClick}>
-            <span>
-              Uncommitted Changes
-            </span>
-          </li>
+          {uncommittedChangesSection}
         </ul>
         {createButton}
         <h6 className="nuclide-source-control-side-bar--header">
