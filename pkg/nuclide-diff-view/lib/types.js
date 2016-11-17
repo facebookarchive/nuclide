@@ -57,8 +57,8 @@ export type LineMapper = Array<number>;
 export type TextDiff = LineMapping & {
   addedLines: Array<number>,
   removedLines: Array<number>,
-  oldLineOffsets: OffsetMap,
-  newLineOffsets: OffsetMap,
+  oldLineOffsets: Array<[number, number]>,
+  newLineOffsets: Array<[number, number]>,
 };
 
 export type LineMapping = {
@@ -279,6 +279,7 @@ export type UpdateFileDiffAction = {
     newContents: string,
     oldContents: string,
     fromRevision: ?RevisionInfo,
+    textDiff: TextDiff,
   },
 };
 

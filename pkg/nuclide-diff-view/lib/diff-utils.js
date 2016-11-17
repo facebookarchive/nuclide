@@ -43,8 +43,8 @@ export function computeDiff(oldText: string, newText: string): TextDiff {
   return {
     addedLines,
     removedLines,
-    oldLineOffsets,
-    newLineOffsets,
+    oldLineOffsets: Array.from(oldLineOffsets), // serialize for JSON.
+    newLineOffsets: Array.from(newLineOffsets), // serialize for JSON.
     oldToNew,
     newToOld,
   };

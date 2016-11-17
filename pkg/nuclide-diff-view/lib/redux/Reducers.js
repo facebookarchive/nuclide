@@ -31,7 +31,6 @@ import {
   getEmptyRepositoryState,
 } from './createEmptyAppState';
 import {
-  computeDiff,
   computeNavigationSections,
 } from '../diff-utils';
 import {
@@ -278,7 +277,7 @@ function reduceFileDiff(
   state: FileDiffState,
   action: UpdateFileDiffAction,
 ): FileDiffState {
-  const {filePath, fromRevision, newContents, oldContents} = action.payload;
+  const {filePath, fromRevision, newContents, oldContents, textDiff} = action.payload;
   let {inlineElements: newEditorElements} = state.newEditorState;
   let {inlineElements: oldEditorElements} = state.oldEditorState;
   let {activeSectionIndex} = state;
@@ -293,11 +292,13 @@ function reduceFileDiff(
   const {
     addedLines,
     removedLines,
-    oldLineOffsets,
-    newLineOffsets,
     newToOld,
     oldToNew,
-  } = computeDiff(oldContents, newContents);
+  } = textDiff;
+
+  // Deserialize from JSON.
+  const oldLineOffsets = new Map(textDiff.oldLineOffsets);
+  const newLineOffsets = new Map(textDiff.newLineOffsets);
 
   const oldEditorState = {
     revisionTitle: fromRevision == null ? '...' : formatFileDiffRevisionTitle(fromRevision),

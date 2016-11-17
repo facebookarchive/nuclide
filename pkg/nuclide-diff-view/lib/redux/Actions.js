@@ -31,6 +31,7 @@ import type {
   SetCwdApiAction,
   SetShouldReabaseOnAmendAction,
   SetViewModeAction,
+  TextDiff,
   UIProvider,
   UpdateActiveNavigationSectionAction,
   UpdateActiveRepositoryAction,
@@ -188,14 +189,16 @@ export function updateFileDiff(
   newContents: string,
   oldContents: string,
   fromRevision: ?RevisionInfo,
+  textDiff: TextDiff,
 ): UpdateFileDiffAction {
   return {
     type: ActionTypes.UPDATE_FILE_DIFF,
     payload: {
       filePath,
+      fromRevision,
       newContents,
       oldContents,
-      fromRevision,
+      textDiff,
     },
   };
 }

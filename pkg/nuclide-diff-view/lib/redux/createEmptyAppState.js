@@ -17,6 +17,7 @@ import type {
   PublishState,
   RepositoryState,
   SuggestedReviewersState,
+  TextDiff,
 } from '../types';
 
 import {
@@ -105,5 +106,16 @@ export function createEmptyAppState(): AppState {
     uiProviders: [],
     viewMode: DiffMode.BROWSE_MODE,
     suggestedReviewers: getEmptySuggestedReviewerState(),
+  };
+}
+
+export function getEmptyTextDiff(): TextDiff {
+  return {
+    addedLines: [],
+    newLineOffsets: [],
+    newToOld: [],
+    oldLineOffsets: [],
+    oldToNew: [],
+    removedLines: [],
   };
 }

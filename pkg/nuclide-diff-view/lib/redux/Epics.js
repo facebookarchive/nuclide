@@ -53,6 +53,7 @@ import {bufferForUri, loadBufferForUri} from '../../../commons-atom/text-editor'
 import {
   getEmptyCommitState,
   getEmptyPublishState,
+  getEmptyTextDiff,
 } from './createEmptyAppState';
 import {getPhabricatorRevisionFromCommitMessage} from '../../../nuclide-arcanist-rpc/lib/utils';
 import {notifyInternalError} from '../notifications';
@@ -63,6 +64,7 @@ import {
   dispatchConsoleToggle,
   pipeProcessMessagesToConsole,
 } from '../../../commons-atom/streamProcessToConsoleMessages';
+import Task from '../../../nuclide-task';
 
 const CHANGE_DEBOUNCE_DELAY_MS = 300;
 const SHOW_CONSOLE_ON_PROCESS_EVENTS = ['stdout', 'stderr', 'error'];
@@ -311,11 +313,13 @@ export function diffFileEpic(
   actions: ActionsObservable<Action>,
   store: Store,
 ): Observable<Action> {
+  const task = new Task();
+
   return actions.ofType(ActionTypes.DIFF_FILE).switchMap(action => {
     invariant(action.type === ActionTypes.DIFF_FILE);
 
     const clearActiveDiffObservable =
-      Observable.of(Actions.updateFileDiff('', '', '', null));
+      Observable.of(Actions.updateFileDiff('', '', '', null, getEmptyTextDiff()));
 
     const {filePath, onChangeModified} = action.payload;
     const repository = repositoryForPath(filePath);
@@ -389,11 +393,12 @@ export function diffFileEpic(
       bufferChangeModifed,
 
       Observable.combineLatest(fetchHgDiff, Observable.merge(bufferReloads, bufferChanges))
+        .debounceTime(20)
         .switchMap(([hgDiff]) => {
           if (hgDiff == null) {
             return Observable.of(
               // Clear Diff UI State.
-              Actions.updateFileDiff(filePath, '', '', null),
+              Actions.updateFileDiff(filePath, '', '', null, getEmptyTextDiff()),
               Actions.updateLoadingFileDiff(true),
             );
           }
@@ -405,12 +410,22 @@ export function diffFileEpic(
           return Observable.concat(
             Observable.of(Actions.updateLoadingFileDiff(false)),
 
-            Observable.of(Actions.updateFileDiff(
-              filePath,
-              newContents,
-              oldContents,
-              revisionInfo,
-            )),
+            Observable.fromPromise(task.invokeRemoteMethod({
+              file: require.resolve('../diff-utils'),
+              method: 'computeDiff',
+              args: [oldContents, newContents],
+            })).map(textDiff =>
+              Actions.updateFileDiff(
+                filePath,
+                newContents,
+                oldContents,
+                revisionInfo,
+                textDiff,
+              ),
+            ).catch(error => {
+              notifyInternalError(error);
+              return Observable.empty();
+            }),
 
             // TODO(most): Add loading indicators for comments.
             // $FlowFixMe flow doesn't have a good way to express that operator.
