@@ -145,7 +145,11 @@ export const RecentFilesProvider: Provider = {
         style={{opacity: opacityForTimestamp(item.timestamp || Date.now())}}
         title={datetime}>
         <div className="recent-files-provider-filepath-container">
-          <span className="recent-files-provider-file-path">{filePath}</span>
+          <span
+            className="icon icon-file-text file recent-files-provider-file-path"
+            data-name={filename}>
+            {filePath}
+          </span>
           <span className="recent-files-provider-file-name">{filename}</span>
         </div>
         <div className="recent-files-provider-datetime-container">

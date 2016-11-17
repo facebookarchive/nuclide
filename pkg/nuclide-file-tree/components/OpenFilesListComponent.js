@@ -124,7 +124,7 @@ export class OpenFilesListComponent extends React.PureComponent {
                   })}
                   onClick={this._onCloseClick.bind(this, e)}
                 />
-                <span className="icon icon-file-text">
+                <span className="icon icon-file-text" data-name={e.name}>
                   {e.name}
                 </span>
               </li>

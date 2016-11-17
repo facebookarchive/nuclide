@@ -91,20 +91,25 @@ export default class ChangedFilesList extends React.Component {
           }
           <ul className="list-tree has-flat-children">
             {Array.from(fileChanges.entries()).map(
-              ([filePath, fileChangeValue]) =>
-                <li
-                  data-path={filePath}
-                  className={this._getFileClassname(filePath, fileChangeValue)}
-                  key={filePath}
-                  onClick={() => this.props.onFileChosen(filePath)}>
-                  <span
-                    className={fileClassName}
+              ([filePath, fileChangeValue]) => {
+                const baseName = nuclideUri.basename(filePath);
+                return (
+                  <li
                     data-path={filePath}
-                    data-root={this.props.rootPath}>
+                    className={this._getFileClassname(filePath, fileChangeValue)}
+                    key={filePath}
+                    onClick={() => this.props.onFileChosen(filePath)}>
                     <Icon icon={FileChangeStatusToIcon[fileChangeValue]} />
-                    {nuclideUri.basename(filePath)}
-                  </span>
-                </li>,
+                    <span
+                      className={fileClassName}
+                      data-name={baseName}
+                      data-path={filePath}
+                      data-root={this.props.rootPath}>
+                      {baseName}
+                    </span>
+                  </li>
+                );
+              },
             )}
           </ul>
         </li>
