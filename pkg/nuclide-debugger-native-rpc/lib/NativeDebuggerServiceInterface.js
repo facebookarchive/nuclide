@@ -26,13 +26,14 @@ export type LaunchTargetInfo = {
   workingDirectory: string,
   stdinFilePath?: string,
   basepath?: string,
-  lldbPythonPath: ?string,
+  lldbPythonPath?: ?string,
 };
 
 export type DebuggerConfig = {
   logLevel: LogLevel,
   pythonBinaryPath: string,
   buckConfigRootFile: string,
+  lldbPythonPath: ?string,
 };
 
 export async function getAttachTargetInfoList(

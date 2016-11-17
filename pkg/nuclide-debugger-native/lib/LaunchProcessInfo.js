@@ -78,6 +78,8 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
       logLevel: getConfig().serverLogLevel,
       pythonBinaryPath: getConfig().pythonBinaryPath,
       buckConfigRootFile: getConfig().buckConfigRootFile,
+      lldbPythonPath: this._launchTargetInfo.lldbPythonPath
+                        || getConfig().lldbPythonPath,
     };
     const service: ?NativeDebuggerService
       = getServiceByNuclideUri('NativeDebuggerService', this.getTargetUri());

@@ -193,7 +193,7 @@ def main():
     arguments = parse_args()
     lldb_python_path = getattr(arguments, 'lldb_python_path', None)
     if lldb_python_path is not None:
-        set_custom_lldb_path(lldb_python_path)
+        set_custom_lldb_path(os.path.expanduser(lldb_python_path))
     lldb = get_lldb()
     debugger = lldb.SBDebugger.Create()
 

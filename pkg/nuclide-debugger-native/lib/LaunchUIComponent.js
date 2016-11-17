@@ -134,7 +134,6 @@ export class LaunchUIComponent extends React.Component<void, PropsType, void> {
       arguments: launchArguments,
       environmentVariables: launchEnvironmentVariables,
       workingDirectory: launchWorkingDirectory,
-      lldbPythonPath: null,
       stdinFilePath,
     };
     // Fire and forget.

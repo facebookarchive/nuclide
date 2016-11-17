@@ -37,7 +37,6 @@ type LaunchInfoArgsType = {
   working_directory: string,
   stdin_filepath: string,
   basepath: string,
-  lldb_python_path: ?string,
 };
 
 type LaunchAttachArgsType = AttachInfoArgsType | LaunchInfoArgsType;
@@ -111,6 +110,7 @@ export class NativeDebuggerService extends DebuggerRpcWebSocketService {
     const inferiorArguments = {
       pid: String(attachInfo.pid),
       basepath: attachInfo.basepath ? attachInfo.basepath : this._config.buckConfigRootFile,
+      lldb_python_path: this._config.lldbPythonPath,
     };
     return Observable.fromPromise(this._startDebugging(inferiorArguments)).publish();
   }
@@ -124,7 +124,7 @@ export class NativeDebuggerService extends DebuggerRpcWebSocketService {
       working_directory: launchInfo.workingDirectory,
       stdin_filepath: launchInfo.stdinFilePath ? launchInfo.stdinFilePath : '',
       basepath: launchInfo.basepath ? launchInfo.basepath : this._config.buckConfigRootFile,
-      lldb_python_path: launchInfo.lldbPythonPath,
+      lldb_python_path: this._config.lldbPythonPath,
     };
     return Observable.fromPromise(this._startDebugging(inferiorArguments)).publish();
   }

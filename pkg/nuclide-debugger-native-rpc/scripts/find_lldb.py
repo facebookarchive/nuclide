@@ -21,15 +21,14 @@ def _get_default_lldb_python_path():
             developer_dir = subprocess.check_output(['xcode-select', '--print-path'])
             return os.path.join(
                 developer_dir.strip(),
-                '../SharedFrameworks/LLDB.framework/Resources/Python')
+                '../SharedFrameworks/LLDB.framework/Resources/Python/lldb')
         except:
             log_error('Cannot find lldb: make sure you have Xcode installed or lldb in the path.')
             os._exit(2)
     elif sys.platform.startswith('linux'):
         # Assume to be Facebook linux devserver.
-        # TODO: make this configurable.
         return '/mnt/gvfs/third-party2/lldb/d51c341932343d3657b9fa997f3ed7d72775d98d/3.8.0.rc3/' \
-            'centos6-native/ff04b3a/lib/python2.7/site-packages'
+            'centos6-native/ff04b3a/lib/python2.7/site-packages/lldb'
     else:
         raise Exception('Failure to find lldb python binding: unknown platform.')
 
@@ -50,6 +49,7 @@ def get_lldb():
 
     lldb_python_path = _custom_lldb_python_path if _custom_lldb_python_path \
         else _get_default_lldb_python_path()
+    lldb_python_path, _ = os.path.split(lldb_python_path)
     sys.path.insert(0, lldb_python_path)
     import lldb
     _lldb = lldb

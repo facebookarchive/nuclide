@@ -69,6 +69,7 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
       logLevel: getConfig().serverLogLevel,
       pythonBinaryPath: getConfig().pythonBinaryPath,
       buckConfigRootFile: getConfig().buckConfigRootFile,
+      lldbPythonPath: getConfig().lldbPythonPath,
     };
     const service = getServiceByNuclideUri('NativeDebuggerService', this.getTargetUri());
     invariant(service);

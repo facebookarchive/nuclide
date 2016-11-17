@@ -51,6 +51,12 @@
         "default": "/usr/bin/python",
         "description": "Path to the python binary used to run the LLDB backend."
       },
+      "lldbPythonPath": {
+        "title": "LLDB Python Module Path",
+        "type": "string",
+        "default": "",
+        "description": "Custom path to Python 'lldb' module. The directory should be called lldb and contain __init__.py and _lldb.so."
+      },
       "buckConfigRootFile": {
         "title": "Buck Build Root",
         "type": "string",
