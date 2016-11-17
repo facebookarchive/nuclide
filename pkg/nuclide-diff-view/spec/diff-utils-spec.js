@@ -36,8 +36,8 @@ describe('diff-utils', () => {
       expect(removedLines).toEqual([]);
       expect(oldLineOffsets.size).toBe(0);
       expect(newLineOffsets.size).toBe(0);
-      expect(newToOld).toEqual([0]);
-      expect(oldToNew).toEqual([0]);
+      expect(newToOld).toEqual([0, 1, 2]);
+      expect(oldToNew).toEqual([0, 1, 2]);
     });
 
     it('diffs simple text with one line changes', () => {
@@ -61,12 +61,19 @@ same end line`,
       expect(removedLines).toEqual([0]); // the first line was removed.
       expect(oldLineOffsets).toEqual(new Map([[2, 1]])); // offset 1 for the new added line.
       expect(newLineOffsets).toEqual(new Map([[0, 1]])); // offset 1 for the first removed line.
-      expect(newToOld).toEqual([1, 2, 2]);
-      expect(oldToNew).toEqual([0, 0, 2]);
+      expect(newToOld).toEqual([1, 2, 2, 3, 4]);
+      expect(oldToNew).toEqual([0, 0, 2, 3, 4]);
     });
 
     it('diffs multi-line text changes', () => {
-      const {addedLines, removedLines, oldLineOffsets, newLineOffsets} = computeDiff(
+      const {
+        addedLines,
+        removedLines,
+        oldLineOffsets,
+        newLineOffsets,
+        newToOld,
+        oldToNew,
+      } = computeDiff(
 `This text is intended for testing.
 If we test at too low a level,
 testing for matching tags
@@ -89,16 +96,27 @@ adding a non-new-line line`,
       expect(removedLines).toEqual([1, 2, 7]);
       expect(oldLineOffsets).toEqual(new Map([[4, 2]])); // offset 2 for the 2 lines added.
       expect(newLineOffsets).toEqual(new Map([[1, 2]])); // offset 2 for the 2 lines removed.
+      expect(newToOld).toEqual([0, 3, 4, 4, 4, 5, 6, 7, 8]);
+      expect(oldToNew).toEqual([0, 1, 1, 1, 4, 5, 6, 7, 8]);
     });
 
     it('diffs new text longer than the other', () => {
-      const {addedLines, removedLines, oldLineOffsets, newLineOffsets} = computeDiff(
+      const {
+        addedLines,
+        removedLines,
+        oldLineOffsets,
+        newLineOffsets,
+        newToOld,
+        oldToNew,
+      } = computeDiff(
         `first line text\n`,
         `first line text\nsecond line text\n`);
       expect(addedLines).toEqual([1]);
       expect(removedLines).toEqual([]);
       expect(oldLineOffsets).toEqual(new Map([[1, 1]])); // offset for the last added line.
       expect(newLineOffsets.size).toBe(0);
+      expect(newToOld).toEqual([0, 1, 2, 3]);
+      expect(oldToNew).toEqual([0, 1, 2]);
     });
 
   });

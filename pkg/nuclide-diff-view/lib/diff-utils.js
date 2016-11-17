@@ -250,19 +250,19 @@ export function _computeLineDiffMapping(
     const {added, removed, offset, count} = chunk;
     if (added) {
       addedCount = count;
-      newLineCount += count;
     } else if (removed) {
       removedCount = count;
-      oldLineCount += count;
     } else {
       if (addedCount > 0 && removedCount > 0) {
         // There's a changed section.
         const changedCount = Math.min(addedCount, removedCount);
-        for (let i = changedCount; i > 0; i--) {
-          oldToNew.push(newLineCount - i);
-          newToOld.push(oldLineCount - i);
+        for (let i = 0; i < changedCount; i++) {
+          oldToNew.push(newLineCount + i);
+          newToOld.push(oldLineCount + i);
         }
       }
+      newLineCount += addedCount;
+      oldLineCount += removedCount;
       if (offset < 0) {
         for (let i = offset; i < 0; i++) {
           oldToNew.push(newLineCount);
@@ -282,6 +282,13 @@ export function _computeLineDiffMapping(
       removedCount = 0;
     }
   }
+
+  // Add two line number mapping for `after` decorations.
+  newToOld.push(newLineCount++);
+  newToOld.push(newLineCount);
+
+  oldToNew.push(oldLineCount++);
+  oldToNew.push(oldLineCount);
 
   return {
     newToOld,
