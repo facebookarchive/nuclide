@@ -37,6 +37,14 @@ export const FileChangeStatusToPrefix: {[key: ?FileChangeStatusValue]: string} =
   [FileChangeStatus.UNTRACKED]: '[?] ',
 });
 
+export const FileChangeStatusToIcon: {[key: ?FileChangeStatusValue]: atom$Octicon} = Object.freeze({
+  [FileChangeStatus.ADDED]: 'diff-added',
+  [FileChangeStatus.MODIFIED]: 'diff-modified',
+  [FileChangeStatus.MISSING]: 'stop',
+  [FileChangeStatus.REMOVED]: 'diff-removed',
+  [FileChangeStatus.UNTRACKED]: 'question',
+});
+
 export const FileChangeStatusToTextColor: {[key: ?FileChangeStatusValue]: string} = Object.freeze({
   [FileChangeStatus.ADDED]: 'text-success',
   [FileChangeStatus.MODIFIED]: 'text-warning',

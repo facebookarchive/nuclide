@@ -14,11 +14,12 @@ import type {FileChangeStatusValue} from '../nuclide-hg-git-bridge/lib/constants
 
 import classnames from 'classnames';
 import {
- FileChangeStatusToPrefix,
+ FileChangeStatusToIcon,
  FileChangeStatusToTextColor,
 } from '../nuclide-hg-git-bridge/lib/constants';
 import nuclideUri from '../commons-node/nuclideUri';
 import {React} from 'react-for-atom';
+import {Icon} from './Icon';
 
 type ChangedFilesProps = {
   fileChanges: Map<NuclideUri, FileChangeStatusValue>,
@@ -100,7 +101,8 @@ export default class ChangedFilesList extends React.Component {
                     className={fileClassName}
                     data-path={filePath}
                     data-root={this.props.rootPath}>
-                    {FileChangeStatusToPrefix[fileChangeValue]}{nuclideUri.basename(filePath)}
+                    <Icon icon={FileChangeStatusToIcon[fileChangeValue]} />
+                    {nuclideUri.basename(filePath)}
                   </span>
                 </li>,
             )}
