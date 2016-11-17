@@ -23,47 +23,43 @@
 
 import invariant from 'assert';
 
-type RequestIdleCallback = (
-  cb: (deadline: {didTimeout: boolean, timeRemaining: () => number}) => void,
-  opts?: {timeout: number},
-) => number;
-type CancelIdleCallback = (id: number) => void ;
-
-const requestIdleCallback: RequestIdleCallback =
-  global.requestIdleCallback ||
-  // Polyfill for node environment
-  function requestIdleCallbackPolyfill(cb, opts) {
-    return global.setImmediate(() => {
-      cb({didTimeout: false, timeRemaining: () => 16});
-    });
-  };
-
-const cancelIdleCallback: CancelIdleCallback =
-  global.cancelIdleCallback ||
-  global.clearImmediate;
-
-export default function scheduleIdleCallback(
-  callback_: () => void,
-  afterRemainingTime?: 30 | 40 | 49 = 49,
-): IDisposable {
-  let callback = callback_;
-  let id;
-  function fn(deadline) {
-    if (deadline.timeRemaining() >= afterRemainingTime) {
-      invariant(callback != null);
-      callback(deadline);
-      id = callback = null;
-    } else {
-      id = requestIdleCallback(fn);
-    }
-  }
-  id = requestIdleCallback(fn);
-  return {
-    dispose() {
-      if (id != null) {
-        cancelIdleCallback(id);
+export default global.requestIdleCallback ?
+  // Using Browser API
+  function scheduleIdleCallback(
+    callback_: () => void,
+    afterRemainingTime?: 30 | 40 | 49 = 49,
+  ): IDisposable {
+    let callback = callback_;
+    let id;
+    function fn(deadline) {
+      if (deadline.timeRemaining() >= afterRemainingTime) {
+        invariant(callback != null);
+        callback(deadline);
         id = callback = null;
+      } else {
+        id = global.requestIdleCallback(fn);
       }
-    },
+    }
+    id = global.requestIdleCallback(fn);
+    return {
+      dispose() {
+        if (id != null) {
+          global.cancelIdleCallback(id);
+          id = callback = null;
+        }
+      },
+    };
+  } :
+
+  // Using Node API
+  function scheduleIdleCallback(
+    callback: () => void,
+    afterRemainingTime?: 30 | 40 | 49 = 49,
+  ) {
+    const id = global.setImmediate(callback);
+    return {
+      dispose() {
+        global.clearImmediate(id);
+      },
+    };
   };
-}
