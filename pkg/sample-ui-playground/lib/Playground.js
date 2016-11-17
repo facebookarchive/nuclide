@@ -29,6 +29,7 @@ import {TreeExamples} from '../../nuclide-ui/Tree.example';
 import {ListviewExamples} from '../../nuclide-ui/ListView.example';
 import {TableExamples} from '../../nuclide-ui/Table.example';
 import {RelativeDateExamples} from '../../nuclide-ui/RelativeDate.example';
+import {MultiRootChangedFilesViewExample} from '../../nuclide-ui/MultiRootChangedFilesView.example';
 
 const playgroundComponents = [
   ButtonExamples,
@@ -46,6 +47,7 @@ const playgroundComponents = [
   ListviewExamples,
   TableExamples,
   RelativeDateExamples,
+  MultiRootChangedFilesViewExample,
 ];
 
 type ComponentSpec = {
