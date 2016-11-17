@@ -366,6 +366,8 @@ class Activation {
     // Show the Diff Navigator section.
     dispatchDiffNavigatorToggle(true);
 
+    this._activateDiffPath(diffEntityOptions);
+
     let textEditor;
     if (diffEntityOptions.file) {
       const filePath = diffEntityOptions.file;
@@ -375,7 +377,6 @@ class Activation {
       getLogger().warn('Split Diff View can only diff files');
     }
 
-    this._activateDiffPath(diffEntityOptions);
     return textEditor;
   }
 

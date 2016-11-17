@@ -163,7 +163,11 @@ export function renderFileChanges(diffModel: DiffViewModel): React.Element<any> 
   // Open the view, if not previously open as well as issue a diff command.
   // TODO(most): Switch to an action after migration complete to the new split UI.
   const diffFilePath = filePath => {
-    atom.workspace.open(formatDiffViewUrl({file: filePath}));
+    if (diffModel.getState().diffEditorsVisible) {
+      diffModel.diffFile(filePath);
+    } else {
+      atom.workspace.open(formatDiffViewUrl({file: filePath}));
+    }
   };
 
   const getCompareRevision = () => {
