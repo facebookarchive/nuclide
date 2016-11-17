@@ -1,7 +1,7 @@
 {
   "name": "ctags-prebuilt",
   "description": "A package for reading source code tag files prebuilt for Mac and Linux",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "keywords": [
     "tags",
     "etags"
