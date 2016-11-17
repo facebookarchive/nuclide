@@ -54,8 +54,8 @@ export function getPathToLogFile(): string {
 export const FileAppender: Object = {
   type: 'file',
   filename: LOG_FILE_PATH,
-  logSize: MAX_LOG_SIZE,
-  numBackups: MAX_LOG_BACKUPS,
+  maxLogSize: MAX_LOG_SIZE,
+  backups: MAX_LOG_BACKUPS,
   layout: {
     type: 'pattern',
     // Format log in following pattern:
