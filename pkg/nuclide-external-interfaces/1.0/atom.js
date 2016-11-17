@@ -274,6 +274,7 @@ declare class atom$PackageManager {
   onDidActivatePackage(callback: (pkg: atom$Package) => mixed): IDisposable,
   onDidDeactivatePackage(callback: (pkg: atom$Package) => mixed): IDisposable,
   onDidLoadPackage(callback: (pkg: atom$Package) => mixed): IDisposable,
+  onDidTriggerActivationHook(activationHook: string, callback: () => mixed): IDisposable,
 
   // Package system data
   getApmPath(): string,
