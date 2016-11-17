@@ -25,6 +25,7 @@ import * as Actions from './refactorActions';
 const refactorUIFactories: Array<RefactorUIFactory> = [
   genericRefactorUI,
   closeOnEscape,
+  focusEditorOnClose,
   renameShortcut,
 ];
 
@@ -57,6 +58,22 @@ function closeOnEscape(store: Store): IDisposable {
         invariant(escapeSubscription != null);
         escapeSubscription.dispose();
         escapeSubscription = null;
+      }
+    }),
+  );
+}
+
+function focusEditorOnClose(store: Store): IDisposable {
+  return new UniversalDisposable(
+    store.subscribe(() => {
+      const state = store.getState();
+      if (state.type === 'closed') {
+        const editor = atom.workspace.getActiveTextEditor();
+        if (editor == null) { return; }
+        const pane = atom.workspace.paneForItem(editor);
+        if (pane == null) { return; }
+        pane.activate();
+        pane.activateItem(editor);
       }
     }),
   );
