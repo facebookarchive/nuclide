@@ -16,7 +16,9 @@ import type {
   FileDiagnosticMessage,
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
+import classnames from 'classnames';
 
+import {Range} from 'atom';
 import invariant from 'assert';
 import {
   React,
@@ -104,28 +106,61 @@ export function applyUpdateToEditor(
 
   for (const message of update.messages) {
     const range = message.range;
+
+    const highlightCssClass = classnames(
+      HIGHLIGHT_CSS,
+      message.type === 'Error' ? ERROR_HIGHLIGHT_CSS : WARNING_HIGHLIGHT_CSS,
+    );
+
     let highlightMarker;
     if (range) {
       addMessageForRow(message, range.start.row);
-      highlightMarker = editor.markBufferRange(range);
+
+      // There is no API in Atom to say: I want to put an underline on all the
+      // lines in this range. The closest is "highlight" which splits your range
+      // into three boxes: the part of the first line, all the lines in between
+      // and the part of the last line.
+      //
+      // This means that some lines in the middle are going to be dropped and
+      // they are going to extend all the way to the right of the buffer.
+      //
+      // To fix this, we can manually split it line by line and give to atom
+      // those ranges.
+      for (let line = range.start.row; line <= range.end.row; line++) {
+        let start;
+        let end;
+        const lineText = editor.getTextInBufferRange(
+          new Range([line, 0], [line + 1, 0]),
+        );
+
+        if (line === range.start.row) {
+          start = range.start.column;
+        } else {
+          start = (lineText.match(/^\s*/) || [''])[0].length;
+        }
+
+        if (line === range.end.row) {
+          end = range.end.column;
+        } else {
+          // Note: this is technically off by 1 (\n) or 2 (\r\n) but Atom will
+          // not extend the range past the actual characters displayed on the
+          // line
+          end = lineText.length;
+        }
+
+        highlightMarker = editor.markBufferRange(new Range(
+          [line, start],
+          [line, end],
+        ));
+        editor.decorateMarker(highlightMarker, {
+          type: 'highlight',
+          class: highlightCssClass,
+        });
+        markers.add(highlightMarker);
+      }
+
     } else {
       addMessageForRow(message, 0);
-    }
-
-    let highlightCssClass;
-    if (message.type === 'Error') {
-      highlightCssClass = HIGHLIGHT_CSS + ' ' + ERROR_HIGHLIGHT_CSS;
-    } else {
-      highlightCssClass = HIGHLIGHT_CSS + ' ' + WARNING_HIGHLIGHT_CSS;
-    }
-
-    // This marker underlines text.
-    if (highlightMarker) {
-      editor.decorateMarker(highlightMarker, {
-        type: 'highlight',
-        class: highlightCssClass,
-      });
-      markers.add(highlightMarker);
     }
   }
 
