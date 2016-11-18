@@ -27,6 +27,7 @@ import invariant from 'assert';
 import ProviderRegistry from '../../commons-atom/ProviderRegistry';
 import createPackage from '../../commons-atom/createPackage';
 import observeGrammarForTextEditors from '../../commons-atom/observe-grammar-for-text-editors';
+import {bufferPositionForMouseEvent} from '../../commons-atom/mouse-to-position';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 
 import * as Actions from './refactorActions';
@@ -110,11 +111,7 @@ class Activation {
           );
           const editor = atom.workspace.getActiveTextEditor();
           invariant(editor != null);
-          const view = atom.views.getView(editor);
-          const component = view.component;
-          invariant(component != null);
-          const screenPosition = component.screenPositionForMouseEvent(mouseEvent);
-          const bufferPosition = editor.bufferPositionForScreenPosition(screenPosition);
+          const bufferPosition = bufferPositionForMouseEvent(mouseEvent, editor);
           editor.setCursorBufferPosition(bufferPosition);
 
           this._store.dispatch(Actions.open('generic'));

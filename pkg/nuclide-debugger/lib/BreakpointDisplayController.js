@@ -13,6 +13,7 @@ import type BreakpointStore from './BreakpointStore';
 import type DebuggerActions from './DebuggerActions';
 
 import invariant from 'assert';
+import {bufferPositionForMouseEvent} from '../../commons-atom/mouse-to-position';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 
 const DIFF_VIEW_NAVIGATION_TARGET = 'nuclide-diff-view-navigation-target';
@@ -207,10 +208,8 @@ class BreakpointDisplayController {
   }
 
   _getCurrentMouseEventLine(event: Event): number {
-    // Beware, screenPositionForMouseEvent is not a public api and may change in future versions.
     // $FlowIssue
-    const screenPos = atom.views.getView(this._editor).component.screenPositionForMouseEvent(event);
-    const bufferPos = this._editor.bufferPositionForScreenPosition(screenPos);
+    const bufferPos = bufferPositionForMouseEvent(event, this._editor);
     return bufferPos.row;
   }
 
