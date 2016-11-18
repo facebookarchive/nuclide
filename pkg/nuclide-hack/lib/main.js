@@ -16,7 +16,7 @@ import {hackLanguageService, resetHackLanguageService} from './HackLanguage';
 
 
 export function activate() {
-  hackLanguageService.activate();
+  hackLanguageService.then(value => value.activate());
 }
 
 export function deactivate(): void {
