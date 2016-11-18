@@ -15,6 +15,8 @@ import {launchScriptForDummyConnection, uriToPath, getMode} from './helpers';
 import fsPromise from '../../commons-node/fsPromise';
 import {maybeToString} from '../../commons-node/string';
 import nuclideUri from '../../commons-node/nuclideUri';
+import invariant from 'assert';
+import {shellParse} from '../../commons-node/string';
 
 import type {Socket} from 'net';
 
@@ -84,7 +86,9 @@ export function isCorrectConnection(isAttachConnection: boolean, message: Object
 
   const requestScriptPath = uriToPath(attributes.fileuri);
   if (getMode() === 'launch') {
-    return launchScriptPath === requestScriptPath;
+    // TODO: Pass arguments separately from script path so this check can be simpler.
+    invariant(launchScriptPath != null, 'Null launchScriptPath in launch mode');
+    return shellParse(launchScriptPath)[0] === requestScriptPath;
   }
 
   // The regex is only applied to connections coming in during attach mode.  We do not use the
