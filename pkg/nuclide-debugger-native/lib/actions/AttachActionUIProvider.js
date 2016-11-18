@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,29 +9,44 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
-import {AttachUIComponent} from '../AttachUIComponent';
-import {LaunchAttachActions} from '../LaunchAttachActions';
-import {LaunchAttachStore} from '../LaunchAttachStore';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.name = undefined;
+exports.getComponent = getComponent;
+exports.isEnabled = isEnabled;
 
-import type EventEmitter from 'events';
+var _reactForAtom = require('react-for-atom');
 
-export function getComponent(
-  store: LaunchAttachStore,
-  actions: LaunchAttachActions,
-  parentEventEmitter: EventEmitter): React.Element<any> {
-  actions.updateAttachTargetList();
-  return (
-    <AttachUIComponent
-      store={store}
-      actions={actions}
-      parentEmitter={parentEventEmitter}
-    />
-  );
+var _AttachUIComponent;
+
+function _load_AttachUIComponent() {
+  return _AttachUIComponent = require('../AttachUIComponent');
 }
 
-export function isEnabled(): Promise<boolean> {
+var _LaunchAttachActions;
+
+function _load_LaunchAttachActions() {
+  return _LaunchAttachActions = require('../LaunchAttachActions');
+}
+
+var _LaunchAttachStore;
+
+function _load_LaunchAttachStore() {
+  return _LaunchAttachStore = require('../LaunchAttachStore');
+}
+
+function getComponent(store, actions, parentEventEmitter) {
+  actions.updateAttachTargetList();
+  return _reactForAtom.React.createElement((_AttachUIComponent || _load_AttachUIComponent()).AttachUIComponent, {
+    store: store,
+    actions: actions,
+    parentEmitter: parentEventEmitter
+  });
+}
+
+function isEnabled() {
   return Promise.resolve(true);
 }
 
-export const name = 'Attach';
+const name = exports.name = 'Attach';

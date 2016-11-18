@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,19 +9,27 @@
  * the root directory of this source tree.
  */
 
-import type {Action, AppState} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.app = app;
 
-import * as Actions from './Actions';
+var _Actions;
 
-export function app(state: AppState, action: Action): AppState {
+function _load_Actions() {
+  return _Actions = _interopRequireWildcard(require('./Actions'));
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function app(state, action) {
   switch (action.type) {
-    case Actions.UPDATE_STATE: {
-      const {state: newState} = action.payload;
-      return {
-        ...state,
-        ...newState,
-      };
-    }
+    case (_Actions || _load_Actions()).UPDATE_STATE:
+      {
+        const newState = action.payload.state;
+
+        return Object.assign({}, state, newState);
+      }
   }
   return state;
 }

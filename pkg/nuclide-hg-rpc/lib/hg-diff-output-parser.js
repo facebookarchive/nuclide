@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -14,21 +14,23 @@
  * Explained here: http://www.gnu.org/software/diffutils/manual/html_node/Detailed-Unified.html
  * and here: http://www.artima.com/weblogs/viewpost.jsp?thread=164293.
  */
+
+var _os = _interopRequireDefault(require('os'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 const HUNK_DIFF_REGEX = /@@ .* @@/g;
 const HUNK_OLD_INFO_REGEX = /-([0-9]+)((?:,[0-9]+)?)/;
 const HUNK_NEW_INFO_REGEX = /\+([0-9]+)((?:,[0-9]+)?)/;
 
-import os from 'os';
-import type {DiffInfo} from './HgService';
-
 /**
  * Parses the output of `hg diff --unified 0`.
  */
-function parseHgDiffUnifiedOutput(output: string): DiffInfo {
+function parseHgDiffUnifiedOutput(output) {
   const diffInfo = {
     added: 0,
     deleted: 0,
-    lineDiffs: [],
+    lineDiffs: []
   };
   if (!output) {
     return diffInfo;
@@ -52,7 +54,7 @@ function parseHgDiffUnifiedOutput(output: string): DiffInfo {
 
     diffInfo.added += newLines;
     diffInfo.deleted += oldLines;
-    diffInfo.lineDiffs.push({oldStart, oldLines, newStart, newLines});
+    diffInfo.lineDiffs.push({ oldStart: oldStart, oldLines: oldLines, newStart: newStart, newLines: newLines });
   });
 
   return diffInfo;
@@ -65,7 +67,7 @@ const SINGLE_UNIFIED_DIFF_BEGINNING_REGEX = /--- /;
  * @return A map of each file path in the output (relative to the root of the
  *   repo) to its parsed DiffInfo.
  */
-function parseMultiFileHgDiffUnifiedOutput(output: string): Map<string, DiffInfo> {
+function parseMultiFileHgDiffUnifiedOutput(output) {
   const filePathToDiffInfo = new Map();
   // Split the output by the symbols '--- '. This is specified in the Unified diff format:
   // http://www.gnu.org/software/diffutils/manual/html_node/Detailed-Unified.html#Detailed-Unified.
@@ -76,7 +78,7 @@ function parseMultiFileHgDiffUnifiedOutput(output: string): Map<string, DiffInfo
 
   for (const diffOutputForFile of diffOutputs) {
     // First, extract the file name. The first line of the string should be the file path.
-    const newLineChar = os.EOL;
+    const newLineChar = _os.default.EOL;
     const firstNewline = diffOutputForFile.indexOf(newLineChar);
     let filePath = diffOutputForFile.slice(0, firstNewline);
     filePath = filePath.trim();
@@ -89,6 +91,6 @@ function parseMultiFileHgDiffUnifiedOutput(output: string): Map<string, DiffInfo
 }
 
 module.exports = {
-  parseHgDiffUnifiedOutput,
-  parseMultiFileHgDiffUnifiedOutput,
+  parseHgDiffUnifiedOutput: parseHgDiffUnifiedOutput,
+  parseMultiFileHgDiffUnifiedOutput: parseMultiFileHgDiffUnifiedOutput
 };

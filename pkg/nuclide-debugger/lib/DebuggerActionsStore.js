@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,32 +9,32 @@
  * the root directory of this source tree.
  */
 
-import type Bridge from './Bridge';
-import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = undefined;
 
-import {
-  Disposable,
-  CompositeDisposable,
-} from 'atom';
-import {ActionTypes} from './DebuggerDispatcher';
+var _atom = require('atom');
 
-export default class DebuggerActionsStore {
-  _bridge: Bridge;
-  _disposables: IDisposable;
+var _DebuggerDispatcher;
 
-  constructor(dispatcher: DebuggerDispatcher, bridge: Bridge) {
+function _load_DebuggerDispatcher() {
+  return _DebuggerDispatcher = require('./DebuggerDispatcher');
+}
+
+let DebuggerActionsStore = class DebuggerActionsStore {
+
+  constructor(dispatcher, bridge) {
     this._bridge = bridge;
     const dispatcherToken = dispatcher.register(this._handlePayload.bind(this));
-    this._disposables = new CompositeDisposable(
-      new Disposable(() => {
-        dispatcher.unregister(dispatcherToken);
-      }),
-    );
+    this._disposables = new _atom.CompositeDisposable(new _atom.Disposable(() => {
+      dispatcher.unregister(dispatcherToken);
+    }));
   }
 
-  _handlePayload(payload: DebuggerAction) {
+  _handlePayload(payload) {
     switch (payload.actionType) {
-      case ActionTypes.TRIGGER_DEBUGGER_ACTION:
+      case (_DebuggerDispatcher || _load_DebuggerDispatcher()).ActionTypes.TRIGGER_DEBUGGER_ACTION:
         this._triggerAction(payload.data.actionId);
         break;
       default:
@@ -42,11 +42,13 @@ export default class DebuggerActionsStore {
     }
   }
 
-  _triggerAction(actionId: string): void {
+  _triggerAction(actionId) {
     this._bridge.triggerAction(actionId);
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
   }
-}
+};
+exports.default = DebuggerActionsStore;
+module.exports = exports['default'];

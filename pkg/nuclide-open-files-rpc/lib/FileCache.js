@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,69 +9,101 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {
-  FileOpenEvent,
-  FileCloseEvent,
-  FileEditEvent,
-  FileEvent,
-  FileVersion,
-  LocalFileEvent,
-} from './rpc-types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.FileCache = undefined;
 
-import TextBuffer from 'simple-text-buffer';
-import invariant from 'assert';
-import {BehaviorSubject, Subject, Observable} from 'rxjs';
-import {FileVersionNotifier} from './FileVersionNotifier';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-import {FileEventKind} from './constants';
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
-export class FileCache {
-  _buffers: Map<NuclideUri, simpleTextBuffer$TextBuffer>;
-  _requests: FileVersionNotifier;
-  _fileEvents: Subject<LocalFileEvent>;
-  _directoryEvents: BehaviorSubject<Set<NuclideUri>>;
-  _resources: UniversalDisposable;
+var _simpleTextBuffer;
+
+function _load_simpleTextBuffer() {
+  return _simpleTextBuffer = _interopRequireDefault(require('simple-text-buffer'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _FileVersionNotifier;
+
+function _load_FileVersionNotifier() {
+  return _FileVersionNotifier = require('./FileVersionNotifier');
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../commons-node/UniversalDisposable'));
+}
+
+var _constants;
+
+function _load_constants() {
+  return _constants = require('./constants');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let FileCache = exports.FileCache = class FileCache {
 
   constructor() {
     this._buffers = new Map();
-    this._fileEvents = new Subject();
-    this._directoryEvents = new BehaviorSubject(new Set());
-    this._requests = new FileVersionNotifier();
+    this._fileEvents = new _rxjsBundlesRxMinJs.Subject();
+    this._directoryEvents = new _rxjsBundlesRxMinJs.BehaviorSubject(new Set());
+    this._requests = new (_FileVersionNotifier || _load_FileVersionNotifier()).FileVersionNotifier();
 
-    this._resources = new UniversalDisposable();
+    this._resources = new (_UniversalDisposable || _load_UniversalDisposable()).default();
     this._resources.add(this._requests);
-    this._resources.add(this._fileEvents.subscribe(event => { this._requests.onEvent(event); }));
+    this._resources.add(this._fileEvents.subscribe(event => {
+      this._requests.onEvent(event);
+    }));
   }
 
   // If any out of sync state is detected then an Error is thrown.
   // This will force the client to send a 'sync' event to get back on track.
-  onFileEvent(event: FileEvent): Promise<void> {
+  onFileEvent(event) {
     const filePath = event.fileVersion.filePath;
     const changeCount = event.fileVersion.version;
     const buffer = this._buffers.get(filePath);
     switch (event.kind) {
-      case FileEventKind.OPEN:
-        invariant(buffer == null);
+      case (_constants || _load_constants()).FileEventKind.OPEN:
+        if (!(buffer == null)) {
+          throw new Error('Invariant violation: "buffer == null"');
+        }
+
         this._open(filePath, event.contents, changeCount);
         break;
-      case FileEventKind.CLOSE:
+      case (_constants || _load_constants()).FileEventKind.CLOSE:
         if (buffer != null) {
           this._buffers.delete(filePath);
           this._emitClose(filePath, buffer);
           buffer.destroy();
         }
         break;
-      case FileEventKind.EDIT:
-        invariant(buffer != null);
-        invariant(buffer.changeCount === (changeCount - 1));
-        invariant(buffer.getTextInRange(event.oldRange) === event.oldText);
+      case (_constants || _load_constants()).FileEventKind.EDIT:
+        if (!(buffer != null)) {
+          throw new Error('Invariant violation: "buffer != null"');
+        }
+
+        if (!(buffer.changeCount === changeCount - 1)) {
+          throw new Error('Invariant violation: "buffer.changeCount === (changeCount - 1)"');
+        }
+
+        if (!(buffer.getTextInRange(event.oldRange) === event.oldText)) {
+          throw new Error('Invariant violation: "buffer.getTextInRange(event.oldRange) === event.oldText"');
+        }
+
         buffer.setTextInRange(event.oldRange, event.newText);
-        invariant(buffer.changeCount === changeCount);
+
+        if (!(buffer.changeCount === changeCount)) {
+          throw new Error('Invariant violation: "buffer.changeCount === changeCount"');
+        }
+
         this._fileEvents.next(event);
         break;
-      case FileEventKind.SYNC:
+      case (_constants || _load_constants()).FileEventKind.SYNC:
         if (buffer == null) {
           this._open(filePath, event.contents, changeCount);
         } else {
@@ -79,21 +111,20 @@ export class FileCache {
         }
         break;
       default:
-        throw new Error(`Unexpected FileEvent.kind: ${event.kind}`);
+        throw new Error(`Unexpected FileEvent.kind: ${ event.kind }`);
     }
     return Promise.resolve(undefined);
   }
 
-  async onDirectoriesChanged(openDirectories: Set<NuclideUri>): Promise<void> {
-    this._directoryEvents.next(openDirectories);
+  onDirectoriesChanged(openDirectories) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      _this._directoryEvents.next(openDirectories);
+    })();
   }
 
-  _syncEdit(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    contents: string,
-    changeCount: number,
-  ): void {
+  _syncEdit(filePath, buffer, contents, changeCount) {
     // messages are out of order
     if (changeCount < buffer.changeCount) {
       return;
@@ -104,26 +135,25 @@ export class FileCache {
     buffer.setText(contents);
     const newRange = buffer.getRange();
     buffer.changeCount = changeCount;
-    this._fileEvents.next(createEditEvent(
-      this.createFileVersion(filePath, changeCount),
-      oldRange,
-      oldText,
-      newRange,
-      buffer.getText(),
-    ));
+    this._fileEvents.next(createEditEvent(this.createFileVersion(filePath, changeCount), oldRange, oldText, newRange, buffer.getText()));
   }
 
-  _open(filePath: NuclideUri, contents: string, changeCount: number): void {
+  _open(filePath, contents, changeCount) {
     // We never call setPath on these TextBuffers as that will
     // start the TextBuffer attempting to sync with the file system.
-    const newBuffer = new TextBuffer(contents);
+    const newBuffer = new (_simpleTextBuffer || _load_simpleTextBuffer()).default(contents);
     newBuffer.changeCount = changeCount;
     this._buffers.set(filePath, newBuffer);
     this._fileEvents.next(createOpenEvent(this.createFileVersion(filePath, changeCount), contents));
   }
 
-  dispose(): void {
-    for (const [filePath, buffer] of this._buffers.entries()) {
+  dispose() {
+    for (const _ref of this._buffers.entries()) {
+      var _ref2 = _slicedToArray(_ref, 2);
+
+      const filePath = _ref2[0];
+      const buffer = _ref2[1];
+
       this._emitClose(filePath, buffer);
       buffer.destroy();
     }
@@ -133,90 +163,85 @@ export class FileCache {
     this._directoryEvents.complete();
   }
 
-  getBuffer(filePath: NuclideUri): ?simpleTextBuffer$TextBuffer {
+  getBuffer(filePath) {
     return this._buffers.get(filePath);
   }
 
-  async getBufferAtVersion(fileVersion: FileVersion): Promise<?simpleTextBuffer$TextBuffer> {
-    if (!(await this._requests.waitForBufferAtVersion(fileVersion))) {
-      return null;
-    }
-    const buffer = this.getBuffer(fileVersion.filePath);
-    return buffer != null && buffer.changeCount === fileVersion.version ? buffer : null;
+  getBufferAtVersion(fileVersion) {
+    var _this2 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      if (!(yield _this2._requests.waitForBufferAtVersion(fileVersion))) {
+        return null;
+      }
+      const buffer = _this2.getBuffer(fileVersion.filePath);
+      return buffer != null && buffer.changeCount === fileVersion.version ? buffer : null;
+    })();
   }
 
-  getOpenDirectories(): Set<NuclideUri> {
+  getOpenDirectories() {
     return this._directoryEvents.getValue();
   }
 
-  getOpenFiles(): Iterator<NuclideUri> {
+  getOpenFiles() {
     return this._buffers.keys();
   }
 
-  observeFileEvents(): Observable<LocalFileEvent> {
-    return Observable.from(
-      Array.from(this._buffers.entries()).map(([filePath, buffer]) => {
-        invariant(buffer != null);
-        return createOpenEvent(
-          this.createFileVersion(filePath, buffer.changeCount),
-          buffer.getText());
-      })).concat(this._fileEvents);
+  observeFileEvents() {
+    return _rxjsBundlesRxMinJs.Observable.from(Array.from(this._buffers.entries()).map((_ref3) => {
+      var _ref4 = _slicedToArray(_ref3, 2);
+
+      let filePath = _ref4[0],
+          buffer = _ref4[1];
+
+      if (!(buffer != null)) {
+        throw new Error('Invariant violation: "buffer != null"');
+      }
+
+      return createOpenEvent(this.createFileVersion(filePath, buffer.changeCount), buffer.getText());
+    })).concat(this._fileEvents);
   }
 
-  observeDirectoryEvents(): Observable<Set<NuclideUri>> {
+  observeDirectoryEvents() {
     return this._directoryEvents;
   }
 
-  _emitClose(filePath: NuclideUri, buffer: simpleTextBuffer$TextBuffer): void {
-    this._fileEvents.next(createCloseEvent(
-      this.createFileVersion(filePath, buffer.changeCount)));
+  _emitClose(filePath, buffer) {
+    this._fileEvents.next(createCloseEvent(this.createFileVersion(filePath, buffer.changeCount)));
   }
 
-  createFileVersion(
-    filePath: NuclideUri,
-    version: number,
-  ): FileVersion {
+  createFileVersion(filePath, version) {
     return {
       notifier: this,
-      filePath,
-      version,
+      filePath: filePath,
+      version: version
     };
   }
-}
+};
 
-function createOpenEvent(
-  fileVersion: FileVersion,
-  contents: string,
-): FileOpenEvent {
+
+function createOpenEvent(fileVersion, contents) {
   return {
-    kind: FileEventKind.OPEN,
-    fileVersion,
-    contents,
+    kind: (_constants || _load_constants()).FileEventKind.OPEN,
+    fileVersion: fileVersion,
+    contents: contents
   };
 }
 
-function createCloseEvent(
-  fileVersion: FileVersion,
-): FileCloseEvent {
+function createCloseEvent(fileVersion) {
   return {
-    kind: FileEventKind.CLOSE,
-    fileVersion,
+    kind: (_constants || _load_constants()).FileEventKind.CLOSE,
+    fileVersion: fileVersion
   };
 }
 
-function createEditEvent(
-  fileVersion: FileVersion,
-  oldRange: atom$Range,
-  oldText: string,
-  newRange: atom$Range,
-  newText: string,
-): FileEditEvent {
+function createEditEvent(fileVersion, oldRange, oldText, newRange, newText) {
   return {
-    kind: FileEventKind.EDIT,
-    fileVersion,
-    oldRange,
-    oldText,
-    newRange,
-    newText,
+    kind: (_constants || _load_constants()).FileEventKind.EDIT,
+    fileVersion: fileVersion,
+    oldRange: oldRange,
+    oldText: oldText,
+    newRange: newRange,
+    newText: newText
   };
 }

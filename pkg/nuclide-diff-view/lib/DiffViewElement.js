@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,25 +9,30 @@
  * the root directory of this source tree.
  */
 
-import type DiffViewModel from './DiffViewModel';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {Emitter, CompositeDisposable} from 'atom';
-import nuclideUri from '../../commons-node/nuclideUri';
+var _atom = require('atom');
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const DID_DESTROY_EVENT_NAME = 'did-destroy';
 const CHANGE_TITLE_EVENT_NAME = 'did-change-title';
 
-class DiffViewElement extends HTMLElement {
-  _uri: string;
-  _diffModel: DiffViewModel;
-  _emitter: atom$Emitter;
-  _subscriptions: CompositeDisposable;
+let DiffViewElement = class DiffViewElement extends HTMLElement {
 
-  initialize(diffModel: DiffViewModel, uri: string): HTMLElement {
+  initialize(diffModel, uri) {
     this._diffModel = diffModel;
     this._uri = uri;
-    this._emitter = new Emitter();
-    this._subscriptions = new CompositeDisposable();
+    this._emitter = new _atom.Emitter();
+    this._subscriptions = new _atom.CompositeDisposable();
 
     let fileName = this._getActiveFileName();
     this._subscriptions.add(this._diffModel.onDidUpdateState(() => {
@@ -41,30 +46,31 @@ class DiffViewElement extends HTMLElement {
     return this;
   }
 
-  _getActiveFileName(): ?string {
-    const {filePath} = this._diffModel.getState().fileDiff;
+  _getActiveFileName() {
+    const filePath = this._diffModel.getState().fileDiff.filePath;
+
     if (filePath == null || filePath.length === 0) {
       return null;
     }
-    return nuclideUri.basename(filePath);
+    return (_nuclideUri || _load_nuclideUri()).default.basename(filePath);
   }
 
-  getIconName(): string {
+  getIconName() {
     return 'git-branch';
   }
 
   /**
    * Return the tab title for the opened diff view tab item.
    */
-  getTitle(): string {
+  getTitle() {
     const fileName = this._getActiveFileName();
-    return 'Diff View' + (fileName == null ? '' : ` : ${fileName}`);
+    return 'Diff View' + (fileName == null ? '' : ` : ${ fileName }`);
   }
 
   /**
    * Change the title as the active file changes.
    */
-  onDidChangeTitle(callback: (title: string) => mixed): IDisposable {
+  onDidChangeTitle(callback) {
     return this._emitter.on('did-change-title', callback);
   }
 
@@ -72,22 +78,22 @@ class DiffViewElement extends HTMLElement {
    * Return the tab URI for the opened diff view tab item.
    * This guarantees only one diff view will be opened per URI.
    */
-  getURI(): string {
+  getURI() {
     return this._uri;
   }
 
   /**
    * Saves the edited file in the editable right text editor.
    */
-  save(): void {
+  save() {
     this._diffModel.saveActiveFile();
   }
 
-  onDidChangeModified(callback: () => mixed): IDisposable {
+  onDidChangeModified(callback) {
     return this._diffModel.onDidActiveBufferChangeModified(callback);
   }
 
-  isModified(): boolean {
+  isModified() {
     return this._diffModel.isActiveBufferModified();
   }
 
@@ -95,21 +101,21 @@ class DiffViewElement extends HTMLElement {
    * Emits a destroy event that's used to unmount the attached React component
    * and invalidate the cached view instance of the Diff View.
    */
-  destroy(): void {
+  destroy() {
     this._emitter.emit('did-destroy');
     this._subscriptions.dispose();
   }
 
-  serialize(): ?Object {
+  serialize() {
     return null;
   }
 
-  onDidDestroy(callback: () => void): IDisposable {
+  onDidDestroy(callback) {
     return this._emitter.on(DID_DESTROY_EVENT_NAME, callback);
   }
 
-}
-
-export default document.registerElement('nuclide-diff-view', {
-  prototype: DiffViewElement.prototype,
+};
+exports.default = document.registerElement('nuclide-diff-view', {
+  prototype: DiffViewElement.prototype
 });
+module.exports = exports['default'];

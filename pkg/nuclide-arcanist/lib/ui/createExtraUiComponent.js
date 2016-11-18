@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,10 +9,20 @@
  * the root directory of this source tree.
  */
 
-import type {ArcToolbarModel} from '../ArcToolbarModel';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.createExtraUiComponent = createExtraUiComponent;
 
-import ArcToolbarSection from '../ArcToolbarSection';
-import {React} from 'react-for-atom';
+var _ArcToolbarSection;
+
+function _load_ArcToolbarSection() {
+  return _ArcToolbarSection = _interopRequireDefault(require('../ArcToolbarSection'));
+}
+
+var _reactForAtom = require('react-for-atom');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Create a component for the extra UI in the toolbar. We use a component
@@ -20,18 +30,13 @@ import {React} from 'react-for-atom';
  * (e.g. dimensions), and create the component in a closure so that we can close over state
  * too.
  */
-export function createExtraUiComponent(
-  model: ArcToolbarModel,
-): ReactClass<any> {
+function createExtraUiComponent(model) {
 
-  return class ExtraUi extends React.Component {
+  return class ExtraUi extends _reactForAtom.React.Component {
 
-    render(): React.Element<any> {
-      return (
-        <ArcToolbarSection model={model} />
-      );
+    render() {
+      return _reactForAtom.React.createElement((_ArcToolbarSection || _load_ArcToolbarSection()).default, { model: model });
     }
 
   };
-
 }

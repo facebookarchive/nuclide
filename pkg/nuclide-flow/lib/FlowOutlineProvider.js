@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,55 +9,61 @@
  * the root directory of this source tree.
  */
 
-import type {
-  OutlineTree,
-  Outline,
-} from '../../nuclide-outline-view/lib/rpc-types';
-import type {FlowOutlineTree} from '../../nuclide-flow-rpc';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.FlowOutlineProvider = undefined;
 
-import {Point} from 'atom';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-import invariant from 'assert';
+var _atom = require('atom');
 
-import {
-  getFlowServiceByNuclideUri,
-  getLocalFlowService,
-} from './FlowServiceFactory';
+var _FlowServiceFactory;
 
-
-export class FlowOutlineProvider {
-  async getOutline(editor: atom$TextEditor): Promise<?Outline> {
-    const filePath = editor.getPath();
-    let flowService;
-    if (filePath != null) {
-      flowService = getFlowServiceByNuclideUri(filePath);
-    } else {
-      flowService = getLocalFlowService();
-    }
-    invariant(flowService != null);
-    const flowOutline = await flowService.flowGetOutline(filePath, editor.getText());
-    if (flowOutline != null) {
-      return flowOutlineToNormalOutline(flowOutline);
-    } else {
-      return null;
-    }
-  }
+function _load_FlowServiceFactory() {
+  return _FlowServiceFactory = require('./FlowServiceFactory');
 }
 
-function flowOutlineToNormalOutline(
-  flowOutline: Array<FlowOutlineTree>,
-): Outline {
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let FlowOutlineProvider = exports.FlowOutlineProvider = class FlowOutlineProvider {
+  getOutline(editor) {
+    return (0, _asyncToGenerator.default)(function* () {
+      const filePath = editor.getPath();
+      let flowService;
+      if (filePath != null) {
+        flowService = (0, (_FlowServiceFactory || _load_FlowServiceFactory()).getFlowServiceByNuclideUri)(filePath);
+      } else {
+        flowService = (0, (_FlowServiceFactory || _load_FlowServiceFactory()).getLocalFlowService)();
+      }
+
+      if (!(flowService != null)) {
+        throw new Error('Invariant violation: "flowService != null"');
+      }
+
+      const flowOutline = yield flowService.flowGetOutline(filePath, editor.getText());
+      if (flowOutline != null) {
+        return flowOutlineToNormalOutline(flowOutline);
+      } else {
+        return null;
+      }
+    })();
+  }
+};
+
+
+function flowOutlineToNormalOutline(flowOutline) {
   return {
-    outlineTrees: flowOutline.map(flowTreeToNormalTree),
+    outlineTrees: flowOutline.map(flowTreeToNormalTree)
   };
 }
 
-function flowTreeToNormalTree(flowTree): OutlineTree {
+function flowTreeToNormalTree(flowTree) {
   return {
     tokenizedText: flowTree.tokenizedText,
     representativeName: flowTree.representativeName,
-    startPosition: new Point(flowTree.startPosition.line, flowTree.startPosition.column),
-    endPosition: new Point(flowTree.endPosition.line, flowTree.endPosition.column),
-    children: flowTree.children.map(flowTreeToNormalTree),
+    startPosition: new _atom.Point(flowTree.startPosition.line, flowTree.startPosition.column),
+    endPosition: new _atom.Point(flowTree.endPosition.line, flowTree.endPosition.column),
+    children: flowTree.children.map(flowTreeToNormalTree)
   };
 }

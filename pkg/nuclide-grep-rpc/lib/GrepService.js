@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,32 +9,30 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.grepSearch = grepSearch;
 
-import {ConnectableObservable} from 'rxjs';
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
-import nuclideUri from '../../commons-node/nuclideUri';
-import search from './scanhandler';
+var _nuclideUri;
 
-export type search$Match = {
-  lineText: string,
-  lineTextOffset: number,
-  matchText: string,
-  range: Array<Array<number>>,
-};
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
 
-export type search$FileResult = {
-  filePath: NuclideUri,
-  matches: Array<search$Match>,
-};
+var _scanhandler;
 
-export function grepSearch(
-  directory: NuclideUri,
-  regex: RegExp,
-  subdirs: Array<string>,
-): ConnectableObservable<search$FileResult> {
-  return search(directory, regex, subdirs).map(update => {
+function _load_scanhandler() {
+  return _scanhandler = _interopRequireDefault(require('./scanhandler'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function grepSearch(directory, regex, subdirs) {
+  return (0, (_scanhandler || _load_scanhandler()).default)(directory, regex, subdirs).map(update => {
     // Transform filePath's to absolute paths.
-    return {filePath: nuclideUri.join(directory, update.filePath), matches: update.matches};
+    return { filePath: (_nuclideUri || _load_nuclideUri()).default.join(directory, update.filePath), matches: update.matches };
   }).publish();
 }

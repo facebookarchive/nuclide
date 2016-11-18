@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,38 +9,58 @@
  * the root directory of this source tree.
  */
 
-import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
-import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
-import type {PanelLocationId} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import createPackage from '../../commons-atom/createPackage';
-import {PaneLocation} from './PaneLocation';
-import {PanelLocation} from './PanelLocation';
-import PanelLocationIds from './PanelLocationIds';
-import {CompositeDisposable} from 'atom';
+var _createPackage;
+
+function _load_createPackage() {
+  return _createPackage = _interopRequireDefault(require('../../commons-atom/createPackage'));
+}
+
+var _PaneLocation;
+
+function _load_PaneLocation() {
+  return _PaneLocation = require('./PaneLocation');
+}
+
+var _PanelLocation;
+
+function _load_PanelLocation() {
+  return _PanelLocation = require('./PanelLocation');
+}
+
+var _PanelLocationIds;
+
+function _load_PanelLocationIds() {
+  return _PanelLocationIds = _interopRequireDefault(require('./PanelLocationIds'));
+}
+
+var _atom = require('atom');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // This package doesn't actually serialize its own state. The reason is that we want to centralize
 // that so that we can (eventually) associate them with profiles or workspace configurations.
 
-class Activation {
-  _disposables: CompositeDisposable;
-  _panelLocations: Map<string, PanelLocation>;
-
-  // The initial visiblity of each panel. A null/undefined value signifies that the serialized
-  // visibility should be used.
-  _initialPanelVisibility: Map<PanelLocationId, ?boolean>;
+let Activation = class Activation {
 
   constructor() {
-    this._disposables = new CompositeDisposable();
+    this._disposables = new _atom.CompositeDisposable();
     this._panelLocations = new Map();
     this._initialPanelVisibility = new Map();
   }
 
-  dispose(): void {
+  // The initial visiblity of each panel. A null/undefined value signifies that the serialized
+  // visibility should be used.
+
+
+  dispose() {
     this._disposables.dispose();
   }
 
-  _toggleVisibility(id: PanelLocationId): void {
+  _toggleVisibility(id) {
     const location = this._panelLocations.get(id);
     if (location == null) {
       // We haven't created the panel yet. Store the visibility value so we can use it once we
@@ -52,31 +72,23 @@ class Activation {
     }
   }
 
-  consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
-    this._disposables.add(
-      api.registerLocation({id: 'pane', create: () => new PaneLocation()}),
-      ...PanelLocationIds.map(id => api.registerLocation({
-        id,
-        create: serializedState_ => {
-          const serializedState = serializedState_ == null ? {} : serializedState_;
-          const initialVisibility = this._initialPanelVisibility.get(id);
-          if (initialVisibility != null) {
-            serializedState.visible = initialVisibility;
-          }
-          const location = new PanelLocation(id, serializedState);
-          location.initialize();
-          this._panelLocations.set(id, location);
-          return location;
-        },
-      })),
-      ...PanelLocationIds.map(id => (
-        atom.commands.add(
-          'atom-workspace',
-          `nuclide-workspace-views:toggle-${id}`,
-          () => { this._toggleVisibility(id); },
-        )
-      )),
-    );
+  consumeWorkspaceViewsService(api) {
+    this._disposables.add(api.registerLocation({ id: 'pane', create: () => new (_PaneLocation || _load_PaneLocation()).PaneLocation() }), ...(_PanelLocationIds || _load_PanelLocationIds()).default.map(id => api.registerLocation({
+      id: id,
+      create: serializedState_ => {
+        const serializedState = serializedState_ == null ? {} : serializedState_;
+        const initialVisibility = this._initialPanelVisibility.get(id);
+        if (initialVisibility != null) {
+          serializedState.visible = initialVisibility;
+        }
+        const location = new (_PanelLocation || _load_PanelLocation()).PanelLocation(id, serializedState);
+        location.initialize();
+        this._panelLocations.set(id, location);
+        return location;
+      }
+    })), ...(_PanelLocationIds || _load_PanelLocationIds()).default.map(id => atom.commands.add('atom-workspace', `nuclide-workspace-views:toggle-${ id }`, () => {
+      this._toggleVisibility(id);
+    })));
   }
 
   /**
@@ -85,20 +97,20 @@ class Activation {
    * early beccause we need the serialized state which we get asynchronously as well). In that case,
    * store the visiblity DSF wants and use it when we create the panel later.
    */
-  provideDistractionFreeModeProvider(): Array<DistractionFreeModeProvider> {
-    this._initialPanelVisibility = new Map(PanelLocationIds.map(id => [id, false]));
-    return PanelLocationIds.map(id => ({
-      name: `nuclide-workspace-view-locations:${id}`,
+  provideDistractionFreeModeProvider() {
+    this._initialPanelVisibility = new Map((_PanelLocationIds || _load_PanelLocationIds()).default.map(id => [id, false]));
+    return (_PanelLocationIds || _load_PanelLocationIds()).default.map(id => ({
+      name: `nuclide-workspace-view-locations:${ id }`,
       isVisible: () => {
         const location = this._panelLocations.get(id);
-        return location == null
-          ? Boolean(this._initialPanelVisibility.get(id))
-          : location.isVisible();
+        return location == null ? Boolean(this._initialPanelVisibility.get(id)) : location.isVisible();
       },
-      toggle: () => { this._toggleVisibility(id); },
+      toggle: () => {
+        this._toggleVisibility(id);
+      }
     }));
   }
 
-}
-
-export default createPackage(Activation);
+};
+exports.default = (0, (_createPackage || _load_createPackage()).default)(Activation);
+module.exports = exports['default'];

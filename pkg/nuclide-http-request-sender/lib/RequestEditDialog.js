@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,90 +9,120 @@
  * the root directory of this source tree.
  */
 
-import type {BoundActionCreators} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.RequestEditDialog = undefined;
 
-import {React} from 'react-for-atom';
-import {AtomInput} from '../../nuclide-ui/AtomInput';
-import {Button, ButtonTypes} from '../../nuclide-ui/Button';
-import {ButtonGroup} from '../../nuclide-ui/ButtonGroup';
-import {Dropdown} from '../../nuclide-ui/Dropdown';
-import {AtomTextEditor} from '../../nuclide-ui/AtomTextEditor';
-import invariant from 'assert';
-import shallowequal from 'shallowequal';
+var _reactForAtom = require('react-for-atom');
 
-type Headers = {[key: string]: string};
+var _AtomInput;
 
-type PropsType = {
-  actionCreators: BoundActionCreators,
-  uri: string,
-  method: string,
-  headers: Headers,
-  body: ?string,
-};
+function _load_AtomInput() {
+  return _AtomInput = require('../../nuclide-ui/AtomInput');
+}
 
-const METHOD_DROPDOWN_OPTIONS = [
-  {label: 'GET', value: 'GET'},
-  {label: 'POST', value: 'POST'},
-];
+var _Button;
 
-export class RequestEditDialog extends React.Component<void, PropsType, void> {
-  props: PropsType;
-  _editorComponent: ?AtomTextEditor;
+function _load_Button() {
+  return _Button = require('../../nuclide-ui/Button');
+}
 
-  constructor(props: PropsType) {
+var _ButtonGroup;
+
+function _load_ButtonGroup() {
+  return _ButtonGroup = require('../../nuclide-ui/ButtonGroup');
+}
+
+var _Dropdown;
+
+function _load_Dropdown() {
+  return _Dropdown = require('../../nuclide-ui/Dropdown');
+}
+
+var _AtomTextEditor;
+
+function _load_AtomTextEditor() {
+  return _AtomTextEditor = require('../../nuclide-ui/AtomTextEditor');
+}
+
+var _shallowequal;
+
+function _load_shallowequal() {
+  return _shallowequal = _interopRequireDefault(require('shallowequal'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const METHOD_DROPDOWN_OPTIONS = [{ label: 'GET', value: 'GET' }, { label: 'POST', value: 'POST' }];
+
+let RequestEditDialog = exports.RequestEditDialog = class RequestEditDialog extends _reactForAtom.React.Component {
+
+  constructor(props) {
     super(props);
     this._editorComponent = null;
-    (this: any)._onCancel = this._onCancel.bind(this);
-    (this: any)._onSendHttpRequest = this._onSendHttpRequest.bind(this);
+    this._onCancel = this._onCancel.bind(this);
+    this._onSendHttpRequest = this._onSendHttpRequest.bind(this);
   }
 
-  shouldComponentUpdate(nextProps: PropsType): boolean {
-    const {uri, method, headers, body} = this.props;
-    return nextProps.uri !== uri
-      || nextProps.method !== method
-      || nextProps.body !== body
-      || !shallowequal(nextProps.headers, headers);
+  shouldComponentUpdate(nextProps) {
+    var _props = this.props;
+    const uri = _props.uri,
+          method = _props.method,
+          headers = _props.headers,
+          body = _props.body;
+
+    return nextProps.uri !== uri || nextProps.method !== method || nextProps.body !== body || !(0, (_shallowequal || _load_shallowequal()).default)(nextProps.headers, headers);
   }
 
-  componentDidMount(): void {
+  componentDidMount() {
     this._componentDidRender();
   }
 
-  componentDidUpdate(): void {
+  componentDidUpdate() {
     this._componentDidRender();
   }
 
   /**
    * This method should be called after every render to set the AtomTextEditor text.
    */
-  _componentDidRender(): void {
+  _componentDidRender() {
     const editorComponent = this._editorComponent;
-    invariant(editorComponent != null);
+
+    if (!(editorComponent != null)) {
+      throw new Error('Invariant violation: "editorComponent != null"');
+    }
+
     const editor = editorComponent.getModel();
-    invariant(editor != null);
+
+    if (!(editor != null)) {
+      throw new Error('Invariant violation: "editor != null"');
+    }
+
     const jsonGrammar = atom.grammars.grammarForScopeName('source.json');
-    invariant(jsonGrammar != null);
+
+    if (!(jsonGrammar != null)) {
+      throw new Error('Invariant violation: "jsonGrammar != null"');
+    }
+
     editor.setGrammar(jsonGrammar);
     editor.setText(JSON.stringify(this.props.headers, null, 2));
   }
 
-  _onSendHttpRequest(): void {
+  _onSendHttpRequest() {
     this.props.actionCreators.sendHttpRequest();
     this._toggleDialog();
   }
 
-  _onCancel(): void {
+  _onCancel() {
     this._toggleDialog();
   }
 
-  _toggleDialog(): void {
-    atom.commands.dispatch(
-      atom.views.getView(atom.workspace),
-      'nuclide-http-request-sender:toggle-http-request-edit-dialog',
-    );
+  _toggleDialog() {
+    atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-http-request-sender:toggle-http-request-edit-dialog');
   }
 
-  _handleTextBufferChange(event: atom$TextEditEvent): void {
+  _handleTextBufferChange(event) {
     // TODO: It's better to store changes, even if they are illegal JSON.
     let headers;
     try {
@@ -100,66 +130,88 @@ export class RequestEditDialog extends React.Component<void, PropsType, void> {
     } catch (_) {
       return; // Do not store illegal JSON.
     }
-    this.props.actionCreators.updateState({headers});
+    this.props.actionCreators.updateState({ headers: headers });
   }
 
-  render(): React.Element<any> {
-    return (
-      <div className="block">
-        <div className="nuclide-edit-request-dialog">
-          <label>URI: </label>
-          <AtomInput
-            tabIndex="1"
-            placeholderText="https://www.facebook.com"
-            value={this.props.uri}
-            onDidChange={uri => this.props.actionCreators.updateState({uri})}
-          />
-          <label>Method: </label>
-          <Dropdown
-            value={this.props.method}
-            options={METHOD_DROPDOWN_OPTIONS}
-            onChange={method => this.props.actionCreators.updateState({method})}
-          />
-         {
-           this.props.method !== 'POST'
-             ? null
-             : (
-               <div>
-                 <label>Body</label>
-                 <AtomInput
-                   tabIndex="2"
-                   onDidChange={body => this.props.actionCreators.updateState({body})}
-                 />
-               </div>
-             )
-         }
-          <label>Headers: </label>
-          <div className="nuclide-http-request-sender-headers">
-            <AtomTextEditor
-              ref={editorComponent => {
-                this._editorComponent = editorComponent;
-              }}
-              tabIndex="3"
-              autoGrow={false}
-              softWrapped={true}
-              onDidTextBufferChange={this._handleTextBufferChange.bind(this)}
-            />
-          </div>
-          <ButtonGroup className="nuclide-http-request-sender-button-group">
-            <Button
-              buttonType={ButtonTypes.PRIMARY}
-              tabIndex="5"
-              onClick={this._onSendHttpRequest}>
-              Send HTTP Request
-            </Button>
-            <Button
-              tabIndex="4"
-              onClick={this._onCancel}>
-              Cancel
-            </Button>
-          </ButtonGroup>
-        </div>
-      </div>
+  render() {
+    return _reactForAtom.React.createElement(
+      'div',
+      { className: 'block' },
+      _reactForAtom.React.createElement(
+        'div',
+        { className: 'nuclide-edit-request-dialog' },
+        _reactForAtom.React.createElement(
+          'label',
+          null,
+          'URI: '
+        ),
+        _reactForAtom.React.createElement((_AtomInput || _load_AtomInput()).AtomInput, {
+          tabIndex: '1',
+          placeholderText: 'https://www.facebook.com',
+          value: this.props.uri,
+          onDidChange: uri => this.props.actionCreators.updateState({ uri: uri })
+        }),
+        _reactForAtom.React.createElement(
+          'label',
+          null,
+          'Method: '
+        ),
+        _reactForAtom.React.createElement((_Dropdown || _load_Dropdown()).Dropdown, {
+          value: this.props.method,
+          options: METHOD_DROPDOWN_OPTIONS,
+          onChange: method => this.props.actionCreators.updateState({ method: method })
+        }),
+        this.props.method !== 'POST' ? null : _reactForAtom.React.createElement(
+          'div',
+          null,
+          _reactForAtom.React.createElement(
+            'label',
+            null,
+            'Body'
+          ),
+          _reactForAtom.React.createElement((_AtomInput || _load_AtomInput()).AtomInput, {
+            tabIndex: '2',
+            onDidChange: body => this.props.actionCreators.updateState({ body: body })
+          })
+        ),
+        _reactForAtom.React.createElement(
+          'label',
+          null,
+          'Headers: '
+        ),
+        _reactForAtom.React.createElement(
+          'div',
+          { className: 'nuclide-http-request-sender-headers' },
+          _reactForAtom.React.createElement((_AtomTextEditor || _load_AtomTextEditor()).AtomTextEditor, {
+            ref: editorComponent => {
+              this._editorComponent = editorComponent;
+            },
+            tabIndex: '3',
+            autoGrow: false,
+            softWrapped: true,
+            onDidTextBufferChange: this._handleTextBufferChange.bind(this)
+          })
+        ),
+        _reactForAtom.React.createElement(
+          (_ButtonGroup || _load_ButtonGroup()).ButtonGroup,
+          { className: 'nuclide-http-request-sender-button-group' },
+          _reactForAtom.React.createElement(
+            (_Button || _load_Button()).Button,
+            {
+              buttonType: (_Button || _load_Button()).ButtonTypes.PRIMARY,
+              tabIndex: '5',
+              onClick: this._onSendHttpRequest },
+            'Send HTTP Request'
+          ),
+          _reactForAtom.React.createElement(
+            (_Button || _load_Button()).Button,
+            {
+              tabIndex: '4',
+              onClick: this._onCancel },
+            'Cancel'
+          )
+        )
+      )
     );
   }
-}
+};

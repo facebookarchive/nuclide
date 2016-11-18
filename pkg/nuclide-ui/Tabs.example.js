@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,75 +9,105 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
-import {Block} from './Block';
-import Tabs from './Tabs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.TabExamples = undefined;
 
-const tabs = [
-  {
-    name: 'one',
-    tabContent: <div>One</div>,
-  },
-  {
-    name: 'two',
-    tabContent: <div>Two</div>,
-  },
-  {
-    name: 'three',
-    tabContent: <div>Three</div>,
-  },
-  {
-    name: 'four',
-    tabContent: <div>Four</div>,
-  },
-  {
-    name: 'five',
-    tabContent: <div>Five</div>,
-  },
-];
+var _reactForAtom = require('react-for-atom');
 
-class TabExample extends React.Component {
-  state: {activeTabName: string};
+var _Block;
 
-  constructor(props: any) {
+function _load_Block() {
+  return _Block = require('./Block');
+}
+
+var _Tabs;
+
+function _load_Tabs() {
+  return _Tabs = _interopRequireDefault(require('./Tabs'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const tabs = [{
+  name: 'one',
+  tabContent: _reactForAtom.React.createElement(
+    'div',
+    null,
+    'One'
+  )
+}, {
+  name: 'two',
+  tabContent: _reactForAtom.React.createElement(
+    'div',
+    null,
+    'Two'
+  )
+}, {
+  name: 'three',
+  tabContent: _reactForAtom.React.createElement(
+    'div',
+    null,
+    'Three'
+  )
+}, {
+  name: 'four',
+  tabContent: _reactForAtom.React.createElement(
+    'div',
+    null,
+    'Four'
+  )
+}, {
+  name: 'five',
+  tabContent: _reactForAtom.React.createElement(
+    'div',
+    null,
+    'Five'
+  )
+}];let TabExample = class TabExample extends _reactForAtom.React.Component {
+
+  constructor(props) {
     super(props);
-    (this: any).handleTabChange = this.handleTabChange.bind(this);
+    this.handleTabChange = this.handleTabChange.bind(this);
     this.state = {
-      activeTabName: 'one',
+      activeTabName: 'one'
     };
   }
 
-  handleTabChange(newTabName: {name: string, tabContent: React.Element<any>}): void {
+  handleTabChange(newTabName) {
     this.setState({
-      activeTabName: newTabName.name,
+      activeTabName: newTabName.name
     });
   }
 
-  render(): React.Element<any> {
-    const {activeTabName} = this.state;
-    return (
-      <Block>
-        <Tabs
-          tabs={tabs}
-          activeTabName={activeTabName}
-          triggeringEvent="onClick"
-          onActiveTabChange={this.handleTabChange}
-        />
-        <div style={{padding: '2em 0 2em 0'}}>
-          Showing content for tab "{activeTabName}".
-        </div>
-      </Block>
+  render() {
+    const activeTabName = this.state.activeTabName;
+
+    return _reactForAtom.React.createElement(
+      (_Block || _load_Block()).Block,
+      null,
+      _reactForAtom.React.createElement((_Tabs || _load_Tabs()).default, {
+        tabs: tabs,
+        activeTabName: activeTabName,
+        triggeringEvent: 'onClick',
+        onActiveTabChange: this.handleTabChange
+      }),
+      _reactForAtom.React.createElement(
+        'div',
+        { style: { padding: '2em 0 2em 0' } },
+        'Showing content for tab "',
+        activeTabName,
+        '".'
+      )
     );
   }
-}
-
-export const TabExamples = {
+};
+const TabExamples = exports.TabExamples = {
   sectionName: 'Tabs',
   description: '',
-  examples: [
-    {
-      title: '',
-      component: TabExample,
-    },
-  ],
+  examples: [{
+    title: '',
+    component: TabExample
+  }]
 };

@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,45 +9,38 @@
  * the root directory of this source tree.
  */
 
-import {React, ReactDOM} from 'react-for-atom';
-import classnames from 'classnames';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Checkbox = undefined;
 
-import ignoreTextSelectionEvents from './ignoreTextSelectionEvents';
+var _class, _temp;
 
-type DefaultProps = {
-  disabled: boolean,
-  indeterminate: boolean,
-  label: string,
-  onClick: (event: SyntheticEvent) => mixed,
-};
+var _reactForAtom = require('react-for-atom');
 
-type Props = {
-  className?: string,
-  checked: boolean,
-  disabled: boolean,
-  indeterminate: boolean,
-  label: string,
-  onChange: (isChecked: boolean) => mixed,
-  onClick: (event: SyntheticEvent) => mixed,
-};
+var _classnames;
+
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
+
+var _ignoreTextSelectionEvents;
+
+function _load_ignoreTextSelectionEvents() {
+  return _ignoreTextSelectionEvents = _interopRequireDefault(require('./ignoreTextSelectionEvents'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * A checkbox component with an input checkbox and a label. We restrict the label to a string
  * to ensure this component is pure.
  */
-export class Checkbox extends React.PureComponent {
-  props: Props;
+let Checkbox = exports.Checkbox = (_temp = _class = class Checkbox extends _reactForAtom.React.PureComponent {
 
-  static defaultProps: DefaultProps = {
-    disabled: false,
-    indeterminate: false,
-    label: '',
-    onClick(event) {},
-  };
-
-  constructor(props: Object) {
+  constructor(props) {
     super(props);
-    (this: any)._onChange = this._onChange.bind(this);
+    this._onChange = this._onChange.bind(this);
   }
 
   componentDidMount() {
@@ -58,8 +51,8 @@ export class Checkbox extends React.PureComponent {
     this._setIndeterminate();
   }
 
-  _onChange(event: SyntheticEvent) {
-    const isChecked = ((event.target: any): HTMLInputElement).checked;
+  _onChange(event) {
+    const isChecked = event.target.checked;
     this.props.onChange.call(null, isChecked);
   }
 
@@ -69,38 +62,45 @@ export class Checkbox extends React.PureComponent {
    *
    * @see https://www.w3.org/TR/html5/forms.html#the-input-element
    */
-  _setIndeterminate(): void {
-    ReactDOM.findDOMNode(this.refs.input).indeterminate = this.props.indeterminate;
+  _setIndeterminate() {
+    _reactForAtom.ReactDOM.findDOMNode(this.refs.input).indeterminate = this.props.indeterminate;
   }
 
-  render(): React.Element<any> {
-    const {
-      checked,
-      className,
-      disabled,
-      // eslint-disable-next-line no-unused-vars
-      indeterminate, // exclude `indeterminate` from `remainingProps`
-      label,
-      onClick,
-    } = this.props;
-    return (
-      <label
-        className={classnames(className, 'nuclide-ui-checkbox-label', {
-          'nuclide-ui-checkbox-disabled': disabled,
-        })}
-        onClick={onClick && ignoreTextSelectionEvents(onClick)}>
-        <input
-          checked={checked}
-          className="input-checkbox nuclide-ui-checkbox"
-          disabled={disabled}
-          onChange={this._onChange}
-          ref="input"
-          type="checkbox"
-        />
-        <span className="nuclide-ui-checkbox-label-text">
-          {' '}{label}
-        </span>
-      </label>
+  render() {
+    var _props = this.props;
+    const checked = _props.checked,
+          className = _props.className,
+          disabled = _props.disabled,
+          indeterminate = _props.indeterminate,
+          label = _props.label,
+          onClick = _props.onClick;
+
+    return _reactForAtom.React.createElement(
+      'label',
+      {
+        className: (0, (_classnames || _load_classnames()).default)(className, 'nuclide-ui-checkbox-label', {
+          'nuclide-ui-checkbox-disabled': disabled
+        }),
+        onClick: onClick && (0, (_ignoreTextSelectionEvents || _load_ignoreTextSelectionEvents()).default)(onClick) },
+      _reactForAtom.React.createElement('input', {
+        checked: checked,
+        className: 'input-checkbox nuclide-ui-checkbox',
+        disabled: disabled,
+        onChange: this._onChange,
+        ref: 'input',
+        type: 'checkbox'
+      }),
+      _reactForAtom.React.createElement(
+        'span',
+        { className: 'nuclide-ui-checkbox-label-text' },
+        ' ',
+        label
+      )
     );
   }
-}
+}, _class.defaultProps = {
+  disabled: false,
+  indeterminate: false,
+  label: '',
+  onClick: function (event) {}
+}, _temp);

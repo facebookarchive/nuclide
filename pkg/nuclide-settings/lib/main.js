@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,50 +9,68 @@
  * the root directory of this source tree.
  */
 
-import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
-import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.consumeWorkspaceViewsService = consumeWorkspaceViewsService;
+exports.consumeToolBar = consumeToolBar;
 
-import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
-import {CompositeDisposable, Disposable} from 'atom';
-import {React} from 'react-for-atom';
-import SettingsPaneItem from './SettingsPaneItem';
+var _viewableFromReactElement;
 
-let subscriptions: CompositeDisposable = (null: any);
-
-export function activate(state: ?Object): void {
-  subscriptions = new CompositeDisposable();
+function _load_viewableFromReactElement() {
+  return _viewableFromReactElement = require('../../commons-atom/viewableFromReactElement');
 }
 
-export function deactivate(): void {
+var _atom = require('atom');
+
+var _reactForAtom = require('react-for-atom');
+
+var _SettingsPaneItem;
+
+function _load_SettingsPaneItem() {
+  return _SettingsPaneItem = _interopRequireDefault(require('./SettingsPaneItem'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let subscriptions = null;
+
+function activate(state) {
+  subscriptions = new _atom.CompositeDisposable();
+}
+
+function deactivate() {
   subscriptions.dispose();
-  subscriptions = (null: any);
+  subscriptions = null;
 }
 
-export function consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
-  subscriptions.add(
-    api.registerFactory({
-      id: 'nuclide-settings',
-      name: 'Nuclide Settings',
-      toggleCommand: 'nuclide-settings:toggle',
-      defaultLocation: 'pane',
-      create: () => viewableFromReactElement(<SettingsPaneItem />),
-      isInstance: item => item instanceof SettingsPaneItem,
-    }),
-  );
+function consumeWorkspaceViewsService(api) {
+  subscriptions.add(api.registerFactory({
+    id: 'nuclide-settings',
+    name: 'Nuclide Settings',
+    toggleCommand: 'nuclide-settings:toggle',
+    defaultLocation: 'pane',
+    create: () => (0, (_viewableFromReactElement || _load_viewableFromReactElement()).viewableFromReactElement)(_reactForAtom.React.createElement((_SettingsPaneItem || _load_SettingsPaneItem()).default, null)),
+    isInstance: item => item instanceof (_SettingsPaneItem || _load_SettingsPaneItem()).default
+  }));
 }
 
-export function consumeToolBar(getToolBar: GetToolBar): IDisposable {
+function consumeToolBar(getToolBar) {
   const toolBar = getToolBar('nuclide-home');
   toolBar.addSpacer({
-    priority: -501,
+    priority: -501
   });
   toolBar.addButton({
     icon: 'gear',
     callback: 'nuclide-settings:toggle',
     tooltip: 'Open Nuclide Settings',
-    priority: -500,
+    priority: -500
   });
-  const disposable = new Disposable(() => { toolBar.removeItems(); });
+  const disposable = new _atom.Disposable(() => {
+    toolBar.removeItems();
+  });
   subscriptions.add(disposable);
   return disposable;
 }

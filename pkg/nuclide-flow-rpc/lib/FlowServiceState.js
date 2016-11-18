@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,24 +9,35 @@
  * the root directory of this source tree.
  */
 
-import {FlowRootContainer} from './FlowRootContainer';
-import {FlowExecInfoContainer} from './FlowExecInfoContainer';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.FlowServiceState = undefined;
 
-export class FlowServiceState {
+var _FlowRootContainer;
 
-  _rootContainer: ?FlowRootContainer;
-  _execInfoContainer: ?FlowExecInfoContainer;
+function _load_FlowRootContainer() {
+  return _FlowRootContainer = require('./FlowRootContainer');
+}
 
-  getRootContainer(): FlowRootContainer {
+var _FlowExecInfoContainer;
+
+function _load_FlowExecInfoContainer() {
+  return _FlowExecInfoContainer = require('./FlowExecInfoContainer');
+}
+
+let FlowServiceState = exports.FlowServiceState = class FlowServiceState {
+
+  getRootContainer() {
     if (this._rootContainer == null) {
-      this._rootContainer = new FlowRootContainer(this.getExecInfoContainer());
+      this._rootContainer = new (_FlowRootContainer || _load_FlowRootContainer()).FlowRootContainer(this.getExecInfoContainer());
     }
     return this._rootContainer;
   }
 
-  getExecInfoContainer(): FlowExecInfoContainer {
+  getExecInfoContainer() {
     if (this._execInfoContainer == null) {
-      this._execInfoContainer = new FlowExecInfoContainer();
+      this._execInfoContainer = new (_FlowExecInfoContainer || _load_FlowExecInfoContainer()).FlowExecInfoContainer();
     }
     return this._execInfoContainer;
   }
@@ -41,4 +52,4 @@ export class FlowServiceState {
       this._execInfoContainer = null;
     }
   }
-}
+};

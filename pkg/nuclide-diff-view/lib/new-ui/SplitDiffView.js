@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,51 +9,223 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../../commons-node/nuclideUri';
-import type {
-  AppState,
-  FileDiffState,
-  NavigationSection,
-  NavigationSectionStatusType,
-} from '../types';
-import typeof * as BoundActionCreators from '../redux/Actions';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = undefined;
 
-import UniversalDisposable from '../../../commons-node/UniversalDisposable';
-import DiffViewEditor from '../DiffViewEditor';
-import SyncScroll from '../SyncScroll';
-import {Observable} from 'rxjs';
-import invariant from 'assert';
-import {observableFromSubscribeFunction} from '../../../commons-node/event';
-import {nextTick} from '../../../commons-node/promise';
-import {notifyInternalError} from '../notifications';
-import {observeElementDimensions} from '../../../commons-atom/observe-element-dimensions';
-import {
-  getCenterScrollSelectedNavigationIndex,
-  centerScrollToBufferLine,
-  pixelRangeForNavigationSection,
-  navigationSectionStatusToEditorElement,
-} from '../DiffViewComponent';
-import {React} from 'react-for-atom';
-import {
-  clickEventToScrollLineNumber,
-  DiffNavigationBar,
-} from '../DiffNavigationBar';
-import {bindObservableAsProps} from '../../../nuclide-ui/bindObservableAsProps';
-import {renderReactRoot} from '../../../commons-atom/renderReactRoot';
-import {getLogger} from '../../../nuclide-logging';
-import {compact} from '../../../commons-node/observable';
-import {
-  enforceReadOnly,
-  enforceSoftWrap,
-} from '../../../commons-atom/text-editor';
-import {
-  DIFF_EDITOR_MARKER_CLASS,
-} from '../constants';
-import {
-  LoadingSpinner,
-  LoadingSpinnerSizes,
-} from '../../../nuclide-ui/LoadingSpinner';
-import {track} from '../../../nuclide-analytics';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
+/**
+ * Split the pane items, if not already split.
+ */
+let getDiffEditors = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (filePath) {
+    let newEditor;
+    const disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
+
+    // Wait for next tick to allow the atom workspace panes to update its
+    // state with the possibly just-opened editor.
+    yield (0, (_promise || _load_promise()).nextTick)();
+    let newEditorPane = atom.workspace.paneForURI(filePath);
+    if (newEditorPane != null) {
+      const newEditorItem = newEditorPane.itemForURI(filePath);
+      newEditorPane.activateItem(newEditorItem);
+      newEditor = newEditorItem;
+      disposables.add((0, (_textEditor || _load_textEditor()).enforceSoftWrap)(newEditor, false), function () {
+        return newEditor.setSoftWrapped(atom.config.get('editor.softWrap'));
+      });
+    } else {
+      newEditor = yield atom.workspace.open(filePath);
+      // Allow the atom workspace to update its state before querying for
+      // the new editor's pane.
+      yield (0, (_promise || _load_promise()).nextTick)();
+      newEditorPane = atom.workspace.paneForURI(filePath);
+
+      if (!(newEditorPane != null)) {
+        throw new Error('Cannot find a pane for the opened text editor');
+      }
+
+      disposables.add((0, (_textEditor || _load_textEditor()).enforceSoftWrap)(newEditor, false), function () {
+        return cleanUpEditor(newEditor);
+      });
+    }
+
+    const navigationGutter = newEditor.gutterWithName(NAVIGATION_GUTTER_NAME) || newEditor.addGutter({
+      name: NAVIGATION_GUTTER_NAME,
+      priority: -1500,
+      visible: true
+    });
+
+    disposables.add(function () {
+      const addedGutter = newEditor.gutterWithName(NAVIGATION_GUTTER_NAME);
+      if (addedGutter != null) {
+        addedGutter.destroy();
+      }
+    });
+
+    const oldEditor = getReadOnlyEditor();
+    newEditorPane.addItem(oldEditor);
+    newEditorPane.activateItem(oldEditor);
+    atom.commands.dispatch(atom.views.getView(oldEditor), 'nuclide-move-item-to-available-pane:left');
+    // Allow the atom workspace to update its state before querying the views for the editor.
+    yield (0, (_promise || _load_promise()).nextTick)();
+
+    disposables.add((0, (_textEditor || _load_textEditor()).enforceSoftWrap)(oldEditor, false), function () {
+      return cleanUpEditor(oldEditor);
+    });
+
+    newEditorPane.activateItem(newEditor);
+    newEditorPane.activate();
+
+    // Unfold all lines so diffs properly align.
+    newEditor.unfoldAll();
+    oldEditor.unfoldAll();
+
+    const newEditorElement = atom.views.getView(newEditor);
+    const oldEditorElement = atom.views.getView(oldEditor);
+
+    const newDiffEditor = new (_DiffViewEditor || _load_DiffViewEditor()).default(newEditorElement);
+    const oldDiffEditor = new (_DiffViewEditor || _load_DiffViewEditor()).default(oldEditorElement);
+
+    disposables.add(function () {
+      return newDiffEditor.destroyMarkers();
+    }, function () {
+      return oldDiffEditor.destroyMarkers();
+    });
+
+    // Add marker classes to be used for atom command registeration.
+    newEditorElement.classList.add((_constants || _load_constants()).DIFF_EDITOR_MARKER_CLASS);
+    oldEditorElement.classList.add(READ_ONLY_EDITOR_CLASS);
+    oldEditorElement.classList.add((_constants || _load_constants()).DIFF_EDITOR_MARKER_CLASS);
+    disposables.add(function () {
+      return newEditorElement.classList.remove((_constants || _load_constants()).DIFF_EDITOR_MARKER_CLASS);
+    });
+
+    disposables.add(new (_SyncScroll || _load_SyncScroll()).default(oldEditorElement, newEditorElement));
+
+    return {
+      navigationGutter: navigationGutter,
+      newDiffEditor: newDiffEditor,
+      oldDiffEditor: oldDiffEditor,
+      disposables: disposables
+    };
+  });
+
+  return function getDiffEditors(_x) {
+    return _ref.apply(this, arguments);
+  };
+})();
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../../commons-node/UniversalDisposable'));
+}
+
+var _DiffViewEditor;
+
+function _load_DiffViewEditor() {
+  return _DiffViewEditor = _interopRequireDefault(require('../DiffViewEditor'));
+}
+
+var _SyncScroll;
+
+function _load_SyncScroll() {
+  return _SyncScroll = _interopRequireDefault(require('../SyncScroll'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _event;
+
+function _load_event() {
+  return _event = require('../../../commons-node/event');
+}
+
+var _promise;
+
+function _load_promise() {
+  return _promise = require('../../../commons-node/promise');
+}
+
+var _notifications;
+
+function _load_notifications() {
+  return _notifications = require('../notifications');
+}
+
+var _observeElementDimensions;
+
+function _load_observeElementDimensions() {
+  return _observeElementDimensions = require('../../../commons-atom/observe-element-dimensions');
+}
+
+var _DiffViewComponent;
+
+function _load_DiffViewComponent() {
+  return _DiffViewComponent = require('../DiffViewComponent');
+}
+
+var _reactForAtom = require('react-for-atom');
+
+var _DiffNavigationBar;
+
+function _load_DiffNavigationBar() {
+  return _DiffNavigationBar = require('../DiffNavigationBar');
+}
+
+var _bindObservableAsProps;
+
+function _load_bindObservableAsProps() {
+  return _bindObservableAsProps = require('../../../nuclide-ui/bindObservableAsProps');
+}
+
+var _renderReactRoot;
+
+function _load_renderReactRoot() {
+  return _renderReactRoot = require('../../../commons-atom/renderReactRoot');
+}
+
+var _nuclideLogging;
+
+function _load_nuclideLogging() {
+  return _nuclideLogging = require('../../../nuclide-logging');
+}
+
+var _observable;
+
+function _load_observable() {
+  return _observable = require('../../../commons-node/observable');
+}
+
+var _textEditor;
+
+function _load_textEditor() {
+  return _textEditor = require('../../../commons-atom/text-editor');
+}
+
+var _constants;
+
+function _load_constants() {
+  return _constants = require('../constants');
+}
+
+var _LoadingSpinner;
+
+function _load_LoadingSpinner() {
+  return _LoadingSpinner = require('../../../nuclide-ui/LoadingSpinner');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../../nuclide-analytics');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const DIFF_VIEW_NAVIGATION_TARGET = 'nuclide-diff-view-navigation-target';
 const NAVIGATION_GUTTER_NAME = 'nuclide-diff-split-navigation';
@@ -64,16 +236,16 @@ const READ_ONLY_EDITOR_CLASS = 'nuclide-diff-view-read-only-editor';
 const DIFF_SPINNER_DELAY_MS = 50;
 const SCROLL_FIRST_CHANGE_DELAY_MS = 100;
 
-function cleanUpEditor(editor: atom$TextEditor): void {
+function cleanUpEditor(editor) {
   // When one of the editors gets destroyed by Atom pane item change,
   // Atom will error with further mutations at the same process cycle.
   // Hence, this delays the cleanup by one cycle to avoid the error.
   process.nextTick(() => editor.destroy());
 }
 
-function getReadOnlyEditor(): atom$TextEditor {
+function getReadOnlyEditor() {
   const textEditor = atom.workspace.buildTextEditor({});
-  enforceReadOnly(textEditor);
+  (0, (_textEditor || _load_textEditor()).enforceReadOnly)(textEditor);
 
   textEditor.getTitle = () => 'Original (Read Only)';
   textEditor.isModified = () => false;
@@ -83,205 +255,75 @@ function getReadOnlyEditor(): atom$TextEditor {
   return textEditor;
 }
 
-type DiffEditorsResult = {
-  navigationGutter: atom$Gutter,
-  newDiffEditor: DiffViewEditor,
-  oldDiffEditor: DiffViewEditor,
-  disposables: UniversalDisposable,
-};
-
-/**
- * Split the pane items, if not already split.
- */
-async function getDiffEditors(
-  filePath: NuclideUri,
-): Promise<DiffEditorsResult> {
-  let newEditor: atom$TextEditor;
-  const disposables = new UniversalDisposable();
-
-  // Wait for next tick to allow the atom workspace panes to update its
-  // state with the possibly just-opened editor.
-  await nextTick();
-  let newEditorPane = atom.workspace.paneForURI(filePath);
-  if (newEditorPane != null) {
-    const newEditorItem = newEditorPane.itemForURI(filePath);
-    newEditorPane.activateItem(newEditorItem);
-    newEditor = ((newEditorItem: any): atom$TextEditor);
-    disposables.add(
-      enforceSoftWrap(newEditor, false),
-      () => newEditor.setSoftWrapped((atom.config.get('editor.softWrap'): any)),
-    );
-  } else {
-    newEditor = ((await atom.workspace.open(filePath): any): atom$TextEditor);
-    // Allow the atom workspace to update its state before querying for
-    // the new editor's pane.
-    await nextTick();
-    newEditorPane = atom.workspace.paneForURI(filePath);
-    invariant(newEditorPane != null, 'Cannot find a pane for the opened text editor');
-    disposables.add(
-      enforceSoftWrap(newEditor, false),
-      () => cleanUpEditor(newEditor),
-    );
-  }
-
-  const navigationGutter = newEditor.gutterWithName(NAVIGATION_GUTTER_NAME) || newEditor.addGutter({
-    name: NAVIGATION_GUTTER_NAME,
-    priority: -1500,
-    visible: true,
-  });
-
-  disposables.add(() => {
-    const addedGutter = newEditor.gutterWithName(NAVIGATION_GUTTER_NAME);
-    if (addedGutter != null) {
-      addedGutter.destroy();
-    }
-  });
-
-  const oldEditor = getReadOnlyEditor();
-  newEditorPane.addItem(oldEditor);
-  newEditorPane.activateItem(oldEditor);
-  atom.commands.dispatch(
-    atom.views.getView(oldEditor),
-    'nuclide-move-item-to-available-pane:left',
-  );
-  // Allow the atom workspace to update its state before querying the views for the editor.
-  await nextTick();
-
-  disposables.add(
-    enforceSoftWrap(oldEditor, false),
-    () => cleanUpEditor(oldEditor),
-  );
-
-  newEditorPane.activateItem(newEditor);
-  newEditorPane.activate();
-
-  // Unfold all lines so diffs properly align.
-  newEditor.unfoldAll();
-  oldEditor.unfoldAll();
-
-  const newEditorElement = atom.views.getView(newEditor);
-  const oldEditorElement = atom.views.getView(oldEditor);
-
-  const newDiffEditor = new DiffViewEditor(newEditorElement);
-  const oldDiffEditor = new DiffViewEditor(oldEditorElement);
-
-  disposables.add(
-    () => newDiffEditor.destroyMarkers(),
-    () => oldDiffEditor.destroyMarkers(),
-  );
-
-  // Add marker classes to be used for atom command registeration.
-  newEditorElement.classList.add(DIFF_EDITOR_MARKER_CLASS);
-  oldEditorElement.classList.add(READ_ONLY_EDITOR_CLASS);
-  oldEditorElement.classList.add(DIFF_EDITOR_MARKER_CLASS);
-  disposables.add(() => newEditorElement.classList.remove(DIFF_EDITOR_MARKER_CLASS));
-
-  disposables.add(
-    new SyncScroll(
-      oldEditorElement,
-      newEditorElement,
-    ),
-  );
-
-  return {
-    navigationGutter,
-    newDiffEditor,
-    oldDiffEditor,
-    disposables,
-  };
-}
-
-function wrapDiffEditorObservable(
-  promise: Promise<DiffEditorsResult>,
-): Observable<?DiffEditorsResult> {
+function wrapDiffEditorObservable(promise) {
 
   let result;
 
-  return Observable.fromPromise(promise)
-    .switchMap(_result => {
-      result = _result;
-      const newEditor = result.newDiffEditor.getEditor();
-      const oldEditor = result.oldDiffEditor.getEditor();
-      return Observable.of(result)
-        .merge(Observable.never())
-        // If any of the editors is closed or the user switched to a different file,
-        // the Diff View is closed.
-        .takeUntil(Observable.merge(
-          observableFromSubscribeFunction(
-            atom.workspace.onDidChangeActivePaneItem.bind(atom.workspace))
-            .filter(() => {
-              const activePaneItem = atom.workspace.getActivePaneItem();
-              return activePaneItem !== newEditor && activePaneItem !== oldEditor;
-            }),
-          observableFromSubscribeFunction(newEditor.onDidDestroy.bind(newEditor)),
-          observableFromSubscribeFunction(oldEditor.onDidDestroy.bind(oldEditor)),
-        )).concat(Observable.of(null));
-    })
-    .startWith(null)
-    .finally(() => {
-      if (result != null) {
-        result.disposables.dispose();
-      }
-    });
+  return _rxjsBundlesRxMinJs.Observable.fromPromise(promise).switchMap(_result => {
+    result = _result;
+    const newEditor = result.newDiffEditor.getEditor();
+    const oldEditor = result.oldDiffEditor.getEditor();
+    return _rxjsBundlesRxMinJs.Observable.of(result).merge(_rxjsBundlesRxMinJs.Observable.never())
+    // If any of the editors is closed or the user switched to a different file,
+    // the Diff View is closed.
+    .takeUntil(_rxjsBundlesRxMinJs.Observable.merge((0, (_event || _load_event()).observableFromSubscribeFunction)(atom.workspace.onDidChangeActivePaneItem.bind(atom.workspace)).filter(() => {
+      const activePaneItem = atom.workspace.getActivePaneItem();
+      return activePaneItem !== newEditor && activePaneItem !== oldEditor;
+    }), (0, (_event || _load_event()).observableFromSubscribeFunction)(newEditor.onDidDestroy.bind(newEditor)), (0, (_event || _load_event()).observableFromSubscribeFunction)(oldEditor.onDidDestroy.bind(oldEditor)))).concat(_rxjsBundlesRxMinJs.Observable.of(null));
+  }).startWith(null).finally(() => {
+    if (result != null) {
+      result.disposables.dispose();
+    }
+  });
 }
 
-function renderNavigationBarAtGutter(
-  diffEditors: DiffEditorsResult,
-  fileDiffs: Observable<FileDiffState>,
-  dimesionsUpdates: Observable<null>,
-): void {
-  const {oldDiffEditor, newDiffEditor, navigationGutter} = diffEditors;
+function renderNavigationBarAtGutter(diffEditors, fileDiffs, dimesionsUpdates) {
+  const oldDiffEditor = diffEditors.oldDiffEditor,
+        newDiffEditor = diffEditors.newDiffEditor,
+        navigationGutter = diffEditors.navigationGutter;
+
   const oldEditorElement = oldDiffEditor.getEditorDomElement();
   const newEditorElement = newDiffEditor.getEditorDomElement();
-  const boundPixelRangeForNavigationSection = pixelRangeForNavigationSection
-    .bind(null, oldEditorElement, newEditorElement);
+  const boundPixelRangeForNavigationSection = (_DiffViewComponent || _load_DiffViewComponent()).pixelRangeForNavigationSection.bind(null, oldEditorElement, newEditorElement);
 
-  const onNavigateToNavigationSection = (
-    navigationSectionStatus: NavigationSectionStatusType,
-    scrollToLineNumber: number,
-  ) => {
-    const textEditorElement = navigationSectionStatusToEditorElement(
-      oldEditorElement, newEditorElement, navigationSectionStatus);
-    centerScrollToBufferLine(textEditorElement, scrollToLineNumber);
+  const onNavigateToNavigationSection = (navigationSectionStatus, scrollToLineNumber) => {
+    const textEditorElement = (0, (_DiffViewComponent || _load_DiffViewComponent()).navigationSectionStatusToEditorElement)(oldEditorElement, newEditorElement, navigationSectionStatus);
+    (0, (_DiffViewComponent || _load_DiffViewComponent()).centerScrollToBufferLine)(textEditorElement, scrollToLineNumber);
   };
 
   const fakeNavigationHandler = () => {
     // TODO(most): use the React handler instead of DOM when it's fixed in the editor gutter.
-    getLogger().warn('Gutter click events never go through!');
+    (0, (_nuclideLogging || _load_nuclideLogging()).getLogger)().warn('Gutter click events never go through!');
   };
 
   const navigationGutterView = atom.views.getView(navigationGutter);
-  const BoundNavigationBarComponent = bindObservableAsProps(
-    Observable.combineLatest(fileDiffs, dimesionsUpdates)
-      // Debounce diff sections rendering to avoid blocking the UI.
-      .debounceTime(50)
-      .switchMap(([{navigationSections}]) => {
-        const gutterContainer: HTMLElement = (navigationGutterView.parentNode: any);
-        if (gutterContainer == null) {
-          getLogger().error('Split Diff Error: Navigation gutter is not mounted!');
-          return Observable.empty();
-        }
+  const BoundNavigationBarComponent = (0, (_bindObservableAsProps || _load_bindObservableAsProps()).bindObservableAsProps)(_rxjsBundlesRxMinJs.Observable.combineLatest(fileDiffs, dimesionsUpdates)
+  // Debounce diff sections rendering to avoid blocking the UI.
+  .debounceTime(50).switchMap((_ref2) => {
+    var _ref3 = _slicedToArray(_ref2, 1);
 
-        const editorLineHeight = oldDiffEditor.getEditor().getLineHeightInPixels();
-        const diffEditorsHeight = Math.max(
-          oldEditorElement.getScrollHeight(),
-          newEditorElement.getScrollHeight(),
-          1, // Protect against zero scroll height while initializring editors.
-        );
-        const navigationScale = gutterContainer.clientHeight / diffEditorsHeight;
+    let navigationSections = _ref3[0].navigationSections;
 
-        return Observable.of({
-          navigationSections,
-          navigationScale,
-          editorLineHeight,
-          pixelRangeForNavigationSection: boundPixelRangeForNavigationSection,
-          onNavigateToNavigationSection: fakeNavigationHandler,
-        });
-      }),
-    DiffNavigationBar,
-  );
+    const gutterContainer = navigationGutterView.parentNode;
+    if (gutterContainer == null) {
+      (0, (_nuclideLogging || _load_nuclideLogging()).getLogger)().error('Split Diff Error: Navigation gutter is not mounted!');
+      return _rxjsBundlesRxMinJs.Observable.empty();
+    }
 
-  const navigationElement = renderReactRoot(<BoundNavigationBarComponent />);
+    const editorLineHeight = oldDiffEditor.getEditor().getLineHeightInPixels();
+    const diffEditorsHeight = Math.max(oldEditorElement.getScrollHeight(), newEditorElement.getScrollHeight(), 1);
+    const navigationScale = gutterContainer.clientHeight / diffEditorsHeight;
+
+    return _rxjsBundlesRxMinJs.Observable.of({
+      navigationSections: navigationSections,
+      navigationScale: navigationScale,
+      editorLineHeight: editorLineHeight,
+      pixelRangeForNavigationSection: boundPixelRangeForNavigationSection,
+      onNavigateToNavigationSection: fakeNavigationHandler
+    });
+  }), (_DiffNavigationBar || _load_DiffNavigationBar()).DiffNavigationBar);
+
+  const navigationElement = (0, (_renderReactRoot || _load_renderReactRoot()).renderReactRoot)(_reactForAtom.React.createElement(BoundNavigationBarComponent, null));
   navigationElement.className = 'nuclide-diff-view-split-navigation-gutter';
   navigationGutterView.style.position = 'relative';
   navigationGutterView.appendChild(navigationElement);
@@ -289,38 +331,32 @@ function renderNavigationBarAtGutter(
   // The gutter elements don't receive the click.
   // Hence, the need to inject DOM attributes in navigation targets,
   // and use  here for
-  navigationGutterView.addEventListener('click', (event: MouseEvent) => {
+  navigationGutterView.addEventListener('click', event => {
     // classList isn't in the defs of EventTarget...
-    const target: HTMLElement = (event.target: any);
+    const target = event.target;
     if (!target.classList.contains(DIFF_VIEW_NAVIGATION_TARGET)) {
       return;
     }
-    const navigationStatus: NavigationSectionStatusType =
-      (target.getAttribute('nav-status'): any);
+    const navigationStatus = target.getAttribute('nav-status');
     const navigationLineCount = parseInt(target.getAttribute('nav-line-count'), 10);
     const navigationLineNumber = parseInt(target.getAttribute('nav-line-number'), 10);
-    const scrollToLineNumber = clickEventToScrollLineNumber(
-      navigationLineNumber, navigationLineCount, (event: any));
+    const scrollToLineNumber = (0, (_DiffNavigationBar || _load_DiffNavigationBar()).clickEventToScrollLineNumber)(navigationLineNumber, navigationLineCount, event);
     onNavigateToNavigationSection(navigationStatus, scrollToLineNumber);
   });
 }
 
-function updateEditorLoadingIndicator(
-  editorElement: atom$TextEditorElement,
-  isLoading: boolean,
-) {
+function updateEditorLoadingIndicator(editorElement, isLoading) {
   // Adding to the parent because the atom-text-editor isn't relatively positioned.
-  const editorParent: HTMLElement = (editorElement.parentNode: any);
+  const editorParent = editorElement.parentNode;
   if (editorParent == null) {
-    getLogger().error('Split Diff Error: Editor is not yet mounted!');
+    (0, (_nuclideLogging || _load_nuclideLogging()).getLogger)().error('Split Diff Error: Editor is not yet mounted!');
     return;
   }
 
   function removeLoadingIndicator() {
     // Unfade the editor and hide the loading spinner with delay.
     editorElement.classList.remove(NUCLIDE_DIFF_EDITOR_LOADING_CLASSNAME);
-    const loadingElement = editorParent
-      .querySelector(`.${NUCLIDE_DIFF_LOADING_INDICATOR_CLASSNAME}`);
+    const loadingElement = editorParent.querySelector(`.${ NUCLIDE_DIFF_LOADING_INDICATOR_CLASSNAME }`);
     if (loadingElement != null) {
       editorParent.removeChild(loadingElement);
     }
@@ -331,202 +367,169 @@ function updateEditorLoadingIndicator(
   if (isLoading) {
     // Fade the editor and show the loading spinner with delay.
     editorElement.classList.add(NUCLIDE_DIFF_EDITOR_LOADING_CLASSNAME);
-    const loadingElement = renderReactRoot(
-      <LoadingSpinner delay={DIFF_SPINNER_DELAY_MS} size={LoadingSpinnerSizes.LARGE} />,
-    );
+    const loadingElement = (0, (_renderReactRoot || _load_renderReactRoot()).renderReactRoot)(_reactForAtom.React.createElement((_LoadingSpinner || _load_LoadingSpinner()).LoadingSpinner, { delay: DIFF_SPINNER_DELAY_MS, size: (_LoadingSpinner || _load_LoadingSpinner()).LoadingSpinnerSizes.LARGE }));
     loadingElement.classList.add(NUCLIDE_DIFF_LOADING_INDICATOR_CLASSNAME);
     editorParent.appendChild(loadingElement);
   }
 }
 
-function centerScrollToFirstChange(
-  diffEditors: DiffEditorsResult,
-  navigationSections: Array<NavigationSection>,
-): void {
+function centerScrollToFirstChange(diffEditors, navigationSections) {
   if (navigationSections.length === 0) {
     return;
   }
 
-  const {oldDiffEditor, newDiffEditor} = diffEditors;
-  const firstSection = navigationSections[0];
-  const editorElement = navigationSectionStatusToEditorElement(
-    oldDiffEditor.getEditorDomElement(),
-    newDiffEditor.getEditorDomElement(),
-    firstSection.status,
-  );
+  const oldDiffEditor = diffEditors.oldDiffEditor,
+        newDiffEditor = diffEditors.newDiffEditor;
 
-  centerScrollToBufferLine(editorElement, firstSection.lineNumber);
+  const firstSection = navigationSections[0];
+  const editorElement = (0, (_DiffViewComponent || _load_DiffViewComponent()).navigationSectionStatusToEditorElement)(oldDiffEditor.getEditorDomElement(), newDiffEditor.getEditorDomElement(), firstSection.status);
+
+  (0, (_DiffViewComponent || _load_DiffViewComponent()).centerScrollToBufferLine)(editorElement, firstSection.lineNumber);
 }
 
-export default class SplitDiffView {
+let SplitDiffView = class SplitDiffView {
 
-  _disposables: UniversalDisposable;
+  constructor(states, actionCreators) {
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
 
-  constructor(states: Observable<AppState>, actionCreators: BoundActionCreators) {
-    this._disposables = new UniversalDisposable();
+    const diffEditorsStream = states.map(state => state.fileDiff.filePath).distinctUntilChanged().switchMap(filePath => {
+      if (!filePath) {
+        return _rxjsBundlesRxMinJs.Observable.empty();
+      } else {
+        return wrapDiffEditorObservable(getDiffEditors(filePath)).catch(error => {
+          (0, (_notifications || _load_notifications()).notifyInternalError)(error);
+          return _rxjsBundlesRxMinJs.Observable.empty();
+        });
+      }
+    }).share();
 
-    const diffEditorsStream: Observable<?DiffEditorsResult> = states
-      .map(state => state.fileDiff.filePath)
-      .distinctUntilChanged()
-      .switchMap(filePath => {
-        if (!filePath) {
-          return Observable.empty();
-        } else {
-          return wrapDiffEditorObservable(getDiffEditors(filePath))
-            .catch(error => {
-              notifyInternalError(error);
-              return Observable.empty();
-            });
-        }
-      }).share();
+    const fileDiffs = states.map((_ref4) => {
+      let fileDiff = _ref4.fileDiff;
+      return fileDiff;
+    }).distinctUntilChanged();
 
-    const fileDiffs = states
-      .map(({fileDiff}) => fileDiff)
-      .distinctUntilChanged();
+    const updateDiffSubscriptions = _rxjsBundlesRxMinJs.Observable.combineLatest(diffEditorsStream, fileDiffs).do((_ref5) => {
+      var _ref6 = _slicedToArray(_ref5, 2);
 
-    const updateDiffSubscriptions = Observable.combineLatest(diffEditorsStream, fileDiffs)
-      .do(([diffEditors, fileDiff]) => {
-        if (diffEditors == null) {
-          // One or both editors were destroyed.
-          return;
-        }
+      let diffEditors = _ref6[0],
+          fileDiff = _ref6[1];
+
+      if (diffEditors == null) {
+        // One or both editors were destroyed.
+        return;
+      }
+      try {
+        const newDiffEditor = diffEditors.newDiffEditor,
+              oldDiffEditor = diffEditors.oldDiffEditor;
+        const filePath = fileDiff.filePath,
+              lineMapping = fileDiff.lineMapping,
+              oldEditorState = fileDiff.oldEditorState,
+              newEditorState = fileDiff.newEditorState;
+
+        oldDiffEditor.setFileContents(filePath, oldEditorState.text);
+        oldDiffEditor.setHighlightedLines([], oldEditorState.highlightedLines.removed);
+        oldDiffEditor.setOffsets(oldEditorState.offsets);
+        oldDiffEditor.setUiElements(oldEditorState.inlineElements);
+        oldDiffEditor.setOffsetUiElements(oldEditorState.inlineOffsetElements, lineMapping.newToOld);
+
+        newDiffEditor.setHighlightedLines(newEditorState.highlightedLines.added, []);
+        newDiffEditor.setOffsets(newEditorState.offsets);
+        newDiffEditor.setUiElements(newEditorState.inlineElements);
+        newDiffEditor.setOffsetUiElements(newEditorState.inlineOffsetElements, lineMapping.oldToNew);
+      } catch (error) {
+        (0, (_notifications || _load_notifications()).notifyInternalError)(error);
+      }
+    }).subscribe();
+
+    const diffEditorsUpdates = diffEditorsStream.debounceTime(100).do(diffEditors => {
+      actionCreators.updateDiffEditorsVisibility(diffEditors != null);
+      actionCreators.updateDiffEditors(diffEditors);
+    }).subscribe();
+
+    const activeSectionUpdates = diffEditorsStream.switchMap(diffEditors => {
+      if (diffEditors == null) {
+        return _rxjsBundlesRxMinJs.Observable.empty();
+      }
+      const newDiffEditor = diffEditors.newDiffEditor,
+            oldDiffEditor = diffEditors.oldDiffEditor;
+
+      const newEditorElement = newDiffEditor.getEditorDomElement();
+      const oldEditorElement = oldDiffEditor.getEditorDomElement();
+
+      return _rxjsBundlesRxMinJs.Observable.combineLatest(fileDiffs, _rxjsBundlesRxMinJs.Observable.merge((0, (_event || _load_event()).observableFromSubscribeFunction)(newEditorElement.onDidChangeScrollTop.bind(newEditorElement)), (0, (_event || _load_event()).observableFromSubscribeFunction)(oldEditorElement.onDidChangeScrollTop.bind(oldEditorElement)))).debounceTime(100).map((_ref7) => {
+        var _ref8 = _slicedToArray(_ref7, 1);
+
+        let fileDiff = _ref8[0];
+
+        return (0, (_DiffViewComponent || _load_DiffViewComponent()).getCenterScrollSelectedNavigationIndex)([oldEditorElement, newEditorElement], fileDiff.navigationSections);
+      }).distinctUntilChanged();
+    }).subscribe(sectionIndex => {
+      actionCreators.updateActiveNavigationSection(sectionIndex);
+    });
+
+    const navigationGutterUpdates = (0, (_observable || _load_observable()).compact)(diffEditorsStream).debounceTime(50).do(diffEditors => {
+      const dimesionsUpdates = _rxjsBundlesRxMinJs.Observable.merge((0, (_observeElementDimensions || _load_observeElementDimensions()).observeElementDimensions)(diffEditors.newDiffEditor.getEditorDomElement()), (0, (_observeElementDimensions || _load_observeElementDimensions()).observeElementDimensions)(diffEditors.oldDiffEditor.getEditorDomElement())).debounceTime(20).mapTo(null);
+      try {
+        renderNavigationBarAtGutter(diffEditors, fileDiffs, dimesionsUpdates);
+      } catch (error) {
+        (0, (_notifications || _load_notifications()).notifyInternalError)(error);
+      }
+    }).subscribe();
+
+    const diffLoadingIndicatorUpdates = diffEditorsStream.switchMap(diffEditors => {
+      if (diffEditors == null) {
+        return _rxjsBundlesRxMinJs.Observable.empty();
+      }
+      return states.map((_ref9) => {
+        let isLoadingFileDiff = _ref9.isLoadingFileDiff;
+        return isLoadingFileDiff;
+      }).distinctUntilChanged().do(isLoading => {
+        const editorElement = diffEditors.oldDiffEditor.getEditorDomElement();
         try {
-          const {newDiffEditor, oldDiffEditor} = diffEditors;
-          const {filePath, lineMapping, oldEditorState, newEditorState} = fileDiff;
-          oldDiffEditor.setFileContents(filePath, oldEditorState.text);
-          oldDiffEditor.setHighlightedLines([], oldEditorState.highlightedLines.removed);
-          oldDiffEditor.setOffsets(oldEditorState.offsets);
-          oldDiffEditor.setUiElements(oldEditorState.inlineElements);
-          oldDiffEditor.setOffsetUiElements(
-            oldEditorState.inlineOffsetElements, lineMapping.newToOld);
-
-          newDiffEditor.setHighlightedLines(newEditorState.highlightedLines.added, []);
-          newDiffEditor.setOffsets(newEditorState.offsets);
-          newDiffEditor.setUiElements(newEditorState.inlineElements);
-          newDiffEditor.setOffsetUiElements(
-            newEditorState.inlineOffsetElements, lineMapping.oldToNew);
+          updateEditorLoadingIndicator(editorElement, isLoading);
         } catch (error) {
-          notifyInternalError(error);
+          (0, (_nuclideLogging || _load_nuclideLogging()).getLogger)().error('Split Diff Error: Could not update loading indicator', error);
         }
-      }).subscribe();
-
-    const diffEditorsUpdates = diffEditorsStream
-      .debounceTime(100)
-      .do(diffEditors => {
-        actionCreators.updateDiffEditorsVisibility(diffEditors != null);
-        actionCreators.updateDiffEditors(diffEditors);
-      }).subscribe();
-
-    const activeSectionUpdates = diffEditorsStream
-      .switchMap(diffEditors => {
-        if (diffEditors == null) {
-          return Observable.empty();
-        }
-        const {newDiffEditor, oldDiffEditor} = diffEditors;
-        const newEditorElement = newDiffEditor.getEditorDomElement();
-        const oldEditorElement = oldDiffEditor.getEditorDomElement();
-
-        return Observable.combineLatest(
-          fileDiffs,
-          Observable.merge(
-            observableFromSubscribeFunction(
-              newEditorElement.onDidChangeScrollTop.bind(newEditorElement)),
-            observableFromSubscribeFunction(
-              oldEditorElement.onDidChangeScrollTop.bind(oldEditorElement)),
-          ),
-        )
-        .debounceTime(100)
-        .map(([fileDiff]) => {
-          return getCenterScrollSelectedNavigationIndex(
-            [oldEditorElement, newEditorElement], fileDiff.navigationSections);
-        })
-        .distinctUntilChanged();
-      }).subscribe((sectionIndex: number) => {
-        actionCreators.updateActiveNavigationSection(sectionIndex);
       });
-
-    const navigationGutterUpdates = compact(diffEditorsStream)
-      .debounceTime(50)
-      .do(diffEditors => {
-        const dimesionsUpdates = Observable.merge(
-          observeElementDimensions(diffEditors.newDiffEditor.getEditorDomElement()),
-          observeElementDimensions(diffEditors.oldDiffEditor.getEditorDomElement()),
-        ).debounceTime(20)
-        .mapTo(null);
-        try {
-          renderNavigationBarAtGutter(
-            diffEditors,
-            fileDiffs,
-            dimesionsUpdates,
-          );
-        } catch (error) {
-          notifyInternalError(error);
-        }
-      })
-      .subscribe();
-
-    const diffLoadingIndicatorUpdates = diffEditorsStream
-      .switchMap(diffEditors => {
-        if (diffEditors == null) {
-          return Observable.empty();
-        }
-        return states
-          .map(({isLoadingFileDiff}) => isLoadingFileDiff)
-          .distinctUntilChanged()
-          .do(isLoading => {
-            const editorElement = diffEditors.oldDiffEditor.getEditorDomElement();
-            try {
-              updateEditorLoadingIndicator(editorElement, isLoading);
-            } catch (error) {
-              getLogger().error('Split Diff Error: Could not update loading indicator', error);
-            }
-          });
-      })
-      .subscribe();
-
+    }).subscribe();
 
     const scrollToFirstChange = diffEditorsStream.switchMap(diffEditors => {
       if (diffEditors == null) {
-        return Observable.empty();
+        return _rxjsBundlesRxMinJs.Observable.empty();
       }
 
       // Wait for the diff text to load.
-      return states
-        .filter(({fileDiff}) => fileDiff.oldEditorState.text.length > 0)
-        .first()
-        // Wait for the diff editor to render the UI state.
-        .delay(SCROLL_FIRST_CHANGE_DELAY_MS)
-        .do(({fileDiff: {navigationSections}}) => {
-          try {
-            centerScrollToFirstChange(diffEditors, navigationSections);
-          } catch (error) {
-            getLogger().error('Split Diff Error: Could not scroll to first change', error);
-          }
-        });
+      return states.filter((_ref10) => {
+        let fileDiff = _ref10.fileDiff;
+        return fileDiff.oldEditorState.text.length > 0;
+      }).first()
+      // Wait for the diff editor to render the UI state.
+      .delay(SCROLL_FIRST_CHANGE_DELAY_MS).do((_ref11) => {
+        let navigationSections = _ref11.fileDiff.navigationSections;
+
+        try {
+          centerScrollToFirstChange(diffEditors, navigationSections);
+        } catch (error) {
+          (0, (_nuclideLogging || _load_nuclideLogging()).getLogger)().error('Split Diff Error: Could not scroll to first change', error);
+        }
+      });
     }).subscribe();
 
-    const trackSavingInSplit = diffEditorsStream
-      .switchMap(diffEditors => {
-        if (diffEditors == null) {
-          return Observable.empty();
-        }
+    const trackSavingInSplit = diffEditorsStream.switchMap(diffEditors => {
+      if (diffEditors == null) {
+        return _rxjsBundlesRxMinJs.Observable.empty();
+      }
 
-        const newEditor = diffEditors.newDiffEditor.getEditor();
-        return observableFromSubscribeFunction(newEditor.onDidSave.bind(newEditor));
-      }).subscribe(() => track('diff-view-save-file'));
+      const newEditor = diffEditors.newDiffEditor.getEditor();
+      return (0, (_event || _load_event()).observableFromSubscribeFunction)(newEditor.onDidSave.bind(newEditor));
+    }).subscribe(() => (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('diff-view-save-file'));
 
-    this._disposables.add(
-      activeSectionUpdates,
-      diffEditorsUpdates,
-      diffLoadingIndicatorUpdates,
-      navigationGutterUpdates,
-      scrollToFirstChange,
-      trackSavingInSplit,
-      updateDiffSubscriptions,
-    );
+    this._disposables.add(activeSectionUpdates, diffEditorsUpdates, diffLoadingIndicatorUpdates, navigationGutterUpdates, scrollToFirstChange, trackSavingInSplit, updateDiffSubscriptions);
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
   }
-}
+};
+exports.default = SplitDiffView;
+module.exports = exports['default'];
