@@ -44,8 +44,12 @@ export class DebuggerConnection {
   _pendingRequests: Map<Id, onResponseReceived>;
   _id: number;
   _events: Subject<Object>;
+  _connectionId: number;
+  _iosDeviceInfo: IosDeviceInfo;
 
-  constructor(iosDeviceInfo: IosDeviceInfo) {
+  constructor(connectionId: number, iosDeviceInfo: IosDeviceInfo) {
+    this._iosDeviceInfo = iosDeviceInfo;
+    this._connectionId = connectionId;
     this._webSocket = null;
     this._events = new Subject();
     this._id = 0;
@@ -113,8 +117,20 @@ export class DebuggerConnection {
     return this._status.getValue() === PAUSED;
   }
 
+  getName(): string {
+    return this._iosDeviceInfo.title;
+  }
+
+  getStatus(): RuntimeStatus {
+    return this._status.getValue();
+  }
+
   getStatusChanges(): Observable<RuntimeStatus> {
     return this._status.asObservable();
+  }
+
+  getId(): number {
+    return this._connectionId;
   }
 
   dispose(): void {

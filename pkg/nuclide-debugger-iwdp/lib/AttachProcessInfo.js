@@ -28,6 +28,10 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
     return new DebuggerInstance(this, rpcService);
   }
 
+  supportThreads(): boolean {
+    return true;
+  }
+
   _getRpcService(): IwdpDebuggerService {
     const service = getServiceByNuclideUri('IwdpDebuggerService', this.getTargetUri());
     invariant(service != null);

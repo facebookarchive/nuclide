@@ -47,6 +47,7 @@ export class ConnectionMultiplexer {
   _fileCache: FileCache;
   _breakpoints: Map<BreakpointId, BreakpointParams>;
   _setPauseOnExceptionsState: PauseOnExceptionState;
+  _freshConnectionId: number;
 
   constructor(sendMessageToClient: (message: Object) => void) {
     this._disposables = new UniversalDisposable();
@@ -55,6 +56,7 @@ export class ConnectionMultiplexer {
     this._fileCache = new FileCache();
     this._breakpoints = new Map();
     this._setPauseOnExceptionsState = 'none';
+    this._freshConnectionId = 0;
   }
 
   sendCommand(message: Object): void {
@@ -135,6 +137,7 @@ export class ConnectionMultiplexer {
         // This is because we may already be paused, and wish to update the UI when we switch the
         // enabled connection.
         this._sendMessageToClient(message);
+        this._updateThreads();
         break;
       }
       case 'resumed': {
@@ -317,7 +320,7 @@ export class ConnectionMultiplexer {
   }
 
   _connectToContext(deviceInfo: IosDeviceInfo): DebuggerConnection {
-    const connection = new DebuggerConnection(deviceInfo);
+    const connection = new DebuggerConnection(this._freshConnectionId++, deviceInfo);
     this._disposables.add(
       connection
         .getStatusChanges()
@@ -369,7 +372,7 @@ export class ConnectionMultiplexer {
   _handleStatusChange(status: RuntimeStatus, connection: DebuggerConnection): void {
     switch (status) {
       case RUNNING: {
-        this._handleRunningMode();
+        this._handleRunningMode(connection);
         break;
       }
       case PAUSED: {
@@ -383,7 +386,7 @@ export class ConnectionMultiplexer {
     log(`Switching status to: ${status}`);
   }
 
-  _handleRunningMode(): void {
+  _handleRunningMode(connection: DebuggerConnection): void {
     // We will enable another paused connection if one exists.
     for (const candidate of this._connections) {
       if (candidate.isPaused()) {
@@ -397,6 +400,24 @@ export class ConnectionMultiplexer {
   _handlePausedMode(connection: DebuggerConnection): void {
     if (this._enabledConnection == null) {
       this._enabledConnection = connection;
+    }
+  }
+
+  _updateThreads(): void {
+    for (const connection of this._connections.values()) {
+      this._sendMessageToClient({
+        method: 'Debugger.threadUpdated',
+        params: {
+          thread: {
+            id: String(connection.getId()),
+            name: connection.getName(),
+            address: connection.getName(),
+            location: {},
+            stopReason: connection.getStatus(),
+            description: connection.getName(),
+          },
+        },
+      });
     }
   }
 
