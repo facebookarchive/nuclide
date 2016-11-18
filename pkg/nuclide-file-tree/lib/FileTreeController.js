@@ -71,11 +71,12 @@ class FileTreeController {
     );
 
     this._subscriptions.add(
-      atom.commands.add('atom-workspace', {
-        // Pass undefined so the default parameter gets used.
-        // NOTE: This is specifically for use in Diff View, so don't expose a menu item.
+      atom.commands.add('atom-text-editor', {
         // eslint-disable-next-line nuclide-internal/atom-commands
         'nuclide-file-tree:reveal-text-editor': this._revealTextEditor.bind(this),
+      }),
+      atom.commands.add('atom-workspace', {
+        // Pass undefined so the default parameter gets used.
         'nuclide-file-tree:reveal-active-file': this.revealActiveFile.bind(this, undefined),
         'nuclide-file-tree:recursive-collapse-all': this._collapseAll.bind(this),
       }),
@@ -221,7 +222,7 @@ class FileTreeController {
   }
 
   _revealTextEditor(event: Event): void {
-    const editorElement = ((event.target: any): atom$TextEditorElement);
+    const editorElement = ((event.currentTarget: any): atom$TextEditorElement);
     if (
       editorElement == null ||
       typeof editorElement.getModel !== 'function' ||
