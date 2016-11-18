@@ -182,6 +182,7 @@ export class NativeDebuggerService extends DebuggerRpcWebSocketService {
       // FD[4] is used as a ipc channel for output/atom notifications.
       stdio: ['pipe', 'pipe', 'pipe', 'pipe', 'pipe'],
       detached: false, // When Atom is killed, clang_server.py should be killed, too.
+      env: {PYTHONPATH: this._config.envPythonPath},
     };
     this.getLogger().logInfo(`spawn child_process: ${JSON.stringify(python_args)}`);
     const lldbProcess = child_process.spawn(

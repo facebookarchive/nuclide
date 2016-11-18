@@ -13,6 +13,7 @@ import type {DebuggerInstanceBase} from '../../nuclide-debugger-base';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {
   LaunchTargetInfo,
+  DebuggerConfig,
   NativeDebuggerService as NativeDebuggerServiceType,
 } from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
 import typeof * as NativeDebuggerService
@@ -73,14 +74,18 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
     return true;
   }
 
-  _getRpcService(): NativeDebuggerServiceType {
-    const debuggerConfig = {
+  _getDebuggerConfig(): DebuggerConfig {
+    return {
       logLevel: getConfig().serverLogLevel,
       pythonBinaryPath: getConfig().pythonBinaryPath,
       buckConfigRootFile: getConfig().buckConfigRootFile,
-      lldbPythonPath: this._launchTargetInfo.lldbPythonPath
-                        || getConfig().lldbPythonPath,
+      lldbPythonPath: this._launchTargetInfo.lldbPythonPath || getConfig().lldbPythonPath,
+      envPythonPath: '',
     };
+  }
+
+  _getRpcService(): NativeDebuggerServiceType {
+    const debuggerConfig = this._getDebuggerConfig();
     const service: ?NativeDebuggerService
       = getServiceByNuclideUri('NativeDebuggerService', this.getTargetUri());
     invariant(service);

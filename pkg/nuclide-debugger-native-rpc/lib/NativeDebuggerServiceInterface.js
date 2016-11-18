@@ -26,14 +26,15 @@ export type LaunchTargetInfo = {
   workingDirectory: string,
   stdinFilePath?: string,
   basepath?: string,
-  lldbPythonPath?: ?string,
+  lldbPythonPath?: ?string, // see DebuggerConfig
 };
 
-export type DebuggerConfig = {
+export type DebuggerConfig = { // config for lldb
   logLevel: LogLevel,
-  pythonBinaryPath: string,
+  pythonBinaryPath: string, // path of the actual python binary, e.g /usr/bin/python
   buckConfigRootFile: string,
-  lldbPythonPath: ?string,
+  lldbPythonPath: ?string, // path of the lldb python modules
+  envPythonPath: string, // sets the PYTHONPATH env var when spawning the lldb server
 };
 
 export async function getAttachTargetInfoList(
