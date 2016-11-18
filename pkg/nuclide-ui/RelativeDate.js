@@ -14,10 +14,12 @@ import {relativeDate} from '../commons-node/string';
 
 type DefaultProps = {
   delay: number,
+  shorten: boolean,
 };
 type Props = DefaultProps & {
   date: Date,
   delay?: number,
+  shorten?: boolean,
 };
 const DEFAULT_RERENDER_DELAY = 10000; // ms
 
@@ -33,6 +35,7 @@ export default class Revision extends React.Component {
 
   static defaultProps: DefaultProps = {
     delay: DEFAULT_RERENDER_DELAY,
+    shorten: false,
   }
 
   componentDidMount(): void {
@@ -52,8 +55,9 @@ export default class Revision extends React.Component {
   render(): React.Element<any> {
     const {
       date,
+      shorten,
       ...remainingProps
     } = this.props;
-    return <span {...remainingProps}>{relativeDate(date)}</span>;
+    return <span {...remainingProps}>{relativeDate(date, undefined, shorten)}</span>;
   }
 }

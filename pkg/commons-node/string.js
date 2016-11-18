@@ -37,7 +37,23 @@ const WEEK = 7 * DAY;
 const YEAR = DAY * 365;
 const MONTH = YEAR / 12;
 
-const formats = [
+const shortFormats = [
+  [0.7 * MINUTE, 'now'],
+  [1.5 * MINUTE, '1m'],
+  [60 * MINUTE, 'm', MINUTE],
+  [1.5 * HOUR, '1h'],
+  [DAY, 'h', HOUR],
+  [2 * DAY, '1d'],
+  [7 * DAY, 'd', DAY],
+  [1.5 * WEEK, '1w'],
+  [MONTH, 'w', WEEK],
+  [1.5 * MONTH, '1mo'],
+  [YEAR, 'mo', MONTH],
+  [1.5 * YEAR, '1y'],
+  [Number.MAX_VALUE, 'y', YEAR],
+];
+
+const longFormats = [
   [0.7 * MINUTE, 'just now'],
   [1.5 * MINUTE, 'a minute ago'],
   [60 * MINUTE, 'minutes ago', MINUTE],
@@ -56,6 +72,7 @@ const formats = [
 export function relativeDate(
   input_: number | Date,
   reference_?: number | Date,
+  useShortVariant?: boolean = false,
 ): string {
   let input = input_;
   let reference = reference_;
@@ -70,11 +87,11 @@ export function relativeDate(
   }
 
   const delta = reference - input;
-
+  const formats = useShortVariant ? shortFormats : longFormats;
   for (const [limit, relativeFormat, remainder] of formats) {
     if (delta < limit) {
       if (typeof remainder === 'number') {
-        return Math.round(delta / remainder) + ' ' + relativeFormat;
+        return Math.round(delta / remainder) + (useShortVariant ? '' : ' ') + relativeFormat;
       } else {
         return relativeFormat;
       }

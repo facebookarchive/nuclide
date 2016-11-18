@@ -31,6 +31,7 @@ describe('relativeDate', () => {
     const reference = 157765000000; // 01.01.1975 00:00
     const now = new Date().getTime();
 
+    // test long format
     expect(relativeDate(0)).toEqual(Math.round(now / YEAR) + ' years ago');
     expect(relativeDate(reference * SECOND, reference)).toEqual('just now');
     expect(relativeDate(reference - 41 * SECOND, reference)).toEqual('just now');
@@ -53,6 +54,30 @@ describe('relativeDate', () => {
     expect(relativeDate(reference - YEAR, reference)).toEqual('a year ago');
     expect(relativeDate(reference - YEAR * 2, reference)).toEqual('2 years ago');
     expect(relativeDate(0, reference)).toEqual('5 years ago');
+
+    // test short format
+    expect(relativeDate(0, undefined, /* short */ true)).toEqual(Math.round(now / YEAR) + 'y');
+    expect(relativeDate(reference * SECOND, reference, /* short */ true)).toEqual('now');
+    expect(relativeDate(reference - 41 * SECOND, reference, /* short */ true)).toEqual('now');
+    expect(relativeDate(reference - 42 * SECOND, reference, /* short */ true)).toEqual('1m');
+    expect(relativeDate(reference - MINUTE, reference, /* short */ true)).toEqual('1m');
+    expect(relativeDate(reference - MINUTE * 1.5, reference, /* short */ true)).toEqual('2m');
+    expect(relativeDate(reference - MINUTE * 59, reference, /* short */ true)).toEqual('59m');
+    expect(relativeDate(reference - HOUR, reference, /* short */ true)).toEqual('1h');
+    expect(relativeDate(reference - HOUR * 1.5, reference, /* short */ true)).toEqual('2h');
+    expect(relativeDate(reference - HOUR * 16, reference, /* short */ true)).toEqual('16h');
+    expect(relativeDate(reference - HOUR * 23, reference, /* short */ true)).toEqual('23h');
+    expect(relativeDate(reference - DAY * 1.8, reference, /* short */ true)).toEqual('1d');
+    expect(relativeDate(reference - DAY * 3, reference, /* short */ true)).toEqual('3d');
+    expect(relativeDate(reference - DAY * 6, reference, /* short */ true)).toEqual('6d');
+    expect(relativeDate(reference - WEEK, reference, /* short */ true)).toEqual('1w');
+    expect(relativeDate(reference - WEEK * 2, reference, /* short */ true)).toEqual('2w');
+    expect(relativeDate(reference - WEEK * 4, reference, /* short */ true)).toEqual('4w');
+    expect(relativeDate(reference - MONTH * 1.2, reference, /* short */ true)).toEqual('1mo');
+    expect(relativeDate(reference - YEAR + HOUR, reference, /* short */ true)).toEqual('12mo');
+    expect(relativeDate(reference - YEAR, reference, /* short */ true)).toEqual('1y');
+    expect(relativeDate(reference - YEAR * 2, reference, /* short */ true)).toEqual('2y');
+    expect(relativeDate(0, reference, /* short */ true)).toEqual('5y');
   });
 });
 
