@@ -11,9 +11,8 @@
 
 import type {Observable} from 'rxjs';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {ServerStatusType, FlowCoverageResult} from '..';
+import type {ServerStatusType, FlowCoverageResult, FlowAutocompleteItem} from '..';
 import type {FlowExecInfoContainer} from './FlowExecInfoContainer';
-import type {FlowAutocompleteItem} from './flowOutputTypes';
 
 import type {
   Diagnostics,
@@ -21,7 +20,6 @@ import type {
   FlowOutlineTree,
 } from '..';
 
-import {filter} from 'fuzzaldrin';
 import semver from 'semver';
 
 import {getLogger} from '../../nuclide-logging';
@@ -29,7 +27,6 @@ const logger = getLogger();
 
 import {
   insertAutocompleteToken,
-  processAutocompleteItem,
   flowCoordsToAtomCoords,
 } from './FlowHelpers';
 
@@ -179,28 +176,7 @@ export class FlowRoot {
     line: number,
     column: number,
     prefix: string,
-    activatedManually: boolean,
-  ): Promise<Array<atom$AutocompleteSuggestion>> {
-    // We may want to make this configurable, but if it is ever higher than one we need to make sure
-    // it works properly when the user manually activates it (e.g. with ctrl+space). See
-    // https://github.com/atom/autocomplete-plus/issues/597
-    //
-    // If this is made configurable, consider using autocomplete-plus' minimumWordLength setting, as
-    // per https://github.com/atom/autocomplete-plus/issues/594
-    const minimumPrefixLength = 1;
-
-    // Allows completions to immediately appear when we are completing off of object properties.
-    // This also needs to be changed if minimumPrefixLength goes above 1, since after you type a
-    // single alphanumeric character, autocomplete-plus no longer includes the dot in the prefix.
-    const prefixHasDot = prefix.indexOf('.') !== -1;
-
-    // If it is just whitespace and punctuation, ignore it (this keeps us
-    // from eating leading dots).
-    const replacementPrefix = /^[\s.]*$/.test(prefix) ? '' : prefix;
-
-    if (!activatedManually && !prefixHasDot && replacementPrefix.length < minimumPrefixLength) {
-      return [];
-    }
+  ): Promise<Array<FlowAutocompleteItem>> {
 
     const options = {};
 
@@ -213,7 +189,7 @@ export class FlowRoot {
         return [];
       }
       const json = parseJSON(args, result.stdout);
-      let resultsArray: Array<FlowAutocompleteItem>;
+      let resultsArray;
       if (Array.isArray(json)) {
         // Flow < v0.20.0
         resultsArray = json;
@@ -222,8 +198,7 @@ export class FlowRoot {
         // information.
         resultsArray = json.result;
       }
-      const candidates = resultsArray.map(item => processAutocompleteItem(replacementPrefix, item));
-      return filter(candidates, replacementPrefix, {key: 'displayText'});
+      return resultsArray;
     } catch (e) {
       return [];
     }

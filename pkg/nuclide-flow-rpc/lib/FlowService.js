@@ -83,6 +83,20 @@ export type FlowCoverageResult = {
   }>,
 };
 
+export type FlowAutocompleteItem = {
+  name: string,
+  type: string,
+  func_details: ?{
+    return_type: string,
+    params: Array<{name: string, type: string}>,
+  },
+  path: string,
+  line: number,
+  endline: number,
+  start: number,
+  end: number,
+};
+
 import {FlowRoot} from './FlowRoot';
 import {FlowServiceState} from './FlowServiceState';
 
@@ -142,10 +156,7 @@ export function flowGetAutocompleteSuggestions(
   line: number,
   column: number,
   prefix: string,
-  activatedManually: boolean,
-// TODO instead of Object, should be atom$AutocompleteSuggestion, but the RPC framework can't handle
-// that.
-): Promise<?Array<Object>> {
+): Promise<?Array<FlowAutocompleteItem>> {
   return getState().getRootContainer().runWithRoot(
     file,
     root => root.flowGetAutocompleteSuggestions(
@@ -154,7 +165,6 @@ export function flowGetAutocompleteSuggestions(
       line,
       column,
       prefix,
-      activatedManually,
     ),
   );
 }

@@ -8,6 +8,8 @@
  * @flow
  */
 
+import type {FlowAutocompleteItem} from '..';
+
 /* FLOW STATUS */
 
 export type FlowStatusOutput = {
@@ -55,18 +57,4 @@ export type FlowPoint = {
 
 export type FlowAutocompleteOutput = {
   result: Array<FlowAutocompleteItem>,
-};
-
-export type FlowAutocompleteItem = {
-  name: string,
-  type: string,
-  func_details: null | {
-    return_type: string,
-    params: Array<{name: string, type: string}>,
-  },
-  path: string,
-  line: number,
-  endline: number,
-  start: number,
-  end: number,
 };
