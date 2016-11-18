@@ -166,7 +166,7 @@ export class FileTreeEntryComponent extends React.Component {
       return null;
     }
     const title = this.props.node.connectionTitle;
-    if (title === '') {
+    if (title === '' || title === '(default)') {
       return null;
     }
 
