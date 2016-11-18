@@ -141,7 +141,9 @@ export class DefinitionPreviewView extends React.Component {
               gutterHidden={true}
               lineNumberGutterVisible={false}
               path={definition.path}
-              readOnly={true}
+              // Should be readonly, but can't because we can only make buffers readonly,
+              // We can't do readonly on editor granularity.
+              readOnly={false}
               textBuffer={this.state.buffer}
               syncTextContents={false}
             />
