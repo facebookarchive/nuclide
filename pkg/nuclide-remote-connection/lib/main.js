@@ -72,6 +72,7 @@ import typeof * as PythonService from '../../nuclide-python-rpc';
 import typeof * as RemoteCommandService from '../../nuclide-remote-atom-rpc';
 import typeof * as SourceControlService
   from '../../nuclide-server/lib/services/SourceControlService';
+import typeof * as AdbService from '../../nuclide-adb-rpc';
 
 export function getArcanistServiceByNuclideUri(uri: NuclideUri): ArcanistService {
   return nullthrows(getServiceByNuclideUri('ArcanistService', uri));
@@ -155,4 +156,8 @@ export function getRemoteCommandServiceByNuclideUri(uri: NuclideUri): RemoteComm
 
 export function getSourceControlServiceByNuclideUri(uri: NuclideUri): SourceControlService {
   return nullthrows(getServiceByNuclideUri('SourceControlService', uri));
+}
+
+export function getAdbServiceByNuclideUri(uri: NuclideUri): AdbService {
+  return nullthrows(getServiceByNuclideUri('AdbService', uri));
 }
