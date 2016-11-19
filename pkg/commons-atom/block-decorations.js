@@ -11,7 +11,6 @@
 
 import {React, ReactDOM} from 'react-for-atom';
 import {renderReactRoot} from '../commons-atom/renderReactRoot';
-import invariant from 'assert';
 
 import type ReactMountRootElement from '../nuclide-ui/ReactMountRootElement';
 
@@ -46,8 +45,7 @@ export function syncBlockDecorations<Value>(
   const decorations = editor.getDecorations({diffBlockType});
   const renderedLineNumbers = new Set();
   const {component} = editorElement;
-  invariant(component, 'Editor not yet initialized!');
-  const editorWidthPx = syncWidth
+  const editorWidthPx = (syncWidth && component != null)
     ? `${component.scrollViewNode.clientWidth}px`
     : '';
 
@@ -80,7 +78,9 @@ export function syncBlockDecorations<Value>(
       Object.assign(properties, customProps);
 
       // Invalidate the block decoration measurements.
-      component.invalidateBlockDecorationDimensions(decoration);
+      if (component != null) {
+        component.invalidateBlockDecorationDimensions(decoration);
+      }
     }
 
     // The item is already up to date.
