@@ -261,7 +261,7 @@ class BreakpointDisplayController {
     const marker = this._editor.markBufferPosition([line, 0], {
       invalidate: 'never',
     });
-    const elem: HTMLAnchorElement = document.createElement('a');
+    const elem: HTMLElement = document.createElement('span');
     elem.className = isShadow ? 'nuclide-debugger-shadow-breakpoint-icon' :
       'nuclide-debugger-breakpoint-icon';
     invariant(this._gutter != null);
