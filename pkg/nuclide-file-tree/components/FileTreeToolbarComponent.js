@@ -153,6 +153,10 @@ export class FileTreeToolbarComponent extends React.Component {
       return;
     }
 
+    if (this.state.definitionsAreEmpty && !this.state.selectionIsActive) {
+      return;
+    }
+
     this.setState({selectionIsActive: !this.state.selectionIsActive});
   }
 
