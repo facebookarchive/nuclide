@@ -16,9 +16,6 @@ import invariant from 'assert';
 import {bufferPositionForMouseEvent} from '../../commons-atom/mouse-to-position';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 
-const DIFF_VIEW_NAVIGATION_TARGET = 'nuclide-diff-view-navigation-target';
-const DIFF_VIEW_NAVIGATION_BAR = 'nuclide-diff-view-navigation-bar';
-
 /**
  * A single delegate which handles events from the object.
  *
@@ -77,6 +74,9 @@ class BreakpointDisplayController {
 
   _registerGutterMouseHandlers(gutter: atom$Gutter): void {
     const gutterView = atom.views.getView(gutter);
+    if (gutter.name !== 'line-number' && gutter.name !== 'nuclide-breakpoint') {
+      return;
+    }
     const boundClickHandler = this._handleGutterClick.bind(this);
     const boundMouseMoveHandler = this._handleGutterMouseMove.bind(this);
     const boundMouseLeaveHandler = this._handleGutterMouseLeave.bind(this);
@@ -186,17 +186,9 @@ class BreakpointDisplayController {
   }
 
   _handleGutterClick(event: Event): void {
-    // Filter out clicks to the folding chevron.
-    const FOLDING_CHEVRON_CLASS_NAME = 'icon-right';
-    const BLAME_HASH_CLICKABLE_CLASS_NAME = 'nuclide-blame-hash-clickable';
     // classList isn't in the defs of EventTarget...
     const target: HTMLElement = (event.target: any);
-    const ignoreClickClassNames = [
-      FOLDING_CHEVRON_CLASS_NAME,
-      BLAME_HASH_CLICKABLE_CLASS_NAME,
-      DIFF_VIEW_NAVIGATION_TARGET,
-    ];
-    if (ignoreClickClassNames.some(className => target.classList.contains(className))) {
+    if (target.classList.contains('icon-right')) {
       return;
     }
 
@@ -215,13 +207,7 @@ class BreakpointDisplayController {
 
   _handleGutterMouseMove(event: Event): void {
     const curLine = this._getCurrentMouseEventLine(event);
-    // classList isn't in the defs of EventTarget...
-    const target: HTMLElement = (event.target: any);
-    const ignoreMouseMoveClassNames = [DIFF_VIEW_NAVIGATION_TARGET, DIFF_VIEW_NAVIGATION_BAR];
-    if (
-      this._isLineOverLastShadowBreakpoint(curLine) ||
-      ignoreMouseMoveClassNames.some(className => target.classList.contains(className))
-    ) {
+    if (this._isLineOverLastShadowBreakpoint(curLine)) {
       return;
     }
     // User moves to a new line we need to delete the old shadow breakpoint
