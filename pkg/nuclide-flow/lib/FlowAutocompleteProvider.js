@@ -23,13 +23,9 @@ export default class FlowAutocompleteProvider {
   static async getSuggestions(
     request: atom$AutocompleteRequest,
   ): Promise<?Array<atom$AutocompleteSuggestion>> {
-    const {editor, prefix, activatedManually} = request;
+    const {bufferPosition, editor, prefix, activatedManually} = request;
     const filePath = editor.getPath();
     const contents = editor.getText();
-    const cursor = editor.getLastCursor();
-    const line = cursor.getBufferRow();
-    const col = cursor.getBufferColumn();
-
     if (filePath == null) {
       return null;
     }
@@ -60,8 +56,8 @@ export default class FlowAutocompleteProvider {
     const flowSuggestions = await flowService.flowGetAutocompleteSuggestions(
       filePath,
       contents,
-      line,
-      col,
+      bufferPosition.row,
+      bufferPosition.column,
       prefix,
     );
 
