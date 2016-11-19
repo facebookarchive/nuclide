@@ -12,16 +12,16 @@
 import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
 
 import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
-import {ExampleGadgetA} from './ExampleGadgetA';
-import {ExampleGadgetB} from './ExampleGadgetB';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import {ExampleGadgetA, WORKSPACE_VIEW_URI_A} from './ExampleGadgetA';
+import {ExampleGadgetB, WORKSPACE_VIEW_URI_B} from './ExampleGadgetB';
 import invariant from 'assert';
-import {CompositeDisposable} from 'atom';
 import {React} from 'react-for-atom';
 
-let disposables: ?CompositeDisposable = null;
+let disposables: ?UniversalDisposable = null;
 
 export function activate() {
-  disposables = new CompositeDisposable();
+  disposables = new UniversalDisposable();
 }
 
 // This example shows two different ways to create a gadget: ExampleGadgetA stores its state in a
@@ -29,25 +29,35 @@ export function activate() {
 
 export function consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
   invariant(disposables != null);
+
+  // Option A
   disposables.add(
-    api.registerFactory({
-      id: 'example-gadget-a',
-      name: 'Example Gadget A',
-      iconName: 'telescope',
-      toggleCommand: 'sample-toggle-example-gadget-a',
-      defaultLocation: 'right-panel',
-      create: () => new ExampleGadgetA(),
-      isInstance: item => item instanceof ExampleGadgetA,
+    api.addOpener(uri => {
+      if (uri === WORKSPACE_VIEW_URI_A) {
+        return new ExampleGadgetA();
+      }
     }),
-    api.registerFactory({
-      id: 'example-gadget-b',
-      name: 'Example Gadget B',
-      iconName: 'telescope',
-      toggleCommand: 'sample-toggle-example-gadget-b',
-      defaultLocation: 'right-panel',
-      create: () => viewableFromReactElement(<ExampleGadgetB />),
-      isInstance: item => item instanceof ExampleGadgetB,
+    () => api.destroyWhere(item => item instanceof ExampleGadgetA),
+    atom.commands.add(
+      'atom-workspace',
+      'sample-toggle-example-gadget-a:toggle',
+      event => { api.toggle(WORKSPACE_VIEW_URI_A, (event: any).detail); },
+    ),
+  );
+
+  // Option B
+  disposables.add(
+    api.addOpener(uri => {
+      if (uri === WORKSPACE_VIEW_URI_B) {
+        return viewableFromReactElement(<ExampleGadgetB />);
+      }
     }),
+    () => api.destroyWhere(item => item instanceof ExampleGadgetB),
+    atom.commands.add(
+      'atom-workspace',
+      'sample-toggle-example-gadget-b:toggle',
+      event => { api.toggle(WORKSPACE_VIEW_URI_B, (event: any).detail); },
+    ),
   );
 }
 

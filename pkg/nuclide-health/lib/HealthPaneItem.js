@@ -19,6 +19,8 @@ type Props = {
   stateStream: Observable<?PaneItemState>,
 };
 
+export const WORKSPACE_VIEW_URI = 'atom://nuclide/health';
+
 export default class HealthPaneItem extends React.Component {
   props: Props;
   state: PaneItemState;
@@ -53,6 +55,14 @@ export default class HealthPaneItem extends React.Component {
   // Return false to prevent the tab getting split (since we only update a singleton health pane).
   copy(): boolean {
     return false;
+  }
+
+  getURI(): string {
+    return WORKSPACE_VIEW_URI;
+  }
+
+  getDefaultLocation(): string {
+    return 'pane';
   }
 
   render() {

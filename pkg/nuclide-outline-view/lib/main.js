@@ -15,13 +15,12 @@ import type {Result} from '../../commons-atom/ActiveEditorRegistry';
 import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
 import type {Observable} from 'rxjs';
 
-import {CompositeDisposable, Disposable} from 'atom';
-
 import ActiveEditorRegistry from '../../commons-atom/ActiveEditorRegistry';
 import createPackage from '../../commons-atom/createPackage';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {track} from '../../nuclide-analytics';
 
-import {OutlineViewPanelState} from './OutlineViewPanel';
+import {OutlineViewPanelState, WORKSPACE_VIEW_URI} from './OutlineViewPanel';
 import {createOutlines} from './createOutlines';
 
 import type {TokenizedText} from '../../commons-node/tokenizedText-rpc-types';
@@ -96,7 +95,7 @@ export type ResultsStreamProvider = {
 };
 
 class Activation {
-  _disposables: CompositeDisposable;
+  _disposables: UniversalDisposable;
 
   _editorService: ActiveEditorRegistry<OutlineProvider, ?Outline>;
 
@@ -146,7 +145,7 @@ class Activation {
   }
 
   constructor() {
-    this._disposables = new CompositeDisposable();
+    this._disposables = new UniversalDisposable();
 
     this._editorService = new ActiveEditorRegistry(
       (provider, editor) => {
@@ -174,7 +173,7 @@ class Activation {
     });
     // Class added is not defined elsewhere, and is just used to mark the toolbar button
     element.classList.add('nuclide-outline-view-toolbar-button');
-    const disposable = new Disposable(() => { toolBar.removeItems(); });
+    const disposable = new UniversalDisposable(() => { toolBar.removeItems(); });
     this._disposables.add(disposable);
     return disposable;
   }
@@ -186,15 +185,17 @@ class Activation {
 
   consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
     this._disposables.add(
-      api.registerFactory({
-        id: 'nuclide-outline-view',
-        name: 'Outline View',
-        iconName: 'list-unordered',
-        toggleCommand: 'nuclide-outline-view:toggle',
-        defaultLocation: 'right-panel',
-        create: () => this._createOutlineViewPanelState(),
-        isInstance: item => item instanceof OutlineViewPanelState,
+      api.addOpener(uri => {
+        if (uri === WORKSPACE_VIEW_URI) {
+          return this._createOutlineViewPanelState();
+        }
       }),
+      () => api.destroyWhere(item => item instanceof OutlineViewPanelState),
+      atom.commands.add(
+        'atom-workspace',
+        'nuclide-outline-view:toggle',
+        event => { api.toggle(WORKSPACE_VIEW_URI, (event: any).detail); },
+      ),
     );
   }
 
@@ -208,7 +209,7 @@ class Activation {
     };
   }
 
-  consumeRegisterNuxService(addNewNux: RegisterNux): Disposable {
+  consumeRegisterNuxService(addNewNux: RegisterNux): IDisposable {
     const disposable = addNewNux(this._createOutlineViewNuxTourModel());
     this._disposables.add(disposable);
     return disposable;

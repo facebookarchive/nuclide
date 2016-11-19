@@ -10,19 +10,6 @@
 
 import type {TrackingEvent} from '../../nuclide-analytics';
 
-export type ViewableFactory = {
-  id: string,
-  name: string,
-  iconName?: atom$Octicon,
-  toggleCommand?: string,
-  defaultLocation?: string,
-  allowedLocations?: Array<string>,
-  disallowedLocations?: Array<string>,
-
-  create(): Viewable,
-  isInstance(item: Viewable): boolean,
-};
-
 /**
  * The object used as items in locations. This is based on the supported interface for items in Atom
  * panes. That way, we maintain compatibility with Atom (upstream?) and can put them in panes as-is.
@@ -40,6 +27,13 @@ export type Viewable = atom$PaneItem & {
   +getPreferredInitialHeight?: () => number,
   +getPreferredInitialWidth?: () => number,
   +didChangeVisibility?: (visible: boolean) => void,
+  +getDefaultLocation?: () => string,
+};
+
+export type Opener = (uri: string) => ?Viewable;
+
+export type OpenOptions = {
+  searchAllPanes?: boolean,
 };
 
 export type Location = {
@@ -57,19 +51,21 @@ export type LocationFactory = {
   create(serializedState: ?Object): Location,
 };
 
+export type ToggleOptions = {
+  visible?: ?boolean,
+};
+
 export type WorkspaceViewsService = {
-  registerFactory(factory: ViewableFactory): IDisposable,
+  addOpener(opener: Opener): IDisposable,
+  destroyWhere(predicate: (item: Viewable) => boolean): void,
+  open(uri: string, options?: OpenOptions): void,
   registerLocation(factory: LocationFactory): IDisposable,
-  getViewableFactories(location: string): Array<ViewableFactory>,
-  observeViewableFactories(
-    location: string,
-    cb: (factories: Set<ViewableFactory>) => void,
-  ): IDisposable,
+  toggle(uri: string, options?: ToggleOptions): void,
 };
 
 export type AppState = {
-  viewableFactories: Map<string, ViewableFactory>,
   locations: Map<string, Location>,
+  openers: Set<Opener>,
   serializedLocationStates: Map<string, ?Object>,
 };
 
@@ -86,10 +82,39 @@ export type Store = {
 // Actions
 //
 
+type AddOpenerAction = {
+  type: 'ADD_OPENER',
+  payload: {
+    opener: Opener,
+  },
+};
+
+type DestroyWhereAction = {
+  type: 'DESTROY_WHERE',
+  payload: {
+    predicate: (item: Viewable) => boolean,
+  },
+};
+
+type RemoveOpenerAction = {
+  type: 'REMOVE_OPENER',
+  payload: {
+    opener: Opener,
+  },
+};
+
+type OpenAction = {
+  type: 'OPEN',
+  payload: {
+    uri: string,
+    searchAllPanes: boolean,
+  },
+};
+
 type CreateViewableAction = {
   type: 'CREATE_VIEWABLE',
   payload: {
-    itemType: string,
+    uri: string,
   },
 };
 
@@ -98,27 +123,6 @@ type ItemCreatedAction = {
   payload: {
     item: Object,
     itemType: string,
-  },
-};
-
-type RegisterViewableFactoryAction = {
-  type: 'REGISTER_VIEWABLE_FACTORY',
-  payload: {
-    viewableFactory: ViewableFactory,
-  },
-};
-
-type UnregisterViewableFactoryAction = {
-  type: 'UNREGISTER_VIEWABLE_FACTORY',
-  payload: {
-    id: string,
-  },
-};
-
-type ViewableFactoryUnregisteredAction = {
-  type: 'VIEWABLE_FACTORY_UNREGISTERED',
-  payload: {
-    id: string,
   },
 };
 
@@ -163,9 +167,8 @@ type SetItemVisibilityAction = {
 type ToggleItemVisibilityAction = {
   type: 'TOGGLE_ITEM_VISIBILITY',
   payload: {
-    itemType: string,
+    uri: string,
     visible: ?boolean,
-    immediate: boolean,
   },
 };
 
@@ -177,12 +180,13 @@ type TrackAction = {
 };
 
 export type Action =
-  CreateViewableAction
+  AddOpenerAction
+  | DestroyWhereAction
+  | RemoveOpenerAction
+  | OpenAction
+  | CreateViewableAction
   | ItemCreatedAction
-  | RegisterViewableFactoryAction
   | TrackAction
-  | UnregisterViewableFactoryAction
-  | ViewableFactoryUnregisteredAction
   | RegisterLocationAction
   | RegisterLocationFactoryAction
   | UnregisterLocationAction

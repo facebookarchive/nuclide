@@ -19,6 +19,8 @@ import {Section} from '../../nuclide-ui/Section';
 
 import {matchesFilter} from './settings-utils';
 
+export const WORKSPACE_VIEW_URI = 'atom://nuclide/settings';
+
 export default class NuclideSettingsPaneItem extends React.Component {
   _disposables: CompositeDisposable;
   state: Object;
@@ -195,6 +197,14 @@ export default class NuclideSettingsPaneItem extends React.Component {
 
   getIconName(): string {
     return 'tools';
+  }
+
+  getDefaultLocation(): string {
+    return 'pane';
+  }
+
+  getURI(): string {
+    return WORKSPACE_VIEW_URI;
   }
 
   // Prevent the tab getting split.

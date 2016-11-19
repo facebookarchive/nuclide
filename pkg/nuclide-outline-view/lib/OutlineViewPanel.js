@@ -17,6 +17,8 @@ import {renderReactRoot} from '../../commons-atom/renderReactRoot';
 import {OutlineView} from './OutlineView';
 import {BehaviorSubject, Observable} from 'rxjs';
 
+export const WORKSPACE_VIEW_URI = 'atom://nuclide/outline-view';
+
 export class OutlineViewPanelState {
   _outlines: Observable<OutlineForUi>;
   _visibility: BehaviorSubject<boolean>;
@@ -36,6 +38,14 @@ export class OutlineViewPanelState {
 
   getPreferredInitialWidth(): number {
     return 300;
+  }
+
+  getURI(): string {
+    return WORKSPACE_VIEW_URI;
+  }
+
+  getDefaultLocation(): string {
+    return 'right-panel';
   }
 
   didChangeVisibility(visible: boolean): void {

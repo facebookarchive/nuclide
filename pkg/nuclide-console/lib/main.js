@@ -22,24 +22,24 @@ import type {
 import createPackage from '../../commons-atom/createPackage';
 import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
 import {combineEpics, createEpicMiddleware} from '../../commons-node/redux-observable';
-import {CompositeDisposable, Disposable} from 'atom';
 import featureConfig from '../../commons-atom/featureConfig';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import * as Actions from './redux/Actions';
 import * as Epics from './redux/Epics';
 import Reducers from './redux/Reducers';
-import {ConsoleContainer} from './ui/ConsoleContainer';
+import {ConsoleContainer, WORKSPACE_VIEW_URI} from './ui/ConsoleContainer';
 import invariant from 'assert';
 import {React} from 'react-for-atom';
 import {applyMiddleware, createStore} from 'redux';
 
 class Activation {
-  _disposables: CompositeDisposable;
+  _disposables: UniversalDisposable;
   _rawState: ?Object;
   _store: Store;
 
   constructor(rawState: ?Object) {
     this._rawState = rawState;
-    this._disposables = new CompositeDisposable(
+    this._disposables = new UniversalDisposable(
       atom.contextMenu.add({
         '.nuclide-console-record': [
           {
@@ -102,21 +102,23 @@ class Activation {
       priority: 700,
     });
     this._disposables.add(
-      new Disposable(() => { toolBar.removeItems(); }),
+      () => { toolBar.removeItems(); },
     );
   }
 
   consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
     this._disposables.add(
-      api.registerFactory({
-        id: 'nuclide-console',
-        name: 'Console',
-        iconName: 'terminal',
-        toggleCommand: 'nuclide-console:toggle',
-        defaultLocation: 'bottom-panel',
-        create: () => viewableFromReactElement(<ConsoleContainer store={this._getStore()} />),
-        isInstance: item => item instanceof ConsoleContainer,
+      api.addOpener(uri => {
+        if (uri === WORKSPACE_VIEW_URI) {
+          return viewableFromReactElement(<ConsoleContainer store={this._getStore()} />);
+        }
       }),
+      () => api.destroyWhere(item => item instanceof ConsoleContainer),
+      atom.commands.add(
+        'atom-workspace',
+        'nuclide-console:toggle',
+        event => { api.toggle(WORKSPACE_VIEW_URI, (event: any).detail); },
+      ),
     );
   }
 
@@ -128,13 +130,13 @@ class Activation {
     // Create a local, nullable reference so that the service consumers don't keep the Activation
     // instance in memory.
     let activation = this;
-    this._disposables.add(new Disposable(() => { activation = null; }));
+    this._disposables.add(() => { activation = null; });
 
     return {
       registerOutputProvider(outputProvider: OutputProvider): IDisposable {
         invariant(activation != null, 'Output service used after deactivation');
         activation._getStore().dispatch(Actions.registerOutputProvider(outputProvider));
-        return new Disposable(() => {
+        return new UniversalDisposable(() => {
           if (activation != null) {
             activation._getStore().dispatch(Actions.unregisterOutputProvider(outputProvider));
           }
@@ -147,12 +149,12 @@ class Activation {
     // Create a local, nullable reference so that the service consumers don't keep the Activation
     // instance in memory.
     let activation = this;
-    this._disposables.add(new Disposable(() => { activation = null; }));
+    this._disposables.add(() => { activation = null; });
 
     return executor => {
       invariant(activation != null, 'Executor registration attempted after deactivation');
       activation._getStore().dispatch(Actions.registerExecutor(executor));
-      return new Disposable(() => {
+      return new UniversalDisposable(() => {
         if (activation != null) {
           activation._getStore().dispatch(Actions.unregisterExecutor(executor));
         }

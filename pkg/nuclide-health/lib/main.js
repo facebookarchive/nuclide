@@ -28,7 +28,7 @@ import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {cacheWhileSubscribed} from '../../commons-node/observable';
 
 // Imports from within this Nuclide package.
-import HealthPaneItem from './HealthPaneItem';
+import HealthPaneItem, {WORKSPACE_VIEW_URI} from './HealthPaneItem';
 import getChildProcessesTree from './getChildProcessesTree';
 import getStats from './getStats';
 
@@ -118,18 +118,18 @@ class Activation {
   consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
     invariant(this._paneItemStates);
     this._subscriptions.add(
-      api.registerFactory({
-        id: 'nuclide-health',
-        name: 'Health',
-        iconName: 'dashboard',
-        toggleCommand: 'nuclide-health:toggle',
-        defaultLocation: 'pane',
-        create: () => {
+      api.addOpener(uri => {
+        if (uri === WORKSPACE_VIEW_URI) {
           invariant(this._paneItemStates != null);
           return viewableFromReactElement(<HealthPaneItem stateStream={this._paneItemStates} />);
-        },
-        isInstance: item => item instanceof HealthPaneItem,
+        }
       }),
+      () => api.destroyWhere(item => item instanceof HealthPaneItem),
+      atom.commands.add(
+        'atom-workspace',
+        'nuclide-health:toggle',
+        event => { api.toggle(WORKSPACE_VIEW_URI, (event: any).detail); },
+      ),
     );
   }
 

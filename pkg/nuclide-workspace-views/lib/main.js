@@ -9,10 +9,17 @@
  * the root directory of this source tree.
  */
 
-import type {SerializedAppState, Store, ViewableFactory, WorkspaceViewsService} from './types';
+import type {
+  Opener,
+  OpenOptions,
+  SerializedAppState,
+  Store,
+  ToggleOptions,
+  Viewable,
+  WorkspaceViewsService,
+} from './types';
 
 import createPackage from '../../commons-atom/createPackage';
-import syncAtomCommands from '../../commons-atom/sync-atom-commands';
 import {combineEpics, createEpicMiddleware} from '../../commons-node/redux-observable';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {getLogger} from '../../nuclide-logging';
@@ -23,7 +30,6 @@ import * as Reducers from './redux/Reducers';
 import invariant from 'assert';
 import {Disposable} from 'atom';
 import {applyMiddleware, combineReducers, createStore} from 'redux';
-import {Observable} from 'rxjs';
 
 class Activation {
   _disposables: UniversalDisposable;
@@ -41,10 +47,8 @@ class Activation {
 
   _getStore(): Store {
     if (this._store == null) {
-      const {store, disposables} = createPackageStore(this._rawState || {});
+      this._store = createPackageStore(this._rawState || {});
       this._rawState = null;
-      this._store = store;
-      this._disposables.add(disposables);
     }
     return this._store;
   }
@@ -58,15 +62,6 @@ class Activation {
     this._disposables.add(() => { pkg = null; });
 
     return {
-      registerFactory: viewableFactory => {
-        invariant(pkg != null, 'Viewables API used after deactivation');
-        pkg._getStore().dispatch(Actions.registerViewableFactory(viewableFactory));
-        return new Disposable(() => {
-          if (pkg != null) {
-            pkg._getStore().dispatch(Actions.unregisterViewableFactory(viewableFactory.id));
-          }
-        });
-      },
       registerLocation: locationFactory => {
         invariant(pkg != null, 'Viewables API used after deactivation');
         pkg._getStore().dispatch(Actions.registerLocationFactory(locationFactory));
@@ -76,30 +71,34 @@ class Activation {
           }
         });
       },
-      getViewableFactories(location: string): Array<ViewableFactory> {
+      addOpener(opener: Opener): IDisposable {
         invariant(pkg != null, 'Viewables API used after deactivation');
-        return Array.from(pkg._getStore().getState().viewableFactories.values());
+        pkg._getStore().dispatch(Actions.addOpener(opener));
+        return new Disposable(() => {
+          if (pkg != null) {
+            pkg._getStore().dispatch(Actions.removeOpener(opener));
+          }
+        });
       },
-      observeViewableFactories(
-        location: string,
-        cb: (factories: Set<ViewableFactory>) => void,
-      ): IDisposable {
+      destroyWhere(predicate: (item: Viewable) => boolean) {
+        if (pkg == null) { return; }
+        pkg._getStore().dispatch(Actions.destroyWhere(predicate));
+      },
+      open(uri: string, options?: OpenOptions): void {
         invariant(pkg != null, 'Viewables API used after deactivation');
-        return new UniversalDisposable(
-          // $FlowFixMe: Teach flow about Symbol.observable
-          Observable.from(pkg._getStore())
-            .map(state => state.viewableFactories)
-            .distinctUntilChanged()
-            .map(viewableFactories => new Set(viewableFactories.values()))
-            .subscribe(cb),
-        );
+        pkg._getStore().dispatch(Actions.open(uri, options));
+      },
+      toggle(uri: string, options?: ?ToggleOptions): void {
+        invariant(pkg != null, 'Viewables API used after deactivation');
+        const visible = options != null ? options.visible : undefined;
+        pkg._getStore().dispatch(Actions.toggleItemVisibility(uri, visible));
       },
     };
   }
 
 }
 
-function createPackageStore(rawState: Object): {store: Store, disposables: IDisposable} {
+function createPackageStore(rawState: Object): Store {
   const initialState = AppSerialization.deserialize(rawState);
   const epics = Object.keys(Epics)
     .map(k => Epics[k])
@@ -118,33 +117,7 @@ function createPackageStore(rawState: Object): {store: Store, disposables: IDisp
     applyMiddleware(createEpicMiddleware(rootEpic)),
   );
 
-  const states = Observable.from(store);
-
-  // Add a toggle command for every viewable provider. We avoid debouncing here so that commands
-  // will immediately be available to packages after they register themselves.
-  const disposables = new UniversalDisposable(
-    syncAtomCommands(
-      states
-        .map(state => state.viewableFactories)
-        .distinctUntilChanged()
-        .map(viewableFactories =>
-          new Set(
-            Array.from(viewableFactories.values())
-              .filter(viewableFactory => viewableFactory.toggleCommand != null),
-          ),
-        ),
-      viewableFactory => ({
-        'atom-workspace': {
-          [viewableFactory.toggleCommand]: event => {
-            const visible = event.detail == null ? undefined : event.detail.visible;
-            store.dispatch(Actions.toggleItemVisibility(viewableFactory.id, visible));
-          },
-        },
-      }),
-    ),
-  );
-
-  return {store, disposables};
+  return store;
 }
 
 export default createPackage(Activation);

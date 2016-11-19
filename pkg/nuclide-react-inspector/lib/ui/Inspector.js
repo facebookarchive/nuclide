@@ -13,6 +13,8 @@ import {React} from 'react-for-atom';
 import nuclideUri from '../../../commons-node/nuclideUri';
 import {Webview} from '../../../nuclide-ui/Webview';
 
+export const WORKSPACE_VIEW_URI = 'atom://nuclide/react-inspector';
+
 export default class Inspector extends React.Component {
   constructor() {
     super();
@@ -21,6 +23,14 @@ export default class Inspector extends React.Component {
 
   getTitle(): string {
     return 'React Inspector';
+  }
+
+  getDefaultLocation(): string {
+    return 'pane';
+  }
+
+  getURI(): string {
+    return WORKSPACE_VIEW_URI;
   }
 
   render(): ?React.Element<any> {

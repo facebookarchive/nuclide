@@ -21,6 +21,8 @@ import featureConfig from '../../commons-atom/featureConfig';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {Checkbox} from '../../nuclide-ui/Checkbox';
 
+export const WORKSPACE_VIEW_URI = 'atom://nuclide/home';
+
 const NUCLIDE_DOCS_URL = createUtmUrl('http://nuclide.io', 'welcome');
 const DEFAULT_WELCOME = (
   <div>
@@ -141,6 +143,14 @@ export default class HomePaneItem extends React.Component {
   // Return false to prevent the tab getting split (since we only update a singleton health pane).
   copy() {
     return false;
+  }
+
+  getURI(): string {
+    return WORKSPACE_VIEW_URI;
+  }
+
+  getDefaultLocation(): string {
+    return 'pane';
   }
 
   componentWillUnmount() {

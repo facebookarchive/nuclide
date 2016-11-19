@@ -13,14 +13,14 @@ import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/type
 import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 
 import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
-import {CompositeDisposable, Disposable} from 'atom';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {React} from 'react-for-atom';
-import SettingsPaneItem from './SettingsPaneItem';
+import SettingsPaneItem, {WORKSPACE_VIEW_URI} from './SettingsPaneItem';
 
-let subscriptions: CompositeDisposable = (null: any);
+let subscriptions: UniversalDisposable = (null: any);
 
 export function activate(state: ?Object): void {
-  subscriptions = new CompositeDisposable();
+  subscriptions = new UniversalDisposable();
 }
 
 export function deactivate(): void {
@@ -30,14 +30,17 @@ export function deactivate(): void {
 
 export function consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
   subscriptions.add(
-    api.registerFactory({
-      id: 'nuclide-settings',
-      name: 'Nuclide Settings',
-      toggleCommand: 'nuclide-settings:toggle',
-      defaultLocation: 'pane',
-      create: () => viewableFromReactElement(<SettingsPaneItem />),
-      isInstance: item => item instanceof SettingsPaneItem,
+    api.addOpener(uri => {
+      if (uri === WORKSPACE_VIEW_URI) {
+        return viewableFromReactElement(<SettingsPaneItem />);
+      }
     }),
+    () => api.destroyWhere(item => item instanceof SettingsPaneItem),
+    atom.commands.add(
+      'atom-workspace',
+      'nuclide-settings:toggle',
+      event => { api.toggle(WORKSPACE_VIEW_URI, (event: any).detail); },
+    ),
   );
 }
 
@@ -52,7 +55,7 @@ export function consumeToolBar(getToolBar: GetToolBar): IDisposable {
     tooltip: 'Open Nuclide Settings',
     priority: -500,
   });
-  const disposable = new Disposable(() => { toolBar.removeItems(); });
+  const disposable = new UniversalDisposable(() => { toolBar.removeItems(); });
   subscriptions.add(disposable);
   return disposable;
 }

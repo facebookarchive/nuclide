@@ -15,7 +15,6 @@ import type {
   LocationFactory,
   Store,
   Viewable,
-  ViewableFactory,
 } from '../lib/types';
 
 import * as Actions from '../lib/redux/Actions';
@@ -25,7 +24,6 @@ import {
   setItemVisibilityEpic,
   trackActionsEpic,
   unregisterLocationEpic,
-  unregisterViewableFactoryEpic,
 } from '../lib/redux/Epics';
 import {ActionsObservable} from '../../commons-node/redux-observable';
 import invariant from 'assert';
@@ -64,26 +62,26 @@ describe('Epics', () => {
   describe('createViewableEpic', () => {
 
     it('create and shows items', () => {
-      const viewableFactory = createMockViewableFactory();
+      const VIEW_URI = 'atom://nuclide/test';
+      const item = createMockViewable();
+      const opener = jasmine.createSpy().andReturn(item);
       const location = createMockLocation();
       const store = {
         getState: () => ({
           locations: new Map([['test-location', location]]),
-          viewableFactories: new Map([['test-view', viewableFactory]]),
+          openers: new Set([opener]),
         }),
       };
 
-      const item = createMockViewable();
-      spyOn(viewableFactory, 'create').andReturn(item);
       spyOn(location, 'showItem');
 
       runActions(
-        [Actions.createViewable('test-view')],
+        [Actions.createViewable(VIEW_URI)],
         createViewableEpic,
         ((store: any): Store),
       );
 
-      expect(viewableFactory.create).toHaveBeenCalled();
+      expect(opener).toHaveBeenCalled();
       expect(location.showItem).toHaveBeenCalledWith(item);
     });
 
@@ -173,48 +171,12 @@ describe('Epics', () => {
 
   });
 
-  describe('unregisterViewableFactoryEpic', () => {
-
-    it('destroys items', () => {
-      const location = createMockLocation();
-      const viewableFactory = createMockViewableFactory();
-      const store = {
-        getState: () => ({
-          locations: new Map([['test-location', location]]),
-          viewableFactories: new Map([['test-viewable', viewableFactory]]),
-        }),
-      };
-      const item = createMockViewable();
-
-      spyOn(location, 'getItems').andReturn([item]);
-      spyOn(location, 'destroyItem');
-      spyOn(viewableFactory, 'isInstance').andReturn(true);
-
-      runActions(
-        [Actions.unregisterViewableFactory('test-viewable')],
-        unregisterViewableFactoryEpic,
-        ((store: any): Store),
-      );
-      expect(location.destroyItem).toHaveBeenCalledWith(item);
-    });
-
-  });
-
 });
 
 function createMockLocationFactory(): LocationFactory {
   return {
     id: 'test-location',
     create: createMockLocation,
-  };
-}
-
-function createMockViewableFactory(): ViewableFactory {
-  return {
-    id: 'test-viewable',
-    name: 'Test Viewable',
-    create: () => ((null: any): Viewable),
-    isInstance: item => true,
   };
 }
 
@@ -230,7 +192,10 @@ function createMockLocation(): Location {
 }
 
 function createMockViewable(): Viewable {
-  return (({}: any): Viewable);
+  const mock = {
+    getDefaultLocation: () => 'test-location',
+  };
+  return ((mock: any): Viewable);
 }
 
 type Epic = (actions: ActionsObservable<Action>, store: Store) => Observable<Action>;

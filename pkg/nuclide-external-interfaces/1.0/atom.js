@@ -408,6 +408,7 @@ declare type atom$PaneItem = {
   +getTitle: () => string,
   +getLongTitle?: () => string,
   +getIconName?: () => atom$Octicon,
+  +getURI?: () => string,
   +onDidChangeIcon?: (cb: (icon: atom$Octicon) => void) => IDisposable,
   +onDidChangeTitle?: (cb: (title: string) => void) => IDisposable,
   +serialize?: () => Object,

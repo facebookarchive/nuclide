@@ -10,25 +10,57 @@
  */
 
 import type {TrackingEvent} from '../../../nuclide-analytics';
-import type {Action, Location, LocationFactory, Viewable, ViewableFactory} from '../types';
+import type {Action, Location, LocationFactory, Opener, OpenOptions, Viewable} from '../types';
 
+export const ADD_OPENER = 'ADD_OPENER';
+export const DESTROY_WHERE = 'DESTROY_WHERE';
+export const REMOVE_OPENER = 'REMOVE_OPENER';
+export const OPEN = 'OPEN';
 export const CREATE_VIEWABLE = 'CREATE_VIEWABLE';
 export const ITEM_CREATED = 'ITEM_CREATED';
 export const SET_ITEM_VISIBILITY = 'SET_ITEM_VISIBILITY';
 export const TOGGLE_ITEM_VISIBILITY = 'TOGGLE_ITEM_VISIBILITY';
 export const TRACK = 'TRACK';
-export const REGISTER_VIEWABLE_FACTORY = 'REGISTER_VIEWABLE_FACTORY';
-export const UNREGISTER_VIEWABLE_FACTORY = 'UNREGISTER_VIEWABLE_FACTORY';
 export const REGISTER_LOCATION = 'REGISTER_LOCATION';
 export const REGISTER_LOCATION_FACTORY = 'REGISTER_LOCATION_FACTORY';
 export const UNREGISTER_LOCATION = 'UNREGISTER_LOCATION';
 export const LOCATION_UNREGISTERED = 'LOCATION_UNREGISTERED';
-export const VIEWABLE_FACTORY_UNREGISTERED = 'VIEWABLE_FACTORY_UNREGISTERED';
 
-export function createViewable(itemType: string): Action {
+export function addOpener(opener: Opener): Action {
+  return {
+    type: ADD_OPENER,
+    payload: {opener},
+  };
+}
+
+export function destroyWhere(predicate: (item: Viewable) => boolean): Action {
+  return {
+    type: DESTROY_WHERE,
+    payload: {predicate},
+  };
+}
+
+export function removeOpener(opener: Opener): Action {
+  return {
+    type: REMOVE_OPENER,
+    payload: {opener},
+  };
+}
+
+export function open(uri: string, options?: OpenOptions): Action {
+  return {
+    type: OPEN,
+    payload: {
+      uri,
+      searchAllPanes: Boolean(options && options.searchAllPanes === true),
+    },
+  };
+}
+
+export function createViewable(uri: string): Action {
   return {
     type: CREATE_VIEWABLE,
-    payload: {itemType},
+    payload: {uri},
   };
 }
 
@@ -39,31 +71,10 @@ export function itemCreated(item: Object, itemType: string) {
   };
 }
 
-export function registerViewableFactory(viewableFactory: ViewableFactory): Action {
-  return {
-    type: REGISTER_VIEWABLE_FACTORY,
-    payload: {viewableFactory},
-  };
-}
-
 export function track(event: TrackingEvent) {
   return {
     type: TRACK,
     payload: {event},
-  };
-}
-
-export function unregisterViewableFactory(id: string): Action {
-  return {
-    type: UNREGISTER_VIEWABLE_FACTORY,
-    payload: {id},
-  };
-}
-
-export function viewableFactoryUnregistered(id: string): Action {
-  return {
-    type: VIEWABLE_FACTORY_UNREGISTERED,
-    payload: {id},
   };
 }
 
@@ -108,12 +119,11 @@ export function setItemVisibility(options: SetItemVisibilityOptions): Action {
 }
 
 export function toggleItemVisibility(
-  itemType: string,
-  visible?: boolean,
-  immediate?: boolean,
+  uri: string,
+  visible?: ?boolean,
 ): Action {
   return {
     type: TOGGLE_ITEM_VISIBILITY,
-    payload: {itemType, visible, immediate: immediate || false},
+    payload: {uri, visible},
   };
 }

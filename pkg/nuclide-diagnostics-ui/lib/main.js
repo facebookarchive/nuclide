@@ -30,7 +30,7 @@ import type {HomeFragments} from '../../nuclide-home/lib/types';
 import createPackage from '../../commons-atom/createPackage';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
-import {DiagnosticsPanelModel} from './DiagnosticsPanelModel';
+import {DiagnosticsPanelModel, WORKSPACE_VIEW_URI} from './DiagnosticsPanelModel';
 import StatusBarTile from './StatusBarTile';
 import {applyUpdateToEditor} from './gutter';
 import {goToLocation} from '../../commons-atom/go-to-location';
@@ -151,15 +151,17 @@ class Activation {
 
   consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
     this._subscriptions.add(
-      api.registerFactory({
-        id: 'nuclide-diagnostics-ui',
-        name: 'Diagnostics',
-        iconName: 'law',
-        toggleCommand: 'nuclide-diagnostics-ui:toggle-table',
-        defaultLocation: 'bottom-panel',
-        create: () => this._createDiagnosticsPanelModel(),
-        isInstance: item => item instanceof DiagnosticsPanelModel,
+      api.addOpener(uri => {
+        if (uri === WORKSPACE_VIEW_URI) {
+          return this._createDiagnosticsPanelModel();
+        }
       }),
+      () => api.destroyWhere(item => item instanceof DiagnosticsPanelModel),
+      atom.commands.add(
+        'atom-workspace',
+        'nuclide-diagnostics-ui:toggle-table',
+        event => { api.toggle(WORKSPACE_VIEW_URI, (event: any).detail); },
+      ),
     );
   }
 

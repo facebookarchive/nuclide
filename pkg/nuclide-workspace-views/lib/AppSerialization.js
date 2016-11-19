@@ -33,7 +33,7 @@ export function deserialize(rawState: SerializedAppState): AppState {
   return {
     // Viewables and locations will re-register using the service.
     locations: new Map(),
-    viewableFactories: new Map(),
     serializedLocationStates: new Map(objectEntries(rawState.serializedLocationStates || {})),
+    openers: new Set(),
   };
 }

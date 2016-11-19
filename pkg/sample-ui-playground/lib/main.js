@@ -12,15 +12,15 @@
 import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
 
 import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
-import {Playground} from './Playground';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import {Playground, WORKSPACE_VIEW_URI} from './Playground';
 import invariant from 'assert';
-import {CompositeDisposable} from 'atom';
 import {React} from 'react-for-atom';
 
-let disposables: ?CompositeDisposable = null;
+let disposables: ?UniversalDisposable = null;
 
 export function activate(): void {
-  disposables = new CompositeDisposable();
+  disposables = new UniversalDisposable();
 }
 
 export function deactivate(): void {
@@ -32,15 +32,17 @@ export function deactivate(): void {
 export function consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
   invariant(disposables != null);
   disposables.add(
-    api.registerFactory({
-      id: 'sample-ui-playground',
-      name: 'UI Playground',
-      iconName: 'puzzle',
-      toggleCommand: 'sample-ui-playground:toggle',
-      defaultLocation: 'pane',
-      create: () => viewableFromReactElement(<Playground />),
-      isInstance: item => item instanceof Playground,
+    api.addOpener(uri => {
+      if (uri === WORKSPACE_VIEW_URI) {
+        return viewableFromReactElement(<Playground />);
+      }
     }),
+    () => api.destroyWhere(item => item instanceof Playground),
+    atom.commands.add(
+      'atom-workspace',
+      'sample-ui-playground:toggle',
+      event => { api.toggle(WORKSPACE_VIEW_URI, (event: any).detail); },
+    ),
   );
   // Optionally return a disposable to clean up this package's state when gadgets goes away
 }

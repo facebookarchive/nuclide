@@ -21,7 +21,6 @@ import type {Viewable, WorkspaceViewsService} from '../../nuclide-workspace-view
 
 import type {RegisterNux, TriggerNux} from '../../nuclide-nux/lib/main';
 
-import {Disposable} from 'atom';
 import createPackage from '../../commons-atom/createPackage';
 import {formatDiffViewUrl} from './utils';
 import {React, ReactDOM} from 'react-for-atom';
@@ -40,7 +39,7 @@ import {track} from '../../nuclide-analytics';
 import {createDiffViewNux, NUX_DIFF_VIEW_ID} from './diffViewNux';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import SplitDiffView from './new-ui/SplitDiffView';
-import DiffViewNavigatorGadget from './new-ui/DiffViewNavigatorGadget';
+import DiffViewNavigatorGadget, {WORKSPACE_VIEW_URI} from './new-ui/DiffViewNavigatorGadget';
 import DiffViewNavigatorComponent from './new-ui/DiffViewNavigatorComponent';
 import passesGK from '../../commons-node/passesGK';
 import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
@@ -425,7 +424,7 @@ class Activation {
     });
 
     this._subscriptions.add(
-      new Disposable(() => { hostElement.destroy(); }),
+      () => { hostElement.destroy(); },
       destroySubscription,
     );
 
@@ -543,8 +542,8 @@ class Activation {
   consumeUIProvider(provider: UIProvider): IDisposable {
     this._actionCreators.addUiProvider(provider);
     let pkg = this;
-    this._subscriptions.add(new Disposable(() => { pkg = null; }));
-    return new Disposable(() => {
+    this._subscriptions.add(() => { pkg = null; });
+    return new UniversalDisposable(() => {
       if (pkg != null) {
         pkg._actionCreators.removeUiProvider(provider);
       }
@@ -555,7 +554,7 @@ class Activation {
     this._actionCreators.setCwdApi(api);
     let pkg = this;
     this._subscriptions.add(() => { pkg = null; });
-    return new Disposable(() => {
+    return new UniversalDisposable(() => {
       if (pkg != null) {
         pkg._actionCreators.setCwdApi(null);
       }
@@ -611,7 +610,7 @@ class Activation {
     // We don't need to dispose of the menuItemDescriptions when the provider is disabled -
     // it needs to be handled by the provider itself. We only should remove it from the list
     // of the disposables we maintain.
-    return new Disposable(() => {
+    return new UniversalDisposable(() => {
       this._subscriptions.remove(menuItemDescriptions);
     });
   }
@@ -638,14 +637,17 @@ class Activation {
 
   consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
     this._subscriptions.add(
-      api.registerFactory({
-        id: 'nuclide-diff-view-navigator',
-        name: 'Source Control Navigator',
-        toggleCommand: DIFF_VIEW_NAVIGATOR_TOGGLE_COMMAND,
-        defaultLocation: 'bottom-panel',
-        create: () => this._createDiffViewNavigatorElement(),
-        isInstance: item => item instanceof DiffViewNavigatorGadget,
+      api.addOpener(uri => {
+        if (uri === WORKSPACE_VIEW_URI) {
+          return this._createDiffViewNavigatorElement();
+        }
       }),
+      () => api.destroyWhere(item => item instanceof DiffViewNavigatorGadget),
+      atom.commands.add(
+        'atom-workspace',
+        DIFF_VIEW_NAVIGATOR_TOGGLE_COMMAND,
+        event => { api.toggle(WORKSPACE_VIEW_URI, (event: any).detail); },
+      ),
     );
   }
 

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Action, AppState, Location, Store, Viewable, ViewableFactory} from '../types';
+import type {Action, AppState, Location, Opener, Store, Viewable} from '../types';
 import type {ActionsObservable} from '../../../commons-node/redux-observable';
 
 import {trackEvent} from '../../../nuclide-analytics';
@@ -51,30 +51,27 @@ export function createViewableEpic(
   return actions.ofType(Actions.CREATE_VIEWABLE)
     .switchMap(action => {
       invariant(action.type === Actions.CREATE_VIEWABLE);
-      const {itemType} = action.payload;
+      const {uri} = action.payload;
       const state = store.getState();
-      const factory = state.viewableFactories.get(itemType);
-      invariant(factory != null);
+
+      const item = createViewable(uri, state.openers);
+      if (item == null) {
+        throw new Error(`No opener found for URI ${uri}`);
+      }
 
       // Find a location for this viewable.
       let location;
-      if (factory.defaultLocation != null) {
-        location = state.locations.get(factory.defaultLocation);
-      }
-      if (location == null) {
-        const entry = Array.from(state.locations.entries()).find(
-          ([id, loc]) => locationIsAllowed(id, factory),
-        );
-        location = entry == null ? null : entry[1];
+      const defaultLocationId = item.getDefaultLocation != null ? item.getDefaultLocation() : null;
+      if (defaultLocationId != null) {
+        location = state.locations.get(defaultLocationId);
       }
 
       if (location == null) {
         return Observable.empty();
       }
 
-      const item = factory.create();
       location.showItem(item);
-      return Observable.of(Actions.itemCreated(item, itemType));
+      return Observable.of(Actions.itemCreated(item, uri));
     });
 }
 
@@ -116,53 +113,41 @@ export function trackEpic(
     .ignoreElements();
 }
 
-/**
- * Some packages (nuclide-home) will call the command that triggers this action during their
- * activation. However, that may be before locations have had a chance to register. Therefore, we
- * want to defer the command. Atom does offer an event for listening to when the activation phase is
- * done (`PackageManager::onDidActivateInitialPackages`), but there's no way to tell if we missed
- * it! So we'll just settle for using `nextTick`.
- */
 export function toggleItemVisibilityEpic(
   actions: ActionsObservable<Action>,
   store: Store,
 ): Observable<Action> {
-  const toggleActions = actions
-    .filter(action => action.type === Actions.TOGGLE_ITEM_VISIBILITY && !action.payload.immediate);
-  const nextTick = Observable.create(observer => { process.nextTick(() => { observer.next(); }); });
-  const missedActions = toggleActions.buffer(nextTick).take(1).concatAll();
-  return Observable.concat(missedActions, toggleActions)
+  const visibilityActions = actions.filter(
+    action => action.type === Actions.TOGGLE_ITEM_VISIBILITY || action.type === Actions.OPEN,
+  );
+  return bufferUntilDidActivateInitialPackages(visibilityActions)
     .map(action => {
-      invariant(action.type === Actions.TOGGLE_ITEM_VISIBILITY);
-      const {itemType, visible} = action.payload;
-      return Actions.toggleItemVisibility(itemType, visible == null ? undefined : visible, true);
-    });
-}
-
-export function toggleItemVisibilityImmediatelyEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions
-    .filter(action => action.type === Actions.TOGGLE_ITEM_VISIBILITY && action.payload.immediate)
-    .switchMap(action => {
-      invariant(action.type === Actions.TOGGLE_ITEM_VISIBILITY);
-      const {itemType, visible} = action.payload;
+      const {payload} = action;
+      switch (action.type) {
+        case Actions.TOGGLE_ITEM_VISIBILITY:
+          return {...payload, searchAllPanes: true};
+        case Actions.OPEN:
+          return {...payload, visible: true};
+        default:
+          throw new Error(`Invalid action type: ${action.type}`);
+      }
+    })
+    .switchMap(({uri, searchAllPanes, visible}) => {
       const state = store.getState();
 
-      // Does an item of this type already exist?
-      const viewableFactory = state.viewableFactories.get(itemType);
-      invariant(viewableFactory != null);
-      const itemsAndLocations = findAllItems(
-        state.locations.values(), it => viewableFactory.isInstance(it),
-      );
+      // Does an item matching this URI already exist?
+      const itemsAndLocations = searchAllPanes
+        ? findAllItems(
+          state.locations.values(), it => it.getURI != null && it.getURI() === uri,
+        )
+        : [];
 
       if (itemsAndLocations.length === 0) {
         if (visible === false) {
           return Observable.empty();
         }
         // We need to create and add the item.
-        return Observable.of(Actions.createViewable(itemType));
+        return Observable.of(Actions.createViewable(uri));
       }
 
       // Change the visibility of all matching items. If some are visible and some aren't, this
@@ -202,34 +187,6 @@ export function setItemVisibilityEpic(
     .ignoreElements();
 }
 
-export function unregisterViewableFactoryEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions.ofType(Actions.UNREGISTER_VIEWABLE_FACTORY)
-    .do(action => {
-      invariant(action.type === Actions.UNREGISTER_VIEWABLE_FACTORY);
-
-      const state = store.getState();
-      const factory = state.viewableFactories.get(action.payload.id);
-
-      if (factory == null) { return; }
-
-      // When a viewable is unregistered, we need to remove all instances of it.
-      for (const location of state.locations.values()) {
-        location.getItems().forEach(item => {
-          if (factory.isInstance(item)) {
-            location.destroyItem(item);
-          }
-        });
-      }
-    })
-    .map(action => {
-      invariant(action.type === Actions.UNREGISTER_VIEWABLE_FACTORY);
-      return Actions.viewableFactoryUnregistered(action.payload.id);
-    });
-}
-
 export function unregisterLocationEpic(
   actions: ActionsObservable<Action>,
   store: Store,
@@ -250,6 +207,26 @@ export function unregisterLocationEpic(
       invariant(action.type === Actions.UNREGISTER_LOCATION);
       return Actions.locationUnregistered(action.payload.id);
     });
+}
+
+export function destroyWhereEpic(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Action> {
+  return actions.ofType(Actions.DESTROY_WHERE)
+    .do(action => {
+      invariant(action.type === Actions.DESTROY_WHERE);
+      const {predicate} = action.payload;
+
+      for (const location of store.getState().locations.values()) {
+        for (const item of location.getItems()) {
+          if (predicate(item)) {
+            location.destroyItem(item);
+          }
+        }
+      }
+    })
+    .ignoreElements();
 }
 
 function findAllItems(
@@ -277,16 +254,25 @@ function getLocationId(location: Location, state: AppState): string {
   throw new Error();
 }
 
-function locationIsAllowed(locationId: string, viewableFactory: ViewableFactory): boolean {
-  const {defaultLocation, allowedLocations, disallowedLocations} = viewableFactory;
-  if (locationId === defaultLocation) {
-    return true;
+function createViewable(uri: string, openers: Set<Opener>): ?Viewable {
+  for (const opener of openers) {
+    const viewable = opener(uri);
+    if (viewable != null) {
+      return viewable;
+    }
   }
-  if (disallowedLocations != null && disallowedLocations.indexOf(locationId) !== -1) {
-    return false;
-  }
-  if (allowedLocations != null && allowedLocations.indexOf(locationId) === -1) {
-    return false;
-  }
-  return true;
+}
+
+const nextTick = Observable.create(observer => { process.nextTick(() => { observer.next(); }); });
+
+/**
+ * Some packages (nuclide-home) will call the command that triggers this action during their
+ * activation. However, that may be before locations have had a chance to register. Therefore, we
+ * want to defer the command. Atom does offer an event for listening to when the activation phase is
+ * done (`PackageManager::onDidActivateInitialPackages`), but there's no way to tell if we missed
+ * it! So we'll just settle for using `nextTick`.
+ */
+function bufferUntilDidActivateInitialPackages<T>(source: Observable<T>): Observable<T> {
+  const missed = source.buffer(nextTick).take(1).concatAll();
+  return Observable.concat(missed, source);
 }

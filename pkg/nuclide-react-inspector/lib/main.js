@@ -12,15 +12,15 @@
 import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
 
 import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
-import Inspector from './ui/Inspector';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import Inspector, {WORKSPACE_VIEW_URI} from './ui/Inspector';
 import invariant from 'assert';
-import {CompositeDisposable} from 'atom';
 import {React} from 'react-for-atom';
 
-let disposables: ?CompositeDisposable = null;
+let disposables: ?UniversalDisposable = null;
 
 export function activate(): void {
-  disposables = new CompositeDisposable();
+  disposables = new UniversalDisposable();
 }
 
 export function deactivate(): void {
@@ -32,13 +32,16 @@ export function deactivate(): void {
 export function consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
   invariant(disposables != null);
   disposables.add(
-    api.registerFactory({
-      id: 'nuclide-react-inspector',
-      name: 'React Inspector',
-      toggleCommand: 'nuclide-react-inspector:toggle',
-      defaultLocation: 'pane',
-      create: () => viewableFromReactElement(<Inspector />),
-      isInstance: item => item instanceof Inspector,
+    api.addOpener(uri => {
+      if (uri === WORKSPACE_VIEW_URI) {
+        return viewableFromReactElement(<Inspector />);
+      }
     }),
+    () => api.destroyWhere(item => item instanceof Inspector),
+    atom.commands.add(
+      'atom-workspace',
+      'nuclide-react-inspector:toggle',
+      event => { api.toggle(WORKSPACE_VIEW_URI, (event: any).detail); },
+    ),
   );
 }

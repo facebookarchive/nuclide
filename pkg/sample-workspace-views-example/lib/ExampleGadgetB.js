@@ -11,6 +11,8 @@
 
 import {React} from 'react-for-atom';
 
+export const WORKSPACE_VIEW_URI_B = 'atom://nuclide/sample-workspace-views-example-b';
+
 export class ExampleGadgetB extends React.Component {
 
   getTitle(): string {
@@ -19,6 +21,14 @@ export class ExampleGadgetB extends React.Component {
 
   getIconName(): atom$Octicon {
     return 'squirrel';
+  }
+
+  getDefaultLocation(): string {
+    return 'right-panel';
+  }
+
+  getURI(): string {
+    return WORKSPACE_VIEW_URI_B;
   }
 
   render(): React.Element<any> {

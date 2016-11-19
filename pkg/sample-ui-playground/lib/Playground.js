@@ -63,6 +63,8 @@ type State = {
   collapsedSections: Set<string>,
 };
 
+export const WORKSPACE_VIEW_URI = 'atom://nuclide/ui-playground';
+
 export class Playground extends React.Component {
   state: State;
 
@@ -81,6 +83,14 @@ export class Playground extends React.Component {
 
   getIconName(): string {
     return 'puzzle';
+  }
+
+  getURI(): string {
+    return WORKSPACE_VIEW_URI;
+  }
+
+  getDefaultLocation(): string {
+    return 'pane';
   }
 
   _collapseAllSections(): void {

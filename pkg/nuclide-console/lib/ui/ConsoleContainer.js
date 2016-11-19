@@ -65,6 +65,8 @@ type BoundActionCreators = {
   clearRecords: () => void,
 };
 
+export const WORKSPACE_VIEW_URI = 'atom://nuclide/console';
+
 // NOTE: We're not accounting for the "store" prop being changed.
 export class ConsoleContainer extends React.Component {
   props: Props;
@@ -120,6 +122,14 @@ export class ConsoleContainer extends React.Component {
       }
     }
     return 'Console';
+  }
+
+  getDefaultLocation(): string {
+    return 'bottom-panel';
+  }
+
+  getURI(): string {
+    return WORKSPACE_VIEW_URI;
   }
 
   onDidChangeTitle(callback: (title: string) => mixed): IDisposable {

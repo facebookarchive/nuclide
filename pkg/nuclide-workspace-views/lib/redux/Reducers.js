@@ -9,25 +9,9 @@
  * the root directory of this source tree.
  */
 
-import type {Action, Location, ViewableFactory} from '../types';
+import type {Action, Location, Opener} from '../types';
 
 import * as Actions from './Actions';
-
-export function viewableFactories(state: Map<string, ViewableFactory> = new Map(), action: Action) {
-  switch (action.type) {
-    case Actions.REGISTER_VIEWABLE_FACTORY: {
-      const {viewableFactory} = action.payload;
-      return new Map(state).set(viewableFactory.id, viewableFactory);
-    }
-    case Actions.VIEWABLE_FACTORY_UNREGISTERED: {
-      const newState = new Map(state);
-      newState.delete(action.payload.id);
-      return newState;
-    }
-    default:
-      return state;
-  }
-}
 
 export function locations(state: Map<string, Location> = new Map(), action: Action) {
   switch (action.type) {
@@ -38,6 +22,23 @@ export function locations(state: Map<string, Location> = new Map(), action: Acti
     case Actions.LOCATION_UNREGISTERED: {
       const newState = new Map(state);
       newState.delete(action.payload.id);
+      return newState;
+    }
+    default:
+      return state;
+  }
+}
+
+export function openers(state: Set<Opener> = new Set(), action: Action) {
+  switch (action.type) {
+    case Actions.ADD_OPENER: {
+      const {opener} = action.payload;
+      return new Set(state).add(opener);
+    }
+    case Actions.REMOVE_OPENER: {
+      const {opener} = action.payload;
+      const newState = new Set(state);
+      newState.delete(opener);
       return newState;
     }
     default:

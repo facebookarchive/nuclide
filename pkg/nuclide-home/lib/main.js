@@ -13,17 +13,17 @@
 import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
 import type {HomeFragments} from './types';
 
-import {CompositeDisposable, Disposable} from 'atom';
 import createUtmUrl from './createUtmUrl';
 import featureConfig from '../../commons-atom/featureConfig';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
-import HomePaneItem from './HomePaneItem';
+import HomePaneItem, {WORKSPACE_VIEW_URI} from './HomePaneItem';
 import Immutable from 'immutable';
 import {React} from 'react-for-atom';
 import {BehaviorSubject} from 'rxjs';
 import {shell} from 'electron';
 
-let subscriptions: CompositeDisposable = (null: any);
+let subscriptions: UniversalDisposable = (null: any);
 
 // A stream of all of the fragments. This is essentially the state of our panel.
 const allHomeFragmentsStream: BehaviorSubject<Immutable.Set<HomeFragments>> =
@@ -31,7 +31,7 @@ const allHomeFragmentsStream: BehaviorSubject<Immutable.Set<HomeFragments>> =
 
 export function activate(state: ?Object): void {
   considerDisplayingHome();
-  subscriptions = new CompositeDisposable();
+  subscriptions = new UniversalDisposable();
   subscriptions.add(
     // eslint-disable-next-line nuclide-internal/atom-commands
     atom.commands.add('atom-workspace', 'nuclide-docs:open', e => {
@@ -41,9 +41,9 @@ export function activate(state: ?Object): void {
   );
 }
 
-export function setHomeFragments(homeFragments: HomeFragments): Disposable {
+export function setHomeFragments(homeFragments: HomeFragments): UniversalDisposable {
   allHomeFragmentsStream.next(allHomeFragmentsStream.getValue().add(homeFragments));
-  return new Disposable(() => {
+  return new UniversalDisposable(() => {
     allHomeFragmentsStream.next(allHomeFragmentsStream.getValue().remove(homeFragments));
   });
 }
@@ -67,17 +67,19 @@ export function deactivate(): void {
 
 export function consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
   subscriptions.add(
-    api.registerFactory({
-      id: 'nuclide-home',
-      name: 'Home',
-      iconName: 'home',
-      toggleCommand: 'nuclide-home:toggle',
-      defaultLocation: 'pane',
-      create: () => (
-        viewableFromReactElement(<HomePaneItem allHomeFragmentsStream={allHomeFragmentsStream} />)
-      ),
-      isInstance: item => item instanceof HomePaneItem,
+    api.addOpener(uri => {
+      if (uri === WORKSPACE_VIEW_URI) {
+        return viewableFromReactElement(
+          <HomePaneItem allHomeFragmentsStream={allHomeFragmentsStream} />,
+        );
+      }
     }),
+    () => api.destroyWhere(item => item instanceof HomePaneItem),
+    atom.commands.add(
+      'atom-workspace',
+      'nuclide-home:toggle',
+      event => { api.toggle(WORKSPACE_VIEW_URI, (event: any).detail); },
+    ),
   );
   considerDisplayingHome();
 }

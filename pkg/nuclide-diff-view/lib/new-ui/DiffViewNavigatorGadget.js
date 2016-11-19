@@ -19,6 +19,8 @@ type Props = {
   component: ReactClass<any>,
 };
 
+export const WORKSPACE_VIEW_URI = 'atom://nuclide/diff-view-navigator';
+
 export default class DiffViewNavigatorGadget extends React.Component {
   props: Props;
 
@@ -32,6 +34,14 @@ export default class DiffViewNavigatorGadget extends React.Component {
 
   getPreferredInitialHeight(): number {
     return 300;
+  }
+
+  getURI(): string {
+    return WORKSPACE_VIEW_URI;
+  }
+
+  getDefaultLocation(): string {
+    return 'bottom-panel';
   }
 
   didChangeVisibility(visible: boolean) {
