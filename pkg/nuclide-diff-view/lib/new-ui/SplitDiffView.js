@@ -384,7 +384,25 @@ export default class SplitDiffView {
       .map(({fileDiff}) => fileDiff)
       .distinctUntilChanged();
 
-    const updateDiffSubscriptions = Observable.combineLatest(diffEditorsStream, fileDiffs)
+    const diffStateStream = fileDiffs
+      .distinctUntilChanged((fileDiff1, fileDiff2) => {
+        return fileDiff1.oldEditorState === fileDiff2.oldEditorState
+          && fileDiff1.newEditorState === fileDiff2.newEditorState;
+      });
+
+    const uiElementStream = fileDiffs
+      .distinctUntilChanged((fileDiff1, fileDiff2) => {
+        return fileDiff1.oldEditorState.inlineElements
+          === fileDiff2.oldEditorState.inlineElements
+          && fileDiff1.oldEditorState.inlineOffsetElements
+            === fileDiff2.oldEditorState.inlineOffsetElements
+          && fileDiff1.newEditorState.inlineElements
+            === fileDiff2.newEditorState.inlineElements
+          && fileDiff1.newEditorState.inlineOffsetElements
+            === fileDiff2.newEditorState.inlineOffsetElements;
+      });
+
+    const updateDiffSubscriptions = Observable.combineLatest(diffEditorsStream, diffStateStream)
       .do(([diffEditors, fileDiff]) => {
         if (diffEditors == null) {
           // One or both editors were destroyed.
@@ -392,16 +410,32 @@ export default class SplitDiffView {
         }
         try {
           const {newDiffEditor, oldDiffEditor} = diffEditors;
-          const {filePath, lineMapping, oldEditorState, newEditorState} = fileDiff;
+          const {filePath, oldEditorState, newEditorState} = fileDiff;
           oldDiffEditor.setFileContents(filePath, oldEditorState.text);
           oldDiffEditor.setHighlightedLines([], oldEditorState.highlightedLines.removed);
           oldDiffEditor.setOffsets(oldEditorState.offsets);
-          oldDiffEditor.setUiElements(oldEditorState.inlineElements);
-          oldDiffEditor.setOffsetUiElements(
-            oldEditorState.inlineOffsetElements, lineMapping.newToOld);
 
           newDiffEditor.setHighlightedLines(newEditorState.highlightedLines.added, []);
           newDiffEditor.setOffsets(newEditorState.offsets);
+        } catch (error) {
+          notifyInternalError(error);
+        }
+      }).subscribe();
+
+    const uiElementsUpdates = Observable.combineLatest(diffEditorsStream, uiElementStream)
+      .do(([diffEditors, fileDiff]) => {
+        if (diffEditors == null) {
+          // One or both editors were destroyed.
+          return;
+        }
+
+        try {
+          const {newDiffEditor, oldDiffEditor} = diffEditors;
+          const {lineMapping, oldEditorState, newEditorState} = fileDiff;
+
+          oldDiffEditor.setUiElements(oldEditorState.inlineElements);
+          oldDiffEditor.setOffsetUiElements(
+            oldEditorState.inlineOffsetElements, lineMapping.newToOld);
           newDiffEditor.setUiElements(newEditorState.inlineElements);
           newDiffEditor.setOffsetUiElements(
             newEditorState.inlineOffsetElements, lineMapping.oldToNew);
@@ -522,6 +556,7 @@ export default class SplitDiffView {
       navigationGutterUpdates,
       scrollToFirstChange,
       trackSavingInSplit,
+      uiElementsUpdates,
       updateDiffSubscriptions,
     );
   }

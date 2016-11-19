@@ -14,7 +14,6 @@ import type {
   DiffOptionType,
   HgDiffState,
   Store,
-  UIElements,
 } from '../types';
 import type {ActionsObservable} from '../../../commons-node/redux-observable';
 import type {CwdApi} from '../../../nuclide-current-working-directory/lib/CwdApi';
@@ -27,7 +26,6 @@ import * as Actions from './Actions';
 import invariant from 'assert';
 import {Observable, Subject} from 'rxjs';
 import {observableFromSubscribeFunction} from '../../../commons-node/event';
-import {mapUnion} from '../../../commons-node/collection';
 import {observeStatusChanges} from '../../../commons-node/vcs';
 import {
   CommitMode,
@@ -59,7 +57,6 @@ import {getPhabricatorRevisionFromCommitMessage} from '../../../nuclide-arcanist
 import {notifyInternalError} from '../notifications';
 import {startTracking, track} from '../../../nuclide-analytics';
 import nuclideUri from '../../../commons-node/nuclideUri';
-import {getLogger} from '../../../nuclide-logging';
 import {
   dispatchConsoleToggle,
   pipeProcessMessagesToConsole,
@@ -309,6 +306,24 @@ export function setCwdApiEpic(
   });
 }
 
+export function uiElementsEpic(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Action> {
+  return actions.ofType(ActionTypes.ADD_UI_PROVIDER).switchMap(action => {
+    invariant(action.type === ActionTypes.ADD_UI_PROVIDER);
+
+    // TODO(most): handle multiple providers, when needed.
+    const {uiProvider} = action.payload;
+    return uiProvider.observeUiElements().map(uiElements => {
+      const {newEditorElements, oldEditorElements} = uiElements;
+      return Actions.updateFileUiElements(newEditorElements, oldEditorElements);
+    }).takeUntil(actions.filter(a =>
+      a.type === ActionTypes.REMOVE_UI_PROVIDER && a.payload.uiProvider === uiProvider),
+    );
+  });
+}
+
 export function diffFileEpic(
   actions: ActionsObservable<Action>,
   store: Store,
@@ -318,8 +333,16 @@ export function diffFileEpic(
   return actions.ofType(ActionTypes.DIFF_FILE).switchMap(action => {
     invariant(action.type === ActionTypes.DIFF_FILE);
 
+    const refreshUiElements = (filePath, oldContents, newContents) => Observable.defer(() => {
+      store.getState().uiProviders.forEach(uiProvider => {
+        uiProvider.refreshUiElements(filePath, oldContents, newContents);
+      });
+      return Observable.empty();
+    });
+
     const clearActiveDiffObservable =
-      Observable.of(Actions.updateFileDiff('', '', '', null, getEmptyTextDiff()));
+      Observable.of(Actions.updateFileDiff('', '', '', null, getEmptyTextDiff()))
+      .concat(refreshUiElements('', '', ''));
 
     const {filePath, onChangeModified} = action.payload;
     const repository = repositoryForPath(filePath);
@@ -414,37 +437,22 @@ export function diffFileEpic(
               file: require.resolve('../diff-utils'),
               method: 'computeDiff',
               args: [oldContents, newContents],
-            })).map(textDiff =>
-              Actions.updateFileDiff(
-                filePath,
-                newContents,
-                oldContents,
-                revisionInfo,
-                textDiff,
+            })).switchMap(textDiff =>
+              Observable.concat(
+                Observable.of(Actions.updateFileDiff(
+                  filePath,
+                  newContents,
+                  oldContents,
+                  revisionInfo,
+                  textDiff,
+                )),
+                refreshUiElements(filePath, oldContents, newContents),
               ),
             ).catch(error => {
               notifyInternalError(error);
               return Observable.empty();
             }),
 
-            // TODO(most): Add loading indicators for comments.
-            // $FlowFixMe flow doesn't have a good way to express that operator.
-            Observable.combineLatest(
-              ...store.getState().uiProviders.map(uiProvider =>
-                  uiProvider.composeUiElements(filePath, oldContents, newContents)
-                    .catch(error => {
-                      getLogger().error('Diff View UI Provider Error:', error);
-                      return Observable.empty();
-                    }),
-                ),
-            ).switchMap((uiElementsResults: Array<UIElements>) => {
-              const newEditorElements = mapUnion(
-                  ...uiElementsResults.map(uiElements => uiElements.newEditorElements));
-              const oldEditorElements = mapUnion(
-                ...uiElementsResults.map(uiElements => uiElements.oldEditorElements));
-              return Observable.of(
-                Actions.updateFileUiElements(newEditorElements, oldEditorElements));
-            }),
           );
         })
         .takeUntil(Observable.merge(

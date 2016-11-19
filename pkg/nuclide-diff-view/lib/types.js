@@ -94,11 +94,12 @@ export type UIElements = {
 };
 
 export type UIProvider = {
-  composeUiElements: (
+  observeUiElements: () => Observable<UIElements>,
+  refreshUiElements: (
     filePath: NuclideUri,
     oldContents: string,
     newContents: string,
-  ) => Observable<UIElements>,
+  ) => mixed,
 };
 
 // Redux store types.
