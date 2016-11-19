@@ -23,7 +23,7 @@ export function getDeviceList(
   adbPath: NuclideUri,
 ): ConnectableObservable<Array<string>> {
   return runCommand(adbPath, ['devices'])
-    .map(stdout => stdout.split(/n+/g)
+    .map(stdout => stdout.split(/\n+/g)
                      .slice(1)
                      .filter(s => s.length > 0)
                      .map(s => s.split(/\s+/g)[0]))
