@@ -11,9 +11,7 @@
 
 import type {FileSearchResult} from './rpc-types';
 
-import urlJoin from 'url-join';
 import nuclideUri from '../../commons-node/nuclideUri';
-
 import fsPromise from '../../commons-node/fsPromise';
 import {getLogger} from '../../nuclide-logging';
 
@@ -57,7 +55,7 @@ class FileSearch {
       }
       return {
         score: result.score,
-        path: urlJoin(this._originalUri, '/', result.value),
+        path: nuclideUri.join(this._originalUri, result.value),
         matchIndexes: matchIndexes || [],
       };
     });
@@ -66,19 +64,19 @@ class FileSearch {
   }
 }
 
-const fileSearchForDirectoryUri = {};
+const fileSearchCache = {};
 
 export async function fileSearchForDirectory(
-  directoryUri: string,
+  directory: string,
   pathSetUpdater: ?PathSetUpdater,
   ignoredNames?: Array<string> = [],
 ): Promise<FileSearch> {
-  let fileSearch = fileSearchForDirectoryUri[directoryUri];
+  let fileSearch = fileSearchCache[directory];
   if (fileSearch) {
     return fileSearch;
   }
 
-  const realpath = await fsPromise.realpath(nuclideUri.parse(directoryUri).path);
+  const realpath = await fsPromise.realpath(directory);
   const paths = await getPaths(realpath);
   const pathSet = new PathSet(paths, ignoredNames || []);
 
@@ -90,11 +88,8 @@ export async function fileSearchForDirectory(
     // TODO(hansonw): Fall back to manual refresh or node watches
   }
 
-  // TODO: Stop updating the pathSet when the fileSearch is torn down. But
-  // currently the fileSearch is never torn down.
-
-  fileSearch = new FileSearch(directoryUri, pathSet);
-  fileSearchForDirectoryUri[directoryUri] = fileSearch;
+  fileSearch = new FileSearch(directory, pathSet);
+  fileSearchCache[directory] = fileSearch;
   return fileSearch;
 }
 
@@ -111,16 +106,16 @@ function getPathSetUpdater() {
 // can be sent across a process boundary.
 
 export async function initFileSearchForDirectory(
-  directoryUri: string,
+  directory: string,
   ignoredNames: Array<string>,
 ): Promise<void> {
-  await fileSearchForDirectory(directoryUri, null, ignoredNames);
+  await fileSearchForDirectory(directory, null, ignoredNames);
 }
 
 export async function doSearch(
-  directoryUri: string,
+  directory: string,
   query: string,
 ): Promise<Array<FileSearchResult>> {
-  const fileSearch = await fileSearchForDirectory(directoryUri);
+  const fileSearch = await fileSearchForDirectory(directory);
   return fileSearch.query(query);
 }

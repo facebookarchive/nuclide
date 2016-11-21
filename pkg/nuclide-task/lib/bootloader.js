@@ -118,6 +118,10 @@ export default class Task {
     this._child.on('error', callback);
   }
 
+  onExit(callback: () => mixed): void {
+    this._child.on('exit', callback);
+  }
+
   dispose() {
     if (this._child.connected) {
       this._child.kill();

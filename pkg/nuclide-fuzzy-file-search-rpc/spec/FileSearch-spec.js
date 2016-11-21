@@ -12,7 +12,6 @@
 import invariant from 'assert';
 import fs from 'fs';
 import nuclideUri from '../../commons-node/nuclideUri';
-import url from 'url';
 import {checkOutput} from '../../commons-node/process';
 import {generateFixture} from '../../nuclide-test-helpers';
 import {fileSearchForDirectory} from '../lib/FileSearch';
@@ -124,43 +123,6 @@ function aFileSearchShould(typename, dirPathFn) {
           invariant(deeperSearch);
           const results = await deeperSearch.query('test');
           expect(results).toEqual([]);
-        });
-      });
-    });
-
-    describe('a FileSearch with a hostname', () => {
-      let uriSearch;
-      beforeEach(() => {
-        waitsForPromise(async () => {
-          uriSearch = await fileSearchForDirectory(
-            url.format({
-              protocol: 'nuclide',
-              slashes: true,
-              host: 'somehost.fb.com',
-              pathname: dirPath,
-            }),
-            mockPathSetUpdater,
-          );
-        });
-      });
-
-      it('should return an easy match in the root directory', () => {
-        waitsForPromise(async () => {
-          invariant(uriSearch);
-          const results = await uriSearch.query('test');
-          expect(values(results)).toEqual([
-            `nuclide://somehost.fb.com${dirPath}/test`,
-          ]);
-        });
-      });
-
-      it('should return an easy match in the deeper directory', () => {
-        waitsForPromise(async () => {
-          invariant(uriSearch);
-          const results = await uriSearch.query('deeper');
-          expect(values(results)).toEqual([
-            `nuclide://somehost.fb.com${dirPath}/deeper/deeper`,
-          ]);
         });
       });
     });
