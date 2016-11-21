@@ -14,9 +14,9 @@ import type {PackagerEvent} from './types';
 import {parseRegularLine} from './parseRegularLine';
 import {Observable} from 'rxjs';
 
-const PORT_LINE = /.*Running.*on port\s+(\d+)/;
-const SOURCE_LIST_START = /Looking for JS files in/;
-const READY_LINE = /(packager|server) ready/i;
+const PORT_LINE = /.*(?:Running.*|Listening )on port\s+(\d+)/;
+const SOURCE_LIST_START = /Looking for (?:JS|JavaScript) files in/;
+const READY_LINE = /(packager|server) ready|<END> {3}Starting Facebook Packager Server/i;
 
 /**
  * Parses output from the packager into messages.

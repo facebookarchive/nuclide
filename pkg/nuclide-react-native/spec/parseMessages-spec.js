@@ -18,7 +18,12 @@ describe('parseMessages', () => {
 
   // Run the same tests for each format of the packager output. We do this not because we want to
   // stay DRY, but to ensure that we're testing for the same output for each format.
-  ['packager-stdout-1', 'packager-stdout-2', 'packager-stdout-3'].forEach(fixtureName => {
+  [
+    'packager-stdout-1',
+    'packager-stdout-2',
+    'packager-stdout-3',
+    'packager-stdout-4',
+  ].forEach(fixtureName => {
 
     describe(fixtureName, () => {
 
@@ -35,10 +40,8 @@ describe('parseMessages', () => {
       it('finds the ready line', () => {
         waitsForPromise(async () => {
           const output = await parseMessages(lines).toArray().toPromise();
-          expect((output[6]: any).kind).toBe(
-            'ready',
-            `Expected ready message but found ${JSON.stringify(output[6])}`,
-          );
+          const readyLines = output.filter(line => (line: any).kind === 'ready');
+          expect(readyLines.length).toBe(1, 'Expected exactly one ready message.');
         });
       });
 
