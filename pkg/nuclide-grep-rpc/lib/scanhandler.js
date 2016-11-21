@@ -19,6 +19,7 @@ import {Observable} from 'rxjs';
 import {safeSpawn} from '../../commons-node/process';
 import fsPromise from '../../commons-node/fsPromise';
 import nuclideUri from '../../commons-node/nuclideUri';
+import {Minimatch} from 'minimatch';
 import split from 'split';
 
 // This pattern is used for parsing the output of grep.
@@ -43,16 +44,21 @@ export default function search(
   if (!subdirs || subdirs.length === 0) {
     // Since no subdirs were specified, run search on the root directory.
     return searchInSubdir(matchesByFile, directory, '.', regex);
-  } else if (subdirs.length === 1 && subdirs[0].includes('*')) {
-    // Filters results by glob specified in subdirs[0]
-    const unfilteredResults: Observable<search$FileResult>
-      = searchInSubdir(matchesByFile, directory, '.', regex);
-
-    return unfilteredResults.filter(result => {
-      const glob: string = subdirs[0];
-      const matches = result.filePath.match(globToRegex(glob));
-      return (matches != null) && (matches.length > 0);
+  } else if (subdirs.find(subdir => subdir.includes('*'))) {
+    // Mimic Atom and use minimatch for glob matching.
+    const matchers = subdirs.map(subdir => {
+      let pattern = subdir;
+      if (!pattern.includes('*')) {
+        // Automatically glob-ify the non-globs.
+        pattern = nuclideUri.ensureTrailingSeparator(pattern) + '**';
+      }
+      return new Minimatch(pattern, {matchBase: true, dot: true});
     });
+    // TODO: This should walk the subdirectories and filter by glob before searching.
+    return searchInSubdir(matchesByFile, directory, '.', regex)
+      .filter(
+        result => Boolean(matchers.find(matcher => matcher.match(result.filePath))),
+      );
   } else {
     // Run the search on each subdirectory that exists.
     return Observable.from(subdirs).concatMap(async subdir => {
@@ -177,14 +183,4 @@ function getLinesFromCommand(
       }
     };
   });
-}
-
-// Converts a wildcard string to JS RegExp.
-function globToRegex(str): RegExp {
-  return new RegExp(preg_quote(str).replace(/\\\*/g, '.*').replace(/\\\?/g, '.'), 'g');
-}
-
-function preg_quote(str, delimiter) {
-  return String(str).replace(new RegExp('[.\\\\+*?\\[\\^\\]$(){}=!<>|:\\'
-    + (delimiter || '') + '-]', 'g'), '\\$&');
 }
