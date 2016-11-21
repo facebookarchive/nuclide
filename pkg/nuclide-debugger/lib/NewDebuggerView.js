@@ -47,6 +47,7 @@ export class NewDebuggerView extends React.Component {
     togglePauseOnCaughtException: boolean,
     enableSingleThreadStepping: boolean,
     debuggerMode: DebuggerModeType,
+    selectedCallFrameIndex: number,
     callstack: ?Callstack,
     breakpoints: ?FileLineBreakpoints,
     showThreadsWindow: boolean,
@@ -82,6 +83,7 @@ export class NewDebuggerView extends React.Component {
       togglePauseOnCaughtException: debuggerStore.getTogglePauseOnCaughtException(),
       enableSingleThreadStepping: debuggerStore.getEnableSingleThreadStepping(),
       showThreadsWindow: Boolean(debuggerStore.getSettings().get('SupportThreadsWindow')),
+      selectedCallFrameIndex: props.model.getCallstackStore().getSelectedCallFrameIndex(),
       callstack: props.model.getCallstackStore().getCallstack(),
       breakpoints: props.model.getBreakpointStore().getAllBreakpoints(),
       threadList: threadStore.getThreadList(),
@@ -113,6 +115,7 @@ export class NewDebuggerView extends React.Component {
     this._disposables.add(
       callstackStore.onChange(() => {
         this.setState({
+          selectedCallFrameIndex: callstackStore.getSelectedCallFrameIndex(),
           callstack: callstackStore.getCallstack(),
         });
       }),
@@ -186,6 +189,7 @@ export class NewDebuggerView extends React.Component {
               actions={actions}
               callstack={this.state.callstack}
               bridge={this.props.model.getBridge()}
+              selectedCallFrameIndex={this.state.selectedCallFrameIndex}
             />
           </div>
         </Section>
