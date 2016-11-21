@@ -11,7 +11,6 @@
 
 import type {FileSearchResult} from './rpc-types';
 
-import nuclideUri from '../../commons-node/nuclideUri';
 import fsPromise from '../../commons-node/fsPromise';
 import {getLogger} from '../../nuclide-logging';
 
@@ -21,64 +20,23 @@ import PathSetUpdater from './PathSetUpdater';
 
 const logger = getLogger();
 
-class FileSearch {
-  _originalUri: string;
-  _pathSet: PathSet;
-
-  constructor(fullUri: string, pathSet: PathSet) {
-    this._originalUri = fullUri;
-    this._pathSet = pathSet;
-  }
-
-  query(query: string): Promise<Array<FileSearchResult>> {
-    // Attempt to relativize paths that people might e.g. copy + paste.
-    let relQuery = query;
-    // Remove the leading home directory qualifier.
-    if (relQuery.startsWith('~/')) {
-      relQuery = relQuery.substr(2);
-    }
-    // If a full path is pasted, make the path relative.
-    if (relQuery.startsWith(nuclideUri.ensureTrailingSeparator(this._originalUri))) {
-      relQuery = relQuery.substr(this._originalUri.length + 1);
-    } else {
-      // Also try to relativize queries that start with the dirname alone.
-      const dirname = nuclideUri.dirname(this._originalUri);
-      if (relQuery.startsWith(nuclideUri.ensureTrailingSeparator(dirname))) {
-        relQuery = relQuery.substr(dirname.length + 1);
-      }
-    }
-
-    const results = this._pathSet.match(relQuery).map(result => {
-      let {matchIndexes} = result;
-      if (matchIndexes != null) {
-        matchIndexes = matchIndexes.map(idx => idx + this._originalUri.length + 1);
-      }
-      return {
-        score: result.score,
-        path: nuclideUri.join(this._originalUri, result.value),
-        matchIndexes: matchIndexes || [],
-      };
-    });
-
-    return Promise.resolve(results);
-  }
-}
-
 const fileSearchCache = {};
 
 export async function fileSearchForDirectory(
   directory: string,
   pathSetUpdater: ?PathSetUpdater,
   ignoredNames?: Array<string> = [],
-): Promise<FileSearch> {
-  let fileSearch = fileSearchCache[directory];
-  if (fileSearch) {
-    return fileSearch;
+): Promise<PathSet> {
+  // Note: races are not an issue here since initialization is managed in
+  // FileSearchProcess (which protects against simultaneous inits).
+  const cached = fileSearchCache[directory];
+  if (cached) {
+    return cached;
   }
 
   const realpath = await fsPromise.realpath(directory);
   const paths = await getPaths(realpath);
-  const pathSet = new PathSet(paths, ignoredNames || []);
+  const pathSet = new PathSet(paths, ignoredNames || [], directory);
 
   const thisPathSetUpdater = pathSetUpdater || getPathSetUpdater();
   try {
@@ -88,9 +46,8 @@ export async function fileSearchForDirectory(
     // TODO(hansonw): Fall back to manual refresh or node watches
   }
 
-  fileSearch = new FileSearch(directory, pathSet);
-  fileSearchCache[directory] = fileSearch;
-  return fileSearch;
+  fileSearchCache[directory] = pathSet;
+  return pathSet;
 }
 
 let pathSetUpdater;
@@ -116,6 +73,6 @@ export async function doSearch(
   directory: string,
   query: string,
 ): Promise<Array<FileSearchResult>> {
-  const fileSearch = await fileSearchForDirectory(directory);
-  return fileSearch.query(query);
+  const pathSet = await fileSearchForDirectory(directory);
+  return pathSet.query(query);
 }
