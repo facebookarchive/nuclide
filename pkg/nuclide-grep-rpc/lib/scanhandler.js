@@ -17,6 +17,7 @@ import type {
 import {Observable} from 'rxjs';
 
 import {safeSpawn} from '../../commons-node/process';
+import {compact} from '../../commons-node/observable';
 import fsPromise from '../../commons-node/fsPromise';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {Minimatch} from 'minimatch';
@@ -24,6 +25,9 @@ import split from 'split';
 
 // This pattern is used for parsing the output of grep.
 const GREP_PARSE_PATTERN = /(.*?):(\d*):(.*)/;
+
+// Limit the total result size to avoid overloading the Nuclide server + Atom.
+const MATCH_BYTE_LIMIT = 2 * 1024 * 1024;
 
 /**
  * Searches for all instances of a pattern in a directory.
@@ -96,11 +100,11 @@ function searchInSubdir(
     .catch(() => Observable.throw(new Error('Failed to execute a grep search.')));
 
   // Transform lines into file matches.
-  return linesSource.flatMap(line => {
+  const results = compact(linesSource.map(line => {
     // Try to parse the output of grep.
     const grepMatchResult = line.match(GREP_PARSE_PATTERN);
     if (!grepMatchResult) {
-      return [];
+      return null;
     }
 
     // Extract the filename, line number, and line text from grep output.
@@ -111,7 +115,7 @@ function searchInSubdir(
     // Try to extract the actual "matched" text.
     const matchTextResult = regex.exec(lineText);
     if (!matchTextResult) {
-      return [];
+      return null;
     }
 
     // IMPORTANT: reset the regex for the next search
@@ -120,22 +124,40 @@ function searchInSubdir(
     const matchText = matchTextResult[0];
     const matchIndex = matchTextResult.index;
 
-    // Put this match into lists grouped by files.
-    let matches = matchesByFile.get(filePath);
-    if (matches == null) {
-      matches = [];
-      matchesByFile.set(filePath, matches);
-    }
-    matches.push({
-      lineText,
-      lineTextOffset: 0,
-      matchText,
-      range: [[lineNo, matchIndex], [lineNo, matchIndex + matchText.length]],
-    });
+    return {
+      filePath,
+      match: {
+        lineText,
+        lineTextOffset: 0,
+        matchText,
+        range: [[lineNo, matchIndex], [lineNo, matchIndex + matchText.length]],
+      },
+    };
+  })).share();
 
-    // If a callback was provided, invoke it with the newest update.
-    return [{matches, filePath}];
-  });
+  return results
+    // Limit the total result size.
+    .merge(
+      results
+        .scan((size, {match}) => size + match.lineText.length + match.matchText.length, 0)
+        .filter(size => size > MATCH_BYTE_LIMIT)
+        .switchMapTo(
+          Observable.throw(`Too many results, truncating to ${MATCH_BYTE_LIMIT} bytes`),
+        )
+        .ignoreElements(),
+    )
+    // Buffer results by file. Flush when the file changes, or on completion.
+    .buffer(
+      results
+        // $FlowFixMe: type Observable.distinct
+        .distinct(result => result.filePath)
+        .concat(Observable.of(null)),
+    )
+    .filter(buffer => buffer.length > 0)
+    .map(buffer => ({
+      filePath: buffer[0].filePath,
+      matches: buffer.map(x => x.match),
+    }));
 }
 
 
