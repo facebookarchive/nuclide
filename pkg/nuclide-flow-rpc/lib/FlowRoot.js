@@ -173,8 +173,7 @@ export class FlowRoot {
   async flowGetAutocompleteSuggestions(
     file: NuclideUri,
     currentContents: string,
-    line: number,
-    column: number,
+    position: atom$Point,
     prefix: string,
   ): Promise<Array<FlowAutocompleteItem>> {
 
@@ -182,7 +181,7 @@ export class FlowRoot {
 
     const args = ['autocomplete', '--json', file];
 
-    options.stdin = insertAutocompleteToken(currentContents, line, column);
+    options.stdin = insertAutocompleteToken(currentContents, position);
     try {
       const result = await this._process.execFlow(args, options);
       if (!result) {

@@ -11,11 +11,11 @@
 
 import type {FlowLocNoSource} from './flowOutputTypes';
 
-export function insertAutocompleteToken(contents: string, line: number, col: number): string {
+export function insertAutocompleteToken(contents: string, position: atom$Point): string {
   const lines = contents.split('\n');
-  let theLine = lines[line];
-  theLine = theLine.substring(0, col) + 'AUTO332' + theLine.substring(col);
-  lines[line] = theLine;
+  let theLine = lines[position.row];
+  theLine = theLine.substring(0, position.column) + 'AUTO332' + theLine.substring(position.column);
+  lines[position.row] = theLine;
   return lines.join('\n');
 }
 

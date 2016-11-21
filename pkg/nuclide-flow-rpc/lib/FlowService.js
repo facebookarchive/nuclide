@@ -153,8 +153,7 @@ export function flowFindDiagnostics(
 export function flowGetAutocompleteSuggestions(
   file: NuclideUri,
   currentContents: string,
-  line: number,
-  column: number,
+  position: atom$Point,
   prefix: string,
 ): Promise<?Array<FlowAutocompleteItem>> {
   return getState().getRootContainer().runWithRoot(
@@ -162,8 +161,7 @@ export function flowGetAutocompleteSuggestions(
     root => root.flowGetAutocompleteSuggestions(
       file,
       currentContents,
-      line,
-      column,
+      position,
       prefix,
     ),
   );

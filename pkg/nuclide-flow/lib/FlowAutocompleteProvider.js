@@ -56,8 +56,7 @@ export default class FlowAutocompleteProvider {
     const flowSuggestions = await flowService.flowGetAutocompleteSuggestions(
       filePath,
       contents,
-      bufferPosition.row,
-      bufferPosition.column,
+      bufferPosition,
       prefix,
     );
 
