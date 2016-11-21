@@ -21,6 +21,13 @@ export class PathSet {
   _ignoredPatterns: Array<RegExp>;
   _rootPath: string;
 
+  /**
+   * To improve working with multiple active directories, include the basename
+   * of the parent directory in the matched filenames.
+   * This class will invisibly add/strip the basename as necessary.
+   */
+  _basename: string;
+
   constructor(
     paths: Array<string>,
     ignoredNames: Array<string>,
@@ -30,16 +37,17 @@ export class PathSet {
       .map(name => makeRe(name, {matchBase: true, dot: true}))
       // makeRe returns false for invalid patterns.
       .filter(x => x);
-    this._matcher = new Matcher(paths.filter(path => !this._isIgnored(path)));
     this._rootPath = rootPath;
+    this._basename = nuclideUri.basename(rootPath);
+    this._matcher = new Matcher(this._transformPaths(paths));
   }
 
   addPaths(paths: Array<string>) {
-    this._matcher.addCandidates(paths.filter(path => !this._isIgnored(path)));
+    this._matcher.addCandidates(this._transformPaths(paths));
   }
 
   removePaths(paths: Array<string>) {
-    this._matcher.removeCandidates(paths);
+    this._matcher.removeCandidates(this._transformPaths(paths));
   }
 
   query(query: string): Array<FileSearchResult> {
@@ -51,14 +59,9 @@ export class PathSet {
     }
     // If a full path is pasted, make the path relative.
     const rootPath = nuclideUri.ensureTrailingSeparator(this._rootPath);
+    const basePath = nuclideUri.ensureTrailingSeparator(nuclideUri.dirname(rootPath));
     if (relQuery.startsWith(rootPath)) {
       relQuery = relQuery.substr(rootPath.length);
-    } else {
-      // Also try to relativize queries that start with the dirname alone.
-      const dirname = nuclideUri.dirname(this._rootPath);
-      if (relQuery.startsWith(nuclideUri.ensureTrailingSeparator(dirname))) {
-        relQuery = relQuery.substr(dirname.length + 1);
-      }
     }
 
     return this._matcher
@@ -72,11 +75,15 @@ export class PathSet {
         let {matchIndexes} = result;
         if (matchIndexes != null) {
           matchIndexes = matchIndexes
-            .map(idx => idx + rootPath.length);
+            .map(idx => idx + basePath.length)
+            // Discard all matching characters in the basepath.
+            // It can be a little confusing when the highlights don't match, but unless
+            // the basename is explicitly used in the query this usually doesn't happen.
+            .filter(idx => idx >= rootPath.length);
         }
         return {
           score: result.score,
-          path: rootPath + result.value,
+          path: basePath + result.value,
           matchIndexes: matchIndexes || [],
         };
       });
@@ -90,5 +97,12 @@ export class PathSet {
       }
     }
     return false;
+  }
+
+  // Append the basename to paths in the index.
+  _transformPaths(paths: Array<string>): Array<string> {
+    return paths
+      .filter(path => !this._isIgnored(path))
+      .map(path => nuclideUri.join(this._basename, path));
   }
 }

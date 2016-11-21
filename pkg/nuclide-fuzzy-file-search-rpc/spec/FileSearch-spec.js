@@ -88,7 +88,7 @@ function aFileSearchShould(typename, dirPathFn) {
           let results = await search.query(fullpath);
           expect(values(results)).toEqual([fullpath]);
           results = await search.query(
-            nuclideUri.join(nuclideUri.dirname(dirPath), 'deeper/deeper'),
+            nuclideUri.join(nuclideUri.basename(dirPath), 'deeper/deeper'),
           );
           expect(values(results)).toEqual([fullpath]);
         });
