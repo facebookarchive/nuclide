@@ -231,7 +231,7 @@ function getInitialTaskMeta(
     // Prefer task runner names that come first alphabetically.
     const nameDiff = taskMeta.taskRunnerName.localeCompare(candidate.taskRunnerName);
     if (nameDiff !== 0) {
-      if (nameDiff > 0) {
+      if (nameDiff < 0) {
         candidate = taskMeta;
       }
       continue;
@@ -240,7 +240,7 @@ function getInitialTaskMeta(
     // Prefer task types that come first alphabetically.
     const typeDiff = taskMeta.type.localeCompare(candidate.type);
     if (typeDiff !== 0) {
-      if (typeDiff > 0) {
+      if (typeDiff < 0) {
         candidate = taskMeta;
       }
       continue;
