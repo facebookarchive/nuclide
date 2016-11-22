@@ -109,8 +109,10 @@
   margin-left: 8px;
 }
 
-.nuclide-task-runner-system-task-icon {
+// Ramp up the specificity to overcome the icon font size rule.
+.nuclide-task-runner-system-task-icon.nuclide-task-runner-system-task-icon {
   &::before {
+    height: 11px;
     font-size: 11px;
     width: auto;
   }
