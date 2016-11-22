@@ -33,6 +33,10 @@ import featureConfig from '../../commons-atom/featureConfig';
 
 const logger = getLogger();
 
+const CUMULATIVE_WHEELX_THRESHOLD = 20;
+const DEFAULT_DATATIP_DEBOUNCE_DELAY = 1000;
+const DEFAULT_DATATIP_INTERACTED_DEBOUNCE_DELAY = 1000;
+
 function getProviderName(provider: DatatipProvider): string {
   if (provider.providerName == null) {
     logger.error('Datatip provider has no name', provider);
@@ -195,6 +199,13 @@ const DatatipState = Object.freeze({
 });
 type State = $Keys<typeof DatatipState>;
 
+function ensurePositiveNumber(value: any, defaultValue: number): number {
+  if (typeof value !== 'number' || value < 0) {
+    return defaultValue;
+  }
+  return value;
+}
+
 class DatatipManagerForEditor {
   _blacklistedPosition: ?atom$Point;
   _datatipElement: HTMLElement;
@@ -210,7 +221,10 @@ class DatatipManagerForEditor {
   _range: ?atom$Range;
   _shouldDropNextMouseMoveAfterFocus: boolean;
   _startFetchingDebounce: () => void;
+  _hideIfOutsideDebounce: () => void;
   _subscriptions: UniversalDisposable;
+  _interactedWith: boolean;
+  _cumulativeWheelX: number;
 
   constructor(
     editor: atom$TextEditor,
@@ -224,6 +238,8 @@ class DatatipManagerForEditor {
     this._datatipElement = document.createElement('div');
     this._datatipElement.className = 'nuclide-datatip-overlay';
     this._datatipState = DatatipState.HIDDEN;
+    this._interactedWith = false;
+    this._cumulativeWheelX = 0;
     this._lastHiddenTime = 0;
     this._shouldDropNextMouseMoveAfterFocus = false;
 
@@ -231,6 +247,10 @@ class DatatipManagerForEditor {
       featureConfig.observe(
         'nuclide-datatip.datatipDebounceDelay',
         () => this._setStartFetchingDebounce(),
+      ),
+      featureConfig.observe(
+        'nuclide-datatip.datatipInteractedWithDebounceDelay',
+        () => this._setHideIfOutsideDebounce(),
       ),
 
       Observable.fromEvent(this._editorView, 'focus').subscribe(e => {
@@ -275,6 +295,20 @@ class DatatipManagerForEditor {
         this._hideOrCancel();
       }),
 
+      Observable.fromEvent(this._datatipElement, 'wheel').subscribe(e => {
+        this._cumulativeWheelX += Math.abs(e.deltaX);
+        if (this._cumulativeWheelX > CUMULATIVE_WHEELX_THRESHOLD) {
+          this._interactedWith = true;
+        }
+        if (this._interactedWith) {
+          e.stopPropagation();
+        }
+      }),
+
+      Observable.fromEvent(this._datatipElement, 'mousedown').subscribe(() => {
+        this._interactedWith = true;
+      }),
+
       Observable.fromEvent(this._datatipElement, 'mouseenter').subscribe(() => {
         this._insideDatatip = true;
         this._hideIfOutside();
@@ -309,7 +343,23 @@ class DatatipManagerForEditor {
           this._lastMoveEvent,
         ));
       },
-      (featureConfig.get('nuclide-datatip.datatipDebounceDelay'): any),
+      ensurePositiveNumber(
+        (featureConfig.get('nuclide-datatip.datatipDebounceDelay'): any),
+        DEFAULT_DATATIP_DEBOUNCE_DELAY,
+      ),
+      /* immediate */ false,
+    );
+  }
+
+  _setHideIfOutsideDebounce(): void {
+    this._hideIfOutsideDebounce = debounce(
+      () => {
+        this._hideIfOutsideImmediate();
+      },
+      ensurePositiveNumber(
+        (featureConfig.get('nuclide-datatip.datatipInteractedWithDebounceDelay'): any),
+        DEFAULT_DATATIP_INTERACTED_DEBOUNCE_DELAY,
+      ),
       /* immediate */ false,
     );
   }
@@ -374,6 +424,8 @@ class DatatipManagerForEditor {
     }
 
     this._setState(DatatipState.VISIBLE);
+    this._interactedWith = false;
+    this._cumulativeWheelX = 0;
     this._range = data.range;
     this._marker = renderDatatip(this._editor, this._datatipElement, data);
   }
@@ -404,6 +456,18 @@ class DatatipManagerForEditor {
   }
 
   _hideIfOutside(): void {
+    if (this._datatipState !== DatatipState.VISIBLE) {
+      return;
+    }
+
+    if (this._interactedWith) {
+      this._hideIfOutsideDebounce();
+    } else {
+      this._hideIfOutsideImmediate();
+    }
+  }
+
+  _hideIfOutsideImmediate(): void {
     if (this._datatipState !== DatatipState.VISIBLE) {
       return;
     }
