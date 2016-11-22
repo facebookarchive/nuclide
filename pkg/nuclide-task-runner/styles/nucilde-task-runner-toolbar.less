@@ -3,6 +3,7 @@
 @nuclide-task-runner-indeterminate-bar-1-size: 1000px;
 @nuclide-task-runner-indeterminate-bar-2-size: 1800px;
 @nuclide-task-runner-indeterminate-bar-2-color: fade(@ui-site-color-1, 30%);
+@nuclide-task-runner-button-inner-padding: 8px;
 
 .nuclide-task-runner-toolbar {
   flex: 1;
@@ -82,7 +83,8 @@
 .nuclide-task-runner-system-icon-wrapper {
   display: flex;
   align-items: center;
-  height: 15px;
+  height: 16px;
+  width: 16px;
 
   // If text is used instead of an icon, let's style it like this.
   font-variant: small-caps;
@@ -91,6 +93,10 @@
   .icon-path-fill {
     fill: @text-color;
   }
+}
+
+.nuclide-task-runner-common-controls {
+  white-space: nowrap;
 }
 
 .nuclide-task-runner-system-task-button,
@@ -103,10 +109,10 @@
 .nuclide-task-runner-system-task-button-divider {
   height: 10px;
   width: 1px;
-  background-color: @button-border-color;
+  background-color: fade(@text-color, 40%);
   display: flex;
-  margin-right: 8px;
-  margin-left: 8px;
+  margin-right: @nuclide-task-runner-button-inner-padding;
+  margin-left: @nuclide-task-runner-button-inner-padding;
 }
 
 // Ramp up the specificity to overcome the icon font size rule.
@@ -126,4 +132,18 @@
 // The shortcut toolbar (suda/tool-bar) button
 .nuclide-task-runner-tool-bar-button[hidden] {
   display: none;
+}
+
+.nuclide-task-run-button, .nuclide-task-stop-button {
+  min-width: 35px;
+}
+
+.nuclide-task-runner-system-task-button {
+  display: flex;
+  justify-content: space-between;
+
+  .nuclide-dropdown-label-text-wrapper {
+    min-width: 35px;
+    margin-right: @nuclide-task-runner-button-inner-padding;
+  }
 }

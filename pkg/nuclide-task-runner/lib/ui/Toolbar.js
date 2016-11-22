@@ -11,7 +11,7 @@
 
 import type {AnnotatedTaskMetadata, TaskId, TaskRunnerInfo} from '../types';
 
-import {TaskButton} from './TaskButton';
+import {CommonControls} from './CommonControls';
 import {ProgressBar} from './ProgressBar';
 import {getTaskMetadata} from '../getTaskMetadata';
 import {React} from 'react-for-atom';
@@ -63,24 +63,16 @@ export class Toolbar extends React.Component {
     return (
       <div className="nuclide-task-runner-toolbar">
         <div className="nuclide-task-runner-toolbar-contents padded">
-          <div className="inline-block">
-            <TaskButton
-              activeTask={activeTask}
-              getActiveTaskRunnerIcon={this.props.getActiveTaskRunnerIcon}
-              taskRunnerInfo={this.props.taskRunnerInfo}
-              runTask={this.props.runTask}
-              selectTask={this.props.selectTask}
-              taskIsRunning={this.props.taskIsRunning}
-              taskLists={this.props.taskLists}
-            />
-          </div>
-          <div className="inline-block">
-            <button
-              className="btn btn-sm icon icon-primitive-square"
-              disabled={!this.props.taskIsRunning || !activeTask || activeTask.cancelable === false}
-              onClick={() => { this.props.stopTask(); }}
-            />
-          </div>
+          <CommonControls
+            activeTask={activeTask}
+            getActiveTaskRunnerIcon={this.props.getActiveTaskRunnerIcon}
+            taskRunnerInfo={this.props.taskRunnerInfo}
+            runTask={this.props.runTask}
+            selectTask={this.props.selectTask}
+            taskIsRunning={this.props.taskIsRunning}
+            taskLists={this.props.taskLists}
+            stopTask={this.props.stopTask}
+          />
           {this._renderExtraUi()}
         </div>
         <ProgressBar
