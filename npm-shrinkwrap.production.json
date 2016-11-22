@@ -1180,11 +1180,6 @@
       "from": "unpipe@>=1.0.0 <1.1.0",
       "resolved": "https://registry.npmjs.org/unpipe/-/unpipe-1.0.0.tgz"
     },
-    "url-join": {
-      "version": "1.1.0",
-      "from": "url-join@1.1.0",
-      "resolved": "https://registry.npmjs.org/url-join/-/url-join-1.1.0.tgz"
-    },
     "urlregexp": {
       "version": "1.0.2",
       "from": "urlregexp@1.0.2",
