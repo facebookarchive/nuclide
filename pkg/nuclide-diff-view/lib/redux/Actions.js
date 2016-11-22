@@ -302,7 +302,7 @@ export function publishDiff(
   message: string,
   isPrepareMode: boolean,
   lintExcuse: ?string,
-  publishUpdates: Subject<any>,
+  publishUpdates: Subject<Message>,
 ): PublishDiffAction {
   return {
     type: ActionTypes.PUBLISH_DIFF,

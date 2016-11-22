@@ -671,6 +671,7 @@ export function publishDiff(
           .filter(headRevision => headRevision != null)
           .first().switchMap(headRevision => {
             invariant(headRevision != null);
+            dispatchConsoleToggle(true);
 
             switch (mode) {
               case PublishMode.CREATE:

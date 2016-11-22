@@ -346,7 +346,7 @@ export type PublishDiffAction = {
     isPrepareMode: boolean,
     lintExcuse: ?string,
     message: string,
-    publishUpdates: Subject<any>,
+    publishUpdates: Subject<Message>,
     repository: HgRepositoryClient,
   },
 };

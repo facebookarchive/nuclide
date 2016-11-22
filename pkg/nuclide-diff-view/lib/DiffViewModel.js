@@ -43,7 +43,6 @@ export default class DiffViewModel {
 
   _emitter: Emitter;
   _state: AppState;
-  _publishUpdates: Subject<any>;
   _progressUpdates: Subject<Message>;
   _actionCreators: BoundActionCreators;
 
@@ -51,7 +50,6 @@ export default class DiffViewModel {
     this._actionCreators = actionCreators;
     this._progressUpdates = progressUpdates;
     this._emitter = new Emitter();
-    this._publishUpdates = new Subject();
     this._state = createEmptyAppState();
   }
 
@@ -93,10 +91,6 @@ export default class DiffViewModel {
     this._actionCreators.setCompareId(this._state.activeRepository, revision.id);
   }
 
-  getPublishUpdates(): Subject<any> {
-    return this._publishUpdates;
-  }
-
   @trackTiming('diff-view.save-file')
   saveActiveFile(): Promise<void> {
     const {filePath} = this._state.fileDiff;
@@ -104,11 +98,11 @@ export default class DiffViewModel {
     return this._saveFile(filePath).catch(notifyInternalError);
   }
 
-  async publishDiff(
+  publishDiff(
     publishMessage: string,
     isPrepareMode: boolean,
     lintExcuse: ?string,
-  ): Promise<void> {
+  ): void {
     const activeRepository = this._state.activeRepository;
     invariant(activeRepository != null, 'Cannot publish without an active stack!');
 
@@ -117,7 +111,7 @@ export default class DiffViewModel {
       publishMessage,
       isPrepareMode,
       lintExcuse,
-      this._publishUpdates,
+      this._progressUpdates,
     );
   }
 
