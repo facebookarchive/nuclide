@@ -61,6 +61,7 @@ export function TaskButton(props: Props): React.Element<any> {
       <ButtonComponent
         size={ButtonSizes.SMALL}
         disabled={confirmDisabled}
+        iconset={activeTask == null ? null : activeTask.iconset}
         icon={activeTask == null ? 'triangle-right' : activeTask.icon}
         onClick={run}>
         {activeTask == null ? 'Run' : activeTask.label}
@@ -117,6 +118,7 @@ function getTaskOptions(
         label: indent(taskMeta.label),
         selectedLabel: taskMeta.label,
         icon: taskMeta.icon,
+        iconset: taskMeta.iconset,
         disabled: taskMeta.disabled,
       })),
     );

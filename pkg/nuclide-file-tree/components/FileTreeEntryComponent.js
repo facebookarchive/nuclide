@@ -107,7 +107,7 @@ export class FileTreeEntryComponent extends React.Component {
 
     let iconName;
     if (node.isContainer) {
-      iconName = node.isCwd ? 'icon-briefcase' : 'icon-file-directory';
+      iconName = node.isCwd ? 'nuclicon-file-directory-starred' : 'nuclicon-file-directory';
     } else {
       iconName = fileTypeClass(node.name);
     }

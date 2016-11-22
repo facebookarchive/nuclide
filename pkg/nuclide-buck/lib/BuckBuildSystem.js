@@ -486,7 +486,8 @@ const TASKS = [
     label: 'Debug',
     description: 'Debug the specfied Buck target',
     runnable: true,
-    icon: 'plug',
+    icon: 'debugger',
+    iconset: 'nuclicon',
   },
 ];
 

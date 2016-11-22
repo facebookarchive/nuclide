@@ -55,7 +55,8 @@ export type TaskMetadata = {
   priority?: number,
   runnable: boolean, // Can the action be run now?
   cancelable?: boolean, // By default, this is true (all tasks are cancelable).
-  icon: atom$Octicon,
+  icon: string,
+  iconset?: string,
 };
 
 export type AnnotatedTaskMetadata = TaskMetadata & {

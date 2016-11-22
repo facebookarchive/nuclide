@@ -32,7 +32,8 @@ export type Option = Separator | {
   value: any,
   label: string,
   selectedLabel?: string,
-  icon?: atom$Octicon,
+  icon?: string,
+  iconset?: string,
   disabled?: boolean,
 };
 
