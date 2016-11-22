@@ -112,7 +112,6 @@
     "babel-plugin-transform-react-jsx": "6.8.0",
     "babel-plugin-transform-strict-mode": "6.18.0",
     "babel-types": "6.19.0",
-    "co": "4.6.0",
     "eslint": "3.9.1",
     "eslint-plugin-babel": "3.3.0",
     "eslint-plugin-flowtype": "2.25.0",
