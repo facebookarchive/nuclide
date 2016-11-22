@@ -89,6 +89,7 @@ export function CommonControls(props: Props): React.Element<any> {
             className="nuclide-task-run-button"
             size={ButtonSizes.SMALL}
             disabled={confirmDisabled}
+            iconset={activeTask == null ? null : activeTask.iconset}
             icon={activeTask == null ? 'triangle-right' : activeTask.icon}
             onClick={run}
           />
