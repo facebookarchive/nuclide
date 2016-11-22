@@ -208,6 +208,7 @@ class DatatipManagerForEditor {
   _marker: ?atom$Marker;
   _pinnedDatatips: Set<PinnedDatatip>;
   _range: ?atom$Range;
+  _shouldDropNextMouseMoveAfterFocus: boolean;
   _startFetchingDebounce: () => void;
   _subscriptions: UniversalDisposable;
 
@@ -224,6 +225,7 @@ class DatatipManagerForEditor {
     this._datatipElement.className = 'nuclide-datatip-overlay';
     this._datatipState = DatatipState.HIDDEN;
     this._lastHiddenTime = 0;
+    this._shouldDropNextMouseMoveAfterFocus = false;
 
     this._subscriptions.add(
       featureConfig.observe(
@@ -231,7 +233,21 @@ class DatatipManagerForEditor {
         () => this._setStartFetchingDebounce(),
       ),
 
+      Observable.fromEvent(this._editorView, 'focus').subscribe(e => {
+        this._shouldDropNextMouseMoveAfterFocus = true;
+        this._setState(DatatipState.HIDDEN);
+      }),
+
+      Observable.fromEvent(this._editorView, 'blur').subscribe(e => {
+        this._setState(DatatipState.HIDDEN);
+      }),
+
       Observable.fromEvent(this._editorView, 'mousemove').subscribe(e => {
+        if (this._shouldDropNextMouseMoveAfterFocus) {
+          this._shouldDropNextMouseMoveAfterFocus = false;
+          return;
+        }
+
         this._lastMoveEvent = e;
         if (this._datatipState === DatatipState.HIDDEN) {
           this._startFetchingDebounce();
