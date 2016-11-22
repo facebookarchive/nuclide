@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,35 +9,49 @@
  * the root directory of this source tree.
  */
 
-import type {DebuggerProcessInfo} from '../../nuclide-debugger-base';
-import type {
-  PhpDebuggerService as PhpDebuggerServiceType,
-} from '../../nuclide-debugger-php-rpc/lib/PhpDebuggerService';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.PhpDebuggerInstance = undefined;
 
-import {DebuggerInstance} from '../../nuclide-debugger-base';
-import {ObservableManager} from './ObservableManager';
-import {translateMessageFromServer} from './ChromeMessageRemoting';
-import nuclideUri from '../../commons-node/nuclideUri';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+var _nuclideDebuggerBase;
 
+function _load_nuclideDebuggerBase() {
+  return _nuclideDebuggerBase = require('../../nuclide-debugger-base');
+}
 
-export class PhpDebuggerInstance extends DebuggerInstance {
-  constructor(
-    processInfo: DebuggerProcessInfo,
-    rpcService: PhpDebuggerServiceType,
-  ) {
-    const subscriptions = new UniversalDisposable(
-      new ObservableManager(
-        rpcService.getNotificationObservable().refCount(),
-        rpcService.getOutputWindowObservable().refCount().map(message => {
-          const serverMessage = translateMessageFromServer(
-            nuclideUri.getHostname(processInfo.getTargetUri()),
-            message,
-          );
-          return JSON.parse(serverMessage);
-        }),
-      ),
-    );
+var _ObservableManager;
+
+function _load_ObservableManager() {
+  return _ObservableManager = require('./ObservableManager');
+}
+
+var _ChromeMessageRemoting;
+
+function _load_ChromeMessageRemoting() {
+  return _ChromeMessageRemoting = require('./ChromeMessageRemoting');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../commons-node/UniversalDisposable'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let PhpDebuggerInstance = exports.PhpDebuggerInstance = class PhpDebuggerInstance extends (_nuclideDebuggerBase || _load_nuclideDebuggerBase()).DebuggerInstance {
+  constructor(processInfo, rpcService) {
+    const subscriptions = new (_UniversalDisposable || _load_UniversalDisposable()).default(new (_ObservableManager || _load_ObservableManager()).ObservableManager(rpcService.getNotificationObservable().refCount(), rpcService.getOutputWindowObservable().refCount().map(message => {
+      const serverMessage = (0, (_ChromeMessageRemoting || _load_ChromeMessageRemoting()).translateMessageFromServer)((_nuclideUri || _load_nuclideUri()).default.getHostname(processInfo.getTargetUri()), message);
+      return JSON.parse(serverMessage);
+    })));
     super(processInfo, rpcService, subscriptions);
   }
-}
+};

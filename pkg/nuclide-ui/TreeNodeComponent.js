@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,10 +9,20 @@
  * the root directory of this source tree.
  */
 
-import type {LazyTreeNode} from './LazyTreeNode';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.TreeNodeComponent = undefined;
 
-import {React, ReactDOM} from 'react-for-atom';
-import classnames from 'classnames';
+var _reactForAtom = require('react-for-atom');
+
+var _classnames;
+
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const INDENT_IN_PX = 10;
 const INDENT_PER_LEVEL_IN_PX = 15;
@@ -20,59 +30,43 @@ const DOWN_ARROW = '\uF0A3';
 const RIGHT_ARROW = '\uF078';
 const SPINNER = '\uF087';
 
-type Props = {
-  depth: number,
-  isContainer: boolean,
-  isExpanded: boolean,
-  isLoading: boolean,
-  isSelected: boolean,
-  label: string,
-  labelElement?: ?React.Element<any>,
-  labelClassName: string,
-  node: LazyTreeNode,
-  onClickArrow: (event: SyntheticMouseEvent, node: LazyTreeNode) => void,
-  onClick: (event: SyntheticMouseEvent, node: LazyTreeNode) => void,
-  onDoubleClick: (event: SyntheticMouseEvent, node: LazyTreeNode) => void,
-  onMouseDown: (event: SyntheticMouseEvent, node: LazyTreeNode) => void,
-  path: string,
-  rowClassName: string,
-};
-
 /**
  * Represents one entry in a TreeComponent.
  */
-export class TreeNodeComponent extends React.PureComponent {
-  props: Props;
-  state: void;
+let TreeNodeComponent = exports.TreeNodeComponent = class TreeNodeComponent extends _reactForAtom.React.PureComponent {
 
-  constructor(props: Props) {
+  constructor(props) {
     super(props);
-    (this: any)._onClick = this._onClick.bind(this);
-    (this: any)._onDoubleClick = this._onDoubleClick.bind(this);
-    (this: any)._onMouseDown = this._onMouseDown.bind(this);
+    this._onClick = this._onClick.bind(this);
+    this._onDoubleClick = this._onDoubleClick.bind(this);
+    this._onMouseDown = this._onMouseDown.bind(this);
   }
 
-  render(): React.Element<any> {
-    const rowClassNameObj: {[key: string]: ?boolean} = {
+  render() {
+    const rowClassNameObj = {
       // Support for selectors in the "file-icons" package.
       // @see {@link https://atom.io/packages/file-icons|file-icons}
       'entry file list-item': true,
       'nuclide-tree-component-item': true,
-      'nuclide-tree-component-selected': this.props.isSelected,
+      'nuclide-tree-component-selected': this.props.isSelected
     };
     if (this.props.rowClassName) {
       rowClassNameObj[this.props.rowClassName] = true;
     }
 
     const itemStyle = {
-      paddingLeft: INDENT_IN_PX + this.props.depth * INDENT_PER_LEVEL_IN_PX,
+      paddingLeft: INDENT_IN_PX + this.props.depth * INDENT_PER_LEVEL_IN_PX
     };
 
     let arrow;
     if (this.props.isContainer) {
       if (this.props.isExpanded) {
         if (this.props.isLoading) {
-          arrow = <span className="nuclide-tree-component-item-arrow-spinner">{SPINNER}</span>;
+          arrow = _reactForAtom.React.createElement(
+            'span',
+            { className: 'nuclide-tree-component-item-arrow-spinner' },
+            SPINNER
+          );
         } else {
           arrow = DOWN_ARROW;
         }
@@ -81,45 +75,45 @@ export class TreeNodeComponent extends React.PureComponent {
       }
     }
 
-    return (
-      <div
-        className={classnames(rowClassNameObj)}
-        style={itemStyle}
-        onClick={this._onClick}
-        onDoubleClick={this._onDoubleClick}
-        onMouseDown={this._onMouseDown}>
-        <span className="nuclide-tree-component-item-arrow" ref="arrow">
-          {arrow}
-        </span>
+    return _reactForAtom.React.createElement(
+      'div',
+      {
+        className: (0, (_classnames || _load_classnames()).default)(rowClassNameObj),
+        style: itemStyle,
+        onClick: this._onClick,
+        onDoubleClick: this._onDoubleClick,
+        onMouseDown: this._onMouseDown },
+      _reactForAtom.React.createElement(
+        'span',
+        { className: 'nuclide-tree-component-item-arrow', ref: 'arrow' },
+        arrow
+      ),
+      this.props.labelElement != null ? this.props.labelElement : _reactForAtom.React.createElement(
+        'span',
         {
-          this.props.labelElement != null ?
-          this.props.labelElement :
-          <span
-            className={this.props.labelClassName}
-            // `data-name` is support for selectors in the "file-icons" package.
-            // @see {@link https://atom.io/packages/file-icons|file-icons}
-            data-name={this.props.label}
-            data-path={this.props.path}>
-            {this.props.label}
-          </span>
-        }
-      </div>
+          className: this.props.labelClassName
+          // `data-name` is support for selectors in the "file-icons" package.
+          // @see {@link https://atom.io/packages/file-icons|file-icons}
+          , 'data-name': this.props.label,
+          'data-path': this.props.path },
+        this.props.label
+      )
     );
   }
 
-  _onClick(event: SyntheticMouseEvent): void {
-    if (ReactDOM.findDOMNode(this.refs.arrow).contains(event.target)) {
+  _onClick(event) {
+    if (_reactForAtom.ReactDOM.findDOMNode(this.refs.arrow).contains(event.target)) {
       this.props.onClickArrow(event, this.props.node);
     } else {
       this.props.onClick(event, this.props.node);
     }
   }
 
-  _onDoubleClick(event: SyntheticMouseEvent): void {
+  _onDoubleClick(event) {
     this.props.onDoubleClick(event, this.props.node);
   }
 
-  _onMouseDown(event: SyntheticMouseEvent): void {
+  _onMouseDown(event) {
     this.props.onMouseDown(event, this.props.node);
   }
-}
+};

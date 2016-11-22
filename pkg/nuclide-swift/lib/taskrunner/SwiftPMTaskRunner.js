@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,31 +9,97 @@
  * the root directory of this source tree.
  */
 
-import type {Task} from '../../../commons-node/tasks';
-import type {TaskMetadata} from '../../../nuclide-task-runner/lib/types';
-import type {Level, Message} from '../../../nuclide-console/lib/types';
-import type {Directory} from '../../../nuclide-remote-connection';
-import type {SwiftPMTaskRunnerStoreState} from './SwiftPMTaskRunnerStoreState';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.SwiftPMTaskRunner = undefined;
 
-import {Observable, Subject} from 'rxjs';
-import {Disposable} from 'atom';
-import {React} from 'react-for-atom';
-import UniversalDisposable from '../../../commons-node/UniversalDisposable';
-import fsPromise from '../../../commons-node/fsPromise';
-import {observeProcess, safeSpawn, exitEventToMessage} from '../../../commons-node/process';
-import {taskFromObservable} from '../../../commons-node/tasks';
-import SwiftPMTaskRunnerStore from './SwiftPMTaskRunnerStore';
-import SwiftPMTaskRunnerActions from './SwiftPMTaskRunnerActions';
-import SwiftPMTaskRunnerDispatcher from './SwiftPMTaskRunnerDispatcher';
-import {buildCommand, testCommand} from './SwiftPMTaskRunnerCommands';
-import {
-  SwiftPMTaskRunnerBuildTaskMetadata,
-  SwiftPMTaskRunnerTestTaskMetadata,
-  SwiftPMTaskRunnerTaskMetadata,
-} from './SwiftPMTaskRunnerTaskMetadata';
-import SwiftPMTaskRunnerToolbar from './toolbar/SwiftPMTaskRunnerToolbar';
-import SwiftPMAutocompletionProvider from './providers/SwiftPMAutocompletionProvider';
-import {SwiftIcon} from '../ui/SwiftIcon';
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _atom = require('atom');
+
+var _reactForAtom = require('react-for-atom');
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../../commons-node/UniversalDisposable'));
+}
+
+var _fsPromise;
+
+function _load_fsPromise() {
+  return _fsPromise = _interopRequireDefault(require('../../../commons-node/fsPromise'));
+}
+
+var _process;
+
+function _load_process() {
+  return _process = require('../../../commons-node/process');
+}
+
+var _tasks;
+
+function _load_tasks() {
+  return _tasks = require('../../../commons-node/tasks');
+}
+
+var _SwiftPMTaskRunnerStore;
+
+function _load_SwiftPMTaskRunnerStore() {
+  return _SwiftPMTaskRunnerStore = _interopRequireDefault(require('./SwiftPMTaskRunnerStore'));
+}
+
+var _SwiftPMTaskRunnerActions;
+
+function _load_SwiftPMTaskRunnerActions() {
+  return _SwiftPMTaskRunnerActions = _interopRequireDefault(require('./SwiftPMTaskRunnerActions'));
+}
+
+var _SwiftPMTaskRunnerDispatcher;
+
+function _load_SwiftPMTaskRunnerDispatcher() {
+  return _SwiftPMTaskRunnerDispatcher = _interopRequireDefault(require('./SwiftPMTaskRunnerDispatcher'));
+}
+
+var _SwiftPMTaskRunnerCommands;
+
+function _load_SwiftPMTaskRunnerCommands() {
+  return _SwiftPMTaskRunnerCommands = require('./SwiftPMTaskRunnerCommands');
+}
+
+var _SwiftPMTaskRunnerTaskMetadata;
+
+function _load_SwiftPMTaskRunnerTaskMetadata() {
+  return _SwiftPMTaskRunnerTaskMetadata = require('./SwiftPMTaskRunnerTaskMetadata');
+}
+
+var _SwiftPMTaskRunnerToolbar;
+
+function _load_SwiftPMTaskRunnerToolbar() {
+  return _SwiftPMTaskRunnerToolbar = _interopRequireDefault(require('./toolbar/SwiftPMTaskRunnerToolbar'));
+}
+
+var _SwiftPMAutocompletionProvider;
+
+function _load_SwiftPMAutocompletionProvider() {
+  return _SwiftPMAutocompletionProvider = _interopRequireDefault(require('./providers/SwiftPMAutocompletionProvider'));
+}
+
+var _SwiftIcon;
+
+function _load_SwiftIcon() {
+  return _SwiftIcon = require('../ui/SwiftIcon');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/**
+ * The primary controller for spawning SwiftPM tasks, such as building a
+ * package, or running its tests. This class conforms to Nuclide's TaskRunner
+ * interface.
+ */
+
 
 /**
  * nuclide-swift makes use of the Flux design pattern. The SwiftPMTaskRunner is
@@ -46,71 +112,52 @@ import {SwiftIcon} from '../ui/SwiftIcon';
  * Actions are routed to the store via a Flux.Dispatcher (instantiated by
  * SwiftPMTaskRunner).
  */
-type SwiftPMTaskRunnerFlux = {
-  store: SwiftPMTaskRunnerStore,
-  actions: SwiftPMTaskRunnerActions,
-};
+let SwiftPMTaskRunner = exports.SwiftPMTaskRunner = class SwiftPMTaskRunner {
 
-/**
- * The primary controller for spawning SwiftPM tasks, such as building a
- * package, or running its tests. This class conforms to Nuclide's TaskRunner
- * interface.
- */
-export class SwiftPMTaskRunner {
-  id: string;
-  name: string;
-  _disposables: UniversalDisposable;
-  _initialState: ?SwiftPMTaskRunnerStoreState;
-  _flux: ?SwiftPMTaskRunnerFlux;
-  _taskList: Observable<Array<TaskMetadata>>;
-  _autocompletionProvider: ?SwiftPMAutocompletionProvider;
-  _outputMessages: Subject<Message>;
-
-  constructor(initialState: ?SwiftPMTaskRunnerStoreState) {
+  constructor(initialState) {
     this.id = 'swiftpm';
     this.name = 'Swift';
     this._initialState = initialState;
-    this._outputMessages = new Subject();
-    this._disposables = new UniversalDisposable(this._outputMessages);
+    this._outputMessages = new _rxjsBundlesRxMinJs.Subject();
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default(this._outputMessages);
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
   }
 
-  serialize(): SwiftPMTaskRunnerStoreState {
+  serialize() {
     return this._getFlux().store.serialize();
   }
 
-  getExtraUi(): ReactClass<any> {
-    const {store, actions} = this._getFlux();
-    return class ExtraUi extends React.Component {
-      props: {
-        activeTaskType: ?string,
-      };
+  getExtraUi() {
+    var _getFlux = this._getFlux();
 
-      render(): React.Element<any> {
-        return (
-          <SwiftPMTaskRunnerToolbar
-            store={store}
-            actions={actions}
-            activeTaskType={this.props.activeTaskType}
-          />
-        );
+    const store = _getFlux.store,
+          actions = _getFlux.actions;
+
+    return class ExtraUi extends _reactForAtom.React.Component {
+
+      render() {
+        return _reactForAtom.React.createElement((_SwiftPMTaskRunnerToolbar || _load_SwiftPMTaskRunnerToolbar()).default, {
+          store: store,
+          actions: actions,
+          activeTaskType: this.props.activeTaskType
+        });
       }
     };
   }
 
-  observeTaskList(callback: (taskList: Array<TaskMetadata>) => mixed): IDisposable {
-    callback(SwiftPMTaskRunnerTaskMetadata);
-    return new Disposable();
+  observeTaskList(callback) {
+    callback((_SwiftPMTaskRunnerTaskMetadata || _load_SwiftPMTaskRunnerTaskMetadata()).SwiftPMTaskRunnerTaskMetadata);
+    return new _atom.Disposable();
   }
 
-  getIcon(): ReactClass<any> {
-    return SwiftIcon;
+  getIcon() {
+    return (_SwiftIcon || _load_SwiftIcon()).SwiftIcon;
   }
 
-  runTask(taskName: string): Task {
+  runTask(taskName) {
     const store = this._getFlux().store;
     const chdir = store.getChdir();
     const configuration = store.getConfiguration();
@@ -118,33 +165,20 @@ export class SwiftPMTaskRunner {
 
     let command;
     switch (taskName) {
-      case SwiftPMTaskRunnerBuildTaskMetadata.type:
-        command = buildCommand(
-          chdir,
-          configuration,
-          store.getXcc(),
-          store.getXlinker(),
-          store.getXswiftc(),
-          buildPath,
-        );
+      case (_SwiftPMTaskRunnerTaskMetadata || _load_SwiftPMTaskRunnerTaskMetadata()).SwiftPMTaskRunnerBuildTaskMetadata.type:
+        command = (0, (_SwiftPMTaskRunnerCommands || _load_SwiftPMTaskRunnerCommands()).buildCommand)(chdir, configuration, store.getXcc(), store.getXlinker(), store.getXswiftc(), buildPath);
         break;
-      case SwiftPMTaskRunnerTestTaskMetadata.type:
-        command = testCommand(chdir, buildPath);
+      case (_SwiftPMTaskRunnerTaskMetadata || _load_SwiftPMTaskRunnerTaskMetadata()).SwiftPMTaskRunnerTestTaskMetadata.type:
+        command = (0, (_SwiftPMTaskRunnerCommands || _load_SwiftPMTaskRunnerCommands()).testCommand)(chdir, buildPath);
         break;
       default:
-        throw new Error(`Unknown task name: ${taskName}`);
+        throw new Error(`Unknown task name: ${ taskName }`);
     }
 
-    atom.commands.dispatch(
-      atom.views.getView(atom.workspace),
-      'nuclide-console:toggle',
-      {visible: true},
-    );
-    this._logOutput(`${command.command} ${command.args.join(' ')}`, 'log');
+    atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-console:toggle', { visible: true });
+    this._logOutput(`${ command.command } ${ command.args.join(' ') }`, 'log');
 
-    const observable = observeProcess(
-      () => safeSpawn(command.command, command.args),
-    ).do(message => {
+    const observable = (0, (_process || _load_process()).observeProcess)(() => (0, (_process || _load_process()).safeSpawn)(command.command, command.args)).do(message => {
       switch (message.kind) {
         case 'stderr':
         case 'stdout':
@@ -152,20 +186,10 @@ export class SwiftPMTaskRunner {
           break;
         case 'exit':
           if (message.exitCode === 0) {
-            this._logOutput(
-              `${command.command} exited successfully.`,
-              'success',
-            );
-            this._getFlux().actions.updateCompileCommands(
-              chdir,
-              configuration,
-              buildPath,
-            );
+            this._logOutput(`${ command.command } exited successfully.`, 'success');
+            this._getFlux().actions.updateCompileCommands(chdir, configuration, buildPath);
           } else {
-            this._logOutput(
-              `${command.command} failed with ${exitEventToMessage(message)}`,
-              'error',
-            );
+            this._logOutput(`${ command.command } failed with ${ (0, (_process || _load_process()).exitEventToMessage)(message) }`, 'error');
           }
           break;
         default:
@@ -173,31 +197,30 @@ export class SwiftPMTaskRunner {
       }
     }).ignoreElements();
 
-    const task = taskFromObservable(observable);
-    return {
-      ...task,
+    const task = (0, (_tasks || _load_tasks()).taskFromObservable)(observable);
+    return Object.assign({}, task, {
       cancel: () => {
         this._logOutput('Task cancelled.', 'warning');
         task.cancel();
-      },
-    };
+      }
+    });
   }
 
-  getAutocompletionProvider(): SwiftPMAutocompletionProvider {
+  getAutocompletionProvider() {
     if (!this._autocompletionProvider) {
-      this._autocompletionProvider = new SwiftPMAutocompletionProvider(this._getFlux().store);
+      this._autocompletionProvider = new (_SwiftPMAutocompletionProvider || _load_SwiftPMAutocompletionProvider()).default(this._getFlux().store);
     }
     return this._autocompletionProvider;
   }
 
-  getOutputMessages(): Observable<Message> {
+  getOutputMessages() {
     return this._outputMessages;
   }
 
-  setProjectRoot(projectRoot: ?Directory): void {
+  setProjectRoot(projectRoot) {
     if (projectRoot) {
       const path = projectRoot.getPath();
-      fsPromise.exists(`${path}/Package.swift`).then(fileExists => {
+      (_fsPromise || _load_fsPromise()).default.exists(`${ path }/Package.swift`).then(fileExists => {
         if (fileExists) {
           this._getFlux().actions.updateChdir(path);
         }
@@ -205,18 +228,18 @@ export class SwiftPMTaskRunner {
     }
   }
 
-  _logOutput(text: string, level: Level) {
-    this._outputMessages.next({text, level});
+  _logOutput(text, level) {
+    this._outputMessages.next({ text: text, level: level });
   }
 
-  _getFlux(): SwiftPMTaskRunnerFlux {
+  _getFlux() {
     if (!this._flux) {
-      const dispatcher = new SwiftPMTaskRunnerDispatcher();
-      const store = new SwiftPMTaskRunnerStore(dispatcher, this._initialState);
+      const dispatcher = new (_SwiftPMTaskRunnerDispatcher || _load_SwiftPMTaskRunnerDispatcher()).default();
+      const store = new (_SwiftPMTaskRunnerStore || _load_SwiftPMTaskRunnerStore()).default(dispatcher, this._initialState);
       this._disposables.add(store);
-      const actions = new SwiftPMTaskRunnerActions(dispatcher);
-      this._flux = {store, actions};
+      const actions = new (_SwiftPMTaskRunnerActions || _load_SwiftPMTaskRunnerActions()).default(dispatcher);
+      this._flux = { store: store, actions: actions };
     }
     return this._flux;
   }
-}
+};

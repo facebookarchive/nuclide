@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,14 +9,13 @@
  * the root directory of this source tree.
  */
 
-export const GRAMMARS = [
-  'source.c',
-  'source.cpp',
-  'source.objc',
-  'source.objcpp',
-];
-export const GRAMMAR_SET = new Set(GRAMMARS);
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-export const PACKAGE_NAME = 'nuclide-clang';
+const GRAMMARS = exports.GRAMMARS = ['source.c', 'source.cpp', 'source.objc', 'source.objcpp'];
+const GRAMMAR_SET = exports.GRAMMAR_SET = new Set(GRAMMARS);
 
-export const IDENTIFIER_REGEXP = /([a-zA-Z_][a-zA-Z0-9_]*)/g;
+const PACKAGE_NAME = exports.PACKAGE_NAME = 'nuclide-clang';
+
+const IDENTIFIER_REGEXP = exports.IDENTIFIER_REGEXP = /([a-zA-Z_][a-zA-Z0-9_]*)/g;

@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,25 +9,21 @@
  * the root directory of this source tree.
  */
 
-import invariant from 'assert';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = debounce;
+function debounce(func, wait) {
+  let immediate = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
 
-export default function debounce<
-  A, B, C, D, E, F, G,
-  TReturn,
-  TFunc:(a: A, b: B, c: C, d: D, e: E, f: F, g: G) => TReturn,
->(
-  func: TFunc,
-  wait: number,
-  immediate?: boolean = false,
-): (a: A, b: B, c: C, d: D, e: E, f: F, g: G) => (TReturn | void) {
   // Taken from: https://github.com/jashkenas/underscore/blob/b10b2e6d72/underscore.js#L815.
-  let timeout: ?number;
-  let args: ?[A, B, C, D, E, F, G];
-  let context: any;
+  let timeout;
+  let args;
+  let context;
   let timestamp = 0;
-  let result: (TReturn | void);
+  let result;
 
-  const later = function() {
+  const later = function () {
     const last = Date.now() - timestamp;
 
     if (last < wait && last >= 0) {
@@ -35,7 +31,10 @@ export default function debounce<
     } else {
       timeout = null;
       if (!immediate) {
-        invariant(args != null);
+        if (!(args != null)) {
+          throw new Error('Invariant violation: "args != null"');
+        }
+
         result = func.apply(context, args);
         if (!timeout) {
           context = args = null;
@@ -44,9 +43,9 @@ export default function debounce<
     }
   };
 
-  return function(): (TReturn | void) {
+  return function () {
     context = this;
-    args = (arguments: [A, B, C, D, E, F, G]);
+    args = arguments;
     timestamp = Date.now();
     const callNow = immediate && !timeout;
     if (!timeout) {
@@ -59,4 +58,4 @@ export default function debounce<
 
     return result;
   };
-}
+}module.exports = exports['default'];

@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,65 +9,70 @@
  * the root directory of this source tree.
  */
 
-import {PanelComponent} from '../../../nuclide-ui/PanelComponent';
-import {View} from '../../../nuclide-ui/View';
-import {React} from 'react-for-atom';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Panel = undefined;
 
-type Position = 'top' | 'right' | 'bottom' | 'left';
+var _PanelComponent;
 
-type Props = {
-  initialSize: ?number,
-  paneContainer: atom$PaneContainer,
-  position: Position,
-  onResize: (size: number) => void,
-};
+function _load_PanelComponent() {
+  return _PanelComponent = require('../../../nuclide-ui/PanelComponent');
+}
 
-export class Panel extends React.Component {
-  props: Props;
+var _View;
 
-  _getInitialSize(): ?number {
+function _load_View() {
+  return _View = require('../../../nuclide-ui/View');
+}
+
+var _reactForAtom = require('react-for-atom');
+
+let Panel = exports.Panel = class Panel extends _reactForAtom.React.Component {
+
+  _getInitialSize() {
     if (this.props.initialSize != null) {
       return this.props.initialSize;
     }
 
     // The item may not have been activated yet. If that's the case, just use the first item.
-    const activePaneItem =
-      this.props.paneContainer.getActivePaneItem() || this.props.paneContainer.getPaneItems()[0];
+    const activePaneItem = this.props.paneContainer.getActivePaneItem() || this.props.paneContainer.getPaneItems()[0];
     if (activePaneItem != null) {
       return getPreferredInitialSize(activePaneItem, this.props.position);
     }
   }
 
-  render(): ?React.Element<any> {
-    if (this.props.paneContainer == null) { return null; }
-    return (
-      <div className="nuclide-workspace-views-panel">
-        <PanelComponent
-          initialLength={this._getInitialSize() || undefined}
-          noScroll={true}
-          onResize={this.props.onResize}
-          dock={this.props.position}>
-          <View item={this.props.paneContainer} />
-        </PanelComponent>
-      </div>
+  render() {
+    if (this.props.paneContainer == null) {
+      return null;
+    }
+    return _reactForAtom.React.createElement(
+      'div',
+      { className: 'nuclide-workspace-views-panel' },
+      _reactForAtom.React.createElement(
+        (_PanelComponent || _load_PanelComponent()).PanelComponent,
+        {
+          initialLength: this._getInitialSize() || undefined,
+          noScroll: true,
+          onResize: this.props.onResize,
+          dock: this.props.position },
+        _reactForAtom.React.createElement((_View || _load_View()).View, { item: this.props.paneContainer })
+      )
     );
   }
 
-}
+};
 
-function getPreferredInitialSize(item: Object, position: Position): ?number {
+
+function getPreferredInitialSize(item, position) {
   switch (position) {
     case 'top':
     case 'bottom':
-      return typeof item.getPreferredInitialHeight === 'function'
-        ? item.getPreferredInitialHeight()
-        : null;
+      return typeof item.getPreferredInitialHeight === 'function' ? item.getPreferredInitialHeight() : null;
     case 'left':
     case 'right':
-      return typeof item.getPreferredInitialWidth === 'function'
-        ? item.getPreferredInitialWidth()
-        : null;
+      return typeof item.getPreferredInitialWidth === 'function' ? item.getPreferredInitialWidth() : null;
     default:
-      throw new Error(`Invalid position: ${position}`);
+      throw new Error(`Invalid position: ${ position }`);
   }
 }

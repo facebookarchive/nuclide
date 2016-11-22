@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -14,15 +14,19 @@
  * https://github.com/atom/service-hub/issues/6
  */
 
-export default function consumeFirstProvider(
-  keyPath: string,
-  version: string = '0.0.0',
-): Promise<any> {
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = consumeFirstProvider;
+
+function consumeFirstProvider(keyPath) {
+  let version = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '0.0.0';
+
   return new Promise((resolve, reject) => {
-    const subscription =
-      atom.packages.serviceHub.consume(keyPath, version, provider => {
-        resolve(provider);
-        subscription.dispose();
-      });
+    const subscription = atom.packages.serviceHub.consume(keyPath, version, provider => {
+      resolve(provider);
+      subscription.dispose();
+    });
   });
 }
+module.exports = exports['default'];

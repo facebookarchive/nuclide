@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -12,20 +12,22 @@
 /**
  * Wraps the calling of the start-packager command in a little more friendly way.
  */
-export function startPackager(): Promise<void> {
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.startPackager = startPackager;
+
+function startPackager() {
   return new Promise((resolve, reject) => {
-    atom.commands.dispatch(
-      atom.views.getView(atom.workspace),
-      'nuclide-react-native:start-packager',
-      {
-        onRunning: err => {
-          if (err != null) {
-            reject(err);
-          } else {
-            resolve();
-          }
-        },
-      },
-    );
+    atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-react-native:start-packager', {
+      onRunning: err => {
+        if (err != null) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      }
+    });
   });
 }

@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,17 +9,21 @@
  * the root directory of this source tree.
  */
 
+var _Handler;
 
-import Handler from './Handler';
-import type {ClientCallback} from './ClientCallback';
+function _load_Handler() {
+  return _Handler = _interopRequireDefault(require('./Handler'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // Handles all 'Console.*' Chrome dev tools messages
-class ConsoleHandler extends Handler {
-  constructor(clientCallback: ClientCallback) {
+let ConsoleHandler = class ConsoleHandler extends (_Handler || _load_Handler()).default {
+  constructor(clientCallback) {
     super('Console', clientCallback);
   }
 
-  handleMethod(id: number, method: string, params: ?Object): Promise<void> {
+  handleMethod(id, method, params) {
     switch (method) {
       case 'enable':
       case 'disable':
@@ -36,6 +40,7 @@ class ConsoleHandler extends Handler {
     }
     return Promise.resolve();
   }
-}
+};
+
 
 module.exports = ConsoleHandler;

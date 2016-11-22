@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,58 +9,69 @@
  * the root directory of this source tree.
  */
 
-import type {DeepLinkParams} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = undefined;
 
-import electron from 'electron';
-import invariant from 'invariant';
-import {Observable} from 'rxjs';
+var _electron = _interopRequireDefault(require('electron'));
 
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import SharedObservableCache from '../../commons-node/SharedObservableCache';
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
-const {ipcRenderer} = electron;
-invariant(ipcRenderer != null);
+var _UniversalDisposable;
 
-export default class DeepLinkService {
-  _disposable: UniversalDisposable;
-  _observers: Map<string, rxjs$Observer<DeepLinkParams>>;
-  _observables: SharedObservableCache<string, DeepLinkParams>;
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../commons-node/UniversalDisposable'));
+}
+
+var _SharedObservableCache;
+
+function _load_SharedObservableCache() {
+  return _SharedObservableCache = _interopRequireDefault(require('../../commons-node/SharedObservableCache'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const ipcRenderer = _electron.default.ipcRenderer;
+
+if (!(ipcRenderer != null)) {
+  throw new Error('Invariant violation: "ipcRenderer != null"');
+}
+
+let DeepLinkService = class DeepLinkService {
 
   constructor() {
     this._observers = new Map();
-    this._observables = new SharedObservableCache(path => {
-      return Observable.create(observer => {
+    this._observables = new (_SharedObservableCache || _load_SharedObservableCache()).default(path => {
+      return _rxjsBundlesRxMinJs.Observable.create(observer => {
         this._observers.set(path, observer);
         return () => this._observers.delete(path, observer);
       }).share();
     });
 
-    this._disposable = new UniversalDisposable(
-      // These events will be sent from lib/url-main.js.
-      // TODO: Use real Atom URI handler from
-      // https://github.com/atom/atom/pull/11399.
-      Observable.fromEvent(ipcRenderer, 'nuclide-url-open', (event, data) => data)
-        .subscribe(({message, params}) => {
-          const path = message.replace(/\/+$/, '');
-          const observer = this._observers.get(path);
-          if (observer != null) {
-            observer.next(params);
-          }
-        }),
-      () => this._observers.forEach(observer => observer.complete()),
-    );
+    this._disposable = new (_UniversalDisposable || _load_UniversalDisposable()).default(
+    // These events will be sent from lib/url-main.js.
+    // TODO: Use real Atom URI handler from
+    // https://github.com/atom/atom/pull/11399.
+    _rxjsBundlesRxMinJs.Observable.fromEvent(ipcRenderer, 'nuclide-url-open', (event, data) => data).subscribe((_ref) => {
+      let message = _ref.message,
+          params = _ref.params;
+
+      const path = message.replace(/\/+$/, '');
+      const observer = this._observers.get(path);
+      if (observer != null) {
+        observer.next(params);
+      }
+    }), () => this._observers.forEach(observer => observer.complete()));
   }
 
-  dispose(): void {
+  dispose() {
     this._disposable.dispose();
   }
 
-  subscribeToPath(
-    path: string,
-    callback: (params: DeepLinkParams) => mixed,
-  ): IDisposable {
-    return new UniversalDisposable(
-      this._observables.get(path).subscribe(callback),
-    );
+  subscribeToPath(path, callback) {
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default(this._observables.get(path).subscribe(callback));
   }
-}
+};
+exports.default = DeepLinkService;
+module.exports = exports['default'];

@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,85 +9,122 @@
  * the root directory of this source tree.
  */
 
-import type {TaskRunnerServiceApi} from '../../nuclide-task-runner/lib/types';
-import type {BuckBuildSystem as BuckBuildSystemType} from './BuckBuildSystem';
-import type {BuckBuilderBuildOptions} from '../../nuclide-buck/lib/types';
-import type {OutputService} from '../../nuclide-console/lib/types';
-import type {HyperclickProvider} from '../../hyperclick/lib/types';
-import type {BuckBuilder, SerializedState} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.consumeTaskRunnerServiceApi = consumeTaskRunnerServiceApi;
+exports.consumeOutputService = consumeOutputService;
+exports.provideObservableDiagnosticUpdates = provideObservableDiagnosticUpdates;
+exports.serialize = serialize;
+exports.getHyperclickProvider = getHyperclickProvider;
+exports.provideBuckBuilder = provideBuckBuilder;
 
-import registerGrammar from '../../commons-atom/register-grammar';
-import invariant from 'assert';
-import {CompositeDisposable, Disposable} from 'atom';
-import {getSuggestion} from './HyperclickProvider';
-import {BuckBuildSystem} from './BuckBuildSystem';
+var _registerGrammar;
 
-let disposables: ?CompositeDisposable = null;
-let buildSystem: ?BuckBuildSystemType = null;
-let initialState: ?Object = null;
-
-export function activate(rawState: ?Object): void {
-  invariant(disposables == null);
-  initialState = rawState;
-  disposables = new CompositeDisposable(
-    new Disposable(() => { buildSystem = null; }),
-    new Disposable(() => { initialState = null; }),
-  );
-  registerGrammar('source.python', 'BUCK');
-  registerGrammar('source.json', 'BUCK.autodeps');
-  registerGrammar('source.ini', '.buckconfig');
+function _load_registerGrammar() {
+  return _registerGrammar = _interopRequireDefault(require('../../commons-atom/register-grammar'));
 }
 
-export function deactivate(): void {
-  invariant(disposables != null);
+var _atom = require('atom');
+
+var _HyperclickProvider;
+
+function _load_HyperclickProvider() {
+  return _HyperclickProvider = require('./HyperclickProvider');
+}
+
+var _BuckBuildSystem;
+
+function _load_BuckBuildSystem() {
+  return _BuckBuildSystem = require('./BuckBuildSystem');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let disposables = null;
+let buildSystem = null;
+let initialState = null;
+
+function activate(rawState) {
+  if (!(disposables == null)) {
+    throw new Error('Invariant violation: "disposables == null"');
+  }
+
+  initialState = rawState;
+  disposables = new _atom.CompositeDisposable(new _atom.Disposable(() => {
+    buildSystem = null;
+  }), new _atom.Disposable(() => {
+    initialState = null;
+  }));
+  (0, (_registerGrammar || _load_registerGrammar()).default)('source.python', 'BUCK');
+  (0, (_registerGrammar || _load_registerGrammar()).default)('source.json', 'BUCK.autodeps');
+  (0, (_registerGrammar || _load_registerGrammar()).default)('source.ini', '.buckconfig');
+}
+
+function deactivate() {
+  if (!(disposables != null)) {
+    throw new Error('Invariant violation: "disposables != null"');
+  }
+
   disposables.dispose();
   disposables = null;
 }
 
-export function consumeTaskRunnerServiceApi(api: TaskRunnerServiceApi): void {
-  invariant(disposables != null);
+function consumeTaskRunnerServiceApi(api) {
+  if (!(disposables != null)) {
+    throw new Error('Invariant violation: "disposables != null"');
+  }
+
   disposables.add(api.register(getBuildSystem()));
 }
 
-function getBuildSystem(): BuckBuildSystem {
+function getBuildSystem() {
   if (buildSystem == null) {
-    invariant(disposables != null);
-    buildSystem = new BuckBuildSystem(initialState);
+    if (!(disposables != null)) {
+      throw new Error('Invariant violation: "disposables != null"');
+    }
+
+    buildSystem = new (_BuckBuildSystem || _load_BuckBuildSystem()).BuckBuildSystem(initialState);
     disposables.add(buildSystem);
   }
   return buildSystem;
 }
 
-export function consumeOutputService(service: OutputService): void {
-  invariant(disposables != null);
+function consumeOutputService(service) {
+  if (!(disposables != null)) {
+    throw new Error('Invariant violation: "disposables != null"');
+  }
+
   disposables.add(service.registerOutputProvider({
     messages: getBuildSystem().getOutputMessages(),
-    id: 'Buck',
+    id: 'Buck'
   }));
 }
 
-export function provideObservableDiagnosticUpdates() {
+function provideObservableDiagnosticUpdates() {
   return getBuildSystem().getDiagnosticProvider();
 }
 
-export function serialize(): ?SerializedState {
+function serialize() {
   if (buildSystem != null) {
     return buildSystem.serialize();
   }
 }
 
-export function getHyperclickProvider(): HyperclickProvider {
+function getHyperclickProvider() {
   return {
     priority: 200,
     providerName: 'nuclide-buck',
-    getSuggestion(editor, position) {
-      return getSuggestion(editor, position);
-    },
+    getSuggestion: function (editor, position) {
+      return (0, (_HyperclickProvider || _load_HyperclickProvider()).getSuggestion)(editor, position);
+    }
   };
 }
 
-export function provideBuckBuilder(): BuckBuilder {
+function provideBuckBuilder() {
   return {
-    build: (options: BuckBuilderBuildOptions) => getBuildSystem().buildArtifact(options),
+    build: options => getBuildSystem().buildArtifact(options)
   };
 }

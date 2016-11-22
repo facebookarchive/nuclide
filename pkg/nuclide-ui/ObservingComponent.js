@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,41 +9,33 @@
  * the root directory of this source tree.
  */
 
-import type {Observable} from 'rxjs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ObservingComponent = undefined;
 
-import {React} from 'react-for-atom';
-import invariant from 'assert';
-
-// State is set to null indicates that the observable has not
-// produced a value yet.
-export type State<T> = {
-  data: ?T,
-};
-
-export type Props<T> = {
-  data: Observable<?T>,
-};
+var _reactForAtom = require('react-for-atom');
 
 // Derived classes must override render()
 // Also might want to override shouldComponentUpdate(nextProps, nextState).
-export class ObservingComponent<T> extends React.Component<void, Props<T>, State<T>> {
-  state: State<T>;
-  props: Props<T>;
 
-  subscription: ?rxjs$ISubscription;
 
-  constructor(props: Props<T>) {
+// State is set to null indicates that the observable has not
+// produced a value yet.
+let ObservingComponent = exports.ObservingComponent = class ObservingComponent extends _reactForAtom.React.Component {
+
+  constructor(props) {
     super(props);
     this.state = {
-      data: null,
+      data: null
     };
   }
 
-  componentWillMount(): void {
+  componentWillMount() {
     this._subscribe(this.props);
   }
 
-  componentWillReceiveProps(newProps: Props<T>): void {
+  componentWillReceiveProps(newProps) {
     if (newProps.data === this.props.data) {
       return;
     }
@@ -52,21 +44,27 @@ export class ObservingComponent<T> extends React.Component<void, Props<T>, State
     this._subscribe(newProps);
   }
 
-  _subscribe(newProps: Props<T>): void {
-    invariant(this.subscription == null);
+  _subscribe(newProps) {
+    if (!(this.subscription == null)) {
+      throw new Error('Invariant violation: "this.subscription == null"');
+    }
+
     this.subscription = this.props.data.subscribe(data => {
-      this.setState({data});
+      this.setState({ data: data });
     });
-    this.setState({data: null});
+    this.setState({ data: null });
   }
 
-  _unsubscribe(): void {
-    invariant(this.subscription != null);
+  _unsubscribe() {
+    if (!(this.subscription != null)) {
+      throw new Error('Invariant violation: "this.subscription != null"');
+    }
+
     this.subscription.unsubscribe();
     this.subscription = null;
   }
 
-  componentWillUnmount(): void {
+  componentWillUnmount() {
     this._unsubscribe();
   }
-}
+};

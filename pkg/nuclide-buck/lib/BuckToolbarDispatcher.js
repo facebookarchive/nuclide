@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,51 +9,20 @@
  * the root directory of this source tree.
  */
 
-import type {Device} from '../../nuclide-ios-common';
-import type {TaskSettings, TaskType} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = exports.ActionTypes = undefined;
 
-import Dispatcher from '../../commons-node/Dispatcher';
+var _Dispatcher;
 
-type BuckToolbarAction =
-  {
-    actionType: 'UPDATE_BUCK_ROOT',
-    buckRoot: ?string,
-  } |
-  {
-    actionType: 'UPDATE_PROJECT_ROOT',
-    projectRoot: ?string,
-  } |
-  {
-    actionType: 'UPDATE_BUILD_TARGET',
-    buildTarget: string,
-  } |
-  {
-    actionType: 'UPDATE_DEVICES',
-    devices: Array<Device>,
-  } |
-  {
-    actionType: 'UPDATE_IS_LOADING_RULE',
-    isLoadingRule: boolean,
-  } |
-  {
-    actionType: 'UPDATE_REACT_NATIVE_SERVER_MODE',
-    serverMode: boolean,
-  } |
-  {
-    actionType: 'UPDATE_RULE_TYPE',
-    ruleType: ?string,
-  } |
-  {
-    actionType: 'UPDATE_SIMULATOR',
-    simulator: string,
-  } |
-  {
-    actionType: 'UPDATE_TASK_SETTINGS',
-    taskType: TaskType,
-    settings: TaskSettings,
-  };
+function _load_Dispatcher() {
+  return _Dispatcher = _interopRequireDefault(require('../../commons-node/Dispatcher'));
+}
 
-export const ActionTypes = Object.freeze({
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const ActionTypes = exports.ActionTypes = Object.freeze({
   UPDATE_BUCK_ROOT: 'UPDATE_BUCK_ROOT',
   UPDATE_PROJECT_ROOT: 'UPDATE_PROJECT_ROOT',
   UPDATE_BUILD_TARGET: 'UPDATE_BUILD_TARGET',
@@ -62,10 +31,11 @@ export const ActionTypes = Object.freeze({
   UPDATE_REACT_NATIVE_SERVER_MODE: 'UPDATE_REACT_NATIVE_SERVER_MODE',
   UPDATE_RULE_TYPE: 'UPDATE_RULE_TYPE',
   UPDATE_SIMULATOR: 'UPDATE_SIMULATOR',
-  UPDATE_TASK_SETTINGS: 'UPDATE_TASK_SETTINGS',
+  UPDATE_TASK_SETTINGS: 'UPDATE_TASK_SETTINGS'
 });
 
 // Flow hack: Every BuckToolbarAction actionType must be in ActionTypes.
-(('': $PropertyType<BuckToolbarAction, 'actionType'>): $Keys<typeof ActionTypes>);
+'';
 
-export default class BuckToolbarDispatcher extends Dispatcher<BuckToolbarAction> {}
+let BuckToolbarDispatcher = class BuckToolbarDispatcher extends (_Dispatcher || _load_Dispatcher()).default {};
+exports.default = BuckToolbarDispatcher;

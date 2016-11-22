@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,54 +9,49 @@
  * the root directory of this source tree.
  */
 
-import type {
-  StatusCodeNumberValue,
-} from '../../nuclide-hg-rpc/lib/HgService';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.HgStatusToFileChangeStatus = exports.RevertibleStatusCodes = exports.FileChangeStatusToTextColor = exports.FileChangeStatusToPrefix = exports.FileChangeStatus = undefined;
 
-import {
- hgConstants,
-} from '../../nuclide-hg-rpc';
+var _nuclideHgRpc;
 
-const {StatusCodeNumber: HgStatusCodeNumber} = hgConstants;
+function _load_nuclideHgRpc() {
+  return _nuclideHgRpc = require('../../nuclide-hg-rpc');
+}
 
-export type FileChangeStatusValue = 1 | 2 | 3 | 4 | 5;
+const HgStatusCodeNumber = (_nuclideHgRpc || _load_nuclideHgRpc()).hgConstants.StatusCodeNumber;
 
-export const FileChangeStatus = Object.freeze({
+const FileChangeStatus = exports.FileChangeStatus = Object.freeze({
   ADDED: 1,
   MODIFIED: 2,
   MISSING: 3,
   REMOVED: 4,
-  UNTRACKED: 5,
+  UNTRACKED: 5
 });
 
-export const FileChangeStatusToPrefix: {[key: ?FileChangeStatusValue]: string} = Object.freeze({
+const FileChangeStatusToPrefix = exports.FileChangeStatusToPrefix = Object.freeze({
   [FileChangeStatus.ADDED]: '[A] ',
   [FileChangeStatus.MODIFIED]: '[M] ',
   [FileChangeStatus.MISSING]: '[!] ',
   [FileChangeStatus.REMOVED]: '[D] ',
-  [FileChangeStatus.UNTRACKED]: '[?] ',
+  [FileChangeStatus.UNTRACKED]: '[?] '
 });
 
-export const FileChangeStatusToTextColor: {[key: ?FileChangeStatusValue]: string} = Object.freeze({
+const FileChangeStatusToTextColor = exports.FileChangeStatusToTextColor = Object.freeze({
   [FileChangeStatus.ADDED]: 'text-success',
   [FileChangeStatus.MODIFIED]: 'text-warning',
   [FileChangeStatus.MISSING]: 'text-error',
   [FileChangeStatus.REMOVED]: 'text-error',
-  [FileChangeStatus.UNTRACKED]: 'text-error',
+  [FileChangeStatus.UNTRACKED]: 'text-error'
 });
 
-export const RevertibleStatusCodes = [
-  FileChangeStatus.ADDED,
-  FileChangeStatus.MODIFIED,
-  FileChangeStatus.REMOVED,
-];
+const RevertibleStatusCodes = exports.RevertibleStatusCodes = [FileChangeStatus.ADDED, FileChangeStatus.MODIFIED, FileChangeStatus.REMOVED];
 
-export const HgStatusToFileChangeStatus
-  : {[key: StatusCodeNumberValue]: FileChangeStatusValue} = Object.freeze({
-    [HgStatusCodeNumber.ADDED]: FileChangeStatus.ADDED,
-    [HgStatusCodeNumber.MODIFIED]: FileChangeStatus.MODIFIED,
-    [HgStatusCodeNumber.MISSING]: FileChangeStatus.MISSING,
-    [HgStatusCodeNumber.REMOVED]: FileChangeStatus.REMOVED,
-    [HgStatusCodeNumber.UNTRACKED]: FileChangeStatus.UNTRACKED,
-  },
-);
+const HgStatusToFileChangeStatus = exports.HgStatusToFileChangeStatus = Object.freeze({
+  [HgStatusCodeNumber.ADDED]: FileChangeStatus.ADDED,
+  [HgStatusCodeNumber.MODIFIED]: FileChangeStatus.MODIFIED,
+  [HgStatusCodeNumber.MISSING]: FileChangeStatus.MISSING,
+  [HgStatusCodeNumber.REMOVED]: FileChangeStatus.REMOVED,
+  [HgStatusCodeNumber.UNTRACKED]: FileChangeStatus.UNTRACKED
+});

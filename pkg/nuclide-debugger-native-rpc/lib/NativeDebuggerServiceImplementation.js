@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,114 +9,134 @@
  * the root directory of this source tree.
  */
 
-import type {ConnectableObservable} from 'rxjs';
-import type {
-  DebuggerConfig,
-  AttachTargetInfo,
-  LaunchTargetInfo,
-} from './NativeDebuggerServiceInterface.js';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.NativeDebuggerService = exports.getAttachTargetInfoList = undefined;
 
-import child_process from 'child_process';
-import invariant from 'assert';
-import nuclideUri from '../../commons-node/nuclideUri';
-import {DebuggerRpcWebSocketService} from '../../nuclide-debugger-common';
-import {observeStream} from '../../commons-node/stream';
-import {splitStream} from '../../commons-node/observable';
-import {checkOutput} from '../../commons-node/process';
-import {Observable} from 'rxjs';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-type AttachInfoArgsType = {
-  pid: string,
-  basepath: string,
-};
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
-type LaunchInfoArgsType = {
-  executable_path: string,
-  launch_arguments: Array<string>,
-  launch_environment_variables: Array<string>,
-  working_directory: string,
-  stdin_filepath: string,
-  basepath: string,
-  lldb_python_path: ?string,
-};
+let getAttachTargetInfoList = exports.getAttachTargetInfoList = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (targetPid) {
+    // Get processes list from ps utility.
+    // -e: include all processes, does not require -ww argument since truncation of process names is
+    //     done by the OS, not the ps utility
+    const pidToName = new Map();
+    const processes = yield (0, (_process || _load_process()).checkOutput)('ps', ['-e', '-o', 'pid,comm'], {});
+    processes.stdout.toString().split('\n').slice(1).forEach(function (line) {
+      const words = line.trim().split(' ');
+      const pid = Number(words[0]);
+      const command = words.slice(1).join(' ');
+      const components = command.split('/');
+      const name = components[components.length - 1];
+      pidToName.set(pid, name);
+    });
+    // Get processes list from ps utility.
+    // -e: include all processes
+    // -ww: provides unlimited width for output and prevents the truncating of command names by ps.
+    // -o pid,args: custom format the output to be two columns(pid and command name)
+    const pidToCommand = new Map();
+    const commands = yield (0, (_process || _load_process()).checkOutput)('ps', ['-eww', '-o', 'pid,args'], {});
+    commands.stdout.toString().split('\n').slice(1).forEach(function (line) {
+      const words = line.trim().split(' ');
+      const pid = Number(words[0]);
+      const command = words.slice(1).join(' ');
+      pidToCommand.set(pid, command);
+    });
+    // Filter out processes that have died in between ps calls and zombiue processes.
+    // Place pid, process, and command info into AttachTargetInfo objects and return in an array.
+    return Array.from(pidToName.entries()).filter(function (arr) {
+      var _arr = _slicedToArray(arr, 2);
 
-type LaunchAttachArgsType = AttachInfoArgsType | LaunchInfoArgsType;
+      const pid = _arr[0],
+            name = _arr[1];
 
+      if (targetPid != null) {
+        return pid === targetPid;
+      }
+      return pidToCommand.has(pid) && !(name.startsWith('(') && name.endsWith(')')) && (name.length < 9 || name.slice(-9) !== '<defunct>');
+    }).map(function (arr) {
+      var _arr2 = _slicedToArray(arr, 2);
 
-export async function getAttachTargetInfoList(
-  targetPid: ?number,
-): Promise<Array<AttachTargetInfo>> {
-  // Get processes list from ps utility.
-  // -e: include all processes, does not require -ww argument since truncation of process names is
-  //     done by the OS, not the ps utility
-  // -o pid,comm: custom format the output to be two columns(pid and process name)
-  const pidToName: Map<number, string> = new Map();
-  const processes = await checkOutput('ps', ['-e', '-o', 'pid,comm'], {});
-  processes.stdout.toString().split('\n').slice(1).forEach(line => {
-    const words = line.trim().split(' ');
-    const pid = Number(words[0]);
-    const command = words.slice(1).join(' ');
-    const components = command.split('/');
-    const name = components[components.length - 1];
-    pidToName.set(pid, name);
+      const pid = _arr2[0],
+            name = _arr2[1];
+
+      const commandName = pidToCommand.get(pid);
+
+      if (!(commandName != null)) {
+        throw new Error('Invariant violation: "commandName != null"');
+      }
+
+      return {
+        pid: pid,
+        name: name,
+        commandName: commandName
+      };
+    });
   });
-  // Get processes list from ps utility.
-  // -e: include all processes
-  // -ww: provides unlimited width for output and prevents the truncating of command names by ps.
-  // -o pid,args: custom format the output to be two columns(pid and command name)
-  const pidToCommand: Map<number, string> = new Map();
-  const commands = await checkOutput('ps', ['-eww', '-o', 'pid,args'], {});
-  commands.stdout.toString().split('\n').slice(1).forEach(line => {
-    const words = line.trim().split(' ');
-    const pid = Number(words[0]);
-    const command = words.slice(1).join(' ');
-    pidToCommand.set(pid, command);
-  });
-  // Filter out processes that have died in between ps calls and zombiue processes.
-  // Place pid, process, and command info into AttachTargetInfo objects and return in an array.
-  return Array.from(pidToName.entries()).filter((arr => {
-    const [pid, name] = arr;
-    if (targetPid != null) {
-      return pid === targetPid;
-    }
-    return (
-      pidToCommand.has(pid) &&
-      !(name.startsWith('(') && name.endsWith(')')) &&
-      (name.length < 9 || name.slice(-9) !== '<defunct>')
-    );
-  }))
-  .map(arr => {
-    const [pid, name] = arr;
-    const commandName = pidToCommand.get(pid);
-    invariant(commandName != null);
-    return {
-      pid,
-      name,
-      commandName,
-    };
-  });
+
+  return function getAttachTargetInfoList(_x) {
+    return _ref.apply(this, arguments);
+  };
+})();
+
+var _child_process = _interopRequireDefault(require('child_process'));
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
 }
 
-export class NativeDebuggerService extends DebuggerRpcWebSocketService {
-  _config: DebuggerConfig;
+var _nuclideDebuggerCommon;
 
-  constructor(config: DebuggerConfig) {
+function _load_nuclideDebuggerCommon() {
+  return _nuclideDebuggerCommon = require('../../nuclide-debugger-common');
+}
+
+var _stream;
+
+function _load_stream() {
+  return _stream = require('../../commons-node/stream');
+}
+
+var _observable;
+
+function _load_observable() {
+  return _observable = require('../../commons-node/observable');
+}
+
+var _process;
+
+function _load_process() {
+  return _process = require('../../commons-node/process');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let NativeDebuggerService = exports.NativeDebuggerService = class NativeDebuggerService extends (_nuclideDebuggerCommon || _load_nuclideDebuggerCommon()).DebuggerRpcWebSocketService {
+
+  constructor(config) {
     super('native');
     this._config = config;
     this.getLogger().setLogLevel(config.logLevel);
   }
 
-  attach(attachInfo: AttachTargetInfo): ConnectableObservable<void> {
-    this.getLogger().log(`attach process: ${JSON.stringify(attachInfo)}`);
+  attach(attachInfo) {
+    this.getLogger().log(`attach process: ${ JSON.stringify(attachInfo) }`);
     const inferiorArguments = {
       pid: String(attachInfo.pid),
-      basepath: attachInfo.basepath ? attachInfo.basepath : this._config.buckConfigRootFile,
+      basepath: attachInfo.basepath ? attachInfo.basepath : this._config.buckConfigRootFile
     };
-    return Observable.fromPromise(this._startDebugging(inferiorArguments)).publish();
+    return _rxjsBundlesRxMinJs.Observable.fromPromise(this._startDebugging(inferiorArguments)).publish();
   }
 
-  launch(launchInfo: LaunchTargetInfo): ConnectableObservable<void> {
-    this.getLogger().log(`launch process: ${JSON.stringify(launchInfo)}`);
+  launch(launchInfo) {
+    this.getLogger().log(`launch process: ${ JSON.stringify(launchInfo) }`);
     const inferiorArguments = {
       executable_path: launchInfo.executablePath,
       launch_arguments: launchInfo.arguments,
@@ -124,111 +144,94 @@ export class NativeDebuggerService extends DebuggerRpcWebSocketService {
       working_directory: launchInfo.workingDirectory,
       stdin_filepath: launchInfo.stdinFilePath ? launchInfo.stdinFilePath : '',
       basepath: launchInfo.basepath ? launchInfo.basepath : this._config.buckConfigRootFile,
-      lldb_python_path: launchInfo.lldbPythonPath,
+      lldb_python_path: launchInfo.lldbPythonPath
     };
-    return Observable.fromPromise(this._startDebugging(inferiorArguments)).publish();
+    return _rxjsBundlesRxMinJs.Observable.fromPromise(this._startDebugging(inferiorArguments)).publish();
   }
 
-  async _startDebugging(
-    inferiorArguments: LaunchAttachArgsType,
-  ): Promise<void> {
-    const lldbProcess = this._spawnPythonBackend();
-    lldbProcess.on('exit', this._handleLLDBExit.bind(this));
-    this._registerIpcChannel(lldbProcess);
-    this._sendArgumentsToPythonBackend(lldbProcess, inferiorArguments);
-    const lldbWebSocketListeningPort = await this._connectWithLLDB(lldbProcess);
+  _startDebugging(inferiorArguments) {
+    var _this = this;
 
-    // TODO[jeffreytan]: explicitly use ipv4 address 127.0.0.1 for now.
-    // Investigate if we can use localhost and match protocol version between client/server.
-    const lldbWebSocketAddress = `ws://127.0.0.1:${lldbWebSocketListeningPort}/`;
-    await this.connectToWebSocketServer(lldbWebSocketAddress);
-    this.getLogger().log(`Connected with lldb at address: ${lldbWebSocketAddress}`);
+    return (0, _asyncToGenerator.default)(function* () {
+      const lldbProcess = _this._spawnPythonBackend();
+      lldbProcess.on('exit', _this._handleLLDBExit.bind(_this));
+      _this._registerIpcChannel(lldbProcess);
+      _this._sendArgumentsToPythonBackend(lldbProcess, inferiorArguments);
+      const lldbWebSocketListeningPort = yield _this._connectWithLLDB(lldbProcess);
+
+      // TODO[jeffreytan]: explicitly use ipv4 address 127.0.0.1 for now.
+      // Investigate if we can use localhost and match protocol version between client/server.
+      const lldbWebSocketAddress = `ws://127.0.0.1:${ lldbWebSocketListeningPort }/`;
+      yield _this.connectToWebSocketServer(lldbWebSocketAddress);
+      _this.getLogger().log(`Connected with lldb at address: ${ lldbWebSocketAddress }`);
+    })();
   }
 
-  _registerIpcChannel(lldbProcess: child_process$ChildProcess): void {
+  _registerIpcChannel(lldbProcess) {
     const IPC_CHANNEL_FD = 4;
     /* $FlowFixMe - update Flow defs for ChildProcess */
     const ipcStream = lldbProcess.stdio[IPC_CHANNEL_FD];
-    this.getSubscriptions().add(
-      splitStream(observeStream(ipcStream)).subscribe(
-        this._handleIpcMessage.bind(this, ipcStream),
-        error => this.getLogger().logError(`ipcStream error: ${JSON.stringify(error)}`),
-      ),
-    );
+    this.getSubscriptions().add((0, (_observable || _load_observable()).splitStream)((0, (_stream || _load_stream()).observeStream)(ipcStream)).subscribe(this._handleIpcMessage.bind(this, ipcStream), error => this.getLogger().logError(`ipcStream error: ${ JSON.stringify(error) }`)));
   }
 
-  _handleIpcMessage(ipcStream: Object, message: string): void {
-    this.getLogger().logTrace(`ipc message: ${message}`);
+  _handleIpcMessage(ipcStream, message) {
+    this.getLogger().logTrace(`ipc message: ${ message }`);
     const messageJson = JSON.parse(message);
     if (messageJson.type === 'Nuclide.userOutput') {
       // Write response message to ipc for sync message.
       if (messageJson.isSync) {
         ipcStream.write(JSON.stringify({
-          message_id: messageJson.id,
+          message_id: messageJson.id
         }) + '\n');
       }
       this.getClientCallback().sendUserOutputMessage(JSON.stringify(messageJson.message));
     } else {
-      this.getLogger().logError(`Unknown message: ${message}`);
+      this.getLogger().logError(`Unknown message: ${ message }`);
     }
   }
 
-  _spawnPythonBackend(): child_process$ChildProcess {
-    const lldbPythonScriptPath = nuclideUri.join(__dirname, '../scripts/main.py');
+  _spawnPythonBackend() {
+    const lldbPythonScriptPath = (_nuclideUri || _load_nuclideUri()).default.join(__dirname, '../scripts/main.py');
     const python_args = [lldbPythonScriptPath, '--arguments_in_json'];
     const options = {
-      cwd: nuclideUri.dirname(lldbPythonScriptPath),
+      cwd: (_nuclideUri || _load_nuclideUri()).default.dirname(lldbPythonScriptPath),
       // FD[3] is used for sending arguments JSON blob.
       // FD[4] is used as a ipc channel for output/atom notifications.
       stdio: ['pipe', 'pipe', 'pipe', 'pipe', 'pipe'],
-      detached: false, // When Atom is killed, clang_server.py should be killed, too.
-    };
-    this.getLogger().logInfo(`spawn child_process: ${JSON.stringify(python_args)}`);
-    const lldbProcess = child_process.spawn(
-      this._config.pythonBinaryPath,
-      python_args,
-      options,
-    );
+      detached: false };
+    this.getLogger().logInfo(`spawn child_process: ${ JSON.stringify(python_args) }`);
+    const lldbProcess = _child_process.default.spawn(this._config.pythonBinaryPath, python_args, options);
     this.getSubscriptions().add(() => lldbProcess.kill());
     return lldbProcess;
   }
 
-  _sendArgumentsToPythonBackend(
-    child: child_process$ChildProcess,
-    args: LaunchAttachArgsType,
-  ): void {
+  _sendArgumentsToPythonBackend(child, args) {
     const ARGUMENT_INPUT_FD = 3;
     /* $FlowFixMe - update Flow defs for ChildProcess */
     const argumentsStream = child.stdio[ARGUMENT_INPUT_FD];
     // Make sure the bidirectional communication channel is set up before
     // sending data.
     argumentsStream.write('init\n');
-    this.getSubscriptions().add(
-      observeStream(argumentsStream).first().subscribe(
-        text => {
-          if (text.startsWith('ready')) {
-            const args_in_json = JSON.stringify(args);
-            this.getLogger().logInfo(`Sending ${args_in_json} to child_process`);
-            argumentsStream.write(`${args_in_json}\n`);
-          } else {
-            this.getLogger().logError(`Get unknown initial data: ${text}.`);
-            child.kill();
-          }
-        },
-        error => this.getLogger().logError(`argumentsStream error: ${JSON.stringify(error)}`),
-      ),
-    );
+    this.getSubscriptions().add((0, (_stream || _load_stream()).observeStream)(argumentsStream).first().subscribe(text => {
+      if (text.startsWith('ready')) {
+        const args_in_json = JSON.stringify(args);
+        this.getLogger().logInfo(`Sending ${ args_in_json } to child_process`);
+        argumentsStream.write(`${ args_in_json }\n`);
+      } else {
+        this.getLogger().logError(`Get unknown initial data: ${ text }.`);
+        child.kill();
+      }
+    }, error => this.getLogger().logError(`argumentsStream error: ${ JSON.stringify(error) }`)));
   }
 
-  _connectWithLLDB(lldbProcess: child_process$ChildProcess): Promise<string> {
+  _connectWithLLDB(lldbProcess) {
     this.getLogger().log('connecting with lldb');
     return new Promise((resolve, reject) => {
       // Async handle parsing websocket address from the stdout of the child.
       lldbProcess.stdout.on('data', chunk => {
         // stdout should hopefully be set to line-buffering, in which case the
-        // string would come on one line.
-        const block: string = chunk.toString();
-        this.getLogger().log(`child process(${lldbProcess.pid}) stdout: ${block}`);
+        const block = chunk.toString();
+        this.getLogger().log(`child process(${ lldbProcess.pid }) stdout: ${ block }`);
         const result = /Port: (\d+)\n/.exec(block);
         if (result != null) {
           // $FlowIssue - flow has wrong typing for it(t9649946).
@@ -240,9 +243,9 @@ export class NativeDebuggerService extends DebuggerRpcWebSocketService {
         const errorMessage = chunk.toString();
         this.getClientCallback().sendUserOutputMessage(JSON.stringify({
           level: 'error',
-          text: errorMessage,
+          text: errorMessage
         }));
-        this.getLogger().logError(`child process(${lldbProcess.pid}) stderr: ${errorMessage}`);
+        this.getLogger().logError(`child process(${ lldbProcess.pid }) stderr: ${ errorMessage }`);
       });
       lldbProcess.on('error', () => {
         reject('lldb process error');
@@ -253,8 +256,8 @@ export class NativeDebuggerService extends DebuggerRpcWebSocketService {
     });
   }
 
-  _handleLLDBExit(): void {
+  _handleLLDBExit() {
     // Fire and forget.
     this.dispose();
   }
-}
+};

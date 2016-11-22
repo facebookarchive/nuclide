@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -11,14 +11,6 @@
 
 /* @providesModule HgConstants */
 
-import type {
-  AmendModeValue,
-  CommitPhaseType,
-  MergeConflictStatusValue,
-  StatusCodeIdValue,
-  StatusCodeNumberValue,
-} from './HgService';
-
 const StatusCodeId = Object.freeze({
   ADDED: 'A',
   CLEAN: 'C',
@@ -27,11 +19,11 @@ const StatusCodeId = Object.freeze({
   MISSING: '!', // (deleted by non-hg command, but still tracked)
   REMOVED: 'R',
   UNTRACKED: '?',
-  UNRESOLVED: 'U',
+  UNRESOLVED: 'U'
 });
 
 // This is to work around flow's missing support of enums.
-(StatusCodeId: {[key: string]: StatusCodeIdValue});
+StatusCodeId;
 
 const StatusCodeNumber = Object.freeze({
   ADDED: 1,
@@ -41,13 +33,13 @@ const StatusCodeNumber = Object.freeze({
   MISSING: 5,
   REMOVED: 6,
   UNTRACKED: 7,
-  UNRESOLVED: 8,
+  UNRESOLVED: 8
 });
 
 // This is to work around flow's missing support of enums.
-(StatusCodeNumber: {[key: string]: StatusCodeNumberValue});
+StatusCodeNumber;
 
-const StatusCodeIdToNumber: {[key: StatusCodeIdValue]: StatusCodeNumberValue} = {
+const StatusCodeIdToNumber = {
   [StatusCodeId.ADDED]: StatusCodeNumber.ADDED,
   [StatusCodeId.CLEAN]: StatusCodeNumber.CLEAN,
   [StatusCodeId.IGNORED]: StatusCodeNumber.IGNORED,
@@ -55,44 +47,44 @@ const StatusCodeIdToNumber: {[key: StatusCodeIdValue]: StatusCodeNumberValue} = 
   [StatusCodeId.MISSING]: StatusCodeNumber.MISSING,
   [StatusCodeId.REMOVED]: StatusCodeNumber.REMOVED,
   [StatusCodeId.UNTRACKED]: StatusCodeNumber.UNTRACKED,
-  [StatusCodeId.UNRESOLVED]: StatusCodeNumber.UNRESOLVED,
+  [StatusCodeId.UNRESOLVED]: StatusCodeNumber.UNRESOLVED
 };
 
 const MergeConflictStatus = Object.freeze({
   BOTH_CHANGED: 'both changed',
   DELETED_IN_THEIRS: 'deleted in theirs',
-  DELETED_IN_OURS: 'deleted in ours',
+  DELETED_IN_OURS: 'deleted in ours'
 });
 
 // This is to work around flow's missing support of enums.
-(MergeConflictStatus: {[key: string]: MergeConflictStatusValue});
+MergeConflictStatus;
 
 const AmendMode = Object.freeze({
   CLEAN: 'Clean',
   FIXUP: 'Fixup',
-  REBASE: 'Rebase',
+  REBASE: 'Rebase'
 });
 
 // This is to work around flow's missing support of enums.
-(AmendMode: {[key: string]: AmendModeValue});
+AmendMode;
 
 const CommitPhase = Object.freeze({
   PUBLIC: 'public',
   DRAFT: 'draft',
-  SECRET: 'secret',
+  SECRET: 'secret'
 });
 
 const HEAD_REVISION_EXPRESSION = '.';
 
 // This is to work around flow's missing support of enums.
-(CommitPhase: {[key: string]: CommitPhaseType});
+CommitPhase;
 
 module.exports = {
-  AmendMode,
-  CommitPhase,
-  HEAD_REVISION_EXPRESSION,
-  MergeConflictStatus,
-  StatusCodeId,
-  StatusCodeIdToNumber,
-  StatusCodeNumber,
+  AmendMode: AmendMode,
+  CommitPhase: CommitPhase,
+  HEAD_REVISION_EXPRESSION: HEAD_REVISION_EXPRESSION,
+  MergeConflictStatus: MergeConflictStatus,
+  StatusCodeId: StatusCodeId,
+  StatusCodeIdToNumber: StatusCodeIdToNumber,
+  StatusCodeNumber: StatusCodeNumber
 };

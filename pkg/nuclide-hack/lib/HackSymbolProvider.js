@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,21 +9,28 @@
  * the root directory of this source tree.
  */
 
-import type {
-  Provider,
-  ProviderType,
-} from '../../nuclide-quick-open/lib/types';
-import type {
-  FileResult,
-} from '../../nuclide-quick-open/lib/rpc-types';
-import type {
-  HackSearchPosition,
-  HackLanguageService,
-} from '../../nuclide-hack-rpc/lib/HackService-types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.HackSymbolProvider = undefined;
 
-import {isFileInHackProject, getHackLanguageForUri} from './HackLanguage';
-import nuclideUri from '../../commons-node/nuclideUri';
-import {React} from 'react-for-atom';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _HackLanguage;
+
+function _load_HackLanguage() {
+  return _HackLanguage = require('./HackLanguage');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var _reactForAtom = require('react-for-atom');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const ICONS = {
   'interface': 'icon-puzzle',
@@ -36,10 +43,10 @@ const ICONS = {
   'trait': 'icon-checklist',
   'enum': 'icon-file-binary',
   'default': 'no-icon',
-  'unknown': 'icon-squirrel',
+  'unknown': 'icon-squirrel'
 };
 
-function bestIconForItem(item: HackSearchPosition): string {
+function bestIconForItem(item) {
   if (!item.additionalInfo) {
     return ICONS.default;
   }
@@ -56,67 +63,73 @@ function bestIconForItem(item: HackSearchPosition): string {
   return ICONS.unknown;
 }
 
-export const HackSymbolProvider: Provider = {
-
-  getName(): string {
+const HackSymbolProvider = exports.HackSymbolProvider = {
+  getName: function () {
     return 'HackSymbolProvider';
   },
-
-  getProviderType(): ProviderType {
+  getProviderType: function () {
     return 'DIRECTORY';
   },
-
-  isRenderable(): boolean {
+  isRenderable: function () {
     return true;
   },
-
-  getAction(): string {
+  getAction: function () {
     return 'nuclide-hack-symbol-provider:toggle-provider';
   },
-
-  getPromptText(): string {
+  getPromptText: function () {
     return 'Search Hack symbols. Available prefixes: @function %constant #class';
   },
-
-  getTabTitle(): string {
+  getTabTitle: function () {
     return 'Hack Symbols';
   },
-
-  isEligibleForDirectory(directory: atom$Directory): Promise<boolean> {
-    return isFileInHackProject(directory.getPath());
+  isEligibleForDirectory: function (directory) {
+    return (0, (_HackLanguage || _load_HackLanguage()).isFileInHackProject)(directory.getPath());
   },
+  executeQuery: (() => {
+    var _ref = (0, _asyncToGenerator.default)(function* (query, directory) {
+      if (query.length === 0 || directory == null) {
+        return [];
+      }
 
-  async executeQuery(
-    query: string,
-    directory?: atom$Directory,
-  ): Promise<Array<FileResult>> {
-    if (query.length === 0 || directory == null) {
-      return [];
-    }
+      const service = yield (0, (_HackLanguage || _load_HackLanguage()).getHackLanguageForUri)(directory.getPath());
+      if (service == null) {
+        return [];
+      }
 
-    const service: ?HackLanguageService = await getHackLanguageForUri(directory.getPath());
-    if (service == null) {
-      return [];
-    }
+      const directoryPath = directory.getPath();
+      const results = yield service.executeQuery(directoryPath, query);
+      return results;
+    });
 
-    const directoryPath = directory.getPath();
-    const results: Array<HackSearchPosition> = await service.executeQuery(directoryPath, query);
-    return ((results: any): Array<FileResult>);
-  },
-
-  getComponentForItem(uncastedItem: FileResult): React.Element<any> {
-    const item = ((uncastedItem: any): HackSearchPosition);
+    return function executeQuery(_x, _x2) {
+      return _ref.apply(this, arguments);
+    };
+  })(),
+  getComponentForItem: function (uncastedItem) {
+    const item = uncastedItem;
     const filePath = item.path;
-    const filename = nuclideUri.basename(filePath);
+    const filename = (_nuclideUri || _load_nuclideUri()).default.basename(filePath);
     const name = item.name || '';
 
     const icon = bestIconForItem(item);
-    const symbolClasses = `file icon ${icon}`;
-    return (
-      <div title={item.additionalInfo || ''}>
-        <span className={symbolClasses}><code>{name}</code></span>
-        <span className="omnisearch-symbol-result-filename">{filename}</span>
-      </div>
+    const symbolClasses = `file icon ${ icon }`;
+    return _reactForAtom.React.createElement(
+      'div',
+      { title: item.additionalInfo || '' },
+      _reactForAtom.React.createElement(
+        'span',
+        { className: symbolClasses },
+        _reactForAtom.React.createElement(
+          'code',
+          null,
+          name
+        )
+      ),
+      _reactForAtom.React.createElement(
+        'span',
+        { className: 'omnisearch-symbol-result-filename' },
+        filename
+      )
     );
-  },
+  }
 };

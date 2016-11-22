@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,240 +9,256 @@
  * the root directory of this source tree.
  */
 
-import type {Action} from './types';
-import type {AppState} from '..';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.applyActionMiddleware = applyActionMiddleware;
 
-import * as ActionType from './ActionType';
-import {HgRepositoryClient} from '../../nuclide-hg-repository-client';
-import invariant from 'assert';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
-import {repositoryForPath} from '../../nuclide-hg-git-bridge';
-import {Observable} from 'rxjs';
-import featureConfig from '../../commons-atom/featureConfig';
-import {STACKED_CONFIG_KEY} from './constants';
+var _ActionType;
 
-const HANDLED_ACTION_TYPES = [
-  ActionType.CREATE_BOOKMARK,
-  ActionType.DELETE_BOOKMARK,
-  ActionType.FETCH_PROJECT_REPOSITORIES,
-  ActionType.RENAME_BOOKMARK,
-  ActionType.UPDATE_TO_BOOKMARK,
-];
+function _load_ActionType() {
+  return _ActionType = _interopRequireWildcard(require('./ActionType'));
+}
 
-export function applyActionMiddleware(
-  actions: Observable<Action>,
-  getState: () => AppState,
-): Observable<Action> {
-  const output = Observable.merge(
-    // Skip unhandled ActionTypes.
-    actions.filter(action => HANDLED_ACTION_TYPES.indexOf(action.type) === -1),
+var _nuclideHgRepositoryClient;
 
-    actions.filter(action => action.type === ActionType.CREATE_BOOKMARK)
-      .switchMap(action => {
-        invariant(action.type === ActionType.CREATE_BOOKMARK);
+function _load_nuclideHgRepositoryClient() {
+  return _nuclideHgRepositoryClient = require('../../nuclide-hg-repository-client');
+}
 
-        const {name, repository} = action.payload;
-        if (repository.getType() !== 'hg') {
-          return Observable.empty();
+var _event;
+
+function _load_event() {
+  return _event = require('../../commons-node/event');
+}
+
+var _nuclideHgGitBridge;
+
+function _load_nuclideHgGitBridge() {
+  return _nuclideHgGitBridge = require('../../nuclide-hg-git-bridge');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _featureConfig;
+
+function _load_featureConfig() {
+  return _featureConfig = _interopRequireDefault(require('../../commons-atom/featureConfig'));
+}
+
+var _constants;
+
+function _load_constants() {
+  return _constants = require('./constants');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+const HANDLED_ACTION_TYPES = [(_ActionType || _load_ActionType()).CREATE_BOOKMARK, (_ActionType || _load_ActionType()).DELETE_BOOKMARK, (_ActionType || _load_ActionType()).FETCH_PROJECT_REPOSITORIES, (_ActionType || _load_ActionType()).RENAME_BOOKMARK, (_ActionType || _load_ActionType()).UPDATE_TO_BOOKMARK];function applyActionMiddleware(actions, getState) {
+  const output = _rxjsBundlesRxMinJs.Observable.merge(
+  // Skip unhandled ActionTypes.
+  actions.filter(action => HANDLED_ACTION_TYPES.indexOf(action.type) === -1), actions.filter(action => action.type === (_ActionType || _load_ActionType()).CREATE_BOOKMARK).switchMap(action => {
+    if (!(action.type === (_ActionType || _load_ActionType()).CREATE_BOOKMARK)) {
+      throw new Error('Invariant violation: "action.type === ActionType.CREATE_BOOKMARK"');
+    }
+
+    var _action$payload = action.payload;
+    const name = _action$payload.name,
+          repository = _action$payload.repository;
+
+    if (repository.getType() !== 'hg') {
+      return _rxjsBundlesRxMinJs.Observable.empty();
+    }
+
+    if (!(repository instanceof (_nuclideHgRepositoryClient || _load_nuclideHgRepositoryClient()).HgRepositoryClient)) {
+      throw new Error('Invariant violation: "repository instanceof HgRepositoryClient"');
+    }
+
+    const stacked = (_featureConfig || _load_featureConfig()).default.get((_constants || _load_constants()).STACKED_CONFIG_KEY);
+    let createBookmarkTask;
+
+    if (stacked) {
+      createBookmarkTask = _rxjsBundlesRxMinJs.Observable.fromPromise(repository.createBookmark(name));
+    } else {
+      createBookmarkTask = _rxjsBundlesRxMinJs.Observable.fromPromise(repository.checkoutForkBase()).switchMap(() => _rxjsBundlesRxMinJs.Observable.fromPromise(repository.createBookmark(name)));
+    }
+
+    // TODO(most): Add loading indicators.
+    return createBookmarkTask.catch(error => {
+      atom.notifications.addWarning('Failed to create bookmark', {
+        detail: error,
+        dismissable: true
+      });
+      return _rxjsBundlesRxMinJs.Observable.empty();
+    }).ignoreElements();
+  }),
+
+  // Fetch and subscribe to repositories and their bookmarks.
+  actions.filter(action => action.type === (_ActionType || _load_ActionType()).FETCH_PROJECT_REPOSITORIES).switchMap(action => {
+    var _getState = getState();
+
+    const projectDirectories = _getState.projectDirectories;
+
+
+    return _rxjsBundlesRxMinJs.Observable.from(projectDirectories).flatMap(directory => {
+      const repository = (0, (_nuclideHgGitBridge || _load_nuclideHgGitBridge()).repositoryForPath)(directory.getPath());
+      if (repository == null) {
+        return _rxjsBundlesRxMinJs.Observable.empty();
+      }
+
+      let observable = _rxjsBundlesRxMinJs.Observable.of({
+        payload: {
+          directory: directory,
+          repository: repository
+        },
+        type: (_ActionType || _load_ActionType()).SET_DIRECTORY_REPOSITORY
+      });
+
+      if (repository.getType() === 'hg') {
+        // Type was checked with `getType`. Downcast to safely access members with Flow.
+        if (!(repository instanceof (_nuclideHgRepositoryClient || _load_nuclideHgRepositoryClient()).HgRepositoryClient)) {
+          throw new Error('Invariant violation: "repository instanceof HgRepositoryClient"');
         }
 
-        invariant(repository instanceof HgRepositoryClient);
-
-        const stacked: boolean = (featureConfig.get(STACKED_CONFIG_KEY): any);
-        let createBookmarkTask;
-
-        if (stacked) {
-          createBookmarkTask = Observable.fromPromise(repository.createBookmark(name));
-        } else {
-          createBookmarkTask = Observable.fromPromise(repository.checkoutForkBase())
-            .switchMap(() => Observable.fromPromise(repository.createBookmark(name)));
-        }
-
-        // TODO(most): Add loading indicators.
-        return createBookmarkTask
-          .catch(error => {
-            atom.notifications.addWarning('Failed to create bookmark', {
-              detail: error,
-              dismissable: true,
-            });
-            return Observable.empty();
-          })
-          .ignoreElements();
-      }),
-
-    // Fetch and subscribe to repositories and their bookmarks.
-    actions.filter(action => action.type === ActionType.FETCH_PROJECT_REPOSITORIES)
-      .switchMap(action => {
-        const {projectDirectories} = getState();
-
-        return Observable.from(projectDirectories).flatMap(directory => {
-          const repository = repositoryForPath(directory.getPath());
-          if (repository == null) {
-            return Observable.empty();
+        observable = observable.concat(_rxjsBundlesRxMinJs.Observable.merge((0, (_event || _load_event()).observableFromSubscribeFunction)(
+        // Re-fetch when the list of bookmarks changes.
+        repository.onDidChangeBookmarks.bind(repository)), (0, (_event || _load_event()).observableFromSubscribeFunction)(
+        // Re-fetch when the active bookmark changes (called "short head" to match
+        // Atom's Git API).
+        repository.onDidChangeShortHead.bind(repository))).startWith(null) // Kick it off the first time
+        .switchMap(() => {
+          return _rxjsBundlesRxMinJs.Observable.fromPromise(repository.getBookmarks());
+        }).map(bookmarks => ({
+          type: (_ActionType || _load_ActionType()).SET_REPOSITORY_BOOKMARKS,
+          payload: {
+            bookmarks: bookmarks,
+            // TODO(most): figure out flow type incompatability.
+            repository: repository
           }
+        })));
+      }
 
-          let observable = Observable.of({
-            payload: {
-              directory,
-              repository,
-            },
-            type: ActionType.SET_DIRECTORY_REPOSITORY,
-          });
+      return observable;
+    });
+  }), actions.filter(action => action.type === (_ActionType || _load_ActionType()).UPDATE_TO_BOOKMARK).switchMap(action => {
+    // Action was filtered, invariant check to downcast in Flow.
+    if (!(action.type === (_ActionType || _load_ActionType()).UPDATE_TO_BOOKMARK)) {
+      throw new Error('Invariant violation: "action.type === ActionType.UPDATE_TO_BOOKMARK"');
+    }
 
-          if (repository.getType() === 'hg') {
-            // Type was checked with `getType`. Downcast to safely access members with Flow.
-            invariant(repository instanceof HgRepositoryClient);
-            observable = observable.concat(
-              Observable.merge(
-                observableFromSubscribeFunction(
-                  // Re-fetch when the list of bookmarks changes.
-                  repository.onDidChangeBookmarks.bind(repository),
-                ),
-                observableFromSubscribeFunction(
-                  // Re-fetch when the active bookmark changes (called "short head" to match
-                  // Atom's Git API).
-                  repository.onDidChangeShortHead.bind(repository),
-                ),
-              )
-              .startWith(null) // Kick it off the first time
-              .switchMap(() => {
-                return Observable.fromPromise(repository.getBookmarks());
-              })
-              .map(bookmarks => ({
-                type: ActionType.SET_REPOSITORY_BOOKMARKS,
-                payload: {
-                  bookmarks,
-                  // TODO(most): figure out flow type incompatability.
-                  repository: (repository: any),
-                },
-              })),
-            );
-          }
+    var _action$payload2 = action.payload;
+    const bookmark = _action$payload2.bookmark,
+          repository = _action$payload2.repository;
 
-          return observable;
+    return _rxjsBundlesRxMinJs.Observable.fromPromise(repository.checkoutReference(bookmark.bookmark, false)).ignoreElements().catch(error => {
+      atom.notifications.addWarning('Failed Updating to Bookmark', {
+        description: 'Revert or commit uncommitted changes before changing bookmarks.',
+        detail: error,
+        dismissable: true
+      });
+
+      return _rxjsBundlesRxMinJs.Observable.empty();
+    });
+  }), actions.filter(action => action.type === (_ActionType || _load_ActionType()).RENAME_BOOKMARK).groupBy(action => {
+    // Action was filtered, invariant check to downcast in Flow.
+    if (!(action.type === (_ActionType || _load_ActionType()).RENAME_BOOKMARK)) {
+      throw new Error('Invariant violation: "action.type === ActionType.RENAME_BOOKMARK"');
+    }
+
+    return action.payload.bookmark.rev;
+  }).flatMap(renames => {
+    return renames.switchMap(action => {
+      // Action was filtered, invariant check to downcast in Flow.
+      if (!(action.type === (_ActionType || _load_ActionType()).RENAME_BOOKMARK)) {
+        throw new Error('Invariant violation: "action.type === ActionType.RENAME_BOOKMARK"');
+      }
+
+      const repository = action.payload.repository;
+
+
+      if (!(repository instanceof (_nuclideHgRepositoryClient || _load_nuclideHgRepositoryClient()).HgRepositoryClient)) {
+        atom.notifications.addWarning('Failed Renaming Bookmark', {
+          detail: `Expected repository type 'hg' but found ${ repository.getType() }`,
+          dismissable: true
         });
-      }),
+        return _rxjsBundlesRxMinJs.Observable.empty();
+      }
+      var _action$payload3 = action.payload;
+      const bookmark = _action$payload3.bookmark,
+            nextName = _action$payload3.nextName;
 
-    actions.filter(action => action.type === ActionType.UPDATE_TO_BOOKMARK)
-      .switchMap(action => {
-        // Action was filtered, invariant check to downcast in Flow.
-        invariant(action.type === ActionType.UPDATE_TO_BOOKMARK);
 
-        const {bookmark, repository} = action.payload;
-        return Observable
-          .fromPromise(repository.checkoutReference(bookmark.bookmark, false))
-          .ignoreElements()
-          .catch(error => {
-            atom.notifications.addWarning('Failed Updating to Bookmark', {
-              description: 'Revert or commit uncommitted changes before changing bookmarks.',
-              detail: error,
-              dismissable: true,
-            });
-
-            return Observable.empty();
-          });
-      }),
-
-    actions.filter(action => action.type === ActionType.RENAME_BOOKMARK)
-      .groupBy(action => {
-        // Action was filtered, invariant check to downcast in Flow.
-        invariant(action.type === ActionType.RENAME_BOOKMARK);
-        return action.payload.bookmark.rev;
-      })
-      .flatMap(renames => {
-        return renames.switchMap(action => {
-          // Action was filtered, invariant check to downcast in Flow.
-          invariant(action.type === ActionType.RENAME_BOOKMARK);
-          const {repository} = action.payload;
-
-          if (!(repository instanceof HgRepositoryClient)) {
-            atom.notifications.addWarning('Failed Renaming Bookmark', {
-              detail: `Expected repository type 'hg' but found ${repository.getType()}`,
-              dismissable: true,
-            });
-            return Observable.empty();
-          }
-          const {
-            bookmark,
-            nextName,
-          } = action.payload;
-
-          return Observable.of({
-            payload: {
-              bookmark,
-              repository,
-            },
-            type: ActionType.SET_BOOKMARK_IS_LOADING,
-          }).concat(
-            Observable
-              .fromPromise(repository.renameBookmark(bookmark.bookmark, nextName))
-              .ignoreElements()
-              .catch(error => {
-                atom.notifications.addWarning('Failed Renaming Bookmark', {
-                  detail: error,
-                  dismissable: true,
-                });
-
-                return Observable.of({
-                  payload: {
-                    bookmark,
-                    repository,
-                  },
-                  type: ActionType.UNSET_BOOKMARK_IS_LOADING,
-                });
-              }),
-          );
+      return _rxjsBundlesRxMinJs.Observable.of({
+        payload: {
+          bookmark: bookmark,
+          repository: repository
+        },
+        type: (_ActionType || _load_ActionType()).SET_BOOKMARK_IS_LOADING
+      }).concat(_rxjsBundlesRxMinJs.Observable.fromPromise(repository.renameBookmark(bookmark.bookmark, nextName)).ignoreElements().catch(error => {
+        atom.notifications.addWarning('Failed Renaming Bookmark', {
+          detail: error,
+          dismissable: true
         });
-      }),
 
-    actions.filter(action => action.type === ActionType.DELETE_BOOKMARK)
-      .groupBy(action => {
-        // Action was filtered, invariant check to downcast in Flow.
-        invariant(action.type === ActionType.DELETE_BOOKMARK);
-        return action.payload.bookmark.rev;
-      })
-      .flatMap(renames => {
-        return renames.switchMap(action => {
-          // Action was filtered, invariant check to downcast in Flow.
-          invariant(action.type === ActionType.DELETE_BOOKMARK);
-          const {repository} = action.payload;
-
-          if (!(repository instanceof HgRepositoryClient)) {
-            atom.notifications.addWarning('Failed Deleting Bookmark', {
-              detail: `Expected repository type 'hg' but found ${repository.getType()}`,
-              dismissable: true,
-            });
-            return Observable.empty();
-          }
-          const {bookmark} = action.payload;
-
-          return Observable.of({
-            payload: {
-              bookmark,
-              repository,
-            },
-            type: ActionType.SET_BOOKMARK_IS_LOADING,
-          }).concat(
-            Observable
-              .fromPromise(repository.deleteBookmark(bookmark.bookmark))
-              .ignoreElements()
-              .catch(error => {
-                atom.notifications.addWarning('Failed Deleting Bookmark', {
-                  detail: error,
-                  dismissable: true,
-                });
-
-                return Observable.of({
-                  payload: {
-                    bookmark,
-                    repository,
-                  },
-                  type: ActionType.UNSET_BOOKMARK_IS_LOADING,
-                });
-              }),
-          );
+        return _rxjsBundlesRxMinJs.Observable.of({
+          payload: {
+            bookmark: bookmark,
+            repository: repository
+          },
+          type: (_ActionType || _load_ActionType()).UNSET_BOOKMARK_IS_LOADING
         });
-      }),
-  );
+      }));
+    });
+  }), actions.filter(action => action.type === (_ActionType || _load_ActionType()).DELETE_BOOKMARK).groupBy(action => {
+    // Action was filtered, invariant check to downcast in Flow.
+    if (!(action.type === (_ActionType || _load_ActionType()).DELETE_BOOKMARK)) {
+      throw new Error('Invariant violation: "action.type === ActionType.DELETE_BOOKMARK"');
+    }
+
+    return action.payload.bookmark.rev;
+  }).flatMap(renames => {
+    return renames.switchMap(action => {
+      // Action was filtered, invariant check to downcast in Flow.
+      if (!(action.type === (_ActionType || _load_ActionType()).DELETE_BOOKMARK)) {
+        throw new Error('Invariant violation: "action.type === ActionType.DELETE_BOOKMARK"');
+      }
+
+      const repository = action.payload.repository;
+
+
+      if (!(repository instanceof (_nuclideHgRepositoryClient || _load_nuclideHgRepositoryClient()).HgRepositoryClient)) {
+        atom.notifications.addWarning('Failed Deleting Bookmark', {
+          detail: `Expected repository type 'hg' but found ${ repository.getType() }`,
+          dismissable: true
+        });
+        return _rxjsBundlesRxMinJs.Observable.empty();
+      }
+      const bookmark = action.payload.bookmark;
+
+
+      return _rxjsBundlesRxMinJs.Observable.of({
+        payload: {
+          bookmark: bookmark,
+          repository: repository
+        },
+        type: (_ActionType || _load_ActionType()).SET_BOOKMARK_IS_LOADING
+      }).concat(_rxjsBundlesRxMinJs.Observable.fromPromise(repository.deleteBookmark(bookmark.bookmark)).ignoreElements().catch(error => {
+        atom.notifications.addWarning('Failed Deleting Bookmark', {
+          detail: error,
+          dismissable: true
+        });
+
+        return _rxjsBundlesRxMinJs.Observable.of({
+          payload: {
+            bookmark: bookmark,
+            repository: repository
+          },
+          type: (_ActionType || _load_ActionType()).UNSET_BOOKMARK_IS_LOADING
+        });
+      }));
+    });
+  }));
   return output.share();
 }

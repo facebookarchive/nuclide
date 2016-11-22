@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,12 +9,20 @@
  * the root directory of this source tree.
  */
 
-import type BuckToolbarActions from '../BuckToolbarActions';
-import type BuckToolbarStore from '../BuckToolbarStore';
-import type {TaskType} from '../types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.createExtraUiComponent = createExtraUiComponent;
 
-import BuckToolbar from '../BuckToolbar';
-import {React} from 'react-for-atom';
+var _BuckToolbar;
+
+function _load_BuckToolbar() {
+  return _BuckToolbar = _interopRequireDefault(require('../BuckToolbar'));
+}
+
+var _reactForAtom = require('react-for-atom');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Create a component for the extra UI in the Buck version of the toolbar. We use a component
@@ -22,27 +30,17 @@ import {React} from 'react-for-atom';
  * (e.g. dimensions), and create the component in a closure so that we can close over Buck state
  * too.
  */
-export function createExtraUiComponent(
-  store: BuckToolbarStore,
-  actions: BuckToolbarActions,
-): ReactClass<any> {
+function createExtraUiComponent(store, actions) {
 
-  return class ExtraUi extends React.Component {
+  return class ExtraUi extends _reactForAtom.React.Component {
 
-    props: {
-      activeTaskType: ?TaskType,
-    };
-
-    render(): React.Element<any> {
-      return (
-        <BuckToolbar
-          activeTaskType={this.props.activeTaskType}
-          store={store}
-          actions={actions}
-        />
-      );
+    render() {
+      return _reactForAtom.React.createElement((_BuckToolbar || _load_BuckToolbar()).default, {
+        activeTaskType: this.props.activeTaskType,
+        store: store,
+        actions: actions
+      });
     }
 
   };
-
 }

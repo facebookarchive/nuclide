@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,34 +9,58 @@
  * the root directory of this source tree.
  */
 
-import typeof * as PythonService from '../../nuclide-python-rpc';
-import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = undefined;
 
-import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
-import {getShowGlobalVariables} from './config';
-import {itemsToOutline} from './outline';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-export default class OutlineHelpers {
-  static async getOutline(editor: atom$TextEditor): Promise<?Outline> {
-    const src = editor.getPath();
-    if (!src) {
-      return null;
-    }
-    const contents = editor.getText();
-    const mode = getShowGlobalVariables() ? 'all' : 'constants';
+var _nuclideRemoteConnection;
 
-    const service: ?PythonService = await getServiceByNuclideUri('PythonService', src);
-    if (!service) {
-      return null;
-    }
-
-    const items = await service.getOutline(src, contents);
-    if (items == null) {
-      return null;
-    }
-
-    return {
-      outlineTrees: itemsToOutline(mode, items),
-    };
-  }
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
 }
+
+var _config;
+
+function _load_config() {
+  return _config = require('./config');
+}
+
+var _outline;
+
+function _load_outline() {
+  return _outline = require('./outline');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let OutlineHelpers = class OutlineHelpers {
+  static getOutline(editor) {
+    return (0, _asyncToGenerator.default)(function* () {
+      const src = editor.getPath();
+      if (!src) {
+        return null;
+      }
+      const contents = editor.getText();
+      const mode = (0, (_config || _load_config()).getShowGlobalVariables)() ? 'all' : 'constants';
+
+      const service = yield (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getServiceByNuclideUri)('PythonService', src);
+      if (!service) {
+        return null;
+      }
+
+      const items = yield service.getOutline(src, contents);
+      if (items == null) {
+        return null;
+      }
+
+      return {
+        outlineTrees: (0, (_outline || _load_outline()).itemsToOutline)(mode, items)
+      };
+    })();
+  }
+};
+exports.default = OutlineHelpers;
+module.exports = exports['default'];

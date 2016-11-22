@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,30 +9,42 @@
  * the root directory of this source tree.
  */
 
-import type {DeepLinkService} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import createPackage from '../../commons-atom/createPackage';
-import {default as DeepLinkServiceImpl} from './DeepLinkService';
+var _createPackage;
 
-class Activation {
-  _service: DeepLinkServiceImpl;
+function _load_createPackage() {
+  return _createPackage = _interopRequireDefault(require('../../commons-atom/createPackage'));
+}
 
-  constructor(state: ?Object): void {
-    this._service = new DeepLinkServiceImpl();
+var _DeepLinkService;
+
+function _load_DeepLinkService() {
+  return _DeepLinkService = _interopRequireDefault(require('./DeepLinkService'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let Activation = class Activation {
+
+  constructor(state) {
+    this._service = new (_DeepLinkService || _load_DeepLinkService()).default();
   }
 
   dispose() {
     this._service.dispose();
   }
 
-  provideDeepLinkService(): DeepLinkService {
+  provideDeepLinkService() {
     // Only expose the public methods of the service.
     return {
       subscribeToPath: (path, callback) => {
         return this._service.subscribeToPath(path, callback);
-      },
+      }
     };
   }
-}
-
-export default createPackage(Activation);
+};
+exports.default = (0, (_createPackage || _load_createPackage()).default)(Activation);
+module.exports = exports['default'];

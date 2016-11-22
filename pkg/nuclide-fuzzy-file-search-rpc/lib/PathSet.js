@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,44 +9,53 @@
  * the root directory of this source tree.
  */
 
-import type {MatchResult} from '../../nuclide-fuzzy-native';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.PathSet = undefined;
 
-import os from 'os';
-import {makeRe} from 'minimatch';
-import {Matcher} from '../../nuclide-fuzzy-native';
+var _os = _interopRequireDefault(require('os'));
 
-export class PathSet {
-  _matcher: Matcher;
-  _ignoredPatterns: Array<RegExp>;
+var _minimatch;
 
-  constructor(
-    paths: Array<string>,
-    ignoredNames: Array<string>,
-  ) {
-    this._ignoredPatterns = ignoredNames
-      .map(name => makeRe(name, {matchBase: true, dot: true}))
-      // makeRe returns false for invalid patterns.
-      .filter(x => x);
-    this._matcher = new Matcher(paths.filter(path => !this._isIgnored(path)));
+function _load_minimatch() {
+  return _minimatch = require('minimatch');
+}
+
+var _nuclideFuzzyNative;
+
+function _load_nuclideFuzzyNative() {
+  return _nuclideFuzzyNative = require('../../nuclide-fuzzy-native');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let PathSet = exports.PathSet = class PathSet {
+
+  constructor(paths, ignoredNames) {
+    this._ignoredPatterns = ignoredNames.map(name => (0, (_minimatch || _load_minimatch()).makeRe)(name, { matchBase: true, dot: true }))
+    // makeRe returns false for invalid patterns.
+    .filter(x => x);
+    this._matcher = new (_nuclideFuzzyNative || _load_nuclideFuzzyNative()).Matcher(paths.filter(path => !this._isIgnored(path)));
   }
 
-  addPaths(paths: Array<string>) {
+  addPaths(paths) {
     this._matcher.addCandidates(paths.filter(path => !this._isIgnored(path)));
   }
 
-  removePaths(paths: Array<string>) {
+  removePaths(paths) {
     this._matcher.removeCandidates(paths);
   }
 
-  match(query: string): Array<MatchResult> {
+  match(query) {
     return this._matcher.match(query, {
       maxResults: 20,
-      numThreads: os.cpus().length,
-      recordMatchIndexes: true,
+      numThreads: _os.default.cpus().length,
+      recordMatchIndexes: true
     });
   }
 
-  _isIgnored(path: string): boolean {
+  _isIgnored(path) {
     // This is 2x as fast as using Array.some...
     for (let i = 0; i < this._ignoredPatterns.length; i++) {
       if (this._ignoredPatterns[i].test(path)) {
@@ -54,6 +63,5 @@ export class PathSet {
       }
     }
     return false;
-
   }
-}
+};

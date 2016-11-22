@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,38 +9,51 @@
  * the root directory of this source tree.
  */
 
-type AnyTeardown = (() => mixed) | rxjs$ISubscription | IDisposable;
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
 
 /**
  * Like a CompositeDisposable, but in addition to Disposable instances it can
  * also accept plain functions and Rx subscriptions.
  */
-export default class UniversalDisposable {
-  _tearDowns: Set<AnyTeardown>;
-  wasDisposed: boolean;
+let UniversalDisposable = class UniversalDisposable {
 
-  constructor(...tearDowns: Array<AnyTeardown>) {
+  constructor() {
+    for (var _len = arguments.length, tearDowns = Array(_len), _key = 0; _key < _len; _key++) {
+      tearDowns[_key] = arguments[_key];
+    }
+
     this._tearDowns = new Set(tearDowns);
     this.wasDisposed = false;
   }
 
-  add(...tearDowns: Array<AnyTeardown>): void {
+  add() {
     if (this.wasDisposed) {
       return;
+    }
+
+    for (var _len2 = arguments.length, tearDowns = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+      tearDowns[_key2] = arguments[_key2];
     }
 
     tearDowns.forEach(td => this._tearDowns.add(td));
   }
 
-  remove(...tearDowns: Array<AnyTeardown>): void {
+  remove() {
     if (this.wasDisposed) {
       return;
+    }
+
+    for (var _len3 = arguments.length, tearDowns = Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
+      tearDowns[_key3] = arguments[_key3];
     }
 
     tearDowns.forEach(td => this._tearDowns.delete(td));
   }
 
-  dispose(): void {
+  dispose() {
     if (this.wasDisposed) {
       return;
     }
@@ -58,15 +71,17 @@ export default class UniversalDisposable {
     this.wasDisposed = true;
   }
 
-  unsubscribe(): void {
+  unsubscribe() {
     this.dispose();
   }
 
-  clear(): void {
+  clear() {
     if (this.wasDisposed) {
       return;
     }
 
     this._tearDowns.clear();
   }
-}
+};
+exports.default = UniversalDisposable;
+module.exports = exports['default'];

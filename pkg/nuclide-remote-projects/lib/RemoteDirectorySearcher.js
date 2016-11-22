@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,49 +9,40 @@
  * the root directory of this source tree.
  */
 
-import typeof * as GrepService from '../../nuclide-grep-rpc';
-import type {search$FileResult} from '../../nuclide-grep-rpc';
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
-import {Observable, ReplaySubject} from 'rxjs';
-import {RemoteDirectory} from '../../nuclide-remote-connection';
+var _nuclideRemoteConnection;
 
-type RemoteDirectorySearch = {
-  then: (onFullfilled: any, onRejected: any) => Promise<any>,
-  cancel: () => void,
-};
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
 
-class RemoteDirectorySearcher {
-  _serviceProvider: (dir: RemoteDirectory) => GrepService;
+let RemoteDirectorySearcher = class RemoteDirectorySearcher {
 
   // When constructed, RemoteDirectorySearcher must be passed a function that
   // it can use to get a 'GrepService' for a given remote path.
-  constructor(serviceProvider: (dir: RemoteDirectory) => GrepService) {
+  constructor(serviceProvider) {
     this._serviceProvider = serviceProvider;
   }
 
-  canSearchDirectory(directory: atom$Directory | RemoteDirectory): boolean {
-    return RemoteDirectory.isRemoteDirectory(directory);
+  canSearchDirectory(directory) {
+    return (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).RemoteDirectory.isRemoteDirectory(directory);
   }
 
-  search(
-    directories: Array<RemoteDirectory>,
-    regex: RegExp,
-    options: Object,
-  ): RemoteDirectorySearch {
+  search(directories, regex, options) {
     // Track the files that we have seen updates for.
     const seenFiles = new Set();
 
     // Get the remote service that corresponds to each remote directory.
     const services = directories.map(dir => this._serviceProvider(dir));
 
-    const searchStreams: Array<Observable<search$FileResult>> = directories.map((dir, index) =>
-      services[index].grepSearch(dir.getPath(), regex, options.inclusions).refCount());
+    const searchStreams = directories.map((dir, index) => services[index].grepSearch(dir.getPath(), regex, options.inclusions).refCount());
 
     // Start the search in each directory, and merge the resulting streams.
-    const searchStream = Observable.merge(...searchStreams);
+    const searchStream = _rxjsBundlesRxMinJs.Observable.merge(...searchStreams);
 
     // Create a subject that we can use to track search completion.
-    const searchCompletion = new ReplaySubject();
+    const searchCompletion = new _rxjsBundlesRxMinJs.ReplaySubject();
     searchCompletion.next();
 
     const subscription = searchStream.subscribe(next => {
@@ -73,12 +64,13 @@ class RemoteDirectorySearcher {
     const completionPromise = searchCompletion.toPromise();
     return {
       then: completionPromise.then.bind(completionPromise),
-      cancel() {
+      cancel: function () {
         // Cancel the subscription, which should also kill the grep process.
         subscription.unsubscribe();
-      },
+      }
     };
   }
-}
+};
+
 
 module.exports = RemoteDirectorySearcher;

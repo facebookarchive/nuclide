@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,102 +9,81 @@
  * the root directory of this source tree.
  */
 
-import {CompositeDisposable} from 'atom';
-import classnames from 'classnames';
-import {React, ReactDOM} from 'react-for-atom';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.MultiSelectList = undefined;
 
-type Option = {
-  label: React.Children,
-  value: any,
-};
+var _class, _temp;
 
-type Props = {
-  optionComponent?: (props: OptionComponentProps) => React.Element<any>,
-  className?: string,
-  options: Array<Option>,
-  value: Array<any>,
-  onChange: (value: Array<any>) => void,
-  commandScope?: HTMLElement,
-};
+var _atom = require('atom');
 
-type State = {
-  selectedValue: any,
-};
+var _classnames;
 
-type DefaultProps = {
-  onChange: (value: Array<any>) => void,
-  optionComponent: ReactClass<OptionComponentProps>,
-  value: Array<any>,
-  options: Array<Option>,
-};
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
 
-export class MultiSelectList extends React.Component {
-  props: Props;
-  state: State;
-  _commandsDisposables: CompositeDisposable;
+var _reactForAtom = require('react-for-atom');
 
-  static defaultProps: DefaultProps = {
-    onChange: values => {},
-    optionComponent: DefaultOptionComponent,
-    options: [],
-    value: [],
-  };
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-  constructor(props: Props) {
+let MultiSelectList = exports.MultiSelectList = (_temp = _class = class MultiSelectList extends _reactForAtom.React.Component {
+
+  constructor(props) {
     super(props);
     this.state = {
-      selectedValue: null,
+      selectedValue: null
     };
   }
 
-  componentDidMount(): void {
+  componentDidMount() {
     this._updateCommands(this.props.commandScope);
   }
 
-  componentDidUpdate(prevProps: Props): void {
+  componentDidUpdate(prevProps) {
     if (prevProps.commandScope !== this.props.commandScope) {
       this._updateCommands(this.props.commandScope);
     }
   }
 
-  _updateCommands(): void {
+  _updateCommands() {
     if (this._commandsDisposables != null) {
       this._commandsDisposables.dispose();
     }
-    const el = this.props.commandScope || ReactDOM.findDOMNode(this);
-    this._commandsDisposables = new CompositeDisposable(
-      atom.commands.add(
-        el,
-        {
-          'core:move-up': () => { this._moveSelectionIndex(-1); },
-          'core:move-down': () => { this._moveSelectionIndex(1); },
-          'core:confirm': () => {
-            const {selectedValue} = this.state;
-            if (selectedValue != null) {
-              this._toggleActive(selectedValue);
-            }
-          },
-        },
-      ),
-    );
+    const el = this.props.commandScope || _reactForAtom.ReactDOM.findDOMNode(this);
+    this._commandsDisposables = new _atom.CompositeDisposable(atom.commands.add(el, {
+      'core:move-up': () => {
+        this._moveSelectionIndex(-1);
+      },
+      'core:move-down': () => {
+        this._moveSelectionIndex(1);
+      },
+      'core:confirm': () => {
+        const selectedValue = this.state.selectedValue;
+
+        if (selectedValue != null) {
+          this._toggleActive(selectedValue);
+        }
+      }
+    }));
   }
 
-  _moveSelectionIndex(delta: number): void {
-    const currentIndex = this.props.options
-      .findIndex(option => option.value === this.state.selectedValue);
+  _moveSelectionIndex(delta) {
+    const currentIndex = this.props.options.findIndex(option => option.value === this.state.selectedValue);
     const nextIndex = currentIndex + delta;
     if (nextIndex >= 0 && nextIndex < this.props.options.length) {
-      this.setState({selectedValue: this.props.options[nextIndex].value});
+      this.setState({ selectedValue: this.props.options[nextIndex].value });
     }
   }
 
-  componentWillUnmount(): void {
+  componentWillUnmount() {
     if (this._commandsDisposables != null) {
       this._commandsDisposables.dispose();
     }
   }
 
-  _toggleActive(value: any): void {
+  _toggleActive(value) {
     const activeValues = this.props.value.slice();
     const index = activeValues.indexOf(value);
     if (index === -1) {
@@ -115,56 +94,62 @@ export class MultiSelectList extends React.Component {
     this.props.onChange(activeValues);
   }
 
-  render(): ?React.Element<any> {
-    return (
-      <div
-        className="nuclide-multi-select-list select-list block"
-        tabIndex="0">
-        <ol className="list-group mark-active">
-          {this._renderOptions()}
-        </ol>
-      </div>
+  render() {
+    return _reactForAtom.React.createElement(
+      'div',
+      {
+        className: 'nuclide-multi-select-list select-list block',
+        tabIndex: '0' },
+      _reactForAtom.React.createElement(
+        'ol',
+        { className: 'list-group mark-active' },
+        this._renderOptions()
+      )
     );
   }
 
-  _renderOptions(): Array<React.Element<any>> {
+  _renderOptions() {
     const OptionComponent = this.props.optionComponent || DefaultOptionComponent;
     return this.props.options.map((option, index) => {
       const selected = this.state.selectedValue === option.value;
       const active = this.props.value.indexOf(option.value) !== -1;
-      const className = classnames({
+      const className = (0, (_classnames || _load_classnames()).default)({
         clearfix: true,
-        selected,
-        active,
+        selected: selected,
+        active: active
       });
-      return (
-        <li
-          key={index}
-          className={className}
-          onMouseOver={() => { this.setState({selectedValue: option.value}); }}
-          onClick={() => { this._toggleActive(option.value); }}>
-          <OptionComponent
-            option={option}
-            active={active}
-            selected={selected}
-          />
-        </li>
+      return _reactForAtom.React.createElement(
+        'li',
+        {
+          key: index,
+          className: className,
+          onMouseOver: () => {
+            this.setState({ selectedValue: option.value });
+          },
+          onClick: () => {
+            this._toggleActive(option.value);
+          } },
+        _reactForAtom.React.createElement(OptionComponent, {
+          option: option,
+          active: active,
+          selected: selected
+        })
       );
     });
   }
 
-}
+}, _class.defaultProps = {
+  onChange: values => {},
+  optionComponent: DefaultOptionComponent,
+  options: [],
+  value: []
+}, _temp);
 
-export type OptionComponentProps = {
-  option: Option,
-  active: boolean,
-  selected: boolean,
-};
 
-function DefaultOptionComponent(props: OptionComponentProps) {
-  return (
-    <span>
-      {props.option.label}
-    </span>
+function DefaultOptionComponent(props) {
+  return _reactForAtom.React.createElement(
+    'span',
+    null,
+    props.option.label
   );
 }
