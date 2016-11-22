@@ -1,5 +1,10 @@
 # Nuclide Changelog
 
+## v0.184.0
+
+* Fixes regression in backspace/enter events not working in input fields of the debugger.
+* Workaround for unprepared Atom environment during package activation.
+
 ## v0.183.0
 
 * Fix inadvertent infinite loop in work deferral queue.
