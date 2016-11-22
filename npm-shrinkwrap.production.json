@@ -88,9 +88,9 @@
       "resolved": "https://registry.npmjs.org/aws4/-/aws4-1.5.0.tgz"
     },
     "babylon": {
-      "version": "6.13.1",
-      "from": "babylon@6.13.1",
-      "resolved": "https://registry.npmjs.org/babylon/-/babylon-6.13.1.tgz"
+      "version": "6.14.1",
+      "from": "babylon@6.14.1",
+      "resolved": "https://registry.npmjs.org/babylon/-/babylon-6.14.1.tgz"
     },
     "balanced-match": {
       "version": "0.4.2",

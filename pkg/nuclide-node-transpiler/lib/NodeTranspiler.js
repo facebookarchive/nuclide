@@ -67,8 +67,6 @@ const BABEL_OPTIONS = {
     }],
     [require.resolve('babel-plugin-transform-class-properties')],
     [require.resolve('babel-plugin-transform-object-rest-spread'), {useBuiltIns: true}],
-    // object-rest-spread needs es2015-destructuring
-    [require.resolve('babel-plugin-transform-es2015-destructuring')],
 
     // babel-preset-react:
     [require.resolve('babel-plugin-transform-react-jsx'), {useBuiltIns: true}],
