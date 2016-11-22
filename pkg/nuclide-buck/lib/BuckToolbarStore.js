@@ -16,6 +16,18 @@ import type BuckToolbarDispatcher from './BuckToolbarDispatcher';
 import {ActionTypes} from './BuckToolbarDispatcher';
 import {Emitter} from 'atom';
 
+const INSTALLABLE_RULES = new Set([
+  'apple_bundle',
+  'apk_genrule',
+]);
+
+const DEBUGGABLE_RULES = new Set([
+  // $FlowFixMe: spreadable sets
+  ...INSTALLABLE_RULES,
+  'cxx_binary',
+  'cxx_test',
+]);
+
 export default class BuckToolbarStore {
 
   _devices: Array<Device>;
@@ -28,7 +40,6 @@ export default class BuckToolbarStore {
   _buildTarget: string;
   _buildRuleType: ?string;
   _simulator: ?string;
-  _isReactNativeServerMode: boolean;
   _taskSettings: {[key: TaskType]: TaskSettings};
 
   constructor(dispatcher: BuckToolbarDispatcher, initialState: ?SerializedState) {
@@ -44,7 +55,6 @@ export default class BuckToolbarStore {
     this._isLoadingRule = false;
     this._buildTarget = initialState && initialState.buildTarget || '';
     this._buildRuleType = null;
-    this._isReactNativeServerMode = initialState && initialState.isReactNativeServerMode || false;
     this._taskSettings = initialState && initialState.taskSettings || {};
     this._simulator = initialState && initialState.simulator || null;
   }
@@ -73,9 +83,6 @@ export default class BuckToolbarStore {
           break;
         case ActionTypes.UPDATE_SIMULATOR:
           this._simulator = action.simulator;
-          break;
-        case ActionTypes.UPDATE_REACT_NATIVE_SERVER_MODE:
-          this._isReactNativeServerMode = action.serverMode;
           break;
         case ActionTypes.UPDATE_TASK_SETTINGS:
           this._taskSettings = {
@@ -137,21 +144,12 @@ export default class BuckToolbarStore {
     return this._buildRuleType;
   }
 
-  canBeReactNativeApp(): boolean {
-    return this._buildRuleType === 'apple_bundle' || this._buildRuleType === 'android_binary';
-  }
-
-  isReactNativeServerMode(): boolean {
-    return this.canBeReactNativeApp() && this._isReactNativeServerMode;
-  }
-
   isInstallableRule(): boolean {
-    return this.canBeReactNativeApp() || this._buildRuleType === 'apk_genrule';
+    return INSTALLABLE_RULES.has(this._buildRuleType);
   }
 
   isDebuggableRule(): boolean {
-    return this.isInstallableRule() || this._buildRuleType === 'cxx_test' ||
-      this._buildRuleType === 'cxx_binary';
+    return DEBUGGABLE_RULES.has(this._buildRuleType);
   }
 
   getSimulator(): ?string {

@@ -36,10 +36,6 @@ type BuckToolbarAction =
     isLoadingRule: boolean,
   } |
   {
-    actionType: 'UPDATE_REACT_NATIVE_SERVER_MODE',
-    serverMode: boolean,
-  } |
-  {
     actionType: 'UPDATE_RULE_TYPE',
     ruleType: ?string,
   } |
@@ -59,7 +55,6 @@ export const ActionTypes = Object.freeze({
   UPDATE_BUILD_TARGET: 'UPDATE_BUILD_TARGET',
   UPDATE_DEVICES: 'UPDATE_DEVICES',
   UPDATE_IS_LOADING_RULE: 'UPDATE_IS_LOADING_RULE',
-  UPDATE_REACT_NATIVE_SERVER_MODE: 'UPDATE_REACT_NATIVE_SERVER_MODE',
   UPDATE_RULE_TYPE: 'UPDATE_RULE_TYPE',
   UPDATE_SIMULATOR: 'UPDATE_SIMULATOR',
   UPDATE_TASK_SETTINGS: 'UPDATE_TASK_SETTINGS',

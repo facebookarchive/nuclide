@@ -106,13 +106,6 @@ export default class BuckToolbarActions {
     });
   }
 
-  updateReactNativeServerMode(serverMode: boolean): void {
-    this._dispatcher.dispatch({
-      actionType: ActionTypes.UPDATE_REACT_NATIVE_SERVER_MODE,
-      serverMode,
-    });
-  }
-
   updateTaskSettings(taskType: TaskType, settings: TaskSettings): void {
     this._dispatcher.dispatch({
       actionType: ActionTypes.UPDATE_TASK_SETTINGS,

@@ -44,7 +44,6 @@ import {taskFromObservable} from '../../commons-node/tasks';
 import {getBuckService} from '../../nuclide-buck-base';
 import featureConfig from '../../commons-atom/featureConfig';
 import {getLogger} from '../../nuclide-logging';
-import {startPackager} from '../../nuclide-react-native-base';
 import {BuckIcon} from './ui/BuckIcon';
 import BuckToolbarStore from './BuckToolbarStore';
 import BuckToolbarActions from './BuckToolbarActions';
@@ -202,7 +201,6 @@ export class BuckBuildSystem {
       store.getBuildTarget(),
       store.getTaskSettings()[taskType] || {},
       store.isInstallableRule(),
-      store.isReactNativeServerMode(),
       store.getSimulator(),
     );
     const task = taskFromObservable(resultStream);
@@ -239,7 +237,6 @@ export class BuckBuildSystem {
           root,
           target,
           {},
-          false,
           false,
           null,
         ),
@@ -291,7 +288,6 @@ export class BuckBuildSystem {
     const {store} = this._flux;
     return {
       buildTarget: store.getBuildTarget(),
-      isReactNativeServerMode: store.isReactNativeServerMode(),
       taskSettings: store.getTaskSettings(),
       simulator: store.getSimulator(),
     };
@@ -303,7 +299,6 @@ export class BuckBuildSystem {
     buildTarget: string,
     settings: TaskSettings,
     isInstallableRule: boolean,
-    isReactNativeServerMode: boolean,
     simulator: ?string,
   ): Observable<TaskEvent> {
     // Clear Buck diagnostics every time we run build.
@@ -353,7 +348,6 @@ export class BuckBuildSystem {
           subcommand,
           settings.arguments || [],
           isDebug,
-          isReactNativeServerMode,
           simulator,
         ).share();
         const processEvents = getEventsFromProcess(processMessages).share();
@@ -498,7 +492,6 @@ function runBuckCommand(
   subcommand: BuckSubcommand,
   args: Array<string>,
   debug: boolean,
-  isReactNativeServerMode: boolean,
   simulator: ?string,
 ): Observable<ProcessMessage> {
 
@@ -511,34 +504,10 @@ function runBuckCommand(
   }
 
   if (subcommand === 'install') {
-    let rnObservable = Observable.empty();
-    if (isReactNativeServerMode) {
-      rnObservable = Observable.concat(
-        Observable.fromPromise(startPackager()),
-        Observable.defer(() => {
-          atom.commands.dispatch(
-            atom.views.getView(atom.workspace),
-            'nuclide-react-native:start-debugging',
-          );
-          return Observable.empty();
-        }),
-      )
-        .ignoreElements();
-    }
-    return rnObservable.concat(
-      buckService.installWithOutput(
-        buckRoot,
-        [buildTarget],
-        args.concat(
-          isReactNativeServerMode ? ['--', '-executor-override', 'RCTWebSocketExecutor'] : [],
-        ),
-        simulator,
-        {
-          run: true,
-          debug,
-        },
-      ).refCount(),
-    );
+    return buckService.installWithOutput(buckRoot, [buildTarget], args, simulator, {
+      run: true,
+      debug,
+    }).refCount();
   } else if (subcommand === 'build') {
     return buckService.buildWithOutput(buckRoot, [buildTarget], args).refCount();
   } else if (subcommand === 'test') {

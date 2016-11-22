@@ -20,7 +20,6 @@ import {React} from 'react-for-atom';
 import BuckToolbarSettings from './ui/BuckToolbarSettings';
 import BuckToolbarTargetSelector from './ui/BuckToolbarTargetSelector';
 import {Button, ButtonSizes} from '../../nuclide-ui/Button';
-import {Checkbox} from '../../nuclide-ui/Checkbox';
 import {Dropdown} from '../../nuclide-ui/Dropdown';
 import {LoadingSpinner} from '../../nuclide-ui/LoadingSpinner';
 import addTooltip from '../../nuclide-ui/add-tooltip';
@@ -47,8 +46,6 @@ class BuckToolbar extends React.Component {
   constructor(props: Props) {
     super(props);
     (this: any)._handleSimulatorChange = this._handleSimulatorChange.bind(this);
-    (this: any)._handleReactNativeServerModeChanged =
-      this._handleReactNativeServerModeChanged.bind(this);
 
     this._buckToolbarActions = this.props.actions;
     this._buckToolbarStore = this.props.store;
@@ -139,18 +136,6 @@ class BuckToolbar extends React.Component {
           />,
         );
       }
-      if (buckToolbarStore.canBeReactNativeApp()) {
-        widgets.push(
-          <div key="react-native-checkbox" className="inline-block">
-            <Checkbox
-              className="nuclide-buck-react-native-packager-checkbox"
-              checked={buckToolbarStore.isReactNativeServerMode()}
-              onChange={this._handleReactNativeServerModeChanged}
-              label="Start React Native Packager"
-            />
-          </div>,
-        );
-      }
     }
 
     const {activeTaskType} = this.props;
@@ -182,10 +167,6 @@ class BuckToolbar extends React.Component {
 
   _handleSimulatorChange(deviceId: string) {
     this._buckToolbarActions.updateSimulator(deviceId);
-  }
-
-  _handleReactNativeServerModeChanged(checked: boolean) {
-    this._buckToolbarActions.updateReactNativeServerMode(checked);
   }
 
   _showSettings() {
