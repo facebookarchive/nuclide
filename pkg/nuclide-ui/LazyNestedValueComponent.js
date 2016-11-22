@@ -28,6 +28,7 @@ import {
 } from './Tree';
 import {LoadingSpinner} from './LoadingSpinner';
 import ignoreTextSelectionEvents from './ignoreTextSelectionEvents';
+import classnames from 'classnames';
 
 const SPINNER_DELAY = 100; /* ms */
 const NOT_AVAILABLE_MESSAGE = '<not available>';
@@ -380,11 +381,13 @@ class TopLevelLazyNestedValueComponent extends React.Component {
   }
 
   render(): React.Element<any> {
-    const className = this.props.className != null
-      ? this.props.className
-      : 'nuclide-ui-lazy-nested-value';
+    const className = classnames(this.props.className, {
+      'native-key-bindings': true,
+      // Note(vjeux): the following line should probably be `: true`
+      'nuclide-ui-lazy-nested-value': this.props.className == null,
+    });
     return (
-      <span className={className}>
+      <span className={className} tabIndex={-1}>
         <ValueComponent
           {...this.props}
           isRoot={true}
