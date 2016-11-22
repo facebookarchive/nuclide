@@ -100,7 +100,7 @@ function searchInSubdir(
     .catch(() => Observable.throw(new Error('Failed to execute a grep search.')));
 
   // Transform lines into file matches.
-  const results = compact(linesSource.map(line => {
+  const results = compact(linesSource.map((line: string) => {
     // Try to parse the output of grep.
     const grepMatchResult = line.match(GREP_PARSE_PATTERN);
     if (!grepMatchResult) {
@@ -142,16 +142,16 @@ function searchInSubdir(
         .scan((size, {match}) => size + match.lineText.length + match.matchText.length, 0)
         .filter(size => size > MATCH_BYTE_LIMIT)
         .switchMapTo(
-          Observable.throw(`Too many results, truncating to ${MATCH_BYTE_LIMIT} bytes`),
+          Observable.throw(Error(`Too many results, truncating to ${MATCH_BYTE_LIMIT} bytes`)),
         )
         .ignoreElements(),
     )
     // Buffer results by file. Flush when the file changes, or on completion.
     .buffer(
-      results
-        // $FlowFixMe: type Observable.distinct
-        .distinct(result => result.filePath)
-        .concat(Observable.of(null)),
+      Observable.concat(
+        results.distinct(result => result.filePath),
+        Observable.of(null),
+      ),
     )
     .filter(buffer => buffer.length > 0)
     .map(buffer => ({

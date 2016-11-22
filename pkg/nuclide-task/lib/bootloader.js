@@ -65,6 +65,7 @@ export default class Task {
     const onExitCallback = () => { child.kill(); };
     process.on('exit', onExitCallback);
     child.on('exit', () => {
+      this._emitter.emit('exit');
       process.removeListener('exit', onExitCallback);
     });
   }
@@ -131,7 +132,7 @@ export default class Task {
   }
 
   onExit(callback: () => mixed): void {
-    this._child.on('exit', callback);
+    this._emitter.on('exit', callback);
   }
 
   dispose() {
