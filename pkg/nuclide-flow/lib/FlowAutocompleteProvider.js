@@ -20,7 +20,7 @@ import {getFlowServiceByNuclideUri} from './FlowServiceFactory';
 
 export default class FlowAutocompleteProvider {
   @trackTiming('flow.autocomplete')
-  static async getSuggestions(
+  async getSuggestions(
     request: atom$AutocompleteRequest,
   ): Promise<?Array<atom$AutocompleteSuggestion>> {
     const {bufferPosition, editor, prefix, activatedManually} = request;
