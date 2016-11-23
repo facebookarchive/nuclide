@@ -30,6 +30,7 @@ import {DatatipComponent, DATATIP_ACTIONS} from './DatatipComponent';
 import {PinnedDatatip} from './PinnedDatatip';
 
 import featureConfig from '../../commons-atom/featureConfig';
+import performanceNow from '../../commons-node/performanceNow';
 
 const logger = getLogger();
 
@@ -505,10 +506,13 @@ class DatatipManagerForEditor {
   }
 
   _handlePinClicked(editor: TextEditor, datatip: Datatip): void {
+    track('datatip-pinned-open');
+    const startTime = performanceNow();
     this._setState(DatatipState.HIDDEN);
     this._pinnedDatatips.add(
       new PinnedDatatip(datatip, editor, /* onDispose */ pinnedDatatip => {
         this._pinnedDatatips.delete(pinnedDatatip);
+        track('datatip-pinned-close', {duration: performanceNow() - startTime});
       }),
     );
   }
