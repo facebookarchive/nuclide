@@ -15,10 +15,20 @@ import invariant from 'assert';
 import {filter} from 'fuzzaldrin';
 
 import {trackTiming} from '../../nuclide-analytics';
+import AutocompleteCacher from '../../commons-atom/AutocompleteCacher';
+import passesGK from '../../commons-node/passesGK';
 
 import {getFlowServiceByNuclideUri} from './FlowServiceFactory';
 
 export default class FlowAutocompleteProvider {
+  _cacher: AutocompleteCacher<?Array<atom$AutocompleteSuggestion>>;
+  constructor() {
+    this._cacher = new AutocompleteCacher({
+      getSuggestions: getSuggestionsFromFlow,
+      updateResults,
+    });
+  }
+
   @trackTiming('flow.autocomplete')
   async getSuggestions(
     request: atom$AutocompleteRequest,
@@ -43,7 +53,11 @@ export default class FlowAutocompleteProvider {
       return null;
     }
 
-    return getSuggestionsFromFlow(request);
+    if (await passesGK('nuclide_fast_autocomplete')) {
+      return this._cacher.getSuggestions(request);
+    } else {
+      return getSuggestionsFromFlow(request);
+    }
   }
 }
 
@@ -73,11 +87,11 @@ async function getSuggestionsFromFlow(
 
   const atomSuggestions =
     await flowSuggestions.map(item => processAutocompleteItem(replacementPrefix, item));
-  return filterResults(request, atomSuggestions);
+  return updateResults(request, atomSuggestions);
 
 }
 
-function filterResults(
+function updateResults(
   request: atom$AutocompleteRequest,
   results: ?Array<atom$AutocompleteSuggestion>,
 ): ?Array<atom$AutocompleteSuggestion> {
@@ -85,7 +99,13 @@ function filterResults(
     return null;
   }
   const replacementPrefix = getReplacementPrefix(request.prefix);
-  return filter(results, replacementPrefix, {key: 'displayText'});
+  const resultsWithCurrentPrefix = results.map(result => {
+    return {
+      ...result,
+      replacementPrefix,
+    };
+  });
+  return filter(resultsWithCurrentPrefix, replacementPrefix, {key: 'displayText'});
 }
 
 function getReplacementPrefix(originalPrefix: string): string {
