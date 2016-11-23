@@ -98,7 +98,7 @@ Unfortunately, this is not currently available as an option in Atom and doesn't 
 
 ## How can I jump to the last cursor position in a file?
 
-Assume you performed an action that caused the cursor to jump to a new position.  How do you go back?f
+Assume you performed an action that caused the cursor to jump to a new position.  How do you go back?
 
 The [last-cursor-position package](https://atom.io/packages/last-cursor-position) allows you to do this.
 
