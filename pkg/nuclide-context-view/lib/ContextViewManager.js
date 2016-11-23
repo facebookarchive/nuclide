@@ -21,6 +21,7 @@ import type {ContextProvider} from './types';
 
 import invariant from 'assert';
 import featureConfig from '../../commons-atom/featureConfig';
+import {arrayCompact} from '../../commons-node/collection';
 import {React, ReactDOM} from 'react-for-atom';
 import {observeTextEditorsPositions} from '../../commons-atom/debounced';
 import {Observable} from 'rxjs';
@@ -277,19 +278,22 @@ export class ContextViewManager {
   _renderProviders(): void {
     // Create collection of provider React elements to render, and
     // display them in order
-    const providerElements: Array<React.Element<any>> =
+    const providerElements: Array<React.Element<any>> = arrayCompact(
       this._contextProviders.map((prov, index) => {
         const createElementFn = prov.getElementFactory();
-        return (
-          <ProviderContainer title={prov.title} key={index}>
-            {createElementFn({
-              ContextViewMessage,
-              definition: this.currentDefinition,
-              setLocked: this._setLocked,
-            })}
-          </ProviderContainer>
-        );
-      },
+        const element = createElementFn({
+          ContextViewMessage,
+          definition: this.currentDefinition,
+          setLocked: this._setLocked,
+        });
+        if (element != null) {
+          return (
+            <ProviderContainer title={prov.title} key={index}>
+              {element}
+            </ProviderContainer>
+          );
+        }
+      }),
     );
 
     // If there are no context providers to show, show a message instead
