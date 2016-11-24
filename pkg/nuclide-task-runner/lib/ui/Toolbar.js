@@ -14,9 +14,11 @@ import type {AnnotatedTaskMetadata, TaskId, TaskRunnerInfo} from '../types';
 import {CommonControls} from './CommonControls';
 import {ProgressBar} from './ProgressBar';
 import {getTaskMetadata} from '../getTaskMetadata';
+import classnames from 'classnames';
 import {React} from 'react-for-atom';
 
 type Props = {
+  disabled: boolean,
   taskRunnerInfo: Array<TaskRunnerInfo>,
   getActiveTaskRunnerIcon: () => ?ReactClass<any>,
   getExtraUi: ?() => ReactClass<any>,
@@ -59,9 +61,12 @@ export class Toolbar extends React.Component {
     const activeTask = activeTaskId == null
       ? null
       : getTaskMetadata(activeTaskId, this.props.taskLists);
+    const className = classnames('nuclide-task-runner-toolbar', {
+      disabled: this.props.disabled,
+    });
 
     return (
-      <div className="nuclide-task-runner-toolbar">
+      <div className={className}>
         <div className="nuclide-task-runner-toolbar-contents padded">
           <CommonControls
             activeTask={activeTask}

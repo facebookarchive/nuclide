@@ -13,6 +13,10 @@
   // this element. That way, we can make sure that our normal contents don't
   // wind up on top of elements they shouldn't.
   overflow: hidden;
+
+  &.disabled {
+    pointer-events: none;
+  }
 }
 
 .nuclide-task-runner-progress-bar {

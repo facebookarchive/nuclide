@@ -110,7 +110,7 @@ export function aggregateTaskListsEpic(
                 Observable.merge(
                   taskLists,
                   Observable.of({taskRunnerId, taskList: []})
-                    .delay(2000)
+                    .delay(1000)
                     .takeUntil(taskLists.take(1)),
                 )
                   .subscribe(observer),
