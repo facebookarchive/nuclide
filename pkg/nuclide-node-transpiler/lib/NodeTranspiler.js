@@ -40,16 +40,12 @@ const BABEL_OPTIONS = {
       'flow',
       'jsx',
       'objectRestSpread',
-      // TODO(asuarez): Remove decorators and remove:
-      'decorators',
     ],
   },
   plugins: [
     [require.resolve('./inline-invariant-tr')],
     [require.resolve('./use-minified-libs-tr')],
 
-    // TODO(asuarez): Remove decorators and remove:
-    [require.resolve('babel-plugin-transform-decorators-legacy')],
     // TODO(asuarez): Switch module boundaries to `module.exports` and remove:
     [require.resolve('babel-plugin-add-module-exports')],
     // TODO(asuarez): Remove after updating to Node 6.3.0:

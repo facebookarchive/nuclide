@@ -19,7 +19,6 @@
 pkg/nuclide-external-interfaces/1.0/
 
 [options]
-esproposal.decorators=ignore
 experimental.const_params=true
 experimental.strict_type_args=true
 module.use_strict=true
