@@ -45,11 +45,6 @@ const BABEL_OPTIONS = {
 
     // TODO(asuarez): Switch module boundaries to `module.exports` and remove:
     [require.resolve('babel-plugin-add-module-exports')],
-    // TODO(asuarez): Remove after updating to Node 6.3.0:
-    [require.resolve('babel-plugin-transform-es2015-parameters')],
-    [require.resolve('babel-plugin-transform-es2015-shorthand-properties')],
-    [require.resolve('babel-plugin-transform-es2015-sticky-regex')],
-    [require.resolve('babel-plugin-transform-es2015-unicode-regex')],
 
     [require.resolve('babel-plugin-check-es2015-constants')],
     [require.resolve('babel-plugin-transform-strict-mode')],
