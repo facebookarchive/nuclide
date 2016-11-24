@@ -13,7 +13,6 @@ import type {Observable} from 'rxjs';
 
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {isPromise} from '../../commons-node/promise';
-import {maybeToString} from '../../commons-node/string';
 import performanceNow from '../../commons-node/performanceNow';
 import {track as rawTrack} from './track';
 
@@ -59,51 +58,6 @@ export function trackEvent(event: TrackingEvent): void {
  */
 export function trackEvents(events: Observable<TrackingEvent>): IDisposable {
   return new UniversalDisposable(events.subscribe(trackEvent));
-}
-
-/**
- * A decorator factory (https://github.com/wycats/javascript-decorators) who measures the execution
- * time of an asynchronous/synchronous function which belongs to either a Class or an Object.
- * Usage:
- *
- * ```
- * Class Test{
- *   @trackTiming()
- *   foo(...) {...}
- *
- *   @trackTiming()
- *   bar(...): Promise {...}
- * }
- *
- * const obj = {
- *   @trackTiming('fooEvent')
- *   foo(...) {...}
- * }
- * ```
- *
- * @param eventName Name of the event to be tracked. It's optional and default value is
- *    `$className.$methodName` for Class method or `Object.$methodName` for Object method.
- * @returns A decorator.
- */
-export function trackTiming(eventName_: ?string = null): any {
-  let eventName = eventName_;
-
-  return (target: any, name: string, descriptor: any) => {
-    const originalMethod = descriptor.value;
-
-    // We can't use arrow function here as it will bind `this` to the context of enclosing function
-    // which is trackTiming, whereas what needed is context of originalMethod.
-    descriptor.value = function(...args) {
-      if (!eventName) {
-        const constructorName = this.constructor ? this.constructor.name : undefined;
-        eventName = `${maybeToString(constructorName)}.${name}`;
-      }
-
-      return trackOperationTiming(eventName,
-        // Must use arrow here to get correct 'this'
-        () => originalMethod.apply(this, args));
-    };
-  };
 }
 
 const PERFORMANCE_EVENT = 'performance';

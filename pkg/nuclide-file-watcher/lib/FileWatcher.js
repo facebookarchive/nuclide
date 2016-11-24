@@ -10,7 +10,7 @@
  */
 
 import {CompositeDisposable} from 'atom';
-import {trackTiming, track} from '../../nuclide-analytics';
+import {trackOperationTiming, track} from '../../nuclide-analytics';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {getLogger} from '../../nuclide-logging';
@@ -42,8 +42,14 @@ class FileWatcher {
     return this._editor.getBuffer().isInConflict();
   }
 
-  @trackTiming('file-watcher:promptReload')
-  async _promptReload(): Promise<any> {
+  _promptReload(): Promise<any> {
+    return trackOperationTiming(
+      'file-watcher:promptReload',
+      () => this.__promptReload(),
+    );
+  }
+
+  async __promptReload(): Promise<any> {
     const filePath = this._editor.getPath();
     if (filePath == null) {
       return;

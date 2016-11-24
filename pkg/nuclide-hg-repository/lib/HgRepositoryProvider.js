@@ -13,7 +13,7 @@ import typeof * as HgService from '../../nuclide-hg-rpc/lib/HgService';
 
 import {Directory} from 'atom';
 import invariant from 'assert';
-import {trackTiming} from '../../nuclide-analytics';
+import {trackOperationTiming} from '../../nuclide-analytics';
 import {
   RemoteDirectory,
   getServiceByNuclideUri,
@@ -83,34 +83,35 @@ export default class HgRepositoryProvider {
     return Promise.resolve(this.repositoryForDirectorySync(directory));
   }
 
-  @trackTiming('hg-repository.repositoryForDirectorySync')
   repositoryForDirectorySync(directory: Directory): ?HgRepositoryClient {
-    try {
-      const repositoryDescription = getRepositoryDescription(directory);
-      if (!repositoryDescription) {
+    return trackOperationTiming('hg-repository.repositoryForDirectorySync', () => {
+      try {
+        const repositoryDescription = getRepositoryDescription(directory);
+        if (!repositoryDescription) {
+          return null;
+        }
+
+        const {
+          originURL,
+          repoPath,
+          workingDirectory,
+          workingDirectoryLocalPath,
+        } = repositoryDescription;
+
+        const service: ?HgService = getServiceByNuclideUri('HgService', directory.getPath());
+        invariant(service);
+        const hgService = new service.HgService(workingDirectoryLocalPath);
+        return new HgRepositoryClient(repoPath, hgService, {
+          workingDirectory,
+          projectRootDirectory: directory,
+          originURL,
+        });
+      } catch (err) {
+        logger.error(
+          'Failed to create an HgRepositoryClient for ', directory.getPath(), ', error: ', err,
+        );
         return null;
       }
-
-      const {
-        originURL,
-        repoPath,
-        workingDirectory,
-        workingDirectoryLocalPath,
-      } = repositoryDescription;
-
-      const service: ?HgService = getServiceByNuclideUri('HgService', directory.getPath());
-      invariant(service);
-      const hgService = new service.HgService(workingDirectoryLocalPath);
-      return new HgRepositoryClient(repoPath, hgService, {
-        workingDirectory,
-        projectRootDirectory: directory,
-        originURL,
-      });
-    } catch (err) {
-      logger.error(
-        'Failed to create an HgRepositoryClient for ', directory.getPath(), ', error: ', err,
-      );
-      return null;
-    }
+    });
   }
 }

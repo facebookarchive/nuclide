@@ -30,7 +30,7 @@ export type DiffEntityOptions = {
 
 import {Emitter} from 'atom';
 import invariant from 'assert';
-import {track, trackTiming} from '../../nuclide-analytics';
+import {track, trackOperationTiming} from '../../nuclide-analytics';
 import {Subject} from 'rxjs';
 import {notifyInternalError} from './notifications';
 import {bufferForUri} from '../../commons-atom/text-editor';
@@ -91,11 +91,12 @@ export default class DiffViewModel {
     this._actionCreators.setCompareId(this._state.activeRepository, revision.id);
   }
 
-  @trackTiming('diff-view.save-file')
   saveActiveFile(): Promise<void> {
-    const {filePath} = this._state.fileDiff;
-    track('diff-view-save-file');
-    return this._saveFile(filePath).catch(notifyInternalError);
+    return trackOperationTiming('diff-view.save-file', () => {
+      const {filePath} = this._state.fileDiff;
+      track('diff-view-save-file');
+      return this._saveFile(filePath).catch(notifyInternalError);
+    });
   }
 
   publishDiff(

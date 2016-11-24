@@ -15,7 +15,7 @@ import type {
   BlameProvider,
 } from './types';
 
-import {track, trackTiming} from '../../nuclide-analytics';
+import {track, trackOperationTiming} from '../../nuclide-analytics';
 import {CompositeDisposable} from 'atom';
 import invariant from 'assert';
 import {shell} from 'electron';
@@ -178,9 +178,15 @@ export default class BlameGutter {
     }
   }
 
-  // The BlameForEditor completely replaces any previous blame information.
-  @trackTiming('blame-ui.blame-gutter.updateBlame')
   _updateBlame(blameForEditor: BlameForEditor): void {
+    return trackOperationTiming(
+      'blame-ui.blame-gutter.updateBlame',
+      () => this.__updateBlame(blameForEditor),
+    );
+  }
+
+  // The BlameForEditor completely replaces any previous blame information.
+  __updateBlame(blameForEditor: BlameForEditor): void {
     if (blameForEditor.size === 0) {
       atom.notifications.addInfo(
           `Found no blame to display. Is this file empty or untracked?

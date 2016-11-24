@@ -13,7 +13,7 @@ import type {ClangCompletion} from '../../nuclide-clang-rpc/lib/rpc-types';
 
 import {Point} from 'atom';
 import {arrayFindLastIndex} from '../../commons-node/collection';
-import {trackTiming} from '../../nuclide-analytics';
+import {trackOperationTiming} from '../../nuclide-analytics';
 import {ClangCursorToDeclarationTypes} from '../../nuclide-clang-rpc';
 import {getCompletions} from './libclang';
 
@@ -206,8 +206,16 @@ function getCompletionPrefix(editor: atom$TextEditor): string {
 
 export default class AutocompleteHelpers {
 
-  @trackTiming('nuclide-clang-atom.autocomplete')
-  static async getAutocompleteSuggestions(
+  static getAutocompleteSuggestions(
+    request: atom$AutocompleteRequest,
+  ): Promise<Array<atom$AutocompleteSuggestion>> {
+    return trackOperationTiming(
+      'nuclide-clang-atom.autocomplete',
+      () => AutocompleteHelpers._getAutocompleteSuggestions(request),
+    );
+  }
+
+  static async _getAutocompleteSuggestions(
     request: atom$AutocompleteRequest,
   ): Promise<Array<atom$AutocompleteSuggestion>> {
     const {editor, bufferPosition: {row, column}, activatedManually} = request;

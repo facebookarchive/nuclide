@@ -11,32 +11,31 @@
 
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 
-import {trackTiming} from '../../nuclide-analytics';
+import {trackOperationTiming} from '../../nuclide-analytics';
 import {getDeclaration} from './libclang';
 
 // Types longer than this will be truncated.
 const MAX_LENGTH = 256;
 
 export default class TypeHintHelpers {
-
-  @trackTiming('nuclide-clang-atom.typeHint')
-  static async typeHint(
+  static typeHint(
     editor: atom$TextEditor,
     position: atom$Point,
   ): Promise<?TypeHint> {
-    const decl = await getDeclaration(editor, position.row, position.column);
-    if (decl == null) {
-      return null;
-    }
-    const {type, extent: range} = decl;
-    if (type == null || type.trim() === '') {
-      return null;
-    }
-    let hint = type;
-    if (type.length > MAX_LENGTH) {
-      hint = type.substr(0, MAX_LENGTH) + '...';
-    }
-    return {hint, range};
+    return trackOperationTiming('nuclide-clang-atom.typeHint', async () => {
+      const decl = await getDeclaration(editor, position.row, position.column);
+      if (decl == null) {
+        return null;
+      }
+      const {type, extent: range} = decl;
+      if (type == null || type.trim() === '') {
+        return null;
+      }
+      let hint = type;
+      if (type.length > MAX_LENGTH) {
+        hint = type.substr(0, MAX_LENGTH) + '...';
+      }
+      return {hint, range};
+    });
   }
-
 }

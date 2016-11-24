@@ -17,7 +17,7 @@ import {CompositeDisposable, Disposable, Point} from 'atom';
 import {getWordTextAndRange} from './hyperclick-utils';
 import invariant from 'assert';
 
-import {trackTiming, startTracking} from '../../nuclide-analytics';
+import {trackOperationTiming, startTracking} from '../../nuclide-analytics';
 import {getLogger} from '../../nuclide-logging';
 
 const logger = getLogger();
@@ -315,14 +315,15 @@ export default class HyperclickForTextEditor {
     this._updateNavigationMarkers(null);
   }
 
-  @trackTiming('hyperclick:confirm-cursor')
-  async _confirmSuggestionAtCursor(): Promise<void> {
-    const suggestion = await this._hyperclick.getSuggestion(
-        this._textEditor,
-        this._textEditor.getCursorBufferPosition());
-    if (suggestion) {
-      this._confirmSuggestion(suggestion);
-    }
+  _confirmSuggestionAtCursor(): Promise<void> {
+    return trackOperationTiming('hyperclick:confirm-cursor', async () => {
+      const suggestion = await this._hyperclick.getSuggestion(
+          this._textEditor,
+          this._textEditor.getCursorBufferPosition());
+      if (suggestion) {
+        this._confirmSuggestion(suggestion);
+      }
+    });
   }
 
   /**

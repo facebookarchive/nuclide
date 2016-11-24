@@ -16,7 +16,7 @@ import {BehaviorSubject} from 'rxjs';
 
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {isFileInHackProject} from '../../nuclide-hack/lib/HackLanguage';
-import {trackTiming} from '../../nuclide-analytics';
+import {trackOperationTiming} from '../../nuclide-analytics';
 import nuclideUri from '../../commons-node/nuclideUri';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 
@@ -66,13 +66,14 @@ class ProjectStore {
     this._emitter.emit('change');
   }
 
-  @trackTiming('toolbar.isFileHHVMProject')
-  async _isFileHHVMProject(fileUri: ?string): Promise<boolean> {
-    return (
-      fileUri != null &&
-      nuclideUri.isRemote(fileUri) &&
-      await isFileInHackProject(fileUri)
-    );
+  _isFileHHVMProject(fileUri: ?string): Promise<boolean> {
+    return trackOperationTiming('toolbar.isFileHHVMProject', async () => {
+      return (
+        fileUri != null &&
+        nuclideUri.isRemote(fileUri) &&
+        await isFileInHackProject(fileUri)
+      );
+    });
   }
 
   getLastScriptCommand(filePath: string): string {

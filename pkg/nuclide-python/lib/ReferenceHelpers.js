@@ -13,7 +13,7 @@ import typeof * as PythonService from '../../nuclide-python-rpc';
 import type {FindReferencesReturn} from '../../nuclide-find-references/lib/rpc-types';
 
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
-import {trackTiming} from '../../nuclide-analytics';
+import {trackOperationTiming} from '../../nuclide-analytics';
 import {getAtomProjectRootPath} from '../../commons-atom/projects';
 import loadingNotification from '../../commons-atom/loading-notification';
 import nuclideUri from '../../commons-node/nuclideUri';
@@ -21,8 +21,17 @@ import {Range, Point} from 'simple-text-buffer';
 
 export default class ReferenceHelpers {
 
-  @trackTiming('python.get-references')
-  static async getReferences(
+  static getReferences(
+    editor: TextEditor,
+    position: atom$Point,
+  ): Promise<?FindReferencesReturn> {
+    return trackOperationTiming(
+      'python.get-references',
+      () => ReferenceHelpers._getReferences(editor, position),
+    );
+  }
+
+  static async _getReferences(
     editor: TextEditor,
     position: atom$Point,
   ): Promise<?FindReferencesReturn> {

@@ -26,7 +26,7 @@ import type {
   MessageComponent,
 } from '../../nuclide-flow-rpc';
 
-import {trackTiming} from '../../nuclide-analytics';
+import {trackOperationTiming} from '../../nuclide-analytics';
 import {getFlowServiceByNuclideUri} from './FlowServiceFactory';
 import {RequestSerializer} from '../../commons-node/promise';
 import {DiagnosticsProviderBase} from '../../nuclide-diagnostics-provider-base';
@@ -135,8 +135,14 @@ class FlowDiagnosticsProvider {
     ).catch(e => logger.error(e));
   }
 
-  @trackTiming('flow.run-diagnostics')
-  async _runDiagnosticsImpl(textEditor: TextEditor): Promise<void> {
+  _runDiagnosticsImpl(textEditor: TextEditor): Promise<void> {
+    return trackOperationTiming(
+      'flow.run-diagnostics',
+      () => this.__runDiagnosticsImpl(textEditor),
+    );
+  }
+
+  async __runDiagnosticsImpl(textEditor: TextEditor): Promise<void> {
     const file = textEditor.getPath();
     if (!file) {
       return;

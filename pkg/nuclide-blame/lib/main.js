@@ -20,7 +20,7 @@ import BlameGutter from './BlameGutter';
 import {getLogger} from '../../nuclide-logging';
 import {goToLocation} from '../../commons-atom/go-to-location';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
-import {track, trackTiming} from '../../nuclide-analytics';
+import {track, trackOperationTiming} from '../../nuclide-analytics';
 
 const PACKAGES_MISSING_MESSAGE = 'Could not open blame. Missing at least one blame provider.';
 const TOGGLE_BLAME_FILE_TREE_CONTEXT_MENU_PRIORITY = 2000;
@@ -141,20 +141,22 @@ class Activation {
    * Section: Managing Context Menus
    */
 
-   @trackTiming('blame.showBlame')
   _showBlame(event): void {
-    const editor = atom.workspace.getActiveTextEditor();
-    if (editor != null) {
-      this._showBlameGutterForEditor(editor);
-    }
+    return trackOperationTiming('blame.showBlame', () => {
+      const editor = atom.workspace.getActiveTextEditor();
+      if (editor != null) {
+        this._showBlameGutterForEditor(editor);
+      }
+    });
   }
 
-  @trackTiming('blame.hideBlame')
   _hideBlame(event): void {
-    const editor = atom.workspace.getActiveTextEditor();
-    if (editor != null) {
-      this._removeBlameGutterForEditor(editor);
-    }
+    return trackOperationTiming('blame.hideBlame', () => {
+      const editor = atom.workspace.getActiveTextEditor();
+      if (editor != null) {
+        this._removeBlameGutterForEditor(editor);
+      }
+    });
   }
 
   _canShowBlame(): boolean {

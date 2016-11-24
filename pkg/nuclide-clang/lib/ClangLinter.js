@@ -15,7 +15,7 @@ import type {
 import type {LinterMessage} from '../../nuclide-diagnostics-common';
 
 import invariant from 'assert';
-import {track, trackTiming} from '../../nuclide-analytics';
+import {track, trackOperationTiming} from '../../nuclide-analytics';
 import featureConfig from '../../commons-atom/featureConfig';
 import {wordAtPosition} from '../../commons-atom/range';
 import {getLogger} from '../../nuclide-logging';
@@ -55,8 +55,18 @@ function getRangeFromPoint(
 
 export default class ClangLinter {
 
-  @trackTiming('nuclide-clang-atom.fetch-diagnostics')
-  static async lint(textEditor: atom$TextEditor): Promise<Array<LinterMessage>> {
+  static lint(
+    textEditor: atom$TextEditor,
+  ): Promise<Array<LinterMessage>> {
+    return trackOperationTiming(
+      'nuclide-clang-atom.fetch-diagnostics',
+      () => ClangLinter._lint(textEditor),
+    );
+  }
+
+  static async _lint(
+    textEditor: atom$TextEditor,
+  ): Promise<Array<LinterMessage>> {
     const filePath = textEditor.getPath();
     if (filePath == null) {
       return [];

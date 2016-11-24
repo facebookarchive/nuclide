@@ -38,7 +38,7 @@ import classnames from 'classnames';
 import {Disposable} from 'atom';
 import {
   track,
-  trackTiming,
+  trackOperationTiming,
 } from '../../nuclide-analytics';
 import RemoteControlService from './RemoteControlService';
 import DebuggerModel from './DebuggerModel';
@@ -330,16 +330,17 @@ class Activation {
     this._model.getBridge().stepOut();
   }
 
-  @trackTiming('nuclide-debugger-atom:toggleBreakpoint')
   _toggleBreakpoint() {
-    const editor = atom.workspace.getActiveTextEditor();
-    if (editor && editor.getPath()) {
-      const filePath = editor.getPath();
-      if (filePath) {
-        const line = editor.getLastCursor().getBufferRow();
-        this._model.getActions().toggleBreakpoint(filePath, line);
+    return trackOperationTiming('nuclide-debugger-atom:toggleBreakpoint', () => {
+      const editor = atom.workspace.getActiveTextEditor();
+      if (editor && editor.getPath()) {
+        const filePath = editor.getPath();
+        if (filePath) {
+          const line = editor.getLastCursor().getBufferRow();
+          this._model.getActions().toggleBreakpoint(filePath, line);
+        }
       }
-    }
+    });
   }
 
 
