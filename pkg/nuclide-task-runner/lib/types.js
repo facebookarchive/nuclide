@@ -20,6 +20,7 @@ export type AppState = {
   previousSessionActiveTaskId: ?TaskId,
   previousSessionVisible: ?boolean,
   projectRoot: ?Directory,
+  projectWasOpened: boolean,
   states: Observable<AppState>,
   taskLists: Map<string, Array<AnnotatedTaskMetadata>>,
   runningTaskInfo: ?{
