@@ -30,9 +30,6 @@ const os = require('os');
 const PREFIXES = ["'use babel'", '"use babel"', '/* @flow */', '/** @babel */'];
 const PREFIX_LENGTH = Math.max(...PREFIXES.map(x => x.length));
 
-// NOTE: When removing plugins, testing Atom is not enough, it's important to
-// test the nuclide server. Atom runs with `--harmony` so some JS feature may
-// work there, but not on the server.
 const BABEL_OPTIONS = {
   parserOpts: {
     plugins: [
