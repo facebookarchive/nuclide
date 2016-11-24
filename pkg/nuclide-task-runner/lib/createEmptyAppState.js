@@ -17,6 +17,7 @@ export function createEmptyAppState(): AppState {
   return {
     activeTaskId: null,
     previousSessionActiveTaskId: null,
+    showPlaceholderInitially: false,
     taskRunners: new Map(),
     projectRoot: null,
     projectWasOpened: false,

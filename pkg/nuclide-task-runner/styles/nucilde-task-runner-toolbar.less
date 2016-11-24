@@ -7,7 +7,6 @@
 
 .nuclide-task-runner-toolbar {
   flex: 1;
-  border-bottom: 1px solid @tool-panel-border-color;
 
   // Anything you want to overflow (e.g. dropdowns) must be rendered outside of
   // this element. That way, we can make sure that our normal contents don't
@@ -24,6 +23,7 @@
   height: 2px;
   position: absolute;
   bottom: 0;
+  left: 0;
 
   &[hidden] {
     display: none;
@@ -150,4 +150,8 @@
     min-width: 35px;
     margin-right: @nuclide-task-runner-button-inner-padding;
   }
+}
+
+.nuclide-task-runner-placeholder {
+  visibility: hidden !important;
 }

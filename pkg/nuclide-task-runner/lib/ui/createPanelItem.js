@@ -43,6 +43,7 @@ export function createPanelItem(store: Store): Object {
     .filter(state => state.tasksAreReady)
     // Throttle to animation frames.
     .audit(() => raf)
+    .startWith(store.getState())
     // Map to a subset of state so we can ignore changes of the other parts.
     .map(state => ({
       taskRunners: state.taskRunners,
@@ -68,6 +69,7 @@ export function createPanelItem(store: Store): Object {
         disabled: !state.tasksAreReady,
         progress: state.runningTaskInfo && state.runningTaskInfo.progress,
         taskIsRunning: state.runningTaskInfo != null,
+        showPlaceholder: !state.viewIsInitialized && state.showPlaceholderInitially,
       };
     });
   const props = Observable.combineLatest(stickyProps, otherProps, (a, b) => ({...a, ...b}));

@@ -11,6 +11,7 @@
 
 import type {AnnotatedTaskMetadata, TaskId, TaskRunnerInfo} from '../types';
 
+import {Button, ButtonSizes} from '../../../nuclide-ui/Button';
 import {CommonControls} from './CommonControls';
 import {ProgressBar} from './ProgressBar';
 import {getTaskMetadata} from '../getTaskMetadata';
@@ -27,6 +28,7 @@ type Props = {
   activeTaskId: ?TaskId,
   selectTask: (taskId: TaskId) => void,
   stopTask: () => void,
+  showPlaceholder: boolean,
   taskIsRunning: boolean,
   taskLists: Map<string, Array<AnnotatedTaskMetadata>>,
 };
@@ -56,30 +58,24 @@ export class Toolbar extends React.Component {
     }
   }
 
-  render(): ?React.Element<any> {
-    const activeTaskId = this.props.activeTaskId;
-    const activeTask = activeTaskId == null
-      ? null
-      : getTaskMetadata(activeTaskId, this.props.taskLists);
-    const className = classnames('nuclide-task-runner-toolbar', {
-      disabled: this.props.disabled,
-    });
+  _renderContents(activeTask: ?AnnotatedTaskMetadata): React.Element<any> {
+    if (this.props.showPlaceholder) {
+      return <Placeholder />;
+    }
 
     return (
-      <div className={className}>
-        <div className="nuclide-task-runner-toolbar-contents padded">
-          <CommonControls
-            activeTask={activeTask}
-            getActiveTaskRunnerIcon={this.props.getActiveTaskRunnerIcon}
-            taskRunnerInfo={this.props.taskRunnerInfo}
-            runTask={this.props.runTask}
-            selectTask={this.props.selectTask}
-            taskIsRunning={this.props.taskIsRunning}
-            taskLists={this.props.taskLists}
-            stopTask={this.props.stopTask}
-          />
-          {this._renderExtraUi()}
-        </div>
+      <div style={{display: 'flex', flex: 1}}>
+        <CommonControls
+          activeTask={activeTask}
+          getActiveTaskRunnerIcon={this.props.getActiveTaskRunnerIcon}
+          taskRunnerInfo={this.props.taskRunnerInfo}
+          runTask={this.props.runTask}
+          selectTask={this.props.selectTask}
+          taskIsRunning={this.props.taskIsRunning}
+          taskLists={this.props.taskLists}
+          stopTask={this.props.stopTask}
+        />
+        {this._renderExtraUi()}
         <ProgressBar
           progress={this.props.progress}
           visible={this.props.taskIsRunning}
@@ -88,4 +84,36 @@ export class Toolbar extends React.Component {
     );
   }
 
+  render(): ?React.Element<any> {
+    const activeTaskId = this.props.activeTaskId;
+    const activeTask = activeTaskId == null
+      ? null
+      : getTaskMetadata(activeTaskId, this.props.taskLists);
+
+    const className = classnames('nuclide-task-runner-toolbar', {
+      disabled: this.props.disabled,
+    });
+
+    return (
+      <div className={className}>
+        <div className="nuclide-task-runner-toolbar-contents padded">
+          {this._renderContents(activeTask)}
+        </div>
+      </div>
+    );
+  }
+
+}
+
+function Placeholder(): React.Element<any> {
+  return (
+    // Themes actually change the size of UI elements (sometimes even dynamically!) and can
+    // therefore change the size of the toolbar! To try to ensure that the placholder has the same
+    // height as the toolbar, we put a dummy button in it and hide it with CSS.
+    <Button
+      className="nuclide-task-runner-placeholder"
+      size={ButtonSizes.SMALL}>
+      Seeing this button is a bug!
+    </Button>
+  );
 }

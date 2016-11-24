@@ -21,6 +21,7 @@ export type AppState = {
   previousSessionVisible: ?boolean,
   projectRoot: ?Directory,
   projectWasOpened: boolean,
+  showPlaceholderInitially: boolean,
   states: Observable<AppState>,
   taskLists: Map<string, Array<AnnotatedTaskMetadata>>,
   runningTaskInfo: ?{
