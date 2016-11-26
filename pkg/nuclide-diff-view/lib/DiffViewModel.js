@@ -26,6 +26,8 @@ export type DiffEntityOptions = {
   directory?: NuclideUri,
   viewMode?: DiffModeType,
   commitMode?: CommitModeType,
+  // Only open the split diff view, not the source control navigator.
+  onlyDiff?: boolean,
 };
 
 import {Emitter} from 'atom';

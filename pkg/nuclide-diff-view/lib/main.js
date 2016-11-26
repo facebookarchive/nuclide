@@ -371,8 +371,10 @@ class Activation {
     }
 
     this._actionCreators.updateDiffEditorsVisibility(true);
-    // Show the Diff Navigator section.
-    dispatchDiffNavigatorToggle(true);
+    if (!diffEntityOptions.onlyDiff) {
+      // Show the Diff Navigator section.
+      dispatchDiffNavigatorToggle(true);
+    }
 
     this._activateDiffPath(diffEntityOptions);
 
