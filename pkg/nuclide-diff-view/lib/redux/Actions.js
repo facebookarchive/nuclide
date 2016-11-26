@@ -36,6 +36,7 @@ import type {
   UpdateActiveNavigationSectionAction,
   UpdateActiveRepositoryAction,
   UpdateCommitStateAction,
+  UpdateDockConfigAction,
   UpdateSuggestedReviewersAction,
   UpdateDiffEditorsAction,
   UpdateDiffEditorsVisibilityAction,
@@ -387,6 +388,17 @@ export function updateActiveNavigationSection(
     type: ActionTypes.UPDATE_ACTIVE_NAVIGATION_SECTION,
     payload: {
       sectionIndex,
+    },
+  };
+}
+
+export function updateDockConfig(
+  shouldDockPublishView: boolean,
+): UpdateDockConfigAction {
+  return {
+    type: ActionTypes.UPDATE_DOCK_CONFIG,
+    payload: {
+      shouldDockPublishView,
     },
   };
 }

@@ -88,6 +88,7 @@ export function renderPublishView(diffModel: DiffViewModel): React.Element<any> 
   const {
     publish: {message, mode, state},
     activeRepositoryState: {headRevision},
+    shouldDockPublishView,
     suggestedReviewers,
   } = diffModel.getState();
   const PublishComponent = getPublishComponent();
@@ -99,6 +100,7 @@ export function renderPublishView(diffModel: DiffViewModel): React.Element<any> 
       publishMode={mode}
       headCommitMessage={headRevision == null ? '' : headRevision.description}
       diffModel={diffModel}
+      shouldDockPublishView={shouldDockPublishView}
     />
   );
 }

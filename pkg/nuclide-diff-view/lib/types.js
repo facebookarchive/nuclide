@@ -178,6 +178,7 @@ export type AppState = {
   isLoadingFileDiff: boolean,
   publish: PublishState,
   repositories: Map<HgRepositoryClient, RepositoryState>,
+  shouldDockPublishView: boolean,
   shouldRebaseOnAmend: boolean,
   uiProviders: Array<UIProvider>,
   viewMode: DiffModeType,
@@ -391,6 +392,13 @@ export type UpdateActiveNavigationSectionAction = {
   },
 };
 
+export type UpdateDockConfigAction = {
+  type: 'UPDATE_DOCK_CONFIG',
+  payload: {
+    shouldDockPublishView: boolean,
+  },
+};
+
 export type Action = AddRepositoryAction
   | AddUiProviderAction
   | CommitAction
@@ -411,6 +419,7 @@ export type Action = AddRepositoryAction
   | UpdateDiffEditorsVisibilityAction
   | UpdateDiffNavigatorVisibilityAction
   | UpdateDirtyFilesAction
+  | UpdateDockConfigAction
   | UpdateFileDiffAction
   | UpdateFileUiElementsAction
   | UpdateHeadToForkBaseRevisions

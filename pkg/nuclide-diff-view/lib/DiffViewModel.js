@@ -116,6 +116,14 @@ export default class DiffViewModel {
     );
   }
 
+  updatePublishMessage(message: ?string): void {
+    const {publish} = this._state;
+    this._actionCreators.updatePublishState({
+      ...publish,
+      message,
+    });
+  }
+
   async _saveFile(filePath: NuclideUri): Promise<void> {
     const buffer = bufferForUri(filePath);
     if (buffer == null) {

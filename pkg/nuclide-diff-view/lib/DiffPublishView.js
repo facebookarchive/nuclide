@@ -34,6 +34,10 @@ import {
 import {Toolbar} from '../../nuclide-ui/Toolbar';
 import {ToolbarLeft} from '../../nuclide-ui/ToolbarLeft';
 import {ToolbarRight} from '../../nuclide-ui/ToolbarRight';
+import {
+  SHOULD_DOCK_PUBLISH_VIEW_CONFIG_KEY,
+} from './constants';
+import featureConfig from '../../commons-atom/featureConfig';
 
 type DiffRevisionViewProps = {
   commitMessage: string,
@@ -63,6 +67,7 @@ type Props = {
   publishModeState: PublishModeStateType,
   headCommitMessage: ?string,
   diffModel: DiffViewModel,
+  shouldDockPublishView: boolean,
   suggestedReviewers: SuggestedReviewersState,
 };
 
@@ -79,6 +84,7 @@ export default class DiffPublishView extends React.Component {
     (this: any)._onClickBack = this._onClickBack.bind(this);
     (this: any).__onClickPublish = this.__onClickPublish.bind(this);
     (this: any)._onTogglePrepare = this._onTogglePrepare.bind(this);
+    (this: any)._toggleDockPublishConfig = this._toggleDockPublishConfig.bind(this);
     this.state = {
       isPrepareMode: false,
     };
@@ -99,7 +105,9 @@ export default class DiffPublishView extends React.Component {
 
   __populatePublishText(): void {
     const messageEditor = this.refs.message;
-    messageEditor.getTextBuffer().setText(this.props.message || '');
+    if (messageEditor != null) {
+      messageEditor.getTextBuffer().setText(this.props.message || '');
+    }
   }
 
   __onClickPublish(): void {
@@ -114,7 +122,9 @@ export default class DiffPublishView extends React.Component {
 
   __getPublishMessage(): ?string {
     const messageEditor = this.refs.message;
-    return messageEditor.getTextBuffer().getText();
+    return messageEditor == null
+      ? this.props.message
+      : messageEditor.getTextBuffer().getText();
   }
 
   __getStatusEditor(): React.Element<any> {
@@ -133,7 +143,12 @@ export default class DiffPublishView extends React.Component {
   }
 
   _getToolbar(): React.Element<any> {
-    const {publishModeState, publishMode, headCommitMessage} = this.props;
+    const {
+      headCommitMessage,
+      publishMode,
+      publishModeState,
+      shouldDockPublishView,
+    } = this.props;
     let revisionView;
     if (headCommitMessage != null) {
       revisionView = <DiffRevisionView commitMessage={headCommitMessage} />;
@@ -176,6 +191,22 @@ export default class DiffPublishView extends React.Component {
       </Button>
     );
 
+    const toggleDockButton = (
+      <Button
+        icon={shouldDockPublishView ? 'move-up' : 'move-down'}
+        onClick={this._toggleDockPublishConfig}
+        title="Dock or Popup view"
+      />
+    );
+
+    const backButton = shouldDockPublishView ?
+      <Button
+        size={ButtonSizes.SMALL}
+        onClick={this._onClickBack}>
+        Back
+      </Button>
+      : null;
+
     let prepareOptionElement;
     if (publishMode === PublishMode.CREATE) {
       prepareOptionElement = (
@@ -198,12 +229,9 @@ export default class DiffPublishView extends React.Component {
           </ToolbarLeft>
           <ToolbarRight>
             <ButtonGroup size={ButtonGroupSizes.SMALL}>
-              <Button
-                size={ButtonSizes.SMALL}
-                onClick={this._onClickBack}>
-                Back
-              </Button>
+              {backButton}
               {publishButton}
+              {toggleDockButton}
             </ButtonGroup>
           </ToolbarRight>
         </Toolbar>
@@ -220,6 +248,13 @@ export default class DiffPublishView extends React.Component {
         {this._getToolbar()}
       </div>
     );
+  }
+
+  _toggleDockPublishConfig(): void {
+    // Persist publish message between docked and modal views.
+    this.props.diffModel.updatePublishMessage(this.__getPublishMessage());
+    const shouldDockPublishView = featureConfig.get(SHOULD_DOCK_PUBLISH_VIEW_CONFIG_KEY);
+    featureConfig.set(SHOULD_DOCK_PUBLISH_VIEW_CONFIG_KEY, !shouldDockPublishView);
   }
 
   _onTogglePrepare(isChecked: boolean): void {

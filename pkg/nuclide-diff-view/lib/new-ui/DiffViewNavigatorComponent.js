@@ -29,6 +29,7 @@ import {
   renderPublishView,
   renderTimelineView,
 } from '../DiffViewComponent';
+import {Modal} from '../../../nuclide-ui/Modal';
 import SectionDirectionNavigator from './SectionDirectionNavigator';
 import {notifyInternalError} from '../notifications';
 
@@ -122,9 +123,35 @@ export default class DiffViewNavigatorComponent extends React.Component {
       case DiffMode.COMMIT_MODE:
         return renderCommitView(diffModel);
       case DiffMode.PUBLISH_MODE:
-        return renderPublishView(diffModel);
+        return this._renderPublishView();
       default:
         throw new Error(`Invalid Diff Mode: ${viewMode}`);
+    }
+  }
+
+  _renderPublishView(): React.Element<any> {
+    const {actionCreators, diffModel, shouldDockPublishView} = this.props;
+
+    const publishViewElement = renderPublishView(diffModel);
+    if (shouldDockPublishView) {
+      return publishViewElement;
+    } else {
+      const dismissHandler = () => {
+        actionCreators.setViewMode(DiffMode.BROWSE_MODE);
+      };
+      const modalMaxHeight = document.body.clientHeight - 100;
+      return (
+        <div>
+          {renderTimelineView(diffModel)}
+          <Modal onDismiss={dismissHandler}>
+            <div
+              style={{maxHeight: modalMaxHeight}}
+              className="nuclide-diff-view-modal-diff-mode">
+              {publishViewElement}
+            </div>
+          </Modal>
+        </div>
+      );
     }
   }
 }
