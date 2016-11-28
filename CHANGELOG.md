@@ -1,5 +1,31 @@
 # Nuclide Changelog
 
+### Highlights
+
+* When you right click on the file tree, it now highlights the row you clicked on!
+
+### File tree
+
+* The [+] icon for the working set no longer jumps around when scrolling.
+* Do not show (default) bubble next to the root.
+
+### Debugger
+
+* Watch expressions are working again.
+
+### Diagnostics
+
+* The yellow and red ~~~~ underlines no longer extends to the end of the line.
+
+### Datatip
+
+* Once interacted with (clicking, selecting text or scrolling horizontally), the datatip closes less aggressively when you mouse out of it.
+* When switching tabs or applications, it should no longer trigger a datatip without moving the mouse.
+
+### OCaml/Reason
+
+* Fix bug in formatting `rei` and `mli` files
+
 ## v0.184.0
 
 * Fixes regression in backspace/enter events not working in input fields of the debugger.
