@@ -41,9 +41,16 @@ export default function accumulateState(state: AppState, action: Action): AppSta
         isLoadingRule: false,
       };
     case Actions.SET_DEVICES:
+      let {simulator} = state;
+      const isInvalidSimulator = simulator == null
+        || !action.devices.some(device => device.udid === simulator);
+      if (isInvalidSimulator && action.devices.length) {
+        simulator = action.devices[0].udid;
+      }
       return {
         ...state,
         devices: action.devices,
+        simulator,
       };
     case Actions.SET_SIMULATOR:
       return {
