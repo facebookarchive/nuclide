@@ -259,10 +259,6 @@ class DatatipManagerForEditor {
         this._setState(DatatipState.HIDDEN);
       }),
 
-      Observable.fromEvent(this._editorView, 'blur').subscribe(e => {
-        this._setState(DatatipState.HIDDEN);
-      }),
-
       Observable.fromEvent(this._editorView, 'mousemove').subscribe(e => {
         if (this._shouldDropNextMouseMoveAfterFocus) {
           this._shouldDropNextMouseMoveAfterFocus = false;
