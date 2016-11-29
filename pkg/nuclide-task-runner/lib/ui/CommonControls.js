@@ -49,9 +49,7 @@ export function CommonControls(props: Props): React.Element<any> {
   // If we don't have an active task runner, use a generic button. If we do, use a fancy one that
   // shows its icon.
   const ButtonComponent = activeTask == null
-    // If there's no active task, just show "Run" (but have it disabled). It's just less weird than
-    // some kind of placeholder. The parent component (Toolbar) will explain the situation.
-    ? buttonProps => <Button {...buttonProps}>Run</Button>
+    ? Button
     : buttonProps => <TaskRunnerButton {...buttonProps} iconComponent={TaskRunnerIcon} />;
 
   // If there's only one task runner, and it doesn't have multiple tasks, don't bother showing the
@@ -75,9 +73,11 @@ export function CommonControls(props: Props): React.Element<any> {
         <Dropdown
           buttonComponent={ButtonComponent}
           value={props.activeTask}
+          placeholder="Select Task"
           options={taskOptions}
           onChange={value => { props.selectTask(value); }}
           onConfirm={run}
+          disabled={taskOptions.every(task => task.type === 'separator' || task.disabled)}
           confirmDisabled={confirmDisabled}
           changeDisabled={props.taskIsRunning}
           size="sm"
