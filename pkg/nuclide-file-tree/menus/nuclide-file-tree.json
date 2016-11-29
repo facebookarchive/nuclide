@@ -22,6 +22,10 @@
             {
               "label": "Collapse File Tree",
               "command": "nuclide-file-tree:recursive-collapse-all"
+            },
+            {
+              "label": "New File...",
+              "command": "nuclide-file-tree:add-file-relative"
             }
           ]
         }
