@@ -224,6 +224,9 @@ class Activation {
       atom.commands.add('atom-workspace', {
         'nuclide-debugger:add-to-watch': this._addToWatch.bind(this),
       }),
+      atom.commands.add('atom-workspace', {
+        'nuclide-debugger:run-to-location': this._runToLocation.bind(this),
+      }),
       atom.commands.add('.nuclide-debugger-root', {
         'nuclide-debugger:copy-debugger-expression-value':
             this._copyDebuggerExpressionValue.bind(this),
@@ -255,6 +258,10 @@ class Activation {
               {
                 label: 'Add to Watch',
                 command: 'nuclide-debugger:add-to-watch',
+              },
+              {
+                label: 'Run to Location',
+                command: 'nuclide-debugger:run-to-location',
               },
             ],
           },
@@ -332,17 +339,28 @@ class Activation {
 
   _toggleBreakpoint() {
     return trackOperationTiming('nuclide-debugger-atom:toggleBreakpoint', () => {
-      const editor = atom.workspace.getActiveTextEditor();
-      if (editor && editor.getPath()) {
-        const filePath = editor.getPath();
-        if (filePath) {
-          const line = editor.getLastCursor().getBufferRow();
-          this._model.getActions().toggleBreakpoint(filePath, line);
-        }
-      }
+      this._executeWithEditorPath((filePath, line) => {
+        this._model.getActions().toggleBreakpoint(filePath, line);
+      });
     });
   }
 
+  _runToLocation() {
+    this._executeWithEditorPath((path, line) => {
+      this._model.getBridge().runToLocation(path, line);
+    });
+  }
+
+  _executeWithEditorPath(fn) {
+    const editor = atom.workspace.getActiveTextEditor();
+    if (editor && editor.getPath()) {
+      const filePath = editor.getPath();
+      if (filePath) {
+        const line = editor.getLastCursor().getBufferRow();
+        fn(filePath, line);
+      }
+    }
+  }
 
   _deleteAllBreakpoints(): void {
     const actions = this._model.getActions();

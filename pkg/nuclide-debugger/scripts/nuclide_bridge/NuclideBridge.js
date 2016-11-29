@@ -226,6 +226,9 @@ class NuclideBridge {
       case 'StepOut':
         this._stepOut();
         break;
+      case 'RunToLocation':
+        this._runToLocation(args[0], args[1]);
+        break;
       case 'evaluateOnSelectedCallFrame':
         this._evaluateOnSelectedCallFrame(args[0], args[1], args[2]);
         break;
@@ -689,6 +692,16 @@ class NuclideBridge {
     if (target) {
       beginTimerTracking('nuclide-debugger-atom:stepOut');
       target.debuggerModel.stepOut();
+    }
+  }
+
+  _runToLocation(path: string, line: number): void {
+    const target = WebInspector.targetManager.mainTarget();
+    if (target) {
+      beginTimerTracking('nuclide-debugger-atom:runToLocation');
+      const url = nuclideUri.nuclideUriToUri(path);
+      const location = target.debuggerModel.createRawLocationByURL(url, line, 0);
+      location.continueToLocation();
     }
   }
 
