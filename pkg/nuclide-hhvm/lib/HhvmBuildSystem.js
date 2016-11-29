@@ -47,6 +47,8 @@ export default class HhvmBuildSystem {
         observableFromSubscribeFunction(this._projectStore.onChange.bind(this._projectStore))
           .map(() => this.getTaskList()),
       )
+        // Wait until the project type has finished loading.
+        .filter(() => this._projectStore.isHHVMProject() != null)
         .subscribe(callback),
     );
   }
@@ -68,7 +70,7 @@ export default class HhvmBuildSystem {
   }
 
   getTaskList(): Array<TaskMetadata> {
-    const disabled = this._projectStore.getProjectType() !== 'Hhvm';
+    const disabled = !this._projectStore.isHHVMProject();
     return [
       {
         type: 'debug',
