@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,61 +9,39 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {
-  HackRange,
-} from './rpc-types';
-import type {Outline, OutlineTree} from '../../nuclide-outline-view/lib/rpc-types';
-import {
-  className,
-  keyword,
-  method,
-  whitespace,
-  plain,
-} from '../../commons-node/tokenizedText';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.outlineFromHackIdeOutline = outlineFromHackIdeOutline;
 
-import {Point} from 'simple-text-buffer';
+var _tokenizedText;
 
+function _load_tokenizedText() {
+  return _tokenizedText = require('../../commons-node/tokenizedText');
+}
+
+var _simpleTextBuffer;
+
+function _load_simpleTextBuffer() {
+  return _simpleTextBuffer = require('simple-text-buffer');
+}
 
 // Note that all line/column values are 1-based.
-export type HackSpan = {
-  filename: NuclideUri,
-  line_start: number,
-  char_start: number,
-  line_end: number,
-  char_end: number,
-};
-
-export type HackIdeOutlineItem = {
-  kind: 'function' | 'class' | 'property' | 'method' | 'const'
-    | 'enum' | 'typeconst' | 'param' | 'trait' | 'interface',
-  name: string,
-  position: HackRange,
-  id?: ?string,
-  span: HackSpan,
-  modifiers: ?Array<string>,
-  children?: Array<HackIdeOutlineItem>,
-  params?: Array<HackIdeOutlineItem>,
-  docblock?: string,
-};
-
-export type HackIdeOutline = Array<HackIdeOutlineItem>;
-
-export function outlineFromHackIdeOutline(hackOutline: HackIdeOutline): Outline {
+function outlineFromHackIdeOutline(hackOutline) {
   return {
-    outlineTrees: hackOutline.map(outlineFromHackIdeItem),
+    outlineTrees: hackOutline.map(outlineFromHackIdeItem)
   };
 }
 
-function outlineFromHackIdeItem(hackItem: HackIdeOutlineItem): OutlineTree {
+function outlineFromHackIdeItem(hackItem) {
   const tokenizedText = [];
 
-  function addKeyword(value: string) {
-    tokenizedText.push(keyword(value));
-    tokenizedText.push(whitespace(' '));
+  function addKeyword(value) {
+    tokenizedText.push((0, (_tokenizedText || _load_tokenizedText()).keyword)(value));
+    tokenizedText.push((0, (_tokenizedText || _load_tokenizedText()).whitespace)(' '));
   }
 
-  function addModifiers(modifiers: ?Array<string>) {
+  function addModifiers(modifiers) {
     if (modifiers != null) {
       modifiers.forEach(addKeyword);
     }
@@ -88,28 +66,28 @@ function outlineFromHackIdeItem(hackItem: HackIdeOutlineItem): OutlineTree {
     case 'class':
     case 'enum':
     case 'typeconst':
-      tokenizedText.push(className(hackItem.name));
+      tokenizedText.push((0, (_tokenizedText || _load_tokenizedText()).className)(hackItem.name));
       break;
     default:
-      tokenizedText.push(method(hackItem.name));
+      tokenizedText.push((0, (_tokenizedText || _load_tokenizedText()).method)(hackItem.name));
       break;
   }
 
   // params
   const params = hackItem.params;
   if (params != null) {
-    tokenizedText.push(plain('('));
+    tokenizedText.push((0, (_tokenizedText || _load_tokenizedText()).plain)('('));
     let first = true;
     for (const param of params) {
       if (!first) {
-        tokenizedText.push(plain(','));
-        tokenizedText.push(whitespace(' '));
+        tokenizedText.push((0, (_tokenizedText || _load_tokenizedText()).plain)(','));
+        tokenizedText.push((0, (_tokenizedText || _load_tokenizedText()).whitespace)(' '));
       }
       first = false;
       addModifiers(param.modifiers);
-      tokenizedText.push(plain(param.name));
+      tokenizedText.push((0, (_tokenizedText || _load_tokenizedText()).plain)(param.name));
     }
-    tokenizedText.push(plain(')'));
+    tokenizedText.push((0, (_tokenizedText || _load_tokenizedText()).plain)(')'));
   }
 
   return {
@@ -117,10 +95,10 @@ function outlineFromHackIdeItem(hackItem: HackIdeOutlineItem): OutlineTree {
     representativeName: hackItem.name,
     startPosition: pointFromHack(hackItem.position.line, hackItem.position.char_start),
     endPosition: pointFromHack(hackItem.span.line_end, hackItem.span.char_end),
-    children: hackItem.children == null ? [] : hackItem.children.map(outlineFromHackIdeItem),
+    children: hackItem.children == null ? [] : hackItem.children.map(outlineFromHackIdeItem)
   };
 }
 
-function pointFromHack(hackLine: number, hackColumn: number): atom$Point {
-  return new Point(hackLine - 1, hackColumn - 1);
+function pointFromHack(hackLine, hackColumn) {
+  return new (_simpleTextBuffer || _load_simpleTextBuffer()).Point(hackLine - 1, hackColumn - 1);
 }

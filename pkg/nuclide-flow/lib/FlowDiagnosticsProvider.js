@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,34 +9,59 @@
  * the root directory of this source tree.
  */
 
-import type {BusySignalProviderBase} from '../../nuclide-busy-signal';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {
-  MessageUpdateCallback,
-  MessageInvalidationCallback,
-} from '../../nuclide-diagnostics-common';
-import type {
-  FileDiagnosticMessage,
-  DiagnosticProviderUpdate,
-  Trace,
-} from '../../nuclide-diagnostics-common/lib/rpc-types';
-import type {
-  Diagnostics,
-  Diagnostic,
-  MessageComponent,
-} from '../../nuclide-flow-rpc';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-import {trackOperationTiming} from '../../nuclide-analytics';
-import {getFlowServiceByNuclideUri} from './FlowServiceFactory';
-import {RequestSerializer} from '../../commons-node/promise';
-import {DiagnosticsProviderBase} from '../../nuclide-diagnostics-provider-base';
-import invariant from 'assert';
-import {JS_GRAMMARS} from './constants';
-import {extractRange} from './flowDiagnosticsCommon';
-import flowMessageToFix from './flowMessageToFix';
-import {getLogger} from '../../nuclide-logging';
+var _nuclideAnalytics;
 
-const logger = getLogger();
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _FlowServiceFactory;
+
+function _load_FlowServiceFactory() {
+  return _FlowServiceFactory = require('./FlowServiceFactory');
+}
+
+var _promise;
+
+function _load_promise() {
+  return _promise = require('../../commons-node/promise');
+}
+
+var _nuclideDiagnosticsProviderBase;
+
+function _load_nuclideDiagnosticsProviderBase() {
+  return _nuclideDiagnosticsProviderBase = require('../../nuclide-diagnostics-provider-base');
+}
+
+var _constants;
+
+function _load_constants() {
+  return _constants = require('./constants');
+}
+
+var _flowDiagnosticsCommon;
+
+function _load_flowDiagnosticsCommon() {
+  return _flowDiagnosticsCommon = require('./flowDiagnosticsCommon');
+}
+
+var _flowMessageToFix;
+
+function _load_flowMessageToFix() {
+  return _flowMessageToFix = _interopRequireDefault(require('./flowMessageToFix'));
+}
+
+var _nuclideLogging;
+
+function _load_nuclideLogging() {
+  return _nuclideLogging = require('../../nuclide-logging');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const logger = (0, (_nuclideLogging || _load_nuclideLogging()).getLogger)();
 
 /**
  * Currently, a diagnostic from Flow is an object with a "message" property.
@@ -55,38 +80,41 @@ const logger = getLogger();
  * files.
  */
 
-function extractPath(message: MessageComponent): NuclideUri | void {
+function extractPath(message) {
   return message.range == null ? undefined : message.range.file;
 }
 
 // A trace object is very similar to an error object.
-function flowMessageToTrace(message: MessageComponent): Trace {
+function flowMessageToTrace(message) {
   return {
     type: 'Trace',
     text: message.descr,
     filePath: extractPath(message),
-    range: extractRange(message),
+    range: (0, (_flowDiagnosticsCommon || _load_flowDiagnosticsCommon()).extractRange)(message)
   };
 }
 
-function flowMessageToDiagnosticMessage(diagnostic: Diagnostic) {
+function flowMessageToDiagnosticMessage(diagnostic) {
   const flowMessage = diagnostic.messageComponents[0];
 
   // The Flow type does not capture this, but the first message always has a path, and the
   // diagnostics package requires a FileDiagnosticMessage to have a path.
   const path = extractPath(flowMessage);
-  invariant(path != null, 'Expected path to not be null or undefined');
 
-  const diagnosticMessage: FileDiagnosticMessage = {
+  if (!(path != null)) {
+    throw new Error('Expected path to not be null or undefined');
+  }
+
+  const diagnosticMessage = {
     scope: 'file',
     providerName: 'Flow',
     type: diagnostic.level === 'error' ? 'Error' : 'Warning',
     text: flowMessage.descr,
     filePath: path,
-    range: extractRange(flowMessage),
+    range: (0, (_flowDiagnosticsCommon || _load_flowDiagnosticsCommon()).extractRange)(flowMessage)
   };
 
-  const fix = flowMessageToFix(diagnostic);
+  const fix = (0, (_flowMessageToFix || _load_flowMessageToFix()).default)(diagnostic);
   if (fix != null) {
     diagnosticMessage.fix = fix;
   }
@@ -101,92 +129,85 @@ function flowMessageToDiagnosticMessage(diagnostic: Diagnostic) {
 }
 
 class FlowDiagnosticsProvider {
-  _providerBase: DiagnosticsProviderBase;
-  _busySignalProvider: BusySignalProviderBase;
-  _requestSerializer: RequestSerializer<?Diagnostics>;
+
+  constructor(shouldRunOnTheFly, busySignalProvider, ProviderBase = (_nuclideDiagnosticsProviderBase || _load_nuclideDiagnosticsProviderBase()).DiagnosticsProviderBase) {
+    this._busySignalProvider = busySignalProvider;
+    const utilsOptions = {
+      grammarScopes: new Set((_constants || _load_constants()).JS_GRAMMARS),
+      shouldRunOnTheFly,
+      onTextEditorEvent: editor => this._runDiagnostics(editor),
+      onNewUpdateSubscriber: callback => this._receivedNewUpdateSubscriber(callback)
+    };
+    this._providerBase = new ProviderBase(utilsOptions);
+    this._requestSerializer = new (_promise || _load_promise()).RequestSerializer();
+    this._flowRootToFilePaths = new Map();
+  }
 
   /**
     * Maps flow root to the set of file paths under that root for which we have
     * ever reported diagnostics.
     */
-  _flowRootToFilePaths: Map<NuclideUri, Set<NuclideUri>>;
 
-  constructor(
-    shouldRunOnTheFly: boolean,
-    busySignalProvider: BusySignalProviderBase,
-    ProviderBase?: typeof DiagnosticsProviderBase = DiagnosticsProviderBase,
-  ) {
-    this._busySignalProvider = busySignalProvider;
-    const utilsOptions = {
-      grammarScopes: new Set(JS_GRAMMARS),
-      shouldRunOnTheFly,
-      onTextEditorEvent: editor => this._runDiagnostics(editor),
-      onNewUpdateSubscriber: callback => this._receivedNewUpdateSubscriber(callback),
-    };
-    this._providerBase = new ProviderBase(utilsOptions);
-    this._requestSerializer = new RequestSerializer();
-    this._flowRootToFilePaths = new Map();
+
+  _runDiagnostics(textEditor) {
+    this._busySignalProvider.reportBusy('Flow: Waiting for diagnostics', () => this._runDiagnosticsImpl(textEditor)).catch(e => logger.error(e));
   }
 
-  _runDiagnostics(textEditor: TextEditor): void {
-    this._busySignalProvider.reportBusy(
-      'Flow: Waiting for diagnostics',
-      () => this._runDiagnosticsImpl(textEditor),
-    ).catch(e => logger.error(e));
+  _runDiagnosticsImpl(textEditor) {
+    return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackOperationTiming)('flow.run-diagnostics', () => this.__runDiagnosticsImpl(textEditor));
   }
 
-  _runDiagnosticsImpl(textEditor: TextEditor): Promise<void> {
-    return trackOperationTiming(
-      'flow.run-diagnostics',
-      () => this.__runDiagnosticsImpl(textEditor),
-    );
-  }
+  __runDiagnosticsImpl(textEditor) {
+    var _this = this;
 
-  async __runDiagnosticsImpl(textEditor: TextEditor): Promise<void> {
-    const file = textEditor.getPath();
-    if (!file) {
-      return;
-    }
+    return (0, _asyncToGenerator.default)(function* () {
+      const file = textEditor.getPath();
+      if (!file) {
+        return;
+      }
 
-    const flowService = getFlowServiceByNuclideUri(file);
-    invariant(flowService);
-    const result = await this._requestSerializer.run(
-      flowService.flowFindDiagnostics(file, /* currentContents */ null),
-    );
-    if (result.status === 'outdated') {
-      return;
-    }
-    const diagnostics: ?Diagnostics = result.result;
-    if (!diagnostics) {
-      return;
-    }
-    const {flowRoot, messages} = diagnostics;
+      const flowService = (0, (_FlowServiceFactory || _load_FlowServiceFactory()).getFlowServiceByNuclideUri)(file);
 
-    const pathsToInvalidate = this._getPathsToInvalidate(flowRoot);
-    /*
-     * TODO Consider optimizing for the common case of only a single flow root
-     * by invalidating all instead of enumerating the files.
-     */
-    this._providerBase.publishMessageInvalidation({scope: 'file', filePaths: pathsToInvalidate});
+      if (!flowService) {
+        throw new Error('Invariant violation: "flowService"');
+      }
 
-    const pathsForRoot = new Set();
-    this._flowRootToFilePaths.set(flowRoot, pathsForRoot);
-    for (const message of messages) {
+      const result = yield _this._requestSerializer.run(flowService.flowFindDiagnostics(file, /* currentContents */null));
+      if (result.status === 'outdated') {
+        return;
+      }
+      const diagnostics = result.result;
+      if (!diagnostics) {
+        return;
+      }
+      const { flowRoot, messages } = diagnostics;
+
+      const pathsToInvalidate = _this._getPathsToInvalidate(flowRoot);
       /*
-       * Each message consists of several different components, each with its
-       * own text and path.
+       * TODO Consider optimizing for the common case of only a single flow root
+       * by invalidating all instead of enumerating the files.
        */
-      for (const messageComponent of message.messageComponents) {
-        if (messageComponent.range != null) {
-          pathsForRoot.add(messageComponent.range.file);
+      _this._providerBase.publishMessageInvalidation({ scope: 'file', filePaths: pathsToInvalidate });
+
+      const pathsForRoot = new Set();
+      _this._flowRootToFilePaths.set(flowRoot, pathsForRoot);
+      for (const message of messages) {
+        /*
+         * Each message consists of several different components, each with its
+         * own text and path.
+         */
+        for (const messageComponent of message.messageComponents) {
+          if (messageComponent.range != null) {
+            pathsForRoot.add(messageComponent.range.file);
+          }
         }
       }
-    }
 
-    this._providerBase.publishMessageUpdate(this._processDiagnostics(messages, file));
+      _this._providerBase.publishMessageUpdate(_this._processDiagnostics(messages, file));
+    })();
   }
 
-  _getPathsToInvalidate(flowRoot: NuclideUri): Array<NuclideUri> {
+  _getPathsToInvalidate(flowRoot) {
     const filePaths = this._flowRootToFilePaths.get(flowRoot);
     if (!filePaths) {
       return [];
@@ -194,7 +215,7 @@ class FlowDiagnosticsProvider {
     return Array.from(filePaths);
   }
 
-  _receivedNewUpdateSubscriber(callback: MessageUpdateCallback): void {
+  _receivedNewUpdateSubscriber(callback) {
     // Every time we get a new subscriber, we need to push results to them. This
     // logic is common to all providers and should be abstracted out (t7813069)
     //
@@ -202,18 +223,18 @@ class FlowDiagnosticsProvider {
     // probably remove the activeTextEditor parameter.
     const activeTextEditor = atom.workspace.getActiveTextEditor();
     if (activeTextEditor) {
-      const matchesGrammar = JS_GRAMMARS.indexOf(activeTextEditor.getGrammar().scopeName) !== -1;
+      const matchesGrammar = (_constants || _load_constants()).JS_GRAMMARS.indexOf(activeTextEditor.getGrammar().scopeName) !== -1;
       if (matchesGrammar) {
         this._runDiagnostics(activeTextEditor);
       }
     }
   }
 
-  onMessageUpdate(callback: MessageUpdateCallback): IDisposable {
+  onMessageUpdate(callback) {
     return this._providerBase.onMessageUpdate(callback);
   }
 
-  onMessageInvalidation(callback: MessageInvalidationCallback): IDisposable {
+  onMessageInvalidation(callback) {
     return this._providerBase.onMessageInvalidation(callback);
   }
 
@@ -221,10 +242,7 @@ class FlowDiagnosticsProvider {
     this._providerBase.dispose();
   }
 
-  _processDiagnostics(
-    diagnostics: Array<Diagnostic>,
-    currentFile: string,
-  ): DiagnosticProviderUpdate {
+  _processDiagnostics(diagnostics, currentFile) {
 
     // convert array messages to Error Objects with Traces
     const fileDiagnostics = diagnostics.map(flowMessageToDiagnosticMessage);
@@ -256,10 +274,10 @@ class FlowDiagnosticsProvider {
       diagnosticArray.push(diagnostic);
     }
 
-    return {filePathToMessages};
+    return { filePathToMessages };
   }
 
-  invalidateProjectPath(projectPath: string): void {
+  invalidateProjectPath(projectPath) {
     const pathsToInvalidate = new Set();
     for (const flowRootEntry of this._flowRootToFilePaths) {
       const [flowRoot, filePaths] = flowRootEntry;
@@ -273,7 +291,7 @@ class FlowDiagnosticsProvider {
     }
     this._providerBase.publishMessageInvalidation({
       scope: 'file',
-      filePaths: Array.from(pathsToInvalidate),
+      filePaths: Array.from(pathsToInvalidate)
     });
   }
 }

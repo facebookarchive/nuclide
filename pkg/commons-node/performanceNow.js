@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -18,13 +18,17 @@
  *   // ... code you want to benchmark ...
  *   const timeItTookInMilliseconds = performanceNow() - now;
  */
-const performanceNow = global.performance && global.performance.now ?
-  function() {
-    return global.performance.now();
-  } :
-  function() {
-    const [seconds, nanoseconds] = process.hrtime();
-    return seconds * 1000 + nanoseconds / 1000000;
-  };
 
-export default performanceNow;
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+const performanceNow = global.performance && global.performance.now ? function () {
+  return global.performance.now();
+} : function () {
+  const [seconds, nanoseconds] = process.hrtime();
+  return seconds * 1000 + nanoseconds / 1000000;
+};
+
+exports.default = performanceNow;
+module.exports = exports['default'];

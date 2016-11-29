@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,4 +9,19 @@
  * the root directory of this source tree.
  */
 
-export {AtomLanguageService} from './AtomLanguageService';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _AtomLanguageService;
+
+function _load_AtomLanguageService() {
+  return _AtomLanguageService = require('./AtomLanguageService');
+}
+
+Object.defineProperty(exports, 'AtomLanguageService', {
+  enumerable: true,
+  get: function () {
+    return (_AtomLanguageService || _load_AtomLanguageService()).AtomLanguageService;
+  }
+});

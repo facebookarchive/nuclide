@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,16 +9,12 @@
  * the root directory of this source tree.
  */
 
-import type {Observable} from 'rxjs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.unspyOnDefault = exports.uncachedRequire = exports.spyOnGetterValue = exports.spyOnDefault = exports.generateFixture = exports.generateHgRepo2Fixture = exports.generateHgRepo1Fixture = exports.expectObservableToStartWith = exports.expectAsyncFailure = exports.copyBuildFixture = exports.copyFixture = exports.clearRequireCache = exports.arePropertiesEqual = exports.addMatchers = undefined;
 
-import {
-  copyFixture,
-  copyBuildFixture,
-  generateHgRepo1Fixture,
-  generateHgRepo2Fixture,
-  generateFixture,
-} from './fixtures';
-import {addMatchers} from './matchers';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
 /**
  * Verifies that a Promise fails with an Error with specific expectations. When
@@ -33,16 +29,20 @@ import {addMatchers} from './matchers';
  *     rejection of `promise`. If these expectations are not met, then
  *     `verify()` must throw an exception.
  */
-async function expectAsyncFailure(
-    promise: Promise<any>,
-    verify: (error: Error) => void): Promise<any> {
-  try {
-    await promise;
-    return Promise.reject('Promise should have failed, but did not.');
-  } catch (e) {
-    verify(e);
-  }
-}
+let expectAsyncFailure = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (promise, verify) {
+    try {
+      yield promise;
+      return Promise.reject('Promise should have failed, but did not.');
+    } catch (e) {
+      verify(e);
+    }
+  });
+
+  return function expectAsyncFailure(_x, _x2) {
+    return _ref.apply(this, arguments);
+  };
+})();
 
 /**
   * This is useful for mocking a module that the module under test requires.
@@ -53,11 +53,42 @@ async function expectAsyncFailure(
   * The require parameter is needed because require is bound differently in each
   * file, and we need to execute this in the caller's context.
   */
-function clearRequireCache(require: Object, module: string): void {
+
+
+/**
+ * Warning: Callsites *must* await the resulting promise, or test failures may go unreported or
+ * misattributed.
+ */
+let expectObservableToStartWith = (() => {
+  var _ref2 = (0, _asyncToGenerator.default)(function* (source, expected) {
+    const actual = yield source.take(expected.length).toArray().toPromise();
+    expect(actual).toEqual(expected);
+  });
+
+  return function expectObservableToStartWith(_x3, _x4) {
+    return _ref2.apply(this, arguments);
+  };
+})();
+
+var _fixtures;
+
+function _load_fixtures() {
+  return _fixtures = require('./fixtures');
+}
+
+var _matchers;
+
+function _load_matchers() {
+  return _matchers = require('./matchers');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function clearRequireCache(require, module) {
   delete require.cache[require.resolve(module)];
 }
 
-function uncachedRequire(require: Object, module: string): mixed {
+function uncachedRequire(require, module) {
   clearRequireCache(require, module);
   // $FlowIgnore
   return require(module);
@@ -74,7 +105,7 @@ function uncachedRequire(require: Object, module: string): mixed {
  * - The getter returns a function (otherwise, it doesn't make sense to spy on
  *   it)
  */
-function spyOnGetterValue(object: Object, f: string): JasmineSpy {
+function spyOnGetterValue(object, f) {
   const value = object[f];
   delete object[f];
   object[f] = value;
@@ -88,13 +119,13 @@ function spyOnGetterValue(object: Object, f: string): JasmineSpy {
  * `id` should be the result of `require.resolve('module-name')`. That way relative modules are
  * resolved in the context of the caller.
  */
-function spyOnDefault(id: string): JasmineSpy {
+function spyOnDefault(id) {
   try {
     // Load the module in case it hasn't been loaded already.
     // $FlowIgnore
     require(id);
   } catch (e) {
-    if (e.message === `Cannot find module '${id}'`) {
+    if (e.message === `Cannot find module '${ id }'`) {
       throw new Error(e.message + '. Did you forget to call `require.resolve`?');
     }
     throw e;
@@ -107,7 +138,7 @@ function spyOnDefault(id: string): JasmineSpy {
   }
 }
 
-function unspyOnDefault(id: string): void {
+function unspyOnDefault(id) {
   const _module = require.cache[id];
   if (_module.exports.__esModule) {
     return jasmine.unspy(_module.exports, 'default');
@@ -120,7 +151,7 @@ function unspyOnDefault(id: string): void {
  * Checks if the two objects have equal properties. This considers a property
  * set to undefined to be equivalent to a property that was not set at all.
  */
-function arePropertiesEqual(obj1: Object, obj2: Object): boolean {
+function arePropertiesEqual(obj1, obj2) {
   const allProps = new Set();
   function addAllProps(obj) {
     for (const prop of Object.keys(obj)) {
@@ -134,33 +165,17 @@ function arePropertiesEqual(obj1: Object, obj2: Object): boolean {
     }
   }
   return true;
-}
-
-/**
- * Warning: Callsites *must* await the resulting promise, or test failures may go unreported or
- * misattributed.
- */
-async function expectObservableToStartWith<T>(
-  source: Observable<T>,
-  expected: Array<T>,
-): Promise<void> {
-  const actual: Array<T> = await source.take(expected.length).toArray().toPromise();
-  expect(actual).toEqual(expected);
-}
-
-export {
-  addMatchers,
-  arePropertiesEqual,
-  clearRequireCache,
-  copyFixture,
-  copyBuildFixture,
-  expectAsyncFailure,
-  expectObservableToStartWith,
-  generateHgRepo1Fixture,
-  generateHgRepo2Fixture,
-  generateFixture,
-  spyOnDefault,
-  spyOnGetterValue,
-  uncachedRequire,
-  unspyOnDefault,
-};
+}exports.addMatchers = (_matchers || _load_matchers()).addMatchers;
+exports.arePropertiesEqual = arePropertiesEqual;
+exports.clearRequireCache = clearRequireCache;
+exports.copyFixture = (_fixtures || _load_fixtures()).copyFixture;
+exports.copyBuildFixture = (_fixtures || _load_fixtures()).copyBuildFixture;
+exports.expectAsyncFailure = expectAsyncFailure;
+exports.expectObservableToStartWith = expectObservableToStartWith;
+exports.generateHgRepo1Fixture = (_fixtures || _load_fixtures()).generateHgRepo1Fixture;
+exports.generateHgRepo2Fixture = (_fixtures || _load_fixtures()).generateHgRepo2Fixture;
+exports.generateFixture = (_fixtures || _load_fixtures()).generateFixture;
+exports.spyOnDefault = spyOnDefault;
+exports.spyOnGetterValue = spyOnGetterValue;
+exports.uncachedRequire = uncachedRequire;
+exports.unspyOnDefault = unspyOnDefault;

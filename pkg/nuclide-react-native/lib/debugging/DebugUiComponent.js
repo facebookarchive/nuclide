@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,103 +9,122 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../../commons-node/nuclideUri';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DebugUiComponent = undefined;
 
-import {React} from 'react-for-atom';
-import {Button, ButtonTypes} from '../../../nuclide-ui/Button';
-import {ButtonGroup} from '../../../nuclide-ui/ButtonGroup';
-import {Checkbox} from '../../../nuclide-ui/Checkbox';
-import {DebuggerLaunchAttachEventTypes} from '../../../nuclide-debugger-base';
+var _reactForAtom = require('react-for-atom');
 
-import type EventEmitter from 'events';
+var _Button;
 
-type Props = {
-  targetUri: NuclideUri,
-  parentEmitter: EventEmitter,
-};
+function _load_Button() {
+  return _Button = require('../../../nuclide-ui/Button');
+}
+
+var _ButtonGroup;
+
+function _load_ButtonGroup() {
+  return _ButtonGroup = require('../../../nuclide-ui/ButtonGroup');
+}
+
+var _Checkbox;
+
+function _load_Checkbox() {
+  return _Checkbox = require('../../../nuclide-ui/Checkbox');
+}
+
+var _nuclideDebuggerBase;
+
+function _load_nuclideDebuggerBase() {
+  return _nuclideDebuggerBase = require('../../../nuclide-debugger-base');
+}
 
 // TODO: All this needs to be serialized by the package, so we're going to need to hoist it and use
 //   actions.
-type State = {
-  startPackager: boolean,
-  tailIosLogs: boolean,
-  tailAdbLogs: boolean,
-};
+class DebugUiComponent extends _reactForAtom.React.Component {
 
-export class DebugUiComponent extends React.Component {
-  props: Props;
-  state: State;
-
-  constructor(props: Props) {
+  constructor(props) {
     super(props);
-    (this: any)._handleCancelButtonClick = this._handleCancelButtonClick.bind(this);
-    (this: any)._handleDebugButtonClick = this._handleDebugButtonClick.bind(this);
+    this._handleCancelButtonClick = this._handleCancelButtonClick.bind(this);
+    this._handleDebugButtonClick = this._handleDebugButtonClick.bind(this);
 
     this.state = {
       startPackager: false,
       tailIosLogs: false,
-      tailAdbLogs: false,
+      tailAdbLogs: false
     };
   }
 
   componentWillMount() {
-    this.props.parentEmitter.on(
-      DebuggerLaunchAttachEventTypes.ENTER_KEY_PRESSED,
-      this._handleDebugButtonClick);
+    this.props.parentEmitter.on((_nuclideDebuggerBase || _load_nuclideDebuggerBase()).DebuggerLaunchAttachEventTypes.ENTER_KEY_PRESSED, this._handleDebugButtonClick);
   }
 
   componentWillUnmount() {
-    this.props.parentEmitter.removeListener(
-      DebuggerLaunchAttachEventTypes.ENTER_KEY_PRESSED,
-      this._handleDebugButtonClick);
+    this.props.parentEmitter.removeListener((_nuclideDebuggerBase || _load_nuclideDebuggerBase()).DebuggerLaunchAttachEventTypes.ENTER_KEY_PRESSED, this._handleDebugButtonClick);
   }
 
-  render(): React.Element<any> {
-    return (
-      <div className="block">
-        <div className="block">
-          <Checkbox
-            checked={this.state.startPackager}
-            label="Start Packager"
-            onChange={startPackager => this.setState({startPackager})}
-          />
-        </div>
-        <div className="block">
-          <Checkbox
-            checked={this.state.tailIosLogs}
-            label="Tail iOS Simulator Logs"
-            onChange={tailIosLogs => this.setState({tailIosLogs})}
-          />
-        </div>
-        <div className="block">
-          <Checkbox
-          checked={this.state.tailAdbLogs}
-            label="Tail adb Logcat Logs"
-            onChange={tailAdbLogs => this.setState({tailAdbLogs})}
-          />
-        </div>
-        <div className="text-left text-smaller text-subtle">
-          After starting the debugger, enable JS debugging from the developer menu of your React
-          Native app
-        </div>
-        <div className="nuclide-react-native-debugging-launch-attach-actions">
-          <ButtonGroup>
-            <Button
-              onClick={this._handleCancelButtonClick}>
-              Cancel
-            </Button>
-            <Button
-              buttonType={ButtonTypes.PRIMARY}
-              onClick={this._handleDebugButtonClick}>
-              Attach
-            </Button>
-          </ButtonGroup>
-        </div>
-      </div>
+  render() {
+    return _reactForAtom.React.createElement(
+      'div',
+      { className: 'block' },
+      _reactForAtom.React.createElement(
+        'div',
+        { className: 'block' },
+        _reactForAtom.React.createElement((_Checkbox || _load_Checkbox()).Checkbox, {
+          checked: this.state.startPackager,
+          label: 'Start Packager',
+          onChange: startPackager => this.setState({ startPackager })
+        })
+      ),
+      _reactForAtom.React.createElement(
+        'div',
+        { className: 'block' },
+        _reactForAtom.React.createElement((_Checkbox || _load_Checkbox()).Checkbox, {
+          checked: this.state.tailIosLogs,
+          label: 'Tail iOS Simulator Logs',
+          onChange: tailIosLogs => this.setState({ tailIosLogs })
+        })
+      ),
+      _reactForAtom.React.createElement(
+        'div',
+        { className: 'block' },
+        _reactForAtom.React.createElement((_Checkbox || _load_Checkbox()).Checkbox, {
+          checked: this.state.tailAdbLogs,
+          label: 'Tail adb Logcat Logs',
+          onChange: tailAdbLogs => this.setState({ tailAdbLogs })
+        })
+      ),
+      _reactForAtom.React.createElement(
+        'div',
+        { className: 'text-left text-smaller text-subtle' },
+        'After starting the debugger, enable JS debugging from the developer menu of your React Native app'
+      ),
+      _reactForAtom.React.createElement(
+        'div',
+        { className: 'nuclide-react-native-debugging-launch-attach-actions' },
+        _reactForAtom.React.createElement(
+          (_ButtonGroup || _load_ButtonGroup()).ButtonGroup,
+          null,
+          _reactForAtom.React.createElement(
+            (_Button || _load_Button()).Button,
+            {
+              onClick: this._handleCancelButtonClick },
+            'Cancel'
+          ),
+          _reactForAtom.React.createElement(
+            (_Button || _load_Button()).Button,
+            {
+              buttonType: (_Button || _load_Button()).ButtonTypes.PRIMARY,
+              onClick: this._handleDebugButtonClick },
+            'Attach'
+          )
+        )
+      )
     );
   }
 
-  _handleDebugButtonClick(): void {
+  _handleDebugButtonClick() {
     if (this.state.startPackager) {
       callWorkspaceCommand('nuclide-react-native:start-packager');
     }
@@ -119,12 +138,13 @@ export class DebugUiComponent extends React.Component {
     callWorkspaceCommand('nuclide-debugger:toggle-launch-attach');
   }
 
-  _handleCancelButtonClick(): void {
+  _handleCancelButtonClick() {
     callWorkspaceCommand('nuclide-debugger:toggle-launch-attach');
   }
 
 }
 
-function callWorkspaceCommand(command: string): void {
+exports.DebugUiComponent = DebugUiComponent;
+function callWorkspaceCommand(command) {
   atom.commands.dispatch(atom.views.getView(atom.workspace), command);
 }

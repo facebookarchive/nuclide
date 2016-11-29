@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,31 +9,32 @@
  * the root directory of this source tree.
  */
 
-import type {AppState, SerializedAppState} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.serialize = serialize;
+exports.deserialize = deserialize;
 
-import {objectEntries, objectFromMap} from '../../commons-node/collection';
+var _collection;
 
-export function serialize(state: AppState): SerializedAppState {
+function _load_collection() {
+  return _collection = require('../../commons-node/collection');
+}
+
+function serialize(state) {
   return {
-    serializedLocationStates: objectFromMap(
-      new Map(
-        Array.from(state.locations.entries())
-          .map(([id, location]) => {
-            const serialized =
-              typeof location.serialize === 'function' ? location.serialize() : null;
-            return [id, serialized];
-          })
-          .filter(([, serialized]) => serialized != null),
-      ),
-    ),
+    serializedLocationStates: (0, (_collection || _load_collection()).objectFromMap)(new Map(Array.from(state.locations.entries()).map(([id, location]) => {
+      const serialized = typeof location.serialize === 'function' ? location.serialize() : null;
+      return [id, serialized];
+    }).filter(([, serialized]) => serialized != null)))
   };
 }
 
-export function deserialize(rawState: SerializedAppState): AppState {
+function deserialize(rawState) {
   return {
     // Viewables and locations will re-register using the service.
     locations: new Map(),
-    serializedLocationStates: new Map(objectEntries(rawState.serializedLocationStates || {})),
-    openers: new Set(),
+    serializedLocationStates: new Map((0, (_collection || _load_collection()).objectEntries)(rawState.serializedLocationStates || {})),
+    openers: new Set()
   };
 }

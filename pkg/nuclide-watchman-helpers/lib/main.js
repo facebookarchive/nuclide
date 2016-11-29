@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,10 +9,24 @@
  * the root directory of this source tree.
  */
 
-import WatchmanClient from './WatchmanClient';
-import WatchmanSubscription from './WatchmanSubscription';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.WatchmanSubscription = exports.WatchmanClient = undefined;
 
-export {
-  WatchmanClient,
-  WatchmanSubscription,
-};
+var _WatchmanClient;
+
+function _load_WatchmanClient() {
+  return _WatchmanClient = _interopRequireDefault(require('./WatchmanClient'));
+}
+
+var _WatchmanSubscription;
+
+function _load_WatchmanSubscription() {
+  return _WatchmanSubscription = _interopRequireDefault(require('./WatchmanSubscription'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.WatchmanClient = (_WatchmanClient || _load_WatchmanClient()).default;
+exports.WatchmanSubscription = (_WatchmanSubscription || _load_WatchmanSubscription()).default;

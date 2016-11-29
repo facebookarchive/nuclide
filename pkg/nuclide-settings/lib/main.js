@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,53 +9,77 @@
  * the root directory of this source tree.
  */
 
-import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
-import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.consumeWorkspaceViewsService = consumeWorkspaceViewsService;
+exports.consumeToolBar = consumeToolBar;
 
-import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {React} from 'react-for-atom';
-import SettingsPaneItem, {WORKSPACE_VIEW_URI} from './SettingsPaneItem';
+var _viewableFromReactElement;
 
-let subscriptions: UniversalDisposable = (null: any);
-
-export function activate(state: ?Object): void {
-  subscriptions = new UniversalDisposable();
+function _load_viewableFromReactElement() {
+  return _viewableFromReactElement = require('../../commons-atom/viewableFromReactElement');
 }
 
-export function deactivate(): void {
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../commons-node/UniversalDisposable'));
+}
+
+var _reactForAtom = require('react-for-atom');
+
+var _SettingsPaneItem;
+
+function _load_SettingsPaneItem() {
+  return _SettingsPaneItem = _interopRequireDefault(require('./SettingsPaneItem'));
+}
+
+var _SettingsPaneItem2;
+
+function _load_SettingsPaneItem2() {
+  return _SettingsPaneItem2 = require('./SettingsPaneItem');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let subscriptions = null;
+
+function activate(state) {
+  subscriptions = new (_UniversalDisposable || _load_UniversalDisposable()).default();
+}
+
+function deactivate() {
   subscriptions.dispose();
-  subscriptions = (null: any);
+  subscriptions = null;
 }
 
-export function consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
-  subscriptions.add(
-    api.addOpener(uri => {
-      if (uri === WORKSPACE_VIEW_URI) {
-        return viewableFromReactElement(<SettingsPaneItem />);
-      }
-    }),
-    () => api.destroyWhere(item => item instanceof SettingsPaneItem),
-    atom.commands.add(
-      'atom-workspace',
-      'nuclide-settings:toggle',
-      event => { api.toggle(WORKSPACE_VIEW_URI, (event: any).detail); },
-    ),
-  );
+function consumeWorkspaceViewsService(api) {
+  subscriptions.add(api.addOpener(uri => {
+    if (uri === (_SettingsPaneItem2 || _load_SettingsPaneItem2()).WORKSPACE_VIEW_URI) {
+      return (0, (_viewableFromReactElement || _load_viewableFromReactElement()).viewableFromReactElement)(_reactForAtom.React.createElement((_SettingsPaneItem || _load_SettingsPaneItem()).default, null));
+    }
+  }), () => api.destroyWhere(item => item instanceof (_SettingsPaneItem || _load_SettingsPaneItem()).default), atom.commands.add('atom-workspace', 'nuclide-settings:toggle', event => {
+    api.toggle((_SettingsPaneItem2 || _load_SettingsPaneItem2()).WORKSPACE_VIEW_URI, event.detail);
+  }));
 }
 
-export function consumeToolBar(getToolBar: GetToolBar): IDisposable {
+function consumeToolBar(getToolBar) {
   const toolBar = getToolBar('nuclide-home');
   toolBar.addSpacer({
-    priority: -501,
+    priority: -501
   });
   toolBar.addButton({
     icon: 'gear',
     callback: 'nuclide-settings:toggle',
     tooltip: 'Open Nuclide Settings',
-    priority: -500,
+    priority: -500
   });
-  const disposable = new UniversalDisposable(() => { toolBar.removeItems(); });
+  const disposable = new (_UniversalDisposable || _load_UniversalDisposable()).default(() => {
+    toolBar.removeItems();
+  });
   subscriptions.add(disposable);
   return disposable;
 }

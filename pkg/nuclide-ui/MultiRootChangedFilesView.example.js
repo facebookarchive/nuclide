@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,53 +9,58 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
-import {Block} from './Block';
-import {MultiRootChangedFilesView} from './MultiRootChangedFilesView';
-import {FileChangeStatus} from '../nuclide-hg-git-bridge/lib/constants';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.MultiRootChangedFilesViewExample = undefined;
 
-function onFileChosen(uri: string): void {
-  atom.notifications.addInfo(`Selected file ${uri}`);
+var _reactForAtom = require('react-for-atom');
+
+var _Block;
+
+function _load_Block() {
+  return _Block = require('./Block');
 }
 
-function BasicExample(): React.Element<any> {
-  const fileChanges = new Map([
-    ['nuclide://remote.host/someRemoteDir', new Map([
-      ['path/to/some/file/added.js', FileChangeStatus.ADDED],
-      ['path/to/some/file/modified.js', FileChangeStatus.MODIFIED],
-      ['path/to/some/file/missing.js', FileChangeStatus.MISSING],
-      ['path/to/some/file/removed.js', FileChangeStatus.REMOVED],
-      ['path/to/some/file/untracked.js', FileChangeStatus.UNTRACKED],
-    ])],
-    ['someLocalDir', new Map([
-      ['file/with/shared/prefix/foo.js', FileChangeStatus.MODIFIED],
-      ['file/with/shared/prefix/bar.js', FileChangeStatus.MODIFIED],
-      ['file/with/shared/prefix/baz.js', FileChangeStatus.MODIFIED],
-      ['file/with/another/prefix/foo.js', FileChangeStatus.MODIFIED],
-      ['file/with/another/prefix/bar.js', FileChangeStatus.MODIFIED],
-    ])],
-  ]);
-  return (
-    <div>
-      <Block>
-        <MultiRootChangedFilesView
-          fileChanges={fileChanges}
-          commandPrefix="sample-ui-playground"
-          selectedFile={null}
-          onFileChosen={onFileChosen}
-        />
-      </Block>
-    </div>
+var _MultiRootChangedFilesView;
+
+function _load_MultiRootChangedFilesView() {
+  return _MultiRootChangedFilesView = require('./MultiRootChangedFilesView');
+}
+
+var _constants;
+
+function _load_constants() {
+  return _constants = require('../nuclide-hg-git-bridge/lib/constants');
+}
+
+function onFileChosen(uri) {
+  atom.notifications.addInfo(`Selected file ${ uri }`);
+}
+
+function BasicExample() {
+  const fileChanges = new Map([['nuclide://remote.host/someRemoteDir', new Map([['path/to/some/file/added.js', (_constants || _load_constants()).FileChangeStatus.ADDED], ['path/to/some/file/modified.js', (_constants || _load_constants()).FileChangeStatus.MODIFIED], ['path/to/some/file/missing.js', (_constants || _load_constants()).FileChangeStatus.MISSING], ['path/to/some/file/removed.js', (_constants || _load_constants()).FileChangeStatus.REMOVED], ['path/to/some/file/untracked.js', (_constants || _load_constants()).FileChangeStatus.UNTRACKED]])], ['someLocalDir', new Map([['file/with/shared/prefix/foo.js', (_constants || _load_constants()).FileChangeStatus.MODIFIED], ['file/with/shared/prefix/bar.js', (_constants || _load_constants()).FileChangeStatus.MODIFIED], ['file/with/shared/prefix/baz.js', (_constants || _load_constants()).FileChangeStatus.MODIFIED], ['file/with/another/prefix/foo.js', (_constants || _load_constants()).FileChangeStatus.MODIFIED], ['file/with/another/prefix/bar.js', (_constants || _load_constants()).FileChangeStatus.MODIFIED]])]]);
+  return _reactForAtom.React.createElement(
+    'div',
+    null,
+    _reactForAtom.React.createElement(
+      (_Block || _load_Block()).Block,
+      null,
+      _reactForAtom.React.createElement((_MultiRootChangedFilesView || _load_MultiRootChangedFilesView()).MultiRootChangedFilesView, {
+        fileChanges: fileChanges,
+        commandPrefix: 'sample-ui-playground',
+        selectedFile: null,
+        onFileChosen: onFileChosen
+      })
+    )
   );
 }
 
-export const MultiRootChangedFilesViewExample = {
+const MultiRootChangedFilesViewExample = exports.MultiRootChangedFilesViewExample = {
   sectionName: 'MultiRootChangedFilesView',
   description: 'Renders a list of changed files, across one or more directories.',
-  examples: [
-    {
-      title: 'Basic example',
-      component: BasicExample,
-    },
-  ],
+  examples: [{
+    title: 'Basic example',
+    component: BasicExample
+  }]
 };

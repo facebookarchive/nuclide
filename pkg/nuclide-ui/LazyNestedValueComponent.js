@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -10,54 +10,78 @@
  */
 
 // TODO @jxg export debugger typedefs from main module. (t11406963)
-import type {
-  EvaluationResult,
-  ExpansionResult,
-} from '../nuclide-debugger/lib/types';
-import type {Observable} from 'rxjs';
 
-import {React} from 'react-for-atom';
-import invariant from 'assert';
-import {bindObservableAsProps} from './bindObservableAsProps';
-import {highlightOnUpdate} from './highlightOnUpdate';
-import {ValueComponentClassNames} from './ValueComponentClassNames';
-import {
-  TreeList,
-  TreeItem,
-  NestedTreeItem,
-} from './Tree';
-import {LoadingSpinner} from './LoadingSpinner';
-import ignoreTextSelectionEvents from './ignoreTextSelectionEvents';
-import classnames from 'classnames';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.LazyNestedValueComponent = undefined;
+
+var _reactForAtom = require('react-for-atom');
+
+var _bindObservableAsProps;
+
+function _load_bindObservableAsProps() {
+  return _bindObservableAsProps = require('./bindObservableAsProps');
+}
+
+var _highlightOnUpdate;
+
+function _load_highlightOnUpdate() {
+  return _highlightOnUpdate = require('./highlightOnUpdate');
+}
+
+var _ValueComponentClassNames;
+
+function _load_ValueComponentClassNames() {
+  return _ValueComponentClassNames = require('./ValueComponentClassNames');
+}
+
+var _Tree;
+
+function _load_Tree() {
+  return _Tree = require('./Tree');
+}
+
+var _LoadingSpinner;
+
+function _load_LoadingSpinner() {
+  return _LoadingSpinner = require('./LoadingSpinner');
+}
+
+var _ignoreTextSelectionEvents;
+
+function _load_ignoreTextSelectionEvents() {
+  return _ignoreTextSelectionEvents = _interopRequireDefault(require('./ignoreTextSelectionEvents'));
+}
+
+var _classnames;
+
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const SPINNER_DELAY = 100; /* ms */
 const NOT_AVAILABLE_MESSAGE = '<not available>';
 
-function isObjectValue(result: EvaluationResult): boolean {
+function isObjectValue(result) {
   return result.objectId != null;
 }
 
-function TreeItemWithLoadingSpinner(): React.Element<any> {
-  return <TreeItem><LoadingSpinner size="EXTRA_SMALL" delay={SPINNER_DELAY} /></TreeItem>;
+function TreeItemWithLoadingSpinner() {
+  return _reactForAtom.React.createElement(
+    (_Tree || _load_Tree()).TreeItem,
+    null,
+    _reactForAtom.React.createElement((_LoadingSpinner || _load_LoadingSpinner()).LoadingSpinner, { size: 'EXTRA_SMALL', delay: SPINNER_DELAY })
+  );
 }
-
-type LoadableValueComponentProps = {
-  children?: ExpansionResult,
-  fetchChildren: ?(objectId: string) => Observable<?ExpansionResult>,
-  path: string,
-  expandedValuePaths: Map<string, NodeData>,
-  onExpandedStateChange: (path: string, isExpanded: boolean) => void,
-  simpleValueComponent: ReactClass<any>,
-  shouldCacheChildren: boolean,
-  getCachedChildren: (path: string) => ?ExpansionResult,
-  setCachedChildren: (path: string, children: ExpansionResult) => void,
-};
 
 /**
  * A wrapper that renders a (delayed) spinner while the list of child properties is being loaded.
  * Otherwise, it renders ValueComponent for each property in `children`.
  */
-const LoadableValueComponent = (props: LoadableValueComponentProps) => {
+const LoadableValueComponent = props => {
   const {
     children,
     fetchChildren,
@@ -67,7 +91,7 @@ const LoadableValueComponent = (props: LoadableValueComponentProps) => {
     simpleValueComponent,
     shouldCacheChildren,
     getCachedChildren,
-    setCachedChildren,
+    setCachedChildren
   } = props;
   if (children == null) {
     return TreeItemWithLoadingSpinner();
@@ -75,154 +99,118 @@ const LoadableValueComponent = (props: LoadableValueComponentProps) => {
   if (shouldCacheChildren) {
     setCachedChildren(path, children);
   }
-  return (
-    <span>
-      {
-        children.map(child =>
-          <TreeItem key={child.name}>
-            <ValueComponent
-              evaluationResult={child.value}
-              fetchChildren={fetchChildren}
-              expression={child.name}
-              expandedValuePaths={expandedValuePaths}
-              onExpandedStateChange={onExpandedStateChange}
-              path={path + '.' + child.name}
-              simpleValueComponent={simpleValueComponent}
-              shouldCacheChildren={shouldCacheChildren}
-              getCachedChildren={getCachedChildren}
-              setCachedChildren={setCachedChildren}
-            />
-          </TreeItem>,
-        )
-      }
-    </span>
+  return _reactForAtom.React.createElement(
+    'span',
+    null,
+    children.map(child => _reactForAtom.React.createElement(
+      (_Tree || _load_Tree()).TreeItem,
+      { key: child.name },
+      _reactForAtom.React.createElement(ValueComponent, {
+        evaluationResult: child.value,
+        fetchChildren: fetchChildren,
+        expression: child.name,
+        expandedValuePaths: expandedValuePaths,
+        onExpandedStateChange: onExpandedStateChange,
+        path: path + '.' + child.name,
+        simpleValueComponent: simpleValueComponent,
+        shouldCacheChildren: shouldCacheChildren,
+        getCachedChildren: getCachedChildren,
+        setCachedChildren: setCachedChildren
+      })
+    ))
   );
 };
 
 // TODO allow passing action components (edit button, pin button) here
-function renderValueLine(
-  expression: React.Element<any> | ?string,
-  value: React.Element<any> | string,
-): React.Element<any> {
+function renderValueLine(expression, value) {
   if (expression == null) {
-    return <div className="nuclide-ui-lazy-nested-value-container">{value}</div>;
+    return _reactForAtom.React.createElement(
+      'div',
+      { className: 'nuclide-ui-lazy-nested-value-container' },
+      value
+    );
   } else {
     // TODO @jxg use a text editor to apply proper syntax highlighting for expressions (t11408154)
-    return (
-      <div className="nuclide-ui-lazy-nested-value-container">
-        <span className={ValueComponentClassNames.identifier}>{expression}</span>
-        : {value}
-      </div>
+    return _reactForAtom.React.createElement(
+      'div',
+      { className: 'nuclide-ui-lazy-nested-value-container' },
+      _reactForAtom.React.createElement(
+        'span',
+        { className: (_ValueComponentClassNames || _load_ValueComponentClassNames()).ValueComponentClassNames.identifier },
+        expression
+      ),
+      ': ',
+      value
     );
   }
 }
-
-type LazyNestedValueComponentProps = {
-  evaluationResult: ?EvaluationResult,
-  fetchChildren: ?(objectId: string) => Observable<?ExpansionResult>,
-  expression: ?string,
-  isRoot?: boolean,
-  expandedValuePaths: Map<string, NodeData>,
-  onExpandedStateChange: (path: string, expanded: boolean) => void,
-  path: string,
-  simpleValueComponent: ReactClass<any>,
-  shouldCacheChildren: boolean,
-  getCachedChildren: (path: string) => ?ExpansionResult,
-  setCachedChildren: (path: string, children: ExpansionResult) => void,
-};
-
-type LazyNestedValueComponentState = {
-  isExpanded: boolean,
-  children: ?Observable<?ExpansionResult>,
-};
 
 /**
  * A component that knows how to render recursive, interactive expression/evaluationResult pairs.
  * The rendering of non-expandable "leaf" values is delegated to the SimpleValueComponent.
  */
-class ValueComponent extends React.Component {
-  props: LazyNestedValueComponentProps;
-  state: LazyNestedValueComponentState;
+class ValueComponent extends _reactForAtom.React.Component {
 
-  _toggleExpandFiltered: (e: SyntheticMouseEvent) => void;
-
-  constructor(props: LazyNestedValueComponentProps) {
+  constructor(props) {
     super(props);
     this.state = {
       isExpanded: false,
-      children: null,
+      children: null
     };
-    (this: any)._toggleExpandFiltered = ignoreTextSelectionEvents(
-      this._toggleExpand.bind(this),
-    );
+    this._toggleExpandFiltered = (0, (_ignoreTextSelectionEvents || _load_ignoreTextSelectionEvents()).default)(this._toggleExpand.bind(this));
   }
 
-  componentDidMount(): void {
+  componentDidMount() {
     const {
       path,
       expandedValuePaths,
       fetchChildren,
-      evaluationResult,
+      evaluationResult
     } = this.props;
     const nodeData = expandedValuePaths.get(path);
-    if (
-      !this.state.isExpanded &&
-      nodeData != null &&
-      nodeData.isExpanded &&
-      this._shouldFetch() &&
-      evaluationResult != null &&
-      evaluationResult.objectId != null &&
-      fetchChildren != null
-    ) {
-      invariant(evaluationResult.objectId != null);
+    if (!this.state.isExpanded && nodeData != null && nodeData.isExpanded && this._shouldFetch() && evaluationResult != null && evaluationResult.objectId != null && fetchChildren != null) {
+      if (!(evaluationResult.objectId != null)) {
+        throw new Error('Invariant violation: "evaluationResult.objectId != null"');
+      }
+
       this.setState({
         children: fetchChildren(evaluationResult.objectId),
-        isExpanded: true,
+        isExpanded: true
       });
     }
   }
 
-  componentWillReceiveProps(nextProps: LazyNestedValueComponentProps): void {
-    if (
-      this._shouldFetch() &&
-      this.state.isExpanded &&
-      nextProps.evaluationResult != null &&
-      nextProps.fetchChildren != null
-    ) {
-      const {objectId} = nextProps.evaluationResult;
+  componentWillReceiveProps(nextProps) {
+    if (this._shouldFetch() && this.state.isExpanded && nextProps.evaluationResult != null && nextProps.fetchChildren != null) {
+      const { objectId } = nextProps.evaluationResult;
       if (objectId == null) {
         return;
       }
       this.setState({
-        children: nextProps.fetchChildren(objectId),
+        children: nextProps.fetchChildren(objectId)
       });
     }
   }
 
-  _shouldFetch(): boolean {
-    const {shouldCacheChildren, getCachedChildren, path} = this.props;
+  _shouldFetch() {
+    const { shouldCacheChildren, getCachedChildren, path } = this.props;
     const children = getCachedChildren(path);
     return !shouldCacheChildren || children == null;
   }
 
-  _toggleExpand(event: SyntheticMouseEvent): void {
+  _toggleExpand(event) {
     const {
       fetchChildren,
       evaluationResult,
       onExpandedStateChange,
-      path,
+      path
     } = this.props;
-    const newState: LazyNestedValueComponentState = {
+    const newState = {
       children: null,
-      isExpanded: !this.state.isExpanded,
+      isExpanded: !this.state.isExpanded
     };
     if (!this.state.isExpanded) {
-      if (
-        this._shouldFetch() &&
-        typeof fetchChildren === 'function' &&
-        evaluationResult != null &&
-        evaluationResult.objectId != null
-      ) {
+      if (this._shouldFetch() && typeof fetchChildren === 'function' && evaluationResult != null && evaluationResult.objectId != null) {
         newState.children = fetchChildren(evaluationResult.objectId);
       }
     }
@@ -231,7 +219,7 @@ class ValueComponent extends React.Component {
     event.stopPropagation();
   }
 
-  render(): ?React.Element<any> {
+  render() {
     const {
       evaluationResult,
       expression,
@@ -243,92 +231,74 @@ class ValueComponent extends React.Component {
       shouldCacheChildren,
       getCachedChildren,
       setCachedChildren,
-      simpleValueComponent: SimpleValueComponent,
+      simpleValueComponent: SimpleValueComponent
     } = this.props;
     if (evaluationResult == null) {
       return renderValueLine(expression, NOT_AVAILABLE_MESSAGE);
     }
     if (!isObjectValue(evaluationResult)) {
-      const simpleValueElement = (
-        <SimpleValueComponent
-          expression={expression}
-          evaluationResult={evaluationResult}
-          simpleValueComponent={SimpleValueComponent}
-        />
+      const simpleValueElement = _reactForAtom.React.createElement(SimpleValueComponent, {
+        expression: expression,
+        evaluationResult: evaluationResult,
+        simpleValueComponent: SimpleValueComponent
+      });
+      return isRoot ? simpleValueElement : _reactForAtom.React.createElement(
+        (_Tree || _load_Tree()).TreeItem,
+        null,
+        simpleValueElement
       );
-      return isRoot ? simpleValueElement : <TreeItem>{simpleValueElement}</TreeItem>;
     }
     const description = evaluationResult.description || '<no description provided>';
     const {
       children,
-      isExpanded,
+      isExpanded
     } = this.state;
     let childListElement = null;
     if (isExpanded) {
       const cachedChildren = getCachedChildren(path);
       if (shouldCacheChildren && cachedChildren != null) {
-        childListElement = (
-          <LoadableValueComponent
-            children={cachedChildren}
-            fetchChildren={fetchChildren}
-            path={path}
-            expandedValuePaths={expandedValuePaths}
-            onExpandedStateChange={onExpandedStateChange}
-            simpleValueComponent={SimpleValueComponent}
-            shouldCacheChildren={shouldCacheChildren}
-            getCachedChildren={getCachedChildren}
-            setCachedChildren={setCachedChildren}
-          />
-        );
+        childListElement = _reactForAtom.React.createElement(LoadableValueComponent, {
+          children: cachedChildren,
+          fetchChildren: fetchChildren,
+          path: path,
+          expandedValuePaths: expandedValuePaths,
+          onExpandedStateChange: onExpandedStateChange,
+          simpleValueComponent: SimpleValueComponent,
+          shouldCacheChildren: shouldCacheChildren,
+          getCachedChildren: getCachedChildren,
+          setCachedChildren: setCachedChildren
+        });
       } else if (children == null) {
-        childListElement = <TreeItemWithLoadingSpinner />;
+        childListElement = _reactForAtom.React.createElement(TreeItemWithLoadingSpinner, null);
       } else {
-        const ChildrenComponent = bindObservableAsProps(
-          children.map(childrenValue => ({children: childrenValue})).startWith({children: null}),
-          LoadableValueComponent,
-        );
-        childListElement = (
-          <ChildrenComponent
-            fetchChildren={fetchChildren}
-            path={path}
-            expandedValuePaths={expandedValuePaths}
-            onExpandedStateChange={onExpandedStateChange}
-            simpleValueComponent={SimpleValueComponent}
-            shouldCacheChildren={shouldCacheChildren}
-            getCachedChildren={getCachedChildren}
-            setCachedChildren={setCachedChildren}
-          />
-        );
+        const ChildrenComponent = (0, (_bindObservableAsProps || _load_bindObservableAsProps()).bindObservableAsProps)(children.map(childrenValue => ({ children: childrenValue })).startWith({ children: null }), LoadableValueComponent);
+        childListElement = _reactForAtom.React.createElement(ChildrenComponent, {
+          fetchChildren: fetchChildren,
+          path: path,
+          expandedValuePaths: expandedValuePaths,
+          onExpandedStateChange: onExpandedStateChange,
+          simpleValueComponent: SimpleValueComponent,
+          shouldCacheChildren: shouldCacheChildren,
+          getCachedChildren: getCachedChildren,
+          setCachedChildren: setCachedChildren
+        });
       }
     }
     const title = renderValueLine(expression, description);
-    return (
-      <TreeList showArrows={true} className="nuclide-ui-lazy-nested-value-treelist">
-        <NestedTreeItem
-          collapsed={!this.state.isExpanded}
-          onClick={this._toggleExpandFiltered}
-          title={title}>
-          {childListElement}
-        </NestedTreeItem>
-      </TreeList>
+    return _reactForAtom.React.createElement(
+      (_Tree || _load_Tree()).TreeList,
+      { showArrows: true, className: 'nuclide-ui-lazy-nested-value-treelist' },
+      _reactForAtom.React.createElement(
+        (_Tree || _load_Tree()).NestedTreeItem,
+        {
+          collapsed: !this.state.isExpanded,
+          onClick: this._toggleExpandFiltered,
+          title: title },
+        childListElement
+      )
     );
   }
 }
-
-type TopLevelValueComponentProps = {
-  className?: string,
-  evaluationResult: ?EvaluationResult,
-  fetchChildren: ?(objectId: string) => Observable<?ExpansionResult>,
-  expression: ?string,
-  simpleValueComponent: ReactClass<any>,
-  // $FlowIssue -- Flow's object spread operator inference is buggy.
-  shouldCacheChildren: ?boolean,
-};
-
-type NodeData = {
-  isExpanded: boolean,
-  cachedChildren: ?ExpansionResult,
-};
 
 /**
  * TopLevelValueComponent wraps all expandable value components. It is in charge of keeping track
@@ -337,34 +307,29 @@ type NodeData = {
  * is necessary to preserve the expansion state while the values are temporarily unavailable, such
  * as after stepping in the debugger, which triggers a recursive re-fetch.
  */
-class TopLevelLazyNestedValueComponent extends React.Component {
-  // $FlowIssue `evaluationResult` gets injected via HOC.
-  props: TopLevelValueComponentProps;
-  expandedValuePaths: Map<string, NodeData>;
-  shouldCacheChildren: boolean;
+class TopLevelLazyNestedValueComponent extends _reactForAtom.React.Component {
 
-  constructor(props: TopLevelValueComponentProps) {
+  constructor(props) {
     super(props);
     this.expandedValuePaths = new Map();
-    (this: any).handleExpansionChange = this.handleExpansionChange.bind(this);
-    (this: any).getCachedChildren = this.getCachedChildren.bind(this);
-    (this: any).setCachedChildren = this.setCachedChildren.bind(this);
-    this.shouldCacheChildren = this.props.shouldCacheChildren == null
-      ? false
-      : this.props.shouldCacheChildren;
+    this.handleExpansionChange = this.handleExpansionChange.bind(this);
+    this.getCachedChildren = this.getCachedChildren.bind(this);
+    this.setCachedChildren = this.setCachedChildren.bind(this);
+    this.shouldCacheChildren = this.props.shouldCacheChildren == null ? false : this.props.shouldCacheChildren;
   }
+  // $FlowIssue `evaluationResult` gets injected via HOC.
 
-  handleExpansionChange(expandedValuePath: string, isExpanded: boolean): void {
-    const nodeData =
-      this.expandedValuePaths.get(expandedValuePath) || {isExpanded, cachedChildren: null};
+
+  handleExpansionChange(expandedValuePath, isExpanded) {
+    const nodeData = this.expandedValuePaths.get(expandedValuePath) || { isExpanded, cachedChildren: null };
     if (isExpanded) {
-      this.expandedValuePaths.set(expandedValuePath, {...nodeData, isExpanded: true});
+      this.expandedValuePaths.set(expandedValuePath, Object.assign({}, nodeData, { isExpanded: true }));
     } else {
-      this.expandedValuePaths.set(expandedValuePath, {...nodeData, isExpanded: false});
+      this.expandedValuePaths.set(expandedValuePath, Object.assign({}, nodeData, { isExpanded: false }));
     }
   }
 
-  getCachedChildren(path: string): ?ExpansionResult {
+  getCachedChildren(path) {
     const nodeData = this.expandedValuePaths.get(path);
     if (nodeData == null) {
       return null;
@@ -373,40 +338,36 @@ class TopLevelLazyNestedValueComponent extends React.Component {
     }
   }
 
-  setCachedChildren(path: string, children: ExpansionResult): void {
+  setCachedChildren(path, children) {
     const nodeData = this.expandedValuePaths.get(path);
     if (nodeData != null) {
-      this.expandedValuePaths.set(path, {...nodeData, cachedChildren: children});
+      this.expandedValuePaths.set(path, Object.assign({}, nodeData, { cachedChildren: children }));
     }
   }
 
-  render(): React.Element<any> {
-    const className = classnames(this.props.className, {
+  render() {
+    const className = (0, (_classnames || _load_classnames()).default)(this.props.className, {
       'native-key-bindings': true,
       // Note(vjeux): the following line should probably be `: true`
-      'nuclide-ui-lazy-nested-value': this.props.className == null,
+      'nuclide-ui-lazy-nested-value': this.props.className == null
     });
-    return (
-      <span className={className} tabIndex={-1}>
-        <ValueComponent
-          {...this.props}
-          isRoot={true}
-          expandedValuePaths={this.expandedValuePaths}
-          onExpandedStateChange={this.handleExpansionChange}
-          path="root"
-          shouldCacheChildren={this.shouldCacheChildren}
-          getCachedChildren={this.getCachedChildren}
-          setCachedChildren={this.setCachedChildren}
-        />
-      </span>
+    return _reactForAtom.React.createElement(
+      'span',
+      { className: className, tabIndex: -1 },
+      _reactForAtom.React.createElement(ValueComponent, Object.assign({}, this.props, {
+        isRoot: true,
+        expandedValuePaths: this.expandedValuePaths,
+        onExpandedStateChange: this.handleExpansionChange,
+        path: 'root',
+        shouldCacheChildren: this.shouldCacheChildren,
+        getCachedChildren: this.getCachedChildren,
+        setCachedChildren: this.setCachedChildren
+      }))
     );
   }
 }
 
-function arePropsEqual(
-  p1: LazyNestedValueComponentProps,
-  p2: LazyNestedValueComponentProps,
-): boolean {
+function arePropsEqual(p1, p2) {
   const evaluationResult1 = p1.evaluationResult;
   const evaluationResult2 = p2.evaluationResult;
   if (evaluationResult1 === evaluationResult2) {
@@ -415,15 +376,7 @@ function arePropsEqual(
   if (evaluationResult1 == null || evaluationResult2 == null) {
     return false;
   }
-  return (
-    evaluationResult1.value === evaluationResult2.value &&
-    evaluationResult1.type === evaluationResult2.type &&
-    evaluationResult1.description === evaluationResult2.description
-  );
+  return evaluationResult1.value === evaluationResult2.value && evaluationResult1.type === evaluationResult2.type && evaluationResult1.description === evaluationResult2.description;
 }
-export const LazyNestedValueComponent = highlightOnUpdate(
-  TopLevelLazyNestedValueComponent,
-  arePropsEqual,
-  undefined, /* custom classname */
-  undefined, /* custom delay */
-);
+const LazyNestedValueComponent = exports.LazyNestedValueComponent = (0, (_highlightOnUpdate || _load_highlightOnUpdate()).highlightOnUpdate)(TopLevelLazyNestedValueComponent, arePropsEqual, undefined, /* custom classname */
+undefined);

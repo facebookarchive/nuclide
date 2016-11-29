@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,39 +9,50 @@
  * the root directory of this source tree.
  */
 
-import typeof * as PythonService from '../../nuclide-python-rpc';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {trackOperationTiming} from '../../nuclide-analytics';
-import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
-import invariant from 'assert';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-export default class CodeFormatHelpers {
+var _nuclideAnalytics;
 
-  static formatEntireFile(editor: atom$TextEditor, range: atom$Range): Promise<{
-    newCursor?: number,
-    formatted: string,
-  }> {
-    return trackOperationTiming('python.formatCode', async () => {
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class CodeFormatHelpers {
+
+  static formatEntireFile(editor, range) {
+    return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackOperationTiming)('python.formatCode', (0, _asyncToGenerator.default)(function* () {
       const buffer = editor.getBuffer();
       const src = editor.getPath();
       if (!src) {
         return {
-          formatted: buffer.getText(),
+          formatted: buffer.getText()
         };
       }
 
-      const service: ?PythonService = getServiceByNuclideUri('PythonService', src);
-      invariant(service, 'Failed to get service for python.');
+      const service = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getServiceByNuclideUri)('PythonService', src);
 
-      const formatted = await service.formatCode(
-        src,
-        buffer.getText(),
-        range.start.row + 1,
-        range.end.row + 1,
-      );
+      if (!service) {
+        throw new Error('Failed to get service for python.');
+      }
 
-      return {formatted};
-    });
+      const formatted = yield service.formatCode(src, buffer.getText(), range.start.row + 1, range.end.row + 1);
+
+      return { formatted };
+    }));
   }
 
 }
+exports.default = CodeFormatHelpers;
+module.exports = exports['default'];

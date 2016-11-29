@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,29 +9,34 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.FlowEvaluationExpressionProvider = undefined;
 
-import {wordAtPosition} from '../../commons-atom/range';
-import {JAVASCRIPT_IDENTIFIER_REGEX} from './constants';
+var _range;
 
-export class FlowEvaluationExpressionProvider {
+function _load_range() {
+  return _range = require('../../commons-atom/range');
+}
 
-  getEvaluationExpression(
-    editor: atom$TextEditor,
-    position: atom$Point,
-  ): Promise<?NuclideEvaluationExpression> {
+var _constants;
+
+function _load_constants() {
+  return _constants = require('./constants');
+}
+
+class FlowEvaluationExpressionProvider {
+
+  getEvaluationExpression(editor, position) {
     // TODO: Replace RegExp with AST-based, more accurate approach.
-    const extractedIdentifier = wordAtPosition(
-      editor,
-      position,
-      JAVASCRIPT_IDENTIFIER_REGEX,
-    );
+    const extractedIdentifier = (0, (_range || _load_range()).wordAtPosition)(editor, position, (_constants || _load_constants()).JAVASCRIPT_IDENTIFIER_REGEX);
     if (extractedIdentifier == null) {
       return Promise.resolve(null);
     }
     const {
       range,
-      wordMatch,
+      wordMatch
     } = extractedIdentifier;
     const [expression] = wordMatch;
     if (expression == null) {
@@ -39,7 +44,8 @@ export class FlowEvaluationExpressionProvider {
     }
     return Promise.resolve({
       expression,
-      range,
+      range
     });
   }
 }
+exports.FlowEvaluationExpressionProvider = FlowEvaluationExpressionProvider;

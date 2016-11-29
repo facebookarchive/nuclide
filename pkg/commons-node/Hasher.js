@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -28,37 +28,39 @@
  *      }
  *    }
  */
-export default class Hasher<K> {
-  _hashes: WeakMap<K, string>;
-  _objectCount: number;
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+class Hasher {
 
   constructor() {
     this._hashes = new WeakMap();
     this._objectCount = 0;
   }
 
-  getHash(item: K): string | number {
+  getHash(item) {
     if (item === null) {
       return 'null';
     }
     const type = typeof item;
     switch (typeof item) {
-      case 'object': {
-        let hash = this._hashes.get(item);
-        if (hash == null) {
-          hash = `${type}:${this._objectCount}`;
-          this._hashes.set(item, hash);
-          this._objectCount = this._objectCount + 1 === Number.MAX_SAFE_INTEGER
-            ? Number.MIN_SAFE_INTEGER
-            : this._objectCount + 1;
+      case 'object':
+        {
+          let hash = this._hashes.get(item);
+          if (hash == null) {
+            hash = `${ type }:${ this._objectCount }`;
+            this._hashes.set(item, hash);
+            this._objectCount = this._objectCount + 1 === Number.MAX_SAFE_INTEGER ? Number.MIN_SAFE_INTEGER : this._objectCount + 1;
+          }
+          return hash;
         }
-        return hash;
-      }
       case 'undefined':
         return 'undefined';
       case 'string':
       case 'boolean':
-        return `${type}:${item.toString()}`;
+        return `${ type }:${ item.toString() }`;
       case 'number':
         return item;
       default:
@@ -66,3 +68,5 @@ export default class Hasher<K> {
     }
   }
 }
+exports.default = Hasher;
+module.exports = exports['default'];

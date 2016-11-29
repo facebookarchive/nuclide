@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,90 +9,98 @@
  * the root directory of this source tree.
  */
 
-import type {Action} from './types';
-import type {AppState} from '..';
-import type {BookmarkInfo} from '../../nuclide-hg-rpc/lib/HgService';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import * as ActionType from './ActionType';
-import {track} from '../../nuclide-analytics';
+var _ActionType;
 
-type dispatchType = (action: Action) => void;
-type getStateType = () => AppState;
+function _load_ActionType() {
+  return _ActionType = _interopRequireWildcard(require('./ActionType'));
+}
 
-export default class Commands {
-  _dispatch: dispatchType;
-  _getState: getStateType;
+var _nuclideAnalytics;
 
-  constructor(dispatch: dispatchType, getState: getStateType) {
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+class Commands {
+
+  constructor(dispatch, getState) {
     this._dispatch = dispatch;
     this._getState = getState;
 
     // Bind to allow methods to be passed as callbacks.
-    (this: any).createBookmark = this.createBookmark.bind(this);
-    (this: any).deleteBookmark = this.deleteBookmark.bind(this);
-    (this: any).renameBookmark = this.renameBookmark.bind(this);
-    (this: any).updateToBookmark = this.updateToBookmark.bind(this);
+    this.createBookmark = this.createBookmark.bind(this);
+    this.deleteBookmark = this.deleteBookmark.bind(this);
+    this.renameBookmark = this.renameBookmark.bind(this);
+    this.updateToBookmark = this.updateToBookmark.bind(this);
   }
 
-  createBookmark(name: string, repository: atom$Repository): void {
-    track('scsidebar-create-bookmark');
+  createBookmark(name, repository) {
+    (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('scsidebar-create-bookmark');
     this._dispatch({
       payload: {
         name,
-        repository,
+        repository
       },
-      type: ActionType.CREATE_BOOKMARK,
+      type: (_ActionType || _load_ActionType()).CREATE_BOOKMARK
     });
   }
 
-  deleteBookmark(bookmark: BookmarkInfo, repository: atom$Repository): void {
-    track('scsidebar-delete-bookmark');
+  deleteBookmark(bookmark, repository) {
+    (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('scsidebar-delete-bookmark');
     this._dispatch({
       payload: {
         bookmark,
-        repository,
+        repository
       },
-      type: ActionType.DELETE_BOOKMARK,
+      type: (_ActionType || _load_ActionType()).DELETE_BOOKMARK
     });
   }
 
-  renameBookmark(bookmark: BookmarkInfo, nextName: string, repository: atom$Repository): void {
-    track('scsidebar-rename-bookmark');
+  renameBookmark(bookmark, nextName, repository) {
+    (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('scsidebar-rename-bookmark');
     this._dispatch({
       payload: {
         bookmark,
         nextName,
-        repository,
+        repository
       },
-      type: ActionType.RENAME_BOOKMARK,
+      type: (_ActionType || _load_ActionType()).RENAME_BOOKMARK
     });
   }
 
-  fetchProjectDirectories(): void {
+  fetchProjectDirectories() {
     this._dispatch({
       payload: {
-        projectDirectories: atom.project.getDirectories(),
+        projectDirectories: atom.project.getDirectories()
       },
-      type: ActionType.SET_PROJECT_DIRECTORIES,
+      type: (_ActionType || _load_ActionType()).SET_PROJECT_DIRECTORIES
     });
 
     this.fetchProjectRepositories();
   }
 
-  fetchProjectRepositories(): void {
+  fetchProjectRepositories() {
     this._dispatch({
-      type: ActionType.FETCH_PROJECT_REPOSITORIES,
+      type: (_ActionType || _load_ActionType()).FETCH_PROJECT_REPOSITORIES
     });
   }
 
-  updateToBookmark(bookmark: BookmarkInfo, repository: atom$Repository): void {
-    track('scsidebar-update-to-bookmark');
+  updateToBookmark(bookmark, repository) {
+    (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('scsidebar-update-to-bookmark');
     this._dispatch({
       payload: {
         bookmark,
-        repository,
+        repository
       },
-      type: ActionType.UPDATE_TO_BOOKMARK,
+      type: (_ActionType || _load_ActionType()).UPDATE_TO_BOOKMARK
     });
   }
 }
+exports.default = Commands;
+module.exports = exports['default'];

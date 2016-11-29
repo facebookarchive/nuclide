@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,16 +9,23 @@
  * the root directory of this source tree.
  */
 
-import logger from './utils';
-import {Observable, Subject} from 'rxjs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ClientCallback = undefined;
 
-import type {NotificationMessage} from '..';
+var _utils;
 
-export type UserMessageType = 'notification' | 'console' | 'outputWindow';
-export type NotificationType = 'info' | 'warning' | 'error' | 'fatalError';
+function _load_utils() {
+  return _utils = _interopRequireDefault(require('./utils'));
+}
 
-function createMessage(method: string, params: ?Object): Object {
-  const result: Object = {method};
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function createMessage(method, params) {
+  const result = { method };
   if (params) {
     result.params = params;
   }
@@ -33,65 +40,65 @@ function createMessage(method: string, params: ?Object): Object {
  * 3. Chrome console user messages.
  * 4. Output window messages.
  */
-export class ClientCallback {
-  _serverMessageObservable: Subject<any>;  // For server messages.
-  _notificationObservable: Subject<any>;   // For atom UI notifications.
-  _outputWindowObservable: Subject<any>;   // For output window messages.
+class ClientCallback {
+  // For output window messages.
 
+  // For server messages.
   constructor() {
-    this._serverMessageObservable = new Subject();
-    this._notificationObservable = new Subject();
-    this._outputWindowObservable = new Subject();
-  }
+    this._serverMessageObservable = new _rxjsBundlesRxMinJs.Subject();
+    this._notificationObservable = new _rxjsBundlesRxMinJs.Subject();
+    this._outputWindowObservable = new _rxjsBundlesRxMinJs.Subject();
+  } // For atom UI notifications.
 
-  getNotificationObservable(): Observable<NotificationMessage> {
+
+  getNotificationObservable() {
     return this._notificationObservable;
   }
 
-  getServerMessageObservable(): Observable<string> {
+  getServerMessageObservable() {
     return this._serverMessageObservable;
   }
 
-  getOutputWindowObservable(): Observable<string> {
+  getOutputWindowObservable() {
     return this._outputWindowObservable;
   }
 
-  sendUserMessage(type: UserMessageType, message: Object): void {
-    logger.log(`sendUserMessage(${type}): ${JSON.stringify(message)}`);
+  sendUserMessage(type, message) {
+    (_utils || _load_utils()).default.log(`sendUserMessage(${ type }): ${ JSON.stringify(message) }`);
     switch (type) {
       case 'notification':
         this._notificationObservable.next({
           type: message.type,
-          message: message.message,
+          message: message.message
         });
         break;
       case 'console':
         this.sendMethod(this._serverMessageObservable, 'Console.messageAdded', {
-          message,
+          message
         });
         break;
       case 'outputWindow':
         this.sendMethod(this._outputWindowObservable, 'Console.messageAdded', {
-          message,
+          message
         });
         break;
       default:
-        logger.logError(`Unknown UserMessageType: ${type}`);
+        (_utils || _load_utils()).default.logError(`Unknown UserMessageType: ${ type }`);
     }
   }
 
-  unknownMethod(id: number, domain: string, method: string, params: ?Object): void {
+  unknownMethod(id, domain, method, params) {
     const message = 'Unknown chrome dev tools method: ' + domain + '.' + method;
-    logger.log(message);
+    (_utils || _load_utils()).default.log(message);
     this.replyWithError(id, message);
   }
 
-  replyWithError(id: number, error: string): void {
+  replyWithError(id, error) {
     this.replyToCommand(id, {}, error);
   }
 
-  replyToCommand(id: number, result: Object, error: ?string): void {
-    const value: Object = {id, result};
+  replyToCommand(id, result, error) {
+    const value = { id, result };
     if (error != null) {
       value.error = error;
     } else if (result.error != null) {
@@ -100,20 +107,21 @@ export class ClientCallback {
     this._sendJsonObject(this._serverMessageObservable, value);
   }
 
-  sendMethod(observable: Observable<string>, method: string, params: ?Object) {
+  sendMethod(observable, method, params) {
     this._sendJsonObject(observable, createMessage(method, params));
   }
 
-  _sendJsonObject(observable: Observable<string>, value: Object): void {
+  _sendJsonObject(observable, value) {
     const message = JSON.stringify(value);
-    logger.log('Sending JSON: ' + message);
-    ((observable: any): Subject<any>).next(message);
+    (_utils || _load_utils()).default.log('Sending JSON: ' + message);
+    observable.next(message);
   }
 
-  dispose(): void {
-    logger.log('Called ClientCallback dispose method.');
+  dispose() {
+    (_utils || _load_utils()).default.log('Called ClientCallback dispose method.');
     this._notificationObservable.complete();
     this._serverMessageObservable.complete();
     this._outputWindowObservable.complete();
   }
 }
+exports.ClientCallback = ClientCallback;

@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,68 +9,74 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
-import {maybeToString} from '../../commons-node/string';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DatatipComponent = exports.DATATIP_ACTIONS = undefined;
 
-export const DATATIP_ACTIONS = Object.freeze({
+var _reactForAtom = require('react-for-atom');
+
+var _string;
+
+function _load_string() {
+  return _string = require('../../commons-node/string');
+}
+
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
+
+const DATATIP_ACTIONS = exports.DATATIP_ACTIONS = Object.freeze({
   PIN: 'PIN',
-  CLOSE: 'CLOSE',
+  CLOSE: 'CLOSE'
 });
 
 const IconsForAction = {
   [DATATIP_ACTIONS.PIN]: 'pin',
-  [DATATIP_ACTIONS.CLOSE]: 'x',
+  [DATATIP_ACTIONS.CLOSE]: 'x'
 };
 
-type DatatipComponentProps = {
-  action: string,
-  actionTitle: string,
-  children?: any,
-  className?: string,
-  onActionClick: Function,
-};
+class DatatipComponent extends _reactForAtom.React.Component {
 
-export class DatatipComponent extends React.Component {
-  props: DatatipComponentProps;
-
-  constructor(props: DatatipComponentProps) {
+  constructor(props) {
     super(props);
-    (this: any).handleActionClick = this.handleActionClick.bind(this);
+    this.handleActionClick = this.handleActionClick.bind(this);
   }
 
-  handleActionClick(event: SyntheticEvent): void {
+  handleActionClick(event) {
     this.props.onActionClick();
   }
 
-  render(): React.Element<any> {
+  render() {
     const {
       className,
       children,
       action,
-      actionTitle,
-      ...props
+      actionTitle
     } = this.props;
+
+    const props = _objectWithoutProperties(this.props, ['className', 'children', 'action', 'actionTitle']);
+
     delete props.onActionClick;
     let actionButton;
     if (action != null && IconsForAction[action] != null) {
       const actionIcon = IconsForAction[action];
-      actionButton = (
-        <div
-          className={`nuclide-datatip-pin-button icon-${actionIcon}`}
-          onClick={this.handleActionClick}
-          title={actionTitle}
-        />
-      );
+      actionButton = _reactForAtom.React.createElement('div', {
+        className: `nuclide-datatip-pin-button icon-${ actionIcon }`,
+        onClick: this.handleActionClick,
+        title: actionTitle
+      });
     }
-    return (
-      <div
-        className={`${maybeToString(className)} nuclide-datatip-container`}
-        {...props}>
-        <div className="nuclide-datatip-content">
-          {children}
-        </div>
-        {actionButton}
-      </div>
+    return _reactForAtom.React.createElement(
+      'div',
+      Object.assign({
+        className: `${ (0, (_string || _load_string()).maybeToString)(className) } nuclide-datatip-container`
+      }, props),
+      _reactForAtom.React.createElement(
+        'div',
+        { className: 'nuclide-datatip-content' },
+        children
+      ),
+      actionButton
     );
   }
 }
+exports.DatatipComponent = DatatipComponent;

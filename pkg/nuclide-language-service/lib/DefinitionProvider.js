@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,40 +9,36 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {
-  Definition,
-  DefinitionQueryResult,
-} from '../../nuclide-definition-service/lib/rpc-types';
-import type {LanguageService} from './LanguageService';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DefinitionProvider = undefined;
 
-import {ConnectionCache} from '../../nuclide-remote-connection';
-import {trackOperationTiming} from '../../nuclide-analytics';
-import {getFileVersionOfEditor} from '../../nuclide-open-files';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-export type DefinitionConfig = {
-  version: '0.0.0',
-  priority: number,
-  definitionEventName: string,
-  definitionByIdEventName: string,
-};
+var _nuclideRemoteConnection;
 
-export class DefinitionProvider<T: LanguageService> {
-  name: string;
-  priority: number;
-  grammarScopes: Array<string>;
-  _definitionEventName: string;
-  _definitionByIdEventName: string;
-  _connectionToLanguageService: ConnectionCache<T>;
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
 
-  constructor(
-    name: string,
-    grammars: Array<string>,
-    priority: number,
-    definitionEventName: string,
-    definitionByIdEventName: string,
-    connectionToLanguageService: ConnectionCache<T>,
-  ) {
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _nuclideOpenFiles;
+
+function _load_nuclideOpenFiles() {
+  return _nuclideOpenFiles = require('../../nuclide-open-files');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class DefinitionProvider {
+
+  constructor(name, grammars, priority, definitionEventName, definitionByIdEventName, connectionToLanguageService) {
     this.name = name;
     this.priority = priority;
     this.grammarScopes = grammars;
@@ -51,44 +47,36 @@ export class DefinitionProvider<T: LanguageService> {
     this._connectionToLanguageService = connectionToLanguageService;
   }
 
-  static register(
-    name: string,
-    grammars: Array<string>,
-    config: DefinitionConfig,
-    connectionToLanguageService: ConnectionCache<T>,
-  ): IDisposable {
-    return atom.packages.serviceHub.provide(
-      'nuclide-definition-provider',
-      config.version,
-      new DefinitionProvider(
-        name,
-        grammars,
-        config.priority,
-        config.definitionEventName,
-        config.definitionByIdEventName,
-        connectionToLanguageService,
-      ));
+  static register(name, grammars, config, connectionToLanguageService) {
+    return atom.packages.serviceHub.provide('nuclide-definition-provider', config.version, new DefinitionProvider(name, grammars, config.priority, config.definitionEventName, config.definitionByIdEventName, connectionToLanguageService));
   }
 
-  async getDefinition(editor: TextEditor, position: atom$Point): Promise<?DefinitionQueryResult> {
-    return trackOperationTiming(this._definitionEventName, async () => {
-      const fileVersion = await getFileVersionOfEditor(editor);
-      const languageService = this._connectionToLanguageService.getForUri(editor.getPath());
-      if (languageService == null || fileVersion == null) {
-        return null;
-      }
-      return await (await languageService).getDefinition(fileVersion, position);
-    });
+  getDefinition(editor, position) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackOperationTiming)(_this._definitionEventName, (0, _asyncToGenerator.default)(function* () {
+        const fileVersion = yield (0, (_nuclideOpenFiles || _load_nuclideOpenFiles()).getFileVersionOfEditor)(editor);
+        const languageService = _this._connectionToLanguageService.getForUri(editor.getPath());
+        if (languageService == null || fileVersion == null) {
+          return null;
+        }
+        return yield (yield languageService).getDefinition(fileVersion, position);
+      }));
+    })();
   }
 
-  getDefinitionById(filePath: NuclideUri, id: string): Promise<?Definition> {
-    return trackOperationTiming(this._definitionByIdEventName, async () => {
-      const languageService = this._connectionToLanguageService.getForUri(filePath);
+  getDefinitionById(filePath, id) {
+    var _this2 = this;
+
+    return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackOperationTiming)(this._definitionByIdEventName, (0, _asyncToGenerator.default)(function* () {
+      const languageService = _this2._connectionToLanguageService.getForUri(filePath);
       if (languageService == null) {
         return null;
       }
 
-      return await (await languageService).getDefinitionById(filePath, id);
-    });
+      return yield (yield languageService).getDefinitionById(filePath, id);
+    }));
   }
 }
+exports.DefinitionProvider = DefinitionProvider;

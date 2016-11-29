@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,11 +9,31 @@
  * the root directory of this source tree.
  */
 
-import type {Datatip} from '../../nuclide-datatip/lib/types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {wordAtPosition} from '../../commons-atom/range';
-import makeUnescapedUnicodeDatatipComponent from './UnescapedUnicodeDatatipComponent';
-import {decodeSurrogateCodePoints, extractCodePoints} from './Unicode';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _range;
+
+function _load_range() {
+  return _range = require('../../commons-atom/range');
+}
+
+var _UnescapedUnicodeDatatipComponent;
+
+function _load_UnescapedUnicodeDatatipComponent() {
+  return _UnescapedUnicodeDatatipComponent = _interopRequireDefault(require('./UnescapedUnicodeDatatipComponent'));
+}
+
+var _Unicode;
+
+function _load_Unicode() {
+  return _Unicode = require('./Unicode');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // Our "word" for the datatip is a contiguous alphanumeric string
 // containing at least one Unicode escape: \uXXXX, \UXXXXXXXX, or
@@ -22,18 +42,25 @@ import {decodeSurrogateCodePoints, extractCodePoints} from './Unicode';
 // eslint-disable-next-line max-len
 const WORD_REGEX = /[a-zA-Z0-9_-]*(?:\\u[0-9a-fA-F]{4}|\\U[0-9a-fA-F]{8}|\\u{[0-9a-fA-F]{1,8}})+(?:\\u[0-9a-fA-F]{4}|\\U[0-9a-fA-F]{8}|\\u{[0-9a-fA-F]{1,8}}|[a-zA-Z0-9_-])*/g;
 
-export default async function unescapedUnicodeDatatip(
-  editor: TextEditor,
-  position: atom$Point,
-): Promise<?Datatip> {
-  const extractedWord = wordAtPosition(editor, position, WORD_REGEX);
-  if (extractedWord == null) {
-    return null;
+exports.default = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (editor, position) {
+    const extractedWord = (0, (_range || _load_range()).wordAtPosition)(editor, position, WORD_REGEX);
+    if (extractedWord == null) {
+      return null;
+    }
+    const extractedCodePoints = (0, (_Unicode || _load_Unicode()).extractCodePoints)(extractedWord.wordMatch[0]);
+    const codePoints = (0, (_Unicode || _load_Unicode()).decodeSurrogateCodePoints)(extractedCodePoints);
+    return {
+      component: (0, (_UnescapedUnicodeDatatipComponent || _load_UnescapedUnicodeDatatipComponent()).default)(codePoints),
+      range: extractedWord.range
+    };
+  });
+
+  function unescapedUnicodeDatatip(_x, _x2) {
+    return _ref.apply(this, arguments);
   }
-  const extractedCodePoints = extractCodePoints(extractedWord.wordMatch[0]);
-  const codePoints = decodeSurrogateCodePoints(extractedCodePoints);
-  return {
-    component: makeUnescapedUnicodeDatatipComponent(codePoints),
-    range: extractedWord.range,
-  };
-}
+
+  return unescapedUnicodeDatatip;
+})();
+
+module.exports = exports['default'];

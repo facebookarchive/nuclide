@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,20 +9,31 @@
  * the root directory of this source tree.
  */
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.translateMessageFromServer = translateMessageFromServer;
+exports.translateMessageToServer = translateMessageToServer;
 
-import url from 'url';
-import nuclideUri from '../../commons-node/nuclideUri';
-import invariant from 'assert';
+var _url = _interopRequireDefault(require('url'));
 
-export function translateMessageFromServer(hostname: string, message: string): string {
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function translateMessageFromServer(hostname, message) {
   return translateMessage(message, uri => translateUriFromServer(hostname, uri));
 }
 
-export function translateMessageToServer(message: string): string {
+function translateMessageToServer(message) {
   return translateMessage(message, translateUriToServer);
 }
 
-function translateMessage(message: string, translateUri: (uri: string) => string): string {
+function translateMessage(message, translateUri) {
   const obj = JSON.parse(message);
   let result;
   switch (obj.method) {
@@ -42,7 +53,7 @@ function translateMessage(message: string, translateUri: (uri: string) => string
   return JSON.stringify(result);
 }
 
-function translateField(obj: Object, field: string, translateUri: (uri: string) => string): mixed {
+function translateField(obj, field, translateUri) {
   const fields = field.split('.');
   const fieldName = fields[0];
   if (fields.length === 1) {
@@ -53,23 +64,26 @@ function translateField(obj: Object, field: string, translateUri: (uri: string) 
   return obj;
 }
 
-function translateUriFromServer(hostname: string, uri: string): string {
-  const components = url.parse(uri);
+function translateUriFromServer(hostname, uri) {
+  const components = _url.default.parse(uri);
   if (components.protocol === 'file:') {
-    invariant(components.pathname);
-    const result = nuclideUri.createRemoteUri(hostname, decodeURI(components.pathname));
+    if (!components.pathname) {
+      throw new Error('Invariant violation: "components.pathname"');
+    }
+
+    const result = (_nuclideUri || _load_nuclideUri()).default.createRemoteUri(hostname, decodeURI(components.pathname));
     return result;
   } else {
     return uri;
   }
 }
 
-function translateUriToServer(uri: string): string {
-  if (nuclideUri.isRemote(uri)) {
-    const result = url.format({
+function translateUriToServer(uri) {
+  if ((_nuclideUri || _load_nuclideUri()).default.isRemote(uri)) {
+    const result = _url.default.format({
       protocol: 'file',
       slashes: true,
-      pathname: nuclideUri.getPath(uri),
+      pathname: (_nuclideUri || _load_nuclideUri()).default.getPath(uri)
     });
     return result;
   } else {

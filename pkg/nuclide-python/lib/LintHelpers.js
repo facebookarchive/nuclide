@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,35 +9,66 @@
  * the root directory of this source tree.
  */
 
-import type {LinterMessage} from '../../nuclide-diagnostics-common';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import invariant from 'assert';
-import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
-import {trackOperationTiming} from '../../nuclide-analytics';
-import {getDiagnosticRange} from './diagnostic-range';
-import {getEnableLinting} from './config';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-export default class LintHelpers {
+var _nuclideRemoteConnection;
 
-  static lint(editor: TextEditor): Promise<Array<LinterMessage>> {
-    return trackOperationTiming('nuclide-python.lint', async () => {
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _diagnosticRange;
+
+function _load_diagnosticRange() {
+  return _diagnosticRange = require('./diagnostic-range');
+}
+
+var _config;
+
+function _load_config() {
+  return _config = require('./config');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class LintHelpers {
+
+  static lint(editor) {
+    return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackOperationTiming)('nuclide-python.lint', (0, _asyncToGenerator.default)(function* () {
       const src = editor.getPath();
-      if (src == null || !getEnableLinting()) {
+      if (src == null || !(0, (_config || _load_config()).getEnableLinting)()) {
         return [];
       }
 
-      const service = getServiceByNuclideUri('PythonService', src);
-      invariant(service);
+      const service = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getServiceByNuclideUri)('PythonService', src);
 
-      const diagnostics = await service.getDiagnostics(src, editor.getText());
-      return diagnostics.map(diagnostic => ({
-        name: 'flake8: ' + diagnostic.code,
-        type: diagnostic.type,
-        text: diagnostic.message,
-        filePath: diagnostic.file,
-        range: getDiagnosticRange(diagnostic, editor),
-      }));
-    });
+      if (!service) {
+        throw new Error('Invariant violation: "service"');
+      }
+
+      const diagnostics = yield service.getDiagnostics(src, editor.getText());
+      return diagnostics.map(function (diagnostic) {
+        return {
+          name: 'flake8: ' + diagnostic.code,
+          type: diagnostic.type,
+          text: diagnostic.message,
+          filePath: diagnostic.file,
+          range: (0, (_diagnosticRange || _load_diagnosticRange()).getDiagnosticRange)(diagnostic, editor)
+        };
+      });
+    }));
   }
 
 }
+exports.default = LintHelpers;
+module.exports = exports['default'];

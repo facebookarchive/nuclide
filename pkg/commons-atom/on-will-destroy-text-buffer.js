@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,24 +9,25 @@
  * the root directory of this source tree.
  */
 
-import invariant from 'assert';
-
-export default function onWillDestroyTextBuffer(
-  callback: (buffer: atom$TextBuffer) => mixed,
-): IDisposable {
-  return atom.workspace.onWillDestroyPaneItem(({item}) => {
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = onWillDestroyTextBuffer;
+function onWillDestroyTextBuffer(callback) {
+  return atom.workspace.onWillDestroyPaneItem(({ item }) => {
     if (!atom.workspace.isTextEditor(item)) {
       return;
     }
 
-    const editor: atom$TextEditor = (item: any);
+    const editor = item;
     const openBufferCount = editor.getBuffer().refcount;
-    invariant(
-      openBufferCount !== 0,
-      'The file that is about to be closed should still be open.',
-    );
+
+    if (!(openBufferCount !== 0)) {
+      throw new Error('The file that is about to be closed should still be open.');
+    }
+
     if (openBufferCount === 1) {
       callback(editor.getBuffer());
     }
   });
-}
+}module.exports = exports['default'];

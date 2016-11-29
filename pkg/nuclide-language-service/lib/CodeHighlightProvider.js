@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,33 +9,38 @@
  * the root directory of this source tree.
  */
 
-import type {LanguageService} from './LanguageService';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.CodeHighlightProvider = undefined;
 
-import {trackOperationTiming} from '../../nuclide-analytics';
-import {ConnectionCache} from '../../nuclide-remote-connection';
-import {getFileVersionOfEditor} from '../../nuclide-open-files';
-import {Range} from 'atom';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-export type CodeHighlightConfig = {
-  version: '0.0.0',
-  priority: number,
-  analyticsEventName: string,
-};
+var _nuclideAnalytics;
 
-export class CodeHighlightProvider<T: LanguageService> {
-  name: string;
-  selector: string;
-  inclusionPriority: number;
-  _analyticsEventName: string;
-  _connectionToLanguageService: ConnectionCache<T>;
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
 
-  constructor(
-    name: string,
-    selector: string,
-    priority: number,
-    analyticsEventName: string,
-    connectionToLanguageService: ConnectionCache<T>,
-  ) {
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+var _nuclideOpenFiles;
+
+function _load_nuclideOpenFiles() {
+  return _nuclideOpenFiles = require('../../nuclide-open-files');
+}
+
+var _atom = require('atom');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class CodeHighlightProvider {
+
+  constructor(name, selector, priority, analyticsEventName, connectionToLanguageService) {
     this.name = name;
     this.selector = selector;
     this.inclusionPriority = priority;
@@ -43,35 +48,24 @@ export class CodeHighlightProvider<T: LanguageService> {
     this._connectionToLanguageService = connectionToLanguageService;
   }
 
-  highlight(editor: atom$TextEditor, position: atom$Point): Promise<Array<atom$Range>> {
-    return trackOperationTiming(this._analyticsEventName, async () => {
-      const fileVersion = await getFileVersionOfEditor(editor);
-      const languageService = this._connectionToLanguageService.getForUri(editor.getPath());
+  highlight(editor, position) {
+    var _this = this;
+
+    return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackOperationTiming)(this._analyticsEventName, (0, _asyncToGenerator.default)(function* () {
+      const fileVersion = yield (0, (_nuclideOpenFiles || _load_nuclideOpenFiles()).getFileVersionOfEditor)(editor);
+      const languageService = _this._connectionToLanguageService.getForUri(editor.getPath());
       if (languageService == null || fileVersion == null) {
         return [];
       }
 
-      return (await (await languageService).highlight(
-        fileVersion,
-        position)).map(range => new Range(range.start, range.end));
-    });
+      return (yield (yield languageService).highlight(fileVersion, position)).map(function (range) {
+        return new _atom.Range(range.start, range.end);
+      });
+    }));
   }
 
-  static register(
-    name: string,
-    selector: string,
-    config: CodeHighlightConfig,
-    connectionToLanguageService: ConnectionCache<T>,
-  ): IDisposable {
-    return atom.packages.serviceHub.provide(
-      'nuclide-code-highlight.provider',
-      config.version,
-      new CodeHighlightProvider(
-        name,
-        selector,
-        config.priority,
-        config.analyticsEventName,
-        connectionToLanguageService,
-      ));
+  static register(name, selector, config, connectionToLanguageService) {
+    return atom.packages.serviceHub.provide('nuclide-code-highlight.provider', config.version, new CodeHighlightProvider(name, selector, config.priority, config.analyticsEventName, connectionToLanguageService));
   }
 }
+exports.CodeHighlightProvider = CodeHighlightProvider;

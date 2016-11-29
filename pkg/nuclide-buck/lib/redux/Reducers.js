@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,62 +9,61 @@
  * the root directory of this source tree.
  */
 
-import type {AppState} from '../types';
-import type {Action} from './Actions';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = accumulateState;
 
-import * as Actions from './Actions';
+var _Actions;
 
-export default function accumulateState(state: AppState, action: Action): AppState {
+function _load_Actions() {
+  return _Actions = _interopRequireWildcard(require('./Actions'));
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function accumulateState(state, action) {
   switch (action.type) {
-    case Actions.SET_PROJECT_ROOT:
-      return {
-        ...state,
+    case (_Actions || _load_Actions()).SET_PROJECT_ROOT:
+      return Object.assign({}, state, {
         projectRoot: action.projectRoot,
-        isLoadingBuckProject: true,
-      };
-    case Actions.SET_BUCK_ROOT:
-      return {
-        ...state,
+        isLoadingBuckProject: true
+      });
+    case (_Actions || _load_Actions()).SET_BUCK_ROOT:
+      return Object.assign({}, state, {
         buckRoot: action.buckRoot,
-        isLoadingBuckProject: false,
-      };
-    case Actions.SET_BUILD_TARGET:
-      return {
-        ...state,
+        isLoadingBuckProject: false
+      });
+    case (_Actions || _load_Actions()).SET_BUILD_TARGET:
+      return Object.assign({}, state, {
         buildTarget: action.buildTarget,
-        isLoadingRule: true,
-      };
-    case Actions.SET_RULE_TYPE:
-      return {
-        ...state,
+        isLoadingRule: true
+      });
+    case (_Actions || _load_Actions()).SET_RULE_TYPE:
+      return Object.assign({}, state, {
         buildRuleType: action.ruleType,
-        isLoadingRule: false,
-      };
-    case Actions.SET_DEVICES:
-      let {simulator} = state;
-      const isInvalidSimulator = simulator == null
-        || !action.devices.some(device => device.udid === simulator);
+        isLoadingRule: false
+      });
+    case (_Actions || _load_Actions()).SET_DEVICES:
+      let { simulator } = state;
+      const isInvalidSimulator = simulator == null || !action.devices.some(device => device.udid === simulator);
       if (isInvalidSimulator && action.devices.length) {
         simulator = action.devices[0].udid;
       }
-      return {
-        ...state,
+      return Object.assign({}, state, {
         devices: action.devices,
-        simulator,
-      };
-    case Actions.SET_SIMULATOR:
-      return {
-        ...state,
-        simulator: action.simulator,
-      };
-    case Actions.SET_TASK_SETTINGS:
-      return {
-        ...state,
-        taskSettings: {
-          ...state.taskSettings,
-          [action.taskType]: action.settings,
-        },
-      };
+        simulator
+      });
+    case (_Actions || _load_Actions()).SET_SIMULATOR:
+      return Object.assign({}, state, {
+        simulator: action.simulator
+      });
+    case (_Actions || _load_Actions()).SET_TASK_SETTINGS:
+      return Object.assign({}, state, {
+        taskSettings: Object.assign({}, state.taskSettings, {
+          [action.taskType]: action.settings
+        })
+      });
   }
   return state;
-}
+}module.exports = exports['default'];

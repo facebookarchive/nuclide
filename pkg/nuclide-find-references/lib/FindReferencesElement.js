@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,15 +9,23 @@
  * the root directory of this source tree.
  */
 
-import type FindReferencesModel from './FindReferencesModel';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {React, ReactDOM} from 'react-for-atom';
-import FindReferencesView from './view/FindReferencesView';
+var _reactForAtom = require('react-for-atom');
+
+var _FindReferencesView;
+
+function _load_FindReferencesView() {
+  return _FindReferencesView = _interopRequireDefault(require('./view/FindReferencesView'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 class FindReferencesElement extends HTMLElement {
-  _model: FindReferencesModel;
 
-  initialize(model: FindReferencesModel) {
+  initialize(model) {
     this._model = model;
     return this;
   }
@@ -26,18 +34,14 @@ class FindReferencesElement extends HTMLElement {
     return 'Symbol References: ' + this._model.getSymbolName();
   }
 
-  attachedCallback(): mixed {
-    ReactDOM.render(
-      <FindReferencesView model={this._model} />,
-      this,
-    );
+  attachedCallback() {
+    _reactForAtom.ReactDOM.render(_reactForAtom.React.createElement((_FindReferencesView || _load_FindReferencesView()).default, { model: this._model }), this);
   }
 
-  detachedCallback(): mixed {
-    ReactDOM.unmountComponentAtNode(this);
+  detachedCallback() {
+    _reactForAtom.ReactDOM.unmountComponentAtNode(this);
   }
-}
-
-export default document.registerElement('nuclide-find-references-view', {
-  prototype: FindReferencesElement.prototype,
+}exports.default = document.registerElement('nuclide-find-references-view', {
+  prototype: FindReferencesElement.prototype
 });
+module.exports = exports['default'];

@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,45 +9,43 @@
  * the root directory of this source tree.
  */
 
-import type {MessageDisplayOptions} from './BusySignalProviderBase';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DedupedBusySignalProviderBase = undefined;
 
-import invariant from 'assert';
+var _atom = require('atom');
 
-import {Disposable} from 'atom';
+var _BusySignalProviderBase;
 
-import {BusySignalProviderBase} from './BusySignalProviderBase';
+function _load_BusySignalProviderBase() {
+  return _BusySignalProviderBase = require('./BusySignalProviderBase');
+}
 
-type MessageRecord = {
-  // The disposable to call to remove the message
-  disposable: IDisposable,
-  // The number of messages outstanding
-  count: number,
-};
-
-export class DedupedBusySignalProviderBase extends BusySignalProviderBase {
-
-  // Invariant: All contained MessageRecords must have a count greater than or equal to one.
-  _messageRecords: Map<string, MessageRecord>;
+class DedupedBusySignalProviderBase extends (_BusySignalProviderBase || _load_BusySignalProviderBase()).BusySignalProviderBase {
 
   constructor() {
     super();
     this._messageRecords = new Map();
   }
 
-  displayMessage(message: string, options?: MessageDisplayOptions): IDisposable {
+  // Invariant: All contained MessageRecords must have a count greater than or equal to one.
+
+
+  displayMessage(message, options) {
     this._incrementCount(message, options);
-    return new Disposable(() => {
+    return new _atom.Disposable(() => {
       this._decrementCount(message, options);
     });
   }
 
-  _incrementCount(message: string, options?: MessageDisplayOptions): void {
+  _incrementCount(message, options) {
     const key = this._getKey(message, options);
     let record = this._messageRecords.get(key);
     if (record == null) {
       record = {
         disposable: super.displayMessage(message, options),
-        count: 1,
+        count: 1
       };
       this._messageRecords.set(key, record);
     } else {
@@ -55,11 +53,18 @@ export class DedupedBusySignalProviderBase extends BusySignalProviderBase {
     }
   }
 
-  _decrementCount(message: string, options?: MessageDisplayOptions): void {
+  _decrementCount(message, options) {
     const key = this._getKey(message, options);
     const record = this._messageRecords.get(key);
-    invariant(record != null);
-    invariant(record.count > 0);
+
+    if (!(record != null)) {
+      throw new Error('Invariant violation: "record != null"');
+    }
+
+    if (!(record.count > 0)) {
+      throw new Error('Invariant violation: "record.count > 0"');
+    }
+
     if (record.count === 1) {
       record.disposable.dispose();
       this._messageRecords.delete(key);
@@ -68,10 +73,11 @@ export class DedupedBusySignalProviderBase extends BusySignalProviderBase {
     }
   }
 
-  _getKey(message: string, options?: MessageDisplayOptions): string {
+  _getKey(message, options) {
     return JSON.stringify({
       message,
-      options,
+      options
     });
   }
 }
+exports.DedupedBusySignalProviderBase = DedupedBusySignalProviderBase;

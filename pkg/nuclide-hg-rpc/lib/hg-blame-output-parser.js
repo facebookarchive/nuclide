@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,7 +9,11 @@
  * the root directory of this source tree.
  */
 
-import {maybeToString} from '../../commons-node/string';
+var _string;
+
+function _load_string() {
+  return _string = require('../../commons-node/string');
+}
 
 /**
  * We choose a length that should be long enough to uniquely identify a ChangeSet with an Hg repo,
@@ -26,7 +30,7 @@ const HG_BLAME_ERROR_MESSAGE_START = '[abort: ';
  *   The ChangeSetID will not be the full 40 digit hexadecimal number, but a prefix whose length is
  *   determined by CHANGE_SET_ID_PREFIX_LENGTH.
  */
-function parseHgBlameOutput(output: string): Map<string, string> {
+function parseHgBlameOutput(output) {
   const results = new Map();
 
   if (output.startsWith(HG_BLAME_ERROR_MESSAGE_START)) {
@@ -41,16 +45,16 @@ function parseHgBlameOutput(output: string): Map<string, string> {
     return results;
   }
   arrayOfLineDescriptions.forEach((lineDescription, index) => {
-    let changeSetId: ?string = lineDescription.node;
+    let changeSetId = lineDescription.node;
     if (changeSetId != null) {
       changeSetId = changeSetId.substring(0, CHANGE_SET_ID_PREFIX_LENGTH);
     }
-    results.set(index.toString(), `${lineDescription.user} ${maybeToString(changeSetId)}`);
+    results.set(index.toString(), `${ lineDescription.user } ${ (0, (_string || _load_string()).maybeToString)(changeSetId) }`);
   });
 
   return results;
 }
 
 module.exports = {
-  parseHgBlameOutput,
+  parseHgBlameOutput
 };

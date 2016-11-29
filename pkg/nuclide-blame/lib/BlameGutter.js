@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,16 +9,23 @@
  * the root directory of this source tree.
  */
 
-import type {
-  BlameForEditor,
-  BlameInfo,
-  BlameProvider,
-} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {track, trackOperationTiming} from '../../nuclide-analytics';
-import {CompositeDisposable} from 'atom';
-import invariant from 'assert';
-import {shell} from 'electron';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _atom = require('atom');
+
+var _electron = require('electron');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const MS_TO_WAIT_BEFORE_SPINNER = 2000;
 const CHANGESET_CSS_CLASS = 'nuclide-blame-hash';
@@ -26,18 +33,7 @@ const CLICKABLE_CHANGESET_CSS_CLASS = 'nuclide-blame-hash-clickable';
 const HG_CHANGESET_DATA_ATTRIBUTE = 'hgChangeset';
 const BLAME_DECORATION_CLASS = 'blame-decoration';
 
-export default class BlameGutter {
-  _editor: atom$TextEditor;
-  _blameProvider: BlameProvider;
-  _changesetSpanClassName: string;
-  _bufferLineToDecoration: Map<number, atom$Decoration>;
-  _gutter: atom$Gutter;
-  _loadingSpinnerIsPending: boolean;
-  _loadingSpinnerDiv: ?HTMLElement;
-  _loadingSpinnerTimeoutId: number;
-  _isDestroyed: boolean;
-  _isEditorDestroyed: boolean;
-  _subscriptions: CompositeDisposable;
+class BlameGutter {
 
   /**
    * @param gutterName A name for this gutter. Must not be used by any another
@@ -46,18 +42,18 @@ export default class BlameGutter {
    * @param blameProvider The BlameProvider that provides the appropriate blame
    *   information for this BlameGutter.
    */
-  constructor(gutterName: string, editor: atom$TextEditor, blameProvider: BlameProvider) {
+  constructor(gutterName, editor, blameProvider) {
     this._isDestroyed = false;
     this._isEditorDestroyed = false;
 
-    this._subscriptions = new CompositeDisposable();
+    this._subscriptions = new _atom.CompositeDisposable();
     this._editor = editor;
     this._blameProvider = blameProvider;
     this._changesetSpanClassName = CHANGESET_CSS_CLASS;
     this._bufferLineToDecoration = new Map();
     // Priority is -200 by default and 0 is the line number
-    this._gutter = editor.addGutter({name: gutterName, priority: -1200});
-    const gutterView: HTMLElement = atom.views.getView(this._gutter);
+    this._gutter = editor.addGutter({ name: gutterName, priority: -1200 });
+    const gutterView = atom.views.getView(this._gutter);
     gutterView.classList.add('nuclide-blame');
 
     // If getUrlForRevision() is available, add a single, top-level click handler for the gutter.
@@ -65,11 +61,9 @@ export default class BlameGutter {
       // We also want to style the changeset differently if it is clickable.
       this._changesetSpanClassName += ' ' + CLICKABLE_CHANGESET_CSS_CLASS;
 
-      const onClick: (evt: Event) => Promise<void> = this._onClick.bind(this);
+      const onClick = this._onClick.bind(this);
       gutterView.addEventListener('click', onClick);
-      this._subscriptions.add(this._gutter.onDidDestroy(
-          () => gutterView.removeEventListener('click', onClick),
-      ));
+      this._subscriptions.add(this._gutter.onDidDestroy(() => gutterView.removeEventListener('click', onClick)));
     }
 
     this._subscriptions.add(editor.onDidDestroy(() => {
@@ -82,65 +76,70 @@ export default class BlameGutter {
    * If the user clicked on a ChangeSet ID, extract it from the DOM element via the data- attribute
    * and find the corresponding Differential revision. If successful, open the URL for the revision.
    */
-  async _onClick(e: Event): Promise<void> {
-    const target = e.target;
-    if (!target) {
-      return;
-    }
+  _onClick(e) {
+    var _this = this;
 
-    const dataset: {[key: string]: string} = (target: any).dataset;
-    const changeset = dataset[HG_CHANGESET_DATA_ATTRIBUTE];
-    if (!changeset) {
-      return;
-    }
+    return (0, _asyncToGenerator.default)(function* () {
+      const target = e.target;
+      if (!target) {
+        return;
+      }
 
-    const blameProvider = this._blameProvider;
-    invariant(typeof blameProvider.getUrlForRevision === 'function');
-    const url = await blameProvider.getUrlForRevision(this._editor, changeset);
-    if (url) {
-      // Note that 'shell' is not the public 'shell' package on npm but an Atom built-in.
-      shell.openExternal(url);
-    } else {
-      atom.notifications.addWarning(`No URL found for ${changeset}.`);
-    }
+      const dataset = target.dataset;
+      const changeset = dataset[HG_CHANGESET_DATA_ATTRIBUTE];
+      if (!changeset) {
+        return;
+      }
 
-    track('blame-gutter-click-revision', {
-      editorPath: this._editor.getPath() || '',
-      url: url || '',
-    });
+      const blameProvider = _this._blameProvider;
+
+      if (!(typeof blameProvider.getUrlForRevision === 'function')) {
+        throw new Error('Invariant violation: "typeof blameProvider.getUrlForRevision === \'function\'"');
+      }
+
+      const url = yield blameProvider.getUrlForRevision(_this._editor, changeset);
+      if (url) {
+        // Note that 'shell' is not the public 'shell' package on npm but an Atom built-in.
+        _electron.shell.openExternal(url);
+      } else {
+        atom.notifications.addWarning(`No URL found for ${ changeset }.`);
+      }
+
+      (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('blame-gutter-click-revision', {
+        editorPath: _this._editor.getPath() || '',
+        url: url || ''
+      });
+    })();
   }
 
-  async _fetchAndDisplayBlame(): Promise<void> {
-    // Add a loading spinner while we fetch the blame.
-    this._addLoadingSpinner();
+  _fetchAndDisplayBlame() {
+    var _this2 = this;
 
-    let newBlame;
-    try {
-      newBlame = await this._blameProvider.getBlameForEditor(this._editor);
-    } catch (error) {
-      atom.notifications.addError(
-        'Failed to fetch blame to display. ' +
-        'The file is empty or untracked or the repository cannot be reached.',
-        error,
-      );
-      atom.commands.dispatch(
-        atom.views.getView(this._editor),
-        'nuclide-blame:hide-blame',
-      );
-      return;
-    }
-    // The BlameGutter could have been destroyed while blame was being fetched.
-    if (this._isDestroyed) {
-      return;
-    }
+    return (0, _asyncToGenerator.default)(function* () {
+      // Add a loading spinner while we fetch the blame.
+      _this2._addLoadingSpinner();
 
-    // Remove the loading spinner before setting the contents of the blame gutter.
-    this._cleanUpLoadingSpinner();
+      let newBlame;
+      try {
+        newBlame = yield _this2._blameProvider.getBlameForEditor(_this2._editor);
+      } catch (error) {
+        atom.notifications.addError('Failed to fetch blame to display. ' + 'The file is empty or untracked or the repository cannot be reached.', error);
+        atom.commands.dispatch(atom.views.getView(_this2._editor), 'nuclide-blame:hide-blame');
+        return;
+      }
+      // The BlameGutter could have been destroyed while blame was being fetched.
+      if (_this2._isDestroyed) {
+        return;
+      }
 
-    this._updateBlame(newBlame);
+      // Remove the loading spinner before setting the contents of the blame gutter.
+      _this2._cleanUpLoadingSpinner();
+
+      _this2._updateBlame(newBlame);
+    })();
   }
 
-  _addLoadingSpinner(): void {
+  _addLoadingSpinner() {
     if (this._loadingSpinnerIsPending) {
       return;
     }
@@ -154,7 +153,7 @@ export default class BlameGutter {
     }, MS_TO_WAIT_BEFORE_SPINNER);
   }
 
-  _cleanUpLoadingSpinner(): void {
+  _cleanUpLoadingSpinner() {
     if (this._loadingSpinnerIsPending) {
       window.clearTimeout(this._loadingSpinnerTimeoutId);
       this._loadingSpinnerIsPending = false;
@@ -165,7 +164,7 @@ export default class BlameGutter {
     }
   }
 
-  destroy(): void {
+  destroy() {
     this._isDestroyed = true;
     this._cleanUpLoadingSpinner();
     if (!this._isEditorDestroyed) {
@@ -178,18 +177,14 @@ export default class BlameGutter {
     }
   }
 
-  _updateBlame(blameForEditor: BlameForEditor): void {
-    return trackOperationTiming(
-      'blame-ui.blame-gutter.updateBlame',
-      () => this.__updateBlame(blameForEditor),
-    );
+  _updateBlame(blameForEditor) {
+    return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackOperationTiming)('blame-ui.blame-gutter.updateBlame', () => this.__updateBlame(blameForEditor));
   }
 
   // The BlameForEditor completely replaces any previous blame information.
-  __updateBlame(blameForEditor: BlameForEditor): void {
+  __updateBlame(blameForEditor) {
     if (blameForEditor.size === 0) {
-      atom.notifications.addInfo(
-          `Found no blame to display. Is this file empty or untracked?
+      atom.notifications.addInfo(`Found no blame to display. Is this file empty or untracked?
           If not, check for errors in the Nuclide logs local to your repo.`);
     }
     const allPreviousBlamedLines = new Set(this._bufferLineToDecoration.keys());
@@ -219,18 +214,18 @@ export default class BlameGutter {
     this._updateGutterWidthToCharacterLength(longestBlame);
   }
 
-  _updateGutterWidthToCharacterLength(characters: number): void {
+  _updateGutterWidthToCharacterLength(characters) {
     const gutterView = atom.views.getView(this._gutter);
-    gutterView.style.width = `${characters}ch`;
+    gutterView.style.width = `${ characters }ch`;
   }
 
-  _setBlameLine(bufferLine: number, blameInfo: BlameInfo, longestBlame: number): void {
+  _setBlameLine(bufferLine, blameInfo, longestBlame) {
     const item = this._createGutterItem(blameInfo, longestBlame);
     const decorationProperties = {
       type: 'gutter',
       gutterName: this._gutter.name,
       class: BLAME_DECORATION_CLASS,
-      item,
+      item
     };
 
     let decoration = this._bufferLineToDecoration.get(bufferLine);
@@ -246,7 +241,7 @@ export default class BlameGutter {
     }
   }
 
-  _removeBlameLine(bufferLine: number): void {
+  _removeBlameLine(bufferLine) {
     const blameDecoration = this._bufferLineToDecoration.get(bufferLine);
     if (!blameDecoration) {
       return;
@@ -256,7 +251,7 @@ export default class BlameGutter {
     this._bufferLineToDecoration.delete(bufferLine);
   }
 
-  _createGutterItem(blameInfo: BlameInfo, longestBlame: number): HTMLElement {
+  _createGutterItem(blameInfo, longestBlame) {
     const doc = window.document;
     const item = doc.createElement('div');
 
@@ -281,3 +276,5 @@ export default class BlameGutter {
     return item;
   }
 }
+exports.default = BlameGutter;
+module.exports = exports['default'];

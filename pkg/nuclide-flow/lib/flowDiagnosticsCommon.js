@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,23 +9,23 @@
  * the root directory of this source tree.
  */
 
-import type {MessageComponent} from '../../nuclide-flow-rpc';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.extractRange = extractRange;
 
-import {Range} from 'atom';
+var _atom = require('atom');
 
 // Use `atom$Range | void` rather than `?atom$Range` to exclude `null`, so that the type is
 // compatible with the `range` property, which is an optional property rather than a nullable
 // property.
-export function extractRange(message: MessageComponent): atom$Range | void {
+function extractRange(message) {
   // It's unclear why the 1-based to 0-based indexing works the way that it
   // does, but this has the desired effect in the UI, in practice.
   const range = message.range;
   if (range == null) {
     return undefined;
   } else {
-    return new Range(
-      [range.start.line - 1, range.start.column - 1],
-      [range.end.line - 1, range.end.column],
-    );
+    return new _atom.Range([range.start.line - 1, range.start.column - 1], [range.end.line - 1, range.end.column]);
   }
 }

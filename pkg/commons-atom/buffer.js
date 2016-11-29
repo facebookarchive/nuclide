@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,20 +9,35 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../commons-node/nuclideUri';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.observeBuffers = observeBuffers;
+exports.observeBufferOpen = observeBufferOpen;
+exports.observeBufferCloseOrRename = observeBufferCloseOrRename;
 
-import nuclideUri from '../commons-node/nuclideUri';
-import {Observable} from 'rxjs';
-import {observableFromSubscribeFunction} from '../commons-node/event';
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../commons-node/nuclideUri'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _event;
+
+function _load_event() {
+  return _event = require('../commons-node/event');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // Once https://github.com/atom/atom/pull/12501 is released, switch to
 // `atom.project.observeBuffers`.
-export function observeBuffers(observeBuffer: (buffer: atom$TextBuffer) => mixed): IDisposable {
-  atom.project.getBuffers()
-    .filter(buffer => !nuclideUri.isBrokenDeserializedUri(buffer.getPath()))
-    .forEach(observeBuffer);
+function observeBuffers(observeBuffer) {
+  atom.project.getBuffers().filter(buffer => !(_nuclideUri || _load_nuclideUri()).default.isBrokenDeserializedUri(buffer.getPath())).forEach(observeBuffer);
   return atom.project.onDidAddBuffer(buffer => {
-    if (!nuclideUri.isBrokenDeserializedUri(buffer.getPath())) {
+    if (!(_nuclideUri || _load_nuclideUri()).default.isBrokenDeserializedUri(buffer.getPath())) {
       observeBuffer(buffer);
     }
   });
@@ -30,32 +45,23 @@ export function observeBuffers(observeBuffer: (buffer: atom$TextBuffer) => mixed
 
 // Observes all buffer opens.
 // Buffer renames are sent as an open of the new name.
-export function observeBufferOpen(): Observable<atom$TextBuffer> {
-  return observableFromSubscribeFunction(observeBuffers)
-    .mergeMap(buffer => {
-      const end = observableFromSubscribeFunction(buffer.onDidDestroy.bind(buffer));
-      const rename = observableFromSubscribeFunction(buffer.onDidChangePath.bind(buffer))
-        .map(() => buffer)
-        .takeUntil(end);
-      return Observable.of(buffer).concat(rename);
-    });
+function observeBufferOpen() {
+  return (0, (_event || _load_event()).observableFromSubscribeFunction)(observeBuffers).mergeMap(buffer => {
+    const end = (0, (_event || _load_event()).observableFromSubscribeFunction)(buffer.onDidDestroy.bind(buffer));
+    const rename = (0, (_event || _load_event()).observableFromSubscribeFunction)(buffer.onDidChangePath.bind(buffer)).map(() => buffer).takeUntil(end);
+    return _rxjsBundlesRxMinJs.Observable.of(buffer).concat(rename);
+  });
 }
 
 // Note that on a rename, the openedPath will be the path of the buffer when the open was sent,
 // which may not match the current name of the buffer.
-export type CloseBufferEvent = {
-  kind: 'close',
-  openedPath: ?NuclideUri,
-  buffer: atom$TextBuffer,
-};
+
 
 // Fires a single event when the buffer is destroyed or renamed.
 // Note that on a rename the buffer path will not be the same as the openedPath.
-export function observeBufferCloseOrRename(buffer: atom$TextBuffer): Observable<CloseBufferEvent> {
-  const openedPath: ?NuclideUri = buffer.getPath();
-  const end = observableFromSubscribeFunction(buffer.onDidDestroy.bind(buffer));
-  const rename = observableFromSubscribeFunction(buffer.onDidChangePath.bind(buffer));
-  return end.merge(rename)
-    .take(1)
-    .map(() => ({kind: 'close', buffer, openedPath}));
+function observeBufferCloseOrRename(buffer) {
+  const openedPath = buffer.getPath();
+  const end = (0, (_event || _load_event()).observableFromSubscribeFunction)(buffer.onDidDestroy.bind(buffer));
+  const rename = (0, (_event || _load_event()).observableFromSubscribeFunction)(buffer.onDidChangePath.bind(buffer));
+  return end.merge(rename).take(1).map(() => ({ kind: 'close', buffer, openedPath }));
 }

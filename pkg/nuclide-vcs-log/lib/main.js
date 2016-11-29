@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -11,21 +11,63 @@
 
 // TODO: Make it possible to move or split a pane with a VcsLogPaneItem.
 
-import type FileTreeContextMenu from '../../nuclide-file-tree/lib/FileTreeContextMenu';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {VcsLogResponse} from '../../nuclide-hg-rpc/lib/HgService';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.shortNameForAuthor = undefined;
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.addItemsToFileTreeContextMenu = addItemsToFileTreeContextMenu;
 
-import {CompositeDisposable, Disposable} from 'atom';
-import VcsLogPaneItem from './VcsLogPaneItem';
-import featureConfig from '../../commons-atom/featureConfig';
-import invariant from 'assert';
-import {getAtomProjectRelativePath} from '../../commons-atom/projects';
-import {maybeToString} from '../../commons-node/string';
-import querystring from 'querystring';
-import {repositoryForPath} from '../../nuclide-hg-git-bridge';
-import {shortNameForAuthor as shortNameForAuthorFn} from './util';
-import {track} from '../../nuclide-analytics';
-import url from 'url';
+var _atom = require('atom');
+
+var _VcsLogPaneItem;
+
+function _load_VcsLogPaneItem() {
+  return _VcsLogPaneItem = _interopRequireDefault(require('./VcsLogPaneItem'));
+}
+
+var _featureConfig;
+
+function _load_featureConfig() {
+  return _featureConfig = _interopRequireDefault(require('../../commons-atom/featureConfig'));
+}
+
+var _projects;
+
+function _load_projects() {
+  return _projects = require('../../commons-atom/projects');
+}
+
+var _string;
+
+function _load_string() {
+  return _string = require('../../commons-node/string');
+}
+
+var _querystring = _interopRequireDefault(require('querystring'));
+
+var _nuclideHgGitBridge;
+
+function _load_nuclideHgGitBridge() {
+  return _nuclideHgGitBridge = require('../../nuclide-hg-git-bridge');
+}
+
+var _util;
+
+function _load_util() {
+  return _util = require('./util');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _url = _interopRequireDefault(require('url'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const SHOW_LOG_FILE_TREE_CONTEXT_MENU_PRIORITY = 500;
 
@@ -34,108 +76,91 @@ const MAX_NUM_LOG_RESULTS = 100;
 const VCS_LOG_URI_PREFIX = 'atom://nucide-vcs-log/view';
 const VCS_LOG_URI_PATHS_QUERY_PARAM = 'path';
 
-type VcsService = {
-  getType(): string,
-  log(filePaths: Array<NuclideUri>, limit?: ?number): Promise<VcsLogResponse>,
-};
-
 class Activation {
-  _subscriptions: CompositeDisposable;
 
   constructor() {
-    this._subscriptions = new CompositeDisposable();
+    this._subscriptions = new _atom.CompositeDisposable();
     this._registerOpener();
   }
 
   _registerOpener() {
-    this._subscriptions.add(
-      atom.workspace.addOpener((uriToOpen: string) => {
-        if (!uriToOpen.startsWith(VCS_LOG_URI_PREFIX)) {
-          return;
-        }
+    this._subscriptions.add(atom.workspace.addOpener(uriToOpen => {
+      if (!uriToOpen.startsWith(VCS_LOG_URI_PREFIX)) {
+        return;
+      }
 
-        const {query} = url.parse(uriToOpen, /* parseQueryString */ true);
-        invariant(query);
+      const { query } = _url.default.parse(uriToOpen, /* parseQueryString */true);
 
-        // Make sure a non-zero number of paths have been specified.
-        const path = query[VCS_LOG_URI_PATHS_QUERY_PARAM];
-        return createLogPaneForPath(path);
-      }),
-    );
+      if (!query) {
+        throw new Error('Invariant violation: "query"');
+      }
+
+      // Make sure a non-zero number of paths have been specified.
+
+
+      const path = query[VCS_LOG_URI_PATHS_QUERY_PARAM];
+      return createLogPaneForPath(path);
+    }));
 
     // TODO(mbolin): Once the nuclide-file-tree.context-menu is generalized to automatically add
     // menu items to the editor context menu, as appropriate, it should be possible to eliminate
     // (or at least reduce) the logic here.
 
-    this._subscriptions.add(
-      atom.commands.add(
-        'atom-text-editor',
-        'nuclide-vcs-log:show-log-for-active-editor',
-        () => {
-          const uri = getActiveTextEditorURI();
-          if (uri != null) {
-            openLogPaneForURI(uri);
-            track('nuclide-vcs-log:open-from-text-editor');
+    this._subscriptions.add(atom.commands.add('atom-text-editor', 'nuclide-vcs-log:show-log-for-active-editor', () => {
+      const uri = getActiveTextEditorURI();
+      if (uri != null) {
+        openLogPaneForURI(uri);
+        (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('nuclide-vcs-log:open-from-text-editor');
+      }
+    }), atom.contextMenu.add({
+      'atom-text-editor': [{
+        label: 'Source Control',
+        submenu: [{
+          label: CONTEXT_MENU_LABEL,
+          command: 'nuclide-vcs-log:show-log-for-active-editor',
+          shouldDisplay() {
+            const uri = getActiveTextEditorURI();
+            return getRepositoryWithLogMethodForPath(uri) != null;
           }
-        },
-      ),
-      atom.contextMenu.add({
-        'atom-text-editor': [
-          {
-            label: 'Source Control',
-            submenu: [
-              {
-                label: CONTEXT_MENU_LABEL,
-                command: 'nuclide-vcs-log:show-log-for-active-editor',
-                shouldDisplay(): boolean {
-                  const uri = getActiveTextEditorURI();
-                  return getRepositoryWithLogMethodForPath(uri) != null;
-                },
-              },
-            ],
-          },
-        ],
-      }),
-    );
+        }]
+      }]
+    }));
   }
 
-  addItemsToFileTreeContextMenu(contextMenu: FileTreeContextMenu): IDisposable {
-    const contextDisposable = contextMenu.addItemToSourceControlMenu(
-      {
-        label: CONTEXT_MENU_LABEL,
-        callback() {
-          const node = contextMenu.getSingleSelectedNode();
-          if (node == null) {
-            return;
-          }
+  addItemsToFileTreeContextMenu(contextMenu) {
+    const contextDisposable = contextMenu.addItemToSourceControlMenu({
+      label: CONTEXT_MENU_LABEL,
+      callback() {
+        const node = contextMenu.getSingleSelectedNode();
+        if (node == null) {
+          return;
+        }
 
-          const {uri} = node;
-          const repository = getRepositoryWithLogMethodForPath(uri);
-          if (repository == null) {
-            return;
-          }
+        const { uri } = node;
+        const repository = getRepositoryWithLogMethodForPath(uri);
+        if (repository == null) {
+          return;
+        }
 
-          openLogPaneForURI(uri);
-          track('nuclide-vcs-log:open-from-file-tree');
-        },
-        shouldDisplay(): boolean {
-          const node = contextMenu.getSingleSelectedNode();
-          if (node == null) {
-            return false;
-          }
-
-          return getRepositoryWithLogMethodForPath(node.uri) != null;
-        },
+        openLogPaneForURI(uri);
+        (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('nuclide-vcs-log:open-from-file-tree');
       },
-      SHOW_LOG_FILE_TREE_CONTEXT_MENU_PRIORITY,
-    );
+      shouldDisplay() {
+        const node = contextMenu.getSingleSelectedNode();
+        if (node == null) {
+          return false;
+        }
+
+        return getRepositoryWithLogMethodForPath(node.uri) != null;
+      }
+    }, SHOW_LOG_FILE_TREE_CONTEXT_MENU_PRIORITY);
 
     this._subscriptions.add(contextDisposable);
 
     // We don't need to dispose of the contextDisposable when the provider is disabled -
     // it needs to be handled by the provider itself. We only should remove it from the list
     // of the disposables we maintain.
-    return new Disposable(() => this._subscriptions.remove(contextDisposable));
+    return new _atom.Disposable(() => this._subscriptions.remove(contextDisposable));
   }
 
   dispose() {
@@ -143,22 +168,22 @@ class Activation {
   }
 }
 
-function getRepositoryWithLogMethodForPath(path: ?string): ?VcsService {
+function getRepositoryWithLogMethodForPath(path) {
   if (path == null) {
     return null;
   }
 
-  const repository = repositoryForPath(path);
+  const repository = (0, (_nuclideHgGitBridge || _load_nuclideHgGitBridge()).repositoryForPath)(path);
   // For now, we only expect HgRepository to work. We should also find a way to
   // make this work for Git.
   if (repository != null && repository.getType() === 'hg') {
-    return ((repository: any): VcsService);
+    return repository;
   } else {
     return null;
   }
 }
 
-function getActiveTextEditorURI(): ?string {
+function getActiveTextEditorURI() {
   const editor = atom.workspace.getActiveTextEditor();
   if (editor == null) {
     return null;
@@ -172,15 +197,15 @@ function getActiveTextEditorURI(): ?string {
   return filePath;
 }
 
-function openLogPaneForURI(uri: string) {
-  track('nuclide-vcs-log:open');
-  const openerURI = VCS_LOG_URI_PREFIX + '?' + querystring.stringify({
-    [VCS_LOG_URI_PATHS_QUERY_PARAM]: uri,
+function openLogPaneForURI(uri) {
+  (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('nuclide-vcs-log:open');
+  const openerURI = VCS_LOG_URI_PREFIX + '?' + _querystring.default.stringify({
+    [VCS_LOG_URI_PATHS_QUERY_PARAM]: uri
   });
   atom.workspace.open(openerURI);
 }
 
-function createLogPaneForPath(path: string): ?VcsLogPaneItem {
+function createLogPaneForPath(path) {
   if (path == null) {
     return null;
   }
@@ -190,43 +215,48 @@ function createLogPaneForPath(path: string): ?VcsLogPaneItem {
     return null;
   }
 
-  const pane = new VcsLogPaneItem();
-  const {showDifferentialRevision} = ((featureConfig.get('nuclide-vcs-log')): any);
-  invariant(typeof showDifferentialRevision === 'boolean');
+  const pane = new (_VcsLogPaneItem || _load_VcsLogPaneItem()).default();
+  const { showDifferentialRevision } = (_featureConfig || _load_featureConfig()).default.get('nuclide-vcs-log');
+
+  if (!(typeof showDifferentialRevision === 'boolean')) {
+    throw new Error('Invariant violation: "typeof showDifferentialRevision === \'boolean\'"');
+  }
+
   pane.initialize({
     iconName: 'repo',
     initialProps: {
       files: [path],
-      showDifferentialRevision,
+      showDifferentialRevision
     },
-    title: `${repository.getType()} log ${maybeToString(getAtomProjectRelativePath(path))}`,
+    title: `${ repository.getType() } log ${ (0, (_string || _load_string()).maybeToString)((0, (_projects || _load_projects()).getAtomProjectRelativePath)(path)) }`
   });
 
-  repository.log([path], MAX_NUM_LOG_RESULTS).then((response: VcsLogResponse) =>
-    pane.updateWithLogEntries(response.entries),
-  );
+  repository.log([path], MAX_NUM_LOG_RESULTS).then(response => pane.updateWithLogEntries(response.entries));
 
   return pane;
 }
 
-let activation: ?Activation;
+let activation;
 
-export function activate(state: ?Object): void {
+function activate(state) {
   if (activation == null) {
     activation = new Activation();
   }
 }
 
-export function deactivate() {
+function deactivate() {
   if (activation != null) {
     activation.dispose();
     activation = null;
   }
 }
 
-export function addItemsToFileTreeContextMenu(contextMenu: FileTreeContextMenu): IDisposable {
-  invariant(activation);
+function addItemsToFileTreeContextMenu(contextMenu) {
+  if (!activation) {
+    throw new Error('Invariant violation: "activation"');
+  }
+
   return activation.addItemsToFileTreeContextMenu(contextMenu);
 }
 
-export const shortNameForAuthor = shortNameForAuthorFn;
+const shortNameForAuthor = exports.shortNameForAuthor = (_util || _load_util()).shortNameForAuthor;

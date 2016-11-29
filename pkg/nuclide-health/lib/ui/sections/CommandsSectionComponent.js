@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,38 +9,73 @@
  * the root directory of this source tree.
  */
 
-import {loggedCalls} from '../../../../commons-node/process';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {React} from 'react-for-atom';
+var _process;
 
-export default class CommandsSectionComponent extends React.Component {
-  _lastRenderCount: number;
+function _load_process() {
+  return _process = require('../../../../commons-node/process');
+}
+
+var _reactForAtom = require('react-for-atom');
+
+class CommandsSectionComponent extends _reactForAtom.React.Component {
 
   shouldComponentUpdate() {
-    return this._lastRenderCount !== loggedCalls.length;
+    return this._lastRenderCount !== (_process || _load_process()).loggedCalls.length;
   }
 
   render() {
-    this._lastRenderCount = loggedCalls.length;
-    return (
-      <table className="table">
-        <thead>
-          <th width="10%">Time</th>
-          <th width="10%">Duration (ms)</th>
-          <th>Command</th>
-        </thead>
-        <tbody>
-          {loggedCalls
-            .map((call, i) =>
-              <tr key={i}>
-                <td>{call.time.toTimeString().replace(/ .+/, '')}</td>
-                <td>{call.duration}</td>
-                <td>{call.command}</td>
-              </tr>,
-            )
-          }
-        </tbody>
-      </table>
+    this._lastRenderCount = (_process || _load_process()).loggedCalls.length;
+    return _reactForAtom.React.createElement(
+      'table',
+      { className: 'table' },
+      _reactForAtom.React.createElement(
+        'thead',
+        null,
+        _reactForAtom.React.createElement(
+          'th',
+          { width: '10%' },
+          'Time'
+        ),
+        _reactForAtom.React.createElement(
+          'th',
+          { width: '10%' },
+          'Duration (ms)'
+        ),
+        _reactForAtom.React.createElement(
+          'th',
+          null,
+          'Command'
+        )
+      ),
+      _reactForAtom.React.createElement(
+        'tbody',
+        null,
+        (_process || _load_process()).loggedCalls.map((call, i) => _reactForAtom.React.createElement(
+          'tr',
+          { key: i },
+          _reactForAtom.React.createElement(
+            'td',
+            null,
+            call.time.toTimeString().replace(/ .+/, '')
+          ),
+          _reactForAtom.React.createElement(
+            'td',
+            null,
+            call.duration
+          ),
+          _reactForAtom.React.createElement(
+            'td',
+            null,
+            call.command
+          )
+        ))
+      )
     );
   }
 }
+exports.default = CommandsSectionComponent;
+module.exports = exports['default'];

@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,79 +9,87 @@
  * the root directory of this source tree.
  */
 
-import type {
-  EvaluationResult,
-  ExpansionResult,
-} from './types';
-import {WatchExpressionStore} from './WatchExpressionStore';
-import type {Observable} from 'rxjs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.LocalsComponent = undefined;
 
-import {
-  React,
-} from 'react-for-atom';
-import {LazyNestedValueComponent} from '../../nuclide-ui/LazyNestedValueComponent';
-import SimpleValueComponent from '../../nuclide-ui/SimpleValueComponent';
+var _WatchExpressionStore;
 
-type LocalsComponentProps = {
-  locals: ExpansionResult,
-  watchExpressionStore: WatchExpressionStore,
-};
+function _load_WatchExpressionStore() {
+  return _WatchExpressionStore = require('./WatchExpressionStore');
+}
 
-export class LocalsComponent extends React.Component {
-  props: LocalsComponentProps;
+var _reactForAtom = require('react-for-atom');
 
-  constructor(props: LocalsComponentProps) {
+var _LazyNestedValueComponent;
+
+function _load_LazyNestedValueComponent() {
+  return _LazyNestedValueComponent = require('../../nuclide-ui/LazyNestedValueComponent');
+}
+
+var _SimpleValueComponent;
+
+function _load_SimpleValueComponent() {
+  return _SimpleValueComponent = _interopRequireDefault(require('../../nuclide-ui/SimpleValueComponent'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class LocalsComponent extends _reactForAtom.React.Component {
+
+  constructor(props) {
     super(props);
-    (this: any)._renderExpression = this._renderExpression.bind(this);
+    this._renderExpression = this._renderExpression.bind(this);
   }
 
-  _renderExpression(
-    fetchChildren: (objectId: string) => Observable<?ExpansionResult>,
-    local: {
-      name: string,
-      value: EvaluationResult,
-    },
-    index: number,
-  ): ?React.Element<any> {
+  _renderExpression(fetchChildren, local, index) {
     if (local == null) {
       // `local` might be `null` while switching threads.
       return null;
     }
     const {
       name,
-      value,
+      value
     } = local;
-    return (
-      <div
-        className="nuclide-debugger-expression-value-row"
-        key={index}>
-        <div
-          className="nuclide-debugger-expression-value-content">
-          <LazyNestedValueComponent
-            expression={name}
-            evaluationResult={value}
-            fetchChildren={fetchChildren}
-            simpleValueComponent={SimpleValueComponent}
-          />
-        </div>
-      </div>
+    return _reactForAtom.React.createElement(
+      'div',
+      {
+        className: 'nuclide-debugger-expression-value-row',
+        key: index },
+      _reactForAtom.React.createElement(
+        'div',
+        {
+          className: 'nuclide-debugger-expression-value-content' },
+        _reactForAtom.React.createElement((_LazyNestedValueComponent || _load_LazyNestedValueComponent()).LazyNestedValueComponent, {
+          expression: name,
+          evaluationResult: value,
+          fetchChildren: fetchChildren,
+          simpleValueComponent: (_SimpleValueComponent || _load_SimpleValueComponent()).default
+        })
+      )
     );
   }
 
-  render(): ?React.Element<any> {
+  render() {
     const {
       watchExpressionStore,
-      locals,
+      locals
     } = this.props;
     if (locals == null || locals.length === 0) {
-      return <span>(no variables)</span>;
+      return _reactForAtom.React.createElement(
+        'span',
+        null,
+        '(no variables)'
+      );
     }
     const fetchChildren = watchExpressionStore.getProperties.bind(watchExpressionStore);
     const expressions = locals.map(this._renderExpression.bind(this, fetchChildren));
-    return (
-      <div className="nuclide-debugger-expression-value-list">
-        {expressions}
-      </div>
+    return _reactForAtom.React.createElement(
+      'div',
+      { className: 'nuclide-debugger-expression-value-list' },
+      expressions
     );
   }
 }
+exports.LocalsComponent = LocalsComponent;

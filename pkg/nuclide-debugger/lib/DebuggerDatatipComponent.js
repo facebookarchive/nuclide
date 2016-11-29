@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,42 +9,50 @@
  * the root directory of this source tree.
  */
 
-import type {WatchExpressionStore} from './WatchExpressionStore';
-import type {
-  EvaluationResult,
-} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DebuggerDatatipComponent = undefined;
 
-import {React} from 'react-for-atom';
-import {LazyNestedValueComponent} from '../../nuclide-ui/LazyNestedValueComponent';
-import SimpleValueComponent from '../../nuclide-ui/SimpleValueComponent';
+var _reactForAtom = require('react-for-atom');
 
-type DebuggerDatatipComponentProps = {
-  expression: string,
-  evaluationResult: EvaluationResult,
-  watchExpressionStore: WatchExpressionStore,
-};
+var _LazyNestedValueComponent;
 
-export class DebuggerDatatipComponent extends React.Component {
-  props: DebuggerDatatipComponentProps;
+function _load_LazyNestedValueComponent() {
+  return _LazyNestedValueComponent = require('../../nuclide-ui/LazyNestedValueComponent');
+}
 
-  render(): ?React.Element<any> {
+var _SimpleValueComponent;
+
+function _load_SimpleValueComponent() {
+  return _SimpleValueComponent = _interopRequireDefault(require('../../nuclide-ui/SimpleValueComponent'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class DebuggerDatatipComponent extends _reactForAtom.React.Component {
+
+  render() {
     const {
       expression,
       evaluationResult,
-      watchExpressionStore,
+      watchExpressionStore
     } = this.props;
     const fetchChildren = watchExpressionStore.getProperties.bind(watchExpressionStore);
-    return (
-      <div className="nuclide-debugger-datatip">
-        <span className="nuclide-debugger-datatip-value">
-          <LazyNestedValueComponent
-            evaluationResult={evaluationResult}
-            expression={expression}
-            fetchChildren={fetchChildren}
-            simpleValueComponent={SimpleValueComponent}
-          />
-        </span>
-      </div>
+    return _reactForAtom.React.createElement(
+      'div',
+      { className: 'nuclide-debugger-datatip' },
+      _reactForAtom.React.createElement(
+        'span',
+        { className: 'nuclide-debugger-datatip-value' },
+        _reactForAtom.React.createElement((_LazyNestedValueComponent || _load_LazyNestedValueComponent()).LazyNestedValueComponent, {
+          evaluationResult: evaluationResult,
+          expression: expression,
+          fetchChildren: fetchChildren,
+          simpleValueComponent: (_SimpleValueComponent || _load_SimpleValueComponent()).default
+        })
+      )
     );
   }
 }
+exports.DebuggerDatatipComponent = DebuggerDatatipComponent;

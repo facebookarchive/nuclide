@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,148 +9,157 @@
  * the root directory of this source tree.
  */
 
-import type {Action, AnnotatedTaskMetadata, AppState, TaskId} from '../types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.app = app;
 
-import {areSetsEqual} from '../../../commons-node/collection';
-import * as Actions from './Actions';
-import {taskIdsAreEqual} from '../taskIdsAreEqual';
+var _collection;
+
+function _load_collection() {
+  return _collection = require('../../../commons-node/collection');
+}
+
+var _Actions;
+
+function _load_Actions() {
+  return _Actions = _interopRequireWildcard(require('./Actions'));
+}
+
+var _taskIdsAreEqual;
+
+function _load_taskIdsAreEqual() {
+  return _taskIdsAreEqual = require('../taskIdsAreEqual');
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 // Normally there would be more than one reducer. Since we were using a single reducer here before
 // we ported to Redux, we just left it this way.
-export function app(state: AppState, action: Action): AppState {
+function app(state, action) {
   switch (action.type) {
-    case Actions.SELECT_TASK: {
-      const {taskId} = action.payload;
-      return {
-        ...state,
-        activeTaskId: taskId,
-        previousSessionActiveTaskId: null,
-      };
-    }
-    case Actions.TASK_COMPLETED: {
-      return {
-        ...state,
-        runningTaskInfo: null,
-      };
-    }
-    case Actions.TASK_PROGRESS: {
-      const {progress} = action.payload;
-      return {
-        ...state,
-        runningTaskInfo: {
-          ...state.runningTaskInfo,
-          progress,
-        },
-      };
-    }
-    case Actions.TASK_ERRORED: {
-      return {
-        ...state,
-        runningTaskInfo: null,
-      };
-    }
-    case Actions.TASK_STARTED: {
-      const {task} = action.payload;
-      return {
-        ...state,
-        runningTaskInfo: {
-          task,
-          progress: null,
-        },
-      };
-    }
-    case Actions.TASK_STOPPED: {
-      return {
-        ...state,
-        runningTaskInfo: null,
-      };
-    }
-    case Actions.SET_TOOLBAR_VISIBILITY: {
-      const {visible} = action.payload;
-      if (state.viewIsInitialized) {
-        return {...state, visible};
-      } else {
-        // If you toggle before we've initialized, don't actually show the toolbar; just update the
-        // value we'll use when we eventually initialize.
-        return {...state, previousSessionVisible: visible};
+    case (_Actions || _load_Actions()).SELECT_TASK:
+      {
+        const { taskId } = action.payload;
+        return Object.assign({}, state, {
+          activeTaskId: taskId,
+          previousSessionActiveTaskId: null
+        });
       }
-    }
-    case Actions.SET_PROJECT_ROOT: {
-      const {projectRoot} = action.payload;
-      return {
-        ...state,
-        projectRoot,
-        projectWasOpened: state.projectWasOpened || (projectRoot != null),
-        tasksAreReady: false,
-      };
-    }
-    case Actions.SET_TASK_LISTS: {
-      const {taskLists} = action.payload;
-      const tasksAreReady = state.tasksAreReady || areSetsEqual(
-        new Set(taskLists.keys()),
-        new Set(state.taskRunners.keys()),
-      );
+    case (_Actions || _load_Actions()).TASK_COMPLETED:
+      {
+        return Object.assign({}, state, {
+          runningTaskInfo: null
+        });
+      }
+    case (_Actions || _load_Actions()).TASK_PROGRESS:
+      {
+        const { progress } = action.payload;
+        return Object.assign({}, state, {
+          runningTaskInfo: Object.assign({}, state.runningTaskInfo, {
+            progress
+          })
+        });
+      }
+    case (_Actions || _load_Actions()).TASK_ERRORED:
+      {
+        return Object.assign({}, state, {
+          runningTaskInfo: null
+        });
+      }
+    case (_Actions || _load_Actions()).TASK_STARTED:
+      {
+        const { task } = action.payload;
+        return Object.assign({}, state, {
+          runningTaskInfo: {
+            task,
+            progress: null
+          }
+        });
+      }
+    case (_Actions || _load_Actions()).TASK_STOPPED:
+      {
+        return Object.assign({}, state, {
+          runningTaskInfo: null
+        });
+      }
+    case (_Actions || _load_Actions()).SET_TOOLBAR_VISIBILITY:
+      {
+        const { visible } = action.payload;
+        if (state.viewIsInitialized) {
+          return Object.assign({}, state, { visible });
+        } else {
+          // If you toggle before we've initialized, don't actually show the toolbar; just update the
+          // value we'll use when we eventually initialize.
+          return Object.assign({}, state, { previousSessionVisible: visible });
+        }
+      }
+    case (_Actions || _load_Actions()).SET_PROJECT_ROOT:
+      {
+        const { projectRoot } = action.payload;
+        return Object.assign({}, state, {
+          projectRoot,
+          projectWasOpened: state.projectWasOpened || projectRoot != null,
+          tasksAreReady: false
+        });
+      }
+    case (_Actions || _load_Actions()).SET_TASK_LISTS:
+      {
+        const { taskLists } = action.payload;
+        const tasksAreReady = state.tasksAreReady || (0, (_collection || _load_collection()).areSetsEqual)(new Set(taskLists.keys()), new Set(state.taskRunners.keys()));
 
-      let newState = {...state, tasksAreReady, taskLists};
+        let newState = Object.assign({}, state, { tasksAreReady, taskLists });
 
-      if (tasksAreReady && !state.tasksAreReady) {
-        const initialTaskMeta = getInitialTaskMeta(
-          state.previousSessionActiveTaskId,
-          state.activeTaskId,
-          taskLists,
-        );
+        if (tasksAreReady && !state.tasksAreReady) {
+          const initialTaskMeta = getInitialTaskMeta(state.previousSessionActiveTaskId, state.activeTaskId, taskLists);
 
-        // Update the active task whenever tasks become ready.
-        newState = {
-          ...newState,
-          activeTaskId: initialTaskMeta == null
-            ? null
-            : {taskRunnerId: initialTaskMeta.taskRunnerId, type: initialTaskMeta.type},
-          previousSessionActiveTaskId: null,
-        };
+          // Update the active task whenever tasks become ready.
+          newState = Object.assign({}, newState, {
+            activeTaskId: initialTaskMeta == null ? null : { taskRunnerId: initialTaskMeta.taskRunnerId, type: initialTaskMeta.type },
+            previousSessionActiveTaskId: null
+          });
 
-        // Initialize the view (select a default task and set the visibility). If a project hasn't
-        // been opened yet, we defer this until one has been. When that happens, a directory will be
-        // added -> the current working root will be set -> we'll request taks lists -> this action
-        // will be called again and we'll initialize.
-        if (!state.viewIsInitialized && state.projectWasOpened) {
-          // Initialize the view if we've yet to do so.
-          newState = {
-            ...newState,
-            viewIsInitialized: true,
-            visible: state.previousSessionVisible != null
+          // Initialize the view (select a default task and set the visibility). If a project hasn't
+          // been opened yet, we defer this until one has been. When that happens, a directory will be
+          // added -> the current working root will be set -> we'll request taks lists -> this action
+          // will be called again and we'll initialize.
+          if (!state.viewIsInitialized && state.projectWasOpened) {
+            // Initialize the view if we've yet to do so.
+            newState = Object.assign({}, newState, {
+              viewIsInitialized: true,
+              visible: state.previousSessionVisible != null
               // Use the last known state, if we have one.
               ? state.previousSessionVisible
               // Otherwise, only show the toolbar if the initial task is enabled. (It's okay if a
               // task runner doesn't give us a "disabled" property for now, but we're not going to
               // show the bar for possibly irrelevant tasks.)
               : initialTaskMeta != null && initialTaskMeta.disabled === false,
-            previousSessionVisible: null,
-          };
+              previousSessionVisible: null
+            });
+          }
         }
-      }
 
-      return validateActiveTask(newState);
-    }
-    case Actions.REGISTER_TASK_RUNNER: {
-      const {taskRunner} = action.payload;
-      return {
-        ...state,
-        taskRunners: new Map(state.taskRunners).set(taskRunner.id, taskRunner),
-      };
-    }
-    case Actions.UNREGISTER_TASK_RUNNER: {
-      const {id} = action.payload;
-      const taskRunners = new Map(state.taskRunners);
-      const taskLists = new Map(state.taskLists);
-      taskRunners.delete(id);
-      taskLists.delete(id);
-      return validateActiveTask({
-        ...state,
-        taskRunners,
-        taskLists,
-      });
-    }
+        return validateActiveTask(newState);
+      }
+    case (_Actions || _load_Actions()).REGISTER_TASK_RUNNER:
+      {
+        const { taskRunner } = action.payload;
+        return Object.assign({}, state, {
+          taskRunners: new Map(state.taskRunners).set(taskRunner.id, taskRunner)
+        });
+      }
+    case (_Actions || _load_Actions()).UNREGISTER_TASK_RUNNER:
+      {
+        const { id } = action.payload;
+        const taskRunners = new Map(state.taskRunners);
+        const taskLists = new Map(state.taskLists);
+        taskRunners.delete(id);
+        taskLists.delete(id);
+        return validateActiveTask(Object.assign({}, state, {
+          taskRunners,
+          taskLists
+        }));
+      }
   }
 
   return state;
@@ -159,27 +168,26 @@ export function app(state: AppState, action: Action): AppState {
 /**
  * Ensure that the active task is in the task list. If not, pick a fallback.
  */
-function validateActiveTask(state: AppState): AppState {
-  if (activeTaskIsValid(state)) { return state; }
-  return {
-    ...state,
-    activeTaskId: null,
-  };
+function validateActiveTask(state) {
+  if (activeTaskIsValid(state)) {
+    return state;
+  }
+  return Object.assign({}, state, {
+    activeTaskId: null
+  });
 }
 
 /**
  * Is the active task a valid one according to the tasks we have?
  */
-function activeTaskIsValid(state: AppState): boolean {
-  if (state.activeTaskId == null) { return false; }
-  const {activeTaskId} = state;
+function activeTaskIsValid(state) {
+  if (state.activeTaskId == null) {
+    return false;
+  }
+  const { activeTaskId } = state;
   for (const taskList of state.taskLists.values()) {
     for (const taskMeta of taskList) {
-      if (
-        taskMeta.taskRunnerId === activeTaskId.taskRunnerId
-        && taskMeta.type === activeTaskId.type
-        && !taskMeta.disabled
-      ) {
+      if (taskMeta.taskRunnerId === activeTaskId.taskRunnerId && taskMeta.type === activeTaskId.type && !taskMeta.disabled) {
         return true;
       }
     }
@@ -189,11 +197,7 @@ function activeTaskIsValid(state: AppState): boolean {
 
 const flatten = arr => Array.prototype.concat.apply([], arr);
 
-function getInitialTaskMeta(
-  previousSessionActiveTaskId: ?TaskId,
-  activeTaskId: ?TaskId,
-  taskLists: Map<string, Array<AnnotatedTaskMetadata>>,
-): ?AnnotatedTaskMetadata {
+function getInitialTaskMeta(previousSessionActiveTaskId, activeTaskId, taskLists) {
   const allTaskMetadatas = flatten(Array.from(taskLists.values()));
   let candidate;
 
@@ -204,12 +208,12 @@ function getInitialTaskMeta(
     }
 
     // If the task we're waiting to restore is present, use that.
-    if (previousSessionActiveTaskId && taskIdsAreEqual(taskMeta, previousSessionActiveTaskId)) {
+    if (previousSessionActiveTaskId && (0, (_taskIdsAreEqual || _load_taskIdsAreEqual()).taskIdsAreEqual)(taskMeta, previousSessionActiveTaskId)) {
       return taskMeta;
     }
 
     // If the task that's already active is present, use that.
-    if (activeTaskId && taskIdsAreEqual(taskMeta, activeTaskId)) {
+    if (activeTaskId && (0, (_taskIdsAreEqual || _load_taskIdsAreEqual()).taskIdsAreEqual)(taskMeta, activeTaskId)) {
       return taskMeta;
     }
 

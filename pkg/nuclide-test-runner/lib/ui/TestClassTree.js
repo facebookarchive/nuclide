@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,72 +9,100 @@
  * the root directory of this source tree.
  */
 
-import type {LazyTreeNode} from '../../../nuclide-ui/LazyTreeNode';
-import type TestSuiteModel from '../TestSuiteModel';
+var _reactForAtom = require('react-for-atom');
 
-import {React} from 'react-for-atom';
-import {PanelComponentScroller} from '../../../nuclide-ui/PanelComponentScroller';
-import TestClassTreeNode from './TestClassTreeNode';
-import {TreeRootComponent} from '../../../nuclide-ui/TreeRootComponent';
+var _PanelComponentScroller;
 
-function labelClassNameForNode(): string {
+function _load_PanelComponentScroller() {
+  return _PanelComponentScroller = require('../../../nuclide-ui/PanelComponentScroller');
+}
+
+var _TestClassTreeNode;
+
+function _load_TestClassTreeNode() {
+  return _TestClassTreeNode = _interopRequireDefault(require('./TestClassTreeNode'));
+}
+
+var _TreeRootComponent;
+
+function _load_TreeRootComponent() {
+  return _TreeRootComponent = require('../../../nuclide-ui/TreeRootComponent');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function labelClassNameForNode() {
   return 'icon icon-code';
 }
 
-type Props = {
-  isRunning: boolean,
-  testSuiteModel: ?TestSuiteModel,
-};
+class TestClassTree extends _reactForAtom.React.Component {
 
-class TestClassTree extends React.Component {
-  props: Props;
-
-  componentDidUpdate(prevProps: Object) {
-    const {testSuiteModel} = this.props;
+  componentDidUpdate(prevProps) {
+    const { testSuiteModel } = this.props;
     if (testSuiteModel !== prevProps.testSuiteModel) {
       const roots = [];
       if (testSuiteModel) {
         for (const testClass of testSuiteModel.testClasses.values()) {
-          roots.push(new TestClassTreeNode(testClass));
+          roots.push(new (_TestClassTreeNode || _load_TestClassTreeNode()).default(testClass));
         }
       }
       this.refs.tree.setRoots(roots);
     }
 
-    (this: any).rowClassNameForNode = this.rowClassNameForNode.bind(this);
+    this.rowClassNameForNode = this.rowClassNameForNode.bind(this);
   }
 
   render() {
-    const emptyRenderMessage = (
-      <div>
-        <h5>Running tests</h5>
-        <ol>
-          <li>Open the file you want to test</li>
-          <li>Choose the appropriate runner from the dropdown</li>
-          <li>{'Click "Test" to run tests for that file\'s directory'}</li>
-        </ol>
-      </div>
+    const emptyRenderMessage = _reactForAtom.React.createElement(
+      'div',
+      null,
+      _reactForAtom.React.createElement(
+        'h5',
+        null,
+        'Running tests'
+      ),
+      _reactForAtom.React.createElement(
+        'ol',
+        null,
+        _reactForAtom.React.createElement(
+          'li',
+          null,
+          'Open the file you want to test'
+        ),
+        _reactForAtom.React.createElement(
+          'li',
+          null,
+          'Choose the appropriate runner from the dropdown'
+        ),
+        _reactForAtom.React.createElement(
+          'li',
+          null,
+          'Click "Test" to run tests for that file\'s directory'
+        )
+      )
     );
 
-    return (
-      <PanelComponentScroller>
-        <div className="padded">
-          <TreeRootComponent
-            elementToRenderWhenEmpty={emptyRenderMessage}
-            eventHandlerSelector=".nuclide-test-runner-tree"
-            initialRoots={[]}
-            labelClassNameForNode={labelClassNameForNode}
-            onKeepSelection={() => {}}
-            ref="tree"
-            rowClassNameForNode={this.rowClassNameForNode}
-          />
-        </div>
-      </PanelComponentScroller>
+    return _reactForAtom.React.createElement(
+      (_PanelComponentScroller || _load_PanelComponentScroller()).PanelComponentScroller,
+      null,
+      _reactForAtom.React.createElement(
+        'div',
+        { className: 'padded' },
+        _reactForAtom.React.createElement((_TreeRootComponent || _load_TreeRootComponent()).TreeRootComponent, {
+          elementToRenderWhenEmpty: emptyRenderMessage,
+          eventHandlerSelector: '.nuclide-test-runner-tree',
+          initialRoots: [],
+          labelClassNameForNode: labelClassNameForNode,
+          onKeepSelection: () => {},
+          ref: 'tree',
+          rowClassNameForNode: this.rowClassNameForNode
+        })
+      )
     );
   }
 
-  rowClassNameForNode(node: LazyTreeNode): string {
-    const {testSuiteModel} = this.props;
+  rowClassNameForNode(node) {
+    const { testSuiteModel } = this.props;
     if (!testSuiteModel) {
       return '';
     }

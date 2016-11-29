@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,25 +9,35 @@
  * the root directory of this source tree.
  */
 
-import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {trackOperationTiming} from '../../nuclide-analytics';
-import {getDeclaration} from './libclang';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _libclang;
+
+function _load_libclang() {
+  return _libclang = require('./libclang');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // Types longer than this will be truncated.
-const MAX_LENGTH = 256;
-
-export default class TypeHintHelpers {
-  static typeHint(
-    editor: atom$TextEditor,
-    position: atom$Point,
-  ): Promise<?TypeHint> {
-    return trackOperationTiming('nuclide-clang-atom.typeHint', async () => {
-      const decl = await getDeclaration(editor, position.row, position.column);
+const MAX_LENGTH = 256;class TypeHintHelpers {
+  static typeHint(editor, position) {
+    return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackOperationTiming)('nuclide-clang-atom.typeHint', (0, _asyncToGenerator.default)(function* () {
+      const decl = yield (0, (_libclang || _load_libclang()).getDeclaration)(editor, position.row, position.column);
       if (decl == null) {
         return null;
       }
-      const {type, extent: range} = decl;
+      const { type, extent: range } = decl;
       if (type == null || type.trim() === '') {
         return null;
       }
@@ -35,7 +45,9 @@ export default class TypeHintHelpers {
       if (type.length > MAX_LENGTH) {
         hint = type.substr(0, MAX_LENGTH) + '...';
       }
-      return {hint, range};
-    });
+      return { hint, range };
+    }));
   }
 }
+exports.default = TypeHintHelpers;
+module.exports = exports['default'];

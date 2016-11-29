@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,84 +9,101 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {
-  Definition,
-  DefinitionQueryResult,
-} from '../../nuclide-definition-service/lib/rpc-types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {getDeclaration} from './libclang';
-import findWholeRangeOfSymbol from './findWholeRangeOfSymbol';
-import invariant from 'assert';
-import {wordAtPosition} from '../../commons-atom/range';
-import {trackOperationTiming} from '../../nuclide-analytics';
-import {GRAMMAR_SET, IDENTIFIER_REGEXP} from './constants';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-export default class DefinitionHelpers {
+var _libclang;
 
-  static getDefinition(
-    editor: TextEditor,
-    position: atom$Point,
-  ): Promise<?DefinitionQueryResult> {
-    return trackOperationTiming(
-      'clang.get-definition',
-      () => DefinitionHelpers._getDefinition(editor, position),
-    );
+function _load_libclang() {
+  return _libclang = require('./libclang');
+}
+
+var _findWholeRangeOfSymbol;
+
+function _load_findWholeRangeOfSymbol() {
+  return _findWholeRangeOfSymbol = _interopRequireDefault(require('./findWholeRangeOfSymbol'));
+}
+
+var _range;
+
+function _load_range() {
+  return _range = require('../../commons-atom/range');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _constants;
+
+function _load_constants() {
+  return _constants = require('./constants');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class DefinitionHelpers {
+
+  static getDefinition(editor, position) {
+    return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackOperationTiming)('clang.get-definition', () => DefinitionHelpers._getDefinition(editor, position));
   }
 
-  static async _getDefinition(
-    editor: TextEditor,
-    position: atom$Point,
-  ): Promise<?DefinitionQueryResult> {
-    invariant(GRAMMAR_SET.has(editor.getGrammar().scopeName));
+  static _getDefinition(editor, position) {
+    return (0, _asyncToGenerator.default)(function* () {
+      if (!(_constants || _load_constants()).GRAMMAR_SET.has(editor.getGrammar().scopeName)) {
+        throw new Error('Invariant violation: "GRAMMAR_SET.has(editor.getGrammar().scopeName)"');
+      }
 
-    const src = editor.getPath();
-    if (src == null) {
-      return null;
-    }
+      const src = editor.getPath();
+      if (src == null) {
+        return null;
+      }
 
-    const contents = editor.getText();
+      const contents = editor.getText();
 
-    const wordMatch = wordAtPosition(editor, position, IDENTIFIER_REGEXP);
-    if (wordMatch == null) {
-      return null;
-    }
+      const wordMatch = (0, (_range || _load_range()).wordAtPosition)(editor, position, (_constants || _load_constants()).IDENTIFIER_REGEXP);
+      if (wordMatch == null) {
+        return null;
+      }
 
-    const {range} = wordMatch;
+      const { range } = wordMatch;
 
-    const result = await getDeclaration(editor, position.row, position.column);
-    if (result == null) {
-      return null;
-    }
+      const result = yield (0, (_libclang || _load_libclang()).getDeclaration)(editor, position.row, position.column);
+      if (result == null) {
+        return null;
+      }
 
-    const wholeRange =
-      findWholeRangeOfSymbol(editor, contents, range, result.spelling, result.extent);
-    const definition: Definition = {
-      path: result.file,
-      position: result.point,
-      range: result.extent,
-      language: 'clang',
-      // TODO: projectRoot
-    };
+      const wholeRange = (0, (_findWholeRangeOfSymbol || _load_findWholeRangeOfSymbol()).default)(editor, contents, range, result.spelling, result.extent);
+      const definition = {
+        path: result.file,
+        position: result.point,
+        range: result.extent,
+        language: 'clang'
+      };
 
-    if (result.spelling != null) {
-      definition.id = result.spelling;
-      definition.name = result.spelling;
-    }
+      if (result.spelling != null) {
+        definition.id = result.spelling;
+        definition.name = result.spelling;
+      }
 
-    return {
-      queryRange: wholeRange,
-      definitions: [definition],
-    };
+      return {
+        queryRange: wholeRange,
+        definitions: [definition]
+      };
+    })();
   }
 
-  static getDefinitionById(
-    filePath: NuclideUri,
-    id: string,
-  ): Promise<?Definition> {
-    return trackOperationTiming('clang.get-definition-by-id', async () => {
+  static getDefinitionById(filePath, id) {
+    return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackOperationTiming)('clang.get-definition-by-id', (0, _asyncToGenerator.default)(function* () {
       // TODO:
       return null;
-    });
+    }));
   }
 }
+exports.default = DefinitionHelpers;
+module.exports = exports['default'];

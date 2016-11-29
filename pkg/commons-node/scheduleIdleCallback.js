@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -21,45 +21,44 @@
  * `requestIdleCallback` for so much time to become available.
  */
 
-import invariant from 'assert';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = global.requestIdleCallback ?
+// Using Browser API
+function scheduleIdleCallback(callback_, afterRemainingTime = 49) {
+  let callback = callback_;
+  let id;
+  function fn(deadline) {
+    if (deadline.timeRemaining() >= afterRemainingTime) {
+      if (!(callback != null)) {
+        throw new Error('Invariant violation: "callback != null"');
+      }
 
-export default global.requestIdleCallback ?
-  // Using Browser API
-  function scheduleIdleCallback(
-    callback_: () => void,
-    afterRemainingTime?: 30 | 40 | 49 = 49,
-  ): IDisposable {
-    let callback = callback_;
-    let id;
-    function fn(deadline) {
-      if (deadline.timeRemaining() >= afterRemainingTime) {
-        invariant(callback != null);
-        callback(deadline);
+      callback(deadline);
+      id = callback = null;
+    } else {
+      id = global.requestIdleCallback(fn);
+    }
+  }
+  id = global.requestIdleCallback(fn);
+  return {
+    dispose() {
+      if (id != null) {
+        global.cancelIdleCallback(id);
         id = callback = null;
-      } else {
-        id = global.requestIdleCallback(fn);
       }
     }
-    id = global.requestIdleCallback(fn);
-    return {
-      dispose() {
-        if (id != null) {
-          global.cancelIdleCallback(id);
-          id = callback = null;
-        }
-      },
-    };
-  } :
-
-  // Using Node API
-  function scheduleIdleCallback(
-    callback: () => void,
-    afterRemainingTime?: 30 | 40 | 49 = 49,
-  ) {
-    const id = global.setImmediate(callback);
-    return {
-      dispose() {
-        global.clearImmediate(id);
-      },
-    };
   };
+} :
+
+// Using Node API
+function scheduleIdleCallback(callback, afterRemainingTime = 49) {
+  const id = global.setImmediate(callback);
+  return {
+    dispose() {
+      global.clearImmediate(id);
+    }
+  };
+};
+module.exports = exports['default'];

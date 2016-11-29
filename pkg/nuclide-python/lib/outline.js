@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,32 +9,20 @@
  * the root directory of this source tree.
  */
 
-import type {
-  OutlineTree,
-} from '../../nuclide-outline-view/lib/rpc-types';
-import type {TextToken} from '../../commons-node/tokenizedText-rpc-types';
-import type {
-  PythonOutlineItem,
-  PythonClassItem,
-  PythonFunctionItem,
-  PythonStatementItem,
-} from '../../nuclide-python-rpc';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.itemsToOutline = itemsToOutline;
 
-import {Point} from 'atom';
-import {
-  keyword,
-  method,
-  param,
-  whitespace,
-  plain,
-} from '../../commons-node/tokenizedText';
+var _atom = require('atom');
 
-type ShowVariableMode = 'none' | 'constants' | 'all';
+var _tokenizedText;
 
-function itemToOutlineTree(
-  mode: ShowVariableMode,
-  item: PythonOutlineItem,
-): ?OutlineTree {
+function _load_tokenizedText() {
+  return _tokenizedText = require('../../commons-node/tokenizedText');
+}
+
+function itemToOutlineTree(mode, item) {
   switch (item.kind) {
     case 'class':
       return classToOutlineTree('all', item);
@@ -45,42 +33,23 @@ function itemToOutlineTree(
   }
 }
 
-function classToOutlineTree(
-  mode: ShowVariableMode,
-  item: PythonClassItem,
-): OutlineTree {
-  return {
-    tokenizedText: [
-      keyword('class'),
-      whitespace(' '),
-      method(item.name),
-    ],
+function classToOutlineTree(mode, item) {
+  return Object.assign({
+    tokenizedText: [(0, (_tokenizedText || _load_tokenizedText()).keyword)('class'), (0, (_tokenizedText || _load_tokenizedText()).whitespace)(' '), (0, (_tokenizedText || _load_tokenizedText()).method)(item.name)],
     representativeName: item.name,
-    children: itemsToOutline(mode, item.children),
-    ...itemToPositions(item),
-  };
+    children: itemsToOutline(mode, item.children)
+  }, itemToPositions(item));
 }
 
-function functionToOutlineTree(item: PythonFunctionItem): OutlineTree {
-  return {
-    tokenizedText: [
-      keyword('def'),
-      whitespace(' '),
-      method(item.name),
-      plain('('),
-      ...argsToText(item.params || []),
-      plain(')'),
-    ],
+function functionToOutlineTree(item) {
+  return Object.assign({
+    tokenizedText: [(0, (_tokenizedText || _load_tokenizedText()).keyword)('def'), (0, (_tokenizedText || _load_tokenizedText()).whitespace)(' '), (0, (_tokenizedText || _load_tokenizedText()).method)(item.name), (0, (_tokenizedText || _load_tokenizedText()).plain)('('), ...argsToText(item.params || []), (0, (_tokenizedText || _load_tokenizedText()).plain)(')')],
     representativeName: item.name,
-    children: [],
-    ...itemToPositions(item),
-  };
+    children: []
+  }, itemToPositions(item));
 }
 
-function statementToOutlineTree(
-  mode: ShowVariableMode,
-  item: PythonStatementItem,
-): ?OutlineTree {
+function statementToOutlineTree(mode, item) {
   if (mode === 'none') {
     return null;
   }
@@ -91,60 +60,51 @@ function statementToOutlineTree(
     return null;
   }
 
-  return {
-    tokenizedText: [
-      plain(name),
-    ],
+  return Object.assign({
+    tokenizedText: [(0, (_tokenizedText || _load_tokenizedText()).plain)(name)],
     representativeName: name,
-    children: [],
-    ...itemToPositions(item),
-  };
+    children: []
+  }, itemToPositions(item));
 }
 
-function argsToText(args: Array<string>): Array<TextToken> {
+function argsToText(args) {
   const result = [];
 
   function startArg() {
     if (result.length > 0) {
-      result.push(plain(','));
-      result.push(whitespace(' '));
+      result.push((0, (_tokenizedText || _load_tokenizedText()).plain)(','));
+      result.push((0, (_tokenizedText || _load_tokenizedText()).whitespace)(' '));
     }
   }
   args.forEach(arg => {
     startArg();
     if (arg.startsWith('**')) {
-      result.push(plain('**'));
-      result.push(param(arg.slice(2)));
+      result.push((0, (_tokenizedText || _load_tokenizedText()).plain)('**'));
+      result.push((0, (_tokenizedText || _load_tokenizedText()).param)(arg.slice(2)));
     } else if (arg.startsWith('*')) {
-      result.push(plain('*'));
-      result.push(param(arg.slice(1)));
+      result.push((0, (_tokenizedText || _load_tokenizedText()).plain)('*'));
+      result.push((0, (_tokenizedText || _load_tokenizedText()).param)(arg.slice(1)));
     } else {
-      result.push(param(arg));
+      result.push((0, (_tokenizedText || _load_tokenizedText()).param)(arg));
     }
   });
 
   return result;
 }
 
-function itemToPositions(item: PythonOutlineItem): {
-  startPosition: atom$Point,
-  endPosition: atom$Point,
-} {
-  const {start, end} = item;
+function itemToPositions(item) {
+  const { start, end } = item;
   return {
-    startPosition: new Point(start.line - 1, start.column),
+    startPosition: new _atom.Point(start.line - 1, start.column),
     // Outline's endPosition is inclusive, while Jedi's is exclusive.
     // By decrementing the end column, we avoid situations where
     // two items are highlighted at once. End column may end up as -1,
     // which still has the intended effect.
-    endPosition: new Point(end.line - 1, end.column - 1),
+    endPosition: new _atom.Point(end.line - 1, end.column - 1)
   };
 }
 
-export function itemsToOutline(
-  mode: ShowVariableMode,
-  items: ?Array<PythonOutlineItem>,
-): Array<OutlineTree> {
+function itemsToOutline(mode, items) {
   if (!items || items.length === 0) {
     return [];
   }

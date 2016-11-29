@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,31 +9,24 @@
  * the root directory of this source tree.
  */
 
-import {Button} from './Button';
-import {ButtonGroup} from './ButtonGroup';
-import {React} from 'react-for-atom';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.MutableListSelector = undefined;
 
-type NuclideListSelectorItem = {
-  deletable?: boolean,
-  displayTitle: string,
-  id: string,
-};
+var _Button;
 
-type Props = {
-  items: Array<NuclideListSelectorItem>,
-  // If null, no item is initially selected.
-  idOfSelectedItem: ?string,
-  onItemClicked: (idOfClickedItem: string) => mixed,
-  onItemDoubleClicked: (idOfDoubleClickedItem: string) => mixed,
-  // Function that is called when the "+" button on the list is clicked.
-  // The user's intent is to create a new item for the list.
-  onAddButtonClicked: () => mixed,
-  // Function that is called when the "-" button on the list is clicked.
-  // The user's intent is to delete the currently-selected item.
-  // If the `idOfCurrentlySelectedItem` is null, this means there is
-  // no item selected.
-  onDeleteButtonClicked: (idOfCurrentlySelectedItem: ?string) => mixed,
-};
+function _load_Button() {
+  return _Button = require('./Button');
+}
+
+var _ButtonGroup;
+
+function _load_ButtonGroup() {
+  return _ButtonGroup = require('./ButtonGroup');
+}
+
+var _reactForAtom = require('react-for-atom');
 
 const DELETE_BUTTON_TITLE_DEFAULT = 'Delete selected item';
 const DELETE_BUTTON_TITLE_NONE = 'No item selected to delete';
@@ -54,27 +47,26 @@ const DELETE_BUTTON_TITLE_UNDELETABLE = 'Selected item cannot be deleted';
  *  | +  |  - |
  *   ---------
  */
-export class MutableListSelector extends React.Component {
-  props: Props;
+class MutableListSelector extends _reactForAtom.React.Component {
 
-  constructor(props: Props) {
+  constructor(props) {
     super(props);
-    (this: any)._onDeleteButtonClicked = this._onDeleteButtonClicked.bind(this);
+    this._onDeleteButtonClicked = this._onDeleteButtonClicked.bind(this);
   }
 
   _onDeleteButtonClicked() {
     this.props.onDeleteButtonClicked(this.props.idOfSelectedItem);
   }
 
-  _onItemClicked(itemId: string) {
+  _onItemClicked(itemId) {
     this.props.onItemClicked(itemId);
   }
 
-  _onItemDoubleClicked(itemId: string) {
+  _onItemDoubleClicked(itemId) {
     this.props.onItemDoubleClicked(itemId);
   }
 
-  render(): ?React.Element<any> {
+  render() {
     let selectedItem;
     const listItems = this.props.items.map(item => {
       let classes = 'list-item';
@@ -82,15 +74,15 @@ export class MutableListSelector extends React.Component {
         classes += ' selected';
         selectedItem = item;
       }
-      return (
-        <li
-          key={item.id}
-          className={classes}
-          onClick={this._onItemClicked.bind(this, item.id)}
-          onDoubleClick={this._onItemDoubleClicked.bind(this, item.id)}
-          tabIndex={0}>
-          {item.displayTitle}
-        </li>
+      return _reactForAtom.React.createElement(
+        'li',
+        {
+          key: item.id,
+          className: classes,
+          onClick: this._onItemClicked.bind(this, item.id),
+          onDoubleClick: this._onItemDoubleClicked.bind(this, item.id),
+          tabIndex: 0 },
+        item.displayTitle
       );
     });
 
@@ -105,29 +97,42 @@ export class MutableListSelector extends React.Component {
       deleteButtonTitle = DELETE_BUTTON_TITLE_DEFAULT;
     }
 
-    return (
-      <div>
-        <div className="block select-list">
-          <ol className="list-group">
-            {listItems}
-          </ol>
-        </div>
-        <div style={{display: 'flex', justifyContent: 'flex-end'}}>
-          <ButtonGroup>
-            <Button
-              disabled={selectedItem == null || selectedItem.deletable === false}
-              onClick={this._onDeleteButtonClicked}
-              title={deleteButtonTitle}>
-              -
-            </Button>
-            <Button
-              onClick={this.props.onAddButtonClicked}
-              title="Create new item">
-              +
-            </Button>
-          </ButtonGroup>
-        </div>
-      </div>
+    return _reactForAtom.React.createElement(
+      'div',
+      null,
+      _reactForAtom.React.createElement(
+        'div',
+        { className: 'block select-list' },
+        _reactForAtom.React.createElement(
+          'ol',
+          { className: 'list-group' },
+          listItems
+        )
+      ),
+      _reactForAtom.React.createElement(
+        'div',
+        { style: { display: 'flex', justifyContent: 'flex-end' } },
+        _reactForAtom.React.createElement(
+          (_ButtonGroup || _load_ButtonGroup()).ButtonGroup,
+          null,
+          _reactForAtom.React.createElement(
+            (_Button || _load_Button()).Button,
+            {
+              disabled: selectedItem == null || selectedItem.deletable === false,
+              onClick: this._onDeleteButtonClicked,
+              title: deleteButtonTitle },
+            '-'
+          ),
+          _reactForAtom.React.createElement(
+            (_Button || _load_Button()).Button,
+            {
+              onClick: this.props.onAddButtonClicked,
+              title: 'Create new item' },
+            '+'
+          )
+        )
+      )
     );
   }
 }
+exports.MutableListSelector = MutableListSelector;

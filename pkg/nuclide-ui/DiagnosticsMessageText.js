@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,27 +9,18 @@
  * the root directory of this source tree.
  */
 
-import invariant from 'assert';
-import {React} from 'react-for-atom';
-import {shell} from 'electron';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DiagnosticsMessageText = undefined;
+exports.separateUrls = separateUrls;
 
-type DiagnosticsMessageTextProps = {
-  message: {
-    html?: string,
-    text?: string,
-  },
-};
+var _reactForAtom = require('react-for-atom');
 
-type UrlOrText = {
-  isUrl: true,
-  url: string,
-} | {
-  isUrl: false,
-  text: string,
-};
+var _electron = require('electron');
 
 // Exported for testing.
-export function separateUrls(message: string): Array<UrlOrText> {
+function separateUrls(message) {
   // Don't match periods at the end of URLs, because those are usually just to
   // end the sentence and not actually part of the URL.
   const urlRegex = /https?:\/\/[a-zA-Z0-9/._-]*[a-zA-Z0-9/_-]/g;
@@ -37,46 +28,67 @@ export function separateUrls(message: string): Array<UrlOrText> {
   const urls = message.match(urlRegex);
   const nonUrls = message.split(urlRegex);
 
-  const parts: Array<UrlOrText> = [{
+  const parts = [{
     isUrl: false,
-    text: nonUrls[0],
+    text: nonUrls[0]
   }];
   for (let i = 1; i < nonUrls.length; i++) {
-    invariant(urls != null);
+    if (!(urls != null)) {
+      throw new Error('Invariant violation: "urls != null"');
+    }
+
     parts.push({
       isUrl: true,
-      url: urls[i - 1],
+      url: urls[i - 1]
     });
     parts.push({
       isUrl: false,
-      text: nonUrls[i],
+      text: nonUrls[i]
     });
   }
   return parts;
 }
 
-function renderTextWithLinks(message: string): React.Element<any> {
+function renderTextWithLinks(message) {
   const parts = separateUrls(message).map((part, index) => {
     if (!part.isUrl) {
       return part.text;
     } else {
-      const openUrl = () => { shell.openExternal(part.url); };
-      return <a href="#" key={index} onClick={openUrl}>{part.url}</a>;
+      const openUrl = () => {
+        _electron.shell.openExternal(part.url);
+      };
+      return _reactForAtom.React.createElement(
+        'a',
+        { href: '#', key: index, onClick: openUrl },
+        part.url
+      );
     }
   });
 
-  return <span>{parts}</span>;
+  return _reactForAtom.React.createElement(
+    'span',
+    null,
+    parts
+  );
 }
 
-export const DiagnosticsMessageText = (props: DiagnosticsMessageTextProps) => {
+const DiagnosticsMessageText = exports.DiagnosticsMessageText = props => {
   const {
-    message,
+    message
   } = props;
   if (message.html != null) {
-    return <span dangerouslySetInnerHTML={{__html: message.html}} />;
+    return _reactForAtom.React.createElement('span', { dangerouslySetInnerHTML: { __html: message.html } });
   } else if (message.text != null) {
-    return <span>{renderTextWithLinks(message.text)}</span>;
+    return _reactForAtom.React.createElement(
+      'span',
+      null,
+      renderTextWithLinks(message.text)
+    );
   } else {
-    return <span>Diagnostic lacks message.</span>;
+    return _reactForAtom.React.createElement(
+      'span',
+      null,
+      'Diagnostic lacks message.'
+    );
   }
 };

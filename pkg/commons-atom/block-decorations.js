@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,16 +9,18 @@
  * the root directory of this source tree.
  */
 
-import {React, ReactDOM} from 'react-for-atom';
-import {renderReactRoot} from '../commons-atom/renderReactRoot';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.syncBlockDecorations = syncBlockDecorations;
 
-import type ReactMountRootElement from '../nuclide-ui/ReactMountRootElement';
+var _reactForAtom = require('react-for-atom');
 
-type BlockElementWithProps = {
-  element: React.Element<any>,
-  customProps: Object,
-};
+var _renderReactRoot;
 
+function _load_renderReactRoot() {
+  return _renderReactRoot = require('../commons-atom/renderReactRoot');
+}
 
 /**
  * Instead of destroying all the decorations and re-rendering them on each edit,
@@ -33,21 +35,12 @@ type BlockElementWithProps = {
  *
  * @return an array of markers to be destroyed when the decorations are no longer needed.
  */
-export function syncBlockDecorations<Value>(
-  editorElement: atom$TextEditorElement,
-  diffBlockType: string,
-  source: Map<number, Value>,
-  shouldUpdate: (value: Value, properties: Object) => boolean,
-  getElementWithProps: (value: Value) => BlockElementWithProps,
-  syncWidth?: boolean = false,
-): Array<atom$Marker> {
+function syncBlockDecorations(editorElement, diffBlockType, source, shouldUpdate, getElementWithProps, syncWidth = false) {
   const editor = editorElement.getModel();
-  const decorations = editor.getDecorations({diffBlockType});
+  const decorations = editor.getDecorations({ diffBlockType });
   const renderedLineNumbers = new Set();
-  const {component} = editorElement;
-  const editorWidthPx = (syncWidth && component != null)
-    ? `${component.scrollViewNode.clientWidth}px`
-    : '';
+  const { component } = editorElement;
+  const editorWidthPx = syncWidth && component != null ? `${ component.scrollViewNode.clientWidth }px` : '';
 
   const markers = [];
 
@@ -56,7 +49,7 @@ export function syncBlockDecorations<Value>(
     const lineNumber = marker.getBufferRange().start.row;
     const value = source.get(lineNumber);
     const properties = decoration.getProperties();
-    const item: HTMLElement = properties.item;
+    const item = properties.item;
 
     // If the decoration should no longer exist or it has already been rendered,
     // it needs to be destroyed.
@@ -67,11 +60,11 @@ export function syncBlockDecorations<Value>(
 
     if (shouldUpdate(value, properties) || item.style.width !== editorWidthPx) {
       // Refresh the  rendered element.
-      const reactRoot: ReactMountRootElement = (item: any);
+      const reactRoot = item;
 
-      ReactDOM.unmountComponentAtNode(reactRoot);
-      const {element, customProps} = getElementWithProps(value);
-      ReactDOM.render(element, reactRoot);
+      _reactForAtom.ReactDOM.unmountComponentAtNode(reactRoot);
+      const { element, customProps } = getElementWithProps(value);
+      _reactForAtom.ReactDOM.render(element, reactRoot);
 
       reactRoot.setReactElement(element);
       reactRoot.style.width = editorWidthPx;
@@ -93,19 +86,18 @@ export function syncBlockDecorations<Value>(
       continue;
     }
 
-    const {element, customProps} = getElementWithProps(value);
-    const marker = editor.markBufferPosition([lineNumber, 0], {invalidate: 'never'});
+    const { element, customProps } = getElementWithProps(value);
+    const marker = editor.markBufferPosition([lineNumber, 0], { invalidate: 'never' });
 
     // The position should be `after` if the element is at the end of the file.
     const position = lineNumber >= editor.getLineCount() - 1 ? 'after' : 'before';
-    const item = renderReactRoot(element);
+    const item = (0, (_renderReactRoot || _load_renderReactRoot()).renderReactRoot)(element);
     item.style.width = editorWidthPx;
-    editor.decorateMarker(marker, {
-      ...customProps,
+    editor.decorateMarker(marker, Object.assign({}, customProps, {
       type: 'block',
       item,
-      position,
-    });
+      position
+    }));
 
     markers.push(marker);
   }

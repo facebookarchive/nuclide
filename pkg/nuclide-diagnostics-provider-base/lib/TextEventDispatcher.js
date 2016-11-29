@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,13 +9,20 @@
  * the root directory of this source tree.
  */
 
-import invariant from 'assert';
-import {Disposable, CompositeDisposable} from 'atom';
-import debounce from '../../commons-node/debounce';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.__TEST__ = undefined;
 
-type EventCallback = (editor: TextEditor) => mixed;
+var _atom = require('atom');
 
-type Event = 'did-reload' | 'did-change' | 'did-save' | 'did-open';
+var _debounce;
+
+function _load_debounce() {
+  return _debounce = _interopRequireDefault(require('../../commons-node/debounce'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // A reload changes the text in the buffer, so it should trigger a refresh.
 const FILE_CHANGE_EVENTS = ['did-change', 'did-reload', 'did-open'];
@@ -29,39 +36,36 @@ const FILE_SAVE_EVENTS = ['did-save', 'did-reload', 'did-open'];
  * we need to dispatch to all callbacks registered for a given (grammar, event)
  * pair.
  */
-class TextCallbackContainer<CallbackArg> {
+class TextCallbackContainer {
   // grammar -> event -> callback
   // invariant: no empty maps or sets (they should be removed instead)
-  _callbacks: Map<string, Map<Event, Set<(arg: CallbackArg) => mixed>>>;
-
-  // event -> callback
-  // invariant: no keys mapping to empty sets (they should be removed instead)
-  _allGrammarCallbacks: Map<Event, Set<(arg: CallbackArg) => mixed>>;
-
   constructor() {
     this._callbacks = new Map();
     this._allGrammarCallbacks = new Map();
   }
 
-  getCallbacks(grammar: string, event: Event): Set<(arg: CallbackArg) => mixed> {
+  // event -> callback
+  // invariant: no keys mapping to empty sets (they should be removed instead)
+
+
+  getCallbacks(grammar, event) {
     const eventMap = this._callbacks.get(grammar);
     const callbacksForGrammar = this._getCallbacksFromEventMap(eventMap, event);
     const callbacksForAll = this._getCallbacksFromEventMap(this._allGrammarCallbacks, event);
     const resultSet = new Set();
-    const add = callback => { resultSet.add(callback); };
+    const add = callback => {
+      resultSet.add(callback);
+    };
     callbacksForGrammar.forEach(add);
     callbacksForAll.forEach(add);
     return resultSet;
   }
 
-  isEmpty(): boolean {
+  isEmpty() {
     return this._callbacks.size === 0 && this._allGrammarCallbacks.size === 0;
   }
 
-  _getCallbacksFromEventMap(
-    eventMap: ?Map<Event, Set<(arg: CallbackArg) => mixed>>,
-    event: Event): Set<(arg: CallbackArg
-  ) => mixed> {
+  _getCallbacksFromEventMap(eventMap, event) {
     if (!eventMap) {
       return new Set();
     }
@@ -72,11 +76,7 @@ class TextCallbackContainer<CallbackArg> {
     return callbackSet;
   }
 
-  addCallback(
-      grammarScopes: Iterable<string> | 'all',
-      events: Iterable<Event>,
-      callback: (arg: CallbackArg) => mixed,
-      ): void {
+  addCallback(grammarScopes, events, callback) {
     if (grammarScopes === 'all') {
       this._addToEventMap(this._allGrammarCallbacks, events, callback);
     } else {
@@ -93,17 +93,17 @@ class TextCallbackContainer<CallbackArg> {
 
   // remove the callbacks, maintaining the invariant that there should be no
   // empty maps or sets in this._callbacks
-  removeCallback(
-      grammarScopes: Iterable<string> | 'all',
-      events: Iterable<Event>,
-      callback: (arg: CallbackArg) => mixed,
-      ): void {
+  removeCallback(grammarScopes, events, callback) {
     if (grammarScopes === 'all') {
       this._removeFromEventMap(this._allGrammarCallbacks, events, callback);
     } else {
       for (const grammarScope of grammarScopes) {
         const eventMap = this._callbacks.get(grammarScope);
-        invariant(eventMap);
+
+        if (!eventMap) {
+          throw new Error('Invariant violation: "eventMap"');
+        }
+
         this._removeFromEventMap(eventMap, events, callback);
         if (eventMap.size === 0) {
           this._callbacks.delete(grammarScope);
@@ -112,10 +112,7 @@ class TextCallbackContainer<CallbackArg> {
     }
   }
 
-  _addToEventMap(
-      eventMap: Map<Event, Set<(arg: CallbackArg) => mixed>>,
-      events: Iterable<Event>,
-      callback: (arg: CallbackArg) => mixed): void {
+  _addToEventMap(eventMap, events, callback) {
     for (const event of events) {
       let callbackSet = eventMap.get(event);
       if (!callbackSet) {
@@ -126,13 +123,14 @@ class TextCallbackContainer<CallbackArg> {
     }
   }
 
-  _removeFromEventMap(
-      eventMap: Map<Event, Set<(arg: CallbackArg) => mixed>>,
-      events: Iterable<Event>,
-      callback: (arg: CallbackArg) => mixed): void {
+  _removeFromEventMap(eventMap, events, callback) {
     for (const event of events) {
       const callbackSet = eventMap.get(event);
-      invariant(callbackSet);
+
+      if (!callbackSet) {
+        throw new Error('Invariant violation: "callbackSet"');
+      }
+
       callbackSet.delete(callback);
       if (callbackSet.size === 0) {
         eventMap.delete(event);
@@ -158,12 +156,7 @@ class TextCallbackContainer<CallbackArg> {
  * from Atom's text events.
  *
  */
-export default class TextEventDispatcher {
-  _callbackContainer: TextCallbackContainer<TextEditor>;
-
-  _editorListenerDisposable: ?CompositeDisposable;
-
-  _pendingEvents: WeakMap<atom$TextBuffer, Set<Event>>;
+class TextEventDispatcher {
 
   constructor() {
     this._callbackContainer = new TextCallbackContainer();
@@ -171,19 +164,15 @@ export default class TextEventDispatcher {
     this._pendingEvents = new WeakMap();
   }
 
-  _onEvents(
-    grammarScopes: Iterable<string> | 'all',
-    events: Iterable<Event>,
-    callback: EventCallback,
-  ) {
+  _onEvents(grammarScopes, events, callback) {
     if (this._callbackContainer.isEmpty()) {
       this._registerEditorListeners();
     }
     // Sometimes these events get triggered several times in succession
     // (particularly on startup).
-    const debouncedCallback = debounce(callback, 50, true);
+    const debouncedCallback = (0, (_debounce || _load_debounce()).default)(callback, 50, true);
     this._callbackContainer.addCallback(grammarScopes, events, debouncedCallback);
-    const disposables = new Disposable(() => {
+    const disposables = new _atom.Disposable(() => {
       this._callbackContainer.removeCallback(grammarScopes, events, debouncedCallback);
       if (this._callbackContainer.isEmpty()) {
         this._deregisterEditorListeners();
@@ -192,24 +181,24 @@ export default class TextEventDispatcher {
     return disposables;
   }
 
-  onFileChange(grammarScopes: Iterable<string>, callback: EventCallback): IDisposable {
+  onFileChange(grammarScopes, callback) {
     return this._onEvents(grammarScopes, FILE_CHANGE_EVENTS, callback);
   }
-  onAnyFileChange(callback: EventCallback): IDisposable {
+  onAnyFileChange(callback) {
     return this._onEvents('all', FILE_CHANGE_EVENTS, callback);
   }
 
-  onFileSave(grammarScopes: Iterable<string>, callback: EventCallback): IDisposable {
+  onFileSave(grammarScopes, callback) {
     return this._onEvents(grammarScopes, FILE_SAVE_EVENTS, callback);
   }
 
-  onAnyFileSave(callback: EventCallback): IDisposable {
+  onAnyFileSave(callback) {
     return this._onEvents('all', FILE_SAVE_EVENTS, callback);
   }
 
-  _registerEditorListeners(): void {
+  _registerEditorListeners() {
     if (!this._editorListenerDisposable) {
-      this._editorListenerDisposable = new CompositeDisposable();
+      this._editorListenerDisposable = new _atom.CompositeDisposable();
     }
 
     // Whenever the active pane item changes, we check to see if there are any
@@ -229,7 +218,7 @@ export default class TextEventDispatcher {
 
     this._getEditorListenerDisposable().add(atom.workspace.observeTextEditors(editor => {
       const buffer = editor.getBuffer();
-      const makeDispatch = (event: Event) => {
+      const makeDispatch = event => {
         return () => {
           this._dispatchEvents(editor, event);
         };
@@ -252,16 +241,16 @@ export default class TextEventDispatcher {
     }
   }
 
-  _dispatchEvents(editor: TextEditor, event: Event): void {
+  _dispatchEvents(editor, event) {
     const currentEditor = atom.workspace.getActiveTextEditor();
     if (currentEditor && editor === currentEditor) {
       const callbacks = this._callbackContainer.getCallbacks(editor.getGrammar().scopeName, event);
       for (const callback of callbacks) {
         callback(editor);
       }
-    // We want to avoid storing pending events if this event was generated by
-    // the same buffer as the current editor, to avoid duplicating events when
-    // multiple panes have the same file open.
+      // We want to avoid storing pending events if this event was generated by
+      // the same buffer as the current editor, to avoid duplicating events when
+      // multiple panes have the same file open.
     } else if (!currentEditor || editor.getBuffer() !== currentEditor.getBuffer()) {
       // Trigger this event next time we switch to an editor with this buffer.
       const buffer = editor.getBuffer();
@@ -274,13 +263,18 @@ export default class TextEventDispatcher {
     }
   }
 
-  _getEditorListenerDisposable(): CompositeDisposable {
+  _getEditorListenerDisposable() {
     const disposable = this._editorListenerDisposable;
-    invariant(disposable, 'TextEventDispatcher disposable is not initialized');
+
+    if (!disposable) {
+      throw new Error('TextEventDispatcher disposable is not initialized');
+    }
+
     return disposable;
   }
 }
 
-export const __TEST__ = {
-  TextCallbackContainer,
+exports.default = TextEventDispatcher;
+const __TEST__ = exports.__TEST__ = {
+  TextCallbackContainer
 };

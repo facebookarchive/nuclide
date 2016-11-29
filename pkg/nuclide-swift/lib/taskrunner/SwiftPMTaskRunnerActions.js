@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,73 +9,71 @@
  * the root directory of this source tree.
  */
 
-import type SwiftPMTaskRunnerDispatcher from './SwiftPMTaskRunnerDispatcher';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {llbuildYamlPath, readCompileCommands} from './LlbuildYamlParser';
-import {ActionTypes} from './SwiftPMTaskRunnerDispatcher';
+var _LlbuildYamlParser;
 
-export default class SwiftPMTaskRunnerActions {
-  _dispatcher: SwiftPMTaskRunnerDispatcher;
+function _load_LlbuildYamlParser() {
+  return _LlbuildYamlParser = require('./LlbuildYamlParser');
+}
 
-  constructor(dispatcher: SwiftPMTaskRunnerDispatcher) {
+var _SwiftPMTaskRunnerDispatcher;
+
+function _load_SwiftPMTaskRunnerDispatcher() {
+  return _SwiftPMTaskRunnerDispatcher = require('./SwiftPMTaskRunnerDispatcher');
+}
+
+class SwiftPMTaskRunnerActions {
+
+  constructor(dispatcher) {
     this._dispatcher = dispatcher;
   }
 
-  updateChdir(chdir: string): void {
+  updateChdir(chdir) {
     this._dispatcher.dispatch({
-      actionType: ActionTypes.UPDATE_CHDIR,
-      chdir,
+      actionType: (_SwiftPMTaskRunnerDispatcher || _load_SwiftPMTaskRunnerDispatcher()).ActionTypes.UPDATE_CHDIR,
+      chdir
     });
   }
 
-  updateBuildSettings(
-    configuration: string,
-    Xcc: string,
-    Xlinker: string,
-    Xswiftc: string,
-    buildPath: string,
-  ): void {
+  updateBuildSettings(configuration, Xcc, Xlinker, Xswiftc, buildPath) {
     this._dispatcher.dispatch({
-      actionType: ActionTypes.UPDATE_BUILD_SETTINGS,
+      actionType: (_SwiftPMTaskRunnerDispatcher || _load_SwiftPMTaskRunnerDispatcher()).ActionTypes.UPDATE_BUILD_SETTINGS,
       configuration,
       Xcc,
       Xlinker,
       Xswiftc,
-      buildPath,
+      buildPath
     });
   }
 
-  updateTestSettings(buildPath: string): void {
+  updateTestSettings(buildPath) {
     this._dispatcher.dispatch({
-      actionType: ActionTypes.UPDATE_TEST_SETTINGS,
-      buildPath,
+      actionType: (_SwiftPMTaskRunnerDispatcher || _load_SwiftPMTaskRunnerDispatcher()).ActionTypes.UPDATE_TEST_SETTINGS,
+      buildPath
     });
   }
 
-  updateCompileCommands(
-    chdir: string,
-    configuration: string,
-    buildPath: string,
-  ): void {
-    const yamlPath = llbuildYamlPath(chdir, configuration, buildPath);
+  updateCompileCommands(chdir, configuration, buildPath) {
+    const yamlPath = (0, (_LlbuildYamlParser || _load_LlbuildYamlParser()).llbuildYamlPath)(chdir, configuration, buildPath);
     let compileCommandsPromise;
     try {
-      compileCommandsPromise = readCompileCommands(yamlPath);
+      compileCommandsPromise = (0, (_LlbuildYamlParser || _load_LlbuildYamlParser()).readCompileCommands)(yamlPath);
     } catch (e) {
-      atom.notifications.addError(
-        'The YAML produced by the Swift package manager is malformed', {
-          description:
-            `Nuclide could not parse the YAML file at \`${yamlPath}\`. ` +
-            'Please file a bug, and include the contents of the file in ' +
-            'your report.',
-        });
+      atom.notifications.addError('The YAML produced by the Swift package manager is malformed', {
+        description: `Nuclide could not parse the YAML file at \`${ yamlPath }\`. ` + 'Please file a bug, and include the contents of the file in ' + 'your report.'
+      });
       return;
     }
     compileCommandsPromise.then(compileCommands => {
       this._dispatcher.dispatch({
-        actionType: ActionTypes.UPDATE_COMPILE_COMMANDS,
-        compileCommands,
+        actionType: (_SwiftPMTaskRunnerDispatcher || _load_SwiftPMTaskRunnerDispatcher()).ActionTypes.UPDATE_COMPILE_COMMANDS,
+        compileCommands
       });
     });
   }
 }
+exports.default = SwiftPMTaskRunnerActions;
+module.exports = exports['default'];

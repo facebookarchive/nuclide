@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,17 +9,18 @@
  * the root directory of this source tree.
  */
 
-export function wordAtPositionFromBuffer(
-  buffer: atom$TextBuffer | simpleTextBuffer$TextBuffer,
-  position: atom$PointObject,
-  wordRegex: RegExp,
-): ?{wordMatch: Array<string>, range: atom$Range} {
-  const {row, column} = position;
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.wordAtPositionFromBuffer = wordAtPositionFromBuffer;
+
+function wordAtPositionFromBuffer(buffer, position, wordRegex) {
+  const { row, column } = position;
   const rowRange = buffer.rangeForRow(row);
   let matchData;
   // Extract the expression from the row text.
   buffer.scanInRange(wordRegex, rowRange, data => {
-    const {range} = data;
+    const { range } = data;
     if (range.containsPoint(position)) {
       matchData = data;
     }
@@ -31,7 +32,7 @@ export function wordAtPositionFromBuffer(
   if (matchData) {
     return {
       wordMatch: matchData.match,
-      range: matchData.range,
+      range: matchData.range
     };
   } else {
     return null;

@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,12 +9,25 @@
  * the root directory of this source tree.
  */
 
-import type BreakpointStore from './BreakpointStore';
-import type DebuggerActions from './DebuggerActions';
+var _mouseToPosition;
 
-import invariant from 'assert';
-import {bufferPositionForMouseEvent} from '../../commons-atom/mouse-to-position';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+function _load_mouseToPosition() {
+  return _mouseToPosition = require('../../commons-atom/mouse-to-position');
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../commons-node/UniversalDisposable'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/**
+ * Handles displaying breakpoints and processing events for a single text
+ * editor.
+ */
+
 
 /**
  * A single delegate which handles events from the object.
@@ -23,32 +36,11 @@ import UniversalDisposable from '../../commons-node/UniversalDisposable';
  * there's less messy bookkeeping regarding lifetimes of the unregister
  * Disposable objects.
  */
-type BreakpointDisplayControllerDelegate = {
-  +handleTextEditorDestroyed: (controller: BreakpointDisplayController) => void,
-};
-
-/**
- * Handles displaying breakpoints and processing events for a single text
- * editor.
- */
 class BreakpointDisplayController {
-  _breakpointStore: BreakpointStore;
-  _debuggerActions: DebuggerActions;
-  _delegate: BreakpointDisplayControllerDelegate;
-  _disposables: UniversalDisposable;
-  _editor: atom$TextEditor;
-  _gutter: ?atom$Gutter;
-  _markers: Array<atom$Marker>;
-  _lastShadowBreakpointMarker: ?atom$Marker;
 
-  constructor(
-    delegate: BreakpointDisplayControllerDelegate,
-    breakpointStore: BreakpointStore,
-    editor: atom$TextEditor,
-    debuggerActions: DebuggerActions,
-  ) {
+  constructor(delegate, breakpointStore, editor, debuggerActions) {
     this._delegate = delegate;
-    this._disposables = new UniversalDisposable();
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
     this._breakpointStore = breakpointStore;
     this._debuggerActions = debuggerActions;
     this._editor = editor;
@@ -60,19 +52,14 @@ class BreakpointDisplayController {
       name: 'nuclide-breakpoint',
       visible: false,
       // Priority is -200 by default and 0 is the line number
-      priority: -1100,
+      priority: -1100
     });
     this._gutter = gutter;
-    this._disposables.add(
-      gutter.onDidDestroy(this._handleGutterDestroyed.bind(this)),
-      editor.observeGutters(this._registerGutterMouseHandlers.bind(this)),
-      this._breakpointStore.onNeedUIUpdate(this._handleBreakpointsChanged.bind(this)),
-      this._editor.onDidDestroy(this._handleTextEditorDestroyed.bind(this)),
-    );
+    this._disposables.add(gutter.onDidDestroy(this._handleGutterDestroyed.bind(this)), editor.observeGutters(this._registerGutterMouseHandlers.bind(this)), this._breakpointStore.onNeedUIUpdate(this._handleBreakpointsChanged.bind(this)), this._editor.onDidDestroy(this._handleTextEditorDestroyed.bind(this)));
     this._update();
   }
 
-  _registerGutterMouseHandlers(gutter: atom$Gutter): void {
+  _registerGutterMouseHandlers(gutter) {
     const gutterView = atom.views.getView(gutter);
     if (gutter.name !== 'line-number' && gutter.name !== 'nuclide-breakpoint') {
       return;
@@ -84,11 +71,7 @@ class BreakpointDisplayController {
     gutterView.addEventListener('click', boundClickHandler);
     gutterView.addEventListener('mousemove', boundMouseMoveHandler);
     gutterView.addEventListener('mouseleave', boundMouseLeaveHandler);
-    this._disposables.add(
-      () => gutterView.removeEventListener('click', boundClickHandler),
-      () => gutterView.removeEventListener('mousemove', boundMouseMoveHandler),
-      () => gutterView.removeEventListener('mouseleave', boundMouseLeaveHandler),
-    );
+    this._disposables.add(() => gutterView.removeEventListener('click', boundClickHandler), () => gutterView.removeEventListener('mousemove', boundMouseMoveHandler), () => gutterView.removeEventListener('mouseleave', boundMouseLeaveHandler));
   }
 
   dispose() {
@@ -99,7 +82,7 @@ class BreakpointDisplayController {
     }
   }
 
-  getEditor(): atom$TextEditor {
+  getEditor() {
     return this._editor;
   }
 
@@ -119,7 +102,7 @@ class BreakpointDisplayController {
   /**
    * Update the display with the current set of breakpoints for this editor.
    */
-  _update(): void {
+  _update() {
     const gutter = this._gutter;
     if (gutter == null) {
       return;
@@ -151,10 +134,7 @@ class BreakpointDisplayController {
         // This line has been handled.
         continue;
       }
-      const marker = this._createBreakpointMarkerAtLine(
-        line,
-        false, // isShadow
-      );
+      const marker = this._createBreakpointMarkerAtLine(line, false);
       marker.onDidChange(this._handleMarkerChange.bind(this));
       markersToKeep.push(marker);
     }
@@ -166,7 +146,7 @@ class BreakpointDisplayController {
   /**
    * Handler for marker movements due to text being edited.
    */
-  _handleMarkerChange(event: Object) {
+  _handleMarkerChange(event) {
     const path = this._editor.getPath();
     if (!path) {
       return;
@@ -179,15 +159,15 @@ class BreakpointDisplayController {
     }
   }
 
-  _handleBreakpointsChanged(path: string): void {
+  _handleBreakpointsChanged(path) {
     if (path === this._editor.getPath()) {
       this._update();
     }
   }
 
-  _handleGutterClick(event: Event): void {
+  _handleGutterClick(event) {
     // classList isn't in the defs of EventTarget...
-    const target: HTMLElement = (event.target: any);
+    const target = event.target;
     if (target.classList.contains('icon-right')) {
       return;
     }
@@ -199,13 +179,13 @@ class BreakpointDisplayController {
     this._debuggerActions.toggleBreakpoint(path, this._getCurrentMouseEventLine(event));
   }
 
-  _getCurrentMouseEventLine(event: Event): number {
+  _getCurrentMouseEventLine(event) {
     // $FlowIssue
-    const bufferPos = bufferPositionForMouseEvent(event, this._editor);
+    const bufferPos = (0, (_mouseToPosition || _load_mouseToPosition()).bufferPositionForMouseEvent)(event, this._editor);
     return bufferPos.row;
   }
 
-  _handleGutterMouseMove(event: Event): void {
+  _handleGutterMouseMove(event) {
     const curLine = this._getCurrentMouseEventLine(event);
     if (this._isLineOverLastShadowBreakpoint(curLine)) {
       return;
@@ -216,42 +196,38 @@ class BreakpointDisplayController {
     this._createShadowBreakpointAtLine(this._editor, curLine);
   }
 
-  _handleGutterMouseLeave(event: Event): void {
+  _handleGutterMouseLeave(event) {
     this._removeLastShadowBreakpoint();
   }
 
-  _isLineOverLastShadowBreakpoint(curLine: number): boolean {
+  _isLineOverLastShadowBreakpoint(curLine) {
     const shadowBreakpointMarker = this._lastShadowBreakpointMarker;
-    return shadowBreakpointMarker != null &&
-      shadowBreakpointMarker.getStartBufferPosition().row === curLine;
+    return shadowBreakpointMarker != null && shadowBreakpointMarker.getStartBufferPosition().row === curLine;
   }
 
-  _removeLastShadowBreakpoint(): void {
+  _removeLastShadowBreakpoint() {
     if (this._lastShadowBreakpointMarker != null) {
       this._lastShadowBreakpointMarker.destroy();
       this._lastShadowBreakpointMarker = null;
     }
   }
 
-  _createShadowBreakpointAtLine(editor: TextEditor, line: number): void {
-    this._lastShadowBreakpointMarker = this._createBreakpointMarkerAtLine(
-      line,
-      true, // isShadow
-    );
+  _createShadowBreakpointAtLine(editor, line) {
+    this._lastShadowBreakpointMarker = this._createBreakpointMarkerAtLine(line, true);
   }
 
-  _createBreakpointMarkerAtLine(
-    line: number,
-    isShadow: boolean,
-  ): atom$Marker {
+  _createBreakpointMarkerAtLine(line, isShadow) {
     const marker = this._editor.markBufferPosition([line, 0], {
-      invalidate: 'never',
+      invalidate: 'never'
     });
-    const elem: HTMLElement = document.createElement('span');
-    elem.className = isShadow ? 'nuclide-debugger-shadow-breakpoint-icon' :
-      'nuclide-debugger-breakpoint-icon';
-    invariant(this._gutter != null);
-    this._gutter.decorateMarker(marker, {item: elem});
+    const elem = document.createElement('span');
+    elem.className = isShadow ? 'nuclide-debugger-shadow-breakpoint-icon' : 'nuclide-debugger-breakpoint-icon';
+
+    if (!(this._gutter != null)) {
+      throw new Error('Invariant violation: "this._gutter != null"');
+    }
+
+    this._gutter.decorateMarker(marker, { item: elem });
     return marker;
   }
 }

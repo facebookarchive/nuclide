@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,29 +9,66 @@
  * the root directory of this source tree.
  */
 
-import type {FileVersion} from './rpc-types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.OPEN_FILES_SERVICE = exports.ConfigObserver = exports.FileEventKind = exports.FileVersionNotifier = exports.FileCache = undefined;
 
-import {FileCache} from './FileCache';
-import {FileVersionNotifier} from './FileVersionNotifier';
-import {trackOperationTiming} from '../../nuclide-analytics';
+var _constants;
 
-export {FileCache, FileVersionNotifier};
-export {FileEventKind} from './constants';
-export {ConfigObserver} from './ConfigObserver';
+function _load_constants() {
+  return _constants = require('./constants');
+}
 
-import invariant from 'assert';
+Object.defineProperty(exports, 'FileEventKind', {
+  enumerable: true,
+  get: function () {
+    return (_constants || _load_constants()).FileEventKind;
+  }
+});
 
-export const OPEN_FILES_SERVICE = 'OpenFilesService';
+var _ConfigObserver;
 
-export function getBufferAtVersion(
-  fileVersion: FileVersion,
-): Promise<?simpleTextBuffer$TextBuffer> {
-  return trackOperationTiming(
-    'getBufferAtVersion',
-    () => {
-      invariant(
-        fileVersion.notifier instanceof FileCache,
-        'Don\'t call this from the Atom process');
-      return (fileVersion.notifier: FileCache).getBufferAtVersion(fileVersion);
-    });
+function _load_ConfigObserver() {
+  return _ConfigObserver = require('./ConfigObserver');
+}
+
+Object.defineProperty(exports, 'ConfigObserver', {
+  enumerable: true,
+  get: function () {
+    return (_ConfigObserver || _load_ConfigObserver()).ConfigObserver;
+  }
+});
+exports.getBufferAtVersion = getBufferAtVersion;
+
+var _FileCache;
+
+function _load_FileCache() {
+  return _FileCache = require('./FileCache');
+}
+
+var _FileVersionNotifier;
+
+function _load_FileVersionNotifier() {
+  return _FileVersionNotifier = require('./FileVersionNotifier');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+exports.FileCache = (_FileCache || _load_FileCache()).FileCache;
+exports.FileVersionNotifier = (_FileVersionNotifier || _load_FileVersionNotifier()).FileVersionNotifier;
+const OPEN_FILES_SERVICE = exports.OPEN_FILES_SERVICE = 'OpenFilesService';
+
+function getBufferAtVersion(fileVersion) {
+  return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackOperationTiming)('getBufferAtVersion', () => {
+    if (!(fileVersion.notifier instanceof (_FileCache || _load_FileCache()).FileCache)) {
+      throw new Error('Don\'t call this from the Atom process');
+    }
+
+    return fileVersion.notifier.getBufferAtVersion(fileVersion);
+  });
 }

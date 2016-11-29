@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,49 +9,67 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
-import BreakpointStore from './BreakpointStore.js';
-import DebuggerActions from './DebuggerActions';
-import DebuggerInspector from './DebuggerInspector';
-import {DebuggerStore} from './DebuggerStore';
-import Bridge from './Bridge';
-import {Button} from '../../nuclide-ui/Button';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-type Props = {
-  actions: DebuggerActions,
-  breakpointStore: BreakpointStore,
-  store: DebuggerStore,
-  bridge: Bridge,
-  toggleOldView: () => void,
-  showOldView: boolean,
-};
+var _reactForAtom = require('react-for-atom');
 
-type State = {
-  processSocket: ?string,
-  debuggerStoreChangeListener?: IDisposable,
-};
+var _BreakpointStore;
 
-function getStateFromStore(store: DebuggerStore): State {
-  return {
-    processSocket: store.getProcessSocket(),
-  };
+function _load_BreakpointStore() {
+  return _BreakpointStore = _interopRequireDefault(require('./BreakpointStore.js'));
 }
 
-export default class DebuggerControllerView extends React.Component {
-  props: Props;
-  state: State;
+var _DebuggerActions;
 
-  constructor(props: Props) {
+function _load_DebuggerActions() {
+  return _DebuggerActions = _interopRequireDefault(require('./DebuggerActions'));
+}
+
+var _DebuggerInspector;
+
+function _load_DebuggerInspector() {
+  return _DebuggerInspector = _interopRequireDefault(require('./DebuggerInspector'));
+}
+
+var _DebuggerStore;
+
+function _load_DebuggerStore() {
+  return _DebuggerStore = require('./DebuggerStore');
+}
+
+var _Bridge;
+
+function _load_Bridge() {
+  return _Bridge = _interopRequireDefault(require('./Bridge'));
+}
+
+var _Button;
+
+function _load_Button() {
+  return _Button = require('../../nuclide-ui/Button');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function getStateFromStore(store) {
+  return {
+    processSocket: store.getProcessSocket()
+  };
+}class DebuggerControllerView extends _reactForAtom.React.Component {
+
+  constructor(props) {
     super(props);
     this.state = getStateFromStore(props.store);
 
-    (this: any)._handleClickClose = this._handleClickClose.bind(this);
-    (this: any)._updateStateFromStore = this._updateStateFromStore.bind(this);
+    this._handleClickClose = this._handleClickClose.bind(this);
+    this._updateStateFromStore = this._updateStateFromStore.bind(this);
   }
 
   componentWillMount() {
     this.setState({
-      debuggerStoreChangeListener: this.props.store.onChange(this._updateStateFromStore),
+      debuggerStoreChangeListener: this.props.store.onChange(this._updateStateFromStore)
     });
     this._updateStateFromStore();
   }
@@ -63,42 +81,44 @@ export default class DebuggerControllerView extends React.Component {
     }
   }
 
-  componentWillReceiveProps(nextProps: Props) {
+  componentWillReceiveProps(nextProps) {
     const listener = this.state.debuggerStoreChangeListener;
     if (listener != null) {
       listener.dispose();
     }
     this.setState({
-      debuggerStoreChangeListener: nextProps.store.onChange(this._updateStateFromStore),
+      debuggerStoreChangeListener: nextProps.store.onChange(this._updateStateFromStore)
     });
     this._updateStateFromStore(nextProps.store);
   }
 
-  render(): ?React.Element<any> {
+  render() {
     if (this.state.processSocket) {
-      return (
-        <DebuggerInspector
-          actions={this.props.actions}
-          bridge={this.props.bridge}
-          breakpointStore={this.props.breakpointStore}
-          socket={this.state.processSocket}
-          showOldView={this.props.showOldView}
-          toggleOldView={this.props.toggleOldView}
-        />
-      );
+      return _reactForAtom.React.createElement((_DebuggerInspector || _load_DebuggerInspector()).default, {
+        actions: this.props.actions,
+        bridge: this.props.bridge,
+        breakpointStore: this.props.breakpointStore,
+        socket: this.state.processSocket,
+        showOldView: this.props.showOldView,
+        toggleOldView: this.props.toggleOldView
+      });
     }
     if (this.props.store.getDebuggerMode() === 'starting') {
-      return (
-        <div className="padded">
-          <Button
-            title="Close"
-            icon="x"
-            className="nuclide-debugger-root-close-button"
-            onClick={this._handleClickClose}
-          />
-          <p>Starting Debugger</p>
-          <progress className="starting" />
-        </div>
+      return _reactForAtom.React.createElement(
+        'div',
+        { className: 'padded' },
+        _reactForAtom.React.createElement((_Button || _load_Button()).Button, {
+          title: 'Close',
+          icon: 'x',
+          className: 'nuclide-debugger-root-close-button',
+          onClick: this._handleClickClose
+        }),
+        _reactForAtom.React.createElement(
+          'p',
+          null,
+          'Starting Debugger'
+        ),
+        _reactForAtom.React.createElement('progress', { className: 'starting' })
       );
     }
     return null;
@@ -108,7 +128,7 @@ export default class DebuggerControllerView extends React.Component {
     this.props.actions.stopDebugging();
   }
 
-  _updateStateFromStore(store?: DebuggerStore) {
+  _updateStateFromStore(store) {
     if (store != null) {
       this.setState(getStateFromStore(store));
     } else {
@@ -116,3 +136,5 @@ export default class DebuggerControllerView extends React.Component {
     }
   }
 }
+exports.default = DebuggerControllerView;
+module.exports = exports['default'];

@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -11,18 +11,37 @@
 
 /* eslint-disable no-console */
 
-import chalk from 'chalk';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import type {ExitCode} from '../lib/types';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-export default async function runCommand(): Promise<ExitCode> {
-  const ctx = new chalk.constructor({enabled: true});
-  const out = Object.keys(process.versions)
-    .map(key => ([key, process.versions[key]]))
-    .concat([['atom', atom.getVersion()]])
-    .map(([name, version]) => `${ctx.yellow(name)}=${ctx.green(version)}`)
-    .sort()
-    .join('\n');
-  console.log(out);
-  return 0;
+var _chalk;
+
+function _load_chalk() {
+  return _chalk = _interopRequireDefault(require('chalk'));
 }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* () {
+    const ctx = new (_chalk || _load_chalk()).default.constructor({ enabled: true });
+    const out = Object.keys(process.versions).map(function (key) {
+      return [key, process.versions[key]];
+    }).concat([['atom', atom.getVersion()]]).map(function ([name, version]) {
+      return `${ ctx.yellow(name) }=${ ctx.green(version) }`;
+    }).sort().join('\n');
+    console.log(out);
+    return 0;
+  });
+
+  function runCommand() {
+    return _ref.apply(this, arguments);
+  }
+
+  return runCommand;
+})();
+
+module.exports = exports['default'];

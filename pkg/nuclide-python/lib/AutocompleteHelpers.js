@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,14 +9,37 @@
  * the root directory of this source tree.
  */
 
-import typeof * as PythonService from '../../nuclide-python-rpc';
-import type {PythonCompletion} from '../../nuclide-python-rpc/lib/PythonService';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import invariant from 'assert';
-import {trackOperationTiming} from '../../nuclide-analytics';
-import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
-import {TYPES} from './constants';
-import {getAutocompleteArguments, getIncludeOptionalArguments} from './config';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+var _constants;
+
+function _load_constants() {
+  return _constants = require('./constants');
+}
+
+var _config;
+
+function _load_config() {
+  return _config = require('./config');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const VALID_EMPTY_SUFFIX = /(\.|\()$/;
 const TRIGGER_COMPLETION_REGEX = /([. ]|[a-zA-Z_][a-zA-Z0-9_]*)$/;
@@ -31,91 +54,76 @@ const TRIGGER_COMPLETION_REGEX = /([. ]|[a-zA-Z_][a-zA-Z0-9_]*)$/;
  *   instead of plain text.
  * @return string               Textual representation of the completion.
  */
-function getText(
-  completion: PythonCompletion,
-  includeOptionalArgs: boolean = true,
-  createPlaceholders: boolean = false,
-): string {
+function getText(completion, includeOptionalArgs = true, createPlaceholders = false) {
   if (completion.params) {
-    const params = includeOptionalArgs
-      ? completion.params
-      : completion.params.filter(param =>
-        param.indexOf('=') < 0 && param.indexOf('*') < 0,
-      );
+    const params = includeOptionalArgs ? completion.params : completion.params.filter(param => param.indexOf('=') < 0 && param.indexOf('*') < 0);
 
     const paramTexts = params.map((param, index) => {
-      return createPlaceholders ? `\${${index + 1}:${param}}` : param;
+      return createPlaceholders ? `\${${ index + 1 }:${ param }}` : param;
     });
-    return `${completion.text}(${paramTexts.join(', ')})`;
+    return `${ completion.text }(${ paramTexts.join(', ') })`;
   }
 
   return completion.text;
 }
 
-export default class AutocompleteHelpers {
+class AutocompleteHelpers {
 
-  static getAutocompleteSuggestions(
-    request: atom$AutocompleteRequest,
-  ): Promise<Array<atom$AutocompleteSuggestion>> {
-    return trackOperationTiming(
-      'nuclide-python:getAutocompleteSuggestions',
-      () => AutocompleteHelpers._getAutocompleteSuggestions(request),
-    );
+  static getAutocompleteSuggestions(request) {
+    return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackOperationTiming)('nuclide-python:getAutocompleteSuggestions', () => AutocompleteHelpers._getAutocompleteSuggestions(request));
   }
 
-  static async _getAutocompleteSuggestions(
-    request: atom$AutocompleteRequest,
-  ): Promise<Array<atom$AutocompleteSuggestion>> {
-    const {editor, activatedManually, prefix} = request;
+  static _getAutocompleteSuggestions(request) {
+    return (0, _asyncToGenerator.default)(function* () {
+      const { editor, activatedManually, prefix } = request;
 
-    if (!TRIGGER_COMPLETION_REGEX.test(prefix)) {
-      return [];
-    }
-
-    if (!activatedManually && prefix === '') {
-      const wordPrefix = editor.getLastCursor().getCurrentWordPrefix();
-      if (!VALID_EMPTY_SUFFIX.test(wordPrefix)) {
+      if (!TRIGGER_COMPLETION_REGEX.test(prefix)) {
         return [];
       }
-    }
 
-    const src = editor.getPath();
-    if (!src) {
-      return [];
-    }
+      if (!activatedManually && prefix === '') {
+        const wordPrefix = editor.getLastCursor().getCurrentWordPrefix();
+        if (!VALID_EMPTY_SUFFIX.test(wordPrefix)) {
+          return [];
+        }
+      }
 
-    const cursor = editor.getLastCursor();
-    const line = cursor.getBufferRow();
-    const column = cursor.getBufferColumn();
+      const src = editor.getPath();
+      if (!src) {
+        return [];
+      }
 
-    const service: ?PythonService = getServiceByNuclideUri('PythonService', src);
-    invariant(service);
+      const cursor = editor.getLastCursor();
+      const line = cursor.getBufferRow();
+      const column = cursor.getBufferColumn();
 
-    const results = await service.getCompletions(
-      src,
-      editor.getText(),
-      line,
-      column,
-    );
+      const service = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getServiceByNuclideUri)('PythonService', src);
 
-    if (!results) {
-      return [];
-    }
+      if (!service) {
+        throw new Error('Invariant violation: "service"');
+      }
 
-    return results.map(completion => {
-      // Always display optional arguments in the UI.
-      const displayText = getText(completion);
-      // Only autocomplete arguments if the include optional arguments setting is on.
-      const snippet = getAutocompleteArguments()
-        ? getText(completion, getIncludeOptionalArguments(), true /* createPlaceholders */)
-        : completion.text;
-      return {
-        displayText,
-        snippet,
-        type: TYPES[completion.type],
-        description: completion.description,
-      };
-    });
+      const results = yield service.getCompletions(src, editor.getText(), line, column);
+
+      if (!results) {
+        return [];
+      }
+
+      return results.map(function (completion) {
+        // Always display optional arguments in the UI.
+        const displayText = getText(completion);
+        // Only autocomplete arguments if the include optional arguments setting is on.
+        const snippet = (0, (_config || _load_config()).getAutocompleteArguments)() ? getText(completion, (0, (_config || _load_config()).getIncludeOptionalArguments)(), true /* createPlaceholders */) : completion.text;
+        return {
+          displayText,
+          snippet,
+          type: (_constants || _load_constants()).TYPES[completion.type],
+          description: completion.description
+        };
+      });
+    })();
   }
 
 }
+exports.default = AutocompleteHelpers;
+module.exports = exports['default'];

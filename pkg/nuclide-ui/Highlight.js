@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,23 +9,29 @@
  * the root directory of this source tree.
  */
 
-import classnames from 'classnames';
-import {React} from 'react-for-atom';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Highlight = exports.HighlightColors = undefined;
 
-export type HighlightColor = 'default' | 'info' | 'success' | 'warning' | 'error';
+var _classnames;
 
-type Props = {
-  className?: string,
-  color?: HighlightColor,
-  children?: ?React.Element<any>,
-};
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
 
-export const HighlightColors = Object.freeze({
+var _reactForAtom = require('react-for-atom');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
+
+const HighlightColors = exports.HighlightColors = Object.freeze({
   default: 'default',
   info: 'info',
   success: 'success',
   warning: 'warning',
-  error: 'error',
+  error: 'error'
 });
 
 const HighlightColorClassNames = Object.freeze({
@@ -33,17 +39,23 @@ const HighlightColorClassNames = Object.freeze({
   info: 'highlight-info',
   success: 'highlight-success',
   warning: 'highlight-warning',
-  error: 'highlight-error',
+  error: 'highlight-error'
 });
 
-export const Highlight = (props: Props) => {
+const Highlight = exports.Highlight = props => {
   const {
     className,
     color,
-    children,
-    ...remainingProps
+    children
   } = props;
+
+  const remainingProps = _objectWithoutProperties(props, ['className', 'color', 'children']);
+
   const colorClassName = HighlightColorClassNames[color == null ? 'default' : color];
-  const newClassName = classnames(colorClassName, className);
-  return <span className={newClassName} {...remainingProps}>{children}</span>;
+  const newClassName = (0, (_classnames || _load_classnames()).default)(colorClassName, className);
+  return _reactForAtom.React.createElement(
+    'span',
+    Object.assign({ className: newClassName }, remainingProps),
+    children
+  );
 };

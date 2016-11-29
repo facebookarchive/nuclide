@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,18 +9,20 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
-import {relativeDate} from '../commons-node/string';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-type DefaultProps = {
-  delay: number,
-  shorten: boolean,
-};
-type Props = DefaultProps & {
-  date: Date,
-  delay?: number,
-  shorten?: boolean,
-};
+var _reactForAtom = require('react-for-atom');
+
+var _string;
+
+function _load_string() {
+  return _string = require('../commons-node/string');
+}
+
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
+
 const DEFAULT_RERENDER_DELAY = 10000; // ms
 
 /**
@@ -29,35 +31,37 @@ const DEFAULT_RERENDER_DELAY = 10000; // ms
  *
  * Does not respond to changes to the initial `delay` for simplicity's sake.
  */
-export default class Revision extends React.Component {
-  props: Props;
-  _interval: ?number;
+class Revision extends _reactForAtom.React.Component {
 
-  static defaultProps: DefaultProps = {
-    delay: DEFAULT_RERENDER_DELAY,
-    shorten: false,
+  componentDidMount() {
+    const { delay } = this.props;
+    this._interval = setInterval(() => this.forceUpdate(), delay);
   }
 
-  componentDidMount(): void {
-    const {delay} = this.props;
-    this._interval = setInterval(
-      () => this.forceUpdate(),
-      delay,
-    );
-  }
-
-  componentWillUnmount(): void {
+  componentWillUnmount() {
     if (this._interval != null) {
       clearInterval(this._interval);
     }
   }
 
-  render(): React.Element<any> {
+  render() {
     const {
       date,
-      shorten,
-      ...remainingProps
+      shorten
     } = this.props;
-    return <span {...remainingProps}>{relativeDate(date, undefined, shorten)}</span>;
+
+    const remainingProps = _objectWithoutProperties(this.props, ['date', 'shorten']);
+
+    return _reactForAtom.React.createElement(
+      'span',
+      remainingProps,
+      (0, (_string || _load_string()).relativeDate)(date, undefined, shorten)
+    );
   }
 }
+exports.default = Revision;
+Revision.defaultProps = {
+  delay: DEFAULT_RERENDER_DELAY,
+  shorten: false
+};
+module.exports = exports['default'];

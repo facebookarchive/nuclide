@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,19 +9,28 @@
  * the root directory of this source tree.
  */
 
-import type {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import {HhvmLaunchAttachProvider} from './HhvmLaunchAttachProvider';
-import nuclideUri from '../../commons-node/nuclideUri';
+var _HhvmLaunchAttachProvider;
 
-function getLaunchAttachProvider(connection: NuclideUri): ?DebuggerLaunchAttachProvider {
-  if (nuclideUri.isRemote(connection)) {
-    return new HhvmLaunchAttachProvider('PHP', connection);
+function _load_HhvmLaunchAttachProvider() {
+  return _HhvmLaunchAttachProvider = require('./HhvmLaunchAttachProvider');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function getLaunchAttachProvider(connection) {
+  if ((_nuclideUri || _load_nuclideUri()).default.isRemote(connection)) {
+    return new (_HhvmLaunchAttachProvider || _load_HhvmLaunchAttachProvider()).HhvmLaunchAttachProvider('PHP', connection);
   }
   return null;
 }
 
 module.exports = {
   name: 'hhvm',
-  getLaunchAttachProvider,
+  getLaunchAttachProvider
 };

@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,20 +9,12 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ProgressBar = undefined;
 
-type Props = {
-  /**
-   * The progress value. If none is provided, the Progressbar will render in `indefinite` mode.
-   * Use `indefinite mode` to indicate an initializing period,
-   * Prefer using the `LoadingSpinner` component for surfacing non-deterministic progress.
-   */
-  value?: number,
-  /** Determines the scaling of `value`. `min` is implicitly set to `0`. */
-  max?: number,
-};
+var _reactForAtom = require('react-for-atom');
 
 /** A Progressbar for showing deterministic progress. */
-export const ProgressBar = (props: Props) => (
-  <progress value={props.value} max={props.max} {...props} />
-);
+const ProgressBar = exports.ProgressBar = props => _reactForAtom.React.createElement('progress', Object.assign({ value: props.value, max: props.max }, props));

@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,11 +9,26 @@
  * the root directory of this source tree.
  */
 
-import type {ExecutorResult, RnMessage} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.runApp = runApp;
 
-import {Observable} from 'rxjs';
-import WS from 'ws';
-import {cacheWhileSubscribed} from '../../../commons-node/observable';
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _ws;
+
+function _load_ws() {
+  return _ws = _interopRequireDefault(require('ws'));
+}
+
+var _observable;
+
+function _load_observable() {
+  return _observable = require('../../../commons-node/observable');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const WS_URL = 'ws://localhost:8081/debugger-proxy?role=debugger&name=Nuclide';
 
@@ -21,70 +36,52 @@ const WS_URL = 'ws://localhost:8081/debugger-proxy?role=debugger&name=Nuclide';
  * This function models the RN side of the debugging equation: it emits a stream of requests for the
  * executor (as well as some other instructions), and accepts a stream of results.
  */
-export function runApp(executorResults: Observable<ExecutorResult>): Observable<RnMessage> {
+function runApp(executorResults) {
   const websockets = connectToRnApp();
 
-  return websockets.switchMap(ws => (
-    Observable.merge(
-      // The messages from the RN app.
-      Observable.fromEvent(ws, 'message').map(JSON.parse),
+  return websockets.switchMap(ws => _rxjsBundlesRxMinJs.Observable.merge(
+  // The messages from the RN app.
+  _rxjsBundlesRxMinJs.Observable.fromEvent(ws, 'message').map(JSON.parse),
 
-      // Send the executor results to the RN app.
-      executorResults
-        .do(response => {
-          const {replyId, result} = response;
-          ws.send(JSON.stringify({replyID: replyId, result}));
-        })
-        .ignoreElements(),
-    )
-  ))
-    .share();
+  // Send the executor results to the RN app.
+  executorResults.do(response => {
+    const { replyId, result } = response;
+    ws.send(JSON.stringify({ replyID: replyId, result }));
+  }).ignoreElements())).share();
 }
 
+function connectToRnApp() {
+  const websockets = _rxjsBundlesRxMinJs.Observable.using(() => {
+    const ws = new (_ws || _load_ws()).default(WS_URL);
+    return { ws, unsubscribe: () => {
+        ws.close();
+      } };
+  }, ({ ws }) => _rxjsBundlesRxMinJs.Observable.of(ws)).switchMap(ws => _rxjsBundlesRxMinJs.Observable.merge(_rxjsBundlesRxMinJs.Observable.never(),
 
-function connectToRnApp(): Observable<WS> {
-  const websockets = Observable.using(
-    () => {
-      const ws = new WS(WS_URL);
-      return {ws, unsubscribe: () => { ws.close(); }};
-    },
-    ({ws}) => Observable.of(ws),
-  )
-    .switchMap(ws => (
-      Observable.merge(
-        Observable.never(),
+  // A stream of websockets...
+  _rxjsBundlesRxMinJs.Observable.of(ws),
 
-        // A stream of websockets...
-        Observable.of(ws),
+  // ...that errors if the websocket closes before we unsubscribe.
+  _rxjsBundlesRxMinJs.Observable.fromEvent(ws, 'close').map(() => {
+    throw new PrematureCloseError();
+  }),
 
-        // ...that errors if the websocket closes before we unsubscribe.
-        Observable.fromEvent(ws, 'close').map(() => {
-          throw new PrematureCloseError();
-        }),
+  // ...or when there's a websocket error.
+  _rxjsBundlesRxMinJs.Observable.fromEvent(ws, 'error').switchMap(_rxjsBundlesRxMinJs.Observable.throw))).retryWhen(errors => errors.scan((errorCount, error) => {
+    // If the connection is being refused, or closes prematurely, just keep retrying
+    // indefinitely.
+    if (error.name === 'PrematureCloseError' || error.code === 'ECONNREFUSED') {
+      return errorCount;
+    }
 
-        // ...or when there's a websocket error.
-        Observable.fromEvent(ws, 'error').switchMap(Observable.throw),
-      )
-    ))
-    .retryWhen(errors => (
-      errors.scan(
-        (errorCount, error) => {
-          // If the connection is being refused, or closes prematurely, just keep retrying
-          // indefinitely.
-          if (error.name === 'PrematureCloseError' || (error: any).code === 'ECONNREFUSED') {
-            return errorCount;
-          }
+    // Otherwise, retry 5 times.
+    if (errorCount >= 5) {
+      throw error;
+    }
+    return errorCount + 1;
+  }, 0).delay(500));
 
-          // Otherwise, retry 5 times.
-          if (errorCount >= 5) { throw error; }
-          return errorCount + 1;
-        },
-        0,
-      )
-        .delay(500)
-    ));
-
-  return cacheWhileSubscribed(websockets);
+  return (0, (_observable || _load_observable()).cacheWhileSubscribed)(websockets);
 }
 
 class PrematureCloseError extends Error {

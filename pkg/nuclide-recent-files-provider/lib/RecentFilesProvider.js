@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,59 +9,62 @@
  * the root directory of this source tree.
  */
 
-import nuclideUri from '../../commons-node/nuclideUri';
-import {React} from 'react-for-atom';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.RecentFilesProvider = undefined;
 
-import type {
-  Provider,
-  ProviderType,
-} from '../../nuclide-quick-open/lib/types';
-import type {
-  FileResult,
-} from '../../nuclide-quick-open/lib/rpc-types';
+var _nuclideUri;
 
-import {arrayCompact} from '../../commons-node/collection';
-import {relativeDate} from '../../commons-node/string';
-import {Matcher} from '../../nuclide-fuzzy-native';
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var _reactForAtom = require('react-for-atom');
+
+var _collection;
+
+function _load_collection() {
+  return _collection = require('../../commons-node/collection');
+}
+
+var _string;
+
+function _load_string() {
+  return _string = require('../../commons-node/string');
+}
+
+var _nuclideFuzzyNative;
+
+function _load_nuclideFuzzyNative() {
+  return _nuclideFuzzyNative = require('../../nuclide-fuzzy-native');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // Imported from nuclide-files-service, which is an apm package, preventing a direct import.
-type FilePath = string;
-type TimeStamp = number;
-type FileList = Array<{path: FilePath, timestamp: TimeStamp}>;
-type RecentFilesService = {
-  getRecentFiles(): FileList,
-  touchFile(path: string): void,
-};
+let _recentFilesService = null;
 
-let _recentFilesService: ?RecentFilesService = null;
-
-function getRecentFilesMatching(query: string): Array<FileResult> {
+function getRecentFilesMatching(query) {
   if (_recentFilesService == null) {
     return [];
   }
   const projectPaths = atom.project.getPaths();
-  const openFiles = new Set(arrayCompact(
-    atom.workspace.getTextEditors().map(editor => editor.getPath()),
-  ));
-  const validRecentFiles = _recentFilesService.getRecentFiles()
-    .filter(result =>
-      !openFiles.has(result.path) &&
-      projectPaths.some(projectPath => result.path.indexOf(projectPath) !== -1),
-    );
-  const timestamps: Map<FilePath, TimeStamp> = new Map();
-  const matcher = new Matcher(validRecentFiles.map(recentFile => {
+  const openFiles = new Set((0, (_collection || _load_collection()).arrayCompact)(atom.workspace.getTextEditors().map(editor => editor.getPath())));
+  const validRecentFiles = _recentFilesService.getRecentFiles().filter(result => !openFiles.has(result.path) && projectPaths.some(projectPath => result.path.indexOf(projectPath) !== -1));
+  const timestamps = new Map();
+  const matcher = new (_nuclideFuzzyNative || _load_nuclideFuzzyNative()).Matcher(validRecentFiles.map(recentFile => {
     timestamps.set(recentFile.path, recentFile.timestamp);
     return recentFile.path;
   }));
-  return matcher.match(query, {recordMatchIndexes: true})
-    .map(result => ({
-      path: result.value,
-      score: result.score,
-      matchIndexes: result.matchIndexes,
-      timestamp: timestamps.get(result.value) || 0,
-    }))
-    // $FlowIssue Flow seems to type the arguments to `sort` as `FileResult` without `timestamp`.
-    .sort((a, b) => b.timestamp - a.timestamp);
+  return matcher.match(query, { recordMatchIndexes: true }).map(result => ({
+    path: result.value,
+    score: result.score,
+    matchIndexes: result.matchIndexes,
+    timestamp: timestamps.get(result.value) || 0
+  }))
+  // $FlowIssue Flow seems to type the arguments to `sort` as `FileResult` without `timestamp`.
+  .sort((a, b) => b.timestamp - a.timestamp);
 }
 
 const MS_PER_HOUR = 60 * 60 * 1000;
@@ -85,80 +88,86 @@ const FALLOFF = 1.1;
  *  | ##########################  ]
  *  +----------Time-------------->
  */
-function opacityForTimestamp(timestamp: number): number {
+function opacityForTimestamp(timestamp) {
   const ageInMS = Date.now() - timestamp;
-  return Math.min(
-    1,
-    Math.max(
-      1 - (FALLOFF * Math.log10(((ageInMS - SHELF) / MS_PER_DAY) + 1)),
-      MIN_OPACITY,
-    ),
-  );
+  return Math.min(1, Math.max(1 - FALLOFF * Math.log10((ageInMS - SHELF) / MS_PER_DAY + 1), MIN_OPACITY));
 }
 
-export const RecentFilesProvider: Provider = {
+const RecentFilesProvider = exports.RecentFilesProvider = {
 
-  getName(): string {
+  getName() {
     return 'RecentFilesProvider';
   },
 
-  getProviderType(): ProviderType {
+  getProviderType() {
     return 'GLOBAL';
   },
 
-  getDebounceDelay(): number {
+  getDebounceDelay() {
     return 0;
   },
 
-  isRenderable(): boolean {
+  isRenderable() {
     return true;
   },
 
-  getAction(): string {
+  getAction() {
     return 'nuclide-recent-files-provider:toggle-provider';
   },
 
-  getPromptText(): string {
+  getPromptText() {
     return 'Search recently opened files';
   },
 
-  getTabTitle(): string {
+  getTabTitle() {
     return 'Recent Files';
   },
 
-  executeQuery(query: string): Promise<Array<FileResult>> {
+  executeQuery(query) {
     return Promise.resolve(getRecentFilesMatching(query));
   },
 
-  setRecentFilesService(service: RecentFilesService): void {
+  setRecentFilesService(service) {
     _recentFilesService = service;
   },
 
-  getComponentForItem(item: FileResult): React.Element<any> {
-    const filename = nuclideUri.basename(item.path);
+  getComponentForItem(item) {
+    const filename = (_nuclideUri || _load_nuclideUri()).default.basename(item.path);
     const filePath = item.path.substring(0, item.path.lastIndexOf(filename));
     const date = item.timestamp == null ? null : new Date(item.timestamp);
     const datetime = date === null ? '' : date.toLocaleString();
-    return (
-      <div
-        className="recent-files-provider-result"
-        style={{opacity: opacityForTimestamp(item.timestamp || Date.now())}}
-        title={datetime}>
-        <div className="recent-files-provider-filepath-container">
-          <span
-            className="icon icon-file-text file recent-files-provider-file-path"
-            data-name={filename}>
-            {filePath}
-          </span>
-          <span className="recent-files-provider-file-name">{filename}</span>
-        </div>
-        <div className="recent-files-provider-datetime-container">
-          <span className="recent-files-provider-datetime-label">
-            {date === null ? 'At some point' : relativeDate(date)}
-          </span>
-        </div>
-      </div>
+    return _reactForAtom.React.createElement(
+      'div',
+      {
+        className: 'recent-files-provider-result',
+        style: { opacity: opacityForTimestamp(item.timestamp || Date.now()) },
+        title: datetime },
+      _reactForAtom.React.createElement(
+        'div',
+        { className: 'recent-files-provider-filepath-container' },
+        _reactForAtom.React.createElement(
+          'span',
+          {
+            className: 'icon icon-file-text file recent-files-provider-file-path',
+            'data-name': filename },
+          filePath
+        ),
+        _reactForAtom.React.createElement(
+          'span',
+          { className: 'recent-files-provider-file-name' },
+          filename
+        )
+      ),
+      _reactForAtom.React.createElement(
+        'div',
+        { className: 'recent-files-provider-datetime-container' },
+        _reactForAtom.React.createElement(
+          'span',
+          { className: 'recent-files-provider-datetime-label' },
+          date === null ? 'At some point' : (0, (_string || _load_string()).relativeDate)(date)
+        )
+      )
     );
-  },
+  }
 
 };

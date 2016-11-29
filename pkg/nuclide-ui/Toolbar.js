@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,24 +9,35 @@
  * the root directory of this source tree.
  */
 
-import classnames from 'classnames';
-import {React} from 'react-for-atom';
-import {maybeToString} from '../commons-node/string';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Toolbar = undefined;
 
-type Props = {
-  children?: mixed,
-  className?: string,
-  location?: 'top' | 'bottom',
-};
+var _classnames;
 
-export const Toolbar = (props: Props) => {
-  const className = classnames('nuclide-ui-toolbar', {
-    [`nuclide-ui-toolbar--${maybeToString(props.location)}`]: props.location != null,
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
+
+var _reactForAtom = require('react-for-atom');
+
+var _string;
+
+function _load_string() {
+  return _string = require('../commons-node/string');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const Toolbar = exports.Toolbar = props => {
+  const className = (0, (_classnames || _load_classnames()).default)('nuclide-ui-toolbar', {
+    [`nuclide-ui-toolbar--${ (0, (_string || _load_string()).maybeToString)(props.location) }`]: props.location != null
   }, props.className);
 
-  return (
-    <div className={className}>
-      {props.children}
-    </div>
+  return _reactForAtom.React.createElement(
+    'div',
+    { className: className },
+    props.children
   );
 };

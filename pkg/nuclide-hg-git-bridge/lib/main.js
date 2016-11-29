@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,30 +9,67 @@
  * the root directory of this source tree.
  */
 
-import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.repositoryForPath = exports.repositoryContainsPath = undefined;
 
-import {arrayCompact} from '../../commons-node/collection';
-import {diffSets} from '../../commons-node/observable';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
-import {Observable} from 'rxjs';
+var _repositoryContainsPath;
 
-export {default as repositoryContainsPath} from './repositoryContainsPath';
-export {default as repositoryForPath} from './repositoryForPath';
-
-export function getHgRepositories(): Set<HgRepositoryClient> {
-  return new Set(
-    arrayCompact(atom.project.getRepositories())
-      .filter(repository => repository.getType() === 'hg'),
-  );
+function _load_repositoryContainsPath() {
+  return _repositoryContainsPath = require('./repositoryContainsPath');
 }
 
-export function getHgRepositoryStream(): Observable<HgRepositoryClient> {
-  const currentRepositories =
-    observableFromSubscribeFunction(atom.project.onDidChangePaths.bind(atom.project))
-    .startWith(null)
-    .map(() => getHgRepositories());
+Object.defineProperty(exports, 'repositoryContainsPath', {
+  enumerable: true,
+  get: function () {
+    return _interopRequireDefault(_repositoryContainsPath || _load_repositoryContainsPath()).default;
+  }
+});
 
-  return diffSets(currentRepositories).flatMap(
-    repoDiff => Observable.from(repoDiff.added),
-  );
+var _repositoryForPath;
+
+function _load_repositoryForPath() {
+  return _repositoryForPath = require('./repositoryForPath');
+}
+
+Object.defineProperty(exports, 'repositoryForPath', {
+  enumerable: true,
+  get: function () {
+    return _interopRequireDefault(_repositoryForPath || _load_repositoryForPath()).default;
+  }
+});
+exports.getHgRepositories = getHgRepositories;
+exports.getHgRepositoryStream = getHgRepositoryStream;
+
+var _collection;
+
+function _load_collection() {
+  return _collection = require('../../commons-node/collection');
+}
+
+var _observable;
+
+function _load_observable() {
+  return _observable = require('../../commons-node/observable');
+}
+
+var _event;
+
+function _load_event() {
+  return _event = require('../../commons-node/event');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function getHgRepositories() {
+  return new Set((0, (_collection || _load_collection()).arrayCompact)(atom.project.getRepositories()).filter(repository => repository.getType() === 'hg'));
+}
+
+function getHgRepositoryStream() {
+  const currentRepositories = (0, (_event || _load_event()).observableFromSubscribeFunction)(atom.project.onDidChangePaths.bind(atom.project)).startWith(null).map(() => getHgRepositories());
+
+  return (0, (_observable || _load_observable()).diffSets)(currentRepositories).flatMap(repoDiff => _rxjsBundlesRxMinJs.Observable.from(repoDiff.added));
 }

@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,67 +9,81 @@
  * the root directory of this source tree.
  */
 
-import type {NavigationStackController} from './NavigationStackController';
-import type {Observable} from 'rxjs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.consumeStatusBar = consumeStatusBar;
 
-import {React} from 'react-for-atom';
-import {Disposable} from 'atom';
-import {renderReactRoot} from '../../commons-atom/renderReactRoot';
-import {Button} from '../../nuclide-ui/Button';
-import {ButtonGroup} from '../../nuclide-ui/ButtonGroup';
-import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
+var _reactForAtom = require('react-for-atom');
+
+var _atom = require('atom');
+
+var _renderReactRoot;
+
+function _load_renderReactRoot() {
+  return _renderReactRoot = require('../../commons-atom/renderReactRoot');
+}
+
+var _Button;
+
+function _load_Button() {
+  return _Button = require('../../nuclide-ui/Button');
+}
+
+var _ButtonGroup;
+
+function _load_ButtonGroup() {
+  return _ButtonGroup = require('../../nuclide-ui/ButtonGroup');
+}
+
+var _bindObservableAsProps;
+
+function _load_bindObservableAsProps() {
+  return _bindObservableAsProps = require('../../nuclide-ui/bindObservableAsProps');
+}
 
 // Since this is a button which can change the current file, place it where
 // it won't change position when the current file name changes, which means way left.
 const STATUS_BAR_PRIORITY = -100;
 
-export function consumeStatusBar(
-  statusBar: atom$StatusBar,
-  controller: NavigationStackController,
-): IDisposable {
+function consumeStatusBar(statusBar, controller) {
   const onBack = () => controller.navigateBackwards();
   const onForward = () => controller.navigateForwards();
-  const props: Observable<Props> = controller.observeStackChanges()
-    .map(stack => ({
-      enableBack: stack.hasPrevious(),
-      enableForward: stack.hasNext(),
-      onBack,
-      onForward,
-    }));
-  const Tile = bindObservableAsProps(props, NavStackStatusBarTile);
-  const item = renderReactRoot(<Tile />);
+  const props = controller.observeStackChanges().map(stack => ({
+    enableBack: stack.hasPrevious(),
+    enableForward: stack.hasNext(),
+    onBack,
+    onForward
+  }));
+  const Tile = (0, (_bindObservableAsProps || _load_bindObservableAsProps()).bindObservableAsProps)(props, NavStackStatusBarTile);
+  const item = (0, (_renderReactRoot || _load_renderReactRoot()).renderReactRoot)(_reactForAtom.React.createElement(Tile, null));
   item.className = 'nuclide-navigation-stack-tile inline-block';
 
   const statusBarTile = statusBar.addLeftTile({
     item,
-    priority: STATUS_BAR_PRIORITY,
+    priority: STATUS_BAR_PRIORITY
   });
 
-  return new Disposable(() => { statusBarTile.destroy(); });
+  return new _atom.Disposable(() => {
+    statusBarTile.destroy();
+  });
 }
 
-type Props = {
-  enableBack: boolean,
-  enableForward: boolean,
-  onBack: () => mixed,
-  onForward: () => mixed,
-};
-
-function NavStackStatusBarTile(props: Props): React.Element<any> {
-  return (
-    <ButtonGroup>
-      <Button
-        icon="chevron-left"
-        onClick={props.onBack}
-        disabled={!props.enableBack}
-        title="Navigate Backwards"
-      />
-      <Button
-        icon="chevron-right"
-        onClick={props.onForward}
-        disabled={!props.enableForward}
-        title="Navigate Forwards"
-      />
-    </ButtonGroup>
+function NavStackStatusBarTile(props) {
+  return _reactForAtom.React.createElement(
+    (_ButtonGroup || _load_ButtonGroup()).ButtonGroup,
+    null,
+    _reactForAtom.React.createElement((_Button || _load_Button()).Button, {
+      icon: 'chevron-left',
+      onClick: props.onBack,
+      disabled: !props.enableBack,
+      title: 'Navigate Backwards'
+    }),
+    _reactForAtom.React.createElement((_Button || _load_Button()).Button, {
+      icon: 'chevron-right',
+      onClick: props.onForward,
+      disabled: !props.enableForward,
+      title: 'Navigate Forwards'
+    })
   );
 }

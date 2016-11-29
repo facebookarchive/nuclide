@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,41 +9,41 @@
  * the root directory of this source tree.
  */
 
-import type {
-  DatatipProvider,
-  DatatipService,
-} from '../../nuclide-datatip/lib/types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {
-  CompositeDisposable,
-  Disposable,
-} from 'atom';
+var _atom = require('atom');
 
-import unescapedUnicodeDatatip from './UnescapedUnicodeDatatip';
+var _UnescapedUnicodeDatatip;
 
-export default class UnicodeDatatipManager {
-  _disposables: CompositeDisposable;
-  datatipService: ?DatatipService;
+function _load_UnescapedUnicodeDatatip() {
+  return _UnescapedUnicodeDatatip = _interopRequireDefault(require('./UnescapedUnicodeDatatip'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class UnicodeDatatipManager {
 
   constructor() {
-    this._disposables = new CompositeDisposable();
+    this._disposables = new _atom.CompositeDisposable();
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
   }
 
-  consumeDatatipService(service: DatatipService): IDisposable {
-    const datatipProvider: DatatipProvider = {
-      datatip: (editor, position) => unescapedUnicodeDatatip(editor, position),
-      validForScope: (scope: string) => true,
+  consumeDatatipService(service) {
+    const datatipProvider = {
+      datatip: (editor, position) => (0, (_UnescapedUnicodeDatatip || _load_UnescapedUnicodeDatatip()).default)(editor, position),
+      validForScope: scope => true,
       providerName: 'nuclide-unicode-escapes',
-      inclusionPriority: 1,
+      inclusionPriority: 1
     };
 
     service.addProvider(datatipProvider);
     this.datatipService = service;
-    const disposable = new Disposable(() => {
+    const disposable = new _atom.Disposable(() => {
       service.removeProvider(datatipProvider);
       this.datatipService = null;
     });
@@ -51,3 +51,5 @@ export default class UnicodeDatatipManager {
     return disposable;
   }
 }
+exports.default = UnicodeDatatipManager;
+module.exports = exports['default'];
