@@ -1,5 +1,12 @@
 # Nuclide Changelog
 
+## v0.186.0
+
+### Hotfix
+
+* Fix case-sensitivity issue that manifested on Linux and Windows.
+* Fix issue where datatips would close when they are clicked on.
+
 ## v0.185.0
 
 ### Highlights
