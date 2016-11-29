@@ -19,7 +19,7 @@ import {Toolbar} from './Toolbar';
 import memoize from 'lodash.memoize';
 import {React} from 'react-for-atom';
 import {Observable} from 'rxjs';
-import shallowEqual from 'shallowEqual';
+import shallowEqual from 'shallowequal';
 
 export function createPanelItem(store: Store): Object {
   const staticProps = {
