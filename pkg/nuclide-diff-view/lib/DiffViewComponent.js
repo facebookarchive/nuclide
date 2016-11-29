@@ -208,6 +208,13 @@ export function centerScrollToBufferLine(
     + textEditor.getLineHeightInPixels() / 2
     - textEditorElement.clientHeight / 2;
   textEditorElement.setScrollTop(Math.max(scrollTop, 1));
+
+  textEditorElement.focus();
+
+  textEditor.setCursorBufferPosition(
+    [bufferLineNumber, 0],
+    {autoscroll: false},
+  );
 }
 
 export function pixelRangeForNavigationSection(
