@@ -34,10 +34,10 @@ import {NoProvidersView} from './NoProvidersView';
 
 const EDITOR_DEBOUNCE_INTERVAL = 500;
 const POSITION_DEBOUNCE_INTERVAL = 500;
+export const WORKSPACE_VIEW_URI = 'atom://nuclide/context-view';
 
-export type ContextViewConfig = {
-  width?: number,
-  visible?: boolean,
+type SerializedContextViewPanelState = {
+  deserializer: 'nuclide.ContextViewPanelState',
 };
 
 const logger = getLogger();
@@ -48,8 +48,6 @@ const logger = getLogger();
  * service.
  */
 export class ContextViewManager {
-
-  _atomPanel: ?atom$Panel;
   _contextProviders: Array<ContextProvider>;
   _defServiceSubscription: ?rxjs$ISubscription;
   // Subscriptions to all changes in registered context providers' `priority` setting.
@@ -60,25 +58,23 @@ export class ContextViewManager {
   _isVisible: boolean;
   // Whether Context View should keep displaying the current content even after the cursor moves
   _locked: boolean;
-  _panelDOMElement: ?HTMLElement;
-  _width: number;
+  _panelDOMElement: HTMLElement;
   currentDefinition: ?Definition;
 
-  constructor(width: number, isVisible: boolean) {
-    this._atomPanel = null;
+  constructor() {
     this._contextProviders = [];
     this._defServiceSubscription = null;
     this._settingDisposables = new Map();
     this._definitionService = null;
-    this._isVisible = isVisible;
+    this._isVisible = false;
     this._locked = false; // Should be unlocked by default
-    this._panelDOMElement = null;
-    this._width = width;
     this.currentDefinition = null;
 
     (this: any).hide = this.hide.bind(this);
-    (this: any)._onResize = this._onResize.bind(this);
     (this: any)._setLocked = this._setLocked.bind(this);
+
+    this._panelDOMElement = document.createElement('div');
+    this._panelDOMElement.style.display = 'flex';
 
     this._render();
   }
@@ -138,13 +134,6 @@ export class ContextViewManager {
       return priority1 - priority2;
     });
     this._render();
-  }
-
-  serialize(): ContextViewConfig {
-    return {
-      width: this._width,
-      visible: this._isVisible,
-    };
   }
 
   /**
@@ -257,22 +246,11 @@ export class ContextViewManager {
   }
 
   _disposeView(): void {
-    if (this._panelDOMElement != null) {
-      ReactDOM.unmountComponentAtNode(this._panelDOMElement);
-      this._panelDOMElement = null;
-    }
-    if (this._atomPanel != null) {
-      this._atomPanel.destroy();
-      this._atomPanel = null;
-    }
+    ReactDOM.unmountComponentAtNode(this._panelDOMElement);
     if (this._defServiceSubscription != null) {
       this._defServiceSubscription.unsubscribe();
       this._defServiceSubscription = null;
     }
-  }
-
-  _onResize(newWidth: number): void {
-    this._width = newWidth;
   }
 
   _renderProviders(): void {
@@ -301,32 +279,14 @@ export class ContextViewManager {
       providerElements.push(<NoProvidersView key={0} />);
     }
 
-    // Render the panel in atom workspace
-    if (!this._panelDOMElement) {
-      this._panelDOMElement = document.createElement('div');
-      this._panelDOMElement.style.display = 'flex';
-    }
-
     ReactDOM.render(
       <ContextViewPanel
-        initialWidth={this._width}
-        onResize={this._onResize}
         definition={this.currentDefinition}
-        locked={this._locked}
-        onHide={this.hide}>
+        locked={this._locked}>
         {providerElements}
       </ContextViewPanel>,
       this._panelDOMElement,
     );
-
-    if (!this._atomPanel) {
-      invariant(this._panelDOMElement != null);
-      this._atomPanel = atom.workspace.addRightPanel({
-        item: this._panelDOMElement,
-        visible: true,
-        priority: 200,
-      });
-    }
   }
 
   _render(): void {
@@ -337,4 +297,41 @@ export class ContextViewManager {
     }
   }
 
+  getTitle() {
+    return 'Context View';
+  }
+
+  getIconName() {
+    return 'info';
+  }
+
+  getPreferredInitialWidth(): number {
+    return 300;
+  }
+
+  getURI(): string {
+    return WORKSPACE_VIEW_URI;
+  }
+
+  getDefaultLocation(): string {
+    return 'right-panel';
+  }
+
+  didChangeVisibility(visible: boolean): void {
+    if (visible) {
+      this.show();
+    } else {
+      this.hide();
+    }
+  }
+
+  getElement(): HTMLElement {
+    return this._panelDOMElement;
+  }
+
+  serialize(): SerializedContextViewPanelState {
+    return {
+      deserializer: 'nuclide.ContextViewPanelState',
+    };
+  }
 }
