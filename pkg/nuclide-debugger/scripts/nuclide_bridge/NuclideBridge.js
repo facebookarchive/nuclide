@@ -464,8 +464,8 @@ class NuclideBridge {
   _handleDebuggerPaused(event: WebInspector$Event) {
     endTimerTracking();
     ++this._debuggerPausedCount;
+
     if (this._debuggerPausedCount === 1) {
-      ipcRenderer.sendToHost('notification', 'LoaderBreakpointHit', {});
       this._handleLoaderBreakpoint();
     } else {
       ipcRenderer.sendToHost('notification', 'NonLoaderDebuggerPaused', {
@@ -473,8 +473,9 @@ class NuclideBridge {
         threadSwitchNotification: this._generateThreadSwitchNotification(
           event.data.threadSwitchMessage, event.data.location),
       });
+      // Only send callstack for non-loader breakpoint pause.
+      this._sendCallstack();
     }
-    this._sendCallstack();
   }
 
   _generateThreadSwitchNotification(message?: string, location?: Object): ?Object {
@@ -737,6 +738,12 @@ class NuclideBridge {
   }
 
   _handleThreadsUpdated(event: WebInspector.Event): void {
+    // Debugger.ThreadsUpdate happens before Debugger.paused
+    // so the first Debugger.ThreadsUpdate has this._debuggerPausedCount
+    // of zero.
+    if (this._debuggerPausedCount < 1) {
+      return;
+    }
     ipcRenderer.sendToHost('notification', 'ThreadsUpdate', event.data);
   }
 
