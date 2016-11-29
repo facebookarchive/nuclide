@@ -1,30 +1,54 @@
 # Nuclide Changelog
 
+## v0.185.0
+
 ### Highlights
 
 * When you right click on the file tree, it now highlights the row you clicked on!
 
+### General
+
+* Make remote "Search in Directory" behaviour more consistent.
+* Performance improvements for remote "Search in Directory".
+* Make remote "Search in Directory” work with multiple projects.
+* Fix Task Runner alphabetical ordering.
+* Buck toolbar no longer includes a “React Native Server” checkbox for iOS/Android targets.
+* New icon for active project root in the file tree.
+* File Tree no longer “jumps” when editing a Working Set.
+
 ### File tree
 
-* The [+] icon for the working set no longer jumps around when scrolling.
+* The `[+]` icon for the working set no longer jumps around when scrolling.
 * Do not show (default) bubble next to the root.
 
 ### Debugger
 
 * Watch expressions are working again.
+* Debugger highlights the current stack frame in the call stack.
+* Fix issue with launching scripts with arguments under the PHP debugger.
 
 ### Diagnostics
 
-* The yellow and red ~~~~ underlines no longer extends to the end of the line.
+* The yellow and red `~~~~` underlines no longer extends to the end of the line.
 
 ### Datatip
 
 * Once interacted with (clicking, selecting text or scrolling horizontally), the datatip closes less aggressively when you mouse out of it.
 * When switching tabs or applications, it should no longer trigger a datatip without moving the mouse.
 
+### Diff view
+
+* The amend button is no longer enabled when the top commit isn't yours.
+* Clicking on the diff gutter no longer creates a breakpoint.
+
 ### OCaml/Reason
 
-* Fix bug in formatting `rei` and `mli` files
+* Fix bug in formatting `rei` and `mli` files.
+
+### Task Runner Toolbar
+
+* Task selection dropdown  and action button have been separated.
+* UI no longer jumps when the active project root changes or is set for the first time.
 
 ## v0.184.0
 
