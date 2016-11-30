@@ -11,6 +11,7 @@
 
 import type FileTreeContextMenu from '../../nuclide-file-tree/lib/FileTreeContextMenu';
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import invariant from 'assert';
 import registerGrammar from '../../commons-atom/register-grammar';
@@ -97,6 +98,15 @@ export function activate(state: any): void {
 
   subscriptions.add(atom.commands.add(
     'atom-text-editor',
+    'nuclide-hg-repository:confirm-and-revert',
+    event => {
+      const editorElement: atom$TextEditorElement = (event.target: any);
+      confirmAndRevertPath(editorElement.getModel().getPath());
+    },
+  ));
+
+  subscriptions.add(atom.commands.add(
+    'atom-text-editor',
     'nuclide-hg-repository:add',
     event => {
       const editorElement: atom$TextEditorElement = (event.target: any);
@@ -113,7 +123,7 @@ export function activate(state: any): void {
         submenu: [
           {
             label: 'Revert',
-            command: 'nuclide-hg-repository:revert',
+            command: 'nuclide-hg-repository:confirm-and-revert',
             shouldDisplay() {
               return isActivePathRevertable();
             },
@@ -146,7 +156,7 @@ export function addItemsToFileTreeContextMenu(contextMenu: FileTreeContextMenu):
       callback() {
         // TODO(most): support reverting multiple nodes at once.
         const revertNode = contextMenu.getSingleSelectedNode();
-        revertPath(revertNode == null ? null : revertNode.uri);
+        confirmAndRevertPath(revertNode == null ? null : revertNode.uri);
       },
       shouldDisplay() {
         return shouldDisplayActionTreeItem(contextMenu, 'Revert');
@@ -178,6 +188,17 @@ export function addItemsToFileTreeContextMenu(contextMenu: FileTreeContextMenu):
       subscriptions.remove(addContextDisposable);
     }
   });
+}
+
+function confirmAndRevertPath(path: ?NuclideUri): void {
+  const result = atom.confirm({
+    message: 'Are you sure you want to revert?',
+    buttons: ['Revert', 'Cancel'],
+  });
+  invariant(result === 0 || result === 1);
+  if (result === 0) {
+    revertPath(path);
+  }
 }
 
 export function deactivate(state: any): void {
