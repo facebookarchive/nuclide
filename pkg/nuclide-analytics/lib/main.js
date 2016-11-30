@@ -98,11 +98,11 @@ export function startTracking(eventName: string): TimingTracker {
  *
  * Usage:
  *
- * analytics.trackOperationTiming('my-package-some-long-operation' () => doit());
+ * analytics.trackTiming('my-package-some-long-operation' () => doit());
  *
  * Returns (or throws) the result of the operation.
  */
-export function trackOperationTiming<T>(eventName: string, operation: () => T): T {
+export function trackTiming<T>(eventName: string, operation: () => T): T {
   const tracker = startTracking(eventName);
 
   try {

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {trackOperationTiming} from '../../nuclide-analytics';
+import {trackTiming} from '../../nuclide-analytics';
 import {getLogger} from '../../nuclide-logging';
 
 import libclang from './libclang';
@@ -19,7 +19,7 @@ export default class CodeFormatHelpers {
     newCursor?: number,
     formatted: string,
   }> {
-    return trackOperationTiming('nuclide-clang-format.formatCode', async () => {
+    return trackTiming('nuclide-clang-format.formatCode', async () => {
       try {
         return await libclang.formatCode(editor, range);
       } catch (e) {

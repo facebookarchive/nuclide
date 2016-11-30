@@ -20,7 +20,7 @@ import BlameGutter from './BlameGutter';
 import {getLogger} from '../../nuclide-logging';
 import {goToLocation} from '../../commons-atom/go-to-location';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
-import {track, trackOperationTiming} from '../../nuclide-analytics';
+import {track, trackTiming} from '../../nuclide-analytics';
 
 const PACKAGES_MISSING_MESSAGE = 'Could not open blame. Missing at least one blame provider.';
 const TOGGLE_BLAME_FILE_TREE_CONTEXT_MENU_PRIORITY = 2000;
@@ -142,7 +142,7 @@ class Activation {
    */
 
   _showBlame(event): void {
-    return trackOperationTiming('blame.showBlame', () => {
+    return trackTiming('blame.showBlame', () => {
       const editor = atom.workspace.getActiveTextEditor();
       if (editor != null) {
         this._showBlameGutterForEditor(editor);
@@ -151,7 +151,7 @@ class Activation {
   }
 
   _hideBlame(event): void {
-    return trackOperationTiming('blame.hideBlame', () => {
+    return trackTiming('blame.hideBlame', () => {
       const editor = atom.workspace.getActiveTextEditor();
       if (editor != null) {
         this._removeBlameGutterForEditor(editor);

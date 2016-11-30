@@ -25,7 +25,7 @@ import {arrayCompact} from '../../commons-node/collection';
 import {React, ReactDOM} from 'react-for-atom';
 import {observeTextEditorsPositions} from '../../commons-atom/debounced';
 import {Observable} from 'rxjs';
-import {track, trackOperationTiming} from '../../nuclide-analytics';
+import {track, trackTiming} from '../../nuclide-analytics';
 import {getLogger} from '../../nuclide-logging';
 import ContextViewMessage from './ContextViewMessage';
 import {ContextViewPanel} from './ContextViewPanel';
@@ -157,7 +157,7 @@ export class ContextViewManager {
         EDITOR_DEBOUNCE_INTERVAL, POSITION_DEBOUNCE_INTERVAL)
         .filter((editorPos: ?EditorPosition) => editorPos != null)
         .map((editorPos: ?EditorPosition) => {
-          return trackOperationTiming('nuclide-context-view:getDefinition', () => {
+          return trackTiming('nuclide-context-view:getDefinition', () => {
             invariant(editorPos != null);
             invariant(this._definitionService != null);
             return this._definitionService.getDefinition(editorPos.editor, editorPos.position)

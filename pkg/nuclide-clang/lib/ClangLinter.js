@@ -15,7 +15,7 @@ import type {
 import type {LinterMessage} from '../../nuclide-diagnostics-common';
 
 import invariant from 'assert';
-import {track, trackOperationTiming} from '../../nuclide-analytics';
+import {track, trackTiming} from '../../nuclide-analytics';
 import featureConfig from '../../commons-atom/featureConfig';
 import {wordAtPosition} from '../../commons-atom/range';
 import {getLogger} from '../../nuclide-logging';
@@ -58,7 +58,7 @@ export default class ClangLinter {
   static lint(
     textEditor: atom$TextEditor,
   ): Promise<Array<LinterMessage>> {
-    return trackOperationTiming(
+    return trackTiming(
       'nuclide-clang-atom.fetch-diagnostics',
       () => ClangLinter._lint(textEditor),
     );

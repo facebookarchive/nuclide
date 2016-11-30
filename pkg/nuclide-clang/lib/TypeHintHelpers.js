@@ -11,7 +11,7 @@
 
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 
-import {trackOperationTiming} from '../../nuclide-analytics';
+import {trackTiming} from '../../nuclide-analytics';
 import {getDeclaration} from './libclang';
 
 // Types longer than this will be truncated.
@@ -22,7 +22,7 @@ export default class TypeHintHelpers {
     editor: atom$TextEditor,
     position: atom$Point,
   ): Promise<?TypeHint> {
-    return trackOperationTiming('nuclide-clang-atom.typeHint', async () => {
+    return trackTiming('nuclide-clang-atom.typeHint', async () => {
       const decl = await getDeclaration(editor, position.row, position.column);
       if (decl == null) {
         return null;

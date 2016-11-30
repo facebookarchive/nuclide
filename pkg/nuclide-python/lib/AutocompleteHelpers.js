@@ -13,7 +13,7 @@ import typeof * as PythonService from '../../nuclide-python-rpc';
 import type {PythonCompletion} from '../../nuclide-python-rpc/lib/PythonService';
 
 import invariant from 'assert';
-import {trackOperationTiming} from '../../nuclide-analytics';
+import {trackTiming} from '../../nuclide-analytics';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {TYPES} from './constants';
 import {getAutocompleteArguments, getIncludeOptionalArguments} from './config';
@@ -57,7 +57,7 @@ export default class AutocompleteHelpers {
   static getAutocompleteSuggestions(
     request: atom$AutocompleteRequest,
   ): Promise<Array<atom$AutocompleteSuggestion>> {
-    return trackOperationTiming(
+    return trackTiming(
       'nuclide-python:getAutocompleteSuggestions',
       () => AutocompleteHelpers._getAutocompleteSuggestions(request),
     );

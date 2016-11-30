@@ -11,7 +11,7 @@
 
 import typeof * as PythonService from '../../nuclide-python-rpc';
 
-import {trackOperationTiming} from '../../nuclide-analytics';
+import {trackTiming} from '../../nuclide-analytics';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import invariant from 'assert';
 
@@ -21,7 +21,7 @@ export default class CodeFormatHelpers {
     newCursor?: number,
     formatted: string,
   }> {
-    return trackOperationTiming('python.formatCode', async () => {
+    return trackTiming('python.formatCode', async () => {
       const buffer = editor.getBuffer();
       const src = editor.getPath();
       if (!src) {

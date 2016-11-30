@@ -16,7 +16,7 @@ import type {
 } from '../../nuclide-refactorizer';
 
 import invariant from 'assert';
-import {trackOperationTiming} from '../../nuclide-analytics';
+import {trackTiming} from '../../nuclide-analytics';
 import {getDiagnostics, getDeclarationInfo, getLocalReferences} from './libclang';
 
 const SUPPORTED_CURSORS = new Set(['VAR_DECL', 'PARM_DECL']);
@@ -37,7 +37,7 @@ export default class RefactoringHelpers {
     editor: atom$TextEditor,
     point: atom$Point,
   ): Promise<Array<AvailableRefactoring>> {
-    return trackOperationTiming(
+    return trackTiming(
       'nuclide-clang:refactoringsAtPoint',
       () => RefactoringHelpers._refactoringsAtPoint(editor, point),
     );
@@ -68,7 +68,7 @@ export default class RefactoringHelpers {
   }
 
   static refactor(request: RefactorRequest): Promise<?RefactorResponse> {
-    return trackOperationTiming(
+    return trackTiming(
       'nuclide-clang:refactor',
       () => RefactoringHelpers._refactor(request),
     );

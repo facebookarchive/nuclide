@@ -38,7 +38,7 @@ import classnames from 'classnames';
 import {Disposable} from 'atom';
 import {
   track,
-  trackOperationTiming,
+  trackTiming,
 } from '../../nuclide-analytics';
 import RemoteControlService from './RemoteControlService';
 import DebuggerModel from './DebuggerModel';
@@ -338,7 +338,7 @@ class Activation {
   }
 
   _toggleBreakpoint() {
-    return trackOperationTiming('nuclide-debugger-atom:toggleBreakpoint', () => {
+    return trackTiming('nuclide-debugger-atom:toggleBreakpoint', () => {
       this._executeWithEditorPath((filePath, line) => {
         this._model.getActions().toggleBreakpoint(filePath, line);
       });

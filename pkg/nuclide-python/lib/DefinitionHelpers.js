@@ -20,7 +20,7 @@ import invariant from 'assert';
 import {Point} from 'atom';
 import {wordAtPosition} from '../../commons-atom/range';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
-import {trackOperationTiming} from '../../nuclide-analytics';
+import {trackTiming} from '../../nuclide-analytics';
 import {GRAMMAR_SET} from './constants';
 
 export default class DefinitionHelpers {
@@ -29,7 +29,7 @@ export default class DefinitionHelpers {
     editor: TextEditor,
     position: atom$Point,
   ): Promise<?DefinitionQueryResult> {
-    return trackOperationTiming(
+    return trackTiming(
       'python.get-definition',
       () => DefinitionHelpers._getDefinition(editor, position),
     );
@@ -94,7 +94,7 @@ export default class DefinitionHelpers {
     filePath: NuclideUri,
     id: string,
   ): Promise<?Definition> {
-    return trackOperationTiming('python.get-definition-by-id', async () => {
+    return trackTiming('python.get-definition-by-id', async () => {
       // TODO:
       return null;
     });

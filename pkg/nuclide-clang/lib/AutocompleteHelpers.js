@@ -13,7 +13,7 @@ import type {ClangCompletion} from '../../nuclide-clang-rpc/lib/rpc-types';
 
 import {Point} from 'atom';
 import {arrayFindLastIndex} from '../../commons-node/collection';
-import {trackOperationTiming} from '../../nuclide-analytics';
+import {trackTiming} from '../../nuclide-analytics';
 import {ClangCursorToDeclarationTypes} from '../../nuclide-clang-rpc';
 import {getCompletions} from './libclang';
 
@@ -209,7 +209,7 @@ export default class AutocompleteHelpers {
   static getAutocompleteSuggestions(
     request: atom$AutocompleteRequest,
   ): Promise<Array<atom$AutocompleteSuggestion>> {
-    return trackOperationTiming(
+    return trackTiming(
       'nuclide-clang-atom.autocomplete',
       () => AutocompleteHelpers._getAutocompleteSuggestions(request),
     );

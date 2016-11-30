@@ -13,14 +13,14 @@ import type {LinterMessage} from '../../nuclide-diagnostics-common';
 
 import invariant from 'assert';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
-import {trackOperationTiming} from '../../nuclide-analytics';
+import {trackTiming} from '../../nuclide-analytics';
 import {getDiagnosticRange} from './diagnostic-range';
 import {getEnableLinting} from './config';
 
 export default class LintHelpers {
 
   static lint(editor: TextEditor): Promise<Array<LinterMessage>> {
-    return trackOperationTiming('nuclide-python.lint', async () => {
+    return trackTiming('nuclide-python.lint', async () => {
       const src = editor.getPath();
       if (src == null || !getEnableLinting()) {
         return [];

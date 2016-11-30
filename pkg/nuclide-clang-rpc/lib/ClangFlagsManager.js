@@ -14,7 +14,7 @@ import os from 'os';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {shellParse} from '../../commons-node/string';
 import {Observable} from 'rxjs';
-import {trackOperationTiming} from '../../nuclide-analytics';
+import {trackTiming} from '../../nuclide-analytics';
 import fsPromise from '../../commons-node/fsPromise';
 import {getLogger} from '../../nuclide-logging';
 import * as BuckService from '../../nuclide-buck-rpc';
@@ -139,7 +139,7 @@ export default class ClangFlagsManager {
   }
 
   _getFlagsForSrcImpl(src: string): Promise<?ClangFlags> {
-    return trackOperationTiming(
+    return trackTiming(
       'nuclide-clang.get-flags',
       () => this.__getFlagsForSrcImpl(src),
     );

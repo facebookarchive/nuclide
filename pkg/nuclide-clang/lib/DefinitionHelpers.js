@@ -19,7 +19,7 @@ import {getDeclaration} from './libclang';
 import findWholeRangeOfSymbol from './findWholeRangeOfSymbol';
 import invariant from 'assert';
 import {wordAtPosition} from '../../commons-atom/range';
-import {trackOperationTiming} from '../../nuclide-analytics';
+import {trackTiming} from '../../nuclide-analytics';
 import {GRAMMAR_SET, IDENTIFIER_REGEXP} from './constants';
 
 export default class DefinitionHelpers {
@@ -28,7 +28,7 @@ export default class DefinitionHelpers {
     editor: TextEditor,
     position: atom$Point,
   ): Promise<?DefinitionQueryResult> {
-    return trackOperationTiming(
+    return trackTiming(
       'clang.get-definition',
       () => DefinitionHelpers._getDefinition(editor, position),
     );
@@ -84,7 +84,7 @@ export default class DefinitionHelpers {
     filePath: NuclideUri,
     id: string,
   ): Promise<?Definition> {
-    return trackOperationTiming('clang.get-definition-by-id', async () => {
+    return trackTiming('clang.get-definition-by-id', async () => {
       // TODO:
       return null;
     });

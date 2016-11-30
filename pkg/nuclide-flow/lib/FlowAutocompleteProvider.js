@@ -14,7 +14,7 @@ import type {FlowAutocompleteItem} from '../../nuclide-flow-rpc';
 import invariant from 'assert';
 import {filter} from 'fuzzaldrin';
 
-import {trackOperationTiming} from '../../nuclide-analytics';
+import {trackTiming} from '../../nuclide-analytics';
 import AutocompleteCacher from '../../commons-atom/AutocompleteCacher';
 import passesGK from '../../commons-node/passesGK';
 
@@ -32,7 +32,7 @@ export default class FlowAutocompleteProvider {
   getSuggestions(
     request: atom$AutocompleteRequest,
   ): Promise<?Array<atom$AutocompleteSuggestion>> {
-    return trackOperationTiming(
+    return trackTiming(
       'flow.autocomplete',
       () => this._getSuggestions(request),
     );

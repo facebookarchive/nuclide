@@ -13,7 +13,7 @@ import typeof * as HgService from '../../nuclide-hg-rpc/lib/HgService';
 
 import {Directory} from 'atom';
 import invariant from 'assert';
-import {trackOperationTiming} from '../../nuclide-analytics';
+import {trackTiming} from '../../nuclide-analytics';
 import {
   RemoteDirectory,
   getServiceByNuclideUri,
@@ -84,7 +84,7 @@ export default class HgRepositoryProvider {
   }
 
   repositoryForDirectorySync(directory: Directory): ?HgRepositoryClient {
-    return trackOperationTiming('hg-repository.repositoryForDirectorySync', () => {
+    return trackTiming('hg-repository.repositoryForDirectorySync', () => {
       try {
         const repositoryDescription = getRepositoryDescription(directory);
         if (!repositoryDescription) {

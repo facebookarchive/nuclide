@@ -14,7 +14,7 @@ export type TimeStamp = number;
 export type FileList = Array<{path: FilePath, timestamp: TimeStamp}>;
 
 import {CompositeDisposable} from 'atom';
-import {trackOperationTiming} from '../../nuclide-analytics';
+import {trackTiming} from '../../nuclide-analytics';
 
 class RecentFilesService {
   // Map uses `Map`'s insertion ordering to keep files in order.
@@ -54,7 +54,7 @@ class RecentFilesService {
    * Returns a reverse-chronological list of recently opened files.
    */
   getRecentFiles(): FileList {
-    return trackOperationTiming('RecentFilesService.getRecentFiles', () => {
+    return trackTiming('RecentFilesService.getRecentFiles', () => {
       return Array.from(this._fileList).reverse().map(pair =>
         ({
           path: pair[0],

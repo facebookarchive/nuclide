@@ -10,7 +10,7 @@
  */
 
 import {CompositeDisposable} from 'atom';
-import {trackOperationTiming, track} from '../../nuclide-analytics';
+import {trackTiming, track} from '../../nuclide-analytics';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {getLogger} from '../../nuclide-logging';
@@ -43,7 +43,7 @@ class FileWatcher {
   }
 
   _promptReload(): Promise<any> {
-    return trackOperationTiming(
+    return trackTiming(
       'file-watcher:promptReload',
       () => this.__promptReload(),
     );

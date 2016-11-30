@@ -13,7 +13,7 @@ import type {Outline, OutlineTree} from '../../nuclide-outline-view/lib/rpc-type
 import type {ClangOutlineTree} from '../../nuclide-clang-rpc/lib/rpc-types';
 import type {TokenizedText} from '../../commons-node/tokenizedText-rpc-types';
 
-import {trackOperationTiming} from '../../nuclide-analytics';
+import {trackTiming} from '../../nuclide-analytics';
 import {sleep} from '../../commons-node/promise';
 import {ClangCursorTypes} from '../../nuclide-clang-rpc';
 import {
@@ -124,7 +124,7 @@ export function outlineFromClangOutline(outline: Array<ClangOutlineTree>): Array
 
 export default class OutlineViewHelpers {
   static getOutline(editor: atom$TextEditor): Promise<?Outline> {
-    return trackOperationTiming('nuclide-clang-atom:outline-view', async () => {
+    return trackTiming('nuclide-clang-atom:outline-view', async () => {
       // HACK: Since outline view and diagnostics both trigger on save, favor diagnostics.
       await sleep(0);
       const clangOutline = await getOutline(editor);

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {trackOperationTiming} from '../../nuclide-analytics';
+import {trackTiming} from '../../nuclide-analytics';
 
 export default class CodeFormatHelpers {
 
@@ -17,7 +17,7 @@ export default class CodeFormatHelpers {
     newCursor?: number,
     formatted: string,
   }> {
-    return trackOperationTiming('json.formatCode', () => {
+    return trackTiming('json.formatCode', () => {
       const buffer_as_json = JSON.parse(editor.getBuffer().getText());
       const formatted = JSON.stringify(buffer_as_json, null, editor.getTabLength());
       return Promise.resolve({formatted});

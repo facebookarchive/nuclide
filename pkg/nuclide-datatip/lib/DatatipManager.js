@@ -21,7 +21,7 @@ import {
 
 import debounce from '../../commons-node/debounce';
 import {arrayCompact, arrayRemove} from '../../commons-node/collection';
-import {track, trackOperationTiming} from '../../nuclide-analytics';
+import {track, trackTiming} from '../../nuclide-analytics';
 import {getLogger} from '../../nuclide-logging';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {Observable} from 'rxjs';
@@ -105,7 +105,7 @@ async function fetchDatatip(editor, position, allProviders, onPinClick) {
   const renderedProviders = arrayCompact(await Promise.all(
     providers.map(async (provider: DatatipProvider): Promise<?Object> => {
       const name = getProviderName(provider);
-      const datatip = await trackOperationTiming(
+      const datatip = await trackTiming(
         name + '.datatip',
         () => provider.datatip(editor, position),
       );

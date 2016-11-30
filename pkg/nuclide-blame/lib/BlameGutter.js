@@ -15,7 +15,7 @@ import type {
   BlameProvider,
 } from './types';
 
-import {track, trackOperationTiming} from '../../nuclide-analytics';
+import {track, trackTiming} from '../../nuclide-analytics';
 import {CompositeDisposable} from 'atom';
 import invariant from 'assert';
 import {shell} from 'electron';
@@ -179,7 +179,7 @@ export default class BlameGutter {
   }
 
   _updateBlame(blameForEditor: BlameForEditor): void {
-    return trackOperationTiming(
+    return trackTiming(
       'blame-ui.blame-gutter.updateBlame',
       () => this.__updateBlame(blameForEditor),
     );

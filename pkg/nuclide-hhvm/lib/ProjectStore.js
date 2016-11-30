@@ -16,7 +16,7 @@ import {BehaviorSubject} from 'rxjs';
 
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {isFileInHackProject} from '../../nuclide-hack/lib/HackLanguage';
-import {trackOperationTiming} from '../../nuclide-analytics';
+import {trackTiming} from '../../nuclide-analytics';
 import nuclideUri from '../../commons-node/nuclideUri';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 
@@ -70,7 +70,7 @@ class ProjectStore {
   }
 
   _isFileHHVMProject(fileUri: ?string): Promise<boolean> {
-    return trackOperationTiming('toolbar.isFileHHVMProject', async () => {
+    return trackTiming('toolbar.isFileHHVMProject', async () => {
       return (
         fileUri != null &&
         nuclideUri.isRemote(fileUri) &&

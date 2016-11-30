@@ -13,7 +13,7 @@ import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 import type {MerlinType} from '../../nuclide-ocaml-rpc';
 
 import {Point, Range} from 'atom';
-import {trackOperationTiming} from '../../nuclide-analytics';
+import {trackTiming} from '../../nuclide-analytics';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 // Ignore typehints that span too many lines. These tend to be super spammy.
@@ -26,7 +26,7 @@ const MAX_LENGTH = 100;
 export default class TypeHintProvider {
 
   typeHint(editor: atom$TextEditor, position: atom$Point): Promise<?TypeHint> {
-    return trackOperationTiming('nuclide-ocaml.typeHint', async () => {
+    return trackTiming('nuclide-ocaml.typeHint', async () => {
       const path = editor.getPath();
       if (path == null) {
         return null;

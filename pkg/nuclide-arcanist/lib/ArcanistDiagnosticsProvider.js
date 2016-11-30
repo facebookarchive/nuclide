@@ -26,7 +26,7 @@ import {Subject} from 'rxjs';
 import {DiagnosticsProviderBase} from '../../nuclide-diagnostics-provider-base';
 
 import featureConfig from '../../commons-atom/featureConfig';
-import {trackOperationTiming} from '../../nuclide-analytics';
+import {trackTiming} from '../../nuclide-analytics';
 import onWillDestroyTextBuffer from '../../commons-atom/on-will-destroy-text-buffer';
 import {removeCommonSuffix} from '../../commons-node/string';
 import invariant from 'assert';
@@ -84,7 +84,7 @@ export class ArcanistDiagnosticsProvider {
 
   /** Do not call this directly -- call _runLintWithBusyMessage */
   _runLint(textEditor: TextEditor): Promise<void> {
-    return trackOperationTiming(
+    return trackTiming(
       'nuclide-arcanist:lint',
       () => this.__runLint(textEditor),
     );
