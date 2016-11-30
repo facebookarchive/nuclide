@@ -120,7 +120,7 @@ export function activate(state: any): void {
           },
           {
             label: 'Add to Mercurial',
-            command: 'nuclide-hg-repository:revert',
+            command: 'nuclide-hg-repository:add',
             shouldDisplay() {
               return isActivePathAddable();
             },
