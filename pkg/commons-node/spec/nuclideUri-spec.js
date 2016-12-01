@@ -16,6 +16,7 @@ import path from 'path';
 describe('nuclide-uri', () => {
   const localUri = '/usr/local/file';
   const badRemoteUriNoPath = 'nuclide://fb.com';
+  const atomUri = 'atom://bla/bla';
   const remoteUri = nuclideUri.createRemoteUri('fb.com', '/usr/local');
   const remoteUriWithSpaces = nuclideUri.createRemoteUri('fb.com', '/a b/c d');
   const remoteUriWithHashes = nuclideUri.createRemoteUri('fb.co.uk', '/ab/#c.d  #');
@@ -23,12 +24,14 @@ describe('nuclide-uri', () => {
   it('isRemote', () => {
     expect(nuclideUri.isRemote('/')).toBe(false);
     expect(nuclideUri.isRemote(remoteUri)).toBe(true);
+    expect(nuclideUri.isRemote(atomUri)).toBe(false);
   });
 
   it('isLocal', () => {
     expect(nuclideUri.isLocal('/')).toBe(true);
     expect(nuclideUri.isLocal(remoteUri)).toBe(false);
     expect(nuclideUri.isLocal('C:\\abc')).toBe(true);
+    expect(nuclideUri.isLocal(atomUri)).toBe(false);
   });
 
   it('createRemoteUri', () => {
@@ -42,6 +45,7 @@ describe('nuclide-uri', () => {
     expect(nuclideUri.join(remoteUri, 'bin')).toBe('nuclide://fb.com/usr/local/bin');
     expect(nuclideUri.join('/usr/local', '..')).toBe('/usr');
     expect(nuclideUri.join(remoteUri, '..')).toBe('nuclide://fb.com/usr');
+    expect(() => nuclideUri.join(atomUri)).toThrow();
   });
 
   describe('parsing remote', () => {
@@ -59,6 +63,12 @@ describe('nuclide-uri', () => {
       const parsedUri = nuclideUri.parse(remoteUriWithHashes);
       expect(parsedUri.hostname).toBe('fb.co.uk');
       expect(parsedUri.pathname).toBe('/ab/#c.d  #');
+    });
+
+    it('throws when given an Atom URI', () => {
+      expect(() => nuclideUri.getHostname(atomUri)).toThrow();
+      expect(() => nuclideUri.getPath(atomUri)).toThrow();
+      expect(() => nuclideUri.parse(atomUri)).toThrow();
     });
   });
 
@@ -89,6 +99,8 @@ describe('nuclide-uri', () => {
     expect(nuclideUri.basename('C:\\abc\\def\\')).toBe('def');
     expect(nuclideUri.basename('\\abc\\def')).toBe('def');
     expect(nuclideUri.basename('\\abc\\def\\')).toBe('def');
+
+    expect(() => nuclideUri.basename(atomUri)).toThrow();
   });
 
   it('dirname', () => {
@@ -112,6 +124,8 @@ describe('nuclide-uri', () => {
     expect(nuclideUri.dirname('C:\\abc\\def\\')).toBe('C:\\abc');
     expect(nuclideUri.dirname('\\abc\\def')).toBe('\\abc');
     expect(nuclideUri.dirname('\\abc\\def\\')).toBe('\\abc');
+
+    expect(() => nuclideUri.dirname(atomUri)).toThrow();
   });
 
   it('extname', () => {
@@ -143,11 +157,14 @@ describe('nuclide-uri', () => {
     expect(nuclideUri.extname('\\abc\\def.dir\\')).toBe('.dir');
     expect(nuclideUri.extname('\\abc\\def.')).toBe('.');
     expect(nuclideUri.extname('\\abc\\def.xml')).toBe('.xml');
+
+    expect(() => nuclideUri.extname(atomUri)).toThrow();
   });
 
   it('getParent', () => {
     expect(nuclideUri.getParent(localUri)).toBe('/usr/local');
     expect(nuclideUri.getParent(remoteUri)).toBe('nuclide://fb.com/usr');
+    expect(() => nuclideUri.getParent(atomUri)).toThrow();
   });
 
   it('contains', () => {
@@ -157,6 +174,8 @@ describe('nuclide-uri', () => {
     expect(nuclideUri.contains('/foo/bar', '/foo/bar/')).toBe(true);
     expect(nuclideUri.contains('/foo/bar/', '/foo/bar/')).toBe(true);
     expect(nuclideUri.contains('/foo/bar/', '/foo/bar')).toBe(true);
+    expect(() => nuclideUri.contains(atomUri, '/foo/bar')).toThrow();
+    expect(() => nuclideUri.contains('/foo/bar', atomUri)).toThrow();
   });
 
   it('collapse', () => {
@@ -182,6 +201,7 @@ describe('nuclide-uri', () => {
     expect(nuclideUri.normalize('/usr/local/..')).toBe('/usr');
     expect(nuclideUri.normalize('nuclide://fb.com/usr/local/..')).toBe('nuclide://fb.com/usr');
     expect(nuclideUri.normalize('/a b/c d/..')).toBe('/a b');
+    expect(() => nuclideUri.normalize(atomUri)).toThrow();
   });
 
   it('relative', () => {
@@ -194,11 +214,13 @@ describe('nuclide-uri', () => {
       .toBe('..');
     expect(nuclideUri.relative(nuclideUri.dirname(localUri), localUri)).toBe('file');
     expect(nuclideUri.relative(localUri, nuclideUri.dirname(localUri))).toBe('..');
+    expect(() => nuclideUri.relative(atomUri, 'foo')).toThrow();
   });
 
   it('nuclideUriToDisplayString', () => {
     expect(nuclideUri.nuclideUriToDisplayString(localUri)).toBe(localUri);
     expect(nuclideUri.nuclideUriToDisplayString(remoteUri)).toBe('fb.com//usr/local');
+    expect(() => nuclideUri.nuclideUriToDisplayString(atomUri)).toThrow();
   });
 
   describe('isRoot', () => {
@@ -221,6 +243,8 @@ describe('nuclide-uri', () => {
     it('win diskful non-root', () => expect(nuclideUri.isRoot('C:\\abc')).toBe(false));
 
     it('win relative', () => expect(nuclideUri.isRoot('abc\\def')).toBe(false));
+
+    it('throws on Atom URIs', () => expect(() => nuclideUri.basename(atomUri)).toThrow());
   });
 
   it('adds a proper suffix when needed', () => {
@@ -243,6 +267,7 @@ describe('nuclide-uri', () => {
     expect(nuclideUri.ensureTrailingSeparator('C:\\abc\\def\\')).toBe('C:\\abc\\def\\');
     expect(nuclideUri.ensureTrailingSeparator('\\abc\\def')).toBe('\\abc\\def\\');
     expect(nuclideUri.ensureTrailingSeparator('\\abc\\def\\')).toBe('\\abc\\def\\');
+    expect(() => nuclideUri.ensureTrailingSeparator(atomUri)).toThrow();
   });
 
   it('properly removes suffix when needed', () => {
@@ -272,6 +297,7 @@ describe('nuclide-uri', () => {
     expect(nuclideUri.trimTrailingSeparator('\\\\')).toBe('\\');
     expect(nuclideUri.trimTrailingSeparator('\\abc\\def')).toBe('\\abc\\def');
     expect(nuclideUri.trimTrailingSeparator('\\abc\\def\\')).toBe('\\abc\\def');
+    expect(() => nuclideUri.trimTrailingSeparator(atomUri)).toThrow();
   });
 
   it('isAbsolute', () => {
@@ -290,6 +316,7 @@ describe('nuclide-uri', () => {
     expect(nuclideUri.isAbsolute('abc/def')).toBe(false);
 
     expect(nuclideUri.isAbsolute('abc\\def')).toBe(false);
+    expect(() => nuclideUri.isAbsolute(atomUri)).toThrow();
   });
 
 
@@ -330,6 +357,7 @@ describe('nuclide-uri', () => {
     expect(nuclideUri.resolve('\\abc', 'def')).toBe('\\abc\\def');
     expect(nuclideUri.resolve('\\abc', '..\\def')).toBe('\\def');
     expect(nuclideUri.resolve('\\abc', '..', 'def')).toBe('\\def');
+    expect(() => nuclideUri.resolve(atomUri, '..')).toThrow();
   });
 
   describe('expandHomeDir()', () => {
@@ -345,6 +373,10 @@ describe('nuclide-uri', () => {
 
     it('keeps ~def to ~def', () => {
       expect(nuclideUri.expandHomeDir('~def')).toBe('~def');
+    });
+
+    it('throws on Atom URIs', () => {
+      expect(() => nuclideUri.expandHomeDir(atomUri)).toThrow();
     });
   });
 

@@ -72,12 +72,17 @@ function isBrokenDeserializedUri(uri: ?NuclideUri): boolean {
   return uri != null && uri.match(/nuclide:[\\/][^/]/) != null;
 }
 
+// Atom often puts its URIs in places where we'd expect to see Nuclide URIs (or plain paths)
+function isAtomUri(uri: NuclideUri): boolean {
+  return uri.startsWith('atom://');
+}
+
 function isUri(uri: string): boolean {
   return URI_PREFIX_REGEX.test(uri);
 }
 
 function isLocal(uri: NuclideUri): boolean {
-  return !isRemote(uri) && !isUri(uri);
+  return !isRemote(uri) && !isUri(uri) && !isAtomUri(uri);
 }
 
 function createRemoteUri(hostname: string, remotePath: string): string {
@@ -104,6 +109,8 @@ function createRemoteUri(hostname: string, remotePath: string): string {
  *         }
  */
 function parse(uri: NuclideUri): ParsedUrl {
+  _testForAtomUri(uri);
+
   const parsedUri = url.parse(_escapeSpecialCharacters(uri));
   if (parsedUri.protocol == null) {
     return {
@@ -205,6 +212,7 @@ function getHostnameOpt(remoteUri: ?NuclideUri): ?string {
 }
 
 function join(uri: NuclideUri, ...relativePath: Array<string>): NuclideUri {
+  _testForAtomUri(uri);
   const uriPathModule = _pathModuleFor(uri);
   if (isRemote(uri)) {
     const {hostname, path} = parseRemoteUri(uri);
@@ -219,6 +227,7 @@ function join(uri: NuclideUri, ...relativePath: Array<string>): NuclideUri {
 }
 
 function normalize(uri: NuclideUri): NuclideUri {
+  _testForAtomUri(uri);
   const uriPathModule = _pathModuleFor(uri);
   if (isRemote(uri)) {
     const {hostname, path} = parseRemoteUri(uri);
@@ -241,6 +250,7 @@ function getParent(uri: NuclideUri): NuclideUri {
 }
 
 function relative(uri: NuclideUri, other: NuclideUri): string {
+  _testForAtomUri(uri);
   const uriPathModule = _pathModuleFor(uri);
   const remote = isRemote(uri);
   if (remote !== isRemote(other) ||
@@ -255,11 +265,13 @@ function relative(uri: NuclideUri, other: NuclideUri): string {
 }
 
 function basename(uri: NuclideUri, ext: string = ''): string {
+  _testForAtomUri(uri);
   const uriPathModule = _pathModuleFor(uri);
   return uriPathModule.basename(getPath(uri), ext);
 }
 
 function dirname(uri: NuclideUri): NuclideUri {
+  _testForAtomUri(uri);
   const uriPathModule = _pathModuleFor(uri);
   if (isRemote(uri)) {
     const {hostname, path} = parseRemoteUri(uri);
@@ -273,11 +285,13 @@ function dirname(uri: NuclideUri): NuclideUri {
 }
 
 function extname(uri: NuclideUri): string {
+  _testForAtomUri(uri);
   const uriPathModule = _pathModuleFor(uri);
   return uriPathModule.extname(getPath(uri));
 }
 
 function stripExtension(uri: NuclideUri): NuclideUri {
+  _testForAtomUri(uri);
   const ext = extname(uri);
   if (ext.length === 0) {
     return uri;
@@ -307,6 +321,7 @@ function uriToNuclideUri(uri: string): ?string {
  * Converts local paths to file: URI's. Leaves remote URI's alone.
  */
 function nuclideUriToUri(uri: NuclideUri): string {
+  _testForAtomUri(uri);
   if (isRemote(uri)) {
     return uri;
   } else {
@@ -318,6 +333,9 @@ function nuclideUriToUri(uri: NuclideUri): string {
  * Returns true if child is equal to, or is a proper child of parent.
  */
 function contains(parent: NuclideUri, child: NuclideUri): boolean {
+  _testForAtomUri(parent);
+  _testForAtomUri(child);
+
   // Can't just do startsWith here. If this directory is "www" and you
   // are trying to check "www-base", just using startsWith would return
   // true, even though "www-base" is at the same level as "Www", not
@@ -388,6 +406,7 @@ function registerHostnameFormatter(formatter: HostnameFormatter): IDisposable {
  * This function returns a human usable string.
  */
 function nuclideUriToDisplayString(uri: NuclideUri): string {
+  _testForAtomUri(uri);
   if (isRemote(uri)) {
     let hostname = getHostname(uri);
     for (const formatter of hostFormatters) {
@@ -404,6 +423,7 @@ function nuclideUriToDisplayString(uri: NuclideUri): string {
 }
 
 function ensureTrailingSeparator(uri: NuclideUri): NuclideUri {
+  _testForAtomUri(uri);
   const uriPathModule = _pathModuleFor(uri);
   if (uri.endsWith(uriPathModule.sep)) {
     return uri;
@@ -413,6 +433,7 @@ function ensureTrailingSeparator(uri: NuclideUri): NuclideUri {
 }
 
 function trimTrailingSeparator(uri: NuclideUri): NuclideUri {
+  _testForAtomUri(uri);
   const uriPathModule = _pathModuleFor(uri);
   let stripped = uri;
 
@@ -424,11 +445,13 @@ function trimTrailingSeparator(uri: NuclideUri): NuclideUri {
 }
 
 function endsWithSeparator(uri: NuclideUri): boolean {
+  _testForAtomUri(uri);
   const uriPathModule = _pathModuleFor(uri);
   return uri.endsWith(uriPathModule.sep);
 }
 
 function isAbsolute(uri: NuclideUri): boolean {
+  _testForAtomUri(uri);
   if (isRemote(uri)) {
     return true;
   } else {
@@ -438,6 +461,7 @@ function isAbsolute(uri: NuclideUri): boolean {
 }
 
 function resolve(uri: NuclideUri, ...paths: Array<string>): NuclideUri {
+  _testForAtomUri(uri);
   const uriPathModule = _pathModuleFor(uri);
   if (isRemote(uri)) {
     const {hostname, path} = parseRemoteUri(uri);
@@ -452,6 +476,7 @@ function resolve(uri: NuclideUri, ...paths: Array<string>): NuclideUri {
 }
 
 function expandHomeDir(uri: NuclideUri): NuclideUri {
+  _testForAtomUri(uri);
   // This function is POSIX only functionality, so using the posix path directly
 
   // Do not expand non home relative uris
@@ -509,6 +534,7 @@ function joinPathList(paths: Array<NuclideUri>): string {
  * which is `./` on *nix and .\ on Windows
  */
 function ensureLocalPrefix(uri: NuclideUri): NuclideUri {
+  _testForAtomUri(uri);
   const uriPathModule = _pathModuleFor(uri);
 
   invariant(!isRemote(uri), 'Local prefix can not be added to a remote path');
@@ -523,15 +549,17 @@ function ensureLocalPrefix(uri: NuclideUri): NuclideUri {
 }
 
 function isRoot(uri: NuclideUri): boolean {
+  _testForAtomUri(uri);
   return dirname(uri) === uri;
 }
 
 function parsePath(uri: NuclideUri): ParsedPath {
+  _testForAtomUri(uri);
   const uriPathModule = _pathModuleFor(uri);
   return uriPathModule.parse(getPath(uri));
 }
 
-function split(uri: string): Array<string> {
+function split(uri: NuclideUri): Array<string> {
   const parts = [];
   let current = uri;
   let parent = dirname(current);
@@ -575,6 +603,12 @@ function _pathModuleFor(uri: NuclideUri): typeof pathModule {
  */
 function _escapeSpecialCharacters(uri: NuclideUri): NuclideUri {
   return uri.replace(/%/g, '%25').replace(/\\/g, '%5C');
+}
+
+function _testForAtomUri(uri: ?NuclideUri): void {
+  if (uri != null && isAtomUri(uri)) {
+    throw new Error(`Path operation invoked on Atom URI ${uri}`);
+  }
 }
 
 const NUCLIDE_URI_TYPE_NAME = 'NuclideUri';
