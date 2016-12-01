@@ -29,7 +29,7 @@ import {
   getEmptBookShelfState,
   serializeBookShelfState,
 } from './utils';
-import {getHgRepositoryStream} from '../../nuclide-hg-git-bridge';
+import {getHgRepositoryStream} from '../../commons-node/vcs';
 import {getLogger} from '../../nuclide-logging';
 import featureConfig from '../../commons-atom/featureConfig';
 import invariant from 'assert';

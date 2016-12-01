@@ -13,7 +13,9 @@ import type {StatusCodeNumberValue} from '../nuclide-hg-rpc/lib/HgService';
 import type {HgRepositoryClient} from '../nuclide-hg-repository-client/lib/HgRepositoryClient';
 import type {NuclideUri} from '../commons-node/nuclideUri';
 
+import {arrayCompact} from './collection';
 import {asyncExecute} from './process';
+import {diffSets} from './observable';
 import {hgConstants} from '../nuclide-hg-rpc';
 import invariant from 'assert';
 import {Observable} from 'rxjs';
@@ -209,4 +211,22 @@ async function hgActionToPath(
       {detail: error.message},
     );
   }
+}
+
+export function getHgRepositories(): Set<HgRepositoryClient> {
+  return new Set(
+    arrayCompact(atom.project.getRepositories())
+      .filter(repository => repository.getType() === 'hg'),
+  );
+}
+
+export function getHgRepositoryStream(): Observable<HgRepositoryClient> {
+  const currentRepositories =
+    observableFromSubscribeFunction(atom.project.onDidChangePaths.bind(atom.project))
+    .startWith(null)
+    .map(() => getHgRepositories());
+
+  return diffSets(currentRepositories).flatMap(
+    repoDiff => Observable.from(repoDiff.added),
+  );
 }
