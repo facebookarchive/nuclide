@@ -13,6 +13,7 @@ import type {Store, TaskRunner} from '../types';
 
 import {bindObservableAsProps} from '../../../nuclide-ui/bindObservableAsProps';
 import {viewableFromReactElement} from '../../../commons-atom/viewableFromReactElement';
+import {throttle} from '../../../commons-node/observable';
 import * as Actions from '../redux/Actions';
 import {getActiveTaskId, getActiveTaskRunner} from '../redux/Selectors';
 import {Toolbar} from './Toolbar';
@@ -41,9 +42,6 @@ export function createPanelItem(store: Store): Object {
   // need to update immediately (e.g. progress).
   const stickyProps = states
     .filter(state => state.tasksAreReady)
-    // Throttle to animation frames.
-    .audit(() => raf)
-    .startWith(store.getState())
     // Map to a subset of state so we can ignore changes of the other parts.
     .map(state => ({
       taskRunners: state.taskRunners,
@@ -71,8 +69,13 @@ export function createPanelItem(store: Store): Object {
         taskIsRunning: state.runningTaskInfo != null,
         showPlaceholder: !state.viewIsInitialized && state.showPlaceholderInitially,
       };
-    });
-  const props = Observable.combineLatest(stickyProps, otherProps, (a, b) => ({...a, ...b}));
+    })
+    .distinctUntilChanged(shallowEqual);
+  // Throttle to animation frames.
+  const props = throttle(
+    Observable.combineLatest(stickyProps, otherProps, (a, b) => ({...a, ...b})),
+    () => raf,
+  );
   const StatefulToolbar = bindObservableAsProps(props, Toolbar);
   return viewableFromReactElement(<StatefulToolbar />);
 }
