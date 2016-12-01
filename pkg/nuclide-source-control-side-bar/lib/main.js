@@ -18,7 +18,7 @@ import type {
 import type {BookmarkInfo} from '../../nuclide-hg-rpc/lib/HgService';
 import type {NuclideSideBarService} from '../../nuclide-side-bar';
 import type {Observable} from 'rxjs';
-import type {FileChangeStatusValue} from '../../commons-node/vcs';
+import type {FileChangeStatusValue} from '../../commons-atom/vcs';
 import type {NuclideUri} from '../../commons-node/NuclideUri';
 
 import * as ActionType from './ActionType';
@@ -32,7 +32,7 @@ import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {BehaviorSubject, Subject} from 'rxjs';
 import SideBarComponent from './SideBarComponent';
 import {track} from '../../nuclide-analytics';
-import {getDirtyFileChanges} from '../../commons-node/vcs';
+import {getDirtyFileChanges} from '../../commons-atom/vcs';
 
 export type AppState = {
   uncommittedChanges: Map<NuclideUri, Map<NuclideUri, FileChangeStatusValue>>,

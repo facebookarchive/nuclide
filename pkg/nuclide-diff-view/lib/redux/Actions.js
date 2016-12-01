@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {FileChangeStatusValue} from '../../../commons-node/vcs';
+import type {FileChangeStatusValue} from '../../../commons-atom/vcs';
 import type {Message} from '../../../nuclide-console/lib/types';
 import type {NuclideUri} from '../../../commons-node/nuclideUri';
 import type {

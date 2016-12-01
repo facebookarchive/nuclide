@@ -10,7 +10,7 @@
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {FileChangeStatusValue} from '../../commons-node/vcs';
+import type {FileChangeStatusValue} from '../../commons-atom/vcs';
 
 import {arrayCompact} from '../../commons-node/collection';
 import nuclideUri from '../../commons-node/nuclideUri';

@@ -10,12 +10,14 @@
  */
 
 import type {NuclideUri} from '../commons-node/nuclideUri';
-import type {FileChangeStatusValue} from '../commons-node/vcs';
+import type {FileChangeStatusValue} from '../commons-atom/vcs';
 
 import {
- FileChangeStatus,
- RevertibleStatusCodes,
-} from '../commons-node/vcs';
+  addPath,
+  confirmAndRevertPath,
+  FileChangeStatus,
+  RevertibleStatusCodes,
+} from '../commons-atom/vcs';
 import {getFileSystemServiceByNuclideUri} from '../nuclide-remote-connection';
 import {HgRepositoryClient} from '../nuclide-hg-repository-client/lib/HgRepositoryClient';
 import invariant from 'assert';
@@ -23,7 +25,6 @@ import nuclideUri from '../commons-node/nuclideUri';
 import {React} from 'react-for-atom';
 import {repositoryForPath} from '../nuclide-hg-git-bridge';
 import UniversalDisposable from '../commons-node/UniversalDisposable';
-import {addPath, confirmAndRevertPath} from '../commons-node/vcs';
 import ChangedFilesList from './ChangedFilesList';
 
 type Props = {

@@ -10,7 +10,7 @@
  */
 
 import type {DiffEntityOptions} from './DiffViewModel';
-import type {FileChangeStatusValue} from '../../commons-node/vcs';
+import type {FileChangeStatusValue} from '../../commons-atom/vcs';
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {
@@ -30,14 +30,14 @@ import {
   DiffOption,
 } from './constants';
 import {
+  getDirtyFileChanges,
   FileChangeStatus,
   FileChangeStatusToPrefix,
-} from '../../commons-node/vcs';
+} from '../../commons-atom/vcs';
 import {getArcanistServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {getPhabricatorRevisionFromCommitMessage} from '../../nuclide-arcanist-rpc/lib/utils';
 import {hgConstants} from '../../nuclide-hg-rpc';
 import {bufferUntil} from '../../commons-node/observable';
-import {getDirtyFileChanges} from '../../commons-node/vcs';
 import {getLogger} from '../../nuclide-logging';
 import {Observable, Subject} from 'rxjs';
 import stripAnsi from 'strip-ansi';

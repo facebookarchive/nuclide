@@ -16,7 +16,7 @@ import invariant from 'assert';
 import registerGrammar from '../../commons-atom/register-grammar';
 import {CompositeDisposable, Disposable} from 'atom';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
-import {addPath, confirmAndRevertPath, revertPath} from '../../commons-node/vcs';
+import {addPath, confirmAndRevertPath, revertPath} from '../../commons-atom/vcs';
 import HgRepositoryProvider from './HgRepositoryProvider';
 
 const HG_ADD_TREE_CONTEXT_MENU_PRIORITY = 400;

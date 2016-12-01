@@ -13,17 +13,15 @@ import type {StatusCodeNumberValue} from '../nuclide-hg-rpc/lib/HgService';
 import type {HgRepositoryClient} from '../nuclide-hg-repository-client/lib/HgRepositoryClient';
 import type {NuclideUri} from '../commons-node/nuclideUri';
 
-import {arrayCompact} from './collection';
-import {asyncExecute} from './process';
-import {diffSets} from './observable';
-// TODO(most): move this to `commons-atom`
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
+import {arrayCompact} from '../commons-node/collection';
+import {asyncExecute} from '../commons-node/process';
+import {diffSets} from '../commons-node/observable';
 import {Directory} from 'atom';
 import {hgConstants} from '../nuclide-hg-rpc';
 import invariant from 'assert';
-import nuclideUri from './nuclideUri';
+import nuclideUri from '../commons-node/nuclideUri';
 import {Observable} from 'rxjs';
-import {observableFromSubscribeFunction} from './event';
+import {observableFromSubscribeFunction} from '../commons-node/event';
 import {track} from '../nuclide-analytics';
 
 type VcsInfo = {

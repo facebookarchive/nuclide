@@ -10,13 +10,13 @@
  */
 
 import type {NuclideUri} from '../commons-node/nuclideUri';
-import type {FileChangeStatusValue} from '../commons-node/vcs';
+import type {FileChangeStatusValue} from '../commons-atom/vcs';
 
 import classnames from 'classnames';
 import {
  FileChangeStatusToIcon,
  FileChangeStatusToTextColor,
-} from '../commons-node/vcs';
+} from '../commons-atom/vcs';
 import nuclideUri from '../commons-node/nuclideUri';
 import {React} from 'react-for-atom';
 import {Icon} from './Icon';

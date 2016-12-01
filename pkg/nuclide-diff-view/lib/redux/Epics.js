@@ -26,7 +26,7 @@ import * as Actions from './Actions';
 import invariant from 'assert';
 import {Observable, Subject} from 'rxjs';
 import {observableFromSubscribeFunction} from '../../../commons-node/event';
-import {observeStatusChanges} from '../../../commons-node/vcs';
+import {observeStatusChanges} from '../../../commons-atom/vcs';
 import {
   CommitMode,
   CommitModeState,

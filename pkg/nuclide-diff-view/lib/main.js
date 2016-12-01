@@ -23,7 +23,7 @@ import type {RegisterNux, TriggerNux} from '../../nuclide-nux/lib/main';
 
 import createPackage from '../../commons-atom/createPackage';
 import {formatDiffViewUrl} from './utils';
-import {getHgRepositoryStream} from '../../commons-node/vcs';
+import {getHgRepositoryStream} from '../../commons-atom/vcs';
 import {React, ReactDOM} from 'react-for-atom';
 import url from 'url';
 import uiTreePath from '../../commons-atom/ui-tree-path';

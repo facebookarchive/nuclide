@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {FileChangeStatusValue} from '../../commons-node/vcs';
+import type {FileChangeStatusValue} from '../../commons-atom/vcs';
 
 import FileTreeDispatcher, {ActionTypes} from './FileTreeDispatcher';
 import FileTreeHelpers from './FileTreeHelpers';
@@ -17,7 +17,7 @@ import FileTreeHgHelpers from './FileTreeHgHelpers';
 import {FileTreeNode} from './FileTreeNode';
 import Immutable from 'immutable';
 import {Emitter} from 'atom';
-import {HgStatusToFileChangeStatus} from '../../commons-node/vcs';
+import {HgStatusToFileChangeStatus} from '../../commons-atom/vcs';
 import {matchesFilter} from './FileTreeFilterHelper';
 import {Minimatch} from 'minimatch';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';

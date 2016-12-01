@@ -12,4 +12,4 @@
 export {
   repositoryContainsPath,
   repositoryForPath,
-} from '../../commons-node/vcs';
+} from '../../commons-atom/vcs';

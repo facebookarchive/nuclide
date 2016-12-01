@@ -12,7 +12,7 @@
 import {React} from 'react-for-atom';
 import {Block} from './Block';
 import {MultiRootChangedFilesView} from './MultiRootChangedFilesView';
-import {FileChangeStatus} from '../commons-node/vcs';
+import {FileChangeStatus} from '../commons-atom/vcs';
 
 function onFileChosen(uri: string): void {
   atom.notifications.addInfo(`Selected file ${uri}`);
