@@ -134,6 +134,7 @@
     "haskell-grammar",
     "highlight-selected",
     "language-babel",
+    "language-graphql",
     "language-ini",
     "language-ocaml",
     "language-swift",
