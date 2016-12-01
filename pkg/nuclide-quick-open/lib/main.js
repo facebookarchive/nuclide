@@ -132,6 +132,7 @@ class Activation {
     if (this._searchComponent == null) {
       _searchComponent.onSelection(selection => {
         const options = {};
+        options.searchAllPanes = true;
         if (selection.line) {
           options.initialLine = selection.line;
         }
