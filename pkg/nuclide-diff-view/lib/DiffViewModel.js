@@ -35,7 +35,7 @@ import invariant from 'assert';
 import {track, trackTiming} from '../../nuclide-analytics';
 import {Subject} from 'rxjs';
 import {notifyInternalError} from './notifications';
-import {bufferForUri} from '../../commons-atom/text-editor';
+import {bufferForUri} from '../../commons-atom/text-buffer';
 import {createEmptyAppState} from './redux/createEmptyAppState';
 
 const ACTIVE_BUFFER_CHANGE_MODIFIED_EVENT = 'active-buffer-change-modified';

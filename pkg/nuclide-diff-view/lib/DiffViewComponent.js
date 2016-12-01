@@ -32,7 +32,7 @@ import {DiffNavigationBar} from './DiffNavigationBar';
 import DiffCommitView from './DiffCommitView';
 import DiffPublishView from './DiffPublishView';
 import createPaneContainer from '../../commons-atom/create-pane-container';
-import {bufferForUri} from '../../commons-atom/text-editor';
+import {bufferForUri} from '../../commons-atom/text-buffer';
 import {
   DiffMode,
   NavigationSectionStatus,

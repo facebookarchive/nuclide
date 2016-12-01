@@ -47,7 +47,7 @@ import {
   promptToCleanDirtyChanges,
 } from '../utils';
 import {repositoryForPath} from '../../../nuclide-hg-git-bridge';
-import {bufferForUri, loadBufferForUri} from '../../../commons-atom/text-editor';
+import {bufferForUri, loadBufferForUri} from '../../../commons-atom/text-buffer';
 import {
   getEmptyCommitState,
   getEmptyPublishState,
