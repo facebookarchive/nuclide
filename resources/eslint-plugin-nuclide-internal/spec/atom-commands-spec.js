@@ -48,7 +48,7 @@ ruleTester.run('atom-commands', rule, {
     {
       code: 'atom.commands.add("atom-workspace", "command", cb)',
       errors: [{
-        error: rule.MISSING_MENU_ITEM_ERROR + ' (command)',
+        message: rule.MISSING_MENU_ITEM_ERROR + ' (command)',
         type: 'Literal',
       }],
     },
@@ -56,11 +56,11 @@ ruleTester.run('atom-commands', rule, {
       code: 'atom.commands.add("atom-workspace", {"a": cb, "b": cb})',
       errors: [
         {
-          error: rule.MISSING_MENU_ITEM_ERROR + ' (a)',
+          message: rule.MISSING_MENU_ITEM_ERROR + ' (a)',
           type: 'Literal',
         },
         {
-          error: rule.MISSING_MENU_ITEM_ERROR + ' (b)',
+          message: rule.MISSING_MENU_ITEM_ERROR + ' (b)',
           type: 'Literal',
         },
       ],
@@ -68,7 +68,7 @@ ruleTester.run('atom-commands', rule, {
     {
       code: 'var x = "command"; atom.commands.add("atom-workspace", x, cb)',
       errors: [{
-        error: rule.COMMAND_LITERAL_ERROR,
+        message: rule.COMMAND_LITERAL_ERROR,
         type: 'Identifier',
       }],
     },
@@ -76,7 +76,7 @@ ruleTester.run('atom-commands', rule, {
       code: 'atom.commands.add("atom-workspace", "bad_command", null)',
       filename: path.join(__dirname, 'test.js'),
       errors: [{
-        error: rule.MISSING_MENU_ITEM_ERROR + ' (bad_command)',
+        message: rule.MISSING_MENU_ITEM_ERROR + ' (bad_command)',
         type: 'Literal',
       }],
     },
@@ -84,7 +84,7 @@ ruleTester.run('atom-commands', rule, {
       code: 'atom.commands.add("atom-workspace", "bad_command2", null)',
       filename: path.join(__dirname, 'test.js'),
       errors: [{
-        error: rule.MISSING_MENU_ITEM_ERROR + ' (bad_command2)',
+        message: rule.MISSING_MENU_ITEM_ERROR + ' (bad_command2)',
         type: 'Literal',
       }],
     },
@@ -92,14 +92,14 @@ ruleTester.run('atom-commands', rule, {
       code: 'api.registerFactory({toggleCommand: "bad_command"})',
       filename: path.join(__dirname, 'test.js'),
       errors: [{
-        error: rule.MISSING_MENU_ITEM_ERROR + ' (bad_command)',
+        message: rule.MISSING_MENU_ITEM_ERROR + ' (bad_command)',
         type: 'Literal',
       }],
     },
     {
       code: 'atom.commands.add(atom.views.getView(atom.workspace), f(), cb)',
       errors: [{
-        error: rule.WORKSPACE_VIEW_LOOKUP_ERROR + ' (bad_command)',
+        message: rule.WORKSPACE_VIEW_LOOKUP_ERROR,
       }],
     },
   ],
