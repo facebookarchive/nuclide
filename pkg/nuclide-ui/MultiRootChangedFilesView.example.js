@@ -12,7 +12,7 @@
 import {React} from 'react-for-atom';
 import {Block} from './Block';
 import {MultiRootChangedFilesView} from './MultiRootChangedFilesView';
-import {FileChangeStatus} from '../nuclide-hg-git-bridge/lib/constants';
+import {FileChangeStatus} from '../commons-node/vcs';
 
 function onFileChosen(uri: string): void {
   atom.notifications.addInfo(`Selected file ${uri}`);

@@ -8,6 +8,7 @@
  * @flow
  */
 
+import type {FileChangeStatusValue} from '../../commons-node/vcs';
 import type {Message} from '../../nuclide-console/lib/types';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {RevisionInfo} from '../../nuclide-hg-rpc/lib/HgService';
@@ -35,8 +36,6 @@ export type PublishModeStateType =
 ;
 
 export type DiffOptionType = 'Dirty' | 'Last Commit' | 'Compare Commit';
-
-export type FileChangeStatusValue = 1 | 2 | 3 | 4 | 5;
 
 export type FileChange = {
   filePath: NuclideUri,

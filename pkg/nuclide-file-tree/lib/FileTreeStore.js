@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {FileChangeStatusValue} from '../../nuclide-hg-git-bridge/lib/constants';
+import type {FileChangeStatusValue} from '../../commons-node/vcs';
 
 import FileTreeDispatcher, {ActionTypes} from './FileTreeDispatcher';
 import FileTreeHelpers from './FileTreeHelpers';

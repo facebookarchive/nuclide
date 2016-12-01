@@ -10,12 +10,12 @@
  */
 
 import type {DiffEntityOptions} from './DiffViewModel';
+import type {FileChangeStatusValue} from '../../commons-node/vcs';
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {
   DiffModeType,
   DiffOptionType,
-  FileChangeStatusValue,
   HgDiffState,
 } from './types';
 import type {

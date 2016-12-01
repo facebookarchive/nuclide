@@ -10,7 +10,7 @@
  */
 
 import type {BookmarkInfo} from '../../nuclide-hg-rpc/lib/HgService';
-import type {FileChangeStatusValue} from '../../nuclide-hg-git-bridge/lib/constants';
+import type {FileChangeStatusValue} from '../../commons-node/vcs';
 import type {NuclideUri} from '../../commons-node/NuclideUri';
 import type {SelectableItem} from './SideBarComponent';
 

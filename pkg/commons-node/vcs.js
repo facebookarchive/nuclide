@@ -12,7 +12,6 @@
 import type {StatusCodeNumberValue} from '../nuclide-hg-rpc/lib/HgService';
 import type {HgRepositoryClient} from '../nuclide-hg-repository-client/lib/HgRepositoryClient';
 import type {NuclideUri} from '../commons-node/nuclideUri';
-import type {FileChangeStatusValue} from '../nuclide-diff-view/lib/types';
 
 import {asyncExecute} from './process';
 import {hgConstants} from '../nuclide-hg-rpc';
@@ -68,6 +67,8 @@ export async function findVcs(dir: string): Promise<VcsInfo> {
   return vcsInfo;
 }
 
+export type FileChangeStatusValue = 1 | 2 | 3 | 4 | 5;
+
 export const FileChangeStatus = Object.freeze({
   ADDED: 1,
   MODIFIED: 2,
@@ -95,6 +96,28 @@ export const FileChangeStatusToPrefix: {[key: FileChangeStatusValue]: string} = 
   [FileChangeStatus.REMOVED]: '[D] ',
   [FileChangeStatus.UNTRACKED]: '[?] ',
 });
+
+export const FileChangeStatusToIcon: {[key: ?FileChangeStatusValue]: atom$Octicon} = Object.freeze({
+  [FileChangeStatus.ADDED]: 'diff-added',
+  [FileChangeStatus.MODIFIED]: 'diff-modified',
+  [FileChangeStatus.MISSING]: 'stop',
+  [FileChangeStatus.REMOVED]: 'diff-removed',
+  [FileChangeStatus.UNTRACKED]: 'question',
+});
+
+export const FileChangeStatusToTextColor: {[key: ?FileChangeStatusValue]: string} = Object.freeze({
+  [FileChangeStatus.ADDED]: 'text-success',
+  [FileChangeStatus.MODIFIED]: 'text-warning',
+  [FileChangeStatus.MISSING]: 'text-error',
+  [FileChangeStatus.REMOVED]: 'text-error',
+  [FileChangeStatus.UNTRACKED]: 'text-error',
+});
+
+export const RevertibleStatusCodes = [
+  FileChangeStatus.ADDED,
+  FileChangeStatus.MODIFIED,
+  FileChangeStatus.REMOVED,
+];
 
 export function getDirtyFileChanges(
   repository: HgRepositoryClient,

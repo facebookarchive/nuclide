@@ -10,12 +10,12 @@
  */
 
 import type {NuclideUri} from '../commons-node/nuclideUri';
-import type {FileChangeStatusValue} from '../nuclide-hg-git-bridge/lib/constants';
+import type {FileChangeStatusValue} from '../commons-node/vcs';
 
 import {
  FileChangeStatus,
  RevertibleStatusCodes,
-} from '../nuclide-hg-git-bridge/lib/constants';
+} from '../commons-node/vcs';
 import {getFileSystemServiceByNuclideUri} from '../nuclide-remote-connection';
 import {HgRepositoryClient} from '../nuclide-hg-repository-client/lib/HgRepositoryClient';
 import invariant from 'assert';

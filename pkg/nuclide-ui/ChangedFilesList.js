@@ -10,13 +10,13 @@
  */
 
 import type {NuclideUri} from '../commons-node/nuclideUri';
-import type {FileChangeStatusValue} from '../nuclide-hg-git-bridge/lib/constants';
+import type {FileChangeStatusValue} from '../commons-node/vcs';
 
 import classnames from 'classnames';
 import {
  FileChangeStatusToIcon,
  FileChangeStatusToTextColor,
-} from '../nuclide-hg-git-bridge/lib/constants';
+} from '../commons-node/vcs';
 import nuclideUri from '../commons-node/nuclideUri';
 import {React} from 'react-for-atom';
 import {Icon} from './Icon';
