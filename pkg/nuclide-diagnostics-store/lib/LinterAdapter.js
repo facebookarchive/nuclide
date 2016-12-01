@@ -148,35 +148,48 @@ export class LinterAdapter {
   }
 
   async _runLint(editor: TextEditor): Promise<void> {
-    if (this._enabled) {
-      const result = await this._requestSerializer.run(this._provider.lint(editor));
-      if (result.status === 'success') {
-        const buffer = editor.getBuffer();
-        if (buffer.isDestroyed()) {
-          return;
-        }
+    if (!this._enabled) {
+      return;
+    }
 
-        if (this._provider.invalidateOnClose && !this._onDestroyDisposables.has(buffer)) {
-          const disposable = buffer.onDidDestroy(() => {
-            this._invalidateBuffer(buffer);
-            this._onDestroyDisposables.delete(buffer);
-            disposable.dispose();
-          });
-          this._onDestroyDisposables.set(buffer, disposable);
-        }
+    const maybe = this._provider.lint(editor);
+    if (maybe == null) {
+      return;
+    }
 
-        const linterMessages = result.result;
-        const diagnosticUpdate = linterMessagesToDiagnosticUpdate(
-          editor.getPath(),
-          linterMessages, this._provider.providerName || this._provider.name,
-        );
+    const result = await this._requestSerializer.run(maybe);
+    if (result.status !== 'success') {
+      return;
+    }
+
+    const linterMessages = result.result;
+    if (linterMessages == null) {
+      return;
+    }
+
+    const buffer = editor.getBuffer();
+    if (buffer.isDestroyed()) {
+      return;
+    }
+
+    if (this._provider.invalidateOnClose && !this._onDestroyDisposables.has(buffer)) {
+      const disposable = buffer.onDidDestroy(() => {
         this._invalidateBuffer(buffer);
-        this._providerUtils.publishMessageUpdate(diagnosticUpdate);
-        const {filePathToMessages} = diagnosticUpdate;
-        if (filePathToMessages != null) {
-          this._filesForBuffer.set(buffer, Array.from(filePathToMessages.keys()));
-        }
-      }
+        this._onDestroyDisposables.delete(buffer);
+        disposable.dispose();
+      });
+      this._onDestroyDisposables.set(buffer, disposable);
+    }
+
+    const diagnosticUpdate = linterMessagesToDiagnosticUpdate(
+      editor.getPath(),
+      linterMessages, this._provider.providerName || this._provider.name,
+    );
+    this._invalidateBuffer(buffer);
+    this._providerUtils.publishMessageUpdate(diagnosticUpdate);
+    const {filePathToMessages} = diagnosticUpdate;
+    if (filePathToMessages != null) {
+      this._filesForBuffer.set(buffer, Array.from(filePathToMessages.keys()));
     }
   }
 
