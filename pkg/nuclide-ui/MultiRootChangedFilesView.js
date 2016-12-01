@@ -23,7 +23,7 @@ import {HgRepositoryClient} from '../nuclide-hg-repository-client/lib/HgReposito
 import invariant from 'assert';
 import nuclideUri from '../commons-node/nuclideUri';
 import {React} from 'react-for-atom';
-import {repositoryForPath} from '../nuclide-hg-git-bridge';
+import {repositoryForPath} from '../commons-atom/vcs';
 import UniversalDisposable from '../commons-node/UniversalDisposable';
 import ChangedFilesList from './ChangedFilesList';
 

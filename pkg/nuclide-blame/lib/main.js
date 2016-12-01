@@ -19,7 +19,7 @@ import invariant from 'assert';
 import BlameGutter from './BlameGutter';
 import {getLogger} from '../../nuclide-logging';
 import {goToLocation} from '../../commons-atom/go-to-location';
-import {repositoryForPath} from '../../nuclide-hg-git-bridge';
+import {repositoryForPath} from '../../commons-atom/vcs';
 import {track, trackTiming} from '../../nuclide-analytics';
 
 const PACKAGES_MISSING_MESSAGE = 'Could not open blame. Missing at least one blame provider.';

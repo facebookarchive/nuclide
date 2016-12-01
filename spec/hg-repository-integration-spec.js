@@ -23,7 +23,7 @@ import {
 
 const {AmendMode} = hgConstants;
 
-import {repositoryForPath} from '../pkg/nuclide-hg-git-bridge';
+import {repositoryForPath} from '../pkg/commons-atom/vcs';
 import {
   fetchFileContentAtRevision,
   fetchFilesChangedAtRevision,

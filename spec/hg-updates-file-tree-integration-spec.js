@@ -23,7 +23,7 @@ import nullthrows from 'nullthrows';
 import nuclideUri from '../pkg/commons-node/nuclideUri';
 import {generateHgRepo1Fixture} from '../pkg/nuclide-test-helpers';
 import {describeRemotableTest} from './utils/remotable-tests';
-import {repositoryForPath} from '../pkg/nuclide-hg-git-bridge';
+import {repositoryForPath} from '../pkg/commons-atom/vcs';
 import {waitsForRepositoryReady} from './utils/diff-view-utils';
 
 const {AmendMode} = hgConstants;

@@ -14,7 +14,7 @@ import type {FileChangeStatusValue} from '../../commons-atom/vcs';
 
 import {arrayCompact} from '../../commons-node/collection';
 import nuclideUri from '../../commons-node/nuclideUri';
-import {repositoryForPath} from '../../nuclide-hg-git-bridge';
+import {repositoryForPath} from '../../commons-atom/vcs';
 
 export function getMultiRootFileChanges(
   fileChanges: Map<NuclideUri, FileChangeStatusValue>,

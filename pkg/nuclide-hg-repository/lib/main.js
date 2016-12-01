@@ -15,7 +15,7 @@ import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import invariant from 'assert';
 import registerGrammar from '../../commons-atom/register-grammar';
 import {CompositeDisposable, Disposable} from 'atom';
-import {repositoryForPath} from '../../nuclide-hg-git-bridge';
+import {repositoryForPath} from '../../commons-atom/vcs';
 import {addPath, confirmAndRevertPath, revertPath} from '../../commons-atom/vcs';
 import HgRepositoryProvider from './HgRepositoryProvider';
 

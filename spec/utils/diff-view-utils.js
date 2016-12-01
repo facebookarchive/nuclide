@@ -12,7 +12,7 @@
 import type {HgRepositoryClient} from '../../pkg/nuclide-hg-repository-client';
 
 import invariant from 'assert';
-import {repositoryForPath} from '../../pkg/nuclide-hg-git-bridge';
+import {repositoryForPath} from '../../pkg/commons-atom/vcs';
 
 function hgRepositoryForPath(filePath: string): HgRepositoryClient {
   const repository = repositoryForPath(filePath);

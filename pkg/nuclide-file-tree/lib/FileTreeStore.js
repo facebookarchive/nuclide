@@ -20,7 +20,7 @@ import {Emitter} from 'atom';
 import {HgStatusToFileChangeStatus} from '../../commons-atom/vcs';
 import {matchesFilter} from './FileTreeFilterHelper';
 import {Minimatch} from 'minimatch';
-import {repositoryForPath} from '../../nuclide-hg-git-bridge';
+import {repositoryForPath} from '../../commons-atom/vcs';
 import {StatusCodeNumber} from '../../nuclide-hg-rpc/lib/hg-constants';
 import {getLogger} from '../../nuclide-logging';
 import {WorkingSet} from '../../nuclide-working-sets-common';

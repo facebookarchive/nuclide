@@ -27,7 +27,7 @@ import {getHgRepositoryStream} from '../../commons-atom/vcs';
 import {React, ReactDOM} from 'react-for-atom';
 import url from 'url';
 import uiTreePath from '../../commons-atom/ui-tree-path';
-import {repositoryForPath} from '../../nuclide-hg-git-bridge';
+import {repositoryForPath} from '../../commons-atom/vcs';
 import {
   CommitMode,
   DiffMode,

@@ -11,7 +11,7 @@
 
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 
-import {repositoryForPath} from '../../nuclide-hg-git-bridge';
+import {repositoryForPath} from '../../commons-atom/vcs';
 
 export function hgRepositoryForEditor(editor: TextEditor): ?HgRepositoryClient {
   const repo = repositoryForPath(editor.getPath() || '');

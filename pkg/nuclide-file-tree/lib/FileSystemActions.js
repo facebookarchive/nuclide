@@ -26,7 +26,7 @@ import nuclideUri from '../../commons-node/nuclideUri';
 import {File} from 'atom';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {keyToPath} from './FileTreeHelpers';
-import {repositoryForPath} from '../../nuclide-hg-git-bridge';
+import {repositoryForPath} from '../../commons-atom/vcs';
 
 let atomPanel: ?Object;
 let dialogComponent: ?React.Component<any, any, any>;

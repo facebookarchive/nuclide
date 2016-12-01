@@ -16,7 +16,7 @@ import * as ActionType from './ActionType';
 import {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import invariant from 'assert';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
-import {repositoryForPath} from '../../nuclide-hg-git-bridge';
+import {repositoryForPath} from '../../commons-atom/vcs';
 import {Observable} from 'rxjs';
 import featureConfig from '../../commons-atom/featureConfig';
 import {STACKED_CONFIG_KEY} from './constants';

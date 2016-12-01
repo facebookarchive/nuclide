@@ -46,7 +46,7 @@ import {
   viewModeToDiffOption,
   promptToCleanDirtyChanges,
 } from '../utils';
-import {repositoryForPath} from '../../../nuclide-hg-git-bridge';
+import {repositoryForPath} from '../../../commons-atom/vcs';
 import {bufferForUri, loadBufferForUri} from '../../../commons-atom/text-buffer';
 import {
   getEmptyCommitState,
