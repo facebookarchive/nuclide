@@ -11,13 +11,12 @@
 
 import type FileTreeContextMenu from '../../nuclide-file-tree/lib/FileTreeContextMenu';
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import invariant from 'assert';
 import registerGrammar from '../../commons-atom/register-grammar';
 import {CompositeDisposable, Disposable} from 'atom';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
-import {revertPath, addPath} from './actions';
+import {addPath, confirmAndRevertPath, revertPath} from './actions';
 import HgRepositoryProvider from './HgRepositoryProvider';
 
 const HG_ADD_TREE_CONTEXT_MENU_PRIORITY = 400;
@@ -188,17 +187,6 @@ export function addItemsToFileTreeContextMenu(contextMenu: FileTreeContextMenu):
       subscriptions.remove(addContextDisposable);
     }
   });
-}
-
-function confirmAndRevertPath(path: ?NuclideUri): void {
-  const result = atom.confirm({
-    message: 'Are you sure you want to revert?',
-    buttons: ['Revert', 'Cancel'],
-  });
-  invariant(result === 0 || result === 1);
-  if (result === 0) {
-    revertPath(path);
-  }
 }
 
 export function deactivate(state: any): void {
