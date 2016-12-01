@@ -22,6 +22,7 @@ import {
 import QuickSelectionComponent from './QuickSelectionComponent';
 import {CompositeDisposable} from 'atom';
 import featureConfig from '../../commons-atom/featureConfig';
+import {goToLocation} from '../../commons-atom/go-to-location';
 import {track} from '../../nuclide-analytics';
 import debounce from '../../commons-node/debounce';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
@@ -131,18 +132,7 @@ class Activation {
 
     if (this._searchComponent == null) {
       _searchComponent.onSelection(selection => {
-        const options = {};
-        options.searchAllPanes = true;
-        if (selection.line) {
-          options.initialLine = selection.line;
-        }
-        if (selection.column) {
-          options.initialColumn = selection.column;
-        }
-
-        atom.workspace.open(selection.path, options).then(textEditor => {
-          atom.commands.dispatch(atom.views.getView(textEditor), 'tabs:keep-preview-tab');
-        });
+        goToLocation(selection.path, selection.line, selection.column);
 
         const query = _searchComponent.getInputTextEditor().textContent;
         const providerName = this._currentProvider.name;
