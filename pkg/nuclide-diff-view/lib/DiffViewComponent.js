@@ -37,7 +37,7 @@ import {
   DiffMode,
   NavigationSectionStatus,
 } from './constants';
-import {getMultiRootFileChanges} from '../../nuclide-hg-git-bridge/lib/utils';
+import {getMultiRootFileChanges} from '../../commons-atom/vcs';
 import {
   LoadingSpinner,
   LoadingSpinnerSizes,
