@@ -136,7 +136,6 @@ export class FileTreeStore {
     this._repositories = new Immutable.Set();
 
     this._conf = DEFAULT_CONF;
-    global.FTConf = this._conf;
     this._suppressChanges = false;
     this._filter = '';
     this.openFilesExpanded = true;
