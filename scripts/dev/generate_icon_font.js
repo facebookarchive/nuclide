@@ -34,6 +34,14 @@ webfontsGenerator(
     templateOptions: {
       classPrefix: 'nuclicon-',
     },
+    normalize: true,
+    fontHeight: 96,
+    ascent: 84,
+    // Similar to how Github genereated their fonts for octicons,
+    // use `descent` option to set the icon baselines 12px lower so that
+    // the generated nuclicons are centered.
+    // https://github.com/primer/octicons/blob/v4.4.0/Gruntfile.js#L89-L92
+    descent: 12,
     types: ['ttf'],
     rename: basename => basename.match(/\d+-(.*)\.svg/)[1].toLowerCase(),
   },
