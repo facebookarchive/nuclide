@@ -9,5 +9,7 @@
  * the root directory of this source tree.
  */
 
-export {default as repositoryContainsPath} from './repositoryContainsPath';
-export {default as repositoryForPath} from './repositoryForPath';
+export {
+  repositoryContainsPath,
+  repositoryForPath,
+} from '../../commons-node/vcs';

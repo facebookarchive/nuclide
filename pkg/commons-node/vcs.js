@@ -16,13 +16,14 @@ import type {NuclideUri} from '../commons-node/nuclideUri';
 import {arrayCompact} from './collection';
 import {asyncExecute} from './process';
 import {diffSets} from './observable';
+// TODO(most): move this to `commons-atom`
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
+import {Directory} from 'atom';
 import {hgConstants} from '../nuclide-hg-rpc';
 import invariant from 'assert';
+import nuclideUri from './nuclideUri';
 import {Observable} from 'rxjs';
 import {observableFromSubscribeFunction} from './event';
-// TODO(most): move `nuclide-hg-git-bridge` utils here.
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {repositoryForPath} from '../nuclide-hg-git-bridge';
 import {track} from '../nuclide-analytics';
 
 type VcsInfo = {
@@ -229,4 +230,66 @@ export function getHgRepositoryStream(): Observable<HgRepositoryClient> {
   return diffSets(currentRepositories).flatMap(
     repoDiff => Observable.from(repoDiff.added),
   );
+}
+
+'use babel';
+/* @flow */
+
+/**
+ * @param aPath The NuclideUri of a file or directory for which you want to find
+ *   a Repository it belongs to.
+ * @return A Git or Hg repository the path belongs to, if any.
+ */
+export function repositoryForPath(aPath: NuclideUri): ?atom$Repository {
+  // Calling atom.project.repositoryForDirectory gets the real path of the directory,
+  // which requires a round-trip to the server for remote paths.
+  // Instead, this function keeps filtering local.
+  const repositories = arrayCompact(atom.project.getRepositories());
+  return repositories.find(
+    repo => {
+      try {
+        return repositoryContainsPath(repo, aPath);
+      } catch (e) {
+        // The repo type is not supported.
+        return false;
+      }
+    },
+  );
+}
+
+/**
+ * @param repository Either a GitRepository or HgRepositoryClient.
+ * @param filePath The absolute file path of interest.
+ * @return boolean Whether the file path exists within the working directory
+ *   (aka root directory) of the repository, or is the working directory.
+ */
+export function repositoryContainsPath(
+  repository: atom$Repository,
+  filePath: NuclideUri,
+): boolean {
+  const workingDirectoryPath = repository.getWorkingDirectory();
+  if (pathsAreEqual(workingDirectoryPath, filePath)) {
+    return true;
+  }
+
+  if (repository.getType() === 'git') {
+    const rootGitProjectDirectory = new Directory(workingDirectoryPath);
+    return rootGitProjectDirectory.contains(filePath);
+  } else if (repository.getType() === 'hg') {
+    const hgRepository = ((repository: any): HgRepositoryClient);
+    return hgRepository._workingDirectory.contains(filePath);
+  }
+  throw new Error(
+    'repositoryContainsPath: Received an unrecognized repository type. Expected git or hg.');
+}
+
+/**
+ * @param filePath1 An abolute file path.
+ * @param filePath2 An absolute file path.
+ * @return Whether the file paths are equal, accounting for trailing slashes.
+ */
+function pathsAreEqual(filePath1: string, filePath2: string): boolean {
+  const realPath1 = nuclideUri.resolve(filePath1);
+  const realPath2 = nuclideUri.resolve(filePath2);
+  return realPath1 === realPath2;
 }
