@@ -17,7 +17,7 @@ import FileTreeHgHelpers from './FileTreeHgHelpers';
 import {FileTreeNode} from './FileTreeNode';
 import Immutable from 'immutable';
 import {Emitter} from 'atom';
-import {HgStatusToFileChangeStatus} from '../../nuclide-hg-git-bridge/lib/constants';
+import {HgStatusToFileChangeStatus} from '../../commons-node/vcs';
 import {matchesFilter} from './FileTreeFilterHelper';
 import {Minimatch} from 'minimatch';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
