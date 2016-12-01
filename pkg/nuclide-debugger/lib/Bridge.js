@@ -221,8 +221,8 @@ class Bridge {
     this._debuggerModel.getActions().updateCallstack(callstack);
   }
 
-  _handleLocalsUpdate(locals: ExpansionResult): void {
-    this._debuggerModel.getActions().updateLocals(locals);
+  _handleScopesUpdate(scopeVariables: ExpansionResult, scopeName: string): void {
+    this._debuggerModel.getActions().updateScopes(scopeVariables, scopeName);
   }
 
   _handleIpcMessage(stdEvent: Event): void {
@@ -274,8 +274,8 @@ class Bridge {
           case 'CallstackUpdate':
             this._handleCallstackUpdate(event.args[1]);
             break;
-          case 'LocalsUpdate':
-            this._handleLocalsUpdate(event.args[1]);
+          case 'ScopesUpdate':
+            this._handleScopesUpdate(event.args[1], event.args[2]);
             break;
           case 'ThreadsUpdate':
             this._handleThreadsUpdate(event.args[1]);

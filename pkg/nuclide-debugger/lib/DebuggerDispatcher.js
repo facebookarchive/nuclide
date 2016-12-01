@@ -151,8 +151,8 @@ export type DebuggerAction =
     data: {path: string, line: number, condition: string, enabled: boolean},
   } |
   {
-    actionType: 'UPDATE_LOCALS',
-    data: {locals: ExpansionResult},
+    actionType: 'UPDATE_SCOPES',
+    data: {scopeVariables: ExpansionResult, scopeName: string},
   } |
   {
     actionType: 'TOGGLE_PAUSE_ON_EXCEPTION',
@@ -226,7 +226,7 @@ export const ActionTypes = Object.freeze({
   TOGGLE_BREAKPOINT: 'TOGGLE_BREAKPOINT',
   DELETE_BREAKPOINT_IPC: 'DELETE_BREAKPOINT_IPC',
   BIND_BREAKPOINT_IPC: 'BIND_BREAKPOINT_IPC',
-  UPDATE_LOCALS: 'UPDATE_LOCALS',
+  UPDATE_SCOPES: 'UPDATE_SCOPES',
   TOGGLE_PAUSE_ON_EXCEPTION: 'TOGGLE_PAUSE_ON_EXCEPTION',
   TOGGLE_PAUSE_ON_CAUGHT_EXCEPTION: 'TOGGLE_PAUSE_ON_CAUGHT_EXCEPTION',
   UPDATE_THREADS: 'UPDATE_THREADS',

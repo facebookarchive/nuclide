@@ -16,7 +16,7 @@ import DebuggerActions from './DebuggerActions';
 import {DebuggerStore} from './DebuggerStore';
 import {WatchExpressionStore} from './WatchExpressionStore';
 import CallstackStore from './CallstackStore';
-import LocalsStore from './LocalsStore';
+import ScopesStore from './ScopesStore';
 import ThreadStore from './ThreadStore';
 import {WatchExpressionListStore} from './WatchExpressionListStore';
 import DebuggerActionsStore from './DebuggerActionsStore';
@@ -45,7 +45,7 @@ class DebuggerModel {
   _debuggerProviderStore: DebuggerProviderStore;
   _debuggerActionStore: DebuggerActionsStore;
   _callstackStore: CallstackStore;
-  _localsStore: LocalsStore;
+  _scopesStore: ScopesStore;
   _threadStore: ThreadStore;
   _bridge: Bridge;
   _debuggerPauseController: DebuggerPauseController;
@@ -72,7 +72,7 @@ class DebuggerModel {
     );
     this._debuggerActionStore = new DebuggerActionsStore(this._dispatcher, this._bridge);
     this._callstackStore = new CallstackStore(this._dispatcher);
-    this._localsStore = new LocalsStore(this._dispatcher);
+    this._scopesStore = new ScopesStore(this._dispatcher);
     this._threadStore = new ThreadStore(this._dispatcher);
     this._debuggerPauseController = new DebuggerPauseController(this._store);
 
@@ -86,7 +86,7 @@ class DebuggerModel {
       this._watchExpressionStore,
       this._debuggerActionStore,
       this._callstackStore,
-      this._localsStore,
+      this._scopesStore,
       this._threadStore,
       this._debuggerPauseController,
     );
@@ -128,8 +128,8 @@ class DebuggerModel {
     return this._callstackStore;
   }
 
-  getLocalsStore(): LocalsStore {
-    return this._localsStore;
+  getScopesStore(): ScopesStore {
+    return this._scopesStore;
   }
 
   getThreadStore(): ThreadStore {

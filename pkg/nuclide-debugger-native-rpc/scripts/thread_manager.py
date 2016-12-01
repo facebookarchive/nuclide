@@ -70,13 +70,15 @@ class ThreadManager(object):
                     self._debugger_store.remote_object_manager.
                     get_add_object_func(CALL_STACK_OBJECT_GROUP)),
                 CALL_STACK_OBJECT_GROUP)
+            scopeChainObject = local_variables.serialized_value
+            scopeChainObject.update({'description': 'Locals'})
             result.append({
                 'callFrameId': "%d.%d" % (frame.thread.idx, frame.idx),
                 'functionName': self._get_frame_name(frame),
                 'location': self._debugger_store.location_serializer.get_frame_location(frame),
                 'hasSource': self._debugger_store.location_serializer.has_source(frame),
                 'scopeChain': [{
-                    'object': local_variables.serialized_value,
+                    'object': scopeChainObject,
                     'type': 'local',
                 }],
             })

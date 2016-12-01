@@ -12,7 +12,7 @@
 import {React} from 'react-for-atom';
 import classnames from 'classnames';
 
-type SectionSize = 'large' | 'small';
+type SectionSize = 'large' | 'medium' | 'small';
 type Props = {
   headline: React.Element<any> | string,
   className?: string,
@@ -89,7 +89,7 @@ export class Section extends React.Component {
       conditionalProps.onClick = this._toggleCollapsed;
       conditionalProps.title = collapsed ? 'Click to expand' : 'Click to collapse';
     }
-    const HeadlineComponent = this.props.size === 'small' ? 'h6' : 'h3';
+    const HeadlineComponent = getHeadlineComponent(this.props.size);
     return (
       <div className={this.props.className}>
         <HeadlineComponent className={iconClass} {...conditionalProps}>
@@ -98,5 +98,13 @@ export class Section extends React.Component {
         <div style={(collapsed) ? {display: 'none'} : {}}>{this.props.children}</div>
       </div>
     );
+  }
+}
+
+function getHeadlineComponent(size?: string): 'h6' | 'h5' | 'h3' {
+  switch (size) {
+    case 'small': return 'h6';
+    case 'medium': return 'h5';
+    default: return 'h3';
   }
 }

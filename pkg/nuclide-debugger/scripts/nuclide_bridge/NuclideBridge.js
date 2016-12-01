@@ -175,19 +175,22 @@ class NuclideBridge {
          * @param {?Array.<!WebInspector.RemoteObjectProperty>} internalProperties
          * @this {WebInspector.ObjectPropertiesSection}
          */
-        function callback(properties, internalProperties) {
+        function callback(scopeName, properties, internalProperties) {
           if (!properties) {
             return;
           }
           this.updateProperties(properties, internalProperties);
           const neededProperties = getIpcExpansionResult(properties);
-          ipcRenderer.sendToHost('notification', 'LocalsUpdate', neededProperties);
+          if (neededProperties != null && scopeName != null) {
+            ipcRenderer.sendToHost('notification', 'ScopesUpdate', neededProperties, scopeName);
+          }
         }
         // $FlowFixMe.
         WebInspector.RemoteObject.loadFromObject(
           this.object,
           Boolean(this.ignoreHasOwnProperty),
-          callback.bind(this),
+          // We use the scope object's `description` field as the scope's section header in the UI.
+          callback.bind(this, this.object.description),
         );
       };
   }

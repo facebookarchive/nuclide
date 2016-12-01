@@ -126,10 +126,11 @@ WebInspector.ScopeChainSidebarPane.prototype = {
             section.editInSelectedCallFrameWhenPaused = true;
             section.pane = this;
 
-            if (scope.type() === DebuggerAgent.ScopeType.Global)
-                section.collapse();
-            else if (!foundLocalScope || scope.type() === DebuggerAgent.ScopeType.Local || this._expandedSections.has(title))
-                section.expand();
+            // Chrome's UI originally had some special handling for the default expansion state
+            // of a scope, but 1. these scope sections need to be expanded for Nuclide to receive
+            // the scope's bindings, and 2. we don't need to support this UI anymore, so it's okay
+            // to ignore the expansion logic for the chrome UI.
+            section.expand();
 
             this._sections.push(section);
             this.bodyElement.appendChild(section.element);

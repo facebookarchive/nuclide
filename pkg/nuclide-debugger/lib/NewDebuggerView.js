@@ -28,7 +28,7 @@ import {
 import {Section} from '../../nuclide-ui/Section';
 import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
 import {WatchExpressionComponent} from './WatchExpressionComponent';
-import {LocalsComponent} from './LocalsComponent';
+import {ScopesComponent} from './ScopesComponent';
 import {BreakpointListComponent} from './BreakpointListComponent';
 import {DebuggerSteppingComponent} from './DebuggerSteppingComponent';
 import {DebuggerCallstackComponent} from './DebuggerCallstackComponent';
@@ -56,7 +56,7 @@ export class NewDebuggerView extends React.Component {
     customControlButtons: Array<ControlButtonSpecification>,
   };
   _watchExpressionComponentWrapped: ReactClass<any>;
-  _localsComponentWrapped: ReactClass<any>;
+  _scopesComponentWrapped: ReactClass<any>;
   _disposables: CompositeDisposable;
 
   constructor(props: Props) {
@@ -67,11 +67,11 @@ export class NewDebuggerView extends React.Component {
       ),
       WatchExpressionComponent,
     );
-    this._localsComponentWrapped = bindObservableAsProps(
-      props.model.getLocalsStore().getLocals().map(
-        locals => ({locals}),
+    this._scopesComponentWrapped = bindObservableAsProps(
+      props.model.getScopesStore().getScopes().map(
+        scopes => ({scopes}),
       ),
-      LocalsComponent,
+      ScopesComponent,
     );
     this._disposables = new CompositeDisposable();
     const debuggerStore = props.model.getStore();
@@ -149,7 +149,7 @@ export class NewDebuggerView extends React.Component {
     } = this.props;
     const actions = model.getActions();
     const WatchExpressionComponentWrapped = this._watchExpressionComponentWrapped;
-    const LocalsComponentWrapped = this._localsComponentWrapped;
+    const ScopesComponentWrapped = this._scopesComponentWrapped;
     const threadsSection = this.state.showThreadsWindow
       ? <Section collapsable={true} headline="Threads"
                  className="nuclide-debugger-section-header">
@@ -199,10 +199,10 @@ export class NewDebuggerView extends React.Component {
             />
           </div>
         </Section>
-        <Section collapsable={true} headline="Locals"
+        <Section collapsable={true} headline="Scopes"
                  className="nuclide-debugger-section-header">
           <div className="nuclide-debugger-section-content">
-            <LocalsComponentWrapped
+            <ScopesComponentWrapped
               watchExpressionStore={model.getWatchExpressionStore()}
             />
           </div>

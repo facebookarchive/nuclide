@@ -485,11 +485,12 @@ class DebuggerActions {
     });
   }
 
-  updateLocals(locals: ExpansionResult): void {
+  updateScopes(scopeVariables: ExpansionResult, scopeName: string): void {
     this._dispatcher.dispatch({
-      actionType: ActionTypes.UPDATE_LOCALS,
+      actionType: ActionTypes.UPDATE_SCOPES,
       data: {
-        locals,
+        scopeVariables,
+        scopeName,
       },
     });
   }

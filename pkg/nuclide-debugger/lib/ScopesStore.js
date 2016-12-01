@@ -10,7 +10,7 @@
  */
 
 import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';
-import type {ExpansionResult} from './types';
+import type {ScopeSection, ExpansionResult} from './types';
 
 import {
   Disposable,
@@ -19,12 +19,12 @@ import {
 import {BehaviorSubject, Observable} from 'rxjs';
 import {ActionTypes} from './DebuggerDispatcher';
 
-export default class LocalsStore {
+export default class ScopesStore {
   _disposables: IDisposable;
   /**
    * Treat as immutable.
    */
-  _locals: BehaviorSubject<ExpansionResult>;
+  _scopes: BehaviorSubject<Array<ScopeSection>>;
 
   constructor(dispatcher: DebuggerDispatcher) {
     const dispatcherToken = dispatcher.register(this._handlePayload.bind(this));
@@ -33,16 +33,17 @@ export default class LocalsStore {
         dispatcher.unregister(dispatcherToken);
       }),
     );
-    this._locals = new BehaviorSubject([]);
+    this._scopes = new BehaviorSubject([]);
   }
 
   _handlePayload(payload: DebuggerAction): void {
     switch (payload.actionType) {
       case ActionTypes.CLEAR_INTERFACE:
+      case ActionTypes.SET_SELECTED_CALLFRAME_INDEX:
         this._handleClearInterface();
         break;
-      case ActionTypes.UPDATE_LOCALS:
-        this._handleUpdateLocals(payload.data.locals);
+      case ActionTypes.UPDATE_SCOPES:
+        this._handleUpdateScopes(payload.data.scopeVariables, payload.data.scopeName);
         break;
       default:
         return;
@@ -50,15 +51,19 @@ export default class LocalsStore {
   }
 
   _handleClearInterface(): void {
-    this._locals.next([]);
+    this._scopes.next([]);
   }
 
-  _handleUpdateLocals(locals: ExpansionResult): void {
-    this._locals.next(locals);
+  _handleUpdateScopes(scopeVariables: ExpansionResult, scopeName: string): void {
+    const scopeSection = {
+      name: scopeName,
+      scopeVariables,
+    };
+    this._scopes.next([...this._scopes.getValue(), scopeSection]);
   }
 
-  getLocals(): Observable<ExpansionResult> {
-    return this._locals.asObservable();
+  getScopes(): Observable<Array<ScopeSection>> {
+    return this._scopes.asObservable();
   }
 
   dispose(): void {

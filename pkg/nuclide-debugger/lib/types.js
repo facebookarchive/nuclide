@@ -34,6 +34,11 @@ export type ExpansionResult = Array<{
   value: EvaluationResult,
 }>;
 
+export type ScopeSection = {
+  name: string,
+  scopeVariables: ExpansionResult,
+};
+
 export type Expression = string;
 export type EvaluatedExpression = {
   expression: Expression,

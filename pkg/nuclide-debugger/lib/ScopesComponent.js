@@ -12,6 +12,7 @@
 import type {
   EvaluationResult,
   ExpansionResult,
+  ScopeSection,
 } from './types';
 import {WatchExpressionStore} from './WatchExpressionStore';
 import type {Observable} from 'rxjs';
@@ -21,17 +22,18 @@ import {
 } from 'react-for-atom';
 import {LazyNestedValueComponent} from '../../nuclide-ui/LazyNestedValueComponent';
 import SimpleValueComponent from '../../nuclide-ui/SimpleValueComponent';
+import {Section} from '../../nuclide-ui/Section';
 
-type LocalsComponentProps = {
-  locals: ExpansionResult,
+type ScopesComponentProps = {
+  scopes: Array<ScopeSection>,
   watchExpressionStore: WatchExpressionStore,
 };
 
-export class LocalsComponent extends React.Component {
-  props: LocalsComponentProps;
+export class ScopesComponent extends React.Component {
+  props: ScopesComponentProps;
   _expansionStates: Map<string /* expression */, /* unique reference for expression */ Object>;
 
-  constructor(props: LocalsComponentProps) {
+  constructor(props: ScopesComponentProps) {
     super(props);
     (this: any)._renderExpression = this._renderExpression.bind(this);
     this._expansionStates = new Map();
@@ -48,20 +50,20 @@ export class LocalsComponent extends React.Component {
 
   _renderExpression(
     fetchChildren: (objectId: string) => Observable<?ExpansionResult>,
-    local: {
+    binding: {
       name: string,
       value: EvaluationResult,
     },
     index: number,
   ): ?React.Element<any> {
-    if (local == null) {
-      // `local` might be `null` while switching threads.
+    if (binding == null) {
+      // `binding` might be `null` while switching threads.
       return null;
     }
     const {
       name,
       value,
-    } = local;
+    } = binding;
     return (
       <div
         className="nuclide-debugger-expression-value-row"
@@ -80,19 +82,36 @@ export class LocalsComponent extends React.Component {
     );
   }
 
+  _renderScopeSection(
+    fetchChildren: (objectId: string) => Observable<?ExpansionResult>,
+    scope: ScopeSection,
+  ): ?React.Element<any> {
+    // Non-local scopes should be collapsed by default since users typically care less about them.
+    const collapsedByDefault = scope.name !== 'Locals';
+    return (
+      <Section
+        collapsable={true}
+        headline={scope.name}
+        size="small"
+        collapsedByDefault={collapsedByDefault}>
+        {scope.scopeVariables.map(this._renderExpression.bind(this, fetchChildren))}
+      </Section>
+    );
+  }
+
   render(): ?React.Element<any> {
     const {
       watchExpressionStore,
-      locals,
+      scopes,
     } = this.props;
-    if (locals == null || locals.length === 0) {
+    if (scopes == null || scopes.length === 0) {
       return <span>(no variables)</span>;
     }
     const fetchChildren = watchExpressionStore.getProperties.bind(watchExpressionStore);
-    const expressions = locals.map(this._renderExpression.bind(this, fetchChildren));
+    const scopeSections = scopes.map(this._renderScopeSection.bind(this, fetchChildren));
     return (
       <div className="nuclide-debugger-expression-value-list">
-        {expressions}
+        {scopeSections}
       </div>
     );
   }
