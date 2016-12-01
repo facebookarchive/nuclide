@@ -68,3 +68,6 @@ to `resources/nuclicons` and rerun the script.
 .nuclicon-bug::before {
   content: "\f10b";
 }
+.nuclicon-graphql::before {
+  content: "\f10c";
+}
