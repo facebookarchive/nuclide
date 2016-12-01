@@ -20,7 +20,6 @@ import {CompositeDisposable} from 'atom';
 import invariant from 'assert';
 import {shell} from 'electron';
 
-const MS_TO_WAIT_BEFORE_SPINNER = 2000;
 const CHANGESET_CSS_CLASS = 'nuclide-blame-hash';
 const CLICKABLE_CHANGESET_CSS_CLASS = 'nuclide-blame-hash-clickable';
 const HG_CHANGESET_DATA_ATTRIBUTE = 'hgChangeset';
@@ -32,9 +31,7 @@ export default class BlameGutter {
   _changesetSpanClassName: string;
   _bufferLineToDecoration: Map<number, atom$Decoration>;
   _gutter: atom$Gutter;
-  _loadingSpinnerIsPending: boolean;
   _loadingSpinnerDiv: ?HTMLElement;
-  _loadingSpinnerTimeoutId: number;
   _isDestroyed: boolean;
   _isEditorDestroyed: boolean;
   _subscriptions: CompositeDisposable;
@@ -141,24 +138,16 @@ export default class BlameGutter {
   }
 
   _addLoadingSpinner(): void {
-    if (this._loadingSpinnerIsPending) {
+    if (this._loadingSpinnerDiv) {
       return;
     }
-    this._loadingSpinnerIsPending = true;
-    this._loadingSpinnerTimeoutId = window.setTimeout(() => {
-      const gutterView = atom.views.getView(this._gutter);
-      this._loadingSpinnerIsPending = false;
-      this._loadingSpinnerDiv = document.createElement('div');
-      this._loadingSpinnerDiv.className = 'nuclide-blame-spinner';
-      gutterView.appendChild(this._loadingSpinnerDiv);
-    }, MS_TO_WAIT_BEFORE_SPINNER);
+    const gutterView = atom.views.getView(this._gutter);
+    this._loadingSpinnerDiv = document.createElement('div');
+    this._loadingSpinnerDiv.className = 'nuclide-blame-spinner';
+    gutterView.appendChild(this._loadingSpinnerDiv);
   }
 
   _cleanUpLoadingSpinner(): void {
-    if (this._loadingSpinnerIsPending) {
-      window.clearTimeout(this._loadingSpinnerTimeoutId);
-      this._loadingSpinnerIsPending = false;
-    }
     if (this._loadingSpinnerDiv) {
       this._loadingSpinnerDiv.remove();
       this._loadingSpinnerDiv = null;
