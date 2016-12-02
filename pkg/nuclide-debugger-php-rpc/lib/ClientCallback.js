@@ -10,7 +10,7 @@
  */
 
 import logger from './utils';
-import {Observable, Subject} from 'rxjs';
+import {Observable, Subject, ReplaySubject} from 'rxjs';
 
 import type {NotificationMessage} from '..';
 
@@ -35,13 +35,17 @@ function createMessage(method: string, params: ?Object): Object {
  */
 export class ClientCallback {
   _serverMessageObservable: Subject<any>;  // For server messages.
-  _notificationObservable: Subject<any>;   // For atom UI notifications.
+  _notificationObservable: ReplaySubject<any>;   // For atom UI notifications.
   _outputWindowObservable: Subject<any>;   // For output window messages.
 
   constructor() {
     this._serverMessageObservable = new Subject();
-    this._notificationObservable = new Subject();
     this._outputWindowObservable = new Subject();
+    // We use a `ReplaySubject` here because we want to allow notifications to be emitted possibly
+    // before the client subscribes.  This is justified because:
+    // 1. we only ever expect one subscriber on the client, and
+    // 2. we expect the number of notifications to be small, so storage in memory is not an issue.
+    this._notificationObservable = new ReplaySubject();
   }
 
   getNotificationObservable(): Observable<NotificationMessage> {

@@ -23,6 +23,7 @@ describe('debugger-php-rpc ClientCallback', () => {
       'complete',
     ]);
     spyOn(require('rxjs'), 'Subject').andReturn(observableSpy);
+    spyOn(require('rxjs'), 'ReplaySubject').andReturn(observableSpy);
     const {ClientCallback} = ((
       uncachedRequire(require, '../lib/ClientCallback'): any
     ): {ClientCallback: () => ClientCallbackType});
@@ -59,7 +60,7 @@ describe('debugger-php-rpc ClientCallback', () => {
       '{"id":42,"result":{"result":"value"},"error":"error-msg"}');
   });
 
-  it('sendUserMessage', () => {
+  it('sendUserMessage console', () => {
     const message = {
       type: 'error',
       message: 'error message',
