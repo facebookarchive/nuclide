@@ -19,10 +19,6 @@ import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 // Ignore typehints that span too many lines. These tend to be super spammy.
 const MAX_LINES = 10;
 
-// Complex types can end up being super long. Truncate them.
-// TODO(hansonw): we could parse these into hint trees
-const MAX_LENGTH = 100;
-
 export default class TypeHintProvider {
 
   typeHint(editor: atom$TextEditor, position: atom$Point): Promise<?TypeHint> {
@@ -44,12 +40,8 @@ export default class TypeHintProvider {
       if (type.end.line - type.start.line > MAX_LINES) {
         return null;
       }
-      let hint = type.type;
-      if (hint.length > MAX_LENGTH) {
-        hint = hint.substr(0, MAX_LENGTH) + '...';
-      }
       return {
-        hint,
+        hint: type.type,
         range: new Range(
           new Point(type.start.line - 1, type.start.col),
           new Point(type.end.line - 1, type.end.col),

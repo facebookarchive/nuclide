@@ -15,6 +15,10 @@ import {TextBuffer} from 'atom';
 import {React} from 'react-for-atom';
 import {AtomTextEditor} from '../../nuclide-ui/AtomTextEditor';
 
+// Complex types can end up being super long. Truncate them.
+// TODO(hansonw): we could parse these into hint trees
+const MAX_LENGTH = 100;
+
 type TypeHintComponentProps = {
   content: string | HintTree,
   grammar: atom$Grammar,
@@ -22,6 +26,7 @@ type TypeHintComponentProps = {
 
 type TypeHintComponentState = {
   expandedNodes: Set<HintTree>,
+  isPrimitiveExpanded: boolean,
 };
 
 export function makeTypeHintComponent(
@@ -39,14 +44,26 @@ class TypeHintComponent extends React.Component {
     super(props);
     this.state = {
       expandedNodes: new Set(),
+      isPrimitiveExpanded: false,
     };
   }
 
   renderPrimitive(value: string): React.Element<any> {
-    const buffer = new TextBuffer(value);
+    const shouldTruncate = (
+      value.length > MAX_LENGTH &&
+      !this.state.isPrimitiveExpanded
+    );
+    const buffer = new TextBuffer(
+      shouldTruncate ? value.substr(0, MAX_LENGTH) + '...' : value,
+    );
     const {grammar} = this.props;
     return (
-      <div className="nuclide-type-hint-text-editor-container">
+      <div
+        className="nuclide-type-hint-text-editor-container"
+        onClick={(e: SyntheticEvent) => {
+          this.setState({isPrimitiveExpanded: !this.state.isPrimitiveExpanded});
+          e.stopPropagation();
+        }}>
         <AtomTextEditor
           className="nuclide-type-hint-text-editor"
           gutterHidden={true}
