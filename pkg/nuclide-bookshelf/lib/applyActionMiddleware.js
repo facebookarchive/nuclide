@@ -22,6 +22,7 @@ import {ActionType, EMPTY_SHORTHEAD} from './constants';
 import {getRepoPathToEditors} from './utils';
 import invariant from 'assert';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
+import {goToLocation} from '../../commons-atom/go-to-location';
 import {Observable} from 'rxjs';
 
 const HANDLED_ACTION_TYPES = [
@@ -163,7 +164,7 @@ function restorePaneItemState(
       .ignoreElements(),
     Observable.from(urisToOpen)
       .flatMap(fileUri => {
-        return Observable.fromPromise(atom.workspace.open(fileUri));
+        return Observable.fromPromise(goToLocation(fileUri));
       })
       .ignoreElements(),
     Observable.of({
