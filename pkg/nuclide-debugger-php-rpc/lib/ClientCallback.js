@@ -12,7 +12,7 @@
 import logger from './utils';
 import {Observable, Subject, ReplaySubject} from 'rxjs';
 
-import type {NotificationMessage} from '..';
+import type {NotificationMessage} from './PhpDebuggerService';
 
 export type UserMessageType = 'notification' | 'console' | 'outputWindow';
 export type NotificationType = 'info' | 'warning' | 'error' | 'fatalError';
@@ -34,48 +34,48 @@ function createMessage(method: string, params: ?Object): Object {
  * 4. Output window messages.
  */
 export class ClientCallback {
-  _serverMessageObservable: Subject<any>;  // For server messages.
-  _notificationObservable: ReplaySubject<any>;   // For atom UI notifications.
-  _outputWindowObservable: Subject<any>;   // For output window messages.
+  _serverMessages: Subject<string>;  // For server messages.
+  _notifications: ReplaySubject<NotificationMessage>;   // For atom UI notifications.
+  _outputWindowMessages: Subject<string>;   // For output window messages.
 
   constructor() {
-    this._serverMessageObservable = new Subject();
-    this._outputWindowObservable = new Subject();
+    this._serverMessages = new Subject();
+    this._outputWindowMessages = new Subject();
     // We use a `ReplaySubject` here because we want to allow notifications to be emitted possibly
     // before the client subscribes.  This is justified because:
     // 1. we only ever expect one subscriber on the client, and
     // 2. we expect the number of notifications to be small, so storage in memory is not an issue.
-    this._notificationObservable = new ReplaySubject();
+    this._notifications = new ReplaySubject();
   }
 
   getNotificationObservable(): Observable<NotificationMessage> {
-    return this._notificationObservable;
+    return this._notifications.asObservable();
   }
 
   getServerMessageObservable(): Observable<string> {
-    return this._serverMessageObservable;
+    return this._serverMessages.asObservable();
   }
 
   getOutputWindowObservable(): Observable<string> {
-    return this._outputWindowObservable;
+    return this._outputWindowMessages.asObservable();
   }
 
   sendUserMessage(type: UserMessageType, message: Object): void {
     logger.log(`sendUserMessage(${type}): ${JSON.stringify(message)}`);
     switch (type) {
       case 'notification':
-        this._notificationObservable.next({
+        this._notifications.next({
           type: message.type,
           message: message.message,
         });
         break;
       case 'console':
-        this.sendMethod(this._serverMessageObservable, 'Console.messageAdded', {
+        this.sendServerMethod('Console.messageAdded', {
           message,
         });
         break;
       case 'outputWindow':
-        this.sendMethod(this._outputWindowObservable, 'Console.messageAdded', {
+        this.sendOutputWindowMethod('Console.messageAdded', {
           message,
         });
         break;
@@ -101,23 +101,27 @@ export class ClientCallback {
     } else if (result.error != null) {
       value.error = result.error;
     }
-    this._sendJsonObject(this._serverMessageObservable, value);
+    sendJsonObject(this._serverMessages, value);
   }
 
-  sendMethod(observable: Observable<string>, method: string, params: ?Object) {
-    this._sendJsonObject(observable, createMessage(method, params));
+  sendServerMethod(method: string, params: ?Object) {
+    sendJsonObject(this._serverMessages, createMessage(method, params));
   }
 
-  _sendJsonObject(observable: Observable<string>, value: Object): void {
-    const message = JSON.stringify(value);
-    logger.log('Sending JSON: ' + message);
-    ((observable: any): Subject<any>).next(message);
+  sendOutputWindowMethod(method: string, params: ?Object) {
+    sendJsonObject(this._outputWindowMessages, createMessage(method, params));
   }
 
   dispose(): void {
     logger.log('Called ClientCallback dispose method.');
-    this._notificationObservable.complete();
-    this._serverMessageObservable.complete();
-    this._outputWindowObservable.complete();
+    this._notifications.complete();
+    this._serverMessages.complete();
+    this._outputWindowMessages.complete();
   }
+}
+
+function sendJsonObject(subject: Subject<string>, value: Object): void {
+  const message = JSON.stringify(value);
+  logger.log(`Sending JSON: ${message}`);
+  subject.next(message);
 }

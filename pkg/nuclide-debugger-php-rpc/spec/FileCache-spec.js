@@ -28,7 +28,7 @@ describe('debugger-php-rpc FileCache', () => {
     callback = ((
       jasmine.createSpyObj(
         'callback',
-        ['replyToCommand', 'replyWithError', 'sendMethod', 'getServerMessageObservable'],
+        ['replyToCommand', 'replyWithError', 'sendServerMethod', 'getServerMessageObservable'],
       ): any
     ): ClientCallback);
     // $FlowIssue -- instance method on object.
@@ -44,8 +44,7 @@ describe('debugger-php-rpc FileCache', () => {
     waitsForPromise(async () => {
       const sourceFileUrl = `file://${filepath}`;
       cache.registerFile(sourceFileUrl);
-      expect(callback.sendMethod).toHaveBeenCalledWith(
-        observableSpy,
+      expect(callback.sendServerMethod).toHaveBeenCalledWith(
         'Debugger.scriptParsed',
         {
           scriptId: filepath,
@@ -64,8 +63,7 @@ describe('debugger-php-rpc FileCache', () => {
     waitsForPromise(async () => {
       const noSourceFileUrl = filepath;
       cache.registerFile(noSourceFileUrl);
-      expect(callback.sendMethod).toHaveBeenCalledWith(
-        observableSpy,
+      expect(callback.sendServerMethod).toHaveBeenCalledWith(
         'Debugger.scriptParsed',
         {
           scriptId: filepath,

@@ -31,8 +31,7 @@ class FileCache {
     const filepath = uriToPath(fileUrl);
     if (!this._files.has(filepath)) {
       this._files.set(filepath, new File(filepath));
-      this._callback.sendMethod(
-        this._callback.getServerMessageObservable(),
+      this._callback.sendServerMethod(
         'Debugger.scriptParsed',
         {
           scriptId: filepath,
@@ -41,7 +40,8 @@ class FileCache {
           startColumn: 0,
           endLine: 0,
           endColumn: 0,
-        });
+        },
+      );
     }
     const result = this._files.get(filepath);
     invariant(result != null);

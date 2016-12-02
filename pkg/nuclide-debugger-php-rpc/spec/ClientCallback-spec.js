@@ -34,13 +34,13 @@ describe('debugger-php-rpc ClientCallback', () => {
     clearRequireCache(require, '../lib/ClientCallback');
   });
 
-  it('sendMethod: no args', () => {
-    clientCallback.sendMethod(observableSpy, 'method1');
+  it('sendServerMethod: no args', () => {
+    clientCallback.sendServerMethod('method1');
     expect(observableSpy.next).toHaveBeenCalledWith('{"method":"method1"}');
   });
 
-  it('sendMethod: args', () => {
-    clientCallback.sendMethod(observableSpy, 'method1', {arg1: 12});
+  it('sendServerMethod: args', () => {
+    clientCallback.sendServerMethod('method1', {arg1: 12});
     expect(observableSpy.next).toHaveBeenCalledWith('{"method":"method1","params":{"arg1":12}}');
   });
 

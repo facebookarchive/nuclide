@@ -26,7 +26,7 @@ describe('debugger-php-rpc ConsoleHandler', () => {
     clientCallback = ((
       jasmine.createSpyObj(
         'clientCallback',
-        ['replyToCommand', 'replyWithError', 'sendMethod', 'getServerMessageObservable'],
+        ['replyToCommand', 'replyWithError', 'sendServerMethod', 'getServerMessageObservable'],
       ): any
     ): ClientCallback);
     // $FlowIssue -- instance method on object.
@@ -53,8 +53,7 @@ describe('debugger-php-rpc ConsoleHandler', () => {
   it('clearMessages', () => {
     waitsForPromise(async () => {
       await handler.handleMethod(3, 'clearMessages');
-      expect(clientCallback.sendMethod).toHaveBeenCalledWith(
-        observableSpy,
+      expect(clientCallback.sendServerMethod).toHaveBeenCalledWith(
         'Console.messagesCleared',
         undefined,
       );

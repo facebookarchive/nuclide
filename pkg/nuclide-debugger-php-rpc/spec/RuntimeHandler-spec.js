@@ -34,7 +34,7 @@ describe('debugger-php-rpc RuntimeHandler', () => {
     clientCallback = ((
       jasmine.createSpyObj(
         'clientCallback',
-        ['replyToCommand', 'replyWithError', 'sendMethod', 'getServerMessageObservable'],
+        ['replyToCommand', 'replyWithError', 'sendServerMethod', 'getServerMessageObservable'],
       ): any
     ): ClientCallback);
     // $FlowIssue -- instance method on object.
@@ -46,8 +46,7 @@ describe('debugger-php-rpc RuntimeHandler', () => {
 
   it('enable', () => {
     handler.handleMethod(1, 'enable');
-    expect(clientCallback.sendMethod).toHaveBeenCalledWith(
-      observableSpy,
+    expect(clientCallback.sendServerMethod).toHaveBeenCalledWith(
       'Runtime.executionContextCreated',
       {
         context: {
