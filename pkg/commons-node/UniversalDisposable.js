@@ -26,7 +26,7 @@ export default class UniversalDisposable {
 
   add(...tearDowns: Array<AnyTeardown>): void {
     if (this.wasDisposed) {
-      return;
+      throw new Error('Cannot add to an already disposed UniversalDisposable!');
     }
 
     tearDowns.forEach(td => this._tearDowns.add(td));

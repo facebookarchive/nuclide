@@ -21,6 +21,13 @@ describe('UniversalDisposable', () => {
     expect(dispose.callCount).toBe(1);
   });
 
+  it('throws if you add after disposing', () => {
+    const universal = new UniversalDisposable();
+    universal.dispose();
+    expect(() => { universal.add(() => {}); })
+      .toThrow('Cannot add to an already disposed UniversalDisposable!');
+  });
+
   it('calls function arguments', () => {
     const foo = jasmine.createSpy('foo');
     const universal = new UniversalDisposable(foo);
