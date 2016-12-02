@@ -224,10 +224,13 @@ export default class BlameGutter {
 
     let decoration = this._bufferLineToDecoration.get(bufferLine);
     if (!decoration) {
-      const bufferLineHeadPoint = [bufferLine, 0];
-      // The range of this Marker doesn't matter, only the line it is on, because
-      // the Decoration is for a Gutter.
-      const marker = this._editor.markBufferRange([bufferLineHeadPoint, bufferLineHeadPoint]);
+      const marker = this._editor.markBufferRange(
+        [
+          [bufferLine, 0],
+          [bufferLine, 100000],
+        ],
+        {invalidate: 'touch'},
+      );
       decoration = this._editor.decorateMarker(marker, decorationProperties);
       this._bufferLineToDecoration.set(bufferLine, decoration);
     } else {
