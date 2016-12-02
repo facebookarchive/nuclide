@@ -11,11 +11,11 @@
 
 import type {AppState, TaskType, TaskSettings} from './types';
 
-import nullthrows from 'nullthrows';
 import {React} from 'react-for-atom';
 
 import BuckToolbarSettings from './ui/BuckToolbarSettings';
 import BuckToolbarTargetSelector from './ui/BuckToolbarTargetSelector';
+import {maybeToString} from '../../commons-node/string';
 import {Button, ButtonSizes} from '../../nuclide-ui/Button';
 import {Dropdown} from '../../nuclide-ui/Dropdown';
 import {LoadingSpinner} from '../../nuclide-ui/LoadingSpinner';
@@ -76,7 +76,7 @@ export default class BuckToolbar extends React.Component {
       } else {
         title =
           `Rule "${buildTarget}" could not be found in ${buckRoot}.<br />` +
-          `Check your Current Working Root: ${nullthrows(projectRoot)}`;
+          `Check your Current Working Root: ${maybeToString(projectRoot)}`;
       }
 
       status =
