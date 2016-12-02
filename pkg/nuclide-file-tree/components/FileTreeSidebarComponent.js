@@ -32,6 +32,7 @@ import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {cacheWhileSubscribed} from '../../commons-node/observable';
 import {Section} from '../../nuclide-ui/Section';
 import featureConfig from '../../commons-atom/featureConfig';
+import {goToLocation} from '../../commons-atom/go-to-location';
 import {track} from '../../nuclide-analytics';
 
 type State = {
@@ -273,7 +274,7 @@ class FileTreeSidebarComponent extends React.Component {
 
   _onFileChosen(filePath: NuclideUri): void {
     track('filetree-uncommitted-file-changes-file-open');
-    atom.workspace.open(filePath);
+    goToLocation(filePath);
   }
 
   _handleOpenFilesExpandedChange(isCollapsed: boolean): void {
