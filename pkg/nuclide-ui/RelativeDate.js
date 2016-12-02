@@ -11,15 +11,18 @@
 
 import {React} from 'react-for-atom';
 import {relativeDate} from '../commons-node/string';
+import addTooltip from './add-tooltip';
 
 type DefaultProps = {
   delay: number,
   shorten: boolean,
+  withToolip: boolean,
 };
 type Props = DefaultProps & {
   date: Date,
   delay?: number,
   shorten?: boolean,
+  withToolip?: boolean,
 };
 const DEFAULT_RERENDER_DELAY = 10000; // ms
 
@@ -29,13 +32,14 @@ const DEFAULT_RERENDER_DELAY = 10000; // ms
  *
  * Does not respond to changes to the initial `delay` for simplicity's sake.
  */
-export default class Revision extends React.Component {
+export default class RelativeDate extends React.Component {
   props: Props;
   _interval: ?number;
 
   static defaultProps: DefaultProps = {
     delay: DEFAULT_RERENDER_DELAY,
     shorten: false,
+    withToolip: false,
   }
 
   componentDidMount(): void {
@@ -56,8 +60,22 @@ export default class Revision extends React.Component {
     const {
       date,
       shorten,
+      withToolip,
       ...remainingProps
     } = this.props;
-    return <span {...remainingProps}>{relativeDate(date, undefined, shorten)}</span>;
+    return (
+      <span
+        {...remainingProps}
+        ref={withToolip
+          ? addTooltip({
+            title: date.toLocaleString(),
+            delay: 200,
+            placement: 'top',
+          })
+          : null
+        }>
+        {relativeDate(date, undefined, shorten)}
+      </span>
+    );
   }
 }
