@@ -1,0 +1,16 @@
+{
+  ".platform-darwin atom-workspace": {
+    "cmd-b b": "nuclide-task-runner:build",
+    "cmd-b t": "nuclide-task-runner:test",
+    "cmd-b r": "nuclide-task-runner:run",
+    "cmd-b d": "nuclide-task-runner:debug",
+    "cmd-b p": "nuclide-task-runner:run-selected-task"
+  },
+  ".platform-linux atom-workspace, .platform-win32 atom-workspace": {
+    "alt-b b": "nuclide-task-runner:build",
+    "alt-b t": "nuclide-task-runner:test",
+    "alt-b r": "nuclide-task-runner:run",
+    "alt-b d": "nuclide-task-runner:debug",
+    "alt-b p": "nuclide-task-runner:run-selected-task"
+  }
+}

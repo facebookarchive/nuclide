@@ -120,6 +120,17 @@ help accomplish file tasks a bit faster.
 | `Option-Cmd-T`| `Alt-Ctrl-T` | `nuclide-fuzzy-filename-provider:toggle-provider` | This allows you to search for files based on patterns. |
 | `Option-Cmd-N`| `Alt-Ctrl-N` | `nuclide-related-files:jump-to-next-related-file` | Find files related to the current file. A file is related if they have the same basename, but a different extension, for example. |
 
+## Task Runner
+
+Nuclide has support for running some common tasks on a variety of projects, like building a Buck project or debugging a React-Native one. For these tasks there is a set of useful keybord shortcuts you can use.
+
+| Key (macOS) | Key (Linux) | Command | Description |
+|-------------|-------------|---------|-------------|
+| `Cmd-B B` | `Alt-B B` | `nuclide-task-runner:build` | Executes the Build task for the currently selected Task Runner or the default one|
+| `Cmd-B D` | `Alt-B D` | `nuclide-task-runner:debug` | Executes the Debug task for the currently selected Task Runner or the default one|
+| `Cmd-B R` | `Alt-B R` | `nuclide-task-runner:run` | Executes the Run task for the currently selected Task Runner or the default one|
+| `Cmd-B T` | `Alt-B T` | `nuclide-task-runner:test` | Executes the Test task for the currently selected Task Runner or the default one|
+| `Cmd-B P` | `Alt-B P` | `nuclide-task-runner:run-selected-task` | Executes the currently selected Task|
 
 ## Debugger
 
