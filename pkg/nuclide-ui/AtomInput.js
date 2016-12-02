@@ -146,7 +146,7 @@ export class AtomInput extends React.Component {
     if (nextProps.disabled !== this.props.disabled) {
       this._updateDisabledState(nextProps.disabled);
     }
-    const {value} = nextProps;
+    const {value, placeholderText} = nextProps;
     if (typeof value === 'string' && value !== this.props.value) {
       // If the `value` prop is specified, then we must update the input area when there is new
       // text, and this includes maintaining the correct cursor position.
@@ -155,6 +155,10 @@ export class AtomInput extends React.Component {
       const cursorPosition = editor.getCursorBufferPosition();
       this.setText(value);
       editor.setCursorBufferPosition(cursorPosition);
+    }
+
+    if (placeholderText !== this.props.placeholderText) {
+      this.getTextEditor().setPlaceholderText(placeholderText || '');
     }
   }
 
