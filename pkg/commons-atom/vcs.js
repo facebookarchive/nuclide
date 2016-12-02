@@ -17,6 +17,7 @@ import {arrayCompact} from '../commons-node/collection';
 import {asyncExecute} from '../commons-node/process';
 import {diffSets} from '../commons-node/observable';
 import {Directory} from 'atom';
+import {getFileSystemServiceByNuclideUri} from '../nuclide-remote-connection';
 import {hgConstants} from '../nuclide-hg-rpc';
 import invariant from 'assert';
 import nuclideUri from '../commons-node/nuclideUri';
@@ -327,4 +328,32 @@ export function getMultiRootFileChanges(
   }));
 
   return changedRoots;
+}
+
+export function confirmAndDeletePath(nuclideFilePath: NuclideUri): void {
+  const result = atom.confirm({
+    message: 'Are you sure you want to delete?',
+    buttons: ['Delete', 'Cancel'],
+  });
+  invariant(result === 0 || result === 1);
+  if (result === 0) {
+    deleteFile(nuclideFilePath);
+  }
+}
+
+async function deleteFile(nuclideFilePath: string): Promise<void> {
+  const filePath = nuclideUri.getPath(nuclideFilePath);
+  const fsService = getFileSystemServiceByNuclideUri(nuclideFilePath);
+  try {
+    await fsService.unlink(filePath);
+    const repository = repositoryForPath(nuclideFilePath);
+    if (repository == null || repository.getType() !== 'hg') {
+      return;
+    }
+    await ((repository: any): HgRepositoryClient).remove([filePath], true);
+  } catch (error) {
+    atom.notifications.addError('Failed to delete file', {
+      detail: error,
+    });
+  }
 }

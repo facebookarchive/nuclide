@@ -13,17 +13,15 @@ import type {NuclideUri} from '../commons-node/nuclideUri';
 import type {FileChangeStatusValue} from '../commons-atom/vcs';
 
 import {
-  addPath,
-  confirmAndRevertPath,
-  FileChangeStatus,
-  RevertibleStatusCodes,
+ addPath,
+ confirmAndRevertPath,
+ confirmAndDeletePath,
+ FileChangeStatus,
+ RevertibleStatusCodes,
 } from '../commons-atom/vcs';
-import {getFileSystemServiceByNuclideUri} from '../nuclide-remote-connection';
-import {HgRepositoryClient} from '../nuclide-hg-repository-client/lib/HgRepositoryClient';
 import invariant from 'assert';
 import nuclideUri from '../commons-node/nuclideUri';
 import {React} from 'react-for-atom';
-import {repositoryForPath} from '../commons-atom/vcs';
 import UniversalDisposable from '../commons-node/UniversalDisposable';
 import ChangedFilesList from './ChangedFilesList';
 
@@ -109,22 +107,9 @@ export class MultiRootChangedFilesView extends React.Component {
     this._subscriptions.add(atom.commands.add(
       `.${commandPrefix}-file-entry`,
       `${commandPrefix}:delete-file`,
-      async event => {
+      event => {
         const nuclideFilePath = this._getFilePathFromEvent(event);
-        const filePath = nuclideUri.getPath(nuclideFilePath);
-        const fsService = getFileSystemServiceByNuclideUri(nuclideFilePath);
-        try {
-          await fsService.unlink(filePath);
-          const repository = repositoryForPath(nuclideFilePath);
-          if (repository == null || repository.getType() !== 'hg') {
-            return;
-          }
-          await ((repository: any): HgRepositoryClient).remove([filePath], true);
-        } catch (error) {
-          atom.notifications.addError('Failed to delete file', {
-            detail: error,
-          });
-        }
+        confirmAndDeletePath(nuclideFilePath);
       }),
     );
     this._subscriptions.add(atom.commands.add(
