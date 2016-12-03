@@ -9,8 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Device} from '../../../nuclide-ios-common';
-import type {TaskSettings, TaskType} from '../types';
+import type {Device, Platform, TaskSettings, TaskType} from '../types';
 
 export type Action =
   {|
@@ -22,11 +21,8 @@ export type Action =
     buildTarget: string,
   |} |
   {|
-    type: 'FETCH_DEVICES',
-  |} |
-  {|
-    type: 'SET_SIMULATOR',
-    simulator: string,
+    type: 'SET_DEVICE',
+    device: Device,
   |} |
   {|
     type: 'SET_TASK_SETTINGS',
@@ -43,17 +39,16 @@ export type Action =
     ruleType: ?string,
   |} |
   {|
-    type: 'SET_DEVICES',
-    devices: Array<Device>,
+    type: 'SET_PLATFORMS',
+    platforms: ?Array<Platform>,
   |};
 
 export const SET_PROJECT_ROOT = 'SET_PROJECT_ROOT';
 export const SET_BUILD_TARGET = 'SET_BUILD_TARGET';
-export const FETCH_DEVICES = 'FETCH_DEVICES';
-export const SET_SIMULATOR = 'SET_SIMULATOR';
+export const SET_DEVICE = 'SET_DEVICE';
 export const SET_TASK_SETTINGS = 'SET_TASK_SETTINGS';
 export const SET_BUCK_ROOT = 'SET_BUCK_ROOT';
-export const SET_DEVICES = 'SET_DEVICES';
+export const SET_PLATFORMS = 'SET_PLATFORMS';
 export const SET_RULE_TYPE = 'SET_RULE_TYPE';
 
 export function setProjectRoot(projectRoot: ?string): Action {
@@ -64,12 +59,8 @@ export function setBuildTarget(buildTarget: string): Action {
   return {type: SET_BUILD_TARGET, buildTarget};
 }
 
-export function fetchDevices(): Action {
-  return {type: FETCH_DEVICES};
-}
-
-export function setSimulator(simulator: string): Action {
-  return {type: SET_SIMULATOR, simulator};
+export function setDevice(device: Device): Action {
+  return {type: SET_DEVICE, device};
 }
 
 export function setTaskSettings(taskType: TaskType, settings: TaskSettings): Action {

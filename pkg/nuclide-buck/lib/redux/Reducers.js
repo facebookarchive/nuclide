@@ -9,8 +9,9 @@
  * the root directory of this source tree.
  */
 
-import type {AppState} from '../types';
+import type {AppState, Device, Platform} from '../types';
 import type {Action} from './Actions';
+import shallowequal from 'shallowequal';
 
 import * as Actions from './Actions';
 
@@ -39,23 +40,22 @@ export default function accumulateState(state: AppState, action: Action): AppSta
         ...state,
         buildRuleType: action.ruleType,
         isLoadingRule: false,
+        isLoadingPlatforms: true,
       };
-    case Actions.SET_DEVICES:
-      let {simulator} = state;
-      const isInvalidSimulator = simulator == null
-        || !action.devices.some(device => device.udid === simulator);
-      if (isInvalidSimulator && action.devices.length) {
-        simulator = action.devices[0].udid;
-      }
+    case Actions.SET_PLATFORMS:
+      const {platforms} = action;
+      const previouslySelected = state.selectedDevice;
+      const selectedDevice = selectValidDevice(previouslySelected, platforms);
       return {
         ...state,
-        devices: action.devices,
-        simulator,
+        platforms,
+        selectedDevice,
+        isLoadingPlatforms: false,
       };
-    case Actions.SET_SIMULATOR:
+    case Actions.SET_DEVICE:
       return {
         ...state,
-        simulator: action.simulator,
+        selectedDevice: action.device,
       };
     case Actions.SET_TASK_SETTINGS:
       return {
@@ -67,4 +67,25 @@ export default function accumulateState(state: AppState, action: Action): AppSta
       };
   }
   return state;
+}
+
+function selectValidDevice(previouslySelected: ?Device, platforms: ?Array<Platform>): ?Device {
+  if (!platforms || !platforms.length) {
+    return null;
+  }
+
+  let selectedDevice = null;
+  if (previouslySelected) {
+    // Reassign selectedDevice to an instance from new platforms,
+    // to guarantee === matches (important for dropdown selection).
+    platforms.some(platform => {
+      selectedDevice = platform.devices.find(device => shallowequal(device, previouslySelected));
+      return selectedDevice != null;
+    });
+  }
+  if (!selectedDevice) {
+    selectedDevice = platforms[0].devices[0];
+  }
+
+  return selectedDevice;
 }

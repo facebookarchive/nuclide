@@ -163,8 +163,8 @@ export class BuckBuildSystem {
       const boundActions = {
         setBuildTarget: buildTarget =>
           store.dispatch(Actions.setBuildTarget(buildTarget)),
-        setSimulator: simulator =>
-          store.dispatch(Actions.setSimulator(simulator)),
+        setDevice: device =>
+          store.dispatch(Actions.setDevice(device)),
         setTaskSettings: (taskType, settings) =>
           store.dispatch(Actions.setTaskSettings(taskType, settings)),
       };
@@ -206,14 +206,15 @@ export class BuckBuildSystem {
     if (this._store == null) {
       invariant(this._serializedState != null);
       const initialState: AppState = {
-        devices: null,
+        platforms: null,
         projectRoot: null,
         buckRoot: null,
         isLoadingBuckProject: false,
         isLoadingRule: false,
+        isLoadingPlatforms: false,
         buildTarget: this._serializedState.buildTarget || '',
         buildRuleType: null,
-        simulator: this._serializedState.simulator,
+        selectedDevice: this._serializedState.selectedDevice,
         taskSettings: this._serializedState.taskSettings || {},
       };
       const epics = Object.keys(Epics)
@@ -244,13 +245,21 @@ export class BuckBuildSystem {
     );
 
     const state = this._getStore().getState();
+    const {selectedDevice} = state;
+    let fullTargetName = state.buildTarget;
+    let udid = null;
+    if (selectedDevice) {
+      udid = selectedDevice.udid;
+      const separator = !fullTargetName.includes('#') ? '#' : ',';
+      fullTargetName += separator + selectedDevice.flavor;
+    }
     const resultStream = this._runTaskType(
       taskType,
       state.buckRoot,
-      state.buildTarget,
+      fullTargetName,
       state.taskSettings[taskType] || {},
       isInstallableRule(taskType, state.buildRuleType),
-      state.simulator,
+      udid,
     );
     const task = taskFromObservable(resultStream);
     return {
@@ -331,8 +340,8 @@ export class BuckBuildSystem {
     if (this._store == null) {
       return;
     }
-    const {buildTarget, taskSettings, simulator} = this._store.getState();
-    return {buildTarget, taskSettings, simulator};
+    const {buildTarget, taskSettings, selectedDevice} = this._store.getState();
+    return {buildTarget, taskSettings, selectedDevice};
   }
 
   _runTaskType(
@@ -341,7 +350,7 @@ export class BuckBuildSystem {
     buildTarget: string,
     settings: TaskSettings,
     isInstallable: boolean,
-    simulator: ?string,
+    deviceUdid: ?string,
   ): Observable<TaskEvent> {
     // Clear Buck diagnostics every time we run build.
     this._diagnosticInvalidations.next({scope: 'all'});
@@ -390,7 +399,7 @@ export class BuckBuildSystem {
           subcommand,
           settings.arguments || [],
           isDebug,
-          simulator,
+          deviceUdid,
         ).share();
         const processEvents = getEventsFromProcess(processMessages).share();
 

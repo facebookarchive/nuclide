@@ -10,7 +10,6 @@
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {Task} from '../../commons-node/tasks';
-import type {Device} from '../../nuclide-ios-common';
 import type {Action} from './redux/Actions';
 
 export type TaskType = 'build' | 'test' | 'run' | 'debug';
@@ -23,14 +22,15 @@ export type TaskSettings = {
 };
 
 export type AppState = {
-  devices: ?Array<Device>,
+  platforms: ?Array<Platform>,
   projectRoot: ?string,
   buckRoot: ?string,
   isLoadingBuckProject: boolean,
   isLoadingRule: boolean,
+  isLoadingPlatforms: boolean,
   buildTarget: string,
   buildRuleType: ?string,
-  simulator: ?string,
+  selectedDevice: ?Device,
   taskSettings: {[key: TaskType]: TaskSettings},
 };
 
@@ -42,7 +42,7 @@ export type Store = {
 export type SerializedState = {
   buildTarget: ?string,
   taskSettings?: {[key: TaskType]: TaskSettings},
-  simulator: ?string,
+  selectedDevice: ?Device,
 };
 
 export type BuildArtifactTask = Task & {
@@ -56,4 +56,15 @@ export type BuckBuilder = {
 export type BuckBuilderBuildOptions = {
   root: NuclideUri,
   target: string,
+};
+
+export type Platform = {
+  name: string,
+  devices: Array<Device>,
+};
+
+export type Device = {
+  name: string,
+  udid?: string,
+  flavor: string,
 };

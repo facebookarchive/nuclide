@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {AppState, TaskType, TaskSettings} from './types';
+import type {AppState, Device, Platform, TaskType, TaskSettings} from './types';
 
 import {React} from 'react-for-atom';
 
@@ -18,6 +18,7 @@ import BuckToolbarTargetSelector from './ui/BuckToolbarTargetSelector';
 import {maybeToString} from '../../commons-node/string';
 import {Button, ButtonSizes} from '../../nuclide-ui/Button';
 import {Dropdown} from '../../nuclide-ui/Dropdown';
+import type {Option} from '../../nuclide-ui/Dropdown';
 import {LoadingSpinner} from '../../nuclide-ui/LoadingSpinner';
 import addTooltip from '../../nuclide-ui/add-tooltip';
 
@@ -25,7 +26,7 @@ type Props = {
   activeTaskType: ?TaskType,
   appState: AppState,
   setBuildTarget(buildTarget: string): void,
-  setSimulator(simulator: string): void,
+  setDevice(device: Device): void,
   setTaskSettings(taskType: TaskType, settings: TaskSettings): void,
 };
 
@@ -39,7 +40,7 @@ export default class BuckToolbar extends React.Component {
 
   constructor(props: Props) {
     super(props);
-    (this: any)._handleSimulatorChange = this._handleSimulatorChange.bind(this);
+    (this: any)._handleDeviceChange = this._handleDeviceChange.bind(this);
     this.state = {settingsVisible: false};
   }
 
@@ -48,18 +49,20 @@ export default class BuckToolbar extends React.Component {
       buildRuleType,
       buildTarget,
       buckRoot,
-      devices,
       isLoadingRule,
+      isLoadingPlatforms,
+      platforms,
       projectRoot,
-      simulator,
+      selectedDevice,
       taskSettings,
     } = this.props.appState;
-    const isAppleBundle = buildRuleType === 'apple_bundle';
-    const isLoading = isLoadingRule || (isAppleBundle && devices == null);
+
     let status;
-    if (isLoading) {
+    if (isLoadingRule || isLoadingPlatforms) {
+      const title = isLoadingRule
+        ? 'Loading target build rule...' : 'Loading available platforms...';
       status =
-        <div ref={addTooltip({title: 'Waiting on rule info...', delay: 0})}>
+        <div ref={addTooltip({title, delay: 0})}>
           <LoadingSpinner
             className="inline-block"
             size="EXTRA_SMALL"
@@ -93,26 +96,20 @@ export default class BuckToolbar extends React.Component {
           {status}
         </div>,
       );
-    } else {
-      if (isAppleBundle && !isLoading && simulator != null &&
-          devices != null && devices.length > 0) {
-        const options = devices.map(device => ({
-          label: `${device.name} (${device.os})`,
-          value: device.udid,
-        }));
+    } else if (platforms != null) {
+      const options = this._optionsFromPlatforms(platforms);
 
-        widgets.push(
-          <Dropdown
-            key="simulator-dropdown"
-            className="inline-block"
-            value={simulator}
-            options={options}
-            onChange={this._handleSimulatorChange}
-            size="sm"
-            title="Choose a device"
-          />,
-        );
-      }
+      widgets.push(
+        <Dropdown
+          key="simulator-dropdown"
+          className="inline-block"
+          value={selectedDevice}
+          options={options}
+          onChange={this._handleDeviceChange}
+          size="sm"
+          title="Choose a device"
+        />,
+      );
     }
 
     const {activeTaskType} = this.props;
@@ -142,8 +139,8 @@ export default class BuckToolbar extends React.Component {
     );
   }
 
-  _handleSimulatorChange(deviceId: string) {
-    this.props.setSimulator(deviceId);
+  _handleDeviceChange(device: Device) {
+    this.props.setDevice(device);
   }
 
   _showSettings() {
@@ -157,6 +154,25 @@ export default class BuckToolbar extends React.Component {
   _saveSettings(taskType: TaskType, settings: TaskSettings) {
     this.props.setTaskSettings(taskType, settings);
     this._hideSettings();
+  }
+
+  _optionsFromPlatforms(platforms: Array<Platform>): Array<Option> {
+    return platforms.reduce((options, platform) => {
+      const platform_header = {
+        label: platform.name,
+        value: platform.name,
+        disabled: true,
+      };
+      const device_options = platform.devices.map(device => {
+        return {
+          label: `  ${device.name}`,
+          value: device,
+        };
+      });
+
+      options.push(platform_header);
+      return options.concat(device_options);
+    }, []);
   }
 
 }

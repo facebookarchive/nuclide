@@ -12,12 +12,12 @@
 import {Observable} from 'rxjs';
 import {ActionsObservable} from '../../commons-node/redux-observable';
 import * as BuckBase from '../../nuclide-buck-base';
-import * as IosSimulator from '../../nuclide-ios-common';
 import * as Actions from '../lib/redux/Actions';
+import * as PlatformService from '../lib/PlatformService.js';
 import {
   setProjectRootEpic,
   setBuildTargetEpic,
-  fetchDevicesEpic,
+  setRuleTypeEpic,
 } from '../lib/redux/Epics';
 
 const mockStore = {
@@ -26,6 +26,7 @@ const mockStore = {
     return {
       buckRoot: '/test',
       buildTarget: 'test',
+      selectedDevice: {udid: 'two', flavor: 'chocolate'},
     };
   },
 };
@@ -76,11 +77,11 @@ describe('setBuildTargetEpic', () => {
     });
   });
 
-  it('gets devices with apple_bundle', () => {
+  it('sets the rule type to what buck service resolves', () => {
     waitsForPromise(async () => {
       spyOn(BuckBase, 'getBuckService').andReturn({
         buildRuleTypeFor() {
-          return Promise.resolve('apple_bundle');
+          return Promise.resolve('some_rule_type');
         },
       });
 
@@ -90,25 +91,41 @@ describe('setBuildTargetEpic', () => {
       ).toArray().toPromise();
 
       expect(stream).toEqual([
-        {type: Actions.SET_RULE_TYPE, ruleType: 'apple_bundle'},
-        Actions.fetchDevices(),
+        {type: Actions.SET_RULE_TYPE, ruleType: 'some_rule_type'},
       ]);
     });
   });
 });
 
-describe('fetchDevicesEpic', () => {
-  it('gets a list of iOS devices', () => {
+describe('setRuleTypeEpic', () => {
+  it('sets platforms to null for null ruleType', () => {
     waitsForPromise(async () => {
-      spyOn(IosSimulator, 'getDevices').andReturn(Observable.of(['test']));
-
-      const stream = await fetchDevicesEpic(
-        new ActionsObservable(Observable.of(Actions.fetchDevices())),
-        mockStore,
+      const stream = await setRuleTypeEpic(
+        new ActionsObservable(
+          Observable.of({type: Actions.SET_RULE_TYPE, ruleType: null})),
+          mockStore,
       ).toArray().toPromise();
 
       expect(stream).toEqual([
-        {type: Actions.SET_DEVICES, devices: ['test']},
+        {type: Actions.SET_PLATFORMS, platforms: null},
+      ]);
+    });
+  });
+
+  it('sets platform to platforms returned from platform service', () => {
+    waitsForPromise(async () => {
+      spyOn(PlatformService, 'platformsForRuleType').andReturn(
+        Observable.of('random platforms'),
+      );
+
+      const stream = await setRuleTypeEpic(
+        new ActionsObservable(
+          Observable.of({type: Actions.SET_RULE_TYPE, ruleType: 'haha'})),
+          mockStore,
+      ).toArray().toPromise();
+
+      expect(stream).toEqual([
+        {type: Actions.SET_PLATFORMS, platforms: 'random platforms'},
       ]);
     });
   });
