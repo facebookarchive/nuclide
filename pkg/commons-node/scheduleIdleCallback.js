@@ -25,22 +25,32 @@ import invariant from 'assert';
 
 export default global.requestIdleCallback ?
   // Using Browser API
+  // Is guaranteed to resolve after `timeout` milliseconds.
   function scheduleIdleCallback(
     callback_: () => void,
-    afterRemainingTime?: 30 | 40 | 49 = 49,
+    options?: {
+      afterRemainingTime?: 30 | 40 | 49,
+      timeout?: number,
+    } = {},
   ): IDisposable {
+    const afterRemainingTime = options.afterRemainingTime || 49;
+    const timeout = options.timeout || 500;
     let callback = callback_;
     let id;
+    const startTime = Date.now();
     function fn(deadline) {
-      if (deadline.timeRemaining() >= afterRemainingTime) {
+      if (deadline.timeRemaining() >= afterRemainingTime ||
+          Date.now() - startTime >= timeout) {
         invariant(callback != null);
         callback(deadline);
         id = callback = null;
       } else {
-        id = global.requestIdleCallback(fn);
+        id = global.requestIdleCallback(fn, {
+          timeout: timeout - (Date.now() - startTime),
+        });
       }
     }
-    id = global.requestIdleCallback(fn);
+    id = global.requestIdleCallback(fn, {timeout});
     return {
       dispose() {
         if (id != null) {
@@ -54,7 +64,10 @@ export default global.requestIdleCallback ?
   // Using Node API
   function scheduleIdleCallback(
     callback: () => void,
-    afterRemainingTime?: 30 | 40 | 49 = 49,
+    options?: {
+      afterRemainingTime?: 30 | 40 | 49,
+      timeout?: number,
+    },
   ) {
     const id = global.setImmediate(callback);
     return {

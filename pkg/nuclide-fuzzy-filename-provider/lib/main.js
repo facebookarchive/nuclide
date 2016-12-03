@@ -57,7 +57,7 @@ class Activation {
             logger.error(`Error starting fuzzy filename search for ${newProjectPath}`, err);
             this._disposeSearch(newProjectPath);
           });
-        });
+        }, {timeout: 5000});
         this._disposables.add(disposable);
       }
     }

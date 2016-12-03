@@ -118,4 +118,27 @@ describe('scheduleIdleCallback using browser API', () => {
     disposable.dispose();
     expect(cancelIdleCallbackCalls.length).toBe(1);
   });
+
+  it('expires after a timeout', () => {
+    let curDate = 0;
+    jasmine.unspy(Date, 'now');
+    spyOn(Date, 'now').andCallFake(() => curDate);
+    const fn = jasmine.createSpy('callback');
+    const disposable = scheduleIdleCallback(fn, {
+      afterRemainingTime: 100,
+      timeout: 100,
+    });
+
+    requestIdleCallbackCalls[0][0]({timeRemaining: () => 48});
+    expect(fn).not.toHaveBeenCalled();
+    curDate = 50;
+    requestIdleCallbackCalls[0][0]({timeRemaining: () => 48});
+    expect(fn).not.toHaveBeenCalled();
+    curDate = 100;
+    requestIdleCallbackCalls[0][0]({timeRemaining: () => 48});
+    expect(fn).toHaveBeenCalled();
+
+    disposable.dispose();
+    expect(cancelIdleCallbackCalls.length).toBe(0);
+  });
 });
