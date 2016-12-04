@@ -29,6 +29,7 @@ import type {
   SetCommitModeAction,
   SetCompareIdAction,
   SetCwdApiAction,
+  SetShouldPublishOnCommitAction,
   SetShouldReabaseOnAmendAction,
   SetViewModeAction,
   TextDiff,
@@ -399,6 +400,17 @@ export function updateDockConfig(
     type: ActionTypes.UPDATE_DOCK_CONFIG,
     payload: {
       shouldDockPublishView,
+    },
+  };
+}
+
+export function setShouldPublishOnCommit(
+  shouldPublishOnCommit: boolean,
+): SetShouldPublishOnCommitAction {
+  return {
+    type: ActionTypes.SET_SHOULD_PUBLISH_ON_COMMIT,
+    payload: {
+      shouldPublishOnCommit,
     },
   };
 }

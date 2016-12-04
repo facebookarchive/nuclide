@@ -168,4 +168,15 @@ export default class DiffViewModel {
   setShouldAmendRebase(shouldRebaseOnAmend: boolean): void {
     this._actionCreators.setShouldRebaseOnAmend(shouldRebaseOnAmend);
   }
+
+  setShouldPublishOnCommit(shoulPublishOnCommit: boolean): void {
+    this._actionCreators.setShouldPublishOnCommit(shoulPublishOnCommit);
+  }
+
+  updatePublishStateWithMessage(message: ?string): void {
+    this._actionCreators.updatePublishState({
+      ...this._state.publish,
+      message,
+    });
+  }
 }

@@ -178,6 +178,7 @@ export type AppState = {
   publish: PublishState,
   repositories: Map<HgRepositoryClient, RepositoryState>,
   shouldDockPublishView: boolean,
+  shouldPublishOnCommit: boolean,
   shouldRebaseOnAmend: boolean,
   uiProviders: Array<UIProvider>,
   viewMode: DiffModeType,
@@ -398,6 +399,14 @@ export type UpdateDockConfigAction = {
   },
 };
 
+export type SetShouldPublishOnCommitAction = {
+  type: 'SET_SHOULD_PUBLISH_ON_COMMIT',
+  payload: {
+    shouldPublishOnCommit: boolean,
+  },
+};
+
+
 export type Action = AddRepositoryAction
   | AddUiProviderAction
   | CommitAction
@@ -408,6 +417,7 @@ export type Action = AddRepositoryAction
   | SetCommitModeAction
   | SetCompareIdAction
   | SetCwdApiAction
+  | SetShouldPublishOnCommitAction
   | SetShouldReabaseOnAmendAction
   | SetViewModeAction
   | UpdateActiveNavigationSectionAction

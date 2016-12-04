@@ -103,6 +103,7 @@ export function createEmptyAppState(): AppState {
     publish: getEmptyPublishState(),
     repositories: new Map(),
     shouldDockPublishView: true,
+    shouldPublishOnCommit: false,
     shouldRebaseOnAmend: true,
     uiProviders: [],
     viewMode: DiffMode.BROWSE_MODE,

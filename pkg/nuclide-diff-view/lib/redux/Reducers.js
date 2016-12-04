@@ -166,6 +166,12 @@ export function rootReducer(
         shouldDockPublishView: action.payload.shouldDockPublishView,
       };
 
+    case ActionTypes.SET_SHOULD_PUBLISH_ON_COMMIT:
+      return {
+        ...state,
+        shouldPublishOnCommit: action.payload.shouldPublishOnCommit,
+      };
+
     default:
       return state;
   }

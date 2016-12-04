@@ -108,6 +108,7 @@ export function renderPublishView(diffModel: DiffViewModel): React.Element<any> 
 export function renderCommitView(diffModel: DiffViewModel): React.Element<any> {
   const {
     commit: {message, mode, state},
+    shouldPublishOnCommit,
     shouldRebaseOnAmend,
     suggestedReviewers,
   } = diffModel.getState();
@@ -119,6 +120,7 @@ export function renderCommitView(diffModel: DiffViewModel): React.Element<any> {
       commitMessage={message}
       commitMode={mode}
       commitModeState={state}
+      shouldPublishOnCommit={shouldPublishOnCommit}
       shouldRebaseOnAmend={shouldRebaseOnAmend}
       // `diffModel` is acting as the action creator for commit view and needs to be passed so
       // methods can be called on it.
