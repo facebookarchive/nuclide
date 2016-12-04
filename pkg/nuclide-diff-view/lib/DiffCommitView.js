@@ -50,7 +50,6 @@ export default class DiffCommitView extends React.Component {
   constructor(props: Props) {
     super(props);
     (this: any).__onClickCommit = this.__onClickCommit.bind(this);
-    (this: any)._onToggleAmend = this._onToggleAmend.bind(this);
     (this: any)._onTogglePublish = this._onTogglePublish.bind(this);
     (this: any)._onToggleAmendRebase = this._onToggleAmendRebase.bind(this);
     (this: any)._onClickBack = this._onClickBack.bind(this);
@@ -157,12 +156,6 @@ export default class DiffCommitView extends React.Component {
     return (
       <Toolbar location="bottom">
         <ToolbarLeft>
-          <Checkbox
-            checked={this.props.commitMode === CommitMode.AMEND}
-            disabled={isLoading}
-            label="Amend"
-            onChange={this._onToggleAmend}
-          />
           {rebaseOptionElement}
           <Checkbox
             className="padded"
@@ -220,13 +213,6 @@ export default class DiffCommitView extends React.Component {
 
   __getCommitMessage(): string {
     return this.refs.message.getTextBuffer().getText();
-  }
-
-  _onToggleAmend(isChecked: boolean): void {
-    this.props.diffModel.setCommitMode(isChecked
-      ? CommitMode.AMEND
-      : CommitMode.COMMIT,
-    );
   }
 
   _onToggleAmendRebase(isChecked: boolean): void {
