@@ -15,10 +15,10 @@ describe('Fake timer test suite', () => {
 
     setTimeout(() => { firstExecuted = true; }, 10);
 
-    window.advanceClock(9);
+    advanceClock(9);
 
     expect(firstExecuted).toBe(false);
-    window.advanceClock(1);
+    advanceClock(1);
     expect(firstExecuted).toBe(true);
 
     let secondExecuted = false;
@@ -27,13 +27,13 @@ describe('Fake timer test suite', () => {
     const secondId = setTimeout(() => { secondExecuted = true; }, 20);
     setTimeout(() => { thirdExecuted = true; }, 30);
 
-    window.advanceClock(19);
+    advanceClock(19);
     clearTimeout(secondId);
 
     expect(secondExecuted).toBe(false);
     expect(thirdExecuted).toBe(false);
 
-    window.advanceClock(20);
+    advanceClock(20);
 
     expect(secondExecuted).toBe(false);
     expect(thirdExecuted).toBe(true);
@@ -44,10 +44,10 @@ describe('Fake timer test suite', () => {
 
     setInterval(() => { firstExecuted = true; }, 10);
 
-    window.advanceClock(9);
+    advanceClock(9);
 
     expect(firstExecuted).toBe(false);
-    window.advanceClock(1);
+    advanceClock(1);
     expect(firstExecuted).toBe(true);
 
     let secondExecuted = false;
@@ -56,13 +56,13 @@ describe('Fake timer test suite', () => {
     const secondId = setInterval(() => { secondExecuted = true; }, 20);
     setInterval(() => { thirdExecuted = true; }, 30);
 
-    window.advanceClock(19);
+    advanceClock(19);
     clearInterval(secondId);
 
     expect(secondExecuted).toBe(false);
     expect(thirdExecuted).toBe(false);
 
-    window.advanceClock(20);
+    advanceClock(20);
 
     expect(secondExecuted).toBe(false);
     expect(thirdExecuted).toBe(true);
@@ -82,7 +82,7 @@ describe('Fake timer test suite', () => {
       expect(firstExecuted).toBe(true);
     }, 20);
 
-    window.advanceClock(20);
+    advanceClock(20);
 
     expect(firstExecuted).toBe(true);
     expect(secondExecuted).toBe(true);
@@ -92,18 +92,18 @@ describe('Fake timer test suite', () => {
     let firstExecutedCount = 0;
     let secondExecutedCount = 0;
 
-    window.fakeSetInterval(() => firstExecutedCount++, 10);
-    window.advanceClock(5);
-    const secondId = window.fakeSetInterval(() => secondExecutedCount++, 10);
+    global.fakeSetInterval(() => firstExecutedCount++, 10);
+    advanceClock(5);
+    const secondId = global.fakeSetInterval(() => secondExecutedCount++, 10);
 
-    window.advanceClock(15);
+    advanceClock(15);
 
     expect(firstExecutedCount).toBe(2);
     expect(secondExecutedCount).toBe(1);
 
-    window.fakeClearInterval(secondId);
+    global.fakeClearInterval(secondId);
 
-    window.advanceClock(20);
+    advanceClock(20);
 
     expect(firstExecutedCount).toBe(4);
     expect(secondExecutedCount).toBe(1);
@@ -114,16 +114,16 @@ describe('Fake timer test suite', () => {
     let firstExecutedCount = 0;
     let secondExecutedCount = 0;
 
-    window.fakeSetInterval(() => {
+    global.fakeSetInterval(() => {
       firstExecutedCount++;
       expect(secondExecutedCount < firstExecutedCount).toBe(true);
     }, 10);
 
-    window.advanceClock(5);
+    advanceClock(5);
 
-    window.fakeSetInterval(() => secondExecutedCount++, 10);
+    global.fakeSetInterval(() => secondExecutedCount++, 10);
 
-    window.advanceClock(40);
+    advanceClock(40);
 
     expect(firstExecutedCount).toBe(4);
     expect(secondExecutedCount).toBe(4);

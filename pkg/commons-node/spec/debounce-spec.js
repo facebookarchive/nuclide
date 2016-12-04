@@ -19,7 +19,7 @@ describe('debounce()', () => {
     debouncedFunc();
     expect(timerCallback).not.toHaveBeenCalled();
 
-    window.advanceClock(101);
+    advanceClock(101);
     expect(timerCallback).toHaveBeenCalled();
   });
 });

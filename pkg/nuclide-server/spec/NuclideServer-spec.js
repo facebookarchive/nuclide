@@ -61,7 +61,7 @@ describe('Nuclide Server test suite', () => {
       nuclideSocket.onReconnect(reconnectHandler);
       nuclideSocket.onMessage().subscribe(messageHandler);
       // The maximum reconnect time is 5 seconds - advance clock to sip the reconnect time.
-      nuclideSocket.onDisconnect(() => process.nextTick(() => window.advanceClock(6000)));
+      nuclideSocket.onDisconnect(() => process.nextTick(() => advanceClock(6000)));
 
       waitsForPromise(() => nuclideSocket.waitForConnect());
 
@@ -92,7 +92,7 @@ describe('Nuclide Server test suite', () => {
           serverSocketClient.socket.close();
           serverSocketClient.getTransport().send(message2);
           // The default WebSocket's close timeout is 30 seconds.
-          window.advanceClock(31 * 1000);
+          advanceClock(31 * 1000);
           serverSocketClient.getTransport().send(message3);
         }
       });

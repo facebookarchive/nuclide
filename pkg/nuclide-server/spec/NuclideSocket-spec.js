@@ -35,10 +35,6 @@ xdescribe('NuclideSocket test suite', () => {
       serverSocketClient = client;
       expect(serverSocketClient.getTransport().id).toBe(clientId);
     });
-
-    // Use spec-helper.coffee utils to test the the heartbeat interval.
-    window.setInterval = window.fakeSetInterval;
-    window.clearInterval = window.fakeClearInterval;
   });
 
   afterEach(() => {
@@ -75,9 +71,9 @@ xdescribe('NuclideSocket test suite', () => {
       // There was an initial heartbeat, but we can't be sure if it went before or after we do
       // listen here.
       socket.onHeartbeat(heartbeatHandler);
-      window.advanceClock(5050); // Advance the heartbeat interval.
+      advanceClock(5050); // Advance the heartbeat interval.
       waitsFor(() => heartbeatHandler.callCount > 0);
-      window.advanceClock(5050); // Advance the heartbeat interval.
+      advanceClock(5050); // Advance the heartbeat interval.
       waitsFor(() => heartbeatHandler.callCount > 1);
     });
 
@@ -87,7 +83,7 @@ xdescribe('NuclideSocket test suite', () => {
       // Assume the hearbeat didn't happen.
       socket._heartbeat._heartbeatConnectedOnce = false;
       server.close();
-      window.advanceClock(5050); // Advance the heartbeat interval.
+      advanceClock(5050); // Advance the heartbeat interval.
       waitsFor(() => heartbeatErrorHandler.callCount > 0);
       runs(() => expect(heartbeatErrorHandler.argsForCall[0][0].code).toBe('PORT_NOT_ACCESSIBLE'));
     });
@@ -97,7 +93,7 @@ xdescribe('NuclideSocket test suite', () => {
       socket.onHeartbeatError(heartbeatErrorHandler);
       socket._heartbeat._heartbeatConnectedOnce = true;
       server.close();
-      window.advanceClock(5050); // Advance the heartbeat interval.
+      advanceClock(5050); // Advance the heartbeat interval.
       waitsFor(() => heartbeatErrorHandler.callCount > 0);
       runs(() => expect(heartbeatErrorHandler.argsForCall[0][0].code).toBe('SERVER_CRASHED'));
     });
@@ -106,7 +102,7 @@ xdescribe('NuclideSocket test suite', () => {
       const heartbeatErrorHandler: Function = (jasmine.createSpy(): any);
       socket.onHeartbeatError(heartbeatErrorHandler);
       socket._serverUri = 'http://not.existing.uri.conf:8657';
-      window.advanceClock(5050); // Advance the heartbeat interval.
+      advanceClock(5050); // Advance the heartbeat interval.
       waitsFor(() => heartbeatErrorHandler.callCount > 0);
       runs(() => expect(heartbeatErrorHandler.argsForCall[0][0].code).toBe('NETWORK_AWAY'));
     });
@@ -136,11 +132,11 @@ xdescribe('NuclideSocket test suite', () => {
         socket.send(message2); // The messages will be cached and sent in order.
         // Make sure a close event on the old socket doesn't have any effect on the reconnect
         // with a new socket.
-        window.advanceClock(31 * 1000); // The default WebSocket's close timeout is 30 seconds.
+        advanceClock(31 * 1000); // The default WebSocket's close timeout is 30 seconds.
         socket.send(message3); // The messages will be cached and sent in order.
         socket._scheduleReconnect();
         socket.send(message4); // The messages will be cached and sent in order.
-        window.advanceClock(6000); // The maximum reconnect time is 5 seconds.
+        advanceClock(6000); // The maximum reconnect time is 5 seconds.
       });
       waitsFor(() => reconnectHandler.callCount > 0);
       waitsFor(() => serverSocketClient.getTransport()._onSocketMessage.calls.length === 5);

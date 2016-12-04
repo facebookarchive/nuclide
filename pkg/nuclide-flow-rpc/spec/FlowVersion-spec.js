@@ -55,7 +55,7 @@ describe('FlowVersion', () => {
       fakeVersion = 'foo';
       await flowVersion.getVersion();
       fakeVersion = 'bar';
-      window.advanceClock(11 * 60 * 1000);
+      advanceClock(11 * 60 * 1000);
       expect(await flowVersion.getVersion()).toEqual('bar');
       expect(getVersionSpy.callCount).toEqual(2);
     });

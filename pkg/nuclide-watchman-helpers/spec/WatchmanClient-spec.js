@@ -69,7 +69,7 @@ describe('WatchmanClient test suite', () => {
           internalClient.end();
         });
         waits(1000); // Wait for watchman to watch the directory.
-        runs(() => window.advanceClock(3000)); // Pass the settle filesystem time.
+        runs(() => advanceClock(3000)); // Pass the settle filesystem time.
         waits(1000); // Wait for the client to restore subscriptions.
         runs(() => fs.unlinkSync(filePath));
         waitsFor(() => changeHandler.callCount > 1);

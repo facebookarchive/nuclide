@@ -81,7 +81,7 @@ xdescribe('QuickSelectionComponent', () => {
       );
       invariant(untypedComponent instanceof QuickSelectionComponent);
       component = untypedComponent;
-      window.advanceClock(250);
+      advanceClock(250);
 
       component.clear();
 

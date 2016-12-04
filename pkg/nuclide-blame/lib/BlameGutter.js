@@ -249,24 +249,25 @@ export default class BlameGutter {
   }
 
   _createGutterItem(blameInfo: BlameInfo, longestBlame: number): HTMLElement {
-    const doc = window.document;
-    const item = doc.createElement('div');
+    const {author, changeset} = blameInfo;
+    const item = document.createElement('div');
 
-    const authorSpan = doc.createElement('span');
-    authorSpan.innerText = blameInfo.author;
+    const authorSpan = document.createElement('span');
+    authorSpan.innerText = author;
     item.appendChild(authorSpan);
 
-    if (blameInfo.changeset) {
-      const numSpaces = longestBlame - blameInfo.author.length - blameInfo.changeset.length;
+
+    if (changeset != null) {
+      const numSpaces = longestBlame - author.length - changeset.length;
       // Insert non-breaking spaces to ensure the changeset is right-aligned.
       // Admittedly, this is a little gross, but it seems better than setting style.width on every
       // item that we create and having to give it a special flexbox layout. Hooray monospace!
-      item.appendChild(doc.createTextNode('\u00A0'.repeat(numSpaces)));
+      item.appendChild(document.createTextNode('\u00A0'.repeat(numSpaces)));
 
-      const changesetSpan = doc.createElement('span');
+      const changesetSpan = document.createElement('span');
       changesetSpan.className = this._changesetSpanClassName;
-      changesetSpan.dataset[HG_CHANGESET_DATA_ATTRIBUTE] = blameInfo.changeset;
-      changesetSpan.innerText = blameInfo.changeset;
+      changesetSpan.dataset[HG_CHANGESET_DATA_ATTRIBUTE] = changeset;
+      changesetSpan.innerText = changeset;
       item.appendChild(changesetSpan);
     }
 

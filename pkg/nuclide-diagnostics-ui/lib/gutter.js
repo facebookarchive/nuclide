@@ -195,7 +195,7 @@ function createGutterItem(
   gutterMarkerCssClass: string,
   fixer: (message: FileDiagnosticMessage) => void,
 ): {item: HTMLElement, dispose: () => void} {
-  const item = window.document.createElement('a');
+  const item = document.createElement('a');
   item.className = gutterMarkerCssClass;
   let popupElement = null;
   let paneItemSubscription = null;
@@ -224,7 +224,7 @@ function createGutterItem(
     const column = 0;
     atomGoToLocation(path, line, column);
   };
-  item.addEventListener('mouseenter', event => {
+  item.addEventListener('mouseenter', (event: MouseEvent) => {
     // If there was somehow another popup for this gutter item, dispose it. This can happen if the
     // user manages to scroll and escape disposal.
     dispose();
@@ -234,7 +234,7 @@ function createGutterItem(
     // This makes sure that the popup disappears when you ctrl+tab to switch tabs.
     paneItemSubscription = atom.workspace.onDidChangeActivePaneItem(dispose);
   });
-  item.addEventListener('mouseleave', event => {
+  item.addEventListener('mouseleave', (event: MouseEvent) => {
     // When the popup is shown, we want to dispose it if the user manages to move the cursor off of
     // the gutter glyph without moving it onto the popup. Even though the popup appears above (as in
     // Z-index above) the gutter glyph, if you move the cursor such that it is only above the glyph
@@ -256,7 +256,7 @@ function showPopupFor(
   // The popup will be an absolutely positioned child element of <atom-workspace> so that it appears
   // on top of everything.
   const workspaceElement = atom.views.getView((atom.workspace: Object));
-  const hostElement = window.document.createElement('div');
+  const hostElement = document.createElement('div');
   // $FlowFixMe check parentNode for null
   workspaceElement.parentNode.appendChild(hostElement);
 
@@ -288,9 +288,10 @@ function showPopupFor(
   const editorElement = atom.views.getView(editor);
   const {top: editorTop, height: editorHeight} = editorElement.getBoundingClientRect();
   const {top: itemTop, height: itemHeight} = item.getBoundingClientRect();
-  const popupHeight = hostElement.firstElementChild.clientHeight;
+  const popupElement = hostElement.firstElementChild;
+  invariant(popupElement instanceof HTMLElement);
+  const popupHeight = popupElement.clientHeight;
   if ((itemTop + itemHeight + popupHeight) > (editorTop + editorHeight)) {
-    const popupElement = hostElement.firstElementChild;
     // Shift the popup back down by GLYPH_HEIGHT, so that the bottom padding overlaps with the
     // glyph. An additional 4 px is needed to make it look the same way it does when it shows up
     // below. I don't know why.

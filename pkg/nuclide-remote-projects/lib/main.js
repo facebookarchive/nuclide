@@ -164,12 +164,13 @@ function addRemoteFolderToProject(connection: RemoteConnection) {
       buttons.reverse();
     }
 
-    const choice = global.atom.confirm({
+    const choice = atom.confirm({
       message: 'No more remote projects on the host: \'' + hostname +
         '\'. Would you like to shutdown Nuclide server there?',
       buttons,
     });
 
+    invariant(choice != null);
     const action = buttonToActions.get(buttons[choice]);
     invariant(action);
     action();

@@ -188,12 +188,12 @@ describe('promises::serializeAsyncCall()', () => {
     // Reuse scheduled promise and resolve to 2 in 20 ms.
     const result3Promise = oneAsyncCallAtATime();
 
-    window.advanceClock(11);
+    advanceClock(11);
     // Wait for the promise to call the next chain
     // That isn't synchrnously guranteed because it happens on `process.nextTick`.
     waitsFor(() => asyncFunSpy.callCount === 2);
     waitsForPromise(async () => {
-      window.advanceClock(11);
+      advanceClock(11);
       const results = await Promise.all([
         result1Promise, result2Promise, result3Promise,
       ]);
@@ -212,25 +212,25 @@ describe('promises::serializeAsyncCall()', () => {
         return waitPromise(10, i);
       });
       const result1Promise = oneAsyncCallAtATime();
-      window.advanceClock(11);
+      advanceClock(11);
       const result1 = await result1Promise;
 
       const result2Promise = oneAsyncCallAtATime();
-      window.advanceClock(11);
+      advanceClock(11);
       const result2 = await result2Promise;
 
       const result3Promise = oneAsyncCallAtATime();
-      window.advanceClock(11);
+      advanceClock(11);
       const result3 = await result3Promise;
 
       const errorPromoise = oneAsyncCallAtATime();
-      window.advanceClock(11);
+      advanceClock(11);
       await expectAsyncFailure(errorPromoise, error => {
         expect(error).toBe('ERROR');
       });
 
       const result5Promise = oneAsyncCallAtATime();
-      window.advanceClock(11);
+      advanceClock(11);
       const result5 = await result5Promise;
       expect([result1, result2, result3, result5]).toEqual([1, 2, 3, 5]);
     });

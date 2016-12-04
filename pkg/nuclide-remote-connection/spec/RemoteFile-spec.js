@@ -242,7 +242,7 @@ describe('RemoteFile', () => {
         file.onDidRename(renameHandler);
         runs(() => fs.renameSync(filePath, filePath + '_moved'));
         waits(500); // wait for the rename event to emit.
-        runs(() => window.advanceClock(150)); // pass the rename timeout.
+        runs(() => advanceClock(150)); // pass the rename timeout.
         waitsFor(() => renameHandler.callCount > 0);
         runs(() => {
           expect(renameHandler.callCount).toBe(1);
