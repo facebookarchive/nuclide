@@ -172,6 +172,12 @@ export function rootReducer(
         shouldPublishOnCommit: action.payload.shouldPublishOnCommit,
       };
 
+    case ActionTypes.SET_IS_PREPARE_MODE:
+      return {
+        ...state,
+        isPrepareMode: action.payload.isPrepareMode,
+      };
+
     default:
       return state;
   }

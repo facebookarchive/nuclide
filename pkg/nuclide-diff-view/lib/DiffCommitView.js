@@ -36,6 +36,7 @@ type Props = {
   commitMode: string,
   commitModeState: CommitModeStateType,
   diffModel: DiffViewModel,
+  isPrepareMode: boolean,
   shouldPublishOnCommit: boolean,
   shouldRebaseOnAmend: boolean,
   suggestedReviewers: SuggestedReviewersState,
@@ -52,6 +53,7 @@ export default class DiffCommitView extends React.Component {
     (this: any)._onTogglePublish = this._onTogglePublish.bind(this);
     (this: any)._onToggleAmendRebase = this._onToggleAmendRebase.bind(this);
     (this: any)._onClickBack = this._onClickBack.bind(this);
+    (this: any)._onTogglePrepare = this._onTogglePrepare.bind(this);
   }
 
   componentDidMount(): void {
@@ -126,6 +128,19 @@ export default class DiffCommitView extends React.Component {
       );
     }
 
+    let prepareOptionElement;
+    if (this.props.shouldPublishOnCommit) {
+      prepareOptionElement = (
+        <Checkbox
+          className="padded"
+          checked={this.props.isPrepareMode}
+          disabled={isLoading}
+          label="Prepare"
+          onChange={this._onTogglePrepare}
+        />
+      );
+    }
+
     return (
       <Toolbar location="bottom">
         <ToolbarLeft>
@@ -143,6 +158,7 @@ export default class DiffCommitView extends React.Component {
             label="Publish"
             onChange={this._onTogglePublish}
           />
+          {prepareOptionElement}
         </ToolbarLeft>
         <ToolbarRight>
           <ButtonGroup size={ButtonGroupSizes.SMALL}>
@@ -205,6 +221,10 @@ export default class DiffCommitView extends React.Component {
 
   _onTogglePublish(isChecked: boolean): void {
     this.props.diffModel.setShouldPublishOnCommit(isChecked);
+  }
+
+  _onTogglePrepare(isChecked: boolean): void {
+    this.props.diffModel.setIsPrepareMode(isChecked);
   }
 
   componentWillUnmount(): void {

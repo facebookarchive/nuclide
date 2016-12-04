@@ -100,6 +100,7 @@ export function createEmptyAppState(): AppState {
     diffNavigatorVisible: false,
     fileDiff: getEmptyFileDiffState(),
     isLoadingFileDiff: false,
+    isPrepareMode: false,
     publish: getEmptyPublishState(),
     repositories: new Map(),
     shouldDockPublishView: true,

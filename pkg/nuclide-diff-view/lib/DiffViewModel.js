@@ -179,4 +179,8 @@ export default class DiffViewModel {
       message,
     });
   }
+
+  setIsPrepareMode(isPrepareMode: boolean): void {
+    this._actionCreators.setIsPrepareMode(isPrepareMode);
+  }
 }

@@ -175,6 +175,7 @@ export type AppState = {
   diffNavigatorVisible: boolean,
   fileDiff: FileDiffState,
   isLoadingFileDiff: boolean,
+  isPrepareMode: boolean,
   publish: PublishState,
   repositories: Map<HgRepositoryClient, RepositoryState>,
   shouldDockPublishView: boolean,
@@ -406,6 +407,12 @@ export type SetShouldPublishOnCommitAction = {
   },
 };
 
+export type SetIsPrepareModeAction = {
+  type: 'SET_IS_PREPARE_MODE',
+  payload: {
+    isPrepareMode: boolean,
+  },
+};
 
 export type Action = AddRepositoryAction
   | AddUiProviderAction

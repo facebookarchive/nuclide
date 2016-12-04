@@ -30,6 +30,7 @@ import type {
   SetCompareIdAction,
   SetCwdApiAction,
   SetShouldPublishOnCommitAction,
+  SetIsPrepareModeAction,
   SetShouldReabaseOnAmendAction,
   SetViewModeAction,
   TextDiff,
@@ -411,6 +412,17 @@ export function setShouldPublishOnCommit(
     type: ActionTypes.SET_SHOULD_PUBLISH_ON_COMMIT,
     payload: {
       shouldPublishOnCommit,
+    },
+  };
+}
+
+export function setIsPrepareMode(
+  isPrepareMode: boolean,
+): SetIsPrepareModeAction {
+  return {
+    type: ActionTypes.SET_IS_PREPARE_MODE,
+    payload: {
+      isPrepareMode,
     },
   };
 }
