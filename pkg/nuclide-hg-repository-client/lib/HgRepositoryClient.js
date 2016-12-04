@@ -861,13 +861,17 @@ export class HgRepositoryClient {
   commit(message: string): Observable<ProcessMessage> {
     return this._service.commit(message)
       .refCount()
-      .finally(this._clearClientCache.bind(this));
+      .do({
+        complete: this._clearClientCache.bind(this),
+      });
   }
 
   amend(message: ?string, amendMode: AmendModeValue): Observable<ProcessMessage> {
     return this._service.amend(message, amendMode)
       .refCount()
-      .finally(this._clearClientCache.bind(this));
+      .do({
+        complete: this._clearClientCache.bind(this),
+      });
   }
 
   revert(filePaths: Array<NuclideUri>, toRevision?: ?string): Promise<void> {
