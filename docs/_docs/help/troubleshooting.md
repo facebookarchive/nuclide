@@ -47,7 +47,7 @@ A version of [Node](https://nodejs.org/) that is equal to or greater than that s
 node --version
 ```
 
-and verifying that you have version 6.3.0 or higher.
+and verifying that you have version 6.5.0 or higher.
 
 *Permissions*
 

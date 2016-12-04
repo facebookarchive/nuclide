@@ -33,7 +33,7 @@ You can verify all the appropriate dependencies. All the following should be in 
 $ git --version
 git version 2.5.4 (Apple Git-61)
 $ node --version
-v6.3.0
+v6.5.0
 $ npm --version
 3.10.3
 $ apm --version
@@ -85,7 +85,7 @@ You can verify all the appropriate dependencies. All the following should be in 
 $ git --version
 git version 1.9.1
 $ node --version
-v6.3.0
+v6.5.0
 $ npm --version
 3.10.3
 $ apm --version
