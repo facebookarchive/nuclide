@@ -184,6 +184,7 @@ export type AppState = {
   uiProviders: Array<UIProvider>,
   viewMode: DiffModeType,
   suggestedReviewers: SuggestedReviewersState,
+  verbatimModeEnabled: boolean,
 };
 
 export type Store = {
@@ -411,6 +412,13 @@ export type SetIsPrepareModeAction = {
   type: 'SET_IS_PREPARE_MODE',
   payload: {
     isPrepareMode: boolean,
+  },
+};
+
+export type SetVerbatimModeEnabledAction = {
+  type: 'SET_VERBATIM_MODE_ENABLED',
+  payload: {
+    verbatimModeEnabled: boolean,
   },
 };
 

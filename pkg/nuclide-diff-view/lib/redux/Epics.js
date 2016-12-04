@@ -676,7 +676,7 @@ export function publishDiff(
 
     track('diff-view-publish');
     const {message, repository, isPrepareMode, lintExcuse, publishUpdates} = action.payload;
-    const {publish: {mode}, shouldRebaseOnAmend} = store.getState();
+    const {publish: {mode}, shouldRebaseOnAmend, verbatimModeEnabled} = store.getState();
 
     const amendCleanupMessage = mode === PublishMode.CREATE ? message : null;
 
@@ -731,6 +731,7 @@ export function publishDiff(
                   message,
                   allowUntracked,
                   lintExcuse,
+                  verbatimModeEnabled,
                 ));
               default:
                 notifyInternalError(new Error(`Invalid Publish Mode: ${mode}`));

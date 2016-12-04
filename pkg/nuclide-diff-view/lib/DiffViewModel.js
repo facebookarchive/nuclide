@@ -183,4 +183,8 @@ export default class DiffViewModel {
   setIsPrepareMode(isPrepareMode: boolean): void {
     this._actionCreators.setIsPrepareMode(isPrepareMode);
   }
+
+  setVerbatimModeEnabled(verbatimModeEnabled: boolean): void {
+    this._actionCreators.setVerbatimModeEnabled(verbatimModeEnabled);
+  }
 }

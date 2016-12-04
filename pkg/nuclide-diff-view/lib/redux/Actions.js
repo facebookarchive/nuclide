@@ -32,6 +32,7 @@ import type {
   SetShouldPublishOnCommitAction,
   SetIsPrepareModeAction,
   SetShouldReabaseOnAmendAction,
+  SetVerbatimModeEnabledAction,
   SetViewModeAction,
   TextDiff,
   UIProvider,
@@ -423,6 +424,17 @@ export function setIsPrepareMode(
     type: ActionTypes.SET_IS_PREPARE_MODE,
     payload: {
       isPrepareMode,
+    },
+  };
+}
+
+export function setVerbatimModeEnabled(
+  verbatimModeEnabled: boolean,
+): SetVerbatimModeEnabledAction {
+  return {
+    type: ActionTypes.SET_VERBATIM_MODE_ENABLED,
+    payload: {
+      verbatimModeEnabled,
     },
   };
 }

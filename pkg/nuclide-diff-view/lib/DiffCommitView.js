@@ -40,6 +40,7 @@ type Props = {
   shouldPublishOnCommit: boolean,
   shouldRebaseOnAmend: boolean,
   suggestedReviewers: SuggestedReviewersState,
+  verbatimModeEnabled: boolean,
 };
 
 export default class DiffCommitView extends React.Component {
@@ -54,6 +55,7 @@ export default class DiffCommitView extends React.Component {
     (this: any)._onToggleAmendRebase = this._onToggleAmendRebase.bind(this);
     (this: any)._onClickBack = this._onClickBack.bind(this);
     (this: any)._onTogglePrepare = this._onTogglePrepare.bind(this);
+    (this: any)._onToggleVerbatim = this._onToggleVerbatim.bind(this);
   }
 
   componentDidMount(): void {
@@ -129,6 +131,7 @@ export default class DiffCommitView extends React.Component {
     }
 
     let prepareOptionElement;
+    let verbatimeOptionElement;
     if (this.props.shouldPublishOnCommit) {
       prepareOptionElement = (
         <Checkbox
@@ -137,6 +140,16 @@ export default class DiffCommitView extends React.Component {
           disabled={isLoading}
           label="Prepare"
           onChange={this._onTogglePrepare}
+        />
+      );
+
+      verbatimeOptionElement = (
+        <Checkbox
+          className="padded"
+          checked={this.props.verbatimModeEnabled}
+          disabled={isLoading}
+          label="Verbatim"
+          onChange={this._onToggleVerbatim}
         />
       );
     }
@@ -159,6 +172,7 @@ export default class DiffCommitView extends React.Component {
             onChange={this._onTogglePublish}
           />
           {prepareOptionElement}
+          {verbatimeOptionElement}
         </ToolbarLeft>
         <ToolbarRight>
           <ButtonGroup size={ButtonGroupSizes.SMALL}>
@@ -225,6 +239,10 @@ export default class DiffCommitView extends React.Component {
 
   _onTogglePrepare(isChecked: boolean): void {
     this.props.diffModel.setIsPrepareMode(isChecked);
+  }
+
+  _onToggleVerbatim(isChecked: boolean): void {
+    this.props.diffModel.setVerbatimModeEnabled(isChecked);
   }
 
   componentWillUnmount(): void {

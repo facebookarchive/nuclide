@@ -112,6 +112,7 @@ export function renderCommitView(diffModel: DiffViewModel): React.Element<any> {
     shouldPublishOnCommit,
     shouldRebaseOnAmend,
     suggestedReviewers,
+    verbatimModeEnabled,
   } = diffModel.getState();
 
   const CommitComponent = getCommitComponent();
@@ -127,6 +128,7 @@ export function renderCommitView(diffModel: DiffViewModel): React.Element<any> {
       // `diffModel` is acting as the action creator for commit view and needs to be passed so
       // methods can be called on it.
       diffModel={diffModel}
+      verbatimModeEnabled={verbatimModeEnabled}
     />
   );
 }

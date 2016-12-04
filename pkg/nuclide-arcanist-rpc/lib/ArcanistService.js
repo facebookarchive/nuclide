@@ -214,8 +214,14 @@ export function updatePhabricatorRevision(
   message: string,
   allowUntracked: boolean,
   lintExcuse: ?string,
+  verbatimModeEnabled: boolean,
 ): ConnectableObservable<{stderr?: string, stdout?: string}> {
-  const args = ['-m', message, ...getArcDiffParams(lintExcuse)];
+  const baseArgs = ['-m', message, ...getArcDiffParams(lintExcuse)];
+  const args = [
+    ...(verbatimModeEnabled ? ['--verbatim'] : []),
+    ...baseArgs,
+  ];
+
   if (allowUntracked) {
     args.push('--allow-untracked');
   }

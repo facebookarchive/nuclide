@@ -501,6 +501,7 @@ export function updatePhabricatorRevision(
   publishMessage: string,
   allowUntracked: boolean,
   lintExcuse: ?string,
+  verbatimModeEnabled: boolean,
 ): Observable<void> {
   const filePath = repository.getProjectDirectory();
 
@@ -516,7 +517,13 @@ export function updatePhabricatorRevision(
   }
 
   const stream = getArcanistServiceByNuclideUri(filePath)
-    .updatePhabricatorRevision(filePath, userUpdateMessage, allowUntracked, lintExcuse)
+    .updatePhabricatorRevision(
+      filePath,
+      userUpdateMessage,
+      allowUntracked,
+      lintExcuse,
+      verbatimModeEnabled,
+    )
     .refCount();
 
   return processArcanistOutput(stream)

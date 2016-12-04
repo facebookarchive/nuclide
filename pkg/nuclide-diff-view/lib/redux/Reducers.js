@@ -178,6 +178,12 @@ export function rootReducer(
         isPrepareMode: action.payload.isPrepareMode,
       };
 
+    case ActionTypes.SET_VERBATIM_MODE_ENABLED:
+      return {
+        ...state,
+        verbatimModeEnabled: action.payload.verbatimModeEnabled,
+      };
+
     default:
       return state;
   }

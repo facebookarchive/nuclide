@@ -109,6 +109,7 @@ export function createEmptyAppState(): AppState {
     uiProviders: [],
     viewMode: DiffMode.BROWSE_MODE,
     suggestedReviewers: getEmptySuggestedReviewerState(),
+    verbatimModeEnabled: false,
   };
 }
 
