@@ -592,8 +592,44 @@ export function commit(
 
     track('diff-view-commit');
     const {message, repository, publishUpdates} = action.payload;
-    const {commit: {mode}, shouldRebaseOnAmend} = store.getState();
+    const {
+      commit: {mode},
+      isPrepareMode,
+      publish,
+      shouldPublishOnCommit,
+      shouldRebaseOnAmend,
+    } = store.getState();
     let consoleShown = false;
+
+    // If the commit/amend and publish option are chosen
+    let optionalPublishAction;
+    if (shouldPublishOnCommit) {
+      let publishMode;
+      let publishUpdateMessage;
+      if (publish.message == null) {
+        publishUpdateMessage = message;
+        publishMode = PublishMode.CREATE;
+      } else {
+        publishUpdateMessage = publish.message;
+        publishMode = PublishMode.UPDATE;
+      }
+
+      optionalPublishAction = Observable.of(
+          Actions.updatePublishState({
+            ...publish,
+            mode: publishMode,
+          }),
+          Actions.publishDiff(
+            repository,
+            publishUpdateMessage,
+            isPrepareMode,
+            null,
+            publishUpdates,
+          ),
+        );
+    } else {
+      optionalPublishAction = Observable.empty();
+    }
 
     return Observable.concat(
       Observable.of(Actions.updateCommitState({
@@ -626,6 +662,7 @@ export function commit(
         Actions.setViewMode(DiffMode.BROWSE_MODE),
         Actions.updateCommitState(getEmptyCommitState()),
       ),
+      optionalPublishAction,
     );
   });
 }
