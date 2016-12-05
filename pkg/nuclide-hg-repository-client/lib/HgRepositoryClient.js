@@ -12,6 +12,7 @@
 import type {
   AmendModeValue,
   BookmarkInfo,
+  CheckoutOptions,
   HgService,
   DiffInfo,
   LineDiff,
@@ -676,8 +677,8 @@ export class HgRepositoryClient {
     return this._service.revert(filePaths);
   }
 
-  checkoutReference(reference: string, create: boolean): Promise<void> {
-    return this._service.checkout(reference, create);
+  checkoutReference(reference: string, create: boolean, options?: CheckoutOptions): Promise<void> {
+    return this._service.checkout(reference, create, options);
   }
 
   stripReference(reference: string): Promise<void> {

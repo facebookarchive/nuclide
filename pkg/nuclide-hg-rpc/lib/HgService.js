@@ -176,6 +176,10 @@ export type CheckoutSideName = 'ours' | 'theirs';
 
 export type AmendModeValue = 'Clean' | 'Rebase' | 'Fixup';
 
+export type CheckoutOptions = {
+  clean?: true,
+};
+
 async function getForkBaseName(directoryPath: string): Promise<string> {
   const arcConfig = await readArcConfig(directoryPath);
   if (arcConfig != null) {
@@ -824,9 +828,18 @@ export class HgService {
   /**
    * @param revision This could be a changeset ID, name of a bookmark, revision number, etc.
    * @param create Currently, this parameter is ignored.
+   * @param options.
    */
-  checkout(revision: string, create: boolean): Promise<void> {
-    return this._runSimpleInWorkingDirectory('checkout', [revision]);
+  checkout(
+    revision: string,
+    create: boolean,
+    options?: CheckoutOptions,
+  ): Promise<void> {
+    const args = [revision];
+    if (options && options.clean) {
+      args.push('--clean');
+    }
+    return this._runSimpleInWorkingDirectory('checkout', args);
   }
 
   /**
