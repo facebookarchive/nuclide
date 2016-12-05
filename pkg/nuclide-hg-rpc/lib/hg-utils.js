@@ -9,10 +9,10 @@
  * the root directory of this source tree.
  */
 
-import type {Observable} from 'rxjs';
 import type {ProcessMessage} from '../../commons-node/process-rpc-types';
 import type {HgExecOptions} from './hg-exec-types';
 
+import {Observable} from 'rxjs';
 import {asyncExecute, createArgsForScriptCommand} from '../../commons-node/process';
 import {getLogger} from '../../nuclide-logging';
 import fsPromise from '../../commons-node/fsPromise';
@@ -40,7 +40,7 @@ const COMMIT_MESSAGE_STRIP_LINE = /^HG:.*(\n|$)/gm;
  *   - TTY_OUTPUT set if the command should be run as if it were attached to a tty.
  */
 export async function hgAsyncExecute(args_: Array<string>, options_: HgExecOptions): Promise<any> {
-  const {command, args, options} = getHgExecParams(args_, options_);
+  const {command, args, options} = await getHgExecParams(args_, options_);
   const result = await asyncExecute(command, args, options);
   if (result.exitCode === 0) {
     return result;
@@ -56,11 +56,13 @@ export function hgObserveExecution(
   args_: Array<string>,
   options_: HgExecOptions,
 ): Observable<ProcessMessage> {
-  const {command, args, options} = getHgExecParams(args_, options_);
-  return observeProcess(
-    () => safeSpawn(command, args, options),
-    true, // kill process tree on complete.
-  );
+  return Observable.fromPromise(getHgExecParams(args_, options_))
+    .switchMap(({command, args, options}) => (
+      observeProcess(
+        () => safeSpawn(command, args, options),
+        true, // kill process tree on complete.
+      )
+    ));
 }
 
 /**
@@ -71,8 +73,10 @@ export function hgRunCommand(
   args_: Array<string>,
   options_: HgExecOptions,
 ): Observable<string> {
-  const {command, args, options} = getHgExecParams(args_, options_);
-  return runCommand(command, args, options, true /* kill process tree on complete */);
+  return Observable.fromPromise(getHgExecParams(args_, options_))
+    .switchMap(({command, args, options}) => (
+      runCommand(command, args, options, true /* kill process tree on complete */)
+    ));
 }
 
 function logAndThrowHgError(
@@ -92,15 +96,15 @@ function logAndThrowHgError(
   }
 }
 
-function getHgExecParams(
+async function getHgExecParams(
   args_: Array<string>,
   options_: HgExecOptions,
-): {command: string, args: Array<string>, options: Object} {
+): Promise<{command: string, args: Array<string>, options: Object}> {
   let args = args_;
   const options = {
     ...options_,
     env: {
-      ...getOriginalEnvironment(),
+      ...await getOriginalEnvironment(),
       ATOM_BACKUP_EDITOR: 'false',
     },
   };

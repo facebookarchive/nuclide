@@ -391,7 +391,7 @@ export async function getInstance(file: NuclideUri): Promise<?MerlinProcess> {
     // logic. This also implies .nucliderc isn't considered, if there's any
     // extra override; to simulate the same behavior, do this in your bashrc:
     // if [ "$TERM" = "nuclide"]; then someOverrideLogic if
-    env: getOriginalEnvironment(),
+    env: await getOriginalEnvironment(),
   };
 
   logger.info('Spawning new ocamlmerlin process version ' + version);
@@ -445,7 +445,7 @@ let merlinVersionCache: ?string;
 async function getMerlinVersion(merlinPath: string): Promise<string | null> {
   if (merlinVersionCache === undefined) {
     const result = await asyncExecute(merlinPath, ['-version'], {
-      env: getOriginalEnvironment(),
+      env: await getOriginalEnvironment(),
     });
     if (result.exitCode === 0) {
       const match = result.stdout.match(/^The Merlin toolkit version (\d+(?:\.\d)*),/);

@@ -149,14 +149,14 @@ async function getCommitBasedArcConfigDirectory(filePath: string): Promise<?stri
 }
 
 
-function getArcExecOptions(
+async function getArcExecOptions(
   cwd: string,
   hgEditor?: string,
-): Object {
+): Promise<Object> {
   const options = {
     cwd,
     env: {
-      ...getOriginalEnvironment(),
+      ...await getOriginalEnvironment(),
       ATOM_BACKUP_EDITOR: 'false',
     },
   };
@@ -180,7 +180,8 @@ function _callArcDiff(
       if (arcConfigDir == null) {
         throw new Error('Failed to find Arcanist config.  Is this project set up for Arcanist?');
       }
-      return scriptSafeSpawnAndObserveOutput('arc', args, getArcExecOptions(arcConfigDir));
+      return Observable.fromPromise(getArcExecOptions(arcConfigDir))
+        .switchMap(opts => scriptSafeSpawnAndObserveOutput('arc', args, opts));
     }).share();
 }
 
@@ -244,9 +245,8 @@ export function execArcPull(
         args.push('--allow-dirty');
       }
 
-      return observeProcess(() =>
-        safeSpawn('arc', args, getArcExecOptions(cwd, editMergeConfigs.hgEditor)),
-      );
+      return Observable.fromPromise(getArcExecOptions(cwd, editMergeConfigs.hgEditor))
+        .switchMap(opts => observeProcess(() => safeSpawn('arc', args, opts)));
     }).publish();
 }
 
@@ -254,7 +254,8 @@ export function execArcLand(
   cwd: NuclideUri,
 ): ConnectableObservable<ProcessMessage> {
   const args = ['land'];
-  return observeProcess(() => safeSpawn('arc', args, getArcExecOptions(cwd)))
+  return Observable.fromPromise(getArcExecOptions(cwd))
+    .switchMap(opts => observeProcess(() => safeSpawn('arc', args, opts)))
     .publish();
 }
 
@@ -263,7 +264,8 @@ export function execArcPatch(
   differentialRevision: string,
 ): ConnectableObservable<ProcessMessage> {
   const args = ['patch', differentialRevision];
-  return observeProcess(() => safeSpawn('arc', args, getArcExecOptions(cwd)))
+  return Observable.fromPromise(getArcExecOptions(cwd))
+    .switchMap(opts => observeProcess(() => safeSpawn('arc', args, opts)))
     .publish();
 }
 
@@ -276,7 +278,8 @@ function execArcLint(
   if (skip.length > 0) {
     args.push('--skip', skip.join(','));
   }
-  return Observable.fromPromise(niceSafeSpawn('arc', args, getArcExecOptions(cwd)))
+  return Observable.fromPromise(getArcExecOptions(cwd))
+    .switchMap(opts => niceSafeSpawn('arc', args, opts))
     .switchMap(arcProcess => getOutputStream(arcProcess, /* killTreeOnComplete */ true))
     .mergeMap(event => {
       if (event.kind === 'error') {

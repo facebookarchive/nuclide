@@ -175,7 +175,7 @@ export async function getBuildFile(rootPath: NuclideUri, targetName: string): Pr
  * @param args Do not include 'buck' as the first argument: it will be added
  *     automatically.
  */
-function _runBuckCommandFromProjectRoot(
+async function _runBuckCommandFromProjectRoot(
   rootPath: string,
   args: Array<string>,
   commandOptions?: AsyncExecuteOptions,
@@ -183,7 +183,7 @@ function _runBuckCommandFromProjectRoot(
   readOnly?: boolean = true,
 ): Promise<{stdout: string, stderr: string, exitCode?: number}> {
   const {pathToBuck, buckCommandOptions: options} =
-    _getBuckCommandAndOptions(rootPath, commandOptions);
+    await _getBuckCommandAndOptions(rootPath, commandOptions);
 
   const newArgs = addClientId ? args.concat(CLIENT_ID_ARGS) : args;
   logger.debug('Buck command:', pathToBuck, newArgs, options);
@@ -195,10 +195,10 @@ function _runBuckCommandFromProjectRoot(
 /**
  * @return The path to buck and set of options to be used to run a `buck` command.
  */
-function _getBuckCommandAndOptions(
+async function _getBuckCommandAndOptions(
   rootPath: string,
   commandOptions?: AsyncExecuteOptions = {},
-): BuckCommandAndOptions {
+): Promise<BuckCommandAndOptions> {
   // $UPFixMe: This should use nuclide-features-config
   const pathToBuck =
     global.atom && global.atom.config.get('nuclide.nuclide-buck.pathToBuck') || 'buck';
@@ -206,7 +206,7 @@ function _getBuckCommandAndOptions(
     cwd: rootPath,
     // Buck restarts itself if the environment changes, so try to preserve
     // the original environment that Nuclide was started in.
-    env: getOriginalEnvironment(),
+    env: await getOriginalEnvironment(),
     ...commandOptions,
   };
   return {pathToBuck, buckCommandOptions};
@@ -429,11 +429,12 @@ function _buildWithOutput(
     baseOptions: {...options},
     buildTargets,
   });
-  const {pathToBuck, buckCommandOptions} = _getBuckCommandAndOptions(rootPath);
-
-  return observeProcess(
-    () => safeSpawn(pathToBuck, args, buckCommandOptions),
-  );
+  return Observable.fromPromise(_getBuckCommandAndOptions(rootPath))
+    .switchMap(({pathToBuck, buckCommandOptions}) => (
+      observeProcess(
+        () => safeSpawn(pathToBuck, args, buckCommandOptions),
+      )
+    ));
 }
 
 /**

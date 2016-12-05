@@ -627,7 +627,7 @@ export function runCommand(
 let cachedOriginalEnvironment = null;
 
 let loadedShellResolve;
-new Promise(resolve => {
+const loadedShellPromise = new Promise(resolve => {
   loadedShellResolve = resolve;
 }).then(() => {
   // No need to include default paths now that the environment is loaded.
@@ -645,7 +645,9 @@ export function loadedShellEnvironment(): void {
   loadedShellResolve();
 }
 
-export function getOriginalEnvironment(): Object {
+export async function getOriginalEnvironment(): Promise<Object> {
+  await loadedShellPromise;
+
   if (cachedOriginalEnvironment != null) {
     return cachedOriginalEnvironment;
   }

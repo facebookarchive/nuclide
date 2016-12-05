@@ -21,7 +21,7 @@ export async function refmt(content: string, flags: Array<string>): Promise<refm
     // logic. This also implies .nucliderc isn't considered, if there's any
     // extra override; to simulate the same behavior, do this in your bashrc:
     // if [ "$TERM" = "nuclide"]; then someOverrideLogic if
-    env: getOriginalEnvironment(),
+    env: await getOriginalEnvironment(),
     stdin: content,
   };
   const result = await asyncExecute(refmtPath, flags, options);
