@@ -52,7 +52,7 @@ declare class http$fixed$IncomingMessage extends stream$Readable {
   setTimeout(msecs: number, callback: Function): void,
   socket: any,  // TODO net.Socket
   statusCode: number,
-  url: String,
+  url: string,
   connection: { destroy: () => void },
 }
 

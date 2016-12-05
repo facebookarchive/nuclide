@@ -45,6 +45,7 @@ export async function openArcDeepLink(
       const matches = [];
       let currentDir = dir;
       for (;;) {
+        // eslint-disable-next-line babel/no-await-in-loop
         const info = await arcService.findArcProjectIdAndDirectory(currentDir);
         if (info == null) {
           break;

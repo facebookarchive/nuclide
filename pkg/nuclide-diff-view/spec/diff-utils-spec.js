@@ -109,8 +109,8 @@ adding a non-new-line line`,
         newToOld,
         oldToNew,
       } = computeDiff(
-        `first line text\n`,
-        `first line text\nsecond line text\n`);
+        'first line text\n',
+        'first line text\nsecond line text\n');
       expect(addedLines).toEqual([1]);
       expect(removedLines).toEqual([]);
       expect(oldLineOffsets).toEqual([[1, 1]]); // offset for the last added line.

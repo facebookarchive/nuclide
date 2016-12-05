@@ -31,7 +31,7 @@ export default class ResultCache {
   _lastCachedQuery: Map<string, string>;
   // List of most recently used query strings, used for pruning the result cache.
   // Makes use of `Map`'s insertion ordering, so values are irrelevant and always set to `null`.
-  _queryLruQueue: Map<string, ?Number>;
+  _queryLruQueue: Map<string, ?number>;
   _cachedResults: CachedResults;
   _onResultsChanged: () => mixed;
   _debouncedCleanCache: () => void;

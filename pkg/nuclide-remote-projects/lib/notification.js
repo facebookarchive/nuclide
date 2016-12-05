@@ -118,7 +118,7 @@ export function notifySshHandshakeError(
         `${config.remoteServerCommand}`;
       detail = 'Troubleshooting: \n' +
         `  1. Make sure the command "${config.remoteServerCommand}" is correct.\n` +
-        `  2. The server might take longer to start up than expected, try to connect again.\n` +
+        '  2. The server might take longer to start up than expected, try to connect again.\n' +
         `  3. If none of above works, ssh to ${config.host} and kill existing nuclide-server` +
         ' by running "killall node", and reconnect.';
       break;

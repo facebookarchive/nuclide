@@ -42,10 +42,10 @@ assert.equal(VanillaSyntax.Foo.bar(), 'qux');
 // this test.
 assert.equal(
   VanillaSyntax.Foo.toString(),
-  `class Foo {\n  static bar() {\n    return 'qux';\n  }\n}`
+  "class Foo {\n  static bar() {\n    return 'qux';\n  }\n}"
 );
 // The transpiled version of "Foo" would've looked like this:
 assert.notEqual(
   VanillaSyntax.Foo.toString(),
-  `function Foo() {\n    _classCallCheck(this, Foo);\n  }`
+  'function Foo() {\n    _classCallCheck(this, Foo);\n  }'
 );

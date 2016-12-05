@@ -98,7 +98,7 @@ export function validateFormInputs(
   if ((authMethod === SshHandshake.SupportedMethods.PASSWORD) && connectionDetails.password) {
     warningMessage += '* You provided a password for this profile. ' +
         'For security, Nuclide will save the other parts of this profile, ' +
-        `but not the password.\n`;
+        'but not the password.\n';
   }
   // 2. Save the remote server command only if it is changed.
   if (connectionDetails.remoteServerCommand &&
