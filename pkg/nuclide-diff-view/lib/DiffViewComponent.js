@@ -54,7 +54,11 @@ type Props = {
 };
 
 let CachedPublishComponent;
-function getPublishComponent() {
+function getPublishComponent(shouldUseTextBasedForm: boolean) {
+  if (shouldUseTextBasedForm) {
+    return DiffPublishView;
+  }
+
   if (CachedPublishComponent == null) {
     // Try requiring private module
     try {
@@ -69,7 +73,11 @@ function getPublishComponent() {
 }
 
 let CachedCommitComponent;
-function getCommitComponent() {
+function getCommitComponent(shouldUseTextBasedForm: boolean) {
+  if (shouldUseTextBasedForm) {
+    return DiffCommitView;
+  }
+
   if (CachedCommitComponent == null) {
     // Try requiring private module
     try {
@@ -89,9 +97,10 @@ export function renderPublishView(diffModel: DiffViewModel): React.Element<any> 
     publish: {message, mode, state},
     activeRepositoryState: {headRevision},
     shouldDockPublishView,
+    shouldUseTextBasedForm,
     suggestedReviewers,
   } = diffModel.getState();
-  const PublishComponent = getPublishComponent();
+  const PublishComponent = getPublishComponent(shouldUseTextBasedForm);
   return (
     <PublishComponent
       suggestedReviewers={suggestedReviewers}
@@ -111,11 +120,12 @@ export function renderCommitView(diffModel: DiffViewModel): React.Element<any> {
     isPrepareMode,
     shouldPublishOnCommit,
     shouldRebaseOnAmend,
+    shouldUseTextBasedForm,
     suggestedReviewers,
     verbatimModeEnabled,
   } = diffModel.getState();
 
-  const CommitComponent = getCommitComponent();
+  const CommitComponent = getCommitComponent(shouldUseTextBasedForm);
   return (
     <CommitComponent
       suggestedReviewers={suggestedReviewers}

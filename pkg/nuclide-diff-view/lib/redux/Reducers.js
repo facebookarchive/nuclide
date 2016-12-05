@@ -178,6 +178,12 @@ export function rootReducer(
         isPrepareMode: action.payload.isPrepareMode,
       };
 
+    case ActionTypes.SET_TEXT_BASED_FORM:
+      return {
+        ...state,
+        shouldUseTextBasedForm: action.payload.shouldUseTextBasedForm,
+      };
+
     case ActionTypes.SET_VERBATIM_MODE_ENABLED:
       return {
         ...state,

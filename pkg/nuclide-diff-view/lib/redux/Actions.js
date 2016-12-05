@@ -34,6 +34,7 @@ import type {
   SetShouldReabaseOnAmendAction,
   SetVerbatimModeEnabledAction,
   SetViewModeAction,
+  SetTextBasedDiffFormAction,
   TextDiff,
   UIProvider,
   UpdateActiveNavigationSectionAction,
@@ -435,6 +436,17 @@ export function setVerbatimModeEnabled(
     type: ActionTypes.SET_VERBATIM_MODE_ENABLED,
     payload: {
       verbatimModeEnabled,
+    },
+  };
+}
+
+export function updateShouldUseTextBasedForm(
+  shouldUseTextBasedForm: boolean,
+): SetTextBasedDiffFormAction {
+  return {
+    type: ActionTypes.SET_TEXT_BASED_FORM,
+    payload: {
+      shouldUseTextBasedForm,
     },
   };
 }

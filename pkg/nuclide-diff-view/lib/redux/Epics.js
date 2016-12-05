@@ -502,12 +502,20 @@ export function setViewModeEpic(
         return commitModeChanges.switchMap(commitMode => {
           switch (commitMode) {
             case CommitMode.COMMIT: {
-              // TODO(asriram): t12228275 load commit template in case of `COMMIT`.
-              return Observable.of(Actions.updateCommitState({
-                message: null,
-                mode: commitMode,
-                state: CommitModeState.READY,
-              }));
+              return Observable.concat(
+                Observable.of(Actions.updateCommitState({
+                  message: null,
+                  mode: commitMode,
+                  state: CommitModeState.LOADING_COMMIT_MESSAGE,
+                })),
+                Observable.fromPromise(
+                  activeRepository.getTemplateCommitMessage(),
+                ).map(commitMessage => Actions.updateCommitState({
+                  message: commitMessage,
+                  mode: commitMode,
+                  state: CommitModeState.READY,
+                })),
+              );
             }
             case CommitMode.AMEND: {
               return Observable.concat(

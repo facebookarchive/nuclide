@@ -23,16 +23,16 @@ import type {RegisterNux, TriggerNux} from '../../nuclide-nux/lib/main';
 
 import createPackage from '../../commons-atom/createPackage';
 import {formatDiffViewUrl} from './utils';
-import {getHgRepositoryStream} from '../../commons-atom/vcs';
 import {React, ReactDOM} from 'react-for-atom';
 import url from 'url';
 import uiTreePath from '../../commons-atom/ui-tree-path';
-import {repositoryForPath} from '../../commons-atom/vcs';
+import {getHgRepositoryStream, repositoryForPath} from '../../commons-atom/vcs';
 import {
   CommitMode,
   DiffMode,
   DIFF_VIEW_NAVIGATOR_TOGGLE_COMMAND,
   SHOULD_DOCK_PUBLISH_VIEW_CONFIG_KEY,
+  DIFF_VIEW_TEXT_BASED_FORM_CONFIG_KEY,
 } from './constants';
 import DiffViewElement from './DiffViewElement';
 import DiffViewComponent from './DiffViewComponent';
@@ -219,6 +219,9 @@ class Activation {
     const configUpdates: Observable<boolean> =
       (featureConfig.observeAsStream(SHOULD_DOCK_PUBLISH_VIEW_CONFIG_KEY): any);
 
+    const useDiffViewTextForm: Observable<boolean> =
+      (featureConfig.observeAsStream(DIFF_VIEW_TEXT_BASED_FORM_CONFIG_KEY): any);
+
     this._subscriptions.add(
       // TODO(most): Remove Diff View model and use stream of props for the views instead.
       states.subscribe(_state => {
@@ -232,6 +235,10 @@ class Activation {
 
       configUpdates.subscribe(shouldDockPublishView => {
         this._actionCreators.updateDockConfig(shouldDockPublishView);
+      }),
+
+      useDiffViewTextForm.subscribe(useTextBasedForm => {
+        this._actionCreators.updateShouldUseTextBasedForm(useTextBasedForm);
       }),
 
       // Listen for menu item workspace diff view open command.

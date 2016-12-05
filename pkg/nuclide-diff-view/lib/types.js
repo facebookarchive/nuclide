@@ -181,6 +181,7 @@ export type AppState = {
   shouldDockPublishView: boolean,
   shouldPublishOnCommit: boolean,
   shouldRebaseOnAmend: boolean,
+  shouldUseTextBasedForm: boolean,
   uiProviders: Array<UIProvider>,
   viewMode: DiffModeType,
   suggestedReviewers: SuggestedReviewersState,
@@ -412,6 +413,13 @@ export type SetIsPrepareModeAction = {
   type: 'SET_IS_PREPARE_MODE',
   payload: {
     isPrepareMode: boolean,
+  },
+};
+
+export type SetTextBasedDiffFormAction = {
+  type: 'SET_TEXT_BASED_FORM',
+  payload: {
+    shouldUseTextBasedForm: boolean,
   },
 };
 

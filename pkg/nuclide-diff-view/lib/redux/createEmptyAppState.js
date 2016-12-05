@@ -106,6 +106,7 @@ export function createEmptyAppState(): AppState {
     shouldDockPublishView: true,
     shouldPublishOnCommit: false,
     shouldRebaseOnAmend: true,
+    shouldUseTextBasedForm: false,
     uiProviders: [],
     viewMode: DiffMode.BROWSE_MODE,
     suggestedReviewers: getEmptySuggestedReviewerState(),
