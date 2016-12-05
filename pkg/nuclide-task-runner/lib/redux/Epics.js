@@ -110,7 +110,9 @@ export function aggregateTaskListsEpic(
                 Observable.merge(
                   taskLists,
                   Observable.of({taskRunnerId, taskList: []})
-                    .delay(1000)
+                    // Use a more generous timeout on the initial load to allow for
+                    // package initialization, lazy imports, the RPC framework, etc.
+                    .delay(store.getState().viewIsInitialized ? 1000 : 5000)
                     .takeUntil(taskLists.take(1)),
                 )
                   .subscribe(observer),
