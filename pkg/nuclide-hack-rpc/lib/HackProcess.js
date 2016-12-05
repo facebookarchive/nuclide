@@ -180,6 +180,8 @@ class HackProcess extends RpcProcess {
       if (processes.has(this._fileCache)) {
         processes.get(this._fileCache).delete(this._hhconfigPath);
       }
+    } else {
+      logger.logInfo(`HackProcess attempt to shut down already disposed ${this.getRoot()}.`);
     }
   }
 }
@@ -206,7 +208,10 @@ processes.observeKeys().subscribe(
     fileCache.observeFileEvents().ignoreElements().subscribe(
       undefined, // next
       undefined, // error
-      () => { processes.delete(fileCache); },
+      () => {
+        logger.logInfo('fileCache shutting down.');
+        closeProcesses(fileCache);
+      },
     );
   });
 
@@ -234,7 +239,18 @@ export async function getHackProcess(
 // Closes all HackProcesses not in configPaths, and starts new HackProcesses for any
 // paths in configPaths.
 export function ensureProcesses(fileCache: FileCache, configPaths: Set<NuclideUri>): void {
+  logger.logInfo(`Hack ensureProcesses. ${Array.from(configPaths).join(', ')}`);
   processes.get(fileCache).setKeys(configPaths);
+}
+
+// Closes all HackProcesses for the given fileCache.
+export function closeProcesses(fileCache: FileCache): void {
+  logger.logInfo('Hack closeProcesses');
+  if (processes.has(fileCache)) {
+    logger.logInfo(
+      `Shutting down HackProcesses ${Array.from(processes.get(fileCache).keys()).join(',')}`);
+    processes.delete(fileCache);
+  }
 }
 
 async function createHackProcess(

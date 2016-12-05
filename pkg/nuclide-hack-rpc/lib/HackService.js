@@ -60,6 +60,7 @@ import {
   getHackProcess,
   observeConnections,
   ensureProcesses,
+  closeProcesses,
 } from './HackProcess';
 import {convertDefinitions} from './Definitions';
 import {
@@ -130,6 +131,9 @@ class HackLanguageServiceImpl extends ServerLanguageService {
         configObserver.observeConfigs().subscribe(configs => {
           ensureProcesses(fileNotifier, configs);
         }));
+      this._resources.add(() => {
+        closeProcesses(fileNotifier);
+      });
     }
   }
 

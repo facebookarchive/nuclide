@@ -59,6 +59,10 @@ export class Cache<KeyType, ValueType> {
     }
   }
 
+  keys(): Iterator<KeyType> {
+    return this._values.keys();
+  }
+
   values(): Iterator<ValueType> {
     return this._values.values();
   }
@@ -104,4 +108,4 @@ export class Cache<KeyType, ValueType> {
 }
 
 // Useful for optional second parameter to Cache constructor.
-export const DISPOSE_VALUE = (value: IDisposable) => { value.dispose; };
+export const DISPOSE_VALUE = (value: IDisposable) => { value.dispose(); };
