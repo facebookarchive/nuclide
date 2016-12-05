@@ -15,6 +15,7 @@ import invariant from 'assert';
 import {Observable} from 'rxjs';
 
 import {observableFromSubscribeFunction} from '../commons-node/event';
+import nuclideUri from '../commons-node/nuclideUri';
 
 /**
  * Returns a text editor that has the given path open, or null if none exists. If there are multiple
@@ -147,6 +148,18 @@ export function enforceSoftWrap(
           editor.setSoftWrapped(enforcedSoftWrap);
         }
       });
+    }
+  });
+}
+
+/**
+ * Small wrapper around `atom.workspace.observeTextEditors` that filters out
+ * uninitialized remote editors. Most callers should use this one instead.
+ */
+export function observeTextEditors(callback: (editor: atom$TextEditor) => mixed): IDisposable {
+  return atom.workspace.observeTextEditors(editor => {
+    if (!nuclideUri.isBrokenDeserializedUri(editor.getPath())) {
+      callback(editor);
     }
   });
 }
