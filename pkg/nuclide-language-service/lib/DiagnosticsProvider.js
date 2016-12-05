@@ -27,7 +27,6 @@ import {track, trackTiming} from '../../nuclide-analytics';
 import {RequestSerializer} from '../../commons-node/promise';
 import {DiagnosticsProviderBase} from '../../nuclide-diagnostics-provider-base';
 import {onDidRemoveProjectPath} from '../../commons-atom/projects';
-import {getLogger} from '../../nuclide-logging';
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
 import {Observable} from 'rxjs';
 import {ServerConnection} from '../../nuclide-remote-connection';
@@ -35,7 +34,6 @@ import {observableFromSubscribeFunction} from '../../commons-node/event';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {BusySignalProviderBase} from '../../nuclide-busy-signal';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
-const logger = getLogger();
 
 export type DiagnosticsConfig = FileDiagnosticsConfig | ObservableDiagnosticsConfig;
 
@@ -151,13 +149,7 @@ export class FileDiagnosticsProvider<T: LanguageService> {
         return;
       }
 
-      // `hh_client` doesn't currently support `onTheFly` diagnosis.
-      // So, currently, it would only work if there is no `hh_client` or `.hhconfig` where
-      // the `HackWorker` model will diagnose with the updated editor contents.
       const diagnosisResult = await this._requestSerializer.run(this.findDiagnostics(textEditor));
-      if (diagnosisResult.status === 'success' && diagnosisResult.result == null) {
-        logger.error('hh_client could not be reached');
-      }
       if (diagnosisResult.status === 'outdated' || diagnosisResult.result == null) {
         return;
       }
@@ -221,7 +213,7 @@ export class FileDiagnosticsProvider<T: LanguageService> {
     // Once we provide all diagnostics, instead of just the current file, we can
     // probably remove the activeTextEditor parameter.
     const activeTextEditor = atom.workspace.getActiveTextEditor();
-    if (activeTextEditor) {
+    if (activeTextEditor && !nuclideUri.isBrokenDeserializedUri(activeTextEditor.getPath())) {
       if (this._providerBase.getGrammarScopes().has(activeTextEditor.getGrammar().scopeName)) {
         this._runDiagnostics(activeTextEditor);
       }

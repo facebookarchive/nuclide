@@ -26,6 +26,7 @@ import type {
 
 import {Range} from 'atom';
 import {DiagnosticsProviderBase} from '../../nuclide-diagnostics-provider-base';
+import nuclideUri from '../../commons-node/nuclideUri';
 import {RequestSerializer} from '../../commons-node/promise';
 
 // Exported for testing.
@@ -195,7 +196,7 @@ export class LinterAdapter {
 
   _newUpdateSubscriber(callback: MessageUpdateCallback): void {
     const activeTextEditor = atom.workspace.getActiveTextEditor();
-    if (activeTextEditor) {
+    if (activeTextEditor && !nuclideUri.isBrokenDeserializedUri(activeTextEditor.getPath())) {
       const matchesGrammar =
         this._provider.grammarScopes.indexOf(activeTextEditor.getGrammar().scopeName) !== -1;
       if (!this._lintInProgress() && matchesGrammar) {

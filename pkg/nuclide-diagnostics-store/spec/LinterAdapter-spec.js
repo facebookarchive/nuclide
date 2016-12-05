@@ -137,6 +137,16 @@ describe('LinterAdapter', () => {
     }, 'It should call the callback', 100);
   });
 
+  it('should not lint broken remote paths', () => {
+    jasmine.unspy(atom.workspace, 'getActiveTextEditor');
+    spyOn(atom.workspace, 'getActiveTextEditor').andReturn({
+      getPath: () => 'nuclide:/badpath',
+    });
+    const callback = jasmine.createSpy();
+    newUpdateSubscriber(callback);
+    expect(publishMessageUpdateSpy).not.toHaveBeenCalled();
+  });
+
   it('should work when the linter is synchronous', () => {
     linterReturn = [{type: 'Error', filePath: 'foo'}];
     let message = null;

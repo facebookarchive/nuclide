@@ -11,6 +11,7 @@
 
 import invariant from 'assert';
 import {Disposable, CompositeDisposable} from 'atom';
+import {observeTextEditors} from '../../commons-atom/text-editor';
 import debounce from '../../commons-node/debounce';
 
 type EventCallback = (editor: TextEditor) => mixed;
@@ -227,7 +228,7 @@ export default class TextEventDispatcher {
       }
     }));
 
-    this._getEditorListenerDisposable().add(atom.workspace.observeTextEditors(editor => {
+    this._getEditorListenerDisposable().add(observeTextEditors(editor => {
       const buffer = editor.getBuffer();
       const makeDispatch = (event: Event) => {
         return () => {
