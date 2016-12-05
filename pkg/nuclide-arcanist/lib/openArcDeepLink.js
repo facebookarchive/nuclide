@@ -15,7 +15,11 @@ import type {RemoteProjectsService} from '../../nuclide-remote-projects';
 import invariant from 'assert';
 import {goToLocation} from '../../commons-atom/go-to-location';
 import nuclideUri from '../../commons-node/nuclideUri';
-import {getArcanistServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {asyncFilter} from '../../commons-node/promise';
+import {
+  getArcanistServiceByNuclideUri,
+  getFileSystemServiceByNuclideUri,
+} from '../../nuclide-remote-connection';
 
 function ensureArray(x: string | Array<string>): Array<string> {
   return typeof x === 'string' ? [x] : x;
@@ -51,18 +55,38 @@ export async function openArcDeepLink(
       return matches;
     }));
 
-    const match = []
+    const matches = []
       .concat(...arcInfos)
-      .find(arcInfo => arcInfo != null && arcInfo.projectId === project);
-    if (match == null) {
+      .filter(Boolean)
+      .filter(arcInfo => arcInfo.projectId === project);
+
+    if (matches.length === 0) {
       // TODO: send URL to other windows if they exist
-      throw new Error(`Arcanist project ${project} not found in open projects.`);
+      // TODO: remember previous directories for this arcanist project
+      throw new Error(
+        `The file you are trying to open is in the \`${project}\` project ` +
+        'but you do not have the project open.<br />' +
+        'Please add the project manually and try again.',
+      );
     }
 
     // Params can be strings or arrays. Always convert to an array
     const paths = ensureArray(path);
     const lines = line == null ? null : ensureArray(line);
     const columns = column == null ? null : ensureArray(column);
+
+    // If there are multiple matches, prefer one which contains the first file.
+    // Otherwise, we still want to support the case of opening a new file.
+    let match = matches[0];
+    if (matches.length > 1) {
+      const existing = await asyncFilter(matches, async arcInfo => {
+        const {directory} = arcInfo;
+        const fsService = getFileSystemServiceByNuclideUri(directory);
+        return fsService.exists(nuclideUri.join(nuclideUri.getPath(directory), paths[0]));
+      });
+      match = existing[0] || match;
+    }
+
     for (let i = 0; i < paths.length; i++) {
       const localPath = nuclideUri.join(match.directory, paths[i]);
       const intLine = lines == null ? undefined : parseInt(lines[i], 10) - 1;
@@ -70,6 +94,6 @@ export async function openArcDeepLink(
       goToLocation(localPath, intLine, intColumn);
     }
   } catch (err) {
-    atom.notifications.addError(err.message);
+    atom.notifications.addError(err.message, {dismissable: true});
   }
 }
