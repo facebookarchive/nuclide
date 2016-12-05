@@ -12,6 +12,7 @@
 import type {ProcessExitMessage, ProcessMessage, ProcessInfo} from './process-rpc-types';
 
 import child_process from 'child_process';
+import nuclideUri from './nuclideUri';
 import {splitStream, takeWhileInclusive} from './observable';
 import {observeStream} from './stream';
 import {maybeToString} from './string';
@@ -461,11 +462,10 @@ function preparePathEnvironment(env: ?Object): Object {
   if (isWindowsPlatform()) {
     return originalEnv;
   }
-  const seperator = ':';
   const existingPath: string = originalEnv.PATH || '';
   return {
     ...originalEnv,
-    PATH: [existingPath, ...DEFAULT_PATH_INCLUDE].join(seperator),
+    PATH: nuclideUri.joinPathList([existingPath, ...DEFAULT_PATH_INCLUDE]),
   };
 }
 
@@ -625,15 +625,24 @@ export function runCommand(
 // If provided, read the original environment from NUCLIDE_ORIGINAL_ENV.
 // This should contain the base64-encoded output of `env -0`.
 let cachedOriginalEnvironment = null;
-const LOADED_SHELL_EVENT = 'core:loaded-shell-environment';
 
-if (typeof atom !== 'undefined') {
-  const disposable = atom.packages.onDidTriggerActivationHook(LOADED_SHELL_EVENT, () => {
-    cachedOriginalEnvironment = null;
-    // No need to include default paths now that the environment is loaded.
-    DEFAULT_PATH_INCLUDE = [];
-    disposable.dispose();
-  });
+let loadedShellResolve;
+new Promise(resolve => {
+  loadedShellResolve = resolve;
+}).then(() => {
+  // No need to include default paths now that the environment is loaded.
+  DEFAULT_PATH_INCLUDE = [];
+  cachedOriginalEnvironment = null;
+});
+
+invariant(loadedShellResolve);
+if (typeof atom === 'undefined' || atom.inSpecMode()) {
+  // This doesn't apply server-side or in tests, so just immediately resolve.
+  loadedShellResolve();
+}
+
+export function loadedShellEnvironment(): void {
+  loadedShellResolve();
 }
 
 export function getOriginalEnvironment(): Object {

@@ -1,0 +1,15 @@
+{
+  "name": "nuclide-loaded-shell-hook",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main.js",
+  "version": "0.0.0",
+  "description": "Safely listen for the core:loaded-shell-environment activation hook.",
+  "atomTestRunner": "../../lib/test-runner.js",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "activationHooks": [
+    "core:loaded-shell-environment"
+  ]
+}
