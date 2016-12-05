@@ -12,20 +12,22 @@
 import type {LinterMessage} from '../../nuclide-diagnostics-common';
 
 import invariant from 'assert';
+import nuclideUri from '../../commons-node/nuclideUri';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {trackTiming} from '../../nuclide-analytics';
 import {getDiagnosticRange} from './diagnostic-range';
-import {getEnableLinting} from './config';
+import {getEnableLinting, getLintExtensionBlacklist} from './config';
 
 export default class LintHelpers {
 
   static lint(editor: TextEditor): Promise<Array<LinterMessage>> {
-    return trackTiming('nuclide-python.lint', async () => {
-      const src = editor.getPath();
-      if (src == null || !getEnableLinting()) {
-        return [];
-      }
+    const src = editor.getPath();
+    if (src == null || !getEnableLinting() ||
+        getLintExtensionBlacklist().includes(nuclideUri.extname(src))) {
+      return Promise.resolve([]);
+    }
 
+    return trackTiming('nuclide-python.lint', async () => {
       const service = getServiceByNuclideUri('PythonService', src);
       invariant(service);
 

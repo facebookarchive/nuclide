@@ -37,6 +37,15 @@
         "default": true,
         "description": "Show lint messages from flake8 with python files. Requires a valid flake8 path to be set."
       },
+      "lintExtensionBlacklist": {
+        "title": "Lint extension blacklist",
+        "type": "array",
+        "description": "File extensions that should not be linted with flake8.",
+        "default": [".tw", ""],
+        "items": {
+          "type": "string"
+        }
+      },
       "lintOnFly": {
         "title": "Lint on the fly",
         "type": "boolean",
