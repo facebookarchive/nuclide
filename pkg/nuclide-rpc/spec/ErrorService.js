@@ -22,6 +22,7 @@ export async function promiseErrorString(message: string): Promise<void> {
 }
 
 export function promiseErrorUndefined(): Promise<void> {
+  // eslint-disable-next-line no-throw-literal
   throw undefined;
 }
 

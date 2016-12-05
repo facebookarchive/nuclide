@@ -32,7 +32,7 @@ describe('FindReferencesModel', () => {
     spyOn(NuclideRemoteConnection, 'getFileSystemServiceByNuclideUri').andReturn({
       readFile: async fileName => {
         if (fileName === 'bad') {
-          throw 'bad file';
+          throw new Error('bad file');
         }
         let file = '';
         for (let i = 1; i <= 9; i++) {

@@ -122,7 +122,7 @@ describe('FlowRoot', () => {
 
     it('should return null if the flow process fails', () => {
       waitsForPromise(async () => {
-        fakeExecFlow = () => { throw 'error'; };
+        fakeExecFlow = () => { throw new Error('error'); };
         // this causes some errors to get logged, but I don't think it's a big
         // deal and I don't know how to mock a module
         expect(

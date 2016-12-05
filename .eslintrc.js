@@ -130,7 +130,7 @@ module.exports = {
     'no-self-assign': 1,
     'no-self-compare': 1,
     'no-sequences': 1,
-    'no-throw-literal': 0,
+    'no-throw-literal': 1,
     'no-unmodified-loop-condition': 0,
     'no-unused-expressions': 0,
     'no-unused-labels': 1,
