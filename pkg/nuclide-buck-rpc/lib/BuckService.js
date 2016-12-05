@@ -34,6 +34,8 @@ const logger = getLogger();
 // Tag these Buck calls as coming from Nuclide for analytics purposes.
 const CLIENT_ID_ARGS = ['--config', 'client.id=nuclide'];
 
+export const MULTIPLE_TARGET_RULE_TYPE = 'multiple_targets';
+
 export type dontRunOptions = {
   run: false,
 };
@@ -520,8 +522,9 @@ export async function buildRuleTypeFor(
 ): Promise<string> {
   let canonicalName = aliasOrTarget;
   // The leading "//" can be omitted for build/test/etc, but not for query.
-  // Don't prepend this for aliases though (aliases will not have colons)
-  if (canonicalName.indexOf(':') !== -1 && !canonicalName.startsWith('//')) {
+  // Don't prepend this for aliases though (aliases will not have colons or .)
+  if ((canonicalName.indexOf(':') !== -1 || canonicalName.indexOf('.') !== -1) &&
+      !canonicalName.startsWith('//')) {
     canonicalName = '//' + canonicalName;
   }
   // Buck query does not support flavors.
@@ -534,10 +537,13 @@ export async function buildRuleTypeFor(
   const json: {[target: string]: Object} = JSON.parse(result.stdout);
   // If aliasOrTarget is an alias, targets[0] will be the fully qualified build target.
   const targets = Object.keys(json);
-  // "target:" rules build all rules in that particular BUCK file.
-  // Let's just choose the first one.
-  if (!targets || (!canonicalName.endsWith(':') && targets.length !== 1)) {
+  if (targets.length === 0) {
     throw new Error(`Error determining rule type of '${aliasOrTarget}'.`);
+  }
+  // target: and target/... build a set of targets.
+  // These don't have a single rule type so let's just return something.
+  if (targets.length > 1) {
+    return MULTIPLE_TARGET_RULE_TYPE;
   }
   return json[targets[0]]['buck.type'];
 }

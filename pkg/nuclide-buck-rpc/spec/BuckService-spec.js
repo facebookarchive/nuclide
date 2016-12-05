@@ -138,10 +138,15 @@ describe('BuckService (test-project-with-failing-targets)', () => {
         expect(type).toBe('genrule');
       });
 
+      // Multi-target rules.
       waitsForPromise(async () => {
-        // If all rules are specified, just pick one.
         const type = await BuckService.buildRuleTypeFor(buckRoot, '//:');
-        expect(type).toBe('genrule');
+        expect(type).toBe(BuckService.MULTIPLE_TARGET_RULE_TYPE);
+      });
+
+      waitsForPromise(async () => {
+        const type = await BuckService.buildRuleTypeFor(buckRoot, '//...');
+        expect(type).toBe(BuckService.MULTIPLE_TARGET_RULE_TYPE);
       });
     });
 
