@@ -355,6 +355,23 @@ export class FlowRoot {
     currentContents: string,
     execInfoContainer: FlowExecInfoContainer,
   ): Promise<?Array<FlowOutlineTree>> {
+    const json = await FlowRoot.flowGetAst(root, currentContents, execInfoContainer);
+
+    try {
+      return json ? astToOutline(json) : null;
+    } catch (e) {
+      // Traversing the AST is an error-prone process and it's hard to be sure we've handled all the
+      // cases. Fail gracefully if it does not work.
+      logger.error(e);
+      return null;
+    }
+  }
+
+  static async flowGetAst(
+    root: ?FlowRoot,
+    currentContents: string,
+    execInfoContainer: FlowExecInfoContainer,
+  ): Promise<any> {
     const options = {
       stdin: currentContents,
     };
@@ -379,15 +396,7 @@ export class FlowRoot {
       logger.warn(e);
       return null;
     }
-
-    try {
-      return astToOutline(json);
-    } catch (e) {
-      // Traversing the AST is an error-prone process and it's hard to be sure we've handled all the
-      // cases. Fail gracefully if it does not work.
-      logger.error(e);
-      return null;
-    }
+    return json;
   }
 }
 

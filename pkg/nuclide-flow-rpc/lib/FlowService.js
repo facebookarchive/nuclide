@@ -205,6 +205,16 @@ export function flowGetOutline(
   );
 }
 
+export function flowGetAst(
+  file: ?NuclideUri,
+  currentContents: string,
+): Promise<any> {
+  return getState().getRootContainer().runWithOptionalRoot(
+    file,
+    root => FlowRoot.flowGetAst(root, currentContents, getState().getExecInfoContainer()),
+  );
+}
+
 export function allowServerRestart(): void {
   for (const root of getState().getRootContainer().getAllRoots()) {
     root.allowServerRestart();
