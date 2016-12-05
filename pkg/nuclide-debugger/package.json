@@ -21,6 +21,11 @@
     "createDebuggerView"
   ],
   "consumedServices": {
+    "nuclide.workspace-views": {
+      "versions": {
+        "0.0.0": "consumeWorkspaceViewsService"
+      }
+    },
     "nuclide.registerExecutor": {
       "versions": {
         "0.0.0": "consumeRegisterExecutor"

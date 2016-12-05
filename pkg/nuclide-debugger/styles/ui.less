@@ -9,6 +9,7 @@
   flex-direction: column;
   flex: 1;
   min-width: 0;
+  padding: @component-padding;
 }
 
 .nuclide-debugger-root select.form-control {
@@ -63,7 +64,9 @@
   border-bottom: none;
 }
 
-.nuclide-debugger-webview-hidden {
+.nuclide-debugger-webview {
+  // This is only used because we're piggybacking on its state management. It
+  // needs to be in the DOM, but we don't want to see it.
   height: 0;
   overflow: hidden;
 }

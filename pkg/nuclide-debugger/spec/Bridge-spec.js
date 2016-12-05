@@ -110,7 +110,7 @@ describe('Bridge', () => {
       spyOn(breakpointStore, '_addBreakpoint').andCallThrough();
       spyOn(breakpointStore, '_bindBreakpoint').andCallThrough();
       spyOn(breakpointStore, '_deleteBreakpoint').andCallThrough();
-      bridge.setWebviewElement(((mockWebview: any): WebviewElement));
+      bridge._setWebviewElement(((mockWebview: any): WebviewElement));
     });
     runs(() => {
       sendIpcNotification('CallFrameSelected', {

@@ -29,10 +29,12 @@ import type {SerializedState} from '..';
 
 const {EventEmitter} = require('events');
 
+export const WORKSPACE_VIEW_URI = 'atom://nuclide/debugger';
+
 /**
  * Atom ViewProvider compatible model object.
  */
-class DebuggerModel {
+export default class DebuggerModel {
   _disposables: CompositeDisposable;
   _actions: DebuggerActions;
   _breakpointManager: BreakpointManager;
@@ -92,6 +94,11 @@ class DebuggerModel {
     );
   }
 
+  destroy(): void {
+    // Stop debugging when the view's destroyed.
+    this.getActions().stopDebugging();
+  }
+
   dispose() {
     this._disposables.dispose();
   }
@@ -139,6 +146,21 @@ class DebuggerModel {
   getBridge(): Bridge {
     return this._bridge;
   }
-}
 
-module.exports = DebuggerModel;
+  getTitle(): string {
+    return 'Debugger';
+  }
+
+  getDefaultLocation(): string {
+    return 'right-panel';
+  }
+
+  getURI(): string {
+    return WORKSPACE_VIEW_URI;
+  }
+
+  getPreferredInitialWidth(): number {
+    return 500;
+  }
+
+}

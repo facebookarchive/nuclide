@@ -11,19 +11,17 @@
 
 import {React} from 'react-for-atom';
 import BreakpointStore from './BreakpointStore.js';
-import DebuggerActions from './DebuggerActions';
 import DebuggerInspector from './DebuggerInspector';
 import {DebuggerStore} from './DebuggerStore';
 import Bridge from './Bridge';
 import {Button} from '../../nuclide-ui/Button';
 
 type Props = {
-  actions: DebuggerActions,
   breakpointStore: BreakpointStore,
   store: DebuggerStore,
   bridge: Bridge,
-  toggleOldView: () => void,
-  showOldView: boolean,
+  openDevTools: () => void,
+  stopDebugging: () => void,
 };
 
 type State = {
@@ -78,12 +76,9 @@ export default class DebuggerControllerView extends React.Component {
     if (this.state.processSocket) {
       return (
         <DebuggerInspector
-          actions={this.props.actions}
-          bridge={this.props.bridge}
           breakpointStore={this.props.breakpointStore}
-          socket={this.state.processSocket}
-          showOldView={this.props.showOldView}
-          toggleOldView={this.props.toggleOldView}
+          openDevTools={this.props.openDevTools}
+          stopDebugging={this.props.stopDebugging}
         />
       );
     }
@@ -105,7 +100,7 @@ export default class DebuggerControllerView extends React.Component {
   }
 
   _handleClickClose() {
-    this.props.actions.stopDebugging();
+    this.props.stopDebugging();
   }
 
   _updateStateFromStore(store?: DebuggerStore) {

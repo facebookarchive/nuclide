@@ -19,6 +19,7 @@ import type {
 } from '../../nuclide-datatip/lib/types';
 import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 import type {RegisterExecutorFunction} from '../../nuclide-console/lib/types';
+import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
 import type {
   EvaluationResult,
   SerializedBreakpoint,
@@ -41,14 +42,13 @@ import {
   trackTiming,
 } from '../../nuclide-analytics';
 import RemoteControlService from './RemoteControlService';
-import DebuggerModel from './DebuggerModel';
+import DebuggerModel, {WORKSPACE_VIEW_URI} from './DebuggerModel';
 import {debuggerDatatip} from './DebuggerDatatip';
 import {React} from 'react-for-atom';
 import {DebuggerLaunchAttachUI} from './DebuggerLaunchAttachUI';
 import {renderReactRoot} from '../../commons-atom/renderReactRoot';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {ServerConnection} from '../../nuclide-remote-connection';
-import {PanelComponent} from '../../nuclide-ui/PanelComponent';
 import {setNotificationService} from '../../nuclide-debugger-base';
 import {NewDebuggerView} from './NewDebuggerView';
 import DebuggerControllerView from './DebuggerControllerView';
@@ -80,7 +80,8 @@ class DebuggerView extends React.Component {
     this.state = {
       showOldView: false,
     };
-    (this: any)._toggleOldView = this._toggleOldView.bind(this);
+    (this: any)._openDevTools = this._openDevTools.bind(this);
+    (this: any)._stopDebugging = this._stopDebugging.bind(this);
   }
 
   _getUiTypeForAnalytics(): string {
@@ -113,10 +114,12 @@ class DebuggerView extends React.Component {
     }
   }
 
-  _toggleOldView(): void {
-    this.setState({
-      showOldView: !this.state.showOldView,
-    });
+  _openDevTools(): void {
+    this.props.model.getActions().openDevTools();
+  }
+
+  _stopDebugging(): void {
+    this.props.model.getActions().stopDebugging();
   }
 
   render(): React.Element<any> {
@@ -125,27 +128,24 @@ class DebuggerView extends React.Component {
     } = this.props;
     const {showOldView} = this.state;
     return (
-      <PanelComponent initialLength={500} dock="right">
-        <div className="nuclide-debugger-root">
-          <div className={classnames({'nuclide-debugger-container-old-enabled': showOldView})}>
-            <DebuggerControllerView
-              store={model.getStore()}
-              bridge = {model.getBridge()}
-              actions={model.getActions()}
-              breakpointStore={model.getBreakpointStore()}
-              showOldView={showOldView}
-              toggleOldView={this._toggleOldView}
+      <div className="nuclide-debugger-root">
+        <div className={classnames({'nuclide-debugger-container-old-enabled': showOldView})}>
+          <DebuggerControllerView
+            store={model.getStore()}
+            bridge = {model.getBridge()}
+            breakpointStore={model.getBreakpointStore()}
+            openDevTools={this._openDevTools}
+            stopDebugging={this._stopDebugging}
+          />
+        </div>
+        {!showOldView
+          ? <NewDebuggerView
+              model={model}
+              watchExpressionListStore={model.getWatchExpressionListStore()}
             />
-          </div>
-          {!showOldView
-            ? <NewDebuggerView
-                model={model}
-                watchExpressionListStore={model.getWatchExpressionListStore()}
-              />
-            : null
-          }
-          </div>
-      </PanelComponent>
+          : null
+        }
+        </div>
     );
   }
 }
@@ -162,13 +162,11 @@ export function createDebuggerView(model: mixed): ?HTMLElement {
 class Activation {
   _disposables: UniversalDisposable;
   _model: DebuggerModel;
-  _panel: ?Object;
   _launchAttachDialog: ?atom$Panel;
   _tryTriggerNux: ?TriggerNux;
 
   constructor(state: ?SerializedState) {
     this._model = new DebuggerModel(state);
-    this._panel = null;
     this._launchAttachDialog = null;
     this._disposables = new UniversalDisposable(
       this._model,
@@ -190,12 +188,6 @@ class Activation {
       // Commands.
       atom.commands.add('atom-workspace', {
         'nuclide-debugger:toggle': this._toggleLaunchAttachDialog.bind(this),
-      }),
-      atom.commands.add('atom-workspace', {
-        'nuclide-debugger:show': this._show.bind(this),
-      }),
-      atom.commands.add('atom-workspace', {
-        'nuclide-debugger:hide': this._hide.bind(this),
       }),
       atom.commands.add('atom-workspace', {
         'nuclide-debugger:continue-debugging': this._continue.bind(this),
@@ -282,9 +274,6 @@ class Activation {
 
   dispose() {
     this._disposables.dispose();
-    if (this._panel) {
-      this._panel.destroy();
-    }
   }
 
   getModel(): DebuggerModel {
@@ -297,6 +286,23 @@ class Activation {
     return disposable;
   }
 
+  consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
+    this._disposables.add(
+      api.addOpener(uri => {
+        if (uri === WORKSPACE_VIEW_URI) {
+          return this._model;
+        }
+      }),
+      () => { api.destroyWhere(item => item instanceof DebuggerModel); },
+      atom.commands.add('atom-workspace', {
+        'nuclide-debugger:show': () => { api.open(WORKSPACE_VIEW_URI, {searchAllPanes: true}); },
+      }),
+      atom.commands.add('atom-workspace', {
+        'nuclide-debugger:hide': () => { api.destroyWhere(item => item instanceof DebuggerModel); },
+      }),
+    );
+  }
+
   setTriggerNux(triggerNux: TriggerNux): void {
     this._tryTriggerNux = triggerNux;
   }
@@ -305,14 +311,6 @@ class Activation {
     if (this._tryTriggerNux != null) {
       this._tryTriggerNux(id);
     }
-  }
-
-  _show() {
-    this._getPanel().show();
-  }
-
-  _hide() {
-    this._getPanel().hide();
   }
 
   _continue() {
@@ -437,25 +435,6 @@ class Activation {
     }
     invariant(this._launchAttachDialog);
     return this._launchAttachDialog;
-  }
-
-  /**
-   * Lazy panel creation.
-   */
-  _getPanel(): Object {
-    if (!this._panel) {
-      const panel = atom.workspace.addRightPanel({
-        item: this._model,
-        visible: false,
-        // Move this left of the toolbar, when it is on the right.
-        priority: 150,
-      });
-      // Flow doesn't track non-null when assigning into nullable directly.
-      this._panel = panel;
-      return panel;
-    } else {
-      return this._panel;
-    }
   }
 
   _addToWatch() {
@@ -638,16 +617,10 @@ function createDebuggerNuxTourModel(): NuxTourModel {
     position: 'left',
   };
 
-  const toggleOldNewUiNux = {
-    content: 'You can always switch back to the old UI.',
-    selector: '.nuclide-debugger-toggle-old-ui-button',
-    position: 'bottom',
-  };
-
   const newDebuggerUINuxTour = {
     id: NUX_NEW_DEBUGGER_UI_ID,
     name: NUX_NEW_DEBUGGER_UI_NAME,
-    nuxList: [welcomeToNewUiNux, toggleOldNewUiNux],
+    nuxList: [welcomeToNewUiNux],
     gatekeeperID: GK_NEW_DEBUGGER_UI_NUX,
   };
 
@@ -663,4 +636,9 @@ export function consumeTriggerNuxService(tryTriggerNux: TriggerNux): void {
   if (activation != null) {
     activation.setTriggerNux(tryTriggerNux);
   }
+}
+
+export function consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
+  invariant(activation);
+  activation.consumeWorkspaceViewsService(api);
 }

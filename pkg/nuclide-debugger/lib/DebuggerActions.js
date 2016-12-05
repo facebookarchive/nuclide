@@ -177,6 +177,9 @@ class DebuggerActions {
       actionType: ActionTypes.SET_PROCESS_SOCKET,
       data: null,
     });
+
+    this.clearInterface();
+
     this.setDebuggerMode(DebuggerMode.STOPPED);
     track(AnalyticsEvents.DEBUGGER_STOP);
     endTimerTracking();
@@ -255,19 +258,6 @@ class DebuggerActions {
     this._dispatcher.dispatch({
       actionType: ActionTypes.SET_ERROR,
       data: error,
-    });
-  }
-
-  /**
-   * Utility for debugging.
-   *
-   * This can be used to set an existing socket, bypassing normal UI flow to
-   * improve iteration speed for development.
-   */
-  forceProcessSocket(socketAddr: ?string) {
-    this._dispatcher.dispatch({
-      actionType: ActionTypes.SET_PROCESS_SOCKET,
-      data: socketAddr,
     });
   }
 
@@ -536,6 +526,10 @@ class DebuggerActions {
         message,
       },
     });
+  }
+
+  openDevTools(): void {
+    this._dispatcher.dispatch({actionType: ActionTypes.OPEN_DEV_TOOLS});
   }
 
   receiveExpressionEvaluationResponse(id: number, response: ExpressionResult): void {

@@ -22,9 +22,11 @@ import type {
   GetPropertiesResult,
 } from './types';
 
-import {CompositeDisposable, Disposable} from 'atom';
 import nuclideUri from '../../commons-node/nuclideUri';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {DebuggerMode} from './DebuggerStore';
+import invariant from 'assert';
+import {Observable} from 'rxjs';
 
 const INJECTED_CSS = [
   /* Force the inspector to scroll vertically on Atom ≥ 1.4.0 */
@@ -62,29 +64,21 @@ const INJECTED_CSS = [
 
 class Bridge {
   _debuggerModel: DebuggerModel;
-  _disposables: CompositeDisposable;
+  _disposables: UniversalDisposable;
   // Contains disposable items should be disposed by
   // cleanup() method.
-  _cleanupDisposables: CompositeDisposable;
+  _cleanupDisposables: ?UniversalDisposable;
   _webview: ?WebviewElement;
+  _webviewUrl: ?string;
   _suppressBreakpointSync: boolean;
 
   constructor(debuggerModel: DebuggerModel) {
+    (this: any)._handleIpcMessage = this._handleIpcMessage.bind(this);
     this._debuggerModel = debuggerModel;
-    this._cleanupDisposables = new CompositeDisposable();
-    this._webview = null;
     this._suppressBreakpointSync = false;
-    this._disposables = new CompositeDisposable(
+    this._disposables = new UniversalDisposable(
       debuggerModel.getBreakpointStore().onUserChange(this._handleUserBreakpointChange.bind(this)),
     );
-  }
-
-  setWebviewElement(webview: WebviewElement) {
-    this._webview = webview;
-    const boundHandler = this._handleIpcMessage.bind(this);
-    webview.addEventListener('ipc-message', boundHandler);
-    this._cleanupDisposables.add(new Disposable(() =>
-      webview.removeEventListener('ipc-message', boundHandler)));
   }
 
   dispose() {
@@ -94,14 +88,10 @@ class Bridge {
 
   // Clean up any state changed after constructor.
   cleanup() {
-    this._cleanupDisposables.dispose();
-    this._webview = null;
-    // Poor man's `waitFor` to prevent nested dispatch. Actual `waitsFor` requires passing around
-    // dispatch tokens between unrelated stores, which is quite cumbersome.
-    // TODO @jxg move to redux to eliminate this problem altogether.
-    setTimeout(() => {
-      this._debuggerModel.getActions().clearInterface();
-    });
+    if (this._cleanupDisposables != null) {
+      this._cleanupDisposables.dispose();
+      this._cleanupDisposables = null;
+    }
   }
 
   continue() {
@@ -430,6 +420,51 @@ class Bridge {
     if (this._webview != null) {
       this._webview.insertCSS(INJECTED_CSS);
     }
+  }
+
+  renderChromeWebview(url: string): void {
+    if (this._webview == null) {
+      // Cast from HTMLElement down to WebviewElement without instanceof
+      // checking, as WebviewElement constructor is not exposed.
+      const webview = ((document.createElement('webview'): any): WebviewElement);
+      webview.src = url;
+      webview.nodeintegration = true;
+      webview.disablewebsecurity = true;
+      webview.classList.add('native-key-bindings'); // required to pass through certain key events
+      webview.classList.add('nuclide-debugger-webview');
+
+      // The webview is actually only used for its state; it's really more of a model that just has
+      // to live in the DOM. We render it into the body to keep it separate from our view, which may
+      // be detached. If the webview were a child, it would cause the webview to reload when
+      // reattached, and we'd lose our state.
+      document.body.appendChild(webview);
+
+      this._setWebviewElement(webview);
+    } else if (url !== this._webviewUrl) {
+      this._webview.src = url;
+    }
+    this._webviewUrl = url;
+  }
+
+  // Exposed for tests
+  _setWebviewElement(webview: WebviewElement): void {
+    this._webview = webview;
+    invariant(this._cleanupDisposables == null);
+    this._cleanupDisposables = new UniversalDisposable(
+      Observable.fromEvent(webview, 'ipc-message').subscribe(this._handleIpcMessage),
+      () => {
+        webview.remove();
+        this._webview = null;
+        this._webviewUrl = null;
+      },
+    );
+  }
+
+  openDevTools(): void {
+    if (this._webview == null) {
+      return;
+    }
+    this._webview.openDevTools();
   }
 
 }
