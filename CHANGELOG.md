@@ -1,5 +1,40 @@
 # Nuclide Changelog
 
+## v0.187.0
+
+### Highlights
+
+* Debugger "Locals" window is now a "Scopes" window, and can show non-local variables in scope, such as global variables.
+* Fixed an issue that would cause the "Hack Diagnostics" spinner to spin forever and also cause Atom to hog the CPU.
+
+### General
+
+* When opening a file with `cmd+t`, prefer to focus an existing editor in a different pane rather than re-opening the file.
+* Fixed a bug causing occasional Hg / Buck errors at Atom startup.
+
+### Debugger
+
+* Fix C++ debugging attach "missing envPythonPath" regression.
+* "Run to location" debug command for C++ debugging.
+* Remove C++ start debugging flickering because of loader breakpoint.
+* Fixed caching of nested value expansion state during stepping.
+
+### React Native
+
+* React Native redboxes will automatically open files using the current Atom window when the packager is run from Nuclide.
+
+### Source Control
+
+* Add confirmation prompt for **Revert** and **Delete** context menu options.
+* Added publish options and an input for publish update message in commit/amend mode.
+* Added verbatim mode to enable updating summary and title on Phabricator to match the data entered in the diff view.
+* Removed amend button in diff view form.
+
+### Buck
+
+* Allow building with the `path/to/target/...` target syntax.
+* `buck test` test failures are treated as diagnostics, and appear inline in the test's source code's buffer.
+
 ## v0.186.0
 
 ### Hotfix
