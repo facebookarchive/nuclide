@@ -5,6 +5,10 @@
   table-layout: fixed;
   width: 100%;
   -webkit-user-select: none;
+
+  // Hack around a Chrome rendering bug by which resizing columns doesn't redraw
+  // their borders.
+  transform: translate3d(0, 0, 0);
 }
 
 .nuclide-ui-table-body {
