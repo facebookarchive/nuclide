@@ -831,6 +831,13 @@ export class HgService {
 
   /**
    * @param revision This could be a changeset ID, name of a bookmark, revision number, etc.
+   */
+  strip(revision: string): Promise<void> {
+    return this._runSimpleInWorkingDirectory('strip', [revision]);
+  }
+
+  /**
+   * @param revision This could be a changeset ID, name of a bookmark, revision number, etc.
    * @param create Currently, this parameter is ignored.
    */
   async checkoutForkBase(): Promise<void> {
