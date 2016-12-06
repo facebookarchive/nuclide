@@ -24,7 +24,6 @@ const fakeEditor: any = {
 };
 
 describe('Refactoring', () => {
-
   describe('Refactoring.refactoringsAtPoint', () => {
     it('returns refactorings for a variable', () => {
       waitsForPromise({timeout: 15000}, async () => {
@@ -89,5 +88,4 @@ describe('Refactoring', () => {
       });
     });
   });
-
 });

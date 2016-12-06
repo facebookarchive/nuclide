@@ -32,7 +32,6 @@ import {
 } from '../process';
 
 describe('commons-node/process', () => {
-
   let origPlatform;
 
   beforeEach(() => {
@@ -233,7 +232,6 @@ describe('commons-node/process', () => {
         ]);
       });
     });
-
   });
 
   describe('getOutputStream', () => {
@@ -262,11 +260,9 @@ describe('commons-node/process', () => {
         ]);
       });
     });
-
   });
 
   describe('createProcessStream', () => {
-
     it('errors when the process does', () => {
       waitsForPromise(async () => {
         spyOn(console, 'error'); // suppress error printing
@@ -316,7 +312,6 @@ describe('commons-node/process', () => {
     });
 
     describe('already exited processeses', () => {
-
       it('protects against giving an exited process', () => {
         waitsForPromise(async () => {
           spyOn(console, 'error'); // suppress error printing
@@ -360,9 +355,7 @@ describe('commons-node/process', () => {
           expect(error).toEqual(null);
         });
       });
-
     });
-
   });
 
   describe('scriptSafeSpawn', () => {
@@ -413,7 +406,6 @@ describe('commons-node/process', () => {
   });
 
   describe('observeProcess', () => {
-
     it('completes the stream if the process errors', () => {
       spyOn(console, 'error');
       spyOn(console, 'log'); // suppress log printing
@@ -422,7 +414,6 @@ describe('commons-node/process', () => {
         await observeProcess(() => safeSpawn('fakeCommand')).toArray().toPromise();
       });
     });
-
   });
 
   describe('runCommand', () => {
@@ -500,7 +491,6 @@ describe('commons-node/process', () => {
         expect(error.stderr).toBe('oopsy');
       });
     });
-
   });
 
   describe('exitEventToMessage', () => {
@@ -513,7 +503,6 @@ describe('commons-node/process', () => {
         .toBe('signal SIGTERM');
     });
   });
-
 });
 
 function makeExitMessage(exitCode: number): ProcessExitMessage {

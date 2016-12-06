@@ -19,7 +19,6 @@ const {
 } = TestUtils;
 
 describe('RadioGroup', () => {
-
   it('honors the selectedIndex param', () => {
     const component = renderIntoDocument(
       <RadioGroup optionLabels={['foo', 'bar']} selectedIndex={1} />,
@@ -79,5 +78,4 @@ describe('RadioGroup', () => {
     Simulate.change(ReactDOM.findDOMNode(radioInputs[1]));
     expect(onSelectedChange.mostRecentCall.args[0]).toEqual(1);
   });
-
 });

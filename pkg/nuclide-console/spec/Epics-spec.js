@@ -18,9 +18,7 @@ import invariant from 'assert';
 import {Observable} from 'rxjs';
 
 describe('Epics', () => {
-
   describe('registerOutputProviderEpic', () => {
-
     it('observes the status', () => {
       const mockStore = {
         dispatch: () => {},
@@ -52,7 +50,5 @@ describe('Epics', () => {
       )
         .toEqual(['running', 'stopped', 'running']);
     });
-
   });
-
 });

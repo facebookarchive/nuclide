@@ -28,7 +28,6 @@ export function convertReferences(
   hackResult: HackReferencesResult,
   projectRoot: NuclideUri,
 ): FindReferencesReturn {
-
   let symbolName = hackResult[0].name;
   // Strip off the global namespace indicator.
   if (symbolName.startsWith('\\')) {

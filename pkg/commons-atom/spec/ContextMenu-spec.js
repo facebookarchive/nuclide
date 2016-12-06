@@ -14,7 +14,6 @@ import invariant from 'assert';
 import ContextMenu from '../ContextMenu';
 
 describe('ContextMenu', () => {
-
   const cssSelector = '.nuclide-context-menu-unit-test';
   let div: HTMLDivElement;
   let menu;

@@ -113,5 +113,4 @@ describe('QuickOpenHelpers', () => {
       expect(renderedNode.querySelectorAll('.icon-code').length).toBe(1);
     });
   });
-
 });

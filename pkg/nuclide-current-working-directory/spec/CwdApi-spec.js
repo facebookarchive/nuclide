@@ -15,7 +15,6 @@ import invariant from 'assert';
 import {Directory} from 'atom';
 
 describe('current-working-directory', () => {
-
   beforeEach(() => {
     spyOn(atom.project, 'getDirectories').andReturn([
       new Directory('/a/b/c'),
@@ -24,9 +23,7 @@ describe('current-working-directory', () => {
   });
 
   describe('Activation', () => {
-
     describe('provideApi', () => {
-
       it('provides an API with the initial path', () => {
         const activation = new Activation({initialCwdPath: '/a/b/c'});
         const api = activation.provideApi();
@@ -34,13 +31,10 @@ describe('current-working-directory', () => {
         invariant(cwd != null);
         expect(cwd.getPath()).toBe('/a/b/c');
       });
-
     });
-
   });
 
   describe('CwdApi', () => {
-
     it('gets and sets the cwd', () => {
       const api = new CwdApi('/a/b/c');
       let cwd = api.getCwd();
@@ -65,13 +59,10 @@ describe('current-working-directory', () => {
       invariant(cwd != null);
       expect(cwd.getPath()).toBe('/a/b/c/d');
     });
-
   });
-
 });
 
 describe('CwdApi event handling', () => {
-
   it('falls back to an existing project when you remove one', () => {
     let projects = [
       new Directory('/a/b/c'),
@@ -119,5 +110,4 @@ describe('CwdApi event handling', () => {
     expect(arg).not.toBeNull();
     expect((arg: any).getPath()).toBe('/a/b/c');
   });
-
 });

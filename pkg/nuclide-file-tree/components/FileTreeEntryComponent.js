@@ -391,7 +391,6 @@ export class FileTreeEntryComponent extends React.Component {
 }
 
 function getSelectionMode(event: SyntheticMouseEvent): SelectionMode {
-
   if (os.platform() === 'darwin' && event.metaKey && event.button === 0
     || os.platform() !== 'darwin' && event.ctrlKey && event.button === 0) {
     return 'multi-select';

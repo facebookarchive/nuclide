@@ -18,7 +18,6 @@ import {
 } from '../lib/properties';
 
 describe('debugger-php-rpc properties', () => {
-
   let objectId: ObjectId = (null: any);
 
   beforeEach(() => {

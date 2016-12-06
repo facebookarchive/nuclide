@@ -98,7 +98,6 @@ function runRename(
     const pickRenameElement = getPickRenameElement();
     invariant(pickRenameElement != null);
     pickRenameElement.click();
-
   });
   waitsFor(() => {
     return getRenameTextEditor() != null;

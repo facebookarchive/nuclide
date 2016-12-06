@@ -17,7 +17,6 @@ const NUX_DIFF_VIEW_NAME = 'nuclide_diff_view_nux';
 const NUX_DIFF_VIEW_GK = 'mp_nuclide_diff_view_nux';
 
 export function createDiffViewNux(): NuxTourModel {
-
   const diffViewFilesNux = {
     content: 'View the list of newly added and modified files.',
     selector: '.nuclide-diff-view-tree',

@@ -210,7 +210,6 @@ export class ObjectRegistry {
     logger.info(`Disposing ${subscriptions.length} subscriptions`);
     for (const id of subscriptions) {
       try {
-
         this.disposeSubscription(id);
       } catch (e) {
         logger.error('Error disposing subscription', e);

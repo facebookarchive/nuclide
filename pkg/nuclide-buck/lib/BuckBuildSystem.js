@@ -545,7 +545,6 @@ function runBuckCommand(
   debug: boolean,
   simulator: ?string,
 ): Observable<ProcessMessage> {
-
   if (debug) {
     // Stop any existing debugging sessions, as install hangs if an existing
     // app that's being overwritten is being debugged.

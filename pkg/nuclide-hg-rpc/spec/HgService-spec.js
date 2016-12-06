@@ -344,7 +344,6 @@ describe('HgService', () => {
   });
 
   describe('::fetchMergeConflicts()', () => {
-
     const relativePath1 = relativize(PATH_1);
     const relativePath2 = relativize(PATH_2);
 
@@ -381,7 +380,6 @@ describe('HgService', () => {
   });
 
   describe('::resolveConflictedFile()', () => {
-
     beforeEach(() => {
       spyOn(hgService, '_hgAsyncExecute');
     });
@@ -453,5 +451,4 @@ describe('HgService', () => {
       hgService && hgService.dispose();
     });
   });
-
 });

@@ -15,7 +15,6 @@ import {copyFixture} from '../pkg/nuclide-test-helpers';
 import {describeRemote} from './utils/remotable-tests';
 
 describeRemote('Remote Connection', (context: TestContext) => {
-
   const NEW_FILE_NAME = 'NEW_FILE.txt';
 
   it('succesfully opens a remote file that doesn\'t exist', () => {

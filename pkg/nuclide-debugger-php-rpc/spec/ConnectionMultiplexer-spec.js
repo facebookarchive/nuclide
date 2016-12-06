@@ -234,8 +234,6 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
         return createConnectionSpy(isDummy);
       }): any
     ): () => ConnectionType);
-
-
   });
 
   afterEach(() => {

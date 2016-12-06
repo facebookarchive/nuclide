@@ -18,7 +18,6 @@ let firstProjectPath;
 let otherProjectPath;
 
 describe('projects', () => {
-
   beforeEach(() => {
     temp.track();
     // `atom.project.addPath` only works for paths that actually exist.

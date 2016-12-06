@@ -293,7 +293,6 @@ async function copyFilePermissions(sourcePath: string, destinationPath: string):
  */
 export async function writeFile(path: string, data: string,
     options?: {encoding?: string, mode?: number, flag?: string}): Promise<void> {
-
   let complete = false;
   const tempFilePath = await fsPromise.tempfile('nuclide');
   try {

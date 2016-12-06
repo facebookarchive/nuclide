@@ -12,7 +12,6 @@
 import compareVersions from '../compareVersions';
 
 describe('compareVersions', () => {
-
   it('compares two versions', () => {
     expect(compareVersions('9.2', '10.0')).toBe(-1);
   });
@@ -26,5 +25,4 @@ describe('compareVersions', () => {
   it('compares numbers using version numbers and not decimal values', () => {
     expect(compareVersions('9.2', '9.10')).toBe(-1);
   });
-
 });

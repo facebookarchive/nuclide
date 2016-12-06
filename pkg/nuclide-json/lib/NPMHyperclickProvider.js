@@ -43,7 +43,6 @@ function getSuggestionForWord(
   text: string,
   range: atom$Range,
 ): Promise<?HyperclickSuggestion> {
-
   if (text === '' || !isPackageJson(textEditor)) {
     return Promise.resolve(null);
   }

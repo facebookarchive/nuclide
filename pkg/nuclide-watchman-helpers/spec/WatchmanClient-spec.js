@@ -19,7 +19,6 @@ import {generateFixture} from '../../nuclide-test-helpers';
 const FILE_MODE = 33188;
 
 describe('WatchmanClient test suite', () => {
-
   let dirPath: string = '';
   let client: WatchmanClient = (null: any);
 
@@ -46,7 +45,6 @@ describe('WatchmanClient test suite', () => {
   });
 
   describe('restore subscriptions', () => {
-
     function testRestoreSubscriptions(onRestoreChange: (watchmanClient: watchman.Client) => void) {
       waitsForPromise(async () => {
         const filePath = nuclideUri.join(dirPath, 'test.txt');

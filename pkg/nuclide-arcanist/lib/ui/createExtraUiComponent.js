@@ -23,7 +23,6 @@ import {React} from 'react-for-atom';
 export function createExtraUiComponent(
   model: ArcToolbarModel,
 ): ReactClass<any> {
-
   return class ExtraUi extends React.Component {
 
     render(): React.Element<any> {
@@ -33,5 +32,4 @@ export function createExtraUiComponent(
     }
 
   };
-
 }

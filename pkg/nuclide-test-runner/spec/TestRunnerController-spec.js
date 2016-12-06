@@ -15,7 +15,6 @@ import {Observable} from 'rxjs';
 import {TestRunnerController} from '../lib/TestRunnerController';
 
 describe('TestRunnerController', () => {
-
   const TEST_RUNNER = {getByUri() {}, label: '', runTest() { return Observable.empty(); }};
 
   let testRunners: Set<TestRunner> = (null: any);
@@ -25,7 +24,6 @@ describe('TestRunnerController', () => {
   });
 
   describe('on initialization', () => {
-
     it('does not create a panel by default', () => {
       const controller = new TestRunnerController(testRunners);
       expect(controller.getElement().innerHTML).toEqual('');
@@ -38,11 +36,9 @@ describe('TestRunnerController', () => {
       expect(controller.getElement().innerHTML).not.toEqual('');
       controller.destroy();
     });
-
   });
 
   describe('runTests()', () => {
-
     it('forces the panel to be shown', () => {
       // The controller needs at least one test runner to run tests.
       testRunners.add(TEST_RUNNER);
@@ -54,7 +50,6 @@ describe('TestRunnerController', () => {
         expect(controller.getElement().innerHTML).not.toEqual('');
       });
     });
-
   });
 
   describe('on addition of new test runners', () => {
@@ -66,7 +61,5 @@ describe('TestRunnerController', () => {
       controller.didUpdateTestRunners();
       expect(controller.getElement().innerHTML).toEqual('');
     });
-
   });
-
 });

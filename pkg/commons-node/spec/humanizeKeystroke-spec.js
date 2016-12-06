@@ -12,7 +12,6 @@
 import humanizeKeystroke from '../humanizeKeystroke';
 
 describe('nuclide-keystroke-label', () => {
-
   // adapted from https://github.com/atom/underscore-plus/blob/master/spec/underscore-plus-spec.coffee
   describe('humanizeKeystroke', () => {
     it('replaces single keystroke', () => {
@@ -78,6 +77,5 @@ describe('nuclide-keystroke-label', () => {
       expect(humanizeKeystroke(null)).toEqual(null);
       expect(humanizeKeystroke('')).toEqual('');
     });
-
   });
 });

@@ -14,7 +14,6 @@ import createMessageStream from '../lib/createMessageStream';
 import {Observable} from 'rxjs';
 
 describe('createMessageStream', () => {
-
   it('splits the output by message', () => {
     const original = featureConfig.observeAsStream.bind(featureConfig);
     spyOn(featureConfig, 'observeAsStream').andCallFake(name => (
@@ -88,5 +87,4 @@ describe('createMessageStream', () => {
       expect(atom.notifications.addError.callCount).toBe(1);
     });
   });
-
 });

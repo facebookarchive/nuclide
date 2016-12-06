@@ -19,7 +19,6 @@ describe('NavigationStackController test suite', () => {
   let controller: NavigationStackController = (null: any);
 
   beforeEach(() => {
-
     setPositionAndScroll =
       spyOn(require('../../commons-atom/text-editor'), 'setPositionAndScroll');
     spyOn(require('../lib/Location'), 'getPathOfLocation')

@@ -15,7 +15,6 @@ import nuclideUri from '../../commons-node/nuclideUri';
 import {Observable} from 'rxjs';
 
 describe('parseMessages', () => {
-
   // Run the same tests for each format of the packager output. We do this not because we want to
   // stay DRY, but to ensure that we're testing for the same output for each format.
   [
@@ -24,9 +23,7 @@ describe('parseMessages', () => {
     'packager-stdout-3',
     'packager-stdout-4',
   ].forEach(fixtureName => {
-
     describe(fixtureName, () => {
-
       const lines = getLines(fixtureName).publishReplay();
       lines.connect();
 
@@ -44,11 +41,8 @@ describe('parseMessages', () => {
           expect(readyLines.length).toBe(1, 'Expected exactly one ready message.');
         });
       });
-
     });
-
   });
-
 });
 
 function getLines(name: string): Observable<string> {

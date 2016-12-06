@@ -79,7 +79,6 @@ function prettyNames(namesList) {
 }
 
 module.exports = function(context) {
-
   function checkNameForId(node, name, id) {
     const allowedNames = ALLOWED_NAMES_BY_MODULE[id];
     if (allowedNames.indexOf(name) === -1) {

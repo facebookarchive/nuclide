@@ -84,5 +84,4 @@ describe('RemoteConnection', () => {
       expect(conn).toBe(testConnection);
     });
   });
-
 });

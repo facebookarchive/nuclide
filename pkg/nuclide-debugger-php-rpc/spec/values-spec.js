@@ -14,7 +14,6 @@ import type {ObjectId} from '../lib/ObjectId';
 import {convertValue} from '../lib/values';
 
 describe('debugger-php-rpc convertValue', () => {
-
   let objectId: ObjectId = (null: any);
 
   beforeEach(() => {

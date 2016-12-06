@@ -17,7 +17,6 @@
 
 // Taken and modified from https://gist.github.com/SimplGy/a229d25cdb19d7f21231
 (function() {
-
   // Create intra-page links
   // Requires that your headings already have an `id` attribute set (because that's what jekyll
   // does). For every heading in your page, this adds a little anchor link `#` that you can click
@@ -83,5 +82,4 @@
     link.href = '#' + link.id;
     node.appendChild(link);
   });
-
 })();

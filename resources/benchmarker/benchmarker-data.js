@@ -16,7 +16,6 @@ function aggregateTable(
   aggregator: (values: Array<string>) => string = avg,
   decimalPlaces: number = 2,
 ): Array<Object> {
-
   // Map data set into arrays of values keyed by distinct keyColumn values and columns.
   const groupedValues = {};
   records.forEach(record => {

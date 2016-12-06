@@ -266,7 +266,6 @@ class DebuggerActions {
    * TODO: refresh connections when new directories are removed/added in file-tree.
    */
   updateConnections(): void {
-
     const connections = this._getRemoteConnections();
     // Always have one single local connection.
     connections.push('local');

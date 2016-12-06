@@ -47,7 +47,6 @@ function copyProjectRelativePath(): void {
 
 function copyRepositoryRelativePath(): void {
   trackOperation('copyRepositoryRelativePath', async () => {
-
     const uri = getCurrentNuclideUri();
     if (!uri) {
       return;

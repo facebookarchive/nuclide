@@ -132,7 +132,6 @@ export class ServiceRegistry {
             break;
         }
       });
-
     } catch (e) {
       logger.error(`Failed to load service ${service.name}. Stack Trace:\n${e.stack}`);
       throw e;

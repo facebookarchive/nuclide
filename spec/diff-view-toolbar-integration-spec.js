@@ -17,7 +17,6 @@ import {generateHgRepo2Fixture} from '../pkg/nuclide-test-helpers';
 import invariant from 'assert';
 
 describeRemotableTest('Diff View Toolbar Button Test', (context: TestContext) => {
-
   let repoPath: string = (null: any);
   let filePath: string = (null: any);
 

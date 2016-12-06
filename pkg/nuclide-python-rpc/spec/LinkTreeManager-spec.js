@@ -79,5 +79,4 @@ describe('LinkTreeManager', () => {
       ]);
     });
   });
-
 });

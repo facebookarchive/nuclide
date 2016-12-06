@@ -27,7 +27,6 @@ const logger = getLogger();
 export function executeRequests(
   requests: Observable<ExecutorRequest>,
 ): Observable<ExecutorResponse> {
-
   // Wait until we get the first request, then spawn a worker process for processing them.
   const workerProcess = requests.first().switchMap(createWorker).share();
 

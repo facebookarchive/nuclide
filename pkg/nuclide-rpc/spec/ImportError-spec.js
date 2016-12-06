@@ -14,7 +14,6 @@ import {ServiceRegistry} from '../lib/ServiceRegistry';
 import invariant from 'assert';
 
 describe('Import Errors', () => {
-
   it('Importing class', () => {
     waitsForPromise(async () => {
       let hadError = false;

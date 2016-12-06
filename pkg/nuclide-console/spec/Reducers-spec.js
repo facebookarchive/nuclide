@@ -27,7 +27,6 @@ const emptyAppState = {
 };
 
 describe('createStateStream', () => {
-
   describe('RECORD_RECEIVED', () => {
     let finalState;
     let initialRecords;
@@ -70,7 +69,6 @@ describe('createStateStream', () => {
     it("doesn't mutate the original records list", () => {
       expect(initialRecords.length).toBe(0);
     });
-
   });
 
   describe('REGISTER_RECORD_PROVIDER', () => {
@@ -102,7 +100,6 @@ describe('createStateStream', () => {
     it("doesn't mutate the original provider map", () => {
       expect(initialProviders.size).toBe(0);
     });
-
   });
 
   describe('CLEAR_RECORDS', () => {
@@ -132,7 +129,6 @@ describe('createStateStream', () => {
     it("doesn't mutate the original records list", () => {
       expect(initialRecords.length).toBe(1);
     });
-
   });
 
   describe('executor registration', () => {
@@ -151,7 +147,6 @@ describe('createStateStream', () => {
     });
 
     describe('REGISTER_EXECUTOR', () => {
-
       beforeEach(() => {
         const actions = [{
           type: Actions.REGISTER_EXECUTOR,
@@ -169,11 +164,9 @@ describe('createStateStream', () => {
       it("doesn't mutate the original executor map", () => {
         expect(initialExecutors.size).toBe(1);
       });
-
     });
 
     describe('unregisterExecutor', () => {
-
       beforeEach(() => {
         const actions = [Actions.unregisterExecutor(dummyExecutor)];
         finalState = actions.reduce(Reducers, initialState);
@@ -186,11 +179,8 @@ describe('createStateStream', () => {
       it("doesn't mutate the original executor map", () => {
         expect(initialExecutors.size).toBe(1);
       });
-
     });
-
   });
-
 });
 
 function createDummyExecutor(id: string): Executor {

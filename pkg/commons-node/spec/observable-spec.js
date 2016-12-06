@@ -33,7 +33,6 @@ const createDisposable = () => {
 };
 
 describe('commons-node/observable', () => {
-
   it('splitStream', () => {
     waitsForPromise(async () => {
       const input = ['foo\nbar', '\n', '\nba', 'z', '\nblar'];
@@ -43,7 +42,6 @@ describe('commons-node/observable', () => {
   });
 
   describe('takeWhileInclusive', () => {
-
     it('completes the stream when something matches the predicate', () => {
       const source = new Subject();
       const result = takeWhileInclusive(source, x => x !== 2);
@@ -56,9 +54,7 @@ describe('commons-node/observable', () => {
       expect(complete).toHaveBeenCalled();
       expect(next.calls.map(call => call.args[0])).toEqual([1, 2]);
     });
-
   });
-
 });
 
 describe('cacheWhileSubscribed', () => {
@@ -107,11 +103,9 @@ describe('cacheWhileSubscribed', () => {
     expect(arr1).toEqual([1]);
     expect(arr2).toEqual([3]);
   });
-
 });
 
 describe('diffSets', () => {
-
   it('emits a diff for the first item', () => {
     waitsForPromise(async () => {
       const source = new Subject();
@@ -206,11 +200,9 @@ describe('diffSets', () => {
       expect(diffs.length).toBe(1);
     });
   });
-
 });
 
 describe('reconcileSetDiffs', () => {
-
   it("calls the add action for each item that's added", () => {
     const diffs = new Subject();
     const addAction = jasmine.createSpy().andReturn(new Disposable(() => {}));
@@ -278,7 +270,6 @@ describe('reconcileSetDiffs', () => {
     expect(disposables.a.dispose).toHaveBeenCalled();
     expect(disposables.b.dispose).toHaveBeenCalled();
   });
-
 });
 
 describe('toggle', () => {
@@ -349,7 +340,6 @@ describe('toggle', () => {
       expect(outputArray).toEqual([1, 2, 3]);
     });
   });
-
 });
 
 describe('concatLatest', () => {
@@ -379,7 +369,6 @@ describe('concatLatest', () => {
 });
 
 describe('throttle', () => {
-
   it('emits the leading item immeditately by default', () => {
     const source = Observable.of(1, 2).merge(Observable.never());
     const spy = jasmine.createSpy();
@@ -422,5 +411,4 @@ describe('throttle', () => {
     throttle(source, Observable.of(null)).subscribe();
     expect(spy.callCount).toBe(1);
   });
-
 });

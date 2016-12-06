@@ -59,7 +59,6 @@ function watchProjectRepository(
   action: AddProjectRepositoryAction,
   getState: () => BookShelfState,
 ): Observable<Action> {
-
   const {repository} = action.payload;
   const hgRepository: HgRepositoryClient = (repository: any);
   // Type was checked with `getType`. Downcast to safely access members with Flow.

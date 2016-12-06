@@ -96,7 +96,6 @@ async function getSuggestionsFromFlow(
   const atomSuggestions =
     await flowSuggestions.map(item => processAutocompleteItem(replacementPrefix, item));
   return updateResults(request, atomSuggestions);
-
 }
 
 function updateResults(

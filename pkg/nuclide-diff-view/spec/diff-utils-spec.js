@@ -118,11 +118,9 @@ adding a non-new-line line`,
       expect(newToOld).toEqual([0, 1, 2, 3]);
       expect(oldToNew).toEqual([0, 1, 2]);
     });
-
   });
 
   describe('getLineCountWithOffsets()', () => {
-
     it('gets the same number of lines when no offsets', () => {
       expect(getLineCountWithOffsets('line-1\nline-2\nline-3', new Map())).toBe(3);
     });
@@ -130,11 +128,9 @@ adding a non-new-line line`,
     it('gets the line numbers with offsets', () => {
       expect(getLineCountWithOffsets('line-1\nline-2\nline-3', new Map([[0, 2], [2, 1]]))).toBe(6);
     });
-
   });
 
   describe('getOffsetLineNumber()', () => {
-
     it('return the same line number when no are given', () => {
       expect(getOffsetLineNumber(2, new Map())).toBe(2);
     });
@@ -147,11 +143,9 @@ adding a non-new-line line`,
       expect(getOffsetLineNumber(3, offsets)).toBe(9);
       expect(getOffsetLineNumber(4, offsets)).toBe(10);
     });
-
   });
 
   describe('computeNavigationSections()', () => {
-
     it('returns empty sections when there are no changed lines', () => {
       const navigationSections = computeNavigationSections([], [], [], [], new Map(), new Map());
       expect(navigationSections.length).toBe(0);
@@ -273,6 +267,5 @@ adding a non-new-line line`,
         status: NavigationSectionStatus.ADDED,
       });
     });
-
   });
 });

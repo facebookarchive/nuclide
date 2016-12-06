@@ -17,7 +17,6 @@ import nuclideUri from '../../commons-node/nuclideUri';
 import {getDiagnosticRange} from '../lib/diagnostic-range';
 
 describe('Diagnostic range', () => {
-
   const fixturePath = nuclideUri.join(__dirname, 'fixtures', 'bad_syntax_land.py');
   let editor: ?atom$TextEditor = null;
 
@@ -124,5 +123,4 @@ describe('Diagnostic range', () => {
       new Range([45, 4], [45, 14]),
     );
   });
-
 });

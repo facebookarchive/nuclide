@@ -111,7 +111,6 @@ module.exports = function(context) {
           }
         }
       }
-
     },
   };
 };

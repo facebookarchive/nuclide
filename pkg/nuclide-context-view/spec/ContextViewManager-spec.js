@@ -24,7 +24,6 @@ const PROVIDER2_ID = 'context-provider-2';
 const PROVIDER2_TITLE = 'Provider Two';
 
 describe('ContextViewManager', () => {
-
   let managerShowing: ContextViewManager; // Initialized as showing
   let managerHidden: ContextViewManager; // Initialized as hidden
   let disposables: CompositeDisposable;

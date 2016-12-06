@@ -87,7 +87,6 @@ describe('diagnosticProviderForResultStream', () => {
       updates.push(fileMessages);
     });
     diagnosticProvider.invalidations.subscribe(invalidation => invalidations.push(invalidation));
-
   });
 
   describe('diagnostic updates', () => {

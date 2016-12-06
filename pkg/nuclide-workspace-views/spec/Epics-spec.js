@@ -30,9 +30,7 @@ import invariant from 'assert';
 import {Observable, ReplaySubject, Subject} from 'rxjs';
 
 describe('Epics', () => {
-
   describe('registerLocationFactoryEpic', () => {
-
     it('creates the location using the serialized state from last time', () => {
       waitsForPromise(async () => {
         const serialized = {value: 1};
@@ -56,11 +54,9 @@ describe('Epics', () => {
         expect(locationFactory.create).toHaveBeenCalledWith(serialized);
       });
     });
-
   });
 
   describe('createViewableEpic', () => {
-
     it('create and shows items', () => {
       const VIEW_URI = 'atom://nuclide/test';
       const item = createMockViewable();
@@ -84,11 +80,9 @@ describe('Epics', () => {
       expect(opener).toHaveBeenCalled();
       expect(location.showItem).toHaveBeenCalledWith(item);
     });
-
   });
 
   describe('setItemVisibilityEpic', () => {
-
     it('shows items', () => {
       const location = createMockLocation();
       const store = {
@@ -126,11 +120,9 @@ describe('Epics', () => {
       );
       expect(location.hideItem).toHaveBeenCalledWith(item);
     });
-
   });
 
   describe('unregisterLocationEpic', () => {
-
     it('destroys the location', () => {
       const location = createMockLocation();
       const store = {
@@ -148,11 +140,9 @@ describe('Epics', () => {
       );
       expect(location.destroy).toHaveBeenCalledWith();
     });
-
   });
 
   describe('trackActionsEpic', () => {
-
     it('tracks when views are created', () => {
       waitsForPromise(async () => {
         const trackAction = await runActions(
@@ -168,9 +158,7 @@ describe('Epics', () => {
         expect(event.data.itemType).toBe('test-view');
       });
     });
-
   });
-
 });
 
 function createMockLocationFactory(): LocationFactory {

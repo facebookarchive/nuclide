@@ -143,7 +143,6 @@ export class PanelLocation extends SimpleModel<State> {
             pane.onDidDestroy(() => { disposables.dispose(); }),
           );
         }
-
       }),
 
       // If you add an item to a panel (e.g. by drag & drop), make the panel visible.

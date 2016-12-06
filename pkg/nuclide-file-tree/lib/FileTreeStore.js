@@ -475,7 +475,6 @@ export class FileTreeStore {
     nodeKey: NuclideUri,
     predicate: (node: FileTreeNode
   ) => FileTreeNode): void {
-
     const roots = this.roots.map(root => {
       const node = root.find(nodeKey);
       if (node == null) {
@@ -1264,7 +1263,6 @@ export class FileTreeStore {
     anchorIndex: number,
     rangeIndex: number,
     direction: 'up' | 'down' | 'none'} {
-
     const invalidate = () => {
       this._selectionRange = null;
       return null;

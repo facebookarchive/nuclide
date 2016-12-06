@@ -40,7 +40,6 @@ const EXPECTED_FILE_OUTLINE = [
 ];
 
 describe('ClangServer', () => {
-
   const serverFlags = {
     flags: [],
     usesDefaultFlags: false,
@@ -313,5 +312,4 @@ describe('ClangServer', () => {
       expect(server.getFlagsChanged()).toBe(true);
     });
   });
-
 });

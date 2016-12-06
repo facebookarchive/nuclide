@@ -125,5 +125,4 @@ describe('File FileTreeEntryComponent', () => {
       expect(actions.confirmNode).toHaveBeenCalled();
     });
   });
-
 });

@@ -79,7 +79,5 @@ describe('TopScores', () => {
     expect(topScores.getSize()).toEqual(3);
     topScores.insert(one);
     expect(topScores.getSize()).toEqual(3);
-
   });
-
 });

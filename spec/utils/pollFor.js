@@ -45,7 +45,6 @@ export default function pollFor(
         expect(res).toBe(true); // For the assertion count
         resolve();
       } else {
-
         if (Date.now() - startTime < maxWaitTime) {
           setTimeout(periodicCheck, periodicity);
         } else {

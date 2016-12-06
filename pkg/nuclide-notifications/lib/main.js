@@ -39,7 +39,6 @@ function proxyToNativeNotification(notification: atom$Notification): void {
     `${upperCaseFirst(notification.getType())}: ${notification.getMessage()}`,
     options.detail,
   );
-
 }
 
 function raiseNativeNotification(title: string, body: string): void {

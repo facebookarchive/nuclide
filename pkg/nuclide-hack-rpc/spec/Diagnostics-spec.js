@@ -16,9 +16,7 @@ import invariant from 'assert';
 const testPath = 'myPath';
 
 describe('Diagnostics', () => {
-
   describe('convertDiagnostics', () => {
-
     it('should propertly transform a simple diagnostic', () => {
       const diagnostics = [
         {

@@ -194,7 +194,6 @@ async function getDiffEditors(
 function wrapDiffEditorObservable(
   promise: Promise<DiffEditorsResult>,
 ): Observable<?DiffEditorsResult> {
-
   let result;
 
   return Observable.fromPromise(promise)

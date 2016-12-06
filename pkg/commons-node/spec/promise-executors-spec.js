@@ -15,7 +15,6 @@ import {
 } from '../promise-executors';
 
 describe('PromiseQueue', () => {
-
   // Workarounds to enable setTimeout, as suggested by:
   // https://discuss.atom.io/t/solved-settimeout-not-working-firing-in-specs-tests/11427/17
   beforeEach(() => {

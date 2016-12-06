@@ -15,7 +15,6 @@ import {processArcanistOutput} from '../lib/utils';
 import {Observable} from 'rxjs';
 
 describe('Diff View Utils', () => {
-
   function stdoutLine(message: string): {stdout?: string, stderr?: string} {
     return {stdout: JSON.stringify({type: 'phutil:out', message})};
   }

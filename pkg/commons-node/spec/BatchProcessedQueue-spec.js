@@ -12,7 +12,6 @@
 import BatchProcessedQueue from '../BatchProcessedQueue';
 
 describe('analytics - BatchProcessedQueue', () => {
-
   it('regular operation', () => {
     const handler = jasmine.createSpy('handler');
     const queue = new BatchProcessedQueue(5000, handler);
@@ -33,5 +32,4 @@ describe('analytics - BatchProcessedQueue', () => {
     advanceClock(10000);
     expect(handler).toHaveBeenCalledWith([42]);
   });
-
 });

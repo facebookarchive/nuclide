@@ -15,7 +15,6 @@ import {Range} from 'atom';
 import {compareMessagesByFile} from '../lib/paneUtils';
 
 describe('compareMessagesByFile', () => {
-
   let fileAMsgA: FileDiagnosticMessage = (null: any);
   let fileAMsgB: FileDiagnosticMessage = (null: any);
   let fileAError: FileDiagnosticMessage = (null: any);

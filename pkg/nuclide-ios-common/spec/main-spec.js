@@ -15,7 +15,6 @@ import {
 } from '..';
 
 describe('IosSimulator', () => {
-
   it('parses typical output', () => {
     expect(parseDevicesFromSimctlOutput([
       '== Devices ==',
@@ -107,5 +106,4 @@ describe('IosSimulator', () => {
       },
     ])).toBe(2);
   });
-
 });

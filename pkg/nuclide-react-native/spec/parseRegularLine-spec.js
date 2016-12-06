@@ -12,7 +12,6 @@
 import {parseRegularLine} from '../lib/packager/parseRegularLine';
 
 describe('parseRegularLine', () => {
-
   it('parses the message when the time is in brackets', () => {
     const parsed = parseRegularLine('[2:08:50 PM] This is the message text');
     expect(parsed.text).toBe('This is the message text');
@@ -37,5 +36,4 @@ describe('parseRegularLine', () => {
     const parsed = parseRegularLine('This is the message text');
     expect(parsed.text).toBe('This is the message text');
   });
-
 });

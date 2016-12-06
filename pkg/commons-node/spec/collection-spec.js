@@ -145,7 +145,6 @@ describe('isEmpty', () => {
     expect(isEmpty(objWithOwnProperties)).toEqual(false);
     expect(isEmpty(objWithoutOwnProperties)).toEqual(false);
   });
-
 });
 
 describe('keyMirror', () => {
@@ -273,7 +272,6 @@ describe('MultiMap', () => {
 });
 
 describe('objectEntries', () => {
-
   it('gets the entries of an object', () => {
     expect(objectEntries({a: 1, b: 2})).toEqual([['a', 1], ['b', 2]]);
   });
@@ -292,28 +290,22 @@ describe('objectEntries', () => {
     Object.setPrototypeOf(b, a);
     expect(objectEntries(b)).toEqual([['b', 2]]);
   });
-
 });
 
 describe('objectFromMap', () => {
-
   it('converts a map to an object', () => {
     expect(objectFromMap(new Map([['a', 1], ['b', 2]]))).toEqual({a: 1, b: 2});
   });
-
 });
 
 describe('concatIterators', () => {
-
   it('concatenates different iterable stuff to a single iterator', () => {
-
     expect(Array.from(concatIterators(
       new Set([1, 2, 3]),
       [4, 5, 6],
       new Set([7, 8, 9]).values(),
     ))).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
   });
-
 });
 
 describe('areSetsEqual', () => {

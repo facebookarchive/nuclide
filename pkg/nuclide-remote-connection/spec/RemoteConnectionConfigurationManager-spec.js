@@ -24,7 +24,6 @@ describe('RemoteConnectionConfigurationManager', () => {
 
       expect(encryptedString).not.toEqual(text);
       expect(decryptString(encryptedString, password, salt)).toEqual(text);
-
     });
   });
 });

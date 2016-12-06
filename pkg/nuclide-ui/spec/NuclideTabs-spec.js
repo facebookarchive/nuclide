@@ -20,7 +20,6 @@ const {
 } = TestUtils;
 
 describe('Checkbox', () => {
-
   it('notifies callback of tab changes', () => {
     const onChange = jasmine.createSpy('onChange');
 
@@ -64,5 +63,4 @@ describe('Checkbox', () => {
 
     expect(onChange).toHaveBeenCalledWith(props.tabs[1]);
   });
-
 });

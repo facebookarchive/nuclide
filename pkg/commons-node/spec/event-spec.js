@@ -14,9 +14,7 @@ import EventEmitter from 'events';
 import {attachEvent, observableFromSubscribeFunction} from '../event';
 
 describe('attachEvent', () => {
-
   describe('the returned disposable', () => {
-
     it("doesn't remove other listeners when disposed multiple times", () => {
       const foo = jasmine.createSpy('foo');
       const emitter = new EventEmitter();
@@ -27,9 +25,7 @@ describe('attachEvent', () => {
       emitter.emit('event');
       expect(foo).toHaveBeenCalled();
     });
-
   });
-
 });
 
 describe('observableFromSubscribeFunction', () => {

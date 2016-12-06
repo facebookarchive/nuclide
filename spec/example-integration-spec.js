@@ -16,7 +16,6 @@ import {
 } from './utils/integration-test-helpers';
 
 describe('Example Integration Test', () => {
-
   beforeEach(() => {
     waitsForPromise(async () => {
       // Configure some jasmine specific things for integration testing.
@@ -70,5 +69,4 @@ describe('Example Integration Test', () => {
       // For more examples look at integration tests in the top-level `spec/` directory.
     });
   });
-
 });

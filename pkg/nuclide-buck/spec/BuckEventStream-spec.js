@@ -13,7 +13,6 @@ import {Subject} from 'rxjs';
 import {combineEventStreams} from '../lib/BuckEventStream';
 
 describe('combineEventStreams', () => {
-
   let socketSubject;
   let processSubject;
 
@@ -98,5 +97,4 @@ describe('combineEventStreams', () => {
       ]);
     });
   });
-
 });

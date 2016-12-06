@@ -18,7 +18,6 @@ const {
 } = TestUtils;
 
 describe('Dropdown', () => {
-
   it('honors the value param', () => {
     const component = renderIntoDocument(
       <Dropdown
@@ -34,5 +33,4 @@ describe('Dropdown', () => {
     const button = scryRenderedDOMComponentsWithTag(component, 'button');
     expect(ReactDOM.findDOMNode(button[0]).innerText).toBe('bar');
   });
-
 });

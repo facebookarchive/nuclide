@@ -20,7 +20,6 @@ import {RemoteFile} from '../lib/RemoteFile';
 import {ServerConnection} from '../lib/ServerConnection';
 
 describe('NuclideTextBuffer', () => {
-
   let buffer: NuclideTextBuffer = (null: any);
   let connection = null;
   const filePath = __filename;

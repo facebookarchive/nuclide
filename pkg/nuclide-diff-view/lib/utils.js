@@ -254,7 +254,6 @@ function mergeFileStatuses(
         mergedFilePaths.add(filePath);
       }
     }
-
   }
 
   // More recent revision changes takes priority in specifying a files' statuses.

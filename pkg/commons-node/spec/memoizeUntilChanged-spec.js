@@ -14,7 +14,6 @@ import memoizeUntilChanged from '../memoizeUntilChanged';
 const sum = (a, b) => a + b;
 
 describe('memoizeUntilChanged', () => {
-
   it('memoizes', () => {
     const spy = jasmine.createSpy().andCallFake(sum);
     const f = memoizeUntilChanged(spy);
@@ -42,5 +41,4 @@ describe('memoizeUntilChanged', () => {
     f.call(obj);
     expect(that).toBe(obj);
   });
-
 });

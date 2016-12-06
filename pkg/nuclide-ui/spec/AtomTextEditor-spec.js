@@ -14,9 +14,7 @@ import {React, TestUtils} from 'react-for-atom';
 import invariant from 'assert';
 
 describe('nuclide-ui-atom-text-editor', () => {
-
   describe('when its `path` is set', () => {
-
     let grammar;
 
     beforeEach(() => {
@@ -34,11 +32,9 @@ describe('nuclide-ui-atom-text-editor', () => {
       const element = TestUtils.renderIntoDocument(<AtomTextEditor path=".ansi" />);
       expect(element.getModel().getGrammar().scopeName).toEqual('text.ansi');
     });
-
   });
 
   describe('providing a grammar', () => {
-
     let grammar1;
     let grammar2;
 
@@ -60,15 +56,12 @@ describe('nuclide-ui-atom-text-editor', () => {
       );
       expect(element.getModel().getGrammar().scopeName).toEqual('text.ansi2');
     });
-
   });
 
   describe('when `readOnly`', () => {
-
     let element;
 
     describe('is true', () => {
-
       beforeEach(() => {
         element = TestUtils.renderIntoDocument(<AtomTextEditor readOnly={true} />);
       });
@@ -115,11 +108,9 @@ describe('nuclide-ui-atom-text-editor', () => {
         model.backspace();
         expect(model.getText()).toEqual('foobar');
       });
-
     });
 
     describe('is undefined', () => {
-
       beforeEach(() => {
         element = TestUtils.renderIntoDocument(<AtomTextEditor />);
       });
@@ -166,9 +157,6 @@ describe('nuclide-ui-atom-text-editor', () => {
         model.backspace();
         expect(model.getText()).toEqual('fooba');
       });
-
     });
-
   });
-
 });

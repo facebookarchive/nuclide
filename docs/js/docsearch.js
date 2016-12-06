@@ -17,12 +17,10 @@
 
 // For Algolia search
 (function() {
-
   // Algolia
   docsearch({
     apiKey: '421f79d033cee73a376aba52e4f572eb',
     indexName: 'nuclide',
     inputSelector: '#algolia-doc-search',
   });
-
 })();

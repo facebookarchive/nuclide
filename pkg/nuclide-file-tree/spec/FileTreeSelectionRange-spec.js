@@ -27,7 +27,6 @@ const tempCleanup = denodeify(tempModule.cleanup);
 import invariant from 'assert';
 
 describe('FileTreeSelectionRange', () => {
-
   function createNode(rootUri: NuclideUri, uri: NuclideUri): FileTreeNode {
     return new FileTreeNode({rootUri, uri}, DEFAULT_CONF);
   }
@@ -56,13 +55,11 @@ describe('FileTreeSelectionRange', () => {
   });
 
   describe('SelectionRange', () => {
-
     const key1 = new RangeKey('a', '1');
     const key2 = new RangeKey('a', '2');
     const key3 = new RangeKey('a', '3');
 
     it('properly construct the object', () => {
-
       const range = new SelectionRange(key1, key2);
       expect(range.anchor().equals(key1)).toBe(true);
       expect(range.range().equals(key2)).toBe(true);
@@ -90,7 +87,6 @@ describe('FileTreeSelectionRange', () => {
   });
 
   describe('RangeUtil', () => {
-
     const actions: FileTreeActions = FileTreeActions.getInstance();
     const store: FileTreeStore = FileTreeStore.getInstance();
 
@@ -205,7 +201,6 @@ describe('FileTreeSelectionRange', () => {
         invariant(node);
         expect(RangeUtil.findSelectedNode(node)).toBe(store.getNode(dir, bar1));
       });
-
     });
   });
 });

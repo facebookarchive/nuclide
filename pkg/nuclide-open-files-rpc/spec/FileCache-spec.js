@@ -30,7 +30,6 @@ function cacheToObject(cache: FileCache): Object {
 }
 
 describe('FileCache', () => {
-
   beforeEach(function() {
     addMatchers(this);
   });

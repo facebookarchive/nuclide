@@ -17,9 +17,7 @@ import * as Reducers from '../lib/redux/Reducers';
 import * as dummy from './dummy';
 
 describe('Reducers', () => {
-
   describe('SET_TASK_LISTS', () => {
-
     // Previously, this would change the active task. With the new behavior, we only want to change
     // the active task when the task list reaches a "stable" state. This way, we avoid seemingly
     // random changes in UI.
@@ -47,11 +45,8 @@ describe('Reducers', () => {
     });
 
     describe('initial visiblity', () => {
-
       describe("when there's no visiblity from the previous session", () => {
-
         describe("when there's a task to restore from the previous session", () => {
-
           it('shows the toolbar', () => {
             const initialState = {
               ...createEmptyAppState(),
@@ -81,7 +76,6 @@ describe('Reducers', () => {
             const finalState = [action].reduce(Reducers.app, initialState);
             expect(finalState.visible).toBe(false);
           });
-
         });
 
         it('hides the toolbar the first time tasks become ready without an active task', () => {
@@ -95,11 +89,9 @@ describe('Reducers', () => {
           const finalState = [action].reduce(Reducers.app, initialState);
           expect(finalState.visible).toBe(false);
         });
-
       });
 
       describe("when there's a serialized visibility from the previous session", () => {
-
         it('shows the toolbar if the value is true (even with no task)', () => {
           const initialState = {
             ...createEmptyAppState(),
@@ -125,15 +117,11 @@ describe('Reducers', () => {
           const finalState = [action].reduce(Reducers.app, initialState);
           expect(finalState.visible).toBe(false);
         });
-
       });
-
     });
-
   });
 
   describe('UNREGISTER_TASK_RUNNER', () => {
-
     it("doesn't leave an invalid task selected", () => {
       const taskRunner = new dummy.TaskRunner('previous-build-system');
       const initialState = {
@@ -151,11 +139,9 @@ describe('Reducers', () => {
       const finalState = [action].reduce(Reducers.app, initialState);
       expect(finalState.activeTaskId).toBe(null);
     });
-
   });
 
   describe('initial tasks', () => {
-
     it("prefers the previous session's active task", () => {
       expect(
         getInitialTask(
@@ -192,13 +178,11 @@ describe('Reducers', () => {
         ]),
       ).toEqual({type: 'enabled1', taskRunnerId: 'build-system'});
     });
-
   });
 
   // Though the visibility shouldn't be updated when the project root changes, the initial task
   // should.
   describe('initial tasks after the view is already initialized', () => {
-
     it("prefers the previous session's active task", () => {
       expect(
         getInitialTask(
@@ -263,9 +247,7 @@ describe('Reducers', () => {
         ),
       ).toEqual({type: 'three', taskRunnerId: 'build-system'});
     });
-
   });
-
 });
 
 function getInitialTask(

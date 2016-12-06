@@ -42,7 +42,6 @@ module.exports = {
   iterations: 2,
   repetitions: REPETITIONS,
   run: async (iteration: number): Object => {
-
     const claimedWindowLoadTime = atom.getWindowLoadTime();
 
     atom.packages.deactivatePackages();
@@ -114,6 +113,5 @@ module.exports = {
     // eslint-disable-next-line no-console
     console.log(JSON.stringify(result));
     return result;
-
   },
 };

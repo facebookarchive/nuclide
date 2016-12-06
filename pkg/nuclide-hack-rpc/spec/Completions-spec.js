@@ -37,9 +37,7 @@ const contents3 = `<?hh // strict
 HH\\fclass HackClass {}`;
 
 describe('Completions', () => {
-
   describe('compareHackCompletions()', () => {
-
     it('prefers prefix case sensitive matches to prefix case insensitive + alphabetical'
       + ' order', () => {
       const completions = [c1, c2];
@@ -115,7 +113,6 @@ describe('Completions', () => {
   });
 
   describe('convertCompletions', () => {
-
     it('normal', () => {
       const serviceResults: HackCompletionsResult = [
         {

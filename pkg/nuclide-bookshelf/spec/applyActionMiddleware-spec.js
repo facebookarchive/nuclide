@@ -29,7 +29,6 @@ import invariant from 'assert';
 import {Subject} from 'rxjs';
 
 describe('BookShelf applyActionMiddleware', () => {
-
   let fakeRepository: atom$Repository = (null: any);
 
   let oneRepoState: BookShelfState = (null: any);

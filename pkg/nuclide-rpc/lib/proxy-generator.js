@@ -273,7 +273,6 @@ function generateInterfaceProxy(def: InterfaceDefinition): any {
  * @returns A MethodDefinition node that can be added to a ClassBody.
  */
 function generateRemoteConstructor(className: string, constructorArgs: Array<Parameter>) {
-
   // arg0, .... argN
   const args = constructorArgs.map((arg, i) => t.identifier(`arg${i}`));
   // [arg0, ... argN]
@@ -444,7 +443,6 @@ function generateTransformStatement(id: any, type: Type, marshal: boolean): any 
  * @returns A babel AST node.
  */
 function objectToLiteral(obj: any): any {
-
   if (typeof obj === 'string') {
     return t.stringLiteral(obj);
   } else if (typeof obj === 'number') {

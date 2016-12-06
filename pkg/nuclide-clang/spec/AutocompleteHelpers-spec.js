@@ -17,7 +17,6 @@ const {
 } = __test__;
 
 describe('AutocompleteHelpers', () => {
-
   describe('@getCompletionBodyMultiLine', () => {
     it('converts method call with first argument being longest', () => {
       const completion = {

@@ -13,7 +13,6 @@ import PanelRenderer from '../PanelRenderer';
 import invariant from 'assert';
 
 describe('PanelRenderer', () => {
-
   it('defers item creation', () => {
     const createItem = jasmine.createSpy().andReturn({});
     const renderer = new PanelRenderer({location: 'top', createItem});
@@ -54,5 +53,4 @@ describe('PanelRenderer', () => {
     expect(item.destroy).toHaveBeenCalled();
     expect(item.destroy.calls.length).toBe(1);
   });
-
 });

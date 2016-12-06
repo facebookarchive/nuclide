@@ -33,7 +33,6 @@ function findHealthPaneAndItem(): {pane: ?atom$Pane, item: ?Object} {
 }
 
 describe('Health', () => {
-
   beforeEach(() => {
     waitsForPromise({label: 'workspace views to load', timeout: 10000}, async () => {
       jasmine.unspy(window, 'setTimeout');
@@ -84,5 +83,4 @@ describe('Health', () => {
       expect(findHealthPaneAndItem().item).toBeFalsy();
     }
   });
-
 });

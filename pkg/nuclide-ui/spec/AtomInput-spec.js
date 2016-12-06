@@ -20,7 +20,6 @@ function createWithProps(props: any): any {
 }
 
 describe('AtomInput', () => {
-
   afterEach(() => {
     if (reactElement) {
       ReactDOM.unmountComponentAtNode(ReactDOM.findDOMNode(reactElement).parentNode);
@@ -88,5 +87,4 @@ describe('AtomInput', () => {
     textEditor.setText('even more new text');
     expect(onDidChange.calls.length).toBe(1);
   });
-
 });

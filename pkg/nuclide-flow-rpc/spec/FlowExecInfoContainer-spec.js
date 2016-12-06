@@ -35,7 +35,6 @@ describe('FlowExecInfoContainer', () => {
 
   // Test this directly so caching doesn't get in the way
   describe('_computeFlowExecInfo', () => {
-
     describe('with flow-bin disallowed (default)', () => {
       describe('in a directory without flow-bin', () => {
         it('should return the system Flow binary', () => {

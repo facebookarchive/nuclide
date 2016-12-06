@@ -32,7 +32,6 @@ export async function callHHClient(
   errorStream: boolean,
   processInput: ?string,
   filePath: string): Promise<?(string | Object)> {
-
   if (!hhPromiseQueue) {
     hhPromiseQueue = new PromiseQueue();
   }

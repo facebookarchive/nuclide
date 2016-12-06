@@ -66,7 +66,6 @@ describe('stacktrace hook', () => {
   });
 
   it('doesn\'t screw up previous customization', () => {
-
     const customizedStack = 'There is no spoon';
     Error.prepareStackTrace = (_, frames) => {
       return customizedStack;

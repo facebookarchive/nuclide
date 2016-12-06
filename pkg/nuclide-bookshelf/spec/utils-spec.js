@@ -25,7 +25,6 @@ import Immutable from 'immutable';
 import {Subject} from 'rxjs';
 
 describe('BookShelf Utils', () => {
-
   describe('serialize/deserialize', () => {
     const REPO_PATH_1 = '/fake/path_1';
     const SHOTHEAD_1_1 = 'FOO';

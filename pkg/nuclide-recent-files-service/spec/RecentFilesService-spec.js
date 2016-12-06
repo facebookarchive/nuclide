@@ -119,6 +119,5 @@ describe('RecentFilesService', () => {
       invariant(recentFilesService);
       expect(recentFilesService.getRecentFiles().length).toEqual(0);
     });
-
   });
 });

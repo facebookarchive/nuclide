@@ -21,7 +21,6 @@ module.exports = {
       prefix: string,
     },
   ): Promise<?Array<{snippet: string, rightLabel: string}>> {
-
     const {editor, prefix} = request;
 
     // OCaml.Pervasives has a lot of stuff that gets shown on every keystroke without this.

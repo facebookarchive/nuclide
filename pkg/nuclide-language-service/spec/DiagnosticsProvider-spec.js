@@ -16,7 +16,6 @@ import type {LanguageService} from '../lib/LanguageService';
 import {clearRequireCache, uncachedRequire} from '../../nuclide-test-helpers';
 
 describe('DiagnosticsProvider', () => {
-
   let diagnosticsProvider: FileDiagnosticsProvider<LanguageService> = (null: any);
 
   beforeEach(() => {

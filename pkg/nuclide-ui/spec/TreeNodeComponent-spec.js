@@ -15,7 +15,6 @@ import {TreeNodeComponent} from '../TreeNodeComponent';
 import invariant from 'assert';
 
 describe('TreeNodeComponent', () => {
-
   let props;
   let treeNodeComponent;
 
@@ -50,7 +49,6 @@ describe('TreeNodeComponent', () => {
   });
 
   describe('rendering its icons', () => {
-
     // The package expects icons to have a `data-name` attribute with the name
     // of the file and for the list item in the tree to have the class names
     // 'entry', 'file', and 'list-item'.
@@ -70,11 +68,9 @@ describe('TreeNodeComponent', () => {
 
       expect(ReactDOM.findDOMNode(iconComponent).dataset.name).toEqual(label);
     });
-
   });
 
   describe('clicking a node', () => {
-
     it('calls its `onClick` callback', () => {
       const domNode = ReactDOM.findDOMNode(treeNodeComponent);
 
@@ -82,11 +78,9 @@ describe('TreeNodeComponent', () => {
       invariant(props);
       expect(props.onClick).toHaveBeenCalled();
     });
-
   });
 
   describe('clicking a node\'s arrow', () => {
-
     it('calls its `onClickArrow` callback, not its `onClick` callback', () => {
       const arrow = TestUtils.findRenderedDOMComponentWithClass(
           treeNodeComponent,
@@ -98,11 +92,9 @@ describe('TreeNodeComponent', () => {
       expect(props.onClick).not.toHaveBeenCalled();
       expect(props.onClickArrow).toHaveBeenCalled();
     });
-
   });
 
   describe('double clicking a node', () => {
-
     it('calls its `onDoubleClick` callback', () => {
       const domNode = ReactDOM.findDOMNode(treeNodeComponent);
 
@@ -110,7 +102,5 @@ describe('TreeNodeComponent', () => {
       invariant(props);
       expect(props.onDoubleClick).toHaveBeenCalled();
     });
-
   });
-
 });

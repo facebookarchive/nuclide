@@ -65,7 +65,6 @@ export const FileAppender: Object = {
 };
 
 export async function getDefaultConfig(): Promise<LoggingAppender> {
-
   if (!logDirectoryInitialized) {
     await fsPromise.mkdirp(LOG_DIRECTORY);
     logDirectoryInitialized = true;

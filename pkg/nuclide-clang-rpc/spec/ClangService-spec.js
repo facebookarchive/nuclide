@@ -12,7 +12,6 @@
 import {formatCode} from '..';
 
 describe('ClangService.formatCode', () => {
-
   it('uses clang-format correctly', () => {
     waitsForPromise(async () => {
       const spy = spyOn(require('../../commons-node/process'), 'checkOutput').andReturn({
@@ -30,5 +29,4 @@ describe('ClangService.formatCode', () => {
       );
     });
   });
-
 });

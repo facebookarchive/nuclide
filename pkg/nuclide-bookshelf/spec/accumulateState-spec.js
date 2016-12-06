@@ -25,7 +25,6 @@ import {getEmptBookShelfState} from '../lib/utils';
 import Immutable from 'immutable';
 
 describe('BookShelf accumulateState', () => {
-
   let fakeRepository: atom$Repository = (null: any);
   const REPO_PATH_1 = '/fake/path_1';
   const SHOTHEAD_1_1 = 'foo';
@@ -171,7 +170,6 @@ describe('BookShelf accumulateState', () => {
   });
 
   describe('UDATE_PANE_ITEM_STATE', () => {
-
     const OTHER_REPO_PARH = '/another/repo/path';
     let fakeEditor1: atom$TextEditor = (null: any);
     let fakeEditor2: atom$TextEditor = (null: any);

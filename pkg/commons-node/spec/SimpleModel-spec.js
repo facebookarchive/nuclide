@@ -29,7 +29,6 @@ class TestModel extends SimpleModel {
 }
 
 describe('SimpleModel', () => {
-
   it('updates state when setState is called', () => {
     const model = new TestModel();
     model.setState({count: 5});
@@ -51,5 +50,4 @@ describe('SimpleModel', () => {
       expect(await states).toEqual([{count: 0, other: true}, {count: 5, other: true}]);
     });
   });
-
 });

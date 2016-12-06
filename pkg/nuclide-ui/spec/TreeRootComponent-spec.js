@@ -698,7 +698,6 @@ describe('TreeRootComponent', () => {
   });
 
   describe('rendering', () => {
-
     it('creates one node for each unique path', () => {
       waitsForPromise(async () => {
         invariant(renderComponent);
@@ -716,7 +715,5 @@ describe('TreeRootComponent', () => {
         expect(renderedNodes.length).toBe(6);
       });
     });
-
   });
-
 });

@@ -25,7 +25,6 @@ import nuclideUri from '../pkg/commons-node/nuclideUri';
 import {generateHgRepo2Fixture} from '../pkg/nuclide-test-helpers';
 
 describe('Diff View Browse Mode Integration Test', () => {
-
   let localRepoPath: string = (null: any);
 
   beforeEach(() => {

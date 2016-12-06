@@ -15,9 +15,7 @@ import {Emitter} from 'event-kit';
 import {Observable, Subject, Subscription} from 'rxjs';
 
 describe('commons-node/tasks', () => {
-
   describe('observableFromTask', () => {
-
     it('calls start when subscribed', () => {
       const task = createMockTask();
       const observable = observableFromTask(task);
@@ -81,11 +79,9 @@ describe('commons-node/tasks', () => {
       task._progress(0.5);
       expect(handler).toHaveBeenCalledWith({type: 'progress', progress: 0.5});
     });
-
   });
 
   describe('taskFromObservable', () => {
-
     it('subscribes when started', () => {
       const observable = new Subject();
       spyOn(observable, 'subscribe').andCallThrough();
@@ -142,9 +138,7 @@ describe('commons-node/tasks', () => {
       observable.next({type: 'progress', progress: 0.5});
       expect(handler).toHaveBeenCalledWith(0.5);
     });
-
   });
-
 });
 
 function createMockTask() {

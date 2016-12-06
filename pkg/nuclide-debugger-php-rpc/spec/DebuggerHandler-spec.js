@@ -91,7 +91,6 @@ describe('debugger-php-rpc DebuggerHandler', () => {
   });
 
   it('stack', () => {
-
     waitsForPromise(async () => {
       connectionMultiplexer.getStackFrames = jasmine.createSpy('getStackFrames').andReturn(
         Promise.resolve({
@@ -166,8 +165,6 @@ describe('debugger-php-rpc DebuggerHandler', () => {
       jasmine.createSpy('pause').andReturn(Promise.resolve(true));
     handler.handleMethod(1, 'pause');
     expect(connectionMultiplexer.pause).toHaveBeenCalledWith();
-
-
   });
 
   it('continue from fake loader bp', () => {

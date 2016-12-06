@@ -12,7 +12,6 @@
 import {sanitizeNuclideUri} from '../lib/utils';
 
 describe('Utils Test Suite', () => {
-
   describe('sanitizeUri()', () => {
     it('returns a clean url from a normalized url version', () => {
       const normalizedUrl = 'nuclide:/abc.fb.com/some/path';
@@ -33,5 +32,4 @@ describe('Utils Test Suite', () => {
       expect(sanitizeNuclideUri(ftpUrl)).toBe(ftpUrl);
     });
   });
-
 });

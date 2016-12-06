@@ -62,7 +62,6 @@ function accumulateAddProjectRepository(
   state: BookShelfState,
   action: AddProjectRepositoryAction,
 ): BookShelfState {
-
   const repositoryPath = action.payload.repository.getWorkingDirectory();
   const newRepositoryState =
     state.repositoryPathToState.get(repositoryPath) ||
@@ -78,7 +77,6 @@ function accumulateRemoveProjectRepository(
   state: BookShelfState,
   action: RemoveProjectRepositoryAction,
 ): BookShelfState {
-
   const repositoryPath = action.payload.repository.getWorkingDirectory();
   return {
     ...state,

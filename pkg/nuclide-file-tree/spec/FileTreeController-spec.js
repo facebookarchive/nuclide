@@ -335,7 +335,6 @@ describe('FileTreeController', () => {
   });
 
   describe('multi-selection and range-selection', () => {
-
     const rootKey = nuclideUri.join(__dirname, 'fixtures') + '/';
     const dir0 = nuclideUri.join(__dirname, 'fixtures/dir0') + '/';
     const bar = nuclideUri.join(__dirname, 'fixtures/dir0/bar') + '/';
@@ -544,6 +543,5 @@ describe('FileTreeController', () => {
       expect(isSelected(rootKey, foo3)).toBe(true);
       expect(numSelected()).toBe(1);
     });
-
   });
 });

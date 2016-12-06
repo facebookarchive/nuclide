@@ -85,7 +85,6 @@ describe('QueryItem', () => {
       expect(item.score('bb')).not.toBe(null);
     });
   });
-
 });
 
 import {__test__} from '../lib/QueryItem';
@@ -97,7 +96,6 @@ const {
 } = __test__;
 
 describe('checkIfMatchesCamelCaseLetters', () => {
-
   it('matches when all letters in `needle` are present as uppercase letters in `haystack`', () => {
     expect(checkIfMatchesCamelCaseLetters('fbide', 'fbide')).toBe(false);
     expect(checkIfMatchesCamelCaseLetters('fbide', 'FBIDE')).toBe(true);
@@ -206,6 +204,5 @@ describe('importantCharactersForString', () => {
       importantCharactersForString('foobar'),
       new Set(['f', 'o']),
     )).toBe(true);
-
   });
 });

@@ -102,7 +102,6 @@ export class Dropdown extends React.Component {
         {selectedLabel}
       </DropdownButton>
     );
-
   }
 
   _renderSelectedLabel(option: ?Option): ?string {

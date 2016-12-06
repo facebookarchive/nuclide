@@ -27,7 +27,6 @@ const baseAppState = {
 };
 
 describe('getCurrentExecutorId', () => {
-
   it('gets the current executor', () => {
     expect(getCurrentExecutorId(baseAppState)).toBe('a');
   });
@@ -39,7 +38,6 @@ describe('getCurrentExecutorId', () => {
     };
     expect(getCurrentExecutorId(appState)).toBe('a');
   });
-
 });
 
 

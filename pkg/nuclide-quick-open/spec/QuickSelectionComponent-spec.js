@@ -68,7 +68,6 @@ xdescribe('QuickSelectionComponent', () => {
     items: {[key: string]: {[key: string]: Promise<{results: Array<any>}>}},
     callback: (component: QuickSelectionComponent) => void) {
     waitsForPromise(() => new Promise((resolve: (component: any) => any, reject) => {
-
       component.onItemsChanged(newItems => {
         resolve(component);
       });
@@ -84,7 +83,6 @@ xdescribe('QuickSelectionComponent', () => {
       advanceClock(250);
 
       component.clear();
-
     }).then(callback));
   }
 
@@ -101,7 +99,6 @@ xdescribe('QuickSelectionComponent', () => {
           }),
         },
       }, () => {
-
         const selectedItemIndex = component.getSelectedIndex();
         expect(selectedItemIndex.selectedDirectory).toBe('');
         expect(selectedItemIndex.selectedService).toBe('');
@@ -138,7 +135,6 @@ xdescribe('QuickSelectionComponent', () => {
           atom.commands.dispatch(componentNode, 'core:confirm');
         }));
       });
-
     });
 
     it('should cancel instead of selecting when there are no items', () => {
@@ -255,7 +251,6 @@ xdescribe('QuickSelectionComponent', () => {
         }).then(newIndex => {
           expect(newIndex.selectedItemIndex).toBe(2);
         }));
-
       });
     });
 
@@ -287,7 +282,6 @@ xdescribe('QuickSelectionComponent', () => {
           });
           component.moveSelectionToTop();
         }));
-
       });
     });
 
@@ -359,6 +353,5 @@ xdescribe('QuickSelectionComponent', () => {
       const editor = component.getInputTextEditor().getModel();
       expect(editor.getText()).toBe('foo');
     });
-
   });
 });

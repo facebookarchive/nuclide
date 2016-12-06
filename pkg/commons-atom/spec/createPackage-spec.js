@@ -12,7 +12,6 @@
 import createPackage from '../createPackage';
 
 describe('createPackage', () => {
-
   it('throws when the activation class contains an `activate()`', () => {
     class Activation {
       activate() {}
@@ -83,5 +82,4 @@ describe('createPackage', () => {
     const pkg = createPackage(B);
     expect('inheritedMethod' in pkg).toBe(true);
   });
-
 });

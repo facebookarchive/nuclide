@@ -16,7 +16,6 @@ import * as BuckService from '../../nuclide-buck-rpc';
 import ClangFlagsManager from '../lib/ClangFlagsManager';
 
 describe('ClangFlagsManager', () => {
-
   let flagsManager: ClangFlagsManager;
   let ownerSpy;
   let buildSpy;
@@ -243,5 +242,4 @@ describe('ClangFlagsManager', () => {
       expect(file).toBe(nuclideUri.join(__dirname, 'fixtures', 'compile_commands.json'));
     });
   });
-
 });

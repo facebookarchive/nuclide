@@ -13,7 +13,6 @@ import {LogTailer} from '../lib/LogTailer';
 import {Observable, Subject} from 'rxjs';
 
 describe('LogTailer', () => {
-
   it('invokes the running callback when there\'s no "starting" status', () => {
     const logTailer = new LogTailer({
       name: 'test',
@@ -241,5 +240,4 @@ describe('LogTailer', () => {
     expect(handleError).toHaveBeenCalled();
     expect(atom.notifications.addError).not.toHaveBeenCalled();
   });
-
 });

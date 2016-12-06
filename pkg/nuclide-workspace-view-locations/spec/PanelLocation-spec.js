@@ -13,7 +13,6 @@ import {PanelLocation} from '../lib/PanelLocation';
 import invariant from 'assert';
 
 describe('PanelLocation', () => {
-
   it('serializes the state', () => {
     const location = new PanelLocation('top-panel');
     location._handlePanelResize(720);

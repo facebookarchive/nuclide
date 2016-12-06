@@ -23,7 +23,6 @@ import {RemoteFile} from '../lib/RemoteFile';
 temp.track();
 
 describe('RemoteFile', () => {
-
   const computeDigest = contents => {
     const hash = crypto.createHash('sha1').update(contents || '');
     invariant(hash);

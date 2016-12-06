@@ -27,9 +27,7 @@ function getRootEpic() {
 }
 
 describe('Epics', () => {
-
   describe('TASK_STOPPED', () => {
-
     it('cancels the current task', () => {
       waitsForPromise(async () => {
         const task = taskFromObservable(new Subject());
@@ -60,11 +58,9 @@ describe('Epics', () => {
         expect(task.cancel).toHaveBeenCalled();
       });
     });
-
   });
 
   describe('RUN_TASK', () => {
-
     it('runs a task to completion', () => {
       waitsForPromise(async () => {
         const taskRunner = new dummy.TaskRunner();
@@ -118,9 +114,7 @@ describe('Epics', () => {
         expect(task.cancel).not.toHaveBeenCalled();
       });
     });
-
   });
-
 });
 
 function createMockStore(state: Object): Store {

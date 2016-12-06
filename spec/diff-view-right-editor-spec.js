@@ -29,7 +29,6 @@ function getResourceTextSync(filePath: string): string {
 }
 
 describe('Diff View Right Editor Save and Edit Test', () => {
-
   const TEST_FILE_NAME = 'test.txt';
   let repoPath: string = (null: any);
 

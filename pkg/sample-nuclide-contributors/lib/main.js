@@ -114,7 +114,6 @@ class Activation {
       invariant(pkg != null);
       pkg.activate();
     };
-
   }
 
   dispose(): void {

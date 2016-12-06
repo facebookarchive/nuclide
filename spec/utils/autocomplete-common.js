@@ -50,7 +50,6 @@ export function getAutocompleteSuggestions(): Array<AutocompleteSuggestion> {
       rightLabel,
     };
   });
-
 }
 
 export function getAutocompleteDescription(): ?string {

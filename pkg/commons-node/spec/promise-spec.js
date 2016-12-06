@@ -26,7 +26,6 @@ import {expectAsyncFailure} from '../../nuclide-test-helpers';
 import invariant from 'assert';
 
 describe('promises::asyncFind()', () => {
-
   it('Empty list of items should resolve to null.', () => {
     let isResolved = false;
     let observedResult;
@@ -171,7 +170,6 @@ describe('promises::denodeify()', () => {
 });
 
 describe('promises::serializeAsyncCall()', () => {
-
   it('Returns the same result when called after scheduled', () => {
     let i = 0;
     const asyncFunSpy = jasmine.createSpy('async');

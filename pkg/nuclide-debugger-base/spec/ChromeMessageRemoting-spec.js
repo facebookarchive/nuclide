@@ -15,7 +15,6 @@ import {
 } from '../lib/ChromeMessageRemoting';
 
 describe('debugger-base ChromeMessageRemoting', () => {
-
   it('translateMessageFromServer', () => {
     expect(translateMessageFromServer(
         'myhost',
@@ -88,5 +87,4 @@ describe('debugger-base ChromeMessageRemoting', () => {
           },
         }));
   });
-
 });

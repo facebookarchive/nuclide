@@ -493,7 +493,6 @@ class NuclideBridge {
     } else {
       return null;
     }
-
   }
 
   _handleLoaderBreakpoint() {

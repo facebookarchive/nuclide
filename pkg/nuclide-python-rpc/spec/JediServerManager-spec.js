@@ -13,7 +13,6 @@ import fsPromise from '../../commons-node/fsPromise';
 import JediServerManager from '../lib/JediServerManager';
 
 describe('JediServerManager', () => {
-
   let jediServerManager;
 
   beforeEach(() => {
@@ -78,5 +77,4 @@ describe('JediServerManager', () => {
       expect(topLevelModulePath).toBeNull;
     });
   });
-
 });

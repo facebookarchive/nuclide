@@ -259,8 +259,6 @@ export class NuxView {
     this._disposables.add(new Disposable(() =>
       dismissElement.removeEventListener('click', dismissElementClickListener),
     ));
-
-
   }
 
   _handleDisposableClick(

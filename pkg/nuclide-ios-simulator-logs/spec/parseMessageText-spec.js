@@ -12,7 +12,6 @@
 import {parseMessageText} from '../lib/parseMessageText';
 
 describe('parseMessageText', () => {
-
   /* eslint-disable max-len */
   const lines = [
     // TODO: Test no tags?
@@ -78,5 +77,4 @@ describe('parseMessageText', () => {
     expect(tags).toEqual(['abc', 'def']);
     expect(text).toBe('g]h');
   });
-
 });

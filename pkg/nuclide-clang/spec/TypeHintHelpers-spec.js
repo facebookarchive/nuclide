@@ -15,7 +15,6 @@ import libclang from '../lib/libclang';
 import TypeHintHelpers from '../lib/TypeHintHelpers';
 
 describe('TypeHintHelpers', () => {
-
   const mockEditor: atom$TextEditor = (null: any);
   let mockDeclaration;
   beforeEach(() => {
@@ -63,5 +62,4 @@ describe('TypeHintHelpers', () => {
       expect(hint).toBe(null);
     });
   });
-
 });

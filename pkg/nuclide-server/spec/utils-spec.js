@@ -105,5 +105,4 @@ describe('NuclideServer utils test', () => {
     const [str] = utils.deserializeArgs('http://localhost:8090/?' + querystring.stringify({args, argTypes}));
     expect(str).toBe('a d+');
   });
-
 });

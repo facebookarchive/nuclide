@@ -20,7 +20,6 @@ import {Observable} from 'rxjs';
 export default function createMessageStream(
   line$: Observable<string>,
 ): Observable<Message> {
-
   // Separate the lines into groups, beginning with metadata lines.
   const messages = Observable.create(observer => {
     let buffer = [];
@@ -86,7 +85,6 @@ export default function createMessageStream(
       // to just assume we have the complete entry and move on.
       sharedLine$.debounceTime(200).subscribe(flush),
     );
-
   })
   .map(createMessage);
 

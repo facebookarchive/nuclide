@@ -23,7 +23,6 @@ function createWithProps(props) {
 }
 
 describe('Checkbox', () => {
-
   beforeEach(() => {
     hostEl = document.createElement('div');
   });

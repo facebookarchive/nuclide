@@ -72,7 +72,6 @@ describe('MerlinService V 2.3.1', () => {
         const result = await merlinService.pushNewBuffer(filename, content);
         expect(JSON.stringify(result)).toBe(
           '{"cursor":{"line":2,"col":0},"marker":false}');
-
       });
     });
   });
@@ -105,7 +104,6 @@ describe('MerlinService V 2.3.1', () => {
 
         expect(JSON.stringify(result)).toBe(
           '{"cursor":{"line":1,"col":0},"marker":false,"file":"notderp.ml"}');
-
       });
     });
   });
@@ -200,7 +198,6 @@ describe('MerlinService V 2.5', () => {
         const result = await merlinService.pushNewBuffer(filename, content);
         expect(JSON.stringify(result)).toBe(
           '{"cursor":{"line":2,"col":0},"marker":false}');
-
       });
     });
   });
@@ -233,7 +230,6 @@ describe('MerlinService V 2.5', () => {
 
         expect(JSON.stringify(result)).toBe(
           '{"cursor":{"line":1,"col":0},"marker":false,"file":"notderp.ml"}');
-
       });
     });
   });

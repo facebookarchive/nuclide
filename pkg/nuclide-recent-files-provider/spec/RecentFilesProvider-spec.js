@@ -53,7 +53,6 @@ class Wrapper extends React.Component {
 }
 
 describe('RecentFilesProvider', () => {
-
   beforeEach(() => {
     provider = {...RecentFilesProvider};
     provider.setRecentFilesService(FakeRecentFilesService);
@@ -118,7 +117,6 @@ describe('RecentFilesProvider', () => {
 
   describe('Result rendering', () => {
     it('should render complete results', () => {
-
       const timestamp = Date.now();
       const mockResult = {
         path: '/some/arbitrary/path',
@@ -169,9 +167,6 @@ describe('RecentFilesProvider', () => {
         path: '/some/arbitrary/path',
         timestamp: now - 10 * DAYS,
       }).props.style.opacity).toEqual(0.6);
-
     });
-
   });
-
 });

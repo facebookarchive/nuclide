@@ -21,7 +21,6 @@ export default class SettingsCategory extends React.Component {
   props: Props;
 
   render(): ?React.Element<any> {
-
     const children = Object.keys(this.props.packages).sort().map(pkgName => {
       const pkgData = this.props.packages[pkgName];
       const settingsArray = getSortedSettingsArray(pkgData.settings, pkgName);

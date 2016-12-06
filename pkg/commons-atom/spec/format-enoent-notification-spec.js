@@ -14,7 +14,6 @@ import featureConfig from '../featureConfig';
 import invariant from 'assert';
 
 describe('formatEnoentNotification', () => {
-
   let formatted;
 
   beforeEach(() => {
@@ -56,5 +55,4 @@ describe('formatEnoentNotification', () => {
     invariant(formatted.meta.description != null);
     expect(/My-special-package/.test(formatted.meta.description)).toBe(true);
   });
-
 });

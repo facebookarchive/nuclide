@@ -13,7 +13,6 @@ import {observeStream} from '../stream';
 import Stream from 'stream';
 
 describe('commons-node/stream', () => {
-
   it('observeStream', () => {
     waitsForPromise(async () => {
       const input = ['foo\nbar', '\n', '\nba', 'z', '\nblar'];
@@ -48,5 +47,4 @@ describe('commons-node/stream', () => {
       expect(result).toBe(error);
     });
   });
-
 });

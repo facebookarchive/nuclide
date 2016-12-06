@@ -129,7 +129,6 @@ export function enforceReadOnly(textEditor: atom$TextEditor): void {
       return result;
     };
   }
-
 }
 
 // Turn off soft wrap setting for these editors so diffs properly align.

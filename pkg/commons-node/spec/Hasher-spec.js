@@ -12,7 +12,6 @@
 import Hasher from '../Hasher';
 
 describe('Hasher', () => {
-
   it('creates a new hash for each object', () => {
     const a = {};
     const b = {};
@@ -43,5 +42,4 @@ describe('Hasher', () => {
     expect(hasher.getHash('a')).toBe(hasher.getHash('a'));
     expect(hasher.getHash('a')).not.toBe(hasher.getHash('b'));
   });
-
 });

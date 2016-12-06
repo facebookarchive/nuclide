@@ -16,7 +16,6 @@ import {uncachedRequire, clearRequireCache} from '..';
 describe('Mocking Imports test suite', () => {
   // Tests ToBeTested.functionToTest while mocking imported function toBeMocked.
   it('Mocking imported dependencies', () => {
-
     // 1 - First mock all functions imported by the module under test
     const mock = spyOn(require('./toBeMocked'), 'importedFunction')
       .andReturn(45);

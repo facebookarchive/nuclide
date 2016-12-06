@@ -21,7 +21,6 @@ function sleep(milliSeconds: number): Promise<void> {
 }
 
 export function runTest(context: TestContext) {
-
   function providerTextExistsInDOM(
     element: Element,
     text: string,

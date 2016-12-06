@@ -30,7 +30,6 @@ process.env.NO_BUCKD = '1';
 // Line/column actual offsets are 0-indexed in this test, similar to what atom
 // provides as input.
 describe('PythonService', () => {
-
   beforeEach(function() {
     addMatchers(this);
   });
@@ -298,7 +297,6 @@ describe('PythonService', () => {
   });
 
   describe('Outlines', () => {
-
     function checkOutlineTree(testName: string) {
       waitsForPromise(async () => {
         const dirName = nuclideUri.join(__dirname, 'fixtures', 'outline-tests');
@@ -336,7 +334,6 @@ describe('PythonService', () => {
   });
 
   describe('Module Resolution', () => {
-
     it('can resolve imports that are relative to the top-level module', () => {
       const projectFile = nuclideUri.join(__dirname, 'fixtures/test-project/testdir/lib/test2.py');
       const src = fs.readFileSync(projectFile).toString('utf8');
@@ -358,7 +355,5 @@ describe('PythonService', () => {
         expect(completion.type).toEqual('function');
       });
     });
-
   });
-
 });

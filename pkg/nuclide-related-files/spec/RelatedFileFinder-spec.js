@@ -22,7 +22,6 @@ function mockFiles(files: Array<string>) {
 }
 
 describe('RelatedFileFinder', () => {
-
   describe('@find', () => {
     it('finds related file with a different extension', () => {
       waitsForPromise(async () => {
@@ -93,7 +92,5 @@ describe('RelatedFileFinder', () => {
         });
       });
     });
-
   });
-
 });

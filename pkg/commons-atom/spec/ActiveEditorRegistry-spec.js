@@ -278,7 +278,6 @@ describe('ActiveEditorRegistry', () => {
       activeEditorRegistry.consumeProvider(betterProvider);
       expect(resultFunction).toHaveBeenCalledWith(betterProvider, editor1);
     });
-
   });
 
   describe('when there is no provider', () => {

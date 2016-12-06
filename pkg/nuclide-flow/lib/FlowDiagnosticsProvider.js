@@ -225,7 +225,6 @@ class FlowDiagnosticsProvider {
     diagnostics: Array<Diagnostic>,
     currentFile: string,
   ): DiagnosticProviderUpdate {
-
     // convert array messages to Error Objects with Traces
     const fileDiagnostics = diagnostics.map(flowMessageToDiagnosticMessage);
 

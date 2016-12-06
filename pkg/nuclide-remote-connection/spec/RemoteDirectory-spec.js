@@ -22,7 +22,6 @@ temp.track();
 const FILE_MODE = 33188;
 
 describe('RemoteDirectory', () => {
-
   it('does have a existsSync() method', () => {
     const remoteDirectory = new RemoteDirectory(connectionMock, 'nuclide://example.com/');
     expect(remoteDirectory.existsSync()).toBe(true);

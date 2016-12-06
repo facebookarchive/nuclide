@@ -14,7 +14,6 @@ import {Range} from 'atom';
 const testPath = 'myPath';
 
 describe('FlowDiagnosticsProvider', () => {
-
   let flowDiagnosticsProvider: any;
 
   beforeEach(() => {
@@ -209,5 +208,4 @@ describe('FlowDiagnosticsProvider', () => {
         .toEqual(new Set(root2Paths));
     });
   });
-
 });

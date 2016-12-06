@@ -176,7 +176,6 @@ export class FlowRoot {
     position: atom$Point,
     prefix: string,
   ): Promise<Array<FlowAutocompleteItem>> {
-
     const options = {};
 
     const args = ['autocomplete', '--json', file];

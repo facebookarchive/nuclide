@@ -24,7 +24,6 @@ import {setLocalProject} from '../pkg/commons-atom/testHelpers';
 import invariant from 'assert';
 
 describe('Buck building via toolbar', () => {
-
   beforeEach(() => {
     waitsForPromise({timeout: 60000}, async () => {
       // Configure some jasmine specific things for integration testing.
@@ -151,7 +150,5 @@ describe('Buck building via toolbar', () => {
         return true;
       },
     );
-
   });
-
 });

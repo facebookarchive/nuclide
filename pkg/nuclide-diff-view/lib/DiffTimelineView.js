@@ -106,7 +106,6 @@ type RevisionsComponentProps = {
 };
 
 function RevisionsTimelineComponent(props: RevisionsComponentProps): React.Element<any> {
-
   const {revisions, compareRevisionId, revisionStatuses} = props;
   const latestToOldestRevisions = revisions.slice().reverse();
   const selectedIndex = latestToOldestRevisions.findIndex(
@@ -150,5 +149,4 @@ function RevisionsTimelineComponent(props: RevisionsComponentProps): React.Eleme
       </div>
     </div>
   );
-
 }

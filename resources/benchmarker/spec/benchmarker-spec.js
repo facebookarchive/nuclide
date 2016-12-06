@@ -45,7 +45,6 @@ atom.devMode = false;
 const {benchmarks: allBenchmarks, packages: allPackages} = getBenchmarksAndPackages();
 
 describe('Nuclide performance', () => {
-
   // Rehydrate the state of the benchmark run following a restart or a reload.
   const testState = getTestState();
   const {benchmarkIndex, iteration, repetition} = testState;
@@ -62,12 +61,10 @@ describe('Nuclide performance', () => {
   columns.unshift('iteration');
 
   it(benchmark.description, () => {
-
     // The Atom spec runner spies on setTimeout and neuters it, but we need it to work as intended.
     jasmine.unspy(window, 'setTimeout');
 
     waitsForPromise({timeout: benchmark.timeout}, async () => {
-
       // Load any packages that might have been passed in from the command line.
       await Promise.all(allPackages.map(p => atom.packages.activatePackage(p)));
 
@@ -115,10 +112,8 @@ describe('Nuclide performance', () => {
       setTestState(nextTestState);
       atom.reload();
       await sleep(5000);
-
     });
   });
-
 });
 
 function getBenchmarksAndPackages(): {benchmarks: Array<string>, packages: Array<string>} {

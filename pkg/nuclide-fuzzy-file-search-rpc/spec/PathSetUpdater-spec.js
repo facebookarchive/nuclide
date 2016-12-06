@@ -137,5 +137,4 @@ describe('PathSetUpdater', () => {
       });
     });
   });
-
 });

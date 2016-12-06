@@ -12,7 +12,6 @@
 import {AnalyticsBatcher} from '../lib/AnalyticsBatcher';
 
 describe('analytics - AnalyticsBatcher', () => {
-
   it('batching track calls', () => {
     const track = jasmine.createSpy('track');
     const batcher = new AnalyticsBatcher(track);
@@ -48,5 +47,4 @@ describe('analytics - AnalyticsBatcher', () => {
       {key: 'key2', values: {v1: 'value1'}},
     ]);
   });
-
 });

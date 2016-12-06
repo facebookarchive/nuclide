@@ -18,7 +18,6 @@ import {
 import WS from 'ws';
 
 describe('React Native Inspector', () => {
-
   beforeEach(() => {
     waitsForPromise(async () => {
       // Configure some jasmine specific things for integration testing.
@@ -55,7 +54,6 @@ describe('React Native Inspector', () => {
       }
     });
   });
-
 });
 
 function tryToConnect(): Promise<void> {

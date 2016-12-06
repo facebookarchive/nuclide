@@ -25,7 +25,6 @@ import {
 } from './utils/settings-pane-common';
 
 describe('Settings View Integration Test', () => {
-
   beforeEach(() => {
     // Activate nuclide packages.
     waitsForPromise(activateAllPackages);
@@ -72,7 +71,6 @@ describe('Settings View Integration Test', () => {
       }
       const tmpClangFlagsValue = ['-E', '-g'];
       testSettingsInput(clangFlagsKeyPath, clangFlagsValue, tmpClangFlagsValue);
-
     });
   });
 });

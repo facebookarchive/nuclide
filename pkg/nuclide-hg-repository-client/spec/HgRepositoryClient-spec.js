@@ -443,5 +443,4 @@ describe('HgRepositoryClient', () => {
       expect(spy).toHaveBeenCalled();
     });
   });
-
 });

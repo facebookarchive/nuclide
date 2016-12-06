@@ -30,7 +30,6 @@ module.exports = {
     text: string,
     range: atom$Range,
   ): Promise<?HyperclickSuggestion> {
-
     if (!GRAMMARS.has(textEditor.getGrammar().scopeName)) {
       return null;
     }

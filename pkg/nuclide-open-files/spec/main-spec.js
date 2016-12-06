@@ -17,7 +17,6 @@ import {getBufferAtVersion} from '../../nuclide-open-files-rpc';
 import {Subject} from 'rxjs';
 
 describe('nuclide-open-files', () => {
-
   let notifier: FileCache = (null: any);
 
   async function getFileCache(): Promise<FileCache> {
@@ -27,7 +26,6 @@ describe('nuclide-open-files', () => {
   }
 
   describe('observeFileEvents', () => {
-
     beforeEach(() => {
       waitsForPromise(async () => {
         reset();
@@ -275,7 +273,6 @@ describe('nuclide-open-files', () => {
   });
 
   describe('observeDirectoryEvents', () => {
-
     beforeEach(() => {
       waitsForPromise(async () => {
         reset();
@@ -328,7 +325,6 @@ describe('nuclide-open-files', () => {
   });
 
   describe('getBufferAtVersion', () => {
-
     beforeEach(() => {
       waitsForPromise(async () => {
         reset();

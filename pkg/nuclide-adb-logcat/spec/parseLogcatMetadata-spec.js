@@ -13,7 +13,6 @@ import invariant from 'assert';
 import parseLogcatMetadata from '../lib/parseLogcatMetadata';
 
 describe('parseLogcatMetadata', () => {
-
   const formats = [
     '[ 01-14 17:15:01.003   640:  654 I/ProcessStatsService ]',
     // Older versions use hex for the tid.
@@ -44,7 +43,6 @@ describe('parseLogcatMetadata', () => {
       it('parses the tag', () => {
         expect(parsed.tag).toBe('ProcessStatsService');
       });
-
     });
   });
 
@@ -55,5 +53,4 @@ describe('parseLogcatMetadata', () => {
     invariant(parsed != null);
     expect(parsed.tag).toBe('fb4a(:<default>):PeriodicForegroundScheduler');
   });
-
 });

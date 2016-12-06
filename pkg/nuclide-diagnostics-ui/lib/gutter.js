@@ -158,7 +158,6 @@ export function applyUpdateToEditor(
         });
         markers.add(highlightMarker);
       }
-
     } else {
       addMessageForRow(message, 0);
     }

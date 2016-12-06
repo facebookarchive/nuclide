@@ -643,7 +643,6 @@ export class ConnectionMultiplexer {
       (this._attachConnector == null ||
         this._launchConnector == null ||
         getConfig().endDebugWhenNoRequests)) {
-
       if (this._launchedScriptProcessPromise != null) {
         await this._launchedScriptProcessPromise;
         this._launchedScriptProcessPromise = null;

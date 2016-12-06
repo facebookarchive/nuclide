@@ -14,7 +14,6 @@ import ClangLinter from '../lib/ClangLinter';
 import * as range from '../../commons-atom/range';
 
 describe('ClangDiagnosticsProvider', () => {
-
   const TEST_PATH = '/path/test.cpp';
   const TEST_PATH2 = '/path/asdf';
 
@@ -167,5 +166,4 @@ describe('ClangDiagnosticsProvider', () => {
       ]);
     });
   });
-
 });

@@ -28,7 +28,6 @@ class Activation {
   contextViewRegistration: ?IDisposable;
 
   constructor() {
-
     this.provider = {
       getElementFactory: () => React.createFactory(DefinitionPreviewView),
       id: PROVIDER_ID,
@@ -57,7 +56,6 @@ export function activate(state: Object | void) {
   if (activation == null) {
     activation = new Activation();
   }
-
 }
 
 export function deactivate() {

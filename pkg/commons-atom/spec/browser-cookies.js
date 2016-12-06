@@ -12,7 +12,6 @@
 import browserCookies from '../browser-cookies';
 
 describe('browser', () => {
-
   describe('getCookies', () => {
     it('gets cookies for a domain', () => waitsForPromise(async () => {
       const cookies = await browserCookies.getCookies('example.com');
@@ -30,5 +29,4 @@ describe('browser', () => {
       expect(cookiesAfter.now).toBe(now);
     }));
   });
-
 });

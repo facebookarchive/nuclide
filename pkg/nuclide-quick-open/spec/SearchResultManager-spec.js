@@ -85,7 +85,6 @@ describe('SearchResultManager', () => {
     it('Should return OmniSearchProvider even if no actual providers are available.', () => {
       const renderableProviders = searchResultManager.getRenderableProviders();
       expect(renderableProviders).toEqual([_getOmniSearchProviderSpec()]);
-
     });
   });
 
@@ -112,7 +111,6 @@ describe('SearchResultManager', () => {
         expect(renderableProviders.length).toEqual(1);
         expect(providersChangedCallCount).toEqual(2);
       });
-
     });
   });
 
