@@ -468,9 +468,7 @@ export function activate(
 
   // Attempt to reload previously open projects.
   const remoteProjectsConfig = state && state.remoteProjectsConfig;
-  if (remoteProjectsConfig != null) {
-    reloadRemoteProjects(remoteProjectsConfig);
-  }
+  reloadRemoteProjects(remoteProjectsConfig || []);
   packageSubscriptions = subscriptions;
 }
 
