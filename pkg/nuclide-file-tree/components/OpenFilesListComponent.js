@@ -16,6 +16,7 @@ import classnames from 'classnames';
 import {PanelComponentScroller} from '../../nuclide-ui/PanelComponentScroller';
 import FileTreeHelpers from '../lib/FileTreeHelpers';
 import {track} from '../../nuclide-analytics';
+import {goToLocation} from '../../commons-atom/go-to-location';
 
 type OpenFileEntry = {
   name: string,
@@ -66,7 +67,7 @@ export class OpenFilesListComponent extends React.PureComponent {
     }
 
     track('filetree-open-from-open-files', {uri});
-    atom.workspace.open(uri, {searchAllPanes: true});
+    goToLocation(uri);
   }
 
   _onCloseClick(entry: OpenFileEntry, event: SyntheticEvent): void {
