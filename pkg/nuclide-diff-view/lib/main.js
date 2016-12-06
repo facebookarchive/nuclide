@@ -46,6 +46,7 @@ import DiffViewNavigatorComponent from './new-ui/DiffViewNavigatorComponent';
 import passesGK from '../../commons-node/passesGK';
 import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
 import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
+import {goToLocation} from '../../commons-atom/go-to-location';
 
 // Redux store
 import type {Store} from './types';
@@ -390,7 +391,7 @@ class Activation {
     if (diffEntityOptions.file) {
       const filePath = diffEntityOptions.file;
       // Activate the text editor of the file to be diffed.
-      textEditor = await atom.workspace.open(filePath, {searchAllPanes: true});
+      textEditor = await goToLocation(filePath);
     } else {
       getLogger().warn('Split Diff View can only diff files');
     }
