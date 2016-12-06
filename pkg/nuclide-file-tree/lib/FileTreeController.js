@@ -23,6 +23,7 @@ import {FileTreeStore} from './FileTreeStore';
 import Immutable from 'immutable';
 import {track} from '../../nuclide-analytics';
 import nuclideUri from '../../commons-node/nuclideUri';
+import {goToLocation} from '../../commons-atom/go-to-location';
 
 import os from 'os';
 import {shell} from 'electron';
@@ -202,7 +203,7 @@ class FileTreeController {
 
   _openAndRevealFilePath(filePath: ?string): void {
     if (filePath != null) {
-      atom.workspace.open(filePath);
+      goToLocation(filePath);
       this.revealNodeKey(filePath);
     }
   }
