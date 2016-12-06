@@ -19,7 +19,7 @@ import {RUNNING, PAUSED} from './constants';
 
 import type {
   RuntimeStatus,
-  IosDeviceInfo,
+  DeviceInfo,
   BreakpointId,
   BreakpointParams,
   PauseOnExceptionState,
@@ -305,7 +305,7 @@ export class ConnectionMultiplexer {
     return responses[0];
   }
 
-  async add(deviceInfo: IosDeviceInfo): Promise<void> {
+  async add(deviceInfo: DeviceInfo): Promise<void> {
     // Adding a new JS Context involves a few steps:
     // 1. Set up the connection to the device.
     const connection = this._connectToContext(deviceInfo);
@@ -319,7 +319,7 @@ export class ConnectionMultiplexer {
     ]);
   }
 
-  _connectToContext(deviceInfo: IosDeviceInfo): DebuggerConnection {
+  _connectToContext(deviceInfo: DeviceInfo): DebuggerConnection {
     const connection = new DebuggerConnection(this._freshConnectionId++, deviceInfo);
     this._disposables.add(
       connection

@@ -10,7 +10,7 @@
  */
 
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {connectToIwdp} from './connectToIwdp';
+import {connectToPackager} from './connectToPackager';
 import {ConnectionMultiplexer} from './ConnectionMultiplexer';
 import {logger} from './logger';
 
@@ -47,7 +47,8 @@ export class IwdpDebuggerService {
 
   attach(): Promise<string> {
     this._disposables.add(
-      connectToIwdp().subscribe(deviceInfo => {
+      // Changed in next diff.
+      connectToPackager().subscribe(deviceInfo => {
         log(`Got device info: ${JSON.stringify(deviceInfo)}`);
         this._connectionMultiplexer.add(deviceInfo);
       }),

@@ -17,7 +17,7 @@ import {logger} from './logger';
 import {RUNNING, PAUSED} from './constants';
 import invariant from 'assert';
 
-import type {IosDeviceInfo, RuntimeStatus} from './types';
+import type {DeviceInfo, RuntimeStatus} from './types';
 
 type Id = number;
 type onResponseReceived = (response: Object) => void;
@@ -45,17 +45,17 @@ export class DebuggerConnection {
   _id: number;
   _events: Subject<Object>;
   _connectionId: number;
-  _iosDeviceInfo: IosDeviceInfo;
+  _deviceInfo: DeviceInfo;
 
-  constructor(connectionId: number, iosDeviceInfo: IosDeviceInfo) {
-    this._iosDeviceInfo = iosDeviceInfo;
+  constructor(connectionId: number, deviceInfo: DeviceInfo) {
+    this._deviceInfo = deviceInfo;
     this._connectionId = connectionId;
     this._webSocket = null;
     this._events = new Subject();
     this._id = 0;
     this._pendingRequests = new Map();
     this._status = new BehaviorSubject(RUNNING);
-    const {webSocketDebuggerUrl} = iosDeviceInfo;
+    const {webSocketDebuggerUrl} = deviceInfo;
     const webSocket = new WS(webSocketDebuggerUrl);
     // It's not enough to just construct the websocket -- we have to also wait for it to open.
     this._webSocketPromise = new Promise(resolve => webSocket.on('open', () => resolve(webSocket)));
@@ -64,7 +64,7 @@ export class DebuggerConnection {
       () => webSocket.close(),
       socketMessages.subscribe(message => this._handleSocketMessage(message)),
     );
-    log(`DebuggerConnection created with device info: ${JSON.stringify(iosDeviceInfo)}`);
+    log(`DebuggerConnection created with device info: ${JSON.stringify(deviceInfo)}`);
   }
 
   async sendCommand(message: Object): Promise<Object> {
@@ -118,7 +118,7 @@ export class DebuggerConnection {
   }
 
   getName(): string {
-    return this._iosDeviceInfo.title;
+    return this._deviceInfo.title;
   }
 
   getStatus(): RuntimeStatus {

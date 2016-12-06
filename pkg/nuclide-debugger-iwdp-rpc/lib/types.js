@@ -8,14 +8,25 @@
  * @flow
  */
 
-export type IosDeviceInfo = {
+export type DeviceInfo = {
+  webSocketDebuggerUrl: string,
+  title: string,
+};
+
+export type IosDeviceInfo = DeviceInfo & {
   devtoolsFrontendUrl: string,
   faviconUrl: string,
   thumbnailUrl: string,
-  title: string,
   url: string,
-  webSocketDebuggerUrl: string,
   appId: string,
+};
+
+export type PackagerDeviceInfo = DeviceInfo & {
+  id: string,
+  description: string,
+  devtoolsFrontendUrl: string,
+  deviceId: string,
+  deviceName: string,
 };
 
 export type RuntimeStatus = 'RUNNING' | 'PAUSED';

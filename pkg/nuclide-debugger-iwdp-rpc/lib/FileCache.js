@@ -16,6 +16,8 @@ import nuclideUri from '../../commons-node/nuclideUri';
 import {logger} from './logger';
 
 const {log} = logger;
+// Android stock emulator uses a standard non-configurable local loopback alias: 10.0.2.2.
+const EMULATOR_LOCALHOST_ADDR = '10.0.2.2';
 
 type FileData = {
   filePath: string, // Path to file on disk.
@@ -83,7 +85,9 @@ export class FileCache {
 async function createFileData(url: URL): Promise<FileData> {
   // Handle the bundle file.
   log(`FileCache got url: ${url.toString()}`);
-  const fileResponse = await xfetch(url.toString(), {});
+  const localhostedUrl = url.toString().replace(EMULATOR_LOCALHOST_ADDR, 'localhost');
+  log(`Converted to: ${localhostedUrl}`);
+  const fileResponse = await xfetch(localhostedUrl, {});
   const basename = nuclideUri.basename(url.pathname);
   const [fileText, filePath] = await Promise.all([
     fileResponse.text(),
@@ -102,7 +106,10 @@ async function createFileData(url: URL): Promise<FileData> {
 
   // Handle source maps for the bundle.
   const sourceMapUrl = `${url.origin}${matches[1]}`;
-  const sourceMapResponse = await xfetch(sourceMapUrl, {});
+  const sourceMapResponse = await xfetch(
+    sourceMapUrl.replace(EMULATOR_LOCALHOST_ADDR, 'localhost'),
+    {},
+  );
   const sourceMap = await sourceMapResponse.text();
   const base64SourceMap = new Buffer(sourceMap).toString('base64');
   return {
