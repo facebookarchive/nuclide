@@ -27,7 +27,6 @@ export async function goToLocation(
     if (line != null) {
       goToLocationInEditor(currentEditor, line, column == null ? 0 : column, center);
     } else {
-      invariant(center !== true, 'goToLocation: Cannot center if no line specfied');
       invariant(column == null, 'goToLocation: Cannot specify just column');
     }
     return currentEditor;
