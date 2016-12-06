@@ -39,7 +39,7 @@ describe('BuckService (test-project-with-failing-targets)', () => {
   describe('.build(targets)', () => {
     it('generates report even if there are failing targets', () => {
       // First expensive buck operation gets a large timeout.
-      waitsForPromise({timeout: 15000}, async () => {
+      waitsForPromise({timeout: 30000}, async () => {
         const targets = ['//:good_rule', '//:bad_rule'];
         const report = await BuckService.build(buckRoot, targets);
         const expectedReport = {
