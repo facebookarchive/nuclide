@@ -10,6 +10,7 @@
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
+import typeof * as FileSystemService from '../../nuclide-server/lib/services/FileSystemService';
 
 import invariant from 'assert';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
@@ -40,7 +41,7 @@ export default class RelatedFileFinder {
   ): Promise<{relatedFiles: Array<string>, index: number}> {
     const dirName = nuclideUri.dirname(filePath);
     const prefix = getPrefix(filePath);
-    const service = getServiceByNuclideUri('FileSystemService', filePath);
+    const service: ?FileSystemService = getServiceByNuclideUri('FileSystemService', filePath);
     invariant(service);
     const listing = await service.readdir(nuclideUri.getPath(dirName));
     // Here the filtering logic:
@@ -49,6 +50,7 @@ export default class RelatedFileFinder {
     // check the wlFilelist: if empty, use filelist
     const filelist = listing
       .filter(otherFilePath => {
+        // $FlowFixMe stats may be null
         return otherFilePath.stats.isFile() && !otherFilePath.file.endsWith('~') &&
           getPrefix(otherFilePath.file) === prefix;
       });
