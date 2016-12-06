@@ -170,7 +170,7 @@ describe('debugger-php-rpc DbgpSocket', () => {
 
   it('runtimeEvaluate - continuation from eval with break', () => {
     waitsForPromise(async () => {
-      expect(dbgpSocket._pendingEvalTransactionIdStack.length).toBe(0);
+      expect(dbgpSocket._pendingEvalTransactionIds.size).toBe(0);
       dbgpSocket.runtimeEvaluate('foo()');
       testCallResult(
         'eval -i 1 -- Zm9vKCk=',
@@ -180,7 +180,7 @@ describe('debugger-php-rpc DbgpSocket', () => {
           transaction_id: '1',
         },
       );
-      expect(dbgpSocket._pendingEvalTransactionIdStack[0]).toBe(1);
+      expect([...dbgpSocket._pendingEvalTransactionIds][0]).toBe(1);
       dbgpSocket.sendContinuationCommand(COMMAND_RUN);
       expect(onStatus).toHaveBeenCalledWith(ConnectionStatus.Running);
       await testCallResult(
@@ -191,7 +191,7 @@ describe('debugger-php-rpc DbgpSocket', () => {
         },
       );
       expect(dbgpSocket._lastContinuationCommandTransactionId).toBe(null);
-      expect(dbgpSocket._pendingEvalTransactionIdStack.length).toBe(0);
+      expect(dbgpSocket._pendingEvalTransactionIds.size).toBe(0);
     });
   });
 

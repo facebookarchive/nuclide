@@ -134,7 +134,7 @@ export class DbgpSocket {
   _emitter: EventEmitter;
   _isClosed: boolean;
   _messageHandler: DbgpMessageHandler;
-  _pendingEvalTransactionIdStack: Array<number>;
+  _pendingEvalTransactionIds: Set<number>;
   _lastContinuationCommandTransactionId: ?number;
 
   constructor(socket: Socket) {
@@ -144,7 +144,7 @@ export class DbgpSocket {
     this._emitter = new EventEmitter();
     this._isClosed = false;
     this._messageHandler = getDbgpMessageHandlerInstance();
-    this._pendingEvalTransactionIdStack = [];
+    this._pendingEvalTransactionIds = new Set();
     this._lastContinuationCommandTransactionId = null;
 
     socket.on('end', this._onEnd.bind(this));
@@ -230,8 +230,12 @@ export class DbgpSocket {
   }
 
   _handleEvaluationCommand(transactionId: number, message: string): void {
-    invariant(this._pendingEvalTransactionIdStack.length > 0, 'No pending Eval Ids');
-    const lastEvalId = this._pendingEvalTransactionIdStack.pop();
+    invariant(this._pendingEvalTransactionIds.size > 0, 'No pending Eval Ids');
+    invariant(
+      this._pendingEvalTransactionIds.has(transactionId),
+      'Got evaluation response for a request that was never sent.',
+    );
+    this._pendingEvalTransactionIds.delete(transactionId);
     const continuationId = this._lastContinuationCommandTransactionId;
     if (continuationId == null) {
       return;
@@ -239,11 +243,7 @@ export class DbgpSocket {
     // In this case, we are processing the second response to our eval request.  So we can
     // complete the current continuation command promise, and then complete the original
     // eval command promise.
-    invariant(
-      lastEvalId === transactionId,
-      'Evaluation requests are being processed out of order.',
-    );
-    if (this._pendingEvalTransactionIdStack.length === 0) {
+    if (this._pendingEvalTransactionIds.size === 0) {
       // This is the last eval command before returning to the dummy connection entry-point, so
       // we will signal to the CM that the dummy connection is now un-viewable.
       this._emitStatus(ConnectionStatus.DummyIsHidden);
@@ -521,7 +521,7 @@ export class DbgpSocket {
   ): Promise<Object> {
     const transactionId = this._sendCommand(command, params);
     if (isEvaluationCommand(command)) {
-      this._pendingEvalTransactionIdStack.push(transactionId);
+      this._pendingEvalTransactionIds.add(transactionId);
     }
     const isContinuation = isContinuationCommand(command);
     if (isContinuation) {
