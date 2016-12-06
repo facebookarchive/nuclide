@@ -126,7 +126,7 @@ export class ServerLanguageService {
     if (buffer == null) {
       return null;
     }
-    return await this._service.getDiagnostics(filePath, buffer);
+    return this._service.getDiagnostics(filePath, buffer);
   }
 
   observeDiagnostics(): ConnectableObservable<FileDiagnosticUpdate> {
@@ -143,7 +143,7 @@ export class ServerLanguageService {
     if (buffer == null) {
       return [];
     }
-    return await this._service.getAutocompleteSuggestions(
+    return this._service.getAutocompleteSuggestions(
       filePath, buffer, position, activatedManually);
   }
 
@@ -156,7 +156,7 @@ export class ServerLanguageService {
     if (buffer == null) {
       return null;
     }
-    return await this._service.getDefinition(filePath, buffer, position);
+    return this._service.getDefinition(filePath, buffer, position);
   }
 
   getDefinitionById(
@@ -175,7 +175,7 @@ export class ServerLanguageService {
     if (buffer == null) {
       return null;
     }
-    return await this._service.findReferences(filePath, buffer, position);
+    return this._service.findReferences(filePath, buffer, position);
   }
 
   getCoverage(
@@ -192,7 +192,7 @@ export class ServerLanguageService {
     if (buffer == null) {
       return null;
     }
-    return await this._service.getOutline(filePath, buffer);
+    return this._service.getOutline(filePath, buffer);
   }
 
   async typeHint(fileVersion: FileVersion, position: atom$Point): Promise<?TypeHint> {
@@ -201,7 +201,7 @@ export class ServerLanguageService {
     if (buffer == null) {
       return null;
     }
-    return await this._service.typeHint(filePath, buffer, position);
+    return this._service.typeHint(filePath, buffer, position);
   }
 
   async highlight(
@@ -213,7 +213,7 @@ export class ServerLanguageService {
     if (buffer == null) {
       return [];
     }
-    return await this._service.highlight(filePath, buffer, position);
+    return this._service.highlight(filePath, buffer, position);
   }
 
   async formatSource(
@@ -225,7 +225,7 @@ export class ServerLanguageService {
     if (buffer == null) {
       return null;
     }
-    return await this._service.formatSource(filePath, buffer, range);
+    return this._service.formatSource(filePath, buffer, range);
   }
 
   async getEvaluationExpression(
@@ -237,7 +237,7 @@ export class ServerLanguageService {
     if (buffer == null) {
       return null;
     }
-    return await this._service.getEvaluationExpression(filePath, buffer, position);
+    return this._service.getEvaluationExpression(filePath, buffer, position);
   }
 
   getProjectRoot(fileUri: NuclideUri): Promise<?NuclideUri> {

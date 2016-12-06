@@ -203,13 +203,13 @@ export class DebuggerHandler extends Handler {
 
   async _getStackFrames(): Promise<Array<Object>> {
     const frames = await this._connectionMultiplexer.getStackFrames();
-    return await Promise.all(
+    return Promise.all(
       frames.stack.map((frame, frameIndex) => this._convertFrame(frame, frameIndex)));
   }
 
   async _getTopFrameForConnection(id: number): Promise<Object> {
     const frames = await this._connectionMultiplexer.getConnectionStackFrames(id);
-    return await this._convertFrame(frames.stack[0], 0);
+    return this._convertFrame(frames.stack[0], 0);
   }
 
   async _convertFrame(frame: Object, frameIndex: number): Promise<Object> {

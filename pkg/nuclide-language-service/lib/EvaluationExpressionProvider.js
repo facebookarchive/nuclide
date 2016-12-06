@@ -67,7 +67,7 @@ export class EvaluationExpressionProvider<T: LanguageService> {
         return null;
       }
 
-      return await (await languageService).getEvaluationExpression(
+      return (await languageService).getEvaluationExpression(
         fileVersion, position);
     });
   }

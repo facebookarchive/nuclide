@@ -31,7 +31,7 @@ const LLDB_PROCESS_ID_REGEX = /lldb -p ([0-9]+)/;
 
 async function getDebuggerService(): Promise<RemoteControlService> {
   atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
-  return await consumeFirstProvider('nuclide-debugger.remote');
+  return consumeFirstProvider('nuclide-debugger.remote');
 }
 
 async function debugBuckTarget(

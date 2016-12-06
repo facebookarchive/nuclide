@@ -162,7 +162,7 @@ export class AtomLanguageService<T: LanguageService> {
     if (languageService == null) {
       return false;
     }
-    return await (await languageService).isFileInProject(fileUri);
+    return (await languageService).isFileInProject(fileUri);
   }
 
   observeLanguageServices(): Observable<T> {

@@ -86,7 +86,7 @@ export default class PathSetUpdater {
       this._setupWatcherService();
     }
     invariant(this._watchmanClient);
-    return await this._watchmanClient.watchDirectoryRecursive(localDirectory);
+    return this._watchmanClient.watchDirectoryRecursive(localDirectory);
   }
 
   _removeWatchmanSubscription(subscription: WatchmanSubscription): void {

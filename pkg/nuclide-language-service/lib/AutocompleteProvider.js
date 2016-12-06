@@ -84,7 +84,7 @@ export class AutocompleteProvider<T: LanguageService> {
         }
         const position = editor.getLastCursor().getBufferPosition();
 
-        return await (await languageService).getAutocompleteSuggestions(
+        return (await languageService).getAutocompleteSuggestions(
           fileVersion, position, activatedManually == null ? false : activatedManually);
       });
   }

@@ -39,11 +39,11 @@ export class FlowVersion {
   async getVersion(): Promise<?string> {
     const lastVersion = this._lastVersion;
     if (lastVersion == null) {
-      return await this._queryAndSetVersion();
+      return this._queryAndSetVersion();
     }
     const msSinceReceived = Date.now() - lastVersion.receivedTime;
     if (msSinceReceived >= VERSION_TIMEOUT_MS) {
-      return await this._queryAndSetVersion();
+      return this._queryAndSetVersion();
     }
     return lastVersion.version;
   }

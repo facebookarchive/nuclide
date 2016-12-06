@@ -145,7 +145,7 @@ async function getCommitBasedArcConfigDirectory(filePath: string): Promise<?stri
   } else {
     configLookupPath = filePath;
   }
-  return await findArcConfigDirectory(configLookupPath);
+  return findArcConfigDirectory(configLookupPath);
 }
 
 

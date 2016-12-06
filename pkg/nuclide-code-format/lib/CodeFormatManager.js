@@ -79,7 +79,7 @@ export default class CodeFormatManager {
       return false;
     }
 
-    return await this._formatCodeInTextEditor(editor);
+    return this._formatCodeInTextEditor(editor);
   }
 
   // Formats code in the editor specified, returning whether or not the code

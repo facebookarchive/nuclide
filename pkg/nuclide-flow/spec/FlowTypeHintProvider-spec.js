@@ -54,7 +54,7 @@ describe('FlowTypeHintProvider', () => {
 
     const {FlowTypeHintProvider} = (uncachedRequire(require, TYPE_HINT_PROVIDER): any);
     typeHintProvider = new FlowTypeHintProvider();
-    return await typeHintProvider.typeHint(editor, position);
+    return typeHintProvider.typeHint(editor, position);
   }
 
   it('should return null when disabled', () => {

@@ -36,7 +36,7 @@ async function getCtagsService(
   if (service == null) {
     return null;
   }
-  return await service.getCtagsService(path);
+  return service.getCtagsService(path);
 }
 
 export default class QuickOpenHelpers {

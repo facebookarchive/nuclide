@@ -69,7 +69,7 @@ export class OutlineViewProvider<T: LanguageService> {
         return null;
       }
 
-      return await (await languageService).getOutline(fileVersion);
+      return (await languageService).getOutline(fileVersion);
     });
   }
 }

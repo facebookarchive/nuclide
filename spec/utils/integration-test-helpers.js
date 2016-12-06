@@ -155,7 +155,7 @@ export async function stopNuclideServer(
 export async function addRemoteProject(
   projectPath: string,
 ): Promise<?RemoteConnection> {
-  return await RemoteConnection._createInsecureConnectionForTesting(
+  return RemoteConnection._createInsecureConnectionForTesting(
     projectPath,
     SERVER_PORT,
   );

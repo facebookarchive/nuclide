@@ -274,7 +274,7 @@ describe('debugger-php-rpc DbgpSocket', () => {
         transaction_id: '1',
       },
         '<error code="1" apperr="42"><message>setBreakpoint error</message></error>');
-    waitsForPromise({shouldReject: true}, async () => (await call));
+    waitsForPromise({shouldReject: true}, async () => call);
   });
 
   it('removeBreakpoint', () => {
@@ -300,7 +300,7 @@ describe('debugger-php-rpc DbgpSocket', () => {
         transaction_id: '1',
       },
         '<error code="1" apperr="42"><message>removeBreakpoint error</message></error>');
-    waitsForPromise({shouldReject: true}, async () => (await call));
+    waitsForPromise({shouldReject: true}, async () => call);
   });
 
   it('getContextsForFrame', () => {

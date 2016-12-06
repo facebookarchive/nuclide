@@ -70,7 +70,7 @@ export class FindReferencesProvider<T: LanguageService> {
         return null;
       }
 
-      return await loadingNotification(
+      return loadingNotification(
         (await languageService).findReferences(fileVersion, position),
         `Loading references from ${this.name} server...`,
       );

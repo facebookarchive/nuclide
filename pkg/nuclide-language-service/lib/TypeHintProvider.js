@@ -69,7 +69,7 @@ export class TypeHintProvider<T: LanguageService> {
         return null;
       }
 
-      return await (await languageService).typeHint(fileVersion, position);
+      return (await languageService).typeHint(fileVersion, position);
     });
   }
 }

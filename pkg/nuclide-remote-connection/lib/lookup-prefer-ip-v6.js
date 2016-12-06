@@ -20,7 +20,7 @@ export default async function lookupPreferIpv6(
     return await lookup(host, 6);
   } catch (e) {
     if (e.code === 'ENOTFOUND') {
-      return await lookup(host, 4);
+      return lookup(host, 4);
     }
     throw e;
   }

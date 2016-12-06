@@ -70,7 +70,7 @@ class Activation {
           const service: RemoteCommandServiceType =
             getServiceByConnection(REMOTE_COMMAND_SERVICE, connection);
           const port = connection == null ? DUMMY_LOCAL_PORT : connection.getPort();
-          return await service.RemoteCommandService.registerAtomCommands(
+          return service.RemoteCommandService.registerAtomCommands(
             port, this._commands);
         });
   }

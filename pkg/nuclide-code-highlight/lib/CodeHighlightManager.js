@@ -78,7 +78,7 @@ export default class CodeHighlightManager {
       return [];
     }
 
-    return await provider.highlight(editor, position);
+    return provider.highlight(editor, position);
   }
 
   _hasEditorChanged(

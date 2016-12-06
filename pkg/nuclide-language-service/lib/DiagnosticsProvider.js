@@ -268,7 +268,7 @@ export class FileDiagnosticsProvider<T: LanguageService> {
       return null;
     }
 
-    return await (await languageService).getDiagnostics(fileVersion);
+    return (await languageService).getDiagnostics(fileVersion);
   }
 }
 

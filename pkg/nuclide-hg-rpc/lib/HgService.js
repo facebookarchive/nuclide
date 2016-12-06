@@ -635,7 +635,7 @@ export class HgService {
    */
   async getBaseRevision(): Promise<RevisionInfo> {
     const forkBaseName = await getForkBaseName(this._workingDirectory);
-    return await fetchRevisionInfo(
+    return fetchRevisionInfo(
       expressionForCommonAncestor(forkBaseName),
       this._workingDirectory,
     );
@@ -724,7 +724,7 @@ export class HgService {
       NO_HGPLAIN: concise, // `hg ssl` is likely user-defined.
       TTY_OUTPUT: ttyOutput,
     };
-    return await this._hgAsyncExecute(args, execOptions);
+    return this._hgAsyncExecute(args, execOptions);
   }
 
   _commitCode(
@@ -1021,7 +1021,7 @@ export class HgService {
     logger.info('origBackupPath:', origBackupPath);
     logger.info('filePath:', filePath);
     logger.info('origFilePath:', origFilePath);
-    return await fsPromise.exists(origFilePath);
+    return fsPromise.exists(origFilePath);
   }
 
   resolveConflictedFile(filePath: NuclideUri): Promise<void> {

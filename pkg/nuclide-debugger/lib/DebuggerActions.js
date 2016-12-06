@@ -111,7 +111,7 @@ class DebuggerActions {
 
   async _allowThreadsForPhp(processInfo: DebuggerProcessInfo): Promise<boolean> {
     if (processInfo.getServiceName() === 'hhvm') {
-      return await passesGK(GK_DEBUGGER_REQUEST_WINDOW);
+      return passesGK(GK_DEBUGGER_REQUEST_WINDOW);
     }
     return true;
   }

@@ -125,7 +125,7 @@ export class DataCache {
     // it only supports the current stack frame.  To work around this, we special-case evaluation
     // at the current stack depth.
     if (frameIndex === 0) {
-      return await this.runtimeEvaluate(frameIndex, expression);
+      return this.runtimeEvaluate(frameIndex, expression);
     }
 
     const evaluatedResult = await this._socket.evaluateOnCallFrame(frameIndex, expression);
@@ -165,13 +165,13 @@ export class DataCache {
     // context and single paged ids require getting children from the debuggee and converting
     // them from dbgp to chrome format.
     if (isContextObjectId(id)) {
-      return await this._getContextProperties(id);
+      return this._getContextProperties(id);
     } else if (isPagedObjectId(id)) {
       // Paged id's children are constructed directly in chrome format from the contents of the
       // object id. Does not require going to the debuggee.
       return getPagedProperties(id);
     } else {
-      return await this._getSinglePageOfProperties(id);
+      return this._getSinglePageOfProperties(id);
     }
   }
 

@@ -321,7 +321,7 @@ export class RpcConnection<TransportType: Transport> {
     } else if (this._transport.isClosed()) {
       logger.info('Dispose call on remote proxy after connection closed');
     } else {
-      return await this._sendMessageAndListenForResult(
+      return this._sendMessageAndListenForResult(
         createDisposeMessage(this._getProtocol(), this._generateRequestId(), objectId),
         'promise', `Disposing object ${objectId}`);
     }

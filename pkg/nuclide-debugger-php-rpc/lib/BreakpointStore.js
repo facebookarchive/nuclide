@@ -132,7 +132,7 @@ export class BreakpointStore {
 
   async removeBreakpoint(breakpointId: BreakpointId): Promise<any> {
     this._breakpoints.delete(breakpointId);
-    return await this._removeBreakpointFromConnections(breakpointId);
+    return this._removeBreakpointFromConnections(breakpointId);
   }
 
   /**
@@ -143,7 +143,7 @@ export class BreakpointStore {
   async setPauseOnExceptions(chromeId: BreakpointId, state: ExceptionState): Promise<void> {
     if (state !== EXCEPTION_PAUSE_STATE_ALL) {
       // Try to remove any existing exception breakpoint.
-      return await this._removePauseAllExceptionBreakpointIfNeeded();
+      return this._removePauseAllExceptionBreakpointIfNeeded();
     }
     this._pauseAllExceptionBreakpointId = chromeId;
 
@@ -161,7 +161,7 @@ export class BreakpointStore {
     const breakpointId = this._pauseAllExceptionBreakpointId;
     if (breakpointId) {
       this._pauseAllExceptionBreakpointId = null;
-      return await this._removeBreakpointFromConnections(breakpointId);
+      return this._removeBreakpointFromConnections(breakpointId);
     } else {
       // This can happen if users switch between 'none' and 'uncaught' states.
       logger.log('No exception breakpoint to remove.');

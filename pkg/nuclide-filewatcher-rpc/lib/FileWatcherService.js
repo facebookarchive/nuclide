@@ -86,7 +86,7 @@ async function getRealPath(entityPath: string, isFile: boolean): Promise<string>
       `FileWatcherService: expected ${entityPath} to be a ${isFile ? 'file' : 'directory'}`,
     );
   }
-  return await fsPromise.realpath(entityPath);
+  return fsPromise.realpath(entityPath);
 }
 
 export function watchDirectoryRecursive(

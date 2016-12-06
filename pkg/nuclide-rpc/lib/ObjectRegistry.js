@@ -223,7 +223,7 @@ export class ObjectRegistry {
     const objectId = this._idsByProxy.get(proxy);
     if (objectId != null) {
       this._idsByProxy.set(proxy, null);
-      return await objectId;
+      return objectId;
     } else {
       return null;
     }

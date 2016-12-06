@@ -69,7 +69,7 @@ export class TypeCoverageProvider<T: LanguageService> {
         return null;
       }
 
-      return await (await languageService).getCoverage(path);
+      return (await languageService).getCoverage(path);
     });
   }
 }

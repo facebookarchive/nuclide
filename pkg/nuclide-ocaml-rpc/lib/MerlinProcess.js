@@ -144,13 +144,13 @@ export class MerlinProcessV2_3_1 extends MerlinProcessBase {
   }
 
   async pushDotMerlinPath(file: NuclideUri): Promise<mixed> {
-    return await this._promiseQueue.submit(
+    return this._promiseQueue.submit(
       () => this.runSingleCommand(['reset', 'dot_merlin', [file], 'auto'], file),
     );
   }
 
   async pushNewBuffer(name: NuclideUri, content: string): Promise<mixed> {
-    return await this._promiseQueue.submit(async () => {
+    return this._promiseQueue.submit(async () => {
       await this.runSingleCommand(['reset', 'auto', name], name);
       // Clear the buffer.
       await this.runSingleCommand(['seek', 'exact', {line: 1, col: 0}], name);
@@ -168,7 +168,7 @@ export class MerlinProcessV2_3_1 extends MerlinProcessBase {
     col: number,
     kind: string,
   ): Promise<?{file: string, pos: {line: number, col: number}}> {
-    return await this._promiseQueue.submit(async () => {
+    return this._promiseQueue.submit(async () => {
       const location = await this.runSingleCommand(
         ['locate', /* identifier name */ '', kind, 'at', {line: line + 1, col}],
         file,
@@ -193,13 +193,14 @@ export class MerlinProcessV2_3_1 extends MerlinProcessBase {
     line: number,
     col: number,
   ): Promise<Array<MerlinType>> {
-    return await this._promiseQueue.submit(
+    // $FlowFixMe: runSingleCommand returns `Promise<Object>`, should me mixed.
+    return this._promiseQueue.submit(
       () => this.runSingleCommand(['type', 'enclosing', 'at', {line: line + 1, col}], file),
     );
   }
 
   async complete(file: NuclideUri, line: number, col: number, prefix: string): Promise<mixed> {
-    return await this._promiseQueue.submit(
+    return this._promiseQueue.submit(
       () => this.runSingleCommand(
         ['complete', 'prefix', prefix, 'at', {line: line + 1, col: col + 1}],
         file,
@@ -208,25 +209,29 @@ export class MerlinProcessV2_3_1 extends MerlinProcessBase {
   }
 
   async errors(path: NuclideUri): Promise<Array<MerlinError>> {
-    return await this._promiseQueue.submit(
+    // $FlowFixMe: runSingleCommand returns `Promise<Object>`, should me mixed.
+    return this._promiseQueue.submit(
       () => this.runSingleCommand(['errors'], path),
     );
   }
 
   async outline(path: NuclideUri): Promise<Array<MerlinOutline>> {
-    return await this._promiseQueue.submit(
+    // $FlowFixMe: runSingleCommand returns `Promise<Object>`, should me mixed.
+    return this._promiseQueue.submit(
       () => this.runSingleCommand(['outline'], path),
     );
   }
 
   async cases(path: NuclideUri, start: MerlinPosition, end: MerlinPosition): Promise<MerlinCases> {
-    return await this._promiseQueue.submit(
+    // $FlowFixMe: runSingleCommand returns `Promise<Object>`, should me mixed.
+    return this._promiseQueue.submit(
       () => this.runSingleCommand(['case', 'analysis', 'from', start, 'to', end], path),
     );
   }
 
   async occurrences(path: NuclideUri, line: number, col: number): Promise<MerlinOccurrences> {
-    return await this._promiseQueue.submit(
+    // $FlowFixMe: runSingleCommand returns `Promise<Object>`, should me mixed.
+    return this._promiseQueue.submit(
       () => this.runSingleCommand(
         ['occurrences', 'ident', 'at', {line: line + 1, col: col + 1}],
         path,
@@ -259,7 +264,7 @@ export class MerlinProcessV2_5 extends MerlinProcessBase {
   }
 
   async pushDotMerlinPath(file: NuclideUri): Promise<mixed> {
-    return await this._promiseQueue.submit(
+    return this._promiseQueue.submit(
       () => this.runSingleCommand(['reset', 'dot_merlin', [file], 'auto'], file, false),
     );
   }
@@ -272,7 +277,7 @@ export class MerlinProcessV2_5 extends MerlinProcessBase {
    * @return on success: a cursor position pointed at the end of the buffer
    */
   async pushNewBuffer(name: NuclideUri, content: string): Promise<mixed> {
-    return await this._promiseQueue.submit(
+    return this._promiseQueue.submit(
       () => this.runSingleCommand(['tell', 'start', 'end', content], name),
     );
   }
@@ -292,7 +297,7 @@ export class MerlinProcessV2_5 extends MerlinProcessBase {
     col: number,
     kind: string,
   ): Promise<?{file: string, pos: {line: number, col: number}}> {
-    return await this._promiseQueue.submit(async () => {
+    return this._promiseQueue.submit(async () => {
       const location = await this.runSingleCommand(
         ['locate', /* identifier name */ '', kind, 'at', {line: line + 1, col}],
         file,
@@ -317,7 +322,8 @@ export class MerlinProcessV2_5 extends MerlinProcessBase {
     line: number,
     col: number,
   ): Promise<Array<MerlinType>> {
-    return await this._promiseQueue.submit(
+    // $FlowFixMe: runSingleCommand returns `Promise<Object>`, should me mixed.
+    return this._promiseQueue.submit(
       () => this.runSingleCommand(
         ['type', 'enclosing', 'at', {line: line + 1, col}],
         file,
@@ -331,7 +337,7 @@ export class MerlinProcessV2_5 extends MerlinProcessBase {
     col: number,
     prefix: string,
   ): Promise<mixed> {
-    return await this._promiseQueue.submit(
+    return this._promiseQueue.submit(
       () => this.runSingleCommand(
         ['complete', 'prefix', prefix, 'at', {line: line + 1, col: col + 1}],
         file,
@@ -340,25 +346,29 @@ export class MerlinProcessV2_5 extends MerlinProcessBase {
   }
 
   async errors(path: NuclideUri): Promise<Array<MerlinError>> {
-    return await this._promiseQueue.submit(
+    // $FlowFixMe: runSingleCommand returns `Promise<Object>`, should me mixed.
+    return this._promiseQueue.submit(
       () => this.runSingleCommand(['errors'], path),
     );
   }
 
   async outline(path: NuclideUri): Promise<Array<MerlinOutline>> {
-    return await this._promiseQueue.submit(
+    // $FlowFixMe: runSingleCommand returns `Promise<Object>`, should me mixed.
+    return this._promiseQueue.submit(
       () => this.runSingleCommand(['outline'], path),
     );
   }
 
   async cases(path: NuclideUri, start: MerlinPosition, end: MerlinPosition): Promise<MerlinCases> {
-    return await this._promiseQueue.submit(
+    // $FlowFixMe: runSingleCommand returns `Promise<Object>`, should me mixed.
+    return this._promiseQueue.submit(
       () => this.runSingleCommand(['case', 'analysis', 'from', start, 'to', end], path),
     );
   }
 
   async occurrences(path: NuclideUri, line: number, col: number): Promise<MerlinOccurrences> {
-    return await this._promiseQueue.submit(
+    // $FlowFixMe: runSingleCommand returns `Promise<Object>`, should me mixed.
+    return this._promiseQueue.submit(
       () => this.runSingleCommand(
         ['occurrences', 'ident', 'at', {line: line + 1, col: col + 1}],
         path,

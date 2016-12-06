@@ -21,7 +21,7 @@ import {shellParse} from '../../commons-node/string';
 import type {Socket} from 'net';
 
 async function getHackRoot(filePath: string): Promise<?string> {
-  return await fsPromise.findNearestFile('.hhconfig', filePath);
+  return fsPromise.findNearestFile('.hhconfig', filePath);
 }
 
 export async function setRootDirectoryUri(directoryUri: string): Promise<void> {

@@ -37,7 +37,7 @@ async function resultFunction(
   if (path == null) {
     return null;
   }
-  return await provider.getCoverage(path);
+  return provider.getCoverage(path);
 }
 
 class Activation {

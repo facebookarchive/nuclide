@@ -77,7 +77,7 @@ export class DefinitionProvider<T: LanguageService> {
       if (languageService == null || fileVersion == null) {
         return null;
       }
-      return await (await languageService).getDefinition(fileVersion, position);
+      return (await languageService).getDefinition(fileVersion, position);
     });
   }
 
@@ -88,7 +88,7 @@ export class DefinitionProvider<T: LanguageService> {
         return null;
       }
 
-      return await (await languageService).getDefinitionById(filePath, id);
+      return (await languageService).getDefinitionById(filePath, id);
     });
   }
 }

@@ -232,7 +232,7 @@ export async function getHackProcess(
       processCache.delete(configDir);
     }
   });
-  return await hackProcess;
+  return hackProcess;
 }
 
 // Ensures that the only attached HackProcesses are those for the given configPaths.

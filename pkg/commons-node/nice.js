@@ -44,7 +44,7 @@ export async function niceCheckOutput(
   execOptions?: AsyncExecuteOptions,
 ): Promise<AsyncExecuteReturn> {
   const nicified = await nicifyCommand(command, args);
-  return await checkOutput(nicified.command, nicified.args, execOptions);
+  return checkOutput(nicified.command, nicified.args, execOptions);
 }
 
 export async function niceAsyncExecute(
@@ -53,7 +53,7 @@ export async function niceAsyncExecute(
   execOptions?: AsyncExecuteOptions,
 ): Promise<AsyncExecuteReturn> {
   const nicified = await nicifyCommand(command, args);
-  return await asyncExecute(nicified.command, nicified.args, execOptions);
+  return asyncExecute(nicified.command, nicified.args, execOptions);
 }
 
 async function nicifyCommand(

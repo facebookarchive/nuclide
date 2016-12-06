@@ -81,7 +81,7 @@ export default class JediServerManager {
       this._addTopLevelModulePath(src, server);
     }
 
-    return await server.getService();
+    return server.getService();
   }
 
   getLinkTreePaths(src: string): Promise<Array<string>> {

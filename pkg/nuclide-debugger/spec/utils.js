@@ -18,7 +18,7 @@ function getUniquePath(): string {
 
 async function createEditorWithUniquePath(): Promise<atom$TextEditor> {
   const path = getUniquePath();
-  return await atom.workspace.open(path);
+  return atom.workspace.open(path);
 }
 
 function hasBreakpointDecorationInRow(editor: atom$TextEditor, row: number): boolean {
