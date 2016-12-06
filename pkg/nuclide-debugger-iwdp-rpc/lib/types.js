@@ -38,3 +38,5 @@ export type BreakpointParams = {
   condition: string,
 };
 export type PauseOnExceptionState = 'none' | 'uncaught' | 'all';
+
+export type TargetEnvironment = 'iOS' | 'Android';

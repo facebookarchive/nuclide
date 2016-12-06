@@ -11,10 +11,12 @@
 
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {connectToPackager} from './connectToPackager';
+import {connectToIwdp} from './connectToIwdp';
 import {ConnectionMultiplexer} from './ConnectionMultiplexer';
 import {logger} from './logger';
 
-import type {ConnectableObservable} from 'rxjs';
+import type {ConnectableObservable, Observable} from 'rxjs';
+import type {DeviceInfo, TargetEnvironment} from './types';
 
 const {log} = logger;
 let lastServiceObjectDispose = null;
@@ -45,10 +47,10 @@ export class IwdpDebuggerService {
     return this._clientCallback.getServerMessageObservable().publish();
   }
 
-  attach(): Promise<string> {
+  attach(targetEnvironment: TargetEnvironment): Promise<string> {
+    const connection = connectToTarget(targetEnvironment);
     this._disposables.add(
-      // Changed in next diff.
-      connectToPackager().subscribe(deviceInfo => {
+      connection.subscribe(deviceInfo => {
         log(`Got device info: ${JSON.stringify(deviceInfo)}`);
         this._connectionMultiplexer.add(deviceInfo);
       }),
@@ -65,4 +67,13 @@ export class IwdpDebuggerService {
     this._disposables.dispose();
     return Promise.resolve();
   }
+}
+
+function connectToTarget(targetEnvironment: TargetEnvironment): Observable<DeviceInfo> {
+  if (targetEnvironment === 'iOS') {
+    return connectToIwdp();
+  } else if (targetEnvironment === 'Android') {
+    return connectToPackager();
+  }
+  throw new Error(`Unrecognized environment: ${targetEnvironment}`);
 }

@@ -12,19 +12,24 @@
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {IwdpDebuggerService} from '../../nuclide-debugger-iwdp-rpc/lib/IwdpDebuggerService';
 import type {DebuggerInstanceBase} from '../../nuclide-debugger-base';
+import type {TargetEnvironment} from '../../nuclide-debugger-iwdp-rpc/lib/types';
+
 
 import invariant from 'assert';
 import {DebuggerProcessInfo, DebuggerInstance} from '../../nuclide-debugger-base';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 export class AttachProcessInfo extends DebuggerProcessInfo {
-  constructor(targetUri: NuclideUri) {
+  _targetEnvironment: TargetEnvironment;
+
+  constructor(targetUri: NuclideUri, targetEnvironment: TargetEnvironment) {
     super('iwdp', targetUri);
+    this._targetEnvironment = targetEnvironment;
   }
 
   async debug(): Promise<DebuggerInstanceBase> {
     const rpcService = this._getRpcService();
-    await rpcService.attach();
+    await rpcService.attach(this._targetEnvironment);
     return new DebuggerInstance(this, rpcService);
   }
 

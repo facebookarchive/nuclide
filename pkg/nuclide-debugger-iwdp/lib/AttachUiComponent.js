@@ -12,12 +12,14 @@
 import {React} from 'react-for-atom';
 import {AttachProcessInfo} from './AttachProcessInfo';
 import {Button, ButtonTypes} from '../../nuclide-ui/Button';
+import {Dropdown} from '../../nuclide-ui/Dropdown';
 import {DebuggerLaunchAttachEventTypes} from '../../nuclide-debugger-base';
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 import {track} from '../../nuclide-analytics';
 
 import type EventEmitter from 'events';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {TargetEnvironment} from '../../nuclide-debugger-iwdp-rpc/lib/types';
 
 type PropsType = {
   targetUri: NuclideUri,
@@ -25,9 +27,13 @@ type PropsType = {
 };
 
 type StateType = {
-  selectedPathIndex: number,
-  pathMenuItems: Array<{label: string, value: number}>,
+  selectedEnvironment: TargetEnvironment,
 };
+
+const TARGET_ENVIRONMENTS = [
+  {label: 'iOS', value: 'iOS'},
+  {label: 'Android', value: 'Android'},
+];
 
 export class AttachUiComponent extends React.Component<void, PropsType, StateType> {
   props: PropsType;
@@ -37,28 +43,37 @@ export class AttachUiComponent extends React.Component<void, PropsType, StateTyp
     super(props);
     (this: any)._handleCancelButtonClick = this._handleCancelButtonClick.bind(this);
     (this: any)._handleAttachButtonClick = this._handleAttachButtonClick.bind(this);
-    (this: any)._handlePathsDropdownChange = this._handlePathsDropdownChange.bind(this);
+    (this: any)._handleDropdownChange = this._handleDropdownChange.bind(this);
     this.state = {
-      selectedPathIndex: 0,
-      pathMenuItems: this._getPathMenuItems(),
+      selectedEnvironment: 'iOS',
     };
   }
 
   componentWillMount() {
     this.props.parentEmitter.on(
       DebuggerLaunchAttachEventTypes.ENTER_KEY_PRESSED,
-      this._handleAttachButtonClick);
+      this._handleAttachButtonClick,
+    );
   }
 
   componentWillUnmount() {
     this.props.parentEmitter.removeListener(
       DebuggerLaunchAttachEventTypes.ENTER_KEY_PRESSED,
-      this._handleAttachButtonClick);
+      this._handleAttachButtonClick,
+    );
   }
 
   render(): React.Element<any> {
     return (
       <div className="block">
+        <div className="nuclide-debugger-php-launch-attach-ui-select-project">
+          <label>Environment: </label>
+          <Dropdown
+            options={TARGET_ENVIRONMENTS}
+            onChange={this._handleDropdownChange}
+            value={this.state.selectedEnvironment}
+          />
+        </div>
         <div className="padded text-right">
           <Button onClick={this._handleCancelButtonClick}>Cancel</Button>
           <Button
@@ -71,20 +86,15 @@ export class AttachUiComponent extends React.Component<void, PropsType, StateTyp
     );
   }
 
-  _getPathMenuItems(): Array<{label: string, value: number}> {
-    return [];
-  }
-
-  _handlePathsDropdownChange(newIndex: number): void {
+  _handleDropdownChange(selectedEnvironment: TargetEnvironment): void {
     this.setState({
-      selectedPathIndex: newIndex,
-      pathMenuItems: this._getPathMenuItems(),
+      selectedEnvironment,
     });
   }
 
   _handleAttachButtonClick(): void {
     track('nuclide-debugger-jsc-attach');
-    const processInfo = new AttachProcessInfo(this.props.targetUri);
+    const processInfo = new AttachProcessInfo(this.props.targetUri, this.state.selectedEnvironment);
     consumeFirstProvider('nuclide-debugger.remote')
       .then(debuggerService => debuggerService.startDebugging(processInfo));
     this._showDebuggerPanel();
