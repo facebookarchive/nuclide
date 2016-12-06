@@ -13,8 +13,25 @@ import {Subject} from 'rxjs';
 import type {Observable} from 'rxjs';
 import invariant from 'assert';
 
-// Opens the given file at the line/column.
-// By default will center the opened text editor.
+/**
+ * Opens the given file.
+ *
+ * Optionally include a line and column to navigate to. If a line is given, by default it will
+ * center it in the opened text editor.
+ *
+ * This should be preferred over `atom.workspace.open()` in typical cases. The motivations are:
+ * - We call `atom.workspace.open()` with the `searchAllPanes` option. This looks in other panes for
+ *   the current file, rather just opening a new copy in the current pane. People often forget this
+ *   option which typically leads to a subpar experience for people who use multiple panes.
+ * - When moving around in the current file, `goToLocation` explicitly publishes events that the nav
+ *   stack uses.
+ *
+ * Currently, `atom.workspace.open()` should be used only in these cases:
+ * - When the URI to open is not a file URI. For example, if we want to open some tool like find
+ *   references in a pane.
+ * - When we want to open an untitled file (providing no file argument). Currently, goToLocation
+ *   requires a file to open.
+ */
 export async function goToLocation(
   file: string,
   line?: number,
