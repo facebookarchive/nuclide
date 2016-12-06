@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+/* global localStorage */
+
 import type {ServerConnectionConfiguration} from './ServerConnection';
 
 import crypto from 'crypto';
@@ -43,7 +45,7 @@ function getStorageKey(host: string): string {
 }
 
 export function getConnectionConfig(host: string): ?ServerConnectionConfiguration {
-  const storedConfig = window.localStorage.getItem(getStorageKey(host));
+  const storedConfig = localStorage.getItem(getStorageKey(host));
   if (storedConfig == null) {
     return null;
   }
@@ -63,7 +65,7 @@ export function setConnectionConfig(config: ServerConnectionConfiguration): void
   }
 
   try {
-    window.localStorage.setItem(
+    localStorage.setItem(
       getStorageKey(config.host),
       JSON.stringify(encryptConfig(config)),
     );
@@ -74,7 +76,7 @@ export function setConnectionConfig(config: ServerConnectionConfiguration): void
 
 export async function clearConnectionConfig(host: string): Promise<void> {
   try {
-    window.localStorage.removeItem(getStorageKey(host));
+    localStorage.removeItem(getStorageKey(host));
   } catch (e) {
     logger.error(`Failed to clear configuration for ${host}.`, e);
   }

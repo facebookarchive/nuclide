@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+/* global requestAnimationFrame */
+
 import type {Store, TaskRunner} from '../types';
 
 import {bindObservableAsProps} from '../../../nuclide-ui/bindObservableAsProps';
@@ -30,7 +32,7 @@ export function createPanelItem(store: Store): Object {
   };
 
   const raf = Observable.create(observer => {
-    window.requestAnimationFrame(() => { observer.complete(); });
+    requestAnimationFrame(() => { observer.complete(); });
   });
 
   // $FlowFixMe: We need to teach Flow about Symbol.observable

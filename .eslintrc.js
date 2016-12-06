@@ -38,8 +38,6 @@ module.exports = {
     atom: false,
     document: false,
     window: false,
-    HTMLElement: false,
-    WebSocket: false,
   },
 
   rules: {

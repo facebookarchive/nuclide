@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+/* global getSelection */
+
 /**
  * Atom by default disables text selection by default on all the non editor
  * views. In order to enable it, in a container you need to add the props
@@ -29,7 +31,8 @@
 const ignoreTextSelectionEvents = (cb?: (e: SyntheticMouseEvent) => mixed) => {
   return (e: SyntheticMouseEvent) => {
     // Ignore text selection
-    if (window.getSelection().type === 'Range') {
+    const selection = getSelection();
+    if (selection != null && selection.type === 'Range') {
       e.preventDefault();
       return;
     }

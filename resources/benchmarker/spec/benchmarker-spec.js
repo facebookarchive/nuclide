@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+/* global sessionStorage */
 /* eslint-disable no-console */
 
 declare function waitsForPromise(
@@ -141,7 +142,7 @@ function getBenchmarksAndPackages(): {benchmarks: Array<string>, packages: Array
 }
 
 function getTestState(): Object {
-  const item = window.sessionStorage.getItem(RUN_STATE_KEY);
+  const item = sessionStorage.getItem(RUN_STATE_KEY);
   if (item) {
     try {
       return JSON.parse(item);
@@ -161,7 +162,7 @@ function setTestState(newState: Object): void {
   for (const key in newState) {
     state[key] = newState[key];
   }
-  window.sessionStorage.setItem(RUN_STATE_KEY, JSON.stringify(state));
+  sessionStorage.setItem(RUN_STATE_KEY, JSON.stringify(state));
 }
 
 function createResultDir(): string {

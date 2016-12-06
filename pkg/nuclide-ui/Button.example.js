@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+/* global alert */
+
 import {React} from 'react-for-atom';
 import {Button} from './Button';
 import {ButtonGroup} from './ButtonGroup';
@@ -153,7 +155,7 @@ const SplitButtonDropdownExample = (() => {
         value={2}
         onConfirm={
           // eslint-disable-next-line no-alert
-          x => window.alert(`You selected ${x}!`)
+          x => alert(`You selected ${x}!`)
         }
       />
     </div>

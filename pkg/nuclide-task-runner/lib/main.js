@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+/* global localStorage */
+
 import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 import type {
   AppState,
@@ -70,7 +72,7 @@ class Activation {
       // initializes so there's not a jump in the UI.
       showPlaceholderInitially: typeof previousSessionVisible === 'boolean'
         ? previousSessionVisible
-        : window.localStorage.getItem(SHOW_PLACEHOLDER_INITIALLY_KEY) === 'true',
+        : localStorage.getItem(SHOW_PLACEHOLDER_INITIALLY_KEY) === 'true',
     };
 
     const epics = Object.keys(Epics)
@@ -106,7 +108,7 @@ class Activation {
         .filter(state => state.viewIsInitialized)
         .map(state => state.visible)
         .subscribe(visible => {
-          window.localStorage.setItem(SHOW_PLACEHOLDER_INITIALLY_KEY, String(visible));
+          localStorage.setItem(SHOW_PLACEHOLDER_INITIALLY_KEY, String(visible));
         }),
 
       this._panelRenderer,

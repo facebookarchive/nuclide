@@ -12,13 +12,15 @@
 /* NON-TRANSPILED FILE */
 /* eslint comma-dangle: [1, always-multiline], prefer-object-spread/prefer-object-spread: 0 */
 
+/* global XMLHttpRequest, atob */
+
 require('../../nuclide-node-transpiler');
 
 /**
  * Override XHR.open to allow this page to be located outside the devtools
  * tree, and resources to be selectively mapped back into the devtools tree.
  */
-window.XMLHttpRequest.prototype.open = (function(original) {
+XMLHttpRequest.prototype.open = (function(original) {
   const unmappedUrlPrefixes = [
     'nuclide_',
   ];
@@ -35,7 +37,7 @@ window.XMLHttpRequest.prototype.open = (function(original) {
     }
     return original.call(this, method, newUrl, async, user, password);
   };
-})(window.XMLHttpRequest.prototype.open);
+})(XMLHttpRequest.prototype.open);
 
 // Originally defined in Runtime.js
 window.loadScriptsPromise = (function(original) {
@@ -52,7 +54,7 @@ window.InspectorFrontendHost = {
   loadNetworkResource(url, headers, streamId, callback) {
     const dataPrefix = 'data:application/json;base64,';
     if (url.startsWith(dataPrefix)) {
-      const response = window.atob(url.slice(dataPrefix.length));
+      const response = atob(url.slice(dataPrefix.length));
       window.WebInspector.Streams.streamWrite(streamId, response);
       callback({statusCode: 200});
     } else {

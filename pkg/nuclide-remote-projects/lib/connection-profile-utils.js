@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+/* global localStorage */
+
 import type {
   NuclideRemoteConnectionProfile,
   NuclideSavedConnectionDialogConfig,
@@ -35,10 +37,11 @@ export function getDefaultConnectionProfile(): NuclideRemoteConnectionProfile {
   const currentOfficialRSC = defaultConnectionSettings.remoteServerCommand;
 
   const rawLastConnectionDetails =
-    window.localStorage.getItem('nuclide:nuclide-remote-projects:lastConnectionDetails');
+    localStorage.getItem('nuclide:nuclide-remote-projects:lastConnectionDetails');
 
   let lastConnectionDetails: ?NuclideSavedConnectionDialogConfig;
   try {
+    // $FlowIgnore: null is ok here
     lastConnectionDetails = JSON.parse(rawLastConnectionDetails);
   } catch (err) {
     // nothing to do...
@@ -135,7 +138,7 @@ export function saveConnectionConfig(
   // SshConnectionConfiguration's sshPort type is 'number', but we want to save
   // everything as strings.
   updatedConfig.sshPort = String(config.sshPort);
-  window.localStorage.setItem(
+  localStorage.setItem(
     'nuclide:nuclide-remote-projects:lastConnectionDetails',
     JSON.stringify({
       updatedConfig,

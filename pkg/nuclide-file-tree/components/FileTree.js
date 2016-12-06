@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+/* global requestAnimationFrame, cancelAnimationFrame */
 
 import {FileTreeStore} from '../lib/FileTreeStore';
 import {React, ReactDOM} from 'react-for-atom';
@@ -63,7 +64,7 @@ export class FileTree extends React.Component {
       atom.themes.onDidChangeActiveThemes(
         () => {
           this._initialHeightMeasured = false;
-          this._afRequestId = window.requestAnimationFrame(() => {
+          this._afRequestId = requestAnimationFrame(() => {
             this._afRequestId = null;
             this._measureHeights();
           });
@@ -77,7 +78,7 @@ export class FileTree extends React.Component {
 
   componentWillUnmount(): void {
     if (this._afRequestId != null) {
-      window.cancelAnimationFrame(this._afRequestId);
+      cancelAnimationFrame(this._afRequestId);
     }
     this._disposables.dispose();
   }

@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+/* global MouseEvent */
+
 import invariant from 'assert';
 import BreakpointDisplayController from '../lib/BreakpointDisplayController';
 import BreakpointStore from '../lib/BreakpointStore';
@@ -34,7 +36,7 @@ describe('BreakpointDisplayController', () => {
   function simulateClickAtBufferPosition(target: EventTarget, row: number) {
     const editorView = atom.views.getView(editor);
     const position = editorView.pixelPositionForBufferPosition([row, 0]);
-    const event = new window.MouseEvent('click', {
+    const event = new MouseEvent('click', {
       clientX: position.left,
       clientY: position.top,
       bubbles: true,

@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+/* global HTMLElement */
+
 import type SuggestionListType from './SuggestionList';
 
 import {CompositeDisposable, Disposable} from 'atom';

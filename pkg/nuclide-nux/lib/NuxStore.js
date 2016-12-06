@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+/* global localStorage */
+
 import {Emitter} from 'atom';
 
 import type {
@@ -51,7 +53,8 @@ export class NuxStore {
     }
 
     const nuclideNuxState = new Map(
-      JSON.parse(window.localStorage.getItem(NUX_SAVED_STORE)),
+      // $FlowIgnore: null is ok here
+      JSON.parse(localStorage.getItem(NUX_SAVED_STORE)),
     );
     const fbNuxState = new NuxBackendCache().getNuxStatus();
 
@@ -83,7 +86,7 @@ export class NuxStore {
   }
 
   _saveNuxState(): void {
-    window.localStorage.setItem(
+    localStorage.setItem(
       NUX_SAVED_STORE,
       // $FlowIgnore -- Flow thinks the spread operator is incompatible with Maps
       JSON.stringify([...this._nuxMap]),

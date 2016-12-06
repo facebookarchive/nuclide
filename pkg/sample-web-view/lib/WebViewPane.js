@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+/* global HTMLElement */
+
 import {CompositeDisposable, Emitter} from 'atom';
 
 class WebViewPane extends HTMLElement {

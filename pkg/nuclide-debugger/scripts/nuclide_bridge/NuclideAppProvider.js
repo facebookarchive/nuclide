@@ -48,7 +48,7 @@ class NuclideApp extends WebInspector.App {
       sourcesPanel.sidebarPaneView = null;
       sourcesPanel._dockSideChanged();
 
-      window.WebInspector.inspectorView.showInitialPanel();
+      WebInspector.inspectorView.showInitialPanel();
       sourcesPanel._splitView.hideMain();
       rootView.attachToDocument(document);
     // eslint-disable-next-line no-console

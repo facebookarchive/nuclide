@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+/* global getSelection */
+
 import type {FindReferencesReturn} from './rpc-types';
 
 import crypto from 'crypto';
@@ -167,8 +169,11 @@ export function activate(state: ?any): void {
     'nuclide-find-references-view',
     'core:copy',
     () => {
-      const selectedText = window.getSelection().toString();
-      atom.clipboard.write(selectedText);
+      const selection = getSelection();
+      if (selection != null) {
+        const selectedText = selection.toString();
+        atom.clipboard.write(selectedText);
+      }
     },
   ));
 }

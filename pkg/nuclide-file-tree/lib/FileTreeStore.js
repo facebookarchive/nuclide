@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+/* global requestAnimationFrame, cancelAnimationFrame */
+
 import type {FileChangeStatusValue} from '../../commons-atom/vcs';
 
 import FileTreeDispatcher, {ActionTypes} from './FileTreeDispatcher';
@@ -543,10 +545,10 @@ export class FileTreeStore {
     }
 
     if (this._animationFrameRequestId != null) {
-      window.cancelAnimationFrame(this._animationFrameRequestId);
+      cancelAnimationFrame(this._animationFrameRequestId);
     }
 
-    this._animationFrameRequestId = window.requestAnimationFrame(() => {
+    this._animationFrameRequestId = requestAnimationFrame(() => {
       const {performance} = global;
       const renderStart = performance.now();
       const childrenCount = this.roots.reduce((sum, root) => sum + root.shownChildrenBelow, 0);

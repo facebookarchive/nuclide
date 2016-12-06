@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+/* global getComputedStyle */
+
 import {
   activateAllPackages,
   jasmineIntegrationTestSetup,
@@ -44,7 +46,7 @@ function isOutlineViewVisible(): boolean {
   let el = document.querySelector('.nuclide-outline-view');
   if (el == null) { return false; }
   while (el != null) {
-    const style = window.getComputedStyle(el);
+    const style = getComputedStyle(el);
     if (style.display === 'none' || style.visibility === 'hidden') { return false; }
     el = el.parentElement;
   }

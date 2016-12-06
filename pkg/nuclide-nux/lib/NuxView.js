@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+/* global getComputedStyle */
+
 import {CompositeDisposable, Disposable} from 'atom';
 import debounce from '../../commons-node/debounce';
 import {maybeToString} from '../../commons-node/string';
@@ -143,7 +145,7 @@ export class NuxView {
       if (element.style.position !== 'fixed') {
         isHidden = element.offsetParent === null;
       } else {
-        isHidden = window.getComputedStyle(element).display === 'none';
+        isHidden = getComputedStyle(element).display === 'none';
       }
       if (isHidden) {
         // Consider the NUX to be dismissed and mark it as completed.

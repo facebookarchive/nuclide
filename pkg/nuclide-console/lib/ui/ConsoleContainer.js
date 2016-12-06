@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+/* global requestAnimationFrame */
+
 import type {Viewable} from '../../../nuclide-workspace-views/lib/types';
 import type {
   AppState,
@@ -138,7 +140,9 @@ export class ConsoleContainer extends React.Component {
 
   componentDidMount() {
     const raf = Observable.create(observer => {
-      window.requestAnimationFrame(observer.complete.bind(observer));
+      requestAnimationFrame(timestamp => {
+        observer.complete(timestamp);
+      });
     });
     // $FlowFixMe: How do we tell flow about Symbol.observable?
     this._statesSubscription = Observable.from(this.props.store)

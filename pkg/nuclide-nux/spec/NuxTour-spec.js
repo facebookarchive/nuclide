@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+/* global localStorage */
+
 import {CompositeDisposable} from 'atom';
 
 import {NuxManager} from '../lib/NuxManager';
@@ -48,8 +50,8 @@ describe('NuxTour', () => {
   beforeEach(() => {
     disposables = new CompositeDisposable();
     // Save viewed state of NUXes
-    nuclideNuxState = window.localStorage.getItem(NUX_SAVED_STORE);
-    window.localStorage.clear();
+    nuclideNuxState = localStorage.getItem(NUX_SAVED_STORE);
+    localStorage.clear();
 
     nuxStore = new NuxStore();
     disposables.add(nuxStore);
@@ -58,9 +60,9 @@ describe('NuxTour', () => {
   afterEach(() => {
     disposables.dispose();
     // Restore viewed state of NUXes
-    window.localStorage.setItem(
+    localStorage.setItem(
       NUX_SAVED_STORE,
-      nuclideNuxState,
+      String(nuclideNuxState),
     );
   });
 

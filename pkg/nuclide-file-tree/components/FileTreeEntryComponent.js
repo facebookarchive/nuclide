@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+/* global requestAnimationFrame */
+
 import type {FileTreeNode} from '../lib/FileTreeNode';
 
 import FileTreeActions from '../lib/FileTreeActions';
@@ -342,7 +344,7 @@ export class FileTreeEntryComponent extends React.Component {
     nativeEvent.dataTransfer.effectAllowed = 'move';
     nativeEvent.dataTransfer.setDragImage(fileIcon, -8, -4);
     nativeEvent.dataTransfer.setData('initialPath', this.props.node.uri);
-    window.requestAnimationFrame(() => document.body.removeChild(fileIcon));
+    requestAnimationFrame(() => document.body.removeChild(fileIcon));
   }
 
   _onDragOver(event: SyntheticDragEvent) {

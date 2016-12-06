@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+/* global requestAnimationFrame, cancelAnimationFrame */
+
 import type {FileChangeStatusValue} from '../../commons-atom/vcs';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
@@ -107,7 +109,7 @@ class FileTreeSidebarComponent extends React.Component {
     this._processExternalUpdate();
 
     window.addEventListener('resize', this._onViewChange);
-    this._afRequestId = window.requestAnimationFrame(() => {
+    this._afRequestId = requestAnimationFrame(() => {
       this._onViewChange();
       this._afRequestId = null;
     });
@@ -125,7 +127,7 @@ class FileTreeSidebarComponent extends React.Component {
       () => {
         window.removeEventListener('resize', this._onViewChange);
         if (this._afRequestId != null) {
-          window.cancelAnimationFrame(this._afRequestId);
+          cancelAnimationFrame(this._afRequestId);
         }
       },
     );

@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+/* global requestAnimationFrame, cancelAnimationFrame, getComputedStyle */
+
 import {CompositeDisposable} from 'atom';
 import {PanelComponentScroller} from './PanelComponentScroller';
 import {React, ReactDOM} from 'react-for-atom';
@@ -77,7 +79,7 @@ export class PanelComponent extends React.Component {
     // Note: This method is called via `requestAnimationFrame` rather than `process.nextTick` like
     // Atom's tree-view does because this does not have a guarantee a paint will have already
     // happened when `componentDidMount` gets called the first time.
-    this._animationFrameRequestId = window.requestAnimationFrame(this._repaint.bind(this));
+    this._animationFrameRequestId = requestAnimationFrame(this._repaint.bind(this));
   }
 
   componentWillUnmount() {
@@ -85,7 +87,7 @@ export class PanelComponent extends React.Component {
       this._resizeSubscriptions.dispose();
     }
     if (this._animationFrameRequestId != null) {
-      window.cancelAnimationFrame(this._animationFrameRequestId);
+      cancelAnimationFrame(this._animationFrameRequestId);
     }
   }
 
@@ -97,7 +99,7 @@ export class PanelComponent extends React.Component {
    */
   _repaint() {
     const element = ReactDOM.findDOMNode(this);
-    const isVisible = window.getComputedStyle(element, null).getPropertyValue('visibility');
+    const isVisible = getComputedStyle(element).getPropertyValue('visibility');
 
     if (isVisible) {
       // Force a redraw so the scrollbars are styled correctly based on the theme

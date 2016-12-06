@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+/* global MouseEvent */
+
 import {sleep} from '../pkg/commons-node/promise';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import activation from '../pkg/nuclide-task-runner';
@@ -86,7 +88,7 @@ describe('Buck building via toolbar', () => {
     runs(() => {
       // Focus on the build toolbar target field.
       targetField = combobox.querySelector('atom-text-editor');
-      const event = new window.MouseEvent('focus');
+      const event = new MouseEvent('focus');
       targetField.dispatchEvent(event);
     });
 

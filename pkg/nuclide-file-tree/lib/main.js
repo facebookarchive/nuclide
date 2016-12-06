@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+/* global requestAnimationFrame */
+
 import type {FileTreeControllerState} from './FileTreeController';
 import type FileTreeContextMenu from './FileTreeContextMenu';
 import type {NuclideSideBarService} from '../../nuclide-side-bar';
@@ -74,15 +76,17 @@ class Activation {
     // Giant hack to fix the context menu highlight
     // For explanation, see https://github.com/atom/atom/pull/13266
 
-    const showForEvent = (atom.contextMenu: any).showForEvent;
-    (atom.contextMenu: any).showForEvent = function(event) {
-      window.requestAnimationFrame(() =>
-        window.requestAnimationFrame(() =>
-          window.requestAnimationFrame(() =>
-            showForEvent.call(atom.contextMenu, event),
-          ),
-        ),
-      );
+    // $FlowIgnore: Undocumented API
+    const {showForEvent} = atom.contextMenu;
+    // $FlowIgnore: Undocumented API
+    atom.contextMenu.showForEvent = function(event) {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            showForEvent.call(atom.contextMenu, event);
+          });
+        });
+      });
     };
 
     return new Disposable(() => {

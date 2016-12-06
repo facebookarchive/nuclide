@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+/* global performance */
+
 import type {
   Datatip,
   DatatipProvider,
@@ -423,7 +425,7 @@ class DatatipManagerForEditor {
   }
 
   _hideDatatip(): void {
-    this._lastHiddenTime = window.performance.now();
+    this._lastHiddenTime = performance.now();
     if (this._marker) {
       this._marker.destroy();
       this._marker = null;
@@ -522,7 +524,7 @@ class DatatipManagerForEditor {
         // hide it, we need to make sure that when we do keyup, it doesn't show
         // it up right away. We assume that a keypress is done within 100ms
         // and don't show it again if it was hidden so soon.
-        window.performance.now() - this._lastHiddenTime > 100) {
+        performance.now() - this._lastHiddenTime > 100) {
       this._startFetching(() => this._editor.getCursorScreenPosition());
       return;
     }

@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+/* global HTMLElement */
+
 import type FindReferencesModel from './FindReferencesModel';
 
 import {React, ReactDOM} from 'react-for-atom';

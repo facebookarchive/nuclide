@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+/* global MouseEvent */
+
 import type {Observable} from 'rxjs';
 
 import type {BusySignalMessageBusy} from './types';
@@ -96,7 +98,7 @@ export class StatusBarTile {
         if (this._isMouseOver) {
           // If the mouse is currently over the element, we want to trigger the new popup to appear.
           ['mouseover', 'mouseenter']
-            .map(name => new window.MouseEvent(name))
+            .map(name => new MouseEvent(name))
             .forEach(event => item.dispatchEvent(event));
         }
       }

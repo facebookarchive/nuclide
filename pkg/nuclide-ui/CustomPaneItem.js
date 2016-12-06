@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+/* global HTMLElement */
+
 import invariant from 'assert';
 import {React, ReactDOM} from 'react-for-atom';
 
