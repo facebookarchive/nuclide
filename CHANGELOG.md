@@ -1,5 +1,9 @@
 # Nuclide Changelog
 
+## v0.188.0
+
+Hotfix release for Source Control sidebar styling and goToLocation errors.
+
 ## v0.187.0
 
 ### Highlights
