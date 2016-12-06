@@ -256,6 +256,19 @@ class DatatipManagerForEditor {
         () => this._setHideIfOutsideDebounce(),
       ),
 
+      Observable.fromEvent(this._editorView, 'focus').subscribe(e => {
+        this._shouldDropNextMouseMoveAfterFocus = true;
+        if (!this._insideDatatip) {
+          this._setState(DatatipState.HIDDEN);
+        }
+      }),
+
+      Observable.fromEvent(this._editorView, 'blur').subscribe(e => {
+        if (!this._insideDatatip) {
+          this._setState(DatatipState.HIDDEN);
+        }
+      }),
+
       Observable.fromEvent(this._editorView, 'mousemove').subscribe(e => {
         if (this._shouldDropNextMouseMoveAfterFocus) {
           this._shouldDropNextMouseMoveAfterFocus = false;
