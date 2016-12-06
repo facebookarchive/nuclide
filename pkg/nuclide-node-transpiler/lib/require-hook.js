@@ -39,16 +39,20 @@ function transpiler_require_hook(_module, filename) {
     const src = fs.readFileSync(filename);
     let output;
     if (NodeTranspiler.shouldCompile(src)) {
-      if (transpiling == null) {
-        transpiling = filename;
-      } else {
+      if (transpiling != null) {
+        // This means that the transpiler tried to transpile itself.
         const a = transpiling.replace(basedir, '');
         const b = filename.replace(basedir, '');
-        transpiling = null;
         throw new Error(`Circular transpile from "${a}" to "${b}"`);
       }
-      output = nodeTranspiler.transformWithCache(src, filename);
-      transpiling = null;
+      try {
+        transpiling = filename;
+        output = nodeTranspiler.transformWithCache(src, filename);
+      } catch (err) {
+        throw err;
+      } finally {
+        transpiling = null;
+      }
     } else {
       output = src.toString();
     }
