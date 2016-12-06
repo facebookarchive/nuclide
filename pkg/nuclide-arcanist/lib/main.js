@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,78 +9,101 @@
  * the root directory of this source tree.
  */
 
-import type {BusySignalProvider} from '../../nuclide-busy-signal/lib/types';
-import type {BusySignalProviderBase} from '../../nuclide-busy-signal';
-import type {TaskRunnerServiceApi} from '../../nuclide-task-runner/lib/types';
-import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
-import type {OutputService} from '../../nuclide-console/lib/types';
-import type {DeepLinkService} from '../../nuclide-deep-link/lib/types';
-import type {RemoteProjectsService} from '../../nuclide-remote-projects';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {CompositeDisposable, Disposable} from 'atom';
-import createPackage from '../../commons-atom/createPackage';
-import registerGrammar from '../../commons-atom/register-grammar';
+var _atom = require('atom');
+
+var _createPackage;
+
+function _load_createPackage() {
+  return _createPackage = _interopRequireDefault(require('../../commons-atom/createPackage'));
+}
+
+var _registerGrammar;
+
+function _load_registerGrammar() {
+  return _registerGrammar = _interopRequireDefault(require('../../commons-atom/register-grammar'));
+}
+
+var _nuclideBusySignal;
+
+function _load_nuclideBusySignal() {
+  return _nuclideBusySignal = require('../../nuclide-busy-signal');
+}
+
+var _ArcanistDiagnosticsProvider;
+
+function _load_ArcanistDiagnosticsProvider() {
+  return _ArcanistDiagnosticsProvider = require('./ArcanistDiagnosticsProvider');
+}
+
+var _ArcBuildSystem;
+
+function _load_ArcBuildSystem() {
+  return _ArcBuildSystem = _interopRequireDefault(require('./ArcBuildSystem'));
+}
+
+var _openArcDeepLink;
+
+function _load_openArcDeepLink() {
+  return _openArcDeepLink = require('./openArcDeepLink');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {DedupedBusySignalProviderBase} from '../../nuclide-busy-signal';
-import {ArcanistDiagnosticsProvider} from './ArcanistDiagnosticsProvider';
-import ArcBuildSystem from './ArcBuildSystem';
-import {openArcDeepLink} from './openArcDeepLink';
-
 class Activation {
-  _disposables: CompositeDisposable;
-  _busySignalProvider: BusySignalProviderBase;
-  _buildSystem: ?ArcBuildSystem;
-  _cwdApi: ?CwdApi;
-  _remoteProjectsService: ?RemoteProjectsService;
 
-  constructor(state: ?Object) {
-    this._disposables = new CompositeDisposable();
-    this._busySignalProvider = new DedupedBusySignalProviderBase();
-    registerGrammar('source.json', '.arcconfig');
+  constructor(state) {
+    this._disposables = new _atom.CompositeDisposable();
+    this._busySignalProvider = new (_nuclideBusySignal || _load_nuclideBusySignal()).DedupedBusySignalProviderBase();
+    (0, (_registerGrammar || _load_registerGrammar()).default)('source.json', '.arcconfig');
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
   }
 
-  setCwdApi(cwdApi: ?CwdApi) {
+  setCwdApi(cwdApi) {
     this._cwdApi = cwdApi;
     if (this._buildSystem != null) {
       this._buildSystem.setCwdApi(cwdApi);
     }
   }
 
-  provideBusySignal(): BusySignalProvider {
+  provideBusySignal() {
     return this._busySignalProvider;
   }
 
   provideDiagnostics() {
-    const provider = new ArcanistDiagnosticsProvider(this._busySignalProvider);
+    const provider = new (_ArcanistDiagnosticsProvider || _load_ArcanistDiagnosticsProvider()).ArcanistDiagnosticsProvider(this._busySignalProvider);
     this._disposables.add(provider);
     return provider;
   }
 
-  consumeTaskRunnerServiceApi(api: TaskRunnerServiceApi): void {
+  consumeTaskRunnerServiceApi(api) {
     this._disposables.add(api.register(this._getBuildSystem()));
   }
 
-  consumeOutputService(api: OutputService): void {
-    this._disposables.add(
-      api.registerOutputProvider({
-        id: 'Arc Build',
-        messages: this._getBuildSystem().getOutputMessages(),
-      }),
-    );
+  consumeOutputService(api) {
+    this._disposables.add(api.registerOutputProvider({
+      id: 'Arc Build',
+      messages: this._getBuildSystem().getOutputMessages()
+    }));
   }
 
-  consumeCwdApi(api: CwdApi): IDisposable {
+  consumeCwdApi(api) {
     this.setCwdApi(api);
 
     let pkg = this;
     this._disposables.add({
-      dispose() { pkg = null; },
+      dispose() {
+        pkg = null;
+      }
     });
-    return new Disposable(() => {
+    return new _atom.Disposable(() => {
       if (pkg != null) {
         pkg.setCwdApi(null);
       }
@@ -92,24 +115,22 @@ class Activation {
    *   atom://nuclide/open-arc?project=<project_id>&path=<relative_path>
    * `line` and `column` can also be optionally provided as 1-based integers.
    */
-  consumeDeepLinkService(deepLink: DeepLinkService): void {
-    this._disposables.add(
-      deepLink.subscribeToPath('open-arc', params => {
-        openArcDeepLink(params, this._remoteProjectsService);
-      }),
-    );
+  consumeDeepLinkService(deepLink) {
+    this._disposables.add(deepLink.subscribeToPath('open-arc', params => {
+      (0, (_openArcDeepLink || _load_openArcDeepLink()).openArcDeepLink)(params, this._remoteProjectsService);
+    }));
   }
 
-  consumeRemoteProjectsService(service: RemoteProjectsService): IDisposable {
+  consumeRemoteProjectsService(service) {
     this._remoteProjectsService = service;
-    return new Disposable(() => {
+    return new _atom.Disposable(() => {
       this._remoteProjectsService = null;
     });
   }
 
-  _getBuildSystem(): ArcBuildSystem {
+  _getBuildSystem() {
     if (this._buildSystem == null) {
-      const buildSystem = new ArcBuildSystem();
+      const buildSystem = new (_ArcBuildSystem || _load_ArcBuildSystem()).default();
       if (this._cwdApi != null) {
         buildSystem.setCwdApi(this._cwdApi);
       }
@@ -120,4 +141,5 @@ class Activation {
   }
 }
 
-export default createPackage(Activation);
+exports.default = (0, (_createPackage || _load_createPackage()).default)(Activation);
+module.exports = exports['default'];

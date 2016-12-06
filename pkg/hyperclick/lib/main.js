@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,43 +9,63 @@
  * the root directory of this source tree.
  */
 
-import type {HyperclickProvider} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.consumeProvider = consumeProvider;
+exports.observeTextEditor = observeTextEditor;
+exports.provideHyperclickView = provideHyperclickView;
 
-import {Disposable} from 'atom';
-import Hyperclick from './Hyperclick';
-import SuggestionList from './SuggestionList';
-import SuggestionListElement from './SuggestionListElement';
+var _atom = require('atom');
 
-let hyperclick: ?Hyperclick = null;
+var _Hyperclick;
 
-export function activate() {
-  hyperclick = new Hyperclick();
+function _load_Hyperclick() {
+  return _Hyperclick = _interopRequireDefault(require('./Hyperclick'));
+}
+
+var _SuggestionList;
+
+function _load_SuggestionList() {
+  return _SuggestionList = _interopRequireDefault(require('./SuggestionList'));
+}
+
+var _SuggestionListElement;
+
+function _load_SuggestionListElement() {
+  return _SuggestionListElement = _interopRequireDefault(require('./SuggestionListElement'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let hyperclick = null;function activate() {
+  hyperclick = new (_Hyperclick || _load_Hyperclick()).default();
 
   // FB-only: override the symbols-view "Go To Declaration" context menu item
   // with the Hyperclick "confirm-cursor" command.
   // TODO(hansonw): Remove when symbols-view has a proper API.
   try {
     // $FlowFB
-    const {overrideGoToDeclaration} = require('./fb/overrideGoToDeclaration');
+    const { overrideGoToDeclaration } = require('./fb/overrideGoToDeclaration');
     overrideGoToDeclaration();
   } catch (e) {
     // Ignore.
   }
 }
 
-export function deactivate() {
+function deactivate() {
   if (hyperclick != null) {
     hyperclick.dispose();
     hyperclick = null;
   }
 }
 
-export function consumeProvider(
-  provider: HyperclickProvider | Array<HyperclickProvider>,
-): ?Disposable {
+function consumeProvider(provider) {
   if (hyperclick != null) {
     hyperclick.consumeProvider(provider);
-    return new Disposable(() => {
+    return new _atom.Disposable(() => {
       if (hyperclick != null) {
         hyperclick.removeProvider(provider);
       }
@@ -58,17 +78,17 @@ export function consumeProvider(
  * observed by default by hyperclick. However, if a TextEditor is created via some other means,
  * (such as a building block for a piece of UI), then it must be observed explicitly.
  */
-export function observeTextEditor(): (textEditor: atom$TextEditor) => void {
-  return (textEditor: atom$TextEditor) => {
+function observeTextEditor() {
+  return textEditor => {
     if (hyperclick != null) {
       hyperclick.observeTextEditor(textEditor);
     }
   };
 }
 
-export function provideHyperclickView(model: mixed): ?SuggestionListElement {
-  if (!(model instanceof SuggestionList)) {
+function provideHyperclickView(model) {
+  if (!(model instanceof (_SuggestionList || _load_SuggestionList()).default)) {
     return;
   }
-  return new SuggestionListElement().initialize(model);
+  return new (_SuggestionListElement || _load_SuggestionListElement()).default().initialize(model);
 }

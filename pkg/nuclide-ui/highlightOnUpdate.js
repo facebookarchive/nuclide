@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,44 +9,48 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
-import shallowequal from 'shallowequal';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.highlightOnUpdate = highlightOnUpdate;
+
+var _reactForAtom = require('react-for-atom');
+
+var _shallowequal;
+
+function _load_shallowequal() {
+  return _shallowequal = _interopRequireDefault(require('shallowequal'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Wraps DecoratedComponent in a special `span` with a configurable classname whenever the
  * component's props change.
  */
-export function highlightOnUpdate<T : ReactClass<any>, P: {+[key: string]: mixed}>(
-  ComposedComponent: T,
-  /**
-   * The result of this function determines whether to apply the highlight or not.
-   */
-  arePropsEqual?: (
-    p1: P,
-    p2: P,
-  ) => boolean = shallowequal,
-  /**
-   * className used in the wrapper. You can style both `className` and `<className>-highlight`.
-   */
-  className?: string = 'nuclide-ui-highlight-on-render',
-  /**
-   * Delay in ms until the `*-highlight` className gets removed from the wrapper.
-   * Effectively throttles the frequency of highlight pulses.
-   */
-  unhighlightDelay?: number = 200,
-): T {
+function highlightOnUpdate(ComposedComponent,
+/**
+ * The result of this function determines whether to apply the highlight or not.
+ */
+arePropsEqual = (_shallowequal || _load_shallowequal()).default,
+/**
+ * className used in the wrapper. You can style both `className` and `<className>-highlight`.
+ */
+className = 'nuclide-ui-highlight-on-render',
+/**
+ * Delay in ms until the `*-highlight` className gets removed from the wrapper.
+ * Effectively throttles the frequency of highlight pulses.
+ */
+unhighlightDelay = 200) {
   // $FlowIssue The return type is guaranteed to be the same as the type of ComposedComponent.
-  return class extends React.Component {
-    props: P;
-    showFlash: boolean;
-    timeout: ?number;
+  return class extends _reactForAtom.React.Component {
 
-    constructor(props: mixed) {
+    constructor(props) {
       super(props);
       this.showFlash = false;
     }
 
-    componentWillUpdate(nextProps: P, nextState: void): void {
+    componentWillUpdate(nextProps, nextState) {
       if (arePropsEqual(nextProps, this.props)) {
         // Skip if prop values didn't actually change.
         return;
@@ -56,21 +60,18 @@ export function highlightOnUpdate<T : ReactClass<any>, P: {+[key: string]: mixed
         return;
       }
       this.showFlash = true;
-      this.timeout = setTimeout(
-        () => {
-          this.showFlash = false;
-          this.timeout = null;
-          this.forceUpdate();
-        },
-        unhighlightDelay,
-      );
+      this.timeout = setTimeout(() => {
+        this.showFlash = false;
+        this.timeout = null;
+        this.forceUpdate();
+      }, unhighlightDelay);
     }
 
-    render(): React.Element<any> {
-      return (
-        <span className={`${className} ${this.showFlash ? className + '-highlight' : ''}`}>
-          <ComposedComponent {...this.props} />
-        </span>
+    render() {
+      return _reactForAtom.React.createElement(
+        'span',
+        { className: `${ className } ${ this.showFlash ? className + '-highlight' : '' }` },
+        _reactForAtom.React.createElement(ComposedComponent, this.props)
       );
     }
   };

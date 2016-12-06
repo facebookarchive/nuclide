@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,31 +9,26 @@
  * the root directory of this source tree.
  */
 
-import type BreakpointStore from './BreakpointStore';
-import type DebuggerActions from './DebuggerActions';
+var _atom = require('atom');
 
-import {CompositeDisposable} from 'atom';
-import BreakpointDisplayController from './BreakpointDisplayController';
+var _BreakpointDisplayController;
+
+function _load_BreakpointDisplayController() {
+  return _BreakpointDisplayController = _interopRequireDefault(require('./BreakpointDisplayController'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 class BreakpointManager {
-  _breakpointStore: BreakpointStore;
-  _debuggerActions: DebuggerActions;
-  _displayControllers: Map<atom$TextEditor, BreakpointDisplayController>;
-  _disposables: CompositeDisposable;
 
-  constructor(
-    store: BreakpointStore,
-    debuggerActions: DebuggerActions,
-  ) {
+  constructor(store, debuggerActions) {
     this._breakpointStore = store;
     this._debuggerActions = debuggerActions;
     this._displayControllers = new Map();
-    this._disposables = new CompositeDisposable(
-      atom.workspace.observeTextEditors(this._handleTextEditor.bind(this)),
-    );
+    this._disposables = new _atom.CompositeDisposable(atom.workspace.observeTextEditors(this._handleTextEditor.bind(this)));
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
     this._displayControllers.forEach(controller => controller.dispose());
     this._displayControllers.clear();
@@ -42,26 +37,21 @@ class BreakpointManager {
   /**
    * Used for testing.
    */
-  getDisplayControllers(): Map<atom$TextEditor, BreakpointDisplayController> {
+  getDisplayControllers() {
     return this._displayControllers;
   }
 
   /**
    * Delegate callback from BreakpointDisplayController.
    */
-  handleTextEditorDestroyed(controller: BreakpointDisplayController) {
+  handleTextEditorDestroyed(controller) {
     controller.dispose();
     this._displayControllers.delete(controller.getEditor());
   }
 
-  _handleTextEditor(editor: atom$TextEditor) {
+  _handleTextEditor(editor) {
     if (!this._displayControllers.has(editor)) {
-      const controller = new BreakpointDisplayController(
-        this,
-        this._breakpointStore,
-        editor,
-        this._debuggerActions,
-      );
+      const controller = new (_BreakpointDisplayController || _load_BreakpointDisplayController()).default(this, this._breakpointStore, editor, this._debuggerActions);
       this._displayControllers.set(editor, controller);
     }
   }

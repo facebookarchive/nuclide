@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,64 +9,85 @@
  * the root directory of this source tree.
  */
 
-import type {BlameProvider} from './types';
-import type FileTreeContextMenu from '../../nuclide-file-tree/lib/FileTreeContextMenu';
-import type {FileTreeNode} from '../../nuclide-file-tree/lib/FileTreeNode';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {CompositeDisposable, Disposable} from 'atom';
-import invariant from 'assert';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-import BlameGutter from './BlameGutter';
-import {getLogger} from '../../nuclide-logging';
-import {goToLocation} from '../../commons-atom/go-to-location';
-import {repositoryForPath} from '../../commons-atom/vcs';
-import {track, trackTiming} from '../../nuclide-analytics';
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.consumeBlameProvider = consumeBlameProvider;
+exports.addItemsToFileTreeContextMenu = addItemsToFileTreeContextMenu;
+
+var _atom = require('atom');
+
+var _BlameGutter;
+
+function _load_BlameGutter() {
+  return _BlameGutter = _interopRequireDefault(require('./BlameGutter'));
+}
+
+var _nuclideLogging;
+
+function _load_nuclideLogging() {
+  return _nuclideLogging = require('../../nuclide-logging');
+}
+
+var _goToLocation;
+
+function _load_goToLocation() {
+  return _goToLocation = require('../../commons-atom/go-to-location');
+}
+
+var _vcs;
+
+function _load_vcs() {
+  return _vcs = require('../../commons-atom/vcs');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const PACKAGES_MISSING_MESSAGE = 'Could not open blame. Missing at least one blame provider.';
 const TOGGLE_BLAME_FILE_TREE_CONTEXT_MENU_PRIORITY = 2000;
 
 class Activation {
-  _packageDisposables: CompositeDisposable;
-  _registeredProviders: Set<BlameProvider>;
   // Map of a TextEditor to its BlameGutter, if it exists.
-  _textEditorToBlameGutter: Map<atom$TextEditor, BlameGutter>;
-  // Map of a TextEditor to the subscription on its ::onDidDestroy.
-  _textEditorToDestroySubscription: Map<atom$TextEditor, IDisposable>;
-
   constructor() {
     this._registeredProviders = new Set();
     this._textEditorToBlameGutter = new Map();
     this._textEditorToDestroySubscription = new Map();
-    this._packageDisposables = new CompositeDisposable();
+    this._packageDisposables = new _atom.CompositeDisposable();
     this._packageDisposables.add(atom.contextMenu.add({
       'atom-text-editor': [{
         label: 'Source Control',
         submenu: [{
           label: 'Toggle Blame',
           command: 'nuclide-blame:toggle-blame',
-          shouldDisplay: (event: MouseEvent) => (this._canShowBlame() || this._canHideBlame()),
-        }],
-      }],
+          shouldDisplay: event => this._canShowBlame() || this._canHideBlame()
+        }]
+      }]
     }));
-    this._packageDisposables.add(
-      atom.commands.add('atom-text-editor', 'nuclide-blame:toggle-blame', () => {
-        if (this._canShowBlame()) {
-          this._showBlame();
-        } else if (this._canHideBlame()) {
-          this._hideBlame();
-        }
-      }),
-      atom.commands.add(
-        'atom-text-editor',
-        'nuclide-blame:hide-blame',
-        () => {
-          if (this._canHideBlame()) {
-            this._hideBlame();
-          }
-        },
-      ),
-    );
+    this._packageDisposables.add(atom.commands.add('atom-text-editor', 'nuclide-blame:toggle-blame', () => {
+      if (this._canShowBlame()) {
+        this._showBlame();
+      } else if (this._canHideBlame()) {
+        this._hideBlame();
+      }
+    }), atom.commands.add('atom-text-editor', 'nuclide-blame:hide-blame', () => {
+      if (this._canHideBlame()) {
+        this._hideBlame();
+      }
+    }));
   }
+  // Map of a TextEditor to the subscription on its ::onDidDestroy.
+
 
   dispose() {
     this._packageDisposables.dispose();
@@ -82,7 +103,7 @@ class Activation {
    * Section: Managing Gutters
    */
 
-  _removeBlameGutterForEditor(editor: atom$TextEditor): void {
+  _removeBlameGutterForEditor(editor) {
     const blameGutter = this._textEditorToBlameGutter.get(editor);
     if (blameGutter != null) {
       blameGutter.destroy();
@@ -90,7 +111,7 @@ class Activation {
     }
   }
 
-  _showBlameGutterForEditor(editor: atom$TextEditor): void {
+  _showBlameGutterForEditor(editor) {
     if (this._registeredProviders.size === 0) {
       atom.notifications.addInfo(PACKAGES_MISSING_MESSAGE);
       return;
@@ -107,28 +128,23 @@ class Activation {
       }
 
       if (providerForEditor) {
-        blameGutter = new BlameGutter('nuclide-blame', editor, providerForEditor);
+        blameGutter = new (_BlameGutter || _load_BlameGutter()).default('nuclide-blame', editor, providerForEditor);
         this._textEditorToBlameGutter.set(editor, blameGutter);
         const destroySubscription = editor.onDidDestroy(() => this._editorWasDestroyed(editor));
         this._textEditorToDestroySubscription.set(editor, destroySubscription);
 
-        track('blame-open', {
-          editorPath: editor.getPath() || '',
+        (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('blame-open', {
+          editorPath: editor.getPath() || ''
         });
       } else {
-        atom.notifications.addInfo(
-          'Could not open blame: no blame information currently available for this file.',
-        );
+        atom.notifications.addInfo('Could not open blame: no blame information currently available for this file.');
 
-        getLogger().info(
-          'nuclide-blame: Could not open blame: no blame provider currently available for this ' +
-          `file: ${String(editor.getPath())}`,
-        );
+        (0, (_nuclideLogging || _load_nuclideLogging()).getLogger)().info('nuclide-blame: Could not open blame: no blame provider currently available for this ' + `file: ${ String(editor.getPath()) }`);
       }
     }
   }
 
-  _editorWasDestroyed(editor: atom$TextEditor): void {
+  _editorWasDestroyed(editor) {
     const blameGutter = this._textEditorToBlameGutter.get(editor);
     if (blameGutter) {
       blameGutter.destroy();
@@ -141,8 +157,8 @@ class Activation {
    * Section: Managing Context Menus
    */
 
-  _showBlame(event): void {
-    return trackTiming('blame.showBlame', () => {
+  _showBlame(event) {
+    return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackTiming)('blame.showBlame', () => {
       const editor = atom.workspace.getActiveTextEditor();
       if (editor != null) {
         this._showBlameGutterForEditor(editor);
@@ -150,8 +166,8 @@ class Activation {
     });
   }
 
-  _hideBlame(event): void {
-    return trackTiming('blame.hideBlame', () => {
+  _hideBlame(event) {
+    return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackTiming)('blame.hideBlame', () => {
       const editor = atom.workspace.getActiveTextEditor();
       if (editor != null) {
         this._removeBlameGutterForEditor(editor);
@@ -159,12 +175,12 @@ class Activation {
     });
   }
 
-  _canShowBlame(): boolean {
+  _canShowBlame() {
     const editor = atom.workspace.getActiveTextEditor();
     return !(editor != null && this._textEditorToBlameGutter.has(editor));
   }
 
-  _canHideBlame(): boolean {
+  _canHideBlame() {
     const editor = atom.workspace.getActiveTextEditor();
     return editor != null && this._textEditorToBlameGutter.has(editor);
   }
@@ -173,50 +189,53 @@ class Activation {
    * Section: Consuming Services
    */
 
-  consumeBlameProvider(provider: BlameProvider): IDisposable {
+  consumeBlameProvider(provider) {
     this._registeredProviders.add(provider);
-    return new Disposable(() => {
+    return new _atom.Disposable(() => {
       if (this._registeredProviders) {
         this._registeredProviders.delete(provider);
       }
     });
   }
 
-  addItemsToFileTreeContextMenu(contextMenu: FileTreeContextMenu): IDisposable {
-    const contextDisposable = contextMenu.addItemToSourceControlMenu(
-      {
-        label: 'Toggle Blame',
-        callback() {
-          findBlameableNodes(contextMenu).forEach(async node => {
-            const editor = await goToLocation(node.uri);
+  addItemsToFileTreeContextMenu(contextMenu) {
+    const contextDisposable = contextMenu.addItemToSourceControlMenu({
+      label: 'Toggle Blame',
+      callback() {
+        findBlameableNodes(contextMenu).forEach((() => {
+          var _ref = (0, _asyncToGenerator.default)(function* (node) {
+            const editor = yield (0, (_goToLocation || _load_goToLocation()).goToLocation)(node.uri);
             atom.commands.dispatch(atom.views.getView(editor), 'nuclide-blame:toggle-blame');
           });
-        },
-        shouldDisplay() {
-          return findBlameableNodes(contextMenu).length > 0;
-        },
+
+          return function (_x) {
+            return _ref.apply(this, arguments);
+          };
+        })());
       },
-      TOGGLE_BLAME_FILE_TREE_CONTEXT_MENU_PRIORITY,
-    );
+      shouldDisplay() {
+        return findBlameableNodes(contextMenu).length > 0;
+      }
+    }, TOGGLE_BLAME_FILE_TREE_CONTEXT_MENU_PRIORITY);
 
     this._packageDisposables.add(contextDisposable);
     // We don't need to dispose of the contextDisposable when the provider is disabled -
     // it needs to be handled by the provider itself. We only should remove it from the list
     // of the disposables we maintain.
-    return new Disposable(() => this._packageDisposables.remove(contextDisposable));
+    return new _atom.Disposable(() => this._packageDisposables.remove(contextDisposable));
   }
 }
 
 /**
  * @return list of nodes against which "Toggle Blame" is an appropriate action.
  */
-function findBlameableNodes(contextMenu: FileTreeContextMenu): Array<FileTreeNode> {
+function findBlameableNodes(contextMenu) {
   const nodes = [];
   for (const node of contextMenu.getSelectedNodes()) {
     if (node == null || !node.uri) {
       continue;
     }
-    const repo = repositoryForPath(node.uri);
+    const repo = (0, (_vcs || _load_vcs()).repositoryForPath)(node.uri);
     if (!node.isContainer && repo != null && repo.getType() === 'hg') {
       nodes.push(node);
     }
@@ -224,27 +243,33 @@ function findBlameableNodes(contextMenu: FileTreeContextMenu): Array<FileTreeNod
   return nodes;
 }
 
-let activation: ?Activation;
+let activation;
 
-export function activate(state: ?Object): void {
+function activate(state) {
   if (!activation) {
     activation = new Activation();
   }
 }
 
-export function deactivate() {
+function deactivate() {
   if (activation) {
     activation.dispose();
     activation = null;
   }
 }
 
-export function consumeBlameProvider(provider: BlameProvider): IDisposable {
-  invariant(activation);
+function consumeBlameProvider(provider) {
+  if (!activation) {
+    throw new Error('Invariant violation: "activation"');
+  }
+
   return activation.consumeBlameProvider(provider);
 }
 
-export function addItemsToFileTreeContextMenu(contextMenu: FileTreeContextMenu): IDisposable {
-  invariant(activation);
+function addItemsToFileTreeContextMenu(contextMenu) {
+  if (!activation) {
+    throw new Error('Invariant violation: "activation"');
+  }
+
   return activation.addItemsToFileTreeContextMenu(contextMenu);
 }

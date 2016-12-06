@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,28 +9,32 @@
  * the root directory of this source tree.
  */
 
-import type {RevisionFileChanges} from './HgService';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {ConnectableObservable} from 'rxjs';
+var _hgUtils;
 
-import {hgRunCommand} from './hg-utils';
-import nuclideUri from '../../commons-node/nuclideUri';
-import invariant from 'assert';
+function _load_hgUtils() {
+  return _hgUtils = require('./hg-utils');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const ALL_FILES_LABEL = 'files:';
 const FILE_ADDS_LABEL = 'file-adds:';
 const FILE_DELETES_LABEL = 'file-dels:';
 const FILE_COPIES_LABEL = 'file-copies:';
 const FILE_MODS_LABEL = 'file-mods:';
-const REVISION_FILE_CHANGES_TEMPLATE =
-`${ALL_FILES_LABEL} {files}
-${FILE_ADDS_LABEL} {file_adds}
-${FILE_DELETES_LABEL} {file_dels}
-${FILE_COPIES_LABEL} {file_copies}
-${FILE_MODS_LABEL} {file_mods}`;
+const REVISION_FILE_CHANGES_TEMPLATE = `${ ALL_FILES_LABEL } {files}
+${ FILE_ADDS_LABEL } {file_adds}
+${ FILE_DELETES_LABEL } {file_dels}
+${ FILE_COPIES_LABEL } {file_copies}
+${ FILE_MODS_LABEL } {file_mods}`;
 // Regex for: "new_file (previous_file", with two capture groups, one for each file.
 const COPIED_FILE_PAIR_REGEX = /(.+) \((.+)/;
-
 
 /**
  * @param filePath An absolute path to a file.
@@ -41,16 +45,12 @@ const COPIED_FILE_PAIR_REGEX = /(.+) \((.+)/;
  * if the operation fails for whatever reason, including invalid input (e.g. if
  * you pass a filePath that does not exist at the given revision).
  */
-function fetchFileContentAtRevision(
-  filePath: NuclideUri,
-  revision: string,
-  workingDirectory: string,
-): ConnectableObservable<string> {
+function fetchFileContentAtRevision(filePath, revision, workingDirectory) {
   const args = ['cat', '--rev', revision, filePath];
   const execOptions = {
-    cwd: workingDirectory,
+    cwd: workingDirectory
   };
-  return hgRunCommand(args, execOptions).publish();
+  return (0, (_hgUtils || _load_hgUtils()).hgRunCommand)(args, execOptions).publish();
 }
 
 /**
@@ -60,22 +60,12 @@ function fetchFileContentAtRevision(
  * if the operation fails for whatever reason, including invalid input (e.g. if
  * you pass an invalid revision).
  */
-function fetchFilesChangedAtRevision(
-  revision: string,
-  workingDirectory: string,
-): ConnectableObservable<RevisionFileChanges> {
-  const args = [
-    'log',
-    '--template', REVISION_FILE_CHANGES_TEMPLATE,
-    '--rev', revision,
-    '--limit', '1',
-  ];
+function fetchFilesChangedAtRevision(revision, workingDirectory) {
+  const args = ['log', '--template', REVISION_FILE_CHANGES_TEMPLATE, '--rev', revision, '--limit', '1'];
   const execOptions = {
-    cwd: workingDirectory,
+    cwd: workingDirectory
   };
-  return hgRunCommand(args, execOptions)
-    .map(stdout => parseRevisionFileChangeOutput(stdout, workingDirectory))
-    .publish();
+  return (0, (_hgUtils || _load_hgUtils()).hgRunCommand)(args, execOptions).map(stdout => parseRevisionFileChangeOutput(stdout, workingDirectory)).publish();
 }
 
 /**
@@ -83,10 +73,7 @@ function fetchFilesChangedAtRevision(
  * @param workingDirectory The absolute path to the working directory of the hg repository.
  * @return A RevisionFileChanges object where the paths are all absolute paths.
  */
-function parseRevisionFileChangeOutput(
-  output: string,
-  workingDirectory: string,
-): RevisionFileChanges {
+function parseRevisionFileChangeOutput(output, workingDirectory) {
   const lines = output.trim().split('\n');
   let allFiles = lines[0].slice(ALL_FILES_LABEL.length + 1).trim();
   allFiles = allFiles.length ? allFiles.split(' ') : [];
@@ -110,10 +97,14 @@ function parseRevisionFileChangeOutput(
   // Parse the lines, now in the form: new_file (previous_file)
   copiedFiles = copiedFiles.map(filePathPair => {
     const fileNameMatches = filePathPair.match(COPIED_FILE_PAIR_REGEX);
-    invariant(fileNameMatches);
+
+    if (!fileNameMatches) {
+      throw new Error('Invariant violation: "fileNameMatches"');
+    }
+
     return {
       from: absolutize(fileNameMatches[2], workingDirectory),
-      to: absolutize(fileNameMatches[1], workingDirectory),
+      to: absolutize(fileNameMatches[1], workingDirectory)
     };
   });
 
@@ -126,20 +117,19 @@ function parseRevisionFileChangeOutput(
     added: addedFiles,
     deleted: deletedFiles,
     copied: copiedFiles,
-    modified: modifiedFiles,
+    modified: modifiedFiles
   };
 }
 
-function absolutize(filePath: string, workingDirectory: string): string {
-  return nuclideUri.join(workingDirectory, filePath);
+function absolutize(filePath, workingDirectory) {
+  return (_nuclideUri || _load_nuclideUri()).default.join(workingDirectory, filePath);
 }
 
-function absolutizeAll(filePaths: Array<string>, workingDirectory: string) {
+function absolutizeAll(filePaths, workingDirectory) {
   return filePaths.map(filePath => absolutize(filePath, workingDirectory));
 }
 
 module.exports = {
   fetchFileContentAtRevision,
   fetchFilesChangedAtRevision,
-  parseRevisionFileChangeOutput, // exposed for testing
-};
+  parseRevisionFileChangeOutput };

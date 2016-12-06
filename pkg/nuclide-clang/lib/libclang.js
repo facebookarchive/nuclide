@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,27 +9,24 @@
  * the root directory of this source tree.
  */
 
-import type {
-  ClangCompileResult,
-  ClangCompletion,
-  ClangCursor,
-  ClangDeclaration,
-  ClangLocalReferences,
-  ClangOutlineTree,
-} from '../../nuclide-clang-rpc/lib/rpc-types';
-import typeof * as ClangService from '../../nuclide-clang-rpc';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-import featureConfig from '../../commons-atom/featureConfig';
-import invariant from 'assert';
-import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
+var _featureConfig;
 
-type NuclideClangConfig = {
-  enableDefaultFlags: boolean,
-  defaultFlags: Array<string>,
-};
+function _load_featureConfig() {
+  return _featureConfig = _interopRequireDefault(require('../../commons-atom/featureConfig'));
+}
 
-function getDefaultFlags(): ?Array<string> {
-  const config: NuclideClangConfig = (featureConfig.get('nuclide-clang'): any);
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function getDefaultFlags() {
+  const config = (_featureConfig || _load_featureConfig()).default.get('nuclide-clang');
   if (!config.enableDefaultFlags) {
     return null;
   }
@@ -40,33 +37,35 @@ const clangServices = new WeakSet();
 
 module.exports = {
 
-  async getDiagnostics(
-    editor: atom$TextEditor,
-  ): Promise<?ClangCompileResult> {
-    const src = editor.getPath();
-    if (src == null) {
-      return null;
-    }
-    const contents = editor.getText();
+  getDiagnostics(editor) {
+    return (0, _asyncToGenerator.default)(function* () {
+      const src = editor.getPath();
+      if (src == null) {
+        return null;
+      }
+      const contents = editor.getText();
 
-    const defaultFlags = getDefaultFlags();
-    const service: ?ClangService = getServiceByNuclideUri('ClangService', src);
-    invariant(service);
+      const defaultFlags = getDefaultFlags();
+      const service = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getServiceByNuclideUri)('ClangService', src);
 
-    // When we fetch diagnostics for the first time, reset the server state.
-    // This is so the user can easily refresh the Clang + Buck state by reloading Atom.
-    if (!clangServices.has(service)) {
-      clangServices.add(service);
-      await service.reset();
-    }
+      if (!service) {
+        throw new Error('Invariant violation: "service"');
+      }
 
-    return service
-        .compile(src, contents, defaultFlags)
-        .refCount()
-        .toPromise();
+      // When we fetch diagnostics for the first time, reset the server state.
+      // This is so the user can easily refresh the Clang + Buck state by reloading Atom.
+
+
+      if (!clangServices.has(service)) {
+        clangServices.add(service);
+        yield service.reset();
+      }
+
+      return service.compile(src, contents, defaultFlags).refCount().toPromise();
+    })();
   },
 
-  getCompletions(editor: atom$TextEditor, prefix: string): Promise<?Array<ClangCompletion>> {
+  getCompletions(editor, prefix) {
     const src = editor.getPath();
     if (src == null) {
       return Promise.resolve();
@@ -78,126 +77,115 @@ module.exports = {
     const tokenStartColumn = column - prefix.length;
 
     const defaultFlags = getDefaultFlags();
-    const service: ?ClangService = getServiceByNuclideUri('ClangService', src);
-    invariant(service);
+    const service = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getServiceByNuclideUri)('ClangService', src);
 
-    return service
-      .getCompletions(
-        src,
-        editor.getText(),
-        line,
-        column,
-        tokenStartColumn,
-        prefix,
-        defaultFlags,
-      );
+    if (!service) {
+      throw new Error('Invariant violation: "service"');
+    }
+
+    return service.getCompletions(src, editor.getText(), line, column, tokenStartColumn, prefix, defaultFlags);
   },
 
   /**
    * If a location can be found for the declaration, it will be available via
    * the 'location' field on the returned object.
    */
-  getDeclaration(
-    editor: atom$TextEditor,
-    line: number,
-    column: number,
-  ): Promise<?ClangDeclaration> {
+  getDeclaration(editor, line, column) {
     const src = editor.getPath();
     if (src == null) {
       return Promise.resolve();
     }
     const defaultFlags = getDefaultFlags();
 
-    const service: ?ClangService = getServiceByNuclideUri('ClangService', src);
-    invariant(service);
+    const service = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getServiceByNuclideUri)('ClangService', src);
 
-    return service
-        .getDeclaration(src, editor.getText(), line, column, defaultFlags);
+    if (!service) {
+      throw new Error('Invariant violation: "service"');
+    }
+
+    return service.getDeclaration(src, editor.getText(), line, column, defaultFlags);
   },
 
-  getDeclarationInfo(
-    editor: atom$TextEditor,
-    line: number,
-    column: number,
-  ): Promise<?Array<ClangCursor>> {
+  getDeclarationInfo(editor, line, column) {
     const src = editor.getPath();
     if (src == null) {
       return Promise.resolve(null);
     }
     const defaultFlags = getDefaultFlags();
 
-    const service: ?ClangService = getServiceByNuclideUri('ClangService', src);
+    const service = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getServiceByNuclideUri)('ClangService', src);
     if (service == null) {
       return Promise.resolve(null);
     }
 
-    return service
-        .getDeclarationInfo(src, editor.getText(), line, column, defaultFlags);
+    return service.getDeclarationInfo(src, editor.getText(), line, column, defaultFlags);
   },
 
-  getOutline(editor: atom$TextEditor): Promise<?Array<ClangOutlineTree>> {
+  getOutline(editor) {
     const src = editor.getPath();
     if (src == null) {
       return Promise.resolve();
     }
     const defaultFlags = getDefaultFlags();
 
-    const service: ?ClangService = getServiceByNuclideUri('ClangService', src);
-    invariant(service);
+    const service = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getServiceByNuclideUri)('ClangService', src);
 
-    return service
-        .getOutline(src, editor.getText(), defaultFlags);
+    if (!service) {
+      throw new Error('Invariant violation: "service"');
+    }
+
+    return service.getOutline(src, editor.getText(), defaultFlags);
   },
 
-  getLocalReferences(
-    editor: atom$TextEditor,
-    line: number,
-    column: number,
-  ): Promise<?ClangLocalReferences> {
+  getLocalReferences(editor, line, column) {
     const src = editor.getPath();
     if (src == null) {
       return Promise.resolve(null);
     }
     const defaultFlags = getDefaultFlags();
 
-    const service: ?ClangService = getServiceByNuclideUri('ClangService', src);
+    const service = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getServiceByNuclideUri)('ClangService', src);
     if (service == null) {
       return Promise.resolve(null);
     }
 
-    return service
-        .getLocalReferences(src, editor.getText(), line, column, defaultFlags);
+    return service.getLocalReferences(src, editor.getText(), line, column, defaultFlags);
   },
 
-  async formatCode(editor: atom$TextEditor, range: atom$Range): Promise<{
-    newCursor?: number,
-    formatted: string,
-  }> {
-    const fileUri = editor.getPath();
-    const buffer = editor.getBuffer();
-    const cursor = buffer.characterIndexForPosition(editor.getLastCursor().getBufferPosition());
-    if (fileUri == null) {
-      return {
-        formatted: editor.getText(),
-      };
-    }
-    const startIndex = buffer.characterIndexForPosition(range.start);
-    const endIndex = buffer.characterIndexForPosition(range.end);
+  formatCode(editor, range) {
+    return (0, _asyncToGenerator.default)(function* () {
+      const fileUri = editor.getPath();
+      const buffer = editor.getBuffer();
+      const cursor = buffer.characterIndexForPosition(editor.getLastCursor().getBufferPosition());
+      if (fileUri == null) {
+        return {
+          formatted: editor.getText()
+        };
+      }
+      const startIndex = buffer.characterIndexForPosition(range.start);
+      const endIndex = buffer.characterIndexForPosition(range.end);
 
-    const service: ?ClangService = getServiceByNuclideUri('ClangService', fileUri);
-    invariant(service);
+      const service = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getServiceByNuclideUri)('ClangService', fileUri);
 
-    return {...(await service
-        .formatCode(fileUri, editor.getText(), cursor, startIndex, endIndex - startIndex))};
+      if (!service) {
+        throw new Error('Invariant violation: "service"');
+      }
+
+      return Object.assign({}, (yield service.formatCode(fileUri, editor.getText(), cursor, startIndex, endIndex - startIndex)));
+    })();
   },
 
-  reset(editor: atom$TextEditor) {
+  reset(editor) {
     const src = editor.getPath();
     if (src != null) {
-      const service: ?ClangService = getServiceByNuclideUri('ClangService', src);
-      invariant(service);
+      const service = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getServiceByNuclideUri)('ClangService', src);
+
+      if (!service) {
+        throw new Error('Invariant violation: "service"');
+      }
+
       return service.reset(src);
     }
-  },
+  }
 
 };

@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,13 +9,15 @@
  * the root directory of this source tree.
  */
 
-import type {AppState} from './types';
-
-export default function getCurrentExecutorId(state: AppState): ?string {
-  let {currentExecutorId} = state;
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = getCurrentExecutorId;
+function getCurrentExecutorId(state) {
+  let { currentExecutorId } = state;
   if (currentExecutorId == null) {
     const firstExecutor = Array.from(state.executors.values())[0];
     currentExecutorId = firstExecutor && firstExecutor.id;
   }
   return currentExecutorId;
-}
+}module.exports = exports['default'];

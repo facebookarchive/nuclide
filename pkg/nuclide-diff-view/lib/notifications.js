@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,12 +9,19 @@
  * the root directory of this source tree.
  */
 
-import {getLogger} from '../../nuclide-logging';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.notifyInternalError = notifyInternalError;
 
-const logger = getLogger();
+var _nuclideLogging;
 
-export function notifyInternalError(error: Error, dismissable?: boolean = false) {
+function _load_nuclideLogging() {
+  return _nuclideLogging = require('../../nuclide-logging');
+}
+
+const logger = (0, (_nuclideLogging || _load_nuclideLogging()).getLogger)();function notifyInternalError(error, dismissable = false) {
   const errorMessage = 'Diff View Internal Error';
   logger.error(errorMessage, error);
-  atom.notifications.addError(errorMessage, {detail: error.message, dismissable});
+  atom.notifications.addError(errorMessage, { detail: error.message, dismissable });
 }

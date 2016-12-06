@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,66 +9,67 @@
  * the root directory of this source tree.
  */
 
-import type {ChildProcessInfo} from '../../types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {React} from 'react-for-atom';
-import HandlesTableComponent from './HandlesTableComponent';
+var _reactForAtom = require('react-for-atom');
 
-type Props = {
-  childProcessesTree: ?ChildProcessInfo,
-};
+var _HandlesTableComponent;
 
-type ProcessWithLevel = {
-  process: ChildProcessInfo,
-  level: number,
-};
+function _load_HandlesTableComponent() {
+  return _HandlesTableComponent = _interopRequireDefault(require('./HandlesTableComponent'));
+}
 
-export default class ChildProcessTreeComponent extends React.Component {
-  props: Props;
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-  render(): React.Element<any> {
-    const {childProcessesTree} = this.props;
+class ChildProcessTreeComponent extends _reactForAtom.React.Component {
+
+  render() {
+    const { childProcessesTree } = this.props;
     if (!childProcessesTree) {
-      return <div />;
+      return _reactForAtom.React.createElement('div', null);
     }
 
     const handles = [];
     flatten(handles, childProcessesTree, 0);
 
-    return (
-      <div>
-        <HandlesTableComponent
-          title="Process tree"
-          handles={handles}
-          keyed={({process, level}) => '\u00A0'.repeat(level * 3) + process.pid}
-          columns={[{
-            title: 'CPU %',
-            value: ({process, level}) => process.cpuPercentage,
-            widthPercentage: 5,
-          }, {
-            title: 'In',
-            value: ({process}) => process.ioBytesStats && process.ioBytesStats.stdin,
-            widthPercentage: 3,
-          }, {
-            title: 'Out',
-            value: ({process}) => process.ioBytesStats && process.ioBytesStats.stdout,
-            widthPercentage: 3,
-          }, {
-            title: 'Err',
-            value: ({process}) => process.ioBytesStats && process.ioBytesStats.stderr,
-            widthPercentage: 3,
-          }, {
-            title: 'Command',
-            value: ({process, level}) => process.command,
-            widthPercentage: 56,
-          }]}
-        />
-      </div>
+    return _reactForAtom.React.createElement(
+      'div',
+      null,
+      _reactForAtom.React.createElement((_HandlesTableComponent || _load_HandlesTableComponent()).default, {
+        title: 'Process tree',
+        handles: handles,
+        keyed: ({ process, level }) => '\u00A0'.repeat(level * 3) + process.pid,
+        columns: [{
+          title: 'CPU %',
+          value: ({ process, level }) => process.cpuPercentage,
+          widthPercentage: 5
+        }, {
+          title: 'In',
+          value: ({ process }) => process.ioBytesStats && process.ioBytesStats.stdin,
+          widthPercentage: 3
+        }, {
+          title: 'Out',
+          value: ({ process }) => process.ioBytesStats && process.ioBytesStats.stdout,
+          widthPercentage: 3
+        }, {
+          title: 'Err',
+          value: ({ process }) => process.ioBytesStats && process.ioBytesStats.stderr,
+          widthPercentage: 3
+        }, {
+          title: 'Command',
+          value: ({ process, level }) => process.command,
+          widthPercentage: 56
+        }]
+      })
     );
   }
 }
 
-function flatten(handles: Array<ProcessWithLevel>, process: ChildProcessInfo, level: number): void {
-  handles.push({process, level});
+exports.default = ChildProcessTreeComponent;
+function flatten(handles, process, level) {
+  handles.push({ process, level });
   process.children.forEach(child => flatten(handles, child, level + 1));
 }
+module.exports = exports['default'];

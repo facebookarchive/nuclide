@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,39 +9,55 @@
  * the root directory of this source tree.
  */
 
-import type {ConnectableObservable} from 'rxjs';
-import type {DeviceDescription} from './AdbService';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import {runCommand} from '../../commons-node/process';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getDeviceList = undefined;
 
-export function startServer(
-  adbPath: NuclideUri,
-): ConnectableObservable<string> {
-  return runCommand(adbPath, ['start-server']).publish();
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+let getDeviceList = exports.getDeviceList = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (adbPath) {
+    const devices = yield (0, (_process || _load_process()).runCommand)(adbPath, ['devices']).map(function (stdout) {
+      return stdout.split(/\n+/g).slice(1).filter(function (s) {
+        return s.length > 0;
+      }).map(function (s) {
+        return s.split(/\s+/g)[0];
+      });
+    }).toPromise();
+
+    return Promise.all(devices.map((() => {
+      var _ref2 = (0, _asyncToGenerator.default)(function* (s) {
+        const arch = yield getDeviceArchitecture(adbPath, s);
+        return { name: s, architecture: arch };
+      });
+
+      return function (_x2) {
+        return _ref2.apply(this, arguments);
+      };
+    })()));
+  });
+
+  return function getDeviceList(_x) {
+    return _ref.apply(this, arguments);
+  };
+})();
+
+exports.startServer = startServer;
+exports.getDeviceArchitecture = getDeviceArchitecture;
+
+var _process;
+
+function _load_process() {
+  return _process = require('../../commons-node/process');
 }
 
-export async function getDeviceList(
-  adbPath: NuclideUri,
-): Promise<Array<DeviceDescription>> {
-  const devices = await runCommand(adbPath, ['devices'])
-    .map(stdout => stdout.split(/\n+/g)
-                     .slice(1)
-                     .filter(s => s.length > 0)
-                     .map(s => s.split(/\s+/g)[0])).toPromise();
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-  return Promise.all(devices.map(async s => {
-    const arch = await getDeviceArchitecture(adbPath, s);
-    return {name: s, architecture: arch};
-  }));
+function startServer(adbPath) {
+  return (0, (_process || _load_process()).runCommand)(adbPath, ['start-server']).publish();
 }
 
-export function getDeviceArchitecture(
-  adbPath: NuclideUri,
-  device: string,
-): Promise<string> {
-  return runCommand(
-    adbPath,
-    ['-s', device, 'shell', 'getprop', 'ro.product.cpu.abi'],
-  ).map(s => s.trim())
-  .toPromise();
+function getDeviceArchitecture(adbPath, device) {
+  return (0, (_process || _load_process()).runCommand)(adbPath, ['-s', device, 'shell', 'getprop', 'ro.product.cpu.abi']).map(s => s.trim()).toPromise();
 }

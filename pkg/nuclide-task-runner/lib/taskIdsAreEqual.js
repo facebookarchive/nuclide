@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,9 +9,13 @@
  * the root directory of this source tree.
  */
 
-import type {TaskId} from './types';
-
-export function taskIdsAreEqual(a: ?TaskId, b: ?TaskId): boolean {
-  if (a == null || b == null) { return false; }
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.taskIdsAreEqual = taskIdsAreEqual;
+function taskIdsAreEqual(a, b) {
+  if (a == null || b == null) {
+    return false;
+  }
   return a.type === b.type && a.taskRunnerId === b.taskRunnerId;
 }

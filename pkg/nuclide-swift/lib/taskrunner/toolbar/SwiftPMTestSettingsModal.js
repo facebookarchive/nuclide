@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,73 +9,98 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
-import {AtomInput} from '../../../../nuclide-ui/AtomInput';
-import {Button, ButtonTypes} from '../../../../nuclide-ui/Button';
-import {ButtonGroup} from '../../../../nuclide-ui/ButtonGroup';
-import {Modal} from '../../../../nuclide-ui/Modal';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-type Props = {
-  buildPath: string,
-  onDismiss: () => void,
-  onSave: (
-    buildPath: string,
-  ) => void,
-};
+var _reactForAtom = require('react-for-atom');
 
-type State = {
-  buildPath: string,
-};
+var _AtomInput;
 
+function _load_AtomInput() {
+  return _AtomInput = require('../../../../nuclide-ui/AtomInput');
+}
 
-export default class SwiftPMTestSettingsModal extends React.Component {
-  props: Props;
-  state: State;
+var _Button;
 
-  constructor(props: Props) {
+function _load_Button() {
+  return _Button = require('../../../../nuclide-ui/Button');
+}
+
+var _ButtonGroup;
+
+function _load_ButtonGroup() {
+  return _ButtonGroup = require('../../../../nuclide-ui/ButtonGroup');
+}
+
+var _Modal;
+
+function _load_Modal() {
+  return _Modal = require('../../../../nuclide-ui/Modal');
+}
+
+class SwiftPMTestSettingsModal extends _reactForAtom.React.Component {
+
+  constructor(props) {
     super(props);
     this.state = {
-      buildPath: props.buildPath,
+      buildPath: props.buildPath
     };
   }
 
-  render(): React.Element<any> {
-    return (
-      <Modal onDismiss={this.props.onDismiss}>
-        <div className="block">
-          <label>Build path:</label>
-          <div className="block">
-            <AtomInput
-              initialValue={this.state.buildPath}
-              placeholderText="Build directory path"
-              onDidChange={this._onBuildPathChange.bind(this)}
-              onConfirm={this._onSave.bind(this)}
-            />
-          </div>
-          <div style={{display: 'flex', justifyContent: 'flex-end'}}>
-            <ButtonGroup>
-              <Button onClick={this.props.onDismiss}>
-                Cancel
-              </Button>
-              <Button
-                buttonType={ButtonTypes.PRIMARY}
-                onClick={this._onSave.bind(this)}>
-                Save
-              </Button>
-            </ButtonGroup>
-          </div>
-        </div>
-      </Modal>
+  render() {
+    return _reactForAtom.React.createElement(
+      (_Modal || _load_Modal()).Modal,
+      { onDismiss: this.props.onDismiss },
+      _reactForAtom.React.createElement(
+        'div',
+        { className: 'block' },
+        _reactForAtom.React.createElement(
+          'label',
+          null,
+          'Build path:'
+        ),
+        _reactForAtom.React.createElement(
+          'div',
+          { className: 'block' },
+          _reactForAtom.React.createElement((_AtomInput || _load_AtomInput()).AtomInput, {
+            initialValue: this.state.buildPath,
+            placeholderText: 'Build directory path',
+            onDidChange: this._onBuildPathChange.bind(this),
+            onConfirm: this._onSave.bind(this)
+          })
+        ),
+        _reactForAtom.React.createElement(
+          'div',
+          { style: { display: 'flex', justifyContent: 'flex-end' } },
+          _reactForAtom.React.createElement(
+            (_ButtonGroup || _load_ButtonGroup()).ButtonGroup,
+            null,
+            _reactForAtom.React.createElement(
+              (_Button || _load_Button()).Button,
+              { onClick: this.props.onDismiss },
+              'Cancel'
+            ),
+            _reactForAtom.React.createElement(
+              (_Button || _load_Button()).Button,
+              {
+                buttonType: (_Button || _load_Button()).ButtonTypes.PRIMARY,
+                onClick: this._onSave.bind(this) },
+              'Save'
+            )
+          )
+        )
+      )
     );
   }
 
-  _onBuildPathChange(buildPath: string) {
-    this.setState({buildPath});
+  _onBuildPathChange(buildPath) {
+    this.setState({ buildPath });
   }
 
   _onSave() {
-    this.props.onSave(
-      this.state.buildPath,
-    );
+    this.props.onSave(this.state.buildPath);
   }
 }
+exports.default = SwiftPMTestSettingsModal;
+module.exports = exports['default'];

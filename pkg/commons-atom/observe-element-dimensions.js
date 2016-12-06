@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,7 +9,12 @@
  * the root directory of this source tree.
  */
 
-import {Observable} from 'rxjs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.observeElementDimensions = observeElementDimensions;
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
 const observerConfig = {
   childList: true,
@@ -17,33 +22,22 @@ const observerConfig = {
   characterData: true,
   subtree: true,
   attributeOldValue: true,
-  characterDataOldValue: true,
+  characterDataOldValue: true
 };
 
-export type DOMMeasurements = {
-  clientHeight: number,
-  clientWidth: number,
-  offsetHeight: number,
-  offsetWidth: number,
-  scrollHeight: number,
-  scrollWidth: number,
-};
-
-function getElementDimensions(node: HTMLElement): DOMMeasurements {
+function getElementDimensions(node) {
   return {
     clientHeight: node.clientHeight,
     clientWidth: node.clientWidth,
     offsetHeight: node.offsetHeight,
     offsetWidth: node.offsetWidth,
     scrollHeight: node.scrollHeight,
-    scrollWidth: node.scrollWidth,
+    scrollWidth: node.scrollWidth
   };
 }
 
-export function observeElementDimensions(
-  node: HTMLElement,
-): Observable<DOMMeasurements> {
-  return Observable.create(observer => {
+function observeElementDimensions(node) {
+  return _rxjsBundlesRxMinJs.Observable.create(observer => {
     observer.next(getElementDimensions(node));
 
     // eslint-disable-next-line no-undef

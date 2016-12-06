@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,121 +9,225 @@
  * the root directory of this source tree.
  */
 
-import type {StatusCodeNumberValue} from '../nuclide-hg-rpc/lib/HgService';
-import type {HgRepositoryClient} from '../nuclide-hg-repository-client/lib/HgRepositoryClient';
-import type {NuclideUri} from '../commons-node/nuclideUri';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.RevertibleStatusCodes = exports.FileChangeStatusToTextColor = exports.FileChangeStatusToIcon = exports.FileChangeStatusToPrefix = exports.HgStatusToFileChangeStatus = exports.FileChangeStatus = exports.findVcs = undefined;
 
-import {arrayCompact} from '../commons-node/collection';
-import {asyncExecute} from '../commons-node/process';
-import {diffSets} from '../commons-node/observable';
-import {Directory} from 'atom';
-import {getFileSystemServiceByNuclideUri} from '../nuclide-remote-connection';
-import {hgConstants} from '../nuclide-hg-rpc';
-import invariant from 'assert';
-import nuclideUri from '../commons-node/nuclideUri';
-import {Observable} from 'rxjs';
-import {observableFromSubscribeFunction} from '../commons-node/event';
-import {track} from '../nuclide-analytics';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-type VcsInfo = {
-  vcs: string,
-  root: string,
-};
+let findVcsHelper = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (dir) {
+    const options = { cwd: dir };
+    const hgResult = yield (0, (_process || _load_process()).asyncExecute)('hg', ['root'], options);
+    if (hgResult.exitCode === 0) {
+      return {
+        vcs: 'hg',
+        root: hgResult.stdout.trim()
+      };
+    }
 
-const {StatusCodeNumber: HgStatusCodeNumber} = hgConstants;
-const vcsInfoCache: {[dir: string]: VcsInfo} = {};
+    const gitResult = yield (0, (_process || _load_process()).asyncExecute)('git', ['rev-parse', '--show-toplevel'], options);
+    if (gitResult.exitCode === 0) {
+      return {
+        vcs: 'git',
+        root: gitResult.stdout.trim()
+      };
+    }
 
-async function findVcsHelper(dir: string): Promise<VcsInfo> {
-  const options = {cwd: dir};
-  const hgResult = await asyncExecute('hg', ['root'], options);
-  if (hgResult.exitCode === 0) {
-    return {
-      vcs: 'hg',
-      root: hgResult.stdout.trim(),
-    };
-  }
+    throw new Error('Could not find VCS for: ' + dir);
+  });
 
-  const gitResult = await asyncExecute('git', ['rev-parse', '--show-toplevel'], options);
-  if (gitResult.exitCode === 0) {
-    return {
-      vcs: 'git',
-      root: gitResult.stdout.trim(),
-    };
-  }
-
-  throw new Error('Could not find VCS for: ' + dir);
-}
+  return function findVcsHelper(_x) {
+    return _ref.apply(this, arguments);
+  };
+})();
 
 /**
  * For the given source file, find the type of vcs that is managing it as well
  * as the root directory for the VCS.
  */
-export async function findVcs(dir: string): Promise<VcsInfo> {
-  let vcsInfo = vcsInfoCache[dir];
-  if (vcsInfo) {
-    return vcsInfo;
-  }
 
-  vcsInfo = await findVcsHelper(dir);
-  vcsInfoCache[dir] = vcsInfo;
-  return vcsInfo;
+
+let findVcs = exports.findVcs = (() => {
+  var _ref2 = (0, _asyncToGenerator.default)(function* (dir) {
+    let vcsInfo = vcsInfoCache[dir];
+    if (vcsInfo) {
+      return vcsInfo;
+    }
+
+    vcsInfo = yield findVcsHelper(dir);
+    vcsInfoCache[dir] = vcsInfo;
+    return vcsInfo;
+  });
+
+  return function findVcs(_x2) {
+    return _ref2.apply(this, arguments);
+  };
+})();
+
+let hgActionToPath = (() => {
+  var _ref5 = (0, _asyncToGenerator.default)(function* (nodePath, actionName, actionDoneMessage, action) {
+    if (nodePath == null || nodePath.length === 0) {
+      atom.notifications.addError(`Cannot ${ actionName } an empty path!`);
+      return;
+    }
+    const repository = repositoryForPath(nodePath);
+    if (repository == null || repository.getType() !== 'hg') {
+      atom.notifications.addError(`Cannot ${ actionName } a non-mercurial repository path`);
+      return;
+    }
+    const hgRepository = repository;
+    try {
+      yield action(hgRepository);
+      atom.notifications.addSuccess(`${ actionDoneMessage } \`${ repository.relativize(nodePath) }\` successfully.`);
+    } catch (error) {
+      atom.notifications.addError(`Failed to ${ actionName } \`${ repository.relativize(nodePath) }\``, { detail: error.message });
+    }
+  });
+
+  return function hgActionToPath(_x5, _x6, _x7, _x8) {
+    return _ref5.apply(this, arguments);
+  };
+})();
+
+let deleteFile = (() => {
+  var _ref6 = (0, _asyncToGenerator.default)(function* (nuclideFilePath) {
+    const filePath = (_nuclideUri || _load_nuclideUri()).default.getPath(nuclideFilePath);
+    const fsService = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getFileSystemServiceByNuclideUri)(nuclideFilePath);
+    try {
+      yield fsService.unlink(filePath);
+      const repository = repositoryForPath(nuclideFilePath);
+      if (repository == null || repository.getType() !== 'hg') {
+        return;
+      }
+      yield repository.remove([filePath], true);
+    } catch (error) {
+      atom.notifications.addError('Failed to delete file', {
+        detail: error
+      });
+    }
+  });
+
+  return function deleteFile(_x9) {
+    return _ref6.apply(this, arguments);
+  };
+})();
+
+exports.getDirtyFileChanges = getDirtyFileChanges;
+exports.observeStatusChanges = observeStatusChanges;
+exports.addPath = addPath;
+exports.revertPath = revertPath;
+exports.confirmAndRevertPath = confirmAndRevertPath;
+exports.getHgRepositories = getHgRepositories;
+exports.getHgRepositoryStream = getHgRepositoryStream;
+exports.repositoryForPath = repositoryForPath;
+exports.repositoryContainsPath = repositoryContainsPath;
+exports.getMultiRootFileChanges = getMultiRootFileChanges;
+exports.confirmAndDeletePath = confirmAndDeletePath;
+
+var _collection;
+
+function _load_collection() {
+  return _collection = require('../commons-node/collection');
 }
 
-export type FileChangeStatusValue = 1 | 2 | 3 | 4 | 5;
+var _process;
 
-export const FileChangeStatus = Object.freeze({
+function _load_process() {
+  return _process = require('../commons-node/process');
+}
+
+var _observable;
+
+function _load_observable() {
+  return _observable = require('../commons-node/observable');
+}
+
+var _atom = require('atom');
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../nuclide-remote-connection');
+}
+
+var _nuclideHgRpc;
+
+function _load_nuclideHgRpc() {
+  return _nuclideHgRpc = require('../nuclide-hg-rpc');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../commons-node/nuclideUri'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _event;
+
+function _load_event() {
+  return _event = require('../commons-node/event');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../nuclide-analytics');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const { StatusCodeNumber: HgStatusCodeNumber } = (_nuclideHgRpc || _load_nuclideHgRpc()).hgConstants;
+const vcsInfoCache = {};
+
+const FileChangeStatus = exports.FileChangeStatus = Object.freeze({
   ADDED: 1,
   MODIFIED: 2,
   MISSING: 3,
   REMOVED: 4,
-  UNTRACKED: 5,
+  UNTRACKED: 5
 });
 
-(FileChangeStatus: {[key: string]: FileChangeStatusValue});
+FileChangeStatus;
 
-export const HgStatusToFileChangeStatus
-  : {[key: StatusCodeNumberValue]: FileChangeStatusValue} = Object.freeze({
-    [HgStatusCodeNumber.ADDED]: FileChangeStatus.ADDED,
-    [HgStatusCodeNumber.MODIFIED]: FileChangeStatus.MODIFIED,
-    [HgStatusCodeNumber.MISSING]: FileChangeStatus.MISSING,
-    [HgStatusCodeNumber.REMOVED]: FileChangeStatus.REMOVED,
-    [HgStatusCodeNumber.UNTRACKED]: FileChangeStatus.UNTRACKED,
-  },
-);
+const HgStatusToFileChangeStatus = exports.HgStatusToFileChangeStatus = Object.freeze({
+  [HgStatusCodeNumber.ADDED]: FileChangeStatus.ADDED,
+  [HgStatusCodeNumber.MODIFIED]: FileChangeStatus.MODIFIED,
+  [HgStatusCodeNumber.MISSING]: FileChangeStatus.MISSING,
+  [HgStatusCodeNumber.REMOVED]: FileChangeStatus.REMOVED,
+  [HgStatusCodeNumber.UNTRACKED]: FileChangeStatus.UNTRACKED
+});
 
-export const FileChangeStatusToPrefix: {[key: FileChangeStatusValue]: string} = Object.freeze({
+const FileChangeStatusToPrefix = exports.FileChangeStatusToPrefix = Object.freeze({
   [FileChangeStatus.ADDED]: '[A] ',
   [FileChangeStatus.MODIFIED]: '[M] ',
   [FileChangeStatus.MISSING]: '[!] ',
   [FileChangeStatus.REMOVED]: '[D] ',
-  [FileChangeStatus.UNTRACKED]: '[?] ',
+  [FileChangeStatus.UNTRACKED]: '[?] '
 });
 
-export const FileChangeStatusToIcon: {[key: ?FileChangeStatusValue]: atom$Octicon} = Object.freeze({
+const FileChangeStatusToIcon = exports.FileChangeStatusToIcon = Object.freeze({
   [FileChangeStatus.ADDED]: 'diff-added',
   [FileChangeStatus.MODIFIED]: 'diff-modified',
   [FileChangeStatus.MISSING]: 'stop',
   [FileChangeStatus.REMOVED]: 'diff-removed',
-  [FileChangeStatus.UNTRACKED]: 'question',
+  [FileChangeStatus.UNTRACKED]: 'question'
 });
 
-export const FileChangeStatusToTextColor: {[key: ?FileChangeStatusValue]: string} = Object.freeze({
+const FileChangeStatusToTextColor = exports.FileChangeStatusToTextColor = Object.freeze({
   [FileChangeStatus.ADDED]: 'text-success',
   [FileChangeStatus.MODIFIED]: 'text-warning',
   [FileChangeStatus.MISSING]: 'text-error',
   [FileChangeStatus.REMOVED]: 'text-error',
-  [FileChangeStatus.UNTRACKED]: 'text-error',
+  [FileChangeStatus.UNTRACKED]: 'text-error'
 });
 
-export const RevertibleStatusCodes = [
-  FileChangeStatus.ADDED,
-  FileChangeStatus.MODIFIED,
-  FileChangeStatus.REMOVED,
-];
+const RevertibleStatusCodes = exports.RevertibleStatusCodes = [FileChangeStatus.ADDED, FileChangeStatus.MODIFIED, FileChangeStatus.REMOVED];
 
-export function getDirtyFileChanges(
-  repository: HgRepositoryClient,
-): Map<NuclideUri, FileChangeStatusValue> {
+function getDirtyFileChanges(repository) {
   const dirtyFileChanges = new Map();
   const statuses = repository.getAllPathStatuses();
   for (const filePath in statuses) {
@@ -136,124 +240,90 @@ export function getDirtyFileChanges(
 }
 
 const UPDATE_STATUS_DEBOUNCE_MS = 50;
-export function observeStatusChanges(
-  repository: HgRepositoryClient,
-): Observable<Map<NuclideUri, FileChangeStatusValue>> {
-  return observableFromSubscribeFunction(
-    repository.onDidChangeStatuses.bind(repository),
-  )
-  .debounceTime(UPDATE_STATUS_DEBOUNCE_MS)
-  .startWith(null)
-  .map(() => getDirtyFileChanges(repository));
+function observeStatusChanges(repository) {
+  return (0, (_event || _load_event()).observableFromSubscribeFunction)(repository.onDidChangeStatuses.bind(repository)).debounceTime(UPDATE_STATUS_DEBOUNCE_MS).startWith(null).map(() => getDirtyFileChanges(repository));
 }
 
-export function addPath(nodePath: ?NuclideUri): Promise<void> {
-  return hgActionToPath(
-    nodePath,
-    'add',
-    'Added',
-    async (hgRepository: HgRepositoryClient) => {
-      invariant(nodePath);
-      track('hg-repository-add', {nodePath});
-      await hgRepository.addAll([nodePath]);
-    },
-  );
+function addPath(nodePath) {
+  return hgActionToPath(nodePath, 'add', 'Added', (() => {
+    var _ref3 = (0, _asyncToGenerator.default)(function* (hgRepository) {
+      if (!nodePath) {
+        throw new Error('Invariant violation: "nodePath"');
+      }
+
+      (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('hg-repository-add', { nodePath });
+      yield hgRepository.addAll([nodePath]);
+    });
+
+    return function (_x3) {
+      return _ref3.apply(this, arguments);
+    };
+  })());
 }
 
-export function revertPath(nodePath: ?NuclideUri, toRevision?: ?string): Promise<void> {
-  return hgActionToPath(
-    nodePath,
-    'revert',
-    'Reverted',
-    async (hgRepository: HgRepositoryClient) => {
-      invariant(nodePath);
-      track('hg-repository-revert', {nodePath});
-      await hgRepository.revert([nodePath], toRevision);
-    },
-  );
+function revertPath(nodePath, toRevision) {
+  return hgActionToPath(nodePath, 'revert', 'Reverted', (() => {
+    var _ref4 = (0, _asyncToGenerator.default)(function* (hgRepository) {
+      if (!nodePath) {
+        throw new Error('Invariant violation: "nodePath"');
+      }
+
+      (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('hg-repository-revert', { nodePath });
+      yield hgRepository.revert([nodePath], toRevision);
+    });
+
+    return function (_x4) {
+      return _ref4.apply(this, arguments);
+    };
+  })());
 }
 
-export function confirmAndRevertPath(path: ?NuclideUri, toRevision?: ?string): void {
+function confirmAndRevertPath(path, toRevision) {
   const result = atom.confirm({
     message: 'Are you sure you want to revert?',
-    buttons: ['Revert', 'Cancel'],
+    buttons: ['Revert', 'Cancel']
   });
-  invariant(result === 0 || result === 1);
+
+  if (!(result === 0 || result === 1)) {
+    throw new Error('Invariant violation: "result === 0 || result === 1"');
+  }
+
   if (result === 0) {
     revertPath(path, toRevision);
   }
 }
 
-async function hgActionToPath(
-  nodePath: ?NuclideUri,
-  actionName: string,
-  actionDoneMessage: string,
-  action: (hgRepository: HgRepositoryClient) => Promise<void>,
-): Promise<void> {
-  if (nodePath == null || nodePath.length === 0) {
-    atom.notifications.addError(`Cannot ${actionName} an empty path!`);
-    return;
-  }
-  const repository = repositoryForPath(nodePath);
-  if (repository == null || repository.getType() !== 'hg') {
-    atom.notifications.addError(`Cannot ${actionName} a non-mercurial repository path`);
-    return;
-  }
-  const hgRepository: HgRepositoryClient = (repository: any);
-  try {
-    await action(hgRepository);
-    atom.notifications.addSuccess(
-      `${actionDoneMessage} \`${repository.relativize(nodePath)}\` successfully.`,
-    );
-  } catch (error) {
-    atom.notifications.addError(
-      `Failed to ${actionName} \`${repository.relativize(nodePath)}\``,
-      {detail: error.message},
-    );
-  }
+function getHgRepositories() {
+  return new Set((0, (_collection || _load_collection()).arrayCompact)(atom.project.getRepositories()).filter(repository => repository.getType() === 'hg'));
 }
 
-export function getHgRepositories(): Set<HgRepositoryClient> {
-  return new Set(
-    arrayCompact(atom.project.getRepositories())
-      .filter(repository => repository.getType() === 'hg'),
-  );
-}
+function getHgRepositoryStream() {
+  const currentRepositories = (0, (_event || _load_event()).observableFromSubscribeFunction)(atom.project.onDidChangePaths.bind(atom.project)).startWith(null).map(() => getHgRepositories());
 
-export function getHgRepositoryStream(): Observable<HgRepositoryClient> {
-  const currentRepositories =
-    observableFromSubscribeFunction(atom.project.onDidChangePaths.bind(atom.project))
-    .startWith(null)
-    .map(() => getHgRepositories());
-
-  return diffSets(currentRepositories).flatMap(
-    repoDiff => Observable.from(repoDiff.added),
-  );
+  return (0, (_observable || _load_observable()).diffSets)(currentRepositories).flatMap(repoDiff => _rxjsBundlesRxMinJs.Observable.from(repoDiff.added));
 }
 
 'use babel';
-/* @flow */
 
 /**
  * @param aPath The NuclideUri of a file or directory for which you want to find
  *   a Repository it belongs to.
  * @return A Git or Hg repository the path belongs to, if any.
  */
-export function repositoryForPath(aPath: NuclideUri): ?atom$Repository {
+
+function repositoryForPath(aPath) {
   // Calling atom.project.repositoryForDirectory gets the real path of the directory,
   // which requires a round-trip to the server for remote paths.
   // Instead, this function keeps filtering local.
-  const repositories = arrayCompact(atom.project.getRepositories());
-  return repositories.find(
-    repo => {
-      try {
-        return repositoryContainsPath(repo, aPath);
-      } catch (e) {
-        // The repo type is not supported.
-        return false;
-      }
-    },
-  );
+  const repositories = (0, (_collection || _load_collection()).arrayCompact)(atom.project.getRepositories());
+  return repositories.find(repo => {
+    try {
+      return repositoryContainsPath(repo, aPath);
+    } catch (e) {
+      // The repo type is not supported.
+      return false;
+    }
+  });
 }
 
 /**
@@ -262,24 +332,20 @@ export function repositoryForPath(aPath: NuclideUri): ?atom$Repository {
  * @return boolean Whether the file path exists within the working directory
  *   (aka root directory) of the repository, or is the working directory.
  */
-export function repositoryContainsPath(
-  repository: atom$Repository,
-  filePath: NuclideUri,
-): boolean {
+function repositoryContainsPath(repository, filePath) {
   const workingDirectoryPath = repository.getWorkingDirectory();
   if (pathsAreEqual(workingDirectoryPath, filePath)) {
     return true;
   }
 
   if (repository.getType() === 'git') {
-    const rootGitProjectDirectory = new Directory(workingDirectoryPath);
+    const rootGitProjectDirectory = new _atom.Directory(workingDirectoryPath);
     return rootGitProjectDirectory.contains(filePath);
   } else if (repository.getType() === 'hg') {
-    const hgRepository = ((repository: any): HgRepositoryClient);
+    const hgRepository = repository;
     return hgRepository._workingDirectory.contains(filePath);
   }
-  throw new Error(
-    'repositoryContainsPath: Received an unrecognized repository type. Expected git or hg.');
+  throw new Error('repositoryContainsPath: Received an unrecognized repository type. Expected git or hg.');
 }
 
 /**
@@ -287,73 +353,48 @@ export function repositoryContainsPath(
  * @param filePath2 An absolute file path.
  * @return Whether the file paths are equal, accounting for trailing slashes.
  */
-function pathsAreEqual(filePath1: string, filePath2: string): boolean {
-  const realPath1 = nuclideUri.resolve(filePath1);
-  const realPath2 = nuclideUri.resolve(filePath2);
+function pathsAreEqual(filePath1, filePath2) {
+  const realPath1 = (_nuclideUri || _load_nuclideUri()).default.resolve(filePath1);
+  const realPath2 = (_nuclideUri || _load_nuclideUri()).default.resolve(filePath2);
   return realPath1 === realPath2;
 }
 
-export function getMultiRootFileChanges(
-  fileChanges: Map<NuclideUri, FileChangeStatusValue>,
-  rootPaths?: Array<NuclideUri>,
-): Map<NuclideUri, Map<NuclideUri, FileChangeStatusValue>> {
+function getMultiRootFileChanges(fileChanges, rootPaths) {
   let roots;
   if (rootPaths == null) {
-    roots = arrayCompact(
-      atom.project.getDirectories().map(directory => {
-        const rootPath = directory.getPath();
-        const repository = repositoryForPath(rootPath);
-        if ((repository == null || repository.getType() !== 'hg')) {
-          return null;
-        }
-        return nuclideUri.ensureTrailingSeparator(rootPath);
-      }),
-    );
+    roots = (0, (_collection || _load_collection()).arrayCompact)(atom.project.getDirectories().map(directory => {
+      const rootPath = directory.getPath();
+      const repository = repositoryForPath(rootPath);
+      if (repository == null || repository.getType() !== 'hg') {
+        return null;
+      }
+      return (_nuclideUri || _load_nuclideUri()).default.ensureTrailingSeparator(rootPath);
+    }));
   } else {
-    roots = rootPaths.map(root => nuclideUri.ensureTrailingSeparator(root));
+    roots = rootPaths.map(root => (_nuclideUri || _load_nuclideUri()).default.ensureTrailingSeparator(root));
   }
 
-  const sortedFilePaths = Array.from(fileChanges.entries())
-    .sort(([filePath1], [filePath2]) =>
-      nuclideUri.basename(filePath1).toLowerCase().localeCompare(
-        nuclideUri.basename(filePath2).toLowerCase(),
-      ),
-    );
+  const sortedFilePaths = Array.from(fileChanges.entries()).sort(([filePath1], [filePath2]) => (_nuclideUri || _load_nuclideUri()).default.basename(filePath1).toLowerCase().localeCompare((_nuclideUri || _load_nuclideUri()).default.basename(filePath2).toLowerCase()));
 
   const changedRoots = new Map(roots.map(root => {
-    const rootChanges = new Map(
-      sortedFilePaths.filter(([filePath]) => nuclideUri.contains(root, filePath)),
-    );
+    const rootChanges = new Map(sortedFilePaths.filter(([filePath]) => (_nuclideUri || _load_nuclideUri()).default.contains(root, filePath)));
     return [root, rootChanges];
   }));
 
   return changedRoots;
 }
 
-export function confirmAndDeletePath(nuclideFilePath: NuclideUri): void {
+function confirmAndDeletePath(nuclideFilePath) {
   const result = atom.confirm({
     message: 'Are you sure you want to delete?',
-    buttons: ['Delete', 'Cancel'],
+    buttons: ['Delete', 'Cancel']
   });
-  invariant(result === 0 || result === 1);
+
+  if (!(result === 0 || result === 1)) {
+    throw new Error('Invariant violation: "result === 0 || result === 1"');
+  }
+
   if (result === 0) {
     deleteFile(nuclideFilePath);
-  }
-}
-
-async function deleteFile(nuclideFilePath: string): Promise<void> {
-  const filePath = nuclideUri.getPath(nuclideFilePath);
-  const fsService = getFileSystemServiceByNuclideUri(nuclideFilePath);
-  try {
-    await fsService.unlink(filePath);
-    const repository = repositoryForPath(nuclideFilePath);
-    if (repository == null || repository.getType() !== 'hg') {
-      return;
-    }
-    await ((repository: any): HgRepositoryClient).remove([filePath], true);
-  } catch (error) {
-    atom.notifications.addError('Failed to delete file', {
-      detail: error,
-    });
   }
 }

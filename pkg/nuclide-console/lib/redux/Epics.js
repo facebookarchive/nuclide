@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,33 +9,53 @@
  * the root directory of this source tree.
  */
 
-import type {Action, Store} from '../types';
-import type {ActionsObservable} from '../../../commons-node/redux-observable';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.registerExecutorEpic = registerExecutorEpic;
+exports.executeEpic = executeEpic;
+exports.registerRecordProviderEpic = registerRecordProviderEpic;
 
-import {observableFromSubscribeFunction} from '../../../commons-node/event';
-import * as Actions from './Actions';
-import getCurrentExecutorId from '../getCurrentExecutorId';
-import invariant from 'assert';
-import {Observable} from 'rxjs';
+var _event;
+
+function _load_event() {
+  return _event = require('../../../commons-node/event');
+}
+
+var _Actions;
+
+function _load_Actions() {
+  return _Actions = _interopRequireWildcard(require('./Actions'));
+}
+
+var _getCurrentExecutorId;
+
+function _load_getCurrentExecutorId() {
+  return _getCurrentExecutorId = _interopRequireDefault(require('../getCurrentExecutorId'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 /**
  * Register a record provider for every executor.
  */
-export function registerExecutorEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions.ofType(Actions.REGISTER_EXECUTOR).map(action => {
-    invariant(action.type === Actions.REGISTER_EXECUTOR);
-    const {executor} = action.payload;
-    return Actions.registerRecordProvider({
+function registerExecutorEpic(actions, store) {
+  return actions.ofType((_Actions || _load_Actions()).REGISTER_EXECUTOR).map(action => {
+    if (!(action.type === (_Actions || _load_Actions()).REGISTER_EXECUTOR)) {
+      throw new Error('Invariant violation: "action.type === Actions.REGISTER_EXECUTOR"');
+    }
+
+    const { executor } = action.payload;
+    return (_Actions || _load_Actions()).registerRecordProvider({
       id: executor.id,
-      records: executor.output.map(message => ({
-        ...message,
+      records: executor.output.map(message => Object.assign({}, message, {
         kind: 'response',
         sourceId: executor.id,
-        scopeName: null, // The output won't be in the language's grammar.
-      })),
+        scopeName: null }))
     });
   });
 }
@@ -43,61 +63,67 @@ export function registerExecutorEpic(
 /**
  * Execute the provided code using the current executor.
  */
-export function executeEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions.ofType(Actions.EXECUTE).flatMap(action => {
-    invariant(action.type === Actions.EXECUTE);
-    const {code} = action.payload;
-    const currentExecutorId = getCurrentExecutorId(store.getState());
-    invariant(currentExecutorId);
+function executeEpic(actions, store) {
+  return actions.ofType((_Actions || _load_Actions()).EXECUTE).flatMap(action => {
+    if (!(action.type === (_Actions || _load_Actions()).EXECUTE)) {
+      throw new Error('Invariant violation: "action.type === Actions.EXECUTE"');
+    }
+
+    const { code } = action.payload;
+    const currentExecutorId = (0, (_getCurrentExecutorId || _load_getCurrentExecutorId()).default)(store.getState());
+
+    if (!currentExecutorId) {
+      throw new Error('Invariant violation: "currentExecutorId"');
+    }
 
     const executor = store.getState().executors.get(currentExecutorId);
-    invariant(executor != null);
+
+    if (!(executor != null)) {
+      throw new Error('Invariant violation: "executor != null"');
+    }
 
     // TODO: Is this the best way to do this? Might want to go through nuclide-executors and have
     //       that register output sources?
-    return Observable.of(
-      Actions.recordReceived({
-        sourceId: currentExecutorId,
-        kind: 'request',
-        level: 'log',
-        text: code,
-        scopeName: executor.scopeName,
-      }),
-    )
-      // Execute the code as a side-effect.
-      .finally(() => {
-        executor.send(code);
-      });
+
+
+    return _rxjsBundlesRxMinJs.Observable.of((_Actions || _load_Actions()).recordReceived({
+      sourceId: currentExecutorId,
+      kind: 'request',
+      level: 'log',
+      text: code,
+      scopeName: executor.scopeName
+    }))
+    // Execute the code as a side-effect.
+    .finally(() => {
+      executor.send(code);
+    });
   });
 }
 
-export function registerRecordProviderEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions.ofType(Actions.REGISTER_RECORD_PROVIDER).flatMap(action => {
-    invariant(action.type === Actions.REGISTER_RECORD_PROVIDER);
-    const {recordProvider} = action.payload;
+function registerRecordProviderEpic(actions, store) {
+  return actions.ofType((_Actions || _load_Actions()).REGISTER_RECORD_PROVIDER).flatMap(action => {
+    if (!(action.type === (_Actions || _load_Actions()).REGISTER_RECORD_PROVIDER)) {
+      throw new Error('Invariant violation: "action.type === Actions.REGISTER_RECORD_PROVIDER"');
+    }
+
+    const { recordProvider } = action.payload;
 
     // Transform the messages into actions and merge them into the action stream.
     // TODO: Add enabling/disabling of registered source and only subscribe when enabled. That
     //       way, we won't trigger cold observer side-effects when we don't need the results.
-    const messageActions = recordProvider.records.map(Actions.recordReceived);
+    const messageActions = recordProvider.records.map((_Actions || _load_Actions()).recordReceived);
 
     // TODO: Can this be delayed until sometime after registration?
-    const statusActions = typeof recordProvider.observeStatus === 'function'
-      ? observableFromSubscribeFunction(recordProvider.observeStatus)
-          .map(status => Actions.updateStatus(recordProvider.id, status))
-      : Observable.empty();
+    const statusActions = typeof recordProvider.observeStatus === 'function' ? (0, (_event || _load_event()).observableFromSubscribeFunction)(recordProvider.observeStatus).map(status => (_Actions || _load_Actions()).updateStatus(recordProvider.id, status)) : _rxjsBundlesRxMinJs.Observable.empty();
 
-    const unregisteredEvents = actions.ofType(Actions.REMOVE_SOURCE).filter(a => {
-      invariant(a.type === Actions.REMOVE_SOURCE);
+    const unregisteredEvents = actions.ofType((_Actions || _load_Actions()).REMOVE_SOURCE).filter(a => {
+      if (!(a.type === (_Actions || _load_Actions()).REMOVE_SOURCE)) {
+        throw new Error('Invariant violation: "a.type === Actions.REMOVE_SOURCE"');
+      }
+
       return a.payload.sourceId === recordProvider.id;
     });
 
-    return Observable.merge(messageActions, statusActions).takeUntil(unregisteredEvents);
+    return _rxjsBundlesRxMinJs.Observable.merge(messageActions, statusActions).takeUntil(unregisteredEvents);
   });
 }

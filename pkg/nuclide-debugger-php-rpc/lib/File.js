@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,38 +9,51 @@
  * the root directory of this source tree.
  */
 
-import fsPromise from '../../commons-node/fsPromise';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _fsPromise;
+
+function _load_fsPromise() {
+  return _fsPromise = _interopRequireDefault(require('../../commons-node/fsPromise'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * A file in the file cache.
  */
 class File {
-  _path: string;
-  _source: ?string;
 
-  constructor(path: string) {
+  constructor(path) {
     this._path = path;
     this._source = null;
   }
 
-  async getSource(): Promise<string> {
-    const hasSource = await this.hasSource();
-    if (!hasSource) {
-      return '';
-    }
-    let source = this._source;
-    if (source == null) {
-      source = await fsPromise.readFile(this._path, 'utf8');
-      this._source = source;
-    }
-    return source;
+  getSource() {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const hasSource = yield _this.hasSource();
+      if (!hasSource) {
+        return '';
+      }
+      let source = _this._source;
+      if (source == null) {
+        source = yield (_fsPromise || _load_fsPromise()).default.readFile(_this._path, 'utf8');
+        _this._source = source;
+      }
+      return source;
+    })();
   }
 
-  async hasSource(): Promise<boolean> {
-    // t12549106 -- this is a workaround for some HHVM goofiness.
-    return await fsPromise.exists(this._path) && (await fsPromise.lstat(this._path)).isFile();
+  hasSource() {
+    var _this2 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      // t12549106 -- this is a workaround for some HHVM goofiness.
+      return (yield (_fsPromise || _load_fsPromise()).default.exists(_this2._path)) && (yield (_fsPromise || _load_fsPromise()).default.lstat(_this2._path)).isFile();
+    })();
   }
 }
-
 
 module.exports = File;

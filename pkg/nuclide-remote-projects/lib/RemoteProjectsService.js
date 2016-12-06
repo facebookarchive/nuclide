@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,26 +9,38 @@
  * the root directory of this source tree.
  */
 
-import {ReplaySubject} from 'rxjs';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-export default class RemoteProjectsService {
-  _subject: ReplaySubject<Array<string>>;
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../commons-node/UniversalDisposable'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class RemoteProjectsService {
 
   constructor() {
-    this._subject = new ReplaySubject(1);
+    this._subject = new _rxjsBundlesRxMinJs.ReplaySubject(1);
   }
 
   dispose() {
     this._subject.complete();
   }
 
-  _reloadFinished(projects: Array<string>) {
+  _reloadFinished(projects) {
     this._subject.next(projects);
     this._subject.complete();
   }
 
-  waitForRemoteProjectReload(callback: (loadedProjects: Array<string>) => mixed): IDisposable {
-    return new UniversalDisposable(this._subject.subscribe(callback));
+  waitForRemoteProjectReload(callback) {
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default(this._subject.subscribe(callback));
   }
 }
+exports.default = RemoteProjectsService;
+module.exports = exports['default'];

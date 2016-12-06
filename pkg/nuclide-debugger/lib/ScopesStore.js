@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,40 +9,41 @@
  * the root directory of this source tree.
  */
 
-import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';
-import type {ScopeSection, ExpansionResult} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {
-  Disposable,
-  CompositeDisposable,
-} from 'atom';
-import {BehaviorSubject, Observable} from 'rxjs';
-import {ActionTypes} from './DebuggerDispatcher';
+var _atom = require('atom');
 
-export default class ScopesStore {
-  _disposables: IDisposable;
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _DebuggerDispatcher;
+
+function _load_DebuggerDispatcher() {
+  return _DebuggerDispatcher = require('./DebuggerDispatcher');
+}
+
+class ScopesStore {
+
+  constructor(dispatcher) {
+    const dispatcherToken = dispatcher.register(this._handlePayload.bind(this));
+    this._disposables = new _atom.CompositeDisposable(new _atom.Disposable(() => {
+      dispatcher.unregister(dispatcherToken);
+    }));
+    this._scopes = new _rxjsBundlesRxMinJs.BehaviorSubject([]);
+  }
   /**
    * Treat as immutable.
    */
-  _scopes: BehaviorSubject<Array<ScopeSection>>;
 
-  constructor(dispatcher: DebuggerDispatcher) {
-    const dispatcherToken = dispatcher.register(this._handlePayload.bind(this));
-    this._disposables = new CompositeDisposable(
-      new Disposable(() => {
-        dispatcher.unregister(dispatcherToken);
-      }),
-    );
-    this._scopes = new BehaviorSubject([]);
-  }
 
-  _handlePayload(payload: DebuggerAction): void {
+  _handlePayload(payload) {
     switch (payload.actionType) {
-      case ActionTypes.CLEAR_INTERFACE:
-      case ActionTypes.SET_SELECTED_CALLFRAME_INDEX:
+      case (_DebuggerDispatcher || _load_DebuggerDispatcher()).ActionTypes.CLEAR_INTERFACE:
+      case (_DebuggerDispatcher || _load_DebuggerDispatcher()).ActionTypes.SET_SELECTED_CALLFRAME_INDEX:
         this._handleClearInterface();
         break;
-      case ActionTypes.UPDATE_SCOPES:
+      case (_DebuggerDispatcher || _load_DebuggerDispatcher()).ActionTypes.UPDATE_SCOPES:
         this._handleUpdateScopes(payload.data.scopeVariables, payload.data.scopeName);
         break;
       default:
@@ -50,23 +51,25 @@ export default class ScopesStore {
     }
   }
 
-  _handleClearInterface(): void {
+  _handleClearInterface() {
     this._scopes.next([]);
   }
 
-  _handleUpdateScopes(scopeVariables: ExpansionResult, scopeName: string): void {
+  _handleUpdateScopes(scopeVariables, scopeName) {
     const scopeSection = {
       name: scopeName,
-      scopeVariables,
+      scopeVariables
     };
     this._scopes.next([...this._scopes.getValue(), scopeSection]);
   }
 
-  getScopes(): Observable<Array<ScopeSection>> {
+  getScopes() {
     return this._scopes.asObservable();
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
   }
 }
+exports.default = ScopesStore;
+module.exports = exports['default'];

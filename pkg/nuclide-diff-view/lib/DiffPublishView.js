@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,170 +9,177 @@
  * the root directory of this source tree.
  */
 
-import type DiffViewModel from './DiffViewModel';
-import type {
-  PublishModeType,
-  PublishModeStateType,
-  SuggestedReviewersState,
-} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {getPhabricatorRevisionFromCommitMessage} from '../../nuclide-arcanist-rpc/lib/utils';
-import {AtomTextEditor} from '../../nuclide-ui/AtomTextEditor';
-import {Checkbox} from '../../nuclide-ui/Checkbox';
-import classnames from 'classnames';
-import {DiffMode, PublishMode, PublishModeState} from './constants';
-import {React} from 'react-for-atom';
-import {
-  Button,
-  ButtonSizes,
-  ButtonTypes,
-} from '../../nuclide-ui/Button';
-import {
-  ButtonGroup,
-  ButtonGroupSizes,
-} from '../../nuclide-ui/ButtonGroup';
-import {Toolbar} from '../../nuclide-ui/Toolbar';
-import {ToolbarLeft} from '../../nuclide-ui/ToolbarLeft';
-import {ToolbarRight} from '../../nuclide-ui/ToolbarRight';
-import {
-  SHOULD_DOCK_PUBLISH_VIEW_CONFIG_KEY,
-} from './constants';
-import featureConfig from '../../commons-atom/featureConfig';
+var _utils;
 
-type DiffRevisionViewProps = {
-  commitMessage: string,
-};
-
-class DiffRevisionView extends React.Component {
-  props: DiffRevisionViewProps;
-
-  render(): React.Element<any> {
-    const {commitMessage} = this.props;
-    const commitTitle = commitMessage.split(/\n/)[0];
-    const revision = getPhabricatorRevisionFromCommitMessage(commitMessage);
-
-    return (revision == null)
-      ? <span />
-      : (
-        <a href={revision.url} title={commitTitle}>
-          {revision.name}
-        </a>
-      );
-  }
+function _load_utils() {
+  return _utils = require('../../nuclide-arcanist-rpc/lib/utils');
 }
 
-type Props = {
-  message: ?string,
-  publishMode: PublishModeType,
-  publishModeState: PublishModeStateType,
-  headCommitMessage: ?string,
-  diffModel: DiffViewModel,
-  shouldDockPublishView: boolean,
-  suggestedReviewers: SuggestedReviewersState,
-};
+var _AtomTextEditor;
 
-type State = {
-  isPrepareMode: boolean,
-};
+function _load_AtomTextEditor() {
+  return _AtomTextEditor = require('../../nuclide-ui/AtomTextEditor');
+}
 
-export default class DiffPublishView extends React.Component {
-  props: Props;
-  state: State;
+var _Checkbox;
 
-  constructor(props: Props) {
+function _load_Checkbox() {
+  return _Checkbox = require('../../nuclide-ui/Checkbox');
+}
+
+var _classnames;
+
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
+
+var _constants;
+
+function _load_constants() {
+  return _constants = require('./constants');
+}
+
+var _reactForAtom = require('react-for-atom');
+
+var _Button;
+
+function _load_Button() {
+  return _Button = require('../../nuclide-ui/Button');
+}
+
+var _ButtonGroup;
+
+function _load_ButtonGroup() {
+  return _ButtonGroup = require('../../nuclide-ui/ButtonGroup');
+}
+
+var _Toolbar;
+
+function _load_Toolbar() {
+  return _Toolbar = require('../../nuclide-ui/Toolbar');
+}
+
+var _ToolbarLeft;
+
+function _load_ToolbarLeft() {
+  return _ToolbarLeft = require('../../nuclide-ui/ToolbarLeft');
+}
+
+var _ToolbarRight;
+
+function _load_ToolbarRight() {
+  return _ToolbarRight = require('../../nuclide-ui/ToolbarRight');
+}
+
+var _featureConfig;
+
+function _load_featureConfig() {
+  return _featureConfig = _interopRequireDefault(require('../../commons-atom/featureConfig'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class DiffRevisionView extends _reactForAtom.React.Component {
+
+  render() {
+    const { commitMessage } = this.props;
+    const commitTitle = commitMessage.split(/\n/)[0];
+    const revision = (0, (_utils || _load_utils()).getPhabricatorRevisionFromCommitMessage)(commitMessage);
+
+    return revision == null ? _reactForAtom.React.createElement('span', null) : _reactForAtom.React.createElement(
+      'a',
+      { href: revision.url, title: commitTitle },
+      revision.name
+    );
+  }
+}class DiffPublishView extends _reactForAtom.React.Component {
+
+  constructor(props) {
     super(props);
-    (this: any)._onClickBack = this._onClickBack.bind(this);
-    (this: any).__onClickPublish = this.__onClickPublish.bind(this);
-    (this: any)._onTogglePrepare = this._onTogglePrepare.bind(this);
-    (this: any)._toggleDockPublishConfig = this._toggleDockPublishConfig.bind(this);
+    this._onClickBack = this._onClickBack.bind(this);
+    this.__onClickPublish = this.__onClickPublish.bind(this);
+    this._onTogglePrepare = this._onTogglePrepare.bind(this);
+    this._toggleDockPublishConfig = this._toggleDockPublishConfig.bind(this);
     this.state = {
-      isPrepareMode: false,
+      isPrepareMode: false
     };
   }
 
-  componentDidMount(): void {
+  componentDidMount() {
     this.__populatePublishText();
   }
 
-  componentDidUpdate(prevProps: Props): void {
-    if (
-      this.props.message !== prevProps.message ||
-      this.props.publishModeState !== prevProps.publishModeState
-    ) {
+  componentDidUpdate(prevProps) {
+    if (this.props.message !== prevProps.message || this.props.publishModeState !== prevProps.publishModeState) {
       this.__populatePublishText();
     }
   }
 
-  __populatePublishText(): void {
+  __populatePublishText() {
     const messageEditor = this.refs.message;
     if (messageEditor != null) {
       messageEditor.getTextBuffer().setText(this.props.message || '');
     }
   }
 
-  __onClickPublish(): void {
+  __onClickPublish() {
     const isPrepareChecked = this.state.isPrepareMode;
 
-    this.props.diffModel.publishDiff(
-      this.__getPublishMessage() || '',
-      isPrepareChecked,
-      null,
-    );
+    this.props.diffModel.publishDiff(this.__getPublishMessage() || '', isPrepareChecked, null);
   }
 
-  __getPublishMessage(): ?string {
+  __getPublishMessage() {
     const messageEditor = this.refs.message;
-    return messageEditor == null
-      ? this.props.message
-      : messageEditor.getTextBuffer().getText();
+    return messageEditor == null ? this.props.message : messageEditor.getTextBuffer().getText();
   }
 
-  __getStatusEditor(): React.Element<any> {
-    const {publishModeState} = this.props;
-    const isBusy = publishModeState === PublishModeState.LOADING_PUBLISH_MESSAGE
-      || publishModeState === PublishModeState.AWAITING_PUBLISH;
-    return (
-      <AtomTextEditor
-        ref="message"
-        softWrapped={true}
-        readOnly={isBusy}
-        syncTextContents={false}
-        gutterHidden={true}
-      />
-    );
+  __getStatusEditor() {
+    const { publishModeState } = this.props;
+    const isBusy = publishModeState === (_constants || _load_constants()).PublishModeState.LOADING_PUBLISH_MESSAGE || publishModeState === (_constants || _load_constants()).PublishModeState.AWAITING_PUBLISH;
+    return _reactForAtom.React.createElement((_AtomTextEditor || _load_AtomTextEditor()).AtomTextEditor, {
+      ref: 'message',
+      softWrapped: true,
+      readOnly: isBusy,
+      syncTextContents: false,
+      gutterHidden: true
+    });
   }
 
-  _getToolbar(): React.Element<any> {
+  _getToolbar() {
     const {
       headCommitMessage,
       publishMode,
       publishModeState,
-      shouldDockPublishView,
+      shouldDockPublishView
     } = this.props;
     let revisionView;
     if (headCommitMessage != null) {
-      revisionView = <DiffRevisionView commitMessage={headCommitMessage} />;
+      revisionView = _reactForAtom.React.createElement(DiffRevisionView, { commitMessage: headCommitMessage });
     }
     let isBusy;
     let publishMessage;
     switch (publishModeState) {
-      case PublishModeState.READY:
+      case (_constants || _load_constants()).PublishModeState.READY:
         isBusy = false;
-        if (publishMode === PublishMode.CREATE) {
+        if (publishMode === (_constants || _load_constants()).PublishMode.CREATE) {
           publishMessage = 'Publish Phabricator Revision';
         } else {
           publishMessage = 'Update Phabricator Revision';
         }
         break;
-      case PublishModeState.LOADING_PUBLISH_MESSAGE:
+      case (_constants || _load_constants()).PublishModeState.LOADING_PUBLISH_MESSAGE:
         isBusy = true;
         publishMessage = 'Loading...';
         break;
-      case PublishModeState.AWAITING_PUBLISH:
+      case (_constants || _load_constants()).PublishModeState.AWAITING_PUBLISH:
         isBusy = true;
         publishMessage = 'Publishing...';
         break;
-      case PublishModeState.PUBLISH_ERROR:
+      case (_constants || _load_constants()).PublishModeState.PUBLISH_ERROR:
         isBusy = false;
         publishMessage = 'Fixed? - Retry Publishing';
         break;
@@ -180,92 +187,98 @@ export default class DiffPublishView extends React.Component {
         throw new Error('Invalid publish mode!');
     }
 
-    const publishButton = (
-      <Button
-        className={classnames({'btn-progress': isBusy})}
-        size={ButtonSizes.SMALL}
-        buttonType={ButtonTypes.PRIMARY}
-        onClick={this.__onClickPublish}
-        disabled={isBusy}>
-        {publishMessage}
-      </Button>
+    const publishButton = _reactForAtom.React.createElement(
+      (_Button || _load_Button()).Button,
+      {
+        className: (0, (_classnames || _load_classnames()).default)({ 'btn-progress': isBusy }),
+        size: (_Button || _load_Button()).ButtonSizes.SMALL,
+        buttonType: (_Button || _load_Button()).ButtonTypes.PRIMARY,
+        onClick: this.__onClickPublish,
+        disabled: isBusy },
+      publishMessage
     );
 
-    const toggleDockButton = (
-      <Button
-        icon={shouldDockPublishView ? 'move-up' : 'move-down'}
-        onClick={this._toggleDockPublishConfig}
-        title="Dock or Popup view"
-      />
-    );
+    const toggleDockButton = _reactForAtom.React.createElement((_Button || _load_Button()).Button, {
+      icon: shouldDockPublishView ? 'move-up' : 'move-down',
+      onClick: this._toggleDockPublishConfig,
+      title: 'Dock or Popup view'
+    });
 
-    const backButton = shouldDockPublishView ?
-      <Button
-        size={ButtonSizes.SMALL}
-        onClick={this._onClickBack}>
-        Back
-      </Button>
-      : null;
+    const backButton = shouldDockPublishView ? _reactForAtom.React.createElement(
+      (_Button || _load_Button()).Button,
+      {
+        size: (_Button || _load_Button()).ButtonSizes.SMALL,
+        onClick: this._onClickBack },
+      'Back'
+    ) : null;
 
     let prepareOptionElement;
-    if (publishMode === PublishMode.CREATE) {
-      prepareOptionElement = (
-        <Checkbox
-          checked={this.state.isPrepareMode}
-          className="padded"
-          label="Prepare"
-          tabIndex="-1"
-          onChange={this._onTogglePrepare}
-        />
-      );
+    if (publishMode === (_constants || _load_constants()).PublishMode.CREATE) {
+      prepareOptionElement = _reactForAtom.React.createElement((_Checkbox || _load_Checkbox()).Checkbox, {
+        checked: this.state.isPrepareMode,
+        className: 'padded',
+        label: 'Prepare',
+        tabIndex: '-1',
+        onChange: this._onTogglePrepare
+      });
     }
 
-    return (
-      <div className="publish-toolbar-wrapper">
-        <Toolbar location="bottom">
-          <ToolbarLeft className="nuclide-diff-view-publish-toolbar-left">
-            {revisionView}
-            {prepareOptionElement}
-          </ToolbarLeft>
-          <ToolbarRight>
-            <ButtonGroup size={ButtonGroupSizes.SMALL}>
-              {backButton}
-              {publishButton}
-              {toggleDockButton}
-            </ButtonGroup>
-          </ToolbarRight>
-        </Toolbar>
-      </div>
+    return _reactForAtom.React.createElement(
+      'div',
+      { className: 'publish-toolbar-wrapper' },
+      _reactForAtom.React.createElement(
+        (_Toolbar || _load_Toolbar()).Toolbar,
+        { location: 'bottom' },
+        _reactForAtom.React.createElement(
+          (_ToolbarLeft || _load_ToolbarLeft()).ToolbarLeft,
+          { className: 'nuclide-diff-view-publish-toolbar-left' },
+          revisionView,
+          prepareOptionElement
+        ),
+        _reactForAtom.React.createElement(
+          (_ToolbarRight || _load_ToolbarRight()).ToolbarRight,
+          null,
+          _reactForAtom.React.createElement(
+            (_ButtonGroup || _load_ButtonGroup()).ButtonGroup,
+            { size: (_ButtonGroup || _load_ButtonGroup()).ButtonGroupSizes.SMALL },
+            backButton,
+            publishButton,
+            toggleDockButton
+          )
+        )
+      )
     );
   }
 
-  render(): React.Element<any> {
-    return (
-      <div className="nuclide-diff-mode">
-        <div className="message-editor-wrapper">
-          {this.__getStatusEditor()}
-        </div>
-        {this._getToolbar()}
-      </div>
+  render() {
+    return _reactForAtom.React.createElement(
+      'div',
+      { className: 'nuclide-diff-mode' },
+      _reactForAtom.React.createElement(
+        'div',
+        { className: 'message-editor-wrapper' },
+        this.__getStatusEditor()
+      ),
+      this._getToolbar()
     );
   }
 
-  _toggleDockPublishConfig(): void {
+  _toggleDockPublishConfig() {
     // Persist publish message between docked and modal views.
     this.props.diffModel.updatePublishMessage(this.__getPublishMessage());
-    const shouldDockPublishView = featureConfig.get(SHOULD_DOCK_PUBLISH_VIEW_CONFIG_KEY);
-    featureConfig.set(SHOULD_DOCK_PUBLISH_VIEW_CONFIG_KEY, !shouldDockPublishView);
+    const shouldDockPublishView = (_featureConfig || _load_featureConfig()).default.get((_constants || _load_constants()).SHOULD_DOCK_PUBLISH_VIEW_CONFIG_KEY);
+    (_featureConfig || _load_featureConfig()).default.set((_constants || _load_constants()).SHOULD_DOCK_PUBLISH_VIEW_CONFIG_KEY, !shouldDockPublishView);
   }
 
-  _onTogglePrepare(isChecked: boolean): void {
-    this.setState({isPrepareMode: isChecked});
+  _onTogglePrepare(isChecked) {
+    this.setState({ isPrepareMode: isChecked });
   }
 
-  _onClickBack(): void {
-    const {publishModeState} = this.props;
-    const diffMode = publishModeState === PublishModeState.PUBLISH_ERROR
-      ? DiffMode.PUBLISH_MODE
-      : DiffMode.BROWSE_MODE;
+  _onClickBack() {
+    const { publishModeState } = this.props;
+    const diffMode = publishModeState === (_constants || _load_constants()).PublishModeState.PUBLISH_ERROR ? (_constants || _load_constants()).DiffMode.PUBLISH_MODE : (_constants || _load_constants()).DiffMode.BROWSE_MODE;
     this.props.diffModel.setViewMode(diffMode);
   }
 }
+exports.default = DiffPublishView;
+module.exports = exports['default'];

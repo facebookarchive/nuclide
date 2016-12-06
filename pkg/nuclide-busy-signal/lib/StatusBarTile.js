@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,35 +9,33 @@
  * the root directory of this source tree.
  */
 
-import type {Observable} from 'rxjs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.StatusBarTile = undefined;
 
-import type {BusySignalMessageBusy} from './types';
+var _reactForAtom = require('react-for-atom');
 
-import {
-  React,
-  ReactDOM,
-} from 'react-for-atom';
-import {StatusBarTileComponent} from './StatusBarTileComponent';
+var _StatusBarTileComponent;
+
+function _load_StatusBarTileComponent() {
+  return _StatusBarTileComponent = require('./StatusBarTileComponent');
+}
 
 // We want to be the furthest left on the right side of the status bar so as not to leave a
 // conspicuous gap (or cause jitter) when nothing is busy.
 const STATUS_BAR_PRIORITY = 1000;
 
-export class StatusBarTile {
-  _item: ?HTMLElement;
-  _tile: ?atom$StatusBarTile;
-  _tooltip: ?IDisposable;
-  _isMouseOver: boolean;
-  _messages: Array<string>;
+class StatusBarTile {
 
   constructor() {
     this._messages = [];
     this._isMouseOver = false;
   }
 
-  dispose(): void {
+  dispose() {
     if (this._item) {
-      ReactDOM.unmountComponentAtNode(this._item);
+      _reactForAtom.ReactDOM.unmountComponentAtNode(this._item);
       this._item = null;
     }
     if (this._tile) {
@@ -51,7 +49,7 @@ export class StatusBarTile {
     this._isMouseOver = false;
   }
 
-  consumeStatusBar(statusBar: atom$StatusBar): void {
+  consumeStatusBar(statusBar) {
     const item = this._item = document.createElement('div');
     item.className = 'inline-block';
     item.addEventListener('mouseenter', () => {
@@ -62,13 +60,13 @@ export class StatusBarTile {
     });
     this._tile = statusBar.addRightTile({
       item,
-      priority: STATUS_BAR_PRIORITY,
+      priority: STATUS_BAR_PRIORITY
     });
 
     this._render();
   }
 
-  consumeMessageStream(messageStream: Observable<Array<BusySignalMessageBusy>>): void {
+  consumeMessageStream(messageStream) {
     messageStream.subscribe(messages => {
       this._messages = messages.map(message => {
         return message.message;
@@ -77,29 +75,28 @@ export class StatusBarTile {
     });
   }
 
-  _render(): void {
+  _render() {
     const props = {
-      busy: this._messages.length !== 0,
+      busy: this._messages.length !== 0
     };
 
     const item = this._item;
     if (item) {
-      ReactDOM.render(<StatusBarTileComponent {...props} />, item);
+      _reactForAtom.ReactDOM.render(_reactForAtom.React.createElement((_StatusBarTileComponent || _load_StatusBarTileComponent()).StatusBarTileComponent, props), item);
       if (this._tooltip) {
         this._tooltip.dispose();
       }
       if (this._messages.length > 0) {
         this._tooltip = atom.tooltips.add(item, {
           title: this._messages.join('<br/>'),
-          delay: 0,
+          delay: 0
         });
         if (this._isMouseOver) {
           // If the mouse is currently over the element, we want to trigger the new popup to appear.
-          ['mouseover', 'mouseenter']
-            .map(name => new window.MouseEvent(name))
-            .forEach(event => item.dispatchEvent(event));
+          ['mouseover', 'mouseenter'].map(name => new window.MouseEvent(name)).forEach(event => item.dispatchEvent(event));
         }
       }
     }
   }
 }
+exports.StatusBarTile = StatusBarTile;

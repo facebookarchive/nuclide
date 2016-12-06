@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,32 +9,54 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {IwdpDebuggerService} from '../../nuclide-debugger-iwdp-rpc/lib/IwdpDebuggerService';
-import type {DebuggerInstanceBase} from '../../nuclide-debugger-base';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.AttachProcessInfo = undefined;
 
-import invariant from 'assert';
-import {DebuggerProcessInfo, DebuggerInstance} from '../../nuclide-debugger-base';
-import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-export class AttachProcessInfo extends DebuggerProcessInfo {
-  constructor(targetUri: NuclideUri) {
+var _nuclideDebuggerBase;
+
+function _load_nuclideDebuggerBase() {
+  return _nuclideDebuggerBase = require('../../nuclide-debugger-base');
+}
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class AttachProcessInfo extends (_nuclideDebuggerBase || _load_nuclideDebuggerBase()).DebuggerProcessInfo {
+  constructor(targetUri) {
     super('iwdp', targetUri);
   }
 
-  async debug(): Promise<DebuggerInstanceBase> {
-    const rpcService = this._getRpcService();
-    await rpcService.attach();
-    return new DebuggerInstance(this, rpcService);
+  debug() {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const rpcService = _this._getRpcService();
+      yield rpcService.attach();
+      return new (_nuclideDebuggerBase || _load_nuclideDebuggerBase()).DebuggerInstance(_this, rpcService);
+    })();
   }
 
-  supportThreads(): boolean {
+  supportThreads() {
     return true;
   }
 
-  _getRpcService(): IwdpDebuggerService {
-    const service = getServiceByNuclideUri('IwdpDebuggerService', this.getTargetUri());
-    invariant(service != null);
+  _getRpcService() {
+    const service = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getServiceByNuclideUri)('IwdpDebuggerService', this.getTargetUri());
+
+    if (!(service != null)) {
+      throw new Error('Invariant violation: "service != null"');
+    }
+
     return new service.IwdpDebuggerService();
   }
 }
+exports.AttachProcessInfo = AttachProcessInfo;

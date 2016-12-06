@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,26 +9,22 @@
  * the root directory of this source tree.
  */
 
-import invariant from 'assert';
-import {React, ReactDOM} from 'react-for-atom';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.CustomPaneItem = undefined;
 
-import type {CustomPaneItemOptions} from './types';
+var _reactForAtom = require('react-for-atom');
 
-export class CustomPaneItem extends HTMLElement {
+class CustomPaneItem extends HTMLElement {
 
-  _title: ?string;
-  _iconName: ?string;
-  _uri: ?string;
-  _allowSplit: boolean;
-  __component: React.Component<any, any, any>;
-
-  initialize(options: CustomPaneItemOptions) {
+  initialize(options) {
     this._title = options.title;
     this._iconName = options.iconName;
     this._uri = options.uri;
     this._allowSplit = Boolean(options.allowSplit);
 
-    this.__component = ReactDOM.render(this.__renderPaneItem(options), this);
+    this.__component = _reactForAtom.ReactDOM.render(this.__renderPaneItem(options), this);
   }
 
   /**
@@ -38,28 +34,32 @@ export class CustomPaneItem extends HTMLElement {
    *
    * @return A React component that this element call ReactDOM.render() on.
    */
-  __renderPaneItem(options: CustomPaneItemOptions): React.Element<any> {
+  __renderPaneItem(options) {
     throw new Error('Subclass should implement this method.');
   }
 
-  getTitle(): string {
-    invariant(this._title);
+  getTitle() {
+    if (!this._title) {
+      throw new Error('Invariant violation: "this._title"');
+    }
+
     return this._title;
   }
 
-  getIconName(): ?string {
+  getIconName() {
     return this._iconName;
   }
 
-  getURI(): ?string {
+  getURI() {
     return this._uri;
   }
 
-  copy(): boolean {
+  copy() {
     return this._allowSplit;
   }
 
-  detachedCallback(): mixed {
-    ReactDOM.unmountComponentAtNode(this);
+  detachedCallback() {
+    _reactForAtom.ReactDOM.unmountComponentAtNode(this);
   }
 }
+exports.CustomPaneItem = CustomPaneItem;

@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,33 +9,35 @@
  * the root directory of this source tree.
  */
 
-import Dispatcher from '../../commons-node/Dispatcher';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ActionTypes = undefined;
 
-type QuickSelectionAction =
-  {
-    actionType: 'ACTIVE_PROVIDER_CHANGED',
-    providerName: string,
-  } |
-  {
-    actionType: 'QUERY',
-    query: string,
-  };
+var _Dispatcher;
 
-export const ActionTypes = Object.freeze({
+function _load_Dispatcher() {
+  return _Dispatcher = _interopRequireDefault(require('../../commons-node/Dispatcher'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const ActionTypes = exports.ActionTypes = Object.freeze({
   ACTIVE_PROVIDER_CHANGED: 'ACTIVE_PROVIDER_CHANGED',
-  QUERY: 'QUERY',
+  QUERY: 'QUERY'
 });
 
 // Flow hack: Every QuickSelectionAction actionType must be in ActionTypes.
-(('': $PropertyType<QuickSelectionAction, 'actionType'>): $Keys<typeof ActionTypes>);
+'';
 
-let instance: ?QuickSelectionDispatcher = null;
+let instance = null;
 
-export default class QuickSelectionDispatcher extends Dispatcher<QuickSelectionAction> {
-  static getInstance(): QuickSelectionDispatcher {
+class QuickSelectionDispatcher extends (_Dispatcher || _load_Dispatcher()).default {
+  static getInstance() {
     if (!instance) {
       instance = new QuickSelectionDispatcher();
     }
     return instance;
   }
 }
+exports.default = QuickSelectionDispatcher;

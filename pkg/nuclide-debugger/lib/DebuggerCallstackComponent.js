@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,86 +9,99 @@
  * the root directory of this source tree.
  */
 
-import classnames from 'classnames';
-import {
-  React,
-} from 'react-for-atom';
-import type {
-  Callstack,
-  CallstackItem,
-} from './types';
-import type DebuggerActions from './DebuggerActions';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DebuggerCallstackComponent = undefined;
 
-import nuclideUri from '../../commons-node/nuclideUri';
-import {
-  ListView,
-  ListViewItem,
-} from '../../nuclide-ui/ListView';
-import Bridge from './Bridge';
+var _classnames;
 
-type DebuggerCallstackComponentProps = {
-  actions: DebuggerActions,
-  callstack: ?Callstack,
-  bridge: Bridge,
-  selectedCallFrameIndex: number,
-};
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
 
-export class DebuggerCallstackComponent extends React.Component {
-  props: DebuggerCallstackComponentProps;
+var _reactForAtom = require('react-for-atom');
 
-  constructor(props: DebuggerCallstackComponentProps) {
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var _ListView;
+
+function _load_ListView() {
+  return _ListView = require('../../nuclide-ui/ListView');
+}
+
+var _Bridge;
+
+function _load_Bridge() {
+  return _Bridge = _interopRequireDefault(require('./Bridge'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class DebuggerCallstackComponent extends _reactForAtom.React.Component {
+
+  constructor(props) {
     super(props);
-    (this: any)._handleCallframeClick = this._handleCallframeClick.bind(this);
+    this._handleCallframeClick = this._handleCallframeClick.bind(this);
   }
 
-  _handleCallframeClick(
-    callFrameIndex: number,
-    clickedCallframe: ?CallstackItem,
-  ): void {
+  _handleCallframeClick(callFrameIndex, clickedCallframe) {
     this.props.bridge.setSelectedCallFrameIndex(callFrameIndex);
     this.props.actions.setSelectedCallFrameIndex(callFrameIndex);
   }
 
-  render(): ?React.Element<any> {
-    const {callstack} = this.props;
-    const items = callstack == null
-      ? []
-      : callstack.map((callstackItem, i) => {
-        const {
-          name,
-          location,
-        } = callstackItem;
-        const path = nuclideUri.basename(location.path);
-        const content = (
-          <div className="nuclide-debugger-callstack-item" key={i}>
-            <span className="nuclide-debugger-callstack-name">
-              {name}
-            </span>
-            <span>
-              {path}:{location.line + 1}
-            </span>
-          </div>
-        );
-        const itemClassNames = classnames(
-          {
-            'nuclide-debugger-callstack-item-selected':
-              this.props.selectedCallFrameIndex === i,
-          },
-        );
-        return <ListViewItem
-                  key={i}
-                  className={itemClassNames}
-                  value={callstackItem}>
-                  {content}
-                </ListViewItem>;
+  render() {
+    const { callstack } = this.props;
+    const items = callstack == null ? [] : callstack.map((callstackItem, i) => {
+      const {
+        name,
+        location
+      } = callstackItem;
+      const path = (_nuclideUri || _load_nuclideUri()).default.basename(location.path);
+      const content = _reactForAtom.React.createElement(
+        'div',
+        { className: 'nuclide-debugger-callstack-item', key: i },
+        _reactForAtom.React.createElement(
+          'span',
+          { className: 'nuclide-debugger-callstack-name' },
+          name
+        ),
+        _reactForAtom.React.createElement(
+          'span',
+          null,
+          path,
+          ':',
+          location.line + 1
+        )
+      );
+      const itemClassNames = (0, (_classnames || _load_classnames()).default)({
+        'nuclide-debugger-callstack-item-selected': this.props.selectedCallFrameIndex === i
       });
-    return callstack == null
-      ? <span>(callstack unavailable)</span>
-      : <ListView
-          alternateBackground={true}
-          selectable={true}
-          onSelect={this._handleCallframeClick}>
-          {items}
-        </ListView>;
+      return _reactForAtom.React.createElement(
+        (_ListView || _load_ListView()).ListViewItem,
+        {
+          key: i,
+          className: itemClassNames,
+          value: callstackItem },
+        content
+      );
+    });
+    return callstack == null ? _reactForAtom.React.createElement(
+      'span',
+      null,
+      '(callstack unavailable)'
+    ) : _reactForAtom.React.createElement(
+      (_ListView || _load_ListView()).ListView,
+      {
+        alternateBackground: true,
+        selectable: true,
+        onSelect: this._handleCallframeClick },
+      items
+    );
   }
 }
+exports.DebuggerCallstackComponent = DebuggerCallstackComponent;

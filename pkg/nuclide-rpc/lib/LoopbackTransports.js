@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,48 +9,50 @@
  * the root directory of this source tree.
  */
 
-import type {Transport} from '../lib/index';
-import type {Observable} from 'rxjs';
-import {Subject} from 'rxjs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.LoopbackTransports = undefined;
 
-export class LoopbackTransports {
-  serverTransport: Transport;
-  clientTransport: Transport;
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+class LoopbackTransports {
 
   constructor() {
-    const serverMessages: Subject<string> = new Subject();
-    const clientMessages: Subject<string> = new Subject();
+    const serverMessages = new _rxjsBundlesRxMinJs.Subject();
+    const clientMessages = new _rxjsBundlesRxMinJs.Subject();
 
     this.serverTransport = {
       _isClosed: false,
-      send(message: string): void {
+      send(message) {
         clientMessages.next(message);
       },
-      onMessage(): Observable<string> {
+      onMessage() {
         return serverMessages;
       },
       close() {
         this._isClosed = true;
       },
-      isClosed(): boolean {
+      isClosed() {
         return this._isClosed;
-      },
+      }
     };
 
     this.clientTransport = {
       _isClosed: false,
-      send(message: string): void {
+      send(message) {
         serverMessages.next(message);
       },
-      onMessage(): Observable<string> {
+      onMessage() {
         return clientMessages;
       },
       close() {
         this._isClosed = true;
       },
-      isClosed(): boolean {
+      isClosed() {
         return this._isClosed;
-      },
+      }
     };
   }
 }
+exports.LoopbackTransports = LoopbackTransports;

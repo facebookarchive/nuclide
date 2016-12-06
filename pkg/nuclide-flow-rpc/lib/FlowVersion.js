@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,51 +9,63 @@
  * the root directory of this source tree.
  */
 
-import {VERSION_TIMEOUT_MS} from './FlowConstants';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.FlowVersion = undefined;
 
-type VersionWithTimestamp = {
-  version: ?string,
-  receivedTime: number,
-};
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _FlowConstants;
+
+function _load_FlowConstants() {
+  return _FlowConstants = require('./FlowConstants');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /*
  * Queries Flow for its version and caches the results. The version is a best guess: it is not 100%
  * guaranteed to be reliable due to caching, but will nearly always be correct.
  */
-export class FlowVersion {
-  _lastVersion: ?VersionWithTimestamp;
+class FlowVersion {
 
-  _versionFn: () => Promise<?string>;
-
-  constructor(
-    versionFn: () => Promise<?string>,
-  ) {
+  constructor(versionFn) {
     this._versionFn = versionFn;
     this._lastVersion = null;
   }
 
-  invalidateVersion(): void {
+  invalidateVersion() {
     this._lastVersion = null;
   }
 
-  async getVersion(): Promise<?string> {
-    const lastVersion = this._lastVersion;
-    if (lastVersion == null) {
-      return await this._queryAndSetVersion();
-    }
-    const msSinceReceived = Date.now() - lastVersion.receivedTime;
-    if (msSinceReceived >= VERSION_TIMEOUT_MS) {
-      return await this._queryAndSetVersion();
-    }
-    return lastVersion.version;
+  getVersion() {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const lastVersion = _this._lastVersion;
+      if (lastVersion == null) {
+        return yield _this._queryAndSetVersion();
+      }
+      const msSinceReceived = Date.now() - lastVersion.receivedTime;
+      if (msSinceReceived >= (_FlowConstants || _load_FlowConstants()).VERSION_TIMEOUT_MS) {
+        return yield _this._queryAndSetVersion();
+      }
+      return lastVersion.version;
+    })();
   }
 
-  async _queryAndSetVersion(): Promise<?string> {
-    const version = await this._versionFn();
-    this._lastVersion = {
-      version,
-      receivedTime: Date.now(),
-    };
-    return version;
+  _queryAndSetVersion() {
+    var _this2 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const version = yield _this2._versionFn();
+      _this2._lastVersion = {
+        version,
+        receivedTime: Date.now()
+      };
+      return version;
+    })();
   }
 }
+exports.FlowVersion = FlowVersion;

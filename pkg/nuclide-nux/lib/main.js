@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,61 +9,62 @@
  * the root directory of this source tree.
  */
 
-import {
-  CompositeDisposable,
-  Disposable,
-} from 'atom';
-import invariant from 'assert';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.provideRegisterNuxService = provideRegisterNuxService;
+exports.provideTriggerNuxService = provideTriggerNuxService;
+exports.consumeSyncCompletedNuxService = consumeSyncCompletedNuxService;
 
-import {NuxManager} from './NuxManager';
-import {NuxStore} from './NuxStore';
+var _atom = require('atom');
 
-import type {NuxTourModel} from './NuxModel';
+var _NuxManager;
 
-export type RegisterNux = (nux: NuxTourModel) => Disposable;
-export type TriggerNux = (id: number) => void;
-export type SyncCompletedNux = (id: number) => void;
+function _load_NuxManager() {
+  return _NuxManager = require('./NuxManager');
+}
+
+var _NuxStore;
+
+function _load_NuxStore() {
+  return _NuxStore = require('./NuxStore');
+}
 
 class Activation {
-  _disposables: CompositeDisposable;
-  _nuxStore: NuxStore;
-  _nuxManager: NuxManager;
-  _syncCompletedNuxService: SyncCompletedNux;
 
-  constructor(): void {
-    this._disposables = new CompositeDisposable();
-    this._nuxStore = new NuxStore();
-    this._nuxManager = new NuxManager(
-      this._nuxStore,
-      this._syncCompletedNux.bind(this),
-    );
+  constructor() {
+    this._disposables = new _atom.CompositeDisposable();
+    this._nuxStore = new (_NuxStore || _load_NuxStore()).NuxStore();
+    this._nuxManager = new (_NuxManager || _load_NuxManager()).NuxManager(this._nuxStore, this._syncCompletedNux.bind(this));
 
     this._disposables.add(this._nuxStore);
     this._disposables.add(this._nuxManager);
   }
 
-  dispose(): void {
+  dispose() {
     this._serializeAndPersist();
     this._disposables.dispose();
   }
 
-  _serializeAndPersist(): void {
+  _serializeAndPersist() {
     this._nuxStore.serialize();
   }
 
-  addNewNux(nux: NuxTourModel): Disposable {
+  addNewNux(nux) {
     return this._nuxManager.addNewNux(nux);
   }
 
-  tryTriggerNux(id: number): void {
+  tryTriggerNux(id) {
     this._nuxManager.tryTriggerNux(id);
   }
 
-  setSyncCompletedNuxService(syncCompletedNuxService: SyncCompletedNux): void {
+  setSyncCompletedNuxService(syncCompletedNuxService) {
     this._syncCompletedNuxService = syncCompletedNuxService;
   }
 
-  _syncCompletedNux(id: number): void {
+  _syncCompletedNux(id) {
     if (this._syncCompletedNuxService == null) {
       return;
     }
@@ -71,23 +72,23 @@ class Activation {
   }
 }
 
-let activation: ?Activation = null;
+let activation = null;
 
-export function activate(): void {
+function activate() {
   if (activation == null) {
     activation = new Activation();
   }
 }
 
-export function deactivate(): void {
+function deactivate() {
   if (activation != null) {
     activation.dispose();
     activation = null;
   }
 }
 
-export function provideRegisterNuxService(): RegisterNux {
-  return ((nux: NuxTourModel): Disposable => {
+function provideRegisterNuxService() {
+  return nux => {
     if (activation == null) {
       throw new Error('An error occurred when instantiating the NUX package.');
     }
@@ -95,19 +96,22 @@ export function provideRegisterNuxService(): RegisterNux {
       throw new Error('Cannot register a "null" NuxTour.');
     }
     return activation.addNewNux(nux);
-  });
+  };
 }
 
-export function provideTriggerNuxService(): TriggerNux {
-  return ((id: number): void => {
+function provideTriggerNuxService() {
+  return id => {
     if (activation == null) {
       throw new Error('An error occurred when instantiating the NUX package.');
     }
     activation.tryTriggerNux(id);
-  });
+  };
 }
 
-export function consumeSyncCompletedNuxService(syncCompletedNuxService: SyncCompletedNux): void {
-  invariant(activation != null);
+function consumeSyncCompletedNuxService(syncCompletedNuxService) {
+  if (!(activation != null)) {
+    throw new Error('Invariant violation: "activation != null"');
+  }
+
   activation.setSyncCompletedNuxService(syncCompletedNuxService);
 }

@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -13,22 +13,32 @@
  * A message view to be shown in Context View.
  */
 
-import {React} from 'react-for-atom';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-export default class ContextViewMessage extends React.Component {
-  static NO_DEFINITION = 'No definition selected.';
-  static LOADING = 'Loading...';
-  static NOT_LOGGED_IN = (
-    <div>
-      <div>You need to log in to see this data!</div>
-    </div>
-  );
+var _reactForAtom = require('react-for-atom');
 
-  props: {
-    message: string | React.Element<any>,
-  };
+class ContextViewMessage extends _reactForAtom.React.Component {
 
-  render(): React.Element<any> {
-    return <div>{this.props.message}</div>;
+  render() {
+    return _reactForAtom.React.createElement(
+      'div',
+      null,
+      this.props.message
+    );
   }
 }
+exports.default = ContextViewMessage;
+ContextViewMessage.NO_DEFINITION = 'No definition selected.';
+ContextViewMessage.LOADING = 'Loading...';
+ContextViewMessage.NOT_LOGGED_IN = _reactForAtom.React.createElement(
+  'div',
+  null,
+  _reactForAtom.React.createElement(
+    'div',
+    null,
+    'You need to log in to see this data!'
+  )
+);
+module.exports = exports['default'];

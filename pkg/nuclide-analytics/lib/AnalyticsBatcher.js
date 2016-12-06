@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,36 +9,40 @@
  * the root directory of this source tree.
  */
 
-import type {TrackEvent} from './track';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.AnalyticsBatcher = undefined;
 
-import BatchProcessedQueue from '../../commons-node/BatchProcessedQueue';
+var _BatchProcessedQueue;
+
+function _load_BatchProcessedQueue() {
+  return _BatchProcessedQueue = _interopRequireDefault(require('../../commons-node/BatchProcessedQueue'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const REPORTING_PERIOD = 1000;
 
-type TrackCallback = (events: Array<TrackEvent>) => mixed;
+class AnalyticsBatcher {
 
-export class AnalyticsBatcher {
-  _queue: BatchProcessedQueue<TrackEvent>;
-  _track: TrackCallback;
-
-  constructor(track: TrackCallback) {
+  constructor(track) {
     this._track = track;
-    this._queue = new BatchProcessedQueue(
-      REPORTING_PERIOD,
-      events => {
-        this._handleBatch(events);
-      });
+    this._queue = new (_BatchProcessedQueue || _load_BatchProcessedQueue()).default(REPORTING_PERIOD, events => {
+      this._handleBatch(events);
+    });
   }
 
-  _handleBatch(events: Array<TrackEvent>): void {
+  _handleBatch(events) {
     this._track(events);
   }
 
-  track(key: string, values: {[key: string]: mixed}): void {
-    this._queue.add({key, values});
+  track(key, values) {
+    this._queue.add({ key, values });
   }
 
-  dispose(): void {
+  dispose() {
     this._queue.dispose();
   }
 }
+exports.AnalyticsBatcher = AnalyticsBatcher;

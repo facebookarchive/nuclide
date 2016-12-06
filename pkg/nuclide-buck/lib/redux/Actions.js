@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,60 +9,34 @@
  * the root directory of this source tree.
  */
 
-import type {Device, Platform, TaskSettings, TaskType} from '../types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.setProjectRoot = setProjectRoot;
+exports.setBuildTarget = setBuildTarget;
+exports.setDevice = setDevice;
+exports.setTaskSettings = setTaskSettings;
 
-export type Action =
-  {|
-    type: 'SET_PROJECT_ROOT',
-    projectRoot: ?string,
-  |} |
-  {|
-    type: 'SET_BUILD_TARGET',
-    buildTarget: string,
-  |} |
-  {|
-    type: 'SET_DEVICE',
-    device: Device,
-  |} |
-  {|
-    type: 'SET_TASK_SETTINGS',
-    taskType: TaskType,
-    settings: TaskSettings,
-  |} |
-  // The actions below are meant to be used in Epics only.
-  {|
-    type: 'SET_BUCK_ROOT',
-    buckRoot: ?string,
-  |} |
-  {|
-    type: 'SET_RULE_TYPE',
-    ruleType: ?string,
-  |} |
-  {|
-    type: 'SET_PLATFORMS',
-    platforms: ?Array<Platform>,
-  |};
+const SET_PROJECT_ROOT = exports.SET_PROJECT_ROOT = 'SET_PROJECT_ROOT';
+const SET_BUILD_TARGET = exports.SET_BUILD_TARGET = 'SET_BUILD_TARGET';
+const SET_DEVICE = exports.SET_DEVICE = 'SET_DEVICE';
+const SET_TASK_SETTINGS = exports.SET_TASK_SETTINGS = 'SET_TASK_SETTINGS';
+const SET_BUCK_ROOT = exports.SET_BUCK_ROOT = 'SET_BUCK_ROOT';
+const SET_PLATFORMS = exports.SET_PLATFORMS = 'SET_PLATFORMS';
+const SET_RULE_TYPE = exports.SET_RULE_TYPE = 'SET_RULE_TYPE';
 
-export const SET_PROJECT_ROOT = 'SET_PROJECT_ROOT';
-export const SET_BUILD_TARGET = 'SET_BUILD_TARGET';
-export const SET_DEVICE = 'SET_DEVICE';
-export const SET_TASK_SETTINGS = 'SET_TASK_SETTINGS';
-export const SET_BUCK_ROOT = 'SET_BUCK_ROOT';
-export const SET_PLATFORMS = 'SET_PLATFORMS';
-export const SET_RULE_TYPE = 'SET_RULE_TYPE';
-
-export function setProjectRoot(projectRoot: ?string): Action {
-  return {type: SET_PROJECT_ROOT, projectRoot};
+function setProjectRoot(projectRoot) {
+  return { type: SET_PROJECT_ROOT, projectRoot };
 }
 
-export function setBuildTarget(buildTarget: string): Action {
-  return {type: SET_BUILD_TARGET, buildTarget};
+function setBuildTarget(buildTarget) {
+  return { type: SET_BUILD_TARGET, buildTarget };
 }
 
-export function setDevice(device: Device): Action {
-  return {type: SET_DEVICE, device};
+function setDevice(device) {
+  return { type: SET_DEVICE, device };
 }
 
-export function setTaskSettings(taskType: TaskType, settings: TaskSettings): Action {
-  return {type: SET_TASK_SETTINGS, taskType, settings};
+function setTaskSettings(taskType, settings) {
+  return { type: SET_TASK_SETTINGS, taskType, settings };
 }

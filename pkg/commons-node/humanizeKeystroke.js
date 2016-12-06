@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -13,6 +13,11 @@
  * adapted from https://github.com/atom/underscore-plus/blob/master/src/underscore-plus.coffee
  */
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = humanizeKeystroke;
+
 const MAC_MODIFIER_KEYMAP = {
   alt: '\u2325',
   cmd: '\u2318',
@@ -23,7 +28,7 @@ const MAC_MODIFIER_KEYMAP = {
   option: '\u2325',
   right: '\u2192',
   shift: '\u21e7',
-  up: '\u2191',
+  up: '\u2191'
 };
 
 const NON_MAC_MODIFIER_KEYMAP = {
@@ -36,7 +41,7 @@ const NON_MAC_MODIFIER_KEYMAP = {
   option: 'Alt',
   right: 'Right',
   shift: 'Shift',
-  up: 'Up',
+  up: 'Up'
 };
 
 // Human key combos should always explicitly state the shift key. This map is a disambiguator.
@@ -52,13 +57,13 @@ const SHIFT_KEYMAP = {
   '<': ',',
   '>': '.',
   '|': '\\',
-  '~': '`',
+  '~': '`'
 };
 
 const FN_KEY_RE = /f[0-9]{1,2}/;
 
 // $FlowIssue
-function flatten<T>(arr: Array<T | Array<T>>): Array<T> {
+function flatten(arr) {
   let flattened = [];
   for (const el of arr) {
     if (Array.isArray(el)) {
@@ -70,13 +75,13 @@ function flatten<T>(arr: Array<T | Array<T>>): Array<T> {
   return flattened;
 }
 
-function capitalize(word: string): string {
+function capitalize(word) {
   const first = word[0] || '';
   const rest = word.slice(1);
   return first.toUpperCase() + rest;
 }
 
-function humanizeKey(key: string, platform: ?string): string | Array<string> {
+function humanizeKey(key, platform) {
   if (!key) {
     return key;
   }
@@ -109,7 +114,7 @@ function humanizeKey(key: string, platform: ?string): string | Array<string> {
  * @param platform An optional String platform to humanize for (default: `process.platform`).
  * @return a humanized representation of the keystroke.
  */
-export default function humanizeKeystroke(keystroke: string, platform_: ?string): string {
+function humanizeKeystroke(keystroke, platform_) {
   let platform = platform_;
   if (!keystroke) {
     return keystroke;
@@ -139,3 +144,4 @@ export default function humanizeKeystroke(keystroke: string, platform_: ?string)
   }
   return humanizedKeystrokes.join(' ');
 }
+module.exports = exports['default'];

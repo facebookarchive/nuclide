@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -26,8 +26,12 @@
  *   onClick={ignoreTextSelectionEvents(this._onClick)}
  */
 
-const ignoreTextSelectionEvents = (cb?: (e: SyntheticMouseEvent) => mixed) => {
-  return (e: SyntheticMouseEvent) => {
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+const ignoreTextSelectionEvents = cb => {
+  return e => {
     // Ignore text selection
     if (window.getSelection().type === 'Range') {
       e.preventDefault();
@@ -38,4 +42,5 @@ const ignoreTextSelectionEvents = (cb?: (e: SyntheticMouseEvent) => mixed) => {
   };
 };
 
-export default ignoreTextSelectionEvents;
+exports.default = ignoreTextSelectionEvents;
+module.exports = exports['default'];

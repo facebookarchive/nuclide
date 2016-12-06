@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,16 +9,31 @@
  * the root directory of this source tree.
  */
 
-import Immutable from 'immutable';
-import {LazyTreeNode} from '../../../nuclide-ui/LazyTreeNode';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-class TestClassTreeNode extends LazyTreeNode {
+var _immutable;
 
-  constructor(testClass: Object) {
-    super(testClass, null, true, async () => Immutable.List.of());
+function _load_immutable() {
+  return _immutable = _interopRequireDefault(require('immutable'));
+}
+
+var _LazyTreeNode;
+
+function _load_LazyTreeNode() {
+  return _LazyTreeNode = require('../../../nuclide-ui/LazyTreeNode');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class TestClassTreeNode extends (_LazyTreeNode || _load_LazyTreeNode()).LazyTreeNode {
+
+  constructor(testClass) {
+    super(testClass, null, true, (0, _asyncToGenerator.default)(function* () {
+      return (_immutable || _load_immutable()).default.List.of();
+    }));
   }
 
-  getLabel(): string {
+  getLabel() {
     return this.getItem().name;
   }
 
