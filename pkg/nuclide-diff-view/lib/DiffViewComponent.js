@@ -174,7 +174,7 @@ export function renderFileChanges(diffModel: DiffViewModel): React.Element<any> 
     );
   }
 
-  const emptyMessage = !isLoadingSelectedFiles && selectedFiles.size === 0
+  const emptyMessage = selectedFiles.size === 0
     ? <div className="nuclide-diff-view-padded">No file changes selected</div>
     : null;
 

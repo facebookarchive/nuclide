@@ -471,17 +471,28 @@ export function setViewModeEpic(
   actions: ActionsObservable<Action>,
   store: Store,
 ): Observable<Action> {
-  return actions.ofType(ActionTypes.SET_VIEW_MODE).switchMap(action => {
-    invariant(action.type === ActionTypes.SET_VIEW_MODE);
-
-    const {viewMode} = action.payload;
-
-    if (viewMode === DiffMode.BROWSE_MODE) {
+  return observeActiveRepository(actions, store).switchMap(activeRepository => {
+    if (activeRepository == null) {
       return Observable.empty();
     }
 
-    return observeActiveRepository(actions, store).switchMap(activeRepository => {
-      if (activeRepository == null) {
+    let commitTemplate = null;
+    const loadCommitTemplate = Observable.defer(() => {
+      if (commitTemplate != null) {
+        return Observable.of(commitTemplate);
+      }
+      return Observable.fromPromise(activeRepository.getTemplateCommitMessage())
+        .do(template => {
+          commitTemplate = template;
+        });
+    });
+
+    return actions.ofType(ActionTypes.SET_VIEW_MODE).switchMap(action => {
+      invariant(action.type === ActionTypes.SET_VIEW_MODE);
+
+      const {viewMode} = action.payload;
+
+      if (viewMode === DiffMode.BROWSE_MODE) {
         return Observable.empty();
       }
 
@@ -508,13 +519,13 @@ export function setViewModeEpic(
                   mode: commitMode,
                   state: CommitModeState.LOADING_COMMIT_MESSAGE,
                 })),
-                Observable.fromPromise(
-                  activeRepository.getTemplateCommitMessage(),
-                ).map(commitMessage => Actions.updateCommitState({
-                  message: commitMessage,
-                  mode: commitMode,
-                  state: CommitModeState.READY,
-                })),
+                loadCommitTemplate.map(commitMessage =>
+                  Actions.updateCommitState({
+                    message: commitMessage,
+                    mode: commitMode,
+                    state: CommitModeState.READY,
+                  }),
+                ),
               );
             }
             case CommitMode.AMEND: {
