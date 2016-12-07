@@ -155,7 +155,8 @@ export class QueuedTransport {
   }
 
   async _send(message: string): Promise<void> {
-    invariant(!this._isClosed, 'Attempt to send socket message after connection closed');
+    invariant(!this._isClosed,
+      `Attempt to send socket message after connection closed: ${message}`);
 
     this._messageQueue.push(message);
     if (this._transport == null) {

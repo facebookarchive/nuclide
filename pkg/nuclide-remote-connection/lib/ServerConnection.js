@@ -81,10 +81,17 @@ class ServerConnection {
   // WARNING: This shuts down all Nuclide servers _without_ closing their
   // RemoteConnections first! This is extremely unsafe and
   // should only be used to forcibly kill Nuclide servers before restarting.
-  static async forceShutdownAllServers(): Promise<void> {
+  static forceShutdownAllServers(): Promise<void> {
+    return ServerConnection.closeAll(true);
+  }
+
+  // WARNING: This shuts down all Nuclide servers _without_ closing their
+  // RemoteConnections first! This is extremely unsafe and
+  // should only be Called during shutdown, reload, or before autoupdate.
+  static async closeAll(shutdown: boolean): Promise<void> {
     await Promise.all(
       Array.from(ServerConnection._connections).map(([_, connection]) => {
-        return connection._closeServerConnection(true);
+        return connection._closeServerConnection(shutdown);
       }),
     );
   }

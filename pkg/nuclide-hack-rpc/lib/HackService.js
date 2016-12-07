@@ -168,6 +168,8 @@ class HackLanguageServiceImpl extends ServerLanguageService {
   }
 
   dispose(): void {
+    logger.logInfo('Disposing HackLanguageServiceImpl');
+
     this._resources.dispose();
     super.dispose();
   }

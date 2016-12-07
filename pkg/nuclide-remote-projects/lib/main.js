@@ -510,6 +510,10 @@ export function deactivate(): void {
     remoteProjectsService.dispose();
     remoteProjectsService = null;
   }
+
+  // Gracefully shutdown all server connections and leave servers running.
+  const shutdown = false;
+  ServerConnection.closeAll(shutdown);
 }
 
 export function createRemoteDirectoryProvider(): RemoteDirectoryProvider {
