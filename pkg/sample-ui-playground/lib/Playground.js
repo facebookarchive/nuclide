@@ -30,11 +30,13 @@ import {ListviewExamples} from '../../nuclide-ui/ListView.example';
 import {TableExamples} from '../../nuclide-ui/Table.example';
 import {RelativeDateExamples} from '../../nuclide-ui/RelativeDate.example';
 import {MultiRootChangedFilesViewExample} from '../../nuclide-ui/MultiRootChangedFilesView.example';
+import {ToggleExamples} from '../../nuclide-ui/Toggle.example';
 
 const playgroundComponents = [
   ButtonExamples,
   ProgressIndicatorExamples,
   CheckboxExamples,
+  ToggleExamples,
   TabExamples,
   RadioGroupExamples,
   TextInputExamples,

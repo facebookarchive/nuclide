@@ -1,6 +1,6 @@
 @import "ui-variables";
 
-.nuclide-ui-checkbox-label {
+.nuclide-ui-checkbox-label, .nuclide-ui-toggle-label {
   margin-bottom: 0; // This is to override a default in bootstrap.
 }
 
@@ -18,7 +18,7 @@
  *
  * [1] https://github.com/atom/settings-view/blob/v0.232.6/styles/settings-view.less#L113
  */
-.nuclide-ui-checkbox[type="checkbox"] {
+.nuclide-ui-checkbox[type="checkbox"], .nuclide-ui-toggle[type="checkbox"] {
 
   &[disabled] {
     opacity: @disabled-opacity;
@@ -26,6 +26,6 @@
 
 }
 
-.nuclide-ui-checkbox-label-text {
+.nuclide-ui-checkbox-label-text, .nuclide-ui-toggle-label-text {
   vertical-align: middle;
 }
