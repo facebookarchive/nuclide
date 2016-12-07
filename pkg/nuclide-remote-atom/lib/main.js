@@ -24,7 +24,7 @@ import createPackage from '../../commons-atom/createPackage';
 import featureConfig from '../../commons-atom/featureConfig';
 import {observeEditorDestroy} from '../../commons-atom/text-editor';
 import {Observable} from 'rxjs';
-import {ServerConnection} from '../../nuclide-remote-connection';
+import {RemoteConnection, ServerConnection} from '../../nuclide-remote-connection';
 import nuclideUri from '../../commons-node/nuclideUri';
 
 // Use dummy 0 port for local connections.
@@ -57,9 +57,18 @@ class Activation {
         }
         return openFile(uri, line, column, isWaiting);
       },
-      addProject(projectPath: NuclideUri): Promise<void> {
-        atom.project.addPath(projectPath);
-        return Promise.resolve();
+      async addProject(projectPath: NuclideUri): Promise<void> {
+        if (nuclideUri.isLocal(projectPath)) {
+          atom.project.addPath(projectPath);
+        } else {
+          // As of Atom 1.12 atom.project.addPath won't work for remote dirs.
+          const serverConnection = ServerConnection.getForUri(projectPath);
+          if (serverConnection != null) {
+            // Creating the RemoteConnection should add it to the FileTree
+            await RemoteConnection.findOrCreateFromConnection(
+              serverConnection, nuclideUri.getPath(projectPath), '');
+          }
+        }
       },
       dispose(): void {
       },

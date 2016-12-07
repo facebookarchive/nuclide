@@ -58,7 +58,16 @@ export class RemoteConnection {
 
   static async findOrCreate(config: RemoteConnectionConfiguration): Promise<RemoteConnection> {
     const serverConnection = await ServerConnection.getOrCreate(config);
-    const connection = new RemoteConnection(serverConnection, config.cwd, config.displayTitle);
+    return RemoteConnection.findOrCreateFromConnection(
+      serverConnection, config.cwd, config.displayTitle);
+  }
+
+  static findOrCreateFromConnection(
+    serverConnection: ServerConnection,
+    cwd: NuclideUri,
+    displayTitle: string,
+  ): Promise<RemoteConnection> {
+    const connection = new RemoteConnection(serverConnection, cwd, displayTitle);
     return connection._initialize();
   }
 
