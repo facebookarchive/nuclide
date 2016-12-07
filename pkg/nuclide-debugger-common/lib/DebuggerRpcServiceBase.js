@@ -13,7 +13,7 @@ import type {CategoryLogger} from '../../nuclide-logging';
 import type {ConnectableObservable} from 'rxjs';
 
 import WS from 'ws';
-import {ClientCallback} from '../../nuclide-debugger-common';
+import ClientCallback from './ClientCallback';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {getCategoryLogger} from '../../nuclide-logging';
 
