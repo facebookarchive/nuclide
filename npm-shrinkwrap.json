@@ -499,6 +499,12 @@
       "from": "commander@>=2.9.0 <3.0.0",
       "resolved": "https://registry.npmjs.org/commander/-/commander-2.9.0.tgz"
     },
+    "commondir": {
+      "version": "1.0.1",
+      "from": "commondir@>=1.0.1 <2.0.0",
+      "resolved": "https://registry.npmjs.org/commondir/-/commondir-1.0.1.tgz",
+      "dev": true
+    },
     "concat-map": {
       "version": "0.0.1",
       "from": "concat-map@0.0.1",
@@ -748,6 +754,12 @@
       "version": "4.0.0",
       "from": "eslint-plugin-babel@4.0.0",
       "resolved": "https://registry.npmjs.org/eslint-plugin-babel/-/eslint-plugin-babel-4.0.0.tgz",
+      "dev": true
+    },
+    "eslint-plugin-dependencies": {
+      "version": "1.3.0",
+      "from": "eslint-plugin-dependencies@1.3.0",
+      "resolved": "https://registry.npmjs.org/eslint-plugin-dependencies/-/eslint-plugin-dependencies-1.3.0.tgz",
       "dev": true
     },
     "eslint-plugin-flowtype": {

@@ -296,6 +296,12 @@ module.exports = {
     // Babel (not in eslint)
     'babel/no-await-in-loop': 1,
 
+    // dependencies (https://github.com/zertosh/eslint-plugin-dependencies)
+    'dependencies/case-sensitive': 1,
+    'dependencies/no-cycles': [0, {skip: ['/spec/', '/sample-[^/]+/']}],
+    'dependencies/no-unresolved': 0,
+    'dependencies/require-json-ext': 1,
+
     // flowtype (https://github.com/gajus/eslint-plugin-flowtype)
     'flowtype/boolean-style': 1,
     'flowtype/define-flow-type': 1,
@@ -408,6 +414,7 @@ module.exports = {
 
   plugins: [
     'babel',
+    'dependencies',
     'flowtype',
     'jasmine',
     'nuclide-internal',

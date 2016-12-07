@@ -15,16 +15,16 @@ import {addMatchers} from '../../nuclide-test-helpers';
 
 import {astToOutline} from '../lib/astToOutline';
 
-import classASTOld from './fixtures/class-ast-old';
-import classAST34 from './fixtures/class-ast-v0.34';
-import jasmineASTOld from './fixtures/jasmine-ast-old';
-import jasmineAST34 from './fixtures/jasmine-ast-v0.34';
-import toplevelASTOld from './fixtures/toplevel-ast-old';
-import toplevelAST34 from './fixtures/toplevel-ast-v0.34';
-import exportsASTOld from './fixtures/exports-ast-old';
-import exportsAST34 from './fixtures/exports-ast-v0.34';
-import typesASTOld from './fixtures/types-ast-old';
-import typesAST34 from './fixtures/types-ast-v0.34';
+import classASTOld from './fixtures/class-ast-old.json';
+import classAST34 from './fixtures/class-ast-v0.34.json';
+import jasmineASTOld from './fixtures/jasmine-ast-old.json';
+import jasmineAST34 from './fixtures/jasmine-ast-v0.34.json';
+import toplevelASTOld from './fixtures/toplevel-ast-old.json';
+import toplevelAST34 from './fixtures/toplevel-ast-v0.34.json';
+import exportsASTOld from './fixtures/exports-ast-old.json';
+import exportsAST34 from './fixtures/exports-ast-v0.34.json';
+import typesASTOld from './fixtures/types-ast-old.json';
+import typesAST34 from './fixtures/types-ast-v0.34.json';
 
 const expectedClassOutline = [
   {
