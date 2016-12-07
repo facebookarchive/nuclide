@@ -79,7 +79,7 @@ const DEBUGGABLE_RULES = new Set([
   'cxx_test',
 ]);
 
-function isInstallableRule(ruleType: string) {
+function isInstallableRule(ruleType: ?string) {
   return INSTALLABLE_RULES.has(ruleType);
 }
 
@@ -262,7 +262,7 @@ export class BuckBuildSystem {
       state.buckRoot,
       fullTargetName,
       state.taskSettings[taskType] || {},
-      isInstallableRule(taskType, state.buildRuleType),
+      isInstallableRule(state.buildRuleType),
       udid,
     );
     const task = taskFromObservable(resultStream);
