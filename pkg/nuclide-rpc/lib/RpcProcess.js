@@ -13,7 +13,8 @@ import type {Subscription, Observable} from 'rxjs';
 import type {ServiceRegistry, MessageLogger} from '..';
 import type {ProcessMessage, ProcessExitMessage} from '../../commons-node/process-rpc-types';
 
-import {StreamTransport, RpcConnection} from '..';
+import {StreamTransport} from './StreamTransport';
+import {RpcConnection} from './RpcConnection';
 import {getOutputStream} from '../../commons-node/process';
 import {getLogger} from '../../nuclide-logging';
 import invariant from 'assert';
