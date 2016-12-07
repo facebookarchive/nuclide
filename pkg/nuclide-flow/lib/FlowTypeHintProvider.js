@@ -18,6 +18,7 @@ import {getFlowServiceByNuclideUri} from './FlowServiceFactory';
 import {Range} from 'atom';
 import {JAVASCRIPT_WORD_REGEX} from './constants';
 import {getLogger} from '../../nuclide-logging';
+import prettyPrintTypes from './prettyPrintTypes';
 
 const logger = getLogger();
 
@@ -63,8 +64,15 @@ export class FlowTypeHintProvider {
     } else {
       range = new Range(position, position);
     }
+    let prettyPrinted;
+    try {
+      prettyPrinted = prettyPrintTypes(type);
+    } catch (e) {
+      logger.error(`Problem pretty printing type hint: ${e.message}`);
+      prettyPrinted = type;
+    }
     const result = {
-      hint: type,
+      hint: prettyPrinted,
       range,
     };
     const hintTree = getTypeHintTree(rawType);
