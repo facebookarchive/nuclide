@@ -1,0 +1,3 @@
+#! /bin/bash
+
+rm -rf `node -p 'require("os").tmpdir()'`/nuclide-node-transpiler
