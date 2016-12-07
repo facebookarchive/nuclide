@@ -78,15 +78,17 @@ export default class UncommittedChangesTimelineNode extends React.Component {
     );
   }
 
-  _handleClickCommit(): void {
+  _handleClickCommit(event: SyntheticMouseEvent): void {
     const {diffModel} = this.props;
     diffModel.setCommitMode(CommitMode.COMMIT);
     diffModel.setViewMode(DiffMode.COMMIT_MODE);
+    event.stopPropagation();
   }
 
-  _handleClickAmend(): void {
+  _handleClickAmend(event: SyntheticMouseEvent): void {
     const {diffModel} = this.props;
     diffModel.setCommitMode(CommitMode.AMEND);
     diffModel.setViewMode(DiffMode.COMMIT_MODE);
+    event.stopPropagation();
   }
 }
