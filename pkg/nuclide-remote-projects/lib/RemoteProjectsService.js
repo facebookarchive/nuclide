@@ -9,8 +9,12 @@
  * the root directory of this source tree.
  */
 
+import type {SerializableRemoteConnectionConfiguration} from '..';
+
 import {ReplaySubject} from 'rxjs';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import {RemoteConnection} from '../../nuclide-remote-connection';
+import {openConnectionDialog} from './open-connection';
 
 export default class RemoteProjectsService {
   _subject: ReplaySubject<Array<string>>;
@@ -30,5 +34,26 @@ export default class RemoteProjectsService {
 
   waitForRemoteProjectReload(callback: (loadedProjects: Array<string>) => mixed): IDisposable {
     return new UniversalDisposable(this._subject.subscribe(callback));
+  }
+
+  async createRemoteConnection(
+    remoteProjectConfig: SerializableRemoteConnectionConfiguration,
+  ): Promise<?RemoteConnection> {
+    const {host, cwd, displayTitle} = remoteProjectConfig;
+    let connection = RemoteConnection.getByHostnameAndPath(host, cwd);
+    if (connection != null) {
+      return connection;
+    }
+
+    connection = await RemoteConnection.createConnectionBySavedConfig(host, cwd, displayTitle);
+    if (connection != null) {
+      return connection;
+    }
+
+    // If connection fails using saved config, open connect dialog.
+    return openConnectionDialog({
+      initialServer: host,
+      initialCwd: cwd,
+    });
   }
 }

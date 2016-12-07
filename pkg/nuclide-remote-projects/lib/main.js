@@ -46,12 +46,20 @@ export type RemoteProjectsService = {
    * If reloading has already finished, this immediately resolves.
    */
   waitForRemoteProjectReload(callback: (loadedProjects: Array<string>) => mixed): IDisposable,
+
+  /**
+   * Attempts to open a remote connection, first by attempting the previously cached connection
+   * and then by opening a connection dialog.
+   */
+  createRemoteConnection(
+    config: SerializableRemoteConnectionConfiguration,
+  ): Promise<?RemoteConnection>,
 };
 
 /**
  * Stores the host and cwd of a remote connection.
  */
-type SerializableRemoteConnectionConfiguration = {
+export type SerializableRemoteConnectionConfiguration = {
   host: string,
   cwd: string,
   displayTitle: string,
@@ -72,27 +80,6 @@ function createSerializableRemoteConnectionConfiguration(
     cwd: config.cwd,
     displayTitle: config.displayTitle,
   };
-}
-
-async function createRemoteConnection(
-  remoteProjectConfig: SerializableRemoteConnectionConfiguration,
-): Promise<?RemoteConnection> {
-  const {host, cwd, displayTitle} = remoteProjectConfig;
-  let connection = RemoteConnection.getByHostnameAndPath(host, cwd);
-  if (connection != null) {
-    return connection;
-  }
-
-  connection = await RemoteConnection.createConnectionBySavedConfig(host, cwd, displayTitle);
-  if (connection != null) {
-    return connection;
-  }
-
-  // If connection fails using saved config, open connect dialog.
-  return openConnectionDialog({
-    initialServer: remoteProjectConfig.host,
-    initialCwd: remoteProjectConfig.cwd,
-  });
 }
 
 function addRemoteFolderToProject(connection: RemoteConnection) {
@@ -293,8 +280,9 @@ async function reloadRemoteProjects(
   // after the first one succeeds the rest should require no user action.
   const reloadedProjects: Array<string> = [];
   for (const config of remoteProjects) {
+    invariant(remoteProjectsService);
     // eslint-disable-next-line babel/no-await-in-loop
-    const connection = await createRemoteConnection(config);
+    const connection = await remoteProjectsService.createRemoteConnection(config);
     if (!connection) {
       logger.info(
         'No RemoteConnection returned on restore state trial:',
