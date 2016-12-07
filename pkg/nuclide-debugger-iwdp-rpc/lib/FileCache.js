@@ -16,8 +16,8 @@ import nuclideUri from '../../commons-node/nuclideUri';
 import {logger} from './logger';
 
 const {log} = logger;
-// Android stock emulator uses a standard non-configurable local loopback alias: 10.0.2.2.
-const EMULATOR_LOCALHOST_ADDR = '10.0.2.2';
+// Android's stock emulator and other emulators such as genymotion use a standard localhost alias.
+const EMULATOR_LOCALHOST_ADDR: RegExp = /10\.0\.2\.2|10\.0\.3\.2/;
 
 type FileData = {
   filePath: string, // Path to file on disk.
