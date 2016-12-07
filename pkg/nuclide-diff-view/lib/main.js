@@ -484,7 +484,7 @@ class Activation {
       priority: 800,
     });
     const button = toolBar.addButton({
-      icon: 'git-branch',
+      icon: 'diff',
       callback: 'nuclide-diff-view:open',
       tooltip: 'Open Diff View',
       priority: 801,
@@ -516,7 +516,7 @@ class Activation {
     return {
       feature: {
         title: 'Diff View',
-        icon: 'git-branch',
+        icon: 'diff',
         description: (
           <span>
             Launches an editable side-by-side compare view across mercurial dirty and commits
