@@ -9,10 +9,13 @@
  * the root directory of this source tree.
  */
 
+/* global localStorage */
+
 import LRUCache from 'lru-cache';
 import {getArcanistServiceByNuclideUri} from '../nuclide-remote-connection';
 
 const arcInfoCache = new LRUCache({max: 200});
+const STORAGE_KEY = 'nuclide.last-arc-project-path';
 
 /**
  * Cached wrapper around ArcanistService.findArcProjectIdAndDirectory.
@@ -27,6 +30,16 @@ export function findArcProjectIdAndDirectory(src: string): Promise<?{
   if (cached == null) {
     const arcService = getArcanistServiceByNuclideUri(src);
     cached = arcService.findArcProjectIdAndDirectory(src)
+      .then(result => {
+        // Store the path in local storage for `getLastProjectPath`.
+        if (result != null) {
+          localStorage.setItem(
+            `${STORAGE_KEY}.${result.projectId}`,
+            result.directory,
+          );
+        }
+        return result;
+      })
       .catch(err => {
         // Clear the cache if there's an error to enable retries.
         arcInfoCache.delete(src);
@@ -35,4 +48,8 @@ export function findArcProjectIdAndDirectory(src: string): Promise<?{
     arcInfoCache.set(src, cached);
   }
   return cached;
+}
+
+export function getLastProjectPath(projectId: string): ?string {
+  return localStorage.getItem(`${STORAGE_KEY}.${projectId}`);
 }
