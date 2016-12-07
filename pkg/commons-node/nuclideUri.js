@@ -416,7 +416,7 @@ function nuclideUriToDisplayString(uri: NuclideUri): string {
         break;
       }
     }
-    return `${hostname}/${getPath(uri)}`;
+    return `${hostname}:${getPath(uri)}`;
   } else {
     return uri;
   }

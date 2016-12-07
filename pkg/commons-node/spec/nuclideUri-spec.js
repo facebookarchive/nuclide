@@ -219,7 +219,7 @@ describe('nuclide-uri', () => {
 
   it('nuclideUriToDisplayString', () => {
     expect(nuclideUri.nuclideUriToDisplayString(localUri)).toBe(localUri);
-    expect(nuclideUri.nuclideUriToDisplayString(remoteUri)).toBe('fb.com//usr/local');
+    expect(nuclideUri.nuclideUriToDisplayString(remoteUri)).toBe('fb.com:/usr/local');
     expect(() => nuclideUri.nuclideUriToDisplayString(atomUri)).toThrow();
   });
 
