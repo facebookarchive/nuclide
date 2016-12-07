@@ -14,7 +14,7 @@
 
 module.exports = {
   rules: {
-    'atom-commands': require('./atom-commands'),
+    'atom-apis': require('./atom-apis'),
     'consistent-import-name': require('./consistent-import-name'),
     'import-type-style': require('./import-type-style'),
     'license-header': require('./license-header'),
@@ -24,7 +24,7 @@ module.exports = {
     'prefer-types-only-header': require('./prefer-types-only-header'),
   },
   rulesConfig: {
-    'atom-commands': 0,
+    'atom-apis': 0,
     'consistent-import-name': 0,
     'import-type-style': 0,
     'license-header': 0,

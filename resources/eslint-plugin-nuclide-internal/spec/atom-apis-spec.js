@@ -13,7 +13,7 @@
 /* eslint comma-dangle: [1, always-multiline], prefer-object-spread/prefer-object-spread: 0 */
 
 const path = require('path');
-const rule = require('../atom-commands');
+const rule = require('../atom-apis');
 const RuleTester = require('eslint').RuleTester;
 
 const ruleTester = new RuleTester();
