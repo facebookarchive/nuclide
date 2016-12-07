@@ -471,7 +471,7 @@ class Activation {
   consumeOutputService(api: OutputService): void {
     this._subscriptions.add(
       api.registerOutputProvider({
-        id: 'diff-view',
+        id: 'Diff View',
         messages: this._progressUpdates.asObservable(),
       }),
     );
