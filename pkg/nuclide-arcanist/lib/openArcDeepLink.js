@@ -13,13 +13,11 @@ import type {DeepLinkParams} from '../../nuclide-deep-link/lib/types';
 import type {RemoteProjectsService} from '../../nuclide-remote-projects';
 
 import invariant from 'assert';
+import {findArcProjectIdAndDirectory} from '../../commons-atom/arcanist';
 import {goToLocation} from '../../commons-atom/go-to-location';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {asyncFilter} from '../../commons-node/promise';
-import {
-  getArcanistServiceByNuclideUri,
-  getFileSystemServiceByNuclideUri,
-} from '../../nuclide-remote-connection';
+import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 function ensureArray(x: string | Array<string>): Array<string> {
   return typeof x === 'string' ? [x] : x;
@@ -41,12 +39,11 @@ export async function openArcDeepLink(
     // Fetch the Arcanist project of each open project.
     // This also gets parent projects, in case we have a child project mounted.
     const arcInfos = await Promise.all(atom.project.getPaths().map(async dir => {
-      const arcService = getArcanistServiceByNuclideUri(dir);
       const matches = [];
       let currentDir = dir;
       for (;;) {
         // eslint-disable-next-line babel/no-await-in-loop
-        const info = await arcService.findArcProjectIdAndDirectory(currentDir);
+        const info = await findArcProjectIdAndDirectory(currentDir);
         if (info == null) {
           break;
         }
