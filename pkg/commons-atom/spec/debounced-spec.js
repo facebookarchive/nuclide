@@ -30,7 +30,8 @@ const SLEEP_INTERVAL = 15;
 // Sleep interval for double the debounce interval.
 const SLEEP_INTERVAL_2 = 25;
 
-describe('editorScrollTopDebounced', () => {
+// eslint-disable-next-line jasmine/no-disabled-tests
+xdescribe('editorScrollTopDebounced', () => {
   it('debounces scroll event', () => {
     const LINES = 1000;
     const mockText = Array(LINES)
@@ -62,7 +63,8 @@ describe('editorScrollTopDebounced', () => {
   });
 });
 
-describe('pane item change events', () => {
+// eslint-disable-next-line jasmine/no-disabled-tests
+xdescribe('pane item change events', () => {
   let pane: atom$Pane = (null: any);
   let editor1: atom$TextEditor = (null: any);
   let editor2: atom$TextEditor = (null: any);
@@ -196,7 +198,8 @@ describe('pane item change events', () => {
   });
 });
 
-describe('editorChangesDebounced', () => {
+// eslint-disable-next-line jasmine/no-disabled-tests
+xdescribe('editorChangesDebounced', () => {
   let editor: atom$TextEditor = (null: any);
   let editorChanges: Observable<void> = (null: any);
 
