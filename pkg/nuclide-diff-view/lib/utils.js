@@ -23,6 +23,7 @@ import type {
   RevisionFileChanges,
   RevisionInfo,
 } from '../../nuclide-hg-rpc/lib/HgService';
+import type {Message} from '../../nuclide-console/lib/types';
 import type {PhabricatorRevisionInfo} from '../../nuclide-arcanist-rpc/lib/utils';
 
 import {
@@ -48,7 +49,7 @@ const MAX_DIALOG_FILE_STATUS_COUNT = 20;
 
 export function processArcanistOutput(
   stream_: Observable<{stderr?: string, stdout?: string}>,
-): Observable<any> {
+): Observable<Message> {
   let stream = stream_;
   stream = stream
     // Split stream into single lines.
@@ -447,7 +448,7 @@ export function viewModeToDiffOption(viewMode: DiffModeType): DiffOptionType {
 // (notifications & publish updates).
 export function createPhabricatorRevision(
   repository: HgRepositoryClient,
-  publishUpdates: Subject<any>,
+  publishUpdates: Subject<Message>,
   headCommitMessage: string,
   publishMessage: string,
   amended: boolean,
@@ -476,7 +477,7 @@ export function createPhabricatorRevision(
         .refCount();
 
       return processArcanistOutput(stream)
-        .startWith({level: 'log', text: 'Creating new revision...\n'})
+        .startWith({level: 'info', text: 'Creating new revision...\n'})
         .do(message => publishUpdates.next(message));
     }),
 
@@ -495,7 +496,7 @@ export function createPhabricatorRevision(
 // (notifications & publish updates).
 export function updatePhabricatorRevision(
   repository: HgRepositoryClient,
-  publishUpdates: Subject<any>,
+  publishUpdates: Subject<Message>,
   headCommitMessage: string,
   publishMessage: string,
   allowUntracked: boolean,
@@ -526,7 +527,7 @@ export function updatePhabricatorRevision(
     .refCount();
 
   return processArcanistOutput(stream)
-    .startWith({level: 'log', text: `Updating revision \`${phabricatorRevision.name}\`...\n`})
+    .startWith({level: 'info', text: `Updating revision \`${phabricatorRevision.name}\`...\n`})
     .do({
       next: message => publishUpdates.next(message),
       complete: () => notifyRevisionStatus(phabricatorRevision, 'updated'),
