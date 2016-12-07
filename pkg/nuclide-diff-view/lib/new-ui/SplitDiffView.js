@@ -107,10 +107,6 @@ async function getDiffEditors(
     const newEditorItem = newEditorPane.itemForURI(filePath);
     newEditorPane.activateItem(newEditorItem);
     newEditor = ((newEditorItem: any): atom$TextEditor);
-    disposables.add(
-      enforceSoftWrap(newEditor, false),
-      () => newEditor.setSoftWrapped((atom.config.get('editor.softWrap'): any)),
-    );
   } else {
     newEditor = ((await atom.workspace.open(filePath): any): atom$TextEditor);
     // Allow the atom workspace to update its state before querying for
@@ -118,11 +114,12 @@ async function getDiffEditors(
     await nextTick();
     newEditorPane = atom.workspace.paneForURI(filePath);
     invariant(newEditorPane != null, 'Cannot find a pane for the opened text editor');
-    disposables.add(
-      enforceSoftWrap(newEditor, false),
-      () => cleanUpEditor(newEditor),
-    );
   }
+
+  disposables.add(
+    enforceSoftWrap(newEditor, false),
+    () => newEditor.setSoftWrapped((atom.config.get('editor.softWrap'): any)),
+  );
 
   const navigationGutter = newEditor.gutterWithName(NAVIGATION_GUTTER_NAME) || newEditor.addGutter({
     name: NAVIGATION_GUTTER_NAME,
