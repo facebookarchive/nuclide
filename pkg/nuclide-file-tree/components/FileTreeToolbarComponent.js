@@ -10,9 +10,9 @@
  */
 
 import {React, ReactDOM} from 'react-for-atom';
-import {CompositeDisposable} from 'atom';
 import classnames from 'classnames';
 import invariant from 'assert';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import addTooltip from '../../nuclide-ui/add-tooltip';
 import {WorkingSetSelectionComponent} from './WorkingSetSelectionComponent';
 import {WorkingSetNameAndSaveComponent} from './WorkingSetNameAndSaveComponent';
@@ -35,7 +35,7 @@ type State = {
 
 export class FileTreeToolbarComponent extends React.Component {
   _store: FileTreeStore;
-  _disposables: CompositeDisposable;
+  _disposables: UniversalDisposable;
   _inProcessOfClosingSelection: boolean;
   _prevName: string;
   _actions: FileTreeActions;
@@ -57,13 +57,14 @@ export class FileTreeToolbarComponent extends React.Component {
     this._inProcessOfClosingSelection = false;
     this._actions = FileTreeActions.getInstance();
 
-    this._disposables = new CompositeDisposable();
-    this._disposables.add(props.workingSetsStore.subscribeToDefinitions(
-      definitions => {
-        const empty = definitions.applicable.length + definitions.notApplicable.length === 0;
-        this.setState({definitionsAreEmpty: empty});
-      },
-    ));
+    this._disposables = new UniversalDisposable(
+      props.workingSetsStore.subscribeToDefinitions(
+        definitions => {
+          const empty = definitions.applicable.length + definitions.notApplicable.length === 0;
+          this.setState({definitionsAreEmpty: empty});
+        },
+      ),
+    );
 
     (this: any)._toggleWorkingSetsSelector = this._toggleWorkingSetsSelector.bind(this);
     (this: any)._checkIfClosingSelector = this._checkIfClosingSelector.bind(this);

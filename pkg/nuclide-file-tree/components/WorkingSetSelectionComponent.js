@@ -15,8 +15,8 @@ import type {
 } from '../../nuclide-working-sets/lib/types';
 
 import classnames from 'classnames';
-import {CompositeDisposable} from 'atom';
 import {React, ReactDOM} from 'react-for-atom';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {Button} from '../../nuclide-ui/Button';
 import {ButtonGroup} from '../../nuclide-ui/ButtonGroup';
 import {HR} from '../../nuclide-ui/HR';
@@ -34,7 +34,7 @@ type State = {
 };
 
 export class WorkingSetSelectionComponent extends React.Component {
-  _disposables: CompositeDisposable;
+  _disposables: UniversalDisposable;
   props: Props;
   state: State;
 
@@ -49,9 +49,7 @@ export class WorkingSetSelectionComponent extends React.Component {
       notApplicableDefinitions: workingSetsStore.getNotApplicableDefinitions(),
     };
 
-    this._disposables = new CompositeDisposable();
-
-    this._disposables.add(
+    this._disposables = new UniversalDisposable(
       workingSetsStore.subscribeToDefinitions(definitions => {
         this.setState({
           applicableDefinitions: definitions.applicable,

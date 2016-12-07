@@ -10,7 +10,7 @@
  */
 
 import debounce from '../../commons-node/debounce';
-import {Disposable, CompositeDisposable} from 'atom';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import FileTreeDispatcher, {ActionTypes} from './FileTreeDispatcher';
 import FileTreeHelpers from './FileTreeHelpers';
 import {FileTreeStore} from './FileTreeStore';
@@ -36,7 +36,7 @@ let instance: ?FileTreeActions;
 class FileTreeActions {
   _dispatcher: FileTreeDispatcher;
   _store: FileTreeStore;
-  _subscriptionForRepository: Immutable.Map<atom$Repository, Disposable>;
+  _disposableForRepository: Immutable.Map<atom$Repository, IDisposable>;
 
   static getInstance(): FileTreeActions {
     if (!instance) {
@@ -48,7 +48,7 @@ class FileTreeActions {
   constructor() {
     this._dispatcher = FileTreeDispatcher.getInstance();
     this._store = FileTreeStore.getInstance();
-    this._subscriptionForRepository = new Immutable.Map();
+    this._disposableForRepository = new Immutable.Map();
   }
 
   setCwd(rootKey: ?string): void {
@@ -470,12 +470,11 @@ class FileTreeActions {
     );
     // Different repo types emit different events at individual and refresh updates.
     // Hence, the need to debounce and listen to both change types.
-    const changeStatusesSubscriptions = new CompositeDisposable();
-    changeStatusesSubscriptions.add(
+    const changeStatusesSubscriptions = new UniversalDisposable(
       repo.onDidChangeStatuses(debouncedChangeStatuses),
       repo.onDidChangeStatus(debouncedChangeStatuses),
     );
-    this._subscriptionForRepository = this._subscriptionForRepository.set(
+    this._disposableForRepository = this._disposableForRepository.set(
       repo,
       changeStatusesSubscriptions,
     );
@@ -541,15 +540,15 @@ class FileTreeActions {
   }
 
   _repositoryRemoved(repo: atom$Repository) {
-    const disposable = this._subscriptionForRepository.get(repo);
+    const disposable = this._disposableForRepository.get(repo);
     if (!disposable) {
       // There is a small chance that the add/remove of the Repository could happen so quickly that
-      // the entry for the repo in _subscriptionForRepository has not been set yet.
+      // the entry for the repo in _disposableForRepository has not been set yet.
       // TODO: Report a soft error for this.
       return;
     }
 
-    this._subscriptionForRepository = this._subscriptionForRepository.delete(repo);
+    this._disposableForRepository = this._disposableForRepository.delete(repo);
     this.invalidateRemovedFolder();
     disposable.dispose();
   }

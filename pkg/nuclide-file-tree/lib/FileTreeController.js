@@ -13,7 +13,6 @@ import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {RemoteProjectsService} from '../../nuclide-remote-projects';
 import type {ExportStoreData} from './FileTreeStore';
 
-import {CompositeDisposable, Disposable} from 'atom';
 import {EVENT_HANDLER_SELECTOR} from './FileTreeConstants';
 import FileSystemActions from './FileSystemActions';
 import FileTreeActions from './FileTreeActions';
@@ -24,6 +23,7 @@ import Immutable from 'immutable';
 import {track} from '../../nuclide-analytics';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {goToLocation} from '../../commons-atom/go-to-location';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 
 import os from 'os';
 import {shell} from 'electron';
@@ -49,29 +49,24 @@ class FileTreeController {
   _cwdApiSubscription: ?IDisposable;
   _repositories: Immutable.Set<atom$Repository>;
   _store: FileTreeStore;
-  _subscriptions: CompositeDisposable;
-  _subscriptionForRepository: Immutable.Map<atom$Repository, IDisposable>;
+  _disposables: UniversalDisposable;
+  _disposableForRepository: Immutable.Map<atom$Repository, IDisposable>;
 
   constructor(state: ?FileTreeControllerState) {
     this._actions = FileTreeActions.getInstance();
     this._store = FileTreeStore.getInstance();
     this._repositories = new Immutable.Set();
-    this._subscriptionForRepository = new Immutable.Map();
-    this._subscriptions = new CompositeDisposable(
-      new Disposable(() => {
-        if (this._cwdApiSubscription != null) {
-          this._cwdApiSubscription.dispose();
-        }
-      }),
-    );
+    this._disposableForRepository = new Immutable.Map();
+    this._disposables = new UniversalDisposable(() => {
+      if (this._cwdApiSubscription != null) {
+        this._cwdApiSubscription.dispose();
+      }
+    });
     // Initial root directories
     this._updateRootDirectories();
     // Subsequent root directories updated on change
-    this._subscriptions.add(
+    this._disposables.add(
       atom.project.onDidChangePaths(() => this._updateRootDirectories()),
-    );
-
-    this._subscriptions.add(
       atom.commands.add('atom-text-editor', {
         // eslint-disable-next-line nuclide-internal/atom-commands
         'nuclide-file-tree:reveal-text-editor': this._revealTextEditor.bind(this),
@@ -100,7 +95,7 @@ class FileTreeController {
       letterKeyBindings[`nuclide-file-tree:go-to-letter-${char}`] =
         this._handlePrefixKeypress.bind(this, char);
     }
-    this._subscriptions.add(
+    this._disposables.add(
       atom.commands.add(EVENT_HANDLER_SELECTOR, {
         'core:move-down': this._moveDown.bind(this),
         'core:move-up': this._moveUp.bind(this),
@@ -142,8 +137,6 @@ class FileTreeController {
         'nuclide-file-tree:set-current-working-root': this._setCwdToSelection.bind(this),
         ...letterKeyBindings,
       }),
-    );
-    this._subscriptions.add(
       atom.commands.add('[is="tabs-tab"]', {
         'nuclide-file-tree:reveal-tab-file': this._revealTabFileOnClick.bind(this),
       }),
@@ -338,7 +331,7 @@ class FileTreeController {
       // The problem happens when the connection fails, or is canceled.
       // The fake root just stays in the file tree.
       // After remote projects have been reloaded, force a refresh to clear out the fake roots.
-      this._subscriptions.add(
+      this._disposables.add(
         service.waitForRemoteProjectReload(this._updateRootDirectories.bind(this)),
       );
     }
@@ -627,8 +620,8 @@ class FileTreeController {
   }
 
   destroy(): void {
-    this._subscriptions.dispose();
-    for (const disposable of this._subscriptionForRepository.values()) {
+    this._disposables.dispose();
+    for (const disposable of this._disposableForRepository.values()) {
       disposable.dispose();
     }
     this._store.reset();

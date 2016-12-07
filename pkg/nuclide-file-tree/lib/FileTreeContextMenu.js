@@ -13,7 +13,7 @@ import type {FileTreeNode} from './FileTreeNode';
 import type Immutable from 'immutable';
 
 import ContextMenu from '../../commons-atom/ContextMenu';
-import {CompositeDisposable, Disposable} from 'atom';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {EVENT_HANDLER_SELECTOR} from './FileTreeConstants';
 import {FileTreeStore} from './FileTreeStore';
 
@@ -89,21 +89,21 @@ const SHOW_IN_MENU_PRIORITY = 6000;
  * import {CompositeDisposable, Disposable} from 'atom';
  * import invariant from 'assert';
  *
- * let subscriptions: ?CompositeDisposable = null;
+ * let disposables: ?CompositeDisposable = null;
  *
  * export function activate(state: ?Object): void {
- *   subscriptions = new CompositeDisposable();
+ *   disposables = new CompositeDisposable();
  * }
  *
  * export function deactivate(): void {
- *   if (subscriptions != null) {
- *     subscriptions.dispose();
- *     subscriptions = null;
+ *   if (disposables != null) {
+ *     disposables.dispose();
+ *     disposables = null;
  *   }
  * }
  *
  * export function addItemsToFileTreeContextMenu(contextMenu: FileTreeContextMenu): IDisposable {
- *   invariant(subscriptions);
+ *   invariant(disposables);
  *
  *   const contextDisposable = contextMenu.addItemToSourceControlMenu(
  *     {
@@ -127,11 +127,11 @@ const SHOW_IN_MENU_PRIORITY = 6000;
  *     1000, // priority
  *   );
  *
- *   subscriptions.add(contextDisposable);
+ *   disposables.add(contextDisposable);
  *   return new Disposable(() => {
- *     invariant(subscriptions);
- *     if (subscriptions != null) {
- *       subscriptions.remove(contextDisposable);
+ *     invariant(disposables);
+ *     if (disposables != null) {
+ *       disposables.remove(contextDisposable);
  *     }
  *   });
  * }
@@ -141,7 +141,7 @@ class FileTreeContextMenu {
   _contextMenu: ContextMenu;
   _sourceControlMenu: ContextMenu;
   _store: FileTreeStore;
-  _subscriptions: CompositeDisposable;
+  _disposables: UniversalDisposable;
 
   constructor() {
     this._contextMenu = new ContextMenu(
@@ -150,7 +150,7 @@ class FileTreeContextMenu {
         cssSelector: EVENT_HANDLER_SELECTOR,
       },
     );
-    this._subscriptions = new CompositeDisposable();
+    this._disposables = new UniversalDisposable();
     this._store = FileTreeStore.getInstance();
 
     const shouldDisplaySetToCurrentWorkingRootOption = () => {
@@ -345,9 +345,9 @@ class FileTreeContextMenu {
     const {itemDisposable, item} = initCommandIfPresent(originalItem);
     itemDisposable.add(menu.addItem(item, priority));
 
-    this._subscriptions.add(itemDisposable);
-    return new Disposable(() => {
-      this._subscriptions.remove(itemDisposable);
+    this._disposables.add(itemDisposable);
+    return new UniversalDisposable(() => {
+      this._disposables.remove(itemDisposable);
       itemDisposable.dispose();
     });
   }
@@ -361,7 +361,7 @@ class FileTreeContextMenu {
   }
 
   dispose(): void {
-    this._subscriptions.dispose();
+    this._disposables.dispose();
   }
 
   _addContextMenuItemGroup(menuItems: Array<MenuItemDefinition>, priority_: number): void {
@@ -390,10 +390,10 @@ class FileTreeContextMenu {
 }
 
 function initCommandIfPresent(item: FileTreeContextMenuItem): {
-  itemDisposable: CompositeDisposable,
+  itemDisposable: UniversalDisposable,
   item: atom$ContextMenuItem,
 } {
-  const itemDisposable = new CompositeDisposable();
+  const itemDisposable = new UniversalDisposable();
   if (typeof item.callback === 'function' && item.label != null) {
     const command = item.command || generateNextInternalCommand(item.label);
     itemDisposable.add(atom.commands.add(FILE_TREE_CSS, command, item.callback));

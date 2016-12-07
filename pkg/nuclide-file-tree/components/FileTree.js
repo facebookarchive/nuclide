@@ -11,12 +11,12 @@
 
 /* global requestAnimationFrame, cancelAnimationFrame */
 
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {FileTreeStore} from '../lib/FileTreeStore';
 import {React, ReactDOM} from 'react-for-atom';
 import {FileTreeEntryComponent} from './FileTreeEntryComponent';
 import {EmptyComponent} from './EmptyComponent';
 import classnames from 'classnames';
-import {CompositeDisposable, Disposable} from 'atom';
 
 import type {OrderedMap} from 'immutable';
 import type {FileTreeNode} from '../lib/FileTreeNode';
@@ -38,13 +38,13 @@ export class FileTree extends React.Component {
   props: Props;
   _store: FileTreeStore;
   _initialHeightMeasured: boolean;
-  _disposables: CompositeDisposable;
+  _disposables: UniversalDisposable;
   _afRequestId: ?number;
 
   constructor(props: Props) {
     super(props);
     this._store = FileTreeStore.getInstance();
-    this._disposables = new CompositeDisposable();
+    this._disposables = new UniversalDisposable();
 
     this.state = {
       elementHeight: 22, // The minimal observed height makes a good default
@@ -70,9 +70,9 @@ export class FileTree extends React.Component {
           });
         },
       ),
-      new Disposable(() => {
+      () => {
         window.removeEventListener('resize', this._measureHeights);
-      }),
+      },
     );
   }
 

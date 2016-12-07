@@ -17,9 +17,9 @@ import type {NuclideSideBarService} from '../../nuclide-side-bar';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {RemoteProjectsService} from '../../nuclide-remote-projects';
 
-import {Disposable, CompositeDisposable} from 'atom';
 import invariant from 'assert';
 
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import featureConfig from '../../commons-atom/featureConfig';
 import debounce from '../../commons-node/debounce';
 
@@ -40,12 +40,12 @@ class Activation {
   _cwdApiSubscription: ?IDisposable;
   _fileTreeController: FileTreeController;
   _packageState: ?FileTreeControllerState;
-  _subscriptions: CompositeDisposable;
+  _disposables: UniversalDisposable;
   _paneItemSubscription: ?IDisposable;
 
   constructor(state: ?FileTreeControllerState) {
     this._packageState = state;
-    this._subscriptions = new CompositeDisposable();
+    this._disposables = new UniversalDisposable();
 
     this._fileTreeController = new FileTreeController(this._packageState);
 
@@ -55,7 +55,7 @@ class Activation {
     const prefixKeyNavSetting = 'nuclide-file-tree.allowKeyboardPrefixNavigation';
     const allowPendingPaneItems = 'core.allowPendingPaneItems';
 
-    this._subscriptions.add(
+    this._disposables.add(
       this._fixContextMenuHighlight(),
       featureConfig.observe(prefixKeyNavSetting, (x: any) => this._setPrefixKeyNavSetting(x)),
       featureConfig.observe(
@@ -89,7 +89,7 @@ class Activation {
       });
     };
 
-    return new Disposable(() => {
+    return new UniversalDisposable(() => {
       (atom.contextMenu: any).showForEvent = showForEvent;
     });
   }
@@ -101,21 +101,21 @@ class Activation {
     }
     const controller = this._fileTreeController;
     controller.setCwdApi(cwdApi);
-    this._cwdApiSubscription = new Disposable(() => controller.setCwdApi(null));
+    this._cwdApiSubscription = new UniversalDisposable(() => controller.setCwdApi(null));
     return this._cwdApiSubscription;
   }
 
   consumeRemoteProjectsService(service: RemoteProjectsService): IDisposable {
     const controller = this._fileTreeController;
     controller.setRemoteProjectsService(service);
-    return new Disposable(() => {
+    return new UniversalDisposable(() => {
       controller.setRemoteProjectsService(null);
     });
   }
 
   dispose() {
     this._deactivate();
-    this._subscriptions.dispose();
+    this._disposables.dispose();
   }
 
   serialize(): ?FileTreeControllerState {
@@ -129,16 +129,16 @@ class Activation {
     const currentSubscription = workingSetsStore.subscribeToCurrent(currentWorkingSet => {
       this._fileTreeController.updateWorkingSet(currentWorkingSet);
     });
-    this._subscriptions.add(currentSubscription);
+    this._disposables.add(currentSubscription);
 
 
     let updateOpenFilesWorkingSet = this._fileTreeController.updateOpenFilesWorkingSet.bind(
       this._fileTreeController,
     );
 
-    this._subscriptions.add(new Disposable(() => {
+    this._disposables.add(() => {
       updateOpenFilesWorkingSet = () => {};
-    }));
+    });
 
     const rebuildOpenFilesWorkingSet = debounce(
       () => {
@@ -153,18 +153,20 @@ class Activation {
 
     rebuildOpenFilesWorkingSet();
 
-    const paneObservingDisposable = new CompositeDisposable();
-    paneObservingDisposable.add(atom.workspace.onDidAddPaneItem(rebuildOpenFilesWorkingSet));
-    paneObservingDisposable.add(atom.workspace.onDidDestroyPaneItem(rebuildOpenFilesWorkingSet));
+    const paneObservingDisposable = new UniversalDisposable();
+    paneObservingDisposable.add(
+      atom.workspace.onDidAddPaneItem(rebuildOpenFilesWorkingSet),
+      atom.workspace.onDidDestroyPaneItem(rebuildOpenFilesWorkingSet),
+    );
 
-    this._subscriptions.add(paneObservingDisposable);
+    this._disposables.add(paneObservingDisposable);
 
-    return new Disposable(() => {
+    return new UniversalDisposable(() => {
       this._fileTreeController.updateWorkingSetsStore(null);
       this._fileTreeController.updateWorkingSet(new WorkingSet());
       this._fileTreeController.updateOpenFilesWorkingSet(new WorkingSet());
       paneObservingDisposable.dispose();
-      this._subscriptions.remove(currentSubscription);
+      this._disposables.remove(currentSubscription);
       currentSubscription.dispose();
     });
   }
@@ -199,13 +201,13 @@ class Activation {
             /* showIfHidden */ false,
           ),
         );
-        this._subscriptions.add(this._paneItemSubscription);
+        this._disposables.add(this._paneItemSubscription);
       }
     } else {
       // Use a local so Flow can refine the type.
       const paneItemSubscription = this._paneItemSubscription;
       if (paneItemSubscription) {
-        this._subscriptions.remove(paneItemSubscription);
+        this._disposables.remove(paneItemSubscription);
         paneItemSubscription.dispose();
         this._paneItemSubscription = null;
       }
@@ -335,7 +337,7 @@ export function consumeNuclideSideBar(sidebar: NuclideSideBarService): IDisposab
     viewId: 'nuclide-file-tree',
   });
 
-  sideBarDisposable = new Disposable(() => {
+  sideBarDisposable = new UniversalDisposable(() => {
     sidebar.destroyView('nuclide-file-tree');
   });
 

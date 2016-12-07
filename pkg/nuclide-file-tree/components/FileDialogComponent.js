@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {AtomInput} from '../../nuclide-ui/AtomInput';
 import {Checkbox} from '../../nuclide-ui/Checkbox';
-import {CompositeDisposable} from 'atom';
 import {
   React,
   ReactDOM,
@@ -45,7 +45,7 @@ type Props = {
  * Component that displays UI to create a new file.
  */
 class FileDialogComponent extends React.Component {
-  _subscriptions: CompositeDisposable;
+  _disposables: UniversalDisposable;
   _isClosed: boolean;
 
   props: Props;
@@ -63,7 +63,7 @@ class FileDialogComponent extends React.Component {
   constructor(props: Props) {
     super(props);
     this._isClosed = false;
-    this._subscriptions = new CompositeDisposable();
+    this._disposables = new UniversalDisposable();
     (this: any)._close = this._close.bind(this);
     (this: any)._confirm = this._confirm.bind(this);
     (this: any)._handleDocumentMouseDown = this._handleDocumentMouseDown.bind(this);
@@ -78,7 +78,7 @@ class FileDialogComponent extends React.Component {
 
   componentDidMount(): void {
     const input = this.refs.input;
-    this._subscriptions.add(atom.commands.add(
+    this._disposables.add(atom.commands.add(
       ReactDOM.findDOMNode(input),
       {
         'core:confirm': this._confirm,
@@ -97,7 +97,7 @@ class FileDialogComponent extends React.Component {
   }
 
   componentWillUnmount(): void {
-    this._subscriptions.dispose();
+    this._disposables.dispose();
     document.removeEventListener('mousedown', this._handleDocumentMouseDown);
   }
 
