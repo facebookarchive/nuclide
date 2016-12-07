@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,84 +9,89 @@
  * the root directory of this source tree.
  */
 
-import type {
-  Provider,
-  ProviderType,
-} from '../../nuclide-quick-open/lib/types';
-import type {
-  FileResult,
-} from '../../nuclide-quick-open/lib/rpc-types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {
-  RemoteDirectory,
-  getFuzzyFileSearchServiceByNuclideUri,
-} from '../../nuclide-remote-connection';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-import {getIgnoredNames} from './utils';
+var _nuclideRemoteConnection;
 
-export default ({
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+var _utils;
+
+function _load_utils() {
+  return _utils = require('./utils');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = {
   // Give preference to filename results in OmniSearch.
   getPriority: () => 1,
 
-  getName(): string {
+  getName() {
     return 'FuzzyFileNameProvider';
   },
 
-  getProviderType(): ProviderType {
+  getProviderType() {
     return 'DIRECTORY';
   },
 
-  isRenderable(): boolean {
+  isRenderable() {
     return true;
   },
 
-  getDebounceDelay(): number {
+  getDebounceDelay() {
     return 0;
   },
 
-  getAction(): string {
+  getAction() {
     return 'nuclide-fuzzy-filename-provider:toggle-provider';
   },
 
-  getPromptText(): string {
+  getPromptText() {
     return 'Fuzzy File Name Search';
   },
 
-  getTabTitle(): string {
+  getTabTitle() {
     return 'Filenames';
   },
 
-  isEligibleForDirectory(directory: atom$Directory): Promise<boolean> {
+  isEligibleForDirectory(directory) {
     return directory.exists();
   },
 
-  async executeQuery(query: string, directory?: atom$Directory): Promise<Array<FileResult>> {
-    if (query.length === 0) {
-      return [];
-    }
+  executeQuery(query, directory) {
+    return (0, _asyncToGenerator.default)(function* () {
+      if (query.length === 0) {
+        return [];
+      }
 
-    if (directory == null) {
-      throw new Error(
-        'FuzzyFileNameProvider is a directory-specific provider but its executeQuery method was'
-        + ' called without a directory argument.',
-      );
-    }
+      if (directory == null) {
+        throw new Error('FuzzyFileNameProvider is a directory-specific provider but its executeQuery method was' + ' called without a directory argument.');
+      }
 
-    const directoryPath = directory.getPath();
-    const service = getFuzzyFileSearchServiceByNuclideUri(directoryPath);
-    const results = await service.queryFuzzyFile(directoryPath, query, getIgnoredNames());
+      const directoryPath = directory.getPath();
+      const service = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getFuzzyFileSearchServiceByNuclideUri)(directoryPath);
+      const results = yield service.queryFuzzyFile(directoryPath, query, (0, (_utils || _load_utils()).getIgnoredNames)());
 
-    // Take the `nuclide://<host>` prefix into account for matchIndexes of remote files.
-    if (RemoteDirectory.isRemoteDirectory(directory)) {
-      const remoteDir: RemoteDirectory = (directory: any);
-      const indexOffset = directoryPath.length - remoteDir.getLocalPath().length;
-      for (let i = 0; i < results.length; i++) {
-        for (let j = 0; j < results[i].matchIndexes.length; j++) {
-          results[i].matchIndexes[j] += indexOffset;
+      // Take the `nuclide://<host>` prefix into account for matchIndexes of remote files.
+      if ((_nuclideRemoteConnection || _load_nuclideRemoteConnection()).RemoteDirectory.isRemoteDirectory(directory)) {
+        const remoteDir = directory;
+        const indexOffset = directoryPath.length - remoteDir.getLocalPath().length;
+        for (let i = 0; i < results.length; i++) {
+          for (let j = 0; j < results[i].matchIndexes.length; j++) {
+            results[i].matchIndexes[j] += indexOffset;
+          }
         }
       }
-    }
 
-    return ((results: any): Array<FileResult>);
-  },
-}: Provider);
+      return results;
+    })();
+  }
+};
+module.exports = exports['default'];

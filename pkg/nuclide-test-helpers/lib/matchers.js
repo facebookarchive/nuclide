@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -26,16 +26,24 @@
 
 // We have to create an invariant function that is a lie because using invariant() with an
 // instanceof check is the only way to convince Flow of the type of an unbound `this`.
-const invariant = (condition: boolean) => {};
 
-import chalk from 'chalk';
-import * as diff from 'diff';
+var _chalk;
 
-type Change = {
-  value: string,
-  removed?: boolean,
-  added?: boolean,
-};
+function _load_chalk() {
+  return _chalk = _interopRequireDefault(require('chalk'));
+}
+
+var _diff;
+
+function _load_diff() {
+  return _diff = _interopRequireWildcard(require('diff'));
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const invariant = condition => {};
 
 /**
  * Do a recursive diff of two JSON objects. This function should not be called
@@ -44,9 +52,9 @@ type Change = {
  * @this A JasmineMatcher object.
  * @returns True if the objects are identical.
  */
-function diffJson(expected: Object): boolean {
-  const parts = diff.diffJson(expected, this.actual);
-  const {message, changes} = formatMessage(parts);
+function diffJson(expected) {
+  const parts = (_diff || _load_diff()).diffJson(expected, this.actual);
+  const { message, changes } = formatMessage(parts);
   invariant(this instanceof jasmine.Matchers);
   this.message = () => message;
   return changes === 0;
@@ -59,9 +67,9 @@ function diffJson(expected: Object): boolean {
  * @this A JasmineMatcher object.
  * @returns True if the strings are identical.
  */
-function diffLines(expected: string): boolean {
-  const parts = diff.diffLines(expected, this.actual);
-  const {message, changes} = formatMessage(parts);
+function diffLines(expected) {
+  const parts = (_diff || _load_diff()).diffLines(expected, this.actual);
+  const { message, changes } = formatMessage(parts);
   invariant(this instanceof jasmine.Matchers);
   this.message = () => message;
   return changes === 0;
@@ -74,7 +82,7 @@ function diffLines(expected: string): boolean {
  * @returns On object containing the number of changes (added or removed parts),
  *   and a string containing the colored diff output.
  */
-function formatMessage(parts: Array<Change>): {changes: number, message: string} {
+function formatMessage(parts) {
   let changes = 0;
   let message = '';
   for (const part of parts) {
@@ -83,15 +91,15 @@ function formatMessage(parts: Array<Change>): {changes: number, message: string}
       ++changes;
       color = part.added ? 'green' : 'red';
     }
-    message += chalk[color](part.value);
+    message += (_chalk || _load_chalk()).default[color](part.value);
   }
-  return {changes, message};
+  return { changes, message };
 }
 
-function addMatchers(spec: JasmineSpec) {
+function addMatchers(spec) {
   const matchersPrototype = {
     diffJson,
-    diffLines,
+    diffLines
   };
   spec.addMatchers(matchersPrototype);
 }
@@ -99,5 +107,5 @@ function addMatchers(spec: JasmineSpec) {
 module.exports = {
   addMatchers,
   diffJson,
-  diffLines,
+  diffLines
 };

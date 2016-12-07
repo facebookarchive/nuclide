@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,20 +9,31 @@
  * the root directory of this source tree.
  */
 
-import type {Provider} from '../../nuclide-quick-open/lib/types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.registerQuickOpenProvider = registerQuickOpenProvider;
 
-import {HackSymbolProvider} from './HackSymbolProvider';
-import {hackLanguageService, resetHackLanguageService} from './HackLanguage';
+var _HackSymbolProvider;
 
-
-export function activate() {
-  hackLanguageService.then(value => value.activate());
+function _load_HackSymbolProvider() {
+  return _HackSymbolProvider = require('./HackSymbolProvider');
 }
 
-export function deactivate(): void {
-  resetHackLanguageService();
+var _HackLanguage;
+
+function _load_HackLanguage() {
+  return _HackLanguage = require('./HackLanguage');
 }
 
-export function registerQuickOpenProvider(): Provider {
-  return HackSymbolProvider;
+function activate() {
+  (_HackLanguage || _load_HackLanguage()).hackLanguageService.then(value => value.activate());
+}function deactivate() {
+  (0, (_HackLanguage || _load_HackLanguage()).resetHackLanguageService)();
+}
+
+function registerQuickOpenProvider() {
+  return (_HackSymbolProvider || _load_HackSymbolProvider()).HackSymbolProvider;
 }

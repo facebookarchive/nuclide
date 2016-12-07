@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,28 +9,25 @@
  * the root directory of this source tree.
  */
 
-import type {Level} from '../../nuclide-console/lib/types';
-
-type Parsed = {
-  text: string,
-  level: ?Level,
-  tags: ?Array<string>,
-};
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.parseMessageText = parseMessageText;
 
 const TAG_RE = /\[([^[\]]*)]/g;
 const TAG_PATTERN = '\\[[^\\[\\]]*\\]'; // The same as TAG_RE but without capturing, for embedding.
 const DATETIME_PATTERN = '\\d{4}-\\d{2}-\\d{2} \\d+:\\d+:\\d+\\.\\d+';
-const PARTS_PATTERN = `${DATETIME_PATTERN}( (?:${TAG_PATTERN})+ ?)?([\\s\\S]*)`;
+const PARTS_PATTERN = `${ DATETIME_PATTERN }( (?:${ TAG_PATTERN })+ ?)?([\\s\\S]*)`;
 const PARTS_RE = new RegExp(PARTS_PATTERN);
 
-export function parseMessageText(raw: string): Parsed {
+function parseMessageText(raw) {
   const messageMatch = raw.match(PARTS_RE);
 
   if (messageMatch == null) {
     return {
       text: raw,
       level: null,
-      tags: null,
+      tags: null
     };
   }
 
@@ -38,7 +35,7 @@ export function parseMessageText(raw: string): Parsed {
   const tags = [];
   let level;
   let tagMatch;
-  while ((tagMatch = TAG_RE.exec(tagsPart))) {
+  while (tagMatch = TAG_RE.exec(tagsPart)) {
     const tag = tagMatch[1];
     switch (tag) {
       case 'info':
@@ -57,5 +54,5 @@ export function parseMessageText(raw: string): Parsed {
     }
   }
 
-  return {text, level, tags};
+  return { text, level, tags };
 }

@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,83 +9,39 @@
  * the root directory of this source tree.
  */
 
-import type {
-  MessageInvalidationCallback,
-  MessageUpdateCallback,
-} from '../../nuclide-diagnostics-common';
-import type {
-  DiagnosticProviderUpdate,
-  InvalidationMessage,
-} from '../../nuclide-diagnostics-common/lib/rpc-types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DiagnosticsProviderBase = undefined;
 
-import {CompositeDisposable, Emitter} from 'atom';
-import TextEventDispatcher from './TextEventDispatcher';
+var _atom = require('atom');
 
-type ProviderBaseOptions = {
-  /** The callback by which a provider is notified of text events, such as a file save. */
-  onTextEditorEvent?: (editor: TextEditor) => mixed,
-  /**
-   * The callback by which a provider is notified that a new consumer has subscribed to diagnostic
-   * updates.
-   */
-  onNewUpdateSubscriber?: (callback: MessageUpdateCallback) => mixed,
-  /**
-   * The callback by which a provider is notified that a new consumer has subscribed to diagnostic
-   * invalidations.
-   */
-  onNewInvalidateSubscriber?: (callback: MessageInvalidationCallback) => mixed,
-  /**
-   * If true, this will cause onTextEditorEvent to get called more often -- approximately whenever
-   * the user stops typing. If false, it will get called only when the user saves.
-   */
-  shouldRunOnTheFly?: boolean,
-  /**
-   * The following two options specify which grammars the provider is interested in. Most providers
-   * will include a set of grammarScopes, and will therefore get notifications only about
-   * TextEditors that are associated with those grammarScopes. Instead, a provider may set
-   * enableForAllGrammars to true, and then it will get notified of changes in all TextEditors. If
-   * enableForAllGrammars is true, it overrides the grammars in grammarScopes.
-   */
-  grammarScopes?: Set<string>,
-  enableForAllGrammars?: boolean,
-};
+var _TextEventDispatcher;
+
+function _load_TextEventDispatcher() {
+  return _TextEventDispatcher = _interopRequireDefault(require('./TextEventDispatcher'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const UPDATE_EVENT = 'update';
 const INVALIDATE_EVENT = 'invalidate';
 
-let _textEventDispatcherInstance: ?TextEventDispatcher = null;
+let _textEventDispatcherInstance = null;
 
-function getTextEventDispatcher(): TextEventDispatcher {
+function getTextEventDispatcher() {
   if (_textEventDispatcherInstance == null) {
-    _textEventDispatcherInstance = new TextEventDispatcher();
+    _textEventDispatcherInstance = new (_TextEventDispatcher || _load_TextEventDispatcher()).default();
   }
   return _textEventDispatcherInstance;
 }
 
-export class DiagnosticsProviderBase {
-  _textEventDispatcher: TextEventDispatcher;
+class DiagnosticsProviderBase {
 
-  _emitter: Emitter;
-
-  _grammarScopes: Set<string>;
-  _allGrammarScopes: ?boolean;
-
-  _currentEventSubscription: ?IDisposable;
-
-  _disposables: atom$CompositeDisposable;
-
-  // callbacks provided by client
-  _textEventCallback: (editor: TextEditor) => mixed;
-  _newUpdateSubscriberCallback: (callback: MessageUpdateCallback) => mixed;
-  _newInvalidateSubscriberCallback: (callback: MessageInvalidationCallback) => mixed;
-
-  constructor(
-    options: ProviderBaseOptions,
-    textEventDispatcher?: TextEventDispatcher = getTextEventDispatcher(),
-  ) {
+  constructor(options, textEventDispatcher = getTextEventDispatcher()) {
     this._textEventDispatcher = textEventDispatcher;
-    this._emitter = new Emitter();
-    this._disposables = new CompositeDisposable();
+    this._emitter = new _atom.Emitter();
+    this._disposables = new _atom.CompositeDisposable();
 
     this._textEventCallback = callbackOrNoop(options.onTextEditorEvent);
     this._newUpdateSubscriberCallback = callbackOrNoop(options.onNewUpdateSubscriber);
@@ -101,7 +57,10 @@ export class DiagnosticsProviderBase {
    * Subscribes to the appropriate event depending on whether we should run on
    * the fly or not.
    */
-  _subscribeToTextEditorEvent(shouldRunOnTheFly: boolean) {
+
+
+  // callbacks provided by client
+  _subscribeToTextEditorEvent(shouldRunOnTheFly) {
     this._disposeEventSubscription();
     const dispatcher = this._textEventDispatcher;
     let subscription;
@@ -121,24 +80,24 @@ export class DiagnosticsProviderBase {
     this._currentEventSubscription = subscription;
   }
 
-  setRunOnTheFly(runOnTheFly: boolean) {
+  setRunOnTheFly(runOnTheFly) {
     this._subscribeToTextEditorEvent(runOnTheFly);
   }
 
-  dispose(): void {
+  dispose() {
     this._emitter.dispose();
     this._disposables.dispose();
     this._disposeEventSubscription();
   }
 
-  _disposeEventSubscription(): void {
+  _disposeEventSubscription() {
     if (this._currentEventSubscription) {
       this._currentEventSubscription.dispose();
       this._currentEventSubscription = null;
     }
   }
 
-  getGrammarScopes(): Set<string> {
+  getGrammarScopes() {
     return this._grammarScopes;
   }
 
@@ -146,11 +105,11 @@ export class DiagnosticsProviderBase {
    * Clients can call these methods to publish messages
    */
 
-  publishMessageUpdate(update: DiagnosticProviderUpdate): void {
+  publishMessageUpdate(update) {
     this._emitter.emit(UPDATE_EVENT, update);
   }
 
-  publishMessageInvalidation(message: InvalidationMessage): void {
+  publishMessageInvalidation(message) {
     this._emitter.emit(INVALIDATE_EVENT, message);
   }
 
@@ -158,19 +117,20 @@ export class DiagnosticsProviderBase {
    * Clients should delegate to these
    */
 
-  onMessageUpdate(callback: MessageUpdateCallback): IDisposable {
+  onMessageUpdate(callback) {
     const disposable = this._emitter.on(UPDATE_EVENT, callback);
     this._newUpdateSubscriberCallback(callback);
     return disposable;
   }
 
-  onMessageInvalidation(callback: MessageInvalidationCallback): IDisposable {
+  onMessageInvalidation(callback) {
     const disposable = this._emitter.on(INVALIDATE_EVENT, callback);
     this._newInvalidateSubscriberCallback(callback);
     return disposable;
   }
 }
 
-function callbackOrNoop<T>(callback: ?(arg: T) => mixed): (arg: T) => mixed {
-  return callback ? callback.bind(undefined) : () => { };
+exports.DiagnosticsProviderBase = DiagnosticsProviderBase;
+function callbackOrNoop(callback) {
+  return callback ? callback.bind(undefined) : () => {};
 }

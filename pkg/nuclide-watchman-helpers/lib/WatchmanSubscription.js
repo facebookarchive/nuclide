@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,15 +9,11 @@
  * the root directory of this source tree.
  */
 
-import {Emitter} from 'event-kit';
+var _eventKit;
 
-export type WatchmanSubscriptionOptions = {
-  expression: ?Array<string>, // e.g. ['match', '*.js'],
-  fields?: Array<string>, // e.g. ['name', 'size', 'exists', 'mode']
-  expression?: Array<mixed>, // e.g. ['dirname', relativePath]
-  since?: string, // e.g. "c:1439492655:58601:1:14195"
-  defer_vcs?: boolean,
-};
+function _load_eventKit() {
+  return _eventKit = require('event-kit');
+}
 
 /**
  * @param pathFromSubscriptionRootToSubscriptionPath The relative path from
@@ -26,21 +22,8 @@ export type WatchmanSubscriptionOptions = {
  *   Notably, this value should be undefined if subscriptionRoot is the same as
  *   subscriptionPath.
  */
-class WatchmanSubscription extends Emitter {
-  subscriptionCount: number;
-  root: string;
-  path: string;
-  pathFromSubscriptionRootToSubscriptionPath: ?string;
-  name: string;
-  options: WatchmanSubscriptionOptions;
-  constructor(
-      subscriptionRoot: string,
-      pathFromSubscriptionRootToSubscriptionPath: ?string,
-      subscriptionPath: string,
-      subscriptionName: string,
-      subscriptionCount: number,
-      subscriptionOptions: WatchmanSubscriptionOptions,
-      ) {
+class WatchmanSubscription extends (_eventKit || _load_eventKit()).Emitter {
+  constructor(subscriptionRoot, pathFromSubscriptionRootToSubscriptionPath, subscriptionPath, subscriptionName, subscriptionCount, subscriptionOptions) {
     super();
     this.root = subscriptionRoot;
     this.pathFromSubscriptionRootToSubscriptionPath = pathFromSubscriptionRootToSubscriptionPath;

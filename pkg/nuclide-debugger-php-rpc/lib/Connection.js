@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,109 +9,88 @@
  * the root directory of this source tree.
  */
 
-import {DbgpSocket} from './DbgpSocket';
-import {DataCache} from './DataCache';
-import {ConnectionStatus} from './DbgpSocket';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Connection = exports.BREAKPOINT = exports.ASYNC_BREAK = undefined;
 
-import {CompositeDisposable} from 'event-kit';
+var _DbgpSocket;
 
-import type {Socket} from 'net';
-import type {
-  DbgpBreakpoint,
-  FileLineBreakpointInfo,
-} from './DbgpSocket';
+function _load_DbgpSocket() {
+  return _DbgpSocket = require('./DbgpSocket');
+}
+
+var _DataCache;
+
+function _load_DataCache() {
+  return _DataCache = require('./DataCache');
+}
+
+var _eventKit;
+
+function _load_eventKit() {
+  return _eventKit = require('event-kit');
+}
 
 let connectionCount = 1;
 
-type StatusCallback = (
-  connection: Connection,
-  status: string,
-  ...args: Array<string>
-) => void;
+const ASYNC_BREAK = exports.ASYNC_BREAK = 'async_break';
+const BREAKPOINT = exports.BREAKPOINT = 'breakpoint';
 
-type NotificationCallback = (
-  connection: Connection,
-  notifyName: string,
-  notify: Object
-) => void;
+class Connection {
 
-export const ASYNC_BREAK = 'async_break';
-export const BREAKPOINT = 'breakpoint';
-
-export class Connection {
-  _socket: DbgpSocket;
-  _dataCache: DataCache;
-  _id: number;
-  _disposables: CompositeDisposable;
-  _status: string;
-  _stopReason: ?string;
-  _isDummyConnection: boolean;
-  _isDummyViewable: boolean;
-
-  constructor(
-    socket: Socket,
-    onStatusCallback: StatusCallback,
-    onNotificationCallback: NotificationCallback,
-    isDummyConnection: boolean,
-  ) {
-    const dbgpSocket = new DbgpSocket(socket);
+  constructor(socket, onStatusCallback, onNotificationCallback, isDummyConnection) {
+    const dbgpSocket = new (_DbgpSocket || _load_DbgpSocket()).DbgpSocket(socket);
     this._socket = dbgpSocket;
-    this._dataCache = new DataCache(dbgpSocket);
+    this._dataCache = new (_DataCache || _load_DataCache()).DataCache(dbgpSocket);
     this._id = connectionCount++;
-    this._status = ConnectionStatus.Starting;
+    this._status = (_DbgpSocket || _load_DbgpSocket()).ConnectionStatus.Starting;
     this._isDummyConnection = isDummyConnection;
     this._isDummyViewable = false;
-    this._disposables = new CompositeDisposable();
+    this._disposables = new (_eventKit || _load_eventKit()).CompositeDisposable();
     if (onStatusCallback != null) {
-      this._disposables.add(this.onStatus((status, ...args) =>
-        onStatusCallback(this, status, ...args)));
+      this._disposables.add(this.onStatus((status, ...args) => onStatusCallback(this, status, ...args)));
     }
     if (onNotificationCallback != null) {
-      this._disposables.add(this.onNotification((notifyName, notify) =>
-        onNotificationCallback(this, notifyName, notify)));
+      this._disposables.add(this.onNotification((notifyName, notify) => onNotificationCallback(this, notifyName, notify)));
     }
     this._stopReason = null;
   }
 
-  isDummyConnection(): boolean {
+  isDummyConnection() {
     return this._isDummyConnection;
   }
 
-  getId(): number {
+  getId() {
     return this._id;
   }
 
-  onStatus(callback: (status: string, ...args: Array<string>) => mixed): IDisposable {
+  onStatus(callback) {
     return this._socket.onStatus(this._handleStatus.bind(this, callback));
   }
 
-  _handleStatus(
-    callback: (newStatus: string, ...args: Array<string>) => mixed,
-    newStatus: string,
-    ...args: Array<string>
-  ): mixed {
+  _handleStatus(callback, newStatus, ...args) {
     const prevStatus = this._status;
     switch (newStatus) {
-      case ConnectionStatus.Running:
+      case (_DbgpSocket || _load_DbgpSocket()).ConnectionStatus.Running:
         this._stopReason = null;
         break;
-      case ConnectionStatus.Break:
-        if (prevStatus === ConnectionStatus.BreakMessageReceived) {
+      case (_DbgpSocket || _load_DbgpSocket()).ConnectionStatus.Break:
+        if (prevStatus === (_DbgpSocket || _load_DbgpSocket()).ConnectionStatus.BreakMessageReceived) {
           this._stopReason = ASYNC_BREAK;
-        } else if (prevStatus !== ConnectionStatus.Break) {
+        } else if (prevStatus !== (_DbgpSocket || _load_DbgpSocket()).ConnectionStatus.Break) {
           // TODO(dbonafilia): investigate why we sometimes receive two BREAK_MESSAGES
           this._stopReason = BREAKPOINT;
         }
         break;
-      case ConnectionStatus.DummyIsViewable:
+      case (_DbgpSocket || _load_DbgpSocket()).ConnectionStatus.DummyIsViewable:
         this._isDummyViewable = true;
         return;
-      case ConnectionStatus.DummyIsHidden:
+      case (_DbgpSocket || _load_DbgpSocket()).ConnectionStatus.DummyIsHidden:
         this._isDummyViewable = false;
         return;
     }
-    if (newStatus === ConnectionStatus.BreakMessageReceived &&
-      prevStatus !== ConnectionStatus.BreakMessageSent) {
+    if (newStatus === (_DbgpSocket || _load_DbgpSocket()).ConnectionStatus.BreakMessageReceived && prevStatus !== (_DbgpSocket || _load_DbgpSocket()).ConnectionStatus.BreakMessageSent) {
       return;
     }
     this._status = newStatus;
@@ -122,98 +101,94 @@ export class Connection {
     }
   }
 
-  _isInternalStatus(status: string) {
-    return [
-      ConnectionStatus.BreakMessageReceived,
-      ConnectionStatus.BreakMessageSent,
-      ConnectionStatus.DummyIsHidden,
-      ConnectionStatus.DummyIsViewable,
-    ].some(internalStatus => internalStatus === status);
+  _isInternalStatus(status) {
+    return [(_DbgpSocket || _load_DbgpSocket()).ConnectionStatus.BreakMessageReceived, (_DbgpSocket || _load_DbgpSocket()).ConnectionStatus.BreakMessageSent, (_DbgpSocket || _load_DbgpSocket()).ConnectionStatus.DummyIsHidden, (_DbgpSocket || _load_DbgpSocket()).ConnectionStatus.DummyIsViewable].some(internalStatus => internalStatus === status);
   }
 
   /**
    * We only want to show the dummy connection's IP to the user when it is outside the entry-point
    * specified by the user in the Debugger config.
    */
-  isViewable(): boolean {
+  isViewable() {
     if (this._isDummyConnection) {
-      return this._status === ConnectionStatus.Break && this._isDummyViewable;
+      return this._status === (_DbgpSocket || _load_DbgpSocket()).ConnectionStatus.Break && this._isDummyViewable;
     } else {
-      return this._status === ConnectionStatus.Break;
+      return this._status === (_DbgpSocket || _load_DbgpSocket()).ConnectionStatus.Break;
     }
   }
 
-  onNotification(callback: (notifyName: string, notify: Object) => mixed): IDisposable {
+  onNotification(callback) {
     return this._socket.onNotification(callback);
   }
 
-  evaluateOnCallFrame(frameIndex: number, expression: string): Promise<Object> {
+  evaluateOnCallFrame(frameIndex, expression) {
     return this._dataCache.evaluateOnCallFrame(frameIndex, expression);
   }
 
-  runtimeEvaluate(frameIndex: number, expression: string): Promise<Object> {
+  runtimeEvaluate(frameIndex, expression) {
     return this._dataCache.runtimeEvaluate(frameIndex, expression);
   }
 
-  setExceptionBreakpoint(exceptionName: string): Promise<string> {
+  setExceptionBreakpoint(exceptionName) {
     return this._socket.setExceptionBreakpoint(exceptionName);
   }
 
-  setFileLineBreakpoint(breakpointInfo: FileLineBreakpointInfo): Promise<string> {
+  setFileLineBreakpoint(breakpointInfo) {
     return this._socket.setFileLineBreakpoint(breakpointInfo);
   }
 
-  getBreakpoint(breakpointId: string): Promise<DbgpBreakpoint> {
+  getBreakpoint(breakpointId) {
     return this._socket.getBreakpoint(breakpointId);
   }
 
-  removeBreakpoint(breakpointId: string): Promise<any> {
+  removeBreakpoint(breakpointId) {
     return this._socket.removeBreakpoint(breakpointId);
   }
 
-  getStackFrames(): Promise<Object> {
+  getStackFrames() {
     return this._socket.getStackFrames();
   }
 
-  getScopesForFrame(frameIndex: number): Promise<Array<Debugger$Scope>> {
+  getScopesForFrame(frameIndex) {
     return this._dataCache.getScopesForFrame(frameIndex);
   }
 
-  getStatus(): string {
+  getStatus() {
     return this._status;
   }
 
-  sendContinuationCommand(command: string): Promise<string> {
+  sendContinuationCommand(command) {
     return this._socket.sendContinuationCommand(command);
   }
 
-  sendStdoutRequest(): Promise<boolean> {
+  sendStdoutRequest() {
     return this._socket.sendStdoutRequest();
   }
 
-  sendStderrRequest(): Promise<boolean> {
+  sendStderrRequest() {
     return this._socket.sendStderrRequest();
   }
 
-  sendBreakCommand(): Promise<boolean> {
-    this._status = ConnectionStatus.BreakMessageSent;
+  sendBreakCommand() {
+    this._status = (_DbgpSocket || _load_DbgpSocket()).ConnectionStatus.BreakMessageSent;
     return this._socket.sendBreakCommand();
   }
 
-  setFeature(name: string, value: string): Promise<boolean> {
+  setFeature(name, value) {
     return this._socket.setFeature(name, value);
   }
 
-  getProperties(remoteId: Runtime$RemoteObjectId): Promise<Array<Runtime$PropertyDescriptor>> {
+  getProperties(remoteId) {
     return this._dataCache.getProperties(remoteId);
   }
 
-  getStopReason(): ?string {
+  getStopReason() {
     return this._stopReason;
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
     this._socket.dispose();
   }
 }
+exports.Connection = Connection;

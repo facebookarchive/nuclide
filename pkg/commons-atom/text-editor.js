@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,19 +9,42 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../commons-node/nuclideUri';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.existingEditorForUri = existingEditorForUri;
+exports.existingEditorForBuffer = existingEditorForBuffer;
+exports.getViewOfEditor = getViewOfEditor;
+exports.getScrollTop = getScrollTop;
+exports.setScrollTop = setScrollTop;
+exports.setPositionAndScroll = setPositionAndScroll;
+exports.getCursorPositions = getCursorPositions;
+exports.observeEditorDestroy = observeEditorDestroy;
+exports.enforceReadOnly = enforceReadOnly;
+exports.enforceSoftWrap = enforceSoftWrap;
+exports.observeTextEditors = observeTextEditors;
 
-import invariant from 'assert';
-import {Observable} from 'rxjs';
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
-import {observableFromSubscribeFunction} from '../commons-node/event';
-import nuclideUri from '../commons-node/nuclideUri';
+var _event;
+
+function _load_event() {
+  return _event = require('../commons-node/event');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../commons-node/nuclideUri'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Returns a text editor that has the given path open, or null if none exists. If there are multiple
  * text editors for this path, one is chosen arbitrarily.
  */
-export function existingEditorForUri(path: NuclideUri): ?atom$TextEditor {
+function existingEditorForUri(path) {
   // This isn't ideal but realistically iterating through even a few hundred editors shouldn't be a
   // real problem. And if you have more than a few hundred you probably have bigger problems.
   for (const editor of atom.workspace.getTextEditors()) {
@@ -37,7 +60,7 @@ export function existingEditorForUri(path: NuclideUri): ?atom$TextEditor {
  * Returns a text editor that has the given buffer open, or null if none exists. If there are
  * multiple text editors for this buffer, one is chosen arbitrarily.
  */
-export function existingEditorForBuffer(buffer: atom$TextBuffer): ?atom$TextEditor {
+function existingEditorForBuffer(buffer) {
   // This isn't ideal but realistically iterating through even a few hundred editors shouldn't be a
   // real problem. And if you have more than a few hundred you probably have bigger problems.
   for (const editor of atom.workspace.getTextEditors()) {
@@ -49,15 +72,15 @@ export function existingEditorForBuffer(buffer: atom$TextBuffer): ?atom$TextEdit
   return null;
 }
 
-export function getViewOfEditor(editor: atom$TextEditor): atom$TextEditorElement {
+function getViewOfEditor(editor) {
   return atom.views.getView(editor);
 }
 
-export function getScrollTop(editor: atom$TextEditor): number {
+function getScrollTop(editor) {
   return getViewOfEditor(editor).getScrollTop();
 }
 
-export function setScrollTop(editor: atom$TextEditor, scrollTop: number): void {
+function setScrollTop(editor, scrollTop) {
   getViewOfEditor(editor).setScrollTop(scrollTop);
 }
 
@@ -68,31 +91,25 @@ export function setScrollTop(editor: atom$TextEditor, scrollTop: number): void {
  * Can be used with editor.getCursorBufferPosition() & getScrollTop() to restore
  * an editors cursor and scroll.
  */
-export function setPositionAndScroll(
-  editor: atom$TextEditor,
-  position: atom$Point,
-  scrollTop: number,
-): void {
-  editor.setCursorBufferPosition(position, {autoscroll: false});
+function setPositionAndScroll(editor, position, scrollTop) {
+  editor.setCursorBufferPosition(position, { autoscroll: false });
   setScrollTop(editor, scrollTop);
 }
 
-export function getCursorPositions(editor: atom$TextEditor): Observable<atom$Point> {
+function getCursorPositions(editor) {
   // This will behave strangely in the face of multiple cursors. Consider supporting multiple
   // cursors in the future.
   const cursor = editor.getCursors()[0];
-  invariant(cursor != null);
-  return Observable.merge(
-    Observable.of(cursor.getBufferPosition()),
-    observableFromSubscribeFunction(cursor.onDidChangePosition.bind(cursor))
-      .map(event => event.newBufferPosition),
-  );
+
+  if (!(cursor != null)) {
+    throw new Error('Invariant violation: "cursor != null"');
+  }
+
+  return _rxjsBundlesRxMinJs.Observable.merge(_rxjsBundlesRxMinJs.Observable.of(cursor.getBufferPosition()), (0, (_event || _load_event()).observableFromSubscribeFunction)(cursor.onDidChangePosition.bind(cursor)).map(event => event.newBufferPosition));
 }
 
-export function observeEditorDestroy(editor: atom$TextEditor): Observable<atom$TextEditor> {
-  return observableFromSubscribeFunction(editor.onDidDestroy.bind(editor))
-    .map(event => editor)
-    .take(1);
+function observeEditorDestroy(editor) {
+  return (0, (_event || _load_event()).observableFromSubscribeFunction)(editor.onDidDestroy.bind(editor)).map(event => editor).take(1);
 }
 
 // As of the introduction of atom.workspace.buildTextEditor(), it is no longer possible to
@@ -100,7 +117,7 @@ export function observeEditorDestroy(editor: atom$TextEditor): Observable<atom$T
 // is to create an ordinary TextEditor and then override any methods that would allow it to
 // change its contents.
 // TODO: https://github.com/atom/atom/issues/9237.
-export function enforceReadOnly(textEditor: atom$TextEditor): void {
+function enforceReadOnly(textEditor) {
   const noop = () => {};
 
   // Cancel insert events to prevent typing in the text editor and disallow editing (read-only).
@@ -118,27 +135,23 @@ export function enforceReadOnly(textEditor: atom$TextEditor): void {
   passReadOnlyException('append');
   passReadOnlyException('setText');
 
-  function passReadOnlyException(functionName: string) {
-    const buffer: any = textBuffer;
+  function passReadOnlyException(functionName) {
+    const buffer = textBuffer;
     const originalFunction = buffer[functionName];
 
-    buffer[functionName] = function() {
+    buffer[functionName] = function () {
       textBuffer.applyChange = originalApplyChange;
       const result = originalFunction.apply(textBuffer, arguments);
       textBuffer.applyChange = noop;
       return result;
     };
   }
-
 }
 
 // Turn off soft wrap setting for these editors so diffs properly align.
 // Some text editor register sometimes override the set soft wrapping
 // after mounting an editor to the workspace - here, that's watched and reset to `false`.
-export function enforceSoftWrap(
-  editor: atom$TextEditor,
-  enforcedSoftWrap: boolean,
-): IDisposable {
+function enforceSoftWrap(editor, enforcedSoftWrap) {
   editor.setSoftWrapped(enforcedSoftWrap);
   return editor.onDidChangeSoftWrapped(softWrapped => {
     if (softWrapped !== enforcedSoftWrap) {
@@ -156,9 +169,9 @@ export function enforceSoftWrap(
  * Small wrapper around `atom.workspace.observeTextEditors` that filters out
  * uninitialized remote editors. Most callers should use this one instead.
  */
-export function observeTextEditors(callback: (editor: atom$TextEditor) => mixed): IDisposable {
+function observeTextEditors(callback) {
   return atom.workspace.observeTextEditors(editor => {
-    if (!nuclideUri.isBrokenDeserializedUri(editor.getPath())) {
+    if (!(_nuclideUri || _load_nuclideUri()).default.isBrokenDeserializedUri(editor.getPath())) {
       callback(editor);
     }
   });

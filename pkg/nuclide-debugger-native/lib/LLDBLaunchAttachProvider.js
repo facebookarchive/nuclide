@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,57 +9,98 @@
  * the root directory of this source tree.
  */
 
-import type {DebuggerActionUIProvider} from './actions/DebuggerActionUIProvider';
-import type EventEmitter from 'events';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.LLDBLaunchAttachProvider = undefined;
 
-import {asyncFilter} from '../../commons-node/promise';
-import {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
-import {React} from 'react-for-atom';
-import {LaunchAttachStore} from './LaunchAttachStore';
-import LaunchAttachDispatcher from './LaunchAttachDispatcher';
-import {LaunchAttachActions} from './LaunchAttachActions';
-import * as LaunchActionUIProvider from './actions/LaunchActionUIProvider';
-import * as AttachActionUIProvider from './actions/AttachActionUIProvider';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
+var _promise;
 
-export class LLDBLaunchAttachProvider extends DebuggerLaunchAttachProvider {
-  _dispatcher: LaunchAttachDispatcher;
-  _actions: LaunchAttachActions;
-  _store: LaunchAttachStore;
-  _uiProviderMap: Map<string, DebuggerActionUIProvider>;
+function _load_promise() {
+  return _promise = require('../../commons-node/promise');
+}
 
-  constructor(debuggingTypeName: string, targetUri: string) {
+var _nuclideDebuggerBase;
+
+function _load_nuclideDebuggerBase() {
+  return _nuclideDebuggerBase = require('../../nuclide-debugger-base');
+}
+
+var _reactForAtom = require('react-for-atom');
+
+var _LaunchAttachStore;
+
+function _load_LaunchAttachStore() {
+  return _LaunchAttachStore = require('./LaunchAttachStore');
+}
+
+var _LaunchAttachDispatcher;
+
+function _load_LaunchAttachDispatcher() {
+  return _LaunchAttachDispatcher = _interopRequireDefault(require('./LaunchAttachDispatcher'));
+}
+
+var _LaunchAttachActions;
+
+function _load_LaunchAttachActions() {
+  return _LaunchAttachActions = require('./LaunchAttachActions');
+}
+
+var _LaunchActionUIProvider;
+
+function _load_LaunchActionUIProvider() {
+  return _LaunchActionUIProvider = _interopRequireWildcard(require('./actions/LaunchActionUIProvider'));
+}
+
+var _AttachActionUIProvider;
+
+function _load_AttachActionUIProvider() {
+  return _AttachActionUIProvider = _interopRequireWildcard(require('./actions/AttachActionUIProvider'));
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class LLDBLaunchAttachProvider extends (_nuclideDebuggerBase || _load_nuclideDebuggerBase()).DebuggerLaunchAttachProvider {
+
+  constructor(debuggingTypeName, targetUri) {
     super(debuggingTypeName, targetUri);
-    this._dispatcher = new LaunchAttachDispatcher();
-    this._actions = new LaunchAttachActions(this._dispatcher, this.getTargetUri());
-    this._store = new LaunchAttachStore(this._dispatcher);
+    this._dispatcher = new (_LaunchAttachDispatcher || _load_LaunchAttachDispatcher()).default();
+    this._actions = new (_LaunchAttachActions || _load_LaunchAttachActions()).LaunchAttachActions(this._dispatcher, this.getTargetUri());
+    this._store = new (_LaunchAttachStore || _load_LaunchAttachStore()).LaunchAttachStore(this._dispatcher);
 
     this._uiProviderMap = new Map();
-    this._loadAction(AttachActionUIProvider);
-    this._loadAction(LaunchActionUIProvider);
+    this._loadAction(_AttachActionUIProvider || _load_AttachActionUIProvider());
+    this._loadAction(_LaunchActionUIProvider || _load_LaunchActionUIProvider());
     try {
       // $FlowFB
       this._loadAction(require('./actions/fb-omActionUIProvider'));
     } catch (_) {}
   }
 
-  _loadAction(actionProvider: ?DebuggerActionUIProvider): void {
+  _loadAction(actionProvider) {
     if (actionProvider != null) {
       this._uiProviderMap.set(actionProvider.name, actionProvider);
     }
   }
 
-  async getActions(): Promise<Array<string>> {
-    const providers = await asyncFilter(
-      Array.from(this._uiProviderMap.values()),
-      provider => provider.isEnabled(),
-    );
-    return providers.map(provider => provider.name);
+  getActions() {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const providers = yield (0, (_promise || _load_promise()).asyncFilter)(Array.from(_this._uiProviderMap.values()), function (provider) {
+        return provider.isEnabled();
+      });
+      return providers.map(function (provider) {
+        return provider.name;
+      });
+    })();
   }
 
-  getComponent(
-    actionName: string,
-    parentEventEmitter: EventEmitter): ?React.Element<any> {
+  getComponent(actionName, parentEventEmitter) {
     const action = this._uiProviderMap.get(actionName);
     if (action) {
       return action.getComponent(this._store, this._actions, parentEventEmitter);
@@ -67,8 +108,9 @@ export class LLDBLaunchAttachProvider extends DebuggerLaunchAttachProvider {
     return null;
   }
 
-  dispose(): void {
+  dispose() {
     this._store.dispose();
     this._actions.dispose();
   }
 }
+exports.LLDBLaunchAttachProvider = LLDBLaunchAttachProvider;

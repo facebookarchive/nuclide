@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,38 +9,28 @@
  * the root directory of this source tree.
  */
 
-import Dispatcher from '../../../commons-node/Dispatcher';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ActionTypes = undefined;
 
-type SwiftPMTaskRunnerAction =
-  {
-    actionType: 'UPDATE_CHDIR',
-    chdir: string,
-  } |
-  {
-    actionType: 'UPDATE_BUILD_SETTINGS',
-    configuration: string,
-    Xcc: string,
-    Xlinker: string,
-    Xswiftc: string,
-    buildPath: string,
-  } |
-  {
-    actionType: 'UPDATE_TEST_SETTINGS',
-    buildPath: string,
-  } |
-  {
-    actionType: 'UPDATE_COMPILE_COMMANDS',
-    compileCommands: Map<string, string>,
-  };
+var _Dispatcher;
 
-export const ActionTypes = Object.freeze({
+function _load_Dispatcher() {
+  return _Dispatcher = _interopRequireDefault(require('../../../commons-node/Dispatcher'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const ActionTypes = exports.ActionTypes = Object.freeze({
   UPDATE_CHDIR: 'UPDATE_CHDIR',
   UPDATE_BUILD_SETTINGS: 'UPDATE_BUILD_SETTINGS',
   UPDATE_TEST_SETTINGS: 'UPDATE_TEST_SETTINGS',
-  UPDATE_COMPILE_COMMANDS: 'UPDATE_COMPILE_COMMANDS',
+  UPDATE_COMPILE_COMMANDS: 'UPDATE_COMPILE_COMMANDS'
 });
 
 // Flow hack: Every SwiftPMTaskRunnerAction actionType must be in ActionTypes.
-(('': $PropertyType<SwiftPMTaskRunnerAction, 'actionType'>): $Keys<typeof ActionTypes>);
+'';
 
-export default class SwiftPMTaskRunnerDispatcher extends Dispatcher<SwiftPMTaskRunnerAction> {}
+class SwiftPMTaskRunnerDispatcher extends (_Dispatcher || _load_Dispatcher()).default {}
+exports.default = SwiftPMTaskRunnerDispatcher;

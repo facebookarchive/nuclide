@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,17 +9,13 @@
  * the root directory of this source tree.
  */
 
-import type {HyperclickSuggestion} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import invariant from 'assert';
+class SuggestionList {
 
-export default class SuggestionList {
-  _textEditor: atom$TextEditor;
-  _suggestion: HyperclickSuggestion;
-  _suggestionMarker: ?atom$Marker;
-  _overlayDecoration: ?atom$Decoration;
-
-  show(textEditor: atom$TextEditor, suggestion: HyperclickSuggestion): void {
+  show(textEditor, suggestion) {
     if (!textEditor || !suggestion) {
       return;
     }
@@ -29,14 +25,18 @@ export default class SuggestionList {
 
     this.hide();
 
-    const {range} = suggestion;
-    invariant(range);
-    const {start: position} = Array.isArray(range) ? range[0] : range;
+    const { range } = suggestion;
+
+    if (!range) {
+      throw new Error('Invariant violation: "range"');
+    }
+
+    const { start: position } = Array.isArray(range) ? range[0] : range;
     this._suggestionMarker = textEditor.markBufferPosition(position);
     if (this._suggestionMarker) {
       this._overlayDecoration = textEditor.decorateMarker(this._suggestionMarker, {
         type: 'overlay',
-        item: this,
+        item: this
       });
     }
   }
@@ -53,11 +53,13 @@ export default class SuggestionList {
     this._overlayDecoration = undefined;
   }
 
-  getTextEditor(): ?TextEditor {
+  getTextEditor() {
     return this._textEditor;
   }
 
-  getSuggestion(): ?HyperclickSuggestion {
+  getSuggestion() {
     return this._suggestion;
   }
 }
+exports.default = SuggestionList;
+module.exports = exports['default'];

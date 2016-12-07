@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,23 +9,30 @@
  * the root directory of this source tree.
  */
 
-import fs from 'fs';
-import nuclideUri from '../../commons-node/nuclideUri';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = loadServicesConfig;
 
-import type {ConfigEntry} from '../../nuclide-rpc';
+var _fs = _interopRequireDefault(require('fs'));
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Load service configs, and resolve all of the paths to absolute paths.
  */
-export default function loadServicesConfig(dirname: string): Array<ConfigEntry> {
-  return [
-    nuclideUri.resolve(dirname, './services-3.json'),
-    nuclideUri.resolve(dirname, './fb-services-3.json'),
-  ].reduce((acc, servicePath) => {
-    if (fs.existsSync(servicePath)) {
-      const basedir = nuclideUri.dirname(servicePath);
-      const src = fs.readFileSync(servicePath, 'utf8');
-      const jsonConfig: Array<Object> = JSON.parse(src);
+function loadServicesConfig(dirname) {
+  return [(_nuclideUri || _load_nuclideUri()).default.resolve(dirname, './services-3.json'), (_nuclideUri || _load_nuclideUri()).default.resolve(dirname, './fb-services-3.json')].reduce((acc, servicePath) => {
+    if (_fs.default.existsSync(servicePath)) {
+      const basedir = (_nuclideUri || _load_nuclideUri()).default.dirname(servicePath);
+      const src = _fs.default.readFileSync(servicePath, 'utf8');
+      const jsonConfig = JSON.parse(src);
       acc.push(...createServiceConfigObject(basedir, jsonConfig));
     }
     return acc;
@@ -38,17 +45,15 @@ export default function loadServicesConfig(dirname: string): Array<ConfigEntry> 
  * Service paths must either be absolute or relative to the service config
  * config file.
  */
-function createServiceConfigObject(
-  basedir: string,
-  jsonConfig: Array<Object>,
-): Array<ConfigEntry> {
+function createServiceConfigObject(basedir, jsonConfig) {
   return jsonConfig.map(config => {
     return {
       name: config.name,
       // TODO(peterhal): Remove this once all services have had their def files removed.
-      definition: nuclideUri.resolve(basedir, config.definition || config.implementation),
-      implementation: nuclideUri.resolve(basedir, config.implementation),
-      preserveFunctionNames: config.preserveFunctionNames === true,
+      definition: (_nuclideUri || _load_nuclideUri()).default.resolve(basedir, config.definition || config.implementation),
+      implementation: (_nuclideUri || _load_nuclideUri()).default.resolve(basedir, config.implementation),
+      preserveFunctionNames: config.preserveFunctionNames === true
     };
   });
 }
+module.exports = exports['default'];

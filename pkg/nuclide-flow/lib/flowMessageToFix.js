@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,13 +9,18 @@
  * the root directory of this source tree.
  */
 
-import type {Fix} from '../../nuclide-diagnostics-common/lib/rpc-types';
-import type {Diagnostic} from '../../nuclide-flow-rpc';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = flowMessageToFix;
 
-import invariant from 'assert';
-import {extractRange} from './flowDiagnosticsCommon';
+var _flowDiagnosticsCommon;
 
-export default function flowMessageToFix(diagnostic: Diagnostic): ?Fix {
+function _load_flowDiagnosticsCommon() {
+  return _flowDiagnosticsCommon = require('./flowDiagnosticsCommon');
+}
+
+function flowMessageToFix(diagnostic) {
   for (const extractionFunction of fixExtractionFunctions) {
     const fix = extractionFunction(diagnostic);
     if (fix != null) {
@@ -26,29 +31,28 @@ export default function flowMessageToFix(diagnostic: Diagnostic): ?Fix {
   return null;
 }
 
-const fixExtractionFunctions: Array<(diagnostic: Diagnostic) => ?Fix> = [
-  unusedSuppressionFix,
-  namedImportTypo,
-];
+const fixExtractionFunctions = [unusedSuppressionFix, namedImportTypo];
 
-function unusedSuppressionFix(diagnostic: Diagnostic): ?Fix {
+function unusedSuppressionFix(diagnostic) {
   // Automatically remove unused suppressions:
-  if (diagnostic.messageComponents.length === 2 &&
-      diagnostic.messageComponents[0].descr === 'Error suppressing comment' &&
-      diagnostic.messageComponents[1].descr === 'Unused suppression') {
-    const oldRange = extractRange(diagnostic.messageComponents[0]);
-    invariant(oldRange != null);
+  if (diagnostic.messageComponents.length === 2 && diagnostic.messageComponents[0].descr === 'Error suppressing comment' && diagnostic.messageComponents[1].descr === 'Unused suppression') {
+    const oldRange = (0, (_flowDiagnosticsCommon || _load_flowDiagnosticsCommon()).extractRange)(diagnostic.messageComponents[0]);
+
+    if (!(oldRange != null)) {
+      throw new Error('Invariant violation: "oldRange != null"');
+    }
+
     return {
       newText: '',
       oldRange,
-      speculative: true,
+      speculative: true
     };
   }
 
   return null;
 }
 
-function namedImportTypo(diagnostic: Diagnostic): ?Fix {
+function namedImportTypo(diagnostic) {
   if (diagnostic.messageComponents.length !== 2) {
     return null;
   }
@@ -67,13 +71,17 @@ function namedImportTypo(diagnostic: Diagnostic): ?Fix {
 
   const oldText = match[1];
   const newText = match[2];
-  const oldRange = extractRange(diagnostic.messageComponents[0]);
-  invariant(oldRange != null);
+  const oldRange = (0, (_flowDiagnosticsCommon || _load_flowDiagnosticsCommon()).extractRange)(diagnostic.messageComponents[0]);
+
+  if (!(oldRange != null)) {
+    throw new Error('Invariant violation: "oldRange != null"');
+  }
 
   return {
     oldText,
     newText,
     oldRange,
-    speculative: true,
+    speculative: true
   };
 }
+module.exports = exports['default'];

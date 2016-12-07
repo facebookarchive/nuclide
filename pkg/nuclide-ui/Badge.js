@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,72 +9,69 @@
  * the root directory of this source tree.
  */
 
-import classnames from 'classnames';
-import {React} from 'react-for-atom';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Badge = exports.BadgeColors = exports.BadgeSizes = undefined;
 
-import {maybeToString} from '../commons-node/string';
+var _classnames;
 
-type BadgeSize = 'medium' | 'small' | 'large';
-type BadgeColor = 'info' | 'success' | 'warning' | 'error';
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
 
-type Props = {
-  className?: string,
-  color?: BadgeColor,
-  /** Octicon icon name, without the `icon-` prefix. E.g. `'arrow-up'` */
-  icon?: atom$Octicon,
-  size?: BadgeSize,
-  /** The value displayed inside the badge. */
-  value: number,
-};
+var _reactForAtom = require('react-for-atom');
 
-export const BadgeSizes = Object.freeze({
+var _string;
+
+function _load_string() {
+  return _string = require('../commons-node/string');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const BadgeSizes = exports.BadgeSizes = Object.freeze({
   medium: 'medium',
   small: 'small',
-  large: 'large',
-});
-
-export const BadgeColors = Object.freeze({
+  large: 'large'
+});const BadgeColors = exports.BadgeColors = Object.freeze({
   info: 'info',
   success: 'success',
   warning: 'warning',
-  error: 'error',
+  error: 'error'
 });
 
 const BadgeSizeClassNames = Object.freeze({
   small: 'badge-small',
   medium: 'badge-medium',
-  large: 'badge-large',
+  large: 'badge-large'
 });
 
 const BadgeColorClassNames = Object.freeze({
   info: 'badge-info',
   success: 'badge-success',
   warning: 'badge-warning',
-  error: 'badge-error',
+  error: 'badge-error'
 });
 
-export const Badge = (props: Props) => {
+const Badge = exports.Badge = props => {
   const {
     className,
     color,
     icon,
     size,
-    value,
+    value
   } = props;
   const sizeClassName = size == null ? '' : BadgeSizeClassNames[size] || '';
   const colorClassName = color == null ? '' : BadgeColorClassNames[color] || '';
-  const newClassName = classnames(
-    className,
-    'badge',
-    {
-      [sizeClassName]: size != null,
-      [colorClassName]: color != null,
-      [`icon icon-${maybeToString(icon)}`]: icon != null,
-    },
-  );
-  return (
-    <span className={newClassName}>
-      {value}
-    </span>
+  const newClassName = (0, (_classnames || _load_classnames()).default)(className, 'badge', {
+    [sizeClassName]: size != null,
+    [colorClassName]: color != null,
+    [`icon icon-${ (0, (_string || _load_string()).maybeToString)(icon) }`]: icon != null
+  });
+  return _reactForAtom.React.createElement(
+    'span',
+    { className: newClassName },
+    value
   );
 };

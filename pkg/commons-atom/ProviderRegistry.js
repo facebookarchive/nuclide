@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,32 +9,29 @@
  * the root directory of this source tree.
  */
 
-export type Provider = {
-  priority: number,
-  grammarScopes: Array<string>,
-};
-
-export default class ProviderRegistry<T: Provider> {
-  _providers: Set<T>;
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+class ProviderRegistry {
 
   constructor() {
     this._providers = new Set();
   }
 
-  addProvider(provider: T): void {
+  addProvider(provider) {
     this._providers.add(provider);
   }
 
-  removeProvider(provider: T): void {
+  removeProvider(provider) {
     this._providers.delete(provider);
   }
 
-  getProviderForEditor(editor: atom$TextEditor): ?T {
+  getProviderForEditor(editor) {
     const grammar = editor.getGrammar().scopeName;
     return this.findProvider(grammar);
   }
 
-  findProvider(grammar: string): ?T {
+  findProvider(grammar) {
     let bestProvider = null;
     let bestPriority = Number.NEGATIVE_INFINITY;
     for (const provider of this._providers) {
@@ -48,3 +45,5 @@ export default class ProviderRegistry<T: Provider> {
     return bestProvider;
   }
 }
+exports.default = ProviderRegistry;
+module.exports = exports['default'];

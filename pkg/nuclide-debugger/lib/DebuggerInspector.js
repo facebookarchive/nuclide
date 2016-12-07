@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,83 +9,94 @@
  * the root directory of this source tree.
  */
 
-import BreakpointStore from './BreakpointStore';
-import Bridge from './Bridge';
-import DebuggerActions from './DebuggerActions';
-import {React, ReactDOM} from 'react-for-atom';
-import nuclideUri from '../../commons-node/nuclideUri';
-import {
-  Button,
-  ButtonTypes,
-} from '../../nuclide-ui/Button';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-type Props = {
-  actions: DebuggerActions,
-  breakpointStore: BreakpointStore,
-  socket: string,
-  bridge: Bridge,
-  toggleOldView: () => void,
-  showOldView: boolean,
-};
+var _BreakpointStore;
+
+function _load_BreakpointStore() {
+  return _BreakpointStore = _interopRequireDefault(require('./BreakpointStore'));
+}
+
+var _Bridge;
+
+function _load_Bridge() {
+  return _Bridge = _interopRequireDefault(require('./Bridge'));
+}
+
+var _DebuggerActions;
+
+function _load_DebuggerActions() {
+  return _DebuggerActions = _interopRequireDefault(require('./DebuggerActions'));
+}
+
+var _reactForAtom = require('react-for-atom');
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var _Button;
+
+function _load_Button() {
+  return _Button = require('../../nuclide-ui/Button');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Wrapper for Chrome Devtools frontend view.
  */
-export default class DebuggerInspector extends React.Component {
-  props: Props;
+class DebuggerInspector extends _reactForAtom.React.Component {
 
-  _webviewNode: ?WebviewElement;
-
-  constructor(props: Props) {
+  constructor(props) {
     super(props);
     this._webviewNode = null;
-    (this: any)._getUrl = this._getUrl.bind(this);
-    (this: any)._handleClickClose = this._handleClickClose.bind(this);
-    (this: any)._handleClickDevTools = this._handleClickDevTools.bind(this);
-    (this: any)._handleClickUISwitch = this._handleClickUISwitch.bind(this);
+    this._getUrl = this._getUrl.bind(this);
+    this._handleClickClose = this._handleClickClose.bind(this);
+    this._handleClickDevTools = this._handleClickDevTools.bind(this);
+    this._handleClickUISwitch = this._handleClickUISwitch.bind(this);
   }
 
-  shouldComponentUpdate(nextProps: Props): boolean {
-    return (
-      nextProps.actions !== this.props.actions ||
-      nextProps.breakpointStore !== this.props.breakpointStore ||
-      nextProps.socket !== this.props.socket ||
-      nextProps.bridge !== this.props.bridge ||
-      nextProps.showOldView !== this.props.showOldView ||
-      nextProps.toggleOldView !== this.props.toggleOldView
-    );
+  shouldComponentUpdate(nextProps) {
+    return nextProps.actions !== this.props.actions || nextProps.breakpointStore !== this.props.breakpointStore || nextProps.socket !== this.props.socket || nextProps.bridge !== this.props.bridge || nextProps.showOldView !== this.props.showOldView || nextProps.toggleOldView !== this.props.toggleOldView;
   }
 
-  render(): React.Element<any> {
-    return (
-      <div className="inspector">
-        <div className="control-bar" ref="controlBar">
-          <Button
-            title="Detach from the current process."
-            icon="x"
-            buttonType={ButtonTypes.ERROR}
-            onClick={this._handleClickClose}
-          />
-          <Button
-            title="(Debug) Open Web Inspector for the debugger frame."
-            icon="gear"
-            onClick={this._handleClickDevTools}
-          />
-          <Button
-            className="nuclide-debugger-toggle-old-ui-button"
-            title="Toggle new / old Nuclide Debugger UI"
-            icon="history"
-            onClick={this._handleClickUISwitch}
-          />
-        </div>
-      </div>
+  render() {
+    return _reactForAtom.React.createElement(
+      'div',
+      { className: 'inspector' },
+      _reactForAtom.React.createElement(
+        'div',
+        { className: 'control-bar', ref: 'controlBar' },
+        _reactForAtom.React.createElement((_Button || _load_Button()).Button, {
+          title: 'Detach from the current process.',
+          icon: 'x',
+          buttonType: (_Button || _load_Button()).ButtonTypes.ERROR,
+          onClick: this._handleClickClose
+        }),
+        _reactForAtom.React.createElement((_Button || _load_Button()).Button, {
+          title: '(Debug) Open Web Inspector for the debugger frame.',
+          icon: 'gear',
+          onClick: this._handleClickDevTools
+        }),
+        _reactForAtom.React.createElement((_Button || _load_Button()).Button, {
+          className: 'nuclide-debugger-toggle-old-ui-button',
+          title: 'Toggle new / old Nuclide Debugger UI',
+          icon: 'history',
+          onClick: this._handleClickUISwitch
+        })
+      )
     );
   }
 
   componentDidMount() {
     // Cast from HTMLElement down to WebviewElement without instanceof
     // checking, as WebviewElement constructor is not exposed.
-    const webviewNode = ((document.createElement('webview'): any): WebviewElement);
+    const webviewNode = document.createElement('webview');
     webviewNode.src = this._getUrl();
     webviewNode.nodeintegration = true;
     webviewNode.disablewebsecurity = true;
@@ -95,12 +106,12 @@ export default class DebuggerInspector extends React.Component {
       webviewNode.classList.add('nuclide-debugger-webview-hidden');
     }
     this._webviewNode = webviewNode;
-    const controlBarNode = ReactDOM.findDOMNode(this.refs.controlBar);
+    const controlBarNode = _reactForAtom.ReactDOM.findDOMNode(this.refs.controlBar);
     controlBarNode.parentNode.insertBefore(webviewNode, controlBarNode.nextSibling);
     this.props.bridge.setWebviewElement(webviewNode);
   }
 
-  componentDidUpdate(prevProps: Props): void {
+  componentDidUpdate(prevProps) {
     const webviewNode = this._webviewNode;
     if (webviewNode == null) {
       return;
@@ -108,7 +119,7 @@ export default class DebuggerInspector extends React.Component {
     if (this.props.socket !== prevProps.socket) {
       webviewNode.src = this._getUrl();
     }
-    const {showOldView} = this.props;
+    const { showOldView } = this.props;
     if (showOldView !== prevProps.showOldView) {
       webviewNode.classList.toggle('nuclide-debugger-webview-hidden', !showOldView);
     }
@@ -121,8 +132,8 @@ export default class DebuggerInspector extends React.Component {
     this._webviewNode = null;
   }
 
-  _getUrl(): string {
-    return `${nuclideUri.join(__dirname, '../scripts/inspector.html')}?${this.props.socket}`;
+  _getUrl() {
+    return `${ (_nuclideUri || _load_nuclideUri()).default.join(__dirname, '../scripts/inspector.html') }?${ this.props.socket }`;
   }
 
   _handleClickClose() {
@@ -136,7 +147,9 @@ export default class DebuggerInspector extends React.Component {
     }
   }
 
-  _handleClickUISwitch(): void {
+  _handleClickUISwitch() {
     this.props.toggleOldView();
   }
 }
+exports.default = DebuggerInspector;
+module.exports = exports['default'];

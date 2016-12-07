@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,38 +9,29 @@
  * the root directory of this source tree.
  */
 
-type PanelLocation = 'top' | 'right' | 'bottom' | 'left';
-type Options = {
-  location: PanelLocation,
-  createItem: () => Object,
-  priority?: number,
-};
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
 
 /**
  * A class that gives us an idempotent API for rendering panels, creating them lazily.
  */
-export default class PanelRenderer {
-  _createItem: () => Object;
-  _item: ?Object;
-  _location: PanelLocation;
-  _panel: ?atom$Panel;
-  _priority: ?number;
+class PanelRenderer {
 
-  constructor(options: Options) {
+  constructor(options) {
     this._createItem = options.createItem;
     this._location = options.location;
     this._priority = options.priority;
   }
 
-  render(props: {visible: boolean}): void {
+  render(props) {
     if (props.visible) {
       if (this._panel == null) {
-        const item = this._item == null
-          ? this._item = this._createItem()
-          : this._item;
+        const item = this._item == null ? this._item = this._createItem() : this._item;
         this._panel = addPanel(this._location, {
           item,
-          priority: this._priority == null ? undefined : this._priority,
+          priority: this._priority == null ? undefined : this._priority
         });
       } else {
         this._panel.show();
@@ -50,7 +41,7 @@ export default class PanelRenderer {
     }
   }
 
-  dispose(): void {
+  dispose() {
     if (this._item != null && typeof this._item.destroy === 'function') {
       this._item.destroy();
     }
@@ -61,7 +52,8 @@ export default class PanelRenderer {
 
 }
 
-function addPanel(location: PanelLocation, options: atom$WorkspaceAddPanelOptions): atom$Panel {
+exports.default = PanelRenderer;
+function addPanel(location, options) {
   switch (location) {
     case 'top':
       return atom.workspace.addTopPanel(options);
@@ -72,6 +64,7 @@ function addPanel(location: PanelLocation, options: atom$WorkspaceAddPanelOption
     case 'left':
       return atom.workspace.addLeftPanel(options);
     default:
-      throw new Error(`Invalid location: ${location}`);
+      throw new Error(`Invalid location: ${ location }`);
   }
 }
+module.exports = exports['default'];

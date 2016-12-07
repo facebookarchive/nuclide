@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,42 +9,58 @@
  * the root directory of this source tree.
  */
 
-import {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
-import {React} from 'react-for-atom';
-import {LaunchUiComponent} from './LaunchUiComponent';
-import {AttachUiComponent} from './AttachUiComponent';
-import invariant from 'assert';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.HhvmLaunchAttachProvider = undefined;
 
-import type EventEmitter from 'events';
+var _nuclideDebuggerBase;
 
-export class HhvmLaunchAttachProvider extends DebuggerLaunchAttachProvider {
-  constructor(debuggingTypeName: string, targetUri: string) {
+function _load_nuclideDebuggerBase() {
+  return _nuclideDebuggerBase = require('../../nuclide-debugger-base');
+}
+
+var _reactForAtom = require('react-for-atom');
+
+var _LaunchUiComponent;
+
+function _load_LaunchUiComponent() {
+  return _LaunchUiComponent = require('./LaunchUiComponent');
+}
+
+var _AttachUiComponent;
+
+function _load_AttachUiComponent() {
+  return _AttachUiComponent = require('./AttachUiComponent');
+}
+
+class HhvmLaunchAttachProvider extends (_nuclideDebuggerBase || _load_nuclideDebuggerBase()).DebuggerLaunchAttachProvider {
+  constructor(debuggingTypeName, targetUri) {
     super(debuggingTypeName, targetUri);
   }
 
-  getActions(): Promise<Array<string>> {
+  getActions() {
     return Promise.resolve(['Attach', 'Launch']);
   }
 
-  getComponent(action: string, parentEventEmitter: EventEmitter): ?React.Element<any> {
+  getComponent(action, parentEventEmitter) {
     if (action === 'Launch') {
-      return (
-        <LaunchUiComponent
-          targetUri={this.getTargetUri()}
-          parentEmitter={parentEventEmitter}
-        />
-      );
+      return _reactForAtom.React.createElement((_LaunchUiComponent || _load_LaunchUiComponent()).LaunchUiComponent, {
+        targetUri: this.getTargetUri(),
+        parentEmitter: parentEventEmitter
+      });
     } else if (action === 'Attach') {
-      return (
-        <AttachUiComponent
-          targetUri={this.getTargetUri()}
-          parentEmitter={parentEventEmitter}
-        />
-      );
+      return _reactForAtom.React.createElement((_AttachUiComponent || _load_AttachUiComponent()).AttachUiComponent, {
+        targetUri: this.getTargetUri(),
+        parentEmitter: parentEventEmitter
+      });
     } else {
-      invariant(false, 'Unrecognized action for component.');
+      if (!false) {
+        throw new Error('Unrecognized action for component.');
+      }
     }
   }
 
-  dispose(): void {}
+  dispose() {}
 }
+exports.HhvmLaunchAttachProvider = HhvmLaunchAttachProvider;

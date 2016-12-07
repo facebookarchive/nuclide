@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,34 +9,39 @@
  * the root directory of this source tree.
  */
 
-import type {RemoteMessage} from './bootloader';
+var _child_process = _interopRequireDefault(require('child_process'));
 
-import invariant from 'assert';
-import child_process from 'child_process';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-process.on('message', (message: RemoteMessage) => {
-  const {id, file, method, args} = message;
+process.on('message', message => {
+  const { id, file, method, args } = message;
 
   // $FlowIgnore
   const exports = require(file);
   const service = method != null ? exports[method] : exports;
 
   const sendSuccessResponse = result => {
-    invariant(process.send != null);
+    if (!(process.send != null)) {
+      throw new Error('Invariant violation: "process.send != null"');
+    }
+
     process.send({
       id,
-      result,
+      result
     });
   };
 
   const sendErrorResponse = err => {
-    invariant(process.send != null && err != null);
+    if (!(process.send != null && err != null)) {
+      throw new Error('Invariant violation: "process.send != null && err != null"');
+    }
+
     process.send({
       id,
       error: {
         message: err.message || err,
-        stack: err.stack || null,
-      },
+        stack: err.stack || null
+      }
     });
   };
 
@@ -44,7 +49,7 @@ process.on('message', (message: RemoteMessage) => {
   let output;
   let error;
   try {
-    output = service(...args || []);
+    output = service(...(args || []));
   } catch (e) {
     error = e;
   }
@@ -70,10 +75,9 @@ process.on('disconnect', () => {
 process.on('exit', () => {
   // Hack: kill all child processes.
   // $FlowIgnore: Private method.
-  process._getActiveHandles()
-    .forEach(handle => {
-      if (handle instanceof child_process.ChildProcess) {
-        handle.kill();
-      }
-    });
+  process._getActiveHandles().forEach(handle => {
+    if (handle instanceof _child_process.default.ChildProcess) {
+      handle.kill();
+    }
+  });
 });

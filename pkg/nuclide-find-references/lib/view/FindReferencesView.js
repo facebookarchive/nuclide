@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,118 +9,134 @@
  * the root directory of this source tree.
  */
 
-import type {FileReferences} from '../types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {React, ReactDOM} from 'react-for-atom';
-import FileReferencesView from './FileReferencesView';
-import FindReferencesModel from '../FindReferencesModel';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _reactForAtom = require('react-for-atom');
+
+var _FileReferencesView;
+
+function _load_FileReferencesView() {
+  return _FileReferencesView = _interopRequireDefault(require('./FileReferencesView'));
+}
+
+var _FindReferencesModel;
+
+function _load_FindReferencesModel() {
+  return _FindReferencesModel = _interopRequireDefault(require('../FindReferencesModel'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // Number of files to show on every page.
 const PAGE_SIZE = 10;
 // Start loading more once the user scrolls within this many pixels of the bottom.
 const SCROLL_LOAD_THRESHOLD = 250;
 
-function pluralize(noun: string, count: number) {
+function pluralize(noun, count) {
   return count === 1 ? noun : noun + 's';
 }
 
-type Props = {
-  model: FindReferencesModel,
-};
+class FindReferencesView extends _reactForAtom.React.Component {
 
-type State = {
-  loading: boolean,
-  fetched: number,
-  selected: number,
-  references: Array<FileReferences>,
-};
-
-export default class FindReferencesView extends React.Component {
-  props: Props;
-  state: State;
-
-  constructor(props: Props) {
+  constructor(props) {
     super(props);
     this.state = {
       loading: true,
       fetched: 0,
       selected: -1,
-      references: [],
+      references: []
     };
 
-    (this: any)._fetchMore = this._fetchMore.bind(this);
-    (this: any)._onScroll = this._onScroll.bind(this);
-    (this: any)._childClick = this._childClick.bind(this);
+    this._fetchMore = this._fetchMore.bind(this);
+    this._onScroll = this._onScroll.bind(this);
+    this._childClick = this._childClick.bind(this);
   }
 
   componentDidMount() {
     this._fetchMore(PAGE_SIZE);
   }
 
-  async _fetchMore(count: number): Promise<void> {
-    const next = await this.props.model.getFileReferences(
-      this.state.fetched,
-      PAGE_SIZE,
-    );
-    this.setState({
-      loading: false,
-      fetched: this.state.fetched + PAGE_SIZE,
-      references: this.state.references.concat(next),
-    });
+  _fetchMore(count) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const next = yield _this.props.model.getFileReferences(_this.state.fetched, PAGE_SIZE);
+      _this.setState({
+        loading: false,
+        fetched: _this.state.fetched + PAGE_SIZE,
+        references: _this.state.references.concat(next)
+      });
+    })();
   }
 
-  _onScroll(evt: Event) {
-    const root = ReactDOM.findDOMNode(this.refs.root);
+  _onScroll(evt) {
+    const root = _reactForAtom.ReactDOM.findDOMNode(this.refs.root);
     if (this.state.loading || root.clientHeight >= root.scrollHeight) {
       return;
     }
     const scrollBottom = root.scrollTop + root.clientHeight;
     if (root.scrollHeight - scrollBottom <= SCROLL_LOAD_THRESHOLD) {
-      this.setState({loading: true});
+      this.setState({ loading: true });
       this._fetchMore(PAGE_SIZE);
     }
   }
 
-  _childClick(i: number) {
-    this.setState({selected: (this.state.selected === i) ? -1 : i});
+  _childClick(i) {
+    this.setState({ selected: this.state.selected === i ? -1 : i });
   }
 
-  render(): React.Element<any> {
-    const children = this.state.references.map((fileRefs, i) =>
-      <FileReferencesView
-        key={i}
-        isSelected={this.state.selected === i}
-        {...fileRefs}
-        basePath={this.props.model.getBasePath()}
-        clickCallback={() => this._childClick(i)}
-      />,
-    );
+  render() {
+    const children = this.state.references.map((fileRefs, i) => _reactForAtom.React.createElement((_FileReferencesView || _load_FileReferencesView()).default, Object.assign({
+      key: i,
+      isSelected: this.state.selected === i
+    }, fileRefs, {
+      basePath: this.props.model.getBasePath(),
+      clickCallback: () => this._childClick(i)
+    })));
 
     const refCount = this.props.model.getReferenceCount();
     const fileCount = this.props.model.getFileCount();
     if (this.state.fetched < fileCount) {
-      children.push(
-        <div
-          key="loading"
-          className="nuclide-find-references-loading loading-spinner-medium"
-        />,
-      );
+      children.push(_reactForAtom.React.createElement('div', {
+        key: 'loading',
+        className: 'nuclide-find-references-loading loading-spinner-medium'
+      }));
     }
 
-    return (
-      <div className="nuclide-find-references">
-        <div className="nuclide-find-references-count panel-heading">
-          {refCount} {pluralize('reference', refCount)}{' '}
-          found in {fileCount} {pluralize('file', fileCount)} for{' '}
-          <span className="highlight-info">
-            {this.props.model.getSymbolName()}
-          </span>
-        </div>
-        <ul className="nuclide-find-references-files list-tree has-collapsable-children"
-            onScroll={this._onScroll} ref="root" tabIndex="0">
-          {children}
-        </ul>
-      </div>
+    return _reactForAtom.React.createElement(
+      'div',
+      { className: 'nuclide-find-references' },
+      _reactForAtom.React.createElement(
+        'div',
+        { className: 'nuclide-find-references-count panel-heading' },
+        refCount,
+        ' ',
+        pluralize('reference', refCount),
+        ' ',
+        'found in ',
+        fileCount,
+        ' ',
+        pluralize('file', fileCount),
+        ' for',
+        ' ',
+        _reactForAtom.React.createElement(
+          'span',
+          { className: 'highlight-info' },
+          this.props.model.getSymbolName()
+        )
+      ),
+      _reactForAtom.React.createElement(
+        'ul',
+        { className: 'nuclide-find-references-files list-tree has-collapsable-children',
+          onScroll: this._onScroll, ref: 'root', tabIndex: '0' },
+        children
+      )
     );
   }
 }
+exports.default = FindReferencesView;
+module.exports = exports['default'];

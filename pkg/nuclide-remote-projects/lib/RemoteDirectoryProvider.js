@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,7 +9,11 @@
  * the root directory of this source tree.
  */
 
-import {RemoteConnection, RemoteDirectory} from '../../nuclide-remote-connection';
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
 
 /**
  * The prefix a URI must have for `RemoteDirectoryProvider` to try to produce a
@@ -19,11 +23,11 @@ import {RemoteConnection, RemoteDirectory} from '../../nuclide-remote-connection
 const REMOTE_PATH_URI_PREFIX = 'nuclide://';
 
 class RemoteDirectoryProvider {
-  directoryForURISync(uri: string): ?RemoteDirectory {
+  directoryForURISync(uri) {
     if (!uri.startsWith(REMOTE_PATH_URI_PREFIX)) {
       return null;
     }
-    const connection = RemoteConnection.getForUri(uri);
+    const connection = (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).RemoteConnection.getForUri(uri);
     if (connection) {
       return connection.createDirectory(uri);
     } else {
@@ -34,7 +38,7 @@ class RemoteDirectoryProvider {
     }
   }
 
-  directoryForURI(uri: string): Promise<any> {
+  directoryForURI(uri) {
     return Promise.resolve(this.directoryForURISync(uri));
   }
 }

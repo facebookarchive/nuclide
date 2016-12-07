@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,47 +9,52 @@
  * the root directory of this source tree.
  */
 
-import featureConfig from './featureConfig';
-import {maybeToString} from '../commons-node/string';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = formatEnoentNotification;
 
-type Options = {
-  feature: string,
-  toolName: string,
-  pathSetting: string,
-};
+var _featureConfig;
 
-type Result = {
-  message: string,
-  meta: atom$NotificationOptions,
-};
+function _load_featureConfig() {
+  return _featureConfig = _interopRequireDefault(require('./featureConfig'));
+}
+
+var _string;
+
+function _load_string() {
+  return _string = require('../commons-node/string');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const capitalize = str => str[0].toUpperCase() + str.substr(1);
 
-export default function formatEnoentNotification(options: Options): Result {
-  const {feature, toolName, pathSetting} = options;
-  const schema = featureConfig.getSchema(pathSetting);
+function formatEnoentNotification(options) {
+  const { feature, toolName, pathSetting } = options;
+  const schema = (_featureConfig || _load_featureConfig()).default.getSchema(pathSetting);
   const settingTitle = schema.title;
   const categoryTitle = capitalize(pathSetting.split('.').shift());
-  const command: string = (featureConfig.get(pathSetting): any);
+  const command = (_featureConfig || _load_featureConfig()).default.get(pathSetting);
   const capitalizedFeature = capitalize(feature);
-  const description =
-    `${capitalizedFeature} needs *${toolName}* but Nuclide couldn't find it at \`${command}\`.
+  const description = `${ capitalizedFeature } needs *${ toolName }* but Nuclide couldn't find it at \`${ command }\`.
 
 **Troubleshooting Tips**
-1. Make sure that *${toolName}* is installed. Some Nuclide features require tools that aren't
+1. Make sure that *${ toolName }* is installed. Some Nuclide features require tools that aren't
    bundled with Nuclide. You may need to install this tool yourself.
-2. Make sure that *${toolName}* can be run using the command \`${command}\`.
+2. Make sure that *${ toolName }* can be run using the command \`${ command }\`.
 3. Atom doesn't know about PATH modifications made in your shell config (".bash_profile", ".zshrc",
-   etc.). If *${toolName}* is installed and you can run it successfully from your terminal using the
-   command \`${command}\`, Nuclide may just not be looking in the right place. Update the command by
-   changing the **${maybeToString(settingTitle)}** setting (under **${categoryTitle}**) on the
+   etc.). If *${ toolName }* is installed and you can run it successfully from your terminal using the
+   command \`${ command }\`, Nuclide may just not be looking in the right place. Update the command by
+   changing the **${ (0, (_string || _load_string()).maybeToString)(settingTitle) }** setting (under **${ categoryTitle }**) on the
    Nuclide settings page.`;
 
   return {
-    message: `Nuclide couldn't find *${toolName}*!`,
+    message: `Nuclide couldn't find *${ toolName }*!`,
     meta: {
       dismissable: true,
-      description,
-    },
+      description
+    }
   };
 }
+module.exports = exports['default'];

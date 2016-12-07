@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,68 +9,41 @@
  * the root directory of this source tree.
  */
 
-import {CompositeDisposable} from 'atom';
-import {PanelComponentScroller} from './PanelComponentScroller';
-import {React, ReactDOM} from 'react-for-atom';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.PanelComponent = undefined;
+
+var _atom = require('atom');
+
+var _PanelComponentScroller;
+
+function _load_PanelComponentScroller() {
+  return _PanelComponentScroller = require('./PanelComponentScroller');
+}
+
+var _reactForAtom = require('react-for-atom');
 
 const MINIMUM_LENGTH = 100;
-
-type DefaultProps = {
-  hidden: boolean,
-  initialLength: number,
-  noScroll: boolean,
-  onResize: (width: number) => mixed,
-};
-
-type Props = {
-  children?: mixed,
-  dock: 'top' | 'right' | 'bottom' | 'left',
-  hidden: boolean,
-  initialLength: number,
-  /*
-   * When `true`, this component does not wrap its children in a scrolling container and instead
-   * provides a simple container with visible (the default in CSS) overflow. Default: false.
-   */
-  noScroll: boolean,
-  onResize: (width: number) => mixed,
-  overflowX?: string,
-};
-
-type State = {
-  isResizing: boolean,
-  length: number,
-};
 
 /**
  * A container for centralizing the logic for making panels scrollable,
  * resizeable, dockable, etc.
  */
-export class PanelComponent extends React.Component {
+class PanelComponent extends _reactForAtom.React.Component {
 
-  _animationFrameRequestId: ?number;
-  _resizeSubscriptions: ?CompositeDisposable;
-
-  props: Props;
-  state: State;
-  static defaultProps: DefaultProps = {
-    hidden: false,
-    initialLength: 200,
-    noScroll: false,
-    onResize: width => {},
-  };
-
-  constructor(props: Object) {
+  constructor(props) {
     super(props);
     this.state = {
       isResizing: false,
-      length: this.props.initialLength,
+      length: this.props.initialLength
     };
 
     // Bind main events to this object. _updateSize is only ever bound within these.
-    (this: any)._handleDoubleClick = this._handleDoubleClick.bind(this);
-    (this: any)._handleMouseDown = this._handleMouseDown.bind(this);
-    (this: any)._handleMouseMove = this._handleMouseMove.bind(this);
-    (this: any)._handleMouseUp = this._handleMouseUp.bind(this);
+    this._handleDoubleClick = this._handleDoubleClick.bind(this);
+    this._handleMouseDown = this._handleMouseDown.bind(this);
+    this._handleMouseMove = this._handleMouseMove.bind(this);
+    this._handleMouseUp = this._handleMouseUp.bind(this);
   }
 
   componentDidMount() {
@@ -96,7 +69,7 @@ export class PanelComponent extends React.Component {
    * [1] https://github.com/atom/tree-view/blob/v0.201.5/lib/tree-view.coffee#L722
    */
   _repaint() {
-    const element = ReactDOM.findDOMNode(this);
+    const element = _reactForAtom.ReactDOM.findDOMNode(this);
     const isVisible = window.getComputedStyle(element, null).getPropertyValue('visibility');
 
     if (isVisible) {
@@ -107,40 +80,37 @@ export class PanelComponent extends React.Component {
     }
   }
 
-  render(): React.Element<any> {
+  render() {
     // We create an overlay to always display the resize cursor while the user
     // is resizing the panel, even if their mouse leaves the handle.
     let resizeCursorOverlay = null;
     if (this.state.isResizing) {
-      resizeCursorOverlay =
-        <div className={`nuclide-ui-panel-component-resize-cursor-overlay ${this.props.dock}`} />;
+      resizeCursorOverlay = _reactForAtom.React.createElement('div', { className: `nuclide-ui-panel-component-resize-cursor-overlay ${ this.props.dock }` });
     }
 
     let containerStyle;
     if (this.props.dock === 'left' || this.props.dock === 'right') {
       containerStyle = {
         width: this.state.length,
-        minWidth: MINIMUM_LENGTH,
+        minWidth: MINIMUM_LENGTH
       };
     } else if (this.props.dock === 'top' || this.props.dock === 'bottom') {
       containerStyle = {
         height: this.state.length,
-        minHeight: MINIMUM_LENGTH,
+        minHeight: MINIMUM_LENGTH
       };
     }
 
-    const content = React.cloneElement(
-      React.Children.only(this.props.children),
-      {ref: 'child'});
+    const content = _reactForAtom.React.cloneElement(_reactForAtom.React.Children.only(this.props.children), { ref: 'child' });
 
     let wrappedContent;
     if (this.props.noScroll) {
       wrappedContent = content;
     } else {
-      wrappedContent = (
-        <PanelComponentScroller overflowX={this.props.overflowX}>
-          {content}
-        </PanelComponentScroller>
+      wrappedContent = _reactForAtom.React.createElement(
+        (_PanelComponentScroller || _load_PanelComponentScroller()).PanelComponentScroller,
+        { overflowX: this.props.overflowX },
+        content
       );
     }
 
@@ -151,21 +121,23 @@ export class PanelComponent extends React.Component {
     //
     // [1] https://github.com/atom/tree-view/blob/v0.201.5/lib/tree-view.coffee#L28
     // [2] https://github.com/cannikin/spacegray-dark-ui/blob/v0.12.0/styles/tree-view.less#L21
-    return (
-      <div
-        className={`nuclide-ui-panel-component tree-view-resizer ${this.props.dock}`}
-        hidden={this.props.hidden}
-        style={containerStyle}>
-        <div className={`nuclide-ui-panel-component-resize-handle ${this.props.dock}`}
-          ref="handle"
-          onMouseDown={this._handleMouseDown}
-          onDoubleClick={this._handleDoubleClick}
-        />
-        <div className="nuclide-ui-panel-component-content">
-          {wrappedContent}
-        </div>
-        {resizeCursorOverlay}
-      </div>
+    return _reactForAtom.React.createElement(
+      'div',
+      {
+        className: `nuclide-ui-panel-component tree-view-resizer ${ this.props.dock }`,
+        hidden: this.props.hidden,
+        style: containerStyle },
+      _reactForAtom.React.createElement('div', { className: `nuclide-ui-panel-component-resize-handle ${ this.props.dock }`,
+        ref: 'handle',
+        onMouseDown: this._handleMouseDown,
+        onDoubleClick: this._handleDoubleClick
+      }),
+      _reactForAtom.React.createElement(
+        'div',
+        { className: 'nuclide-ui-panel-component-content' },
+        wrappedContent
+      ),
+      resizeCursorOverlay
     );
   }
 
@@ -175,35 +147,36 @@ export class PanelComponent extends React.Component {
    * For panels docked left or right, the length is the width. For panels
    * docked top or bottom, it's the height.
    */
-  getLength(): number {
+  getLength() {
     return this.state.length;
   }
 
-  focus(): void {
+  focus() {
     this.refs.child.focus();
   }
 
-  getChildComponent(): React.Component<any, any, any> {
+  getChildComponent() {
     return this.refs.child;
   }
 
-  _handleMouseDown(event: SyntheticMouseEvent): void {
+  _handleMouseDown(event) {
     if (this._resizeSubscriptions != null) {
       this._resizeSubscriptions.dispose();
     }
 
     window.addEventListener('mousemove', this._handleMouseMove);
     window.addEventListener('mouseup', this._handleMouseUp);
-    this._resizeSubscriptions = new CompositeDisposable(
-      {dispose: () => { window.removeEventListener('mousemove', this._handleMouseMove); }},
-      {dispose: () => { window.removeEventListener('mouseup', this._handleMouseUp); }},
-    );
+    this._resizeSubscriptions = new _atom.CompositeDisposable({ dispose: () => {
+        window.removeEventListener('mousemove', this._handleMouseMove);
+      } }, { dispose: () => {
+        window.removeEventListener('mouseup', this._handleMouseUp);
+      } });
 
-    this.setState({isResizing: true});
+    this.setState({ isResizing: true });
   }
 
-  _handleMouseMove(event: SyntheticMouseEvent): void {
-    const containerEl = ReactDOM.findDOMNode(this);
+  _handleMouseMove(event) {
+    const containerEl = _reactForAtom.ReactDOM.findDOMNode(this);
     let length = 0;
     switch (this.props.dock) {
       case 'left':
@@ -222,24 +195,24 @@ export class PanelComponent extends React.Component {
     this._updateSize(length);
   }
 
-  _handleMouseUp(event: SyntheticMouseEvent): void {
+  _handleMouseUp(event) {
     if (this._resizeSubscriptions) {
       this._resizeSubscriptions.dispose();
     }
-    this.setState({isResizing: false});
+    this.setState({ isResizing: false });
   }
 
   /**
    * Resize the pane to fit its contents.
    */
-  _handleDoubleClick(): void {
+  _handleDoubleClick() {
     // Reset size to 0 and read the content's natural width (after re-layout)
     // to determine the size to scale to.
-    this.setState({length: 0});
+    this.setState({ length: 0 });
     this.forceUpdate(() => {
       let length = 0;
-      const childNode = ReactDOM.findDOMNode(this.refs.child);
-      const handle = ReactDOM.findDOMNode(this.refs.handle);
+      const childNode = _reactForAtom.ReactDOM.findDOMNode(this.refs.child);
+      const handle = _reactForAtom.ReactDOM.findDOMNode(this.refs.handle);
       if (this.props.dock === 'left' || this.props.dock === 'right') {
         length = childNode.offsetWidth + handle.offsetWidth;
       } else if (this.props.dock === 'top' || this.props.dock === 'bottom') {
@@ -252,8 +225,15 @@ export class PanelComponent extends React.Component {
   }
 
   // Whether this is width or height depends on the orientation of this panel.
-  _updateSize(newSize: number): void {
-    this.setState({length: newSize});
+  _updateSize(newSize) {
+    this.setState({ length: newSize });
     this.props.onResize.call(null, newSize);
   }
 }
+exports.PanelComponent = PanelComponent;
+PanelComponent.defaultProps = {
+  hidden: false,
+  initialLength: 200,
+  noScroll: false,
+  onResize: width => {}
+};

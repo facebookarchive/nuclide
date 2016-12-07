@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,23 +9,43 @@
  * the root directory of this source tree.
  */
 
-import {trackTiming} from '../../nuclide-analytics';
-import {getLogger} from '../../nuclide-logging';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import libclang from './libclang';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-export default class CodeFormatHelpers {
-  static formatEntireFile(editor: atom$TextEditor, range: atom$Range): Promise<{
-    newCursor?: number,
-    formatted: string,
-  }> {
-    return trackTiming('nuclide-clang-format.formatCode', async () => {
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _nuclideLogging;
+
+function _load_nuclideLogging() {
+  return _nuclideLogging = require('../../nuclide-logging');
+}
+
+var _libclang;
+
+function _load_libclang() {
+  return _libclang = _interopRequireDefault(require('./libclang'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class CodeFormatHelpers {
+  static formatEntireFile(editor, range) {
+    return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackTiming)('nuclide-clang-format.formatCode', (0, _asyncToGenerator.default)(function* () {
       try {
-        return await libclang.formatCode(editor, range);
+        return yield (_libclang || _load_libclang()).default.formatCode(editor, range);
       } catch (e) {
-        getLogger().error('Could not run clang-format:', e);
+        (0, (_nuclideLogging || _load_nuclideLogging()).getLogger)().error('Could not run clang-format:', e);
         throw new Error('Could not run clang-format.<br>Ensure it is installed and in your $PATH.');
       }
-    });
+    }));
   }
 }
+exports.default = CodeFormatHelpers;
+module.exports = exports['default'];

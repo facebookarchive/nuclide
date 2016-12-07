@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,37 +9,48 @@
  * the root directory of this source tree.
  */
 
-import type {OutputService} from '../../nuclide-console/lib/types';
-import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {DebuggingActivation} from './debugging/DebuggingActivation';
-import {PackagerActivation} from './packager/PackagerActivation';
-import {ShellActivation} from './shell/ShellActivation';
-import {CompositeDisposable} from 'atom';
+var _DebuggingActivation;
 
-export default class Activation {
-  _debuggingActivation: DebuggingActivation;
-  _packagerActivation: PackagerActivation;
-  _disposables: IDisposable;
+function _load_DebuggingActivation() {
+  return _DebuggingActivation = require('./debugging/DebuggingActivation');
+}
 
-  constructor(state: ?Object) {
-    this._disposables = new CompositeDisposable(
-      this._debuggingActivation = new DebuggingActivation(),
-      this._packagerActivation = new PackagerActivation(),
-      new ShellActivation(),
-    );
+var _PackagerActivation;
+
+function _load_PackagerActivation() {
+  return _PackagerActivation = require('./packager/PackagerActivation');
+}
+
+var _ShellActivation;
+
+function _load_ShellActivation() {
+  return _ShellActivation = require('./shell/ShellActivation');
+}
+
+var _atom = require('atom');
+
+class Activation {
+
+  constructor(state) {
+    this._disposables = new _atom.CompositeDisposable(this._debuggingActivation = new (_DebuggingActivation || _load_DebuggingActivation()).DebuggingActivation(), this._packagerActivation = new (_PackagerActivation || _load_PackagerActivation()).PackagerActivation(), new (_ShellActivation || _load_ShellActivation()).ShellActivation());
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
   }
 
-  consumeOutputService(api: OutputService): void {
+  consumeOutputService(api) {
     return this._packagerActivation.consumeOutputService(api);
   }
 
-  consumeCwdApi(api: CwdApi): void {
+  consumeCwdApi(api) {
     return this._packagerActivation.consumeCwdApi(api);
   }
 
 }
+exports.default = Activation;
+module.exports = exports['default'];

@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,35 +9,84 @@
  * the root directory of this source tree.
  */
 
-import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
-import type {ServerConnection} from '../../nuclide-remote-connection';
-import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getFileVersionOfBuffer = exports.Activation = undefined;
 
-import invariant from 'assert';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {observeBufferOpen, observeBufferCloseOrRename} from '../../commons-atom/text-buffer';
-import {NotifiersByConnection} from './NotifiersByConnection';
-import {BufferSubscription} from './BufferSubscription';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-export class Activation {
-  _disposables: UniversalDisposable;
-  notifiers: NotifiersByConnection;
+let getFileVersionOfBuffer = exports.getFileVersionOfBuffer = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (buffer) {
+    const filePath = buffer.getPath();
+    const notifier = activation.notifiers.getForUri(filePath);
+    if (notifier == null) {
+      return null;
+    }
 
-  constructor(state: ?Object) {
-    this._disposables = new UniversalDisposable();
+    if (!(filePath != null)) {
+      throw new Error('Invariant violation: "filePath != null"');
+    }
 
-    const notifiers = new NotifiersByConnection();
+    return {
+      notifier: yield notifier,
+      filePath,
+      version: buffer.changeCount
+    };
+  });
+
+  return function getFileVersionOfBuffer(_x) {
+    return _ref.apply(this, arguments);
+  };
+})();
+
+exports.reset = reset;
+exports.getActivation = getActivation;
+exports.getNotifierByConnection = getNotifierByConnection;
+exports.getFileVersionOfEditor = getFileVersionOfEditor;
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../commons-node/UniversalDisposable'));
+}
+
+var _textBuffer;
+
+function _load_textBuffer() {
+  return _textBuffer = require('../../commons-atom/text-buffer');
+}
+
+var _NotifiersByConnection;
+
+function _load_NotifiersByConnection() {
+  return _NotifiersByConnection = require('./NotifiersByConnection');
+}
+
+var _BufferSubscription;
+
+function _load_BufferSubscription() {
+  return _BufferSubscription = require('./BufferSubscription');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class Activation {
+
+  constructor(state) {
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
+
+    const notifiers = new (_NotifiersByConnection || _load_NotifiersByConnection()).NotifiersByConnection();
     this.notifiers = notifiers;
     this._disposables.add(notifiers);
 
-    this._disposables.add(observeBufferOpen().subscribe(buffer => {
-      const subscriptions = new UniversalDisposable();
-      subscriptions.add(new BufferSubscription(notifiers, buffer));
-      subscriptions.add(observeBufferCloseOrRename(buffer)
-        .subscribe(closeEvent => {
-          this._disposables.remove(subscriptions);
-          subscriptions.dispose();
-        }));
+    this._disposables.add((0, (_textBuffer || _load_textBuffer()).observeBufferOpen)().subscribe(buffer => {
+      const subscriptions = new (_UniversalDisposable || _load_UniversalDisposable()).default();
+      subscriptions.add(new (_BufferSubscription || _load_BufferSubscription()).BufferSubscription(notifiers, buffer));
+      subscriptions.add((0, (_textBuffer || _load_textBuffer()).observeBufferCloseOrRename)(buffer).subscribe(closeEvent => {
+        this._disposables.remove(subscriptions);
+        subscriptions.dispose();
+      }));
       this._disposables.add(subscriptions);
     }));
   }
@@ -47,36 +96,23 @@ export class Activation {
   }
 }
 
-// Mutable for testing.
-let activation: Activation = new Activation();
+exports.Activation = Activation; // Mutable for testing.
+
+let activation = new Activation();
 
 // exported for testing
-export function reset(): void {
+function reset() {
   activation.dispose();
   activation = new Activation();
 }
-export function getActivation(): Activation {
+function getActivation() {
   return activation;
 }
 
-export function getNotifierByConnection(connection: ?ServerConnection): Promise<FileNotifier> {
+function getNotifierByConnection(connection) {
   return activation.notifiers.getForConnection(connection);
 }
 
-export async function getFileVersionOfBuffer(buffer: atom$TextBuffer): Promise<?FileVersion> {
-  const filePath = buffer.getPath();
-  const notifier = activation.notifiers.getForUri(filePath);
-  if (notifier == null) {
-    return null;
-  }
-  invariant(filePath != null);
-  return {
-    notifier: await notifier,
-    filePath,
-    version: buffer.changeCount,
-  };
-}
-
-export function getFileVersionOfEditor(editor: atom$TextEditor): Promise<?FileVersion> {
+function getFileVersionOfEditor(editor) {
   return getFileVersionOfBuffer(editor.getBuffer());
 }

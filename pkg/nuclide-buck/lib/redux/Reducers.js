@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,67 +9,74 @@
  * the root directory of this source tree.
  */
 
-import type {AppState, Device, Platform} from '../types';
-import type {Action} from './Actions';
-import shallowequal from 'shallowequal';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = accumulateState;
 
-import * as Actions from './Actions';
+var _shallowequal;
 
-export default function accumulateState(state: AppState, action: Action): AppState {
+function _load_shallowequal() {
+  return _shallowequal = _interopRequireDefault(require('shallowequal'));
+}
+
+var _Actions;
+
+function _load_Actions() {
+  return _Actions = _interopRequireWildcard(require('./Actions'));
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function accumulateState(state, action) {
   switch (action.type) {
-    case Actions.SET_PROJECT_ROOT:
-      return {
-        ...state,
+    case (_Actions || _load_Actions()).SET_PROJECT_ROOT:
+      return Object.assign({}, state, {
         projectRoot: action.projectRoot,
-        isLoadingBuckProject: true,
-      };
-    case Actions.SET_BUCK_ROOT:
-      return {
-        ...state,
+        isLoadingBuckProject: true
+      });
+    case (_Actions || _load_Actions()).SET_BUCK_ROOT:
+      return Object.assign({}, state, {
         buckRoot: action.buckRoot,
-        isLoadingBuckProject: false,
-      };
-    case Actions.SET_BUILD_TARGET:
-      return {
-        ...state,
+        isLoadingBuckProject: false
+      });
+    case (_Actions || _load_Actions()).SET_BUILD_TARGET:
+      return Object.assign({}, state, {
         buildTarget: action.buildTarget,
-        isLoadingRule: true,
-      };
-    case Actions.SET_RULE_TYPE:
-      return {
-        ...state,
+        isLoadingRule: true
+      });
+    case (_Actions || _load_Actions()).SET_RULE_TYPE:
+      return Object.assign({}, state, {
         buildRuleType: action.ruleType,
         isLoadingRule: false,
-        isLoadingPlatforms: true,
-      };
-    case Actions.SET_PLATFORMS:
-      const {platforms} = action;
+        isLoadingPlatforms: true
+      });
+    case (_Actions || _load_Actions()).SET_PLATFORMS:
+      const { platforms } = action;
       const previouslySelected = state.selectedDevice;
       const selectedDevice = selectValidDevice(previouslySelected, platforms);
-      return {
-        ...state,
+      return Object.assign({}, state, {
         platforms,
         selectedDevice,
-        isLoadingPlatforms: false,
-      };
-    case Actions.SET_DEVICE:
-      return {
-        ...state,
-        selectedDevice: action.device,
-      };
-    case Actions.SET_TASK_SETTINGS:
-      return {
-        ...state,
-        taskSettings: {
-          ...state.taskSettings,
-          [action.taskType]: action.settings,
-        },
-      };
+        isLoadingPlatforms: false
+      });
+    case (_Actions || _load_Actions()).SET_DEVICE:
+      return Object.assign({}, state, {
+        selectedDevice: action.device
+      });
+    case (_Actions || _load_Actions()).SET_TASK_SETTINGS:
+      return Object.assign({}, state, {
+        taskSettings: Object.assign({}, state.taskSettings, {
+          [action.taskType]: action.settings
+        })
+      });
   }
   return state;
 }
 
-function selectValidDevice(previouslySelected: ?Device, platforms: ?Array<Platform>): ?Device {
+function selectValidDevice(previouslySelected, platforms) {
   if (!platforms || !platforms.length) {
     return null;
   }
@@ -79,7 +86,7 @@ function selectValidDevice(previouslySelected: ?Device, platforms: ?Array<Platfo
     // Reassign selectedDevice to an instance from new platforms,
     // to guarantee === matches (important for dropdown selection).
     platforms.some(platform => {
-      selectedDevice = platform.devices.find(device => shallowequal(device, previouslySelected));
+      selectedDevice = platform.devices.find(device => (0, (_shallowequal || _load_shallowequal()).default)(device, previouslySelected));
       return selectedDevice != null;
     });
   }
@@ -89,3 +96,4 @@ function selectValidDevice(previouslySelected: ?Device, platforms: ?Array<Platfo
 
   return selectedDevice;
 }
+module.exports = exports['default'];

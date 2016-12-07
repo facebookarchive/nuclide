@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,54 +9,61 @@
  * the root directory of this source tree.
  */
 
-import type {Tab} from '../../nuclide-ui/Tabs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {React, ReactDOM} from 'react-for-atom';
-import Tabs from '../../nuclide-ui/Tabs';
+var _reactForAtom = require('react-for-atom');
 
-type Props = {
-  children?: React.Element<any>,
-  menuItems: Array<{label: string, value: string}>,
-  onSelectedViewMenuItemChange: (value: ?string) => void,
-  selectedViewMenuItemValue: ?string,
-};
+var _Tabs;
 
-export default class SideBarPanelComponent extends React.Component {
-  props: Props;
+function _load_Tabs() {
+  return _Tabs = _interopRequireDefault(require('../../nuclide-ui/Tabs'));
+}
 
-  constructor(props: Props) {
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class SideBarPanelComponent extends _reactForAtom.React.Component {
+
+  constructor(props) {
     super(props);
-    (this: any)._handleTabChange = this._handleTabChange.bind(this);
+    this._handleTabChange = this._handleTabChange.bind(this);
   }
 
-  focus(): void {
-    ReactDOM.findDOMNode(this.refs.child).focus();
+  focus() {
+    _reactForAtom.ReactDOM.findDOMNode(this.refs.child).focus();
   }
 
-  _handleTabChange(newTab: Tab): void {
+  _handleTabChange(newTab) {
     const value = newTab.name;
     this.props.onSelectedViewMenuItemChange(value);
   }
 
-  render(): React.Element<any> {
+  render() {
     const {
       menuItems,
-      selectedViewMenuItemValue,
+      selectedViewMenuItemValue
     } = this.props;
     const tabs = menuItems.map(menuItem => ({
       name: menuItem.value,
-      tabContent: <span>{menuItem.label}</span>,
+      tabContent: _reactForAtom.React.createElement(
+        'span',
+        null,
+        menuItem.label
+      )
     }));
     const activeTabName = selectedViewMenuItemValue;
-    return (
-      <div className="nuclide-side-bar-tab-container" tabIndex={0}>
-        <Tabs
-          activeTabName={activeTabName}
-          tabs={tabs}
-          onActiveTabChange={this._handleTabChange}
-        />
-        {React.cloneElement(React.Children.only(this.props.children), {ref: 'child'})}
-      </div>
+    return _reactForAtom.React.createElement(
+      'div',
+      { className: 'nuclide-side-bar-tab-container', tabIndex: 0 },
+      _reactForAtom.React.createElement((_Tabs || _load_Tabs()).default, {
+        activeTabName: activeTabName,
+        tabs: tabs,
+        onActiveTabChange: this._handleTabChange
+      }),
+      _reactForAtom.React.cloneElement(_reactForAtom.React.Children.only(this.props.children), { ref: 'child' })
     );
   }
 }
+exports.default = SideBarPanelComponent;
+module.exports = exports['default'];

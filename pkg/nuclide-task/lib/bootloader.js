@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,17 +9,15 @@
  * the root directory of this source tree.
  */
 
-import child_process from 'child_process';
-import EventEmitter from 'events';
-import invariant from 'assert';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-export type InvokeRemoteMethodParams = {
-  file: string,
-  method?: string,
-  args?: Array<any>,
-};
+var _child_process = _interopRequireDefault(require('child_process'));
 
-export type RemoteMessage = {id: string} & InvokeRemoteMethodParams;
+var _events = _interopRequireDefault(require('events'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const BOOTSTRAP_PATH = require.resolve('./bootstrap');
 const TRANSPILER_PATH = require.resolve('../../nuclide-node-transpiler');
@@ -30,25 +28,24 @@ const TRANSPILER_PATH = require.resolve('../../nuclide-node-transpiler');
  * under the Babel transpiler, so long as they have the `'use babel'` pragma
  * used in Atom.
  */
-export default class Task {
-  _id: number;
-  _emitter: EventEmitter;
-  _child: ?child_process$ChildProcess;
+class Task {
 
   constructor() {
     this._id = 0;
-    this._emitter = new EventEmitter();
+    this._emitter = new _events.default();
     this._child = null;
   }
 
   _initialize() {
-    invariant(this._child == null);
-    const child = this._child = child_process.fork(
-      '--require', [TRANSPILER_PATH, BOOTSTRAP_PATH],
-      {silent: true}, // Needed so stdout/stderr are available.
-    );
+    if (!(this._child == null)) {
+      throw new Error('Invariant violation: "this._child == null"');
+    }
+
+    const child = this._child = _child_process.default.fork('--require', [TRANSPILER_PATH, BOOTSTRAP_PATH], { silent: true });
     // eslint-disable-next-line no-console
-    const log = buffer => { console.log(`TASK(${child.pid}): ${buffer}`); };
+    const log = buffer => {
+      console.log(`TASK(${ child.pid }): ${ buffer }`);
+    };
     child.stdout.on('data', log);
     child.stderr.on('data', log);
     child.on('message', response => {
@@ -62,7 +59,9 @@ export default class Task {
       this._emitter.emit('child-process-error', buffer);
     });
 
-    const onExitCallback = () => { child.kill(); };
+    const onExitCallback = () => {
+      child.kill();
+    };
     process.on('exit', onExitCallback);
     child.on('exit', () => {
       this._emitter.emit('exit');
@@ -93,7 +92,7 @@ export default class Task {
    *     method. If an error is thrown, a rejected Promise will be returned
    *     instead.
    */
-  invokeRemoteMethod(params: InvokeRemoteMethodParams): Promise<any> {
+  invokeRemoteMethod(params) {
     if (this._child == null) {
       this._initialize();
     }
@@ -103,7 +102,7 @@ export default class Task {
       id: requestId,
       file: params.file,
       method: params.method,
-      args: params.args,
+      args: params.args
     };
 
     return new Promise((resolve, reject) => {
@@ -122,16 +121,20 @@ export default class Task {
         }
       });
       this._emitter.once('error', reject);
-      invariant(this._child != null);
+
+      if (!(this._child != null)) {
+        throw new Error('Invariant violation: "this._child != null"');
+      }
+
       this._child.send(request);
     });
   }
 
-  onError(callback: (buffer: Buffer) => any): void {
+  onError(callback) {
     this._emitter.on('child-process-error', callback);
   }
 
-  onExit(callback: () => mixed): void {
+  onExit(callback) {
     this._emitter.on('exit', callback);
   }
 
@@ -142,3 +145,5 @@ export default class Task {
     this._emitter.removeAllListeners();
   }
 }
+exports.default = Task;
+module.exports = exports['default'];

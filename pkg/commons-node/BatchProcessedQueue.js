@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,24 +9,23 @@
  * the root directory of this source tree.
  */
 
-export type BatchHandler<T> = (batch: Array<T>) => void;
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
 
 // A Queue which will process elements at intervals, only if the
 // queue contains any elements.
-export default class BatchProcessedQueue<T> {
-  _batchPeriod: number;
-  _handler: BatchHandler<T>;
-  _timeoutId: ?number;
-  _items: Array<T>;
+class BatchProcessedQueue {
 
-  constructor(batchPeriod: number, handler: BatchHandler<T>) {
+  constructor(batchPeriod, handler) {
     this._batchPeriod = batchPeriod;
     this._handler = handler;
     this._timeoutId = null;
     this._items = [];
   }
 
-  add(item: T): void {
+  add(item) {
     this._items.push(item);
     if (this._timeoutId === null) {
       this._timeoutId = setTimeout(() => {
@@ -42,10 +41,12 @@ export default class BatchProcessedQueue<T> {
     this._handler(batch);
   }
 
-  dispose(): void {
+  dispose() {
     if (this._timeoutId !== null) {
       clearTimeout(this._timeoutId);
       this._handleBatch();
     }
   }
 }
+exports.default = BatchProcessedQueue;
+module.exports = exports['default'];

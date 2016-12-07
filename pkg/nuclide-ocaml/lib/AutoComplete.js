@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,55 +9,61 @@
  * the root directory of this source tree.
  */
 
-import invariant from 'assert';
-import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 module.exports = {
-  async getAutocompleteSuggestions(
-    request: {
-      editor: atom$TextEditor,
-      bufferPosition: atom$Point,
-      scopeDescriptor: any,
-      prefix: string,
-    },
-  ): Promise<?Array<{snippet: string, rightLabel: string}>> {
+  getAutocompleteSuggestions(request) {
+    return (0, _asyncToGenerator.default)(function* () {
 
-    const {editor, prefix} = request;
+      const { editor, prefix } = request;
 
-    // OCaml.Pervasives has a lot of stuff that gets shown on every keystroke without this.
-    if (prefix.trim().length === 0) {
-      return [];
-    }
+      // OCaml.Pervasives has a lot of stuff that gets shown on every keystroke without this.
+      if (prefix.trim().length === 0) {
+        return [];
+      }
 
-    const path = editor.getPath();
-    const ocamlmerlin = getServiceByNuclideUri('MerlinService', path);
-    invariant(ocamlmerlin);
-    const text = editor.getText();
-    const [line, col] = editor.getCursorBufferPosition().toArray();
+      const path = editor.getPath();
+      const ocamlmerlin = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getServiceByNuclideUri)('MerlinService', path);
 
-    // The default prefix at something like `Printf.[cursor]` is just the dot. Compute
-    // `linePrefix` so that ocamlmerlin gets more context. Compute `replacementPrefix`
-    // to make sure that the existing dot doesn't get clobbered when autocompleting.
-    let linePrefix = editor.lineTextForBufferRow(line).substring(0, col);
-    if (linePrefix.length > 0) {
-      linePrefix = linePrefix.split(/([ \t[\](){}<>,+*/-])/).slice(-1)[0];
-    }
-    let replacementPrefix = prefix;
-    if (replacementPrefix.startsWith('.')) {
-      replacementPrefix = replacementPrefix.substring(1);
-    }
+      if (!ocamlmerlin) {
+        throw new Error('Invariant violation: "ocamlmerlin"');
+      }
 
-    await ocamlmerlin.pushNewBuffer(path, text);
-    const output = await ocamlmerlin.complete(path, line, col, linePrefix);
-    if (!output) {
-      return null;
-    }
-    return output.entries.map(item => {
-      return {
-        text: item.name,
-        rightLabel: (item.desc === '' ? '(module)' : item.desc),
-        replacementPrefix,
-      };
-    });
-  },
+      const text = editor.getText();
+      const [line, col] = editor.getCursorBufferPosition().toArray();
+
+      // The default prefix at something like `Printf.[cursor]` is just the dot. Compute
+      // `linePrefix` so that ocamlmerlin gets more context. Compute `replacementPrefix`
+      // to make sure that the existing dot doesn't get clobbered when autocompleting.
+      let linePrefix = editor.lineTextForBufferRow(line).substring(0, col);
+      if (linePrefix.length > 0) {
+        linePrefix = linePrefix.split(/([ \t[\](){}<>,+*/-])/).slice(-1)[0];
+      }
+      let replacementPrefix = prefix;
+      if (replacementPrefix.startsWith('.')) {
+        replacementPrefix = replacementPrefix.substring(1);
+      }
+
+      yield ocamlmerlin.pushNewBuffer(path, text);
+      const output = yield ocamlmerlin.complete(path, line, col, linePrefix);
+      if (!output) {
+        return null;
+      }
+      return output.entries.map(function (item) {
+        return {
+          text: item.name,
+          rightLabel: item.desc === '' ? '(module)' : item.desc,
+          replacementPrefix
+        };
+      });
+    })();
+  }
 };

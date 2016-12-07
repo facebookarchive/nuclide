@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,96 +9,107 @@
  * the root directory of this source tree.
  */
 
-import type {
-  RefactorResponse,
-  RefactorRequest,
-  AvailableRefactoring,
-} from '../../nuclide-refactorizer';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import invariant from 'assert';
-import {trackTiming} from '../../nuclide-analytics';
-import {getDiagnostics, getDeclarationInfo, getLocalReferences} from './libclang';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+let checkDiagnostics = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (editor) {
+    // Don't allow refactoring if there are any warnings or errors.
+    const diagnostics = yield (0, (_libclang || _load_libclang()).getDiagnostics)(editor);
+    return diagnostics != null && diagnostics.accurateFlags === true && diagnostics.diagnostics.length === 0;
+  });
+
+  return function checkDiagnostics(_x) {
+    return _ref.apply(this, arguments);
+  };
+})();
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _libclang;
+
+function _load_libclang() {
+  return _libclang = require('./libclang');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const SUPPORTED_CURSORS = new Set(['VAR_DECL', 'PARM_DECL']);
 
-async function checkDiagnostics(editor: atom$TextEditor): Promise<boolean> {
-  // Don't allow refactoring if there are any warnings or errors.
-  const diagnostics = await getDiagnostics(editor);
-  return (
-    diagnostics != null &&
-    diagnostics.accurateFlags === true &&
-    diagnostics.diagnostics.length === 0
-  );
-}
+class RefactoringHelpers {
 
-export default class RefactoringHelpers {
-
-  static refactoringsAtPoint(
-    editor: atom$TextEditor,
-    point: atom$Point,
-  ): Promise<Array<AvailableRefactoring>> {
-    return trackTiming(
-      'nuclide-clang:refactoringsAtPoint',
-      () => RefactoringHelpers._refactoringsAtPoint(editor, point),
-    );
+  static refactoringsAtPoint(editor, point) {
+    return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackTiming)('nuclide-clang:refactoringsAtPoint', () => RefactoringHelpers._refactoringsAtPoint(editor, point));
   }
 
-  static async _refactoringsAtPoint(
-    editor: atom$TextEditor,
-    point: atom$Point,
-  ): Promise<Array<AvailableRefactoring>> {
-    const path = editor.getPath();
-    if (path == null || !(await checkDiagnostics(editor))) {
-      return [];
-    }
+  static _refactoringsAtPoint(editor, point) {
+    return (0, _asyncToGenerator.default)(function* () {
+      const path = editor.getPath();
+      if (path == null || !(yield checkDiagnostics(editor))) {
+        return [];
+      }
 
-    const {row, column} = point;
-    const declInfo = await getDeclarationInfo(editor, row, column);
-    if (declInfo == null || !SUPPORTED_CURSORS.has(declInfo[0].type)) {
-      return [];
-    }
+      const { row, column } = point;
+      const declInfo = yield (0, (_libclang || _load_libclang()).getDeclarationInfo)(editor, row, column);
+      if (declInfo == null || !SUPPORTED_CURSORS.has(declInfo[0].type)) {
+        return [];
+      }
 
-    return [{
-      kind: 'rename',
-      symbolAtPoint: {
-        text: declInfo[0].name,
-        range: declInfo[0].extent,
-      },
-    }];
+      return [{
+        kind: 'rename',
+        symbolAtPoint: {
+          text: declInfo[0].name,
+          range: declInfo[0].extent
+        }
+      }];
+    })();
   }
 
-  static refactor(request: RefactorRequest): Promise<?RefactorResponse> {
-    return trackTiming(
-      'nuclide-clang:refactor',
-      () => RefactoringHelpers._refactor(request),
-    );
+  static refactor(request) {
+    return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackTiming)('nuclide-clang:refactor', () => RefactoringHelpers._refactor(request));
   }
 
   // TODO(hansonw): Move this to the clang-rpc service.
-  static async _refactor(request: RefactorRequest): Promise<?RefactorResponse> {
-    invariant(request.kind === 'rename');
-    const {editor, originalPoint, newName} = request;
-    const path = editor.getPath();
-    if (path == null || !(await checkDiagnostics(editor))) {
-      return null;
-    }
+  static _refactor(request) {
+    return (0, _asyncToGenerator.default)(function* () {
+      if (!(request.kind === 'rename')) {
+        throw new Error('Invariant violation: "request.kind === \'rename\'"');
+      }
 
-    // TODO(hansonw): We should disallow renames that conflict with an existing variable.
-    const refs = await getLocalReferences(editor, originalPoint.row, originalPoint.column);
-    if (refs == null) {
-      return null;
-    }
+      const { editor, originalPoint, newName } = request;
+      const path = editor.getPath();
+      if (path == null || !(yield checkDiagnostics(editor))) {
+        return null;
+      }
 
-    // TODO(hansonw): Apply clang-format.
-    const edits = refs.references.map(ref => ({
-      oldRange: ref,
-      oldText: refs.cursor_name,
-      newText: newName,
-    }));
+      // TODO(hansonw): We should disallow renames that conflict with an existing variable.
+      const refs = yield (0, (_libclang || _load_libclang()).getLocalReferences)(editor, originalPoint.row, originalPoint.column);
+      if (refs == null) {
+        return null;
+      }
 
-    return {
-      edits: new Map([[path, edits]]),
-    };
+      // TODO(hansonw): Apply clang-format.
+      const edits = refs.references.map(function (ref) {
+        return {
+          oldRange: ref,
+          oldText: refs.cursor_name,
+          newText: newName
+        };
+      });
+
+      return {
+        edits: new Map([[path, edits]])
+      };
+    })();
   }
 
 }
+exports.default = RefactoringHelpers;
+module.exports = exports['default'];

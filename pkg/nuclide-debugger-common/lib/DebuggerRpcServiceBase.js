@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,74 +9,100 @@
  * the root directory of this source tree.
  */
 
-import type {CategoryLogger} from '../../nuclide-logging';
-import type {ConnectableObservable} from 'rxjs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DebuggerRpcWebSocketService = exports.DebuggerRpcServiceBase = undefined;
 
-import WS from 'ws';
-import {ClientCallback} from '../../nuclide-debugger-common';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {getCategoryLogger} from '../../nuclide-logging';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-export class DebuggerRpcServiceBase {
-  _clientCallback: ClientCallback;
-  _logger: CategoryLogger;
-  _subscriptions: UniversalDisposable;
+var _ws;
 
-  constructor(debuggerRpcServiceName: string) {
-    this._clientCallback = new ClientCallback();
-    this._logger = getCategoryLogger(`nuclide-debugger-${debuggerRpcServiceName}-rpc`);
-    this._subscriptions = new UniversalDisposable(this._clientCallback);
+function _load_ws() {
+  return _ws = _interopRequireDefault(require('ws'));
+}
+
+var _nuclideDebuggerCommon;
+
+function _load_nuclideDebuggerCommon() {
+  return _nuclideDebuggerCommon = require('../../nuclide-debugger-common');
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../commons-node/UniversalDisposable'));
+}
+
+var _nuclideLogging;
+
+function _load_nuclideLogging() {
+  return _nuclideLogging = require('../../nuclide-logging');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class DebuggerRpcServiceBase {
+
+  constructor(debuggerRpcServiceName) {
+    this._clientCallback = new (_nuclideDebuggerCommon || _load_nuclideDebuggerCommon()).ClientCallback();
+    this._logger = (0, (_nuclideLogging || _load_nuclideLogging()).getCategoryLogger)(`nuclide-debugger-${ debuggerRpcServiceName }-rpc`);
+    this._subscriptions = new (_UniversalDisposable || _load_UniversalDisposable()).default(this._clientCallback);
   }
 
-  getClientCallback(): ClientCallback {
+  getClientCallback() {
     return this._clientCallback;
   }
 
-  getLogger(): CategoryLogger {
+  getLogger() {
     return this._logger;
   }
 
-  getSubscriptions(): UniversalDisposable {
+  getSubscriptions() {
     return this._subscriptions;
   }
 
-  getOutputWindowObservable(): ConnectableObservable<string> {
+  getOutputWindowObservable() {
     return this._clientCallback.getOutputWindowObservable().publish();
   }
 
-  getServerMessageObservable(): ConnectableObservable<string> {
+  getServerMessageObservable() {
     return this._clientCallback.getServerMessageObservable().publish();
   }
 
-  dispose(): Promise<void> {
+  dispose() {
     this._subscriptions.dispose();
     return Promise.resolve();
   }
 }
 
-// TODO: make this transportation plugable.
+exports.DebuggerRpcServiceBase = DebuggerRpcServiceBase; // TODO: make this transportation plugable.
 /**
  * Debugger base rpc service using WebSocket protocol to communicate with backend.
  */
-export class DebuggerRpcWebSocketService extends DebuggerRpcServiceBase {
-  _webSocket: ?WS;
 
-  async connectToWebSocketServer(
-    webSocketServerAddress: string,
-  ): Promise<void> {
-    const webSocket = await this._startWebSocketClient(webSocketServerAddress);
-    this._webSocket = webSocket;
-    this._subscriptions.add(() => webSocket.terminate());
-    webSocket.on('message', this._handleWebSocketServerMessage.bind(this));
+class DebuggerRpcWebSocketService extends DebuggerRpcServiceBase {
+
+  connectToWebSocketServer(webSocketServerAddress) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const webSocket = yield _this._startWebSocketClient(webSocketServerAddress);
+      _this._webSocket = webSocket;
+      _this._subscriptions.add(function () {
+        return webSocket.terminate();
+      });
+      webSocket.on('message', _this._handleWebSocketServerMessage.bind(_this));
+    })();
   }
 
-  _handleWebSocketServerMessage(message: string): void {
+  _handleWebSocketServerMessage(message) {
     this._clientCallback.sendChromeMessage(message);
   }
 
-  _startWebSocketClient(webSocketServerAddress: string): Promise<WS> {
+  _startWebSocketClient(webSocketServerAddress) {
     return new Promise((resolve, reject) => {
-      const ws = new WS(webSocketServerAddress);
+      const ws = new (_ws || _load_ws()).default(webSocketServerAddress);
       ws.on('open', () => {
         // Successfully connected with WS server, fulfill the promise.
         resolve(ws);
@@ -84,14 +110,15 @@ export class DebuggerRpcWebSocketService extends DebuggerRpcServiceBase {
     });
   }
 
-  sendCommand(message: string): Promise<void> {
+  sendCommand(message) {
     const webSocket = this._webSocket;
     if (webSocket != null) {
-      this.getLogger().logTrace(`forward client message to server: ${message}`);
+      this.getLogger().logTrace(`forward client message to server: ${ message }`);
       webSocket.send(message);
     } else {
-      this.getLogger().logInfo(`Nuclide sent message to server after socket closed: ${message}`);
+      this.getLogger().logInfo(`Nuclide sent message to server after socket closed: ${ message }`);
     }
     return Promise.resolve();
   }
 }
+exports.DebuggerRpcWebSocketService = DebuggerRpcWebSocketService;

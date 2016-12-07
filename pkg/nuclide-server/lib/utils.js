@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,26 +9,17 @@
  * the root directory of this source tree.
  */
 
-import type {AgentOptions} from './main';
-import invariant from 'assert';
-import url from 'url';
-import request from 'request';
+var _url = _interopRequireDefault(require('url'));
+
+var _request;
+
+function _load_request() {
+  return _request = _interopRequireDefault(require('request'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const MAX_REQUEST_LENGTH = 1e6;
-
-type HttpResponse = {
-  statusCode: number,
-};
-export type ResponseBody = {body: string, response: HttpResponse};
-type QueryParams = {[key: string]: any};
-type SerializedArguments = {args: Array<string>, argTypes: Array<string>};
-
-export type RequestOptions = {
-  uri: string,
-  agentOptions?: AgentOptions,
-  useQuerystring?: boolean,
-  timeout?: number,
-};
 
 /**
  * Promisified version of the request function:
@@ -38,14 +29,14 @@ export type RequestOptions = {
  * the option:
  * {useQuerystring: false}
  */
-function asyncRequest(options: RequestOptions): Promise<ResponseBody> {
+function asyncRequest(options) {
   return new Promise((resolve, reject) => {
     if (options.useQuerystring === undefined) {
       options.useQuerystring = true;
     }
     // TODO(t8118670): This can cause an uncaught exception.
     // Likely requires a fix to 'request'.
-    request(options, (error, response, body) => {
+    (0, (_request || _load_request()).default)(options, (error, response, body) => {
       if (error) {
         reject(error);
       } else if (response.statusCode < 200 || response.statusCode >= 300) {
@@ -55,16 +46,16 @@ function asyncRequest(options: RequestOptions): Promise<ResponseBody> {
             errorJson = JSON.parse(body);
           } catch (e) {
             // 404 responses aren't currently JSON.
-            errorJson = {message: body};
+            errorJson = { message: body };
           }
         }
         // Cast to Object for use of code field below...
-        const err: Object = new Error(errorJson.message);
+        const err = new Error(errorJson.message);
         // Success http status codes range from 200 to 299.
         err.code = errorJson.code || response.statusCode;
         reject(err);
       } else {
-        resolve({body, response});
+        resolve({ body, response });
       }
     });
   });
@@ -73,11 +64,7 @@ function asyncRequest(options: RequestOptions): Promise<ResponseBody> {
 /**
  * Write a text or convert to text response with an optional status code.
  */
-function sendTextResponse(
-  response: http$fixed$ServerResponse,
-  text: any,
-  statusCode: ?number,
-): void {
+function sendTextResponse(response, text, statusCode) {
   if (typeof statusCode === 'number') {
     response.statusCode = statusCode;
   }
@@ -88,11 +75,7 @@ function sendTextResponse(
 /**
  * Write a json response text with an optional status code.
  */
-function sendJsonResponse(
-  response: http$fixed$ServerResponse,
-  json: any,
-  statusCode: ?number,
-): void {
+function sendJsonResponse(response, json, statusCode) {
   response.setHeader('Content-Type', 'application/json');
   sendTextResponse(response, JSON.stringify(json), statusCode);
 }
@@ -100,10 +83,7 @@ function sendJsonResponse(
 /**
   * Parses the request body in an anyc/promise way
   */
-function parseRequestBody(
-  httpRequest: http$fixed$IncomingMessage,
-  isJson: ?boolean,
-): Promise<string> {
+function parseRequestBody(httpRequest, isJson) {
   return new Promise((resolve, reject) => {
     let body = '';
     httpRequest.on('data', data => {
@@ -121,10 +101,14 @@ function parseRequestBody(
 /**
  * Parses the url parameters ?abc=erf&lol=432c
  */
-function getQueryParameters(requestUrl: string): QueryParams {
-  const components: ?Object = url.parse(requestUrl, true);
-  invariant(components != null);
-  const {query} = components;
+function getQueryParameters(requestUrl) {
+  const components = _url.default.parse(requestUrl, true);
+
+  if (!(components != null)) {
+    throw new Error('Invariant violation: "components != null"');
+  }
+
+  const { query } = components;
   return query;
 }
 
@@ -133,7 +117,7 @@ function getQueryParameters(requestUrl: string): QueryParams {
  * to send the metadata about the argument types with the data
  * to help the server understand and parse it.
  */
-function serializeArgs(args: Array<any>): SerializedArguments {
+function serializeArgs(args) {
   const argsOnHttp = [];
   const argTypes = [];
   args.forEach(arg => {
@@ -144,14 +128,15 @@ function serializeArgs(args: Array<any>): SerializedArguments {
     } else if (typeof arg === 'string') {
       argsOnHttp.push(arg);
       argTypes.push('string');
-    } else { // object, number, boolean null
+    } else {
+      // object, number, boolean null
       argsOnHttp.push(JSON.stringify(arg));
       argTypes.push('object');
     }
   });
   return {
     args: argsOnHttp,
-    argTypes,
+    argTypes
   };
 }
 
@@ -159,8 +144,8 @@ function serializeArgs(args: Array<any>): SerializedArguments {
  * Deserializes a url with query parameters: args, argTypes to an array
  * of the original arguments of the same types the client called the function with.
  */
-function deserializeArgs(requestUrl: string): Array<any> {
-  let {args, argTypes} = getQueryParameters(requestUrl);
+function deserializeArgs(requestUrl) {
+  let { args, argTypes } = getQueryParameters(requestUrl);
   args = args || [];
   argTypes = argTypes || [];
   const argsArray = Array.isArray(args) ? args : [args];
@@ -185,5 +170,5 @@ module.exports = {
   parseRequestBody,
   sendJsonResponse,
   sendTextResponse,
-  serializeArgs,
+  serializeArgs
 };

@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,7 +9,12 @@
  * the root directory of this source tree.
  */
 
-export default function destroyPaneItemWithTitle(title: string) {
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = destroyPaneItemWithTitle;
+
+function destroyPaneItemWithTitle(title) {
   for (const item of atom.workspace.getPaneItems()) {
     if (item.getTitle() === title) {
       const pane = atom.workspace.paneForItem(item);
@@ -20,3 +25,4 @@ export default function destroyPaneItemWithTitle(title: string) {
     }
   }
 }
+module.exports = exports['default'];

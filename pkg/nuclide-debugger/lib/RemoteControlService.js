@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,11 +9,11 @@
  * the root directory of this source tree.
  */
 
-import type DebuggerModel from './DebuggerModel';
-import type {DebuggerProcessInfo} from '../../nuclide-debugger-base';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 class RemoteControlService {
-  _getModel: () => ?DebuggerModel;
 
   /**
    * @param getModel function always returning the latest singleton model.
@@ -23,19 +23,23 @@ class RemoteControlService {
    * outside of any model, so objects vended early must still always manipulate
    * the latest model's state.
    */
-  constructor(getModel: () => ?DebuggerModel) {
+  constructor(getModel) {
     this._getModel = getModel;
   }
 
-  async startDebugging(processInfo: DebuggerProcessInfo): Promise<void> {
-    const model = this._getModel();
-    if (model == null) {
-      throw new Error('Package is not activated.');
-    }
-    await model.getActions().startDebugging(processInfo);
+  startDebugging(processInfo) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const model = _this._getModel();
+      if (model == null) {
+        throw new Error('Package is not activated.');
+      }
+      yield model.getActions().startDebugging(processInfo);
+    })();
   }
 
-  toggleBreakpoint(filePath: string, line: number): void {
+  toggleBreakpoint(filePath, line) {
     const model = this._getModel();
     if (model == null) {
       throw new Error('Package is not activated.');
@@ -43,7 +47,7 @@ class RemoteControlService {
     model.getActions().toggleBreakpoint(filePath, line);
   }
 
-  isInDebuggingMode(providerName: string): boolean {
+  isInDebuggingMode(providerName) {
     const model = this._getModel();
     if (model == null) {
       throw new Error('Package is not activated.');
@@ -52,7 +56,7 @@ class RemoteControlService {
     return session != null && session.getProviderName() === providerName;
   }
 
-  killDebugger(): void {
+  killDebugger() {
     const model = this._getModel();
     if (model == null) {
       throw new Error('Package is not activated.');

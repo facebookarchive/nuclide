@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,40 +9,42 @@
  * the root directory of this source tree.
  */
 
-import type {Observable} from 'rxjs';
-import type {OutputService} from '../../nuclide-console/lib/types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.setOutputService = setOutputService;
+exports.getOutputService = getOutputService;
+exports.setNotificationService = setNotificationService;
+exports.getNotificationService = getNotificationService;
+exports.registerConsoleLogging = registerConsoleLogging;
 
-type raiseNativeNotificationFunc = ?(title: string, body: string) => void;
 
-let _outputServiceApi: ?OutputService = null;
-let _raiseNativeNotification: ?raiseNativeNotificationFunc = null;
+let _outputServiceApi = null;
+let _raiseNativeNotification = null;
 
-export function setOutputService(api: OutputService): void {
+function setOutputService(api) {
   _outputServiceApi = api;
 }
 
-export function getOutputService(): ?OutputService {
+function getOutputService() {
   return _outputServiceApi;
 }
 
-export function setNotificationService(raiseNativeNotification: raiseNativeNotificationFunc): void {
+function setNotificationService(raiseNativeNotification) {
   _raiseNativeNotification = raiseNativeNotification;
 }
 
-export function getNotificationService(): ?raiseNativeNotificationFunc {
+function getNotificationService() {
   return _raiseNativeNotification;
 }
 
-export function registerConsoleLogging(
-  sourceId: string,
-  userOutputStream: Observable<string>,
-): ?IDisposable {
+function registerConsoleLogging(sourceId, userOutputStream) {
   const api = getOutputService();
   let outputDisposable = null;
   if (api != null) {
     outputDisposable = api.registerOutputProvider({
       id: sourceId,
-      messages: userOutputStream.map(message => JSON.parse(message)),
+      messages: userOutputStream.map(message => JSON.parse(message))
     });
   }
   return outputDisposable;

@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,106 +9,108 @@
  * the root directory of this source tree.
  */
 
-import type {DiagnosticMessage} from '../../nuclide-diagnostics-common';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DiagnosticsPanelModel = exports.WORKSPACE_VIEW_URI = undefined;
 
-import {compareMessagesByFile} from './paneUtils';
-import {React} from 'react-for-atom';
-import DiagnosticsPanel from './DiagnosticsPanel';
-import {renderReactRoot} from '../../commons-atom/renderReactRoot';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
-import {toggle} from '../../commons-node/observable';
-import {track} from '../../nuclide-analytics';
-import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
-import {BehaviorSubject, Observable} from 'rxjs';
+var _paneUtils;
 
-type PanelProps = {
-  +diagnostics: Array<DiagnosticMessage>,
-  +pathToActiveTextEditor: ?string,
-  +filterByActiveTextEditor: boolean,
-  +onFilterByActiveTextEditorChange: (isChecked: boolean) => void,
-  +warnAboutLinter: boolean,
-  +showTraces: boolean,
-  +disableLinter: () => void,
-};
+function _load_paneUtils() {
+  return _paneUtils = require('./paneUtils');
+}
 
-type SerializedDiagnosticsPanelModel = {
-  deserializer: 'nuclide.DiagnosticsPanelModel',
-};
+var _reactForAtom = require('react-for-atom');
 
-export const WORKSPACE_VIEW_URI = 'atom://nuclide/diagnostics';
+var _DiagnosticsPanel;
 
-export class DiagnosticsPanelModel {
-  _element: ?HTMLElement;
-  _props: Observable<PanelProps>;
-  _visibility: BehaviorSubject<boolean>;
-  _visibilitySubscription: rxjs$ISubscription;
+function _load_DiagnosticsPanel() {
+  return _DiagnosticsPanel = _interopRequireDefault(require('./DiagnosticsPanel'));
+}
 
-  constructor(
-    diagnostics: Observable<Array<DiagnosticMessage>>,
-    initialfilterByActiveTextEditor: boolean,
-    showTraces: Observable<boolean>,
-    disableLinter: () => void,
-    onFilterByActiveTextEditorChange: (filterByActiveTextEditor: boolean) => void,
-    warnAboutLinterStream: Observable<boolean>,
-  ) {
-    this._visibility = new BehaviorSubject(true);
+var _renderReactRoot;
 
-    this._visibilitySubscription = this._visibility
-      .debounceTime(1000)
-      .distinctUntilChanged()
-      .filter(Boolean)
-      .subscribe(() => { track('diagnostics-show-table'); });
+function _load_renderReactRoot() {
+  return _renderReactRoot = require('../../commons-atom/renderReactRoot');
+}
+
+var _event;
+
+function _load_event() {
+  return _event = require('../../commons-node/event');
+}
+
+var _observable;
+
+function _load_observable() {
+  return _observable = require('../../commons-node/observable');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _bindObservableAsProps;
+
+function _load_bindObservableAsProps() {
+  return _bindObservableAsProps = require('../../nuclide-ui/bindObservableAsProps');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const WORKSPACE_VIEW_URI = exports.WORKSPACE_VIEW_URI = 'atom://nuclide/diagnostics';
+
+class DiagnosticsPanelModel {
+
+  constructor(diagnostics, initialfilterByActiveTextEditor, showTraces, disableLinter, onFilterByActiveTextEditorChange, warnAboutLinterStream) {
+    this._visibility = new _rxjsBundlesRxMinJs.BehaviorSubject(true);
+
+    this._visibilitySubscription = this._visibility.debounceTime(1000).distinctUntilChanged().filter(Boolean).subscribe(() => {
+      (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('diagnostics-show-table');
+    });
 
     // A stream that contains the props, but is "muted" when the panel's not visible.
-    this._props = toggle(
-      getPropsStream(
-        diagnostics,
-        warnAboutLinterStream,
-        showTraces,
-        initialfilterByActiveTextEditor,
-        disableLinter,
-        onFilterByActiveTextEditorChange,
-      )
-        .publishReplay(1)
-        .refCount(),
-      this._visibility.distinctUntilChanged(),
-    );
+    this._props = (0, (_observable || _load_observable()).toggle)(getPropsStream(diagnostics, warnAboutLinterStream, showTraces, initialfilterByActiveTextEditor, disableLinter, onFilterByActiveTextEditorChange).publishReplay(1).refCount(), this._visibility.distinctUntilChanged());
   }
 
-  destroy(): void {
+  destroy() {
     this._visibilitySubscription.unsubscribe();
   }
 
-  getTitle(): string {
+  getTitle() {
     return 'Diagnostics';
   }
 
-  getIconName(): atom$Octicon {
+  getIconName() {
     return 'law';
   }
 
-  getURI(): string {
+  getURI() {
     return WORKSPACE_VIEW_URI;
   }
 
-  getDefaultLocation(): string {
+  getDefaultLocation() {
     return 'bottom-panel';
   }
 
-  serialize(): SerializedDiagnosticsPanelModel {
+  serialize() {
     return {
-      deserializer: 'nuclide.DiagnosticsPanelModel',
+      deserializer: 'nuclide.DiagnosticsPanelModel'
     };
   }
 
-  didChangeVisibility(visible: boolean): void {
+  didChangeVisibility(visible) {
     this._visibility.next(visible);
   }
 
-  getElement(): HTMLElement {
+  getElement() {
     if (this._element == null) {
-      const Component = bindObservableAsProps(this._props, DiagnosticsPanel);
-      const element = renderReactRoot(<Component />);
+      const Component = (0, (_bindObservableAsProps || _load_bindObservableAsProps()).bindObservableAsProps)(this._props, (_DiagnosticsPanel || _load_DiagnosticsPanel()).default);
+      const element = (0, (_renderReactRoot || _load_renderReactRoot()).renderReactRoot)(_reactForAtom.React.createElement(Component, null));
       element.classList.add('nuclide-diagnostics-ui');
       this._element = element;
     }
@@ -116,53 +118,33 @@ export class DiagnosticsPanelModel {
   }
 }
 
-function getPropsStream(
-  diagnosticsStream: Observable<Array<DiagnosticMessage>>,
-  warnAboutLinterStream: Observable<boolean>,
-  showTraces: Observable<boolean>,
-  initialfilterByActiveTextEditor: boolean,
-  disableLinter: () => void,
-  onFilterByActiveTextEditorChange: (filterByActiveTextEditor: boolean) => void,
-): Observable<PanelProps> {
-  const activeTextEditorPaths = observableFromSubscribeFunction(
-    atom.workspace.observeActivePaneItem.bind(atom.workspace),
-  )
-    .map(paneItem => {
-      if (atom.workspace.isTextEditor(paneItem)) {
-        const textEditor: atom$TextEditor = (paneItem: any);
-        return textEditor ? textEditor.getPath() : null;
-      }
-    })
-    .distinctUntilChanged();
+exports.DiagnosticsPanelModel = DiagnosticsPanelModel;
+function getPropsStream(diagnosticsStream, warnAboutLinterStream, showTraces, initialfilterByActiveTextEditor, disableLinter, onFilterByActiveTextEditorChange) {
+  const activeTextEditorPaths = (0, (_event || _load_event()).observableFromSubscribeFunction)(atom.workspace.observeActivePaneItem.bind(atom.workspace)).map(paneItem => {
+    if (atom.workspace.isTextEditor(paneItem)) {
+      const textEditor = paneItem;
+      return textEditor ? textEditor.getPath() : null;
+    }
+  }).distinctUntilChanged();
 
-  const sortedDiagnostics = Observable.concat(
-    Observable.of([]),
-    diagnosticsStream.map(diagnostics => diagnostics.slice().sort(compareMessagesByFile)),
-  );
+  const sortedDiagnostics = _rxjsBundlesRxMinJs.Observable.concat(_rxjsBundlesRxMinJs.Observable.of([]), diagnosticsStream.map(diagnostics => diagnostics.slice().sort((_paneUtils || _load_paneUtils()).compareMessagesByFile)));
 
-  const filterByActiveTextEditorStream = new BehaviorSubject(initialfilterByActiveTextEditor);
-  const handleFilterByActiveTextEditorChange = (filterByActiveTextEditor: boolean) => {
+  const filterByActiveTextEditorStream = new _rxjsBundlesRxMinJs.BehaviorSubject(initialfilterByActiveTextEditor);
+  const handleFilterByActiveTextEditorChange = filterByActiveTextEditor => {
     filterByActiveTextEditorStream.next(filterByActiveTextEditor);
     onFilterByActiveTextEditorChange(filterByActiveTextEditor);
   };
 
-  return Observable.combineLatest(
-    activeTextEditorPaths,
-    sortedDiagnostics,
-    warnAboutLinterStream,
-    filterByActiveTextEditorStream,
-    showTraces,
-  )
-    .map(([pathToActiveTextEditor, diagnostics, warnAboutLinter, filter, traces]) => ({
-      pathToActiveTextEditor,
-      diagnostics,
-      // $FlowFixMe I think the typedefs are imprecise
-      warnAboutLinter,
-      // $FlowFixMe I think the typedefs are imprecise
-      showTraces: traces,
-      disableLinter,
-      // $FlowFixMe I think the typedefs are imprecise
-      filterByActiveTextEditor: filter,
-      onFilterByActiveTextEditorChange: handleFilterByActiveTextEditorChange,
-    }));
+  return _rxjsBundlesRxMinJs.Observable.combineLatest(activeTextEditorPaths, sortedDiagnostics, warnAboutLinterStream, filterByActiveTextEditorStream, showTraces).map(([pathToActiveTextEditor, diagnostics, warnAboutLinter, filter, traces]) => ({
+    pathToActiveTextEditor,
+    diagnostics,
+    // $FlowFixMe I think the typedefs are imprecise
+    warnAboutLinter,
+    // $FlowFixMe I think the typedefs are imprecise
+    showTraces: traces,
+    disableLinter,
+    // $FlowFixMe I think the typedefs are imprecise
+    filterByActiveTextEditor: filter,
+    onFilterByActiveTextEditorChange: handleFilterByActiveTextEditorChange
+  }));
 }

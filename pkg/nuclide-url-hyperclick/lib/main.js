@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,18 +9,27 @@
  * the root directory of this source tree.
  */
 
-import type {HyperclickProvider} from '../../hyperclick/lib/types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getHyperclickProvider = getHyperclickProvider;
 
-import HyperclickProviderHelpers from './HyperclickProviderHelpers';
+var _HyperclickProviderHelpers;
 
-export function getHyperclickProvider(): HyperclickProvider {
+function _load_HyperclickProviderHelpers() {
+  return _HyperclickProviderHelpers = _interopRequireDefault(require('./HyperclickProviderHelpers'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function getHyperclickProvider() {
   return {
     providerName: 'url-hyperclick',
     // Allow all language-specific providers to take priority.
     priority: 5,
     wordRegExp: /[^\s]+/g,
     getSuggestionForWord(textEditor, text, range) {
-      return HyperclickProviderHelpers.getSuggestionForWord(textEditor, text, range);
-    },
+      return (_HyperclickProviderHelpers || _load_HyperclickProviderHelpers()).default.getSuggestionForWord(textEditor, text, range);
+    }
   };
 }

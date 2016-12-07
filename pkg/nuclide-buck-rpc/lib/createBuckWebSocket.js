@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,23 +9,36 @@
  * the root directory of this source tree.
  */
 
-import type {BuckWebSocketMessage} from './BuckService';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = createBuckWebSocket;
 
-import {Observable} from 'rxjs';
-import {getLogger} from '../../nuclide-logging';
-import WS from 'ws';
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
-export default function createBuckWebSocket(
-  httpPort: number,
-): Observable<BuckWebSocketMessage> {
-  return Observable.create(observer => {
-    const uri = `ws://localhost:${httpPort}/ws/build`;
-    const socket = new WS(uri);
-    let buildId: ?string = null;
+var _nuclideLogging;
+
+function _load_nuclideLogging() {
+  return _nuclideLogging = require('../../nuclide-logging');
+}
+
+var _ws;
+
+function _load_ws() {
+  return _ws = _interopRequireDefault(require('ws'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function createBuckWebSocket(httpPort) {
+  return _rxjsBundlesRxMinJs.Observable.create(observer => {
+    const uri = `ws://localhost:${ httpPort }/ws/build`;
+    const socket = new (_ws || _load_ws()).default(uri);
+    let buildId = null;
 
     socket.on('open', () => {
       // Emit a message so the client knows the socket is ready for Buck events.
-      observer.next({type: 'SocketConnected'});
+      observer.next({ type: 'SocketConnected' });
     });
 
     socket.on('message', data => {
@@ -33,7 +46,7 @@ export default function createBuckWebSocket(
       try {
         message = JSON.parse(data);
       } catch (err) {
-        getLogger().error('Error parsing Buck websocket message', err);
+        (0, (_nuclideLogging || _load_nuclideLogging()).getLogger)().error('Error parsing Buck websocket message', err);
         return;
       }
 
@@ -67,3 +80,4 @@ export default function createBuckWebSocket(
     };
   });
 }
+module.exports = exports['default'];

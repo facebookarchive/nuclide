@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,22 +9,40 @@
  * the root directory of this source tree.
  */
 
-import type {Viewable} from '../../nuclide-workspace-views/lib/types';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {observePanes} from './observePanes';
-import {syncPaneItemVisibility} from './syncPaneItemVisibility';
-import {Observable} from 'rxjs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.PaneLocation = undefined;
 
-export class PaneLocation {
-  _disposables: IDisposable;
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../commons-node/UniversalDisposable'));
+}
+
+var _observePanes;
+
+function _load_observePanes() {
+  return _observePanes = require('./observePanes');
+}
+
+var _syncPaneItemVisibility;
+
+function _load_syncPaneItemVisibility() {
+  return _syncPaneItemVisibility = require('./syncPaneItemVisibility');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class PaneLocation {
 
   constructor() {
-    this._disposables = new UniversalDisposable(
-      syncPaneItemVisibility(observePanes(atom.workspace.paneContainer), Observable.of(true)),
-    );
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default((0, (_syncPaneItemVisibility || _load_syncPaneItemVisibility()).syncPaneItemVisibility)((0, (_observePanes || _load_observePanes()).observePanes)(atom.workspace.paneContainer), _rxjsBundlesRxMinJs.Observable.of(true)));
   }
 
-  addItem(item: Viewable): void {
+  addItem(item) {
     atom.workspace.getActivePane().addItem(item);
   }
 
@@ -34,22 +52,22 @@ export class PaneLocation {
    * (and then serialized and deserialized) is indistinguishable from a pane item added via other
    * means, so we'll be conservative but predictable and not destroy any items.
    */
-  destroy(): void {
+  destroy() {
     this._disposables.dispose();
   }
 
-  destroyItem(item: Object): void {
+  destroyItem(item) {
     const pane = atom.workspace.paneForItem(item);
     if (pane != null) {
       pane.destroyItem(item);
     }
   }
 
-  getItems(): Array<Viewable> {
+  getItems() {
     return atom.workspace.getPaneItems();
   }
 
-  _destroyItem(item: Viewable): void {
+  _destroyItem(item) {
     // The user may have split since adding, so find the item first.
     const pane = atom.workspace.paneForItem(item);
     if (pane != null) {
@@ -57,16 +75,16 @@ export class PaneLocation {
     }
   }
 
-  hideItem(item: Viewable): void {
+  hideItem(item) {
     this.destroyItem(item);
   }
 
-  itemIsVisible(item: Viewable): boolean {
+  itemIsVisible(item) {
     const pane = atom.workspace.paneForItem(item);
     return pane != null && pane.getActiveItem() === item;
   }
 
-  showItem(item: Viewable): void {
+  showItem(item) {
     let pane = atom.workspace.paneForItem(item);
     if (pane == null) {
       pane = atom.workspace.getActivePane();
@@ -76,8 +94,9 @@ export class PaneLocation {
     pane.activateItem(item);
   }
 
-  serialize(): ?Object {
+  serialize() {
     // We rely on the default Atom serialization for Panes.
     return null;
   }
 }
+exports.PaneLocation = PaneLocation;

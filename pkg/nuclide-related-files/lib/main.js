@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,42 +9,41 @@
  * the root directory of this source tree.
  */
 
-import {CompositeDisposable} from 'atom';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.activate = activate;
+exports.deactivate = deactivate;
 
-import JumpToRelatedFile from './JumpToRelatedFile';
+var _atom = require('atom');
 
-let subscriptions: ?CompositeDisposable = null;
+var _JumpToRelatedFile;
 
-// Only expose a context menu for files in languages that have header files.
-const GRAMMARS_WITH_HEADER_FILES = new Set([
-  'source.c',
-  'source.cpp',
-  'source.objc',
-  'source.objcpp',
-  'source.ocaml',
-]);
-
-export function activate() {
-  subscriptions = new CompositeDisposable(
-    new JumpToRelatedFile(),
-    atom.contextMenu.add({
-      'atom-text-editor': [
-        {
-          label: 'Switch Between Header/Source',
-          command: 'nuclide-related-files:jump-to-next-related-file',
-          shouldDisplay() {
-            const editor = atom.workspace.getActiveTextEditor();
-            return editor != null &&
-              GRAMMARS_WITH_HEADER_FILES.has(editor.getGrammar().scopeName);
-          },
-        },
-        {type: 'separator'},
-      ],
-    }),
-  );
+function _load_JumpToRelatedFile() {
+  return _JumpToRelatedFile = _interopRequireDefault(require('./JumpToRelatedFile'));
 }
 
-export function deactivate() {
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let subscriptions = null;
+
+// Only expose a context menu for files in languages that have header files.
+const GRAMMARS_WITH_HEADER_FILES = new Set(['source.c', 'source.cpp', 'source.objc', 'source.objcpp', 'source.ocaml']);
+
+function activate() {
+  subscriptions = new _atom.CompositeDisposable(new (_JumpToRelatedFile || _load_JumpToRelatedFile()).default(), atom.contextMenu.add({
+    'atom-text-editor': [{
+      label: 'Switch Between Header/Source',
+      command: 'nuclide-related-files:jump-to-next-related-file',
+      shouldDisplay() {
+        const editor = atom.workspace.getActiveTextEditor();
+        return editor != null && GRAMMARS_WITH_HEADER_FILES.has(editor.getGrammar().scopeName);
+      }
+    }, { type: 'separator' }]
+  }));
+}
+
+function deactivate() {
   if (subscriptions != null) {
     subscriptions.dispose();
     subscriptions = null;

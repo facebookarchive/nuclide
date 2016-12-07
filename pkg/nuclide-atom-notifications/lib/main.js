@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,31 +9,41 @@
  * the root directory of this source tree.
  */
 
-import type {Level, OutputService} from '../../nuclide-console/lib/types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {CompositeDisposable} from 'atom';
-import createPackage from '../../commons-atom/createPackage';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
+var _atom = require('atom');
+
+var _createPackage;
+
+function _load_createPackage() {
+  return _createPackage = _interopRequireDefault(require('../../commons-atom/createPackage'));
+}
+
+var _event;
+
+function _load_event() {
+  return _event = require('../../commons-node/event');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 class Activation {
-  _disposables: CompositeDisposable;
 
   constructor() {
-    this._disposables = new CompositeDisposable();
+    this._disposables = new _atom.CompositeDisposable();
   }
 
-  consumeOutputService(api: OutputService): void {
-    const messages = observableFromSubscribeFunction(
-      atom.notifications.onDidAddNotification.bind(atom.notifications),
-    )
-      .map(notification => ({
-        // TODO (matthewwithanm): Add timestamp once nuclide-console supports it.
-        // TODO (matthewwithanm): Show notification description/details.
-        text: notification.getMessage(),
-        level: getLevel(notification.getType()),
-      }));
+  consumeOutputService(api) {
+    const messages = (0, (_event || _load_event()).observableFromSubscribeFunction)(atom.notifications.onDidAddNotification.bind(atom.notifications)).map(notification => ({
+      // TODO (matthewwithanm): Add timestamp once nuclide-console supports it.
+      // TODO (matthewwithanm): Show notification description/details.
+      text: notification.getMessage(),
+      level: getLevel(notification.getType())
+    }));
 
-    this._disposables.add(api.registerOutputProvider({id: 'Atom', messages}));
+    this._disposables.add(api.registerOutputProvider({ id: 'Atom', messages }));
   }
 
   dispose() {
@@ -41,7 +51,7 @@ class Activation {
   }
 }
 
-function getLevel(atomNotificationType: string): Level {
+function getLevel(atomNotificationType) {
   switch (atomNotificationType) {
     case 'error':
     case 'fatal':
@@ -57,4 +67,5 @@ function getLevel(atomNotificationType: string): Level {
   }
 }
 
-export default createPackage(Activation);
+exports.default = (0, (_createPackage || _load_createPackage()).default)(Activation);
+module.exports = exports['default'];

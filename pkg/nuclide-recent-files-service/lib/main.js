@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,23 +9,35 @@
  * the root directory of this source tree.
  */
 
-import invariant from 'assert';
-import {CompositeDisposable, Disposable} from 'atom';
-import RecentFilesService from './RecentFilesService';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.activate = activate;
+exports.provideRecentFilesService = provideRecentFilesService;
+exports.serialize = serialize;
+exports.deactivate = deactivate;
+
+var _atom = require('atom');
+
+var _RecentFilesService;
+
+function _load_RecentFilesService() {
+  return _RecentFilesService = _interopRequireDefault(require('./RecentFilesService'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 class Activation {
-  _subscriptions: CompositeDisposable;
-  _service: RecentFilesService;
 
-  constructor(state: ?Object) {
-    this._subscriptions = new CompositeDisposable();
-    this._service = new RecentFilesService(state);
-    this._subscriptions.add(new Disposable(() => {
+  constructor(state) {
+    this._subscriptions = new _atom.CompositeDisposable();
+    this._service = new (_RecentFilesService || _load_RecentFilesService()).default(state);
+    this._subscriptions.add(new _atom.Disposable(() => {
       this._service.dispose();
     }));
   }
 
-  getService(): RecentFilesService {
+  getService() {
     return this._service;
   }
 
@@ -34,27 +46,33 @@ class Activation {
   }
 }
 
-let activation: ?Activation = null;
+let activation = null;
 
-export function activate(state: ?Object): void {
+function activate(state) {
   if (activation == null) {
     activation = new Activation(state);
   }
 }
 
-export function provideRecentFilesService(): RecentFilesService {
-  invariant(activation);
+function provideRecentFilesService() {
+  if (!activation) {
+    throw new Error('Invariant violation: "activation"');
+  }
+
   return activation.getService();
 }
 
-export function serialize(): Object {
-  invariant(activation);
+function serialize() {
+  if (!activation) {
+    throw new Error('Invariant violation: "activation"');
+  }
+
   return {
-    filelist: activation.getService().getRecentFiles(),
+    filelist: activation.getService().getRecentFiles()
   };
 }
 
-export function deactivate(): void {
+function deactivate() {
   if (activation) {
     activation.dispose();
     activation = null;

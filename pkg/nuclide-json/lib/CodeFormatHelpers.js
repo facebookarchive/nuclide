@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,19 +9,26 @@
  * the root directory of this source tree.
  */
 
-import {trackTiming} from '../../nuclide-analytics';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-export default class CodeFormatHelpers {
+var _nuclideAnalytics;
 
-  static formatEntireFile(editor: atom$TextEditor, range: atom$Range): Promise<{
-    newCursor?: number,
-    formatted: string,
-  }> {
-    return trackTiming('json.formatCode', () => {
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+class CodeFormatHelpers {
+
+  static formatEntireFile(editor, range) {
+    return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackTiming)('json.formatCode', () => {
       const buffer_as_json = JSON.parse(editor.getBuffer().getText());
       const formatted = JSON.stringify(buffer_as_json, null, editor.getTabLength());
-      return Promise.resolve({formatted});
+      return Promise.resolve({ formatted });
     });
   }
 
 }
+exports.default = CodeFormatHelpers;
+module.exports = exports['default'];

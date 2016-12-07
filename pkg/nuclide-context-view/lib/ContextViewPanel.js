@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,22 +9,29 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
-import {Icon} from '../../nuclide-ui/Icon';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ContextViewPanel = undefined;
 
-type Props = {
-  locked: boolean,
-  children?: React.Element<any>,
-};
+var _reactForAtom = require('react-for-atom');
 
-export const ContextViewPanel = (props: Props) => {
-  return (
-    <div className="nuclide-context-view-content padded">
-      <p>
-        {props.locked ? <Icon icon="lock" /> : null}
-        Click on a symbol to see more information about it.
-      </p>
-      {props.children}
-    </div>
+var _Icon;
+
+function _load_Icon() {
+  return _Icon = require('../../nuclide-ui/Icon');
+}
+
+const ContextViewPanel = exports.ContextViewPanel = props => {
+  return _reactForAtom.React.createElement(
+    'div',
+    { className: 'nuclide-context-view-content padded' },
+    _reactForAtom.React.createElement(
+      'p',
+      null,
+      props.locked ? _reactForAtom.React.createElement((_Icon || _load_Icon()).Icon, { icon: 'lock' }) : null,
+      'Click on a symbol to see more information about it.'
+    ),
+    props.children
   );
 };

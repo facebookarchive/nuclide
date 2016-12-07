@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,34 +9,38 @@
  * the root directory of this source tree.
  */
 
-import classnames from 'classnames';
-import {React} from 'react-for-atom';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.PanelComponentScroller = undefined;
 
-type Props = {
-  children?: mixed,
-  flexDirection?: 'column',
-  overflowX?: string,
-  onScroll?: (event: Event) => void,
-  onFocus?: (event: SyntheticEvent) => void,
-};
+var _classnames;
 
-export class PanelComponentScroller extends React.Component {
-  props: Props;
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
 
-  render(): React.Element<any> {
-    const style = (this.props.overflowX == null) ? null : {overflowX: this.props.overflowX};
-    const className = classnames('nuclide-ui-panel-component-scroller', {
-      'nuclide-ui-panel-component-scroller--column': (this.props.flexDirection === 'column'),
+var _reactForAtom = require('react-for-atom');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class PanelComponentScroller extends _reactForAtom.React.Component {
+
+  render() {
+    const style = this.props.overflowX == null ? null : { overflowX: this.props.overflowX };
+    const className = (0, (_classnames || _load_classnames()).default)('nuclide-ui-panel-component-scroller', {
+      'nuclide-ui-panel-component-scroller--column': this.props.flexDirection === 'column'
     });
 
-    return (
-      <div
-        className={className}
-        style={style}
-        onScroll={this.props.onScroll}
-        onFocus={this.props.onFocus}>
-        {this.props.children}
-      </div>
+    return _reactForAtom.React.createElement(
+      'div',
+      {
+        className: className,
+        style: style,
+        onScroll: this.props.onScroll,
+        onFocus: this.props.onFocus },
+      this.props.children
     );
   }
 }
+exports.PanelComponentScroller = PanelComponentScroller;

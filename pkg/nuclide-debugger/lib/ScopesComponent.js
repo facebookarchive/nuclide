@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,37 +9,48 @@
  * the root directory of this source tree.
  */
 
-import type {
-  EvaluationResult,
-  ExpansionResult,
-  ScopeSection,
-} from './types';
-import {WatchExpressionStore} from './WatchExpressionStore';
-import type {Observable} from 'rxjs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ScopesComponent = undefined;
 
-import {
-  React,
-} from 'react-for-atom';
-import {LazyNestedValueComponent} from '../../nuclide-ui/LazyNestedValueComponent';
-import SimpleValueComponent from '../../nuclide-ui/SimpleValueComponent';
-import {Section} from '../../nuclide-ui/Section';
+var _WatchExpressionStore;
 
-type ScopesComponentProps = {
-  scopes: Array<ScopeSection>,
-  watchExpressionStore: WatchExpressionStore,
-};
+function _load_WatchExpressionStore() {
+  return _WatchExpressionStore = require('./WatchExpressionStore');
+}
 
-export class ScopesComponent extends React.Component {
-  props: ScopesComponentProps;
-  _expansionStates: Map<string /* expression */, /* unique reference for expression */ Object>;
+var _reactForAtom = require('react-for-atom');
 
-  constructor(props: ScopesComponentProps) {
+var _LazyNestedValueComponent;
+
+function _load_LazyNestedValueComponent() {
+  return _LazyNestedValueComponent = require('../../nuclide-ui/LazyNestedValueComponent');
+}
+
+var _SimpleValueComponent;
+
+function _load_SimpleValueComponent() {
+  return _SimpleValueComponent = _interopRequireDefault(require('../../nuclide-ui/SimpleValueComponent'));
+}
+
+var _Section;
+
+function _load_Section() {
+  return _Section = require('../../nuclide-ui/Section');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class ScopesComponent extends _reactForAtom.React.Component {
+
+  constructor(props) {
     super(props);
-    (this: any)._renderExpression = this._renderExpression.bind(this);
+    this._renderExpression = this._renderExpression.bind(this);
     this._expansionStates = new Map();
   }
 
-  _getExpansionStateIdForExpression(expression: string): Object {
+  _getExpansionStateIdForExpression(expression) {
     let expansionStateId = this._expansionStates.get(expression);
     if (expansionStateId == null) {
       expansionStateId = {};
@@ -48,71 +59,68 @@ export class ScopesComponent extends React.Component {
     return expansionStateId;
   }
 
-  _renderExpression(
-    fetchChildren: (objectId: string) => Observable<?ExpansionResult>,
-    binding: {
-      name: string,
-      value: EvaluationResult,
-    },
-    index: number,
-  ): ?React.Element<any> {
+  _renderExpression(fetchChildren, binding, index) {
     if (binding == null) {
       // `binding` might be `null` while switching threads.
       return null;
     }
     const {
       name,
-      value,
+      value
     } = binding;
-    return (
-      <div
-        className="nuclide-debugger-expression-value-row"
-        key={index}>
-        <div
-          className="nuclide-debugger-expression-value-content">
-          <LazyNestedValueComponent
-            expression={name}
-            evaluationResult={value}
-            fetchChildren={fetchChildren}
-            simpleValueComponent={SimpleValueComponent}
-            expansionStateId={this._getExpansionStateIdForExpression(name)}
-          />
-        </div>
-      </div>
+    return _reactForAtom.React.createElement(
+      'div',
+      {
+        className: 'nuclide-debugger-expression-value-row',
+        key: index },
+      _reactForAtom.React.createElement(
+        'div',
+        {
+          className: 'nuclide-debugger-expression-value-content' },
+        _reactForAtom.React.createElement((_LazyNestedValueComponent || _load_LazyNestedValueComponent()).LazyNestedValueComponent, {
+          expression: name,
+          evaluationResult: value,
+          fetchChildren: fetchChildren,
+          simpleValueComponent: (_SimpleValueComponent || _load_SimpleValueComponent()).default,
+          expansionStateId: this._getExpansionStateIdForExpression(name)
+        })
+      )
     );
   }
 
-  _renderScopeSection(
-    fetchChildren: (objectId: string) => Observable<?ExpansionResult>,
-    scope: ScopeSection,
-  ): ?React.Element<any> {
+  _renderScopeSection(fetchChildren, scope) {
     // Non-local scopes should be collapsed by default since users typically care less about them.
     const collapsedByDefault = scope.name !== 'Locals';
-    return (
-      <Section
-        collapsable={true}
-        headline={scope.name}
-        size="small"
-        collapsedByDefault={collapsedByDefault}>
-        {scope.scopeVariables.map(this._renderExpression.bind(this, fetchChildren))}
-      </Section>
+    return _reactForAtom.React.createElement(
+      (_Section || _load_Section()).Section,
+      {
+        collapsable: true,
+        headline: scope.name,
+        size: 'small',
+        collapsedByDefault: collapsedByDefault },
+      scope.scopeVariables.map(this._renderExpression.bind(this, fetchChildren))
     );
   }
 
-  render(): ?React.Element<any> {
+  render() {
     const {
       watchExpressionStore,
-      scopes,
+      scopes
     } = this.props;
     if (scopes == null || scopes.length === 0) {
-      return <span>(no variables)</span>;
+      return _reactForAtom.React.createElement(
+        'span',
+        null,
+        '(no variables)'
+      );
     }
     const fetchChildren = watchExpressionStore.getProperties.bind(watchExpressionStore);
     const scopeSections = scopes.map(this._renderScopeSection.bind(this, fetchChildren));
-    return (
-      <div className="nuclide-debugger-expression-value-list">
-        {scopeSections}
-      </div>
+    return _reactForAtom.React.createElement(
+      'div',
+      { className: 'nuclide-debugger-expression-value-list' },
+      scopeSections
     );
   }
 }
+exports.ScopesComponent = ScopesComponent;

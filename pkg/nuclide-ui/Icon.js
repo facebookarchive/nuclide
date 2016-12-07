@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,38 +9,42 @@
  * the root directory of this source tree.
  */
 
-import classnames from 'classnames';
-import {React} from 'react-for-atom';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Icon = undefined;
 
-type Props = {
-  /** Icon name, without the `icon-` prefix. E.g. `'arrow-up'` */
-  icon: string,
-  iconset?: ?string,
-  className?: string,
-  /** Optional text content to render next to the icon. */
-  children?: string,
-};
+var _classnames;
+
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
+
+var _reactForAtom = require('react-for-atom');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
 
 /**
  * Renders an icon with optional text next to it.
  */
-export const Icon = (props: Props) => {
+const Icon = exports.Icon = props => {
   const {
     icon,
     iconset,
     children,
-    className,
-    ...remainingProps
+    className
   } = props;
-  const newClassName = classnames(
-    className,
-    {
-      [`icon ${iconset || 'icon'}-${icon}`]: icon != null,
-    },
-  );
-  return (
-    <span className={newClassName} {...remainingProps}>
-      {children}
-    </span>
+
+  const remainingProps = _objectWithoutProperties(props, ['icon', 'iconset', 'children', 'className']);
+
+  const newClassName = (0, (_classnames || _load_classnames()).default)(className, {
+    [`icon ${ iconset || 'icon' }-${ icon }`]: icon != null
+  });
+  return _reactForAtom.React.createElement(
+    'span',
+    Object.assign({ className: newClassName }, remainingProps),
+    children
   );
 };

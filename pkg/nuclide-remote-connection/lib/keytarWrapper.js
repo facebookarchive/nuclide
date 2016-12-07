@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,57 +9,64 @@
  * the root directory of this source tree.
  */
 
-import child_process from 'child_process';
-import nuclideUri from '../../commons-node/nuclideUri';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.__TEST__ = undefined;
 
-function getApmNodePath(): string {
-  const apmDir = nuclideUri.dirname(atom.packages.getApmPath());
-  return nuclideUri.normalize(nuclideUri.join(apmDir, 'node'));
+var _child_process = _interopRequireDefault(require('child_process'));
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
 }
 
-function getApmNodeModulesPath(): string {
-  const apmDir = nuclideUri.dirname(atom.packages.getApmPath());
-  return nuclideUri.normalize(nuclideUri.join(apmDir, '..', 'node_modules'));
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function getApmNodePath() {
+  const apmDir = (_nuclideUri || _load_nuclideUri()).default.dirname(atom.packages.getApmPath());
+  return (_nuclideUri || _load_nuclideUri()).default.normalize((_nuclideUri || _load_nuclideUri()).default.join(apmDir, 'node'));
 }
 
-function runScriptInApmNode(script: string): string {
+function getApmNodeModulesPath() {
+  const apmDir = (_nuclideUri || _load_nuclideUri()).default.dirname(atom.packages.getApmPath());
+  return (_nuclideUri || _load_nuclideUri()).default.normalize((_nuclideUri || _load_nuclideUri()).default.join(apmDir, '..', 'node_modules'));
+}
+
+function runScriptInApmNode(script) {
   const args = ['-e', script];
-  const options = {env: {NODE_PATH: getApmNodeModulesPath()}};
-  const output = child_process.spawnSync(getApmNodePath(), args, options);
+  const options = { env: { NODE_PATH: getApmNodeModulesPath() } };
+  const output = _child_process.default.spawnSync(getApmNodePath(), args, options);
   return output.stdout.toString();
 }
 
-export default {
-  getPassword(service: string, account: string): ?string {
+exports.default = {
+  getPassword(service, account) {
     const script = `
       var keytar = require('keytar');
-      var service = ${JSON.stringify(service)};
-      var account = ${JSON.stringify(account)};
+      var service = ${ JSON.stringify(service) };
+      var account = ${ JSON.stringify(account) };
       var password = keytar.getPassword(service, account);
       console.log(JSON.stringify(password));
     `;
     return JSON.parse(runScriptInApmNode(script));
   },
 
-  replacePassword(
-    service: string,
-    account: string,
-    password: string,
-  ): ?boolean {
+  replacePassword(service, account, password) {
     const script = `
       var keytar = require('keytar');
-      var service = ${JSON.stringify(service)};
-      var account = ${JSON.stringify(account)};
-      var password = ${JSON.stringify(password)};
+      var service = ${ JSON.stringify(service) };
+      var account = ${ JSON.stringify(account) };
+      var password = ${ JSON.stringify(password) };
       var result = keytar.replacePassword(service, account, password);
       console.log(JSON.stringify(result));
     `;
     return JSON.parse(runScriptInApmNode(script));
-  },
+  }
 };
-
-export const __TEST__ = {
+const __TEST__ = exports.__TEST__ = {
   getApmNodeModulesPath,
   getApmNodePath,
-  runScriptInApmNode,
+  runScriptInApmNode
 };

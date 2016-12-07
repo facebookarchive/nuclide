@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,31 +9,32 @@
  * the root directory of this source tree.
  */
 
-import {
-  React,
-} from 'react-for-atom';
-import classnames from 'classnames';
+var _reactForAtom = require('react-for-atom');
 
-type Props = {
-  filter: string,
-  found: boolean,
-};
+var _classnames;
 
-class FileTreeSidebarFilterComponent extends React.Component {
-  props: Props;
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class FileTreeSidebarFilterComponent extends _reactForAtom.React.Component {
 
   render() {
-    const {filter, found} = this.props;
+    const { filter, found } = this.props;
 
-    const classes = classnames({
+    const classes = (0, (_classnames || _load_classnames()).default)({
       'nuclide-file-tree-filter': true,
       'show': Boolean(filter && filter.length),
-      'not-found': !found,
+      'not-found': !found
     });
-    const text = `search for: ${filter}`;
+    const text = `search for: ${ filter }`;
 
-    return (
-      <div className={classes}>{text}</div>
+    return _reactForAtom.React.createElement(
+      'div',
+      { className: classes },
+      text
     );
   }
 }

@@ -1,5 +1,5 @@
+'use strict';
 'use babel';
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,23 +9,25 @@
  * the root directory of this source tree.
  */
 
-import type {
-  NodeAttachTargetInfo,
-} from '../../nuclide-debugger-node-rpc/lib/NodeDebuggerService';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ActionTypes = undefined;
 
-import Dispatcher from '../../commons-node/Dispatcher';
+var _Dispatcher;
 
-export type LaunchAttachAction =
-  {
-    actionType: 'UPDATE_ATTACH_TARGET_LIST',
-    attachTargetInfos: Array<NodeAttachTargetInfo>,
-  };
+function _load_Dispatcher() {
+  return _Dispatcher = _interopRequireDefault(require('../../commons-node/Dispatcher'));
+}
 
-export const ActionTypes = Object.freeze({
-  UPDATE_ATTACH_TARGET_LIST: 'UPDATE_ATTACH_TARGET_LIST',
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const ActionTypes = exports.ActionTypes = Object.freeze({
+  UPDATE_ATTACH_TARGET_LIST: 'UPDATE_ATTACH_TARGET_LIST'
 });
 
 // Flow hack: Every LaunchAttachAction actionType must be in ActionTypes.
-(('': $PropertyType<LaunchAttachAction, 'actionType'>): $Keys<typeof ActionTypes>);
+'';
 
-export default class LaunchAttachDispatcher extends Dispatcher<LaunchAttachAction> {}
+class LaunchAttachDispatcher extends (_Dispatcher || _load_Dispatcher()).default {}
+exports.default = LaunchAttachDispatcher;
