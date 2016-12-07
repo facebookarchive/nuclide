@@ -13,12 +13,17 @@ import {Observable} from 'rxjs';
 import {ActionsObservable} from '../../commons-node/redux-observable';
 import * as BuckBase from '../../nuclide-buck-base';
 import * as Actions from '../lib/redux/Actions';
-import * as PlatformService from '../lib/PlatformService.js';
 import {
   setProjectRootEpic,
   setBuildTargetEpic,
   setRuleTypeEpic,
 } from '../lib/redux/Epics';
+
+const mockPlatformService = {
+  getPlatforms(ruleType): ?any {
+    return null;
+  },
+};
 
 const mockStore = {
   dispatch(action) {},
@@ -27,6 +32,7 @@ const mockStore = {
       buckRoot: '/test',
       buildTarget: 'test',
       selectedDevice: {udid: 'two', flavor: 'chocolate'},
+      platformService: mockPlatformService,
     };
   },
 };
@@ -98,7 +104,7 @@ describe('setBuildTargetEpic', () => {
 });
 
 describe('setRuleTypeEpic', () => {
-  it('sets platforms to null for null ruleType', () => {
+  it('sets platforms to an empty array for null ruleType', () => {
     waitsForPromise(async () => {
       const stream = await setRuleTypeEpic(
         new ActionsObservable(
@@ -107,14 +113,14 @@ describe('setRuleTypeEpic', () => {
       ).toArray().toPromise();
 
       expect(stream).toEqual([
-        {type: Actions.SET_PLATFORMS, platforms: null},
+        {type: Actions.SET_PLATFORMS, platforms: []},
       ]);
     });
   });
 
   it('sets platform to platforms returned from platform service', () => {
     waitsForPromise(async () => {
-      spyOn(PlatformService, 'platformsForRuleType').andReturn(
+      spyOn(mockPlatformService, 'getPlatforms').andReturn(
         Observable.of('random platforms'),
       );
 

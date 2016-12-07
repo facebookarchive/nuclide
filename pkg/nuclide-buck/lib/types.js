@@ -11,6 +11,7 @@
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {Task} from '../../commons-node/tasks';
 import type {Action} from './redux/Actions';
+import type {PlatformService} from './PlatformService';
 
 export type TaskType = 'build' | 'test' | 'run' | 'debug';
 
@@ -22,7 +23,8 @@ export type TaskSettings = {
 };
 
 export type AppState = {
-  platforms: ?Array<Platform>,
+  platforms: Array<Platform>,
+  platformService: PlatformService,
   projectRoot: ?string,
   buckRoot: ?string,
   isLoadingBuckProject: boolean,

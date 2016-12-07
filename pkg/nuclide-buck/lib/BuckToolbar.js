@@ -96,7 +96,7 @@ export default class BuckToolbar extends React.Component {
           {status}
         </div>,
       );
-    } else if (platforms != null) {
+    } else if (platforms.length) {
       const options = this._optionsFromPlatforms(platforms);
 
       widgets.push(

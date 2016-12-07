@@ -69,8 +69,8 @@ export default function accumulateState(state: AppState, action: Action): AppSta
   return state;
 }
 
-function selectValidDevice(previouslySelected: ?Device, platforms: ?Array<Platform>): ?Device {
-  if (!platforms || !platforms.length) {
+function selectValidDevice(previouslySelected: ?Device, platforms: Array<Platform>): ?Device {
+  if (!platforms.length) {
     return null;
   }
 

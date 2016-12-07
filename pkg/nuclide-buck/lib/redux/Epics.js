@@ -12,7 +12,6 @@
 import type {ActionsObservable} from '../../../commons-node/redux-observable';
 import type {Platform, Store} from '../types';
 import type {Action} from './Actions';
-import {platformsForRuleType} from '../PlatformService.js';
 
 import invariant from 'assert';
 import {Observable} from 'rxjs';
@@ -43,7 +42,7 @@ function setRuleType(ruleType: ?string): Action {
   return {type: Actions.SET_RULE_TYPE, ruleType};
 }
 
-function setPlatforms(platforms: ?Array<Platform>): Action {
+function setPlatforms(platforms: Array<Platform>): Action {
   return {type: Actions.SET_PLATFORMS, platforms};
 }
 
@@ -75,14 +74,14 @@ export function setRuleTypeEpic(
   store: Store,
 ): Observable<Action> {
   return actions.ofType(Actions.SET_RULE_TYPE)
-    .switchMap(action => {
-      invariant(action.type === Actions.SET_RULE_TYPE);
-      const {ruleType} = action;
-      if (ruleType) {
-        return platformsForRuleType(ruleType).map(platforms =>
-          setPlatforms(platforms));
-      } else {
-        return Observable.of(setPlatforms(null));
-      }
-    });
+  .switchMap(action => {
+    invariant(action.type === Actions.SET_RULE_TYPE);
+    const {ruleType} = action;
+    if (ruleType) {
+      return store.getState().platformService.getPlatforms(ruleType)
+        .map(platforms => setPlatforms(platforms));
+    } else {
+      return Observable.of(setPlatforms([]));
+    }
+  });
 }

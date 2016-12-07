@@ -25,6 +25,7 @@ import type {
   TaskSettings,
   TaskType,
 } from './types';
+import {PlatformService} from './PlatformService';
 import type {BuckEvent} from './BuckEventStream';
 import type {
   ObservableDiagnosticProvider,
@@ -121,8 +122,9 @@ export class BuckBuildSystem {
   _outputMessages: Subject<Message>;
   _diagnosticUpdates: Subject<DiagnosticProviderUpdate>;
   _diagnosticInvalidations: Subject<InvalidationMessage>;
+  _platformService: PlatformService;
 
-  constructor(initialState: ?SerializedState) {
+  constructor(initialState: ?SerializedState, platformService: PlatformService) {
     this.id = 'buck';
     this.name = 'Buck';
     this._serializedState = initialState;
@@ -131,6 +133,7 @@ export class BuckBuildSystem {
     this._diagnosticUpdates = new Subject();
     this._diagnosticInvalidations = new Subject();
     this._disposables.add(this._outputMessages);
+    this._platformService = platformService;
   }
 
   getTaskList() {
@@ -206,7 +209,8 @@ export class BuckBuildSystem {
     if (this._store == null) {
       invariant(this._serializedState != null);
       const initialState: AppState = {
-        platforms: null,
+        platforms: [],
+        platformService: this._platformService,
         projectRoot: null,
         buckRoot: null,
         isLoadingBuckProject: false,

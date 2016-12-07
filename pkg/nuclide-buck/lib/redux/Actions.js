@@ -40,7 +40,7 @@ export type Action =
   |} |
   {|
     type: 'SET_PLATFORMS',
-    platforms: ?Array<Platform>,
+    platforms: Array<Platform>,
   |};
 
 export const SET_PROJECT_ROOT = 'SET_PROJECT_ROOT';

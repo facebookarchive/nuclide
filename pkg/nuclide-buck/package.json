@@ -56,6 +56,11 @@
       "versions": {
         "0.0.0": "provideBuckBuilder"
       }
+    },
+    "nuclide.buck-platforms": {
+      "versions": {
+        "0.0.0": "providePlatformService"
+      }
     }
   },
   "activationCommands": {}

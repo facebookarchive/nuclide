@@ -11,26 +11,38 @@
 
 import type {Platform} from './types';
 
-import {Observable} from 'rxjs';
-import * as IosSimulator from '../../nuclide-ios-common';
+import {Disposable} from 'atom';
+import {Observable, Subject} from 'rxjs';
 
-export function platformsForRuleType(ruleType: string): Observable<?Array<Platform>> {
-  // TODO: Fetch platforms from registered providers
-  if (ruleType !== 'apple_bundle') {
-    return Observable.of(null);
+type PlatformProvider = (ruleType: string) => Observable<?Platform>;
+
+export class PlatformService {
+  _registeredProviders: Array<PlatformProvider> = [];
+  _providersChanged: Subject<void> = new Subject();
+
+  register(platformProvider: PlatformProvider): Disposable {
+    this._registeredProviders.push(platformProvider);
+    this._providersChanged.next();
+    return new Disposable(() => {
+      const index = this._registeredProviders.indexOf(platformProvider);
+      this._registeredProviders.splice(index, 1);
+      this._providersChanged.next();
+    });
   }
-  const iosDevices = IosSimulator.getDevices().map(devices => ({
-    name: 'iOS Simulators',
-    devices: devices.map(device => ({
-      name: device.name,
-      udid: device.udid,
-      flavor: 'iphonesimulator-x86_64',
-    })),
-  }));
-  const allPlatforms = iosDevices.map(platform => [platform]);
 
-  return allPlatforms.map(platforms =>
-    platforms.sort((a, b) =>
-    a.name.toUpperCase().localeCompare(b.name.toUpperCase())),
-  );
+  getPlatforms(ruleType: string): Observable<Array<Platform>> {
+    return this._providersChanged
+      .startWith(undefined)
+      .switchMap(() => {
+        const observables = this._registeredProviders.map(provider => provider(ruleType));
+        return Observable.from(observables)
+          // $FlowFixMe: type combineAll
+          .combineAll()
+          .map(platforms => {
+            return platforms
+              .filter(p => p != null)
+              .sort((a, b) => a.name.toUpperCase().localeCompare(b.name.toUpperCase()));
+          });
+      });
+  }
 }

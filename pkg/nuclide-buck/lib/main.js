@@ -21,9 +21,11 @@ import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
 import {getSuggestion} from './HyperclickProvider';
 import {BuckBuildSystem} from './BuckBuildSystem';
+import {PlatformService} from './PlatformService';
 
 let disposables: ?CompositeDisposable = null;
 let buildSystem: ?BuckBuildSystemType = null;
+let platformService: ?PlatformService = null;
 let initialState: ?Object = null;
 
 export function activate(rawState: ?Object): void {
@@ -32,6 +34,7 @@ export function activate(rawState: ?Object): void {
   disposables = new CompositeDisposable(
     new Disposable(() => { buildSystem = null; }),
     new Disposable(() => { initialState = null; }),
+    new Disposable(() => { platformService = null; }),
   );
   registerGrammar('source.python', 'BUCK');
   registerGrammar('source.json', 'BUCK.autodeps');
@@ -52,10 +55,17 @@ export function consumeTaskRunnerServiceApi(api: TaskRunnerServiceApi): void {
 function getBuildSystem(): BuckBuildSystem {
   if (buildSystem == null) {
     invariant(disposables != null);
-    buildSystem = new BuckBuildSystem(initialState);
+    buildSystem = new BuckBuildSystem(initialState, getPlatformService());
     disposables.add(buildSystem);
   }
   return buildSystem;
+}
+
+export function getPlatformService(): PlatformService {
+  if (platformService == null) {
+    platformService = new PlatformService();
+  }
+  return platformService;
 }
 
 export function consumeOutputService(service: OutputService): void {
@@ -90,4 +100,8 @@ export function provideBuckBuilder(): BuckBuilder {
   return {
     build: (options: BuckBuilderBuildOptions) => getBuildSystem().buildArtifact(options),
   };
+}
+
+export function providePlatformService(): PlatformService {
+  return getPlatformService();
 }
