@@ -13,11 +13,12 @@ import type {DeepLinkParams} from '../../nuclide-deep-link/lib/types';
 import type {RemoteProjectsService} from '../../nuclide-remote-projects';
 
 import invariant from 'assert';
-import {findArcProjectIdAndDirectory} from '../../commons-atom/arcanist';
 import {goToLocation} from '../../commons-atom/go-to-location';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {asyncFilter} from '../../commons-node/promise';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
+import getMatchingProjects from './getMatchingProjects';
+import tryReopenProject from './tryReopenProject';
 
 function ensureArray(x: string | Array<string>): Array<string> {
   return typeof x === 'string' ? [x] : x;
@@ -30,37 +31,23 @@ export async function openArcDeepLink(
   const {project, path, line, column} = params;
   try {
     invariant(typeof project === 'string', 'Must provide an Arcanist project');
+    invariant(project.match(/^[a-zA-Z0-9-_]+$/), 'Must provide a valid Arcanist project');
     invariant(path, 'Must provide a valid path');
 
     if (remoteProjectsService != null) {
       await new Promise(resolve => remoteProjectsService.waitForRemoteProjectReload(resolve));
     }
 
-    // Fetch the Arcanist project of each open project.
-    // This also gets parent projects, in case we have a child project mounted.
-    const arcInfos = await Promise.all(atom.project.getPaths().map(async dir => {
-      const matches = [];
-      let currentDir = dir;
-      for (;;) {
-        // eslint-disable-next-line babel/no-await-in-loop
-        const info = await findArcProjectIdAndDirectory(currentDir);
-        if (info == null) {
-          break;
-        }
-        matches.push(info);
-        currentDir = nuclideUri.dirname(info.directory);
+    let matches = await getMatchingProjects(project, atom.project.getPaths());
+    if (matches.length === 0) {
+      // See if we had this project open previously, and try re-opening it.
+      const lastPath = await tryReopenProject(project, remoteProjectsService);
+      if (lastPath != null) {
+        matches = await getMatchingProjects(project, [lastPath]);
       }
-      return matches;
-    }));
-
-    const matches = []
-      .concat(...arcInfos)
-      .filter(Boolean)
-      .filter(arcInfo => arcInfo.projectId === project);
+    }
 
     if (matches.length === 0) {
-      // TODO: send URL to other windows if they exist
-      // TODO: remember previous directories for this arcanist project
       throw new Error(
         `The file you are trying to open is in the \`${project}\` project ` +
         'but you do not have the project open.<br />' +
@@ -77,8 +64,7 @@ export async function openArcDeepLink(
     // Otherwise, we still want to support the case of opening a new file.
     let match = matches[0];
     if (matches.length > 1) {
-      const existing = await asyncFilter(matches, async arcInfo => {
-        const {directory} = arcInfo;
+      const existing = await asyncFilter(matches, async directory => {
         const fsService = getFileSystemServiceByNuclideUri(directory);
         return fsService.exists(nuclideUri.join(nuclideUri.getPath(directory), paths[0]));
       });
@@ -86,7 +72,7 @@ export async function openArcDeepLink(
     }
 
     for (let i = 0; i < paths.length; i++) {
-      const localPath = nuclideUri.join(match.directory, paths[i]);
+      const localPath = nuclideUri.join(match, paths[i]);
       const intLine = lines == null ? undefined : parseInt(lines[i], 10) - 1;
       const intColumn = columns == null ? undefined : parseInt(columns[i], 10) - 1;
       goToLocation(localPath, intLine, intColumn);
