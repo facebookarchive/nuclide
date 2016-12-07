@@ -71,3 +71,9 @@ to `resources/nuclicons` and rerun the script.
 .icon-nuclicon-graphql::before {
   content: "\f10c";
 }
+.icon-nuclicon-comment-discussion::before {
+  content: "\f10d";
+}
+.icon-nuclicon-comment::before {
+  content: "\f10e";
+}
