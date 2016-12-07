@@ -577,7 +577,7 @@ export function consumeEvaluationExpressionProvider(
 export function consumeToolBar(getToolBar: GetToolBar): IDisposable {
   const toolBar = getToolBar('nuclide-debugger');
   toolBar.addButton({
-    iconset: 'nuclicon',
+    iconset: 'icon-nuclicon',
     icon: 'debugger',
     callback: 'nuclide-debugger:toggle',
     tooltip: 'Toggle Debugger',

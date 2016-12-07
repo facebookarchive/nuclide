@@ -12,8 +12,8 @@ to `resources/nuclicons` and rerun the script.
   font-style: normal;
 }
 
-[class^="nuclicon-"]::before,
-[class*=" nuclicon-"]::before {
+[class^="icon-nuclicon-"]::before,
+[class*=" icon-nuclicon-"]::before {
   /*
     use !important to prevent issues with browser extensions that change fonts
   */
@@ -35,39 +35,39 @@ to `resources/nuclicons` and rerun the script.
   height: 16px;
 }
 
-.nuclicon-nuclide::before {
+.icon-nuclicon-nuclide::before {
   content: "\f101";
 }
-.nuclicon-react::before {
+.icon-nuclicon-react::before {
   content: "\f102";
 }
-.nuclicon-buck::before {
+.icon-nuclicon-buck::before {
   content: "\f103";
 }
-.nuclicon-hhvm::before {
+.icon-nuclicon-hhvm::before {
   content: "\f104";
 }
-.nuclicon-hack::before {
+.icon-nuclicon-hack::before {
   content: "\f105";
 }
-.nuclicon-swift::before {
+.icon-nuclicon-swift::before {
   content: "\f106";
 }
-.nuclicon-file-directory::before {
+.icon-nuclicon-file-directory::before {
   content: "\f107";
 }
-.nuclicon-file-directory-starred::before {
+.icon-nuclicon-file-directory-starred::before {
   content: "\f108";
 }
-.nuclicon-debugger::before {
+.icon-nuclicon-debugger::before {
   content: "\f109";
 }
-.nuclicon-arrow-down::before {
+.icon-nuclicon-arrow-down::before {
   content: "\f10a";
 }
-.nuclicon-bug::before {
+.icon-nuclicon-bug::before {
   content: "\f10b";
 }
-.nuclicon-graphql::before {
+.icon-nuclicon-graphql::before {
   content: "\f10c";
 }

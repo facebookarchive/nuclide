@@ -81,7 +81,7 @@ export default class HhvmBuildSystem {
         runnable: !disabled,
         cancelable: false,
         icon: 'debugger',
-        iconset: 'nuclicon',
+        iconset: 'icon-nuclicon',
       },
     ];
   }

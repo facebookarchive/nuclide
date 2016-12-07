@@ -16,8 +16,8 @@ to `resources/nuclicons` and rerun the script.
   font-style: normal;
 }
 
-[class^="nuclicon-"]::before,
-[class*=" nuclicon-"]::before {
+[class^="{{ classPrefix }}"]::before,
+[class*=" {{ classPrefix }}"]::before {
   /*
     use !important to prevent issues with browser extensions that change fonts
   */

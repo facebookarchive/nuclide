@@ -32,7 +32,9 @@ webfontsGenerator(
     cssDest: path.join(stylesDir, 'nuclicons.css'),
     cssTemplate: path.join(nucliconsDir, 'template.css'),
     templateOptions: {
-      classPrefix: 'nuclicon-',
+      // Since Atom automatically prefixes classes with "icon-", we need to make sure ours include
+      // that prefix.
+      classPrefix: 'icon-nuclicon-',
     },
     normalize: true,
     fontHeight: 96,
