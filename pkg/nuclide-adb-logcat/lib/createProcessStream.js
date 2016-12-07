@@ -40,10 +40,14 @@ export function createProcessStream(): Observable<string> {
               // that killed the process, so throw it away. Why is this not on stderr? I don't know.
               return {
                 event,
-                lastError: parseError(event.data),
+                lastError: parseError(event.data) || acc.lastError,
               };
             case 'stderr':
-              return {...acc, event};
+              return {
+                ...acc,
+                lastError: event.data || acc.lastError,
+                event,
+              };
             default:
               // This should never happen.
               throw new Error(`Invalid event kind: ${event.kind}`);
