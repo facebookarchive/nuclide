@@ -13,6 +13,7 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import invariant from 'assert';
 import {getScrollTop} from '../../commons-atom/text-editor';
+import {goToLocation} from '../../commons-atom/go-to-location';
 
 // A location which can be navigated to. Includes the file (as uri for closed files and as
 // atom$TextEditor for open files) as well as the cursor position and scroll.
@@ -45,9 +46,7 @@ export function getLocationOfEditor(editor: atom$TextEditor): EditorLocation {
 
 export async function editorOfLocation(location: Location): Promise<atom$TextEditor> {
   if (location.type === 'uri') {
-    return atom.workspace.open(location.uri, {
-      searchAllPanes: true,
-    });
+    return goToLocation(location.uri);
   } else {
     invariant(location.type === 'editor');
     const editor = location.editor;
