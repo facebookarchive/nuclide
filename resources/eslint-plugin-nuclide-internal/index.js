@@ -21,7 +21,6 @@ module.exports = {
     'no-cross-atom-imports': require('./no-cross-atom-imports'),
     'no-unnecessary-disposable-wrapping': require('./no-unnecessary-disposable-wrapping'),
     'prefer-nuclide-uri': require('./prefer-nuclide-uri'),
-    'prefer-types-only-header': require('./prefer-types-only-header'),
   },
   rulesConfig: {
     'atom-apis': 0,
@@ -31,6 +30,5 @@ module.exports = {
     'no-cross-atom-imports': 0,
     'no-unnecessary-disposable-wrapping': 0,
     'prefer-nuclide-uri': 0,
-    'prefer-types-only-header': 0,
   },
 };
