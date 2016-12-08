@@ -27,6 +27,8 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
+const docblock = require('./docblock');
+
 const PREFIXES = ["'use babel'", '"use babel"', '/* @flow */', '/** @babel */'];
 const PREFIX_LENGTH = Math.max(...PREFIXES.map(x => x.length));
 
@@ -91,10 +93,15 @@ function getVersion(start) {
 }
 
 class NodeTranspiler {
-
   static shouldCompile(bufferOrString) {
     const start = bufferOrString.slice(0, PREFIX_LENGTH).toString();
-    return PREFIXES.some(prefix => start.startsWith(prefix));
+    if (PREFIXES.some(prefix => start.startsWith(prefix))) {
+      return true;
+    }
+
+    const src = bufferOrString.toString();
+    const directives = docblock.parseAsObject(docblock.extract(src));
+    return directives.hasOwnProperty('flow');
   }
 
   constructor() {
@@ -119,7 +126,7 @@ class NodeTranspiler {
       // The source of this file and that of our plugins is used as part of the
       // hash as a way to version our transforms. For external transforms their
       // package.json version is used.
-      [__filename]
+      [__filename, require.resolve('./docblock')]
         .concat(BABEL_OPTIONS.plugins)
         .filter(Boolean)
         .forEach(plugin => {

@@ -20,6 +20,7 @@ console.log(__filename);
 const assert = require('assert');
 const fs = require('fs');
 const vm = require('vm');
+const dedent = require('dedent');
 
 const NodeTranspiler = require('../lib/NodeTranspiler');
 
@@ -47,6 +48,52 @@ console.log('NodeTranspiler.shouldCompile on Buffers and strings');
   new Buffer('console.log("hello world");\n'),
 ].forEach(src => {
   assert.ok(!NodeTranspiler.shouldCompile(src));
+});
+
+[
+  '/** @flow */\n',
+  dedent`
+    /**
+     * @flow
+     */
+  `,
+  dedent`
+    /**
+     * @foo
+     * @flow
+     */
+  `,
+].forEach(src => {
+  assert.ok(NodeTranspiler.shouldCompile(src));
+  assert.ok(NodeTranspiler.shouldCompile(new Buffer(src)));
+});
+
+[
+  "'use strict';\n",
+  '/** @fflow */\n',
+  '/** flow */\n',
+  dedent`
+    'use strict';
+    /**
+     * @flow
+     */
+  `,
+  dedent`
+    'use strict';
+    /**
+     * @flow
+     */
+  `,
+  // You have to strip your own shebang before the docblock is parsed!
+  dedent`
+    #!/usr/bin/env node
+    /**
+     * @flow
+     */
+  `,
+].forEach(src => {
+  assert.ok(!NodeTranspiler.shouldCompile(src));
+  assert.ok(!NodeTranspiler.shouldCompile(new Buffer(src)));
 });
 
 //---
