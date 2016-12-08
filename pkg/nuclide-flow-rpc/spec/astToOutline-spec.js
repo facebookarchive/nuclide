@@ -37,11 +37,11 @@ const expectedClassOutline = [
     ],
     representativeName: 'Foo',
     startPosition: {
-      line: 10,
+      line: 12,
       column: 0,
     },
     endPosition: {
-      line: 20,
+      line: 22,
       column: 1,
     },
     children: [
@@ -52,11 +52,11 @@ const expectedClassOutline = [
         ],
         representativeName: 'field',
         startPosition: {
-          line: 11,
+          line: 13,
           column: 2,
         },
         endPosition: {
-          line: 11,
+          line: 13,
           column: 14,
         },
         children: [],
@@ -70,11 +70,11 @@ const expectedClassOutline = [
         ],
         representativeName: 'bar',
         startPosition: {
-          line: 13,
+          line: 15,
           column: 2,
         },
         endPosition: {
-          line: 15,
+          line: 17,
           column: 3,
         },
         children: [],
@@ -89,11 +89,11 @@ const expectedClassOutline = [
         ],
         representativeName: 'baz',
         startPosition: {
-          line: 17,
+          line: 19,
           column: 2,
         },
         endPosition: {
-          line: 17,
+          line: 19,
           column: 35,
         },
         children: [],
@@ -107,11 +107,11 @@ const expectedClassOutline = [
         ],
         representativeName: 'foo',
         startPosition: {
-          line: 19,
+          line: 21,
           column: 2,
         },
         endPosition: {
-          line: 19,
+          line: 21,
           column: 31,
         },
         children: [],
@@ -135,11 +135,11 @@ const expectedToplevelOutline = [
     ],
     representativeName: 'baz',
     startPosition: {
-      line: 10,
+      line: 12,
       column: 0,
     },
     endPosition: {
-      line: 13,
+      line: 15,
       column: 1,
     },
     children: [],
@@ -169,11 +169,11 @@ const expectedToplevelOutline = [
     ],
     representativeName: 'foo',
     startPosition: {
-      line: 15,
+      line: 17,
       column: 0,
     },
     endPosition: {
-      line: 17,
+      line: 19,
       column: 1,
     },
     children: [],
@@ -189,11 +189,11 @@ const expectedToplevelOutline = [
     ],
     representativeName: 'funExpr1',
     startPosition: {
-      line: 19,
+      line: 21,
       column: 0,
     },
     endPosition: {
-      line: 21,
+      line: 23,
       column: 2,
     },
     children: [],
@@ -212,11 +212,11 @@ const expectedToplevelOutline = [
     ],
     representativeName: 'funExpr2',
     startPosition: {
-      line: 23,
+      line: 25,
       column: 0,
     },
     endPosition: {
-      line: 25,
+      line: 27,
       column: 2,
     },
     children: [],
@@ -229,11 +229,11 @@ const expectedToplevelOutline = [
     ],
     representativeName: 'varFoo',
     startPosition: {
-      line: 28,
+      line: 29,
       column: 0,
     },
     endPosition: {
-      line: 28,
+      line: 29,
       column: 18,
     },
     children: [],
@@ -246,11 +246,11 @@ const expectedToplevelOutline = [
     ],
     representativeName: 'varBar',
     startPosition: {
-      line: 30,
+      line: 31,
       column: 0,
     },
     endPosition: {
-      line: 30,
+      line: 31,
       column: 16,
     },
     children: [],
@@ -263,11 +263,11 @@ const expectedToplevelOutline = [
     ],
     representativeName: 'varBaz',
     startPosition: {
-      line: 32,
+      line: 33,
       column: 0,
     },
     endPosition: {
-      line: 37,
+      line: 38,
       column: 2,
     },
     children: [],
@@ -284,11 +284,11 @@ const expectedToplevelOutline = [
       {kind: 'plain', value: '}'},
     ],
     startPosition: {
-      line: 39,
+      line: 40,
       column: 0,
     },
     endPosition: {
-      line: 39,
+      line: 40,
       column: 36,
     },
     children: [],
@@ -302,11 +302,11 @@ const expectedToplevelOutline = [
       {kind: 'plain', value: ']'},
     ],
     startPosition: {
-      line: 40,
+      line: 41,
       column: 0,
     },
     endPosition: {
-      line: 40,
+      line: 41,
       column: 18,
     },
     children: [],
@@ -322,11 +322,11 @@ const expectedJasmineOutline = [
     ],
     representativeName: 'foo',
     startPosition: {
-      line: 10,
+      line: 12,
       column: 0,
     },
     endPosition: {
-      line: 15,
+      line: 17,
       column: 3,
     },
     children: [
@@ -338,11 +338,11 @@ const expectedJasmineOutline = [
         ],
         representativeName: 'should work',
         startPosition: {
-          line: 12,
+          line: 14,
           column: 2,
         },
         endPosition: {
-          line: 14,
+          line: 16,
           column: 5,
         },
         children: [],
@@ -357,11 +357,11 @@ const expectedJasmineOutline = [
     ],
     representativeName: 'bar',
     startPosition: {
-      line: 17,
+      line: 19,
       column: 0,
     },
     endPosition: {
-      line: 20,
+      line: 22,
       column: 3,
     },
     children: [
@@ -373,11 +373,11 @@ const expectedJasmineOutline = [
         ],
         representativeName: 'should work with a normal function',
         startPosition: {
-          line: 18,
+          line: 20,
           column: 2,
         },
         endPosition: {
-          line: 19,
+          line: 21,
           column: 5,
         },
         children: [],
