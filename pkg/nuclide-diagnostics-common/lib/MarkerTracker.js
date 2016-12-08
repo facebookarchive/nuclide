@@ -19,6 +19,7 @@ import {CompositeDisposable} from 'atom';
 
 import invariant from 'assert';
 
+import {observeTextEditors} from '../../commons-atom/text-editor';
 import {MultiMap} from '../../commons-node/collection';
 
 export class MarkerTracker {
@@ -46,7 +47,7 @@ export class MarkerTracker {
     this._disposed = false;
 
     this._subscriptions.add(
-      atom.workspace.observeTextEditors(editor => {
+      observeTextEditors(editor => {
         const path = editor.getPath();
         if (path == null) {
           return;

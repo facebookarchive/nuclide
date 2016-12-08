@@ -28,6 +28,7 @@ import {
 } from 'atom';
 import invariant from 'assert';
 import {makeDiagnosticsDatatipComponent} from './DiagnosticsDatatipComponent';
+import {observeTextEditors} from '../../commons-atom/text-editor';
 import passesGK from '../../commons-node/passesGK';
 
 
@@ -88,7 +89,7 @@ export function activate(state: ?mixed): void {
 
 export function consumeDiagnosticUpdates(diagnosticUpdater: DiagnosticUpdater): void {
   invariant(disposables);
-  disposables.add(atom.workspace.observeTextEditors((editor: TextEditor) => {
+  disposables.add(observeTextEditors((editor: TextEditor) => {
     invariant(fileDiagnostics);
     const filePath = editor.getPath();
     if (!filePath) {

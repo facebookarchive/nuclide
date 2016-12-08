@@ -32,6 +32,7 @@ import {DatatipComponent, DATATIP_ACTIONS} from './DatatipComponent';
 import {PinnedDatatip} from './PinnedDatatip';
 
 import featureConfig from '../../commons-atom/featureConfig';
+import {observeTextEditors} from '../../commons-atom/text-editor';
 import performanceNow from '../../commons-node/performanceNow';
 
 const logger = getLogger();
@@ -554,7 +555,7 @@ export class DatatipManager {
     this._editorManagers = new Map();
     this._datatipProviders = [];
 
-    this._subscriptions.add(atom.workspace.observeTextEditors(editor => {
+    this._subscriptions.add(observeTextEditors(editor => {
       const manager = new DatatipManagerForEditor(
         editor,
         this._datatipProviders,

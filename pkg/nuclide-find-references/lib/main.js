@@ -14,6 +14,7 @@
 import type {FindReferencesReturn} from './rpc-types';
 
 import crypto from 'crypto';
+import {observeTextEditors} from '../../commons-atom/text-editor';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {arrayCompact} from '../../commons-node/collection';
 import {track} from '../../nuclide-analytics';
@@ -137,7 +138,7 @@ export function activate(state: ?any): void {
 
   // Mark text editors with a working provider with a special CSS class.
   // This ensures the context menu option only appears in supported projects.
-  subscriptions.add(atom.workspace.observeTextEditors(async editor => {
+  subscriptions.add(observeTextEditors(async editor => {
     const path = editor.getPath();
     if (!path || supportedProviders.get(editor)) {
       return;

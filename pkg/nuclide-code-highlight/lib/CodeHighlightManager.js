@@ -11,6 +11,7 @@
 
 import type {CodeHighlightProvider} from './types';
 import {CompositeDisposable} from 'atom';
+import {observeTextEditors} from '../../commons-atom/text-editor';
 import debounce from '../../commons-node/debounce';
 
 const HIGHLIGHT_DELAY_MS = 250;
@@ -29,7 +30,7 @@ export default class CodeHighlightManager {
       HIGHLIGHT_DELAY_MS,
       false,
     );
-    subscriptions.add(atom.workspace.observeTextEditors(editor => {
+    subscriptions.add(observeTextEditors(editor => {
       subscriptions.add(editor.onDidChangeCursorPosition(event => {
         debouncedCallback(editor, event.newBufferPosition);
       }));

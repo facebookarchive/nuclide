@@ -12,6 +12,7 @@
 import type {CodeFormatProvider} from './types';
 
 import {CompositeDisposable, Range} from 'atom';
+import {observeTextEditors} from '../../commons-atom/text-editor';
 import {getFormatOnSave} from './config';
 
 export default class CodeFormatManager {
@@ -28,7 +29,7 @@ export default class CodeFormatManager {
       // Atom doesn't accept in-command modification of the text editor contents.
       () => process.nextTick(this._formatCodeInActiveTextEditor.bind(this)),
     ));
-    subscriptions.add(atom.workspace.observeTextEditors(this._addEditor.bind(this)));
+    subscriptions.add(observeTextEditors(this._addEditor.bind(this)));
     this._codeFormatProviders = [];
     this._pendingFormats = new Map();
   }

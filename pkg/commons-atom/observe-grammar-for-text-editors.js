@@ -10,6 +10,7 @@
  */
 
 import {CompositeDisposable, Emitter} from 'atom';
+import {observeTextEditors} from './text-editor';
 
 const GRAMMAR_CHANGE_EVENT = 'grammar-change';
 
@@ -25,7 +26,7 @@ class GrammarForTextEditorsListener {
     this._subscriptions = new CompositeDisposable();
     this._subscriptions.add(
       this._emitter,
-      atom.workspace.observeTextEditors(textEditor => {
+      observeTextEditors(textEditor => {
         const grammarSubscription = textEditor.observeGrammar(grammar => {
           this._emitter.emit(GRAMMAR_CHANGE_EVENT, textEditor);
         });

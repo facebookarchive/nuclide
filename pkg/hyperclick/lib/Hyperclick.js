@@ -21,6 +21,7 @@ import {
   getWordTextAndRange,
 } from './hyperclick-utils';
 
+import {observeTextEditors} from '../../commons-atom/text-editor';
 import {trackTiming} from '../../nuclide-analytics';
 
 /**
@@ -51,7 +52,7 @@ export default class Hyperclick {
 
     this._suggestionList = new SuggestionList();
     this._hyperclickForTextEditors = new Set();
-    this._textEditorSubscription = atom.workspace.observeTextEditors(
+    this._textEditorSubscription = observeTextEditors(
       this.observeTextEditor.bind(this));
   }
 

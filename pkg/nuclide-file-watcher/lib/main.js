@@ -10,6 +10,7 @@
  */
 
 import {CompositeDisposable} from 'atom';
+import {observeTextEditors} from '../../commons-atom/text-editor';
 import FileWatcher from './FileWatcher';
 
 let subscriptions: ?CompositeDisposable = null;
@@ -19,7 +20,7 @@ export function activate(state: ?Object): void {
   const _subscriptions = new CompositeDisposable();
   const _watchers = new Map();
 
-  _subscriptions.add(atom.workspace.observeTextEditors(editor => {
+  _subscriptions.add(observeTextEditors(editor => {
     if (_watchers.has(editor)) {
       return;
     }

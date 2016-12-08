@@ -28,6 +28,7 @@ import {track} from '../../nuclide-analytics';
 import type {HomeFragments} from '../../nuclide-home/lib/types';
 
 import createPackage from '../../commons-atom/createPackage';
+import {observeTextEditors} from '../../commons-atom/text-editor';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {DiagnosticsPanelModel, WORKSPACE_VIEW_URI} from './DiagnosticsPanelModel';
@@ -178,7 +179,7 @@ function gutterConsumeDiagnosticUpdates(
   diagnosticUpdater: ObservableDiagnosticUpdater,
 ): IDisposable {
   const fixer = diagnosticUpdater.applyFix.bind(diagnosticUpdater);
-  return atom.workspace.observeTextEditors((editor: TextEditor) => {
+  return observeTextEditors((editor: TextEditor) => {
     const filePath = editor.getPath();
     if (!filePath) {
       return; // The file is likely untitled.

@@ -13,6 +13,7 @@ import type BreakpointStore from './BreakpointStore';
 import type DebuggerActions from './DebuggerActions';
 
 import {CompositeDisposable} from 'atom';
+import {observeTextEditors} from '../../commons-atom/text-editor';
 import BreakpointDisplayController from './BreakpointDisplayController';
 
 class BreakpointManager {
@@ -29,7 +30,7 @@ class BreakpointManager {
     this._debuggerActions = debuggerActions;
     this._displayControllers = new Map();
     this._disposables = new CompositeDisposable(
-      atom.workspace.observeTextEditors(this._handleTextEditor.bind(this)),
+      observeTextEditors(this._handleTextEditor.bind(this)),
     );
   }
 
