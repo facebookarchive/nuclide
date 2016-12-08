@@ -272,11 +272,14 @@ export class HgService {
    /**
     * Shells out of the `hg status` to get the statuses of the paths.
     */
-  fetchStatuses(): ConnectableObservable<Map<NuclideUri, StatusCodeIdValue>> {
+  fetchStatuses(toRevision?: string): ConnectableObservable<Map<NuclideUri, StatusCodeIdValue>> {
     const execOptions = {
       cwd: this._workingDirectory,
     };
     const args = ['status', '-Tjson'];
+    if (toRevision != null) {
+      args.push('--rev', toRevision);
+    }
 
     return hgRunCommand(args, execOptions)
       .map(stdout => {

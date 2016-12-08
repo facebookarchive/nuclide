@@ -776,6 +776,20 @@ export class HgRepositoryClient {
     }
   }
 
+  fetchFilesChangedSinceRevision(
+    revision: string,
+  ): Observable<Map<NuclideUri, StatusCodeNumberValue>> {
+    return this._service.fetchStatuses(revision)
+      .refCount()
+      .map(fileStatuses => {
+        const statusesWithCodeIds = new Map();
+        for (const [filePath, code] of fileStatuses) {
+          statusesWithCodeIds.set(filePath, StatusCodeIdToNumber[code]);
+        }
+        return statusesWithCodeIds;
+      });
+  }
+
   fetchRevisionInfoBetweenHeadAndBase(): Promise<Array<RevisionInfo>> {
     return this._service.fetchRevisionInfoBetweenHeadAndBase();
   }

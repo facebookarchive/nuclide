@@ -20,7 +20,6 @@ import type {
 } from './types';
 import type {
   AmendModeValue,
-  RevisionFileChanges,
   RevisionInfo,
 } from '../../nuclide-hg-rpc/lib/HgService';
 import type {Message} from '../../nuclide-console/lib/types';
@@ -34,6 +33,7 @@ import {
   getDirtyFileChanges,
   FileChangeStatus,
   FileChangeStatusToPrefix,
+  HgStatusToFileChangeStatus,
 } from '../../commons-atom/vcs';
 import {getArcanistServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {getPhabricatorRevisionFromCommitMessage} from '../../nuclide-arcanist-rpc/lib/utils';
@@ -233,43 +233,6 @@ export function getHeadRevision(revisions: Array<RevisionInfo>): ?RevisionInfo {
   return revisions.find(revision => revision.isHead);
 }
 
-/**
- * Merges the file change statuses of the dirty filesystem state with
- * the revision changes, where dirty changes and more recent revisions
- * take priority in deciding which status a file is in.
- */
-function mergeFileStatuses(
-  dirtyStatus: Map<NuclideUri, FileChangeStatusValue>,
-  revisionsFileChanges: Array<RevisionFileChanges>,
-): Map<NuclideUri, FileChangeStatusValue> {
-  const mergedStatus = new Map(dirtyStatus);
-  const mergedFilePaths = new Set(mergedStatus.keys());
-
-  function mergeStatusPaths(
-    filePaths: Array<NuclideUri>,
-    changeStatusValue: FileChangeStatusValue,
-  ) {
-    for (const filePath of filePaths) {
-      if (!mergedFilePaths.has(filePath)) {
-        mergedStatus.set(filePath, changeStatusValue);
-        mergedFilePaths.add(filePath);
-      }
-    }
-  }
-
-  // More recent revision changes takes priority in specifying a files' statuses.
-  const latestToOldestRevisionsChanges = revisionsFileChanges.slice().reverse();
-  for (const revisionFileChanges of latestToOldestRevisionsChanges) {
-    const {added, modified, deleted} = revisionFileChanges;
-
-    mergeStatusPaths(added, FileChangeStatus.ADDED);
-    mergeStatusPaths(modified, FileChangeStatus.MODIFIED);
-    mergeStatusPaths(deleted, FileChangeStatus.REMOVED);
-  }
-
-  return mergedStatus;
-}
-
 export function getHeadToForkBaseRevisions(revisions: Array<RevisionInfo>): Array<RevisionInfo> {
   // `headToForkBaseRevisions` should have the public commit at the fork base as the first.
   // and the rest of the current `HEAD` stack in order with the `HEAD` being last.
@@ -289,21 +252,6 @@ export function getHeadToForkBaseRevisions(revisions: Array<RevisionInfo>): Arra
     headToForkBaseRevisions.unshift(parentRevision);
   }
   return headToForkBaseRevisions;
-}
-
-function fetchFileChangesForRevisions(
-  repository: HgRepositoryClient,
-  revisions: Array<RevisionInfo>,
-): Observable<Array<RevisionFileChanges>> {
-  if (revisions.length === 0) {
-    return Observable.of([]);
-  }
-  // Revision ids are unique and don't change, except when the revision is amended/rebased.
-  // Hence, it's cached here to avoid service calls when working on a stack of commits.
-  // $FlowFixMe(matthewwithanm) Type this.
-  return Observable.forkJoin(...revisions.map(revision =>
-    repository.fetchFilesChangedAtRevision(`${revision.id}`),
-  ));
 }
 
 export function getSelectedFileChanges(
@@ -336,26 +284,27 @@ export function getSelectedFileChanges(
   }
   return getSelectedFileChangesToCommit(
     repository,
-    headToForkBaseRevisions,
     beforeCommitId,
-    dirtyFileChanges,
   );
 }
 
 function getSelectedFileChangesToCommit(
   repository: HgRepositoryClient,
-  headToForkBaseRevisions: Array<RevisionInfo>,
   beforeCommitId: number,
-  dirtyFileChanges: Map<NuclideUri, FileChangeStatusValue>,
 ): Observable<Map<NuclideUri, FileChangeStatusValue>> {
-  const latestToOldesRevisions = headToForkBaseRevisions.slice().reverse();
-  return fetchFileChangesForRevisions(
-    repository,
-    latestToOldesRevisions.filter(revision => revision.id > beforeCommitId),
-  ).map(revisionChanges => mergeFileStatuses(
-    dirtyFileChanges,
-    revisionChanges,
-  ));
+  return repository.fetchFilesChangedSinceRevision(`${beforeCommitId}`)
+    .map(fileStatusCodes => {
+      const fileChanges = new Map();
+      for (const [filePath, statusCode] of fileStatusCodes) {
+        fileChanges.set(filePath, HgStatusToFileChangeStatus[statusCode]);
+      }
+      return fileChanges;
+    })
+    .catch(error => {
+      // Cannot get status during transient states (rebase / commit),
+      // because the `compareId` in hand could be hidden.
+      return Observable.never();
+    });
 }
 
 export function getHgDiff(
