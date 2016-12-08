@@ -16,23 +16,24 @@ import type {
   UpdateUncommittedChanges,
 } from './types';
 import type {BookmarkInfo} from '../../nuclide-hg-rpc/lib/HgService';
-import type {NuclideSideBarService} from '../../nuclide-side-bar';
 import type {Observable} from 'rxjs';
 import type {FileChangeStatusValue} from '../../commons-atom/vcs';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
 
 import * as ActionType from './ActionType';
 import {applyActionMiddleware} from './applyActionMiddleware';
 import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
 import bookmarkIsEqual from './bookmarkIsEqual';
 import Commands from './Commands';
-import {Disposable} from 'atom';
+import {renderReactRoot} from '../../commons-atom/renderReactRoot';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {BehaviorSubject, Subject} from 'rxjs';
 import SideBarComponent from './SideBarComponent';
 import {track} from '../../nuclide-analytics';
 import {getDirtyFileChanges} from '../../commons-atom/vcs';
+import {React} from 'react-for-atom';
 
 export type AppState = {
   uncommittedChanges: Map<NuclideUri, Map<NuclideUri, FileChangeStatusValue>>,
@@ -64,8 +65,14 @@ function getInitialState() {
 let commands: Commands;
 let disposables: UniversalDisposable;
 let states: BehaviorSubject<AppState>;
+let activated = false;
+let restored;
+
+const WORKSPACE_VIEW_URI = 'atom://nuclide/source-control';
 
 export function activate(rawState: Object): void {
+  activated = true;
+  restored = rawState != null && rawState.restored === true;
   const initialState = getInitialState();
   const actions = new Subject();
   states = createStateStream(
@@ -76,54 +83,89 @@ export function activate(rawState: Object): void {
   const dispatch = action => { actions.next(action); };
   commands = new Commands(dispatch, () => states.getValue());
 
-  const subscription = observableFromSubscribeFunction(
+  disposables = new UniversalDisposable(
+    () => { activated = false; },
+    observableFromSubscribeFunction(
       atom.project.onDidChangePaths.bind(atom.project),
     )
-    .startWith(null) // Start with a fake event to fetch initial directories.
-    .subscribe(() => {
-      commands.fetchProjectDirectories();
-    });
-
-  disposables = new UniversalDisposable(subscription);
+      .startWith(null) // Start with a fake event to fetch initial directories.
+      .subscribe(() => {
+        commands.fetchProjectDirectories();
+      }),
+  );
 }
 
-export function consumeNuclideSideBar(sideBar: NuclideSideBarService): IDisposable {
-  let serviceDisposable;
+class SourceControlSideBar {
 
-  sideBar.registerView({
-    getComponent() {
-      const props = states.map(state => ({
-        createBookmark: commands.createBookmark,
-        deleteBookmark: commands.deleteBookmark,
-        projectBookmarks: state.projectBookmarks,
-        projectDirectories: state.projectDirectories,
-        projectRepositories: state.projectRepositories,
-        renameBookmark: commands.renameBookmark,
-        repositoryBookmarksIsLoading: state.repositoryBookmarksIsLoading,
-        updateToBookmark: commands.updateToBookmark,
-        uncommittedChanges: state.uncommittedChanges,
-      }));
+  constructor() {
+    track('scsidebar-show');
+  }
 
-      track('scsidebar-show');
-      return bindObservableAsProps(props, SideBarComponent);
-    },
-    onDidShow() {},
-    title: 'Source Control',
-    toggleCommand: 'nuclide-source-control-side-bar:toggle',
-    viewId: 'nuclide-source-control-side-bar',
-  });
+  getElement(): HTMLElement {
+    const props = states.map(state => ({
+      createBookmark: commands.createBookmark,
+      deleteBookmark: commands.deleteBookmark,
+      projectBookmarks: state.projectBookmarks,
+      projectDirectories: state.projectDirectories,
+      projectRepositories: state.projectRepositories,
+      renameBookmark: commands.renameBookmark,
+      repositoryBookmarksIsLoading: state.repositoryBookmarksIsLoading,
+      updateToBookmark: commands.updateToBookmark,
+      uncommittedChanges: state.uncommittedChanges,
+    }));
+    const BoundSideBarComponent = bindObservableAsProps(props, SideBarComponent);
+    return renderReactRoot(<BoundSideBarComponent />);
+  }
 
-  serviceDisposable = new Disposable(() => {
-    sideBar.destroyView('nuclide-source-control-side-bar');
-  });
-  disposables.add(serviceDisposable);
+  getDefaultLocation(): string {
+    return 'left-panel';
+  }
 
-  return new Disposable(() => {
-    if (serviceDisposable != null) {
-      disposables.remove(serviceDisposable);
-      serviceDisposable = null;
-    }
-  });
+  getTitle(): string {
+    return 'Source Control';
+  }
+
+  getURI(): string {
+    return WORKSPACE_VIEW_URI;
+  }
+
+  serialize(): Object {
+    return {
+      deserializer: 'nuclide.SourceControlSideBar',
+    };
+  }
+
+}
+
+export function deserializeSourceControlSideBar(state: mixed): ?SourceControlSideBar {
+  // It's possible for this method to be called before the package has been activated (if this was
+  // serialized as part of the workspace instead of nuclide-workspace-views).
+  // TODO: Once atom/atom#13358 makes it into stable, we can switch from using 'activate()' to
+  // `initialize()` and avoid that.
+  if (!activated) {
+    return;
+  }
+  return new SourceControlSideBar();
+}
+
+export function consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
+  disposables.add(
+    api.addOpener(uri => {
+      if (uri === WORKSPACE_VIEW_URI) {
+        return new SourceControlSideBar();
+      }
+    }),
+    () => api.destroyWhere(item => item instanceof SourceControlSideBar),
+    atom.commands.add(
+      'atom-workspace',
+      'nuclide-source-control-side-bar:toggle',
+      event => { api.toggle(WORKSPACE_VIEW_URI, (event: any).detail); },
+    ),
+  );
+  // If this is the first time we're opening this workspace, open the source control side bar.
+  if (!restored) {
+    api.open(WORKSPACE_VIEW_URI, {searchAllPanes: true, activatePane: false, activateItem: false});
+  }
 }
 
 function accumulateSetBookmarkIsLoading(state: AppState, action: SetBookmarkIsLoading): AppState {
@@ -285,4 +327,10 @@ function accumulateState(state: AppState, action: Action): AppState {
 
 export function deactivate(): void {
   disposables.dispose();
+}
+
+export function serialize(): Object {
+  return {
+    restored: true,
+  };
 }

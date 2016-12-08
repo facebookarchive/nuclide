@@ -5,6 +5,9 @@
   "version": "0.0.0",
   "description": "Source control management in your nuclide-side-bar",
   "atomTestRunner": "../../lib/test-runner.js",
+  "deserializers": {
+    "nuclide.SourceControlSideBar": "deserializeSourceControlSideBar"
+  },
   "nuclide": {
     "configMetadata": {
       "pathComponents": [
@@ -24,9 +27,9 @@
     "testRunner": "apm"
   },
   "consumedServices": {
-    "nuclide-side-bar": {
+    "nuclide.workspace-views": {
       "versions": {
-        "1.0.0": "consumeNuclideSideBar"
+        "0.0.0": "consumeWorkspaceViewsService"
       }
     }
   }
