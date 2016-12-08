@@ -16,7 +16,7 @@
 <PROJECT_ROOT>/pkg/nuclide-debugger/VendorLib/devtools/.*
 
 [libs]
-pkg/nuclide-external-interfaces/1.0/
+flow-libs/
 
 [options]
 experimental.const_params=true

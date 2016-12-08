@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
  *
@@ -7,8 +7,6 @@
  *
  * @flow
  */
-
-/* eslint-disable no-unused-vars */
 
 /*
  * APIs listed in this file are ones that should be built into Flow and need to be upstreamed.
