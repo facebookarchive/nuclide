@@ -13,7 +13,7 @@ import type {StatusCodeNumberValue} from '../nuclide-hg-rpc/lib/HgService';
 import type {HgRepositoryClient} from '../nuclide-hg-repository-client/lib/HgRepositoryClient';
 import type {NuclideUri} from '../commons-node/nuclideUri';
 
-import {arrayCompact} from '../commons-node/collection';
+import {arrayCompact, mapFilter} from '../commons-node/collection';
 import {asyncExecute} from '../commons-node/process';
 import {diffSets} from '../commons-node/observable';
 import {Directory} from 'atom';
@@ -289,6 +289,23 @@ function pathsAreEqual(filePath1: string, filePath2: string): boolean {
   const realPath1 = nuclideUri.resolve(filePath1);
   const realPath2 = nuclideUri.resolve(filePath2);
   return realPath1 === realPath2;
+}
+
+export function filterMultiRootFileChanges(
+  unfilteredFileChanges: Map<NuclideUri, Map<NuclideUri, FileChangeStatusValue>>,
+): Map<NuclideUri, Map<NuclideUri, FileChangeStatusValue>> {
+  const filteredFileChanges = new Map();
+  // Filtering the changes to make sure they only show up under the directory the
+  // file exists under.
+  for (const [root, fileChanges] of unfilteredFileChanges) {
+    const filteredFiles = mapFilter(
+      fileChanges,
+      filePath => filePath.startsWith(root),
+    );
+    filteredFileChanges.set(root, filteredFiles);
+  }
+
+  return filteredFileChanges;
 }
 
 export function getMultiRootFileChanges(

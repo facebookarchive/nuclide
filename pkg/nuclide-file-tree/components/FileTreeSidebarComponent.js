@@ -19,6 +19,7 @@ import {
 import {Observable} from 'rxjs';
 
 import {REVEAL_FILE_ON_SWITCH_SETTING, WORKSPACE_VIEW_URI} from '../lib/Constants';
+import {filterMultiRootFileChanges} from '../../commons-atom/vcs';
 import {FileTree} from './FileTree';
 import FileTreeSideBarFilterComponent from './FileTreeSideBarFilterComponent';
 import {FileTreeToolbarComponent} from './FileTreeToolbarComponent';
@@ -173,7 +174,7 @@ export default class FileTreeSidebarComponent extends React.Component {
         <div className="nuclide-file-tree-sidebar-uncommitted-changes">
           <MultiRootChangedFilesView
             commandPrefix="file-tree-sidebar"
-            fileChanges={this.state.uncommittedFileChanges}
+            fileChanges={filterMultiRootFileChanges(this.state.uncommittedFileChanges)}
             selectedFile={this.state.activeUri}
             hideEmptyFolders={true}
             onFileChosen={this._onFileChosen}
