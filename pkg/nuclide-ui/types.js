@@ -15,3 +15,21 @@ export type CustomPaneItemOptions = {
   allowSplit?: boolean, // Whether splits are allowed on the pane item. Defaults to false.
   initialProps: Object, // The pane item specific properties.
 };
+
+export type Nuclicon =
+  'nuclicon-nuclide'
+  | 'nuclicon-react'
+  | 'nuclicon-buck'
+  | 'nuclicon-hhvm'
+  | 'nuclicon-hack'
+  | 'nuclicon-swift'
+  | 'nuclicon-file-directory'
+  | 'nuclicon-file-directory-starred'
+  | 'nuclicon-debugger'
+  | 'nuclicon-arrow-down'
+  | 'nuclicon-bug'
+  | 'nuclicon-graphql'
+  | 'nuclicon-comment-discussion'
+  | 'nuclicon-comment';
+
+export type IconName = Nuclicon | atom$Octicon;

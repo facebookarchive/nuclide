@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {IconName} from './types';
+
 import {Button, ButtonSizes} from './Button';
 import {Icon} from './Icon';
 import classnames from 'classnames';
@@ -32,8 +34,7 @@ export type Option = Separator | {
   value: any,
   label: string,
   selectedLabel?: string,
-  icon?: string,
-  iconset?: string,
+  icon?: IconName,
   disabled?: boolean,
 };
 

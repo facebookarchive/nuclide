@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {IconName} from './types';
+
 import classnames from 'classnames';
 import {React} from 'react-for-atom';
 import {maybeToString} from '../commons-node/string';
@@ -20,8 +22,7 @@ type ButtonNodeName = 'button' | 'a';
 
 type Props = {
   /** Icon name, without the `icon-` prefix. E.g. `'arrow-up'` */
-  icon?: string,
-  iconset?: ?string,
+  icon?: IconName,
   /** Optional specifier for special buttons, e.g. primary, info, success or error buttons. */
   buttonType?: ButtonType,
   selected?: boolean,
@@ -69,7 +70,6 @@ const ButtonTypeClassnames = Object.freeze({
 export const Button = (props: Props) => {
   const {
     icon,
-    iconset,
     buttonType,
     selected,
     size,
@@ -86,7 +86,7 @@ export const Button = (props: Props) => {
     className,
     'btn',
     {
-      [`icon ${iconset || 'icon'}-${maybeToString(icon)}`]: icon != null,
+      [`icon icon-${maybeToString(icon)}`]: icon != null,
       [sizeClassname]: size != null,
       selected,
       [buttonTypeClassname]: buttonType != null,

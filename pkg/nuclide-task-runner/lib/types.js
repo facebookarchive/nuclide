@@ -10,6 +10,7 @@
 
 import type {Task} from '../../commons-node/tasks';
 import type {Directory} from '../../nuclide-remote-connection';
+import type {IconName} from '../../nuclide-ui/types';
 import type {Observable} from 'rxjs';
 
 export type AppState = {
@@ -57,8 +58,7 @@ export type TaskMetadata = {
   priority?: number,
   runnable: boolean, // Can the action be run now?
   cancelable?: boolean, // By default, this is true (all tasks are cancelable).
-  icon: string,
-  iconset?: string,
+  icon: IconName,
 };
 
 export type AnnotatedTaskMetadata = TaskMetadata & {

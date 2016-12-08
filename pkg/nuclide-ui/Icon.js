@@ -9,13 +9,14 @@
  * the root directory of this source tree.
  */
 
+import type {IconName} from './types';
+
 import classnames from 'classnames';
 import {React} from 'react-for-atom';
 
 type Props = {
   /** Icon name, without the `icon-` prefix. E.g. `'arrow-up'` */
-  icon: string,
-  iconset?: ?string,
+  icon: IconName,
   className?: string,
   /** Optional text content to render next to the icon. */
   children?: string,
@@ -27,17 +28,11 @@ type Props = {
 export const Icon = (props: Props) => {
   const {
     icon,
-    iconset,
     children,
     className,
     ...remainingProps
   } = props;
-  const newClassName = classnames(
-    className,
-    {
-      [`icon ${iconset || 'icon'}-${icon}`]: icon != null,
-    },
-  );
+  const newClassName = classnames(className, icon == null ? null : `icon icon-${icon}`);
   return (
     <span className={newClassName} {...remainingProps}>
       {children}
