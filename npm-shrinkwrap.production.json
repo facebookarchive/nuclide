@@ -240,6 +240,11 @@
       "from": "decamelize@>=1.1.1 <2.0.0",
       "resolved": "https://registry.npmjs.org/decamelize/-/decamelize-1.2.0.tgz"
     },
+    "dedent": {
+      "version": "0.6.0",
+      "from": "dedent@0.6.0",
+      "resolved": "https://registry.npmjs.org/dedent/-/dedent-0.6.0.tgz"
+    },
     "delayed-stream": {
       "version": "1.0.0",
       "from": "delayed-stream@>=1.0.0 <1.1.0",
