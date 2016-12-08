@@ -19,6 +19,7 @@ import {
  FileChangeStatus,
  RevertibleStatusCodes,
 } from '../commons-atom/vcs';
+import {goToLocation} from '../commons-atom/go-to-location';
 import invariant from 'assert';
 import nuclideUri from '../commons-node/nuclideUri';
 import {React} from 'react-for-atom';
@@ -92,7 +93,7 @@ export class MultiRootChangedFilesView extends React.Component {
       event => {
         const filePath = this._getFilePathFromEvent(event);
         if (filePath != null && filePath.length) {
-          atom.workspace.open(filePath);
+          goToLocation(filePath);
         }
       },
     ));
