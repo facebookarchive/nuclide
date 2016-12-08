@@ -44,6 +44,7 @@ export function createPanelItem(store: Store): Object {
   // need to update immediately (e.g. progress).
   const stickyProps = states
     .filter(state => state.tasksAreReady)
+    .startWith(store.getState())
     // Map to a subset of state so we can ignore changes of the other parts.
     .map(state => ({
       taskRunners: state.taskRunners,
