@@ -15,6 +15,7 @@ import {compareMessagesByFile} from './paneUtils';
 import {React} from 'react-for-atom';
 import DiagnosticsPanel from './DiagnosticsPanel';
 import {renderReactRoot} from '../../commons-atom/renderReactRoot';
+import {isValidTextEditor} from '../../commons-atom/text-editor';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {toggle} from '../../commons-node/observable';
 import {track} from '../../nuclide-analytics';
@@ -128,7 +129,7 @@ function getPropsStream(
     atom.workspace.observeActivePaneItem.bind(atom.workspace),
   )
     .map(paneItem => {
-      if (atom.workspace.isTextEditor(paneItem)) {
+      if (isValidTextEditor(paneItem)) {
         const textEditor: atom$TextEditor = (paneItem: any);
         return textEditor ? textEditor.getPath() : null;
       }

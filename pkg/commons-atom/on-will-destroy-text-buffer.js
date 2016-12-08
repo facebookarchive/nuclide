@@ -10,12 +10,13 @@
  */
 
 import invariant from 'assert';
+import {isValidTextEditor} from './text-editor';
 
 export default function onWillDestroyTextBuffer(
   callback: (buffer: atom$TextBuffer) => mixed,
 ): IDisposable {
   return atom.workspace.onWillDestroyPaneItem(({item}) => {
-    if (!atom.workspace.isTextEditor(item)) {
+    if (!isValidTextEditor(item)) {
       return;
     }
 

@@ -23,6 +23,7 @@ import Immutable from 'immutable';
 import {track} from '../../nuclide-analytics';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {goToLocation} from '../../commons-atom/go-to-location';
+import {isValidTextEditor} from '../../commons-atom/text-editor';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 
 import os from 'os';
@@ -225,7 +226,7 @@ class FileTreeController {
     if (
       editorElement == null ||
       typeof editorElement.getModel !== 'function' ||
-      !atom.workspace.isTextEditor(editorElement.getModel())
+      !isValidTextEditor(editorElement.getModel())
     ) {
       return;
     }

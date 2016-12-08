@@ -157,8 +157,18 @@ export function enforceSoftWrap(
  */
 export function observeTextEditors(callback: (editor: atom$TextEditor) => mixed): IDisposable {
   return atom.workspace.observeTextEditors(editor => {
-    if (!nuclideUri.isBrokenDeserializedUri(editor.getPath())) {
+    if (isValidTextEditor(editor)) {
       callback(editor);
     }
   });
+}
+
+/**
+ * Checks if an object (typically an Atom pane) is a TextEditor with a non-broken path.
+ */
+export function isValidTextEditor(item: mixed): boolean {
+  if (atom.workspace.isTextEditor(item)) {
+    return !nuclideUri.isBrokenDeserializedUri(((item: any): atom$TextEditor).getPath());
+  }
+  return false;
 }

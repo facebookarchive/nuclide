@@ -125,6 +125,7 @@ describe('TextEventDispatcher', () => {
     fakeTextEditor = makeFakeEditor('foo');
     fakeTextEditor2 = makeFakeEditor('bar');
     activeEditor = fakeTextEditor;
+    spyOn(atom.workspace, 'isTextEditor').andReturn(true);
     spyOn(atom.workspace, 'observeTextEditors').andCallFake(fakeObserveEditors);
     spyOn(atom.workspace, 'getActiveTextEditor').andCallFake(() => activeEditor);
     spyOn(atom.workspace, 'getTextEditors').andReturn([fakeTextEditor, fakeTextEditor2]);

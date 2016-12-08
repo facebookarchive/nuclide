@@ -15,6 +15,7 @@ import {
   Emitter,
 } from 'atom';
 
+import {isValidTextEditor} from '../../commons-atom/text-editor';
 import {arrayCompact} from '../../commons-node/collection';
 import {
   isGkEnabled,
@@ -204,7 +205,7 @@ export class NuxManager {
     // The `paneItem` is not guaranteed to be an instance of `TextEditor` from
     // Atom's API, but usually is.  We return if the type is not `TextEditor`
     // since `NuxTour.isReady` expects a `TextEditor` as its argument.
-    if (!atom.workspace.isTextEditor(paneItem)) {
+    if (!isValidTextEditor(paneItem)) {
       return;
     }
     // Flow doesn't understand the refinement done above.

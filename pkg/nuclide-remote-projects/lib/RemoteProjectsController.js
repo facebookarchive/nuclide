@@ -14,6 +14,7 @@ import {ServerConnection} from '../../nuclide-remote-connection';
 import {React, ReactDOM} from 'react-for-atom';
 import {CompositeDisposable, Disposable} from 'atom';
 import StatusBarTile from './StatusBarTile';
+import {isValidTextEditor} from '../../commons-atom/text-editor';
 import nuclideUri from '../../commons-node/nuclideUri';
 import ConnectionState from './ConnectionState';
 
@@ -48,7 +49,7 @@ class RemoteProjectsController {
   _updateConnectionStatus(paneItem: mixed): void {
     this._disposeSubscription();
 
-    if (!atom.workspace.isTextEditor(paneItem)) {
+    if (!isValidTextEditor(paneItem)) {
       this._renderStatusBar(ConnectionState.NONE);
       return;
     }

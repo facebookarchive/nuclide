@@ -10,7 +10,7 @@
  */
 
 import {onDidRemoveProjectPath} from '../../commons-atom/projects';
-import {getViewOfEditor} from '../../commons-atom/text-editor';
+import {getViewOfEditor, isValidTextEditor} from '../../commons-atom/text-editor';
 import {NavigationStackController} from './NavigationStackController';
 import {trackTiming} from '../../nuclide-analytics';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
@@ -48,25 +48,27 @@ class Activation {
 
     const addEditor = (addEvent: AddTextEditorEvent) => {
       const editor = addEvent.textEditor;
-      subscribeEditor(editor);
-      controller.onCreate(editor);
+      if (isValidTextEditor(editor)) {
+        subscribeEditor(editor);
+        controller.onCreate(editor);
+      }
     };
 
     atom.workspace.getTextEditors().forEach(subscribeEditor);
     this._disposables.add(
       atom.workspace.onDidAddTextEditor(addEditor),
       atom.workspace.onDidOpen((event: OnDidOpenEvent) => {
-        if (atom.workspace.isTextEditor(event.item)) {
+        if (isValidTextEditor(event.item)) {
           controller.onOpen((event.item: any));
         }
       }),
       atom.workspace.observeActivePaneItem(item => {
-        if (atom.workspace.isTextEditor(item)) {
+        if (isValidTextEditor(item)) {
           controller.onActivate((item: any));
         }
       }),
       atom.workspace.onDidStopChangingActivePaneItem(item => {
-        if (atom.workspace.isTextEditor(item)) {
+        if (isValidTextEditor(item)) {
           controller.onActiveStopChanging((item: any));
         }
       }),

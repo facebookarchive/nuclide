@@ -21,7 +21,7 @@
 import {Observable} from 'rxjs';
 
 import {observableFromSubscribeFunction} from '../commons-node/event';
-import {getCursorPositions} from './text-editor';
+import {getCursorPositions, isValidTextEditor} from './text-editor';
 import invariant from 'assert';
 
 const DEFAULT_PANE_DEBOUNCE_INTERVAL_MS = 100;
@@ -42,9 +42,9 @@ export function observeActiveEditorsDebounced(
 ): Observable<?atom$TextEditor> {
   return observeActivePaneItemDebounced(debounceInterval)
     .map(paneItem => {
-      if (atom.workspace.isTextEditor(paneItem)) {
-        // Flow cannot understand the type refinement provided by the isTextEditor function, so we
-        // have to cast.
+      if (isValidTextEditor(paneItem)) {
+        // Flow cannot understand the type refinement provided by the isValidTextEditor function,
+        // so we have to cast.
         return ((paneItem: any): atom$TextEditor);
       }
       return null;
