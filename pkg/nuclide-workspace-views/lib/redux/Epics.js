@@ -42,40 +42,6 @@ export function registerLocationFactoryEpic(
 }
 
 /**
- * Create and show an item of the specified type.
- */
-export function createViewableEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions.ofType(Actions.CREATE_VIEWABLE)
-    .switchMap(action => {
-      invariant(action.type === Actions.CREATE_VIEWABLE);
-      const {uri} = action.payload;
-      const state = store.getState();
-
-      const item = createViewable(uri, state.openers);
-      if (item == null) {
-        throw new Error(`No opener found for URI ${uri}`);
-      }
-
-      // Find a location for this viewable.
-      let location;
-      const defaultLocationId = item.getDefaultLocation != null ? item.getDefaultLocation() : null;
-      if (defaultLocationId != null) {
-        location = state.locations.get(defaultLocationId);
-      }
-
-      if (location == null) {
-        return Observable.empty();
-      }
-
-      location.showItem(item);
-      return Observable.of(Actions.itemCreated(item, uri));
-    });
-}
-
-/**
  * Convert actions into tracking events. We perform the side-effect of actually calling track in
  * another epic and keep this one pure.
  */
@@ -113,41 +79,100 @@ export function trackEpic(
     .ignoreElements();
 }
 
+export function openEpic(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Action> {
+  return bufferUntilDidActivateInitialPackages(actions)
+    .filter(action => action.type === Actions.OPEN)
+    .switchMap(action => {
+      const state = store.getState();
+      invariant(action.type === Actions.OPEN);
+      const {uri, options} = action.payload;
+      const {searchAllPanes, activateItem, activateLocation} = options;
+
+      let itemAndLocation;
+      let item;
+      let location;
+      let itemCreated = false;
+
+      if (searchAllPanes) {
+        itemAndLocation = findItem(
+          state.locations.values(),
+          it => it.getURI != null && it.getURI() === uri,
+        );
+      }
+
+      if (itemAndLocation == null) {
+        // We need to create the item.
+        item = createViewable(uri, state.openers);
+        if (item == null) {
+          throw new Error(`No opener found for URI ${uri}`);
+        }
+
+        // Find a location for this viewable.
+        const defaultLocationId = item.getDefaultLocation != null
+          ? item.getDefaultLocation()
+          : null;
+        if (defaultLocationId != null) {
+          location = state.locations.get(defaultLocationId);
+        }
+
+        // If we don't have a location, just use any one we know about.
+        if (location == null) {
+          location = getFirstValue(state.locations);
+        }
+
+        // If we still don't have a location, give up.
+        if (location == null) {
+          return Observable.empty();
+        }
+
+        itemCreated = true;
+      } else {
+        item = itemAndLocation.item;
+        location = itemAndLocation.location;
+      }
+
+      location.addItem(item);
+
+      if (activateItem) {
+        location.activateItem(item);
+      }
+
+      if (activateLocation) {
+        location.activate();
+      }
+
+      return itemCreated
+        ? Observable.of(Actions.itemCreated(item, uri))
+        : Observable.empty();
+    });
+}
+
 export function toggleItemVisibilityEpic(
   actions: ActionsObservable<Action>,
   store: Store,
 ): Observable<Action> {
-  const visibilityActions = actions.filter(
-    action => action.type === Actions.TOGGLE_ITEM_VISIBILITY || action.type === Actions.OPEN,
-  );
-  return bufferUntilDidActivateInitialPackages(visibilityActions)
-    .map(action => {
-      const {payload} = action;
-      switch (action.type) {
-        case Actions.TOGGLE_ITEM_VISIBILITY:
-          return {...payload, searchAllPanes: true};
-        case Actions.OPEN:
-          return {...payload, visible: true};
-        default:
-          throw new Error(`Invalid action type: ${action.type}`);
-      }
-    })
-    .switchMap(({uri, searchAllPanes, visible}) => {
+  return bufferUntilDidActivateInitialPackages(actions)
+    .filter(action => action.type === Actions.TOGGLE_ITEM_VISIBILITY)
+    .switchMap(action => {
+      invariant(action.type === Actions.TOGGLE_ITEM_VISIBILITY);
+      const {uri, visible} = action.payload;
       const state = store.getState();
 
       // Does an item matching this URI already exist?
-      const itemsAndLocations = searchAllPanes
-        ? findAllItems(
-          state.locations.values(), it => it.getURI != null && it.getURI() === uri,
-        )
-        : [];
+      const itemsAndLocations = findAllItems(
+        state.locations.values(),
+        it => it.getURI != null && it.getURI() === uri,
+      );
 
       if (itemsAndLocations.length === 0) {
         if (visible === false) {
           return Observable.empty();
         }
         // We need to create and add the item.
-        return Observable.of(Actions.createViewable(uri));
+        return Observable.of(Actions.open(uri, {searchAllPanes: false}));
       }
 
       // Change the visibility of all matching items. If some are visible and some aren't, this
@@ -178,7 +203,8 @@ export function setItemVisibilityEpic(
       const location = store.getState().locations.get(locationId);
       invariant(location != null);
       if (visible) {
-        location.showItem(item);
+        location.activateItem(item);
+        location.activate();
       } else {
         location.hideItem(item);
       }
@@ -243,6 +269,19 @@ function findAllItems(
   return itemsAndLocations;
 }
 
+function findItem(
+  locations: Iterable<Location>,
+  predicate: (item: Viewable) => boolean,
+): ?ItemAndLocation {
+  for (const location of locations) {
+    for (const item of location.getItems()) {
+      if (predicate(item)) {
+        return {item, location};
+      }
+    }
+  }
+}
+
 function getLocationId(location: Location, state: AppState): string {
   for (const [id, loc] of state.locations.entries()) {
     if (location === loc) {
@@ -262,16 +301,21 @@ function createViewable(uri: string, openers: Set<Opener>): ?Viewable {
   }
 }
 
-const nextTick = Observable.create(observer => { process.nextTick(() => { observer.next(); }); });
-
 /**
- * Some packages (nuclide-home) will call the command that triggers this action during their
- * activation. However, that may be before locations have had a chance to register. Therefore, we
- * want to defer the command. Atom does offer an event for listening to when the activation phase is
- * done (`PackageManager::onDidActivateInitialPackages`), but there's no way to tell if we missed
- * it! So we'll just settle for using `nextTick`.
+ * Some packages (nuclide-home) will call the command that triggers actions during their activation.
+ * However, that may be before locations have had a chance to register. Therefore, we want to defer
+ * the command.
  */
-function bufferUntilDidActivateInitialPackages<T>(source: Observable<T>): Observable<T> {
-  const missed = source.buffer(nextTick).take(1).concatAll();
-  return Observable.concat(missed, source);
+function bufferUntilDidActivateInitialPackages(
+  actions: ActionsObservable<Action>,
+): Observable<Action> {
+  const didActivateInitialPackages = actions.ofType(Actions.DID_ACTIVATE_INITIAL_PACKAGES).take(1);
+  const missed = actions.buffer(didActivateInitialPackages).take(1).concatAll();
+  return Observable.concat(missed, actions);
+}
+
+function getFirstValue<T>(map: Map<any, T>): ?T {
+  for (const value of map.values()) {
+    return value;
+  }
 }

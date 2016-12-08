@@ -24,8 +24,21 @@ export class PaneLocation {
     );
   }
 
+  activate(): void {
+    // No need to do anything; this is always visible.
+  }
+
   addItem(item: Viewable): void {
     atom.workspace.getActivePane().addItem(item);
+  }
+
+  activateItem(item: Viewable): void {
+    let pane = atom.workspace.paneForItem(item);
+    if (pane == null) {
+      pane = atom.workspace.getActivePane();
+    }
+    pane.activate();
+    pane.activateItem(item);
   }
 
   /**
@@ -64,16 +77,6 @@ export class PaneLocation {
   itemIsVisible(item: Viewable): boolean {
     const pane = atom.workspace.paneForItem(item);
     return pane != null && pane.getActiveItem() === item;
-  }
-
-  showItem(item: Viewable): void {
-    let pane = atom.workspace.paneForItem(item);
-    if (pane == null) {
-      pane = atom.workspace.getActivePane();
-      pane.addItem(item);
-    }
-    pane.activate();
-    pane.activateItem(item);
   }
 
   serialize(): ?Object {

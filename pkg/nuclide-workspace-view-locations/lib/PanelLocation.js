@@ -245,15 +245,24 @@ export class PanelLocation extends SimpleModel<State> {
     return items;
   }
 
-  showItem(item: Viewable): void {
+  activate(): void {
+    this.setState({visible: true});
+  }
+
+  addItem(item: Viewable): void {
     let pane = this._paneContainer.paneForItem(item);
     if (pane == null) {
       pane = this._paneContainer.getActivePane();
-      pane.addItem(item);
     }
-    pane.activate();
+    pane.addItem(item);
+  }
+
+  activateItem(item: Viewable): void {
+    let pane = this._paneContainer.paneForItem(item);
+    if (pane == null) {
+      pane = this._paneContainer.getActivePane();
+    }
     pane.activateItem(item);
-    this.setState({visible: true});
   }
 
   /**

@@ -22,6 +22,8 @@ import type {
 import createPackage from '../../commons-atom/createPackage';
 import {combineEpics, createEpicMiddleware} from '../../commons-node/redux-observable';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import {observableFromSubscribeFunction} from '../../commons-node/event';
+import {nextTick} from '../../commons-node/observable';
 import {getLogger} from '../../nuclide-logging';
 import * as AppSerialization from './AppSerialization';
 import * as Actions from './redux/Actions';
@@ -33,12 +35,32 @@ import {applyMiddleware, combineReducers, createStore} from 'redux';
 
 class Activation {
   _disposables: UniversalDisposable;
+  _needToDispatchActivatedAction: boolean;
   _store: Store;
   _rawState: ?Object;
 
   constructor(rawState: ?Object) {
-    this._disposables = new UniversalDisposable();
+    this._needToDispatchActivatedAction = false;
+
+    this._disposables = new UniversalDisposable(
+      // We don't know if this package is being activated as part of Atom's initial package
+      // activation phase or being enabled through the settings later (in which case we would have
+      // missed the `onDidActivatePackage` event).
+      observableFromSubscribeFunction(cb => atom.packages.onDidActivatePackage(cb)).race(nextTick)
+        .first()
+        .subscribe(() => {
+          this._needToDispatchActivatedAction = true;
+          this._maybeDispatchActivatedAction();
+        }),
+    );
     this._rawState = rawState;
+  }
+
+  _maybeDispatchActivatedAction(): void {
+    if (this._needToDispatchActivatedAction && this._store != null) {
+      this._needToDispatchActivatedAction = false;
+      this._store.dispatch(Actions.didActivateInitialPackages());
+    }
   }
 
   dispose(): void {
@@ -49,6 +71,7 @@ class Activation {
     if (this._store == null) {
       this._store = createPackageStore(this._rawState || {});
       this._rawState = null;
+      this._maybeDispatchActivatedAction();
     }
     return this._store;
   }

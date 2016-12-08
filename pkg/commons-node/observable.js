@@ -283,3 +283,10 @@ export function throttle<T>(
     );
   });
 }
+
+export const nextTick = Observable.create(observer => {
+  process.nextTick(() => {
+    observer.next();
+    observer.complete();
+  });
+});

@@ -33,16 +33,20 @@ export type Viewable = atom$PaneItem & {
 export type Opener = (uri: string) => ?Viewable;
 
 export type OpenOptions = {
+  activateItem?: boolean,
+  activateLocation?: boolean,
   searchAllPanes?: boolean,
 };
 
 export type Location = {
+  activate(): void,
+  activateItem(item: Object): void,
+  addItem(item: Object): void,
   destroy(): void,
   destroyItem(item: Object): void,
   getItems(): Array<Viewable>,
   hideItem(item: Viewable): void,
   itemIsVisible(item: Viewable): boolean,
-  showItem(item: Viewable): void,
   serialize(): ?Object,
 };
 
@@ -96,6 +100,10 @@ type DestroyWhereAction = {
   },
 };
 
+type DidActivateInitialPackagesAction = {
+  type: 'DID_ACTIVATE_INITIAL_PACKAGES',
+};
+
 type RemoveOpenerAction = {
   type: 'REMOVE_OPENER',
   payload: {
@@ -107,14 +115,11 @@ type OpenAction = {
   type: 'OPEN',
   payload: {
     uri: string,
-    searchAllPanes: boolean,
-  },
-};
-
-type CreateViewableAction = {
-  type: 'CREATE_VIEWABLE',
-  payload: {
-    uri: string,
+    options: {
+      searchAllPanes: boolean,
+      activateItem: boolean,
+      activateLocation: boolean,
+    },
   },
 };
 
@@ -182,9 +187,9 @@ type TrackAction = {
 export type Action =
   AddOpenerAction
   | DestroyWhereAction
+  | DidActivateInitialPackagesAction
   | RemoveOpenerAction
   | OpenAction
-  | CreateViewableAction
   | ItemCreatedAction
   | TrackAction
   | RegisterLocationAction

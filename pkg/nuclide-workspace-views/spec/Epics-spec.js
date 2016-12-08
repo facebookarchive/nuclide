@@ -19,7 +19,7 @@ import type {
 
 import * as Actions from '../lib/redux/Actions';
 import {
-  createViewableEpic,
+  openEpic,
   registerLocationFactoryEpic,
   setItemVisibilityEpic,
   trackActionsEpic,
@@ -56,11 +56,11 @@ describe('Epics', () => {
     });
   });
 
-  describe('createViewableEpic', () => {
-    it('create and shows items', () => {
+  describe('openEpic', () => {
+    it('creates and shows items', () => {
       const VIEW_URI = 'atom://nuclide/test';
       const item = createMockViewable();
-      const opener = jasmine.createSpy().andReturn(item);
+      const opener = jasmine.createSpy('opener').andReturn(item);
       const location = createMockLocation();
       const store = {
         getState: () => ({
@@ -69,16 +69,16 @@ describe('Epics', () => {
         }),
       };
 
-      spyOn(location, 'showItem');
+      spyOn(location, 'activateItem');
 
       runActions(
-        [Actions.createViewable(VIEW_URI)],
-        createViewableEpic,
+        [Actions.didActivateInitialPackages(), Actions.open(VIEW_URI, {searchAllPanes: false})],
+        openEpic,
         ((store: any): Store),
       );
 
       expect(opener).toHaveBeenCalled();
-      expect(location.showItem).toHaveBeenCalledWith(item);
+      expect(location.activateItem).toHaveBeenCalledWith(item);
     });
   });
 
@@ -92,14 +92,14 @@ describe('Epics', () => {
       };
       const item = createMockViewable();
 
-      spyOn(location, 'showItem');
+      spyOn(location, 'activateItem');
 
       runActions(
         [Actions.setItemVisibility({item, locationId: 'test-location', visible: true})],
         setItemVisibilityEpic,
         ((store: any): Store),
       );
-      expect(location.showItem).toHaveBeenCalledWith(item);
+      expect(location.activateItem).toHaveBeenCalledWith(item);
     });
 
     it('hides items', () => {
@@ -170,11 +170,12 @@ function createMockLocationFactory(): LocationFactory {
 
 function createMockLocation(): Location {
   const location = {
+    activateItem: item => {},
+    addItem: item => {},
     destroy: () => {},
     destroyItem: item => {},
     getItems: () => {},
     hideItem: item => {},
-    showItem: item => {},
   };
   return ((location: any): Location);
 }

@@ -14,9 +14,9 @@ import type {Action, Location, LocationFactory, Opener, OpenOptions, Viewable} f
 
 export const ADD_OPENER = 'ADD_OPENER';
 export const DESTROY_WHERE = 'DESTROY_WHERE';
+export const DID_ACTIVATE_INITIAL_PACKAGES = 'DID_ACTIVATE_INITIAL_PACKAGES';
 export const REMOVE_OPENER = 'REMOVE_OPENER';
 export const OPEN = 'OPEN';
-export const CREATE_VIEWABLE = 'CREATE_VIEWABLE';
 export const ITEM_CREATED = 'ITEM_CREATED';
 export const SET_ITEM_VISIBILITY = 'SET_ITEM_VISIBILITY';
 export const TOGGLE_ITEM_VISIBILITY = 'TOGGLE_ITEM_VISIBILITY';
@@ -40,6 +40,10 @@ export function destroyWhere(predicate: (item: Viewable) => boolean): Action {
   };
 }
 
+export function didActivateInitialPackages(): Action {
+  return {type: DID_ACTIVATE_INITIAL_PACKAGES};
+}
+
 export function removeOpener(opener: Opener): Action {
   return {
     type: REMOVE_OPENER,
@@ -52,15 +56,12 @@ export function open(uri: string, options?: OpenOptions): Action {
     type: OPEN,
     payload: {
       uri,
-      searchAllPanes: Boolean(options && options.searchAllPanes === true),
+      options: {
+        searchAllPanes: Boolean(options && options.searchAllPanes === true),
+        activateItem: options == null || options.activateItem !== false,
+        activateLocation: options == null || options.activateLocation !== false,
+      },
     },
-  };
-}
-
-export function createViewable(uri: string): Action {
-  return {
-    type: CREATE_VIEWABLE,
-    payload: {uri},
   };
 }
 
