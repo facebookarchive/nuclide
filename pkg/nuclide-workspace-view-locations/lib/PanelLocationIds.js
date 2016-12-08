@@ -14,5 +14,5 @@ export const RIGHT_PANEL = 'right-panel';
 export const BOTTOM_PANEL = 'bottom-panel';
 export const LEFT_PANEL = 'left-panel';
 
-// For now, we just show the bottom and right panels.
-export default [RIGHT_PANEL, BOTTOM_PANEL];
+// For now, we just show the left, bottom and right panels.
+export default [LEFT_PANEL, RIGHT_PANEL, BOTTOM_PANEL];
