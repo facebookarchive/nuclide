@@ -192,6 +192,7 @@ export default class DiffCommitView extends React.Component {
       <div className="nuclide-diff-mode">
         <div className="message-editor-wrapper">
           <AtomTextEditor
+            grammar={atom.grammars.grammarForScopeName('source.fb-arcanist-editor')}
             gutterHidden={true}
             path=".HG_COMMIT_EDITMSG"
             readOnly={this._isLoading()}

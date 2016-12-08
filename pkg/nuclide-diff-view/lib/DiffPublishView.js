@@ -133,6 +133,7 @@ export default class DiffPublishView extends React.Component {
       || publishModeState === PublishModeState.AWAITING_PUBLISH;
     return (
       <AtomTextEditor
+        grammar={atom.grammars.grammarForScopeName('source.fb-arcanist-editor')}
         ref="message"
         softWrapped={true}
         readOnly={isBusy}
