@@ -11,6 +11,8 @@
 
 const TREE_API_DATA_PATH = 'data-path';
 
+import invariant from 'assert';
+
 /**
  * This shouldn't be used for the `file-tree` as it's replaced by
  * the `FileTreeContextMenu` API.
@@ -18,12 +20,13 @@ const TREE_API_DATA_PATH = 'data-path';
  */
 export default function uiTreePath(
   event: Event | {currentTarget: EventTarget},
-): string {
+): ?string {
   // Event target isn't necessarily an HTMLElement,
   // but that's guaranteed in the usages here.
   const target: HTMLElement = (event.currentTarget: any);
   const nameElement = target.hasAttribute(TREE_API_DATA_PATH)
     ? target
     : target.querySelector(`[${TREE_API_DATA_PATH}]`);
+  invariant(nameElement != null);
   return nameElement.getAttribute(TREE_API_DATA_PATH);
 }

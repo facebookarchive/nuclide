@@ -111,11 +111,11 @@ describe('FlowAutocompleteProvider', () => {
       return suggestions.map(item => item.text);
     }
 
-    async function getNameSet(): Promise<Set<string>> {
+    async function getNameSet(): Promise<Set<?string>> {
       return new Set(await getNameArray());
     }
 
-    function hasEqualElements(set1: Set<string>, set2: Set<string>): boolean {
+    function hasEqualElements(set1: Set<?string>, set2: Set<?string>): boolean {
       if (set1.size !== set2.size) {
         return false;
       }

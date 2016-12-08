@@ -40,7 +40,7 @@ describe('Buck building via toolbar', () => {
   });
 
   it('builds a project', () => {
-    let buildToolbar: HTMLElement;
+    let buildToolbar: ?HTMLElement;
     const workspaceView = atom.views.getView(atom.workspace);
 
     waitsForPromise(async () => {
@@ -73,26 +73,30 @@ describe('Buck building via toolbar', () => {
       },
     );
 
-    let combobox: HTMLElement;
+    let combobox: ?HTMLElement;
     waitsFor(
       'the target combobox to appear',
       200,
-      () => (
-        combobox = buildToolbar.querySelector('.nuclide-buck-target-combobox')
-      ),
+      () => {
+        invariant(buildToolbar != null);
+        combobox = buildToolbar.querySelector('.nuclide-buck-target-combobox');
+        return combobox;
+      },
     );
 
     // Focus on the build toolbar target combobox field.
-    let targetField: HTMLElement;
+    let targetField: ?HTMLElement;
     runs(() => {
       // Focus on the build toolbar target field.
+      invariant(combobox != null);
       targetField = combobox.querySelector('atom-text-editor');
       const event = new MouseEvent('focus');
+      invariant(targetField != null);
       targetField.dispatchEvent(event);
     });
 
     // Wait for the results.
-    let listGroup: HTMLElement;
+    let listGroup: ?HTMLElement;
     waitsFor(
       'results to appear',
       30000,
@@ -106,6 +110,7 @@ describe('Buck building via toolbar', () => {
 
     waitsForPromise(async () => {
       // It shouldn't have errored.
+      invariant(listGroup != null);
       const errorMessageEl = listGroup.querySelector('.text-error');
       const errorText = errorMessageEl == null ? null : errorMessageEl.innerText;
       expect(errorMessageEl).toBeNull(`Buck failed with the following error: ${errorText || ''}`);
@@ -123,10 +128,12 @@ describe('Buck building via toolbar', () => {
       // Run the project
       atom.commands.dispatch(workspaceView, 'nuclide-task-runner:run-selected-task');
 
+      invariant(buildToolbar != null);
       // The Build task should be selected.
       const button = buildToolbar.querySelector(
         '.nuclide-task-runner-toolbar-contents .nuclide-task-runner-system-task-button',
       );
+      invariant(button != null);
       expect(button.textContent).toBe('Build');
     });
 

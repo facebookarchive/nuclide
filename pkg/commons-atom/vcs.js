@@ -215,8 +215,9 @@ async function hgActionToPath(
 
 export function getHgRepositories(): Set<HgRepositoryClient> {
   return new Set(
-    arrayCompact(atom.project.getRepositories())
-      .filter(repository => repository.getType() === 'hg'),
+    (arrayCompact(atom.project.getRepositories())
+      // Flow doesn't understand that this filters to hg repositories only, so cast through `any`
+      .filter(repository => repository.getType() === 'hg'): Array<any>),
   );
 }
 

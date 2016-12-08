@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import invariant from 'assert';
+
 import {track} from '../../nuclide-analytics';
 
 type MoveOperation = 'up' | 'down' | 'right' | 'left';
@@ -94,6 +96,8 @@ function findTargetPane(
     candidatePanes.sort((pane1, pane2) => {
       const rect1 = paneToRect.get(pane1);
       const rect2 = paneToRect.get(pane2);
+      invariant(rect1 != null);
+      invariant(rect2 != null);
       const comp = primaryComparator(rect1) - primaryComparator(rect2);
       if (comp !== 0) {
         return comp;

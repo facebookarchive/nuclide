@@ -38,9 +38,18 @@ export function getAutocompleteSuggestions(): Array<AutocompleteSuggestion> {
   const items = Array.from(view.querySelectorAll('li'));
 
   return items.map(node => {
-    const word = node.querySelector('.word').innerText;
-    const leftLabel = node.querySelector('.left-label').innerText;
-    const rightLabel = node.querySelector('.right-label').innerText;
+    const wordElement = node.querySelector('.word');
+    invariant(wordElement != null);
+    const word = wordElement.innerText;
+
+    const leftLabelElement = node.querySelector('.left-label');
+    invariant(leftLabelElement != null);
+    const leftLabel = leftLabelElement.innerText;
+
+    const rightLabelElement = node.querySelector('.right-label');
+    invariant(rightLabelElement != null);
+    const rightLabel = rightLabelElement.innerText;
+
     invariant(word != null);
     invariant(leftLabel != null);
     invariant(rightLabel != null);

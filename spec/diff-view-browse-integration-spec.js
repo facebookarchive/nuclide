@@ -67,8 +67,8 @@ describe('Diff View Browse Mode Integration Test', () => {
       return diffViewElement != null && diffViewElement.tagName === 'NUCLIDE-DIFF-VIEW';
     });
 
-    let revisionsTimelineElement: HTMLElement = (null: any);
-    let treeElement: HTMLElement = (null: any);
+    let revisionsTimelineElement: ?HTMLElement = (null: any);
+    let treeElement: ?HTMLElement = (null: any);
 
     runs(() => {
       invariant(diffViewElement);
@@ -86,6 +86,7 @@ describe('Diff View Browse Mode Integration Test', () => {
     let revisionLabels = [];
 
     waitsFor('revisions to load', () => {
+      invariant(revisionsTimelineElement != null);
       revisionLabels = revisionsTimelineElement.querySelectorAll('.revision-label');
       return revisionLabels.length > 0;
     });
@@ -99,6 +100,7 @@ describe('Diff View Browse Mode Integration Test', () => {
 
     let diffFiles = [];
     waitsFor('file changes to load', () => {
+      invariant(treeElement != null);
       diffFiles = treeElement.querySelectorAll('.nuclide-file-changes-file-entry');
       return diffFiles.length > 2;
     });
@@ -114,6 +116,7 @@ describe('Diff View Browse Mode Integration Test', () => {
       expect(uiTreePath(({currentTarget: diffFiles[2]}: any))).toBe(
         nuclideUri.join(localRepoPath, 'untracked.txt'),
       );
+      invariant(treeElement != null);
       const treeRoots = treeElement.querySelectorAll('.nuclide-file-changes-root-entry');
       expect(treeRoots.length).toBe(0);
     });

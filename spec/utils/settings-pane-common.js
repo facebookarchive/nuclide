@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import invariant from 'assert';
+
 import featureConfig from '../../pkg/commons-atom/featureConfig';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {
@@ -21,12 +23,18 @@ import {TestUtils} from 'react-for-atom';
 type elementGetValue = (element: any) => any;
 type elementSetValue = (element: any, newValue: any) => void;
 
-function canonicalKeyPath(keyPath: string) {
+function canonicalKeyPath(keyPath: string): string {
   return keyPath.replace(/\./g, '_');
 }
 
-function idSelector(keyPath: string) {
+function idSelector(keyPath: string): string {
   return '#' + canonicalKeyPath(keyPath);
+}
+
+function elementForKeyPath(keyPath: string): HTMLElement {
+  const element = document.querySelector(idSelector(keyPath));
+  invariant(element != null);
+  return element;
 }
 
 // function classSelector(keyPath: string) {
@@ -72,7 +80,7 @@ function testSettingsComponent(
 export function testSettingsCheckbox(keyPath: string, value: boolean) {
   testSettingsComponent(
     keyPath,
-    document.querySelector(idSelector(keyPath)),
+    elementForKeyPath(keyPath),
     value,
     !value,
     (element: HTMLInputElement) => { return element.checked; },
@@ -87,7 +95,7 @@ export function testSettingsCheckbox(keyPath: string, value: boolean) {
 export function testSettingsSelect(keyPath: string, value: mixed, tmpValue: mixed) {
   testSettingsComponent(
     keyPath,
-    document.querySelector(idSelector(keyPath)),
+    elementForKeyPath(keyPath),
     value,
     tmpValue,
     (element: HTMLInputElement) => { return element.value; },

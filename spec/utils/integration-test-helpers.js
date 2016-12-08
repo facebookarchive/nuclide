@@ -42,7 +42,9 @@ export function jasmineIntegrationTestSetup(): void {
     height: 600px;
     width: 1000px;
   `;
-  document.querySelector('#jasmine-content').setAttribute('style', styleCSS);
+  const element = document.querySelector('#jasmine-content');
+  invariant(element != null);
+  element.setAttribute('style', styleCSS);
 
   // Unmock timer functions.
   jasmine.useRealClock();

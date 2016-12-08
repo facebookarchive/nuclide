@@ -11,6 +11,7 @@
 
 /* global getComputedStyle */
 
+import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
 import debounce from '../../commons-node/debounce';
 import {maybeToString} from '../../commons-node/string';
@@ -241,6 +242,7 @@ export class NuxView {
       const nextElementClickListener =
         this._handleDisposableClick.bind(this, true /* continue to the next NUX in the tour */);
       const nextElement = document.querySelector(`.nuclide-nux-next-link-${this._index}`);
+      invariant(nextElement != null);
       nextElement.addEventListener('click', nextElementClickListener);
       this._disposables.add(new Disposable(() =>
         nextElement.removeEventListener('click', nextElementClickListener),
@@ -254,6 +256,7 @@ export class NuxView {
         this._handleDisposableClick.bind(this, false  /* skip to the end of the tour */) :
         this._handleDisposableClick.bind(this, true /* continue to the next NUX in the tour */);
     const dismissElement = document.querySelector(`.nuclide-nux-dismiss-link-${this._index}`);
+    invariant(dismissElement != null);
     dismissElement.addEventListener('click', dismissElementClickListener);
 
     this._disposables.add(new Disposable(() =>

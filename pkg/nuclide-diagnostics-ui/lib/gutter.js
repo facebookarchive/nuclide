@@ -284,6 +284,7 @@ function showPopupFor(
   // Check to see whether the popup is within the bounds of the TextEditor. If not, display it above
   // the glyph rather than below it.
   const editor = itemToEditor.get(item);
+  invariant(editor != null);
   const editorElement = atom.views.getView(editor);
   const {top: editorTop, height: editorHeight} = editorElement.getBoundingClientRect();
   const {top: itemTop, height: itemHeight} = item.getBoundingClientRect();

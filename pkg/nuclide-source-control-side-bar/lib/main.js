@@ -21,6 +21,7 @@ import type {FileChangeStatusValue} from '../../commons-atom/vcs';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
 
+import invariant from 'assert';
 import * as ActionType from './ActionType';
 import {applyActionMiddleware} from './applyActionMiddleware';
 import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
@@ -176,6 +177,7 @@ function accumulateSetBookmarkIsLoading(state: AppState, action: SetBookmarkIsLo
   let repositoryBookmarksIsLoading;
   if (state.repositoryBookmarksIsLoading.has(repository)) {
     repositoryBookmarksIsLoading = state.repositoryBookmarksIsLoading.get(repository);
+    invariant(repositoryBookmarksIsLoading != null);
   } else {
     repositoryBookmarksIsLoading = [];
   }

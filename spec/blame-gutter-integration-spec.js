@@ -11,13 +11,14 @@
 
 import type {TestContext} from './utils/remotable-tests';
 
+import invariant from 'assert';
 import {generateHgRepo2Fixture} from '../pkg/nuclide-test-helpers';
 import {describeRemotableTest} from './utils/remotable-tests';
 
 describeRemotableTest('Blame gutter integration test', (context: TestContext) => {
   it('renders the blame gutter', () => {
     let textEditorView: HTMLElement = (null: any);
-    let blameGutter: HTMLElement = (null: any);
+    let blameGutter: ?HTMLElement = (null: any);
     let blameEntries: Array<HTMLElement> = (null: any);
 
     waitsForPromise({timeout: 60000}, async () => {
@@ -41,6 +42,7 @@ describeRemotableTest('Blame gutter integration test', (context: TestContext) =>
     });
 
     waitsFor('blame information to populate', 10000, () => {
+      invariant(blameGutter != null);
       blameEntries = Array.from(blameGutter.querySelectorAll('.blame-decoration'));
       return blameEntries.length;
     });

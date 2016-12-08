@@ -71,6 +71,7 @@ class Activation {
         'nuclide-test-runner:run-tests',
         event => {
           const target = ((event.currentTarget: any): HTMLElement).querySelector('.name');
+          invariant(target != null);
           this.getController().runTests(target.dataset.path);
           // Ensure ancestors of this element don't attempt to run tests as well.
           event.stopPropagation();
@@ -84,6 +85,7 @@ class Activation {
         'nuclide-test-runner:run-tests',
         event => {
           const target = ((event.currentTarget: any): HTMLElement).querySelector('.name');
+          invariant(target != null);
           this.getController().runTests(target.dataset.path);
           // Ensure ancestors of this element don't attempt to run tests as well.
           event.stopPropagation();
@@ -192,6 +194,7 @@ class Activation {
           // If the event did not happen on the `name` span, search for it in the descendants.
           target = target.querySelector('.name');
         }
+        invariant(target != null);
         if (target.dataset.name === undefined) {
           // If no necessary `.name` descendant is found, don't display a context menu.
           return;

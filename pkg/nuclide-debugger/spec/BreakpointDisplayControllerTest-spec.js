@@ -50,7 +50,9 @@ describe('BreakpointDisplayController', () => {
       const editorPath = editor.getPath();
       invariant(editorPath);
       testFilePath = editorPath;
-      document.querySelector('#jasmine-content').appendChild(atom.views.getView(editor));
+      const element = document.querySelector('#jasmine-content');
+      invariant(element != null);
+      element.appendChild(atom.views.getView(editor));
 
       dispatcher = new DebuggerDispatcher();
       store = new BreakpointStore(dispatcher);
@@ -103,7 +105,7 @@ describe('BreakpointDisplayController', () => {
     const gutter = editor.gutterWithName('line-number');
     invariant(gutter);
     const lineNumberElem = atom.views.getView(gutter).querySelector('.line-number');
-    expect(lineNumberElem).not.toBeNull();
+    invariant(lineNumberElem != null);
     simulateClickAtBufferPosition(lineNumberElem, 1);
     expect(utils.hasBreakpointDecorationInRow(editor, 1)).toBe(true);
     simulateClickAtBufferPosition(lineNumberElem, 1);

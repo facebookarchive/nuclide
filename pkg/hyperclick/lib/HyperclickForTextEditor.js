@@ -90,7 +90,8 @@ export default class HyperclickForTextEditor {
         (process.platform === 'win32' ? 'nuclide.hyperclick.win32TriggerKeys' :
                                         'nuclide.hyperclick.linuxTriggerKeys'),
         (newValue: string) => {
-          this._triggerKeys = new Set(newValue.split(','));
+          // For all Flow knows, newValue.split could return any old strings
+          this._triggerKeys = (new Set(newValue.split(',')): Set<any>);
         },
       ),
     );

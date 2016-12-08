@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import invariant from 'assert';
+
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {FileTreeStore} from '../../pkg/nuclide-file-tree/lib/FileTreeStore';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
@@ -29,6 +31,7 @@ export function runTest(context: TestContext) {
     });
 
     runs(() => {
+      invariant(elem != null);
       // Open file tree
       atom.commands.dispatch(elem, 'nuclide-file-tree:toggle');
       store.clearFilter();

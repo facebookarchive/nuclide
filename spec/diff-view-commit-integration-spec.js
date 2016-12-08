@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import invariant from 'assert';
+
 import {
   activateAllPackages,
   jasmineIntegrationTestSetup,
@@ -49,17 +51,18 @@ xdescribe('Diff View Commit Mode Integration Test', () => {
   it('tests commit view have the changed files & commit/amend works', () => {
     atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-diff-view:open');
 
-    let diffViewElement: HTMLElement = (null: any);
+    let diffViewElement: ?HTMLElement = (null: any);
     waitsFor('diff view to load', 10000, () => {
       diffViewElement = (atom.workspace.getActivePaneItem(): any);
       return diffViewElement != null && diffViewElement.tagName === 'NUCLIDE-DIFF-VIEW';
     });
 
-    let revisionsTimelineElement: HTMLElement = (null: any);
-    let treeElement: HTMLElement = (null: any);
+    let revisionsTimelineElement: ?HTMLElement = (null: any);
+    let treeElement: ?HTMLElement = (null: any);
     let diffFiles = [];
 
     runs(() => {
+      invariant(diffViewElement != null);
       treeElement = diffViewElement.querySelector('.nuclide-diff-view-tree');
       expect(treeElement).not.toBeNull();
       revisionsTimelineElement = diffViewElement.querySelector('.nuclide-diff-timeline');
@@ -74,6 +77,7 @@ xdescribe('Diff View Commit Mode Integration Test', () => {
     let revisionLabels = [];
 
     waitsFor('revisions to load', () => {
+      invariant(revisionsTimelineElement != null);
       revisionLabels = revisionsTimelineElement.querySelectorAll('.revision-title');
       return revisionLabels.length > 0;
     });
@@ -82,12 +86,15 @@ xdescribe('Diff View Commit Mode Integration Test', () => {
     let amendButton: HTMLElement = (null: any);
 
     function getDiffHeaderTitle(): string {
-      return diffViewElement
-        .querySelector('.nuclide-ui-toolbar__center')
-        .textContent;
+      invariant(diffViewElement != null);
+      const headerElement = diffViewElement
+        .querySelector('.nuclide-ui-toolbar__center');
+      invariant(headerElement != null);
+      return headerElement.textContent;
     }
 
     function updateUncommittedButtons(): void {
+      invariant(revisionsTimelineElement != null);
       const uncommittedButtons = revisionsTimelineElement
         .querySelectorAll('.nuclide-diff-rev-side-button');
       commitButton = uncommittedButtons[0];
@@ -95,8 +102,10 @@ xdescribe('Diff View Commit Mode Integration Test', () => {
     }
 
     function getUncommittedChangesText(): string {
+      invariant(revisionsTimelineElement != null);
       const uncommittedNode = revisionsTimelineElement
         .querySelector('.revision-label--uncommitted .revision-title');
+      invariant(uncommittedNode != null);
       return uncommittedNode.textContent;
     }
 
@@ -109,6 +118,7 @@ xdescribe('Diff View Commit Mode Integration Test', () => {
       expect(amendButton).not.toBeNull();
       expect((commitButton: any).disabled).toBe(true);
 
+      invariant(treeElement != null);
       diffFiles = treeElement.querySelectorAll('.file-change');
       expect(diffFiles.length).toBe(0);
 
@@ -121,6 +131,7 @@ xdescribe('Diff View Commit Mode Integration Test', () => {
     });
 
     waitsFor('repo diff status to update', () => {
+      invariant(treeElement != null);
       diffFiles = treeElement.querySelectorAll('.nuclide-file-changes-file-entry');
       return diffFiles.length > 0;
     });
@@ -148,6 +159,7 @@ xdescribe('Diff View Commit Mode Integration Test', () => {
 
     runs(() => {
       expect(/[0-9a-f]{12}...Filesystem \/ Editor/.test(getDiffHeaderTitle())).toBeTruthy();
+      invariant(diffViewElement != null);
       const editorElements = diffViewElement.querySelectorAll('atom-text-editor');
       const oldEditor = ((editorElements[0]: any): atom$TextEditorElement).getModel();
       const newEditor = ((editorElements[1]: any): atom$TextEditorElement).getModel();
@@ -174,14 +186,16 @@ xdescribe('Diff View Commit Mode Integration Test', () => {
     });
 
     waitsFor('commit mode to open', () => {
+      invariant(diffViewElement != null);
       return (
         diffViewElement.querySelector('.commit-form-wrapper') != null ||
         diffViewElement.querySelector('.message-editor-wrapper') != null
       );
     });
 
-    let commitModeContainer: HTMLElement = (null: any);
+    let commitModeContainer: ?HTMLElement = (null: any);
     runs(() => {
+      invariant(diffViewElement != null);
       revisionsTimelineElement = diffViewElement.querySelector('.nuclide-diff-timeline');
       expect(revisionsTimelineElement).toBeNull();
       commitModeContainer = diffViewElement.querySelector('.nuclide-diff-mode');
@@ -189,6 +203,7 @@ xdescribe('Diff View Commit Mode Integration Test', () => {
 
     let modeButtons = [];
     waitsFor('load commit message', () => {
+      invariant(commitModeContainer != null);
       modeButtons = commitModeContainer.querySelectorAll('.btn');
       return modeButtons.length === 2 && modeButtons[1].textContent === 'Commit';
     });
@@ -198,6 +213,7 @@ xdescribe('Diff View Commit Mode Integration Test', () => {
     let amendCheckbox: HTMLInputElement = (null: any);
 
     runs(() => {
+      invariant(commitModeContainer != null);
       amendCheckbox = (commitModeContainer.querySelector('input[type=checkbox]'): any);
       expect(amendCheckbox.checked).toBe(false);
       const commitEditorElement = commitModeContainer.querySelectorAll('atom-text-editor');
@@ -212,11 +228,13 @@ xdescribe('Diff View Commit Mode Integration Test', () => {
     });
 
     waitsFor('back to browse mode after a successful commit', () => {
+      invariant(diffViewElement != null);
       revisionsTimelineElement = diffViewElement.querySelector('.nuclide-diff-timeline');
       return revisionsTimelineElement != null;
     });
 
     waitsFor('new commit to load in the revisions timeline', () => {
+      invariant(revisionsTimelineElement != null);
       revisionLabels = revisionsTimelineElement.querySelectorAll('.revision-title');
       return revisionLabels.length === 5;
     });
@@ -234,6 +252,7 @@ xdescribe('Diff View Commit Mode Integration Test', () => {
     });
 
     waitsFor('amend mode to open', () => {
+      invariant(diffViewElement != null);
       return (
         diffViewElement.querySelector('.commit-form-wrapper') != null ||
         diffViewElement.querySelector('.message-editor-wrapper') != null
@@ -241,17 +260,20 @@ xdescribe('Diff View Commit Mode Integration Test', () => {
     });
 
     runs(() => {
+      invariant(diffViewElement != null);
       revisionsTimelineElement = diffViewElement.querySelector('.nuclide-diff-timeline');
       expect(revisionsTimelineElement).toBeNull();
       commitModeContainer = diffViewElement.querySelector('.nuclide-diff-mode');
     });
 
     waitsFor('load amend message', () => {
+      invariant(commitModeContainer != null);
       modeButtons = commitModeContainer.querySelectorAll('.btn');
       return modeButtons.length === 2 && modeButtons[1].textContent === 'Amend';
     });
 
     runs(() => {
+      invariant(commitModeContainer != null);
       amendCheckbox = (commitModeContainer.querySelector('input[type=checkbox]'): any);
       expect(amendCheckbox.checked).toBe(true);
 
@@ -269,11 +291,13 @@ xdescribe('Diff View Commit Mode Integration Test', () => {
     });
 
     waitsFor('back to browse mode after a successful amend', () => {
+      invariant(diffViewElement != null);
       revisionsTimelineElement = diffViewElement.querySelector('.nuclide-diff-timeline');
       return revisionsTimelineElement != null;
     });
 
     waitsFor('amended commit to show in the revisions timeline', () => {
+      invariant(revisionsTimelineElement != null);
       revisionLabels = revisionsTimelineElement.querySelectorAll('.revision-title');
       return revisionLabels.length === 5 &&
         revisionLabels[1].textContent === commitMessage.split('\n')[0];

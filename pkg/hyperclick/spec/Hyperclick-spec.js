@@ -47,10 +47,10 @@ describe('Hyperclick', () => {
   ): {clientX: number, clientY: number} {
     const positionOffset = textEditorView.pixelPositionForScreenPosition(screenPosition);
     const {component} = textEditorView;
-    invariant(component);
-    const scrollViewClientRect = component.domNode
-        .querySelector('.scroll-view')
-        .getBoundingClientRect();
+    invariant(component != null);
+    const scrollViewElement = component.domNode.querySelector('.scroll-view');
+    invariant(scrollViewElement != null);
+    const scrollViewClientRect = scrollViewElement.getBoundingClientRect();
     const clientX = scrollViewClientRect.left
                   + positionOffset.left
                   - textEditorView.getScrollLeft();

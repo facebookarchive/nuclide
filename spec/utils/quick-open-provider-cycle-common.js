@@ -87,6 +87,7 @@ export function runTest(context: TestContext) {
 
     waitsFor('quick-open providers to load', () => {
       const omniSearchTreeList = document.querySelector('.omnisearch-pane .list-tree');
+      invariant(omniSearchTreeList != null);
       const omniSearchTreeNodes = omniSearchTreeList.querySelectorAll('.list-nested-item');
       return omniSearchTreeNodes.length > 0;
     });
@@ -143,11 +144,13 @@ export function runTest(context: TestContext) {
 
     waitsFor('open file provider to load', () => {
       const omniSearchTreeList = document.querySelector('.omnisearch-pane .list-tree');
+      invariant(omniSearchTreeList != null);
       return providerTextExistsInDOM(omniSearchTreeList, 'Open Files');
     });
 
     waitsFor('recent file provider to load', () => {
       const omniSearchTreeList = document.querySelector('.omnisearch-pane .list-tree');
+      invariant(omniSearchTreeList != null);
       return providerTextExistsInDOM(omniSearchTreeList, 'Recent Files');
     });
 
@@ -156,6 +159,7 @@ export function runTest(context: TestContext) {
       const omniSearchTextEditorQueryString = 'atom-workspace atom-panel-container.modal' +
                                               ' atom-panel atom-text-editor.mini';
       const omniSearchTextEditorElement = document.querySelector(omniSearchTextEditorQueryString);
+      invariant(omniSearchTextEditorElement != null);
        // make active element
       omniSearchTextEditorElement.click();
       // upcast to `any` before downcasting to child type
@@ -166,6 +170,7 @@ export function runTest(context: TestContext) {
 
     waitsFor('filenames provider to load', () => {
       const omniSearchTreeList = document.querySelector('.omnisearch-pane .list-tree');
+      invariant(omniSearchTreeList != null);
       return providerTextExistsInDOM(omniSearchTreeList, 'Filenames');
     });
 
