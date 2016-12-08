@@ -12,6 +12,7 @@
 import type {CommitModeStateType, SuggestedReviewersState} from './types';
 import type DiffViewModel from './DiffViewModel';
 
+import addTooltip from '../../nuclide-ui/add-tooltip';
 import {AtomTextEditor} from '../../nuclide-ui/AtomTextEditor';
 import {Checkbox} from '../../nuclide-ui/Checkbox';
 import classnames from 'classnames';
@@ -84,6 +85,14 @@ export default class DiffCommitView extends React.Component {
     return commitModeState !== CommitModeState.READY;
   }
 
+  _addTooltip(title: string): (elementRef: React.Element<any>) => void {
+    return addTooltip({
+      title,
+      delay: 200,
+      placement: 'top',
+    });
+  }
+
   _getToolbar(): Toolbar {
     const {commitModeState, commitMode} = this.props;
     let message;
@@ -125,6 +134,9 @@ export default class DiffCommitView extends React.Component {
           label="Rebase stacked commits"
           onChange={this._onToggleAmendRebase}
           tabIndex="-1"
+          ref={this._addTooltip(
+            'Whether to rebase any child revisions on top of the newly amended revision.',
+          )}
         />
       );
     }
@@ -139,6 +151,9 @@ export default class DiffCommitView extends React.Component {
           disabled={isLoading}
           label="Prepare"
           onChange={this._onTogglePrepare}
+          ref={this._addTooltip(
+            'Whether to mark the new created revision as unpublished.',
+          )}
         />
       );
 
@@ -149,6 +164,10 @@ export default class DiffCommitView extends React.Component {
           disabled={isLoading}
           label="Verbatim"
           onChange={this._onToggleVerbatim}
+          ref={this._addTooltip(
+            'Whether to override the diff\'s' +
+            'commit message on Phabricator with that of your local commit.',
+          )}
         />
       );
     }
@@ -163,6 +182,10 @@ export default class DiffCommitView extends React.Component {
             disabled={isLoading}
             label="Publish"
             onChange={this._onTogglePublish}
+            ref={this._addTooltip(
+              'Whether to automatically publish the revision' +
+              'to Phabricator after committing or amending it.',
+            )}
           />
           {prepareOptionElement}
           {verbatimeOptionElement}
