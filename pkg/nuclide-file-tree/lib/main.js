@@ -11,8 +11,8 @@
 
 /* global requestAnimationFrame */
 
-import type {FileTreeControllerState} from './FileTreeController';
 import type FileTreeContextMenu from './FileTreeContextMenu';
+import type {ExportStoreData} from './FileTreeStore';
 import type {NuclideSideBarService} from '../../nuclide-side-bar';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {RemoteProjectsService} from '../../nuclide-remote-projects';
@@ -28,6 +28,10 @@ import FileTreeController from './FileTreeController';
 import {WorkingSet} from '../../nuclide-working-sets-common';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
 
+type SerializedState = {
+  tree: ExportStoreData,
+};
+
 /**
  * Minimum interval (in ms) between onChangeActivePaneItem events before revealing the active pane
  * item in the file tree.
@@ -39,15 +43,13 @@ const REVEAL_FILE_ON_SWITCH_SETTING = 'nuclide-file-tree.revealFileOnSwitch';
 class Activation {
   _cwdApiSubscription: ?IDisposable;
   _fileTreeController: FileTreeController;
-  _packageState: ?FileTreeControllerState;
   _disposables: UniversalDisposable;
   _paneItemSubscription: ?IDisposable;
 
-  constructor(state: ?FileTreeControllerState) {
-    this._packageState = state;
+  constructor(state: ?SerializedState) {
     this._disposables = new UniversalDisposable();
 
-    this._fileTreeController = new FileTreeController(this._packageState);
+    this._fileTreeController = new FileTreeController(state == null ? null : state.tree);
 
     const excludeVcsIgnoredPathsSetting = 'core.excludeVcsIgnoredPaths';
     const hideIgnoredNamesSetting = 'nuclide-file-tree.hideIgnoredNames';
@@ -118,8 +120,10 @@ class Activation {
     this._disposables.dispose();
   }
 
-  serialize(): ?FileTreeControllerState {
-    return this._fileTreeController.serialize();
+  serialize(): ?SerializedState {
+    return {
+      tree: this._fileTreeController.serialize(),
+    };
   }
 
   consumeWorkingSetsStore(workingSetsStore: WorkingSetsStore): ?IDisposable {
@@ -242,7 +246,7 @@ class Activation {
 }
 
 let activation: ?Activation;
-let deserializedState: ?FileTreeControllerState;
+let deserializedState: ?SerializedState;
 let onDidActivateDisposable: IDisposable;
 let sideBarDisposable: ?IDisposable;
 
@@ -264,7 +268,7 @@ function disableTreeViewPackage() {
   }
 }
 
-export function activate(state: ?FileTreeControllerState): void {
+export function activate(state: ?SerializedState): void {
   invariant(activation == null);
   // Disable Atom's bundled 'tree-view' package. If this activation is happening during the
   // normal startup activation, the `onDidActivateInitialPackages` handler below must unload the
@@ -306,7 +310,7 @@ export function deactivate() {
   }
 }
 
-export function serialize(): ?FileTreeControllerState {
+export function serialize(): ?SerializedState {
   if (activation) {
     return activation.serialize();
   }

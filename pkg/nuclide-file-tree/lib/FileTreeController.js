@@ -35,10 +35,6 @@ import type {WorkingSet} from '../../nuclide-working-sets-common';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
 import type {FileTreeNode} from './FileTreeNode';
 
-export type FileTreeControllerState = {
-  tree: ExportStoreData,
-};
-
 const VALID_FILTER_CHARS = '!#./0123456789-:;?@ABCDEFGHIJKLMNOPQRSTUVWXYZ' +
   '_abcdefghijklmnopqrstuvwxyz~';
 
@@ -53,7 +49,7 @@ class FileTreeController {
   _disposables: UniversalDisposable;
   _disposableForRepository: Immutable.Map<atom$Repository, IDisposable>;
 
-  constructor(state: ?FileTreeControllerState) {
+  constructor(state: ?ExportStoreData) {
     this._actions = FileTreeActions.getInstance();
     this._store = FileTreeStore.getInstance();
     this._repositories = new Immutable.Set();
@@ -142,8 +138,8 @@ class FileTreeController {
         'nuclide-file-tree:reveal-tab-file': this._revealTabFileOnClick.bind(this),
       }),
     );
-    if (state && state.tree) {
-      this._store.loadData(state.tree);
+    if (state != null) {
+      this._store.loadData(state);
     }
     this._contextMenu = new FileTreeContextMenu();
   }
@@ -629,10 +625,8 @@ class FileTreeController {
     this._contextMenu.dispose();
   }
 
-  serialize(): FileTreeControllerState {
-    return {
-      tree: this._store.exportData(),
-    };
+  serialize(): ExportStoreData {
+    return this._store.exportData();
   }
 }
 
