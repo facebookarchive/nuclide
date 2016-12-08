@@ -46,6 +46,7 @@ import {
   enforceReadOnly,
   enforceSoftWrap,
 } from '../../../commons-atom/text-editor';
+import {goToLocation} from '../../../commons-atom/go-to-location';
 import {
   DIFF_EDITOR_MARKER_CLASS,
 } from '../constants';
@@ -108,7 +109,7 @@ async function getDiffEditors(
     newEditorPane.activateItem(newEditorItem);
     newEditor = ((newEditorItem: any): atom$TextEditor);
   } else {
-    newEditor = ((await atom.workspace.open(filePath): any): atom$TextEditor);
+    newEditor = await goToLocation(filePath);
     // Allow the atom workspace to update its state before querying for
     // the new editor's pane.
     await nextTick();
