@@ -9,8 +9,6 @@
  * the root directory of this source tree.
  */
 
-/* global requestAnimationFrame, cancelAnimationFrame */
-
 import type {FileChangeStatusValue} from '../../commons-atom/vcs';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
@@ -20,6 +18,7 @@ import {
 } from 'react-for-atom';
 import {Observable} from 'rxjs';
 
+import {REVEAL_FILE_ON_SWITCH_SETTING, WORKSPACE_VIEW_URI} from '../lib/Constants';
 import {FileTree} from './FileTree';
 import FileTreeSideBarFilterComponent from './FileTreeSideBarFilterComponent';
 import {FileTreeToolbarComponent} from './FileTreeToolbarComponent';
@@ -28,7 +27,7 @@ import FileTreeActions from '../lib/FileTreeActions';
 import {FileTreeStore} from '../lib/FileTreeStore';
 import {MultiRootChangedFilesView} from '../../nuclide-ui/MultiRootChangedFilesView';
 import {PanelComponentScroller} from '../../nuclide-ui/PanelComponentScroller';
-import {toggle} from '../../commons-node/observable';
+import {toggle, throttle} from '../../commons-node/observable';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {cacheWhileSubscribed} from '../../commons-node/observable';
@@ -47,35 +46,31 @@ type State = {
   modifiedUris: Array<NuclideUri>,
   activeUri: ?NuclideUri,
   hasUncommittedChanges: boolean,
-  uncommittedFileChanges: Map<NuclideUri, Map<NuclideUri, FileChangeStatusValue>>,
-};
-
-type Props = {
   hidden: boolean,
+  uncommittedFileChanges: Map<NuclideUri, Map<NuclideUri, FileChangeStatusValue>>,
 };
 
 const SHOW_OPEN_FILE_CONFIG_KEY = 'nuclide-file-tree.showOpenFiles';
 const SHOW_UNCOMMITTED_CHANGES_CONFIG_KEY = 'nuclide-file-tree.showUncommittedChanges';
 
-class FileTreeSidebarComponent extends React.Component {
+export default class FileTreeSidebarComponent extends React.Component {
   _actions: FileTreeActions;
   _store: FileTreeStore;
   _disposables: UniversalDisposable;
-  _afRequestId: ?number;
   _showOpenConfigValues: Observable<boolean>;
   _showUncommittedConfigValue: Observable<boolean>;
   _scrollWasTriggeredProgrammatically: boolean;
   state: State;
-  props: Props;
 
-  constructor(props: Props) {
-    super(props);
+  constructor() {
+    super();
 
     this._actions = FileTreeActions.getInstance();
     this._store = FileTreeStore.getInstance();
     this.state = {
+      hidden: false,
       shouldRenderToolbar: false,
-      scrollerHeight: 0,
+      scrollerHeight: window.innerHeight,
       scrollerScrollTop: 0,
       showOpenFiles: true,
       showUncommittedChanges: true,
@@ -93,11 +88,10 @@ class FileTreeSidebarComponent extends React.Component {
     );
 
     this._disposables = new UniversalDisposable();
-    this._afRequestId = null;
     this._scrollWasTriggeredProgrammatically = false;
     (this: any)._handleFocus = this._handleFocus.bind(this);
-    (this: any)._onViewChange = this._onViewChange.bind(this);
-    (this: any)._onScroll = this._onScroll.bind(this);
+    (this: any)._updateScrollerHeight = this._updateScrollerHeight.bind(this);
+    (this: any)._handleScroll = this._handleScroll.bind(this);
     (this: any)._scrollToPosition = this._scrollToPosition.bind(this);
     (this: any)._processExternalUpdate = this._processExternalUpdate.bind(this);
     (this: any)._handleOpenFilesExpandedChange = this._handleOpenFilesExpandedChange.bind(this);
@@ -107,12 +101,6 @@ class FileTreeSidebarComponent extends React.Component {
 
   componentDidMount(): void {
     this._processExternalUpdate();
-
-    window.addEventListener('resize', this._onViewChange);
-    this._afRequestId = requestAnimationFrame(() => {
-      this._onViewChange();
-      this._afRequestId = null;
-    });
 
     this._disposables.add(
       this._store.subscribe(this._processExternalUpdate),
@@ -124,12 +112,10 @@ class FileTreeSidebarComponent extends React.Component {
       this._showUncommittedConfigValue.subscribe(
         showUncommittedChanges => this.setState({showUncommittedChanges}),
       ),
-      () => {
-        window.removeEventListener('resize', this._onViewChange);
-        if (this._afRequestId != null) {
-          cancelAnimationFrame(this._afRequestId);
-        }
-      },
+
+      throttle(Observable.fromEvent(window, 'resize'), 100).subscribe(() => {
+        this._updateScrollerHeight();
+      }),
     );
   }
 
@@ -137,10 +123,20 @@ class FileTreeSidebarComponent extends React.Component {
     this._disposables.dispose();
   }
 
-  componentDidUpdate(prevProps: Props): void {
-    if (prevProps.hidden && !this.props.hidden) {
-      this._actions.clearFilter();
-      this._onViewChange();
+  componentDidUpdate(prevProps: mixed, prevState: State): void {
+    if (this.state.hidden !== prevState.hidden) {
+      if (!this.state.hidden) {
+        // If "Reveal File on Switch" is enabled, ensure the scroll position is synced to where the
+        // user expects when the side bar shows the file tree.
+        if (featureConfig.get(REVEAL_FILE_ON_SWITCH_SETTING)) {
+          atom.commands.dispatch(
+            atom.views.getView(atom.workspace),
+            'nuclide-file-tree:reveal-active-file',
+          );
+        }
+        this._actions.clearFilter();
+        this._updateScrollerHeight();
+      }
     }
   }
 
@@ -239,7 +235,7 @@ class FileTreeSidebarComponent extends React.Component {
         {toolbar}
         <PanelComponentScroller
           ref="scroller"
-          onScroll={this._onScroll}>
+          onScroll={this._handleScroll}>
           <FileTree
             ref="fileTree"
             containerHeight={this.state.scrollerHeight}
@@ -315,21 +311,23 @@ class FileTreeSidebarComponent extends React.Component {
     );
   }
 
-  _onViewChange(): void {
-    const node = ReactDOM.findDOMNode(this.refs.scroller);
-    const {clientHeight, scrollTop} = node;
-
-    if (clientHeight !== this.state.scrollerHeight || scrollTop !== this.state.scrollerScrollTop) {
-      this.setState({scrollerHeight: clientHeight, scrollerScrollTop: scrollTop});
-    }
+  _updateScrollerHeight(): void {
+    // Ideally, we would use the size of the element here, however recognizing when that changes is
+    // tough. So instead, we'll just use the window height. We may end up creating a few more rows
+    // than we need, but that's no big deal.
+    this.setState({scrollerHeight: window.innerHeight});
   }
 
-  _onScroll(): void {
+  _handleScroll(): void {
     if (!this._scrollWasTriggeredProgrammatically) {
       this._actions.clearTrackedNode();
     }
     this._scrollWasTriggeredProgrammatically = false;
-    this._onViewChange();
+    const node = ReactDOM.findDOMNode(this.refs.scroller);
+    const {scrollTop} = node;
+    if (scrollTop !== this.state.scrollerScrollTop) {
+      this.setState({scrollerScrollTop: scrollTop});
+    }
   }
 
   _scrollToPosition(top: number, height: number): void {
@@ -351,6 +349,37 @@ class FileTreeSidebarComponent extends React.Component {
         this.setState({scrollerScrollTop: newTop});
       } catch (e) {}
     });
+  }
+
+  getTitle(): string {
+    return 'File Tree';
+  }
+
+  getDefaultLocation(): string {
+    return 'left-panel';
+  }
+
+  getPreferredInitialWidth(): number {
+    return 300;
+  }
+
+  getURI(): string {
+    return WORKSPACE_VIEW_URI;
+  }
+
+  didChangeVisibility(visible: boolean): void {
+    this.setState({hidden: !visible});
+  }
+
+  serialize(): mixed {
+    return {
+      deserializer: 'nuclide.FileTreeSidebarComponent',
+    };
+  }
+
+  copy(): mixed {
+    // The file tree store wasn't written to support multiple instances, so try to prevent it.
+    return false;
   }
 }
 
@@ -391,5 +420,3 @@ function getCurrentBuffers(): Array<atom$TextBuffer> {
 
   return buffers;
 }
-
-module.exports = FileTreeSidebarComponent;

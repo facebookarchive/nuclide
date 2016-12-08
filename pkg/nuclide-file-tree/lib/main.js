@@ -13,23 +13,27 @@
 
 import type FileTreeContextMenu from './FileTreeContextMenu';
 import type {ExportStoreData} from './FileTreeStore';
-import type {NuclideSideBarService} from '../../nuclide-side-bar';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {RemoteProjectsService} from '../../nuclide-remote-projects';
+import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
+import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
 
 import invariant from 'assert';
 
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import featureConfig from '../../commons-atom/featureConfig';
+import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
 import debounce from '../../commons-node/debounce';
 
 import FileTreeSidebarComponent from '../components/FileTreeSidebarComponent';
 import FileTreeController from './FileTreeController';
 import {WorkingSet} from '../../nuclide-working-sets-common';
-import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
+import {REVEAL_FILE_ON_SWITCH_SETTING, WORKSPACE_VIEW_URI} from './Constants';
+import {React} from 'react-for-atom';
 
 type SerializedState = {
   tree: ExportStoreData,
+  restored: ?boolean,
 };
 
 /**
@@ -38,11 +42,10 @@ type SerializedState = {
  */
 const OPEN_FILES_UPDATE_DEBOUNCE_INTERVAL_MS = 150;
 
-const REVEAL_FILE_ON_SWITCH_SETTING = 'nuclide-file-tree.revealFileOnSwitch';
-
 class Activation {
   _cwdApiSubscription: ?IDisposable;
   _fileTreeController: FileTreeController;
+  _restored: boolean; // Has the package state been restored from a previous session?
   _disposables: UniversalDisposable;
   _paneItemSubscription: ?IDisposable;
 
@@ -50,6 +53,7 @@ class Activation {
     this._disposables = new UniversalDisposable();
 
     this._fileTreeController = new FileTreeController(state == null ? null : state.tree);
+    this._restored = state != null && state.restored === true;
 
     const excludeVcsIgnoredPathsSetting = 'core.excludeVcsIgnoredPaths';
     const hideIgnoredNamesSetting = 'nuclide-file-tree.hideIgnoredNames';
@@ -123,6 +127,7 @@ class Activation {
   serialize(): ?SerializedState {
     return {
       tree: this._fileTreeController.serialize(),
+      restored: true,
     };
   }
 
@@ -243,12 +248,34 @@ class Activation {
     // Guard against deactivate being called twice
     this._fileTreeController.destroy();
   }
+
+  consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
+    this._disposables.add(
+      api.addOpener(uri => {
+        if (uri === WORKSPACE_VIEW_URI) {
+          return viewableFromReactElement(<FileTreeSidebarComponent />);
+        }
+      }),
+      () => api.destroyWhere(item => item instanceof FileTreeSidebarComponent),
+      atom.commands.add(
+        'atom-workspace',
+        'nuclide-file-tree:toggle',
+        event => { api.toggle(WORKSPACE_VIEW_URI, (event: any).detail); },
+      ),
+    );
+    if (!this._restored) {
+      api.open(WORKSPACE_VIEW_URI, {searchAllPanes: true});
+    }
+  }
+
+  deserializeFileTreeSidebarComponent(): HTMLElement {
+    return viewableFromReactElement(<FileTreeSidebarComponent />);
+  }
 }
 
 let activation: ?Activation;
 let deserializedState: ?SerializedState;
 let onDidActivateDisposable: IDisposable;
-let sideBarDisposable: ?IDisposable;
 
 function disableTreeViewPackage() {
   if (!atom.packages.isPackageDisabled('tree-view')) {
@@ -296,10 +323,6 @@ export function deactivate() {
     atom.packages.enablePackage('tree-view');
   }
 
-  if (sideBarDisposable != null) {
-    sideBarDisposable.dispose();
-  }
-
   if (!onDidActivateDisposable.disposed) {
     onDidActivateDisposable.dispose();
   }
@@ -321,31 +344,14 @@ export function getContextMenuForFileTree(): FileTreeContextMenu {
   return activation.getContextMenu();
 }
 
-export function consumeNuclideSideBar(sidebar: NuclideSideBarService): IDisposable {
+export function consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
   invariant(activation);
+  activation.consumeWorkspaceViewsService(api);
+}
 
-  sidebar.registerView({
-    getComponent() { return FileTreeSidebarComponent; },
-    onDidShow() {
-      // If "Reveal File on Switch" is enabled, ensure the scroll position is synced to where the
-      // user expects when the side bar shows the file tree.
-      if (featureConfig.get(REVEAL_FILE_ON_SWITCH_SETTING)) {
-        atom.commands.dispatch(
-          atom.views.getView(atom.workspace),
-          'nuclide-file-tree:reveal-active-file',
-        );
-      }
-    },
-    title: 'File Tree',
-    toggleCommand: 'nuclide-file-tree:toggle',
-    viewId: 'nuclide-file-tree',
-  });
-
-  sideBarDisposable = new UniversalDisposable(() => {
-    sidebar.destroyView('nuclide-file-tree');
-  });
-
-  return sideBarDisposable;
+export function deserializeFileTreeSidebarComponent(): HTMLElement {
+  invariant(activation);
+  return activation.deserializeFileTreeSidebarComponent();
 }
 
 export function consumeWorkingSetsStore(workingSetsStore: WorkingSetsStore): ?IDisposable {

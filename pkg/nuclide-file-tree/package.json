@@ -10,9 +10,9 @@
         "0.0.0": "consumeCwdApi"
       }
     },
-    "nuclide-side-bar": {
+    "nuclide.workspace-views": {
       "versions": {
-        "1.0.0": "consumeNuclideSideBar"
+        "0.0.0": "consumeWorkspaceViewsService"
       }
     },
     "working-sets.provider": {
@@ -34,6 +34,9 @@
     }
   },
   "atomTestRunner": "../../lib/test-runner.js",
+  "deserializers": {
+    "nuclide.FileTreeSidebarComponent": "deserializeFileTreeSidebarComponent"
+  },
   "nuclide": {
     "configMetadata": {
       "pathComponents": [
