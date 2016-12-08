@@ -150,6 +150,8 @@ export default class SideBarComponent extends React.Component {
         type: 'bookmark',
       },
     });
+    // Not a file URI
+    // eslint-disable-next-line nuclide-internal/atom-apis
     atom.workspace.open(url.format({
       hostname: 'view',
       protocol: 'fb-hg-smartlog',

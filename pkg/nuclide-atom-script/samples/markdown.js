@@ -43,6 +43,8 @@ export default async function runCommand(args: Array<string>): Promise<ExitCode>
 
   const markdownFile = resolvePath(argv._[0]);
 
+  // don't want to pull in too many Nuclide dependencies here
+  // eslint-disable-next-line nuclide-internal/atom-apis
   const textEditor = await atom.workspace.open(markdownFile);
   await atom.packages.activatePackage('markdown-preview');
 

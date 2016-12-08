@@ -126,6 +126,8 @@ export function activate(state: ?any): void {
             return view;
           }
         });
+        // not a file URI
+        // eslint-disable-next-line nuclide-internal/atom-apis
         atom.workspace.open(uri);
         // The new tab opens instantly, so this is no longer needed.
         disposable.dispose();

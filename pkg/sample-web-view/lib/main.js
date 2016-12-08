@@ -46,6 +46,8 @@ class Activation {
 
   /** Opens a tab that loads facebook.com. */
   _openUrl() {
+    // not a file URI
+    // eslint-disable-next-line nuclide-internal/atom-apis
     atom.workspace.open('sample-web-view:https://facebook.com/');
   }
 

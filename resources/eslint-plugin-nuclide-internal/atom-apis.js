@@ -24,6 +24,9 @@ const COMMAND_LITERAL_ERROR = 'Please use literals for Atom commands. ' +
 const WORKSPACE_VIEW_LOOKUP_ERROR = 'Prefer the string "atom-workspace" to calling'
   + ' `atom.views.getView()`.';
 
+const WORKSPACE_OPEN_ERROR =
+  'Prefer goToLocation (commons-atom/go-to-location) to atom.workspace.open';
+
 // Commands with these prefixes will be whitelisted.
 const WHITELISTED_PREFIXES = [
   'core:',
@@ -125,6 +128,10 @@ function checkLiterals(literals, context) {
   }
 }
 
+function isSpecFile(filename) {
+  return filename.includes('/spec/') || filename.endsWith('-spec.js');
+}
+
 /**
  * Capture calls of the form:
  * - atom.commands.add('atom-workspace', 'command', callback)
@@ -215,9 +222,30 @@ module.exports = function(context) {
     }
   }
 
+  function disallowWorkspaceOpen(node) {
+    if (isSpecFile(context.getFilename())) {
+      return;
+    }
+    if (node.callee.type === 'MemberExpression' &&
+        node.callee.object.type === 'MemberExpression' &&
+        node.callee.object.object.type === 'Identifier' &&
+        node.callee.object.object.name === 'atom' &&
+        node.callee.object.property.type === 'Identifier' &&
+        node.callee.object.property.name === 'workspace' &&
+        node.callee.property.type === 'Identifier' &&
+        node.callee.property.name === 'open'
+    ) {
+      context.report({
+        node,
+        message: WORKSPACE_OPEN_ERROR,
+      });
+    }
+  }
+
   function visitCallExpression(node) {
     checkCommandAddCall(node);
     checkWorkspaceFactory(node);
+    disallowWorkspaceOpen(node);
   }
 
   return {
@@ -229,3 +257,4 @@ module.exports = function(context) {
 module.exports.MISSING_MENU_ITEM_ERROR = MISSING_MENU_ITEM_ERROR;
 module.exports.COMMAND_LITERAL_ERROR = COMMAND_LITERAL_ERROR;
 module.exports.WORKSPACE_VIEW_LOOKUP_ERROR = WORKSPACE_VIEW_LOOKUP_ERROR;
+module.exports.WORKSPACE_OPEN_ERROR = WORKSPACE_OPEN_ERROR;

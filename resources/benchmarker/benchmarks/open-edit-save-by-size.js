@@ -38,6 +38,7 @@ module.exports = {
     makeSizedFixture(SAMPLE_FILE, result.bytes);
 
     // Open the file, insert text, append text, save and close.
+    // eslint-disable-next-line nuclide-internal/atom-apis
     const {ret: editor, time: open} = await timedAsync(atom.workspace.open(SAMPLE_FILE));
     result.open = open;
 

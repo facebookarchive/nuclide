@@ -184,6 +184,8 @@ export function renderFileChanges(diffModel: DiffViewModel): React.Element<any> 
     if (diffModel.getState().diffEditorsVisible) {
       diffModel.diffFile(filePath);
     } else {
+      // This is not a file URI
+      // eslint-disable-next-line nuclide-internal/atom-apis
       atom.workspace.open(formatDiffViewUrl({file: filePath}));
     }
   };

@@ -177,6 +177,8 @@ function openLogPaneForURI(uri: string) {
   const openerURI = VCS_LOG_URI_PREFIX + '?' + querystring.stringify({
     [VCS_LOG_URI_PATHS_QUERY_PARAM]: uri,
   });
+  // Not a file URI
+  // eslint-disable-next-line nuclide-internal/atom-apis
   atom.workspace.open(openerURI);
 }
 

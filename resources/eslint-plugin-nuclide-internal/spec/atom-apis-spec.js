@@ -43,6 +43,14 @@ ruleTester.run('atom-commands', rule, {
       code: 'registerFactory({toggleCommand: "bad_command"})',
       filename: path.join(__dirname, 'test.js'),
     },
+    {
+      code: 'atom.workspace.open()',
+      filename: 'in-a-spec.js',
+    },
+    {
+      code: 'atom.workspace.open()',
+      filename: '/in/a/spec/folder.js',
+    },
   ],
   invalid: [
     {
@@ -100,6 +108,20 @@ ruleTester.run('atom-commands', rule, {
       code: 'atom.commands.add(atom.views.getView(atom.workspace), f(), cb)',
       errors: [{
         message: rule.WORKSPACE_VIEW_LOOKUP_ERROR,
+      }],
+    },
+    {
+      code: 'atom.workspace.open()',
+      filename: 'not-a-test.js',
+      errors: [{
+        message: rule.WORKSPACE_OPEN_ERROR,
+      }],
+    },
+    {
+      code: 'atom.workspace.open()',
+      filename: 'in/a/nonspec/folder.js',
+      errors: [{
+        message: rule.WORKSPACE_OPEN_ERROR,
       }],
     },
   ],

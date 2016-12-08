@@ -81,6 +81,9 @@ class FileWatcher {
 
     // Open a right split pane to compare the contents.
     // TODO: We can use the diff-view here when ready.
+    // TODO: Figure out wtf is going on here (why are we passing the empty string as a path) and
+    // consider using goToLocation instead.
+    // eslint-disable-next-line nuclide-internal/atom-apis
     const splitEditor = await atom.workspace.open('', {split: 'right'});
 
     splitEditor.insertText(contents);

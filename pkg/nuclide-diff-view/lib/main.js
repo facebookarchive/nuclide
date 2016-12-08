@@ -90,8 +90,12 @@ function dispatchDiffNavigatorToggle(visible: boolean): void {
 function diffActivePath(diffOptions?: Object): void {
   const editor = atom.workspace.getActiveTextEditor();
   if (editor == null) {
+    // Not a file URI
+    // eslint-disable-next-line nuclide-internal/atom-apis
     atom.workspace.open(formatDiffViewUrl(diffOptions));
   } else {
+    // Not a file URI
+    // eslint-disable-next-line nuclide-internal/atom-apis
     atom.workspace.open(formatDiffViewUrl({
       file: editor.getPath() || '',
       ...diffOptions,
@@ -131,6 +135,8 @@ function addFileTreeCommands(
       commandName,
       event => {
         const filePath = uiTreePath(event);
+        // Not a file URI
+        // eslint-disable-next-line nuclide-internal/atom-apis
         atom.workspace.open(formatDiffViewUrl({
           file: filePath || '',
           ...diffOptions,
@@ -142,6 +148,8 @@ function addFileTreeCommands(
       commandName,
       event => {
         const directoryPath = uiTreePath(event);
+        // Not a file URI
+        // eslint-disable-next-line nuclide-internal/atom-apis
         atom.workspace.open(formatDiffViewUrl({
           directory: directoryPath || '',
           ...diffOptions,
@@ -295,6 +303,8 @@ class Activation {
         () => {
           const {filePath} = this._getDiffViewModel().getState().fileDiff;
           if (filePath != null && filePath.length) {
+            // This is part of the old diff view, not worth updating.
+            // eslint-disable-next-line nuclide-internal/atom-apis
             atom.workspace.open(filePath);
           }
         },
@@ -360,6 +370,8 @@ class Activation {
       if (canRestoreActiveDiffView) {
         restorationSubscription.unsubscribe();
         this._subscriptions.remove(restorationSubscription);
+        // Not a file URI
+        // eslint-disable-next-line nuclide-internal/atom-apis
         atom.workspace.open(formatDiffViewUrl({
           file: activeFilePath,
           viewMode,

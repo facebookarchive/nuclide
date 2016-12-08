@@ -200,6 +200,8 @@ class FileTreeActions {
         });
       }
     } else {
+      // goToLocation doesn't support pending panes
+      // eslint-disable-next-line nuclide-internal/atom-apis
       atom.workspace.open(FileTreeHelpers.keyToPath(nodeKey), {
         activatePane: true,
         searchAllPanes: true,

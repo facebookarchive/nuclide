@@ -94,6 +94,8 @@ export default class RepositorySectionComponent extends React.Component {
       query: diffEntityOptions,
     });
 
+    // Not a file URI
+    // eslint-disable-next-line nuclide-internal/atom-apis
     atom.workspace.open(formattedUrl);
   }
 

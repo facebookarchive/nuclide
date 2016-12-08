@@ -77,6 +77,9 @@ export default class CallstackStore {
   _openSourceLocation(sourceURL: string, lineNumber: number): void {
     const path = nuclideUri.uriToNuclideUri(sourceURL);
     if (path != null && atom.workspace != null) { // only handle real files for now.
+      // This should be goToLocation instead but since the searchAllPanes option is correctly
+      // provided it's not urgent.
+      // eslint-disable-next-line nuclide-internal/atom-apis
       atom.workspace.open(path, {searchAllPanes: true}).then(editor => {
         this._nagivateToLocation(editor, lineNumber);
       });
@@ -99,6 +102,9 @@ export default class CallstackStore {
       const path = nuclideUri.uriToNuclideUri(options.sourceURL);
       const {lineNumber} = options;
       if (path != null && atom.workspace != null) { // only handle real files for now
+        // This should be goToLocation instead but since the searchAllPanes option is correctly
+        // provided it's not urgent.
+        // eslint-disable-next-line nuclide-internal/atom-apis
         atom.workspace.open(path, {searchAllPanes: true}).then(editor => {
           this._clearSelectedCallFrameMarker();
           this._highlightCallFrameLine(editor, lineNumber);
