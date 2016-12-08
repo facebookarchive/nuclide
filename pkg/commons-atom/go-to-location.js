@@ -31,6 +31,7 @@ import invariant from 'assert';
  *   references in a pane.
  * - When we want to open an untitled file (providing no file argument). Currently, goToLocation
  *   requires a file to open.
+ * - When we want to open a file as a pending pane item. Currently goToLocation cannot do this.
  */
 export async function goToLocation(
   file: string,
