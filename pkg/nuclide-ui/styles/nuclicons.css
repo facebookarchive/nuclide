@@ -77,3 +77,6 @@ to `resources/nuclicons` and rerun the script.
 .icon-nuclicon-comment::before {
   content: "\f10e";
 }
+.icon-nuclicon-fb-like::before {
+  content: "\f10f";
+}
