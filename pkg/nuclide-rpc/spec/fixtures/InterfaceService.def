@@ -16,7 +16,7 @@ export function getCurrentDirection(): Promise<Vector2> {}
 
 // RPC definition files should ignore all non-export statements
 
-'use babel';
+'use strict';
 while(true) {}
 var x = 5;
 const x = 42;

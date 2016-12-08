@@ -231,9 +231,6 @@ export function getHgRepositoryStream(): Observable<HgRepositoryClient> {
   );
 }
 
-'use babel';
-/* @flow */
-
 /**
  * @param aPath The NuclideUri of a file or directory for which you want to find
  *   a Repository it belongs to.
