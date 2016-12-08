@@ -11,7 +11,7 @@
 
 import type {BookmarkInfo} from '../../nuclide-hg-rpc/lib/HgService';
 import type {FileChangeStatusValue} from '../../commons-atom/vcs';
-import type {NuclideUri} from '../../commons-node/NuclideUri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {SelectableItem} from './SideBarComponent';
 
 import bookmarkIsEqual from './bookmarkIsEqual';

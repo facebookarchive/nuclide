@@ -12,7 +12,7 @@
 import type {BookmarkInfo} from '../../nuclide-hg-rpc/lib/HgService';
 import type {Directory} from 'atom';
 import type {FileChangeStatusValue} from '../../commons-atom/vcs';
-import type {NuclideUri} from '../../commons-node/NuclideUri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import invariant from 'assert';
 import {CompositeDisposable} from 'atom';

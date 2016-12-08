@@ -19,7 +19,7 @@ import type {BookmarkInfo} from '../../nuclide-hg-rpc/lib/HgService';
 import type {NuclideSideBarService} from '../../nuclide-side-bar';
 import type {Observable} from 'rxjs';
 import type {FileChangeStatusValue} from '../../commons-atom/vcs';
-import type {NuclideUri} from '../../commons-node/NuclideUri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import * as ActionType from './ActionType';
 import {applyActionMiddleware} from './applyActionMiddleware';
