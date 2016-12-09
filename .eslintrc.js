@@ -1,14 +1,15 @@
-'use strict';
-/* @flow */
-
-/*
+/**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
  *
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
+ *
+ * @noflow
  */
+'use strict';
 
+/* eslint comma-dangle: [1, always-multiline], prefer-object-spread/prefer-object-spread: 0 */
 /* eslint-disable max-len */
 
 module.exports = {
@@ -343,7 +344,7 @@ module.exports = {
     'nuclide-internal/atom-apis': 1,
     'nuclide-internal/consistent-import-name': 1,
     'nuclide-internal/import-type-style': 1,
-    'nuclide-internal/license-header': 0,
+    'nuclide-internal/license-header': 1,
     'nuclide-internal/no-cross-atom-imports': [1, {whitelist: ['nuclide-ui']}],
     'nuclide-internal/no-unnecessary-disposable-wrapping': 1,
     'nuclide-internal/prefer-nuclide-uri': 1,
