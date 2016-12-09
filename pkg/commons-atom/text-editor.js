@@ -156,6 +156,8 @@ export function enforceSoftWrap(
  * uninitialized remote editors. Most callers should use this one instead.
  */
 export function observeTextEditors(callback: (editor: atom$TextEditor) => mixed): IDisposable {
+  // The one place where atom.workspace.observeTextEditors needs to be used.
+  // eslint-disable-next-line nuclide-internal/atom-apis
   return atom.workspace.observeTextEditors(editor => {
     if (isValidTextEditor(editor)) {
       callback(editor);
@@ -167,6 +169,7 @@ export function observeTextEditors(callback: (editor: atom$TextEditor) => mixed)
  * Checks if an object (typically an Atom pane) is a TextEditor with a non-broken path.
  */
 export function isValidTextEditor(item: mixed): boolean {
+  // eslint-disable-next-line nuclide-internal/atom-apis
   if (atom.workspace.isTextEditor(item)) {
     return !nuclideUri.isBrokenDeserializedUri(((item: any): atom$TextEditor).getPath());
   }

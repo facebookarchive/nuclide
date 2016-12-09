@@ -24,8 +24,15 @@ const COMMAND_LITERAL_ERROR = 'Please use literals for Atom commands. ' +
 const WORKSPACE_VIEW_LOOKUP_ERROR = 'Prefer the string "atom-workspace" to calling'
   + ' `atom.views.getView()`.';
 
-const WORKSPACE_OPEN_ERROR =
-  'Prefer goToLocation (commons-atom/go-to-location) to atom.workspace.open';
+const DISALLOWED_WORKSPACE_METHODS = {
+  open: 'Prefer goToLocation (commons-atom/go-to-location) to atom.workspace.open',
+  observeTextEditors: 'Use observeTextEditors from commons-atom/text-editor instead of ' +
+    'atom.workspace.observeTextEditors. It ignores broken nuclide:/path ' +
+    'URIs, which appear briefly when reloading Atom with remote projects.',
+  isTextEditor: 'Use isValidTextEditor from commons-atom/text-editor instead of ' +
+    'atom.workspace.isTextEditor. It additionally blocks editors with broken nuclide:/path ' +
+    'URIs, which appear briefly when reloading Atom with remote projects.',
+};
 
 // Commands with these prefixes will be whitelisted.
 const WHITELISTED_PREFIXES = [
@@ -232,13 +239,12 @@ module.exports = function(context) {
         node.callee.object.object.name === 'atom' &&
         node.callee.object.property.type === 'Identifier' &&
         node.callee.object.property.name === 'workspace' &&
-        node.callee.property.type === 'Identifier' &&
-        node.callee.property.name === 'open'
+        node.callee.property.type === 'Identifier'
     ) {
-      context.report({
-        node,
-        message: WORKSPACE_OPEN_ERROR,
-      });
+      const message = DISALLOWED_WORKSPACE_METHODS[node.callee.property.name];
+      if (message != null) {
+        context.report({node, message});
+      }
     }
   }
 
@@ -257,4 +263,4 @@ module.exports = function(context) {
 module.exports.MISSING_MENU_ITEM_ERROR = MISSING_MENU_ITEM_ERROR;
 module.exports.COMMAND_LITERAL_ERROR = COMMAND_LITERAL_ERROR;
 module.exports.WORKSPACE_VIEW_LOOKUP_ERROR = WORKSPACE_VIEW_LOOKUP_ERROR;
-module.exports.WORKSPACE_OPEN_ERROR = WORKSPACE_OPEN_ERROR;
+module.exports.DISALLOWED_WORKSPACE_METHODS = DISALLOWED_WORKSPACE_METHODS;

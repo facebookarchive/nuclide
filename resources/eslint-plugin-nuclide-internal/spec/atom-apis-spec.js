@@ -114,14 +114,28 @@ ruleTester.run('atom-commands', rule, {
       code: 'atom.workspace.open()',
       filename: 'not-a-test.js',
       errors: [{
-        message: rule.WORKSPACE_OPEN_ERROR,
+        message: rule.DISALLOWED_WORKSPACE_METHODS.open,
       }],
     },
     {
       code: 'atom.workspace.open()',
       filename: 'in/a/nonspec/folder.js',
       errors: [{
-        message: rule.WORKSPACE_OPEN_ERROR,
+        message: rule.DISALLOWED_WORKSPACE_METHODS.open,
+      }],
+    },
+    {
+      code: 'atom.workspace.observeTextEditors()',
+      filename: 'not-a-test.js',
+      errors: [{
+        message: rule.DISALLOWED_WORKSPACE_METHODS.observeTextEditors,
+      }],
+    },
+    {
+      code: 'atom.workspace.isTextEditor()',
+      filename: 'not-a-test.js',
+      errors: [{
+        message: rule.DISALLOWED_WORKSPACE_METHODS.isTextEditor,
       }],
     },
   ],
