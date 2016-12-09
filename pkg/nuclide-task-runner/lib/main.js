@@ -64,14 +64,16 @@ class Activation {
     }
 
     const {previousSessionVisible} = serializedState;
+    const showPlaceholderInitially = typeof previousSessionVisible === 'boolean'
+      ? previousSessionVisible
+      : localStorage.getItem(SHOW_PLACEHOLDER_INITIALLY_KEY) === 'true';
     const initialState = {
       ...createEmptyAppState(),
       ...serializedState,
       // If the task runner toolbar was shown previously, we'll display a placholder until the view
       // initializes so there's not a jump in the UI.
-      showPlaceholderInitially: typeof previousSessionVisible === 'boolean'
-        ? previousSessionVisible
-        : localStorage.getItem(SHOW_PLACEHOLDER_INITIALLY_KEY) === 'true',
+      showPlaceholderInitially,
+      visible: showPlaceholderInitially,
     };
 
     const epics = Object.keys(Epics)
@@ -214,7 +216,7 @@ class Activation {
       ),
 
       states
-        .map(state => state.visible || (!state.viewIsInitialized && state.showPlaceholderInitially))
+        .map(state => state.visible)
         .distinctUntilChanged()
         .subscribe(visible => { this._panelRenderer.render({visible}); }),
     );

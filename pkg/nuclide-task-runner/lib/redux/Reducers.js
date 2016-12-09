@@ -66,13 +66,7 @@ export function app(state: AppState, action: Action): AppState {
     }
     case Actions.SET_TOOLBAR_VISIBILITY: {
       const {visible} = action.payload;
-      if (state.viewIsInitialized) {
-        return {...state, visible};
-      } else {
-        // If you toggle before we've initialized, don't actually show the toolbar; just update the
-        // value we'll use when we eventually initialize.
-        return {...state, previousSessionVisible: visible};
-      }
+      return {...state, visible};
     }
     case Actions.SET_PROJECT_ROOT: {
       const {projectRoot} = action.payload;
