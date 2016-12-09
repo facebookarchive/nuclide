@@ -26,7 +26,7 @@ const {AmendMode} = hgConstants;
 import {repositoryForPath} from '../pkg/commons-atom/vcs';
 import {
   fetchFileContentAtRevision,
-  fetchFilesChangedAtRevision,
+  fetchFilesChangedSinceRevision,
 } from '../pkg/nuclide-hg-rpc/lib/hg-revision-state-helpers';
 import fsPromise from '../pkg/commons-node/fsPromise';
 import nuclideUri from '../pkg/commons-node/nuclideUri';
@@ -68,12 +68,10 @@ describe('Mercurial Repository Integration Tests', () => {
       invariant(hgRepository != null);
       await fsPromise.writeFile(filePath, 'new text');
       await hgRepository.commit('commit msg').toArray().toPromise();
-      const changes = await fetchFilesChangedAtRevision('.', repoPath)
+      const changes = await fetchFilesChangedSinceRevision('.^', repoPath)
         .refCount().toPromise();
-      invariant(changes != null);
-      expect(changes.all.length).toEqual(1);
-      expect(changes.modified.length).toEqual(1);
-      expect(changes.modified[0]).toEqual(filePath);
+      expect(changes.length).toEqual(1);
+      expect(changes[0]).toEqual(filePath);
       const content = await fetchFileContentAtRevision(filePath, '.', repoPath)
         .refCount().toPromise();
       expect(content).toEqual('new text');
@@ -93,12 +91,10 @@ describe('Mercurial Repository Integration Tests', () => {
       await hgRepository.commit('commit msg 2').toArray().toPromise();
       await fsPromise.writeFile(filePath, 'new text 3');
       await hgRepository.amend('commit msg 3', AmendMode.CLEAN).toArray().toPromise();
-      const changes = await fetchFilesChangedAtRevision('.', repoPath)
+      const changes = await fetchFilesChangedSinceRevision('.^', repoPath)
         .refCount().toPromise();
-      invariant(changes != null);
-      expect(changes.all.length).toEqual(1);
-      expect(changes.modified.length).toEqual(1);
-      expect(changes.modified[0]).toEqual(filePath);
+      expect(changes.length).toEqual(1);
+      expect(changes[0]).toEqual(filePath);
       const content3 = await fetchFileContentAtRevision(filePath, '.', repoPath)
         .refCount().toPromise();
       expect(content3).toEqual('new text 3');

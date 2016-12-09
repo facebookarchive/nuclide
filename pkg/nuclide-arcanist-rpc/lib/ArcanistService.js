@@ -10,7 +10,6 @@
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {RevisionFileChanges} from '../../nuclide-hg-rpc/lib/HgService';
 import type {ConnectableObservable} from 'rxjs';
 import type {ProcessMessage} from '../../commons-node/process-rpc-types';
 
@@ -29,7 +28,7 @@ import {
 import {niceSafeSpawn} from '../../commons-node/nice';
 import fsPromise from '../../commons-node/fsPromise';
 import {
-  fetchFilesChangedAtRevision,
+  fetchFilesChangedSinceRevision,
 } from '../../nuclide-hg-rpc/lib/hg-revision-state-helpers';
 import {
   expressionForRevisionsBeforeHead,
@@ -118,13 +117,13 @@ export function findDiagnostics(
     .publish();
 }
 
-async function getMercurialHeadCommitChanges(filePath: string): Promise<?RevisionFileChanges> {
+async function getMercurialHeadCommitChanges(filePath: string): Promise<Array<string>> {
   const hgRepoDetails = findHgRepository(filePath);
   if (hgRepoDetails == null) {
-    return null;
+    throw new Error('Cannot find source control root to diff from');
   }
-  const filesChanged = await fetchFilesChangedAtRevision(
-    expressionForRevisionsBeforeHead(0),
+  const filesChanged = await fetchFilesChangedSinceRevision(
+    expressionForRevisionsBeforeHead(1),
     hgRepoDetails.workingDirectoryPath,
   ).refCount().toPromise();
   if (filesChanged == null) {
@@ -136,12 +135,9 @@ async function getMercurialHeadCommitChanges(filePath: string): Promise<?Revisio
 async function getCommitBasedArcConfigDirectory(filePath: string): Promise<?string> {
   // TODO Support other source control types file changes (e.g. `git`).
   const filesChanged = await getMercurialHeadCommitChanges(filePath);
-  if (filesChanged == null) {
-    throw new Error('Cannot find source control root to diff from');
-  }
   let configLookupPath = null;
-  if (filesChanged.all.length > 0) {
-    configLookupPath = fsPromise.getCommonAncestorDirectory(filesChanged.all);
+  if (filesChanged.length > 0) {
+    configLookupPath = fsPromise.getCommonAncestorDirectory(filesChanged);
   } else {
     configLookupPath = filePath;
   }

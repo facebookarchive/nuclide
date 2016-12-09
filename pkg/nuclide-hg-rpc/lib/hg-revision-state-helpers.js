@@ -41,7 +41,7 @@ const COPIED_FILE_PAIR_REGEX = /(.+) \((.+)/;
  * if the operation fails for whatever reason, including invalid input (e.g. if
  * you pass a filePath that does not exist at the given revision).
  */
-function fetchFileContentAtRevision(
+export function fetchFileContentAtRevision(
   filePath: NuclideUri,
   revision: string,
   workingDirectory: string,
@@ -60,7 +60,7 @@ function fetchFileContentAtRevision(
  * if the operation fails for whatever reason, including invalid input (e.g. if
  * you pass an invalid revision).
  */
-function fetchFilesChangedAtRevision(
+export function fetchFilesChangedAtRevision(
   revision: string,
   workingDirectory: string,
 ): ConnectableObservable<RevisionFileChanges> {
@@ -79,11 +79,40 @@ function fetchFilesChangedAtRevision(
 }
 
 /**
+ * @param revision A string representation of the revision desired. See
+ * Mercurial documentation for ways to specify a revision.
+ * @return The content of the filePath at the given revision. Returns null
+ * if the operation fails for whatever reason, including invalid input (e.g. if
+ * you pass an invalid revision).
+ */
+export function fetchFilesChangedSinceRevision(
+  revision: string,
+  workingDirectory: string,
+): ConnectableObservable<Array<string>> {
+  const args = [
+    'status',
+    '--rev', revision,
+    '-Tjson',
+  ];
+  const execOptions = {
+    cwd: workingDirectory,
+  };
+  return hgRunCommand(args, execOptions)
+    .map(stdout => {
+      const statuses = JSON.parse(stdout);
+      return absolutizeAll(statuses.map(status => status.path), workingDirectory);
+    })
+    .publish();
+}
+
+/**
+ * Exported for testing.
+ *
  * @param output Raw output string from 'hg log' call in `fetchFilesChangedAtRevision`.
  * @param workingDirectory The absolute path to the working directory of the hg repository.
  * @return A RevisionFileChanges object where the paths are all absolute paths.
  */
-function parseRevisionFileChangeOutput(
+export function parseRevisionFileChangeOutput(
   output: string,
   workingDirectory: string,
 ): RevisionFileChanges {
@@ -137,9 +166,3 @@ function absolutize(filePath: string, workingDirectory: string): string {
 function absolutizeAll(filePaths: Array<string>, workingDirectory: string) {
   return filePaths.map(filePath => absolutize(filePath, workingDirectory));
 }
-
-module.exports = {
-  fetchFileContentAtRevision,
-  fetchFilesChangedAtRevision,
-  parseRevisionFileChangeOutput, // exposed for testing
-};
