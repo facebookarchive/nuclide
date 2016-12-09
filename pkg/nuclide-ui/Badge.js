@@ -8,6 +8,8 @@
  * @flow
  */
 
+import type {IconName} from './types';
+
 import classnames from 'classnames';
 import {React} from 'react-for-atom';
 
@@ -20,7 +22,7 @@ type Props = {
   className?: string,
   color?: BadgeColor,
   /** Octicon icon name, without the `icon-` prefix. E.g. `'arrow-up'` */
-  icon?: atom$Octicon,
+  icon?: IconName,
   size?: BadgeSize,
   /** The value displayed inside the badge. */
   value: number,

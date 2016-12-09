@@ -10,6 +10,7 @@
 
 import type {StatusCodeNumberValue} from '../nuclide-hg-rpc/lib/HgService';
 import type {HgRepositoryClient} from '../nuclide-hg-repository-client/lib/HgRepositoryClient';
+import type {IconName} from '../nuclide-ui/types';
 import type {NuclideUri} from '../commons-node/nuclideUri';
 
 import {arrayCompact, mapFilter} from '../commons-node/collection';
@@ -98,7 +99,7 @@ export const FileChangeStatusToPrefix: {[key: FileChangeStatusValue]: string} = 
   [FileChangeStatus.UNTRACKED]: '[?] ',
 });
 
-export const FileChangeStatusToIcon: {[key: ?FileChangeStatusValue]: atom$Octicon} = Object.freeze({
+export const FileChangeStatusToIcon: {[key: ?FileChangeStatusValue]: IconName} = Object.freeze({
   [FileChangeStatus.ADDED]: 'diff-added',
   [FileChangeStatus.MODIFIED]: 'diff-modified',
   [FileChangeStatus.MISSING]: 'stop',

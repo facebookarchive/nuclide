@@ -8,6 +8,8 @@
  * @flow
  */
 
+import type {IconName} from './types';
+
 import {Icon} from './Icon';
 import {React} from 'react-for-atom';
 import classnames from 'classnames';
@@ -15,7 +17,7 @@ import nullthrows from 'nullthrows';
 
 export type Tab = {
   name: string,
-  icon?: atom$Octicon,
+  icon?: IconName,
   tabContent: React.Element<any>,
 };
 

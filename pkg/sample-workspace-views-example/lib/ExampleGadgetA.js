@@ -8,6 +8,8 @@
  * @flow
  */
 
+import type {IconName} from '../../nuclide-ui/types';
+
 import {React} from 'react-for-atom';
 import {renderReactRoot} from '../../commons-atom/renderReactRoot';
 
@@ -19,7 +21,7 @@ export class ExampleGadgetA {
     return 'Example Gadget A';
   }
 
-  getIconName(): atom$Octicon {
+  getIconName(): IconName {
     return 'squirrel';
   }
 

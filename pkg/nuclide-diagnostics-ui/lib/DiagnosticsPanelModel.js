@@ -9,6 +9,7 @@
  */
 
 import type {DiagnosticMessage} from '../../nuclide-diagnostics-common';
+import type {IconName} from '../../nuclide-ui/types';
 
 import {compareMessagesByFile} from './paneUtils';
 import {React} from 'react-for-atom';
@@ -83,7 +84,7 @@ export class DiagnosticsPanelModel {
     return 'Diagnostics';
   }
 
-  getIconName(): atom$Octicon {
+  getIconName(): IconName {
     return 'law';
   }
 

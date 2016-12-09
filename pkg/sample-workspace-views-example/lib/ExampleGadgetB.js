@@ -8,6 +8,8 @@
  * @flow
  */
 
+import type {IconName} from '../../nuclide-ui/types';
+
 import {React} from 'react-for-atom';
 
 export const WORKSPACE_VIEW_URI_B = 'atom://nuclide/sample-workspace-views-example-b';
@@ -18,7 +20,7 @@ export class ExampleGadgetB extends React.Component {
     return 'Example Gadget B';
   }
 
-  getIconName(): atom$Octicon {
+  getIconName(): IconName {
     return 'squirrel';
   }
 

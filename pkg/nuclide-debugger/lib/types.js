@@ -10,10 +10,11 @@
 
 /* eslint-disable no-unused-vars */
 
+import type {IconName} from '../../nuclide-ui/types';
 import type {Observable} from 'rxjs';
 
 export type ControlButtonSpecification = {
-  icon: atom$Octicon,
+  icon: IconName,
   title?: string,
   onClick: () => mixed,
 };

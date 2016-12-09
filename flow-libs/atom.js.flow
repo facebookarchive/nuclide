@@ -405,9 +405,9 @@ declare type atom$PaneItem = {
   // object with more strict requirements to an variable of this type.
   +getTitle: () => string,
   +getLongTitle?: () => string,
-  +getIconName?: () => atom$Octicon,
+  +getIconName?: () => string,
   +getURI?: () => string,
-  +onDidChangeIcon?: (cb: (icon: atom$Octicon) => void) => IDisposable,
+  +onDidChangeIcon?: (cb: (icon: string) => void) => IDisposable,
   +onDidChangeTitle?: (cb: (title: string) => void) => IDisposable,
   +serialize?: () => Object,
 }
