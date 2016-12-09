@@ -35,7 +35,7 @@ NODE_PACKAGE = 'node'
 ATOM_PACKAGE = 'atom'
 DEFAULT_PREFIX = 'nuclide'
 PACKAGE_PREFIXES = [DEFAULT_PREFIX, 'fb', 'sample']
-ATOM_TEST_RUNNER_FILE = os.path.join(PACKAGES_PATH, '../lib/test-runner.js')
+ATOM_TEST_RUNNER_FILE = os.path.join(PACKAGES_PATH, '../lib/test-runner-entry.js')
 NUCLIDE_JASMINE_BIN = os.path.join(PACKAGES_PATH,
                                    'nuclide-jasmine/bin/jasmine-node-transpiled')
 

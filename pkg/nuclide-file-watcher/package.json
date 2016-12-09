@@ -4,7 +4,7 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Watch for editor conflicts and prompt to reload, ignore or compare",
-  "atomTestRunner": "../../lib/test-runner.js",
+  "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "packageType": "Atom",
     "testRunner": "apm"

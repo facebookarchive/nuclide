@@ -130,7 +130,7 @@
     "node": ">=6.5.0"
   },
   "private": true,
-  "atomTestRunner": "./lib/test-runner.js",
+  "atomTestRunner": "./lib/test-runner-entry.js",
   "package-deps": [
     "tool-bar",
     "haskell-grammar",

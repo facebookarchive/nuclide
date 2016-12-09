@@ -4,7 +4,7 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "A nuclide-output provider for iOS Simulator logs",
-  "atomTestRunner": "../../lib/test-runner.js",
+  "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "packageType": "Atom",
     "testRunner": "apm",

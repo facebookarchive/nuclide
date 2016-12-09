@@ -33,7 +33,7 @@
       }
     }
   },
-  "atomTestRunner": "../../lib/test-runner.js",
+  "atomTestRunner": "../../lib/test-runner-entry.js",
   "deserializers": {
     "nuclide.FileTreeSidebarComponent": "deserializeFileTreeSidebarComponent"
   },

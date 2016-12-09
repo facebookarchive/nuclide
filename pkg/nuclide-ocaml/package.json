@@ -5,7 +5,7 @@
   "version": "0.0.0",
   "description": "Provides support for OCaml in Nuclide",
   "activationCommands": {},
-  "atomTestRunner": "../../lib/test-runner.js",
+  "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "configMetadata": {
       "pathComponents": [
