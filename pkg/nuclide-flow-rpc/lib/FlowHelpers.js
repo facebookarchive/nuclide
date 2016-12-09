@@ -10,14 +10,6 @@
 
 import type {FlowLocNoSource} from './flowOutputTypes';
 
-export function insertAutocompleteToken(contents: string, position: atom$Point): string {
-  const lines = contents.split('\n');
-  let theLine = lines[position.row];
-  theLine = theLine.substring(0, position.column) + 'AUTO332' + theLine.substring(position.column);
-  lines[position.row] = theLine;
-  return lines.join('\n');
-}
-
 export function getStopFlowOnExit(): boolean {
   // $UPFixMe: This should use nuclide-features-config
   // Does not currently do so because this is an npm module that may run on the server.

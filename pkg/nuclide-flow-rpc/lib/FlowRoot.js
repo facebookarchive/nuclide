@@ -24,10 +24,7 @@ import semver from 'semver';
 import {getLogger} from '../../nuclide-logging';
 const logger = getLogger();
 
-import {
-  insertAutocompleteToken,
-  flowCoordsToAtomCoords,
-} from './FlowHelpers';
+import {flowCoordsToAtomCoords} from './FlowHelpers';
 
 import {FlowProcess} from './FlowProcess';
 import {FlowVersion} from './FlowVersion';
@@ -177,9 +174,10 @@ export class FlowRoot {
   ): Promise<Array<FlowAutocompleteItem>> {
     const options = {};
 
-    const args = ['autocomplete', '--json', file];
+    // Note that Atom coordinates are 0-indexed whereas Flow's are 1-indexed, so we must add 1.
+    const args = ['autocomplete', '--json', file, position.row + 1, position.column + 1];
 
-    options.stdin = insertAutocompleteToken(currentContents, position);
+    options.stdin = currentContents;
     try {
       const result = await this._process.execFlow(args, options);
       if (!result) {
