@@ -13,8 +13,7 @@
 
 /**
  * This file installs the logic that modifies Node's built in require()
- * function to transpile .js files that start with either `'use babel'` or
- * `"use babel"`.
+ * function to transpile .js files that have the @flow pragma.
  */
 
 const Module = require('module');
@@ -31,8 +30,6 @@ let transpiling = null;
 
 function transpiler_require_hook(_module, filename) {
   let moduleExports;
-  // TODO(asuarez): Once "use babel" is removed, `shouldCompile` can be made
-  // to handle paths.
   if (filename.startsWith(basedir) && !filename.includes('node_modules')) {
     // Keep src as a buffer so calculating its digest with crypto is fast.
     const src = fs.readFileSync(filename);

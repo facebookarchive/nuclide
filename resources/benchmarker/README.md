@@ -70,7 +70,6 @@ Every benchmark module needs exports the following properties:
 
 A very simple benchmark might look like:
 
-    'use babel';
     /* @flow */
     module.exports = {
       description: 'cubes square numbers',

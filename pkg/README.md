@@ -94,7 +94,7 @@ To run the tests for an individual package, invoke the test runner that correspo
 the `"nuclide/testRunner"` section of the `package.json` file (i.e., `npm test` or `apm test`).
 Note that the [nuclide-node-transpiler](./nuclide-node-transpiler) package creates some
 bootstrapping code for `npm test` so that it behaves more like `apm test`. In particular,
-files with the `'use babel'` pragma are automatically transpiled, and helper functions such as
+files with the `/** @flow */` pragma are automatically transpiled, and helper functions such as
 `fit()`, `fdescribe()`, and `waitsForPromise()` will be globally available. Here are the
 relevant parts of the `package.json` file that set this up:
 

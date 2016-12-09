@@ -26,8 +26,7 @@ const TRANSPILER_PATH = require.resolve('../../nuclide-node-transpiler');
 /**
  * Task creates and manages communication with another Node process. In addition
  * to executing ordinary .js files, the other Node process can also run .js files
- * under the Babel transpiler, so long as they have the `'use babel'` pragma
- * used in Atom.
+ * under the Babel transpiler, so long as they have the @flow pragma.
  */
 export default class Task {
   _id: number;

@@ -28,28 +28,6 @@ const NodeTranspiler = require('../lib/NodeTranspiler');
 console.log('NodeTranspiler.shouldCompile on Buffers and strings');
 
 [
-  "'use babel';\n",
-  '"use babel";\n',
-  '/* @flow */\n',
-  '/** @babel */\n',
-  new Buffer("'use babel';\n"),
-  new Buffer('"use babel";\n'),
-  new Buffer('/* @flow */\n'),
-  new Buffer('/** @babel */\n'),
-].forEach(src => {
-  assert.ok(NodeTranspiler.shouldCompile(src));
-});
-
-[
-  "'use strict';\n",
-  'console.log("hello world");\n',
-  new Buffer("'use strict';\n"),
-  new Buffer('console.log("hello world");\n'),
-].forEach(src => {
-  assert.ok(!NodeTranspiler.shouldCompile(src));
-});
-
-[
   '/** @flow */\n',
   dedent`
     /**

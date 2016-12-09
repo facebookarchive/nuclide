@@ -28,9 +28,6 @@ const os = require('os');
 
 const docblock = require('./docblock');
 
-const PREFIXES = ["'use babel'", '"use babel"', '/* @flow */', '/** @babel */'];
-const PREFIX_LENGTH = Math.max(...PREFIXES.map(x => x.length));
-
 const BABEL_OPTIONS = {
   parserOpts: {
     plugins: [
@@ -93,11 +90,6 @@ function getVersion(start) {
 
 class NodeTranspiler {
   static shouldCompile(bufferOrString) {
-    const start = bufferOrString.slice(0, PREFIX_LENGTH).toString();
-    if (PREFIXES.some(prefix => start.startsWith(prefix))) {
-      return true;
-    }
-
     const src = bufferOrString.toString();
     const directives = docblock.parseAsObject(docblock.extract(src));
     return directives.hasOwnProperty('flow');
