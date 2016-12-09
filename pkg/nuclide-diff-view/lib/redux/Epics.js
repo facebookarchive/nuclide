@@ -82,7 +82,6 @@ function notifyCwdMismatch(
   newRepository: HgRepositoryClient,
   cwdApi: CwdApi,
   filePath: NuclideUri,
-  onChangeModified: () => mixed,
 ): Observable<Action> {
   const newDirectoryPath = newRepository.getProjectDirectory();
   const actionSubject = new Subject();
@@ -96,7 +95,7 @@ function notifyCwdMismatch(
         className: 'icon icon-git-branch',
         onDidClick: () => {
           cwdApi.setCwd(newDirectoryPath);
-          actionSubject.next(Actions.diffFile(filePath, onChangeModified));
+          actionSubject.next(Actions.diffFile(filePath));
           notification.dismiss();
         },
       }, {
@@ -344,7 +343,7 @@ export function diffFileEpic(
       Observable.of(Actions.updateFileDiff('', '', '', null, getEmptyTextDiff()))
       .concat(refreshUiElements('', '', ''));
 
-    const {filePath, onChangeModified} = action.payload;
+    const {filePath} = action.payload;
     const repository = repositoryForPath(filePath);
 
     if (repository == null || repository.getType() !== 'hg') {
@@ -367,7 +366,6 @@ export function diffFileEpic(
         hgRepository,
         cwdApi,
         filePath,
-        onChangeModified,
       ));
     }
 
@@ -384,12 +382,6 @@ export function diffFileEpic(
       .startWith(null);
     const bufferChanges = observableFromSubscribeFunction(buffer.onDidChange.bind(buffer))
       .debounceTime(CHANGE_DEBOUNCE_DELAY_MS);
-
-    const bufferChangeModifed = Observable.merge(
-      observableFromSubscribeFunction(buffer.onDidChangeModified.bind(buffer)),
-      observableFromSubscribeFunction(buffer.onDidStopChanging.bind(buffer)),
-    ).map(onChangeModified)
-    .ignoreElements();
 
     const fetchHgDiff = Observable.combineLatest(
       revisionChanges,
@@ -412,58 +404,54 @@ export function diffFileEpic(
         .map(() => hgDiff),
       );
 
-    return Observable.merge(
-      bufferChangeModifed,
-
-      Observable.combineLatest(fetchHgDiff, Observable.merge(bufferReloads, bufferChanges))
-        .debounceTime(20)
-        .switchMap(([hgDiff]) => {
-          if (hgDiff == null) {
-            return Observable.of(
-              // Clear Diff UI State.
-              Actions.updateFileDiff(filePath, '', '', null, getEmptyTextDiff()),
-              Actions.updateLoadingFileDiff(true),
-            );
-          }
-
-          const {committedContents, revisionInfo} = hgDiff;
-          const newContents = buffer.getText();
-          const oldContents = committedContents;
-
-          return Observable.concat(
-            Observable.of(Actions.updateLoadingFileDiff(false)),
-
-            Observable.fromPromise(task.invokeRemoteMethod({
-              file: require.resolve('../diff-utils'),
-              method: 'computeDiff',
-              args: [oldContents, newContents],
-            })).switchMap(textDiff =>
-              Observable.concat(
-                Observable.of(Actions.updateFileDiff(
-                  filePath,
-                  newContents,
-                  oldContents,
-                  revisionInfo,
-                  textDiff,
-                )),
-                refreshUiElements(filePath, oldContents, newContents),
-              ),
-            ).catch(error => {
-              notifyInternalError(error);
-              return Observable.empty();
-            }),
-
+    return Observable.combineLatest(fetchHgDiff, Observable.merge(bufferReloads, bufferChanges))
+      .debounceTime(20)
+      .switchMap(([hgDiff]) => {
+        if (hgDiff == null) {
+          return Observable.of(
+            // Clear Diff UI State.
+            Actions.updateFileDiff(filePath, '', '', null, getEmptyTextDiff()),
+            Actions.updateLoadingFileDiff(true),
           );
-        })
-        .takeUntil(Observable.merge(
-          observableFromSubscribeFunction(buffer.onDidDestroy.bind(buffer)),
-          deactiveRepsitory,
-          actions.filter(a =>
-            a.type === ActionTypes.UPDATE_DIFF_EDITORS_VISIBILITY && !a.payload.visible,
-          ),
-        ))
-        .concat(clearActiveDiffObservable),
-    );
+        }
+
+        const {committedContents, revisionInfo} = hgDiff;
+        const newContents = buffer.getText();
+        const oldContents = committedContents;
+
+        return Observable.concat(
+          Observable.of(Actions.updateLoadingFileDiff(false)),
+
+          Observable.fromPromise(task.invokeRemoteMethod({
+            file: require.resolve('../diff-utils'),
+            method: 'computeDiff',
+            args: [oldContents, newContents],
+          })).switchMap(textDiff =>
+            Observable.concat(
+              Observable.of(Actions.updateFileDiff(
+                filePath,
+                newContents,
+                oldContents,
+                revisionInfo,
+                textDiff,
+              )),
+              refreshUiElements(filePath, oldContents, newContents),
+            ),
+          ).catch(error => {
+            notifyInternalError(error);
+            return Observable.empty();
+          }),
+
+        );
+      })
+      .takeUntil(Observable.merge(
+        observableFromSubscribeFunction(buffer.onDidDestroy.bind(buffer)),
+        deactiveRepsitory,
+        actions.filter(a =>
+          a.type === ActionTypes.UPDATE_DIFF_EDITORS_VISIBILITY && !a.payload.visible,
+        ),
+      ))
+      .concat(clearActiveDiffObservable);
   });
 }
 

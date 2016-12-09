@@ -32,13 +32,10 @@ export type DiffEntityOptions = {
 
 import {Emitter} from 'atom';
 import invariant from 'assert';
-import {track, trackTiming} from '../../nuclide-analytics';
+import {track} from '../../nuclide-analytics';
 import {Subject} from 'rxjs';
-import {notifyInternalError} from './notifications';
-import {bufferForUri} from '../../commons-atom/text-buffer';
 import {createEmptyAppState} from './redux/createEmptyAppState';
 
-const ACTIVE_BUFFER_CHANGE_MODIFIED_EVENT = 'active-buffer-change-modified';
 const DID_UPDATE_STATE_EVENT = 'did-update-state';
 
 export default class DiffViewModel {
@@ -56,10 +53,7 @@ export default class DiffViewModel {
   }
 
   diffFile(filePath: NuclideUri): void {
-    this._actionCreators.diffFile(
-      filePath,
-      this.emitActiveBufferChangeModified.bind(this),
-    );
+    this._actionCreators.diffFile(filePath);
   }
 
   getDirtyFileChangesCount(): number {
@@ -71,34 +65,10 @@ export default class DiffViewModel {
     this._actionCreators.setViewMode(viewMode);
   }
 
-  emitActiveBufferChangeModified(): void {
-    this._emitter.emit(ACTIVE_BUFFER_CHANGE_MODIFIED_EVENT);
-  }
-
-  onDidActiveBufferChangeModified(
-    callback: () => mixed,
-  ): IDisposable {
-    return this._emitter.on(ACTIVE_BUFFER_CHANGE_MODIFIED_EVENT, callback);
-  }
-
-  isActiveBufferModified(): boolean {
-    const {filePath} = this._state.fileDiff;
-    const buffer = bufferForUri(filePath);
-    return buffer.isModified();
-  }
-
   setCompareRevision(revision: RevisionInfo): void {
     track('diff-view-set-revision');
     invariant(this._state.activeRepository != null, 'There must be an active repository!');
     this._actionCreators.setCompareId(this._state.activeRepository, revision.id);
-  }
-
-  saveActiveFile(): Promise<void> {
-    return trackTiming('diff-view.save-file', () => {
-      const {filePath} = this._state.fileDiff;
-      track('diff-view-save-file');
-      return this._saveFile(filePath).catch(notifyInternalError);
-    });
   }
 
   publishDiff(
@@ -124,18 +94,6 @@ export default class DiffViewModel {
       ...publish,
       message,
     });
-  }
-
-  async _saveFile(filePath: NuclideUri): Promise<void> {
-    const buffer = bufferForUri(filePath);
-    if (buffer == null) {
-      throw new Error(`Could not find file buffer to save: \`${filePath}\``);
-    }
-    try {
-      await buffer.save();
-    } catch (err) {
-      throw new Error(`Could not save file buffer: \`${filePath}\` - ${err.toString()}`);
-    }
   }
 
   onDidUpdateState(callback: () => mixed): IDisposable {
