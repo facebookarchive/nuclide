@@ -41,6 +41,7 @@ type Props = AppState & {
   actionCreators: BoundActionCreators,
   // TODO(most): deprecate the model - use `actionCreators` instead.
   diffModel: DiffViewModel,
+  tryTriggerNux: () => mixed,
 };
 
 export default class DiffViewNavigatorComponent extends React.Component {
@@ -64,6 +65,8 @@ export default class DiffViewNavigatorComponent extends React.Component {
       flexScale: 0.5,
     });
     this._renderPaneElements();
+
+    this.props.tryTriggerNux();
   }
 
   componentDidUpdate(): void {

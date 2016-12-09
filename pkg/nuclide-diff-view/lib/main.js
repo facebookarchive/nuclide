@@ -23,7 +23,7 @@ import type {RegisterNux, TriggerNux} from '../../nuclide-nux/lib/main';
 
 import createPackage from '../../commons-atom/createPackage';
 import {formatDiffViewUrl} from './utils';
-import {React, ReactDOM} from 'react-for-atom';
+import {React} from 'react-for-atom';
 import url from 'url';
 import uiTreePath from '../../commons-atom/ui-tree-path';
 import {getHgRepositoryStream, repositoryForPath} from '../../commons-atom/vcs';
@@ -34,8 +34,6 @@ import {
   SHOULD_DOCK_PUBLISH_VIEW_CONFIG_KEY,
   DIFF_VIEW_TEXT_BASED_FORM_CONFIG_KEY,
 } from './constants';
-import DiffViewElement from './DiffViewElement';
-import DiffViewComponent from './DiffViewComponent';
 import DiffViewModel from './DiffViewModel';
 import {track} from '../../nuclide-analytics';
 import {createDiffViewNux, NUX_DIFF_VIEW_ID} from './diffViewNux';
@@ -43,7 +41,6 @@ import {observableFromSubscribeFunction} from '../../commons-node/event';
 import SplitDiffView from './new-ui/SplitDiffView';
 import DiffViewNavigatorGadget, {WORKSPACE_VIEW_URI} from './new-ui/DiffViewNavigatorGadget';
 import DiffViewNavigatorComponent from './new-ui/DiffViewNavigatorComponent';
-import passesGK from '../../commons-node/passesGK';
 import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
 import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
 import {goToLocation} from '../../commons-atom/go-to-location';
@@ -188,8 +185,6 @@ class Activation {
 
   _subscriptions: UniversalDisposable;
   _diffViewModel: ?DiffViewModel;
-  _diffViewElement: ?DiffViewElement;
-  _diffViewComponent: ?React.Component<DiffViewComponent, any, any>;
   _tryTriggerNuxService: ?TriggerNux;
   _progressUpdates: Subject<Message>;
   _splitDiffView: ?SplitDiffView;
@@ -327,13 +322,7 @@ class Activation {
       atom.workspace.addOpener(uri => {
         if (uri.startsWith(NUCLIDE_DIFF_VIEW_URI)) {
           const {query: diffEntityOptions} = url.parse(uri, true);
-          return passesGK('nuclide_diff_view_new_ui').then(useNewUi => {
-            if (useNewUi) {
-              return this._openNewSplitView((diffEntityOptions: any));
-            } else {
-              return this._getDiffViewElement((diffEntityOptions: any));
-            }
-          });
+          return this._openNewSplitView((diffEntityOptions: any));
         }
       }),
     );
@@ -418,51 +407,6 @@ class Activation {
       this._diffViewModel = diffViewModel;
     }
     return diffViewModel;
-  }
-
-  // To add a View as an Atom workspace pane, we return `DiffViewElement` extending `HTMLElement`.
-  // This pattern is also followed with atom's TextEditor.
-  _getDiffViewElement(diffEntityOptions: DiffEntityOptions): DiffViewElement {
-    if (this._diffViewElement != null) {
-      const diffViewElement = this._diffViewElement;
-      this._activateDiffPath(diffEntityOptions);
-      return diffViewElement;
-    }
-
-    const diffModel = this._getDiffViewModel();
-    this._actionCreators.updateDiffEditorsVisibility(true);
-    this._actionCreators.updateDiffNavigatorVisibility(true);
-    const hostElement = this._diffViewElement = new DiffViewElement()
-      .initialize(diffModel, NUCLIDE_DIFF_VIEW_URI);
-    this._diffViewComponent = ReactDOM.render(
-      <DiffViewComponent
-        actionCreators={this._actionCreators}
-        diffModel={diffModel}
-        tryTriggerNux={this.tryTriggerNux.bind(this, NUX_DIFF_VIEW_ID)}
-      />,
-      hostElement,
-    );
-    this._activateDiffPath(diffEntityOptions);
-
-    const destroySubscription = hostElement.onDidDestroy(() => {
-      ReactDOM.unmountComponentAtNode(hostElement);
-      this._actionCreators.updateDiffEditorsVisibility(false);
-      this._actionCreators.updateDiffNavigatorVisibility(false);
-      this._actionCreators.updateDiffEditors(null);
-      destroySubscription.dispose();
-      this._subscriptions.remove(destroySubscription);
-      this._diffViewElement = null;
-      this._diffViewComponent = null;
-    });
-
-    this._subscriptions.add(
-      () => { hostElement.destroy(); },
-      destroySubscription,
-    );
-
-    track('diff-view-open');
-    track('diff-view-old-open');
-    return hostElement;
   }
 
   _activateDiffPath(diffEntityOptions: DiffEntityOptions): void {
@@ -647,10 +591,6 @@ class Activation {
     });
   }
 
-  __getDiffViewComponent() {
-    return this._diffViewComponent;
-  }
-
   tryTriggerNux(nuxID: number): void {
     if (this._tryTriggerNuxService != null) {
       this._tryTriggerNuxService(nuxID);
@@ -693,6 +633,7 @@ class Activation {
         ...state,
         actionCreators,
         diffModel,
+        tryTriggerNux: this.tryTriggerNux.bind(this, NUX_DIFF_VIEW_ID),
       })),
       DiffViewNavigatorComponent,
     );

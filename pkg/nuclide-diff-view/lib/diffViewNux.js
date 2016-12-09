@@ -29,12 +29,6 @@ export function createDiffViewNux(): NuxTourModel {
     position: 'top',
   };
 
-  const diffViewEditButtonNux = {
-    content: 'Want to make changes? Click here to open the file in an editor.',
-    selector: '.nuclide-diff-view-goto-editor-button',
-    position: 'left',
-  };
-
   const diffViewPhabricatorNux = {
     content: 'Publish your changes to Phabricator without leaving Nuclide!',
     selector: '.nuclide-diff-timeline .revision-timeline-wrap .btn',
@@ -48,7 +42,6 @@ export function createDiffViewNux(): NuxTourModel {
     nuxList: [
       diffViewFilesNux,
       diffViewTimelineNux,
-      diffViewEditButtonNux,
       diffViewPhabricatorNux,
     ],
   };

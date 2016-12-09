@@ -65,7 +65,9 @@ export function runTest(context: TestContext) {
     });
   }
 
-  it('reloads the diff view when the active file changes', () => {
+  // TODO(t13905062) Update Diff View integration tests.
+  // eslint-disable-next-line jasmine/no-disabled-tests
+  xit('reloads the diff view when the active file changes', () => {
     const SAMPLE_TEXT = 'Integration test sample text';
     openDiffViewForTestFile();
 
