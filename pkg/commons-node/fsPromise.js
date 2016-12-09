@@ -73,7 +73,7 @@ async function findNearestFile(fileName: string, pathToDirectory: string): Promi
   let currentPath = nuclideUri.resolve(pathToDirectory);
   for (;;) {
     const fileToFind = nuclideUri.join(currentPath, fileName);
-    // eslint-disable-next-line babel/no-await-in-loop
+    // eslint-disable-next-line no-await-in-loop
     const hasFile = await exists(fileToFind);
     if (hasFile) {
       return currentPath;
@@ -103,7 +103,7 @@ async function findFurthestFile(
   let result = null;
   for (;;) {
     const fileToFind = nuclideUri.join(currentPath, fileName);
-    // eslint-disable-next-line babel/no-await-in-loop
+    // eslint-disable-next-line no-await-in-loop
     const hasFile = await exists(fileToFind);
     if ((!hasFile && stopOnMissing) || nuclideUri.isRoot(currentPath)) {
       return result;

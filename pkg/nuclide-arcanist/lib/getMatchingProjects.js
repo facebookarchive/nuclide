@@ -21,7 +21,7 @@ export default async function getMatchingProjects(
     const matches = [];
     let currentDir = dir;
     while (true) {
-      // eslint-disable-next-line babel/no-await-in-loop
+      // eslint-disable-next-line no-await-in-loop
       const info = await findArcProjectIdAndDirectory(currentDir);
       if (info == null) {
         break;

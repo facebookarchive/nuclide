@@ -344,7 +344,7 @@ describe('PythonService', () => {
         // found and added to paths.
         while (response == null || response.length === 0) {
           // line 7: from potato import h
-          // eslint-disable-next-line babel/no-await-in-loop
+          // eslint-disable-next-line no-await-in-loop
           response = await getCompletions(projectFile, src, 6, 28);
         }
 

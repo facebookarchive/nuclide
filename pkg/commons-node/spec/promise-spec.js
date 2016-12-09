@@ -242,7 +242,7 @@ describe('promises::asyncLimit()', () => {
   it('runs in series if limit is 1', () => {
     waitsForPromise(async () => {
       const {result, parallelismHistory} = await captureParallelismHistory(
-          asyncLimit,
+        asyncLimit,
         [
             [1, 2, 3],
           1,
@@ -257,7 +257,7 @@ describe('promises::asyncLimit()', () => {
   it('runs with the specified limit, until finishing', () => {
     waitsForPromise(async () => {
       const {result, parallelismHistory} = await captureParallelismHistory(
-          asyncLimit,
+        asyncLimit,
         [
             [1, 2, 3, 4, 5, 6, 7, 8, 9],
           3,
@@ -303,7 +303,7 @@ describe('promises::asyncFilter()', () => {
   it('filters an array with an async iterator and maximum parallelization when no limit is specified', () => {
     waitsForPromise(async () => {
       const {result: filtered, parallelismHistory} = await captureParallelismHistory(
-          asyncFilter,
+        asyncFilter,
         [
             [1, 2, 3, 4, 5],
           item => waitPromise(10 + item, item > 2),
@@ -317,7 +317,7 @@ describe('promises::asyncFilter()', () => {
   it('filters an array with a limit on parallelization', () => {
     waitsForPromise(async () => {
       const {result: filtered, parallelismHistory} = await captureParallelismHistory(
-          asyncFilter,
+        asyncFilter,
         [
             [1, 2, 3, 4, 5],
           item => waitPromise(10 + item, item > 2),
@@ -340,7 +340,7 @@ describe('promises::asyncObjFilter()', () => {
   it('filters an object with an async iterator and maximum parallelization when no limit is specified', () => {
     waitsForPromise(async () => {
       const {result: filtered, parallelismHistory} = await captureParallelismHistory(
-          asyncObjFilter,
+        asyncObjFilter,
         [
             {a: 1, b: 2, c: 3, d: 4, e: 5},
           (value, key) => waitPromise(5 + value, value > 2),
@@ -354,7 +354,7 @@ describe('promises::asyncObjFilter()', () => {
   it('filters an array with a limit on parallelization', () => {
     waitsForPromise(async () => {
       const {result: filtered, parallelismHistory} = await captureParallelismHistory(
-          asyncObjFilter,
+        asyncObjFilter,
         [
             {a: 1, b: 2, c: 3, d: 4, e: 5},
           (value, key) => waitPromise(5 + value, value > 2),
@@ -377,7 +377,7 @@ describe('promises::asyncSome()', () => {
   it('some an array with an async iterator and maximum parallelization when no limit is specified', () => {
     waitsForPromise(async () => {
       const {result, parallelismHistory} = await captureParallelismHistory(
-          asyncSome,
+        asyncSome,
         [
             [1, 2, 3, 4, 5],
           item => waitPromise(10, item === 6),
@@ -391,7 +391,7 @@ describe('promises::asyncSome()', () => {
   it('some an array with a limit on parallelization', () => {
     waitsForPromise(async () => {
       const {result, parallelismHistory} = await captureParallelismHistory(
-          asyncSome,
+        asyncSome,
         [
             [1, 2, 3, 4, 5],
           item => waitPromise(10 + item, item === 5),

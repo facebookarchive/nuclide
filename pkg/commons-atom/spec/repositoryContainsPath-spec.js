@@ -63,9 +63,12 @@ describe('repositoryContainsPath', () => {
       const mockService = new MockHgService();
       const mockHgService: HgServiceType = (mockService: any);
       const hgRepositoryClient = new HgRepositoryClient(
-        /* repoPath */ nuclideUri.join(repoRoot, '.hg'),
-        /* hgService */ mockHgService,
-        /* options */ {
+        /* repoPath */
+        nuclideUri.join(repoRoot, '.hg'),
+        /* hgService */
+        mockHgService,
+        /* options */
+        {
           originURL: 'testURL',
           workingDirectory: new Directory(repoRoot),
           projectRootDirectory: new Directory(repoRoot),

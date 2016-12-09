@@ -62,7 +62,7 @@ describe('ClangServerManager', () => {
     waitsForPromise(async () => {
       const servers = [];
       for (let i = 0; i < 21; i++) {
-        // eslint-disable-next-line babel/no-await-in-loop
+        // eslint-disable-next-line no-await-in-loop
         servers.push(await serverManager.getClangServer(`test${i}.cpp`, '', []));
       }
       invariant(servers[0]);

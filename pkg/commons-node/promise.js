@@ -85,7 +85,7 @@ export class RequestSerializer<T> {
     while (lastPromise !== this._latestPromise) {
       lastPromise = this._latestPromise;
       // Wait for the current last know promise to resolve, or a next run have started.
-      // eslint-disable-next-line babel/no-await-in-loop
+      // eslint-disable-next-line no-await-in-loop
       result = await new Promise((resolve, reject) => {
         this._waitResolve = resolve;
         this._latestPromise.then(resolve);
@@ -196,7 +196,7 @@ export async function retryLimit<T>(
   let lastError = null;
   while (tries === 0 || tries < maximumTries) {
     try {
-      // eslint-disable-next-line babel/no-await-in-loop
+      // eslint-disable-next-line no-await-in-loop
       result = await retryFunction();
       lastError = null;
       if (validationFunction(result)) {
@@ -208,7 +208,7 @@ export async function retryLimit<T>(
     }
 
     if (++tries < maximumTries && retryIntervalMs !== 0) {
-      // eslint-disable-next-line babel/no-await-in-loop
+      // eslint-disable-next-line no-await-in-loop
       await sleep(retryIntervalMs);
     }
   }

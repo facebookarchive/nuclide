@@ -222,7 +222,7 @@ export class NuxManager {
       try {
         // Disable the linter suggestion to use `Promise.all` as we want to trigger NUXes
         // as soon as each promise resolves rather than waiting for them all to.
-        // eslint-disable-next-line babel/no-await-in-loop
+        // eslint-disable-next-line no-await-in-loop
         if (await this._canTriggerNux(gkID)) {
           this._emitter.emit(READY_TOUR_EVENT, nux);
         }

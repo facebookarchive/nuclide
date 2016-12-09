@@ -280,7 +280,7 @@ async function reloadRemoteProjects(
   const reloadedProjects: Array<string> = [];
   for (const config of remoteProjects) {
     invariant(remoteProjectsService);
-    // eslint-disable-next-line babel/no-await-in-loop
+    // eslint-disable-next-line no-await-in-loop
     const connection = await remoteProjectsService.createRemoteConnection(config);
     if (!connection) {
       logger.info(
@@ -317,7 +317,7 @@ async function reloadRemoteProjects(
       const {cwd, host, displayTitle} = config;
       if (connection.getPathForInitialWorkingDirectory() !== cwd &&
           connection.getRemoteHostname() === host) {
-        // eslint-disable-next-line babel/no-await-in-loop
+        // eslint-disable-next-line no-await-in-loop
         const subConnection = await RemoteConnection.createConnectionBySavedConfig(
           host, cwd, displayTitle);
         if (subConnection != null) {

@@ -43,6 +43,7 @@ module.exports = {
 
   rules: {
     // Possible Errors (http://eslint.org/docs/rules/#possible-errors)
+    'no-await-in-loop': 1,
     'no-cond-assign': 1,
     'no-console': 1,
     'no-constant-condition': [1, {checkLoops: false}],
@@ -290,13 +291,6 @@ module.exports = {
     'template-curly-spacing': 1,
     'yield-star-spacing': 1,
 
-    // Babel (https://github.com/babel/eslint-plugin-babel)
-    'babel/new-cap': 0,
-    'babel/no-invalid-this': 0,
-    'babel/object-curly-spacing': 0,
-    // Babel (not in eslint)
-    'babel/no-await-in-loop': 1,
-
     // dependencies (https://github.com/zertosh/eslint-plugin-dependencies)
     'dependencies/case-sensitive': 1,
     'dependencies/no-cycles': [0, {skip: ['/spec/', '/sample-[^/]+/']}],
@@ -413,7 +407,6 @@ module.exports = {
   },
 
   plugins: [
-    'babel',
     'dependencies',
     'flowtype',
     'jasmine',

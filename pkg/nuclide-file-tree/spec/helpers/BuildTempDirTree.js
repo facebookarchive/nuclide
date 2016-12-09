@@ -32,10 +32,10 @@ export async function buildTempDirTree(...paths: Array<string>): Promise<Map<str
     const itemGlobalDirPath = nuclideUri.join(rootPath, ...arrPathItemParts.slice(0, -1));
     const itemLocalFileName = arrPathItemParts[arrPathItemParts.length - 1];
 
-    // eslint-disable-next-line babel/no-await-in-loop
+    // eslint-disable-next-line no-await-in-loop
     await mkdir(itemGlobalDirPath);
     if (itemLocalFileName) {
-      // eslint-disable-next-line babel/no-await-in-loop
+      // eslint-disable-next-line no-await-in-loop
       await touch(nuclideUri.join(itemGlobalDirPath, itemLocalFileName));
     }
 

@@ -59,7 +59,7 @@ function sleep(milliseconds: number): Promise<void> {
 async function sleepUntilNoRequests(pollMilliseconds: number = 1): Promise<any> {
   // $FlowFixMe: use public API.
   while (process._getActiveRequests().length !== 0) {
-    // eslint-disable-next-line babel/no-await-in-loop
+    // eslint-disable-next-line no-await-in-loop
     await sleep(pollMilliseconds);
   }
 }

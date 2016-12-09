@@ -28,7 +28,7 @@ import {trackTiming} from '../../nuclide-analytics';
  */
 async function findTruthyReturnValue(fns: Array<void | () => Promise<any>>): Promise<any> {
   for (const fn of fns) {
-    // eslint-disable-next-line babel/no-await-in-loop
+    // eslint-disable-next-line no-await-in-loop
     const result = typeof fn === 'function' ? await fn() : null;
     if (result) {
       return result;

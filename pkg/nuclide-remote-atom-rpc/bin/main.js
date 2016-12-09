@@ -96,32 +96,32 @@ async function main(argv): Promise<number> {
 
     for (const arg of argv._) {
       const {filePath, line, column} = parseLocationParameter(arg);
-      // eslint-disable-next-line babel/no-await-in-loop
+      // eslint-disable-next-line no-await-in-loop
       const realpath = await getRealPath(filePath);
-      // eslint-disable-next-line babel/no-await-in-loop
+      // eslint-disable-next-line no-await-in-loop
       const isDirectory = await getIsDirectory(realpath);
       try {
         if (nuclideUri.isRemote(realpath)) {
           const result =
             commands.openRemoteFile(realpath, line, column, Boolean(argv.wait)).refCount();
           if (argv.wait) {
-            // eslint-disable-next-line babel/no-await-in-loop
+            // eslint-disable-next-line no-await-in-loop
             await result.toPromise();
           } else {
-            // eslint-disable-next-line babel/no-await-in-loop
+            // eslint-disable-next-line no-await-in-loop
             await result.take(1).toPromise();
           }
         } else if (isDirectory) {
           // file/line/wait are ignored on directories
-          // eslint-disable-next-line babel/no-await-in-loop
+          // eslint-disable-next-line no-await-in-loop
           await commands.addProject(realpath);
         } else {
           const result = commands.openFile(realpath, line, column, Boolean(argv.wait)).refCount();
           if (argv.wait) {
-            // eslint-disable-next-line babel/no-await-in-loop
+            // eslint-disable-next-line no-await-in-loop
             await result.toPromise();
           } else {
-            // eslint-disable-next-line babel/no-await-in-loop
+            // eslint-disable-next-line no-await-in-loop
             await result.take(1).toPromise();
           }
         }

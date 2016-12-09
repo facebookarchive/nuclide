@@ -90,7 +90,7 @@ export class BreakpointStore {
       const xdebugBreakpointId = map.get(chromeId);
       invariant(xdebugBreakpointId != null);
       const promise = connection.getBreakpoint(xdebugBreakpointId);
-      const xdebugBreakpoint = await promise; // eslint-disable-line babel/no-await-in-loop
+      const xdebugBreakpoint = await promise; // eslint-disable-line no-await-in-loop
       this.updateBreakpoint(chromeId, xdebugBreakpoint);
       // Breakpoint status should be the same for all connections
       // so only need to fetch from the first connection.
