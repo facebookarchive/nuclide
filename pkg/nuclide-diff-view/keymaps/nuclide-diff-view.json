@@ -5,12 +5,6 @@
   ".platform-win32 atom-workspace, .platform-linux atom-workspace": {
     "alt-ctrl-shift-d": "nuclide-diff-view:open"
   },
-  ".platform-darwin .nuclide-diff-editor-container": {
-    "cmd-shift-e": "nuclide-diff-view:switch-to-editor"
-  },
-  ".platform-win32 .nuclide-diff-editor-container, .platform-linux .nuclide-diff-editor-container": {
-    "ctrl-shift-e": "nuclide-diff-view:switch-to-editor"
-  },
   ".platform-darwin .commit-form-wrapper": {
     "cmd-ctrl-enter": "nuclide-diff-view:commit-message"
   },

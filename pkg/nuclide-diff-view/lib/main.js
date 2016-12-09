@@ -18,7 +18,6 @@ import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 import type {OutputService, Message} from '../../nuclide-console/lib/types';
 import type {Viewable, WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
-
 import type {RegisterNux, TriggerNux} from '../../nuclide-nux/lib/main';
 
 import createPackage from '../../commons-atom/createPackage';
@@ -290,20 +289,6 @@ class Activation {
           {type: 'separator'},
         ],
       }),
-
-      // Listen for switching to editor mode for the active file.
-      atom.commands.add(
-        'nuclide-diff-view',
-        'nuclide-diff-view:switch-to-editor',
-        () => {
-          const {filePath} = this._getDiffViewModel().getState().fileDiff;
-          if (filePath != null && filePath.length) {
-            // This is part of the old diff view, not worth updating.
-            // eslint-disable-next-line nuclide-internal/atom-apis
-            atom.workspace.open(filePath);
-          }
-        },
-      ),
 
       addFileTreeCommands('nuclide-diff-view:open-context'),
       addFileTreeCommands('nuclide-diff-view:commit-context', {

@@ -9,8 +9,6 @@
  * the root directory of this source tree.
  */
 
-import type DiffViewComponent from '../pkg/nuclide-diff-view/lib/DiffViewComponent';
-
 import {
   activateAllPackages,
   jasmineIntegrationTestSetup,
@@ -19,7 +17,6 @@ import {
 import {setLocalProject} from '../pkg/commons-atom/testHelpers';
 import fs from 'fs';
 import invariant from 'assert';
-import {ReactDOM} from 'react-for-atom';
 import uiTreePath from '../pkg/commons-atom/ui-tree-path';
 import nuclideUri from '../pkg/commons-node/nuclideUri';
 import {generateHgRepo2Fixture} from '../pkg/nuclide-test-helpers';
@@ -49,14 +46,6 @@ xdescribe('Diff View Browse Mode Integration Test', () => {
     deactivateAllPackages();
   });
 
-  function getDiffViewComponent(): DiffViewComponent {
-    const diffViewPackage = atom.packages.getActivePackage('nuclide-diff-view');
-    invariant(diffViewPackage, 'nuclide-diff-view is not active!');
-    const diffViewComponent = (diffViewPackage.mainModule: any).__getDiffViewComponent();
-    invariant(diffViewComponent, 'no active diff view!');
-    return diffViewComponent;
-  }
-
   it('tests opening the diff view in browse mode', () => {
     // Open diff view with the `test.txt` file.
     const textEditor = atom.workspace.getActiveTextEditor();
@@ -74,9 +63,6 @@ xdescribe('Diff View Browse Mode Integration Test', () => {
 
     runs(() => {
       invariant(diffViewElement);
-      const diffViewComponent = getDiffViewComponent();
-      const diffViewContainer = ReactDOM.findDOMNode(diffViewComponent);
-      expect(diffViewContainer.parentNode).toBe(diffViewElement);
       const textEditorElements = diffViewElement.querySelectorAll('atom-text-editor');
       expect(textEditorElements.length).toBe(2);
       treeElement = diffViewElement.querySelector('.nuclide-diff-view-tree');
