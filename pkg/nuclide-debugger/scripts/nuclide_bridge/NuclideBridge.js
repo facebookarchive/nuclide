@@ -34,19 +34,6 @@ invariant(ipcRenderer != null);
 
 const NUCLIDE_DEBUGGER_CONSOLE_OBJECT_GROUP = 'console';
 const DebuggerSettingsChangedEvent = 'debugger-settings-updated';
-const PARSABLE_EXTENSIONS = [
-  '.php',
-  '.hh',
-  '.c',
-  '.cpp',
-  '.h',
-  '.hpp',
-  '.js',
-  '.m',
-  '.mm',
-  '.java',
-];
-
 
 type BreakpointNotificationType = 'BreakpointAdded' | 'BreakpointRemoved';
 
@@ -565,30 +552,20 @@ class NuclideBridge {
     });
   }
 
-  _hasParsableExtension(sourceUrl: string): boolean {
-    return PARSABLE_EXTENSIONS.some(extension => nuclideUri.extname(sourceUrl) === extension);
-  }
-
-  _isFileWithNoExtension(sourceUrl: string): boolean {
-    return !nuclideUri.endsWithSeparator(sourceUrl) && nuclideUri.extname(sourceUrl) === '';
-  }
-
   _parseBreakpointSourceIfNeeded(breakpoint: Object): void {
     const sourceUrl = breakpoint.sourceURL;
-    if (this._hasParsableExtension(sourceUrl) || this._isFileWithNoExtension(sourceUrl)) {
-      const source = WebInspector.workspace.uiSourceCodeForOriginURL(sourceUrl);
-      if (source != null) {
-        return;
-      }
-      const target = WebInspector.targetManager.mainTarget();
-      if (target == null) {
-        return;
-      }
-      target.debuggerModel._parsedScriptSource(
-        sourceUrl,
-        sourceUrl,
-      );
+    const source = WebInspector.workspace.uiSourceCodeForOriginURL(sourceUrl);
+    if (source != null) {
+      return;
     }
+    const target = WebInspector.targetManager.mainTarget();
+    if (target == null) {
+      return;
+    }
+    target.debuggerModel._parsedScriptSource(
+      sourceUrl,
+      sourceUrl,
+    );
   }
 
   // Synchronizes nuclide BreakpointStore and BreakpointManager
