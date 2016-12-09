@@ -117,7 +117,7 @@ export default class BlameGutter {
       atom.notifications.addError(
         'Failed to fetch blame to display. ' +
         'The file is empty or untracked or the repository cannot be reached.',
-        error,
+        {detail: error},
       );
       atom.commands.dispatch(
         atom.views.getView(this._editor),
