@@ -21,6 +21,7 @@ import {Checkbox} from '../../nuclide-ui/Checkbox';
 import {StatusCodeNumber} from '../../nuclide-hg-rpc/lib/hg-constants';
 import {FileTreeStore} from '../lib/FileTreeStore';
 import {isValidRename} from '../lib/FileTreeHgHelpers';
+import addTooltip from '../../nuclide-ui/add-tooltip';
 import os from 'os';
 
 const store = FileTreeStore.getInstance();
@@ -47,6 +48,7 @@ export class FileTreeEntryComponent extends React.Component {
   // the duration of one user interaction.
   dragEventCount: number;
   _loadingTimeout: ?number;
+  _pathContainer: ?HTMLElement;
 
   constructor(props: Props) {
     super(props);
@@ -148,10 +150,14 @@ export class FileTreeEntryComponent extends React.Component {
     }
 
     let iconName;
+    let tooltip;
     if (node.isContainer) {
-      iconName = node.isCwd
-        ? 'icon-nuclicon-file-directory-starred'
-        : 'icon-nuclicon-file-directory';
+      if (node.isCwd) {
+        iconName = 'icon-nuclicon-file-directory-starred';
+        tooltip = addTooltip({title: 'Current Working Root'});
+      } else {
+        iconName = 'icon-nuclicon-file-directory';
+      }
     } else {
       iconName = fileTypeClass(node.name);
     }
@@ -174,7 +180,10 @@ export class FileTreeEntryComponent extends React.Component {
           ref="arrowContainer">
           <span
             className={`icon name ${iconName}`}
-            ref="pathContainer"
+            ref={elem => {
+              this._pathContainer = elem;
+              tooltip && tooltip(elem);
+            }}
             data-name={node.name}
             data-path={node.uri}>
             {this._renderCheckbox()}
@@ -222,10 +231,14 @@ export class FileTreeEntryComponent extends React.Component {
   }
 
   _isToggleNodeExpand(event: SyntheticMouseEvent) {
+    if (!this._pathContainer) {
+      return;
+    }
+
     const node = this.props.node;
     return node.isContainer
       && ReactDOM.findDOMNode(this.refs.arrowContainer).contains(event.target)
-      && event.clientX < ReactDOM.findDOMNode(this.refs.pathContainer)
+      && event.clientX < ReactDOM.findDOMNode(this._pathContainer)
           .getBoundingClientRect().left;
   }
 
@@ -335,7 +348,10 @@ export class FileTreeEntryComponent extends React.Component {
 
   _onDragStart(event: SyntheticDragEvent) {
     event.stopPropagation();
-    const target = this.refs.pathContainer;
+    const target = this._pathContainer;
+    if (target == null) {
+      return;
+    }
 
     const fileIcon = target.cloneNode(false);
     fileIcon.style.cssText = 'position: absolute; top: 0; left: 0; color: #fff; opacity: .8;';
@@ -345,7 +361,7 @@ export class FileTreeEntryComponent extends React.Component {
     nativeEvent.dataTransfer.effectAllowed = 'move';
     nativeEvent.dataTransfer.setDragImage(fileIcon, -8, -4);
     nativeEvent.dataTransfer.setData('initialPath', this.props.node.uri);
-    requestAnimationFrame(() => document.body.removeChild(fileIcon));
+    requestAnimationFrame(() => { document.body.removeChild(fileIcon); });
   }
 
   _onDragOver(event: SyntheticDragEvent) {
