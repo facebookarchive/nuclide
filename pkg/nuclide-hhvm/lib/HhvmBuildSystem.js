@@ -17,11 +17,12 @@ import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {taskFromObservable} from '../../commons-node/tasks';
 import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
-import HhvmIcon from './HhvmIcon';
+import {Icon} from '../../nuclide-ui/Icon';
 
 import {debug} from './HhvmDebug';
 import HhvmToolbar from './HhvmToolbar';
 import ProjectStore from './ProjectStore';
+import {React} from 'react-for-atom';
 
 export default class HhvmBuildSystem {
   id: string;
@@ -84,7 +85,7 @@ export default class HhvmBuildSystem {
   }
 
   getIcon(): ReactClass<any> {
-    return HhvmIcon;
+    return () => <Icon icon="nuclicon-hhvm" className="nuclide-hhvm-task-runner-icon" />;
   }
 
   runTask(taskName: string): Task {

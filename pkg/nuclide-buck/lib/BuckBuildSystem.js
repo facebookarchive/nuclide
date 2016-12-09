@@ -48,7 +48,7 @@ import {getBuckService} from '../../nuclide-buck-base';
 import featureConfig from '../../commons-atom/featureConfig';
 import {getLogger} from '../../nuclide-logging';
 import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
-import {BuckIcon} from './ui/BuckIcon';
+import {Icon} from '../../nuclide-ui/Icon';
 import * as Actions from './redux/Actions';
 import * as Epics from './redux/Epics';
 import Reducers from './redux/Reducers';
@@ -63,6 +63,7 @@ import {
   getLLDBBuildEvents,
   getLLDBInstallEvents,
 } from './LLDBEventStream';
+import {React} from 'react-for-atom';
 
 const SOCKET_TIMEOUT = 30000;
 
@@ -181,7 +182,7 @@ export class BuckBuildSystem {
   }
 
   getIcon(): ReactClass<any> {
-    return BuckIcon;
+    return () => <Icon icon="nuclicon-buck" className="nuclide-buck-task-runner-icon" />;
   }
 
   getOutputMessages(): Observable<Message> {

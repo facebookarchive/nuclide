@@ -32,7 +32,7 @@ import {
 } from './SwiftPMTaskRunnerTaskMetadata';
 import SwiftPMTaskRunnerToolbar from './toolbar/SwiftPMTaskRunnerToolbar';
 import SwiftPMAutocompletionProvider from './providers/SwiftPMAutocompletionProvider';
-import {SwiftIcon} from '../ui/SwiftIcon';
+import {Icon} from '../../../nuclide-ui/Icon';
 
 /**
  * nuclide-swift makes use of the Flux design pattern. The SwiftPMTaskRunner is
@@ -106,7 +106,7 @@ export class SwiftPMTaskRunner {
   }
 
   getIcon(): ReactClass<any> {
-    return SwiftIcon;
+    return () => <Icon icon="nuclicon-swift" className="nuclide-swift-task-runner-icon" />;
   }
 
   runTask(taskName: string): Task {
