@@ -274,7 +274,6 @@ const createTask = (taskRunnerId, type, disabled = undefined, priority = 0) => (
   disabled,
   priority,
   runnable: true,
-  icon: 'triangle-right',
   taskRunnerId,
   taskRunnerName: taskRunnerId,
 });

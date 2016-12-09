@@ -45,7 +45,6 @@ describe('Epics', () => {
               label: 'Test Task',
               description: 'A great task to test',
               runnable: true,
-              icon: 'squirrel',
             },
           ]]]),
         };
@@ -84,7 +83,6 @@ describe('Epics', () => {
               label: 'Test Task',
               description: 'A great task to test',
               runnable: true,
-              icon: 'squirrel',
             },
           ]]]),
         };

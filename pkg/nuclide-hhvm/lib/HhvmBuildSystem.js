@@ -79,7 +79,6 @@ export default class HhvmBuildSystem {
         priority: 1,  // Take precedence over the Arcanist build toolbar.
         runnable: !disabled,
         cancelable: false,
-        icon: 'nuclicon-debugger',
       },
     ];
   }

@@ -15,7 +15,6 @@ export const SwiftPMTaskRunnerBuildTaskMetadata: TaskMetadata = {
   label: 'Build',
   description: 'Build a Swift package',
   runnable: true,
-  icon: 'tools',
 };
 
 export const SwiftPMTaskRunnerTestTaskMetadata: TaskMetadata = {
@@ -23,7 +22,6 @@ export const SwiftPMTaskRunnerTestTaskMetadata: TaskMetadata = {
   label: 'Test',
   description: 'Run a Swift package\'s tests',
   runnable: true,
-  icon: 'checklist',
 };
 
 export const SwiftPMTaskRunnerTaskMetadata: Array<TaskMetadata> = [

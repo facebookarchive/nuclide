@@ -88,7 +88,7 @@ export function CommonControls(props: Props): React.Element<any> {
             className="nuclide-task-run-button"
             size={ButtonSizes.SMALL}
             disabled={confirmDisabled}
-            icon={activeTask == null ? 'triangle-right' : activeTask.icon}
+            icon="triangle-right"
             onClick={run}
           />
           <Button
@@ -138,7 +138,6 @@ function getTaskOptions(
         value: taskMeta,
         label: indent(taskMeta.label),
         selectedLabel: taskMeta.label,
-        icon: taskMeta.icon,
         disabled: taskMeta.disabled,
       })),
     );
