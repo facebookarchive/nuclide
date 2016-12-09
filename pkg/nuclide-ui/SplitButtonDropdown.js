@@ -37,9 +37,7 @@ export class SplitButtonDropdown extends React.Component {
   props: Props;
 
   render(): React.Element<any> {
-    const selectedOption = this.props.options.find(option => (
-      option.type !== 'separator' && option.value === this.props.value),
-    ) || this.props.options[0];
+    const selectedOption = this._findSelectedOption(this.props.options) || this.props.options[0];
 
     invariant(selectedOption.type !== 'separator');
 
@@ -79,6 +77,24 @@ export class SplitButtonDropdown extends React.Component {
     }
   }
 
+  _findSelectedOption(options: Array<Option>): ?Option {
+    let result = null;
+    for (const option of options) {
+      if (option.type === 'separator') {
+        continue;
+      } else if (option.type === 'submenu') {
+        const submenu = (((option.submenu): any): Array<Option>);
+        result = this._findSelectedOption(submenu);
+      } else if (option.value === this.props.value) {
+        result = option;
+      }
+
+      if (result) {
+        break;
+      }
+    }
+    return result;
+  }
 }
 
 export {ButtonSizes};

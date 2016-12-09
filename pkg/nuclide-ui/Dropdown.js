@@ -33,7 +33,16 @@ export type Option = Separator | {
   value: any,
   label: string,
   selectedLabel?: string,
+  submenu?: void,
   icon?: IconName,
+  iconset?: string,
+  disabled?: boolean,
+} | {
+  type: 'submenu',
+  label: string,
+  submenu: Array<Option>,
+  icon?: IconName,
+  iconset?: string,
   disabled?: boolean,
 };
 
@@ -74,9 +83,7 @@ export class Dropdown extends React.Component {
   }
 
   render(): React.Element<any> {
-    const selectedOption = this.props.options.find(option => (
-      option.type !== 'separator' && option.value === this.props.value),
-    );
+    const selectedOption = this._findSelectedOption(this.props.options);
 
     let selectedLabel;
     if (selectedOption == null) {
@@ -120,27 +127,58 @@ export class Dropdown extends React.Component {
 
   _handleDropdownClick(event: SyntheticMouseEvent): void {
     const currentWindow = remote.getCurrentWindow();
-    const menu = new remote.Menu();
-    this.props.options.forEach(option => {
-      if (option.type === 'separator') {
-        menu.append(new remote.MenuItem({type: 'separator'}));
-        return;
-      }
-      menu.append(new remote.MenuItem({
-        type: 'checkbox',
-        checked: this.props.value === option.value,
-        label: option.label,
-        enabled: option.disabled !== true,
-        click: () => {
-          if (this.props.onChange != null) {
-            this.props.onChange(option.value);
-          }
-        },
-      }));
-    });
+    const menu = this._menuFromOptions(this.props.options);
     menu.popup(currentWindow, event.clientX, event.clientY);
   }
 
+  _menuFromOptions(options: Array<Option>): remote.Menu {
+    const menu = new remote.Menu();
+    options.forEach(option => {
+      if (option.type === 'separator') {
+        menu.append(new remote.MenuItem({type: 'separator'}));
+      } else if (option.type === 'submenu') {
+        const submenu = (((option.submenu): any): Array<Option>);
+        menu.append(new remote.MenuItem({
+          type: 'submenu',
+          label: option.label,
+          enabled: option.disabled !== true,
+          submenu: this._menuFromOptions(submenu),
+        }));
+      } else {
+        menu.append(new remote.MenuItem({
+          type: 'checkbox',
+          checked: this.props.value === option.value,
+          label: option.label,
+          enabled: option.disabled !== true,
+          click: () => {
+            if (this.props.onChange != null) {
+              this.props.onChange(option.value);
+            }
+          },
+        }));
+      }
+    });
+    return menu;
+  }
+
+  _findSelectedOption(options: Array<Option>): ?Option {
+    let result = null;
+    for (const option of options) {
+      if (option.type === 'separator') {
+        continue;
+      } else if (option.type === 'submenu') {
+        const submenu = (((option.submenu): any): Array<Option>);
+        result = this._findSelectedOption(submenu);
+      } else if (option.value === this.props.value) {
+        result = option;
+      }
+
+      if (result) {
+        break;
+      }
+    }
+    return result;
+  }
 }
 
 type DropdownButtonProps = {
