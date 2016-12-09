@@ -19,7 +19,7 @@ import fsPromise from '../../commons-node/fsPromise';
 import {
   getOriginalEnvironment,
   observeProcess,
-  safeSpawn,
+  scriptSafeSpawn,
   runCommand,
 } from '../../commons-node/process';
 import {getConnectionDetails} from '../../nuclide-remote-atom-rpc';
@@ -59,7 +59,7 @@ export function hgObserveExecution(
   return Observable.fromPromise(getHgExecParams(args_, options_))
     .switchMap(({command, args, options}) => (
       observeProcess(
-        () => safeSpawn(command, args, options),
+        () => scriptSafeSpawn(command, args, options),
         true, // kill process tree on complete.
       )
     ));
