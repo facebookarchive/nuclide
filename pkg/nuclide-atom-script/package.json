@@ -3,8 +3,8 @@
   "repository": "https://github.com/facebook/nuclide",
   "version": "0.0.0",
   "description": "Facilitates dumping data from Atom",
-  "main": "./lib/test-runner",
-  "atomTestRunner": "./lib/test-runner",
+  "main": "./lib/test-runner-entry.js",
+  "atomTestRunner": "./lib/test-runner-entry.js",
   "bin": {
     "atom-script": "./bin/atom-script"
   }
