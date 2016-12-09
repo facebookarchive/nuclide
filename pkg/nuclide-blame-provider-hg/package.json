@@ -12,14 +12,6 @@
         "Blame"
       ]
     },
-    "config": {
-      "showVerboseBlame": {
-        "title": "Show Complete Username",
-        "type": "boolean",
-        "default": false,
-        "description": "Show complete name returned from \"hg blame\", instead of shortened name."
-      }
-    },
     "packageType": "Atom",
     "testRunner": "apm"
   },

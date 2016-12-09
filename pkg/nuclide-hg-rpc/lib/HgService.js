@@ -23,13 +23,13 @@ import {
   StatusCodeId,
 } from './hg-constants';
 import {Subject} from 'rxjs';
-import {parseHgBlameOutput} from './hg-blame-output-parser';
 import {parseMultiFileHgDiffUnifiedOutput} from './hg-diff-output-parser';
 import {
   expressionForCommonAncestor,
   expressionForRevisionsBeforeHead,
   fetchRevisionInfoBetweenRevisions,
   fetchRevisionInfo,
+  fetchRevisionsInfo,
   fetchSmartlogRevisions,
 } from './hg-revision-expression-helpers';
 import {
@@ -644,29 +644,51 @@ export class HgService {
   }
 
   /**
-   * Gets the blame for the filePath at the current revision, including uncommitted changes
-   * (but not unsaved changes).
+   * Gets the blame for the filePath at the current revision.
+   * It returns null for uncommitted changes (but cannot detect unsaved changes)
    * @param filePath The file to get blame information for.
-   * @return A Map that maps a line number (0-indexed) to the name that line blames to.
-   *   The name is of the form: "Firstname Lastname <username@email.com> ChangeSetID".
-   *   The Firstname Lastname may not appear sometimes.
-   *   If no blame information is available, returns an empty Map.
+   * @return An Array that maps a line number (0-indexed) to the revision info.
    */
-  async getBlameAtHead(filePath: NuclideUri): Promise<Map<string, string>> {
-    const args =
-      ['blame', '-r', 'wdir()', '-Tjson', '--changeset', '--user', '--line-number', filePath];
-    const execOptions = {
-      cwd: this._workingDirectory,
-    };
-    let output;
+  async getBlameAtHead(filePath: NuclideUri): Promise<Array<?RevisionInfo>> {
+    let revisionsByLine;
     try {
-      output = await this._hgAsyncExecute(args, execOptions);
+      revisionsByLine = (await this._hgAsyncExecute(
+        [
+          'blame',
+          '-c', // Query the hash
+          '-T', '{node|short}\n', // Just display the hash per line
+          '-r', 'wdir()', // Blank out uncommitted changes
+          filePath,
+        ],
+        {cwd: this._workingDirectory},
+      )).stdout.split('\n');
     } catch (e) {
       getLogger().error(
-          `LocalHgServiceBase failed to fetch blame for file: ${filePath}. Error: ${e.stderr}`);
+        `LocalHgServiceBase failed to fetch blame for file: ${filePath}. Error: ${e.stderr}`);
       throw e;
     }
-    return parseHgBlameOutput(output.stdout);
+
+    const uniqueRevisions = [...(new Set(revisionsByLine.filter(e => e)): any)];
+
+    let revisionsArray;
+    try {
+      revisionsArray = await fetchRevisionsInfo(
+        uniqueRevisions.join('+'),
+        this._workingDirectory,
+        {hidden: true},
+      ).toPromise();
+    } catch (e) {
+      getLogger().error(
+        `LocalHgServiceBase failed to fetch blame for file: ${filePath}. Error: ${e.stderr}`);
+      throw e;
+    }
+
+    const revisionsByHash = {};
+    revisionsArray.forEach(revision => {
+      revisionsByHash[revision.hash] = revision;
+    });
+
+    return revisionsByLine.map(hash => revisionsByHash[hash]);
   }
 
   /**

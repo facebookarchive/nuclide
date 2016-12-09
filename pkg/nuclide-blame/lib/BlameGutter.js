@@ -8,9 +8,9 @@
  * @flow
  */
 
+import type {RevisionInfo} from '../../nuclide-hg-rpc/lib/HgService';
 import type {
   BlameForEditor,
-  BlameInfo,
   BlameProvider,
 } from './types';
 
@@ -18,6 +18,8 @@ import {track, trackTiming} from '../../nuclide-analytics';
 import {CompositeDisposable} from 'atom';
 import invariant from 'assert';
 import {shell} from 'electron';
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
+import {shortNameForAuthor} from '../../nuclide-vcs-log';
 
 const CHANGESET_CSS_CLASS = 'nuclide-blame-hash';
 const CLICKABLE_CHANGESET_CSS_CLASS = 'nuclide-blame-hash-clickable';
@@ -175,7 +177,7 @@ export default class BlameGutter {
 
   // The BlameForEditor completely replaces any previous blame information.
   __updateBlame(blameForEditor: BlameForEditor): void {
-    if (blameForEditor.size === 0) {
+    if (blameForEditor.length === 0) {
       atom.notifications.addInfo(
           `Found no blame to display. Is this file empty or untracked?
           If not, check for errors in the Nuclide logs local to your repo.`);
@@ -183,18 +185,21 @@ export default class BlameGutter {
     const allPreviousBlamedLines = new Set(this._bufferLineToDecoration.keys());
 
     let longestBlame = 0;
-    for (const blameInfo of blameForEditor.values()) {
-      let blameLength = blameInfo.author.length;
-      if (blameInfo.changeset) {
-        blameLength += blameInfo.changeset.length + 1;
+    for (const blameInfo of blameForEditor) {
+      if (!blameInfo) {
+        continue;
       }
+      const blameLength = shortNameForAuthor(blameInfo.author).length + 1 + blameInfo.hash.length;
       if (blameLength > longestBlame) {
         longestBlame = blameLength;
       }
     }
 
-    for (const [bufferLine, blameInfo] of blameForEditor) {
-      this._setBlameLine(bufferLine, blameInfo, longestBlame);
+    for (let bufferLine = 0; bufferLine < blameForEditor.length; ++bufferLine) {
+      const blameInfo = blameForEditor[bufferLine];
+      if (blameInfo) {
+        this._setBlameLine(bufferLine, blameInfo, longestBlame);
+      }
       allPreviousBlamedLines.delete(bufferLine);
     }
 
@@ -212,7 +217,7 @@ export default class BlameGutter {
     gutterView.style.width = `${characters}ch`;
   }
 
-  _setBlameLine(bufferLine: number, blameInfo: BlameInfo, longestBlame: number): void {
+  _setBlameLine(bufferLine: number, blameInfo: RevisionInfo, longestBlame: number): void {
     const item = this._createGutterItem(blameInfo, longestBlame);
     const decorationProperties = {
       type: 'gutter',
@@ -247,28 +252,26 @@ export default class BlameGutter {
     this._bufferLineToDecoration.delete(bufferLine);
   }
 
-  _createGutterItem(blameInfo: BlameInfo, longestBlame: number): HTMLElement {
-    const {author, changeset} = blameInfo;
-    const item = document.createElement('div');
+  _createGutterItem(blameInfo: RevisionInfo, longestBlame: number): HTMLElement {
+    const doc = window.document;
+    const item = doc.createElement('div');
 
-    const authorSpan = document.createElement('span');
+    const authorSpan = doc.createElement('span');
+    const author = shortNameForAuthor(blameInfo.author);
     authorSpan.innerText = author;
     item.appendChild(authorSpan);
 
+    const numSpaces = longestBlame - author.length - blameInfo.hash.length;
+    // Insert non-breaking spaces to ensure the changeset is right-aligned.
+    // Admittedly, this is a little gross, but it seems better than setting style.width on every
+    // item that we create and having to give it a special flexbox layout. Hooray monospace!
+    item.appendChild(doc.createTextNode('\u00A0'.repeat(numSpaces)));
 
-    if (changeset != null) {
-      const numSpaces = longestBlame - author.length - changeset.length;
-      // Insert non-breaking spaces to ensure the changeset is right-aligned.
-      // Admittedly, this is a little gross, but it seems better than setting style.width on every
-      // item that we create and having to give it a special flexbox layout. Hooray monospace!
-      item.appendChild(document.createTextNode('\u00A0'.repeat(numSpaces)));
-
-      const changesetSpan = document.createElement('span');
-      changesetSpan.className = this._changesetSpanClassName;
-      changesetSpan.dataset[HG_CHANGESET_DATA_ATTRIBUTE] = changeset;
-      changesetSpan.innerText = changeset;
-      item.appendChild(changesetSpan);
-    }
+    const changesetSpan = doc.createElement('span');
+    changesetSpan.className = this._changesetSpanClassName;
+    changesetSpan.dataset[HG_CHANGESET_DATA_ATTRIBUTE] = blameInfo.hash;
+    changesetSpan.innerText = blameInfo.hash;
+    item.appendChild(changesetSpan);
 
     return item;
   }

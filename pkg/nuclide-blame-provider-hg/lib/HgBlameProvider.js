@@ -10,11 +10,8 @@
 
 import type {BlameForEditor} from '../../nuclide-blame/lib/types';
 
-import featureConfig from '../../commons-atom/featureConfig';
 import {hgRepositoryForEditor} from './common';
 import {trackTiming} from '../../nuclide-analytics';
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {shortNameForAuthor} from '../../nuclide-vcs-log';
 import {getLogger} from '../../nuclide-logging';
 
 const logger = getLogger();
@@ -45,7 +42,7 @@ function getBlameForEditor(editor: atom$TextEditor): Promise<BlameForEditor> {
 async function doGetBlameForEditor(editor: atom$TextEditor): Promise<BlameForEditor> {
   const path = editor.getPath();
   if (!path) {
-    return Promise.resolve(new Map());
+    return Promise.resolve([]);
   }
 
   const repo = hgRepositoryForEditor(editor);
@@ -55,46 +52,7 @@ async function doGetBlameForEditor(editor: atom$TextEditor): Promise<BlameForEdi
     throw new Error(message);
   }
 
-  const blameInfo = await repo.getBlameAtHead(path);
-  // TODO (t8045823) Convert the return type of ::getBlameAtHead to a Map when
-  // the service framework supports a Map return type.
-  const useShortName = !(featureConfig.get('nuclide-blame-provider-hg.showVerboseBlame'));
-  return formatBlameInfo(blameInfo, useShortName);
-}
-
-/**
- * Takes a map returned by HgRepositoryClient.getBlameAtHead() and reformats it as a Map of
- * line numbers to blame info to display in the blame gutter. If `useShortName` is false,
- * The blame info is of the form: "Firstname Lastname <username@email.com> ChangeSetID".
- * (The Firstname Lastname may not appear sometimes.) If `useShortName` is true, then the
- * author portion will contain only the username.
- */
-function formatBlameInfo(
-  rawBlameData: Map<string, string>,
-  useShortName: boolean,
-): BlameForEditor {
-  const extractAuthor = useShortName ? shortNameForAuthor : identity;
-
-  const blameForEditor = new Map();
-  rawBlameData.forEach((blameName, serializedLineNumber) => {
-    const lineNumber = parseInt(serializedLineNumber, 10);
-    const index = blameName.lastIndexOf(' ');
-    const changeSetId = blameName.substring(index + 1);
-    const fullAuthor = blameName.substring(0, index);
-
-    // The ChangeSet ID will be null for uncommitted local changes.
-    const blameInfo = {
-      author: extractAuthor(fullAuthor),
-      changeset: changeSetId !== 'null' ? changeSetId : null,
-    };
-    blameForEditor.set(lineNumber, blameInfo);
-  });
-  return blameForEditor;
-}
-
-/** @return The input value. */
-function identity<T>(anything: T): T {
-  return anything;
+  return repo.getBlameAtHead(path);
 }
 
 let getUrlForRevision;
@@ -110,7 +68,4 @@ module.exports = {
   canProvideBlameForEditor,
   getBlameForEditor,
   getUrlForRevision,
-  __test__: {
-    formatBlameInfo,
-  },
 };

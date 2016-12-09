@@ -8,13 +8,9 @@
  * @flow
  */
 
-// Map of line number (0-indexed) to the name that line blames to.
-export type BlameInfo = {
-  author: string,
-  changeset: ?string,
-};
+import type {RevisionInfo} from '../../nuclide-hg-rpc/lib/HgService';
 
-export type BlameForEditor = Map<number, BlameInfo>;
+export type BlameForEditor = Array<?RevisionInfo>;
 
 export type BlameProvider = {
   canProvideBlameForEditor: (editor: atom$TextEditor) => boolean,

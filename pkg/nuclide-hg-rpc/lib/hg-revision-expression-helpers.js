@@ -115,11 +115,12 @@ export async function fetchCommonAncestorOfHeadAndRevision(
   }
 }
 
-function fetchRevisions(
+export function fetchRevisionsInfo(
   revisionExpression: string,
   workingDirectory: string,
   options?: {
     shouldLimit?: boolean,
+    hidden?: boolean,
   },
 ): Observable<Array<RevisionInfo>> {
   const revisionLogArgs = [
@@ -131,6 +132,14 @@ function fetchRevisions(
       '--limit', '20',
     );
   }
+
+  // --hidden prevents mercurial from loading the obsstore, which can be expensive.
+  if (options && options.hidden === true) {
+    revisionLogArgs.push(
+      '--hidden',
+    );
+  }
+
   const hgOptions = {
     cwd: workingDirectory,
   };
@@ -164,14 +173,14 @@ export function fetchRevisionInfoBetweenRevisions(
   workingDirectory: string,
 ): Promise<Array<RevisionInfo>> {
   const revisionExpression = `${revisionFrom}::${revisionTo}`;
-  return fetchRevisions(revisionExpression, workingDirectory).toPromise();
+  return fetchRevisionsInfo(revisionExpression, workingDirectory).toPromise();
 }
 
 export async function fetchRevisionInfo(
     revisionExpression: string,
     workingDirectory: string,
   ): Promise<RevisionInfo> {
-  const [revisionInfo] = await fetchRevisions(revisionExpression, workingDirectory).toPromise();
+  const [revisionInfo] = await fetchRevisionsInfo(revisionExpression, workingDirectory).toPromise();
   return revisionInfo;
 }
 
@@ -181,7 +190,7 @@ export function fetchSmartlogRevisions(
   // This will get the `smartlog()` expression revisions
   // and the head revision commits to the nearest public commit parent.
   const revisionExpression = 'smartlog(all) + ancestor(smartlog(all)) + last(::. & public())::.';
-  return fetchRevisions(revisionExpression, workingDirectory, {shouldLimit: false})
+  return fetchRevisionsInfo(revisionExpression, workingDirectory, {shouldLimit: false})
     .publish();
 }
 

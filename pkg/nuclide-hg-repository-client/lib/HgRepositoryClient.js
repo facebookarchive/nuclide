@@ -819,7 +819,7 @@ export class HgRepositoryClient {
   }
 
   // See HgService.getBlameAtHead.
-  getBlameAtHead(filePath: NuclideUri): Promise<Map<string, string>> {
+  getBlameAtHead(filePath: NuclideUri): Promise<Array<?RevisionInfo>> {
     return this._service.getBlameAtHead(filePath);
   }
 
