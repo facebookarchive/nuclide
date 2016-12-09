@@ -21,7 +21,6 @@ import DeleteBookmarkModalComponent from './DeleteBookmarkModalComponent';
 import {React, ReactDOM} from 'react-for-atom';
 import RenameBookmarkModalComponent from './RenameBookmarkModalComponent';
 import RepositorySectionComponent from './RepositorySectionComponent';
-import url from 'url';
 
 const {remote} = electron;
 invariant(remote != null);
@@ -149,16 +148,11 @@ export default class SideBarComponent extends React.Component {
         type: 'bookmark',
       },
     });
-    // Not a file URI
-    // eslint-disable-next-line nuclide-internal/atom-apis
-    atom.workspace.open(url.format({
-      hostname: 'view',
-      protocol: 'fb-hg-smartlog',
-      query: {
-        repositoryPath: repository.getPath(),
-      },
-      slashes: true,
-    }));
+    atom.commands.dispatch(
+      atom.views.getView(atom.workspace),
+      'fb-interactive-smartlog:toggle',
+      {visible: true},
+    );
   }
 
   _handleBookmarkContextMenu(
