@@ -53,7 +53,7 @@ describeRemotableTest('Blame gutter integration test', (context: TestContext) =>
         return Array.from(blameEntry.querySelectorAll('span')).map(spans => spans.innerHTML);
       });
 
-      expect(blameLines.every(blameLine => blameLine[0] === process.env.USER)).toBeTruthy();
+      expect(blameLines.every(blameLine => blameLine[0] === 'test')).toBeTruthy();
       expect(blameLines[0][1]).toEqual(blameLines[1][1]);
       expect(blameLines[0][1]).toEqual(blameLines[2][1]);
       expect(blameLines[0][1]).toEqual(blameLines[3][1]);

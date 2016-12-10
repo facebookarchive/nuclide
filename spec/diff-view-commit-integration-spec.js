@@ -15,17 +15,18 @@ import {
   jasmineIntegrationTestSetup,
   deactivateAllPackages,
 } from './utils/integration-test-helpers';
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
+import {DIFF_EDITOR_MARKER_CLASS} from '../pkg/nuclide-diff-view/lib/constants';
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
+import {NUCLIDE_DIFF_LOADING_INDICATOR_CLASSNAME}
+  from '../pkg/nuclide-diff-view/lib/new-ui/SplitDiffView';
 import {generateHgRepo2Fixture} from '../pkg/nuclide-test-helpers';
 import {setLocalProject} from '../pkg/commons-atom/testHelpers';
 import nuclideUri from '../pkg/commons-node/nuclideUri';
 import fs from 'fs';
 import {waitsForRepositoryReady} from './utils/diff-view-utils';
 
-const NO_FILE_SELECTED_TITLE = 'No file selected...No file selected';
-
-// TODO(t13905062) Update Diff View integration tests.
-// eslint-disable-next-line jasmine/no-disabled-tests
-xdescribe('Diff View Commit Mode Integration Test', () => {
+describe('Diff View Commit Integration Test', () => {
   let repoPath: string = (null: any);
   let filePath: string = (null: any);
 
@@ -50,22 +51,12 @@ xdescribe('Diff View Commit Mode Integration Test', () => {
   it('tests commit view have the changed files & commit/amend works', () => {
     atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-diff-view:open');
 
-    let diffViewElement: ?HTMLElement = (null: any);
-    waitsFor('diff view to load', 10000, () => {
-      diffViewElement = (atom.workspace.getActivePaneItem(): any);
-      return diffViewElement != null && diffViewElement.tagName === 'NUCLIDE-DIFF-VIEW';
-    });
-
-    let revisionsTimelineElement: ?HTMLElement = (null: any);
-    let treeElement: ?HTMLElement = (null: any);
-    let diffFiles = [];
-
-    runs(() => {
-      invariant(diffViewElement != null);
-      treeElement = diffViewElement.querySelector('.nuclide-diff-view-tree');
-      expect(treeElement).not.toBeNull();
-      revisionsTimelineElement = diffViewElement.querySelector('.nuclide-diff-timeline');
-      expect(revisionsTimelineElement).not.toBeNull();
+    let revisionsTimelineElement: HTMLElement = (null: any);
+    let treeElement: HTMLElement = (null: any);
+    waitsFor('revision timeline to load', 10000, () => {
+      treeElement = document.querySelector('.nuclide-diff-view-tree');
+      revisionsTimelineElement = document.querySelector('.nuclide-diff-timeline');
+      return treeElement != null && revisionsTimelineElement != null;
     });
 
     waitsForPromise(
@@ -84,14 +75,6 @@ xdescribe('Diff View Commit Mode Integration Test', () => {
     let commitButton: HTMLElement = (null: any);
     let amendButton: HTMLElement = (null: any);
 
-    function getDiffHeaderTitle(): string {
-      invariant(diffViewElement != null);
-      const headerElement = diffViewElement
-        .querySelector('.nuclide-ui-toolbar__center');
-      invariant(headerElement != null);
-      return headerElement.textContent;
-    }
-
     function updateUncommittedButtons(): void {
       invariant(revisionsTimelineElement != null);
       const uncommittedButtons = revisionsTimelineElement
@@ -103,13 +86,12 @@ xdescribe('Diff View Commit Mode Integration Test', () => {
     function getUncommittedChangesText(): string {
       invariant(revisionsTimelineElement != null);
       const uncommittedNode = revisionsTimelineElement
-        .querySelector('.revision-label--uncommitted .revision-title');
-      invariant(uncommittedNode != null);
+        .querySelector('.revision-label .revision-title');
       return uncommittedNode.textContent;
     }
 
     runs(() => {
-      expect(revisionLabels.length).toBe(4);
+      expect(revisionLabels.length).toBe(3);
 
       expect(getUncommittedChangesText()).toBe('No Uncommitted Changes');
       updateUncommittedButtons();
@@ -120,17 +102,12 @@ xdescribe('Diff View Commit Mode Integration Test', () => {
       invariant(treeElement != null);
       diffFiles = treeElement.querySelectorAll('.file-change');
       expect(diffFiles.length).toBe(0);
-
-      expect(getDiffHeaderTitle()).toBe(NO_FILE_SELECTED_TITLE);
-
-      // Save and wait for the file to update there.
-      // TODO(most): edit the file in a text editor and in the diff view, save
-      // and make sure they sync and update the markers/offsets correctly.
       fs.appendFileSync(filePath, '\nnew_line_1\nnew_line_2');
     });
 
-    waitsFor('repo diff status to update', () => {
-      invariant(treeElement != null);
+    let diffFiles = [];
+
+    waitsFor('repo diff status to update', 20000, () => {
       diffFiles = treeElement.querySelectorAll('.nuclide-file-changes-file-entry');
       return diffFiles.length > 0;
     });
@@ -147,28 +124,29 @@ xdescribe('Diff View Commit Mode Integration Test', () => {
 
       expect((commitButton: any).disabled).toBe(false);
 
-      // Double click to open the diff view with `test.txt`.
-      diffFiles[0].click();
+      // Click to open the diff view with `test.txt`.
       diffFiles[0].click();
     });
 
-    waitsFor('header title changes with diff update', () => {
-      return getDiffHeaderTitle() !== NO_FILE_SELECTED_TITLE;
+    waitsFor('hg diff to load', 10000, () => {
+      const diffViewPackage: any = atom.packages.getActivePackage('nuclide-diff-view');
+      return diffViewPackage.mainModule._getAppState()
+        .getValue().fileDiff.oldEditorState.text.length > 0;
     });
+
+    let editorElements = [];
 
     runs(() => {
-      expect(/[0-9a-f]{12}...Filesystem \/ Editor/.test(getDiffHeaderTitle())).toBeTruthy();
-      invariant(diffViewElement != null);
-      const editorElements = diffViewElement.querySelectorAll('atom-text-editor');
-      const oldEditor = ((editorElements[0]: any): atom$TextEditorElement).getModel();
-      const newEditor = ((editorElements[1]: any): atom$TextEditorElement).getModel();
+      editorElements = (document.querySelectorAll(`.${DIFF_EDITOR_MARKER_CLASS}`): any);
+      const oldEditor: atom$TextEditor = editorElements[0].getModel();
+      const newEditor: atom$TextEditor = editorElements[1].getModel();
       // Verify the trailing block decoration shows in place.
       const offsetDecorations = oldEditor.getDecorations({type: 'block'});
       expect(offsetDecorations.length).toBe(1);
       const [trailingOffsetDecoration] = offsetDecorations;
       const {item, position} = trailingOffsetDecoration.getProperties();
       expect(position).toBe('after');
-      expect(item.style.minHeight).toBe(`${2 * oldEditor.getLineHeightInPixels()}px`);
+      expect(item.firstChild.style.minHeight).toBe(`${2 * oldEditor.getLineHeightInPixels()}px`);
       expect(trailingOffsetDecoration.getMarker().getStartBufferPosition().isEqual([6, 0]))
         .toBeTruthy();
 
@@ -185,19 +163,17 @@ xdescribe('Diff View Commit Mode Integration Test', () => {
     });
 
     waitsFor('commit mode to open', () => {
-      invariant(diffViewElement != null);
       return (
-        diffViewElement.querySelector('.commit-form-wrapper') != null ||
-        diffViewElement.querySelector('.message-editor-wrapper') != null
+        document.querySelector('.commit-form-wrapper') != null ||
+        document.querySelector('.message-editor-wrapper') != null
       );
     });
 
     let commitModeContainer: ?HTMLElement = (null: any);
     runs(() => {
-      invariant(diffViewElement != null);
-      revisionsTimelineElement = diffViewElement.querySelector('.nuclide-diff-timeline');
+      revisionsTimelineElement = document.querySelector('.nuclide-diff-timeline');
       expect(revisionsTimelineElement).toBeNull();
-      commitModeContainer = diffViewElement.querySelector('.nuclide-diff-mode');
+      commitModeContainer = document.querySelector('.nuclide-diff-mode');
     });
 
     let modeButtons = [];
@@ -227,15 +203,14 @@ xdescribe('Diff View Commit Mode Integration Test', () => {
     });
 
     waitsFor('back to browse mode after a successful commit', () => {
-      invariant(diffViewElement != null);
-      revisionsTimelineElement = diffViewElement.querySelector('.nuclide-diff-timeline');
+      revisionsTimelineElement = document.querySelector('.nuclide-diff-timeline');
       return revisionsTimelineElement != null;
     });
 
-    waitsFor('new commit to load in the revisions timeline', () => {
+    waitsFor('new commit to load in the revisions timeline', 20000, () => {
       invariant(revisionsTimelineElement != null);
       revisionLabels = revisionsTimelineElement.querySelectorAll('.revision-title');
-      return revisionLabels.length === 5;
+      return revisionLabels.length === 4;
     });
 
     waitsFor('hg status to update', () => {
@@ -251,18 +226,16 @@ xdescribe('Diff View Commit Mode Integration Test', () => {
     });
 
     waitsFor('amend mode to open', () => {
-      invariant(diffViewElement != null);
       return (
-        diffViewElement.querySelector('.commit-form-wrapper') != null ||
-        diffViewElement.querySelector('.message-editor-wrapper') != null
+        document.querySelector('.commit-form-wrapper') != null ||
+        document.querySelector('.message-editor-wrapper') != null
       );
     });
 
     runs(() => {
-      invariant(diffViewElement != null);
-      revisionsTimelineElement = diffViewElement.querySelector('.nuclide-diff-timeline');
+      revisionsTimelineElement = document.querySelector('.nuclide-diff-timeline');
       expect(revisionsTimelineElement).toBeNull();
-      commitModeContainer = diffViewElement.querySelector('.nuclide-diff-mode');
+      commitModeContainer = document.querySelector('.nuclide-diff-mode');
     });
 
     waitsFor('load amend message', () => {
@@ -290,16 +263,25 @@ xdescribe('Diff View Commit Mode Integration Test', () => {
     });
 
     waitsFor('back to browse mode after a successful amend', () => {
-      invariant(diffViewElement != null);
-      revisionsTimelineElement = diffViewElement.querySelector('.nuclide-diff-timeline');
+      revisionsTimelineElement = document.querySelector('.nuclide-diff-timeline');
       return revisionsTimelineElement != null;
     });
 
-    waitsFor('amended commit to show in the revisions timeline', () => {
+    waitsFor('amended commit to show in the revisions timeline', 20000, () => {
       invariant(revisionsTimelineElement != null);
       revisionLabels = revisionsTimelineElement.querySelectorAll('.revision-title');
-      return revisionLabels.length === 5 &&
+      return revisionLabels.length === 4 &&
         revisionLabels[1].textContent === commitMessage.split('\n')[0];
+    });
+
+    runs(() => {
+      // Cleanup.
+      editorElements.forEach(editorElement => {
+        editorElement.getModel().destroy();
+      });
+      // TODO(most): figure our why closing the editors doesn't clean up these.
+      Array.from(document.querySelectorAll(`.${NUCLIDE_DIFF_LOADING_INDICATOR_CLASSNAME}`))
+        .forEach(loadingElement => (loadingElement: any).parentNode.removeChild(loadingElement));
     });
   });
 });

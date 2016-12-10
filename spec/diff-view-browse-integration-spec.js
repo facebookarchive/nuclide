@@ -13,6 +13,11 @@ import {
   jasmineIntegrationTestSetup,
   deactivateAllPackages,
 } from './utils/integration-test-helpers';
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
+import {DIFF_EDITOR_MARKER_CLASS} from '../pkg/nuclide-diff-view/lib/constants';
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
+import {NUCLIDE_DIFF_LOADING_INDICATOR_CLASSNAME}
+  from '../pkg/nuclide-diff-view/lib/new-ui/SplitDiffView';
 import {setLocalProject} from '../pkg/commons-atom/testHelpers';
 import fs from 'fs';
 import invariant from 'assert';
@@ -20,9 +25,7 @@ import uiTreePath from '../pkg/commons-atom/ui-tree-path';
 import nuclideUri from '../pkg/commons-node/nuclideUri';
 import {generateHgRepo2Fixture} from '../pkg/nuclide-test-helpers';
 
-// TODO(t13905062) Update Diff View integration tests.
-// eslint-disable-next-line jasmine/no-disabled-tests
-xdescribe('Diff View Browse Mode Integration Test', () => {
+describe('Diff view preview integration test', () => {
   let localRepoPath: string = (null: any);
 
   beforeEach(() => {
@@ -45,28 +48,32 @@ xdescribe('Diff View Browse Mode Integration Test', () => {
     deactivateAllPackages();
   });
 
-  it('tests opening the diff view in browse mode', () => {
+  it('tests opening the split diff view', () => {
     // Open diff view with the `test.txt` file.
     const textEditor = atom.workspace.getActiveTextEditor();
     invariant(textEditor, 'no active text editor!');
     atom.commands.dispatch(atom.views.getView(textEditor), 'nuclide-diff-view:open');
 
-    let diffViewElement: ?HTMLElement = (null: any);
-    waitsFor('diff view to load', 10000, () => {
-      diffViewElement = atom.workspace.getActivePaneItem();
-      return diffViewElement != null && diffViewElement.tagName === 'NUCLIDE-DIFF-VIEW';
+    let textEditorElements: Array<atom$TextEditorElement> = [];
+    waitsFor('diff editors to load', () => {
+      textEditorElements = (document.querySelectorAll(`.${DIFF_EDITOR_MARKER_CLASS}`): any);
+      return textEditorElements.length === 2;
+    });
+
+    waitsFor('hg diff to load', 10000, () => {
+      const diffViewPackage: any = atom.packages.getActivePackage('nuclide-diff-view');
+      return diffViewPackage.mainModule._getAppState()
+        .getValue().fileDiff.oldEditorState.text.length > 0;
     });
 
     let revisionsTimelineElement: ?HTMLElement = (null: any);
     let treeElement: ?HTMLElement = (null: any);
 
     runs(() => {
-      invariant(diffViewElement);
-      const textEditorElements = diffViewElement.querySelectorAll('atom-text-editor');
       expect(textEditorElements.length).toBe(2);
-      treeElement = diffViewElement.querySelector('.nuclide-diff-view-tree');
+      treeElement = document.querySelector('.nuclide-diff-view-tree');
       expect(treeElement).not.toBeNull();
-      revisionsTimelineElement = diffViewElement.querySelector('.nuclide-diff-timeline');
+      revisionsTimelineElement = document.querySelector('.nuclide-diff-timeline');
       expect(revisionsTimelineElement).not.toBeNull();
     });
 
@@ -106,6 +113,14 @@ xdescribe('Diff View Browse Mode Integration Test', () => {
       invariant(treeElement != null);
       const treeRoots = treeElement.querySelectorAll('.nuclide-file-changes-root-entry');
       expect(treeRoots.length).toBe(0);
+
+      // Cleanup.
+      textEditorElements.forEach(editorElement => {
+        editorElement.getModel().destroy();
+      });
+      // TODO(most): figure our why closing the editors doesn't clean up these.
+      Array.from(document.querySelectorAll(`.${NUCLIDE_DIFF_LOADING_INDICATOR_CLASSNAME}`))
+        .forEach(loadingElement => (loadingElement: any).parentNode.removeChild(loadingElement));
     });
   });
 });

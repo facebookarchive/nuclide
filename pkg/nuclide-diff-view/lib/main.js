@@ -637,6 +637,10 @@ class Activation {
   dispose(): void {
     this._subscriptions.dispose();
   }
+
+  _getAppState(): BehaviorSubject<AppState> {
+    return this._appState;
+  }
 }
 
 export default createPackage(Activation);
