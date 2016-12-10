@@ -36,7 +36,7 @@ import DiffViewModel from './DiffViewModel';
 import {track} from '../../nuclide-analytics';
 import {createDiffViewNux, NUX_DIFF_VIEW_ID} from './diffViewNux';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
-import SplitDiffView from './new-ui/SplitDiffView';
+import SplitDiffView, {READ_ONLY_EDITOR_PATH} from './new-ui/SplitDiffView';
 import DiffViewNavigatorGadget, {WORKSPACE_VIEW_URI} from './new-ui/DiffViewNavigatorGadget';
 import DiffViewNavigatorComponent from './new-ui/DiffViewNavigatorComponent';
 import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
@@ -257,6 +257,28 @@ class Activation {
         viewMode: DiffMode.PUBLISH_MODE,
       }),
 
+      atom.commands.add(
+        'atom-workspace',
+        'nuclide-diff-view:toggle',
+        () => {
+          const readOnlyEditor = atom.workspace.getTextEditors()
+            .find(editor => {
+              return editor != null &&
+                editor.getURI != null &&
+                editor.getURI() === READ_ONLY_EDITOR_PATH;
+            });
+          if (readOnlyEditor != null) {
+            dispatchDiffNavigatorToggle(false);
+            readOnlyEditor.destroy();
+          } else {
+            atom.commands.dispatch(
+              atom.views.getView(atom.workspace),
+              'nuclide-diff-view:open',
+            );
+          }
+        },
+      ),
+
       // Context Menu Items.
       atom.contextMenu.add({
         'atom-text-editor': [
@@ -417,7 +439,6 @@ class Activation {
     );
   }
 
-
   consumeToolBar(getToolBar: GetToolBar): IDisposable {
     const toolBar = getToolBar('nuclide-diff-view');
     toolBar.addSpacer({
@@ -425,8 +446,8 @@ class Activation {
     });
     const button = toolBar.addButton({
       icon: 'diff',
-      callback: 'nuclide-diff-view:open',
-      tooltip: 'Open Diff View',
+      callback: 'nuclide-diff-view:toggle',
+      tooltip: 'Toggle Diff View',
       priority: 801,
     }).element;
     button.classList.add('diff-view-count');

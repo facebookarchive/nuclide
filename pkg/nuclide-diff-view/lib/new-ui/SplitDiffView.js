@@ -57,12 +57,12 @@ import {track} from '../../../nuclide-analytics';
 
 const DIFF_VIEW_NAVIGATION_TARGET = 'nuclide-diff-view-navigation-target';
 const NAVIGATION_GUTTER_NAME = 'nuclide-diff-split-navigation';
-const READ_ONLY_EDITOR_PATH = 'nuclide-diff-view-read-only-path';
 const NUCLIDE_DIFF_EDITOR_LOADING_CLASSNAME = 'nuclide-diff-view-editor-loading';
 const READ_ONLY_EDITOR_CLASS = 'nuclide-diff-view-read-only-editor';
 const DIFF_SPINNER_DELAY_MS = 50;
 const SCROLL_FIRST_CHANGE_DELAY_MS = 100;
 export const NUCLIDE_DIFF_LOADING_INDICATOR_CLASSNAME = 'nuclide-diff-view-pane-loading-indicator';
+export const READ_ONLY_EDITOR_PATH = 'nuclide-diff-view-read-only-path';
 
 function cleanUpEditor(editor: atom$TextEditor): void {
   // When one of the editors gets destroyed by Atom pane item change,

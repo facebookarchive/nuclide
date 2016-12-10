@@ -7,8 +7,8 @@
           "label": "Source Control",
           "submenu": [
             {
-              "label": "Open in Diff View...",
-              "command": "nuclide-diff-view:open"
+              "label": "Toggle Diff View",
+              "command": "nuclide-diff-view:toggle"
             },
             {
               "label": "Commit",
