@@ -247,7 +247,7 @@ class FileTreeController {
       atom.commands.dispatch(
         atom.views.getView(atom.workspace),
         'nuclide-file-tree:toggle',
-        {display: true},
+        {visible: true},
       );
     }
 
