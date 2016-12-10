@@ -4,20 +4,6 @@
 @revisionBubbleDiameter: 10px;
 @revisionBubbleShadowRadius: 4px;
 
-.nuclide-diff-view-container {
-  height: 100%;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  -webkit-user-select: none;
-}
-
-.nuclide-diff-view-component {
-  flex-grow: 1;
-  /* Let the `<atom-pane-container>` fill the height since it already has `flex: 1` applied. */
-  display: flex;
-}
-
 .nuclide-diff-view-removable-tag {
   margin-left: 2px;
   margin-right: 2px;
@@ -238,28 +224,17 @@ atom-text-editor, atom-text-editor::shadow {
 
 }
 
+.nuclide-diff-view-split-navigation-gutter {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 0;
+}
+
 .nuclide-diff-view-navigation-bar {
   height: 100%;
   width: 100%;
-}
-
-.nuclide-diff-editor-container {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  width: 100%;
-}
-
-.nuclide-diff-editor-wrapper {
-  display: flex;
-  flex-grow: 1;
-  position: relative;
-}
-
-.nuclide-diff-view-lint-excuse {
-  flex: 1;
-  margin-left: 3px;
-  margin-right: 3px;
 }
 
 .publish-toolbar-wrapper {
@@ -368,17 +343,6 @@ atom-text-editor, atom-text-editor::shadow {
   100% { background-position: -10px 0px; }
 }
 
-/*
- * Prepend another class selector, `nuclide-diff-view-component` in this case, to beat the
- * specificity of core styles with 2 classes + 1 tag.
- */
-.nuclide-diff-view-component .btn.btn-progress,
-.nuclide-diff-view-component .btn.btn-progress:hover {
-  background-image: linear-gradient(to right, transparent 50%, hsla(0,0%,0%,.15) 50%);
-  background-size: 10px 100%;
-  animation: btn-progress .5s linear infinite;
-}
-
 .nuclide-diff-view-navigator-root {
   display: flex;
   width: 100%;
@@ -392,12 +356,6 @@ atom-text-editor, atom-text-editor::shadow {
 .nuclide-diff-view-navigator-timeline-container {
   overflow: scroll;
   display: flex;
-}
-
-.nuclide-diff-view-navigator-vertical-selector {
-  min-height: 100%;
-  width: 1px;
-  background-color: @base-border-color;
 }
 
 .nuclide-diff-view-navigator-horizontal-selector {
