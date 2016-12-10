@@ -46,7 +46,7 @@ declare class rxjs$Observable<+T> {
     subscribe: (observer: rxjs$Observer<T>) => rxjs$ISubscription | Function | void
   ): rxjs$Observable<T>;
 
-  static defer(observableFactory: () => rxjs$Observable<T>): rxjs$Observable<T>;
+  static defer(observableFactory: () => rxjs$Observable<T> | Promise<T>): rxjs$Observable<T>;
 
   static from(iterable: Iterable<T>): rxjs$Observable<T>;
 

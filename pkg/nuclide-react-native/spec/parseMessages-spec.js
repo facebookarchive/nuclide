@@ -46,6 +46,6 @@ describe('parseMessages', () => {
 
 function getLines(name: string): Observable<string> {
   const pathToFile = nuclideUri.resolve(__dirname, 'fixtures', `${name}.txt`);
-  return Observable.defer(() => Observable.fromPromise(fsPromise.readFile(pathToFile)))
+  return Observable.defer(() => fsPromise.readFile(pathToFile))
     .switchMap(contents => Observable.from(contents.toString().split('\n')));
 }

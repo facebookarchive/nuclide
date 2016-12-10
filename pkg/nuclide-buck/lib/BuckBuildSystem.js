@@ -301,9 +301,7 @@ export class BuckBuildSystem {
         ),
 
         // Don't complete until we've determined the artifact path.
-        Observable.defer(
-          () => Observable.fromPromise(buckService.showOutput(root, target)),
-        )
+        Observable.defer(() => buckService.showOutput(root, target))
           .do(output => {
             let outputPath;
             if (
