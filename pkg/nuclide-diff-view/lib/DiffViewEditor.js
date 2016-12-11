@@ -26,14 +26,6 @@ function renderLineOffset(
     />
   );
 }
-function renderInlineElement(
-  inlineElement: React.Element<any>,
-  scrollToRow: (buffeRow: number) => void,
-): React.Element<any> {
-  // TODO(most): Replace this property injection with a better UI Provider API.
-  inlineElement.props.helpers.scrollToRow = scrollToRow;
-  return inlineElement;
-}
 
 function renderInlineOffset(
   offsetElement: React.Element<any>,
@@ -70,7 +62,6 @@ export default class DiffViewEditor {
     this._offsetMarkers = [];
     this._uiElementsMarkers = [];
     this._offsetUiElementsMarkers = [];
-    (this: any)._scrollToRow = this._scrollToRow.bind(this);
 
     this._cleanupInvisibleDecorations();
   }
@@ -96,7 +87,7 @@ export default class DiffViewEditor {
       elements,
       (element, customProps) => customProps.element !== element,
       element => ({
-        element: renderInlineElement(element, this._scrollToRow),
+        element,
         customProps: {diffBlockType, element},
       }),
       /* syncWidth */ true,
@@ -228,12 +219,5 @@ export default class DiffViewEditor {
 
   getEditorDomElement(): atom$TextEditorElement {
     return this._editorElement;
-  }
-
-  _scrollToRow(row: number): void {
-    this._editor.scrollToBufferPosition(
-      [row, 0],
-      {center: true},
-    );
   }
 }
