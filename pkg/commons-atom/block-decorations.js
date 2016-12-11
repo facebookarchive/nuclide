@@ -9,9 +9,6 @@
  */
 
 import {React, ReactDOM} from 'react-for-atom';
-import {renderReactRoot} from '../commons-atom/renderReactRoot';
-
-import type ReactMountRootElement from '../nuclide-ui/ReactMountRootElement';
 
 type BlockElementWithProps = {
   element: React.Element<any>,
@@ -44,9 +41,6 @@ export function syncBlockDecorations<Value>(
   const decorations = editor.getDecorations({diffBlockType});
   const renderedLineNumbers = new Set();
   const {component} = editorElement;
-  const editorWidthPx = (syncWidth && component != null)
-    ? `${component.scrollViewNode.clientWidth}px`
-    : '';
 
   const markers = [];
 
@@ -64,16 +58,10 @@ export function syncBlockDecorations<Value>(
       continue;
     }
 
-    if (shouldUpdate(value, properties) || item.style.width !== editorWidthPx) {
-      // Refresh the  rendered element.
-      const reactRoot: ReactMountRootElement = (item: any);
-
-      ReactDOM.unmountComponentAtNode(reactRoot);
+    if (shouldUpdate(value, properties)) {
       const {element, customProps} = getElementWithProps(value);
-      ReactDOM.render(element, reactRoot);
+      ReactDOM.render(element, item);
 
-      reactRoot.setReactElement(element);
-      reactRoot.style.width = editorWidthPx;
       Object.assign(properties, customProps);
 
       // Invalidate the block decoration measurements.
@@ -97,8 +85,11 @@ export function syncBlockDecorations<Value>(
 
     // The position should be `after` if the element is at the end of the file.
     const position = lineNumber >= editor.getLineCount() - 1 ? 'after' : 'before';
-    const item = renderReactRoot(element);
-    item.style.width = editorWidthPx;
+    const item = document.createElement('div');
+    ReactDOM.render(element, item);
+    marker.onDidDestroy(() => {
+      ReactDOM.unmountComponentAtNode(item);
+    });
     editor.decorateMarker(marker, {
       ...customProps,
       type: 'block',
