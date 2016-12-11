@@ -97,12 +97,36 @@ type NavigatonBarJumpTargetProps = {
   onClick: (status: NavigationSectionStatusType, lineNumber: number) => any,
 };
 
+type NavigatonBarJumpTargetState = {
+  pixelRangeForNavigationSection: {top: number, bottom: number},
+};
+
 class NavigatonBarJumpTarget extends React.Component {
   props: NavigatonBarJumpTargetProps;
+  state: NavigatonBarJumpTargetState;
 
   constructor(props: NavigatonBarJumpTargetProps) {
     super(props);
+    const {navigationSection, pixelRangeForNavigationSection} = props;
+    this.state = {
+      pixelRangeForNavigationSection: pixelRangeForNavigationSection(navigationSection),
+    };
     (this: any)._handleClick = this._handleClick.bind(this);
+  }
+
+  componentWillReceiveProps(newProps: NavigatonBarJumpTargetProps): void {
+    // This is crazytown but pixelRangeForNavigationSection is not pure.
+    // It calls TextEditorComponent.pixelPositionForBufferPosition which
+    // via a series of internal calls inside of atom can trigger an
+    // updateScrollTop event which can trigger a React render() down the line.
+    //
+    // React, rightfully so, will yell at you if you cause a setState inside of
+    // a render. To workaround this mess, we can update this inside of
+    // componentWillReceiveProps.
+    const {navigationSection, pixelRangeForNavigationSection} = newProps;
+    this.setState({
+      pixelRangeForNavigationSection: pixelRangeForNavigationSection(navigationSection),
+    });
   }
 
   componentDidMount() {
@@ -114,9 +138,10 @@ class NavigatonBarJumpTarget extends React.Component {
   }
 
   render(): React.Element<any> {
-    const {navigationSection, pixelRangeForNavigationSection, navigationScale} = this.props;
+    const {navigationSection, navigationScale} = this.props;
+    const {pixelRangeForNavigationSection} = this.state;
     const lineChangeClass = sectionStatusToClassName(navigationSection.status);
-    const {top, bottom} = pixelRangeForNavigationSection(navigationSection);
+    const {top, bottom} = pixelRangeForNavigationSection;
     const scaledTop = top * navigationScale;
     const scaledHeight = Math.max((bottom - top) * navigationScale, 1);
     const targetStyle = {
