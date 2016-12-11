@@ -10,6 +10,7 @@
 
 import {React, ReactDOM} from 'react-for-atom';
 import classnames from 'classnames';
+import addTooltip from './add-tooltip';
 
 import ignoreTextSelectionEvents from './ignoreTextSelectionEvents';
 
@@ -28,6 +29,7 @@ type Props = {
   label: string,
   onChange: (isChecked: boolean) => mixed,
   onClick: (event: SyntheticEvent) => mixed,
+  tooltip?: atom$TooltipsAddOptions,
 };
 
 /**
@@ -81,7 +83,10 @@ export class Checkbox extends React.PureComponent {
       indeterminate, // exclude `indeterminate` from `remainingProps`
       label,
       onClick,
+      tooltip,
     } = this.props;
+
+    const ref = tooltip ? addTooltip(tooltip) : null;
     const text = label === ''
       ? null
       : <span className="nuclide-ui-checkbox-label-text">{' '}{label}</span>;
@@ -90,6 +95,7 @@ export class Checkbox extends React.PureComponent {
         className={classnames(className, 'nuclide-ui-checkbox-label', {
           'nuclide-ui-checkbox-disabled': disabled,
         })}
+        ref={ref}
         onClick={onClick && ignoreTextSelectionEvents(onClick)}>
         <input
           checked={checked}
