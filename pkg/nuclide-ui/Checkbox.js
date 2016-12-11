@@ -18,7 +18,7 @@ type DefaultProps = {
   disabled: boolean,
   indeterminate: boolean,
   label: string,
-  onClick: (event: SyntheticEvent) => mixed,
+  onClick: (event: SyntheticMouseEvent) => mixed,
 };
 
 type Props = {
@@ -28,7 +28,7 @@ type Props = {
   indeterminate: boolean,
   label: string,
   onChange: (isChecked: boolean) => mixed,
-  onClick: (event: SyntheticEvent) => mixed,
+  onClick: (event: SyntheticMouseEvent) => mixed,
   tooltip?: atom$TooltipsAddOptions,
 };
 
