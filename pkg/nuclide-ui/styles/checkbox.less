@@ -19,11 +19,12 @@
  * [1] https://github.com/atom/settings-view/blob/v0.232.6/styles/settings-view.less#L113
  */
 .nuclide-ui-checkbox[type="checkbox"], .nuclide-ui-toggle[type="checkbox"] {
+  cursor: pointer;
 
   &[disabled] {
     opacity: @disabled-opacity;
+    cursor: auto;
   }
-
 }
 
 .nuclide-ui-checkbox-label-text, .nuclide-ui-toggle-label-text {
