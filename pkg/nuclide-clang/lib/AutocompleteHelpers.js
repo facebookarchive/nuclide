@@ -12,7 +12,7 @@ import type {ClangCompletion} from '../../nuclide-clang-rpc/lib/rpc-types';
 
 import {Point} from 'atom';
 import {arrayFindLastIndex} from '../../commons-node/collection';
-import {trackTiming} from '../../nuclide-analytics';
+import {track, trackTiming} from '../../nuclide-analytics';
 import {ClangCursorToDeclarationTypes} from '../../nuclide-clang-rpc';
 import {getCompletions} from './libclang';
 
@@ -233,6 +233,12 @@ export default class AutocompleteHelpers {
     if (data == null) {
       return [];
     }
+
+    track('clang.autocompleteResults', {
+      path: editor.getPath(),
+      prefix: prefix.substr(0, 20), // avoid logging too much!
+      completions: data.length,
+    });
 
     return data.map(completion => {
       let snippet;
