@@ -283,6 +283,11 @@ class DatatipManagerForEditor {
         }
       }),
 
+      Observable.fromEvent(this._editorView, 'mouseleave').subscribe(() => {
+        this._lastMoveEvent = null;
+        this._hideIfOutside();
+      }),
+
       Observable.fromEvent(this._editorView, 'mousedown').subscribe(e => {
         let node = e.target;
         while (node !== null) {
