@@ -597,7 +597,7 @@ export function commit(
     invariant(action.type === ActionTypes.COMMIT);
 
     track('diff-view-commit');
-    const {message, repository, publishUpdates} = action.payload;
+    const {message, repository, publishUpdates, bookmarkName} = action.payload;
     const {
       commit: {mode},
       isPrepareMode,
@@ -648,7 +648,12 @@ export function commit(
         switch (mode) {
           case CommitMode.COMMIT:
             track('diff-view-commit-commit');
-            return repository.commit(message);
+            return Observable.concat(
+              bookmarkName != null && bookmarkName.length > 0
+                ? Observable.fromPromise(repository.createBookmark(bookmarkName)).ignoreElements()
+                : Observable.empty(),
+              repository.commit(message),
+            );
           case CommitMode.AMEND:
             track('diff-view-commit-amend');
             return repository.amend(message, getAmendMode(shouldRebaseOnAmend))

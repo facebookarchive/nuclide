@@ -340,6 +340,7 @@ export type CommitAction = {
     message: string,
     repository: HgRepositoryClient,
     publishUpdates: Subject<Message>,
+    bookmarkName: ?string,
   },
 };
 

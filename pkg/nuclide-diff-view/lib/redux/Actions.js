@@ -288,6 +288,7 @@ export function commit(
   repository: HgRepositoryClient,
   message: string,
   publishUpdates: Subject<Message>,
+  bookmarkName: ?string,
 ): CommitAction {
   return {
     type: ActionTypes.COMMIT,
@@ -295,6 +296,7 @@ export function commit(
       message,
       repository,
       publishUpdates,
+      bookmarkName,
     },
   };
 }

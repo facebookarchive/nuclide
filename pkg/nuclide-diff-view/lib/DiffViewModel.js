@@ -99,14 +99,19 @@ export default class DiffViewModel {
     return this._emitter.on(DID_UPDATE_STATE_EVENT, callback);
   }
 
-  commit(message: string): void {
+  commit(message: string, bookmarkName: ?string): void {
     if (message === '') {
       atom.notifications.addError('Commit aborted', {detail: 'Commit message empty'});
       return;
     }
     const activeRepository = this._state.activeRepository;
     invariant(activeRepository != null, 'No active repository stack');
-    this._actionCreators.commit(activeRepository, message, this._progressUpdates);
+    this._actionCreators.commit(
+      activeRepository,
+      message,
+      this._progressUpdates,
+      bookmarkName,
+    );
   }
 
   injectState(newState: AppState): void {

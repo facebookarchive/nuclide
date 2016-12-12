@@ -226,8 +226,8 @@ export default class DiffCommitView extends React.Component {
     );
   }
 
-  __onClickCommit(): void {
-    this.props.diffModel.commit(this.__getCommitMessage());
+  __onClickCommit(bookmarkName?: string): void {
+    this.props.diffModel.commit(this.__getCommitMessage(), bookmarkName);
   }
 
   _onClickBack(): void {
