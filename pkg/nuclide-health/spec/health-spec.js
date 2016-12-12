@@ -8,9 +8,8 @@
  * @flow
  */
 
-import featureConfig from '../../commons-atom/featureConfig';
 import nuclideUri from '../../commons-node/nuclideUri';
-import {sleep} from '../../commons-node/promise';
+import invariant from 'assert';
 
 const openHealthPane = () => {
   atom.commands.dispatch(
@@ -47,39 +46,32 @@ describe('Health', () => {
   });
 
   it('contains stats after its first refresh', () => {
-    waitsForPromise(async () => {
+    let element;
+    runs(() => {
       openHealthPane();
       const {item} = findHealthPaneAndItem();
-      expect(item).toBeTruthy();
-      if (item) {
-        expect(item.getTitle()).toEqual('Health');
-        const interval = featureConfig.get('nuclide-health.viewTimeout');
-        expect(typeof interval).toEqual('number');
-        const {element} = item;
-
-        if (typeof interval === 'number') {
-          // Flow considers atom config items to be mixed.
-          await sleep((interval + 1) * 1000);
-          // An extra second should be enough for this test not to be flakey.
-          expect(element.innerHTML).toContain('Stats');
-          expect(element.innerHTML).toContain('CPU');
-          expect(element.innerHTML).toContain('Heap');
-          expect(element.innerHTML).toContain('Memory');
-          expect(element.innerHTML).toContain('Handles');
-          expect(element.innerHTML).toContain('Event loop');
-        }
-      }
+      invariant(item != null);
+      expect(item.getTitle()).toEqual('Health');
+      element = atom.views.getView(item);
+    });
+    waitsFor(() => element.innerHTML.trim() !== '', 500);
+    runs(() => {
+      expect(element.innerHTML).toContain('Stats');
+      expect(element.innerHTML).toContain('CPU');
+      expect(element.innerHTML).toContain('Heap');
+      expect(element.innerHTML).toContain('Memory');
+      expect(element.innerHTML).toContain('Handles');
+      expect(element.innerHTML).toContain('Event loop');
     });
   });
 
   it('disappears when closed', () => {
     openHealthPane();
     const {pane, item} = findHealthPaneAndItem();
-    expect(item).toBeTruthy();
-    if (pane && item) {
-      pane.activateItem(item);
-      atom.commands.dispatch(atom.views.getView(atom.workspace), 'core:close');
-      expect(findHealthPaneAndItem().item).toBeFalsy();
-    }
+    invariant(item != null);
+    invariant(pane != null);
+    pane.activateItem(item);
+    atom.commands.dispatch(atom.views.getView(atom.workspace), 'core:close');
+    expect(findHealthPaneAndItem().item).toBeFalsy();
   });
 });
