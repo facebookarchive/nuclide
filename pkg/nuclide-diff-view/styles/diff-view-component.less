@@ -1,5 +1,6 @@
 @import 'ui-variables';
 @import 'syntax-variables';
+@import '../../nuclide-ui/styles/dashed-background-mixin';
 
 @revisionBubbleDiameter: 10px;
 @revisionBubbleShadowRadius: 4px;
@@ -174,25 +175,7 @@
 .nuclide-diff-view-block-offset {
   width: 100%;
 
-  & when (lightness(@syntax-background-color) <= 50% ) {
-    @diff-block-offset-cross-color: lighten(@syntax-background-color, 3%);
-    .styleBlockOffset();
-  }
-
-  & when ( lightness(@syntax-background-color) >= 50% ) {
-    @diff-block-offset-cross-color: darken(@syntax-background-color, 3%);
-    .styleBlockOffset();
-  }
-}
-
-.styleBlockOffset() {
-  background: repeating-linear-gradient(
-    -45deg,
-    @diff-block-offset-cross-color,
-    @diff-block-offset-cross-color, 5px,
-    transparent 5px,
-    transparent 10px
-  );
+  .nuclide-ui-dashed-background();
 }
 
 // Default colors for themes that do not specify any.

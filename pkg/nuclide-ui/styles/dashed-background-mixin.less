@@ -1,0 +1,23 @@
+@import 'syntax-variables';
+
+.nuclide-ui-dashed-background() {
+  & when (lightness(@syntax-background-color) <= 50% ) {
+    @diff-block-offset-cross-color: lighten(@syntax-background-color, 3%);
+    .nuclide-ui-styleBlockOffset();
+  }
+
+  & when ( lightness(@syntax-background-color) >= 50% ) {
+    @diff-block-offset-cross-color: darken(@syntax-background-color, 3%);
+    .nuclide-ui-styleBlockOffset();
+  }
+}
+
+.nuclide-ui-styleBlockOffset() {
+  background: repeating-linear-gradient(
+    -45deg,
+    @diff-block-offset-cross-color,
+    @diff-block-offset-cross-color, 5px,
+    transparent 5px,
+    transparent 10px
+  );
+}
