@@ -74,6 +74,7 @@ function setupTextEditor(props: Props): TextEditorSetup {
 
 type DefaultProps = {
   autoGrow: boolean,
+  disabled: boolean,
   gutterHidden: boolean,
   lineNumberGutterVisible: boolean,
   readOnly: boolean,
@@ -85,6 +86,7 @@ type DefaultProps = {
 type Props = {
   autoGrow: boolean,
   className?: string,
+  disabled: boolean,
   gutterHidden: boolean,
   grammar?: ?Object,
   onDidTextBufferChange?: (event: atom$TextEditEvent) => mixed,
@@ -99,6 +101,7 @@ type Props = {
 
 export class AtomTextEditor extends React.Component {
   static defaultProps: DefaultProps = {
+    disabled: false,
     gutterHidden: false,
     lineNumberGutterVisible: true,
     readOnly: false,
@@ -116,6 +119,9 @@ export class AtomTextEditor extends React.Component {
     this._editorDisposables = new UniversalDisposable();
     this._updateTextEditor(setupTextEditor(this.props));
     this._onDidUpdateTextEditorElement(this.props);
+    if (this.props.disabled) {
+      this._updateDisabledState(true);
+    }
   }
 
   _updateTextEditor(setup: TextEditorSetup): void {
@@ -159,7 +165,7 @@ export class AtomTextEditor extends React.Component {
     }));
   }
 
-  componentWillReceiveProps(nextProps: Object): void {
+  componentWillReceiveProps(nextProps: Props): void {
     if (
         nextProps.textBuffer !== this.props.textBuffer ||
         nextProps.readOnly !== this.props.readOnly
@@ -179,7 +185,7 @@ export class AtomTextEditor extends React.Component {
       }
     }
     if (nextProps.path !== this.props.path) {
-      this.getTextBuffer().setPath(nextProps.path);
+      this.getTextBuffer().setPath(nextProps.path || '');
     }
     if (nextProps.gutterHidden !== this.props.gutterHidden) {
       this.getModel().setLineNumberGutterVisible(nextProps.gutterHidden);
@@ -190,9 +196,12 @@ export class AtomTextEditor extends React.Component {
     if (nextProps.softWrapped !== this.props.softWrapped) {
       this.getModel().setSoftWrapped(nextProps.softWrapped);
     }
+    if (nextProps.disabled !== this.props.disabled) {
+      this._updateDisabledState(nextProps.disabled);
+    }
   }
 
-  _onDidUpdateTextEditorElement(props: Object): void {
+  _onDidUpdateTextEditorElement(props: Props): void {
     if (!props.readOnly) {
       return;
     }
@@ -204,6 +213,15 @@ export class AtomTextEditor extends React.Component {
     const {presenter} = component;
     presenter.startBlinkingCursors = doNothing;
     presenter.stopBlinkingCursors(false);
+  }
+
+  _updateDisabledState(isDisabled: boolean): void {
+    // Hack to set TextEditor to read-only mode, per https://github.com/atom/atom/issues/6880
+    if (isDisabled) {
+      this.getElement().removeAttribute('tabindex');
+    } else {
+      this.getElement().setAttribute('tabindex', this.props.tabIndex);
+    }
   }
 
   getTextBuffer(): atom$TextBuffer {

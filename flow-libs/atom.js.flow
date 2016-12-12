@@ -831,7 +831,7 @@ declare class atom$TextEditor extends atom$Model {
 
   // Grammars
   getGrammar(): atom$Grammar,
-  setGrammar(grammar: atom$Grammar): void,
+  setGrammar(grammar: ?atom$Grammar): void,
 
   // Clipboard Operations
   pasteText: (options?: Object) => void,
