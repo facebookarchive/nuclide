@@ -41,7 +41,7 @@ export function findArcProjectIdAndDirectory(src: string): Promise<?{
       })
       .catch(err => {
         // Clear the cache if there's an error to enable retries.
-        arcInfoCache.delete(src);
+        arcInfoCache.del(src);
         return Promise.reject(err);
       });
     arcInfoCache.set(src, cached);
