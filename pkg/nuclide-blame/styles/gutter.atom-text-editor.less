@@ -1,21 +1,92 @@
-@import "syntax-variables";
-@import "ui-variables";
+@import 'syntax-variables';
+@import 'ui-variables';
+@import '../../nuclide-ui/styles/dashed-background-mixin';
 
-.nuclide-blame {
+@age-width: 3px;
+
+.gutter.nuclide-blame {
   display: flex;
-  width: 50px;
+  width: 170px;
+  font-family: @font-family;
+  font-size: 11px;
+  text-align: left;
+
+  .nuclide-ui-dashed-background();
+
+  &.nuclide-blame-loading {
+    background: none;
+  }
 }
 
-.nuclide-blame-hash {
-  color: @text-color-info;
+
+.nuclide-blame-row {
+  box-sizing: border-box;
+  width: 170px;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: @syntax-background-color;
 }
 
-.nuclide-blame-hash-clickable {
-  cursor: pointer;
+.nuclide-blame-vertical-bar {
+  width: 1px;
+  background-color: @text-color-highlight;
+  left: 14px;
+  position: absolute;
+
+  &.nuclide-blame-vertical-bar-first,
+  &.nuclide-blame-vertical-bar-middle {
+    top: 0;
+    bottom: 0;
+  }
+
+  &.nuclide-blame-vertical-bar-last {
+    top: 0;
+    height: 50%;
+
+    &:before {
+      content: '';
+      background-color: @text-color-highlight;
+      position: absolute;
+      bottom: 0;
+      left: -2px;
+      width: 5px;
+      height: 5px;
+      border-radius: 5px;
+    }
+  }
 }
 
-.nuclide-blame-hash-clickable:hover {
-  text-decoration: underline;
+.nuclide-blame-content {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: @component-padding / 2 + @age-width;
+  padding-left: @component-padding / 2;
+  vertical-align: bottom;
+
+  &:hover {
+    color: @text-color-highlight;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+}
+
+.nuclide-blame-border-age {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: @age-width;
+  background-color: @text-color-info;
+}
+
+atom-text-editor::shadow .nuclide-blame, .nuclide-blame {
+  .nuclide-ui-fb-avatar {
+    border: 1px solid;
+    margin-right: @component-padding / 2;
+    position: relative;
+  }
 }
 
 /*
