@@ -146,7 +146,7 @@ class DebuggerDomain(HandlerDomain):
         # But we'll treat none+uncaught as no-op since that's all LLDB can do.
         if params['state'] == 'all':
             breakpoint = self.debugger_store.debugger.GetSelectedTarget(
-                    ).BreakpointCreateForException(lldb.eLanguageTypeC_plus_plus,
+                    ).BreakpointCreateForException(get_lldb().eLanguageTypeC_plus_plus,
                                                    False,  # don't pause on catch
                                                    True    # do pause on throw
                                                    )
