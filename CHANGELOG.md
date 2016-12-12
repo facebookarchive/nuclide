@@ -1,5 +1,38 @@
 # Nuclide Changelog
 
+## v0.189.0
+
+### Highlights
+
+* React Native: Experimental JavaScriptCore JS debugger support for Android.
+* Vastly improved Mercurial blame UI.
+* Flow types are now pretty-printed into multiple lines.
+* Debugger, file tree, and source control panels are now normal, draggable Atom tabs.
+
+### General
+
+* `atom://nuclide/open-arc` URLs can now remember and re-open your previous paths.
+* Brought back the remote connection status-bar indicator.
+* Fixed opening remote directories via the remote Atom CLI.
+* Fixed diagnostics table resizing bug.
+* Datatips no longer appear after leaving the editor.
+
+### Debugger
+
+* Breakpoints are no longer restricted to certain file extensions.
+* HHVM: fixed debugger crashes related to evaluations coming back in an unexpected order.
+* HHVM: Debugger now displays a warning if hphpd is attached.
+* C++: Fixed toggle uncaught exception crash.
+* iOS: Fixed app debugging via the Buck toolbar.
+
+### Source Control
+
+* Diff View icon has been changed from the branch icon to a "diff" icon.
+
+### React Native
+
+* Improved adb logcat error messages.
+
 ## v0.188.0
 
 Hotfix release for Source Control sidebar styling and goToLocation errors.
