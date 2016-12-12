@@ -169,7 +169,11 @@ export function safeSpawn(
   options?: child_process$spawnOpts = {},
 ): child_process$ChildProcess {
   const now = performanceNow();
-  const child = child_process.spawn(command, args, prepareProcessOptions(options));
+  const child = child_process.spawn(
+    nuclideUri.expandHomeDir(command),
+    args,
+    prepareProcessOptions(options),
+  );
   monitorStreamErrors(child, command, args, options);
   child.on('error', error => {
     logError('error with command:', command, args, options, 'error:', error);
@@ -485,7 +489,7 @@ export function asyncExecute(
   const now = performanceNow();
   return new Promise((resolve, reject) => {
     const process = child_process.execFile(
-      command,
+      nuclideUri.expandHomeDir(command),
       args,
       prepareProcessOptions({
         maxBuffer: DEFAULT_MAX_BUFFER,
@@ -549,7 +553,7 @@ export async function checkOutput(
   args: Array<string>,
   options?: AsyncExecuteOptions = {},
 ): Promise<AsyncExecuteReturn> {
-  const result = await asyncExecute(command, args, options);
+  const result = await asyncExecute(nuclideUri.expandHomeDir(command), args, options);
   if (result.exitCode !== 0) {
     const reason = result.exitCode != null ? `exitCode: ${result.exitCode}` :
       `error: ${maybeToString(result.errorMessage)}`;
