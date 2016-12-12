@@ -56,8 +56,8 @@ type Props = {
   // ** while a profile is selected **.
   // The user's intent is to delete the currently-selected profile.
   onDeleteProfileClicked: (indexOfSelectedConnectionProfile: number) => mixed,
-  onConnect: () => mixed,
-  onError: () => mixed,
+  onConnect: (connection: RemoteConnection, config: SshConnectionConfiguration) => mixed,
+  onError: (error: Error, config: SshConnectionConfiguration) => mixed,
   onCancel: () => mixed,
   onClosed: ?() => mixed,
   onSaveProfile: (index: number, profile: NuclideRemoteConnectionProfile) => mixed,

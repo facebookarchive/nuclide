@@ -33,7 +33,10 @@ let dialogPromiseQueue: ?PromiseQueue = null;
  * for connection parameters (e.g. username, server name, etc), and optionally
  * asking for additional (e.g. 2-fac) authentication.
  */
-export function openConnectionDialog(props?: Object): Promise<?RemoteConnection> {
+export function openConnectionDialog(options?: {
+  initialServer: string,
+  initialCwd: string,
+}): Promise<?RemoteConnection> {
   if (!dialogPromiseQueue) {
     dialogPromiseQueue = new PromiseQueue();
   }
@@ -42,7 +45,8 @@ export function openConnectionDialog(props?: Object): Promise<?RemoteConnection>
     // During the lifetime of this 'openConnectionDialog' flow, the 'default'
     // connection profile should not change (even if it is reset by the user
     // connecting to a remote project from another Atom window).
-    const defaultConnectionProfile: NuclideRemoteConnectionProfile = getDefaultConnectionProfile();
+    const defaultConnectionProfile: NuclideRemoteConnectionProfile =
+      getDefaultConnectionProfile(options);
     // The `compositeConnectionProfiles` is the combination of the default connection
     // profile plus any user-created connection profiles. Initialize this to the
     // default connection profile. This array of profiles may change in the lifetime
@@ -191,7 +195,6 @@ export function openConnectionDialog(props?: Object): Promise<?RemoteConnection>
         },
         onDeleteProfileClicked,
         onSaveProfile: saveProfile,
-        ...props,
       };
 
       // If/when the saved connection profiles change, we want to re-render the dialog

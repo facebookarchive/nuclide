@@ -11,6 +11,7 @@
 /* global localStorage */
 
 import type {
+  NuclideRemoteConnectionParams,
   NuclideRemoteConnectionProfile,
   NuclideSavedConnectionDialogConfig,
 } from './connection-types';
@@ -31,7 +32,10 @@ import featureConfig from '../../commons-atom/featureConfig';
  * the connection dialog and the default settings, plus the update logic we use
  * to change the remote server command.
  */
-export function getDefaultConnectionProfile(): NuclideRemoteConnectionProfile {
+export function getDefaultConnectionProfile(options?: {
+  initialServer: string,
+  initialCwd: string,
+}): NuclideRemoteConnectionProfile {
   const defaultConnectionSettings = getDefaultConfig();
   const currentOfficialRSC = defaultConnectionSettings.remoteServerCommand;
 
@@ -61,7 +65,15 @@ export function getDefaultConnectionProfile(): NuclideRemoteConnectionProfile {
       && lastConfig.remoteServerCommand) {
     remoteServerCommand = lastConfig.remoteServerCommand;
   }
-  const dialogSettings = {...defaultConnectionSettings, ...lastConfig, remoteServerCommand};
+  const dialogSettings: NuclideRemoteConnectionParams = {
+    ...defaultConnectionSettings,
+    ...lastConfig,
+    remoteServerCommand,
+  };
+  if (options != null) {
+    dialogSettings.cwd = options.initialCwd;
+    dialogSettings.server = options.initialServer;
+  }
   // Due to a previous bug in the sshPort type, we may need to do this cast to
   // correct bad state that was persisted in users' configs.
   dialogSettings.sshPort = String(dialogSettings.sshPort);
