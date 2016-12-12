@@ -159,17 +159,39 @@ function monitorStreamErrors(process: child_process$ChildProcess, command, args,
 }
 
 /**
- * Basically like spawn, except it handles and logs errors instead of crashing
- * the process. This is much lower-level than asyncExecute. Unless you have a
- * specific reason you should use asyncExecute instead.
+ * Basically like spawn/fork, except it handles and logs errors instead of
+ * crashing the process. This is much lower-level than asyncExecute. Unless
+ * you have a specific reason you should use asyncExecute instead.
  */
 export function safeSpawn(
   command: string,
   args?: Array<string> = [],
   options?: child_process$spawnOpts = {},
 ): child_process$ChildProcess {
+  return _makeChildProcess('spawn', command, args, options);
+}
+
+export function safeFork(
+  command: string,
+  args?: Array<string> = [],
+  options?: child_process$forkOpts = {},
+): child_process$ChildProcess {
+  return _makeChildProcess('fork', command, args, options);
+}
+
+/**
+ * Helper type/function to create child_process by spawning/forking the process.
+ */
+type ChildProcessOpts = child_process$spawnOpts | child_process$forkOpts;
+
+function _makeChildProcess(
+  type: 'spawn' | 'fork' = 'spawn',
+  command: string,
+  args?: Array<string> = [],
+  options?: ChildProcessOpts = {},
+): child_process$ChildProcess {
   const now = performanceNow();
-  const child = child_process.spawn(
+  const child = child_process[type](
     nuclideUri.expandHomeDir(command),
     args,
     prepareProcessOptions(options),
