@@ -14,11 +14,10 @@
 const rule = require('../license-header');
 const RuleTester = require('eslint').RuleTester;
 
-const {HEADERS} = rule;
-
-// Having this in a test causes prefer-object-spread to load and breaks the test :/
-HEADERS.noFlow = HEADERS.noFlow
-  .replace(', prefer-object-spread/prefer-object-spread: 0', '');
+const {
+  FLOW_AND_TRANSPILE,
+  NO_FLOW_AND_NO_TRANSPILE,
+} = rule;
 
 const SHEBANG = '#!/usr/bin/env node';
 const LINE = '';
@@ -33,25 +32,25 @@ const ruleTester = new RuleTester({
 
 ruleTester.run('license-header', rule, {
   valid: [
-    {code: [HEADERS.standard].join('\n')},
-    {code: [HEADERS.standard, LINE].join('\n')},
-    {code: [HEADERS.standard, LINE, CODE].join('\n')},
+    {code: [FLOW_AND_TRANSPILE].join('\n')},
+    {code: [FLOW_AND_TRANSPILE, LINE].join('\n')},
+    {code: [FLOW_AND_TRANSPILE, LINE, CODE].join('\n')},
 
-    {code: [HEADERS.noFlow].join('\n')},
-    {code: [HEADERS.noFlow, LINE].join('\n')},
-    {code: [HEADERS.noFlow, LINE, CODE].join('\n')},
+    {code: [NO_FLOW_AND_NO_TRANSPILE].join('\n')},
+    {code: [NO_FLOW_AND_NO_TRANSPILE, LINE].join('\n')},
+    {code: [NO_FLOW_AND_NO_TRANSPILE, LINE, CODE].join('\n')},
 
-    {code: [SHEBANG, HEADERS.noFlow].join('\n')},
-    {code: [SHEBANG, HEADERS.noFlow, LINE].join('\n')},
-    {code: [SHEBANG, HEADERS.noFlow, LINE, CODE].join('\n')},
+    {code: [SHEBANG, NO_FLOW_AND_NO_TRANSPILE].join('\n')},
+    {code: [SHEBANG, NO_FLOW_AND_NO_TRANSPILE, LINE].join('\n')},
+    {code: [SHEBANG, NO_FLOW_AND_NO_TRANSPILE, LINE, CODE].join('\n')},
   ],
   invalid: [
     {
-      code: [SHEBANG, HEADERS.standard].join('\n'),
+      code: [SHEBANG, FLOW_AND_TRANSPILE].join('\n'),
       errors: [LICENSE_ERROR],
     },
     {
-      code: [USE_BABEL, HEADERS.standard].join('\n'),
+      code: [USE_BABEL, FLOW_AND_TRANSPILE].join('\n'),
       errors: [LICENSE_ERROR],
     },
     {
