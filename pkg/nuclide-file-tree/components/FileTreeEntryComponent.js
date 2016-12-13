@@ -8,14 +8,13 @@
  * @flow
  */
 
-/* global requestAnimationFrame */
-
 import type {FileTreeNode} from '../lib/FileTreeNode';
 
 import FileTreeActions from '../lib/FileTreeActions';
 import {React, ReactDOM} from 'react-for-atom';
 import classnames from 'classnames';
 import fileTypeClass from '../../commons-atom/file-type-class';
+import {nextAnimationFrame} from '../../commons-node/observable';
 import {filterName} from '../lib/FileTreeFilterHelper';
 import {Checkbox} from '../../nuclide-ui/Checkbox';
 import {StatusCodeNumber} from '../../nuclide-hg-rpc/lib/hg-constants';
@@ -361,7 +360,7 @@ export class FileTreeEntryComponent extends React.Component {
     nativeEvent.dataTransfer.effectAllowed = 'move';
     nativeEvent.dataTransfer.setDragImage(fileIcon, -8, -4);
     nativeEvent.dataTransfer.setData('initialPath', this.props.node.uri);
-    requestAnimationFrame(() => { document.body.removeChild(fileIcon); });
+    nextAnimationFrame.subscribe(() => { document.body.removeChild(fileIcon); });
   }
 
   _onDragOver(event: SyntheticDragEvent) {

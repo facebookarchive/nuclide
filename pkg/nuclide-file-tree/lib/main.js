@@ -8,8 +8,6 @@
  * @flow
  */
 
-/* global requestAnimationFrame */
-
 import type {FileTreeProjectSelectionManager} from './FileTreeController';
 import type FileTreeContextMenu from './FileTreeContextMenu';
 import type {ExportStoreData} from './FileTreeStore';
@@ -24,6 +22,7 @@ import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import featureConfig from '../../commons-atom/featureConfig';
 import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
 import debounce from '../../commons-node/debounce';
+import {nextAnimationFrame} from '../../commons-node/observable';
 
 import FileTreeSidebarComponent from '../components/FileTreeSidebarComponent';
 import FileTreeController from './FileTreeController';
@@ -84,20 +83,20 @@ class Activation {
 
     // $FlowIgnore: Undocumented API
     const {showForEvent} = atom.contextMenu;
-    // $FlowIgnore: Undocumented API
-    atom.contextMenu.showForEvent = function(event) {
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            showForEvent.call(atom.contextMenu, event);
-          });
-        });
-      });
-    };
-
-    return new UniversalDisposable(() => {
+    const disposables = new UniversalDisposable(() => {
       (atom.contextMenu: any).showForEvent = showForEvent;
     });
+    // $FlowIgnore: Undocumented API
+    atom.contextMenu.showForEvent = function(event) {
+      // $FlowFixMe: Add repeat() to type def
+      const sub = nextAnimationFrame.repeat(3).last().subscribe(() => {
+        showForEvent.call(atom.contextMenu, event);
+        disposables.remove(sub);
+      });
+      disposables.add(sub);
+    };
+
+    return disposables;
   }
 
   consumeCwdApi(cwdApi: CwdApi): IDisposable {

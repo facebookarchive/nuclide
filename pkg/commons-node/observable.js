@@ -8,6 +8,8 @@
  * @flow
  */
 
+/* global requestAnimationFrame, cancelAnimationFrame */
+
 import UniversalDisposable from './UniversalDisposable';
 import invariant from 'assert';
 import {setDifference} from './collection';
@@ -288,4 +290,15 @@ export const nextTick = Observable.create(observer => {
     observer.next();
     observer.complete();
   });
+});
+
+export const nextAnimationFrame = Observable.create(observer => {
+  if (typeof requestAnimationFrame === 'undefined') {
+    throw new Error('This util can only be used in Atom');
+  }
+  const id = requestAnimationFrame(() => {
+    observer.next();
+    observer.complete();
+  });
+  return () => { cancelAnimationFrame(id); };
 });

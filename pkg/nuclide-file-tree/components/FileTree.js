@@ -8,9 +8,8 @@
  * @flow
  */
 
-/* global requestAnimationFrame, cancelAnimationFrame */
-
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import {nextAnimationFrame} from '../../commons-node/observable';
 import {FileTreeStore} from '../lib/FileTreeStore';
 import {React, ReactDOM} from 'react-for-atom';
 import {FileTreeEntryComponent} from './FileTreeEntryComponent';
@@ -38,7 +37,6 @@ export class FileTree extends React.Component {
   _store: FileTreeStore;
   _initialHeightMeasured: boolean;
   _disposables: UniversalDisposable;
-  _afRequestId: ?number;
 
   constructor(props: Props) {
     super(props);
@@ -50,7 +48,6 @@ export class FileTree extends React.Component {
     };
 
     this._initialHeightMeasured = false;
-    this._afRequestId = null;
     (this: any)._measureHeights = this._measureHeights.bind(this);
   }
 
@@ -63,10 +60,11 @@ export class FileTree extends React.Component {
       atom.themes.onDidChangeActiveThemes(
         () => {
           this._initialHeightMeasured = false;
-          this._afRequestId = requestAnimationFrame(() => {
-            this._afRequestId = null;
+          const sub = nextAnimationFrame.subscribe(() => {
+            this._disposables.remove(sub);
             this._measureHeights();
           });
+          this._disposables.add(sub);
         },
       ),
       () => {
@@ -76,9 +74,6 @@ export class FileTree extends React.Component {
   }
 
   componentWillUnmount(): void {
-    if (this._afRequestId != null) {
-      cancelAnimationFrame(this._afRequestId);
-    }
     this._disposables.dispose();
   }
 

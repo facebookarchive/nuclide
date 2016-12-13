@@ -11,6 +11,7 @@
 import {
   diffSets,
   cacheWhileSubscribed,
+  nextAnimationFrame,
   reconcileSetDiffs,
   splitStream,
   takeWhileInclusive,
@@ -409,5 +410,34 @@ describe('throttle', () => {
     const source = Observable.create(spy);
     throttle(source, Observable.of(null)).subscribe();
     expect(spy.callCount).toBe(1);
+  });
+});
+
+describe('nextAnimationFrame', () => {
+  let oldRequestAnimationFrame;
+  let oldCancelAnimationFrame;
+  beforeEach(() => {
+    oldRequestAnimationFrame = window.requestAnimationFrame;
+    oldCancelAnimationFrame = window.cancelAnimationFrame;
+    window.requestAnimationFrame = jasmine.createSpy('requestAnimationFrame');
+    window.cancelAnimationFrame = jasmine.createSpy('cancelAnimationFrame');
+  });
+
+  afterEach(() => {
+    window.requestAnimationFrame = oldRequestAnimationFrame;
+    window.cancelAnimationFrame = oldCancelAnimationFrame;
+  });
+
+  it('schedules next using requestAnimationFrame', () => {
+    const sub = nextAnimationFrame.subscribe();
+    expect(window.requestAnimationFrame).toHaveBeenCalled();
+    sub.unsubscribe();
+  });
+
+  it('uses cancelAnimationFrame when unsubscribed', () => {
+    const sub = nextAnimationFrame.subscribe();
+    expect(window.cancelAnimationFrame).not.toHaveBeenCalled();
+    sub.unsubscribe();
+    expect(window.cancelAnimationFrame).toHaveBeenCalled();
   });
 });

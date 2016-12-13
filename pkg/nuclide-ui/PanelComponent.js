@@ -8,8 +8,9 @@
  * @flow
  */
 
-/* global requestAnimationFrame, cancelAnimationFrame, getComputedStyle */
+/* global getComputedStyle */
 
+import {nextAnimationFrame} from '../commons-node/observable';
 import {CompositeDisposable} from 'atom';
 import {PanelComponentScroller} from './PanelComponentScroller';
 import {React, ReactDOM} from 'react-for-atom';
@@ -48,7 +49,7 @@ type State = {
  */
 export class PanelComponent extends React.Component {
 
-  _animationFrameRequestId: ?number;
+  _animationFrameRequestSubscription: ?rxjs$Subscription;
   _resizeSubscriptions: ?CompositeDisposable;
 
   props: Props;
@@ -78,15 +79,17 @@ export class PanelComponent extends React.Component {
     // Note: This method is called via `requestAnimationFrame` rather than `process.nextTick` like
     // Atom's tree-view does because this does not have a guarantee a paint will have already
     // happened when `componentDidMount` gets called the first time.
-    this._animationFrameRequestId = requestAnimationFrame(this._repaint.bind(this));
+    this._animationFrameRequestSubscription = nextAnimationFrame.subscribe(() => {
+      this._repaint();
+    });
   }
 
   componentWillUnmount() {
     if (this._resizeSubscriptions != null) {
       this._resizeSubscriptions.dispose();
     }
-    if (this._animationFrameRequestId != null) {
-      cancelAnimationFrame(this._animationFrameRequestId);
+    if (this._animationFrameRequestSubscription != null) {
+      this._animationFrameRequestSubscription.unsubscribe();
     }
   }
 

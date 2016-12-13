@@ -8,8 +8,6 @@
  * @flow
  */
 
-/* global requestAnimationFrame */
-
 import type {Viewable} from '../../../nuclide-workspace-views/lib/types';
 import type {
   AppState,
@@ -23,6 +21,7 @@ import type {
 
 import {viewableFromReactElement} from '../../../commons-atom/viewableFromReactElement';
 import UniversalDisposable from '../../../commons-node/UniversalDisposable';
+import {nextAnimationFrame} from '../../../commons-node/observable';
 import getCurrentExecutorId from '../getCurrentExecutorId';
 import * as Actions from '../redux/Actions';
 import Console from './Console';
@@ -138,14 +137,9 @@ export class ConsoleContainer extends React.Component {
   }
 
   componentDidMount() {
-    const raf = Observable.create(observer => {
-      requestAnimationFrame(timestamp => {
-        observer.complete(timestamp);
-      });
-    });
     // $FlowFixMe: How do we tell flow about Symbol.observable?
     this._statesSubscription = Observable.from(this.props.store)
-      .audit(() => raf)
+      .audit(() => nextAnimationFrame)
       .subscribe(state => {
         const currentExecutorId = getCurrentExecutorId(state);
         const currentExecutor =

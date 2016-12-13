@@ -8,8 +8,6 @@
  * @flow
  */
 
-/* global requestAnimationFrame, cancelAnimationFrame */
-
 import type {FileChangeStatusValue} from '../../commons-atom/vcs';
 import type React from 'react-for-atom';
 
@@ -23,6 +21,7 @@ import {HgStatusToFileChangeStatus} from '../../commons-atom/vcs';
 import {matchesFilter} from './FileTreeFilterHelper';
 import {Minimatch} from 'minimatch';
 import {repositoryForPath} from '../../commons-atom/vcs';
+import {nextAnimationFrame} from '../../commons-node/observable';
 import {StatusCodeNumber} from '../../nuclide-hg-rpc/lib/hg-constants';
 import {getLogger} from '../../nuclide-logging';
 import {WorkingSet} from '../../nuclide-working-sets-common';
@@ -104,7 +103,7 @@ export class FileTreeStore {
   _dispatcher: FileTreeDispatcher;
   _emitter: Emitter;
   _logger: any;
-  _animationFrameRequestId: ?number;
+  _animationFrameRequestSubscription: ?rxjs$Subscription;
   _suppressChanges: boolean;
   _cwdKey: ?NuclideUri;
   _filter: string;
@@ -548,11 +547,11 @@ export class FileTreeStore {
       return;
     }
 
-    if (this._animationFrameRequestId != null) {
-      cancelAnimationFrame(this._animationFrameRequestId);
+    if (this._animationFrameRequestSubscription != null) {
+      this._animationFrameRequestSubscription.unsubscribe();
     }
 
-    this._animationFrameRequestId = requestAnimationFrame(() => {
+    this._animationFrameRequestSubscription = nextAnimationFrame.subscribe(() => {
       const {performance} = global;
       const renderStart = performance.now();
       const childrenCount = this.roots.reduce((sum, root) => sum + root.shownChildrenBelow, 0);
@@ -561,7 +560,7 @@ export class FileTreeStore {
       this._suppressChanges = true;
       this._checkTrackedNode();
       this._suppressChanges = false;
-      this._animationFrameRequestId = null;
+      this._animationFrameRequestSubscription = null;
 
       const duration = (performance.now() - renderStart).toString();
       track('filetree-root-node-component-render', {

@@ -8,13 +8,11 @@
  * @flow
  */
 
-/* global requestAnimationFrame */
-
 import type {Store, TaskRunner} from '../types';
 
 import {bindObservableAsProps} from '../../../nuclide-ui/bindObservableAsProps';
 import {viewableFromReactElement} from '../../../commons-atom/viewableFromReactElement';
-import {throttle} from '../../../commons-node/observable';
+import {nextAnimationFrame, throttle} from '../../../commons-node/observable';
 import * as Actions from '../redux/Actions';
 import {getActiveTaskId, getActiveTaskRunner} from '../redux/Selectors';
 import {Toolbar} from './Toolbar';
@@ -29,10 +27,6 @@ export function createPanelItem(store: Store): Object {
     selectTask: taskId => { store.dispatch(Actions.selectTask(taskId)); },
     stopTask: () => { store.dispatch(Actions.stopTask()); },
   };
-
-  const raf = Observable.create(observer => {
-    requestAnimationFrame(() => { observer.complete(); });
-  });
 
   // $FlowFixMe: We need to teach Flow about Symbol.observable
   const states = Observable.from(store).distinctUntilChanged();
@@ -76,7 +70,7 @@ export function createPanelItem(store: Store): Object {
   // Throttle to animation frames.
   const props = throttle(
     Observable.combineLatest(stickyProps, otherProps, (a, b) => ({...a, ...b})),
-    () => raf,
+    () => nextAnimationFrame,
   );
   const StatefulToolbar = bindObservableAsProps(props, Toolbar);
   return viewableFromReactElement(<StatefulToolbar />);
