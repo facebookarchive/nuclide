@@ -22,7 +22,7 @@ integration with support for [Mercurial](https://www.mercurial-scm.org/).
 The Diff View allows you to quickly see what has changed in the files you have modified. It
 shows what has changed from the current committed revision.
 
-If you *right-click* in the editor, you will see the **Open in Diff View** option in the context-aware menu (alternatively, you can use `Alt-Cmd-Shift-D` on Mac or `Alt-Ctrl-Shift-D` on Linux).
+*Right-click* in the editor and select `Source Control | Open in Diff View` in the context-aware menu (alternatively, you can use `Alt-Cmd-Shift-D` on Mac or `Alt-Ctrl-Shift-D` on Linux).
 
 ![](/static/images/docs/feature-hg-diff-view-access.png)
 
@@ -50,7 +50,7 @@ Nuclide provides the capability to show you line-by-line
 [blame (or annotate)](https://selenic.com/hg/help/annotate) for the current file within your
 Mercurial repository.
 
-If you *right-click* in the editor, you will see the **Toggle Blame** option in the context-aware menu.
+*Right-click* in the editor and select `Source Control | Toggle Blame` in the context-aware menu.
 
 ![](/static/images/docs/feature-hg-blame-access.png)
 
