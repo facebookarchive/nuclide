@@ -10,22 +10,48 @@
 
 import type {TestContext} from './remotable-tests';
 
+import dedent from 'dedent';
 import busySignal from './busy-signal-common';
-import {copyFixture} from '../../pkg/nuclide-test-helpers';
+import {generateFixture} from '../../pkg/nuclide-test-helpers';
 import {Deferred} from '../../pkg/commons-node/promise';
 
-const FLOW_FIXTURE = 'flow_project_1';
-const FLOW_MAIN_FILE = 'main.js';
+export function generateFlowProject(): Promise<string> {
+  // When a test fails, the generated fixtures can be found in
+  // `$TMP/flow_project_xxxxxxxx`.
+  return generateFixture('flow_project', new Map([
+    ['.flowconfig', dedent`
+      [ignore]
+
+      [include]
+
+      [libs]
+
+      [options]
+    `],
+    ['Foo.js', dedent`
+      // @flow
+      export class Foo {
+        bar(): void {}
+      }
+    `],
+    ['main.js', dedent`
+      // @flow
+      const num = 3;
+      import {Foo} from './Foo';
+      new Foo().bar();
+    `],
+  ]));
+}
 
 export function setup(context: TestContext): Promise<atom$TextEditor> {
   const deferred: Deferred<atom$TextEditor> = new Deferred();
   waitsForPromise({timeout: 240000}, async () => {
-    const flowProjectPath = await copyFixture(FLOW_FIXTURE, __dirname);
+    const flowProjectPath = await generateFlowProject();
 
     // Add this directory as an atom project.
     await context.setProject(flowProjectPath);
     // Open a file in the flow project we copied, and get reference to the editor's HTML.
-    const editor = await atom.workspace.open(context.getProjectRelativePath(FLOW_MAIN_FILE));
+    const editor = await atom.workspace.open(context.getProjectRelativePath('main.js'));
     deferred.resolve(editor);
   });
 

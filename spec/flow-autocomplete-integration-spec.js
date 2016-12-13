@@ -9,7 +9,6 @@
  */
 
 import busySignal from './utils/busy-signal-common';
-import {copyFixture} from '../pkg/nuclide-test-helpers';
 import {describeRemotableTest} from './utils/remotable-tests';
 import {
   getAutocompleteView,
@@ -17,6 +16,7 @@ import {
   getAutocompleteDescription,
   waitsForAutocompleteSuggestions,
 } from './utils/autocomplete-common';
+import {generateFlowProject} from './utils/flow-common';
 
 describeRemotableTest('Flow Autocomplete', context => {
   it('tests simple autocomplete example', () => {
@@ -24,8 +24,7 @@ describeRemotableTest('Flow Autocomplete', context => {
     let textEditorView: HTMLElement = (null: any);
 
     waitsForPromise({timeout: 240000}, async () => {
-      // Copy flow project to a temporary location.
-      const flowProjectPath = await copyFixture('flow_project_1', __dirname);
+      const flowProjectPath = await generateFlowProject();
 
       // Add this directory as an atom project.
       await context.setProject(flowProjectPath);
@@ -45,6 +44,7 @@ describeRemotableTest('Flow Autocomplete', context => {
       textEditorView = atom.views.getView(textEditor);
       // Simulate a keypress to trigger the autocomplete menu.
       textEditor.moveToBottom();
+      textEditor.insertText('\n');
       textEditor.insertText('n');
     });
 

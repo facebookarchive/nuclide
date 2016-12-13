@@ -40,7 +40,7 @@ export function runTest(context: TestContext) {
     waitsForPromise(async () => {
       textEditor = await textEditorPromise;
       // Change `bar` to `baz`
-      textEditor.setTextInBufferRange(new Range([13, 12], [13, 13]), 'z');
+      textEditor.setTextInBufferRange(new Range([3, 12], [3, 13]), 'z');
 
       expect(doGutterDiagnosticsExist()).toBeFalsy();
 
@@ -68,7 +68,7 @@ export function runTest(context: TestContext) {
     });
 
     waitsFor(() => {
-      return textEditor.getCursorBufferPosition().isEqual([13, 0]);
+      return textEditor.getCursorBufferPosition().isEqual([3, 0]);
     });
 
     runs(() => {
@@ -81,7 +81,7 @@ export function runTest(context: TestContext) {
       expect(isDiagnosticsPanelShowing()).toBeTruthy();
 
       // Change `baz` back to `bar`
-      textEditor.setTextInBufferRange(new Range([13, 12], [13, 13]), 'r');
+      textEditor.setTextInBufferRange(new Range([3, 12], [3, 13]), 'r');
       dispatchKeyboardEvent('s', document.activeElement, {cmd: true});
     });
 

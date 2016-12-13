@@ -56,7 +56,7 @@ export function runTest(context: TestContext) {
 
     // Test setup
     waitsForPromise(async () => {
-      repoPath = await copyFixture('flow_project_1', __dirname);
+      repoPath = await copyFixture('cpp_project', __dirname);
       await context.setProject(repoPath);
     });
 
