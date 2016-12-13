@@ -1,11 +1,11 @@
 {
   ".platform-darwin atom-workspace": {
     "cmd-shift-y": "nuclide-debugger:toggle",
-    "cmd-shift-a": "nuclide-debugger:toggle-launch-attach",
+    "cmd-shift-a": "nuclide-debugger:toggle-launch-attach"
   },
   ".platform-win32 atom-workspace, .platform-linux atom-workspace": {
     "ctrl-shift-y": "nuclide-debugger:toggle",
-    "ctrl-shift-a": "nuclide-debugger:toggle-launch-attach",
+    "ctrl-shift-a": "nuclide-debugger:toggle-launch-attach"
   },
   "atom-workspace": {
     "f8": "nuclide-debugger:continue-debugging",
