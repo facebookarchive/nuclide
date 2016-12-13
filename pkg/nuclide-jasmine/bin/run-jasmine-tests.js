@@ -22,14 +22,19 @@ require('../../nuclide-node-transpiler');
 // Set this up before we call jasmine-node. jasmine-node does this same trick,
 // but neglects to respect the exit code, so we beat it the to the punch.
 process.once('exit', code => {
-  // jasmine-node is swallowing temp's exit handler, so force a cleanup.
-  try {
-    const temp = require('temp');
-    temp.cleanupSync();
-  } catch (err) {
-    if (err && err.message !== 'not tracking') {
-      console.log(`temp.cleanup() failed. ${err}`);
+  const temp = require('temp');
+  if (code === 0) {
+    // jasmine-node is swallowing temp's exit handler, so force a cleanup.
+    try {
+      temp.cleanupSync();
+    } catch (err) {
+      if (err && err.message !== 'not tracking') {
+        console.log(`temp.cleanup() failed. ${err}`);
+      }
     }
+  } else {
+    // When the test fails, we keep the temp contents for debugging.
+    temp.track(false);
   }
   process.exit(code);
 });
