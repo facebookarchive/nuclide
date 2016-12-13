@@ -244,6 +244,8 @@ export function toggleToolbarVisibilityEpic(
     });
 }
 
+let taskFailedNotification;
+
 /**
  * Run a task and transform its output into domain-specific actions.
  */
@@ -253,6 +255,9 @@ function createTaskObservable(
   getState: () => AppState,
 ): Observable<Action> {
   return Observable.defer(() => {
+    if (taskFailedNotification != null) {
+      taskFailedNotification.dismiss();
+    }
     const task = taskRunner.runTask(taskMeta.type);
     const events = observableFromTask(task);
 
@@ -275,13 +280,14 @@ function createTaskObservable(
       }));
   })
     .catch(error => {
-      atom.notifications.addError(
+      taskFailedNotification = atom.notifications.addError(
         `The task "${taskMeta.label}" failed`,
         {
           description: error.message,
           dismissable: true,
         },
       );
+      taskFailedNotification.onDidDismiss(() => { taskFailedNotification = null; });
       getLogger().error('Error running task:', taskMeta, error);
       const {runningTaskInfo} = getState();
       return Observable.of({
