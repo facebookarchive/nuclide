@@ -36,7 +36,7 @@ import type {
 
 import invariant from 'assert';
 import {applyMiddleware, createStore} from 'redux';
-import {Observable, Subject} from 'rxjs';
+import {Observable, Subject, TimeoutError} from 'rxjs';
 import {quote} from 'shell-quote';
 
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
@@ -420,7 +420,13 @@ export class BuckBuildSystem {
             socketEvents
               .filter(event => event.type === 'socket-connected')
               .take(1)
-              .timeout(SOCKET_TIMEOUT, Error('Timed out connecting to Buck server.'))
+              .timeout(SOCKET_TIMEOUT)
+              .catch(err => {
+                if (err instanceof TimeoutError) {
+                  throw Error('Timed out connecting to Buck server.');
+                }
+                throw err;
+              })
               .ignoreElements(),
 
           this._consumeEventStream(

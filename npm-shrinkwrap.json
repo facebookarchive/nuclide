@@ -29,9 +29,9 @@
       }
     },
     "ajv": {
-      "version": "4.9.2",
+      "version": "4.10.0",
       "from": "ajv@>=4.7.0 <5.0.0",
-      "resolved": "https://registry.npmjs.org/ajv/-/ajv-4.9.2.tgz",
+      "resolved": "https://registry.npmjs.org/ajv/-/ajv-4.10.0.tgz",
       "dev": true
     },
     "ajv-keywords": {
@@ -1960,9 +1960,9 @@
       "dev": true
     },
     "rxjs": {
-      "version": "5.0.0-rc.2",
-      "from": "rxjs@5.0.0-rc.2",
-      "resolved": "https://registry.npmjs.org/rxjs/-/rxjs-5.0.0-rc.2.tgz"
+      "version": "5.0.1",
+      "from": "rxjs@5.0.1",
+      "resolved": "https://registry.npmjs.org/rxjs/-/rxjs-5.0.1.tgz"
     },
     "sabor": {
       "version": "0.8.0",
@@ -2286,9 +2286,9 @@
       "resolved": "https://registry.npmjs.org/tunnel-agent/-/tunnel-agent-0.4.3.tgz"
     },
     "tweetnacl": {
-      "version": "0.14.4",
+      "version": "0.14.5",
       "from": "tweetnacl@>=0.14.0 <0.15.0",
-      "resolved": "https://registry.npmjs.org/tweetnacl/-/tweetnacl-0.14.4.tgz",
+      "resolved": "https://registry.npmjs.org/tweetnacl/-/tweetnacl-0.14.5.tgz",
       "optional": true
     },
     "type-check": {

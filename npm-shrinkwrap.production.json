@@ -991,9 +991,9 @@
       "resolved": "https://registry.npmjs.org/rimraf/-/rimraf-2.5.4.tgz"
     },
     "rxjs": {
-      "version": "5.0.0-rc.2",
-      "from": "rxjs@5.0.0-rc.2",
-      "resolved": "https://registry.npmjs.org/rxjs/-/rxjs-5.0.0-rc.2.tgz"
+      "version": "5.0.1",
+      "from": "rxjs@5.0.1",
+      "resolved": "https://registry.npmjs.org/rxjs/-/rxjs-5.0.1.tgz"
     },
     "sax": {
       "version": "1.2.1",
@@ -1155,9 +1155,9 @@
       "resolved": "https://registry.npmjs.org/tunnel-agent/-/tunnel-agent-0.4.3.tgz"
     },
     "tweetnacl": {
-      "version": "0.14.4",
+      "version": "0.14.5",
       "from": "tweetnacl@>=0.14.0 <0.15.0",
-      "resolved": "https://registry.npmjs.org/tweetnacl/-/tweetnacl-0.14.4.tgz",
+      "resolved": "https://registry.npmjs.org/tweetnacl/-/tweetnacl-0.14.5.tgz",
       "optional": true
     },
     "ua-parser-js": {

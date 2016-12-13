@@ -14,7 +14,7 @@ import type {
 } from '../../nuclide-hg-rpc/lib/HgService';
 
 import {arrayEqual} from '../../commons-node/collection';
-import {BehaviorSubject, Observable, Subject} from 'rxjs';
+import {BehaviorSubject, Observable, Subject, TimeoutError} from 'rxjs';
 import {getLogger} from '../../nuclide-logging';
 
 const FETCH_REVISIONS_DEBOUNCE_MS = 100;
@@ -81,11 +81,13 @@ export default class RevisionsCache {
   _fetchSmartlogRevisions(): Observable<Array<RevisionInfo>> {
     return this._hgService.fetchSmartlogRevisions()
       .refCount()
-      .timeout(
-        FETCH_REVISIONS_TIMEOUT_MS,
-        new Error('Timed out fetching smartlog revisions'),
-      )
-    ;
+      .timeout(FETCH_REVISIONS_TIMEOUT_MS)
+      .catch(err => {
+        if (err instanceof TimeoutError) {
+          throw new Error('Timed out fetching smartlog revisions');
+        }
+        throw err;
+      });
   }
 
   refreshRevisions(): void {
