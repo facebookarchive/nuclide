@@ -19,6 +19,7 @@ import {hgConstants} from '../../nuclide-hg-rpc';
 import {getLogger} from '../../nuclide-logging';
 import nuclideUri from '../../commons-node/nuclideUri';
 
+import type React from 'react-for-atom';
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import type {StatusCodeNumberValue} from '../../nuclide-hg-rpc/lib/HgService';
 import type {WorkingSet} from '../../nuclide-working-sets-common';
@@ -73,6 +74,13 @@ class FileTreeActions {
   clearFilter(): void {
     this._dispatcher.dispatch({
       actionType: ActionTypes.CLEAR_FILTER,
+    });
+  }
+
+  addExtraProjectSelectionContent(content: React.Element<any>): void {
+    this._dispatcher.dispatch({
+      actionType: ActionTypes.ADD_EXTRA_PROJECT_SELECTION_CONTENT,
+      content,
     });
   }
 

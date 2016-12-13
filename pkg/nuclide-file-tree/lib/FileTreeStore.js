@@ -11,6 +11,7 @@
 /* global requestAnimationFrame, cancelAnimationFrame */
 
 import type {FileChangeStatusValue} from '../../commons-atom/vcs';
+import type React from 'react-for-atom';
 
 import FileTreeDispatcher, {ActionTypes} from './FileTreeDispatcher';
 import FileTreeHelpers from './FileTreeHelpers';
@@ -107,6 +108,7 @@ export class FileTreeStore {
   _suppressChanges: boolean;
   _cwdKey: ?NuclideUri;
   _filter: string;
+  _extraProjectSelectionContent: Immutable.List<React.Element<any>>;
   _selectionRange: ?SelectionRange;
 
   static getInstance(): FileTreeStore {
@@ -139,6 +141,7 @@ export class FileTreeStore {
     this._conf = DEFAULT_CONF;
     this._suppressChanges = false;
     this._filter = '';
+    this._extraProjectSelectionContent = new Immutable.List();
     this.openFilesExpanded = true;
     this.uncommittedChangesExpanded = true;
     this._selectionRange = null;
@@ -411,6 +414,9 @@ export class FileTreeStore {
         break;
       case ActionTypes.CLEAR_FILTER:
         this.clearFilter();
+        break;
+      case ActionTypes.ADD_EXTRA_PROJECT_SELECTION_CONTENT:
+        this.addExtraProjectSelectionContent(payload.content);
         break;
       case ActionTypes.SET_OPEN_FILES_EXPANDED:
         this._setOpenFilesExpanded(payload.openFilesExpanded);
@@ -1047,6 +1053,14 @@ export class FileTreeStore {
     } else if (oldLength === 1) {
       this.clearFilter();
     }
+  }
+
+  getExtraProjectSelectionContent(): Immutable.List<React.Element<any>> {
+    return this._extraProjectSelectionContent;
+  }
+
+  addExtraProjectSelectionContent(content: React.Element<any>) {
+    this._extraProjectSelectionContent = this._extraProjectSelectionContent.push(content);
   }
 
   getFilterFound(): boolean {

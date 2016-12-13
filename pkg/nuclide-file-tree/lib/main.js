@@ -10,6 +10,7 @@
 
 /* global requestAnimationFrame */
 
+import type {FileTreeProjectSelectionManager} from './FileTreeController';
 import type FileTreeContextMenu from './FileTreeContextMenu';
 import type {ExportStoreData} from './FileTreeStore';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
@@ -243,6 +244,11 @@ class Activation {
     return this._fileTreeController.getContextMenu();
   }
 
+  getProjectSelectionManager(): FileTreeProjectSelectionManager {
+    invariant(this._fileTreeController);
+    return this._fileTreeController.getProjectSelectionManager();
+  }
+
   _deactivate() {
     // Guard against deactivate being called twice
     this._fileTreeController.destroy();
@@ -346,6 +352,11 @@ export function getContextMenuForFileTree(): FileTreeContextMenu {
 export function consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
   invariant(activation);
   activation.consumeWorkspaceViewsService(api);
+}
+
+export function getProjectSelectionManagerForFileTree(): FileTreeProjectSelectionManager {
+  invariant(activation);
+  return activation.getProjectSelectionManager();
 }
 
 export function deserializeFileTreeSidebarComponent(): HTMLElement {

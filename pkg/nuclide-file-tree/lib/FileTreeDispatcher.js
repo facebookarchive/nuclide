@@ -8,6 +8,7 @@
  * @flow
  */
 
+import type React from 'react-for-atom';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {StatusCodeNumberValue} from '../../nuclide-hg-rpc/lib/HgService';
 import type {WorkingSet} from '../../nuclide-working-sets-common';
@@ -184,6 +185,10 @@ export type FileTreeAction =
     actionType: 'CLEAR_FILTER',
   } |
   {
+    actionType: 'ADD_EXTRA_PROJECT_SELECTION_CONTENT',
+    content: React.Element<any>,
+  } |
+  {
     actionType: 'SET_OPEN_FILES_EXPANDED',
     openFilesExpanded: boolean,
   } |
@@ -236,6 +241,7 @@ export const ActionTypes = Object.freeze({
   MOVE_SELECTION_TO_BOTTOM: 'MOVE_SELECTION_TO_BOTTOM',
   ENSURE_CHILD_NODE: 'ENSURE_CHILD_NODE',
   CLEAR_FILTER: 'CLEAR_FILTER',
+  ADD_EXTRA_PROJECT_SELECTION_CONTENT: 'ADD_EXTRA_PROJECT_SELECTION_CONTENT',
   SET_OPEN_FILES_EXPANDED: 'SET_OPEN_FILES_EXPANDED',
   SET_UNCOMMITTED_CHANGES_EXPANDED: 'SET_UNCOMMITTED_CHANGES_EXPANDED',
   INVALIDATE_REMOVED_FOLDER: 'INVALIDATE_REMOVED_FOLDER',

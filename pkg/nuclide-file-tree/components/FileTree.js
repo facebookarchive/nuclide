@@ -14,7 +14,7 @@ import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {FileTreeStore} from '../lib/FileTreeStore';
 import {React, ReactDOM} from 'react-for-atom';
 import {FileTreeEntryComponent} from './FileTreeEntryComponent';
-import {EmptyComponent} from './EmptyComponent';
+import {ProjectSelection} from './ProjectSelection';
 import classnames from 'classnames';
 
 import type {OrderedMap} from 'immutable';
@@ -134,7 +134,7 @@ export class FileTree extends React.Component {
     const childrenCount = countShownNodes(roots);
 
     if (childrenCount === 0) {
-      return <EmptyComponent />;
+      return <ProjectSelection />;
     }
 
     const scrollTop = this.props.containerScrollTop;

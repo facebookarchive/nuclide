@@ -11,6 +11,7 @@
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {RemoteProjectsService} from '../../nuclide-remote-projects';
 import type {ExportStoreData} from './FileTreeStore';
+import type React from 'react-for-atom';
 
 import {EVENT_HANDLER_SELECTOR} from './FileTreeConstants';
 import FileSystemActions from './FileSystemActions';
@@ -37,9 +38,30 @@ import type {FileTreeNode} from './FileTreeNode';
 const VALID_FILTER_CHARS = '!#./0123456789-:;?@ABCDEFGHIJKLMNOPQRSTUVWXYZ' +
   '_abcdefghijklmnopqrstuvwxyz~';
 
+class ProjectSelectionManager {
+  _actions: FileTreeActions;
+  _store: FileTreeStore;
+
+  constructor() {
+    this._actions = FileTreeActions.getInstance();
+    this._store = FileTreeStore.getInstance();
+  }
+
+  addExtraContent(content: React.Element<any>) {
+    this._actions.addExtraProjectSelectionContent(content);
+  }
+
+  getExtraContent(): Immutable.List<React.Element<any>> {
+    return this._store.getExtraProjectSelectionContent();
+  }
+}
+
+export type FileTreeProjectSelectionManager = ProjectSelectionManager;
+
 class FileTreeController {
   _actions: FileTreeActions;
   _contextMenu: FileTreeContextMenu;
+  _projectSelectionManager: ProjectSelectionManager;
   _cwdApi: ?CwdApi;
   _remoteProjectsService: ?RemoteProjectsService;
   _cwdApiSubscription: ?IDisposable;
@@ -51,6 +73,7 @@ class FileTreeController {
   constructor(state: ?ExportStoreData) {
     this._actions = FileTreeActions.getInstance();
     this._store = FileTreeStore.getInstance();
+    this._projectSelectionManager = new ProjectSelectionManager();
     this._repositories = new Immutable.Set();
     this._disposableForRepository = new Immutable.Map();
     this._disposables = new UniversalDisposable(() => {
@@ -169,6 +192,10 @@ class FileTreeController {
 
   getContextMenu(): FileTreeContextMenu {
     return this._contextMenu;
+  }
+
+  getProjectSelectionManager(): ProjectSelectionManager {
+    return this._projectSelectionManager;
   }
 
   _handleClearFilter(): void {
