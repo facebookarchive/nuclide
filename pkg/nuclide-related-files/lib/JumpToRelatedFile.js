@@ -25,6 +25,19 @@ export default class JumpToRelatedFile {
     this._subscription = atom.commands.add(
       'atom-workspace',
       {
+        'nuclide-related-files:switch-between-header-source': () => {
+          const editor = atom.workspace.getActiveTextEditor();
+          if (editor == null) {
+            return;
+          }
+          const path = editor.getPath();
+          if (path) {
+            trackTiming(
+              'nuclide-related-files:switch-between-header-source',
+              async () => this._open(await this.getNextRelatedFile(path)),
+            );
+          }
+        },
         'nuclide-related-files:jump-to-next-related-file': () => {
           const editor = atom.workspace.getActiveTextEditor();
           if (editor == null) {
