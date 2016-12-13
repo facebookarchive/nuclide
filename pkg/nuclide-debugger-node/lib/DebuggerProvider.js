@@ -1,22 +1,24 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import type {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import {NodeLaunchAttachProvider} from './NodeLaunchAttachProvider';
+var _NodeLaunchAttachProvider;
 
-function getLaunchAttachProvider(connection: NuclideUri): ?DebuggerLaunchAttachProvider {
-  return new NodeLaunchAttachProvider('JavaScript', connection);
+function _load_NodeLaunchAttachProvider() {
+  return _NodeLaunchAttachProvider = require('./NodeLaunchAttachProvider');
 }
+
+function getLaunchAttachProvider(connection) {
+  return new (_NodeLaunchAttachProvider || _load_NodeLaunchAttachProvider()).NodeLaunchAttachProvider('JavaScript', connection);
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   */
 
 module.exports = {
   name: 'Node',
-  getLaunchAttachProvider,
+  getLaunchAttachProvider
 };

@@ -1,3 +1,8 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,7 +10,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
 
 /**
@@ -17,13 +22,12 @@
  *   // ... code you want to benchmark ...
  *   const timeItTookInMilliseconds = performanceNow() - now;
  */
-const performanceNow = global.performance && global.performance.now ?
-  function() {
-    return global.performance.now();
-  } :
-  function() {
-    const [seconds, nanoseconds] = process.hrtime();
-    return seconds * 1000 + nanoseconds / 1000000;
-  };
+const performanceNow = global.performance && global.performance.now ? function () {
+  return global.performance.now();
+} : function () {
+  const [seconds, nanoseconds] = process.hrtime();
+  return seconds * 1000 + nanoseconds / 1000000;
+};
 
-export default performanceNow;
+exports.default = performanceNow;
+module.exports = exports["default"];

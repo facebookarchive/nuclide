@@ -1,50 +1,55 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import type {Task, TaskEvent} from '../../commons-node/tasks';
-import type {TaskMetadata} from '../../nuclide-task-runner/lib/types';
-import type {ArcToolbarModel as ArcToolbarModelType} from './ArcToolbarModel';
-import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
-import type {Message} from '../../nuclide-console/lib/types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {taskFromObservable} from '../../commons-node/tasks';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
-import {createExtraUiComponent} from './ui/createExtraUiComponent';
-import {React} from 'react-for-atom';
-import {Observable, Subject} from 'rxjs';
+var _UniversalDisposable;
 
-export default class ArcBuildSystem {
-  _model: ArcToolbarModelType;
-  _extraUi: ?ReactClass<any>;
-  id: string;
-  name: string;
-  _tasks: ?Observable<Array<TaskMetadata>>;
-  _cwdApi: ?CwdApi;
-  _outputMessages: Subject<Message>;
-  _disposables: UniversalDisposable;
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../commons-node/UniversalDisposable'));
+}
+
+var _tasks;
+
+function _load_tasks() {
+  return _tasks = require('../../commons-node/tasks');
+}
+
+var _event;
+
+function _load_event() {
+  return _event = require('../../commons-node/event');
+}
+
+var _createExtraUiComponent;
+
+function _load_createExtraUiComponent() {
+  return _createExtraUiComponent = require('./ui/createExtraUiComponent');
+}
+
+var _reactForAtom = require('react-for-atom');
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class ArcBuildSystem {
 
   constructor() {
     this.id = 'arcanist';
-    this._outputMessages = new Subject();
+    this._outputMessages = new _rxjsBundlesRxMinJs.Subject();
     this._model = this._getModel();
     this.name = this._model.getName();
-    this._disposables = new UniversalDisposable(this._outputMessages);
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default(this._outputMessages);
   }
 
-  setCwdApi(cwdApi: ?CwdApi): void {
+  setCwdApi(cwdApi) {
     this._cwdApi = cwdApi;
     this._model.setCwdApi(cwdApi);
   }
 
-  _getModel(): ArcToolbarModelType {
+  _getModel() {
     let ArcToolbarModel;
     try {
       // $FlowFB
@@ -55,58 +60,64 @@ export default class ArcBuildSystem {
     return new ArcToolbarModel(this._outputMessages);
   }
 
-  observeTaskList(cb: (taskList: Array<TaskMetadata>) => mixed): IDisposable {
+  observeTaskList(cb) {
     if (this._tasks == null) {
-      this._tasks = Observable.concat(
-        Observable.of(this._model.getTaskList()),
-        observableFromSubscribeFunction(this._model.onChange.bind(this._model))
-          .map(() => this._model.getTaskList()),
-      );
+      this._tasks = _rxjsBundlesRxMinJs.Observable.concat(_rxjsBundlesRxMinJs.Observable.of(this._model.getTaskList()), (0, (_event || _load_event()).observableFromSubscribeFunction)(this._model.onChange.bind(this._model)).map(() => this._model.getTaskList()));
     }
-    return new UniversalDisposable(
-      this._tasks.subscribe({next: cb}),
-    );
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default(this._tasks.subscribe({ next: cb }));
   }
 
-  getExtraUi(): ReactClass<any> {
+  getExtraUi() {
     if (this._extraUi == null) {
-      this._extraUi = createExtraUiComponent(this._model);
+      this._extraUi = (0, (_createExtraUiComponent || _load_createExtraUiComponent()).createExtraUiComponent)(this._model);
     }
     return this._extraUi;
   }
 
-  getIcon(): ReactClass<any> {
+  getIcon() {
     return ArcIcon;
   }
 
-  getOutputMessages(): Observable<Message> {
+  getOutputMessages() {
     return this._outputMessages;
   }
 
-  runTask(taskType: string): Task {
+  runTask(taskType) {
     if (!this._model.getTaskList().some(task => task.type === taskType)) {
-      throw new Error(`There's no hhvm task named "${taskType}"`);
+      throw new Error(`There's no hhvm task named "${ taskType }"`);
     }
 
     const taskFunction = getTaskRunFunction(this._model, taskType);
-    return taskFromObservable(taskFunction());
+    return (0, (_tasks || _load_tasks()).taskFromObservable)(taskFunction());
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
   }
 }
 
-function getTaskRunFunction(
-  model: ArcToolbarModelType,
-  taskType: string,
-): () => Observable<TaskEvent> {
+exports.default = ArcBuildSystem; /**
+                                   * Copyright (c) 2015-present, Facebook, Inc.
+                                   * All rights reserved.
+                                   *
+                                   * This source code is licensed under the license found in the LICENSE file in
+                                   * the root directory of this source tree.
+                                   *
+                                   * 
+                                   */
+
+function getTaskRunFunction(model, taskType) {
   switch (taskType) {
     case 'build':
       return () => model.arcBuild();
     default:
-      throw new Error(`Invalid task type: ${taskType}`);
+      throw new Error(`Invalid task type: ${ taskType }`);
   }
 }
 
-const ArcIcon = () => <span>arc</span>;
+const ArcIcon = () => _reactForAtom.React.createElement(
+  'span',
+  null,
+  'arc'
+);
+module.exports = exports['default'];

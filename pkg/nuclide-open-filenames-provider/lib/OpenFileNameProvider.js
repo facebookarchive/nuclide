@@ -1,3 +1,18 @@
+'use strict';
+
+var _collection;
+
+function _load_collection() {
+  return _collection = require('../../commons-node/collection');
+}
+
+var _nuclideFuzzyNative;
+
+function _load_nuclideFuzzyNative() {
+  return _nuclideFuzzyNative = require('../../nuclide-fuzzy-native');
+}
+
+// Returns paths of currently opened editor tabs.
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,67 +20,51 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
 
-import type {
-  Provider,
-  ProviderType,
-} from '../../nuclide-quick-open/lib/types';
-import type {
-  FileResult,
-} from '../../nuclide-quick-open/lib/rpc-types';
-
-import {arrayCompact} from '../../commons-node/collection';
-import {Matcher} from '../../nuclide-fuzzy-native';
-
-// Returns paths of currently opened editor tabs.
-function getOpenTabsMatching(query: string): Array<FileResult> {
-  const matcher = new Matcher(arrayCompact(
-    atom.workspace.getTextEditors()
-      .map(editor => editor.getPath()),
-  ));
-  return matcher.match(query, {recordMatchIndexes: true})
-    .map(result => ({
-      path: result.value,
-      score: result.score,
-      matchIndexes: result.matchIndexes,
-    }));
+function getOpenTabsMatching(query) {
+  const matcher = new (_nuclideFuzzyNative || _load_nuclideFuzzyNative()).Matcher((0, (_collection || _load_collection()).arrayCompact)(atom.workspace.getTextEditors().map(editor => editor.getPath())));
+  return matcher.match(query, { recordMatchIndexes: true }).map(result => ({
+    path: result.value,
+    score: result.score,
+    matchIndexes: result.matchIndexes
+  }));
 }
 
-const OpenFileListProvider: Provider = {
+const OpenFileListProvider = {
 
-  getName(): string {
+  getName() {
     return 'OpenFileListProvider';
   },
 
-  getProviderType(): ProviderType {
+  getProviderType() {
     return 'GLOBAL';
   },
 
-  getDebounceDelay(): number {
+  getDebounceDelay() {
     return 0;
   },
 
-  isRenderable(): boolean {
+  isRenderable() {
     return true;
   },
 
-  getAction(): string {
+  getAction() {
     return 'nuclide-open-filenames-provider:toggle-provider';
   },
 
-  getPromptText(): string {
+  getPromptText() {
     return 'Search names of open files';
   },
 
-  getTabTitle(): string {
+  getTabTitle() {
     return 'Open Files';
   },
 
-  executeQuery(query: string): Promise<Array<FileResult>> {
+  executeQuery(query) {
     return Promise.resolve(getOpenTabsMatching(query));
-  },
+  }
 
 };
 

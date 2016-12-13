@@ -1,102 +1,96 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import {React} from 'react-for-atom';
-import type {ThreadItem} from './types';
-import type Bridge from './Bridge';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DebuggerThreadsComponent = undefined;
 
-import {Icon} from '../../nuclide-ui/Icon';
-import {Table} from '../../nuclide-ui/Table';
+var _reactForAtom = require('react-for-atom');
 
-type DebuggerThreadsComponentProps = {
-  bridge: Bridge,
-  threadList: Array<ThreadItem>,
-  selectedThreadId: number,
-};
+var _Icon;
 
-const activeThreadIndicatorComponent = (props: {cellData: boolean}) => (
-  <div className="nuclide-debugger-thread-list-item-current-indicator">
-    {props.cellData
-      ? <Icon icon="arrow-right" title="Selected Thread" />
-      : null
-    }
-  </div>
-);
+function _load_Icon() {
+  return _Icon = require('../../nuclide-ui/Icon');
+}
 
-export class DebuggerThreadsComponent extends React.Component {
-  props: DebuggerThreadsComponentProps;
+var _Table;
 
-  constructor(props: DebuggerThreadsComponentProps) {
+function _load_Table() {
+  return _Table = require('../../nuclide-ui/Table');
+}
+
+const activeThreadIndicatorComponent = props => _reactForAtom.React.createElement(
+  'div',
+  { className: 'nuclide-debugger-thread-list-item-current-indicator' },
+  props.cellData ? _reactForAtom.React.createElement((_Icon || _load_Icon()).Icon, { icon: 'arrow-right', title: 'Selected Thread' }) : null
+); /**
+    * Copyright (c) 2015-present, Facebook, Inc.
+    * All rights reserved.
+    *
+    * This source code is licensed under the license found in the LICENSE file in
+    * the root directory of this source tree.
+    *
+    * 
+    */
+
+class DebuggerThreadsComponent extends _reactForAtom.React.Component {
+
+  constructor(props) {
     super(props);
-    (this: any)._handleSelectThread = this._handleSelectThread.bind(this);
+    this._handleSelectThread = this._handleSelectThread.bind(this);
   }
 
-  _handleSelectThread(data: ThreadItem, selectedIndex: number): void {
+  _handleSelectThread(data, selectedIndex) {
     this.props.bridge.selectThread(data.id);
   }
 
-  render(): ?React.Element<any> {
+  render() {
     const {
       threadList,
-      selectedThreadId,
+      selectedThreadId
     } = this.props;
-    const columns = [
-      {
-        component: activeThreadIndicatorComponent,
-        title: '',
-        key: 'isSelected',
-        width: 0.05,
-      },
-      {
-        title: 'ID',
-        key: 'id',
-        width: 0.15,
-      },
-      {
-        title: 'Address',
-        key: 'address',
-        width: 0.55,
-      },
-      {
-        title: 'Stop Reason',
-        key: 'stopReason',
-        width: 0.25,
-      },
-    ];
-    const emptyComponent = () =>
-      <div className="nuclide-debugger-thread-list-empty">
-        {threadList == null ? '(threads unavailable)' : 'no threads to display'}
-      </div>;
-    const rows = threadList == null
-      ? []
-      : threadList.map((threadItem, i) => {
-        const cellData = {
-          data: {
-            ...threadItem,
-            isSelected: Number(threadItem.id) === selectedThreadId,
-          },
-        };
-        if (Number(threadItem.id) === selectedThreadId) {
-          // $FlowIssue className is an optional property of a table row
-          cellData.className = 'nuclide-debugger-thread-list-item-selected';
-        }
-        return cellData;
-      });
-    return (
-      <Table
-        columns={columns}
-        emptyComponent={emptyComponent}
-        rows={rows}
-        selectable={true}
-        onSelect={this._handleSelectThread}
-      />
+    const columns = [{
+      component: activeThreadIndicatorComponent,
+      title: '',
+      key: 'isSelected',
+      width: 0.05
+    }, {
+      title: 'ID',
+      key: 'id',
+      width: 0.15
+    }, {
+      title: 'Address',
+      key: 'address',
+      width: 0.55
+    }, {
+      title: 'Stop Reason',
+      key: 'stopReason',
+      width: 0.25
+    }];
+    const emptyComponent = () => _reactForAtom.React.createElement(
+      'div',
+      { className: 'nuclide-debugger-thread-list-empty' },
+      threadList == null ? '(threads unavailable)' : 'no threads to display'
     );
+    const rows = threadList == null ? [] : threadList.map((threadItem, i) => {
+      const cellData = {
+        data: Object.assign({}, threadItem, {
+          isSelected: Number(threadItem.id) === selectedThreadId
+        })
+      };
+      if (Number(threadItem.id) === selectedThreadId) {
+        // $FlowIssue className is an optional property of a table row
+        cellData.className = 'nuclide-debugger-thread-list-item-selected';
+      }
+      return cellData;
+    });
+    return _reactForAtom.React.createElement((_Table || _load_Table()).Table, {
+      columns: columns,
+      emptyComponent: emptyComponent,
+      rows: rows,
+      selectable: true,
+      onSelect: this._handleSelectThread
+    });
   }
 }
+exports.DebuggerThreadsComponent = DebuggerThreadsComponent;

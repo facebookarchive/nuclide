@@ -1,24 +1,20 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
+var _Handler;
 
-import Handler from './Handler';
-import type {ClientCallback} from './ClientCallback';
+function _load_Handler() {
+  return _Handler = _interopRequireDefault(require('./Handler'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // Handles all 'Console.*' Chrome dev tools messages
-class ConsoleHandler extends Handler {
-  constructor(clientCallback: ClientCallback) {
+class ConsoleHandler extends (_Handler || _load_Handler()).default {
+  constructor(clientCallback) {
     super('Console', clientCallback);
   }
 
-  handleMethod(id: number, method: string, params: ?Object): Promise<void> {
+  handleMethod(id, method, params) {
     switch (method) {
       case 'enable':
       case 'disable':
@@ -35,6 +31,14 @@ class ConsoleHandler extends Handler {
     }
     return Promise.resolve();
   }
-}
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   */
 
 module.exports = ConsoleHandler;
