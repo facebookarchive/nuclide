@@ -124,7 +124,7 @@ export class BuckBuildSystem {
   _diagnosticInvalidations: Subject<InvalidationMessage>;
   _platformService: PlatformService;
 
-  constructor(initialState: ?SerializedState, platformService: PlatformService) {
+  constructor(initialState: ?SerializedState) {
     this.id = 'buck';
     this.name = 'Buck';
     this._serializedState = initialState;
@@ -133,7 +133,7 @@ export class BuckBuildSystem {
     this._diagnosticUpdates = new Subject();
     this._diagnosticInvalidations = new Subject();
     this._disposables.add(this._outputMessages);
-    this._platformService = platformService;
+    this._platformService = new PlatformService();
   }
 
   getTaskList() {
@@ -194,6 +194,10 @@ export class BuckBuildSystem {
       updates: this._diagnosticUpdates,
       invalidations: this._diagnosticInvalidations,
     };
+  }
+
+  getPlatformService(): PlatformService {
+    return this._platformService;
   }
 
   setProjectRoot(projectRoot: ?Directory): void {

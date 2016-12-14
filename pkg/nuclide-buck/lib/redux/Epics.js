@@ -77,7 +77,9 @@ export function setRuleTypeEpic(
     invariant(action.type === Actions.SET_RULE_TYPE);
     const {ruleType} = action;
     if (ruleType) {
-      return store.getState().platformService.getPlatformGroups(ruleType)
+      const state = store.getState();
+      invariant(state.buckRoot);
+      return state.platformService.getPlatformGroups(ruleType, state.buckRoot)
         .map(platformGroups => setPlatformGroups(platformGroups));
     } else {
       return Observable.of(setPlatformGroups([]));

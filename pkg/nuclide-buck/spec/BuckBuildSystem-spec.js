@@ -9,13 +9,12 @@
  */
 
 import {Observable} from 'rxjs';
-import {PlatformService} from '../lib/PlatformService';
 import {BuckBuildSystem} from '../lib/BuckBuildSystem';
 
 describe('BuckBuildSystem', () => {
   let buckBuildSystem;
   beforeEach(() => {
-    buckBuildSystem = new BuckBuildSystem(null, new PlatformService());
+    buckBuildSystem = new BuckBuildSystem();
   });
 
   describe('_consumeEventStream', () => {
