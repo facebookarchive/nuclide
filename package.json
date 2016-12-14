@@ -137,6 +137,7 @@
     "language-babel",
     "language-graphql",
     "language-ini",
+    "language-lua",
     "language-ocaml",
     "language-swift",
     "language-thrift",
