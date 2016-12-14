@@ -1,5 +1,7 @@
 # Nuclide
 
+[![Circle Status](https://circleci.com/gh/facebook/nuclide/tree/master.svg?style=shield&circle-token=a805ec51c07ae99799ce548795383dd1f1e4dc76)](https://circleci.com/gh/facebook/nuclide)
+
 [Nuclide](http://nuclide.io/) is a collection of features for [Atom](https://atom.io/) to provide
 IDE-like functionality for a variety of programming languages and technologies.
 
