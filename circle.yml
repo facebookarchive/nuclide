@@ -1,0 +1,11 @@
+machine:
+  node:
+    version: 6.5.0
+
+test:
+  override:
+    # eslint
+    - ./node_modules/.bin/eslint --max-warnings=0 .
+    # flow
+    - sed -i.tmp -e 's/^; \(suppress_comment=.*FlowFB.*\)$/\1/' .flowconfig
+    - ./node_modules/.bin/flow check --show-all-errors
