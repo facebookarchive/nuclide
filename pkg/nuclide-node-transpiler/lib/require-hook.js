@@ -18,28 +18,25 @@
 
 const Module = require('module');
 const fs = require('fs');
-const path = require('path');
 
-const basedir = path.join(__dirname, '../../../');
 const builtinJsExt = Module._extensions['.js'];
 
 const NodeTranspiler = require('./NodeTranspiler');
 const nodeTranspiler = new NodeTranspiler();
+const pathRules = require('./path-rules');
 
 let transpiling = null;
 
 function transpiler_require_hook(_module, filename) {
   let moduleExports;
-  if (filename.startsWith(basedir) && !filename.includes('node_modules')) {
+  if (pathRules.isIncluded(filename)) {
     // Keep src as a buffer so calculating its digest with crypto is fast.
     const src = fs.readFileSync(filename);
     let output;
     if (NodeTranspiler.shouldCompile(src)) {
       if (transpiling != null) {
         // This means that the transpiler tried to transpile itself.
-        const a = transpiling.replace(basedir, '');
-        const b = filename.replace(basedir, '');
-        throw new Error(`Circular transpile from "${a}" to "${b}"`);
+        throw new Error(`Circular transpile from "${transpiling}" to "${filename}"`);
       }
       try {
         transpiling = filename;

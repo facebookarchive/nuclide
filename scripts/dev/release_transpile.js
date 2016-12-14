@@ -34,12 +34,13 @@ function runParent() {
   const assert = require('assert');
   const child_process = require('child_process');
   const fs = require('fs');
-  const glob = require('glob');
   const os = require('os');
   const path = require('path');
 
-  const basedir = path.join(__dirname, '../..');
-  const developmentFilePath = path.join(basedir, 'DEVELOPMENT');
+  const pathRules = require('../../pkg/nuclide-node-transpiler/lib/path-rules');
+
+  const developmentFilePath = path.join(__dirname, '../../DEVELOPMENT');
+
   const numWorkers = Math.max(os.cpus().length - 1, 1);
 
   const count = {
@@ -47,14 +48,7 @@ function runParent() {
     transpiled: 0,
   };
 
-  const jsFiles = glob.sync(path.join(basedir, '**/*.js'), {
-    ignore: [
-      // TODO(asuarez): Move this into NodeTranspiler
-      '**/node_modules/**',
-      '**/VendorLib/**',
-      '**/spec/fixtures/**',
-    ],
-  });
+  const jsFiles = pathRules.getIncludedFiles();
 
   // Sanity checks
   assert(jsFiles.length > 10);
