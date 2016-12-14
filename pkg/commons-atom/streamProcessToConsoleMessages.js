@@ -53,7 +53,7 @@ export function pipeProcessMessagesToConsole(
         // Keep console open
         progressUpdates.next({text: `${processName} exited with non zero code`, level: 'error'});
         atom.notifications.addError(
-          'Smartlog Operation Failed', {
+          'Operation Failed', {
             detail: 'Check console for output',
           },
         );
