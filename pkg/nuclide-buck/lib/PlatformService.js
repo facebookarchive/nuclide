@@ -1,47 +1,47 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import type {Platform} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.PlatformService = undefined;
 
-import {Disposable} from 'atom';
-import {Observable, Subject} from 'rxjs';
+var _atom = require('atom');
 
-type PlatformProvider = (ruleType: string) => Observable<?Platform>;
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
-export class PlatformService {
-  _registeredProviders: Array<PlatformProvider> = [];
-  _providersChanged: Subject<void> = new Subject();
+class PlatformService {
+  constructor() {
+    this._registeredProviders = [];
+    this._providersChanged = new _rxjsBundlesRxMinJs.Subject();
+  }
 
-  register(platformProvider: PlatformProvider): Disposable {
+  register(platformProvider) {
     this._registeredProviders.push(platformProvider);
     this._providersChanged.next();
-    return new Disposable(() => {
+    return new _atom.Disposable(() => {
       const index = this._registeredProviders.indexOf(platformProvider);
       this._registeredProviders.splice(index, 1);
       this._providersChanged.next();
     });
   }
 
-  getPlatforms(ruleType: string): Observable<Array<Platform>> {
-    return this._providersChanged
-      .startWith(undefined)
-      .switchMap(() => {
-        const observables = this._registeredProviders.map(provider => provider(ruleType));
-        return Observable.from(observables)
-          // $FlowFixMe: type combineAll
-          .combineAll()
-          .map(platforms => {
-            return platforms
-              .filter(p => p != null)
-              .sort((a, b) => a.name.toUpperCase().localeCompare(b.name.toUpperCase()));
-          });
+  getPlatforms(ruleType) {
+    return this._providersChanged.startWith(undefined).switchMap(() => {
+      const observables = this._registeredProviders.map(provider => provider(ruleType));
+      return _rxjsBundlesRxMinJs.Observable.from(observables)
+      // $FlowFixMe: type combineAll
+      .combineAll().map(platforms => {
+        return platforms.filter(p => p != null).sort((a, b) => a.name.toUpperCase().localeCompare(b.name.toUpperCase()));
       });
+    });
   }
 }
+exports.PlatformService = PlatformService; /**
+                                            * Copyright (c) 2015-present, Facebook, Inc.
+                                            * All rights reserved.
+                                            *
+                                            * This source code is licensed under the license found in the LICENSE file in
+                                            * the root directory of this source tree.
+                                            *
+                                            * 
+                                            */

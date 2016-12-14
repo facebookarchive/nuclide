@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,7 +7,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
 
 /**
@@ -21,7 +23,7 @@ let intervalCount = 0;
 let timeouts = [];
 let intervalTimeouts = {};
 
-function resetTimeouts(): void {
+function resetTimeouts() {
   now = 0;
   timeoutCount = 0;
   intervalCount = 0;
@@ -29,20 +31,18 @@ function resetTimeouts(): void {
   intervalTimeouts = {};
 }
 
-function fakeSetTimeout(callback: () => ?any, ms: number): number {
+function fakeSetTimeout(callback, ms) {
   const id = ++timeoutCount;
   timeouts.push([id, now + ms, callback]);
-  timeouts = timeouts
-      .sort(([id0, strikeTime0, cb0], [id1, strikeTime1, cb1]) => strikeTime0 - strikeTime1);
+  timeouts = timeouts.sort(([id0, strikeTime0, cb0], [id1, strikeTime1, cb1]) => strikeTime0 - strikeTime1);
   return id;
 }
 
-function fakeClearTimeout(idToClear: number): void {
-  timeouts = timeouts
-      .filter(([id, strikeTime, callback]) => (id !== idToClear));
+function fakeClearTimeout(idToClear) {
+  timeouts = timeouts.filter(([id, strikeTime, callback]) => id !== idToClear);
 }
 
-function fakeSetInterval(callback: () => ?any, ms: number): number {
+function fakeSetInterval(callback, ms) {
   const id = ++intervalCount;
   const action = () => {
     callback();
@@ -52,11 +52,11 @@ function fakeSetInterval(callback: () => ?any, ms: number): number {
   return id;
 }
 
-function fakeClearInterval(idToClear: number): void {
+function fakeClearInterval(idToClear) {
   fakeClearTimeout(intervalTimeouts[idToClear]);
 }
 
-function advanceClock(deltaMs: number): void {
+function advanceClock(deltaMs) {
   const advanceTo = now + deltaMs;
 
   while (timeouts.length !== 0 && timeouts[0][1] <= advanceTo) {
@@ -71,7 +71,7 @@ function advanceClock(deltaMs: number): void {
 /**
  * Allows tests to use the non-fake setTimeout and clearTimeout functions.
  */
-function useRealClock(): void {
+function useRealClock() {
   jasmine.unspy(global, 'setTimeout');
   jasmine.unspy(global, 'clearTimeout');
   jasmine.unspy(global, 'setInterval');
@@ -88,7 +88,9 @@ global.fakeClearInterval = fakeClearInterval;
 global.advanceClock = advanceClock;
 jasmine.useRealClock = useRealClock;
 const attributes = {};
-attributes.get = function() { return now; };
+attributes.get = function () {
+  return now;
+};
 Object.defineProperty(global, 'now', attributes);
 
 /**

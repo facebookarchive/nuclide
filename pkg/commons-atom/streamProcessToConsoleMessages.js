@@ -1,62 +1,53 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import type {Message} from '../nuclide-console/lib/types';
-import type {ProcessMessage} from '../commons-node/process-rpc-types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.dispatchConsoleToggle = dispatchConsoleToggle;
+exports.pipeProcessMessagesToConsole = pipeProcessMessagesToConsole;
 
-import {Subject} from 'rxjs';
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
-export function dispatchConsoleToggle(visible: boolean): void {
-  atom.commands.dispatch(
-    atom.views.getView(atom.workspace),
-    'nuclide-console:toggle',
-    {visible},
-  );
-}
+function dispatchConsoleToggle(visible) {
+  atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-console:toggle', { visible });
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   */
 
-export function pipeProcessMessagesToConsole(
-  processName: string,
-  progressUpdates: Subject<Message>,
-  processMessage: ProcessMessage,
-): void {
+function pipeProcessMessagesToConsole(processName, progressUpdates, processMessage) {
   switch (processMessage.kind) {
     case 'stderr':
-      progressUpdates.next({text: processMessage.data, level: 'error'});
+      progressUpdates.next({ text: processMessage.data, level: 'error' });
       break;
 
     case 'stdout':
-      progressUpdates.next({text: processMessage.data, level: 'info'});
+      progressUpdates.next({ text: processMessage.data, level: 'info' });
       break;
 
     case 'error':
-      const {error} = processMessage;
-      progressUpdates.next({text: error.message || String(error), level: 'error'});
+      const { error } = processMessage;
+      progressUpdates.next({ text: error.message || String(error), level: 'error' });
       break;
 
     case 'exit':
       if (processMessage.exitCode === 0) {
         // TODO(asriram) t13831340 Check if console was initially open, if yes then dont close here
-        progressUpdates.next({text: `${processName} completed successfully`, level: 'success'});
-        atom.notifications.addSuccess(
-          'Operation completed successfully', {
-            detail: `${processName} finished`,
-          },
-        );
+        progressUpdates.next({ text: `${ processName } completed successfully`, level: 'success' });
+        atom.notifications.addSuccess('Operation completed successfully', {
+          detail: `${ processName } finished`
+        });
       } else {
         // Keep console open
-        progressUpdates.next({text: `${processName} exited with non zero code`, level: 'error'});
-        atom.notifications.addError(
-          'Smartlog Operation Failed', {
-            detail: 'Check console for output',
-          },
-        );
+        progressUpdates.next({ text: `${ processName } exited with non zero code`, level: 'error' });
+        atom.notifications.addError('Smartlog Operation Failed', {
+          detail: 'Check console for output'
+        });
       }
       break;
   }

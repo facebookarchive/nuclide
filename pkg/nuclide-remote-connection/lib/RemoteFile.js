@@ -1,3 +1,30 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.RemoteFile = undefined;
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var _crypto = _interopRequireDefault(require('crypto'));
+
+var _atom = require('atom');
+
+var _nuclideLogging;
+
+function _load_nuclideLogging() {
+  return _nuclideLogging = require('../../nuclide-logging');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,45 +32,18 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
 
-import type {ServerConnection} from './ServerConnection';
-import type {RemoteDirectory} from './RemoteDirectory';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import typeof * as FileSystemService from '../../nuclide-server/lib/services/FileSystemService';
-
-import invariant from 'assert';
-import nuclideUri from '../../commons-node/nuclideUri';
-import crypto from 'crypto';
-import {Disposable, Emitter} from 'atom';
-import {getLogger} from '../../nuclide-logging';
-
-const logger = getLogger();
+const logger = (0, (_nuclideLogging || _load_nuclideLogging()).getLogger)();
 
 /* Mostly implements https://atom.io/docs/api/latest/File */
-export class RemoteFile {
+class RemoteFile {
 
-  _deleted: boolean;
-  _emitter: Emitter;
-  _encoding: ?string;
-  _localPath: string;
-  _path: string;
-  _realpath: ?string;
-  _server: ServerConnection;
-  _subscriptionCount: number;
-  _watchSubscription: ?rxjs$ISubscription;
-  _digest: ?string;
-  _symlink: boolean;
-
-  constructor(
-    server: ServerConnection,
-    remotePath: string,
-    symlink: boolean = false,
-  ) {
+  constructor(server, remotePath, symlink = false) {
     this._server = server;
     this.setPath(remotePath);
-    this._emitter = new Emitter();
+    this._emitter = new _atom.Emitter();
     this._subscriptionCount = 0;
     this._deleted = false;
     this._symlink = symlink;
@@ -54,27 +54,27 @@ export class RemoteFile {
     this._unsubscribeFromNativeChangeEvents();
   }
 
-  onDidChange(callback: () => mixed): IDisposable {
+  onDidChange(callback) {
     this._willAddSubscription();
     return this._trackUnsubscription(this._emitter.on('did-change', callback));
   }
 
-  onDidRename(callback: () => mixed): IDisposable {
+  onDidRename(callback) {
     // TODO: this is not supported by the Watchman API.
-    return new Disposable();
+    return new _atom.Disposable();
   }
 
-  onDidDelete(callback: () => mixed): IDisposable {
+  onDidDelete(callback) {
     this._willAddSubscription();
     return this._trackUnsubscription(this._emitter.on('did-delete', callback));
   }
 
-  _willAddSubscription(): void {
+  _willAddSubscription() {
     this._subscriptionCount++;
     return this._subscribeToNativeChangeEvents();
   }
 
-  _subscribeToNativeChangeEvents(): void {
+  _subscribeToNativeChangeEvents() {
     if (this._watchSubscription) {
       return;
     }
@@ -100,18 +100,18 @@ export class RemoteFile {
       this._watchSubscription = null;
     }, () => {
       // Nothing needs to be done if the root directory watch has ended.
-      logger.debug(`watchFile ended: ${this._path}`);
+      logger.debug(`watchFile ended: ${ this._path }`);
       this._watchSubscription = null;
     });
   }
 
-  _handleNativeChangeEvent(): Promise<void> {
+  _handleNativeChangeEvent() {
     // Don't bother checking the file - this can be very expensive.
     this._emitter.emit('did-change');
     return Promise.resolve();
   }
 
-  _handleNativeDeleteEvent(): void {
+  _handleNativeDeleteEvent() {
     this._unsubscribeFromNativeChangeEvents();
     if (!this._deleted) {
       this._deleted = true;
@@ -123,178 +123,226 @@ export class RemoteFile {
    * Return a new Disposable that upon dispose, will remove the bound watch subscription.
    * When the number of subscriptions reach 0, the file is unwatched.
    */
-  _trackUnsubscription(subscription: IDisposable): IDisposable {
-    return new Disposable(() => {
+  _trackUnsubscription(subscription) {
+    return new _atom.Disposable(() => {
       subscription.dispose();
       this._didRemoveSubscription();
     });
   }
 
-  _didRemoveSubscription(): void {
+  _didRemoveSubscription() {
     this._subscriptionCount--;
     if (this._subscriptionCount === 0) {
       this._unsubscribeFromNativeChangeEvents();
     }
   }
 
-  _unsubscribeFromNativeChangeEvents(): void {
+  _unsubscribeFromNativeChangeEvents() {
     if (this._watchSubscription) {
       this._watchSubscription.unsubscribe();
       this._watchSubscription = null;
     }
   }
 
-  onWillThrowWatchError(
-    callback: (watchError: {error: Error, handle: () => void}) => mixed,
-  ): IDisposable {
+  onWillThrowWatchError(callback) {
     return this._emitter.on('will-throw-watch-error', callback);
   }
 
-  isFile(): boolean {
+  isFile() {
     return true;
   }
 
-  isDirectory(): boolean {
+  isDirectory() {
     return false;
   }
 
-  exists(): Promise<boolean> {
+  exists() {
     return this._getFileSystemService().exists(this._localPath);
   }
 
-  existsSync(): boolean {
+  existsSync() {
     return true;
   }
 
-  getDigestSync(): string {
+  getDigestSync() {
     if (!this._digest) {
       // File's `getDigestSync()` calls `readSync()`, which we don't implement.
       // However, we mimic it's behavior for when a file does not exist.
       this._setDigest('');
     }
-    invariant(this._digest);
-    return this._digest;
-  }
 
-  async getDigest(): Promise<string> {
-    if (this._digest) {
-      return this._digest;
+    if (!this._digest) {
+      throw new Error('Invariant violation: "this._digest"');
     }
-    await this.read();
-    invariant(this._digest);
+
     return this._digest;
   }
 
-  _setDigest(contents: string) {
-    const hash = crypto.createHash('sha1').update(contents || '');
-    invariant(hash);
+  getDigest() {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      if (_this._digest) {
+        return _this._digest;
+      }
+      yield _this.read();
+
+      if (!_this._digest) {
+        throw new Error('Invariant violation: "this._digest"');
+      }
+
+      return _this._digest;
+    })();
+  }
+
+  _setDigest(contents) {
+    const hash = _crypto.default.createHash('sha1').update(contents || '');
+
+    if (!hash) {
+      throw new Error('Invariant violation: "hash"');
+    }
+
     this._digest = hash.digest('hex');
   }
 
-  setEncoding(encoding: string) {
+  setEncoding(encoding) {
     this._encoding = encoding;
   }
 
-  getEncoding(): ?string {
+  getEncoding() {
     return this._encoding;
   }
 
-  setPath(remotePath: NuclideUri): void {
-    const {path: localPath} = nuclideUri.parse(remotePath);
+  setPath(remotePath) {
+    const { path: localPath } = (_nuclideUri || _load_nuclideUri()).default.parse(remotePath);
     this._localPath = localPath;
     this._path = remotePath;
   }
 
-  getPath(): string {
+  getPath() {
     return this._path;
   }
 
-  getLocalPath(): string {
+  getLocalPath() {
     return this._localPath;
   }
 
-  getRealPathSync(): string {
+  getRealPathSync() {
     return this._realpath || this._path;
   }
 
-  async getRealPath(): Promise<string> {
-    if (this._realpath == null) {
-      this._realpath = await this._getFileSystemService().realpath(this._localPath);
-    }
-    invariant(this._realpath);
-    return this._realpath;
-  }
+  getRealPath() {
+    var _this2 = this;
 
-  getBaseName(): string {
-    return nuclideUri.basename(this._path);
-  }
-
-  async create(): Promise<boolean> {
-    const wasCreated = await this._getFileSystemService().newFile(this._localPath);
-    if (this._subscriptionCount > 0) {
-      this._subscribeToNativeChangeEvents();
-    }
-    return wasCreated;
-  }
-
-  async delete(): Promise<any> {
-    try {
-      await this._getFileSystemService().unlink(this._localPath);
-      this._handleNativeDeleteEvent();
-    } catch (error) {
-      if (error.code !== 'ENOENT') {
-        throw error;
+    return (0, _asyncToGenerator.default)(function* () {
+      if (_this2._realpath == null) {
+        _this2._realpath = yield _this2._getFileSystemService().realpath(_this2._localPath);
       }
-    }
+
+      if (!_this2._realpath) {
+        throw new Error('Invariant violation: "this._realpath"');
+      }
+
+      return _this2._realpath;
+    })();
   }
 
-  async copy(newPath: string): Promise<boolean> {
-    const wasCopied = await this._getFileSystemService().copy(this._localPath, newPath);
-    this._subscribeToNativeChangeEvents();
-    return wasCopied;
+  getBaseName() {
+    return (_nuclideUri || _load_nuclideUri()).default.basename(this._path);
   }
 
-  async read(flushCache?: boolean): Promise<string> {
-    const data = await this._getFileSystemService().readFile(this._localPath);
-    const contents = data.toString();
-    this._setDigest(contents);
-    // TODO: respect encoding
-    return contents;
+  create() {
+    var _this3 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const wasCreated = yield _this3._getFileSystemService().newFile(_this3._localPath);
+      if (_this3._subscriptionCount > 0) {
+        _this3._subscribeToNativeChangeEvents();
+      }
+      return wasCreated;
+    })();
   }
 
-  readSync(flushcache: boolean): Promise<string> {
+  delete() {
+    var _this4 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      try {
+        yield _this4._getFileSystemService().unlink(_this4._localPath);
+        _this4._handleNativeDeleteEvent();
+      } catch (error) {
+        if (error.code !== 'ENOENT') {
+          throw error;
+        }
+      }
+    })();
+  }
+
+  copy(newPath) {
+    var _this5 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const wasCopied = yield _this5._getFileSystemService().copy(_this5._localPath, newPath);
+      _this5._subscribeToNativeChangeEvents();
+      return wasCopied;
+    })();
+  }
+
+  read(flushCache) {
+    var _this6 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const data = yield _this6._getFileSystemService().readFile(_this6._localPath);
+      const contents = data.toString();
+      _this6._setDigest(contents);
+      // TODO: respect encoding
+      return contents;
+    })();
+  }
+
+  readSync(flushcache) {
     throw new Error('readSync is not supported in RemoteFile');
   }
 
-  async write(text: string): Promise<void> {
-    const previouslyExisted = await this.exists();
-    await this._getFileSystemService().writeFile(this._localPath, text);
-    if (!previouslyExisted && this._subscriptionCount > 0) {
-      this._subscribeToNativeChangeEvents();
-    }
+  write(text) {
+    var _this7 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const previouslyExisted = yield _this7.exists();
+      yield _this7._getFileSystemService().writeFile(_this7._localPath, text);
+      if (!previouslyExisted && _this7._subscriptionCount > 0) {
+        _this7._subscribeToNativeChangeEvents();
+      }
+    })();
   }
 
-  getParent(): RemoteDirectory {
-    const {path: localPath, protocol, host} = nuclideUri.parse(this._path);
-    invariant(protocol);
-    invariant(host);
-    const directoryPath = protocol + '//' + host + nuclideUri.dirname(localPath);
+  getParent() {
+    const { path: localPath, protocol, host } = (_nuclideUri || _load_nuclideUri()).default.parse(this._path);
+
+    if (!protocol) {
+      throw new Error('Invariant violation: "protocol"');
+    }
+
+    if (!host) {
+      throw new Error('Invariant violation: "host"');
+    }
+
+    const directoryPath = protocol + '//' + host + (_nuclideUri || _load_nuclideUri()).default.dirname(localPath);
     const remoteConnection = this._server.getRemoteConnectionForUri(this._path);
-    const hgRepositoryDescription = remoteConnection != null ?
-      remoteConnection.getHgRepositoryDescription() :
-      null;
+    const hgRepositoryDescription = remoteConnection != null ? remoteConnection.getHgRepositoryDescription() : null;
     return this._server.createDirectory(directoryPath, hgRepositoryDescription);
   }
 
-  isSymbolicLink(): boolean {
+  isSymbolicLink() {
     return this._symlink;
   }
 
-  _getFileSystemService(): FileSystemService {
+  _getFileSystemService() {
     return this._getService('FileSystemService');
   }
 
-  _getService(serviceName: string): any {
+  _getService(serviceName) {
     return this._server.getService(serviceName);
   }
 }
+exports.RemoteFile = RemoteFile;

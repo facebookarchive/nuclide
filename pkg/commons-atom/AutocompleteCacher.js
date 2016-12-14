@@ -1,3 +1,13 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _asyncToGenerator = _interopRequireDefault(require("async-to-generator"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,68 +15,49 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
 
-export type AutocompleteCacherConfig<T> = {
- getSuggestions: (request: atom$AutocompleteRequest) => Promise<T>,
- updateResults: (
-   request: atom$AutocompleteRequest,
-   firstResult: T,
- ) => T,
-};
+class AutocompleteCacher {
 
-type AutocompleteSession<T> = {
-  firstResult: Promise<T>,
-  lastRequest: atom$AutocompleteRequest,
-};
-
-export default class AutocompleteCacher<T> {
-  _config: AutocompleteCacherConfig<T>;
-
-  _session: ?AutocompleteSession<T>;
-
-  constructor(config: AutocompleteCacherConfig<T>) {
+  constructor(config) {
     this._config = config;
   }
 
-  getSuggestions(request: atom$AutocompleteRequest): Promise<T> {
+  getSuggestions(request) {
     const session = this._session;
     if (session != null && canFilterResults(session, request)) {
       const result = this._filterSuggestions(request, session.firstResult);
       this._session = {
         firstResult: session.firstResult,
-        lastRequest: request,
+        lastRequest: request
       };
       return result;
     } else {
       const result = this._config.getSuggestions(request);
       this._session = {
         firstResult: result,
-        lastRequest: request,
+        lastRequest: request
       };
       return result;
     }
   }
 
-  async _filterSuggestions(
-    request: atom$AutocompleteRequest,
-    firstResult: Promise<T>,
-  ): Promise<T> {
-    return this._config.updateResults(request, await firstResult);
+  _filterSuggestions(request, firstResult) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      return _this._config.updateResults(request, (yield firstResult));
+    })();
   }
 }
 
-// TODO make this configurable per language
+exports.default = AutocompleteCacher; // TODO make this configurable per language
+
 const IDENTIFIER_CHAR_REGEX = /[a-zA-Z_]/;
 
-function canFilterResults<T>(
-  session: AutocompleteSession<T>,
-  request: atom$AutocompleteRequest,
-): boolean {
-  const {lastRequest} = session;
-  return lastRequest.bufferPosition.row === request.bufferPosition.row &&
-      lastRequest.bufferPosition.column + 1 === request.bufferPosition.column &&
-      request.prefix.startsWith(lastRequest.prefix) &&
-      IDENTIFIER_CHAR_REGEX.test(request.prefix.charAt(request.prefix.length - 1));
+function canFilterResults(session, request) {
+  const { lastRequest } = session;
+  return lastRequest.bufferPosition.row === request.bufferPosition.row && lastRequest.bufferPosition.column + 1 === request.bufferPosition.column && request.prefix.startsWith(lastRequest.prefix) && IDENTIFIER_CHAR_REGEX.test(request.prefix.charAt(request.prefix.length - 1));
 }
+module.exports = exports["default"];
