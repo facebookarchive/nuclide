@@ -44,7 +44,7 @@ module.exports = {
         return {
           type: diagnostic.type === 'warning' ? 'Warning' : 'Error',
           filePath,
-          text: diagnostic.message,
+          html: '<pre>' + diagnostic.message + '</pre>',
           range: new Range(
             start == null ? [0, 0] : [start.line - 1, start.col],
             end == null ? [0, 0] : [end.line - 1, end.col],
