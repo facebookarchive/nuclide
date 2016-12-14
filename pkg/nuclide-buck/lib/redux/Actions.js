@@ -8,7 +8,7 @@
  * @flow
  */
 
-import type {Device, Platform, TaskSettings, TaskType} from '../types';
+import type {DeploymentTarget, PlatformGroup, TaskSettings, TaskType} from '../types';
 
 export type Action =
   {|
@@ -20,8 +20,8 @@ export type Action =
     buildTarget: string,
   |} |
   {|
-    type: 'SET_DEVICE',
-    device: Device,
+    type: 'SET_DEPLOYMENT_TARGET',
+    deploymentTarget: DeploymentTarget,
   |} |
   {|
     type: 'SET_TASK_SETTINGS',
@@ -38,16 +38,16 @@ export type Action =
     ruleType: ?string,
   |} |
   {|
-    type: 'SET_PLATFORMS',
-    platforms: Array<Platform>,
+    type: 'SET_PLATFORM_GROUPS',
+    platformGroups: Array<PlatformGroup>,
   |};
 
 export const SET_PROJECT_ROOT = 'SET_PROJECT_ROOT';
 export const SET_BUILD_TARGET = 'SET_BUILD_TARGET';
-export const SET_DEVICE = 'SET_DEVICE';
+export const SET_DEPLOYMENT_TARGET = 'SET_DEPLOYMENT_TARGET';
 export const SET_TASK_SETTINGS = 'SET_TASK_SETTINGS';
 export const SET_BUCK_ROOT = 'SET_BUCK_ROOT';
-export const SET_PLATFORMS = 'SET_PLATFORMS';
+export const SET_PLATFORM_GROUPS = 'SET_PLATFORM_GROUPS';
 export const SET_RULE_TYPE = 'SET_RULE_TYPE';
 
 export function setProjectRoot(projectRoot: ?string): Action {
@@ -58,8 +58,8 @@ export function setBuildTarget(buildTarget: string): Action {
   return {type: SET_BUILD_TARGET, buildTarget};
 }
 
-export function setDevice(device: Device): Action {
-  return {type: SET_DEVICE, device};
+export function setDeploymentTarget(deploymentTarget: DeploymentTarget): Action {
+  return {type: SET_DEPLOYMENT_TARGET, deploymentTarget};
 }
 
 export function setTaskSettings(taskType: TaskType, settings: TaskSettings): Action {

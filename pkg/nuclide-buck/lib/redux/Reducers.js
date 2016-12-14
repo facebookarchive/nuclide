@@ -8,9 +8,8 @@
  * @flow
  */
 
-import type {AppState, Device, Platform} from '../types';
+import type {AppState, DeploymentTarget, PlatformGroup} from '../types';
 import type {Action} from './Actions';
-import shallowequal from 'shallowequal';
 
 import * as Actions from './Actions';
 
@@ -41,20 +40,21 @@ export default function accumulateState(state: AppState, action: Action): AppSta
         isLoadingRule: false,
         isLoadingPlatforms: true,
       };
-    case Actions.SET_PLATFORMS:
-      const {platforms} = action;
-      const previouslySelected = state.selectedDevice;
-      const selectedDevice = selectValidDevice(previouslySelected, platforms);
+    case Actions.SET_PLATFORM_GROUPS:
+      const {platformGroups} = action;
+      const previouslySelected = state.selectedDeploymentTarget;
+      const selectedDeploymentTarget
+        = selectValidDeploymentTarget(previouslySelected, platformGroups);
       return {
         ...state,
-        platforms,
-        selectedDevice,
+        platformGroups,
+        selectedDeploymentTarget,
         isLoadingPlatforms: false,
       };
-    case Actions.SET_DEVICE:
+    case Actions.SET_DEPLOYMENT_TARGET:
       return {
         ...state,
-        selectedDevice: action.device,
+        selectedDeploymentTarget: action.deploymentTarget,
       };
     case Actions.SET_TASK_SETTINGS:
       return {
@@ -68,23 +68,46 @@ export default function accumulateState(state: AppState, action: Action): AppSta
   return state;
 }
 
-function selectValidDevice(previouslySelected: ?Device, platforms: Array<Platform>): ?Device {
-  if (!platforms.length) {
+function selectValidDeploymentTarget(
+  previouslySelected: ?DeploymentTarget,
+  platformGroups: Array<PlatformGroup>): ?DeploymentTarget {
+  if (!platformGroups.length) {
     return null;
   }
 
-  let selectedDevice = null;
+  let existingDevice = null;
+  let existingPlatform = null;
   if (previouslySelected) {
-    // Reassign selectedDevice to an instance from new platforms,
-    // to guarantee === matches (important for dropdown selection).
-    platforms.some(platform => {
-      selectedDevice = platform.devices.find(device => shallowequal(device, previouslySelected));
-      return selectedDevice != null;
-    });
-  }
-  if (!selectedDevice) {
-    selectedDevice = platforms[0].devices[0];
+    const previousPlatform = previouslySelected.platform;
+    const previousDevice = previouslySelected.device;
+    for (const platformGroup of platformGroups) {
+      for (const platform of platformGroup.platforms) {
+        if (platform.flavor === previousPlatform.flavor) {
+          existingPlatform = platform;
+          if (previousDevice) {
+            for (const device of platform.devices) {
+              if (device.udid === previousDevice.udid) {
+                existingDevice = device;
+              }
+            }
+          }
+          break;
+        }
+      }
+
+      if (existingPlatform) {
+        break;
+      }
+    }
   }
 
-  return selectedDevice;
+  if (!existingPlatform) {
+    existingPlatform = platformGroups[0].platforms[0];
+  }
+
+  if (!existingDevice && existingPlatform.devices.length) {
+    existingDevice = existingPlatform.devices[0];
+  }
+
+  return {platform: existingPlatform, device: existingDevice};
 }

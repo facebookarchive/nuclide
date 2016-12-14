@@ -9,7 +9,7 @@
  */
 
 import type {ActionsObservable} from '../../../commons-node/redux-observable';
-import type {Platform, Store} from '../types';
+import type {PlatformGroup, Store} from '../types';
 import type {Action} from './Actions';
 
 import invariant from 'assert';
@@ -41,8 +41,8 @@ function setRuleType(ruleType: ?string): Action {
   return {type: Actions.SET_RULE_TYPE, ruleType};
 }
 
-function setPlatforms(platforms: Array<Platform>): Action {
-  return {type: Actions.SET_PLATFORMS, platforms};
+function setPlatformGroups(platformGroups: Array<PlatformGroup>): Action {
+  return {type: Actions.SET_PLATFORM_GROUPS, platformGroups};
 }
 
 export function setBuildTargetEpic(
@@ -77,10 +77,10 @@ export function setRuleTypeEpic(
     invariant(action.type === Actions.SET_RULE_TYPE);
     const {ruleType} = action;
     if (ruleType) {
-      return store.getState().platformService.getPlatforms(ruleType)
-        .map(platforms => setPlatforms(platforms));
+      return store.getState().platformService.getPlatformGroups(ruleType)
+        .map(platformGroups => setPlatformGroups(platformGroups));
     } else {
-      return Observable.of(setPlatforms([]));
+      return Observable.of(setPlatformGroups([]));
     }
   });
 }

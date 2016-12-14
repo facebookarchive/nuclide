@@ -8,9 +8,17 @@
  * @flow
  */
 
-import type {AppState, Device, Platform, TaskType, TaskSettings} from './types';
+import type {
+  AppState,
+  DeploymentTarget,
+  Platform,
+  PlatformGroup,
+  TaskType,
+  TaskSettings,
+} from './types';
 
 import {React} from 'react-for-atom';
+import shallowequal from 'shallowequal';
 
 import BuckToolbarSettings from './ui/BuckToolbarSettings';
 import BuckToolbarTargetSelector from './ui/BuckToolbarTargetSelector';
@@ -25,12 +33,17 @@ type Props = {
   activeTaskType: ?TaskType,
   appState: AppState,
   setBuildTarget(buildTarget: string): void,
-  setDevice(device: Device): void,
+  setDeploymentTarget(deploymentTarget: DeploymentTarget): void,
   setTaskSettings(taskType: TaskType, settings: TaskSettings): void,
 };
 
 type State = {
   settingsVisible: boolean,
+};
+
+type DropdownGroup = {
+  header: Option,
+  selectableOptions: Array<Option>,
 };
 
 export default class BuckToolbar extends React.Component {
@@ -39,7 +52,7 @@ export default class BuckToolbar extends React.Component {
 
   constructor(props: Props) {
     super(props);
-    (this: any)._handleDeviceChange = this._handleDeviceChange.bind(this);
+    (this: any)._handleDeploymentTargetChange = this._handleDeploymentTargetChange.bind(this);
     this.state = {settingsVisible: false};
   }
 
@@ -50,9 +63,9 @@ export default class BuckToolbar extends React.Component {
       buckRoot,
       isLoadingRule,
       isLoadingPlatforms,
-      platforms,
+      platformGroups,
       projectRoot,
-      selectedDevice,
+      selectedDeploymentTarget,
       taskSettings,
     } = this.props.appState;
 
@@ -95,18 +108,19 @@ export default class BuckToolbar extends React.Component {
           {status}
         </div>,
       );
-    } else if (platforms.length) {
-      const options = this._optionsFromPlatforms(platforms);
+    } else if (platformGroups.length) {
+      const options = this._optionsFromPlatformGroups(platformGroups);
 
       widgets.push(
         <Dropdown
           key="simulator-dropdown"
           className="inline-block"
-          value={selectedDevice}
+          value={selectedDeploymentTarget}
           options={options}
-          onChange={this._handleDeviceChange}
+          onChange={this._handleDeploymentTargetChange}
           size="sm"
           title="Choose a device"
+          selectionComparator={shallowequal}
         />,
       );
     }
@@ -138,8 +152,8 @@ export default class BuckToolbar extends React.Component {
     );
   }
 
-  _handleDeviceChange(device: Device) {
-    this.props.setDevice(device);
+  _handleDeploymentTargetChange(deploymentTarget: DeploymentTarget) {
+    this.props.setDeploymentTarget(deploymentTarget);
   }
 
   _showSettings() {
@@ -155,23 +169,64 @@ export default class BuckToolbar extends React.Component {
     this._hideSettings();
   }
 
-  _optionsFromPlatforms(platforms: Array<Platform>): Array<Option> {
-    return platforms.reduce((options, platform) => {
-      const platform_header = {
-        label: platform.name,
-        value: platform.name,
-        disabled: true,
-      };
-      const device_options = platform.devices.map(device => {
-        return {
-          label: `  ${device.name}`,
-          value: device,
-        };
-      });
+  _optionsFromPlatformGroups(platformGroups: Array<PlatformGroup>): Array<Option> {
+    return platformGroups.reduce((options, platformGroup) => {
+      let dropdownGroup = null;
+      if (platformGroup.platforms.length === 1) {
+        dropdownGroup = this._turnDevicesIntoSelectableOptions(platformGroup.platforms[0]);
+      } else {
+        dropdownGroup = this._putDevicesIntoSubmenus(platformGroup);
+      }
 
-      options.push(platform_header);
-      return options.concat(device_options);
+      options.push(dropdownGroup.header);
+      return options.concat(dropdownGroup.selectableOptions);
     }, []);
   }
 
+  _turnDevicesIntoSelectableOptions(platform: Platform): DropdownGroup {
+    const header = {
+      label: platform.name,
+      value: platform.name,
+      disabled: true,
+    };
+
+    const selectableOptions = platform.devices.map(device => {
+      return {
+        label: `  ${device.name}`,
+        selectedLabel: device.name,
+        value: {platform, device},
+      };
+    });
+    return {header, selectableOptions};
+  }
+
+  _putDevicesIntoSubmenus(platformGroup: PlatformGroup): DropdownGroup {
+    const header = {
+      label: platformGroup.name,
+      value: platformGroup.name,
+      disabled: true,
+    };
+
+    const selectableOptions = platformGroup.platforms.map(platform => {
+      if (platform.devices.length) {
+        return {
+          type: 'submenu',
+          label: `  ${platform.name}`,
+          submenu: platform.devices.map(device => ({
+            label: device.name,
+            selectedLabel: `${device.name}`,
+            value: {platform, device},
+          })),
+        };
+      } else {
+        return {
+          label: `  ${platform.name}`,
+          selectedLabel: platform.name,
+          value: {platform, device: null},
+        };
+      }
+    });
+
+    return {header, selectableOptions};
+  }
 }

@@ -8,12 +8,12 @@
  * @flow
  */
 
-import type {Platform} from './types';
+import type {PlatformGroup} from './types';
 
 import {Disposable} from 'atom';
 import {Observable, Subject} from 'rxjs';
 
-type PlatformProvider = (ruleType: string) => Observable<?Platform>;
+type PlatformProvider = (ruleType: string) => Observable<?PlatformGroup>;
 
 export class PlatformService {
   _registeredProviders: Array<PlatformProvider> = [];
@@ -29,7 +29,7 @@ export class PlatformService {
     });
   }
 
-  getPlatforms(ruleType: string): Observable<Array<Platform>> {
+  getPlatformGroups(ruleType: string): Observable<Array<PlatformGroup>> {
     return this._providersChanged
       .startWith(undefined)
       .switchMap(() => {
@@ -37,8 +37,8 @@ export class PlatformService {
         return Observable.from(observables)
           // $FlowFixMe: type combineAll
           .combineAll()
-          .map(platforms => {
-            return platforms
+          .map(platformGroups => {
+            return platformGroups
               .filter(p => p != null)
               .sort((a, b) => a.name.toUpperCase().localeCompare(b.name.toUpperCase()));
           });

@@ -23,7 +23,7 @@ export type TaskSettings = {
 };
 
 export type AppState = {
-  platforms: Array<Platform>,
+  platformGroups: Array<PlatformGroup>,
   platformService: PlatformService,
   projectRoot: ?string,
   buckRoot: ?string,
@@ -32,7 +32,7 @@ export type AppState = {
   isLoadingPlatforms: boolean,
   buildTarget: string,
   buildRuleType: ?string,
-  selectedDevice: ?Device,
+  selectedDeploymentTarget: ?DeploymentTarget,
   taskSettings: {[key: TaskType]: TaskSettings},
 };
 
@@ -44,7 +44,7 @@ export type Store = {
 export type SerializedState = {
   buildTarget: ?string,
   taskSettings?: {[key: TaskType]: TaskSettings},
-  selectedDevice: ?Device,
+  selectedDeploymentTarget: ?DeploymentTarget,
 };
 
 export type BuildArtifactTask = Task & {
@@ -60,13 +60,23 @@ export type BuckBuilderBuildOptions = {
   target: string,
 };
 
+export type PlatformGroup = {
+  name: string,
+  platforms: Array<Platform>,
+};
+
 export type Platform = {
   name: string,
+  flavor: string,
   devices: Array<Device>,
 };
 
 export type Device = {
   name: string,
-  udid?: string,
-  flavor: string,
+  udid: string,
+};
+
+export type DeploymentTarget = {
+  platform: Platform,
+  device: ?Device,
 };

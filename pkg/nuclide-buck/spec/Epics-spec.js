@@ -19,7 +19,7 @@ import {
 } from '../lib/redux/Epics';
 
 const mockPlatformService = {
-  getPlatforms(ruleType): ?any {
+  getPlatformGroups(ruleType): ?any {
     return null;
   },
 };
@@ -112,14 +112,14 @@ describe('setRuleTypeEpic', () => {
       ).toArray().toPromise();
 
       expect(stream).toEqual([
-        {type: Actions.SET_PLATFORMS, platforms: []},
+        {type: Actions.SET_PLATFORM_GROUPS, platformGroups: []},
       ]);
     });
   });
 
-  it('sets platform to platforms returned from platform service', () => {
+  it('sets platform groups to groups returned from platform service', () => {
     waitsForPromise(async () => {
-      spyOn(mockPlatformService, 'getPlatforms').andReturn(
+      spyOn(mockPlatformService, 'getPlatformGroups').andReturn(
         Observable.of('random platforms'),
       );
 
@@ -130,7 +130,7 @@ describe('setRuleTypeEpic', () => {
       ).toArray().toPromise();
 
       expect(stream).toEqual([
-        {type: Actions.SET_PLATFORMS, platforms: 'random platforms'},
+        {type: Actions.SET_PLATFORM_GROUPS, platformGroups: 'random platforms'},
       ]);
     });
   });

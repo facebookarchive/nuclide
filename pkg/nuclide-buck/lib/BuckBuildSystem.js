@@ -166,8 +166,8 @@ export class BuckBuildSystem {
       const boundActions = {
         setBuildTarget: buildTarget =>
           store.dispatch(Actions.setBuildTarget(buildTarget)),
-        setDevice: device =>
-          store.dispatch(Actions.setDevice(device)),
+        setDeploymentTarget: deploymentTarget =>
+          store.dispatch(Actions.setDeploymentTarget(deploymentTarget)),
         setTaskSettings: (taskType, settings) =>
           store.dispatch(Actions.setTaskSettings(taskType, settings)),
       };
@@ -209,7 +209,7 @@ export class BuckBuildSystem {
     if (this._store == null) {
       invariant(this._serializedState != null);
       const initialState: AppState = {
-        platforms: [],
+        platformGroups: [],
         platformService: this._platformService,
         projectRoot: null,
         buckRoot: null,
@@ -218,7 +218,7 @@ export class BuckBuildSystem {
         isLoadingPlatforms: false,
         buildTarget: this._serializedState.buildTarget || '',
         buildRuleType: null,
-        selectedDevice: this._serializedState.selectedDevice,
+        selectedDeploymentTarget: this._serializedState.selectedDeploymentTarget,
         taskSettings: this._serializedState.taskSettings || {},
       };
       const epics = Object.keys(Epics)
@@ -249,13 +249,15 @@ export class BuckBuildSystem {
     );
 
     const state = this._getStore().getState();
-    const {selectedDevice} = state;
+    const {selectedDeploymentTarget} = state;
     let fullTargetName = state.buildTarget;
     let udid = null;
-    if (selectedDevice) {
-      udid = selectedDevice.udid;
+    if (selectedDeploymentTarget) {
       const separator = !fullTargetName.includes('#') ? '#' : ',';
-      fullTargetName += separator + selectedDevice.flavor;
+      fullTargetName += separator + selectedDeploymentTarget.platform.flavor;
+      if (selectedDeploymentTarget.device) {
+        udid = selectedDeploymentTarget.device.udid;
+      }
     }
     const resultStream = this._runTaskType(
       taskType,
@@ -342,8 +344,8 @@ export class BuckBuildSystem {
     if (this._store == null) {
       return;
     }
-    const {buildTarget, taskSettings, selectedDevice} = this._store.getState();
-    return {buildTarget, taskSettings, selectedDevice};
+    const {buildTarget, taskSettings, selectedDeploymentTarget} = this._store.getState();
+    return {buildTarget, taskSettings, selectedDeploymentTarget};
   }
 
   _runTaskType(
