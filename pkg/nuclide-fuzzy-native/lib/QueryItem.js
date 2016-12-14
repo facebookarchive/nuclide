@@ -143,9 +143,9 @@ export default class QueryItem {
   }
 
   _getScoreFor(query: string): ?number {
-    // Purely defensive, as query is guaranteed to be non-empty.
+    // Everything's an equally decent match for the empty string.
     if (query.length === 0) {
-      return null;
+      return 0;
     }
     // Check if this a "possible result".
     // TODO consider building a directory-level index from important_character -> QueryItem,

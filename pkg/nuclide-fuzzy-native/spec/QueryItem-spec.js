@@ -15,8 +15,12 @@ describe('QueryItem', () => {
   describe('"Hello"', () => {
     const item = new QueryItem('Hello');
 
-    it('should return null for empty queries', () => {
-      expect(item.score('')).toBe(null);
+    it('should return 0 for empty queries', () => {
+      expect(item.score('')).toEqual({
+        score: 0,
+        value: 'Hello',
+        matchIndexes: [],
+      });
     });
 
     it('should return null on no match', () => {
