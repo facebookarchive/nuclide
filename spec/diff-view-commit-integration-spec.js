@@ -51,8 +51,8 @@ describe('Diff View Commit Integration Test', () => {
   it('tests commit view have the changed files & commit/amend works', () => {
     atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-diff-view:open');
 
-    let revisionsTimelineElement: HTMLElement = (null: any);
-    let treeElement: HTMLElement = (null: any);
+    let revisionsTimelineElement: ?HTMLElement = (null: any);
+    let treeElement: ?HTMLElement = (null: any);
     waitsFor('revision timeline to load', 10000, () => {
       treeElement = document.querySelector('.nuclide-diff-view-tree');
       revisionsTimelineElement = document.querySelector('.nuclide-diff-timeline');
@@ -87,6 +87,7 @@ describe('Diff View Commit Integration Test', () => {
       invariant(revisionsTimelineElement != null);
       const uncommittedNode = revisionsTimelineElement
         .querySelector('.revision-label .revision-title');
+      invariant(uncommittedNode != null);
       return uncommittedNode.textContent;
     }
 
@@ -108,6 +109,7 @@ describe('Diff View Commit Integration Test', () => {
     let diffFiles = [];
 
     waitsFor('repo diff status to update', 20000, () => {
+      invariant(treeElement != null);
       diffFiles = treeElement.querySelectorAll('.nuclide-file-changes-file-entry');
       return diffFiles.length > 0;
     });

@@ -146,7 +146,6 @@ export class NativeDebuggerService extends DebuggerRpcWebSocketService {
 
   _registerIpcChannel(lldbProcess: child_process$ChildProcess): void {
     const IPC_CHANNEL_FD = 4;
-    /* $FlowFixMe - update Flow defs for ChildProcess */
     const ipcStream = lldbProcess.stdio[IPC_CHANNEL_FD];
     this.getSubscriptions().add(
       splitStream(observeStream(ipcStream)).subscribe(
@@ -198,7 +197,6 @@ export class NativeDebuggerService extends DebuggerRpcWebSocketService {
     args: LaunchAttachArgsType,
   ): void {
     const ARGUMENT_INPUT_FD = 3;
-    /* $FlowFixMe - update Flow defs for ChildProcess */
     const argumentsStream = child.stdio[ARGUMENT_INPUT_FD];
     // Make sure the bidirectional communication channel is set up before
     // sending data.

@@ -149,6 +149,7 @@ export default class DiffViewNavigatorComponent extends React.Component {
   }
 
   _getPaneElement(pane: atom$Pane): HTMLElement {
+    // $FlowFixMe querySelector returns ?HTMLElement
     return atom.views.getView(pane).querySelector('.item-views');
   }
 

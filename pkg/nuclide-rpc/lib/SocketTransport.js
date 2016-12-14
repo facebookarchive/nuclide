@@ -24,7 +24,6 @@ export class SocketTransport extends StreamTransport {
     socket: Socket,
     messageLogger: MessageLogger = (direction, message) => { return; },
   ) {
-    // $FlowIssue: Sockets are a stream$Duplex, but flow doesn't handle this.
     super(socket, socket, messageLogger);
     this._socket = socket;
     this._emitter = new Emitter();

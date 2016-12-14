@@ -151,14 +151,17 @@ export class MultiRootChangedFilesView extends React.Component {
     const target = ((event.target: any): HTMLElement);
     const filePath = target.getAttribute('data-path');
     const rootPath = target.getAttribute('data-root');
+    // $FlowFixMe
     const fileChangesForRoot = this.props.fileChanges.get(rootPath);
     invariant(fileChangesForRoot, 'Invalid rootpath');
+    // $FlowFixMe
     const statusCode = fileChangesForRoot.get(filePath);
     return statusCode;
   }
 
   _getFilePathFromEvent(event: Event): NuclideUri {
     const eventTarget: HTMLElement = (event.currentTarget: any);
+    // $FlowFixMe
     return eventTarget.getAttribute('data-path');
   }
 
