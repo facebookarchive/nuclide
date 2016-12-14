@@ -44,7 +44,7 @@ function provideIosDevices(ruleType: string, buckRoot: string): Observable<?Plat
         name: 'iOS Simulators',
         flavor: 'iphonesimulator-x86_64',
         devices: devices.map(device => ({
-          name: device.name,
+          name: `${device.name} (${device.os})`,
           udid: device.udid,
         })),
       }],
