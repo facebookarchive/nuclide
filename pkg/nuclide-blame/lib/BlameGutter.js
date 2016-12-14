@@ -20,11 +20,18 @@ import {CompositeDisposable} from 'atom';
 import {shell} from 'electron';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {shortNameForAuthor} from '../../nuclide-vcs-log';
-import Avatar from '../../nuclide-ui/fb-Avatar';
 import {React, ReactDOM} from 'react-for-atom';
 import classnames from 'classnames';
 
 const BLAME_DECORATION_CLASS = 'blame-decoration';
+
+let Avatar;
+try {
+  // $FlowFB
+  Avatar = require('../../nuclide-ui/fb-Avatar').default;
+} catch (err) {
+  Avatar = null;
+}
 
 function escapeHTML(str: string): string {
   return str
@@ -311,10 +318,12 @@ class GutterElement extends React.Component {
               className="nuclide-blame-vertical-bar nuclide-blame-vertical-bar-first"
             /> : null
           }
-          <Avatar
-            size={16}
-            unixname={unixname}
-          />
+          {Avatar ?
+            <Avatar
+              size={16}
+              unixname={unixname}
+            /> : unixname + ': '
+          }
           <span>{revision.title}</span>
           <div style={{opacity}} className="nuclide-blame-border-age" />
         </div>
