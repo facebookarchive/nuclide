@@ -867,6 +867,13 @@ export class HgService {
   }
 
   /**
+   * Removes files not tracked by Mercurial.
+   */
+  purge(): Promise<void> {
+    return this._runSimpleInWorkingDirectory('purge', []);
+  }
+
+  /**
    * @param revision This could be a changeset ID, name of a bookmark, revision number, etc.
    */
   strip(revision: string): Promise<void> {

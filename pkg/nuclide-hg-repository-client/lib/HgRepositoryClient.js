@@ -680,6 +680,10 @@ export class HgRepositoryClient {
     return this._service.checkout(reference, create, options);
   }
 
+  purge(): Promise<void> {
+    return this._service.purge();
+  }
+
   stripReference(reference: string): Promise<void> {
     return this._service.strip(reference);
   }
