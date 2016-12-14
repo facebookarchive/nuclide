@@ -23,6 +23,7 @@ import {
   objectFromMap,
   concatIterators,
   areSetsEqual,
+  someOfIterable,
 } from '../collection';
 
 describe('arrayRemove', () => {
@@ -323,5 +324,26 @@ describe('areSetsEqual', () => {
   it('returns false when an item exists in one set but not the other', () => {
     expect(areSetsEqual(new Set(['foo']), new Set())).toBe(false);
     expect(areSetsEqual(new Set(), new Set(['foo']))).toBe(false);
+  });
+});
+
+describe('someOfIterable', () => {
+  it('lazily returns whether any element of an iterable fulfills a given predicate', () => {
+    expect(someOfIterable(
+      new Set([1, 2, 3, 4, 5]),
+      element => element % 2 === 0,
+    )).toEqual(true);
+    expect(someOfIterable(
+      new Set([1, 2, 3, 4, 5]),
+      element => element % 5 === 0,
+    )).toEqual(true);
+    expect(someOfIterable(
+      new Set([1, 2, 3, 4, 5]),
+      element => element % 6 === 0,
+    )).toEqual(false);
+    expect(someOfIterable(
+      [],
+      element => true,
+    )).toEqual(false);
   });
 });
