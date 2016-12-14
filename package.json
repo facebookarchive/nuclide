@@ -109,7 +109,7 @@
     "babel-plugin-transform-strict-mode": "6.18.0",
     "babel-types": "6.20.0",
     "eslint": "3.12.0",
-    "eslint-plugin-dependencies": "2.0.0",
+    "eslint-plugin-dependencies": "2.2.0",
     "eslint-plugin-flowtype": "2.29.1",
     "eslint-plugin-jasmine": "2.2.0",
     "eslint-plugin-nuclide-internal": "file:resources/eslint-plugin-nuclide-internal",

@@ -756,9 +756,9 @@
       "dev": true
     },
     "eslint-plugin-dependencies": {
-      "version": "2.0.0",
-      "from": "eslint-plugin-dependencies@2.0.0",
-      "resolved": "https://registry.npmjs.org/eslint-plugin-dependencies/-/eslint-plugin-dependencies-2.0.0.tgz",
+      "version": "2.2.0",
+      "from": "eslint-plugin-dependencies@2.2.0",
+      "resolved": "https://registry.npmjs.org/eslint-plugin-dependencies/-/eslint-plugin-dependencies-2.2.0.tgz",
       "dev": true
     },
     "eslint-plugin-flowtype": {
