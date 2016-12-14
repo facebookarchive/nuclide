@@ -637,6 +637,12 @@ export function commit(
       optionalPublishAction = Observable.empty();
     }
 
+    const resetCommitAction = Actions.updateCommitState({
+      message,
+      mode,
+      state: CommitModeState.READY,
+    });
+
     return Observable.concat(
       Observable.of(Actions.updateCommitState({
         message,
@@ -668,11 +674,27 @@ export function commit(
         }
       }))
       .do(pipeProcessMessagesToConsole.bind(null, mode, publishUpdates))
-      .ignoreElements(),
-      Observable.of(
-        Actions.setViewMode(DiffMode.BROWSE_MODE),
-        Actions.updateCommitState(getEmptyCommitState()),
-      ),
+      .switchMap(processMessage => {
+        if (processMessage.kind !== 'exit') {
+          return Observable.empty();
+        } else if (processMessage.exitCode !== 0) {
+          optionalPublishAction = Observable.empty();
+          return Observable.of(resetCommitAction);
+        } else {
+          return Observable.of(
+            Actions.setViewMode(DiffMode.BROWSE_MODE),
+            Actions.updateCommitState(getEmptyCommitState()),
+          );
+        }
+      })
+      .catch(error => {
+        atom.notifications.addError('Couldn\'t commit code', {
+          detail: error,
+        });
+        optionalPublishAction = Observable.empty();
+        return Observable.of(resetCommitAction);
+      }),
+
       optionalPublishAction,
     );
   });

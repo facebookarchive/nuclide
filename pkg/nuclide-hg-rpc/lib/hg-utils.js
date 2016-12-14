@@ -135,7 +135,11 @@ export async function createCommmitMessageTempFile(commitMessage: string): Promi
 export async function getEditMergeConfigs(): Promise<{args: Array<string>, hgEditor: string}> {
   const connectionDetails = await getConnectionDetails();
   if (connectionDetails == null) {
-    throw new Error('CommandServer not initialized!');
+    getLogger().error('CommandServer not initialized!');
+    return {
+      args: [],
+      hgEditor: '',
+    };
   }
   // Atom RPC needs to agree with the Atom process / nuclide server on the address and port.
   const hgEditor = getAtomRpcScriptPath()
