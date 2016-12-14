@@ -63,6 +63,10 @@ type Props = {
   onChange?: (value: any) => mixed,
   size?: ShortButtonSize,
   tooltip?: atom$TooltipsAddOptions,
+
+  // Function used to determine whether an option is selected, useful if its
+  // value doesn't match the pointer to `value`. === is used by default.
+  selectionComparator?: (dropdownValue: any, optionValue: any) => boolean,
 };
 
 export class Dropdown extends React.Component {
@@ -147,7 +151,7 @@ export class Dropdown extends React.Component {
       } else {
         menu.append(new remote.MenuItem({
           type: 'checkbox',
-          checked: this.props.value === option.value,
+          checked: this._optionIsSelected(this.props.value, option.value),
           label: option.label,
           enabled: option.disabled !== true,
           click: () => {
@@ -161,6 +165,12 @@ export class Dropdown extends React.Component {
     return menu;
   }
 
+  _optionIsSelected(dropdownValue: any, optionValue: any): boolean {
+    return this.props.selectionComparator
+      ? this.props.selectionComparator(dropdownValue, optionValue)
+      : dropdownValue === optionValue;
+  }
+
   _findSelectedOption(options: Array<Option>): ?Option {
     let result = null;
     for (const option of options) {
@@ -169,7 +179,7 @@ export class Dropdown extends React.Component {
       } else if (option.type === 'submenu') {
         const submenu = (((option.submenu): any): Array<Option>);
         result = this._findSelectedOption(submenu);
-      } else if (option.value === this.props.value) {
+      } else if (this._optionIsSelected(this.props.value, option.value)) {
         result = option;
       }
 
