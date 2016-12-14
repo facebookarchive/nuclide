@@ -1,5 +1,9 @@
 # Nuclide Changelog
 
+## v0.191.0
+
+Hotfix Diff View gutter highlighting for Atom <= 1.12.x.
+
 ## v0.190.0
 
 Hotfix for internal changes.
