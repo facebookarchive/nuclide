@@ -458,6 +458,7 @@ export class ConnectionMultiplexer {
       type: 'error',
       message: error,
     });
+    logger.logError(`PHP debugger attach error: ${error}`);
     this._emitStatus(ConnectionMultiplexerStatus.End);
   }
 
