@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -12,167 +11,161 @@
 
 /* eslint comma-dangle: [1, always-multiline], prefer-object-spread/prefer-object-spread: 0 */
 
-/* eslint-disable no-console */
-
-console.log(__filename);
-
-const assert = require('assert');
 const babel = require('babel-core');
-const babylon = require('babylon');
-const babelTransformSyntaxFlow = require('babel-plugin-syntax-flow');
+const dedent = require('dedent');
 
-const transformer = require('../lib/inline-invariant-tr');
-
-assertTransformation(`
-  import invariant from '';
-  invariant(false)
-`, `
-  if (!false) {
-    throw new Error('Invariant violation: "false"');
-  }
-`);
-
-assertTransformation(`
-  import invariant from '';
-  invariant(false != true)
-`, `
-  if (!(false != true)) {
-    throw new Error('Invariant violation: "false != true"');
-  }
-`);
-
-assertTransformation(`
-  import invariant from '';
-  invariant(foo() ? !!bar : baz.qux())
-`, `
-  if (!(foo() ? !!bar : baz.qux())) {
-    throw new Error('Invariant violation: "foo() ? !!bar : baz.qux()"');
-  }
-`);
-
-assertTransformation(`
-  import invariant from '';
-  invariant(true, 'it is true');
-`, `
-  if (!true) {
-    throw new Error('it is true');
-  }
-`);
-
-assertTransformation(`
-  import {invariant} from '';
-  invariant(true, 'it is true');
-`, `
-  if (!true) {
-    throw new Error('it is true');
-  }
-`);
-
-assertTransformation(`
-  import invariant from '';
-  invariant(true, 'it is true');
-  invariant.ok();
-`, `
-  import invariant from '';
-  if (!true) {
-    throw new Error('it is true');
-  }
-  invariant.ok();
-`);
-
-assertTransformation(`
-  export {invariant} from ''
-`, `
-  export {invariant} from '';
-`);
-
-assertTransformation(`
-  import {default as invariant} from ''
-  invariant(true);
-`, `
-  if (!true) {
-    throw new Error('Invariant violation: "true"');
-  }
-`);
-
-assertTransformation(`
-  invariant
-`, `
-  invariant
-`);
-
-assertTransformation(`
-  var invariant = require('invariant');
-`, `
-  var invariant = require('invariant');
-`);
-
-assertTransformation(`
-  var invariant = require('invariant');
-  invariant(true)
-`, `
-  var invariant = require('invariant');
-  invariant(true)
-`);
-
-assertTransformation(`
-  import invariant from 'invariant';
-  foo;
-`, `
-  foo;
-`);
-
-assert.throws(() => {
-  assertTransformation(`
-    import invariant from 'invariant';
-    if (invariant(true)) {}
-  `);
-}, /SyntaxError: unknown: `invariant\(\)` must be used as an expression statement\./);
-
-assert.throws(() => {
-  assertTransformation(`
-    import invariant from 'invariant';
-    invariant()
-  `);
-}, /SyntaxError: unknown: `invariant\(\)` must at least one argument\./);
-
-function stripMeta(node) {
-  delete node.start;
-  delete node.end;
-  delete node.leadingComments;
-  delete node.trailingComments;
-  delete node.loc;
-  delete node.tokens;
-  delete node.parenStart;
-  for (const p in node) {
-    if (node[p] && typeof node[p] === 'object') {
-      stripMeta(node[p]);
-    }
-  }
-  return node;
-}
-
-function parse(source) {
-  return babylon.parse(source, {
-    sourceType: 'module',
-    plugins: ['*', 'jsx', 'flow'],
-  });
-}
-
-function assertTransformation(source, expected, plugins) {
-  const output = babel.transform(source, {
-    plugins: (plugins || []).concat([
-      babelTransformSyntaxFlow,
-      transformer,
-    ]),
+function transform(source) {
+  return babel.transform(source, {
+    plugins: [
+      require('babel-plugin-syntax-flow'),
+      require('../lib/inline-invariant-tr'),
+    ],
   }).code;
-  try {
-    assert.deepEqual(
-      stripMeta(parse(output, {sourceType: 'module'})),
-      stripMeta(parse(expected, {sourceType: 'module'}))
-    );
-  } catch (err) {
-    console.log(output);
-    throw err;
-  }
 }
+
+describe('inline-invariant transform', () => {
+  it('works 1', () => {
+    expect(transform(dedent`
+      import invariant from '';
+      invariant(false);
+    `)).toEqual(dedent`
+      if (!false) {
+        throw new Error('Invariant violation: "false"');
+      }
+    `);
+  });
+
+  it('works 2', () => {
+    expect(transform(dedent`
+      import invariant from '';
+      invariant(false != true);
+    `)).toEqual(dedent`
+      if (!(false != true)) {
+        throw new Error('Invariant violation: "false != true"');
+      }
+    `);
+  });
+
+  it('works 3', () => {
+    expect(transform(dedent`
+      import invariant from '';
+      invariant(foo() ? !!bar : baz.qux());
+    `)).toEqual(dedent`
+      if (!(foo() ? !!bar : baz.qux())) {
+        throw new Error('Invariant violation: "foo() ? !!bar : baz.qux()"');
+      }
+    `);
+  });
+
+  it('works 4', () => {
+    expect(transform(dedent`
+      import invariant from '';
+      invariant(true, 'it is true');
+    `)).toEqual(dedent`
+      if (!true) {
+        throw new Error('it is true');
+      }
+    `);
+  });
+
+  it('works 5', () => {
+    expect(transform(dedent`
+      import {invariant} from '';
+      invariant(true, 'it is true');
+    `)).toEqual(dedent`
+      if (!true) {
+        throw new Error('it is true');
+      }
+    `);
+  });
+
+  it('works 6', () => {
+    expect(transform(dedent`
+      import invariant from '';
+      invariant(true, 'it is true');
+      invariant.ok();
+    `)).toEqual(dedent`
+      import invariant from '';
+
+      if (!true) {
+        throw new Error('it is true');
+      }
+
+      invariant.ok();
+    `);
+  });
+
+  it('works 7', () => {
+    expect(transform(dedent`
+      export { invariant } from ''
+    `)).toEqual(dedent`
+      export { invariant } from '';
+    `);
+  });
+
+  it('works 8', () => {
+    expect(transform(dedent`
+      import {default as invariant} from ''
+      invariant(true);
+    `)).toEqual(dedent`
+      if (!true) {
+        throw new Error('Invariant violation: "true"');
+      }
+    `);
+  });
+
+  it('works 9', () => {
+    expect(transform(dedent`
+      invariant;
+    `)).toEqual(dedent`
+      invariant;
+    `);
+  });
+
+  it('works 10', () => {
+    expect(transform(dedent`
+      var invariant = require('invariant');
+    `)).toEqual(dedent`
+      var invariant = require('invariant');
+    `);
+  });
+
+  it('works 11', () => {
+    expect(transform(dedent`
+      var invariant = require('invariant');
+      invariant(true);
+    `)).toEqual(dedent`
+      var invariant = require('invariant');
+      invariant(true);
+    `);
+  });
+
+  it('works 12', () => {
+    expect(transform(dedent`
+      import invariant from 'invariant';
+      foo;
+    `)).toEqual('\nfoo;');
+  });
+
+  it('works 13', () => {
+    expect(() => {
+      transform(dedent`
+        import invariant from 'invariant';
+        if (invariant(true)) {}
+      `);
+    }).toThrow(
+      new SyntaxError('unknown: `invariant()` must be used as an expression statement.')
+    );
+  });
+
+  it('works 14', () => {
+    expect(() => {
+      transform(dedent`
+        import invariant from 'invariant';
+        invariant();
+      `);
+    }).toThrow(
+      new SyntaxError('unknown: `invariant()` must at least one argument.')
+    );
+  });
+});

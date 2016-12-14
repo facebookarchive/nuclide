@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -12,39 +11,18 @@
 
 /* eslint comma-dangle: [1, always-multiline], prefer-object-spread/prefer-object-spread: 0 */
 
-/* eslint-disable no-console */
+const child_process = require('child_process');
 
-console.log(__filename);
-
-const assert = require('assert');
-
-require('..');
-
-//---
-
-assert.doesNotThrow(() => {
-  require('./fixtures/modern-syntax');
+describe('require-hook', () => {
+  it('works', () => {
+    // This test runs in a new process because it monkey-patches `require` and
+    // we don't want to pollute the test environment.
+    const ret = child_process.spawnSync(process.execPath, [
+      require.resolve('./fixtures/require-hook-test'),
+    ]);
+    expect(ret.status).toBe(0);
+    expect(String(ret.stdout).trim()).toBe('OK');
+    expect(String(ret.stderr).trim()).toBe('');
+  });
 });
 
-const ModernSyntax = require('./fixtures/modern-syntax');
-assert.equal(typeof ModernSyntax.Foo, 'function');
-assert.equal(ModernSyntax.Foo.bar, 'qux');
-
-//---
-
-const VanillaSyntax = require('./fixtures/vanilla-syntax');
-assert.equal(typeof VanillaSyntax.Foo, 'function');
-assert.equal(typeof VanillaSyntax.Foo.bar, 'function');
-assert.equal(VanillaSyntax.Foo.bar(), 'qux');
-
-// This may not always be true forever. If the v8 output changes, then remove
-// this test.
-assert.equal(
-  VanillaSyntax.Foo.toString(),
-  "class Foo {\n  static bar() {\n    return 'qux';\n  }\n}"
-);
-// The transpiled version of "Foo" would've looked like this:
-assert.notEqual(
-  VanillaSyntax.Foo.toString(),
-  'function Foo() {\n    _classCallCheck(this, Foo);\n  }'
-);

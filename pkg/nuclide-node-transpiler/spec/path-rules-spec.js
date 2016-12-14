@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -11,45 +10,44 @@
 'use strict';
 
 /* eslint comma-dangle: [1, always-multiline], prefer-object-spread/prefer-object-spread: 0 */
-/* eslint-disable no-console */
 
-console.log(__filename);
-
-const assert = require('assert');
 const path = require('path');
 const glob = require('glob');
 
 const pathRules = require('../lib/path-rules');
 
-//---
+describe('path-rules', () => {
+  describe('pathRules.getIncludedFiles', () => {
+    it('works', () => {
+      const includedFiles = pathRules.getIncludedFiles();
 
-const includedFiles = pathRules.getIncludedFiles();
+      expect(includedFiles.includes(__filename)).toBe(true);
 
-assert.ok(includedFiles.includes(__filename));
+      // If this file ever moves, just pick anything else that's in a VendorLib dir.
+      const pathToVendorLibFile =
+        require.resolve('../../nuclide-fuzzy-native/VendorLib/fuzzy-native/lib/main.js');
+      expect(!includedFiles.includes(pathToVendorLibFile)).toBe(true);
 
-// If this file ever moves, just pick anything else that's in a VendorLib dir.
-const pathToVendorLibFile =
-  require.resolve('../../nuclide-fuzzy-native/VendorLib/fuzzy-native/lib/main.js');
-assert.ok(!includedFiles.includes(pathToVendorLibFile));
+      const pathToNuclideFile =
+        require.resolve('../../nuclide-fuzzy-native/lib/main.js');
+      expect(includedFiles.includes(pathToNuclideFile)).toBe(true);
+    });
+  });
 
-const pathToNuclideFile =
-  require.resolve('../../nuclide-fuzzy-native/lib/main.js');
-assert.ok(includedFiles.includes(pathToNuclideFile));
+  describe('pathRules.isIncluded', () => {
+    it('matches what getIncludedFiles finds', () => {
+      const expectedFiles = pathRules.getIncludedFiles().sort();
+      const allFiles = glob.sync(path.join(__dirname, '../../../**/*.js')).sort();
 
-//---
+      expect(expectedFiles).not.toEqual(allFiles);
 
-// This test verifies that `getIncludedFiles` and `isIncluded` ignore the same
-// things.
+      for (let i = allFiles.length - 1; i >= 0; i--) {
+        if (!pathRules.isIncluded(allFiles[i])) {
+          allFiles.splice(i, 1);
+        }
+      }
 
-const expectedFiles = pathRules.getIncludedFiles().sort();
-const allFiles = glob.sync(path.join(__dirname, '../../../**/*.js')).sort();
-
-assert.notDeepEqual(expectedFiles, allFiles);
-
-for (let i = allFiles.length - 1; i >= 0; i--) {
-  if (!pathRules.isIncluded(allFiles[i])) {
-    allFiles.splice(i, 1);
-  }
-}
-
-assert.deepEqual(expectedFiles, allFiles);
+      expect(expectedFiles).toEqual(allFiles);
+    });
+  });
+});

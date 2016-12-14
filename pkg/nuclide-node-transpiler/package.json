@@ -9,6 +9,6 @@
     "testRunner": "npm"
   },
   "scripts": {
-    "test": "find spec -name '*-spec.js' -print0 | xargs -n 1 -0 node"
+    "test": "../../node_modules/.bin/jasmine-node spec"
   }
 }

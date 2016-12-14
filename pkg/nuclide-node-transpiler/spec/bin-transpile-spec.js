@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -12,35 +11,32 @@
 
 /* eslint comma-dangle: [1, always-multiline], prefer-object-spread/prefer-object-spread: 0 */
 
-/* eslint-disable no-console */
-
-console.log(__filename);
-
-const assert = require('assert');
 const child_process = require('child_process');
 const vm = require('vm');
 
-const ps = child_process.spawn(
-  require.resolve('../bin/transpile.js'),
-  [require.resolve('./fixtures/modern-syntax')]
-);
+describe('bin-transpile', () => {
+  it('transpiles one file', () => {
+    const ps = child_process.spawn(
+      require.resolve('../bin/transpile.js'),
+      [require.resolve('./fixtures/modern-syntax')]
+    );
 
-let out = '';
-let err = '';
-ps.stdout.on('data', buf => { out += buf; });
-ps.stderr.on('data', buf => { err += buf; });
+    let out = '';
+    let err = '';
+    ps.stdout.on('data', buf => { out += buf; });
+    ps.stderr.on('data', buf => { err += buf; });
 
-let ran = false;
-ps.on('close', () => {
-  assert.equal(err, '');
+    let ran = false;
+    ps.on('close', () => {
+      expect(err).toBe('');
 
-  const c = {exports: {}};
-  vm.runInNewContext(out, c);
-  assert.equal(c.exports.Foo.bar, 'qux');
+      const c = {exports: {}};
+      vm.runInNewContext(out, c);
+      expect(c.exports.Foo.bar).toBe('qux');
 
-  ran = true;
-});
+      ran = true;
+    });
 
-process.once('exit', () => {
-  assert.ok(ran);
+    waitsFor(() => ran);
+  });
 });
