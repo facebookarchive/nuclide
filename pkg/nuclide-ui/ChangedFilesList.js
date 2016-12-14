@@ -15,6 +15,7 @@ import classnames from 'classnames';
 import {
  FileChangeStatusToIcon,
  FileChangeStatusToTextColor,
+ repositoryForPath,
 } from '../commons-atom/vcs';
 import nuclideUri from '../commons-node/nuclideUri';
 import {React} from 'react-for-atom';
@@ -65,11 +66,13 @@ export default class ChangedFilesList extends React.Component {
       collapsed: this.state.isCollapsed,
     });
 
+    const repository = repositoryForPath(this.props.rootPath);
     const fileClassName = classnames(
       'icon',
       'icon-file-text',
-      'nuclide-file-changes-file-entry',
-      `${commandPrefix}-file-entry`,
+      'nuclide-file-changes-file-entry', {
+        [`${commandPrefix}-file-entry`]: repository != null && repository.getType() === 'hg',
+      },
     );
 
     return (
