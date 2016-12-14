@@ -102,6 +102,12 @@ export default class FileTreeSidebarComponent extends React.Component {
   componentDidMount(): void {
     this._processExternalUpdate();
 
+    const remeasureEvents = Observable.merge(
+      Observable.of(null),
+      Observable.fromEvent(window, 'resize'),
+      Observable.interval(2000), // We poll because lots of things can change the height :(
+    );
+
     this._disposables.add(
       this._store.subscribe(this._processExternalUpdate),
       atom.project.onDidChangePaths(this._processExternalUpdate),
@@ -113,7 +119,7 @@ export default class FileTreeSidebarComponent extends React.Component {
         showUncommittedChanges => this.setState({showUncommittedChanges}),
       ),
 
-      throttle(Observable.fromEvent(window, 'resize'), 100).subscribe(() => {
+      throttle(remeasureEvents, 100).subscribe(() => {
         this._updateScrollerHeight();
       }),
     );
@@ -312,10 +318,15 @@ export default class FileTreeSidebarComponent extends React.Component {
   }
 
   _updateScrollerHeight(): void {
-    // Ideally, we would use the size of the element here, however recognizing when that changes is
-    // tough. So instead, we'll just use the window height. We may end up creating a few more rows
-    // than we need, but that's no big deal.
-    this.setState({scrollerHeight: window.innerHeight});
+    const component = this.refs.scroller;
+    if (component == null) {
+      return;
+    }
+    const el = ReactDOM.findDOMNode(component);
+    if (el == null) {
+      return;
+    }
+    this.setState({scrollerHeight: el.clientHeight});
   }
 
   _handleScroll(): void {
