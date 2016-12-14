@@ -1,7 +1,7 @@
 - title: Built-in Debugging
   text: |
         Building upon Chrome Developer Tools, Nuclide has first class debugging support for React
-        Native (shown here), Hack, Flow and other platforms. \\
+        Native, Hack (shown here), Flow and other platforms. \\
         [**Read More**](/docs/features/debugger)
   image: images/docs/promo-debugger.png
 
@@ -31,17 +31,17 @@
     [**Read More**](/docs/features/task-runner/)
   image: images/docs/promo-task-runner.png
 
-- title: Mercurial Support
-  text: |
-    Local changes to files in a Mercurial repo will be reflected in Atom's file tree and UI, as
-    Atom does natively for Git repos. \\
-    [**Read More**](/docs/features/hg/)
-  image: images/docs/promo-mercurial.png
-
 - title: Working Sets
   text: |
     Is your project big, but only a small subset applies to your work? Working Sets can reduce
     noise. \\
     [**Read More**](/docs/features/working-sets/)
   image: images/docs/promo-working-sets.png
+
+- title: Mercurial Support
+  text: |
+    Local changes to files in a Mercurial repo will be reflected in Atom's file tree and UI, as
+    Atom does natively for Git repos. \\
+    [**Read More**](/docs/features/hg/)
+  image: images/docs/promo-mercurial.png
   center: true

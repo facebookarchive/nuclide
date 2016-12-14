@@ -603,9 +603,7 @@ a.blockButton {
 
     img {
       margin-top: 6vh;
-      width: 750px;
-      height: 400px;
-      object-fit: fill;
+      max-width: 100%;
     }
 
     &.featureBlock  h3 {
