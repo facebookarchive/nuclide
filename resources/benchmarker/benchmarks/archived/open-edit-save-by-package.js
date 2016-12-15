@@ -8,7 +8,7 @@
  * @flow
  */
 
-import {timedAsync, timedSync, makeSizedFixture} from '../benchmarker-utils';
+import {timedAsync, timedSync, makeSizedFixture} from '../../benchmarker-utils';
 
 const SAMPLE_FILE = '/tmp/nuclide-benchmarker-open-edit-save.js';
 const FILE_SIZE = 10000;
