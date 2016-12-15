@@ -7,3 +7,13 @@
  *
  * @flow
  */
+
+import type {
+  NuclideDebuggerProvider,
+} from '../../nuclide-debugger-interfaces/service';
+
+import DebuggerProvider from './DebuggerProvider';
+
+export function createDebuggerProvider(): NuclideDebuggerProvider {
+  return DebuggerProvider;
+}
