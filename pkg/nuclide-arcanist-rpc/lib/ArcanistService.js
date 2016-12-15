@@ -80,7 +80,7 @@ export async function readArcConfig(fileName: NuclideUri): Promise<?any> {
 
 export async function findArcProjectIdOfPath(fileName: NuclideUri): Promise<?string> {
   const project = await readArcConfig(fileName);
-  return project ? project.project_id : null;
+  return project ? project.project_id || project['project.name'] : null;
 }
 
 export async function findArcProjectIdAndDirectory(fileName: NuclideUri): Promise<?{
@@ -91,8 +91,9 @@ export async function findArcProjectIdAndDirectory(fileName: NuclideUri): Promis
   if (directory != null) {
     // This will hit the directory map cache.
     const projectId = await findArcProjectIdOfPath(fileName);
-    invariant(projectId != null);
-    return {projectId, directory};
+    if (projectId != null) {
+      return {projectId, directory};
+    }
   }
   return null;
 }
