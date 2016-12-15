@@ -15,6 +15,7 @@ import createPaneContainer from '../../commons-atom/create-pane-container';
 import PanelRenderer from '../../commons-atom/PanelRenderer';
 import {renderReactRoot} from '../../commons-atom/renderReactRoot';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
+import {nextAnimationFrame} from '../../commons-node/observable';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {SimpleModel} from '../../commons-node/SimpleModel';
 import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
@@ -31,6 +32,8 @@ type State = {
   showDropAreas: boolean,
   visible: boolean,
 };
+
+const HIDE_BUTTON_WRAPPER_CLASS = 'nuclide-workspace-views-panel-location-tabs-hide-button-wrapper';
 
 /**
  * Manages views for an Atom panel.
@@ -117,8 +120,7 @@ export class PanelLocation extends SimpleModel<State> {
           paneElement.insertBefore(tabBarView, paneElement.firstChild);
 
           const hideButtonWrapper = document.createElement('div');
-          hideButtonWrapper.className =
-            'nuclide-workspace-views-panel-location-tabs-hide-button-wrapper';
+          hideButtonWrapper.className = HIDE_BUTTON_WRAPPER_CLASS;
           const hideButton = document.createElement('div');
           hideButton.className = 'nuclide-workspace-views-panel-location-tabs-hide-button';
           hideButton.onclick = () => { this.setState({visible: false}); };
@@ -143,6 +145,37 @@ export class PanelLocation extends SimpleModel<State> {
           );
         }
       }),
+
+      // The atom/tabs package identifies the pane item being dragged [based on the child index of
+      // the tab][1]. Since our button shares the same parent as the tabs, the tab indexes won't we
+      // correct unless our button appears after every tab element in the DOM. (It's not enough to
+      // use CSS `order` to visually reposition our button.) Therefore, we need to move our button
+      // to the end every time a pane is added.
+      //
+      // [1]: https://github.com/atom/tabs/blob/v0.103.1/lib/tab-bar-view.coffee#L232
+      paneItemChanges
+        // Since we're observing the pane items (and not the addition of tabs directly), we need to
+        // delay for an animation frame to give the TabBarView a chance to add the tab.
+        .audit(() => nextAnimationFrame)
+        .subscribe(() => {
+          const paneContainerEl = atom.views.getView(paneContainer);
+          Array.from(paneContainerEl.getElementsByClassName(HIDE_BUTTON_WRAPPER_CLASS))
+            .forEach(el => {
+              const parent = el.parentElement;
+              if (parent == null) {
+                return;
+              }
+              const buttonIndex = getChildIndex(el);
+              const tabs = parent.querySelectorAll('.tab');
+              const lastTab = tabs[tabs.length - 1];
+              if (lastTab == null) {
+                return;
+              }
+              if (buttonIndex < getChildIndex(lastTab)) {
+                parent.insertBefore(el, lastTab.nextSibling);
+              }
+            });
+        }),
 
       // If you add an item to a panel (e.g. by drag & drop), make the panel visible.
       paneItemChanges
@@ -322,4 +355,9 @@ function isTab(element: HTMLElement): boolean {
     el = el.parentElement;
   }
   return false;
+}
+
+function getChildIndex(el: HTMLElement): number {
+  const parent = el.parentElement;
+  return parent == null ? -1 : Array.prototype.indexOf.call(parent.children, el);
 }
