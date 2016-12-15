@@ -25,6 +25,7 @@ import {
   areSetsEqual,
   someOfIterable,
   filterIterable,
+  mapIterable,
 } from '../collection';
 
 describe('arrayRemove', () => {
@@ -357,5 +358,13 @@ describe('filterIterable', () => {
       .toEqual([1, 2, 3, 4, 5]);
     expect(Array.from(filterIterable(new Set([1, 2, 3, 4, 5]), element => false))).toEqual([]);
     expect(Array.from(filterIterable([], element => true))).toEqual([]);
+  });
+});
+
+describe('mapIterable', () => {
+  it('projects each element of an iterable into a new iterable', () => {
+    expect(Array.from(mapIterable(new Set(), element => true))).toEqual([]);
+    expect(Array.from(mapIterable(new Set([1, 2, 3, 4, 5]), element => element * element)))
+      .toEqual([1, 4, 9, 16, 25]);
   });
 });

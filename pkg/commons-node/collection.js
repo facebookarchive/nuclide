@@ -329,3 +329,12 @@ export function *filterIterable<T>(
     }
   }
 }
+
+export function *mapIterable<T, M>(
+  iterable: Iterable<T>,
+  projectorFn: (element: T) => M,
+): Iterable<M> {
+  for (const element of iterable) {
+    yield projectorFn(element);
+  }
+}
