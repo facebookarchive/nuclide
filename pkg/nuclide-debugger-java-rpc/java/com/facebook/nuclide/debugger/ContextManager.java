@@ -36,7 +36,7 @@ public class ContextManager {
   public ContextManager(CommandInterpreterBase interpreter, INotificationChannel channel) {
     _interpreter = interpreter;
     _channel = channel;
-    _domainHandlerMap.put("LaunchHook", new LaunchHookDomain(this));
+    _domainHandlerMap.put("Bootstrap", new LaunchHookDomain(this));
     _domainHandlerMap.put("Debugger", new DebuggerDomain(this));
     _domainHandlerMap.put("Runtime", new RuntimeDomain(this));
   }
