@@ -25,6 +25,7 @@ export default class FlowAutocompleteProvider {
     this._cacher = new AutocompleteCacher({
       getSuggestions: getSuggestionsFromFlow,
       updateResults,
+      shouldFilter,
     });
   }
 
@@ -66,6 +67,20 @@ export default class FlowAutocompleteProvider {
       return getSuggestionsFromFlow(request);
     }
   }
+}
+
+// Exported only for testing
+export function shouldFilter(
+  lastRequest: atom$AutocompleteRequest,
+  currentRequest: atom$AutocompleteRequest,
+): boolean {
+  const prefixIsIdentifier = /^[a-zA-Z_$][0-9a-zA-Z_$]*$/.test(currentRequest.prefix);
+  const previousPrefixIsDot = /^\s*\.\s*$/.test(lastRequest.prefix);
+  const currentPrefixIsSingleChar = currentRequest.prefix.length === 1;
+  const startsWithPrevious = currentRequest.prefix.length - 1 === lastRequest.prefix.length &&
+      currentRequest.prefix.startsWith(lastRequest.prefix);
+  return prefixIsIdentifier &&
+      ((previousPrefixIsDot && currentPrefixIsSingleChar) || startsWithPrevious);
 }
 
 async function getSuggestionsFromFlow(

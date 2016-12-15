@@ -15,6 +15,7 @@ import nuclideUri from '../../commons-node/nuclideUri';
 
 import FlowAutocompleteProvider, {
   groupParamNames,
+  shouldFilter,
 } from '../lib/FlowAutocompleteProvider';
 
 const FIXTURE_PATH = nuclideUri.join(__dirname, 'fixtures/fixture.js');
@@ -52,6 +53,45 @@ describe('FlowAutocompleteProvider', () => {
 
     it('should return an empty array for no arguments', () => {
       expect(groupParamNames([])).toEqual([]);
+    });
+  });
+
+  describe('shouldFilter', () => {
+    function fakeRequest(prefix: string): atom$AutocompleteRequest {
+      // Right now shouldFilter only uses the prefix. If it changes this will need to be updated.
+      return ({prefix}: any);
+    }
+
+    it('should filter after a dot', () => {
+      expect(shouldFilter(fakeRequest('.'), fakeRequest('f'))).toBe(true);
+    });
+
+    it('should not filter after a dot if the next prefix is more than one character', () => {
+      expect(shouldFilter(fakeRequest('.'), fakeRequest('fo'))).toBe(false);
+    });
+
+    it('should filter when the prefix is one character longer and a valid identifier', () => {
+      expect(shouldFilter(fakeRequest('asdf'), fakeRequest('asdfg'))).toBe(true);
+      expect(shouldFilter(fakeRequest('_9asdf'), fakeRequest('_9asdf$'))).toBe(true);
+    });
+
+    it("should not filter if the current prefix doesn't start with the last prefix", () => {
+      expect(shouldFilter(fakeRequest('asdf'), fakeRequest('bsdfg'))).toBe(false);
+    });
+
+    it('should not filter if the prefix is not a valid identifier', () => {
+      expect(shouldFilter(fakeRequest('a-df'), fakeRequest('a-dfg'))).toBe(false);
+      expect(shouldFilter(fakeRequest('9asdf'), fakeRequest('9asdfg'))).toBe(false);
+    });
+
+    it('should not filter if the current prefix is more than one character longer', () => {
+      expect(shouldFilter(fakeRequest('asdf'), fakeRequest('asdfgh'))).toBe(false);
+    });
+
+    // If autocomplete is activated manually (ctrl+space), you can get a blank prefix for the first
+    // request. Then, we should filter when the first character is typed.
+    it('should filter on the first character typed', () => {
+      expect(shouldFilter(fakeRequest(''), fakeRequest('a'))).toBe(true);
     });
   });
 
