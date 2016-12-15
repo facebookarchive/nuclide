@@ -70,7 +70,7 @@ public class RemoteObjectManager {
       // Primitive type.
       // TODO: get concrete type.
       result.put("type", "object");
-      result.put("description", value.toString());
+      result.put("description", value == null ? "null": value.toString());
     }
     return result;
   }
