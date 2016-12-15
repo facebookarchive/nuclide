@@ -16,7 +16,6 @@ import com.sun.jdi.event.LocatableEvent;
 import java.util.HashMap;
 import java.util.Map;
 
-
 /**
  * Contains all the debugger contextual information for client retrieval.
  */
@@ -28,15 +27,18 @@ public class ContextManager {
   // Only accessed from request thread, no need to lock.
   private final Map<String, DomainHandlerBase> _domainHandlerMap = new HashMap<>();
   private final SourceLocator _sourceLocator = new SourceLocator(this);
-  private final INotificationChannel _channel;
+  private final NotificationChannel _channel;
   private final FileManager _fileManager = new FileManager(this);
   private String _classPath = null;
   private final RemoteObjectManager _remoteObjectManager = new RemoteObjectManager();
+  private final AppExitEvent _appExitEvent;
+  private EventThread _eventThread;
 
-  public ContextManager(CommandInterpreterBase interpreter, INotificationChannel channel) {
+  public ContextManager(CommandInterpreterBase interpreter, NotificationChannel channel, AppExitEvent appExitEvent) {
     _interpreter = interpreter;
     _channel = channel;
-    _domainHandlerMap.put("Bootstrap", new LaunchHookDomain(this));
+    _appExitEvent = appExitEvent;
+    _domainHandlerMap.put("Bootstrap", new BootstrapDomain(this));
     _domainHandlerMap.put("Debugger", new DebuggerDomain(this));
     _domainHandlerMap.put("Runtime", new RuntimeDomain(this));
   }
@@ -45,31 +47,35 @@ public class ContextManager {
     _virtualMachine = virtualMachine;
   }
 
-  VirtualMachine getVirtualMachine() {
+  public VirtualMachine getVirtualMachine() {
     return _virtualMachine;
   }
 
-  ThreadReference getCurrentThread() {
+  public ThreadReference getCurrentThread() {
     return _currentThread;
   }
 
-  DomainHandlerBase getDomain(String domain) {
+  public AppExitEvent getAppExitEvent() {
+    return _appExitEvent;
+  }
+
+  public DomainHandlerBase getDomain(String domain) {
     return _domainHandlerMap.get(domain);
   }
 
-  BreakpointManager getBreakpointManager() {
+  public BreakpointManager getBreakpointManager() {
     return _breakpointManager;
   }
 
-  SourceLocator getSourceLocator() {
+  public SourceLocator getSourceLocator() {
     return _sourceLocator;
   }
 
-  RemoteObjectManager getRemoteObjectManager() {
+  public RemoteObjectManager getRemoteObjectManager() {
     return _remoteObjectManager;
   }
 
-  void setClassPath(String classPath) {
+  public void setClassPath(String classPath) {
     _classPath = classPath;
     _sourceLocator.setClassPath(classPath);
   }
@@ -78,19 +84,19 @@ public class ContextManager {
     _sourceLocator.setClassPath(sourcePath);
   }
 
-  String getClassPath() {
+  public String getClassPath() {
     return _classPath;
   }
 
-  CommandInterpreterBase getInterpreter() {
+  public CommandInterpreterBase getInterpreter() {
     return _interpreter;
   }
 
-  INotificationChannel getNotificationChannel() {
+  public NotificationChannel getNotificationChannel() {
     return _channel;
   }
 
-  FileManager getFileManager() {
+  public FileManager getFileManager() {
     return _fileManager;
   }
 
@@ -98,5 +104,13 @@ public class ContextManager {
     if (event instanceof LocatableEvent) {
       _currentThread = ((LocatableEvent) event).thread();
     }
+  }
+
+  public void setEventThread(EventThread eventThread) {
+    _eventThread = eventThread;
+  }
+
+  public EventThread getEventThread() {
+    return _eventThread;
   }
 }
