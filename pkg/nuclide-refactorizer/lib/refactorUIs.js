@@ -98,7 +98,7 @@ function renameShortcut(store: Store): IDisposable {
               }
             }
             if (renameRefactoring == null) {
-              // TODO display a message here
+              atom.notifications.addWarning('Unable to rename at this location');
               store.dispatch(Actions.close());
             } else {
               store.dispatch(Actions.pickedRefactor(renameRefactoring));
