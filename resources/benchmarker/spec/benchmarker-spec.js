@@ -22,10 +22,18 @@ declare class Benchmark {
   timeout: number,
   iterations: number,
   repetitions: number,
+  getIterationDescription?: (iteration: number) => string,
   run: (iteration: number) => Object,
   name?: string,
   index?: number,
 }
+
+type RunOptions = {
+  benchmarks: Array<string>,
+  packages: Array<string>,
+  iterations?: number,
+  repetitions?: number,
+};
 
 const fs = require('fs');
 const path = require('path');
@@ -41,7 +49,12 @@ const RESULT_DIR_ROOT = '/tmp/nuclide-benchmarker-results';
 atom.devMode = false;
 
 // Determine what benchmarks are to be run, and with which packages installed.
-const {benchmarks: allBenchmarks, packages: allPackages} = getBenchmarksAndPackages();
+const {
+  benchmarks: allBenchmarks,
+  packages: allPackages,
+  iterations: iterationsOverride,
+  repetitions: repetitionsOverride,
+} = getRunOptions();
 
 describe('Nuclide performance', () => {
   // Rehydrate the state of the benchmark run following a restart or a reload.
@@ -54,6 +67,12 @@ describe('Nuclide performance', () => {
   const benchmark: Benchmark = require('../benchmarks/' + allBenchmarks[benchmarkIndex]);
   benchmark.index = benchmarkIndex;
   benchmark.name = allBenchmarks[benchmarkIndex];
+  if (iterationsOverride != null) {
+    benchmark.iterations = iterationsOverride;
+  }
+  if (repetitionsOverride != null) {
+    benchmark.repetitions = repetitionsOverride;
+  }
 
   // Every record stored in a file has an iteration column at the start for aggregation purposes.
   const columns = benchmark.columns;
@@ -87,9 +106,15 @@ describe('Nuclide performance', () => {
       await sleepUntilNoRequests();
 
       // Run the benchmark for this iteration/repetition and append the results to the result file.
+      const repetitionDescription =
+        benchmark.getIterationDescription != null ?
+        `; ${benchmark.getIterationDescription(repetition)}` :
+        '';
+
       console.log(yellow(`${String(benchmark.name)}: ` +
                           `iteration ${iteration + 1} of ${benchmark.iterations}, ` +
-                          `repetition ${repetition + 1} of ${benchmark.repetitions}`));
+                          `repetition ${repetition + 1} of ${benchmark.repetitions}` +
+                          repetitionDescription));
       const result = await benchmark.run(iteration);
       result.iteration = iteration;
       writeTsv(resultFile, columns, result);
@@ -115,7 +140,7 @@ describe('Nuclide performance', () => {
   });
 });
 
-function getBenchmarksAndPackages(): {benchmarks: Array<string>, packages: Array<string>} {
+function getRunOptions(): RunOptions {
   let benchmarks = [];
   if (process.env.BENCHMARK) {
     // A single benchmark has been passed in from the command line or shell.
@@ -132,7 +157,24 @@ function getBenchmarksAndPackages(): {benchmarks: Array<string>, packages: Array
     // packages to be loaded have been passed in from the command line or shell.
     packages = process.env.BENCHMARK_PACKAGES.split(',').map(p => p.trim()).filter(p => p !== '');
   }
-  return {benchmarks, packages};
+
+  const options: RunOptions = {
+    benchmarks,
+    packages,
+  };
+
+  if (process.env.QUICK != null && process.env.QUICK !== 'false') {
+    options.iterations = 1;
+    options.repetitions = 1;
+  }
+  if (process.env.ITERATIONS != null) {
+    options.iterations = Number(process.env.ITERATIONS);
+  }
+  if (process.env.REPETITIONS != null) {
+    options.repetitions = Number(process.env.REPETITIONS);
+  }
+
+  return options;
 }
 
 function getTestState(): Object {

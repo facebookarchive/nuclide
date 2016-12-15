@@ -29,6 +29,9 @@ module.exports = {
   timeout: TIMEOUT,
   iterations: ITERATIONS,
   repetitions: REPETITIONS,
+  getIterationDescription: (iteration: number): string => {
+    return `Open, edit, save, close a ${sizeForIteration(iteration)} byte file`;
+  },
   run: async (iteration: number): Object => {
     const result = {};
 
@@ -52,7 +55,7 @@ module.exports = {
     result.append = timedSync(() => editor.insertText('// new line\n')).time;
 
     result.save = timedSync(() => editor.save()).time;
-    result.close = timedSync(() => atom.workspace.destroyActivePaneItemOrEmptyPane()).time;
+    result.close = timedSync(() => atom.workspace.destroyActivePaneItem()).time;
 
     return result;
   },
