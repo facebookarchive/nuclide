@@ -318,3 +318,14 @@ export function someOfIterable<T>(
   }
   return false;
 }
+
+export function *filterIterable<T>(
+  iterable: Iterable<T>,
+  predicate: (element: T) => boolean,
+): Iterable<T> {
+  for (const element of iterable) {
+    if (predicate(element)) {
+      yield element;
+    }
+  }
+}

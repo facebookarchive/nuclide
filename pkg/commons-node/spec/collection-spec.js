@@ -24,6 +24,7 @@ import {
   concatIterators,
   areSetsEqual,
   someOfIterable,
+  filterIterable,
 } from '../collection';
 
 describe('arrayRemove', () => {
@@ -345,5 +346,16 @@ describe('someOfIterable', () => {
       [],
       element => true,
     )).toEqual(false);
+  });
+});
+
+describe('filterIterable', () => {
+  it('returns a (lazy) iterable containing all elements which fulfill the given predicate', () => {
+    expect(Array.from(filterIterable(new Set([1, 2, 3, 4, 5]), element => element % 2 === 0)))
+      .toEqual([2, 4]);
+    expect(Array.from(filterIterable(new Set([1, 2, 3, 4, 5]), element => true)))
+      .toEqual([1, 2, 3, 4, 5]);
+    expect(Array.from(filterIterable(new Set([1, 2, 3, 4, 5]), element => false))).toEqual([]);
+    expect(Array.from(filterIterable([], element => true))).toEqual([]);
   });
 });
