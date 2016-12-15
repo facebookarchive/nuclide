@@ -1,0 +1,15 @@
+{
+  "name": "nuclide-debugger-java-rpc",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/JavaDebuggerServiceImplementation.js",
+  "version": "0.0.0",
+  "description": "Nuclide java debugging rpc service",
+  "private": true,
+  "nuclide": {
+    "packageType": "Node",
+    "testRunner": "npm"
+  },
+  "scripts": {
+    "test": "node ../nuclide-jasmine/bin/jasmine-node-transpiled spec"
+  }
+}
