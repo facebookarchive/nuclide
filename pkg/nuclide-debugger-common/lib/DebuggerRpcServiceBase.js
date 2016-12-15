@@ -69,6 +69,10 @@ export class DebuggerRpcWebSocketService extends DebuggerRpcServiceBase {
     webSocket.on('message', this._handleWebSocketServerMessage.bind(this));
   }
 
+  getWebSocket(): ?WS {
+    return this._webSocket;
+  }
+
   _handleWebSocketServerMessage(message: string): void {
     this._clientCallback.sendChromeMessage(message);
   }
