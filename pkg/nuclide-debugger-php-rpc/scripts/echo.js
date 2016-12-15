@@ -26,6 +26,14 @@ const port = process.argv[2] || 9000;
 
 console.log('Attempting to connect on port: ' + port);
 
+const readline = require('readline');
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+  terminal: true,
+  prompt: 'xdebug> ',
+});
+
 let socket = null;
 
 const net = require('net');
@@ -42,26 +50,16 @@ const server = net.createServer(
       const components = data.toString().split('\x00');
       console.log('components count: ' + components.length);
       console.log('message content length: ' + components[1].length);
-      process.stdout.write(DBG_PROMPT_TEXT);
+      rl.prompt();
     });
   });
 
 server.listen(port, () => { // 'listening' listener
-  console.log('server bound');
-});
-
-const readline = require('readline');
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-  terminal: false,
+  console.log('server bound... waiting for connection from debugger');
 });
 
 let commandId = 0;
-const DBG_PROMPT_TEXT = 'xdebug> ';
-process.stdout.write(DBG_PROMPT_TEXT);
 rl.on('line', line_ => {
-  process.stdout.write(DBG_PROMPT_TEXT);
   if (socket == null) {
     return;
   }
