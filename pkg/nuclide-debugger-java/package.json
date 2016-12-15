@@ -1,0 +1,13 @@
+{
+  "name": "nuclide-debugger-java",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main.js",
+  "version": "0.0.0",
+  "description": "Nuclide java debugger client",
+  "private": true,
+  "atomTestRunner": "../../lib/test-runner.js",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  }
+}
