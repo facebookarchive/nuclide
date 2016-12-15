@@ -157,6 +157,7 @@ class CompletionResults:
         # Keep reference to original results object alive.
         self._completion = completion
         self._results = map(CompletionResult, list(completion.results))
+        self._last_prefix = None
 
     def getResults(self, prefix, limit):
         if prefix == '':
@@ -174,6 +175,10 @@ class CompletionResults:
             matches = islice(self._results, start, end)
             num_matches = end - start
 
+            self._last_prefix = prefix_lower
+            self._last_start = start
+            self._last_end = end
+
         best_matches = heapq.nsmallest(
             limit or num_matches, matches, key=lambda x: x.priority)
 
@@ -186,8 +191,14 @@ class CompletionResults:
     # Note that prefix should already be all lowercase.
     # Returns len(results) if no such result exists.
     def _getFirstMatch(self, prefix):
-        low = 0
-        high = len(self._results)
+        if (self._last_prefix is not None and
+                prefix.startswith(self._last_prefix)):
+            low = self._last_start
+            high = self._last_end
+        else:
+            low = 0
+            high = len(self._results)
+
         while low < high:
             mid = (low + high) // 2
             if self._results[mid].typed_name.lower() < prefix:

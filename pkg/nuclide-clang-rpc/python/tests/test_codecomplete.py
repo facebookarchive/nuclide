@@ -57,6 +57,10 @@ class CompletionResultsTestCase(unittest.TestCase):
             [{'spelling': 'ab'}, {'spelling': 'aa'}],
         )
         self.assertEqual(
+            results.getResults('aa', None),
+            [{'spelling': 'aa'}],
+        )
+        self.assertEqual(
             results.getResults('B', None),
             [{'spelling': 'B'}, {'spelling': 'b'}],
         )
