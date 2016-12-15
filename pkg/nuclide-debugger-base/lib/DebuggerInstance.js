@@ -24,6 +24,9 @@ import type {
   PhpDebuggerService,
 } from '../../nuclide-debugger-php-rpc/lib/PhpDebuggerService';
 import type {CategoryLogger} from '../../nuclide-logging';
+import type {
+  JavaDebuggerService,
+} from '../../nuclide-debugger-java-rpc/lib/JavaDebuggerServiceInterface';
 
 import {Emitter} from 'atom';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
@@ -38,7 +41,8 @@ import {getCategoryLogger} from '../../nuclide-logging';
 const SESSION_END_EVENT = 'session-end-event';
 
 export type RpcDebuggerService =
-  NodeDebuggerService | NativeDebuggerService | IwdpDebuggerService | PhpDebuggerService;
+  NodeDebuggerService | NativeDebuggerService | IwdpDebuggerService |
+  PhpDebuggerService | JavaDebuggerService;
 
 export default class DebuggerInstanceBase {
   _processInfo: DebuggerProcessInfo;
