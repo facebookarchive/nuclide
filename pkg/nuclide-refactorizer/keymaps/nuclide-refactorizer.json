@@ -1,0 +1,5 @@
+{
+  "atom-text-editor": {
+    "shift-f6": "nuclide-refactorizer:rename"
+  }
+}
