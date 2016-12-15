@@ -1,5 +1,9 @@
 # Nuclide Changelog
 
+## v0.192.0
+
+Hotfix various hanging processes and Diff View operations.
+
 ## v0.191.0
 
 Hotfix Diff View gutter highlighting for Atom <= 1.12.x.
