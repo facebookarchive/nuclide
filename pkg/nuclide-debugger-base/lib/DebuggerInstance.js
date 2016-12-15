@@ -26,7 +26,7 @@ import type {
 import type {CategoryLogger} from '../../nuclide-logging';
 import type {
   JavaDebuggerService,
-} from '../../nuclide-debugger-java-rpc/lib/JavaDebuggerServiceInterface';
+} from '../../fb-debugger-java-rpc/lib/JavaDebuggerServiceInterface';
 
 import {Emitter} from 'atom';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
