@@ -1,189 +1,250 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {ConnectableObservable} from 'rxjs';
-import type {ProcessMessage} from '../../commons-node/process-rpc-types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.__TEST__ = exports.getProjectRelativePath = exports.findArcProjectIdAndDirectory = exports.findArcProjectIdOfPath = exports.readArcConfig = exports.findArcConfigDirectory = undefined;
 
-import {getEditMergeConfigs} from '../../nuclide-hg-rpc/lib/hg-utils';
-import invariant from 'assert';
-import {Observable} from 'rxjs';
-import nuclideUri from '../../commons-node/nuclideUri';
-import {
-  exitEventToMessage,
-  getOriginalEnvironment,
-  getOutputStream,
-  observeProcess,
-  safeSpawn,
-  scriptSafeSpawnAndObserveOutput,
-} from '../../commons-node/process';
-import {niceSafeSpawn} from '../../commons-node/nice';
-import fsPromise from '../../commons-node/fsPromise';
-import {
-  fetchFilesChangedSinceRevision,
-} from '../../nuclide-hg-rpc/lib/hg-revision-state-helpers';
-import {
-  expressionForRevisionsBeforeHead,
-} from '../../nuclide-hg-rpc/lib/hg-revision-expression-helpers';
-import {
-  findHgRepository,
-} from '../../nuclide-source-control-helpers';
-import {getLogger} from '../../nuclide-logging';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-const ARC_CONFIG_FILE_NAME = '.arcconfig';
+let findArcConfigDirectory = exports.findArcConfigDirectory = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (fileName) {
+    if (!arcConfigDirectoryMap.has(fileName)) {
+      const result = yield (_fsPromise || _load_fsPromise()).default.findNearestFile(ARC_CONFIG_FILE_NAME, fileName);
+      arcConfigDirectoryMap.set(fileName, result);
+    }
+    return arcConfigDirectoryMap.get(fileName);
+  });
 
-export type ArcDiagnostic = {
-  type: 'Error' | 'Warning',
-  text: string,
-  filePath: NuclideUri,
-  row: number,
-  col: number,
-  code: ?string,
-
-  // For autofix
-  original?: string,
-  replacement?: string,
-};
-
-const arcConfigDirectoryMap: Map<NuclideUri, ?NuclideUri> = new Map();
-const arcProjectMap: Map<?NuclideUri, ?Object> = new Map();
-
-export async function findArcConfigDirectory(fileName: NuclideUri): Promise<?NuclideUri> {
-  if (!arcConfigDirectoryMap.has(fileName)) {
-    const result = await fsPromise.findNearestFile(ARC_CONFIG_FILE_NAME, fileName);
-    arcConfigDirectoryMap.set(fileName, result);
-  }
-  return arcConfigDirectoryMap.get(fileName);
-}
-
-export async function readArcConfig(fileName: NuclideUri): Promise<?any> {
-  const arcConfigDirectory = await findArcConfigDirectory(fileName);
-  if (!arcConfigDirectory) {
-    return null;
-  }
-  if (!arcProjectMap.has(arcConfigDirectory)) {
-    const arcconfigFile = nuclideUri.join(arcConfigDirectory, ARC_CONFIG_FILE_NAME);
-    const contents = await fsPromise.readFile(arcconfigFile, 'utf8');
-    invariant(typeof contents === 'string');
-    const result = JSON.parse(contents);
-    arcProjectMap.set(arcConfigDirectory, result);
-  }
-  return arcProjectMap.get(arcConfigDirectory);
-}
-
-export async function findArcProjectIdOfPath(fileName: NuclideUri): Promise<?string> {
-  const project = await readArcConfig(fileName);
-  return project ? project.project_id : null;
-}
-
-export async function findArcProjectIdAndDirectory(fileName: NuclideUri): Promise<?{
-  projectId: string,
-  directory: NuclideUri,
-}> {
-  const directory = await findArcConfigDirectory(fileName);
-  if (directory != null) {
-    // This will hit the directory map cache.
-    const projectId = await findArcProjectIdOfPath(fileName);
-    invariant(projectId != null);
-    return {projectId, directory};
-  }
-  return null;
-}
-
-export async function getProjectRelativePath(fileName: NuclideUri): Promise<?string> {
-  const arcPath = await findArcConfigDirectory(fileName);
-  return arcPath && fileName ? nuclideUri.relative(arcPath, fileName) : null;
-}
-
-export function findDiagnostics(
-  path: NuclideUri,
-  skip: Array<string>,
-): ConnectableObservable<ArcDiagnostic> {
-  return Observable.fromPromise(findArcConfigDirectory(path))
-    .switchMap(arcDir => {
-      if (arcDir == null) {
-        return Observable.empty();
-      }
-      return execArcLint(arcDir, [path], skip);
-    })
-    .publish();
-}
-
-async function getMercurialHeadCommitChanges(filePath: string): Promise<Array<string>> {
-  const hgRepoDetails = findHgRepository(filePath);
-  if (hgRepoDetails == null) {
-    throw new Error('Cannot find source control root to diff from');
-  }
-  const filesChanged = await fetchFilesChangedSinceRevision(
-    expressionForRevisionsBeforeHead(1),
-    hgRepoDetails.workingDirectoryPath,
-  ).refCount().toPromise();
-  if (filesChanged == null) {
-    throw new Error('Failed to fetch commit changed files while diffing');
-  }
-  return filesChanged;
-}
-
-async function getCommitBasedArcConfigDirectory(filePath: string): Promise<?string> {
-  // TODO Support other source control types file changes (e.g. `git`).
-  const filesChanged = await getMercurialHeadCommitChanges(filePath);
-  let configLookupPath = null;
-  if (filesChanged.length > 0) {
-    configLookupPath = fsPromise.getCommonAncestorDirectory(filesChanged);
-  } else {
-    configLookupPath = filePath;
-  }
-  return findArcConfigDirectory(configLookupPath);
-}
-
-
-async function getArcExecOptions(
-  cwd: string,
-  hgEditor?: string,
-): Promise<Object> {
-  const options = {
-    cwd,
-    env: {
-      ...await getOriginalEnvironment(),
-      ATOM_BACKUP_EDITOR: 'false',
-    },
+  return function findArcConfigDirectory(_x) {
+    return _ref.apply(this, arguments);
   };
+})();
 
-  if (hgEditor != null) {
-    options.env.HGEDITOR = hgEditor;
-  }
+let readArcConfig = exports.readArcConfig = (() => {
+  var _ref2 = (0, _asyncToGenerator.default)(function* (fileName) {
+    const arcConfigDirectory = yield findArcConfigDirectory(fileName);
+    if (!arcConfigDirectory) {
+      return null;
+    }
+    if (!arcProjectMap.has(arcConfigDirectory)) {
+      const arcconfigFile = (_nuclideUri || _load_nuclideUri()).default.join(arcConfigDirectory, ARC_CONFIG_FILE_NAME);
+      const contents = yield (_fsPromise || _load_fsPromise()).default.readFile(arcconfigFile, 'utf8');
 
-  return options;
+      if (!(typeof contents === 'string')) {
+        throw new Error('Invariant violation: "typeof contents === \'string\'"');
+      }
+
+      const result = JSON.parse(contents);
+      arcProjectMap.set(arcConfigDirectory, result);
+    }
+    return arcProjectMap.get(arcConfigDirectory);
+  });
+
+  return function readArcConfig(_x2) {
+    return _ref2.apply(this, arguments);
+  };
+})();
+
+let findArcProjectIdOfPath = exports.findArcProjectIdOfPath = (() => {
+  var _ref3 = (0, _asyncToGenerator.default)(function* (fileName) {
+    const project = yield readArcConfig(fileName);
+    return project ? project.project_id : null;
+  });
+
+  return function findArcProjectIdOfPath(_x3) {
+    return _ref3.apply(this, arguments);
+  };
+})();
+
+let findArcProjectIdAndDirectory = exports.findArcProjectIdAndDirectory = (() => {
+  var _ref4 = (0, _asyncToGenerator.default)(function* (fileName) {
+    const directory = yield findArcConfigDirectory(fileName);
+    if (directory != null) {
+      // This will hit the directory map cache.
+      const projectId = yield findArcProjectIdOfPath(fileName);
+
+      if (!(projectId != null)) {
+        throw new Error('Invariant violation: "projectId != null"');
+      }
+
+      return { projectId, directory };
+    }
+    return null;
+  });
+
+  return function findArcProjectIdAndDirectory(_x4) {
+    return _ref4.apply(this, arguments);
+  };
+})();
+
+let getProjectRelativePath = exports.getProjectRelativePath = (() => {
+  var _ref5 = (0, _asyncToGenerator.default)(function* (fileName) {
+    const arcPath = yield findArcConfigDirectory(fileName);
+    return arcPath && fileName ? (_nuclideUri || _load_nuclideUri()).default.relative(arcPath, fileName) : null;
+  });
+
+  return function getProjectRelativePath(_x5) {
+    return _ref5.apply(this, arguments);
+  };
+})();
+
+let getMercurialHeadCommitChanges = (() => {
+  var _ref6 = (0, _asyncToGenerator.default)(function* (filePath) {
+    const hgRepoDetails = (0, (_nuclideSourceControlHelpers || _load_nuclideSourceControlHelpers()).findHgRepository)(filePath);
+    if (hgRepoDetails == null) {
+      throw new Error('Cannot find source control root to diff from');
+    }
+    const filesChanged = yield (0, (_hgRevisionStateHelpers || _load_hgRevisionStateHelpers()).fetchFilesChangedSinceRevision)((0, (_hgRevisionExpressionHelpers || _load_hgRevisionExpressionHelpers()).expressionForRevisionsBeforeHead)(1), hgRepoDetails.workingDirectoryPath).refCount().toPromise();
+    if (filesChanged == null) {
+      throw new Error('Failed to fetch commit changed files while diffing');
+    }
+    return filesChanged;
+  });
+
+  return function getMercurialHeadCommitChanges(_x6) {
+    return _ref6.apply(this, arguments);
+  };
+})();
+
+let getCommitBasedArcConfigDirectory = (() => {
+  var _ref7 = (0, _asyncToGenerator.default)(function* (filePath) {
+    // TODO Support other source control types file changes (e.g. `git`).
+    const filesChanged = yield getMercurialHeadCommitChanges(filePath);
+    let configLookupPath = null;
+    if (filesChanged.length > 0) {
+      configLookupPath = (_fsPromise || _load_fsPromise()).default.getCommonAncestorDirectory(filesChanged);
+    } else {
+      configLookupPath = filePath;
+    }
+    return findArcConfigDirectory(configLookupPath);
+  });
+
+  return function getCommitBasedArcConfigDirectory(_x7) {
+    return _ref7.apply(this, arguments);
+  };
+})();
+
+let getArcExecOptions = (() => {
+  var _ref8 = (0, _asyncToGenerator.default)(function* (cwd, hgEditor) {
+    const options = {
+      cwd,
+      env: Object.assign({}, (yield (0, (_process || _load_process()).getOriginalEnvironment)()), {
+        ATOM_BACKUP_EDITOR: 'false'
+      })
+    };
+
+    if (hgEditor != null) {
+      options.env.HGEDITOR = hgEditor;
+    }
+
+    return options;
+  });
+
+  return function getArcExecOptions(_x8, _x9) {
+    return _ref8.apply(this, arguments);
+  };
+})();
+
+exports.findDiagnostics = findDiagnostics;
+exports.createPhabricatorRevision = createPhabricatorRevision;
+exports.updatePhabricatorRevision = updatePhabricatorRevision;
+exports.execArcPull = execArcPull;
+exports.execArcLand = execArcLand;
+exports.execArcPatch = execArcPatch;
+
+var _hgUtils;
+
+function _load_hgUtils() {
+  return _hgUtils = require('../../nuclide-hg-rpc/lib/hg-utils');
 }
 
-function _callArcDiff(
-  filePath: NuclideUri,
-  extraArcDiffArgs: Array<string>,
-): Observable<{stderr?: string, stdout?: string}> {
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var _process;
+
+function _load_process() {
+  return _process = require('../../commons-node/process');
+}
+
+var _nice;
+
+function _load_nice() {
+  return _nice = require('../../commons-node/nice');
+}
+
+var _fsPromise;
+
+function _load_fsPromise() {
+  return _fsPromise = _interopRequireDefault(require('../../commons-node/fsPromise'));
+}
+
+var _hgRevisionStateHelpers;
+
+function _load_hgRevisionStateHelpers() {
+  return _hgRevisionStateHelpers = require('../../nuclide-hg-rpc/lib/hg-revision-state-helpers');
+}
+
+var _hgRevisionExpressionHelpers;
+
+function _load_hgRevisionExpressionHelpers() {
+  return _hgRevisionExpressionHelpers = require('../../nuclide-hg-rpc/lib/hg-revision-expression-helpers');
+}
+
+var _nuclideSourceControlHelpers;
+
+function _load_nuclideSourceControlHelpers() {
+  return _nuclideSourceControlHelpers = require('../../nuclide-source-control-helpers');
+}
+
+var _nuclideLogging;
+
+function _load_nuclideLogging() {
+  return _nuclideLogging = require('../../nuclide-logging');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const ARC_CONFIG_FILE_NAME = '.arcconfig'; /**
+                                            * Copyright (c) 2015-present, Facebook, Inc.
+                                            * All rights reserved.
+                                            *
+                                            * This source code is licensed under the license found in the LICENSE file in
+                                            * the root directory of this source tree.
+                                            *
+                                            * 
+                                            */
+
+const arcConfigDirectoryMap = new Map();
+const arcProjectMap = new Map();
+
+function findDiagnostics(path, skip) {
+  return _rxjsBundlesRxMinJs.Observable.fromPromise(findArcConfigDirectory(path)).switchMap(arcDir => {
+    if (arcDir == null) {
+      return _rxjsBundlesRxMinJs.Observable.empty();
+    }
+    return execArcLint(arcDir, [path], skip);
+  }).publish();
+}
+
+function _callArcDiff(filePath, extraArcDiffArgs) {
   const args = ['diff', '--json'].concat(extraArcDiffArgs);
 
-  return Observable
-    .fromPromise(getCommitBasedArcConfigDirectory(filePath))
-    .flatMap((arcConfigDir: ?string) => {
-      if (arcConfigDir == null) {
-        throw new Error('Failed to find Arcanist config.  Is this project set up for Arcanist?');
-      }
-      return Observable.fromPromise(getArcExecOptions(arcConfigDir))
-        .switchMap(opts => scriptSafeSpawnAndObserveOutput('arc', args, opts));
-    }).share();
+  return _rxjsBundlesRxMinJs.Observable.fromPromise(getCommitBasedArcConfigDirectory(filePath)).flatMap(arcConfigDir => {
+    if (arcConfigDir == null) {
+      throw new Error('Failed to find Arcanist config.  Is this project set up for Arcanist?');
+    }
+    return _rxjsBundlesRxMinJs.Observable.fromPromise(getArcExecOptions(arcConfigDir)).switchMap(opts => (0, (_process || _load_process()).scriptSafeSpawnAndObserveOutput)('arc', args, opts));
+  }).share();
 }
 
-function getArcDiffParams(
-  lintExcuse: ?string,
-  isPrepareMode?: boolean = false,
-): Array<string> {
+function getArcDiffParams(lintExcuse, isPrepareMode = false) {
   const args = [];
   if (isPrepareMode) {
     args.push('--prepare');
@@ -196,27 +257,14 @@ function getArcDiffParams(
   return args;
 }
 
-export function createPhabricatorRevision(
-  filePath: NuclideUri,
-  isPrepareMode: boolean,
-  lintExcuse: ?string,
-): ConnectableObservable<{stderr?: string, stdout?: string}> {
+function createPhabricatorRevision(filePath, isPrepareMode, lintExcuse) {
   const args = ['--verbatim', ...getArcDiffParams(lintExcuse, isPrepareMode)];
   return _callArcDiff(filePath, args).publish();
 }
 
-export function updatePhabricatorRevision(
-  filePath: NuclideUri,
-  message: string,
-  allowUntracked: boolean,
-  lintExcuse: ?string,
-  verbatimModeEnabled: boolean,
-): ConnectableObservable<{stderr?: string, stdout?: string}> {
+function updatePhabricatorRevision(filePath, message, allowUntracked, lintExcuse, verbatimModeEnabled) {
   const baseArgs = ['-m', message, ...getArcDiffParams(lintExcuse)];
-  const args = [
-    ...(verbatimModeEnabled ? ['--verbatim'] : []),
-    ...baseArgs,
-  ];
+  const args = [...(verbatimModeEnabled ? ['--verbatim'] : []), ...baseArgs];
 
   if (allowUntracked) {
     args.push('--allow-untracked');
@@ -224,124 +272,91 @@ export function updatePhabricatorRevision(
   return _callArcDiff(filePath, args).publish();
 }
 
-export function execArcPull(
-  cwd: NuclideUri,
-  fetchLatest: boolean,
-  allowDirtyChanges: boolean,
-): ConnectableObservable<ProcessMessage> {
-  return Observable.fromPromise(getEditMergeConfigs())
-    .switchMap(editMergeConfigs => {
-      const args = ['pull'];
-      if (fetchLatest) {
-        args.push('--latest');
-      }
+function execArcPull(cwd, fetchLatest, allowDirtyChanges) {
+  return _rxjsBundlesRxMinJs.Observable.fromPromise((0, (_hgUtils || _load_hgUtils()).getEditMergeConfigs)()).switchMap(editMergeConfigs => {
+    const args = ['pull'];
+    if (fetchLatest) {
+      args.push('--latest');
+    }
 
-      if (allowDirtyChanges) {
-        args.push('--allow-dirty');
-      }
+    if (allowDirtyChanges) {
+      args.push('--allow-dirty');
+    }
 
-      return Observable.fromPromise(getArcExecOptions(cwd, editMergeConfigs.hgEditor))
-        .switchMap(opts => observeProcess(() => safeSpawn('arc', args, opts)));
-    }).publish();
+    return _rxjsBundlesRxMinJs.Observable.fromPromise(getArcExecOptions(cwd, editMergeConfigs.hgEditor)).switchMap(opts => (0, (_process || _load_process()).observeProcess)(() => (0, (_process || _load_process()).safeSpawn)('arc', args, opts)));
+  }).publish();
 }
 
-export function execArcLand(
-  cwd: NuclideUri,
-): ConnectableObservable<ProcessMessage> {
+function execArcLand(cwd) {
   const args = ['land'];
-  return Observable.fromPromise(getArcExecOptions(cwd))
-    .switchMap(opts => observeProcess(() => safeSpawn('arc', args, opts)))
-    .publish();
+  return _rxjsBundlesRxMinJs.Observable.fromPromise(getArcExecOptions(cwd)).switchMap(opts => (0, (_process || _load_process()).observeProcess)(() => (0, (_process || _load_process()).safeSpawn)('arc', args, opts))).publish();
 }
 
-export function execArcPatch(
-  cwd: NuclideUri,
-  differentialRevision: string,
-): ConnectableObservable<ProcessMessage> {
+function execArcPatch(cwd, differentialRevision) {
   const args = ['patch', differentialRevision];
-  return Observable.fromPromise(getArcExecOptions(cwd))
-    .switchMap(opts => observeProcess(() => safeSpawn('arc', args, opts)))
-    .publish();
+  return _rxjsBundlesRxMinJs.Observable.fromPromise(getArcExecOptions(cwd)).switchMap(opts => (0, (_process || _load_process()).observeProcess)(() => (0, (_process || _load_process()).safeSpawn)('arc', args, opts))).publish();
 }
 
-function execArcLint(
-  cwd: string,
-  filePaths: Array<NuclideUri>,
-  skip: Array<string>,
-): Observable<ArcDiagnostic> {
-  const args: Array<string> = ['lint', '--output', 'json', ...filePaths];
+function execArcLint(cwd, filePaths, skip) {
+  const args = ['lint', '--output', 'json', ...filePaths];
   if (skip.length > 0) {
     args.push('--skip', skip.join(','));
   }
-  return Observable.fromPromise(getArcExecOptions(cwd))
-    .switchMap(opts => niceSafeSpawn('arc', args, opts))
-    .switchMap(arcProcess => getOutputStream(arcProcess, /* killTreeOnComplete */ true))
-    .mergeMap(event => {
-      if (event.kind === 'error') {
-        return Observable.throw(event.error);
-      } else if (event.kind === 'exit') {
-        if (event.exitCode !== 0) {
-          return Observable.throw(Error(exitEventToMessage(event)));
-        }
-        return Observable.empty();
-      } else if (event.kind === 'stderr') {
-        return Observable.empty();
+  return _rxjsBundlesRxMinJs.Observable.fromPromise(getArcExecOptions(cwd)).switchMap(opts => (0, (_nice || _load_nice()).niceSafeSpawn)('arc', args, opts)).switchMap(arcProcess => (0, (_process || _load_process()).getOutputStream)(arcProcess, /* killTreeOnComplete */true)).mergeMap(event => {
+    if (event.kind === 'error') {
+      return _rxjsBundlesRxMinJs.Observable.throw(event.error);
+    } else if (event.kind === 'exit') {
+      if (event.exitCode !== 0) {
+        return _rxjsBundlesRxMinJs.Observable.throw(Error((0, (_process || _load_process()).exitEventToMessage)(event)));
       }
-      // Arc lint outputs multiple JSON objects on multiple lines.
-      const stdout = event.data.trim();
-      if (stdout === '') {
-        return Observable.empty();
+      return _rxjsBundlesRxMinJs.Observable.empty();
+    } else if (event.kind === 'stderr') {
+      return _rxjsBundlesRxMinJs.Observable.empty();
+    }
+    // Arc lint outputs multiple JSON objects on multiple lines.
+    const stdout = event.data.trim();
+    if (stdout === '') {
+      return _rxjsBundlesRxMinJs.Observable.empty();
+    }
+    let json;
+    try {
+      json = JSON.parse(stdout);
+    } catch (error) {
+      (0, (_nuclideLogging || _load_nuclideLogging()).getLogger)().warn('Error parsing `arc lint` JSON output', stdout);
+      return _rxjsBundlesRxMinJs.Observable.empty();
+    }
+    const output = new Map();
+    for (const file of Object.keys(json)) {
+      const errorsToAdd = json[file];
+      let errors = output.get(file);
+      if (errors == null) {
+        errors = [];
+        output.set(file, errors);
       }
-      let json;
-      try {
-        json = JSON.parse(stdout);
-      } catch (error) {
-        getLogger().warn('Error parsing `arc lint` JSON output', stdout);
-        return Observable.empty();
+      for (const error of errorsToAdd) {
+        errors.push(error);
       }
-      const output = new Map();
-      for (const file of Object.keys(json)) {
-        const errorsToAdd = json[file];
-        let errors = output.get(file);
-        if (errors == null) {
-          errors = [];
-          output.set(file, errors);
-        }
-        for (const error of errorsToAdd) {
-          errors.push(error);
-        }
-      }
+    }
 
-      const lints = [];
-      for (const file of filePaths) {
-        // TODO(7876450): For some reason, this does not work for particular
-        // values of pathToFile. Depending on the location of .arcconfig, we may
-        // get a key that is different from what `arc lint` actually returns,
-        // and end up without any lints for this path.
-        const key = nuclideUri.relative(cwd, file);
-        const rawLints = output.get(key);
-        if (rawLints) {
-          for (const lint of convertLints(file, rawLints)) {
-            lints.push(lint);
-          }
+    const lints = [];
+    for (const file of filePaths) {
+      // TODO(7876450): For some reason, this does not work for particular
+      // values of pathToFile. Depending on the location of .arcconfig, we may
+      // get a key that is different from what `arc lint` actually returns,
+      // and end up without any lints for this path.
+      const key = (_nuclideUri || _load_nuclideUri()).default.relative(cwd, file);
+      const rawLints = output.get(key);
+      if (rawLints) {
+        for (const lint of convertLints(file, rawLints)) {
+          lints.push(lint);
         }
       }
-      return Observable.from(lints);
-    });
+    }
+    return _rxjsBundlesRxMinJs.Observable.from(lints);
+  });
 }
 
-function convertLints(
-  pathToFile: string,
-  lints: Array<{
-    severity: string,
-    line: number,
-    char: number,
-    code: string,
-    description: string,
-    original?: string,
-    replacement?: string,
-  }>,
-): Array<ArcDiagnostic> {
+function convertLints(pathToFile, lints) {
   return lints.map(lint => {
     // Choose an appropriate level based on lint['severity'].
     const severity = lint.severity;
@@ -353,13 +368,13 @@ function convertLints(
     const col = Math.max(0, lint.char - 1);
     const row = Math.max(0, line - 1);
 
-    const diagnostic: ArcDiagnostic = {
+    const diagnostic = {
       type: level,
       text: lint.description,
       filePath: pathToFile,
       row,
       col,
-      code: lint.code,
+      code: lint.code
     };
     if (lint.original != null) {
       diagnostic.original = lint.original;
@@ -371,11 +386,11 @@ function convertLints(
   });
 }
 
-export const __TEST__ = {
+const __TEST__ = exports.__TEST__ = {
   arcConfigDirectoryMap,
   arcProjectMap,
   reset() {
     arcConfigDirectoryMap.clear();
     arcProjectMap.clear();
-  },
+  }
 };

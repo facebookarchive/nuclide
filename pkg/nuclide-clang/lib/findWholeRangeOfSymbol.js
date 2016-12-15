@@ -1,14 +1,6 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import {Range} from 'atom';
+var _atom = require('atom');
 
 // Matches something like: textA: or textA:textB:
 const OBJC_SELECTOR_NAME_REGEX = /([^\s:]+:)+$/g;
@@ -30,18 +22,22 @@ const OBJC_SELECTOR_NAME_REGEX = /([^\s:]+:)+$/g;
  * @param extent The 'extent' of the symbol, as returned by libclang's Cursor.extent.
  * @return The true range of the symbol, which may extend beyond the `text` word.
  */
-function findWholeRangeOfSymbol(
-    textEditor: TextEditor,
-    text: string,
-    textRange: Range,
-    spelling: ?string,
-    extent: atom$Range,
-  ): Array<atom$Range> {
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ *
+ * 
+ */
+
+function findWholeRangeOfSymbol(textEditor, text, textRange, spelling, extent) {
   if (!spelling || text === spelling) {
     return [textRange];
-  } else if ((text + ':') === spelling) {
+  } else if (text + ':' === spelling) {
     // Quick check for a common case, an Obj-C selector with one argument.
-    const newRange = new Range(textRange.start, [textRange.end.row, textRange.end.column + 1]);
+    const newRange = new _atom.Range(textRange.start, [textRange.end.row, textRange.end.column + 1]);
     return [newRange];
   } else if (spelling.match(OBJC_SELECTOR_NAME_REGEX)) {
     // Obj-C selector with multiple arguments, e.g. doFoo:withBar:
@@ -53,7 +49,7 @@ function findWholeRangeOfSymbol(
     const ranges = [];
 
     const selectorSegments = spelling.split(':');
-    const iterator = ({match, matchText, range, stop, replace}) => {
+    const iterator = ({ match, matchText, range, stop, replace }) => {
       if (!matchText) {
         return;
       }
@@ -69,9 +65,9 @@ function findWholeRangeOfSymbol(
       const segmentWithColon = selectorSegment + ':';
       const regex = new RegExp(segmentWithColon);
 
-      const rangeOfPreviousSegment = ranges[(ranges.length - 1)];
+      const rangeOfPreviousSegment = ranges[ranges.length - 1];
       const rangeStart = rangeOfPreviousSegment ? rangeOfPreviousSegment.end : extent.start;
-      const rangeToScan = new Range(rangeStart, extent.end);
+      const rangeToScan = new _atom.Range(rangeStart, extent.end);
 
       textEditor.scanInBufferRange(regex, rangeToScan, iterator);
     }

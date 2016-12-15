@@ -1,118 +1,122 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import type {NuclideUri} from '../commons-node/nuclideUri';
-import type {FileChangeStatusValue} from '../commons-atom/vcs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import classnames from 'classnames';
-import {
- FileChangeStatusToIcon,
- FileChangeStatusToTextColor,
-} from '../commons-atom/vcs';
-import nuclideUri from '../commons-node/nuclideUri';
-import {React} from 'react-for-atom';
-import {Icon} from './Icon';
+var _classnames;
 
-type ChangedFilesProps = {
-  fileChanges: Map<NuclideUri, FileChangeStatusValue>,
-  rootPath: NuclideUri,
-  commandPrefix: string,
-  selectedFile: ?NuclideUri,
-  hideEmptyFolders: boolean,
-  shouldShowFolderName: boolean,
-  onFileChosen: (filePath: NuclideUri) => void,
-};
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
 
-type ChangedFilesState = {
-  isCollapsed: boolean,
-};
+var _vcs;
 
-export default class ChangedFilesList extends React.Component {
-  props: ChangedFilesProps;
-  state: ChangedFilesState;
+function _load_vcs() {
+  return _vcs = require('../commons-atom/vcs');
+}
 
-  constructor(props: ChangedFilesProps) {
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../commons-node/nuclideUri'));
+}
+
+var _reactForAtom = require('react-for-atom');
+
+var _Icon;
+
+function _load_Icon() {
+  return _Icon = require('./Icon');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class ChangedFilesList extends _reactForAtom.React.Component {
+
+  constructor(props) {
     super(props);
     this.state = {
-      isCollapsed: false,
+      isCollapsed: false
     };
   }
 
-  _getFileClassname(file: NuclideUri, fileChangeValue: FileChangeStatusValue): string {
-    const {selectedFile} = this.props;
-    return classnames(
-      'list-item', {
-        selected: file === selectedFile,
-      },
-      FileChangeStatusToTextColor[fileChangeValue],
-    );
+  _getFileClassname(file, fileChangeValue) {
+    const { selectedFile } = this.props;
+    return (0, (_classnames || _load_classnames()).default)('list-item', {
+      selected: file === selectedFile
+    }, (_vcs || _load_vcs()).FileChangeStatusToTextColor[fileChangeValue]);
   }
 
-  render(): ?React.Element<any> {
-    const {fileChanges, commandPrefix} = this.props;
+  render() {
+    const { fileChanges, commandPrefix } = this.props;
     if (fileChanges.size === 0 && this.props.hideEmptyFolders) {
       return null;
     }
 
-    const rootClassName = classnames('list-nested-item', {
-      collapsed: this.state.isCollapsed,
+    const rootClassName = (0, (_classnames || _load_classnames()).default)('list-nested-item', {
+      collapsed: this.state.isCollapsed
     });
 
-    const fileClassName = classnames(
-      'icon',
-      'icon-file-text',
-      'nuclide-file-changes-file-entry',
-      `${commandPrefix}-file-entry`,
-    );
+    const fileClassName = (0, (_classnames || _load_classnames()).default)('icon', 'icon-file-text', 'nuclide-file-changes-file-entry', `${ commandPrefix }-file-entry`);
 
-    return (
-      <ul className="list-tree has-collapsable-children">
-        <li className={rootClassName}>
-          {this.props.shouldShowFolderName ?
-            <div
-              className="list-item"
-              key={this.props.rootPath}
-              onClick={() => this.setState({isCollapsed: !this.state.isCollapsed})}>
-              <span
-                className="icon icon-file-directory nuclide-file-changes-root-entry"
-                data-path={this.props.rootPath}>
-                {nuclideUri.basename(this.props.rootPath)}
-              </span>
-            </div> :
-            null
-          }
-          <ul className="list-tree has-flat-children">
-            {Array.from(fileChanges.entries()).map(
-              ([filePath, fileChangeValue]) => {
-                const baseName = nuclideUri.basename(filePath);
-                return (
-                  <li
-                    data-path={filePath}
-                    className={this._getFileClassname(filePath, fileChangeValue)}
-                    key={filePath}
-                    onClick={() => this.props.onFileChosen(filePath)}>
-                    <Icon icon={FileChangeStatusToIcon[fileChangeValue]} />
-                    <span
-                      className={fileClassName}
-                      data-name={baseName}
-                      data-path={filePath}
-                      data-root={this.props.rootPath}>
-                      {baseName}
-                    </span>
-                  </li>
-                );
-              },
-            )}
-          </ul>
-        </li>
-      </ul>
+    return _reactForAtom.React.createElement(
+      'ul',
+      { className: 'list-tree has-collapsable-children' },
+      _reactForAtom.React.createElement(
+        'li',
+        { className: rootClassName },
+        this.props.shouldShowFolderName ? _reactForAtom.React.createElement(
+          'div',
+          {
+            className: 'list-item',
+            key: this.props.rootPath,
+            onClick: () => this.setState({ isCollapsed: !this.state.isCollapsed }) },
+          _reactForAtom.React.createElement(
+            'span',
+            {
+              className: 'icon icon-file-directory nuclide-file-changes-root-entry',
+              'data-path': this.props.rootPath },
+            (_nuclideUri || _load_nuclideUri()).default.basename(this.props.rootPath)
+          )
+        ) : null,
+        _reactForAtom.React.createElement(
+          'ul',
+          { className: 'list-tree has-flat-children' },
+          Array.from(fileChanges.entries()).map(([filePath, fileChangeValue]) => {
+            const baseName = (_nuclideUri || _load_nuclideUri()).default.basename(filePath);
+            return _reactForAtom.React.createElement(
+              'li',
+              {
+                'data-path': filePath,
+                className: this._getFileClassname(filePath, fileChangeValue),
+                key: filePath,
+                onClick: () => this.props.onFileChosen(filePath) },
+              _reactForAtom.React.createElement((_Icon || _load_Icon()).Icon, { icon: (_vcs || _load_vcs()).FileChangeStatusToIcon[fileChangeValue] }),
+              _reactForAtom.React.createElement(
+                'span',
+                {
+                  className: fileClassName,
+                  'data-name': baseName,
+                  'data-path': filePath,
+                  'data-root': this.props.rootPath },
+                baseName
+              )
+            );
+          })
+        )
+      )
     );
   }
 }
+exports.default = ChangedFilesList; /**
+                                     * Copyright (c) 2015-present, Facebook, Inc.
+                                     * All rights reserved.
+                                     *
+                                     * This source code is licensed under the license found in the LICENSE file in
+                                     * the root directory of this source tree.
+                                     *
+                                     * 
+                                     */
+
+module.exports = exports['default'];

@@ -1,25 +1,31 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import featureConfig from '../../commons-atom/featureConfig';
-import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.SHOW_TYPE_COVERAGE_CONFIG_PATH = exports.HACK_CONFIG_PATH = undefined;
+exports.getConfig = getConfig;
 
-type HackConfig = {
-  hhClientPath: string,
-  useIdeConnection: boolean,
-  logLevel: LogLevel,
-};
+var _featureConfig;
 
-export const HACK_CONFIG_PATH = 'nuclide-hack';
-export const SHOW_TYPE_COVERAGE_CONFIG_PATH = HACK_CONFIG_PATH + '.showTypeCoverage';
+function _load_featureConfig() {
+  return _featureConfig = _interopRequireDefault(require('../../commons-atom/featureConfig'));
+}
 
-export function getConfig(): HackConfig {
-  return (featureConfig.get(HACK_CONFIG_PATH): any);
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const HACK_CONFIG_PATH = exports.HACK_CONFIG_PATH = 'nuclide-hack'; /**
+                                                                     * Copyright (c) 2015-present, Facebook, Inc.
+                                                                     * All rights reserved.
+                                                                     *
+                                                                     * This source code is licensed under the license found in the LICENSE file in
+                                                                     * the root directory of this source tree.
+                                                                     *
+                                                                     * 
+                                                                     */
+
+const SHOW_TYPE_COVERAGE_CONFIG_PATH = exports.SHOW_TYPE_COVERAGE_CONFIG_PATH = HACK_CONFIG_PATH + '.showTypeCoverage';
+
+function getConfig() {
+  return (_featureConfig || _load_featureConfig()).default.get(HACK_CONFIG_PATH);
 }
