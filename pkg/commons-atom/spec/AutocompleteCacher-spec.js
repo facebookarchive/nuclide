@@ -17,6 +17,7 @@ import AutocompleteCacher from '../AutocompleteCacher';
 describe('AutocompleteCacher', () => {
   let getSuggestions: JasmineSpy = (null: any);
   let updateResults: JasmineSpy = (null: any);
+  let shouldFilter: JasmineSpy | void = undefined;
   let mockedSuggestions: Promise<Array<string>> = (null: any);
   let mockedUpdateResults: Array<string> = (null: any);
   // returned from the second call
@@ -30,6 +31,14 @@ describe('AutocompleteCacher', () => {
 
   // Denotes a new autocomplete session. Previous results cannot be re-used.
   let separateMockedRequest: atom$AutocompleteRequest = (null: any);
+
+  function initializeAutocompleteCacher() {
+    autocompleteCacher = new AutocompleteCacher({
+      getSuggestions,
+      updateResults,
+      shouldFilter,
+    });
+  }
 
   beforeEach(() => {
     waitsForPromise(async () => {
@@ -77,10 +86,8 @@ describe('AutocompleteCacher', () => {
         updateResultsCallCount++;
         return result;
       });
-      autocompleteCacher = new AutocompleteCacher({
-        getSuggestions: request => getSuggestions(request),
-        updateResults: (request, previousResults) => updateResults(request, previousResults),
-      });
+
+      initializeAutocompleteCacher();
     });
   });
 
@@ -176,6 +183,53 @@ describe('AutocompleteCacher', () => {
       expect(updateResults).not.toHaveBeenCalled();
 
       expect(secondResults).toBe(await mockedSuggestions);
+    });
+  });
+
+  describe('with a custom shouldFilter function', () => {
+    let shouldFilterResult = false;
+    beforeEach(() => {
+      shouldFilter = jasmine.createSpy('shouldFilter').andCallFake(() => shouldFilterResult);
+      initializeAutocompleteCacher();
+    });
+
+    it('should not filter if not allowed', () => {
+      waitsForPromise(async () => {
+        await autocompleteCacher.getSuggestions(mockedRequest);
+        await autocompleteCacher.getSuggestions(mockedRequest2);
+
+        expect(getSuggestions.callCount).toBe(2);
+        expect(shouldFilter).toHaveBeenCalledWith(mockedRequest, mockedRequest2);
+
+        expect(updateResults).not.toHaveBeenCalled();
+      });
+    });
+
+    it('should filter if allowed', () => {
+      waitsForPromise(async () => {
+        shouldFilterResult = true;
+        await autocompleteCacher.getSuggestions(mockedRequest);
+        const secondResults = await autocompleteCacher.getSuggestions(mockedRequest2);
+
+        expect(getSuggestions.callCount).toBe(1);
+        expect(getSuggestions).toHaveBeenCalledWith(mockedRequest);
+
+        expect(updateResults.callCount).toBe(1);
+        expect(updateResults).toHaveBeenCalledWith(mockedRequest2, await mockedSuggestions);
+
+        expect(secondResults).toBe(mockedUpdateResults);
+      });
+    });
+
+    it('should check the cursor positions of requests before calling shouldFilter', () => {
+      waitsForPromise(async () => {
+        await autocompleteCacher.getSuggestions(mockedRequest);
+        await autocompleteCacher.getSuggestions(separateMockedRequest);
+
+        expect(getSuggestions.callCount).toBe(2);
+        expect(shouldFilter).not.toHaveBeenCalled();
+        expect(updateResults).not.toHaveBeenCalled();
+      });
     });
   });
 });

@@ -8,13 +8,20 @@
  * @flow
  */
 
-export type AutocompleteCacherConfig<T> = {
+export type AutocompleteCacherConfig<T> = {|
  getSuggestions: (request: atom$AutocompleteRequest) => Promise<T>,
  updateResults: (
    request: atom$AutocompleteRequest,
    firstResult: T,
  ) => T,
-};
+ // If this is provided, we will ask it whether we can filter on the given request after first
+ // verifying that the cursor has only moved by one column since the last request.
+ shouldFilter?: (
+   lastRequest: atom$AutocompleteRequest,
+   currentRequest: atom$AutocompleteRequest,
+   // TODO pass originalResult here if any client requires it
+ ) => boolean,
+|};
 
 type AutocompleteSession<T> = {
   firstResult: Promise<T>,
@@ -32,7 +39,7 @@ export default class AutocompleteCacher<T> {
 
   getSuggestions(request: atom$AutocompleteRequest): Promise<T> {
     const session = this._session;
-    if (session != null && canFilterResults(session, request)) {
+    if (session != null && this._canFilterResults(session, request)) {
       const result = this._filterSuggestions(request, session.firstResult);
       this._session = {
         firstResult: session.firstResult,
@@ -55,18 +62,27 @@ export default class AutocompleteCacher<T> {
   ): Promise<T> {
     return this._config.updateResults(request, await firstResult);
   }
+
+  _canFilterResults(
+    session: AutocompleteSession<T>,
+    currentRequest: atom$AutocompleteRequest,
+  ): boolean {
+    const {lastRequest} = session;
+    const shouldFilter = this._config.shouldFilter != null ?
+      this._config.shouldFilter :
+      defaultShouldFilter;
+    return lastRequest.bufferPosition.row === currentRequest.bufferPosition.row &&
+        lastRequest.bufferPosition.column + 1 === currentRequest.bufferPosition.column &&
+        shouldFilter(lastRequest, currentRequest);
+  }
 }
 
-// TODO make this configurable per language
 const IDENTIFIER_CHAR_REGEX = /[a-zA-Z_]/;
 
-function canFilterResults<T>(
-  session: AutocompleteSession<T>,
-  request: atom$AutocompleteRequest,
-): boolean {
-  const {lastRequest} = session;
-  return lastRequest.bufferPosition.row === request.bufferPosition.row &&
-      lastRequest.bufferPosition.column + 1 === request.bufferPosition.column &&
-      request.prefix.startsWith(lastRequest.prefix) &&
-      IDENTIFIER_CHAR_REGEX.test(request.prefix.charAt(request.prefix.length - 1));
+function defaultShouldFilter(
+  lastRequest: atom$AutocompleteRequest,
+  currentRequest: atom$AutocompleteRequest,
+) {
+  return currentRequest.prefix.startsWith(lastRequest.prefix) &&
+    IDENTIFIER_CHAR_REGEX.test(currentRequest.prefix.charAt(currentRequest.prefix.length - 1));
 }
