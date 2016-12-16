@@ -11,7 +11,6 @@
 'use strict';
 
 /* eslint comma-dangle: [1, always-multiline], prefer-object-spread/prefer-object-spread: 0 */
-
 /* eslint-disable no-console */
 
 // This file is both the main and worker process.
@@ -37,9 +36,9 @@ function runParent() {
   const os = require('os');
   const path = require('path');
 
-  const pathRules = require('../../pkg/nuclide-node-transpiler/lib/path-rules');
+  const pathRules = require('../pkg/nuclide-node-transpiler/lib/path-rules');
 
-  const developmentFilePath = path.join(__dirname, '../../DEVELOPMENT');
+  const developmentFilePath = path.join(__dirname, '../DEVELOPMENT');
 
   const numWorkers = Math.max(os.cpus().length - 1, 1);
 
@@ -97,7 +96,7 @@ function runParent() {
 function runChild() {
   const fs = require('fs');
 
-  const NodeTranspiler = require('../../pkg/nuclide-node-transpiler/lib/NodeTranspiler');
+  const NodeTranspiler = require('../pkg/nuclide-node-transpiler/lib/NodeTranspiler');
   const nodeTranspiler = new NodeTranspiler();
 
   let overwrite;

@@ -78,17 +78,6 @@ but it seems like it will ultimately have to, as it is the favored pattern in At
 ## Development
 
 The Nuclide repository is organized to facilitate iterative development of Nuclide itself.
-After running `./scripts/dev/setup`, not only will Nuclide be installed, but it will be
-set up so you can iterate on packages using the standard edit/refresh loop. That is,
-you can edit any Nuclide package source (whether it is a Node or Atom package) and then
-hit `ctrl-alt-cmd-l` to reload Atom and pick up your changes. This works because
-`./scripts/dev/setup` creates a system of symlinks that eliminates the need for subsequent
-calls to `npm install` between changes. The only time `./scripts/dev/setup` needs to be run
-again is when the `"dependencies"` of a `package.json` file is modified.
-
-To run the full suite of tests across all Nuclide packages, run `./scripts/dev/test`.
-Where possible, tests will be run in parallel to improve throughput. Therefore, it is
-important to design tests such that they do not depend on any global, shared state.
 
 To run the tests for an individual package, invoke the test runner that corresponds to
 the `"nuclide/testRunner"` section of the `package.json` file (i.e., `npm test` or `apm test`).

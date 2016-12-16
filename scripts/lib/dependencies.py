@@ -49,3 +49,17 @@ def get_atom_version():
 
 def get_flow_version():
     return load_dependencies()['flow']['version']
+
+def main():
+    import optparse
+    import sys
+    parser = optparse.OptionParser(usage='usage: %prog [options]',
+                                   description='Check dependency versions')
+    parser.add_option('--no-atom', action='store_true',
+                      help='Exclude packages that depend on Atom',
+                      default=False)
+    options, _ = parser.parse_args(sys.argv[1:])
+    check_dependencies(not options.no_atom)
+
+if __name__ == '__main__':
+    main()

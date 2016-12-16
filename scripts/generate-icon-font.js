@@ -12,13 +12,12 @@
 
 /* eslint comma-dangle: [1, always-multiline], prefer-object-spread/prefer-object-spread: 0 */
 
-
 const webfontsGenerator = require('webfonts-generator');
 const glob = require('glob');
 const path = require('path');
 const fs = require('fs');
 
-const basedir = path.join(__dirname, '../..');
+const basedir = path.join(__dirname, '..');
 const nucliconsDir = path.join(basedir, 'resources/nuclicons');
 const stylesDir = path.join(basedir, 'pkg/nuclide-ui/styles');
 const svgs = glob.sync(path.join(basedir, 'resources/nuclicons/*.svg'));

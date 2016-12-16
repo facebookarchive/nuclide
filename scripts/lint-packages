@@ -14,9 +14,6 @@ logging.basicConfig(level=logging.INFO, format='%(message)s')
 import os.path
 import sys
 
-# Add the lib/ directory to $PYTHONPATH so library code can be imported.
-sys.path.append(os.path.join(os.path.dirname(__file__), '../lib'))
-
 # Parse the command-line arguments.
 import optparse
 parser = optparse.OptionParser(usage='usage: %prog [options]',
@@ -29,8 +26,8 @@ if verbose:
     logging.getLogger().setLevel(logging.DEBUG)
 
 # Validate package definitions
-from package_manager import PackageManager
-from package_linter import PackageLinter
+from lib.package_manager import PackageManager
+from lib.package_linter import PackageLinter
 
 package_manager = PackageManager()
 linter = PackageLinter(package_manager.get_package_map())

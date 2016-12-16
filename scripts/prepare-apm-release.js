@@ -15,7 +15,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const basedir = path.join(__dirname, '../..');
+const basedir = path.join(__dirname, '..');
 
 const gitIgnorePath = path.join(basedir, '.gitignore');
 const npmIgnorePath = path.join(basedir, '.npmignore');
@@ -58,8 +58,8 @@ fs.writeFileSync(packageJsonPath, newPackageJson);
  * npm-shrinkwrap.json:
  */
 try {
-  const prodShrinkwrapPath = require.resolve('../../npm-shrinkwrap.production.json');
-  const realShrinkwrapPath = require.resolve('../../npm-shrinkwrap.json');
+  const prodShrinkwrapPath = require.resolve('../npm-shrinkwrap.production.json');
+  const realShrinkwrapPath = require.resolve('../npm-shrinkwrap.json');
   fs.renameSync(prodShrinkwrapPath, realShrinkwrapPath);
 } catch (err) {
   if (!/Error: Cannot find module/.test(err)) {

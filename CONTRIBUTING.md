@@ -13,7 +13,7 @@ We actively welcome your pull requests.
  or `gh-pages` for docs and website changes.
 2. If you've added code that should be tested, add tests.
 3. If you've changed APIs, update the documentation.
-4. Ensure the test suite passes by running scripts/dev/test.
+4. Ensure the test suite passes by running `scripts/test`.
 5. Make sure your JavaScript code lints by using Flow.
 6. If you haven't already, complete the Contributor License Agreement ("CLA").
 

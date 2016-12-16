@@ -5,7 +5,7 @@ This file is a handlebars template used to generate the `nuclicons.css` file in
 /*
 @gen{{! spoiler comment so as to avoid the tag in the template }}erated
 This file was programatically generated using
-`scripts/dev/generate_icon_font.js`. DON'T EDIT IT DIRECTLY! Instead, add SVGs
+`scripts/generate-icon-font.js`. DON'T EDIT IT DIRECTLY! Instead, add SVGs
 to `resources/nuclicons` and rerun the script.
 */
 

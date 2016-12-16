@@ -24,10 +24,7 @@ import os.path
 import subprocess
 import sys
 
-# Add the lib directory to $PYTHONPATH so library code can be imported.
-sys.path.append(os.path.join(os.path.dirname(__file__), '../lib'))
-
-from package_manager import PACKAGES_PATH
+from lib.package_manager import PACKAGES_PATH
 
 NPM = 'npm'
 APM = 'apm'
@@ -170,9 +167,6 @@ def create_package(package_name, package_type, test_runner):
                 (package_name, os.path.relpath(ATOM_TEST_RUNNER_FILE, pkg_dir)))
 
     print 'New package created at: %s.' % pkg_dir
-    print 'Running setup to pick up the changes.'
-    setup_script = os.path.join(os.path.dirname(__file__), './setup')
-    subprocess.check_call([setup_script])
 
 def prompt_and_create_package(user_input):
     if user_input is None:

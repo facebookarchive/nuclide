@@ -11,10 +11,9 @@
 'use strict';
 
 /* eslint comma-dangle: [1, always-multiline], prefer-object-spread/prefer-object-spread: 0 */
-
 /* eslint-disable no-console */
 
-require('../../pkg/nuclide-node-transpiler');
+require('../pkg/nuclide-node-transpiler');
 
 const argv = require('yargs')
   .usage('Usage: $0 [options]')
@@ -30,9 +29,9 @@ const glob = require('glob');
 const os = require('os');
 const path = require('path');
 
-const basedir = path.join(__dirname, '../..');
+const basedir = path.join(__dirname, '..');
 
-const loadServicesConfig = require('../../pkg/nuclide-rpc/lib/loadServicesConfig');
+const loadServicesConfig = require('../pkg/nuclide-rpc/lib/loadServicesConfig');
 const servicesConfigs = glob.sync(path.join(basedir, 'pkg/*'))
   .reduce((acc, dirname) => acc.concat(loadServicesConfig(dirname)), []);
 
@@ -47,7 +46,7 @@ function spawnWorker() {
   }
   const servicesConfig = servicesConfigs.shift();
   const ps = child_process.spawn(
-    require.resolve('../../pkg/nuclide-rpc/bin/generate-proxy.js'),
+    require.resolve('../pkg/nuclide-rpc/bin/generate-proxy.js'),
     [
       '--definitionPath', servicesConfig.definition,
       '--serviceName', servicesConfig.name,
