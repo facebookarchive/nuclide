@@ -48,7 +48,7 @@ parser.add_option('--fast', action='store_true', default=False,
 options, args = parser.parse_args(sys.argv[1:])
 
 try:
-    from fb.pre_setup import fb_pre_setup
+    from fb_pre_setup import fb_pre_setup
     disable_fb_update = not options.dev
     fb_pre_setup(disable_fb_update)
 except ImportError as e:
