@@ -399,7 +399,7 @@ export default class SplitDiffView {
       });
 
     const updateDiffSubscriptions = Observable.combineLatest(diffEditorsStream, diffStateStream)
-      .do(([diffEditors, fileDiff]) => {
+      .subscribe(([diffEditors, fileDiff]) => {
         if (diffEditors == null) {
           // One or both editors were destroyed.
           return;
@@ -416,10 +416,10 @@ export default class SplitDiffView {
         } catch (error) {
           notifyInternalError(error);
         }
-      }).subscribe();
+      });
 
     const uiElementsUpdates = Observable.combineLatest(diffEditorsStream, uiElementStream)
-      .do(([diffEditors, fileDiff]) => {
+      .subscribe(([diffEditors, fileDiff]) => {
         if (diffEditors == null) {
           // One or both editors were destroyed.
           return;
@@ -438,14 +438,14 @@ export default class SplitDiffView {
         } catch (error) {
           notifyInternalError(error);
         }
-      }).subscribe();
+      });
 
     const diffEditorsUpdates = diffEditorsStream
       .debounceTime(100)
-      .do(diffEditors => {
+      .subscribe(diffEditors => {
         actionCreators.updateDiffEditorsVisibility(diffEditors != null);
         actionCreators.updateDiffEditors(diffEditors);
-      }).subscribe();
+      });
 
     const activeSectionUpdates = diffEditorsStream
       .switchMap(diffEditors => {
@@ -477,7 +477,7 @@ export default class SplitDiffView {
 
     const navigationGutterUpdates = compact(diffEditorsStream)
       .debounceTime(50)
-      .do(diffEditors => {
+      .subscribe(diffEditors => {
         const dimesionsUpdates = Observable.merge(
           observeElementDimensions(diffEditors.newDiffEditor.getEditorDomElement()),
           observeElementDimensions(diffEditors.oldDiffEditor.getEditorDomElement()),
@@ -492,8 +492,7 @@ export default class SplitDiffView {
         } catch (error) {
           notifyInternalError(error);
         }
-      })
-      .subscribe();
+      });
 
     const diffLoadingIndicatorUpdates = diffEditorsStream
       .switchMap(diffEditors => {
@@ -503,16 +502,18 @@ export default class SplitDiffView {
         return states
           .map(({isLoadingFileDiff}) => isLoadingFileDiff)
           .distinctUntilChanged()
-          .do(isLoading => {
+          .map(isLoading => {
             const editorElement = diffEditors.oldDiffEditor.getEditorDomElement();
-            try {
-              updateEditorLoadingIndicator(editorElement, isLoading);
-            } catch (error) {
-              getLogger().error('Split Diff Error: Could not update loading indicator', error);
-            }
+            return {editorElement, isLoading};
           });
       })
-      .subscribe();
+      .subscribe(({editorElement, isLoading}) => {
+        try {
+          updateEditorLoadingIndicator(editorElement, isLoading);
+        } catch (error) {
+          getLogger().error('Split Diff Error: Could not update loading indicator', error);
+        }
+      });
 
 
     const scrollToFirstChange = diffEditorsStream.switchMap(diffEditors => {
@@ -526,14 +527,16 @@ export default class SplitDiffView {
         .first()
         // Wait for the diff editor to render the UI state.
         .delay(SCROLL_FIRST_CHANGE_DELAY_MS)
-        .do(({fileDiff: {navigationSections}}) => {
-          try {
-            centerScrollToFirstChange(diffEditors, navigationSections);
-          } catch (error) {
-            getLogger().error('Split Diff Error: Could not scroll to first change', error);
-          }
+        .map(({fileDiff: {navigationSections}}) => {
+          return {diffEditors, navigationSections};
         });
-    }).subscribe();
+    }).subscribe(({diffEditors, navigationSections}) => {
+      try {
+        centerScrollToFirstChange(diffEditors, navigationSections);
+      } catch (error) {
+        getLogger().error('Split Diff Error: Could not scroll to first change', error);
+      }
+    });
 
     const trackSavingInSplit = diffEditorsStream
       .switchMap(diffEditors => {
