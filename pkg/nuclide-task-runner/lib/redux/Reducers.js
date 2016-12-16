@@ -10,7 +10,6 @@
 
 import type {Action, AnnotatedTaskMetadata, AppState, TaskId} from '../types';
 
-import {areSetsEqual} from '../../../commons-node/collection';
 import * as Actions from './Actions';
 import {taskIdsAreEqual} from '../taskIdsAreEqual';
 
@@ -79,51 +78,33 @@ export function app(state: AppState, action: Action): AppState {
     }
     case Actions.SET_TASK_LISTS: {
       const {taskLists} = action.payload;
-      const tasksAreReady = state.tasksAreReady || areSetsEqual(
-        new Set(taskLists.keys()),
-        new Set(state.taskRunners.keys()),
+      return validateActiveTask({...state, taskLists});
+    }
+    case Actions.TASKS_READY: {
+      // When the tasks become ready, select a default task.
+      const initialTaskMeta = getInitialTaskMeta(
+        state.previousSessionActiveTaskId,
+        state.activeTaskId,
+        state.taskLists,
       );
 
-      let newState = {...state, tasksAreReady, taskLists};
-
-      if (tasksAreReady && !state.tasksAreReady) {
-        const initialTaskMeta = getInitialTaskMeta(
-          state.previousSessionActiveTaskId,
-          state.activeTaskId,
-          taskLists,
-        );
-
-        // Update the active task whenever tasks become ready.
-        newState = {
-          ...newState,
-          activeTaskId: initialTaskMeta == null
-            ? null
-            : {taskRunnerId: initialTaskMeta.taskRunnerId, type: initialTaskMeta.type},
-          previousSessionActiveTaskId: null,
-        };
-
-        // Initialize the view (select a default task and set the visibility). If a project hasn't
-        // been opened yet, we defer this until one has been. When that happens, a directory will be
-        // added -> the current working root will be set -> we'll request taks lists -> this action
-        // will be called again and we'll initialize.
-        if (!state.viewIsInitialized && state.projectWasOpened) {
-          // Initialize the view if we've yet to do so.
-          newState = {
-            ...newState,
-            viewIsInitialized: true,
-            visible: state.previousSessionVisible != null
-              // Use the last known state, if we have one.
-              ? state.previousSessionVisible
-              // Otherwise, only show the toolbar if the initial task is enabled. (It's okay if a
-              // task runner doesn't give us a "disabled" property for now, but we're not going to
-              // show the bar for possibly irrelevant tasks.)
-              : initialTaskMeta != null && initialTaskMeta.disabled === false,
-            previousSessionVisible: null,
-          };
-        }
-      }
-
-      return validateActiveTask(newState);
+      return validateActiveTask({
+        ...state,
+        tasksAreReady: true,
+        activeTaskId: initialTaskMeta == null
+          ? null
+          : {taskRunnerId: initialTaskMeta.taskRunnerId, type: initialTaskMeta.type},
+        previousSessionActiveTaskId: null,
+      });
+    }
+    case Actions.INITIALIZE_VIEW: {
+      const {visible} = action.payload;
+      return {
+        ...state,
+        viewIsInitialized: true,
+        visible,
+        previousSessionVisible: null,
+      };
     }
     case Actions.REGISTER_TASK_RUNNER: {
       const {taskRunner} = action.payload;

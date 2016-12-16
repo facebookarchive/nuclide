@@ -26,6 +26,7 @@ export function createEmptyAppState(): AppState {
     runningTaskInfo: null,
     viewIsInitialized: false,
     visible: false,
+    visibilityTable: null,
     previousSessionVisible: null,
   };
 }

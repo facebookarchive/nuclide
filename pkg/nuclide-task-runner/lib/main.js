@@ -8,8 +8,6 @@
  * @flow
  */
 
-/* global localStorage */
-
 import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 import type {
   AppState,
@@ -34,6 +32,7 @@ import {combineEpics, createEpicMiddleware} from '../../commons-node/redux-obser
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {trackEvent} from '../../nuclide-analytics';
 import {createEmptyAppState} from './createEmptyAppState';
+import {LocalStorageJsonTable} from './LocalStorageJsonTable';
 import * as Actions from './redux/Actions';
 import * as Epics from './redux/Epics';
 import {getActiveTaskId} from './redux/Selectors';
@@ -44,12 +43,11 @@ import {Disposable} from 'atom';
 import nullthrows from 'nullthrows';
 import {applyMiddleware, bindActionCreators, createStore} from 'redux';
 import {Observable} from 'rxjs';
+import shallowEqual from 'shallowequal';
 
 // TODO: use a more general versioning mechanism.
 // Perhaps Atom should provide packages with some way of doing this.
 const SERIALIZED_VERSION = 2;
-
-const SHOW_PLACEHOLDER_INITIALLY_KEY = 'nuclide:nuclide-task-runner:showPlaceholderInitially';
 
 class Activation {
   _disposables: UniversalDisposable;
@@ -63,17 +61,34 @@ class Activation {
       serializedState = {};
     }
 
+    // The serialized state that Atom gives us here is based on the open roots. However, users often
+    // open an empty window and then add a root (especially with remote projects). We need to go
+    // outside of Atom's normal serialization mechanism to account for this.
+    const visibilityTable = new LocalStorageJsonTable('nuclide:nuclide-task-runner:visibility');
+
+    // If the task runner toolbar was shown previously, we'll display a placholder until the view
+    // initializes so there's not a jump in the UI. Unfortunately, since we haven't yet been
+    // connected to the current working directory service at this point, we don't know what root to
+    // check the previous visibility of. We could just assume it's
+    // `atom.project.getDirectories()[0]`, but using explicitly serialized package state is better.
     const {previousSessionVisible} = serializedState;
-    const showPlaceholderInitially = typeof previousSessionVisible === 'boolean'
-      ? previousSessionVisible
-      : localStorage.getItem(SHOW_PLACEHOLDER_INITIALLY_KEY) === 'true';
+    let showPlaceholderInitially;
+    if (typeof previousSessionVisible === 'boolean') {
+      showPlaceholderInitially = previousSessionVisible;
+    } else {
+      // This collection of roots wasn't seen before. Just fall back to the state of the last known
+      // session.
+      const entries = visibilityTable.getEntries();
+      const previousEntry = entries[entries.length - 1];
+      showPlaceholderInitially = previousEntry && previousEntry.value;
+    }
+
     const initialState = {
       ...createEmptyAppState(),
       ...serializedState,
-      // If the task runner toolbar was shown previously, we'll display a placholder until the view
-      // initializes so there's not a jump in the UI.
       showPlaceholderInitially,
       visible: showPlaceholderInitially,
+      visibilityTable,
     };
 
     const epics = Object.keys(Epics)
@@ -93,6 +108,8 @@ class Activation {
     });
 
     this._disposables = new UniversalDisposable(
+      visibilityTable,
+
       // We stick a stream of states onto the store so that epics can use them. This is less than
       // ideal. See redux-observable/redux-observable#56
       // $FlowFixMe: Teach flow about Symbol.observable
@@ -106,10 +123,14 @@ class Activation {
       // Whenever the visiblity changes, store the value in localStorage so that we can use it
       // to decide whether we should show the placeholder at the beginning of the next session.
       states
-        .filter(state => state.viewIsInitialized)
-        .map(state => state.visible)
-        .subscribe(visible => {
-          localStorage.setItem(SHOW_PLACEHOLDER_INITIALLY_KEY, String(visible));
+        .filter(state => state.viewIsInitialized && state.projectRoot)
+        .map(state => ({
+          visible: state.visible,
+          projectRootPath: state.projectRoot && state.projectRoot.getPath(),
+        }))
+        .distinctUntilChanged(shallowEqual)
+        .subscribe(({projectRootPath, visible}) => {
+          visibilityTable.setItem(projectRootPath, visible);
         }),
 
       this._panelRenderer,
@@ -295,9 +316,7 @@ class Activation {
     const state = this._store.getState();
     return {
       previousSessionActiveTaskId: state.activeTaskId || state.previousSessionActiveTaskId,
-      previousSessionVisible: state.previousSessionVisible == null
-        ? state.visible
-        : state.previousSessionVisible,
+      previousSessionVisible: state.visible,
       version: SERIALIZED_VERSION,
     };
   }

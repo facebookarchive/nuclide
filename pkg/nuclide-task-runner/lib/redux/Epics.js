@@ -13,11 +13,13 @@ import type {
   Action,
   AppState,
   Store,
+  TaskId,
   TaskMetadata,
   TaskRunner,
 } from '../types';
 import type {ActionsObservable} from '../../../commons-node/redux-observable';
 
+import {areSetsEqual} from '../../../commons-node/collection';
 import {observableFromTask} from '../../../commons-node/tasks';
 import {observableFromSubscribeFunction} from '../../../commons-node/event';
 import {diffSets} from '../../../commons-node/observable';
@@ -135,6 +137,61 @@ export function aggregateTaskListsEpic(
         );
 
       return taskListsByIdStream.map(taskListsById => Actions.setTaskLists(taskListsById));
+    });
+}
+
+export function tasksReadyEpic(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Action> {
+  return actions.ofType(Actions.SET_TASK_LISTS)
+    .switchMap(action => {
+      invariant(action.type === Actions.SET_TASK_LISTS);
+      const {taskLists} = action.payload;
+      const state = store.getState();
+      const tasksBecameReady = !state.tasksAreReady && areSetsEqual(
+        new Set(taskLists.keys()),
+        new Set(state.taskRunners.keys()),
+      );
+      return tasksBecameReady ? [Actions.tasksReady()] : [];
+    });
+}
+
+export function initializeViewEpic(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Action> {
+  // Initialize the view when we have a task list.
+  return actions.ofType(Actions.TASKS_READY)
+    // If a project hasn't been opened yet, we defer this until one has been. When that happens, a
+    // directory will be added -> the current working root will be set -> we'll request taks lists
+    // -> this action will be called again and we'll initialize.
+    .filter(() => {
+      const state = store.getState();
+      return state.projectWasOpened && !state.viewIsInitialized;
+    })
+    .map(() => {
+      const {activeTaskId, taskLists, visibilityTable, projectRoot} = store.getState();
+      invariant(visibilityTable != null);
+      const projectRootPath = projectRoot == null ? null : projectRoot.getPath();
+      const previousSessionVisible = projectRootPath == null
+        ? undefined
+        : visibilityTable.getItem(projectRootPath);
+
+      // Initialize the view if we've yet to do so.
+      let visible;
+      if (previousSessionVisible != null) {
+        // Use the last known state, if we have one.
+        visible = previousSessionVisible;
+      } else {
+        // Otherwise, only show the toolbar if the initial task is enabled. (It's okay if a
+        // task runner doesn't give us a "disabled" property for now, but we're not going to
+        // show the bar for possibly irrelevant tasks.)
+        const activeTaskMeta = activeTaskId == null ? null : getTaskMeta(activeTaskId, taskLists);
+        visible = activeTaskMeta != null && activeTaskMeta.disabled === false;
+      }
+
+      return Actions.initializeView(visible);
     });
 }
 
@@ -299,4 +356,17 @@ function createTaskObservable(
       });
     })
     .share();
+}
+
+function getTaskMeta(
+  taskId: TaskId,
+  taskLists: Map<string, Array<AnnotatedTaskMetadata>>,
+): ?AnnotatedTaskMetadata {
+  for (const taskList of taskLists.values()) {
+    for (const taskMeta of taskList) {
+      if (taskIdsAreEqual(taskId, taskMeta)) {
+        return taskMeta;
+      }
+    }
+  }
 }

@@ -9,10 +9,12 @@
  */
 
 import type {Task} from '../../commons-node/tasks';
-import type {TaskMetadata} from '../lib/types';
+import type {AnnotatedTaskMetadata, TaskMetadata} from '../lib/types';
 
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {Subject} from 'rxjs';
+
+type Entry<T> = {key: string, value: T};
 
 export class TaskRunner {
   _taskLists: Subject<Array<TaskMetadata>>;
@@ -39,4 +41,40 @@ export class TaskRunner {
   runTask(taskName: string): Task {
     return ((null: any): Task);
   }
+}
+
+export class VisibilityTable {
+  _db: Array<Entry<boolean>>;
+
+  constructor(db: Array<Entry<boolean>>) {
+    this._db = db;
+  }
+
+  getItem(key: string): ?boolean {
+    const entry = this._db[0];
+    return entry == null ? null : entry.value;
+  }
+
+  getEntries(): Array<Entry<boolean>> {
+    return this._db;
+  }
+}
+
+export function createTask(
+  taskRunnerId: string,
+  type: string,
+  disabled: ?boolean = undefined,
+  priority: number = 0,
+): AnnotatedTaskMetadata {
+  return {
+    type,
+    label: type,
+    description: type,
+    // $FlowIgnore: For tests, it's fine if this exists and is undefined.
+    disabled,
+    priority,
+    runnable: true,
+    taskRunnerId,
+    taskRunnerName: taskRunnerId,
+  };
 }

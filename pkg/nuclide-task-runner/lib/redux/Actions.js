@@ -12,6 +12,7 @@ import type {Directory} from '../../../nuclide-remote-connection';
 import type {
   AnnotatedTaskMetadata,
   DidLoadInitialPackagesAction,
+  InitializeViewAction,
   TaskRunner,
   RegisterTaskRunnerAction,
   RunTaskAction,
@@ -21,11 +22,13 @@ import type {
   SetToolbarVisibilityAction,
   StopTaskAction,
   TaskId,
+  TasksReadyAction,
   ToggleToolbarVisibilityAction,
   UnregisterTaskRunnerAction,
 } from '../types';
 
 export const DID_LOAD_INITIAL_PACKAGES = 'DID_LOAD_INITIAL_PACKAGES';
+export const INITIALIZE_VIEW = 'INITIALIZE_VIEW';
 export const REGISTER_TASK_RUNNER = 'REGISTER_TASK_RUNNER';
 export const RUN_TASK = 'RUN_TASK';
 export const SELECT_TASK = 'SELECT_TASK';
@@ -33,6 +36,7 @@ export const SET_PROJECT_ROOT = 'SET_PROJECT_ROOT';
 export const SET_TASK_LISTS = 'SET_TASK_LISTS';
 export const SET_TOOLBAR_VISIBILITY = 'SET_TOOLBAR_VISIBILITY';
 export const STOP_TASK = 'STOP_TASK';
+export const TASKS_READY = 'TASKS_READY';
 export const TASK_COMPLETED = 'TASK_COMPLETED';
 export const TASK_PROGRESS = 'TASK_PROGRESS';
 export const TASK_STARTED = 'TASK_STARTED';
@@ -43,6 +47,13 @@ export const UNREGISTER_TASK_RUNNER = 'UNREGISTER_TASK_RUNNER';
 
 export function didLoadInitialPackages(): DidLoadInitialPackagesAction {
   return {type: DID_LOAD_INITIAL_PACKAGES};
+}
+
+export function initializeView(visible: boolean): InitializeViewAction {
+  return {
+    type: INITIALIZE_VIEW,
+    payload: {visible},
+  };
 }
 
 export function registerTaskRunner(taskRunner: TaskRunner): RegisterTaskRunnerAction {
@@ -91,6 +102,10 @@ export function setToolbarVisibility(visible: boolean): SetToolbarVisibilityActi
 
 export function stopTask(): StopTaskAction {
   return {type: STOP_TASK};
+}
+
+export function tasksReady(): TasksReadyAction {
+  return {type: TASKS_READY};
 }
 
 export function toggleToolbarVisibility(taskRunnerId?: string): ToggleToolbarVisibilityAction {

@@ -10,6 +10,7 @@
 
 import type {Task} from '../../commons-node/tasks';
 import type {Directory} from '../../nuclide-remote-connection';
+import type {LocalStorageJsonTable} from './LocalStorageJsonTable';
 import type {Observable} from 'rxjs';
 
 export type AppState = {
@@ -18,7 +19,6 @@ export type AppState = {
   activeTaskId: ?TaskId,
   taskRunners: Map<string, TaskRunner>,
   previousSessionActiveTaskId: ?TaskId,
-  previousSessionVisible: ?boolean,
   projectRoot: ?Directory,
   projectWasOpened: boolean,
   showPlaceholderInitially: boolean,
@@ -31,6 +31,10 @@ export type AppState = {
   tasksAreReady: boolean,
   viewIsInitialized: boolean,
   visible: boolean,
+
+  // This really shouldn't be in the store. We just put it there so that we don't have to create our
+  // epics in a closure.
+  visibilityTable: ?LocalStorageJsonTable<boolean>,
 };
 
 export type SerializedAppState = {
@@ -101,6 +105,13 @@ export type BoundActionCreators = {
 
 export type DidLoadInitialPackagesAction = {
   type: 'DID_LOAD_INITIAL_PACKAGES',
+};
+
+export type InitializeViewAction = {
+  type: 'INITIALIZE_VIEW',
+  payload: {
+    visible: boolean,
+  },
 };
 
 export type SelectTaskAction = {
@@ -192,6 +203,10 @@ export type SetTaskListsAction = {
   },
 };
 
+export type TasksReadyAction = {
+  type: 'TASKS_READY',
+};
+
 export type UnregisterTaskRunnerAction = {
   type: 'UNREGISTER_TASK_RUNNER',
   payload: {
@@ -201,6 +216,7 @@ export type UnregisterTaskRunnerAction = {
 
 export type Action =
   DidLoadInitialPackagesAction
+  | InitializeViewAction
   | RunTaskAction
   | SelectTaskAction
   | SetProjectRootAction
@@ -210,6 +226,7 @@ export type Action =
   | TaskCompletedAction
   | TaskProgressAction
   | TaskErroredAction
+  | TasksReadyAction
   | TaskStartedAction
   | TaskStoppedAction
   | ToggleToolbarVisibilityAction

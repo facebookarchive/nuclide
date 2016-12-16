@@ -9,6 +9,8 @@
  */
 
 import type {Action, AppState, Store} from '../lib/types';
+import type {LocalStorageJsonTable} from '../lib/LocalStorageJsonTable';
+import type {Directory} from '../../nuclide-remote-connection';
 
 import {ActionsObservable, combineEpics} from '../../commons-node/redux-observable';
 import {taskFromObservable} from '../../commons-node/tasks';
@@ -16,6 +18,8 @@ import * as Actions from '../lib/redux/Actions';
 import * as Epics from '../lib/redux/Epics';
 import {createEmptyAppState} from '../lib/createEmptyAppState';
 import * as dummy from './dummy';
+import {createTask} from './dummy';
+import invariant from 'assert';
 import {ReplaySubject, Subject} from 'rxjs';
 
 function getRootEpic() {
@@ -26,6 +30,104 @@ function getRootEpic() {
 }
 
 describe('Epics', () => {
+  describe('initializeViewEpic', () => {
+    describe("when there's no visiblity from the previous session", () => {
+      describe("when there's an active task", () => {
+        it('shows the toolbar if the active task is explicitly enabled', () => {
+          waitsForPromise(async () => {
+            const initialState = {
+              ...createEmptyAppState(),
+              projectRoot: createMockDirectory('/a'),
+              activeTaskId: {taskRunnerId: 'build-system', type: 'test'},
+              taskLists: new Map([['build-system', [createTask('build-system', 'test', false)]]]),
+              projectWasOpened: true,
+              visibilityTable: createMockVisibilityTable([]),
+            };
+            const output = await runActions([Actions.tasksReady()], initialState)
+              .first()
+              .toPromise();
+            invariant(output.type === Actions.INITIALIZE_VIEW);
+            expect(output.payload.visible).toBe(true);
+          });
+        });
+
+        it("doesn't show the toolbar if the active task doesn't have a disabled value", () => {
+          waitsForPromise(async () => {
+            const initialState = {
+              ...createEmptyAppState(),
+              projectRoot: createMockDirectory('/a'),
+              activeTaskId: {taskRunnerId: 'build-system', type: 'test'},
+              taskLists: new Map([['build-system', [createTask('build-system', 'test')]]]),
+              projectWasOpened: true,
+              visibilityTable: createMockVisibilityTable([]),
+            };
+            const output = await runActions([Actions.tasksReady()], initialState)
+              .first()
+              .toPromise();
+            invariant(output.type === Actions.INITIALIZE_VIEW);
+            expect(output.payload.visible).toBe(false);
+          });
+        });
+      });
+
+      it('hides the toolbar the first time tasks become ready without an active task', () => {
+        waitsForPromise(async () => {
+          const initialState = {
+            ...createEmptyAppState(),
+            projectRoot: createMockDirectory('/a'),
+            activeTaskId: null,
+            taskLists: new Map([['build-system', [createTask('build-system', 'test')]]]),
+            projectWasOpened: true,
+            visibilityTable: createMockVisibilityTable([]),
+          };
+          const output = await runActions([Actions.tasksReady()], initialState)
+            .first()
+            .toPromise();
+          invariant(output.type === Actions.INITIALIZE_VIEW);
+          expect(output.payload.visible).toBe(false);
+        });
+      });
+    });
+
+    describe("when there's a serialized visibility from the previous session", () => {
+      it('shows the toolbar if the value is true (even with no task)', () => {
+        waitsForPromise(async () => {
+          const initialState = {
+            ...createEmptyAppState(),
+            projectRoot: createMockDirectory('/a'),
+            activeTaskId: null,
+            taskLists: new Map([['build-system', [createTask('build-system', 'test')]]]),
+            projectWasOpened: true,
+            visibilityTable: createMockVisibilityTable([{key: '/a', value: true}]),
+          };
+          const output = await runActions([Actions.tasksReady()], initialState)
+            .first()
+            .toPromise();
+          invariant(output.type === Actions.INITIALIZE_VIEW);
+          expect(output.payload.visible).toBe(true);
+        });
+      });
+
+      it('hides the toolbar if the value is false (even with an enabled task)', () => {
+        waitsForPromise(async () => {
+          const initialState = {
+            ...createEmptyAppState(),
+            projectRoot: createMockDirectory('/a'),
+            activeTaskId: {taskRunnerId: 'build-system', type: 'test'},
+            taskLists: new Map([['build-system', [createTask('build-system', 'test')]]]),
+            projectWasOpened: true,
+            visibilityTable: createMockVisibilityTable([{key: '/a', value: false}]),
+          };
+          const output = await runActions([Actions.tasksReady()], initialState)
+            .first()
+            .toPromise();
+          invariant(output.type === Actions.INITIALIZE_VIEW);
+          expect(output.payload.visible).toBe(false);
+        });
+      });
+    });
+  });
+
   describe('TASK_STOPPED', () => {
     it('cancels the current task', () => {
       waitsForPromise(async () => {
@@ -129,4 +231,17 @@ function runActions(actions: Array<Action>, initialState: AppState): ReplaySubje
   actions.forEach(input.next.bind(input));
   input.complete();
   return output;
+}
+
+function createMockDirectory(path: string): Directory {
+  const directory = {
+    getPath: () => path,
+  };
+  return ((directory: any): Directory);
+}
+
+function createMockVisibilityTable(
+  db: Array<{key: string, value: boolean}>,
+): LocalStorageJsonTable<boolean> {
+  return ((new dummy.VisibilityTable(db): any): LocalStorageJsonTable<boolean>);
 }

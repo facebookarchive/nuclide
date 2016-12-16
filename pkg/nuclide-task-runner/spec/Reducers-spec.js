@@ -14,6 +14,7 @@ import {createEmptyAppState} from '../lib/createEmptyAppState';
 import * as Actions from '../lib/redux/Actions';
 import * as Reducers from '../lib/redux/Reducers';
 import * as dummy from './dummy';
+import {createTask} from './dummy';
 
 describe('Reducers', () => {
   describe('SET_TASK_LISTS', () => {
@@ -41,82 +42,6 @@ describe('Reducers', () => {
       ]));
       const finalState = [action].reduce(Reducers.app, initialState);
       expect(finalState.activeTaskId).toBeNull();
-    });
-
-    describe('initial visiblity', () => {
-      describe("when there's no visiblity from the previous session", () => {
-        describe("when there's a task to restore from the previous session", () => {
-          it('shows the toolbar', () => {
-            const initialState = {
-              ...createEmptyAppState(),
-              taskRunners: new Map([['build-system', new dummy.TaskRunner('build-system')]]),
-              taskLists: new Map(),
-              previousSessionActiveTaskId: {taskRunnerId: 'build-system', type: 'test'},
-              projectWasOpened: true,
-            };
-            const action = Actions.setTaskLists(
-              new Map([['build-system', [createTask('build-system', 'test', false)]]]),
-            );
-            const finalState = [action].reduce(Reducers.app, initialState);
-            expect(finalState.visible).toBe(true);
-          });
-
-          it("doesn't show the toolbar if the active task doesn't have a disabled value", () => {
-            const initialState = {
-              ...createEmptyAppState(),
-              taskLists: new Map([
-                ['build-system', [createTask('build-system', 'test')]],
-              ]),
-              previousSessionActiveTaskId: {taskRunnerId: 'build-system', type: 'test'},
-            };
-            const action = Actions.setTaskLists(
-              new Map([['build-system', [createTask('build-system', 'test', false)]]]),
-            );
-            const finalState = [action].reduce(Reducers.app, initialState);
-            expect(finalState.visible).toBe(false);
-          });
-        });
-
-        it('hides the toolbar the first time tasks become ready without an active task', () => {
-          const initialState = {
-            ...createEmptyAppState(),
-            taskRunners: new Map([['build-system', new dummy.TaskRunner('build-system')]]),
-            taskLists: new Map(),
-            previousSessionActiveTaskId: {taskRunnerId: 'build-system', type: 'test'},
-          };
-          const action = Actions.setTaskLists(new Map([]));
-          const finalState = [action].reduce(Reducers.app, initialState);
-          expect(finalState.visible).toBe(false);
-        });
-      });
-
-      describe("when there's a serialized visibility from the previous session", () => {
-        it('shows the toolbar if the value is true (even with no task)', () => {
-          const initialState = {
-            ...createEmptyAppState(),
-            previousSessionVisible: true,
-            projectWasOpened: true,
-          };
-          const action = Actions.setTaskLists(new Map());
-          const finalState = [action].reduce(Reducers.app, initialState);
-          expect(finalState.visible).toBe(true);
-        });
-
-        it('hides the toolbar if the value is false', () => {
-          const initialState = {
-            ...createEmptyAppState(),
-            taskRunners: new Map([['build-system', new dummy.TaskRunner('build-system')]]),
-            taskLists: new Map(),
-            previousSessionActiveTaskId: {taskRunnerId: 'build-system', type: 'test'},
-            previousSessionVisible: false,
-          };
-          const action = Actions.setTaskLists(
-            new Map([['build-system', [createTask('build-system', 'test', false)]]]),
-          );
-          const finalState = [action].reduce(Reducers.app, initialState);
-          expect(finalState.visible).toBe(false);
-        });
-      });
     });
   });
 
@@ -259,21 +184,11 @@ function getInitialTask(
     ...createEmptyAppState(),
     activeTaskId,
     taskRunners: new Map([['build-system', new dummy.TaskRunner('build-system')]]),
+    taskLists: new Map([['build-system', taskList]]),
     previousSessionActiveTaskId,
     viewIsInitialized,
   };
-  const action = Actions.setTaskLists(new Map([['build-system', taskList]]));
+  const action = Actions.tasksReady();
   const finalState = [action].reduce(Reducers.app, initialState);
   return finalState.activeTaskId;
 }
-
-const createTask = (taskRunnerId, type, disabled = undefined, priority = 0) => ({
-  type,
-  label: type,
-  description: type,
-  disabled,
-  priority,
-  runnable: true,
-  taskRunnerId,
-  taskRunnerName: taskRunnerId,
-});
