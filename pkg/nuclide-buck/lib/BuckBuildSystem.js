@@ -63,6 +63,7 @@ import {
   getLLDBBuildEvents,
   getLLDBInstallEvents,
 } from './LLDBEventStream';
+import observeBuildCommands from './observeBuildCommands';
 import {React} from 'react-for-atom';
 
 const SOCKET_TIMEOUT = 30000;
@@ -241,6 +242,7 @@ export class BuckBuildSystem {
         initialState,
         applyMiddleware(createEpicMiddleware(rootEpic)),
       );
+      this._disposables.add(observeBuildCommands(this._store));
     }
     return this._store;
   }

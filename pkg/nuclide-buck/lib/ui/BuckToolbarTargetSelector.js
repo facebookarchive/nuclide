@@ -106,6 +106,9 @@ export default class BuckToolbarTargetSelector extends React.Component {
   render(): React.Element<any> {
     return (
       <Combobox
+        // Hack to forcibly refresh the combobox when the target changes.
+        // TODO(#11581583): Remove this when Combobox is fully controllable.
+        key={this.props.appState.buildTarget}
         className="inline-block nuclide-buck-target-combobox"
         formatRequestOptionsErrorMessage={err => err.message}
         requestOptions={this._requestOptions}
