@@ -8,6 +8,7 @@
  * @flow
  */
 
+import invariant from 'assert';
 import * as BuckService from '../lib/BuckService';
 import {copyBuildFixture} from '../../nuclide-test-helpers';
 import nuclideUri from '../../commons-node/nuclideUri';
@@ -61,6 +62,11 @@ describe('BuckService (test-project-with-failing-targets)', () => {
         // Sometimes this ends in "\nstderr: " - No idea why.
         expect(report.failures['//:bad_rule'])
           .toMatch(/^\/\/:bad_rule failed with exit code 1:\ngenrule/);
+
+        const lastCommand = await BuckService.getLastCommandInfo(buckRoot);
+        invariant(lastCommand);
+        expect(lastCommand.command).toBe('build');
+        expect(lastCommand.args.slice(0, 2)).toEqual(['//:good_rule', '//:bad_rule']);
       });
     });
 
