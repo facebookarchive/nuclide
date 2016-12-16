@@ -15,13 +15,16 @@ import {React, ReactDOM} from 'react-for-atom';
 import classnames from 'classnames';
 import fileTypeClass from '../../commons-atom/file-type-class';
 import {nextAnimationFrame} from '../../commons-node/observable';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {filterName} from '../lib/FileTreeFilterHelper';
 import {Checkbox} from '../../nuclide-ui/Checkbox';
 import {StatusCodeNumber} from '../../nuclide-hg-rpc/lib/hg-constants';
 import {FileTreeStore} from '../lib/FileTreeStore';
 import {isValidRename} from '../lib/FileTreeHgHelpers';
 import addTooltip from '../../nuclide-ui/add-tooltip';
+import invariant from 'assert';
 import os from 'os';
+import {Observable} from 'rxjs';
 
 const store = FileTreeStore.getInstance();
 const getActions = FileTreeActions.getInstance;
@@ -47,6 +50,7 @@ export class FileTreeEntryComponent extends React.Component {
   // the duration of one user interaction.
   dragEventCount: number;
   _loadingTimeout: ?number;
+  _disposables: ?UniversalDisposable;
   _pathContainer: ?HTMLElement;
 
   constructor(props: Props) {
@@ -98,7 +102,22 @@ export class FileTreeEntryComponent extends React.Component {
     }
   }
 
+  componentDidMount(): void {
+    const el = ReactDOM.findDOMNode(this);
+    this._disposables = new UniversalDisposable(
+      // Because this element can be inside of an Atom panel (which adds its own drag and drop
+      // handlers) we need to sidestep React's event delegation.
+      Observable.fromEvent(el, 'dragenter').subscribe(this._onDragEnter),
+      Observable.fromEvent(el, 'dragleave').subscribe(this._onDragLeave),
+      Observable.fromEvent(el, 'dragstart').subscribe(this._onDragStart),
+      Observable.fromEvent(el, 'dragover').subscribe(this._onDragOver),
+      Observable.fromEvent(el, 'drop').subscribe(this._onDrop),
+    );
+  }
+
   componentWillUnmount(): void {
+    invariant(this._disposables != null);
+    this._disposables.dispose();
     if (this._loadingTimeout != null) {
       clearTimeout(this._loadingTimeout);
     }
@@ -168,12 +187,7 @@ export class FileTreeEntryComponent extends React.Component {
         draggable={true}
         onMouseDown={this._onMouseDown}
         onClick={this._onClick}
-        onDoubleClick={this._onDoubleClick}
-        onDragEnter={this._onDragEnter}
-        onDragLeave={this._onDragLeave}
-        onDragStart={this._onDragStart}
-        onDragOver={this._onDragOver}
-        onDrop={this._onDrop}>
+        onDoubleClick={this._onDoubleClick}>
         <div
           className={listItemClassName}
           ref="arrowContainer">
@@ -316,7 +330,7 @@ export class FileTreeEntryComponent extends React.Component {
     }
   }
 
-  _onDragEnter(event: SyntheticDragEvent) {
+  _onDragEnter(event: DragEvent) {
     event.stopPropagation();
     const movableNodes = store.getSelectedNodes()
       .filter(node => isValidRename(node, this.props.node.uri));
@@ -332,7 +346,7 @@ export class FileTreeEntryComponent extends React.Component {
     this.dragEventCount++;
   }
 
-  _onDragLeave(event: SyntheticDragEvent) {
+  _onDragLeave(event: DragEvent) {
     event.stopPropagation();
     // Avoid calling an unhoverNode action if dragEventCount is already 0.
     if (this.dragEventCount === 0) {
@@ -345,7 +359,7 @@ export class FileTreeEntryComponent extends React.Component {
     }
   }
 
-  _onDragStart(event: SyntheticDragEvent) {
+  _onDragStart(event: DragEvent) {
     event.stopPropagation();
     const target = this._pathContainer;
     if (target == null) {
@@ -356,19 +370,21 @@ export class FileTreeEntryComponent extends React.Component {
     fileIcon.style.cssText = 'position: absolute; top: 0; left: 0; color: #fff; opacity: .8;';
     document.body.appendChild(fileIcon);
 
-    const nativeEvent = (event.nativeEvent: any);
-    nativeEvent.dataTransfer.effectAllowed = 'move';
-    nativeEvent.dataTransfer.setDragImage(fileIcon, -8, -4);
-    nativeEvent.dataTransfer.setData('initialPath', this.props.node.uri);
+    const {dataTransfer} = event;
+    if (dataTransfer != null) {
+      dataTransfer.effectAllowed = 'move';
+      dataTransfer.setDragImage(fileIcon, -8, -4);
+      dataTransfer.setData('initialPath', this.props.node.uri);
+    }
     nextAnimationFrame.subscribe(() => { document.body.removeChild(fileIcon); });
   }
 
-  _onDragOver(event: SyntheticDragEvent) {
+  _onDragOver(event: DragEvent) {
     event.preventDefault();
     event.stopPropagation();
   }
 
-  _onDrop(event: SyntheticDragEvent) {
+  _onDrop(event: DragEvent) {
     event.preventDefault();
     event.stopPropagation();
 
