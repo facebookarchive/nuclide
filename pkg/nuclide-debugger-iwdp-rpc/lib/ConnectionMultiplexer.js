@@ -15,13 +15,13 @@ import {PRELUDE_MESSAGES} from './prelude';
 import {FileCache} from './FileCache';
 import invariant from 'assert';
 import {RUNNING, PAUSED} from './constants';
+import {BreakpointManager} from './BreakpointManager';
+import {Subject} from 'rxjs';
 
 import type {
-  RuntimeStatus,
   DeviceInfo,
-  BreakpointId,
-  BreakpointParams,
   PauseOnExceptionState,
+  RuntimeStatus,
 } from './types';
 
 const {log, logError} = logger;
@@ -43,19 +43,27 @@ export class ConnectionMultiplexer {
   // Invariant: this._enabledConnection != null, if and only if that connection is paused.
   _enabledConnection: ?DebuggerConnection;
   _sendMessageToClient: (message: Object) => void;
+  _newConnections: Subject<DebuggerConnection>;
   _fileCache: FileCache;
-  _breakpoints: Map<BreakpointId, BreakpointParams>;
+  _breakpointManager: BreakpointManager;
   _setPauseOnExceptionsState: PauseOnExceptionState;
   _freshConnectionId: number;
 
   constructor(sendMessageToClient: (message: Object) => void) {
-    this._disposables = new UniversalDisposable();
     this._connections = new Set();
     this._sendMessageToClient = message => sendMessageToClient(message);
     this._fileCache = new FileCache();
-    this._breakpoints = new Map();
     this._setPauseOnExceptionsState = 'none';
     this._freshConnectionId = 0;
+    this._newConnections = new Subject();
+    this._breakpointManager = new BreakpointManager(
+      this._fileCache,
+      this._sendMessageToClient.bind(this),
+    );
+    this._disposables = new UniversalDisposable(
+      this._newConnections.subscribe(this._handleNewConnection.bind(this)),
+      this._breakpointManager,
+    );
   }
 
   sendCommand(message: Object): void {
@@ -90,12 +98,12 @@ export class ConnectionMultiplexer {
         break;
       }
       case 'setBreakpointByUrl': {
-        const response = await this._setBreakpointByUrl(message);
+        const response = await this._breakpointManager.setBreakpointByUrl(message);
         this._sendMessageToClient(response);
         break;
       }
       case 'removeBreakpoint': {
-        const response = await this._removeBreakpoint(message);
+        const response = await this._breakpointManager.removeBreakpoint(message);
         this._sendMessageToClient(response);
         break;
       }
@@ -254,68 +262,9 @@ export class ConnectionMultiplexer {
     return responses[0];
   }
 
-  /**
-   * setBreakpointByUrl must send this breakpoint to each connection managed by the multiplexer.
-   */
-  async _setBreakpointByUrl(message: Object): Promise<Object> {
-    if (this._connections.size === 0) {
-      return {id: message.id, error: {message: 'setBreakpointByUrl sent with no connections.'}};
-    }
-    const {params} = message;
-    const targetMessage = {
-      ...message,
-      params: {
-        ...message.params,
-        url: this._fileCache.getUrlFromFilePath(message.params.url),
-      },
-    };
-    const responsePromises = Array.from(this._connections.values())
-      .map(connection => connection.sendCommand(targetMessage));
-    const responses = await Promise.all(responsePromises);
-    log(`setBreakpointByUrl yielded: ${JSON.stringify(responses)}`);
-    for (const response of responses) {
-      // We will receive multiple responses, so just send the first non-error one.
-      if (response.result != null && response.error == null) {
-        this._breakpoints.set(response.result.breakpointId, params);
-        return response;
-      }
-    }
-    return responses[0];
-  }
-
-  /**
-   * removeBreakpoint must send this message to each connection managed by the multiplexer.
-   */
-  async _removeBreakpoint(message: Object): Promise<Object> {
-    if (this._connections.size === 0) {
-      return {id: message.id, error: {message: 'removeBreakpoint sent with no connections.'}};
-    }
-    const responsePromises = Array.from(this._connections.values())
-      .map(connection => connection.sendCommand(message));
-    const responses = await Promise.all(responsePromises);
-    log(`removeBreakpoint yielded: ${JSON.stringify(responses)}`);
-    for (const response of responses) {
-      // We will receive multiple responses, so just send the first non-error one.
-      if (response.result != null && response.error == null) {
-        this._breakpoints.delete(response.result.breakpointId);
-        return response;
-      }
-    }
-    return responses[0];
-  }
-
   async add(deviceInfo: DeviceInfo): Promise<void> {
-    // Adding a new JS Context involves a few steps:
-    // 1. Set up the connection to the device.
     const connection = this._connectToContext(deviceInfo);
-    // 2. Exchange prelude messages, enabling the relevant domains, etc.
-    await this._sendPreludeToTarget(connection);
-    await Promise.all([
-      // 3. Once this is done, set all of the breakpoints we currently have.
-      this._sendBreakpointsToTarget(connection),
-      // 4. Set the pause on exception state.
-      this._sendSetPauseOnExceptionToTarget(connection),
-    ]);
+    this._newConnections.next(connection);
   }
 
   _connectToContext(deviceInfo: DeviceInfo): DebuggerConnection {
@@ -330,6 +279,15 @@ export class ConnectionMultiplexer {
     return connection;
   }
 
+  async _handleNewConnection(connection: DebuggerConnection): Promise<void> {
+    // When a connection comes in, we need to do a few things:
+    // 1. Exchange prelude messages, enabling the relevant domains, etc.
+    await this._sendPreludeToTarget(connection);
+    // 2. Add this connection to the breakpoint manager so that will handle breakpoints.
+    await this._breakpointManager.addConnection(connection);
+    await this._sendSetPauseOnExceptionToTarget(connection);
+  }
+
   async _sendPreludeToTarget(connection: DebuggerConnection): Promise<void> {
     const responsePromises: Array<Promise<Object>> = [];
     for (const message of PRELUDE_MESSAGES) {
@@ -341,23 +299,6 @@ export class ConnectionMultiplexer {
       logError(err);
       throw new Error(err);
     }
-  }
-
-  async _sendBreakpointsToTarget(connection: DebuggerConnection): Promise<void> {
-    const responsePromises = [];
-    for (const breakpointParams of this._breakpoints.values()) {
-      responsePromises.push(
-        connection.sendCommand({
-          method: 'Debugger.setBreakpointByUrl',
-          params: {
-            ...breakpointParams,
-            url: this._fileCache.getUrlFromFilePath(breakpointParams.url),
-          },
-        }),
-      );
-    }
-    // Drop the responses on the floor, since setting initial bp's is handled by CM.
-    await Promise.all(responsePromises);
   }
 
   async _sendSetPauseOnExceptionToTarget(connection: DebuggerConnection): Promise<void> {

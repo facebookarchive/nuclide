@@ -63,7 +63,9 @@ export class IwdpDebuggerService {
   }
 
   dispose(): Promise<void> {
-    this._disposables.dispose();
+    if (this._disposables != null) {
+      this._disposables.dispose();
+    }
     return Promise.resolve();
   }
 }

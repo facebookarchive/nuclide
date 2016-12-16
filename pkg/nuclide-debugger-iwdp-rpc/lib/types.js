@@ -37,6 +37,12 @@ export type BreakpointParams = {
   columnNumber: number,
   condition: string,
 };
+export type Breakpoint = {
+  nuclideId: string,
+  jscId: ?string,
+  resolved: boolean,
+  params: BreakpointParams,
+};
 export type PauseOnExceptionState = 'none' | 'uncaught' | 'all';
 
 export type TargetEnvironment = 'iOS' | 'Android';
