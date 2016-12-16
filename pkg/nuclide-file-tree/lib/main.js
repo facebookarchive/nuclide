@@ -44,6 +44,7 @@ const OPEN_FILES_UPDATE_DEBOUNCE_INTERVAL_MS = 150;
 class Activation {
   _cwdApiSubscription: ?IDisposable;
   _fileTreeController: FileTreeController;
+  _fileTreeComponent: ?FileTreeSidebarComponent;
   _restored: boolean; // Has the package state been restored from a previous session?
   _disposables: UniversalDisposable;
   _paneItemSubscription: ?IDisposable;
@@ -74,6 +75,19 @@ class Activation {
         this._setExcludeVcsIgnoredPaths.bind(this),
       ),
       atom.config.observe(allowPendingPaneItems, this._setUsePreviewTabs.bind(this)),
+      atom.commands.add('atom-workspace', 'nuclide-file-tree:toggle-focus', () => {
+        const component = this._fileTreeComponent;
+        if (component == null) {
+          return;
+        }
+        if (component.isFocused()) {
+          // Focus the text editor.
+          atom.workspace.getActivePane().activate();
+        } else {
+          // Focus the file tree.
+          component.focus();
+        }
+      }),
     );
   }
 
@@ -253,11 +267,17 @@ class Activation {
     this._fileTreeController.destroy();
   }
 
+  _createView(): FileTreeSidebarComponent {
+    // Currently, we assume that only one will be created.
+    this._fileTreeComponent = viewableFromReactElement(<FileTreeSidebarComponent />);
+    return this._fileTreeComponent;
+  }
+
   consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
     this._disposables.add(
       api.addOpener(uri => {
         if (uri === WORKSPACE_VIEW_URI) {
-          return viewableFromReactElement(<FileTreeSidebarComponent />);
+          return this._createView();
         }
       }),
       () => api.destroyWhere(item => item instanceof FileTreeSidebarComponent),
@@ -272,8 +292,8 @@ class Activation {
     }
   }
 
-  deserializeFileTreeSidebarComponent(): HTMLElement {
-    return viewableFromReactElement(<FileTreeSidebarComponent />);
+  deserializeFileTreeSidebarComponent(): FileTreeSidebarComponent {
+    return this._createView();
   }
 }
 
@@ -358,7 +378,7 @@ export function getProjectSelectionManagerForFileTree(): FileTreeProjectSelectio
   return activation.getProjectSelectionManager();
 }
 
-export function deserializeFileTreeSidebarComponent(): HTMLElement {
+export function deserializeFileTreeSidebarComponent(): FileTreeSidebarComponent {
   invariant(activation);
   return activation.deserializeFileTreeSidebarComponent();
 }

@@ -20,6 +20,10 @@
               "command": "nuclide-file-tree:toggle"
             },
             {
+              "label": "Toggle Focus",
+              "command": "nuclide-file-tree:toggle-focus"
+            },
+            {
               "label": "Reveal Active File in File Tree",
               "command": "nuclide-file-tree:reveal-active-file"
             },

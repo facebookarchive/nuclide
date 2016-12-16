@@ -362,6 +362,22 @@ export default class FileTreeSidebarComponent extends React.Component {
     });
   }
 
+  isFocused(): boolean {
+    const el = ReactDOM.findDOMNode(this.refs.fileTree);
+    if (el == null) {
+      return false;
+    }
+    return el.contains(document.activeElement);
+  }
+
+  focus(): void {
+    const el = ReactDOM.findDOMNode(this.refs.fileTree);
+    if (el == null) {
+      return;
+    }
+    el.focus();
+  }
+
   getTitle(): string {
     return 'File Tree';
   }
@@ -382,7 +398,7 @@ export default class FileTreeSidebarComponent extends React.Component {
     this.setState({hidden: !visible});
   }
 
-  serialize(): mixed {
+  serialize(): Object {
     return {
       deserializer: 'nuclide.FileTreeSidebarComponent',
     };
