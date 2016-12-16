@@ -77,7 +77,11 @@ PRAGMA_MARK_REGEX = re.compile(
 
 
 def visit_cursor(libclang, cursor):
-    kind = cursor.kind.name
+    try:
+        kind = cursor.kind.name
+    except:
+        # Some cursor kinds aren't supported by the Python binding.
+        return None
     if kind not in ALL_KINDS:
         return None
 
