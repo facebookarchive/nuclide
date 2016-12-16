@@ -15,7 +15,6 @@ import type {FindReferencesReturn} from './rpc-types';
 import crypto from 'crypto';
 import {observeTextEditors} from '../../commons-atom/text-editor';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {arrayCompact} from '../../commons-node/collection';
 import {track} from '../../nuclide-analytics';
 import FindReferencesElement from './FindReferencesElement';
 import {getLogger} from '../../nuclide-logging';
@@ -110,6 +109,17 @@ function disableForEditor(editor: TextEditor): void {
   elem.classList.remove('enable-nuclide-find-references');
 }
 
+// Returns true if this is this adds the supported provider.
+function addSupportedProvider(editor: TextEditor, provider: FindReferencesProvider) {
+  let supported = supportedProviders.get(editor);
+  if (supported == null) {
+    supported = [];
+    supportedProviders.set(editor, supported);
+  }
+  supported.push(provider);
+  return supported.length === 1;
+}
+
 export function activate(state: ?any): void {
   subscriptions = new UniversalDisposable();
   subscriptions.add(atom.commands.add(
@@ -142,19 +152,16 @@ export function activate(state: ?any): void {
     if (!path || supportedProviders.get(editor)) {
       return;
     }
-    let supported = await Promise.all(providers.map(
+    supportedProviders.set(editor, []);
+    await Promise.all(providers.map(
       async provider => {
         if (await provider.isEditorSupported(editor)) {
-          return provider;
+          if (addSupportedProvider(editor, provider)) {
+            enableForEditor(editor);
+          }
         }
-        return null;
       },
     ));
-    supported = arrayCompact(supported);
-    if (supported.length) {
-      enableForEditor(editor);
-    }
-    supportedProviders.set(editor, supported);
     if (subscriptions) {
       const disposable = editor.onDidDestroy(() => {
         supportedProviders.delete(editor);
@@ -191,12 +198,11 @@ export function deactivate(): void {
 export function consumeProvider(provider: FindReferencesProvider): IDisposable {
   providers.push(provider);
   // Editors are often open before providers load, so update existing ones too.
-  supportedProviders.forEach(async (supported, editor) => {
+  atom.workspace.getTextEditors().forEach(async editor => {
     if (await provider.isEditorSupported(editor)) {
-      if (!supported.length) {
+      if (addSupportedProvider(editor, provider)) {
         enableForEditor(editor);
       }
-      supported.push(provider);
     }
   });
 
