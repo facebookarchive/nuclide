@@ -30,6 +30,9 @@ export default function accumulateState(state: AppState, action: Action): AppSta
     case Actions.SET_BUILD_TARGET:
       return {
         ...state,
+        buildRuleType: null,
+        platformGroups: [],
+        selectedDeploymentTarget: null,
         buildTarget: action.buildTarget,
         isLoadingRule: true,
       };
