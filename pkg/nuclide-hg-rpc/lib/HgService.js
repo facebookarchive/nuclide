@@ -675,7 +675,7 @@ export class HgService {
       revisionsArray = await fetchRevisionsInfo(
         uniqueRevisions.join('+'),
         this._workingDirectory,
-        {hidden: true},
+        {hidden: true, shouldLimit: false},
       ).toPromise();
     } catch (e) {
       getLogger().error(
