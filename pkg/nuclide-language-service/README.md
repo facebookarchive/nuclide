@@ -272,4 +272,60 @@ export class MyLanguageService {
 
 ## Observable Diagnostics
 
-TODO
+Observable diagnostics allows Nuclide to publish diagnostics as soon as the language analyzer can produce them.
+
+To implement push based diagnostics, implement the `observeDiagnostics` member of the `LanguageService` or `SingleFileLanguageService` interfaces. The main steps include:
+- watch for open projects on a given Atom connection
+- manage connections to your language analyzer processes for each open process
+- subscribe to diagnostics for each connected process
+- aggregating and invalidating the diagnostics for the connected processes
+
+### Projects
+
+A project consists of a set of source files which must be analyzed as a unit to produce consistent and complete results. For example, a Hack project is identified by a file named `.hhconfig`. The directory containing a `.hhconfig` file called the project directory. All `.php` and `.hh` files in subdirectores of the project directory are part of the project.
+
+Whenever a `.php` file in a given project directory is opened in Nuclide,
+or a directory containing a `.hhconfig` file is added to the file tree, that
+project is considered to be open.
+
+The `ConfigObserver` class in the nuclide-open-files-rpc package provides
+an Observable of open projects for a given language.
+
+### Analyzer Processes
+
+An analyzer process provides diagnostics(and possibly other language analysis services) for a single project.
+
+Each time a project is opened in Nuclide, an analyzer process for that project
+is started. When a project is closed in Atom the corresponding analyzer process is shut down.
+
+TODO: Process lifetime is currently handled by the `processes`,
+`ensureProcess`, `observeConnections` in HackProcess.js. These
+should be abstracted into a reusable Language agnostic API.
+
+One additional complexity is that a given project may be opened
+by multiple Atom windows simultaneously. A LanguageService must choose between
+starting a new analyzer process per connected Atom window; or having one analyzer
+process per project which is then synchronized to the active Atom window making
+requests.
+
+Each connected Atom window is tracked via a FileCache (which implements the FileNotifier interface).
+
+NOTE: Hack starts a new process when a new Atom window opens a
+project already open in another window. The process connected to
+the other window is closed (by Hack) and the new process subsumes
+ownership of the underlying hack server process. When the previous
+Atom window makes a request on that project it starts another
+connection process (closing the one started by the other window)
+and resynchronizes its open files. It turns out the cost of
+switching the hack server between the different Atom windows is
+quite reasonable.
+
+### Observing Diagnostics for an Analyzer Process
+
+This will be language specific.
+
+### Aggregating and Invalidating Diagnostics
+
+Currently this occurs in `observeDiagnostics` in HackService.js.
+
+TODO: Move this to a reusable component which maps Observable<Observable<FileDiagnosticUpdate>> for each project to an Observable<FileDiagnosticUpdate> which handles the invalidations and flattening.
