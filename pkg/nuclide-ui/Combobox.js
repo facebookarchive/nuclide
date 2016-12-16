@@ -71,6 +71,7 @@ export class Combobox extends React.Component {
   _optionsElement: HTMLElement;
   _updateSubscription: ?rxjs$ISubscription;
   _subscriptions: UniversalDisposable;
+  _blurTimeout: ?number;
 
   static defaultProps: DefaultProps = {
     className: '',
@@ -124,6 +125,9 @@ export class Combobox extends React.Component {
     }
     if (this._updateSubscription != null) {
       this._updateSubscription.unsubscribe();
+    }
+    if (this._blurTimeout != null) {
+      clearTimeout(this._blurTimeout);
     }
   }
 
@@ -248,6 +252,10 @@ export class Combobox extends React.Component {
   }
 
   _handleInputFocus(): void {
+    if (this._blurTimeout != null) {
+      clearTimeout(this._blurTimeout);
+      this._blurTimeout = null;
+    }
     this.requestUpdate(this.state.textInput);
     const boundingRect = ReactDOM.findDOMNode(this).getBoundingClientRect();
     this.setState({
@@ -261,14 +269,23 @@ export class Combobox extends React.Component {
   }
 
   _handleInputBlur(): void {
-    // Delay hiding the combobox long enough for a click inside the combobox to trigger on it in
-    // case the blur was caused by a click inside the combobox. 150ms is empirically long enough to
-    // let the stack clear from this blur event and for the click event to trigger.
-    setTimeout(this._handleCancel, 150);
-    const {onBlur} = this.props;
-    if (onBlur != null) {
-      onBlur(this.getText());
+    // When the user:
+    // 1) clicks on the text input, or
+    // 2) selects a value from the dropdown,
+    // the dropdown very quickly steals focus and the input gets focused again.
+    // We don't want to actually blur in either of these cases, so wait a bit to
+    // ensure there's no immediately following focus event.
+    if (this._blurTimeout != null) {
+      clearTimeout(this._blurTimeout);
     }
+    this._blurTimeout = setTimeout(() => {
+      this._handleCancel();
+      const {onBlur} = this.props;
+      if (onBlur != null) {
+        onBlur(this.getText());
+      }
+      this._blurTimeout = null;
+    }, 150);
   }
 
   _handleItemClick(selectedValue: string, event: any) {
@@ -278,6 +295,8 @@ export class Combobox extends React.Component {
       const input = ReactDOM.findDOMNode(this.refs.freeformInput);
       if (input) {
         input.focus();
+        // Focusing usually shows the options, so hide them immediately.
+        setImmediate(() => this.setState({optionsVisible: false}));
       }
     });
   }
