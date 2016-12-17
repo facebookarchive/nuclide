@@ -54,38 +54,8 @@
 
 .nuclide-find-references-ref-name {
   cursor: pointer;
+  margin-bottom: 4px;
   &:hover {
     text-decoration: underline;
   }
-}
-
-.nuclide-find-references-file-preview {
-  display: flex;
-  margin-top: 4px;
-
-  atom-text-editor[mini] {
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
-    flex: 1;
-    font-size: @font-size;
-    line-height: @component-line-height;
-    max-height: none;
-  }
-
-  atom-text-editor::shadow .highlight.reference .region {
-    background-color: rgba(255, 255, 255, 0.2);
-  }
-}
-
-.nuclide-find-references-line-number-column {
-  background: @base-border-color;
-  border-top-left-radius: 2px;
-  border-bottom-left-radius: 2px;
-  font-family: Menlo, Monaco, Consolas, monospace;
-  padding: 0 0.5em;
-}
-
-.nuclide-find-references-line-number {
-  color: @text-color-selected;
-  line-height: @component-line-height;
 }

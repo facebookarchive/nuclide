@@ -8,46 +8,47 @@
  * @flow
  */
 
-import type {Reference} from '../rpc-types';
-
-import {AtomInput} from '../../../nuclide-ui/AtomInput';
+import {AtomInput} from './AtomInput';
 import {React} from 'react-for-atom';
 
 type Props = {
   text: string,
-  grammar: atom$Grammar,
-  references: Array<Reference>,
+  grammar?: atom$Grammar,
+  highlights?: Array<atom$Range>,
   startLine: number,
   endLine: number,
   onClick: (event: SyntheticMouseEvent) => mixed,
   onLineClick: (event: SyntheticMouseEvent, line: number) => mixed,
 };
 
-export default class FilePreview extends React.Component {
+export class CodeSnippet extends React.Component {
   props: Props;
 
   componentDidMount() {
     const editor = this.refs.editor.getTextEditor();
-    const {grammar, references, startLine} = this.props;
+    const {grammar, highlights, startLine} = this.props;
 
     if (grammar) {
       editor.setGrammar(grammar);
     }
 
-    references.forEach((ref: Reference) => {
-      const range = ref.range;
-      const marker = editor.markBufferRange([
-        [range.start.row - startLine, range.start.column],
-        [range.end.row - startLine, range.end.column],
-      ]);
-      editor.decorateMarker(marker, {type: 'highlight', class: 'reference'});
-    });
+    if (highlights != null) {
+      highlights.forEach(range => {
+        const marker = editor.markBufferRange([
+          [range.start.row - startLine, range.start.column],
+          [range.end.row - startLine, range.end.column],
+        ]);
+        editor.decorateMarker(marker, {type: 'highlight', class: 'code-snippet-highlight'});
+      });
 
-    // Make sure at least one highlight is visible.
-    editor.scrollToBufferPosition([
-      references[0].range.end.row - startLine + 1,
-      references[0].range.end.column,
-    ]);
+      // Make sure at least one highlight is visible.
+      if (highlights.length > 0) {
+        editor.scrollToBufferPosition([
+          highlights[0].end.row - startLine + 1,
+          highlights[0].end.column,
+        ]);
+      }
+    }
   }
 
   render(): React.Element<any> {
@@ -56,15 +57,15 @@ export default class FilePreview extends React.Component {
       lineNumbers.push(
         <div
           key={i}
-          className="nuclide-find-references-line-number"
+          className="nuclide-ui-code-snippet-line-number"
           onClick={evt => this.props.onLineClick(evt, i)}>
           {i + 1}
         </div>,
       );
     }
     return (
-      <div className="nuclide-find-references-file-preview">
-        <div className="nuclide-find-references-line-number-column">
+      <div className="nuclide-ui-code-snippet">
+        <div className="nuclide-ui-code-snippet-line-number-column">
           {lineNumbers}
         </div>
         <AtomInput
@@ -76,5 +77,4 @@ export default class FilePreview extends React.Component {
       </div>
     );
   }
-
 }

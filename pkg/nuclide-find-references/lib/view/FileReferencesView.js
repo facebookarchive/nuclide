@@ -13,9 +13,9 @@ import type {Reference} from '../rpc-types';
 
 import {React} from 'react-for-atom';
 import classnames from 'classnames';
-import FilePreview from './FilePreview';
 import nuclideUri from '../../../commons-node/nuclideUri';
 import {goToLocation} from '../../../commons-atom/go-to-location';
+import {CodeSnippet} from '../../../nuclide-ui/CodeSnippet';
 
 type Props = {
   uri: string,
@@ -81,10 +81,12 @@ export default class FileReferencesView extends React.Component {
             {startRange.row + 1}:{startRange.column + 1} - {endRange.row + 1}:{endRange.column + 1}
             {caller}
           </div>
-          <FilePreview
+          <CodeSnippet
             grammar={this.props.grammar}
             text={this.props.previewText[i]}
-            {...group}
+            highlights={group.references.map(ref => ref.range)}
+            startLine={group.startLine}
+            endLine={group.endLine}
             onClick={evt => this._onRefClick(evt, firstRef)}
             onLineClick={this._onFileNameClick}
           />

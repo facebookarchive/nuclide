@@ -1,0 +1,32 @@
+@import 'ui-variables';
+
+.nuclide-ui-code-snippet {
+  display: flex;
+
+  atom-text-editor[mini] {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    flex: 1;
+    font-size: @font-size;
+    line-height: @component-line-height;
+    max-height: none;
+  }
+
+  atom-text-editor .highlight.code-snippet-highlight .region,
+  atom-text-editor::shadow .highlight.code-snippet-highlight .region {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+}
+
+.nuclide-ui-code-snippet-line-number-column {
+  background: @base-border-color;
+  border-top-left-radius: @component-border-radius;
+  border-bottom-left-radius: @component-border-radius;
+  font-family: Menlo, Monaco, Consolas, monospace;
+  padding: 0 0.5em;
+}
+
+.nuclide-ui-code-snippet-line-number {
+  color: @text-color-selected;
+  line-height: @component-line-height;
+}
