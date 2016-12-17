@@ -8,8 +8,8 @@
  * @flow
  */
 
+import type {LocalStorageJsonTable} from '../../commons-atom/LocalStorageJsonTable';
 import type {Action, AppState, Store} from '../lib/types';
-import type {LocalStorageJsonTable} from '../lib/LocalStorageJsonTable';
 import type {Directory} from '../../nuclide-remote-connection';
 
 import {ActionsObservable, combineEpics} from '../../commons-node/redux-observable';

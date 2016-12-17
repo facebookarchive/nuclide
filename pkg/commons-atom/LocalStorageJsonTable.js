@@ -10,7 +10,7 @@
 
 /* global localStorage */
 
-import {nextAnimationFrame} from '../../commons-node/observable';
+import {nextAnimationFrame} from '../commons-node/observable';
 
 type Entry<T> = {key: string, value: T};
 

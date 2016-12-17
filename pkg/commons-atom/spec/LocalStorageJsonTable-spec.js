@@ -10,7 +10,7 @@
 
 /* global localStorage */
 
-import {LocalStorageJsonTable} from '../lib/LocalStorageJsonTable';
+import {LocalStorageJsonTable} from '../LocalStorageJsonTable';
 
 describe('LocalStorageJsonTable', () => {
   it('writes values to localStorage', () => {

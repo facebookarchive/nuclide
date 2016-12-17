@@ -26,13 +26,13 @@ import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-m
 
 import syncAtomCommands from '../../commons-atom/sync-atom-commands';
 import createPackage from '../../commons-atom/createPackage';
+import {LocalStorageJsonTable} from '../../commons-atom/LocalStorageJsonTable';
 import PanelRenderer from '../../commons-atom/PanelRenderer';
 import {arrayRemove} from '../../commons-node/collection';
 import {combineEpics, createEpicMiddleware} from '../../commons-node/redux-observable';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {trackEvent} from '../../nuclide-analytics';
 import {createEmptyAppState} from './createEmptyAppState';
-import {LocalStorageJsonTable} from './LocalStorageJsonTable';
 import * as Actions from './redux/Actions';
 import * as Epics from './redux/Epics';
 import {getActiveTaskId} from './redux/Selectors';
