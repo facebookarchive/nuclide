@@ -10,6 +10,7 @@
 
 import type {Viewable} from '../../nuclide-workspace-views/lib/types';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import {observeAddedPaneItems} from './observeAddedPaneItems';
 import {observePanes} from './observePanes';
 import {syncPaneItemVisibility} from './syncPaneItemVisibility';
 import {Observable} from 'rxjs';
@@ -81,5 +82,11 @@ export class PaneLocation {
   serialize(): ?Object {
     // We rely on the default Atom serialization for Panes.
     return null;
+  }
+
+  onDidAddItem(cb: (item: Viewable) => void): IDisposable {
+    return new UniversalDisposable(
+      observeAddedPaneItems(atom.workspace.paneContainer).subscribe(cb),
+    );
   }
 }

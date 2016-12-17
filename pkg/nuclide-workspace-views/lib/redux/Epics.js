@@ -11,6 +11,8 @@
 import type {Action, AppState, Location, Opener, Store, Viewable} from '../types';
 import type {ActionsObservable} from '../../../commons-node/redux-observable';
 
+import {LocalStorageJsonTable} from '../../../commons-atom/LocalStorageJsonTable';
+import {observableFromSubscribeFunction} from '../../../commons-node/event';
 import {trackEvent} from '../../../nuclide-analytics';
 import * as Actions from './Actions';
 import invariant from 'assert';
@@ -20,6 +22,9 @@ type ItemAndLocation = {
   item: Viewable,
   location: Location,
 };
+
+const preferredLocationStorage =
+  new LocalStorageJsonTable('nuclide:nuclide-workspace-views:preferredLocationIds');
 
 /**
  * Register a record provider for every executor.
@@ -37,6 +42,29 @@ export function registerLocationFactoryEpic(
     const serializedLocationState = serializedLocationStates.get(factory.id);
     const location = factory.create(serializedLocationState);
     return Actions.registerLocation(factory.id, location);
+  });
+}
+
+export function trackItemLocationsEpic(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Action> {
+  return actions.ofType(Actions.REGISTER_LOCATION).mergeMap(action => {
+    invariant(action.type === Actions.REGISTER_LOCATION);
+    const {id, location} = action.payload;
+    const unregistered = actions
+      .filter(a => a.type === Actions.UNREGISTER_LOCATION && a.payload.id === id);
+    // Since items can be added via means other than the workspace views API (e.g. dragging and
+    // dropping), we need to register a listener.
+    return observableFromSubscribeFunction(location.onDidAddItem.bind(location))
+      .filter(item => item.getURI != null)
+      .takeUntil(unregistered)
+      .do(item => {
+        // Store the preferred location for recall later.
+        invariant(item.getURI != null);
+        preferredLocationStorage.setItem(item.getURI(), id);
+      })
+      .ignoreElements();
   });
 }
 
@@ -85,7 +113,7 @@ export function openEpic(
   return bufferUntilDidActivateInitialPackages(actions)
     .filter(action => action.type === Actions.OPEN)
     .switchMap(action => {
-      const state = store.getState();
+      const {locations, openers} = store.getState();
       invariant(action.type === Actions.OPEN);
       const {uri, options} = action.payload;
       const {searchAllPanes, activateItem, activateLocation} = options;
@@ -97,29 +125,35 @@ export function openEpic(
 
       if (searchAllPanes) {
         itemAndLocation = findItem(
-          state.locations.values(),
+          locations.values(),
           it => it.getURI != null && it.getURI() === uri,
         );
       }
 
       if (itemAndLocation == null) {
         // We need to create the item.
-        item = createViewable(uri, state.openers);
+        item = createViewable(uri, openers);
         if (item == null) {
           throw new Error(`No opener found for URI ${uri}`);
         }
 
         // Find a location for this viewable.
-        const defaultLocationId = item.getDefaultLocation != null
-          ? item.getDefaultLocation()
-          : null;
-        if (defaultLocationId != null) {
-          location = state.locations.get(defaultLocationId);
+        const preferredLocationId = preferredLocationStorage.getItem(uri);
+        if (preferredLocationId != null) {
+          location = locations.get(preferredLocationId);
+        }
+        if (location == null) {
+          const defaultLocationId = item.getDefaultLocation != null
+            ? item.getDefaultLocation()
+            : null;
+          if (defaultLocationId != null) {
+            location = locations.get(defaultLocationId);
+          }
         }
 
         // If we don't have a location, just use any one we know about.
         if (location == null) {
-          location = getFirstValue(state.locations);
+          location = getFirstValue(locations);
         }
 
         // If we still don't have a location, give up.

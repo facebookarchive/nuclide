@@ -48,6 +48,8 @@ export type Location = {
   hideItem(item: Viewable): void,
   itemIsVisible(item: Viewable): boolean,
   serialize(): ?Object,
+
+  onDidAddItem(cb: (item: Viewable) => void): IDisposable,
 };
 
 export type LocationFactory = {

@@ -19,6 +19,7 @@ import {nextAnimationFrame} from '../../commons-node/observable';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {SimpleModel} from '../../commons-node/SimpleModel';
 import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
+import {observeAddedPaneItems} from './observeAddedPaneItems';
 import {observePanes} from './observePanes';
 import {syncPaneItemVisibility} from './syncPaneItemVisibility';
 import * as PanelLocationIds from './PanelLocationIds';
@@ -330,6 +331,10 @@ export class PanelLocation extends SimpleModel<State> {
         visible: this.state.visible,
       },
     };
+  }
+
+  onDidAddItem(cb: (item: Viewable) => void): IDisposable {
+    return new UniversalDisposable(observeAddedPaneItems(this._paneContainer).subscribe(cb));
   }
 }
 
