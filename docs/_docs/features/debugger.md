@@ -134,14 +134,6 @@ You can open the Web Inspector by clicking on the Web Inspector icon (i.e., gear
 a [Chrome Developer Tools window](https://developers.google.com/web/tools/chrome-devtools/) for the
 current debugging frame.
 
-***Debugger UI Toggle***
-
-![](/static/images/docs/feature-debugger-basics-ui-toggle.png)
-
-The Debugger UI Toggle allows you to switch between the new Debugger Controls and the old Debugger UI.
-
-![](/static/images/docs/feature-debugger-basics-main-debugging-tab.png)
-
 ### Stepping
 
 It is essential for any debugger to have a mechanism to step into, over, and out of code. The
