@@ -83,6 +83,7 @@ declare class atom$CommandRegistry {
     callback?: atom$CommandCallback
   ): IDisposable,
   dispatch(target: HTMLElement, commandName: string): void,
+  onDidDispatch(callback: (event: Event) => mixed): IDisposable,
   onWillDispatch(callback: (event: Event) => mixed): IDisposable,
 }
 

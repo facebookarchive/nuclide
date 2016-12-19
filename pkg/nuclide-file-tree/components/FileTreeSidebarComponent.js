@@ -105,6 +105,8 @@ export default class FileTreeSidebarComponent extends React.Component {
     const remeasureEvents = Observable.merge(
       Observable.of(null),
       Observable.fromEvent(window, 'resize'),
+      observableFromSubscribeFunction(atom.commands.onDidDispatch.bind(atom.commands))
+        .filter(event => event.type === 'nuclide-file-tree:toggle'),
       Observable.interval(2000), // We poll because lots of things can change the height :(
     );
 
