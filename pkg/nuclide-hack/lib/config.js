@@ -21,5 +21,11 @@ export const HACK_CONFIG_PATH = 'nuclide-hack';
 export const SHOW_TYPE_COVERAGE_CONFIG_PATH = HACK_CONFIG_PATH + '.showTypeCoverage';
 
 export function getConfig(): HackConfig {
-  return (featureConfig.get(HACK_CONFIG_PATH): any);
+  return featureConfig.getWithDefaults(
+    HACK_CONFIG_PATH,
+    {
+      hhClientPath: '',
+      useIdeConnection: false,
+      logLevel: 'INFO',
+    });
 }

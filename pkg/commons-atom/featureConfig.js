@@ -41,6 +41,19 @@ function get(
   return atom.config.get(formatKeyPath(keyPath), ...(options == null ? [] : [options]));
 }
 
+function getWithDefaults<T>(
+  keyPath: string,
+  defaults: T,
+  options?: {
+    excludeSources?: Array<string>,
+    sources?: Array<string>,
+    scope?: Object,
+  },
+): T {
+  const current: any = get(keyPath, options);
+  return current == null ? defaults : current;
+}
+
 /*
  * Gets the schema of a setting for a Nuclide feature key. Takes and returns the same types as
  * `atom.config.getSchema`.
@@ -142,6 +155,7 @@ function isFeatureDisabled(name: string): boolean {
 
 export default {
   get,
+  getWithDefaults,
   getSchema,
   observe,
   observeAsStream,
