@@ -27,7 +27,7 @@ import FileTreeActions from '../lib/FileTreeActions';
 import {FileTreeStore} from '../lib/FileTreeStore';
 import {MultiRootChangedFilesView} from '../../nuclide-ui/MultiRootChangedFilesView';
 import {PanelComponentScroller} from '../../nuclide-ui/PanelComponentScroller';
-import {toggle, throttle} from '../../commons-node/observable';
+import {nextAnimationFrame, toggle, throttle} from '../../commons-node/observable';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {cacheWhileSubscribed} from '../../commons-node/observable';
@@ -119,7 +119,7 @@ export default class FileTreeSidebarComponent extends React.Component {
         showUncommittedChanges => this.setState({showUncommittedChanges}),
       ),
 
-      throttle(remeasureEvents, 100).subscribe(() => {
+      throttle(remeasureEvents, () => nextAnimationFrame).subscribe(() => {
         this._updateScrollerHeight();
       }),
     );
