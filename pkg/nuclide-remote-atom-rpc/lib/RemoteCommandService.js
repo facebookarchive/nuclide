@@ -16,16 +16,14 @@ import {CommandServer} from './CommandServer';
 // This interface is exposed by the nuclide server process to the client side
 // Atom process.
 export class RemoteCommandService {
-  _port: number;
   _disposables: CompositeDisposable;
 
-  constructor(port: number) {
-    this._port = port;
+  constructor() {
     this._disposables = new CompositeDisposable();
   }
 
   async _registerAtomCommands(atomCommands: AtomCommands): Promise<void> {
-    this._disposables.add(await CommandServer.create(this._port, atomCommands));
+    this._disposables.add(await CommandServer.register(atomCommands));
   }
 
   dispose(): void {
@@ -34,10 +32,9 @@ export class RemoteCommandService {
 
   // Called by Atom once for each new remote connection.
   static async registerAtomCommands(
-    port: number,
     atomCommands: AtomCommands,
   ): Promise<RemoteCommandService> {
-    const result = new RemoteCommandService(port);
+    const result = new RemoteCommandService();
     await result._registerAtomCommands(atomCommands);
     return result;
   }

@@ -27,8 +27,6 @@ const NUCLIDE_SERVER_INFO_DIR = 'command-server';
 const SERVER_INFO_FILE = 'serverInfo.json';
 
 export type ServerInfo = {
-  // Port on which the Atom process is connected to nuclide-server.
-  port: number,
   // Port for local command scripts to connect to the nuclide-server.
   commandPort: number,
   // address family
@@ -56,7 +54,6 @@ async function createConfigDirectory(clearDirectory: boolean): Promise<?NuclideU
 }
 
 export async function createNewEntry(
-  port: number,
   commandPort: number,
   family: string,
 ): Promise<void> {
@@ -66,14 +63,15 @@ export async function createNewEntry(
     throw new Error('Could\'t create config directory');
   }
 
-  const subdir = nuclideUri.join(configDirectory, String(port));
+  // TODO: Instead of using this dummy '0' port, will need to figure out
+  // a directory structure which can handle multiple registered servers on the client side.
+  const subdir = nuclideUri.join(configDirectory, String(0));
   await fs.rmdir(subdir);
   if (await fs.exists(subdir)) {
     throw new Error('createNewEntry: Failed to delete: ' + subdir);
   }
   const info = {
     commandPort,
-    port,
     family,
   };
   await fs.mkdir(subdir);

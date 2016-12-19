@@ -26,8 +26,6 @@ import {Observable} from 'rxjs';
 import {RemoteConnection, ServerConnection} from '../../nuclide-remote-connection';
 import nuclideUri from '../../commons-node/nuclideUri';
 
-// Use dummy 0 port for local connections.
-const DUMMY_LOCAL_PORT = 0;
 const REMOTE_COMMAND_SERVICE = 'RemoteCommandService';
 
 class Activation {
@@ -77,9 +75,7 @@ class Activation {
         async connection => {
           const service: RemoteCommandServiceType =
             getServiceByConnection(REMOTE_COMMAND_SERVICE, connection);
-          const port = connection == null ? DUMMY_LOCAL_PORT : connection.getPort();
-          return service.RemoteCommandService.registerAtomCommands(
-            port, this._commands);
+          return service.RemoteCommandService.registerAtomCommands(this._commands);
         });
   }
 

@@ -19,60 +19,65 @@ import {localNuclideUriMarshalers} from '../../nuclide-marshalers-common';
 // Ties the AtomCommands registered via RemoteCommandService to
 // the server side CommandService.
 export class CommandServer {
-  static _server: ?CommandServer = null;
+  // The list of connected AtomCommands, most recent connection last.
+  // We have no way of detecting a traumatic termination of an Atom
+  // process, so the most recent connection is likely the healthiest
+  // connection.
+  static _connections: Array<CommandServer> = [];
+  static _server: ?SocketServer = null;
 
-  static async getConnectionDetails(): Promise<?ConnectionDetails> {
-    return CommandServer._server == null
-      ? null
-      : (await CommandServer._server._server.getAddress());
-  }
-
-  _server: SocketServer;
-  _nuclidePort: number;
-  _atomCommands: AtomCommands;
-
-  constructor(nuclidePort: number, atomCommands: AtomCommands) {
-    this._nuclidePort = nuclidePort;
-    this._atomCommands = atomCommands;
+  static async _ensureServer(): Promise<SocketServer> {
+    if (CommandServer._server != null) {
+      return CommandServer._server;
+    }
     const services = loadServicesConfig(nuclideUri.join(__dirname, '..'));
     const registry = new ServiceRegistry(
       [localNuclideUriMarshalers],
       services,
       RPC_PROTOCOL);
-    this._server = new SocketServer(registry);
+    const result = new SocketServer(registry);
+    CommandServer._server = result;
+    const address = await result.getAddress();
+    await createNewEntry(address.port, address.family);
+    return result;
   }
 
-  async _initialize(): Promise<void> {
-    const address = await this._server.getAddress();
+  static async getConnectionDetails(): Promise<?ConnectionDetails> {
+    const server = CommandServer.getCurrentServer();
+    return server == null
+      ? null
+      : (await (await CommandServer._ensureServer()).getAddress());
+  }
 
-    await createNewEntry(this._nuclidePort, address.port, address.family);
+  _atomCommands: AtomCommands;
+
+  constructor(atomCommands: AtomCommands) {
+    this._atomCommands = atomCommands;
+    CommandServer._ensureServer();
   }
 
   dispose(): void {
-    invariant(CommandServer._server === this);
-    CommandServer._server = null;
-    this._server.dispose();
+    invariant(CommandServer._connections.includes(this));
+    CommandServer._connections.splice(CommandServer._connections.indexOf(this), 1);
   }
 
-  static async create(
-    port: number,
+  static async register(
     atomCommands: AtomCommands,
-  ): Promise<CommandServer> {
-    if (CommandServer._server != null) {
-      CommandServer._server.dispose();
-    }
-    invariant(CommandServer._server == null);
-
-    const server = new CommandServer(port, atomCommands);
-    await server._initialize();
-    CommandServer._server = server;
+  ): Promise<IDisposable> {
+    const server = new CommandServer(atomCommands);
+    CommandServer._connections.push(server);
     return server;
   }
 
-  static getAtomCommands(): ?AtomCommands {
-    if (CommandServer._server == null) {
+  static getCurrentServer(): ?CommandServer {
+    if (CommandServer._connections.length === 0) {
       return null;
     }
-    return CommandServer._server._atomCommands;
+    return CommandServer._connections[CommandServer._connections.length - 1];
+  }
+
+  static getAtomCommands(): ?AtomCommands {
+    const server = CommandServer.getCurrentServer();
+    return (server == null) ? null : server._atomCommands;
   }
 }

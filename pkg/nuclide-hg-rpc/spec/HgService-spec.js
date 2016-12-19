@@ -277,10 +277,9 @@ describe('HgService', () => {
         return Observable.of(null);
       });
       CommandServer._server = ({
-        _server: {
-          getAddress: () => ({family: 'f', port: 12345}),
-        },
+        getAddress: () => ({family: 'f', port: 12345}),
       }: any);
+      CommandServer._connections = [({}: any)];
     });
 
     describe('::commit', () => {
