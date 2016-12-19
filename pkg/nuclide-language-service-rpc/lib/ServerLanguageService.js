@@ -23,13 +23,15 @@ import type {
   FileDiagnosticUpdate,
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
 import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
-import type {ConnectableObservable, Observable} from 'rxjs';
+import type {ConnectableObservable} from 'rxjs';
 import type {Completion} from '../../nuclide-language-service/lib/LanguageService';
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
+import type {CategoryLogger} from '../../nuclide-logging';
 
 import invariant from 'assert';
 import {getBufferAtVersion} from '../../nuclide-open-files-rpc';
 import {FileCache} from '../../nuclide-open-files-rpc';
+import {Observable} from 'rxjs';
 
 // This is a version of the LanguageService interface which operates on a
 // single modified file at a time. This provides a simplified interface
@@ -250,4 +252,37 @@ export class ServerLanguageService {
   dispose(): void {
     this._service.dispose();
   }
+}
+
+export function ensureInvalidations(
+  logger: CategoryLogger,
+  diagnostics: Observable<FileDiagnosticUpdate>,
+): Observable<FileDiagnosticUpdate> {
+  const filesWithErrors = new Set();
+  const trackedDiagnotics: Observable<FileDiagnosticUpdate> =
+    diagnostics
+    .do((diagnostic: FileDiagnosticUpdate) => {
+      const filePath = diagnostic.filePath;
+      if (diagnostic.messages.length === 0) {
+        logger.logTrace(`Removing ${filePath} from files with errors`);
+        filesWithErrors.delete(filePath);
+      } else {
+        logger.logTrace(`Adding ${filePath} to files with errors`);
+        filesWithErrors.add(filePath);
+      }
+    });
+
+  const fileInvalidations: Observable<FileDiagnosticUpdate> =
+    Observable.defer(() => {
+      logger.logTrace('Clearing errors after stream closed');
+      return Observable.from(Array.from(filesWithErrors).map(file => {
+        logger.logTrace(`Clearing errors for ${file} after connection closed`);
+        return {
+          filePath: file,
+          messages: [],
+        };
+      }));
+    });
+
+  return trackedDiagnotics.concat(fileInvalidations);
 }

@@ -8,8 +8,10 @@
  * @flow
  */
 
-import featureConfig from '../../commons-atom/featureConfig';
 import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
+
+import featureConfig from '../../commons-atom/featureConfig';
+import {getCategoryLogger} from '../../nuclide-logging';
 
 type HackConfig = {
   hhClientPath: string,
@@ -29,3 +31,13 @@ export function getConfig(): HackConfig {
       logLevel: 'INFO',
     });
 }
+
+const LOGGER_CATEGORY = 'nuclide-hack';
+export const logger = getCategoryLogger(LOGGER_CATEGORY);
+
+function initializeLogging(): void {
+  const config = getConfig();
+  logger.setLogLevel(config.logLevel);
+}
+
+initializeLogging();

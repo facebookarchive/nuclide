@@ -14,10 +14,12 @@ import type {
   MessageInvalidationCallback,
 } from '../../nuclide-diagnostics-common';
 import type {
+  FileDiagnosticUpdate,
   DiagnosticProviderUpdate,
   InvalidationMessage,
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
 import type {LanguageService} from './LanguageService';
+import type {CategoryLogger} from '../../nuclide-logging';
 
 import {Cache} from '../../commons-node/cache';
 import {ConnectionCache} from '../../nuclide-remote-connection';
@@ -33,6 +35,7 @@ import {observableFromSubscribeFunction} from '../../commons-node/event';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {BusySignalProviderBase} from '../../nuclide-busy-signal';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import {ensureInvalidations} from '../../nuclide-language-service-rpc';
 
 export type DiagnosticsConfig = FileDiagnosticsConfig | ObservableDiagnosticsConfig;
 
@@ -53,6 +56,7 @@ export function registerDiagnostics<T: LanguageService>(
   name: string,
   grammars: Array<string>,
   config: DiagnosticsConfig,
+  logger: CategoryLogger,
   connectionToLanguageService: ConnectionCache<T>,
 ): IDisposable {
   const result = new UniversalDisposable();
@@ -71,6 +75,7 @@ export function registerDiagnostics<T: LanguageService>(
     case '0.2.0':
       provider = new ObservableDiagnosticProvider(
         config.analyticsEventName,
+        logger,
         connectionToLanguageService,
       );
       break;
@@ -277,26 +282,40 @@ export class ObservableDiagnosticProvider<T: LanguageService> {
   _analyticsEventName: string;
   _connectionToLanguageService: ConnectionCache<T>;
   _connectionToFiles: Cache<?ServerConnection, Set<NuclideUri>>;
+  _logger: CategoryLogger;
 
   constructor(
     analyticsEventName: string,
+    logger: CategoryLogger,
     connectionToLanguageService: ConnectionCache<T>,
   ) {
+    this._logger = logger;
     this._analyticsEventName = analyticsEventName;
     this._connectionToFiles = new Cache(connection => new Set());
     this._connectionToLanguageService = connectionToLanguageService;
     this.updates = this._connectionToLanguageService.observeEntries()
       .mergeMap(([connection, languageService]) => {
+        const connectionName = ServerConnection.toDebugString(connection);
+        this._logger.logTrace(
+          `Starting observing diagnostics ${connectionName}, ${this._analyticsEventName}`);
         return Observable.fromPromise(languageService).catch(error => Observable.empty())
-          .mergeMap(language => {
-            return language.observeDiagnostics().refCount().catch(error => Observable.empty());
+          .mergeMap((language: LanguageService) => {
+            this._logger.logTrace(
+              `Observing diagnostics ${connectionName}, ${this._analyticsEventName}`);
+            return ensureInvalidations(this._logger,
+              language.observeDiagnostics().refCount().catch(error => Observable.empty()));
           })
-          .map(({filePath, messages}) => {
+          .map((update: FileDiagnosticUpdate) => {
+            const {filePath, messages} = update;
             track(this._analyticsEventName);
             const fileCache = this._connectionToFiles.get(connection);
             if (messages.length === 0) {
+              this._logger.logTrace(
+                `Observing diagnostics: removing ${filePath}, ${this._analyticsEventName}`);
               fileCache.delete(filePath);
             } else {
+              this._logger.logTrace(
+                `Observing diagnostics: adding ${filePath}, ${this._analyticsEventName}`);
               fileCache.add(filePath);
             }
             return {
@@ -308,6 +327,8 @@ export class ObservableDiagnosticProvider<T: LanguageService> {
     this.invalidations = observableFromSubscribeFunction(
       ServerConnection.onDidCloseServerConnection)
         .map(connection => {
+          this._logger.logTrace(
+            `Diagnostics closing ${connection.getRemoteHostname()}, ${this._analyticsEventName}`);
           const files = Array.from(this._connectionToFiles.get(connection));
           this._connectionToFiles.delete(connection);
           return {

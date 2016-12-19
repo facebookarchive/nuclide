@@ -21,6 +21,7 @@ import type {FindReferencesConfig} from './FindReferencesProvider';
 import type {EvaluationExpressionConfig} from './EvaluationExpressionProvider';
 import type {AutocompleteConfig} from './AutocompleteProvider';
 import type {DiagnosticsConfig} from './DiagnosticsProvider';
+import type {CategoryLogger} from '../../nuclide-logging';
 
 import {ConnectionCache} from '../../nuclide-remote-connection';
 import {Observable} from 'rxjs';
@@ -35,6 +36,7 @@ import {FindReferencesProvider} from './FindReferencesProvider';
 import {EvaluationExpressionProvider} from './EvaluationExpressionProvider';
 import {AutocompleteProvider} from './AutocompleteProvider';
 import {registerDiagnostics} from './DiagnosticsProvider';
+import {getCategoryLogger} from '../../nuclide-logging';
 
 export type AtomLanguageServiceConfig = {
   name: string,
@@ -55,12 +57,15 @@ export class AtomLanguageService<T: LanguageService> {
   _config: AtomLanguageServiceConfig;
   _connectionToLanguageService: ConnectionCache<T>;
   _subscriptions: UniversalDisposable;
+  _logger: CategoryLogger;
 
   constructor(
     languageServiceFactory: (connection: ?ServerConnection) => Promise<T>,
     config: AtomLanguageServiceConfig,
+    logger: CategoryLogger = getCategoryLogger('nuclide-language-service'),
   ) {
     this._config = config;
+    this._logger = logger;
     this._subscriptions = new UniversalDisposable();
     const lazy = true;
     this._connectionToLanguageService = new ConnectionCache(languageServiceFactory, lazy);
@@ -147,6 +152,7 @@ export class AtomLanguageService<T: LanguageService> {
         this._config.name,
         this._config.grammars,
         diagnosticsConfig,
+        this._logger,
         this._connectionToLanguageService));
     }
   }

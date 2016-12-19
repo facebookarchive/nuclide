@@ -327,6 +327,10 @@ class ServerConnection {
     return ServerConnection.onDidAddServerConnection(handler);
   }
 
+  static toDebugString(connection: ?ServerConnection): string {
+    return connection == null ? 'local' : connection.getRemoteHostname();
+  }
+
   getRemoteConnectionForUri(uri: NuclideUri): ?RemoteConnection {
     const {path} = nuclideUri.parse(uri);
     return this.getConnections().filter(connection => {

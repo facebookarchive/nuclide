@@ -39,6 +39,7 @@ import type {
 import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {Completion} from '../../nuclide-language-service/lib/LanguageService';
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
+import type {HackDiagnosticsMessage} from './HackConnectionService';
 
 import {Observable} from 'rxjs';
 import {wordAtPositionFromBuffer} from '../../commons-node/range';
@@ -77,7 +78,7 @@ import {
 import {executeQuery} from './SymbolSearch';
 import {FileCache, ConfigObserver} from '../../nuclide-open-files-rpc';
 import {getEvaluationExpression} from './EvaluationExpression';
-import {ServerLanguageService} from '../../nuclide-language-service-rpc';
+import {ServerLanguageService, ensureInvalidations} from '../../nuclide-language-service-rpc';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 
 export type SymbolTypeValue = 0 | 1 | 2 | 3 | 4;
@@ -212,39 +213,22 @@ class HackSingleFileLanguageService {
     return observeConnections(this._fileCache)
       .mergeMap(connection => {
         logger.logTrace('notifyDiagnostics');
-        const filesWithErrors = new Set();
-        const diagnostics: Observable<FileDiagnosticUpdate> = connection.notifyDiagnostics()
-          .refCount()
-          .catch(error => {
-            logger.logError(`Error: notifyDiagnostics ${error}`);
-            return Observable.empty();
-          })
-          .map(hackDiagnostics => {
-            logger.logTrace(`Got hack error in ${hackDiagnostics.filename}`);
-            return ({
-              filePath: hackDiagnostics.filename,
-              messages: hackDiagnostics.errors.map(diagnostic =>
-                hackMessageToDiagnosticMessage(diagnostic.message)),
-            });
-          })
-          .do(diagnostic => {
-            const filePath = diagnostic.filePath;
-            if (diagnostic.messages.length === 0) {
-              logger.logTrace(`Removing ${filePath} from files with errors`);
-              filesWithErrors.delete(filePath);
-            } else {
-              logger.logTrace(`Adding ${filePath} to files with errors`);
-              filesWithErrors.add(filePath);
-            }
-          });
-
-        const fileInvalidations: Observable<FileDiagnosticUpdate> =
-          Observable.defer(() => Observable.from(Array.from(filesWithErrors).map(file => ({
-            filePath: file,
-            messages: [],
-          }))));
-
-        return diagnostics.concat(fileInvalidations);
+        return ensureInvalidations(
+            logger,
+            connection.notifyDiagnostics()
+            .refCount()
+            .catch(error => {
+              logger.logError(`Error: notifyDiagnostics ${error}`);
+              return Observable.empty();
+            })
+            .map((hackDiagnostics: HackDiagnosticsMessage) => {
+              logger.logTrace(`Got hack error in ${hackDiagnostics.filename}`);
+              return ({
+                filePath: hackDiagnostics.filename,
+                messages: hackDiagnostics.errors.map(diagnostic =>
+                  hackMessageToDiagnosticMessage(diagnostic.message)),
+              });
+            }));
       });
   }
 

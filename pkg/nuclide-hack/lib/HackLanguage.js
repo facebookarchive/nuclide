@@ -18,7 +18,7 @@ import type {
 import typeof * as FileSystemService from '../../nuclide-server/lib/services/FileSystemService';
 
 import {getServiceByConnection} from '../../nuclide-remote-connection';
-import {getConfig} from './config';
+import {getConfig, logger} from './config';
 import {getNotifierByConnection} from '../../nuclide-open-files';
 import {AtomLanguageService} from '../../nuclide-language-service';
 import {HACK_GRAMMARS} from '../../nuclide-hack-common';
@@ -115,7 +115,7 @@ async function createLanguageService(): Promise<AtomLanguageService<HackLanguage
     diagnostics: diagnosticsConfig,
   };
 
-  return new AtomLanguageService(connectionToHackService, atomConfig);
+  return new AtomLanguageService(connectionToHackService, atomConfig, logger);
 }
 
 // This needs to be initialized eagerly for Hack Symbol search and the HHVM Toolbar.
