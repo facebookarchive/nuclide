@@ -11,15 +11,9 @@
 import type {HyperclickSuggestion} from '../../hyperclick/lib/types';
 
 import nuclideUri from '../../commons-node/nuclideUri';
-import invariant from 'assert';
-import {GRAMMARS} from './constants';
+import {GRAMMARS, EXTENSIONS} from './constants';
 import {goToLocation} from '../../commons-atom/go-to-location';
-import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
-
-const EXTENSIONS = new Set([
-  'ml',
-  'mli',
-]);
+import {getMerlinServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 module.exports = {
   priority: 20,
@@ -29,45 +23,49 @@ module.exports = {
     text: string,
     range: atom$Range,
   ): Promise<?HyperclickSuggestion> {
-    if (!GRAMMARS.has(textEditor.getGrammar().scopeName)) {
+    const {scopeName} = textEditor.getGrammar();
+    if (!GRAMMARS.has(scopeName)) {
       return null;
     }
 
     const file = textEditor.getPath();
-
     if (file == null) {
       return null;
     }
 
-    let kind = 'ml';
-    const extension = nuclideUri.extname(file);
-    if (EXTENSIONS.has(extension)) {
-      kind = extension;
+    const instance = getMerlinServiceByNuclideUri(file);
+
+    try {
+      await instance.pushNewBuffer(file, textEditor.getText());
+    } catch (e) {
+      atom.notifications.addError(e.message, {dismissable: true});
+      return null;
     }
 
-    const instance = await getServiceByNuclideUri('MerlinService', file);
-    invariant(instance);
-    const start = range.start;
+    const extension = nuclideUri.extname(file);
+    const kind = EXTENSIONS.has(extension) ? extension : 'ml';
 
-    return {
-      range,
-      async callback() {
-        try {
-          await instance.pushNewBuffer(file, textEditor.getText());
-          const location = await instance.locate(
-            file,
-            start.row,
-            start.column,
-            kind);
-          if (!location) {
-            return;
-          }
+    try {
+      const location = await instance.locate(
+        file,
+        range.start.row,
+        range.start.column,
+        kind,
+      );
+      if (location != null) {
+        return {
+          range,
+          callback() {
+            return goToLocation(
+              location.file,
+              location.pos.line - 1,
+              location.pos.col,
+            );
+          },
+        };
+      }
+    } catch (e) { }
 
-          goToLocation(location.file, location.pos.line - 1, location.pos.col);
-        } catch (e) {
-          atom.notifications.addError(e.message, {dismissable: true});
-        }
-      },
-    };
+    return null;
   },
 };

@@ -8,6 +8,11 @@
  * @flow
  */
 
+export const EXTENSIONS = new Set([
+  'ml',
+  'mli',
+]);
+
 export const GRAMMARS = new Set([
   'source.ocaml',
   'source.reason',
