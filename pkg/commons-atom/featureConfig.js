@@ -36,7 +36,9 @@ function get(
     scope?: Object,
   },
 ): mixed {
-  return atom.config.get(formatKeyPath(keyPath), ...Array.prototype.slice.call(arguments, 1));
+  // atom.config.get will crash if the second arg is present and undefined.
+  // It does not crash if the second arg is missing.
+  return atom.config.get(formatKeyPath(keyPath), ...(options == null ? [] : [options]));
 }
 
 /*
