@@ -1,5 +1,34 @@
 # Nuclide Changelog
 
+## v0.193.0
+
+### Highlights
+
+* Improve Flow autocomplete performance by caching and filtering previous results more often.
+
+### General
+
+* Recreate closed workspace view items in previous location.
+*  `~`  is now expanded to the user's home dir by default in user provided config paths.
+* Task runner failure notifications are now automatically hidden when you start running another task.
+* Task runner visibility is now serialized based on current working root.
+
+### Source Control
+
+* Add option to create bookmark on commit.
+
+### Fixes
+
+* Fix bug causing Mercurial operations to sometimes never terminate.
+* Fix dragging tabs between panels.
+* Fix Diff View sometimes missing original file.
+* Clang: fix blank outline views for some C++ files.
+* Fix remote atom when folks have overridden their `TMPDIR`.
+* Fixed several File Tree regressions including
+    * Re-introduce `⌘K` `⌘B` alias for toggling.
+    * Fix `⌃0` / focus toggling.
+    * Ability to move files using drag-and-drop.
+
 ## v0.192.0
 
 Hotfix various hanging processes and Diff View operations.
