@@ -51,8 +51,8 @@ class FileSystemActions {
           return;
         }
 
-        const {pathname} = nuclideUri.parse(filePath);
-        const basename = nuclideUri.basename(pathname);
+        const {path} = nuclideUri.parse(filePath);
+        const basename = nuclideUri.basename(path);
         const newDirectory = directory.getSubdirectory(basename);
         const created = await newDirectory.create();
         if (!created) {
@@ -91,7 +91,7 @@ class FileSystemActions {
 
     if (rootNode) {
       const localPath = nuclideUri.isRemote(dirPath)
-        ? nuclideUri.parse(dirPath).pathname
+        ? nuclideUri.parse(dirPath).path
         : dirPath;
 
       return this._openAddFileDialogImpl(

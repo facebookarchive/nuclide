@@ -55,11 +55,10 @@ export class RemoteDirectory {
     this._emitter = new Emitter();
     this._subscriptionCount = 0;
     this._symlink = symlink;
-    const {path: directoryPath, protocol, host} = nuclideUri.parse(uri);
-    invariant(protocol);
-    invariant(host);
+    const {path: directoryPath, hostname} = nuclideUri.parse(uri);
+    invariant(hostname != null);
     /** In the example, this would be "nuclide://example.com". */
-    this._host = host;
+    this._host = hostname;
     /** In the example, this would be "/path/to/directory". */
     this._localPath = directoryPath;
     // A workaround before Atom 2.0: see ::getHgRepoInfo of main.js.

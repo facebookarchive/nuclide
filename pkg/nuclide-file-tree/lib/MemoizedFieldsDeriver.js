@@ -66,7 +66,7 @@ export class MemoizedFieldsDeriver {
     this._name = keyToName(uri);
     this._isContainer = isDirKey(uri);
     this._relativePath = uri.slice(rootUri.length);
-    this._localPath = keyToPath(nuclideUri.isRemote(uri) ? nuclideUri.parse(uri).pathname : uri);
+    this._localPath = keyToPath(nuclideUri.isRemote(uri) ? nuclideUri.parse(uri).path : uri);
     this._splitPath = nuclideUri.split(uri);
 
     this._getRepo = memoize(this._repoGetter.bind(this));

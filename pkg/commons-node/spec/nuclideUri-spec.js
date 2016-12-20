@@ -61,7 +61,7 @@ describe('nuclide-uri', () => {
     it('treats hash symbols as literals, part of the path', () => {
       const parsedUri = nuclideUri.parse(remoteUriWithHashes);
       expect(parsedUri.hostname).toBe('fb.co.uk');
-      expect(parsedUri.pathname).toBe('/ab/#c.d  #');
+      expect(parsedUri.path).toBe('/ab/#c.d  #');
     });
 
     it('throws when given an Atom URI', () => {

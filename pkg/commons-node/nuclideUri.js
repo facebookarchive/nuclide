@@ -16,29 +16,13 @@
 export type NuclideUri = string;
 
 type ParsedUrl = {
-  auth: ?string,
-  href: string,
-  host: ?string,
   hostname: ?string,
   path: string,
-  pathname: string,
-  protocol: ?string,
-  query: ?any,
-  search: ?string,
-  slashes: ?boolean,
 };
 
 type ParsedRemoteUrl = {
-  auth: ?string,
-  href: string,
-  host: ?string,
   hostname: string,
   path: string,
-  pathname: string,
-  protocol: ?string,
-  query: ?any,
-  search: ?string,
-  slashes: ?boolean,
 };
 
 type ParsedPath = {
@@ -90,81 +74,40 @@ function createRemoteUri(hostname: string, remotePath: string): string {
 }
 
 /**
- * Parses `uri` with Node's `url.parse` and calls `decodeURI` on `href`, `path`, and `pathname` of
- * the parsed URL object.
+ * Parses valid Nuclide URIs into the hostname and path components.
+ * Throws an Error on invalid URIs. Invalid URIs are:
+ *  1) Any URI that does not start with 'nuclide://' protocol.
+ *  2) A URI starting with 'nuclide://' that doesn't contain either a hostname or a path
  *
- * * `url.parse` seems to apply encodeURI to the URL, and we typically don't want this behavior.
- * * Nuclide URIs disallow use of the `hash` attribute, and any hash characters are interpreted as
- *   as literal hashes.
- *
- *   For example:
- *
- *       parse('nuclide://f.co/path/to/#foo.txt#')
- *       >
- *         {
- *           ...
- *           path: '/path/to/#foo.txt#',
- *           ...
- *         }
+ * Everything that does not contain a '://' is assumed to be a local path. Both POSIX and Windows
+ * paths are legal
  */
 function parse(uri: NuclideUri): ParsedUrl {
-  _testForAtomUri(uri);
+  if (uri.startsWith(REMOTE_PATH_URI_PREFIX)) {
+    const hostAndPath = uri.substr(REMOTE_PATH_URI_PREFIX.length);
+    const hostSep = hostAndPath.indexOf('/');
 
-  const parsedUri = url.parse(_escapeSpecialCharacters(uri));
-  if (parsedUri.protocol == null) {
-    return {
-      auth: null,
-      host: null,
-      hostname: null,
-      href: uri,
-      path: uri,
-      pathname: uri,
-      protocol: null,
-      query: null,
-      search: null,
-      slashes: null,
-    };
+    invariant(
+      hostSep !== -1,
+      `Remote URIs must contain a hostname and a path. Failed to parse ${uri}`,
+    );
+
+    const hostname = hostAndPath.substr(0, hostSep);
+    invariant(
+      hostname !== '',
+      `Remote URIs must contain a hostname. Failed to parse ${uri}`,
+    );
+
+    const path = hostAndPath.substr(hostSep);
+    return {hostname, path};
   }
 
   invariant(
-    parsedUri.path,
-    'Nuclide URIs must contain paths, ' +
-    `${maybeToString(parsedUri.path)}' found while parsing '${uri}'`,
+    uri.indexOf('://') === -1,
+    'Nuclide URI must be either local file names or URLs starting with nuclide://',
   );
 
-  let path = parsedUri.path;
-  // `url.parse` treates the first '#' character as the beginning of the `hash` attribute. That
-  // feature is not used in Nuclide and is instead treated as part of the path.
-  if (parsedUri.hash != null) {
-    path += parsedUri.hash;
-  }
-
-  invariant(
-    parsedUri.pathname,
-    'Nuclide URIs must contain pathnamess, ' +
-    `'${maybeToString(parsedUri.pathname)}' found while parsing '${uri}'`,
-  );
-  let pathname = parsedUri.pathname;
-  // `url.parse` treates the first '#' character as the beginning of the `hash` attribute. That
-  // feature is not used in Nuclide and is instead treated as part of the pathname.
-  if (parsedUri.hash != null) {
-    pathname += parsedUri.hash;
-  }
-
-  // Explicitly copying object properties appeases Flow's "maybe" type handling. Using the `...`
-  // operator causes null/undefined errors, and `Object.assign` bypasses type checking.
-  return {
-    auth: parsedUri.auth,
-    host: parsedUri.host,
-    hostname: parsedUri.hostname,
-    href: decodeURI(parsedUri.href),
-    path: decodeURI(path),
-    pathname: decodeURI(pathname),
-    protocol: parsedUri.protocol,
-    query: parsedUri.query,
-    search: parsedUri.search,
-    slashes: parsedUri.slashes,
-  };
+  return {hostname: null, path: uri};
 }
 
 function parseRemoteUri(remoteUri: NuclideUri): ParsedRemoteUrl {
@@ -181,16 +124,8 @@ function parseRemoteUri(remoteUri: NuclideUri): ParsedRemoteUrl {
   // Explicitly copying object properties appeases Flow's "maybe" type handling. Using the `...`
   // operator causes null/undefined errors, and `Object.assign` bypasses type checking.
   return {
-    auth: parsedUri.auth,
-    host: parsedUri.host,
     hostname: parsedUri.hostname,
-    href: parsedUri.href,
     path: parsedUri.path,
-    pathname: parsedUri.pathname,
-    protocol: parsedUri.protocol,
-    query: parsedUri.query,
-    search: parsedUri.search,
-    slashes: parsedUri.slashes,
   };
 }
 

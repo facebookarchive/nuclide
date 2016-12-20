@@ -275,10 +275,7 @@ export class RemoteFile {
   }
 
   getParent(): RemoteDirectory {
-    const {path: localPath, protocol, host} = nuclideUri.parse(this._path);
-    invariant(protocol);
-    invariant(host);
-    const directoryPath = protocol + '//' + host + nuclideUri.dirname(localPath);
+    const directoryPath = nuclideUri.dirname(this._path);
     const remoteConnection = this._server.getRemoteConnectionForUri(this._path);
     const hgRepositoryDescription = remoteConnection != null ?
       remoteConnection.getHgRepositoryDescription() :
