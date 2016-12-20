@@ -1,5 +1,10 @@
 # Nuclide Changelog
 
+## v0.194.0
+
+* OCaml Hyperclick provider now only triggers on success.
+* Hotfix for internal changes.
+
 ## v0.193.0
 
 ### Highlights
