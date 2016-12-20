@@ -1,5 +1,9 @@
 [
   {
+    "implementation": "../nuclide-adb-rpc/lib/AdbService.js",
+    "name": "AdbService"
+  },
+  {
     "implementation": "../nuclide-arcanist-rpc/lib/ArcanistService.js",
     "name": "ArcanistService"
   },
@@ -48,12 +52,12 @@
     "name": "InfoService"
   },
   {
-    "implementation": "../nuclide-ocaml-rpc/lib/MerlinService.js",
-    "name": "MerlinService"
+    "implementation": "../nuclide-debugger-iwdp-rpc/lib/IwdpDebuggerService.js",
+    "name": "IwdpDebuggerService"
   },
   {
-    "implementation": "../nuclide-ocaml-rpc/lib/ReasonService.js",
-    "name": "ReasonService"
+    "implementation": "../nuclide-ocaml-rpc/lib/MerlinService.js",
+    "name": "MerlinService"
   },
   {
     "definition": "../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface.js",
@@ -77,19 +81,15 @@
     "name": "PythonService"
   },
   {
+    "implementation": "../nuclide-ocaml-rpc/lib/ReasonService.js",
+    "name": "ReasonService"
+  },
+  {
     "implementation": "../nuclide-remote-atom-rpc/lib/RemoteCommandService.js",
     "name": "RemoteCommandService"
   },
   {
     "implementation": "./lib/services/SourceControlService.js",
     "name": "SourceControlService"
-  },
-  {
-    "implementation": "../nuclide-debugger-iwdp-rpc/lib/IwdpDebuggerService.js",
-    "name": "IwdpDebuggerService"
-  },
-  {
-    "implementation": "../nuclide-adb-rpc/lib/AdbService.js",
-    "name": "AdbService"
   }
 ]
