@@ -19,7 +19,7 @@ import {
 } from '../lib/redux/Epics';
 
 const mockPlatformService = {
-  getPlatformGroups(ruleType, buckRoot): ?any {
+  getPlatformGroups(buckRoot, ruleType, buildTarget): ?any {
     return null;
   },
 };

@@ -13,7 +13,11 @@ import type {PlatformGroup} from './types';
 import {Disposable} from 'atom';
 import {Observable, Subject} from 'rxjs';
 
-type PlatformProvider = (ruleType: string, buckRoot: string) => Observable<?PlatformGroup>;
+type PlatformProvider = (
+  buckRoot: string,
+  ruleType: string,
+  buildTarget: string,
+) => Observable<?PlatformGroup>;
 
 export class PlatformService {
   _registeredProviders: Array<PlatformProvider> = [];
@@ -29,12 +33,16 @@ export class PlatformService {
     });
   }
 
-  getPlatformGroups(ruleType: string, buckRoot: string): Observable<Array<PlatformGroup>> {
+  getPlatformGroups(
+    buckRoot: string,
+    ruleType: string,
+    buildTarget: string,
+  ): Observable<Array<PlatformGroup>> {
     return this._providersChanged
       .startWith(undefined)
       .switchMap(() => {
         const observables = this._registeredProviders
-          .map(provider => provider(ruleType, buckRoot));
+          .map(provider => provider(buckRoot, ruleType, buildTarget));
         return Observable.from(observables)
           // $FlowFixMe: type combineAll
           .combineAll()

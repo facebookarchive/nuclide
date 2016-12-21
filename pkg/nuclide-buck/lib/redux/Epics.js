@@ -79,7 +79,7 @@ export function setRuleTypeEpic(
     if (ruleType) {
       const state = store.getState();
       invariant(state.buckRoot);
-      return state.platformService.getPlatformGroups(ruleType, state.buckRoot)
+      return state.platformService.getPlatformGroups(state.buckRoot, ruleType, state.buildTarget)
         .map(platformGroups => setPlatformGroups(platformGroups));
     } else {
       return Observable.of(setPlatformGroups([]));

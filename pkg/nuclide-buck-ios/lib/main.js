@@ -28,7 +28,11 @@ export function consumePlatformService(service: PlatformService): void {
   disposable = service.register(provideIosDevices);
 }
 
-function provideIosDevices(ruleType: string, buckRoot: string): Observable<?PlatformGroup> {
+function provideIosDevices(
+  buckRoot: string,
+  ruleType: string,
+  buildTarget: string,
+): Observable<?PlatformGroup> {
   if (ruleType !== 'apple_bundle') {
     return Observable.of(null);
   }
