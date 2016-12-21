@@ -57,7 +57,10 @@ export class DebuggerCallstackComponent extends React.Component {
           name,
           location,
         } = callstackItem;
-        const path = nuclideUri.basename(location.path);
+        // Callstack paths may have a format like file://foo/bar, or
+        // lldb://asm/0x1234. These are not valid paths that can be used to
+        // construct a nuclideUri so we need to skip the protocol prefix.
+        const path = nuclideUri.basename(location.path.replace(/^[a-zA-Z]+:\/\//, ''));
         const content = (
           <div className="nuclide-debugger-callstack-item" key={i}>
             <span className="nuclide-debugger-callstack-name">
