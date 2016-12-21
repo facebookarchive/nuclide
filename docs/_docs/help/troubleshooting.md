@@ -47,8 +47,6 @@ A version of [Node](https://nodejs.org/) that is equal to or greater than that s
 node --version
 ```
 
-and verifying that you have version 6.5.0 or higher.
-
 *Permissions*
 
 If you get `EACCESS` errors when you run the `npm install` command, you likely do not have your NPM properly

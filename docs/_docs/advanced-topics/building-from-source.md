@@ -31,17 +31,9 @@ You can verify all the appropriate dependencies. All the following should be in 
 
 ```bash
 $ git --version
-git version 2.5.4 (Apple Git-61)
 $ node --version
-v6.5.0
 $ npm --version
-3.10.3
 $ apm --version
-apm  1.12.5
-npm  3.10.5
-node 4.4.5
-python 2.7.10
-git 2.5.4
 ```
 
 > Don't worry about the `apm` versions of `npm`, etc. Those are internal to `atom`. Your
@@ -83,17 +75,9 @@ You can verify all the appropriate dependencies. All the following should be in 
 
 ```bash
 $ git --version
-git version 1.9.1
 $ node --version
-v6.5.0
 $ npm --version
-3.10.3
 $ apm --version
-apm  1.12.5
-npm  3.10.5
-node 4.4.5
-python 2.7.6
-git 1.9.1
 ```
 
 >Don't worry about the `apm` versions of `npm`, etc. Those are internal to `atom`. Your
