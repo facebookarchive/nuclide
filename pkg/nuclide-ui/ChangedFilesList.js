@@ -11,6 +11,7 @@
 import type {NuclideUri} from '../commons-node/nuclideUri';
 import type {FileChangeStatusValue} from '../commons-atom/vcs';
 
+import addTooltip from './add-tooltip';
 import classnames from 'classnames';
 import {
  FileChangeStatusToIcon,
@@ -20,6 +21,8 @@ import {
 import nuclideUri from '../commons-node/nuclideUri';
 import {React} from 'react-for-atom';
 import {Icon} from './Icon';
+
+const FILE_CHANGES_INITIAL_PAGE_SIZE = 100;
 
 type ChangedFilesProps = {
   fileChanges: Map<NuclideUri, FileChangeStatusValue>,
@@ -33,6 +36,7 @@ type ChangedFilesProps = {
 
 type ChangedFilesState = {
   isCollapsed: boolean,
+  visiblePagesCount: number,
 };
 
 export default class ChangedFilesList extends React.Component {
@@ -43,6 +47,7 @@ export default class ChangedFilesList extends React.Component {
     super(props);
     this.state = {
       isCollapsed: false,
+      visiblePagesCount: 1,
     };
   }
 
@@ -62,6 +67,9 @@ export default class ChangedFilesList extends React.Component {
       return null;
     }
 
+    const filesToShow = FILE_CHANGES_INITIAL_PAGE_SIZE * this.state.visiblePagesCount;
+    const sizeLimitedFileChanges = Array.from(fileChanges.entries()).slice(0, filesToShow);
+
     const rootClassName = classnames('list-nested-item', {
       collapsed: this.state.isCollapsed,
     });
@@ -74,6 +82,18 @@ export default class ChangedFilesList extends React.Component {
         [`${commandPrefix}-file-entry`]: repository != null && repository.getType() === 'hg',
       },
     );
+
+    const showMoreFilesElement = fileChanges.size > filesToShow
+      ? <div
+          className="icon icon-ellipsis"
+          ref={addTooltip({
+            title: 'Show more files with uncommitted changes',
+            delay: 100,
+            placement: 'bottom',
+          })}
+          onClick={() => this.setState({visiblePagesCount: this.state.visiblePagesCount + 1})}
+        />
+      : null;
 
     return (
       <ul className="list-tree has-collapsable-children">
@@ -92,7 +112,7 @@ export default class ChangedFilesList extends React.Component {
             null
           }
           <ul className="list-tree has-flat-children">
-            {Array.from(fileChanges.entries()).map(
+            {sizeLimitedFileChanges.map(
               ([filePath, fileChangeValue]) => {
                 const baseName = nuclideUri.basename(filePath);
                 return (
@@ -113,6 +133,7 @@ export default class ChangedFilesList extends React.Component {
                 );
               },
             )}
+            <li>{showMoreFilesElement}</li>
           </ul>
         </li>
       </ul>
