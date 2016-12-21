@@ -497,6 +497,19 @@ export async function listAliases(rootPath: NuclideUri): Promise<Array<string>> 
   return stdout ? stdout.split('\n') : [];
 }
 
+export async function listFlavors(
+  rootPath: NuclideUri,
+  targets: Array<string>,
+): Promise<?Object> {
+  const args = ['audit', 'flavors', '--json'].concat(targets);
+  try {
+    const result = await _runBuckCommandFromProjectRoot(rootPath, args);
+    return JSON.parse(result.stdout);
+  } catch (e) {
+    return null;
+  }
+}
+
 /**
  * Currently, if `aliasOrTarget` contains a flavor, this will fail.
  */
