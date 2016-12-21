@@ -14,10 +14,9 @@ import type {
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {ControlButtonSpecification} from '../../nuclide-debugger/lib/types';
 
-import invariant from 'assert';
 import {DebuggerProcessInfo} from '../../nuclide-debugger-base';
 import {PhpDebuggerInstance} from './PhpDebuggerInstance';
-import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {getPhpDebuggerServiceByNuclideUri} from '../../nuclide-remote-connection';
 import nuclideUri from '../../commons-node/nuclideUri';
 
 import utils from './utils';
@@ -52,9 +51,7 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
   }
 
   _getRpcService(): PhpDebuggerServiceType {
-    const service =
-      getServiceByNuclideUri('PhpDebuggerService', this.getTargetUri());
-    invariant(service);
+    const service = getPhpDebuggerServiceByNuclideUri(this.getTargetUri());
     return new service.PhpDebuggerService();
   }
 

@@ -13,10 +13,9 @@ import type {
   PhpDebuggerService as PhpDebuggerServiceType,
 } from '../../nuclide-debugger-php-rpc/lib/PhpDebuggerService';
 
-import invariant from 'assert';
 import {DebuggerProcessInfo} from '../../nuclide-debugger-base';
 import {PhpDebuggerInstance} from './PhpDebuggerInstance';
-import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {getPhpDebuggerServiceByNuclideUri} from '../../nuclide-remote-connection';
 import nuclideUri from '../../commons-node/nuclideUri';
 
 import utils from './utils';
@@ -47,9 +46,7 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
   }
 
   _getRpcService(): PhpDebuggerServiceType {
-    const service =
-      getServiceByNuclideUri('PhpDebuggerService', this.getTargetUri());
-    invariant(service);
+    const service = getPhpDebuggerServiceByNuclideUri(this.getTargetUri());
     return new service.PhpDebuggerService();
   }
 

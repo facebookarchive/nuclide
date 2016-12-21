@@ -44,7 +44,7 @@ import nuclideUri from '../../commons-node/nuclideUri';
 import {combineEpics, createEpicMiddleware} from '../../commons-node/redux-observable';
 import {compact} from '../../commons-node/observable';
 import {taskFromObservable} from '../../commons-node/tasks';
-import {getBuckService} from '../../nuclide-buck-base';
+import {getBuckServiceByNuclideUri} from '../../nuclide-remote-connection';
 import featureConfig from '../../commons-atom/featureConfig';
 import {getLogger} from '../../nuclide-logging';
 import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
@@ -294,8 +294,7 @@ export class BuckBuildSystem {
   buildArtifact(opts: BuckBuilderBuildOptions): BuildArtifactTask {
     const {root, target} = opts;
     let pathToArtifact = null;
-    const buckService = getBuckService(root);
-    invariant(buckService != null, 'Buck service is not available');
+    const buckService = getBuckServiceByNuclideUri(root);
 
     const task = taskFromObservable(
       Observable.concat(
@@ -383,8 +382,7 @@ export class BuckBuildSystem {
     }
     this._logOutput(`Starting "buck ${subcommand} ${buildTarget}${argString}"`, 'log');
 
-    const buckService = getBuckService(buckRoot);
-    invariant(buckService != null, 'Buck service is not available');
+    const buckService = getBuckServiceByNuclideUri(buckRoot);
 
     return Observable.fromPromise(buckService.getHTTPServerPort(buckRoot))
       .catch(err => {

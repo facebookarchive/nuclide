@@ -11,7 +11,10 @@
 import RelatedFileFinder from '../lib/RelatedFileFinder';
 
 function mockFiles(files: Array<string>) {
-  spyOn(require('../../nuclide-remote-connection'), 'getServiceByNuclideUri').andReturn({
+  spyOn(
+    require('../../nuclide-remote-connection'),
+    'getFileSystemServiceByNuclideUri',
+  ).andReturn({
     readdir: async () => {
       return files.map(file => {
         return {file, stats: {isFile: () => true}};

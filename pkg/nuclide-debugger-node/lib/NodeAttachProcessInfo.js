@@ -10,7 +10,6 @@
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
-import invariant from 'assert';
 import {
   DebuggerInstance,
   DebuggerInstanceBase,
@@ -20,7 +19,7 @@ import type {
   NodeAttachTargetInfo,
   NodeDebuggerService,
 } from '../../nuclide-debugger-node-rpc/lib/NodeDebuggerService';
-import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {getNodeDebuggerServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {getConfig} from './utils';
 
 export class NodeAttachProcessInfo extends DebuggerProcessInfo {
@@ -41,9 +40,7 @@ export class NodeAttachProcessInfo extends DebuggerProcessInfo {
     const debuggerConfig = {
       logLevel: getConfig().serverLogLevel,
     };
-    const service =
-      getServiceByNuclideUri('NodeDebuggerService', this.getTargetUri());
-    invariant(service);
+    const service = getNodeDebuggerServiceByNuclideUri(this.getTargetUri());
     return new service.NodeDebuggerService(debuggerConfig);
   }
 }

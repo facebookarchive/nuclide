@@ -32,31 +32,30 @@ describe('HyperclickHelpers', () => {
         .andCallThrough();
 
     // Mock the services we use.
-    spyOn(require('../../nuclide-remote-connection'), 'getServiceByNuclideUri')
+    spyOn(require('../../nuclide-remote-connection'), 'getCtagsServiceByNuclideUri')
       .andCallFake(service => {
-        if (service === 'FileSystemService') {
-          return {
-            readFile() {
-              return new Buffer('function A\ntest\nclass A\n');
-            },
-          };
-        } else if (service === 'CtagsService') {
-          return {
-            getCtagsService() {
-              return {
-                async getTagsPath() {
-                  return '/tags';
-                },
-                async findTags(path, query) {
-                  return findTagsResult;
-                },
-                dispose() {},
-              };
-            },
-          };
-        } else {
-          throw new Error('Unexpected service call');
-        }
+        return {
+          getCtagsService() {
+            return {
+              async getTagsPath() {
+                return '/tags';
+              },
+              async findTags(path, query) {
+                return findTagsResult;
+              },
+              dispose() {},
+            };
+          },
+        };
+      });
+
+    spyOn(require('../../nuclide-remote-connection'), 'getFileSystemServiceByNuclideUri')
+      .andCallFake(service => {
+        return {
+          readFile() {
+            return new Buffer('function A\ntest\nclass A\n');
+          },
+        };
       });
   });
 

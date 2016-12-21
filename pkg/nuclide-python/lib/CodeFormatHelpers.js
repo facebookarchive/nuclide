@@ -8,11 +8,8 @@
  * @flow
  */
 
-import typeof * as PythonService from '../../nuclide-python-rpc';
-
 import {trackTiming} from '../../nuclide-analytics';
-import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
-import invariant from 'assert';
+import {getPythonServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 export default class CodeFormatHelpers {
 
@@ -29,9 +26,7 @@ export default class CodeFormatHelpers {
         };
       }
 
-      const service: ?PythonService = getServiceByNuclideUri('PythonService', src);
-      invariant(service, 'Failed to get service for python.');
-
+      const service = getPythonServiceByNuclideUri(src);
       const formatted = await service.formatCode(
         src,
         buffer.getText(),

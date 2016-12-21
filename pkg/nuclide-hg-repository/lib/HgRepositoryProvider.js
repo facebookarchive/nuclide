@@ -8,14 +8,11 @@
  * @flow
  */
 
-import typeof * as HgService from '../../nuclide-hg-rpc/lib/HgService';
-
 import {Directory} from 'atom';
-import invariant from 'assert';
 import {trackTiming} from '../../nuclide-analytics';
 import {
   RemoteDirectory,
-  getServiceByNuclideUri,
+  getHgServiceByNuclideUri,
 } from '../../nuclide-remote-connection';
 import {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import {getLogger} from '../../nuclide-logging';
@@ -97,8 +94,7 @@ export default class HgRepositoryProvider {
           workingDirectoryLocalPath,
         } = repositoryDescription;
 
-        const service: ?HgService = getServiceByNuclideUri('HgService', directory.getPath());
-        invariant(service);
+        const service = getHgServiceByNuclideUri(directory.getPath());
         const hgService = new service.HgService(workingDirectoryLocalPath);
         return new HgRepositoryClient(repoPath, hgService, {
           workingDirectory,

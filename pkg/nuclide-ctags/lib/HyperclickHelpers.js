@@ -12,10 +12,9 @@ import type {HyperclickSuggestion} from '../../hyperclick/lib/types';
 import type {CtagsResult, CtagsService} from '../../nuclide-ctags-rpc';
 
 import {goToLocation} from '../../commons-atom/go-to-location';
-import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {getCtagsServiceByNuclideUri} from '../../nuclide-remote-connection';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {CTAGS_KIND_NAMES, getLineNumberForTag} from './utils';
-import invariant from 'assert';
 
 const LIMIT = 100;
 const QUALIFYING_FIELDS = ['class', 'namespace', 'struct', 'enum', 'Module'];
@@ -51,8 +50,7 @@ export default class HyperclickHelpers {
       return null;
     }
 
-    const service = getServiceByNuclideUri('CtagsService', path);
-    invariant(service);
+    const service = getCtagsServiceByNuclideUri(path);
     const ctagsService = (await service.getCtagsService(path): ?CtagsService);
 
     if (ctagsService == null) {

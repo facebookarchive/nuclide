@@ -9,10 +9,8 @@
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import typeof * as FileSystemService from '../../nuclide-server/lib/services/FileSystemService';
 
-import invariant from 'assert';
-import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
 import nuclideUri from '../../commons-node/nuclideUri';
 
 /**
@@ -40,8 +38,7 @@ export default class RelatedFileFinder {
   ): Promise<{relatedFiles: Array<string>, index: number}> {
     const dirName = nuclideUri.dirname(filePath);
     const prefix = getPrefix(filePath);
-    const service: ?FileSystemService = getServiceByNuclideUri('FileSystemService', filePath);
-    invariant(service);
+    const service = getFileSystemServiceByNuclideUri(filePath);
     const listing = await service.readdir(nuclideUri.getPath(dirName));
     // Here the filtering logic:
     // first get all files with the same prefix -> filelist,

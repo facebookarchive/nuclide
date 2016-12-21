@@ -19,8 +19,10 @@ import type {
 import typeof * as ClangService from '../../nuclide-clang-rpc';
 
 import featureConfig from '../../commons-atom/featureConfig';
-import invariant from 'assert';
-import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {
+  getClangServiceByNuclideUri,
+  getServiceByNuclideUri,
+} from '../../nuclide-remote-connection';
 
 type NuclideClangConfig = {
   enableDefaultFlags: boolean,
@@ -49,8 +51,7 @@ module.exports = {
     const contents = editor.getText();
 
     const defaultFlags = getDefaultFlags();
-    const service: ?ClangService = getServiceByNuclideUri('ClangService', src);
-    invariant(service);
+    const service = getClangServiceByNuclideUri(src);
 
     // When we fetch diagnostics for the first time, reset the server state.
     // This is so the user can easily refresh the Clang + Buck state by reloading Atom.
@@ -77,8 +78,7 @@ module.exports = {
     const tokenStartColumn = column - prefix.length;
 
     const defaultFlags = getDefaultFlags();
-    const service: ?ClangService = getServiceByNuclideUri('ClangService', src);
-    invariant(service);
+    const service = getClangServiceByNuclideUri(src);
 
     return service
       .getCompletions(
@@ -106,10 +106,7 @@ module.exports = {
       return Promise.resolve();
     }
     const defaultFlags = getDefaultFlags();
-
-    const service: ?ClangService = getServiceByNuclideUri('ClangService', src);
-    invariant(service);
-
+    const service = getClangServiceByNuclideUri(src);
     return service
         .getDeclaration(src, editor.getText(), line, column, defaultFlags);
   },
@@ -140,10 +137,7 @@ module.exports = {
       return Promise.resolve();
     }
     const defaultFlags = getDefaultFlags();
-
-    const service: ?ClangService = getServiceByNuclideUri('ClangService', src);
-    invariant(service);
-
+    const service = getClangServiceByNuclideUri(src);
     return service
         .getOutline(src, editor.getText(), defaultFlags);
   },
@@ -182,10 +176,7 @@ module.exports = {
     }
     const startIndex = buffer.characterIndexForPosition(range.start);
     const endIndex = buffer.characterIndexForPosition(range.end);
-
-    const service: ?ClangService = getServiceByNuclideUri('ClangService', fileUri);
-    invariant(service);
-
+    const service = getClangServiceByNuclideUri(fileUri);
     return {...(await service
         .formatCode(fileUri, editor.getText(), cursor, startIndex, endIndex - startIndex))};
   },
@@ -193,8 +184,7 @@ module.exports = {
   reset(editor: atom$TextEditor) {
     const src = editor.getPath();
     if (src != null) {
-      const service: ?ClangService = getServiceByNuclideUri('ClangService', src);
-      invariant(service);
+      const service = getClangServiceByNuclideUri(src);
       return service.reset(src);
     }
   },

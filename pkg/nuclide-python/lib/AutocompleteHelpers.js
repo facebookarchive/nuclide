@@ -8,12 +8,10 @@
  * @flow
  */
 
-import typeof * as PythonService from '../../nuclide-python-rpc';
 import type {PythonCompletion} from '../../nuclide-python-rpc/lib/PythonService';
 
-import invariant from 'assert';
 import {trackTiming} from '../../nuclide-analytics';
-import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {getPythonServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {TYPES} from './constants';
 import {getAutocompleteArguments, getIncludeOptionalArguments} from './config';
 
@@ -87,9 +85,7 @@ export default class AutocompleteHelpers {
     const line = cursor.getBufferRow();
     const column = cursor.getBufferColumn();
 
-    const service: ?PythonService = getServiceByNuclideUri('PythonService', src);
-    invariant(service);
-
+    const service = getPythonServiceByNuclideUri(src);
     const results = await service.getCompletions(
       src,
       editor.getText(),

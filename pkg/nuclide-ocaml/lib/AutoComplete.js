@@ -8,8 +8,7 @@
  * @flow
  */
 
-import invariant from 'assert';
-import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {getMerlinServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 module.exports = {
   async getAutocompleteSuggestions(
@@ -22,14 +21,17 @@ module.exports = {
   ): Promise<?Array<{snippet: string, rightLabel: string}>> {
     const {editor, prefix} = request;
 
+    const path = editor.getPath();
+    if (path == null) {
+      return null;
+    }
+
     // OCaml.Pervasives has a lot of stuff that gets shown on every keystroke without this.
     if (prefix.trim().length === 0) {
       return [];
     }
 
-    const path = editor.getPath();
-    const ocamlmerlin = getServiceByNuclideUri('MerlinService', path);
-    invariant(ocamlmerlin);
+    const ocamlmerlin = getMerlinServiceByNuclideUri(path);
     const text = editor.getText();
     const [line, col] = editor.getCursorBufferPosition().toArray();
 

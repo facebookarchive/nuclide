@@ -15,7 +15,6 @@ import type {ServerConnection} from '../../nuclide-remote-connection';
 import type {
   AtomLanguageServiceConfig,
 } from '../../nuclide-language-service/lib/AtomLanguageService';
-import typeof * as FileSystemService from '../../nuclide-server/lib/services/FileSystemService';
 
 import {getServiceByConnection} from '../../nuclide-remote-connection';
 import {getConfig, logger} from './config';
@@ -134,7 +133,7 @@ export async function getHackLanguageForUri(uri: ?NuclideUri): Promise<?HackLang
 }
 
 export async function isFileInHackProject(fileUri: NuclideUri): Promise<boolean> {
-  const fileSystemService: FileSystemService = getFileSystemServiceByNuclideUri(fileUri);
+  const fileSystemService = getFileSystemServiceByNuclideUri(fileUri);
   const foundDir = await fileSystemService.findNearestFile(
     '.hhconfig',
     nuclideUri.getPath(fileUri),

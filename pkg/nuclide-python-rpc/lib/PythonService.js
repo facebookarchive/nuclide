@@ -9,6 +9,7 @@
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {MessageType} from '../../nuclide-diagnostics-common/lib/rpc-types';
 
 import {asyncExecute} from '../../commons-node/process';
 import {maybeToString} from '../../commons-node/string';
@@ -81,7 +82,7 @@ export type PythonDiagnostic = {
   file: NuclideUri,
   code: string,
   message: string,
-  type: string,
+  type: MessageType,
   line: number,
   column: number,
 };

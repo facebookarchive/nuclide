@@ -10,9 +10,8 @@
 
 import type {LinterMessage} from '../../nuclide-diagnostics-common';
 
-import invariant from 'assert';
 import nuclideUri from '../../commons-node/nuclideUri';
-import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {getPythonServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {trackTiming} from '../../nuclide-analytics';
 import {getDiagnosticRange} from './diagnostic-range';
 import {getEnableLinting, getLintExtensionBlacklist} from './config';
@@ -27,9 +26,7 @@ export default class LintHelpers {
     }
 
     return trackTiming('nuclide-python.lint', async () => {
-      const service = getServiceByNuclideUri('PythonService', src);
-      invariant(service);
-
+      const service = getPythonServiceByNuclideUri(src);
       const diagnostics = await service.getDiagnostics(src, editor.getText());
       return diagnostics.map(diagnostic => ({
         name: 'flake8: ' + diagnostic.code,

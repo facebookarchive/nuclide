@@ -10,9 +10,8 @@
 
 import type {CtagsResult} from '../../nuclide-ctags-rpc';
 
-import invariant from 'assert';
 import {getLogger} from '../../nuclide-logging';
-import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
 import nuclideUri from '../../commons-node/nuclideUri';
 
 // Taken from http://ctags.sourceforge.net/FORMAT
@@ -63,8 +62,7 @@ export async function getLineNumberForTag(tag: CtagsResult): Promise<number> {
     }
     try {
       // Search for the pattern in the file.
-      const service = getServiceByNuclideUri('FileSystemService', tag.file);
-      invariant(service);
+      const service = getFileSystemServiceByNuclideUri(tag.file);
       const contents = await service.readFile(nuclideUri.getPath(tag.file));
       const lines = contents.toString('utf8').split('\n');
       lineNumber = 0;
