@@ -1,27 +1,23 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-/* global localStorage */
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getDefaultConnectionProfile = getDefaultConnectionProfile;
+exports.getSavedConnectionProfiles = getSavedConnectionProfiles;
+exports.saveConnectionProfiles = saveConnectionProfiles;
+exports.onSavedConnectionProfilesDidChange = onSavedConnectionProfilesDidChange;
+exports.saveConnectionConfig = saveConnectionConfig;
+exports.getDefaultConfig = getDefaultConfig;
+exports.getOfficialRemoteServerCommand = getOfficialRemoteServerCommand;
 
-import type {
-  NuclideRemoteConnectionParams,
-  NuclideRemoteConnectionProfile,
-  NuclideSavedConnectionDialogConfig,
-} from './connection-types';
+var _featureConfig;
 
-import type {
-  SshConnectionConfiguration,
-} from '../../nuclide-remote-connection/lib/SshHandshake';
+function _load_featureConfig() {
+  return _featureConfig = _interopRequireDefault(require('../../commons-atom/featureConfig'));
+}
 
-import invariant from 'assert';
-import featureConfig from '../../commons-atom/featureConfig';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Section: Default Connection Profile
@@ -32,17 +28,25 @@ import featureConfig from '../../commons-atom/featureConfig';
  * the connection dialog and the default settings, plus the update logic we use
  * to change the remote server command.
  */
-export function getDefaultConnectionProfile(options?: {
-  initialServer: string,
-  initialCwd: string,
-}): NuclideRemoteConnectionProfile {
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ *
+ * 
+ */
+
+/* global localStorage */
+
+function getDefaultConnectionProfile(options) {
   const defaultConnectionSettings = getDefaultConfig();
   const currentOfficialRSC = defaultConnectionSettings.remoteServerCommand;
 
-  const rawLastConnectionDetails =
-    localStorage.getItem('nuclide:nuclide-remote-projects:lastConnectionDetails');
+  const rawLastConnectionDetails = localStorage.getItem('nuclide:nuclide-remote-projects:lastConnectionDetails');
 
-  let lastConnectionDetails: ?NuclideSavedConnectionDialogConfig;
+  let lastConnectionDetails;
   try {
     // $FlowIgnore: null is ok here
     lastConnectionDetails = JSON.parse(rawLastConnectionDetails);
@@ -54,22 +58,22 @@ export function getDefaultConnectionProfile(options?: {
     }
   }
 
-  invariant(lastConnectionDetails != null);
-  const {lastOfficialRemoteServerCommand, updatedConfig} = lastConnectionDetails;
+  if (!(lastConnectionDetails != null)) {
+    throw new Error('Invariant violation: "lastConnectionDetails != null"');
+  }
+
+  const { lastOfficialRemoteServerCommand, updatedConfig } = lastConnectionDetails;
   const lastConfig = updatedConfig || {};
 
   // Only use the user's last saved remote server command if there has been no
   // change (upgrade) in the official remote server command.
   let remoteServerCommand = currentOfficialRSC;
-  if (lastOfficialRemoteServerCommand === currentOfficialRSC
-      && lastConfig.remoteServerCommand) {
+  if (lastOfficialRemoteServerCommand === currentOfficialRSC && lastConfig.remoteServerCommand) {
     remoteServerCommand = lastConfig.remoteServerCommand;
   }
-  const dialogSettings: NuclideRemoteConnectionParams = {
-    ...defaultConnectionSettings,
-    ...lastConfig,
-    remoteServerCommand,
-  };
+  const dialogSettings = Object.assign({}, defaultConnectionSettings, lastConfig, {
+    remoteServerCommand
+  });
   if (options != null) {
     dialogSettings.cwd = options.initialCwd;
     dialogSettings.server = options.initialServer;
@@ -81,10 +85,9 @@ export function getDefaultConnectionProfile(options?: {
     deletable: false,
     displayTitle: '(default)',
     params: dialogSettings,
-    saveable: false,
+    saveable: false
   };
 }
-
 
 /**
  * Section: User-created Connection Profiles
@@ -93,10 +96,13 @@ export function getDefaultConnectionProfile(options?: {
 /**
  * Returns an array of saved connection profiles.
  */
-export function getSavedConnectionProfiles(): Array<NuclideRemoteConnectionProfile> {
-  const connectionProfiles: ?Array<NuclideRemoteConnectionProfile> =
-    (featureConfig.get('nuclide-remote-projects.connectionProfiles'): any);
-  invariant(Array.isArray(connectionProfiles));
+function getSavedConnectionProfiles() {
+  const connectionProfiles = (_featureConfig || _load_featureConfig()).default.get('nuclide-remote-projects.connectionProfiles');
+
+  if (!Array.isArray(connectionProfiles)) {
+    throw new Error('Invariant violation: "Array.isArray(connectionProfiles)"');
+  }
+
   prepareSavedConnectionProfilesForDisplay(connectionProfiles);
   return connectionProfiles;
 }
@@ -104,34 +110,22 @@ export function getSavedConnectionProfiles(): Array<NuclideRemoteConnectionProfi
 /**
  * Saves the connection profiles. Overwrites any existing profiles.
  */
-export function saveConnectionProfiles(profiles: Array<NuclideRemoteConnectionProfile>): void {
+function saveConnectionProfiles(profiles) {
   prepareConnectionProfilesForSaving(profiles);
-  featureConfig.set('nuclide-remote-projects.connectionProfiles', profiles);
+  (_featureConfig || _load_featureConfig()).default.set('nuclide-remote-projects.connectionProfiles', profiles);
 }
 
-
-type ConnectionProfileChange = {
-  newValue: ?Array<NuclideRemoteConnectionProfile>,
-  oldValue: ?Array<NuclideRemoteConnectionProfile>,
-  keyPath: string,
-};
 /**
  * Calls the callback when the saved connection profiles change.
  * @return Disposable that can be disposed to stop listening for changes.
  */
-export function onSavedConnectionProfilesDidChange(
-  callback: (newProfiles: ?Array<NuclideRemoteConnectionProfile>) => mixed,
-): IDisposable {
-  return featureConfig.onDidChange(
-    'nuclide-remote-projects.connectionProfiles',
-    (event: ConnectionProfileChange) => {
-      const newProfiles = event.newValue;
-      prepareSavedConnectionProfilesForDisplay(newProfiles);
-      callback(newProfiles);
-    },
-  );
+function onSavedConnectionProfilesDidChange(callback) {
+  return (_featureConfig || _load_featureConfig()).default.onDidChange('nuclide-remote-projects.connectionProfiles', event => {
+    const newProfiles = event.newValue;
+    prepareSavedConnectionProfilesForDisplay(newProfiles);
+    callback(newProfiles);
+  });
 }
-
 
 /**
  * Section: Default/Last-Used Connection Profiles
@@ -140,31 +134,25 @@ export function onSavedConnectionProfilesDidChange(
 /**
  * Saves a connection configuration along with the last official server command.
  */
-export function saveConnectionConfig(
-  config: SshConnectionConfiguration,
-  lastOfficialRemoteServerCommand: string,
-): void {
+function saveConnectionConfig(config, lastOfficialRemoteServerCommand) {
   // Don't store user's password.
-  const updatedConfig = {...config, password: ''};
+  const updatedConfig = Object.assign({}, config, { password: '' });
   // SshConnectionConfiguration's sshPort type is 'number', but we want to save
   // everything as strings.
   updatedConfig.sshPort = String(config.sshPort);
-  localStorage.setItem(
-    'nuclide:nuclide-remote-projects:lastConnectionDetails',
-    JSON.stringify({
-      updatedConfig,
-      // Save last official command to detect upgrade.
-      lastOfficialRemoteServerCommand,
-    }),
-  );
+  localStorage.setItem('nuclide:nuclide-remote-projects:lastConnectionDetails', JSON.stringify({
+    updatedConfig,
+    // Save last official command to detect upgrade.
+    lastOfficialRemoteServerCommand
+  }));
 }
 
-let defaultConfig: ?any = null;
+let defaultConfig = null;
 /**
  * This fetches the 'default' connection configuration supplied to the user
  * regardless of any connection profiles they might have saved.
  */
-export function getDefaultConfig(): any {
+function getDefaultConfig() {
   if (defaultConfig) {
     return defaultConfig;
   }
@@ -179,13 +167,11 @@ export function getDefaultConfig(): any {
   return defaultConfig;
 }
 
-export function getOfficialRemoteServerCommand(): string {
+function getOfficialRemoteServerCommand() {
   return getDefaultConfig().remoteServerCommand;
 }
 
-function prepareSavedConnectionProfilesForDisplay(
-  connectionProfiles: ?Array<NuclideRemoteConnectionProfile>,
-): void {
+function prepareSavedConnectionProfilesForDisplay(connectionProfiles) {
   if (!connectionProfiles) {
     return;
   }
@@ -193,22 +179,20 @@ function prepareSavedConnectionProfilesForDisplay(
   // intended to use the default server command. We must fill this in.
   const defaultConnectionSettings = getDefaultConfig();
   const currentOfficialRSC = defaultConnectionSettings.remoteServerCommand;
-  connectionProfiles.forEach((profile: NuclideRemoteConnectionProfile) => {
+  connectionProfiles.forEach(profile => {
     if (!profile.params.remoteServerCommand) {
       profile.params.remoteServerCommand = currentOfficialRSC;
     }
   });
 }
 
-function prepareConnectionProfilesForSaving(
-  connectionProfiles: Array<NuclideRemoteConnectionProfile>,
-): void {
+function prepareConnectionProfilesForSaving(connectionProfiles) {
   // If a connection profile has a default remote server command, replace it with
   // an empty string. This indicates that this server command should be filled in
   // when this profile is used.
   const defaultConnectionSettings = getDefaultConfig();
   const currentOfficialRSC = defaultConnectionSettings.remoteServerCommand;
-  connectionProfiles.forEach((profile: NuclideRemoteConnectionProfile) => {
+  connectionProfiles.forEach(profile => {
     if (profile.params.remoteServerCommand === currentOfficialRSC) {
       profile.params.remoteServerCommand = '';
     }

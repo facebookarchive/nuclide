@@ -1,3 +1,27 @@
+'use strict';
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../commons-node/UniversalDisposable'));
+}
+
+var _DebuggerStore;
+
+function _load_DebuggerStore() {
+  return _DebuggerStore = require('./DebuggerStore');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,35 +29,16 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
 
-import type DebuggerModel from './DebuggerModel';
-import type {
-  Callstack,
-  EvalCommand,
-  ExpansionResult,
-  NuclideThreadData,
-  ThreadItem,
-  BreakpointUserChangeArgType,
-  IPCBreakpoint,
-  ExpressionResult,
-  GetPropertiesResult,
-} from './types';
-
-import nuclideUri from '../../commons-node/nuclideUri';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {DebuggerMode} from './DebuggerStore';
-import invariant from 'assert';
-import {Observable} from 'rxjs';
-
 const INJECTED_CSS = [
-  /* Force the inspector to scroll vertically on Atom ≥ 1.4.0 */
-  'body > .root-view {overflow-y: scroll;}',
-  /* Force the contents of the mini console (on the bottom) to scroll vertically */
-  '.insertion-point-sidebar#drawer-contents {overflow-y: auto;}',
-  /* imitate chrome table styles for threads window */
-  `
+/* Force the inspector to scroll vertically on Atom ≥ 1.4.0 */
+'body > .root-view {overflow-y: scroll;}',
+/* Force the contents of the mini console (on the bottom) to scroll vertically */
+'.insertion-point-sidebar#drawer-contents {overflow-y: auto;}',
+/* imitate chrome table styles for threads window */
+`
   .nuclide-chrome-debugger-data-grid table {
     border-spacing: 0;
   }
@@ -58,26 +63,16 @@ const INJECTED_CSS = [
   .nuclide-chrome-debugger-data-grid td:first-child {
     border-left: none;
   }
-  `,
-].join('');
+  `].join('');
 
 class Bridge {
-  _debuggerModel: DebuggerModel;
-  _disposables: UniversalDisposable;
   // Contains disposable items should be disposed by
   // cleanup() method.
-  _cleanupDisposables: ?UniversalDisposable;
-  _webview: ?WebviewElement;
-  _webviewUrl: ?string;
-  _suppressBreakpointSync: boolean;
-
-  constructor(debuggerModel: DebuggerModel) {
-    (this: any)._handleIpcMessage = this._handleIpcMessage.bind(this);
+  constructor(debuggerModel) {
+    this._handleIpcMessage = this._handleIpcMessage.bind(this);
     this._debuggerModel = debuggerModel;
     this._suppressBreakpointSync = false;
-    this._disposables = new UniversalDisposable(
-      debuggerModel.getBreakpointStore().onUserChange(this._handleUserBreakpointChange.bind(this)),
-    );
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default(debuggerModel.getBreakpointStore().onUserChange(this._handleUserBreakpointChange.bind(this)));
   }
 
   dispose() {
@@ -117,108 +112,74 @@ class Bridge {
     }
   }
 
-  runToLocation(filePath: string, line: number) {
+  runToLocation(filePath, line) {
     if (this._webview) {
-      this._webview.send(
-        'command',
-        'RunToLocation',
-        filePath,
-        line,
-      );
+      this._webview.send('command', 'RunToLocation', filePath, line);
     }
   }
 
-  triggerAction(actionId: string): void {
+  triggerAction(actionId) {
     if (this._webview) {
-      this._webview.send(
-        'command',
-        'triggerDebuggerAction',
-        actionId,
-      );
+      this._webview.send('command', 'triggerDebuggerAction', actionId);
     }
   }
 
-  setSelectedCallFrameIndex(callFrameIndex: number): void {
+  setSelectedCallFrameIndex(callFrameIndex) {
     if (this._webview != null) {
-      this._webview.send(
-        'command',
-        'setSelectedCallFrameIndex',
-        callFrameIndex,
-      );
+      this._webview.send('command', 'setSelectedCallFrameIndex', callFrameIndex);
     }
   }
 
-  setPauseOnException(pauseOnExceptionEnabled: boolean): void {
+  setPauseOnException(pauseOnExceptionEnabled) {
     if (this._webview) {
-      this._webview.send(
-        'command',
-        'setPauseOnException',
-        pauseOnExceptionEnabled,
-      );
+      this._webview.send('command', 'setPauseOnException', pauseOnExceptionEnabled);
     }
   }
 
-  setPauseOnCaughtException(pauseOnCaughtExceptionEnabled: boolean): void {
+  setPauseOnCaughtException(pauseOnCaughtExceptionEnabled) {
     if (this._webview) {
-      this._webview.send(
-        'command',
-        'setPauseOnCaughtException',
-        pauseOnCaughtExceptionEnabled,
-      );
+      this._webview.send('command', 'setPauseOnCaughtException', pauseOnCaughtExceptionEnabled);
     }
   }
 
-  setSingleThreadStepping(singleThreadStepping: boolean): void {
+  setSingleThreadStepping(singleThreadStepping) {
     if (this._webview) {
-      this._webview.send(
-        'command',
-        'setSingleThreadStepping',
-        singleThreadStepping,
-      );
+      this._webview.send('command', 'setSingleThreadStepping', singleThreadStepping);
     }
   }
 
-  selectThread(threadId: string): void {
+  selectThread(threadId) {
     if (this._webview) {
-      this._webview.send(
-        'command',
-        'selectThread',
-        threadId,
-      );
+      this._webview.send('command', 'selectThread', threadId);
     }
   }
 
-  sendEvaluationCommand(
-    command: EvalCommand,
-    evalId: number,
-    ...args: Array<mixed>
-  ): void {
+  sendEvaluationCommand(command, evalId, ...args) {
     if (this._webview != null) {
       this._webview.send('command', command, evalId, ...args);
     }
   }
 
-  _handleExpressionEvaluationResponse(response: ExpressionResult & {id: number}): void {
+  _handleExpressionEvaluationResponse(response) {
     this._debuggerModel.getActions().receiveExpressionEvaluationResponse(response.id, response);
   }
 
-  _handleGetPropertiesResponse(response: GetPropertiesResult & {id: number}): void {
+  _handleGetPropertiesResponse(response) {
     this._debuggerModel.getActions().receiveGetPropertiesResponse(response.id, response);
   }
 
-  _handleCallstackUpdate(callstack: Callstack): void {
+  _handleCallstackUpdate(callstack) {
     this._debuggerModel.getActions().updateCallstack(callstack);
   }
 
-  _handleScopesUpdate(scopeVariables: ExpansionResult, scopeName: string): void {
+  _handleScopesUpdate(scopeVariables, scopeName) {
     this._debuggerModel.getActions().updateScopes(scopeVariables, scopeName);
   }
 
-  _handleIpcMessage(stdEvent: Event): void {
+  _handleIpcMessage(stdEvent) {
     // addEventListener expects its callback to take an Event. I'm not sure how to reconcile it with
     // the type that is expected here.
-    // $FlowFixMe(jeffreytan)
-    const event: {channel: string, args: any[]} = stdEvent;
+    const event = stdEvent;
     switch (event.channel) {
       case 'notification':
         switch (event.args[0]) {
@@ -277,29 +238,22 @@ class Bridge {
     }
   }
 
-  _updateDebuggerSettings(): void {
+  _updateDebuggerSettings() {
     const webview = this._webview;
     if (webview != null) {
-      webview.send(
-        'command',
-        'UpdateSettings',
-        this._debuggerModel.getStore().getSettings().getSerializedData(),
-      );
+      webview.send('command', 'UpdateSettings', this._debuggerModel.getStore().getSettings().getSerializedData());
     }
   }
 
-  _syncDebuggerState(): void {
+  _syncDebuggerState() {
     const store = this._debuggerModel.getStore();
     this.setPauseOnException(store.getTogglePauseOnException());
     this.setPauseOnCaughtException(store.getTogglePauseOnCaughtException());
     this.setSingleThreadStepping(store.getEnableSingleThreadStepping());
   }
 
-  _handleDebuggerPaused(options: ?{
-    stopThreadId: number,
-    threadSwitchNotification: {sourceURL: string, lineNumber: number, message: string},
-  }): void {
-    this._debuggerModel.getActions().setDebuggerMode(DebuggerMode.PAUSED);
+  _handleDebuggerPaused(options) {
+    this._debuggerModel.getActions().setDebuggerMode((_DebuggerStore || _load_DebuggerStore()).DebuggerMode.PAUSED);
     if (options != null) {
       if (options.stopThreadId != null) {
         this._handleStopThreadUpdate(options.stopThreadId);
@@ -308,46 +262,39 @@ class Bridge {
     }
   }
 
-  _handleDebuggerResumed(): void {
-    this._debuggerModel.getActions().setDebuggerMode(DebuggerMode.RUNNING);
+  _handleDebuggerResumed() {
+    this._debuggerModel.getActions().setDebuggerMode((_DebuggerStore || _load_DebuggerStore()).DebuggerMode.RUNNING);
   }
 
-  _handleLoaderBreakpointResumed(): void {
+  _handleLoaderBreakpointResumed() {
     this._debuggerModel.getStore().loaderBreakpointResumed();
   }
 
-  _handleClearInterface(): void {
+  _handleClearInterface() {
     this._debuggerModel.getActions().clearInterface();
   }
 
-  _setSelectedCallFrameLine(options: ?{sourceURL: string, lineNumber: number}): void {
+  _setSelectedCallFrameLine(options) {
     this._debuggerModel.getActions().setSelectedCallFrameLine(options);
   }
 
-  _openSourceLocation(options: ?{sourceURL: string, lineNumber: number}): void {
+  _openSourceLocation(options) {
     if (options == null) {
       return;
     }
-    this._debuggerModel.getActions().openSourceLocation(
-      options.sourceURL,
-      options.lineNumber,
-    );
+    this._debuggerModel.getActions().openSourceLocation(options.sourceURL, options.lineNumber);
   }
 
-  _handleStopThreadSwitch(options: ?{sourceURL: string, lineNumber: number, message: string}) {
+  _handleStopThreadSwitch(options) {
     if (options == null) {
       return;
     }
-    this._debuggerModel.getActions().notifyThreadSwitch(
-      options.sourceURL,
-      options.lineNumber,
-      options.message,
-    );
+    this._debuggerModel.getActions().notifyThreadSwitch(options.sourceURL, options.lineNumber, options.message);
   }
 
-  _bindBreakpoint(breakpoint: IPCBreakpoint) {
-    const {sourceURL, lineNumber, condition, enabled} = breakpoint;
-    const path = nuclideUri.uriToNuclideUri(sourceURL);
+  _bindBreakpoint(breakpoint) {
+    const { sourceURL, lineNumber, condition, enabled } = breakpoint;
+    const path = (_nuclideUri || _load_nuclideUri()).default.uriToNuclideUri(sourceURL);
     // only handle real files for now.
     if (path) {
       try {
@@ -359,9 +306,9 @@ class Bridge {
     }
   }
 
-  _removeBreakpoint(breakpoint: IPCBreakpoint) {
-    const {sourceURL, lineNumber} = breakpoint;
-    const path = nuclideUri.uriToNuclideUri(sourceURL);
+  _removeBreakpoint(breakpoint) {
+    const { sourceURL, lineNumber } = breakpoint;
+    const path = (_nuclideUri || _load_nuclideUri()).default.uriToNuclideUri(sourceURL);
     // only handle real files for now.
     if (path) {
       try {
@@ -373,28 +320,28 @@ class Bridge {
     }
   }
 
-  _handleUserBreakpointChange(params: BreakpointUserChangeArgType) {
+  _handleUserBreakpointChange(params) {
     const webview = this._webview;
     if (webview != null) {
-      const {action, breakpoint} = params;
+      const { action, breakpoint } = params;
       webview.send('command', action, {
-        sourceURL: nuclideUri.nuclideUriToUri(breakpoint.path),
+        sourceURL: (_nuclideUri || _load_nuclideUri()).default.nuclideUriToUri(breakpoint.path),
         lineNumber: breakpoint.line,
         condition: breakpoint.condition,
-        enabled: breakpoint.enabled,
+        enabled: breakpoint.enabled
       });
     }
   }
 
-  _handleThreadsUpdate(threadData: NuclideThreadData): void {
+  _handleThreadsUpdate(threadData) {
     this._debuggerModel.getActions().updateThreads(threadData);
   }
 
-  _handleThreadUpdate(thread: ThreadItem): void {
+  _handleThreadUpdate(thread) {
     this._debuggerModel.getActions().updateThread(thread);
   }
 
-  _handleStopThreadUpdate(id: number): void {
+  _handleStopThreadUpdate(id) {
     this._debuggerModel.getActions().updateStopThread(id);
   }
 
@@ -405,10 +352,10 @@ class Bridge {
       const results = [];
       this._debuggerModel.getBreakpointStore().getAllBreakpoints().forEach(breakpoint => {
         results.push({
-          sourceURL: nuclideUri.nuclideUriToUri(breakpoint.path),
+          sourceURL: (_nuclideUri || _load_nuclideUri()).default.nuclideUriToUri(breakpoint.path),
           lineNumber: breakpoint.line,
           condition: breakpoint.condition,
-          enabled: breakpoint.enabled,
+          enabled: breakpoint.enabled
         });
       });
       webview.send('command', 'SyncBreakpoints', results);
@@ -421,11 +368,11 @@ class Bridge {
     }
   }
 
-  renderChromeWebview(url: string): void {
+  renderChromeWebview(url) {
     if (this._webview == null) {
       // Cast from HTMLElement down to WebviewElement without instanceof
       // checking, as WebviewElement constructor is not exposed.
-      const webview = ((document.createElement('webview'): any): WebviewElement);
+      const webview = document.createElement('webview');
       webview.src = url;
       webview.nodeintegration = true;
       webview.disablewebsecurity = true;
@@ -446,20 +393,21 @@ class Bridge {
   }
 
   // Exposed for tests
-  _setWebviewElement(webview: WebviewElement): void {
+  _setWebviewElement(webview) {
     this._webview = webview;
-    invariant(this._cleanupDisposables == null);
-    this._cleanupDisposables = new UniversalDisposable(
-      Observable.fromEvent(webview, 'ipc-message').subscribe(this._handleIpcMessage),
-      () => {
-        webview.remove();
-        this._webview = null;
-        this._webviewUrl = null;
-      },
-    );
+
+    if (!(this._cleanupDisposables == null)) {
+      throw new Error('Invariant violation: "this._cleanupDisposables == null"');
+    }
+
+    this._cleanupDisposables = new (_UniversalDisposable || _load_UniversalDisposable()).default(_rxjsBundlesRxMinJs.Observable.fromEvent(webview, 'ipc-message').subscribe(this._handleIpcMessage), () => {
+      webview.remove();
+      this._webview = null;
+      this._webviewUrl = null;
+    });
   }
 
-  openDevTools(): void {
+  openDevTools() {
     if (this._webview == null) {
       return;
     }

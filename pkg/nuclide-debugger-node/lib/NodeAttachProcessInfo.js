@@ -1,49 +1,68 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.NodeAttachProcessInfo = undefined;
 
-import invariant from 'assert';
-import {
-  DebuggerInstance,
-  DebuggerInstanceBase,
-  DebuggerProcessInfo,
-} from '../../nuclide-debugger-base';
-import type {
-  NodeAttachTargetInfo,
-  NodeDebuggerService,
-} from '../../nuclide-debugger-node-rpc/lib/NodeDebuggerService';
-import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
-import {getConfig} from './utils';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-export class NodeAttachProcessInfo extends DebuggerProcessInfo {
-  _targetInfo: NodeAttachTargetInfo;
+var _nuclideDebuggerBase;
 
-  constructor(targetUri: NuclideUri, targetInfo: NodeAttachTargetInfo) {
+function _load_nuclideDebuggerBase() {
+  return _nuclideDebuggerBase = require('../../nuclide-debugger-base');
+}
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+var _utils;
+
+function _load_utils() {
+  return _utils = require('./utils');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class NodeAttachProcessInfo extends (_nuclideDebuggerBase || _load_nuclideDebuggerBase()).DebuggerProcessInfo {
+
+  constructor(targetUri, targetInfo) {
     super('node', targetUri);
     this._targetInfo = targetInfo;
   }
 
-  async debug(): Promise<DebuggerInstanceBase> {
-    const rpcService = this._getRpcService();
-    await rpcService.attach(this._targetInfo);
-    return new DebuggerInstance(this, rpcService);
+  debug() {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const rpcService = _this._getRpcService();
+      yield rpcService.attach(_this._targetInfo);
+      return new (_nuclideDebuggerBase || _load_nuclideDebuggerBase()).DebuggerInstance(_this, rpcService);
+    })();
   }
 
-  _getRpcService(): NodeDebuggerService {
+  _getRpcService() {
     const debuggerConfig = {
-      logLevel: getConfig().serverLogLevel,
+      logLevel: (0, (_utils || _load_utils()).getConfig)().serverLogLevel
     };
-    const service =
-      getServiceByNuclideUri('NodeDebuggerService', this.getTargetUri());
-    invariant(service);
+    const service = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getServiceByNuclideUri)('NodeDebuggerService', this.getTargetUri());
+
+    if (!service) {
+      throw new Error('Invariant violation: "service"');
+    }
+
     return new service.NodeDebuggerService(debuggerConfig);
   }
 }
+exports.NodeAttachProcessInfo = NodeAttachProcessInfo; /**
+                                                        * Copyright (c) 2015-present, Facebook, Inc.
+                                                        * All rights reserved.
+                                                        *
+                                                        * This source code is licensed under the license found in the LICENSE file in
+                                                        * the root directory of this source tree.
+                                                        *
+                                                        * 
+                                                        */
