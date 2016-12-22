@@ -64,9 +64,8 @@ parser.add_option('--destructive-compile', action='store_true',
 options, args = parser.parse_args(sys.argv[1:])
 
 try:
-    from fb_pre_setup import fb_pre_setup
-    disable_fb_update = not options.dev
-    fb_pre_setup(disable_fb_update)
+    from lib import fb_env_dev
+    fb_env_dev.add_node_to_path()
 except ImportError as _:
     pass
 
