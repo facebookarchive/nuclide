@@ -1,31 +1,37 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import type {CustomPaneItemOptions} from '../../nuclide-ui/types';
-import type {VcsLogEntry} from '../../nuclide-hg-rpc/lib/HgService';
+var _reactForAtom = require('react-for-atom');
 
-import {React} from 'react-for-atom';
-import {CustomPaneItem} from '../../nuclide-ui/CustomPaneItem';
-import VcsLog from './VcsLog';
+var _CustomPaneItem;
 
-class VcsLogPaneItem extends CustomPaneItem {
-  __renderPaneItem(options: CustomPaneItemOptions): React.Element<any> {
-    return <VcsLog {...options.initialProps} />;
-  }
-
-  updateWithLogEntries(logEntries: Array<VcsLogEntry>) {
-    this.__component.setState({logEntries});
-  }
+function _load_CustomPaneItem() {
+  return _CustomPaneItem = require('../../nuclide-ui/CustomPaneItem');
 }
 
-module.exports = document.registerElement(
-  'nuclide-vcs-log',
-  {prototype: VcsLogPaneItem.prototype},
-);
+var _VcsLog;
+
+function _load_VcsLog() {
+  return _VcsLog = _interopRequireDefault(require('./VcsLog'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class VcsLogPaneItem extends (_CustomPaneItem || _load_CustomPaneItem()).CustomPaneItem {
+  __renderPaneItem(options) {
+    return _reactForAtom.React.createElement((_VcsLog || _load_VcsLog()).default, options.initialProps);
+  }
+
+  updateWithLogEntries(logEntries) {
+    this.__component.setState({ logEntries });
+  }
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   */
+
+module.exports = document.registerElement('nuclide-vcs-log', { prototype: VcsLogPaneItem.prototype });

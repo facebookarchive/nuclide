@@ -1,3 +1,14 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Webview = undefined;
+
+var _atom = require('atom');
+
+var _reactForAtom = require('react-for-atom');
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,52 +16,31 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
 
-import {CompositeDisposable, Disposable} from 'atom';
-import {
-  React,
-  ReactDOM,
-} from 'react-for-atom';
+class Webview extends _reactForAtom.React.Component {
 
-type Props = {
-  className: ?string,
-  nodeintegration?: boolean,
-  onDidFinishLoad: (event: Event) => mixed,
-  src: string,
-  style: ?Object,
-};
-
-export class Webview extends React.Component<void, Props, void> {
-  props: Props;
-
-  _disposables: CompositeDisposable;
-
-  constructor(props: Object) {
+  constructor(props) {
     super(props);
-    (this: any)._handleDidFinishLoad = this._handleDidFinishLoad.bind(this);
-    this._disposables = new CompositeDisposable();
+    this._handleDidFinishLoad = this._handleDidFinishLoad.bind(this);
+    this._disposables = new _atom.CompositeDisposable();
   }
 
   componentDidMount() {
-    const element = ReactDOM.findDOMNode(this);
+    const element = _reactForAtom.ReactDOM.findDOMNode(this);
 
     // Add event listeners. This has the drawbacks of 1) adding an event listener even when we don't
     // have a callback for it and 2) needing to add explicit support for each event type we want to
     // support. However, those costs aren't great enough to justify a new abstraction for managing
     // it at this time.
     element.addEventListener('did-finish-load', this._handleDidFinishLoad);
-    this._disposables.add(
-      new Disposable(
-        () => element.removeEventListener('did-finish-load', this._handleDidFinishLoad),
-      ),
-    );
+    this._disposables.add(new _atom.Disposable(() => element.removeEventListener('did-finish-load', this._handleDidFinishLoad)));
 
     this.updateAttributes({});
   }
 
-  componentDidUpdate(prevProps: Props): void {
+  componentDidUpdate(prevProps) {
     this.updateAttributes(prevProps);
   }
 
@@ -58,10 +48,8 @@ export class Webview extends React.Component<void, Props, void> {
     this._disposables.dispose();
   }
 
-  render(): ?React.Element<any> {
-    return (
-      <webview className={this.props.className} style={this.props.style} />
-    );
+  render() {
+    return _reactForAtom.React.createElement('webview', { className: this.props.className, style: this.props.style });
   }
 
   /**
@@ -70,8 +58,8 @@ export class Webview extends React.Component<void, Props, void> {
    * attributes ourselves. But not "className" or "style" because React has special rules for those.
    * *sigh*
    */
-  updateAttributes(prevProps: Object): void {
-    const element = ReactDOM.findDOMNode(this);
+  updateAttributes(prevProps) {
+    const element = _reactForAtom.ReactDOM.findDOMNode(this);
     const specialProps = ['className', 'style', 'onDidFinishLoad'];
     const normalProps = Object.keys(this.props).filter(prop => specialProps.indexOf(prop) === -1);
     normalProps.forEach(prop => {
@@ -84,10 +72,11 @@ export class Webview extends React.Component<void, Props, void> {
     });
   }
 
-  _handleDidFinishLoad(event: Event): void {
+  _handleDidFinishLoad(event) {
     if (this.props.onDidFinishLoad) {
       this.props.onDidFinishLoad(event);
     }
   }
 
 }
+exports.Webview = Webview;

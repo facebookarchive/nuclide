@@ -1,18 +1,17 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import {ShellMessageManager} from './ShellMessageManager';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ShellActivation = undefined;
 
-export class ShellActivation {
+var _ShellMessageManager;
 
-  _shellManager: ?ShellMessageManager;
+function _load_ShellMessageManager() {
+  return _ShellMessageManager = require('./ShellMessageManager');
+}
+
+class ShellActivation {
 
   constructor() {
     // TODO: Enable following when RN changes land. Don't forget to call dispose in `dispose()`!
@@ -24,19 +23,27 @@ export class ShellActivation {
     this._shellManager = null;
   }
 
-  dispose(): void {
-  }
+  dispose() {}
 
-  _reload(): void {
+  _reload() {
     if (this._shellManager == null) {
-      this._shellManager = new ShellMessageManager();
+      this._shellManager = new (_ShellMessageManager || _load_ShellMessageManager()).ShellMessageManager();
     }
     const message = {
       version: 1,
       target: 'bridge',
-      action: 'reload',
+      action: 'reload'
     };
     this._shellManager.send(message);
   }
 
 }
+exports.ShellActivation = ShellActivation; /**
+                                            * Copyright (c) 2015-present, Facebook, Inc.
+                                            * All rights reserved.
+                                            *
+                                            * This source code is licensed under the license found in the LICENSE file in
+                                            * the root directory of this source tree.
+                                            *
+                                            * 
+                                            */

@@ -1,3 +1,16 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ArcToolbarModel = exports.TASKS = undefined;
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _atom = require('atom');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,41 +18,30 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
 
-import type {TaskEvent} from '../../commons-node/tasks';
-import type {TaskMetadata} from '../../nuclide-task-runner/lib/types';
-import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
-import type {Level, Message} from '../../nuclide-console/lib/types';
-import type {Observable, Subject} from 'rxjs';
-
-import {Disposable} from 'atom';
-
-export const TASKS: Array<TaskMetadata> = [];
+const TASKS = exports.TASKS = [];
 
 /*
  * This will provide the toolbar functionality for the open-source-supported HHVM targets.
  * e.g. HHVM Debugger
  */
-export class ArcToolbarModel {
+class ArcToolbarModel {
 
-  _cwdApi: ?CwdApi;
-  _outputMessages: Subject<Message>;
-
-  constructor(outputMessages: Subject<Message>) {
+  constructor(outputMessages) {
     this._outputMessages = outputMessages;
   }
 
-  setCwdApi(cwdApi: ?CwdApi): void {
+  setCwdApi(cwdApi) {
     this._cwdApi = cwdApi;
   }
 
-  logOutput(text: string, level: Level) {
-    this._outputMessages.next({text, level});
+  logOutput(text, level) {
+    this._outputMessages.next({ text, level });
   }
 
-  getActiveProjectPath(): ?string {
+  getActiveProjectPath() {
     if (this._cwdApi == null) {
       return atom.project.getPaths()[0];
     }
@@ -51,52 +53,55 @@ export class ArcToolbarModel {
     }
   }
 
-  onChange(callback: () => mixed): IDisposable {
-    return new Disposable(() => {});
+  onChange(callback) {
+    return new _atom.Disposable(() => {});
   }
 
-  setActiveBuildTarget(value: string): void {
+  setActiveBuildTarget(value) {
     throw new Error('arc build targets not supported');
   }
 
-  isArcSupported(): boolean {
+  isArcSupported() {
     return false;
   }
 
-  getActiveBuildTarget(): string {
+  getActiveBuildTarget() {
     return '';
   }
 
-  getName(): string {
+  getName() {
     return 'Arcanist';
   }
 
-  getTaskList(): Array<TaskMetadata> {
+  getTaskList() {
     return TASKS;
   }
 
-  async arcBuild(): Observable<TaskEvent> {
+  arcBuild() {
+    return (0, _asyncToGenerator.default)(function* () {
+      throw new Error('arc build not supported');
+    })();
+  }
+
+  getBuildTargets() {
     throw new Error('arc build not supported');
   }
 
-  getBuildTargets(): ?Array<string> {
+  updateBuildTargets() {
     throw new Error('arc build not supported');
   }
 
-  updateBuildTargets(): void {
+  getBuildTargetsError() {
     throw new Error('arc build not supported');
   }
 
-  getBuildTargetsError(): ?Error {
+  viewActivated() {
     throw new Error('arc build not supported');
   }
 
-  viewActivated(): void {
-    throw new Error('arc build not supported');
-  }
-
-  viewDeactivated(): void {
+  viewDeactivated() {
     throw new Error('arc build not supported');
   }
 
 }
+exports.ArcToolbarModel = ArcToolbarModel;

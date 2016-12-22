@@ -1,105 +1,123 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import type {Task} from '../../commons-node/tasks';
-import type {Directory} from '../../nuclide-remote-connection';
-import type {TaskMetadata} from '../../nuclide-task-runner/lib/types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {Observable} from 'rxjs';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
-import {taskFromObservable} from '../../commons-node/tasks';
-import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
-import {Icon} from '../../nuclide-ui/Icon';
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
-import {debug} from './HhvmDebug';
-import HhvmToolbar from './HhvmToolbar';
-import ProjectStore from './ProjectStore';
-import {React} from 'react-for-atom';
+var _UniversalDisposable;
 
-export default class HhvmBuildSystem {
-  id: string;
-  name: string;
-  _projectStore: ProjectStore;
-  _extraUi: ?ReactClass<any>;
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../commons-node/UniversalDisposable'));
+}
+
+var _event;
+
+function _load_event() {
+  return _event = require('../../commons-node/event');
+}
+
+var _tasks;
+
+function _load_tasks() {
+  return _tasks = require('../../commons-node/tasks');
+}
+
+var _bindObservableAsProps;
+
+function _load_bindObservableAsProps() {
+  return _bindObservableAsProps = require('../../nuclide-ui/bindObservableAsProps');
+}
+
+var _Icon;
+
+function _load_Icon() {
+  return _Icon = require('../../nuclide-ui/Icon');
+}
+
+var _HhvmDebug;
+
+function _load_HhvmDebug() {
+  return _HhvmDebug = require('./HhvmDebug');
+}
+
+var _HhvmToolbar;
+
+function _load_HhvmToolbar() {
+  return _HhvmToolbar = _interopRequireDefault(require('./HhvmToolbar'));
+}
+
+var _ProjectStore;
+
+function _load_ProjectStore() {
+  return _ProjectStore = _interopRequireDefault(require('./ProjectStore'));
+}
+
+var _reactForAtom = require('react-for-atom');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class HhvmBuildSystem {
 
   constructor() {
     this.id = 'hhvm';
     this.name = 'HHVM';
-    this._projectStore = new ProjectStore();
+    this._projectStore = new (_ProjectStore || _load_ProjectStore()).default();
   }
 
   dispose() {
     this._projectStore.dispose();
   }
 
-  observeTaskList(callback: (taskList: Array<TaskMetadata>) => mixed): IDisposable {
-    return new UniversalDisposable(
-      Observable.concat(
-        Observable.of(this.getTaskList()),
-        observableFromSubscribeFunction(this._projectStore.onChange.bind(this._projectStore))
-          .map(() => this.getTaskList()),
-      )
-        // Wait until the project type has finished loading.
-        .filter(() => this._projectStore.isHHVMProject() != null)
-        .subscribe(callback),
-    );
+  observeTaskList(callback) {
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default(_rxjsBundlesRxMinJs.Observable.concat(_rxjsBundlesRxMinJs.Observable.of(this.getTaskList()), (0, (_event || _load_event()).observableFromSubscribeFunction)(this._projectStore.onChange.bind(this._projectStore)).map(() => this.getTaskList()))
+    // Wait until the project type has finished loading.
+    .filter(() => this._projectStore.isHHVMProject() != null).subscribe(callback));
   }
 
-  getExtraUi(): ReactClass<any> {
+  getExtraUi() {
     if (this._extraUi == null) {
       const projectStore = this._projectStore;
-      const subscription = observableFromSubscribeFunction(
-        projectStore.onChange.bind(projectStore),
-      );
-      this._extraUi = bindObservableAsProps(
-        subscription
-          .startWith(null)
-          .mapTo({projectStore}),
-        HhvmToolbar,
-      );
+      const subscription = (0, (_event || _load_event()).observableFromSubscribeFunction)(projectStore.onChange.bind(projectStore));
+      this._extraUi = (0, (_bindObservableAsProps || _load_bindObservableAsProps()).bindObservableAsProps)(subscription.startWith(null).mapTo({ projectStore }), (_HhvmToolbar || _load_HhvmToolbar()).default);
     }
     return this._extraUi;
   }
 
-  getTaskList(): Array<TaskMetadata> {
+  getTaskList() {
     const disabled = !this._projectStore.isHHVMProject();
-    return [
-      {
-        type: 'debug',
-        label: 'Debug',
-        description: 'Debug a HHVM project',
-        disabled,
-        priority: 1,  // Take precedence over the Arcanist build toolbar.
-        runnable: !disabled,
-        cancelable: false,
-      },
-    ];
+    return [{
+      type: 'debug',
+      label: 'Debug',
+      description: 'Debug a HHVM project',
+      disabled,
+      priority: 1, // Take precedence over the Arcanist build toolbar.
+      runnable: !disabled,
+      cancelable: false
+    }];
   }
 
-  getIcon(): ReactClass<any> {
-    return () => <Icon icon="nuclicon-hhvm" className="nuclide-hhvm-task-runner-icon" />;
+  getIcon() {
+    return () => _reactForAtom.React.createElement((_Icon || _load_Icon()).Icon, { icon: 'nuclicon-hhvm', className: 'nuclide-hhvm-task-runner-icon' });
   }
 
-  runTask(taskName: string): Task {
-    return taskFromObservable(
-      Observable.fromPromise(debug(
-        this._projectStore.getDebugMode(),
-        this._projectStore.getProjectRoot(),
-        this._projectStore.getDebugTarget(),
-      ))
-        .ignoreElements(),
-    );
+  runTask(taskName) {
+    return (0, (_tasks || _load_tasks()).taskFromObservable)(_rxjsBundlesRxMinJs.Observable.fromPromise((0, (_HhvmDebug || _load_HhvmDebug()).debug)(this._projectStore.getDebugMode(), this._projectStore.getProjectRoot(), this._projectStore.getDebugTarget())).ignoreElements());
   }
 
-  setProjectRoot(projectRoot: ?Directory): void {
+  setProjectRoot(projectRoot) {
     this._projectStore.setProjectRoot(projectRoot == null ? null : projectRoot.getPath());
   }
 }
+exports.default = HhvmBuildSystem; /**
+                                    * Copyright (c) 2015-present, Facebook, Inc.
+                                    * All rights reserved.
+                                    *
+                                    * This source code is licensed under the license found in the LICENSE file in
+                                    * the root directory of this source tree.
+                                    *
+                                    * 
+                                    */
+
+module.exports = exports['default'];

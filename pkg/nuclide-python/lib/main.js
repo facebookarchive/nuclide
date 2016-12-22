@@ -1,3 +1,79 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+exports.activate = activate;
+exports.createAutocompleteProvider = createAutocompleteProvider;
+exports.provideOutlines = provideOutlines;
+exports.provideDefinitions = provideDefinitions;
+exports.provideReferences = provideReferences;
+exports.provideCodeFormat = provideCodeFormat;
+exports.provideLint = provideLint;
+exports.provideBusySignal = provideBusySignal;
+exports.deactivate = deactivate;
+
+var _nuclideBusySignal;
+
+function _load_nuclideBusySignal() {
+  return _nuclideBusySignal = require('../../nuclide-busy-signal');
+}
+
+var _constants;
+
+function _load_constants() {
+  return _constants = require('./constants');
+}
+
+var _config;
+
+function _load_config() {
+  return _config = require('./config');
+}
+
+var _AutocompleteHelpers;
+
+function _load_AutocompleteHelpers() {
+  return _AutocompleteHelpers = _interopRequireDefault(require('./AutocompleteHelpers'));
+}
+
+var _DefinitionHelpers;
+
+function _load_DefinitionHelpers() {
+  return _DefinitionHelpers = _interopRequireDefault(require('./DefinitionHelpers'));
+}
+
+var _OutlineHelpers;
+
+function _load_OutlineHelpers() {
+  return _OutlineHelpers = _interopRequireDefault(require('./OutlineHelpers'));
+}
+
+var _ReferenceHelpers;
+
+function _load_ReferenceHelpers() {
+  return _ReferenceHelpers = _interopRequireDefault(require('./ReferenceHelpers'));
+}
+
+var _CodeFormatHelpers;
+
+function _load_CodeFormatHelpers() {
+  return _CodeFormatHelpers = _interopRequireDefault(require('./CodeFormatHelpers'));
+}
+
+var _LintHelpers;
+
+function _load_LintHelpers() {
+  return _LintHelpers = _interopRequireDefault(require('./LintHelpers'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let busySignalProvider = null;
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,120 +81,104 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
 
-import type {OutlineProvider} from '../../nuclide-outline-view';
-import type {DefinitionProvider} from '../../nuclide-definition-service';
-import type {FindReferencesProvider} from '../../nuclide-find-references';
-import type {CodeFormatProvider} from '../../nuclide-code-format/lib/types';
-import type {LinterProvider} from '../../nuclide-diagnostics-common';
-
-import invariant from 'assert';
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {DedupedBusySignalProviderBase} from '../../nuclide-busy-signal';
-import {GRAMMAR_SET} from './constants';
-import {getLintOnFly} from './config';
-import AutocompleteHelpers from './AutocompleteHelpers';
-import DefinitionHelpers from './DefinitionHelpers';
-import OutlineHelpers from './OutlineHelpers';
-import ReferenceHelpers from './ReferenceHelpers';
-import CodeFormatHelpers from './CodeFormatHelpers';
-import LintHelpers from './LintHelpers';
-
-let busySignalProvider: ?DedupedBusySignalProviderBase = null;
-
-export function activate() {
-  busySignalProvider = new DedupedBusySignalProviderBase();
+function activate() {
+  busySignalProvider = new (_nuclideBusySignal || _load_nuclideBusySignal()).DedupedBusySignalProviderBase();
 }
 
-export function createAutocompleteProvider(): atom$AutocompleteProvider {
+function createAutocompleteProvider() {
   return {
     selector: '.source.python',
     disableForSelector: '.source.python .comment, .source.python .string',
     inclusionPriority: 5,
-    suggestionPriority: 5,  // Higher than the snippets provider.
+    suggestionPriority: 5, // Higher than the snippets provider.
     getSuggestions(request) {
-      return AutocompleteHelpers.getAutocompleteSuggestions(request);
-    },
+      return (_AutocompleteHelpers || _load_AutocompleteHelpers()).default.getAutocompleteSuggestions(request);
+    }
   };
 }
 
-export function provideOutlines(): OutlineProvider {
+function provideOutlines() {
   return {
-    grammarScopes: Array.from(GRAMMAR_SET),
+    grammarScopes: Array.from((_constants || _load_constants()).GRAMMAR_SET),
     priority: 1,
     name: 'Python',
     getOutline(editor) {
-      return OutlineHelpers.getOutline(editor);
-    },
+      return (_OutlineHelpers || _load_OutlineHelpers()).default.getOutline(editor);
+    }
   };
 }
 
-export function provideDefinitions(): DefinitionProvider {
+function provideDefinitions() {
   return {
-    grammarScopes: Array.from(GRAMMAR_SET),
+    grammarScopes: Array.from((_constants || _load_constants()).GRAMMAR_SET),
     priority: 20,
     name: 'PythonDefinitionProvider',
     getDefinition(editor, position) {
-      return DefinitionHelpers.getDefinition(editor, position);
+      return (_DefinitionHelpers || _load_DefinitionHelpers()).default.getDefinition(editor, position);
     },
     getDefinitionById(filePath, id) {
-      return DefinitionHelpers.getDefinitionById(filePath, id);
-    },
+      return (_DefinitionHelpers || _load_DefinitionHelpers()).default.getDefinitionById(filePath, id);
+    }
   };
 }
 
-export function provideReferences(): FindReferencesProvider {
+function provideReferences() {
   return {
-    async isEditorSupported(textEditor) {
-      const fileUri = textEditor.getPath();
-      if (!fileUri || !GRAMMAR_SET.has(textEditor.getGrammar().scopeName)) {
-        return false;
-      }
-      return true;
+    isEditorSupported(textEditor) {
+      return (0, _asyncToGenerator.default)(function* () {
+        const fileUri = textEditor.getPath();
+        if (!fileUri || !(_constants || _load_constants()).GRAMMAR_SET.has(textEditor.getGrammar().scopeName)) {
+          return false;
+        }
+        return true;
+      })();
     },
     findReferences(editor, position) {
-      return ReferenceHelpers.getReferences(editor, position);
-    },
+      return (_ReferenceHelpers || _load_ReferenceHelpers()).default.getReferences(editor, position);
+    }
   };
 }
 
-export function provideCodeFormat(): CodeFormatProvider {
+function provideCodeFormat() {
   return {
     selector: 'source.python',
     inclusionPriority: 1,
     formatEntireFile(editor, range) {
-      invariant(busySignalProvider);
-      return busySignalProvider.reportBusy(
-        `Python: formatting \`${editor.getTitle()}\``,
-        () => CodeFormatHelpers.formatEntireFile(editor, range),
-      );
-    },
+      if (!busySignalProvider) {
+        throw new Error('Invariant violation: "busySignalProvider"');
+      }
+
+      return busySignalProvider.reportBusy(`Python: formatting \`${ editor.getTitle() }\``, () => (_CodeFormatHelpers || _load_CodeFormatHelpers()).default.formatEntireFile(editor, range));
+    }
   };
 }
 
-export function provideLint(): LinterProvider {
+function provideLint() {
   return {
-    grammarScopes: Array.from(GRAMMAR_SET),
+    grammarScopes: Array.from((_constants || _load_constants()).GRAMMAR_SET),
     scope: 'file',
-    lintOnFly: getLintOnFly(),
+    lintOnFly: (0, (_config || _load_config()).getLintOnFly)(),
     name: 'nuclide-python',
     invalidateOnClose: true,
     lint(editor) {
-      invariant(busySignalProvider);
-      return busySignalProvider.reportBusy(
-        `Python: Waiting for flake8 lint results for \`${editor.getTitle()}\``,
-        () => LintHelpers.lint(editor),
-      );
-    },
+      if (!busySignalProvider) {
+        throw new Error('Invariant violation: "busySignalProvider"');
+      }
+
+      return busySignalProvider.reportBusy(`Python: Waiting for flake8 lint results for \`${ editor.getTitle() }\``, () => (_LintHelpers || _load_LintHelpers()).default.lint(editor));
+    }
   };
 }
 
-export function provideBusySignal(): DedupedBusySignalProviderBase {
-  invariant(busySignalProvider);
+function provideBusySignal() {
+  if (!busySignalProvider) {
+    throw new Error('Invariant violation: "busySignalProvider"');
+  }
+
   return busySignalProvider;
 }
 
-export function deactivate() {
-}
+function deactivate() {}
