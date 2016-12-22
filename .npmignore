@@ -4,6 +4,7 @@
 /.flowconfig
 /CONTRIBUTING.md
 /ISSUE_TEMPLATE.md
+/circle.yml
 /docs
 /flow-libs
 /flow-typed
