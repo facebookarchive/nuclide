@@ -1,5 +1,9 @@
 # Nuclide Changelog
 
+## v0.194.1
+
+* Noop OSS-only release to fix publishing script issues.
+
 ## v0.194.0
 
 * OCaml Hyperclick provider now only triggers on success.
