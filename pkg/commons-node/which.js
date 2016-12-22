@@ -26,3 +26,6 @@ export default async function which(command: string): Promise<?string> {
     return null;
   }
 }
+
+// Fake export to avoid babel's commonjs compat
+export const __BABEL_CJS_COMPAT__ = {};

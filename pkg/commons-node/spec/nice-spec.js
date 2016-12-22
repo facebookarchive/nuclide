@@ -16,7 +16,7 @@ import typeof {
 
 import type {AsyncExecuteReturn} from '../process';
 
-import {uncachedRequire, spyOnDefault} from '../../nuclide-test-helpers';
+import {uncachedRequire} from '../../nuclide-test-helpers';
 
 describe('nice', () => {
   let niceSafeSpawn: niceSafeSpawnType = (null: any);
@@ -38,7 +38,7 @@ describe('nice', () => {
   beforeEach(() => {
     shouldFindNiceCommand = true;
     shouldFindIoniceCommand = true;
-    whichSpy = spyOnDefault(require.resolve('../which')).andCallFake(command => {
+    whichSpy = spyOn(require('../which'), 'default').andCallFake(command => {
       if (
         (shouldFindNiceCommand && command === 'nice') ||
         (shouldFindIoniceCommand && command === 'ionice')

@@ -81,41 +81,6 @@ function spyOnGetterValue(object: Object, f: string): JasmineSpy {
 }
 
 /**
- * Allows spying on a function that is the default export of a module. Works
- * with ES modules and CommonJS.
- *
- * `id` should be the result of `require.resolve('module-name')`. That way relative modules are
- * resolved in the context of the caller.
- */
-function spyOnDefault(id: string): JasmineSpy {
-  try {
-    // Load the module in case it hasn't been loaded already.
-    // $FlowIgnore
-    require(id);
-  } catch (e) {
-    if (e.message === `Cannot find module '${id}'`) {
-      throw new Error(e.message + '. Did you forget to call `require.resolve`?');
-    }
-    throw e;
-  }
-  const _module = require.cache[id];
-  if (_module.exports.__esModule) {
-    return spyOn(_module.exports, 'default');
-  } else {
-    return spyOn(_module, 'exports');
-  }
-}
-
-function unspyOnDefault(id: string): void {
-  const _module = require.cache[id];
-  if (_module.exports.__esModule) {
-    return jasmine.unspy(_module.exports, 'default');
-  } else {
-    return jasmine.unspy(_module, 'exports');
-  }
-}
-
-/**
  * Checks if the two objects have equal properties. This considers a property
  * set to undefined to be equivalent to a property that was not set at all.
  */
@@ -158,8 +123,6 @@ export {
   generateHgRepo1Fixture,
   generateHgRepo2Fixture,
   generateFixture,
-  spyOnDefault,
   spyOnGetterValue,
   uncachedRequire,
-  unspyOnDefault,
 };
