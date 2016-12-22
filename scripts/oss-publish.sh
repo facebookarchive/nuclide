@@ -25,22 +25,6 @@ if [[ ! -z "$CI" ]]; then
     exit 1
   fi
 
-  if [[ -z "${NPM_TOKEN}" ]]; then
-    echo "\$NPM_TOKEN is not set."
-    exit 1
-  else
-    echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
-  fi
-
-  if [[ -z "${ATOM_ACCESS_TOKEN}" ]]; then
-    echo "\$ATOM_ACCESS_TOKEN is not set."
-    exit 1
-  fi
-
-  # This info isn't set in CircleCI
-  git config --get user.email || git config user.email "zertosh@gmail.com"
-  git config --get user.name || git config user.name "Andres Suarez"
-
   # Excerpts from https://github.com/atom/ci/blob/5587d0e/build-package.sh
   echo "Downloading latest Atom release..."
   if [ "${CIRCLECI}" = "true" ]; then
@@ -56,6 +40,26 @@ if [[ ! -z "$CI" ]]; then
     echo "Unknown CI environment, exiting!"
     exit 1
   fi
+
+  if [[ -z "${NPM_TOKEN}" ]]; then
+    echo "\$NPM_TOKEN is not set."
+    exit 1
+  else
+    echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+    unset NPM_TOKEN
+  fi
+
+  if [[ -z "${ATOM_ACCESS_TOKEN}" ]]; then
+    echo "\$ATOM_ACCESS_TOKEN is not set."
+    exit 1
+  else
+    apm login --token="${ATOM_ACCESS_TOKEN}"
+    unset ATOM_ACCESS_TOKEN
+  fi
+
+  # This info isn't set in CircleCI
+  git config --get user.email || git config user.email "zertosh@gmail.com"
+  git config --get user.name || git config user.name "Andres Suarez"
 fi
 
 echo "Using Atom version:"
@@ -81,7 +85,7 @@ if ! git config --get user.name >/dev/null; then
 fi
 
 # Force a detached HEAD
-git checkout $(git rev-parse HEAD)
+git checkout "$(git rev-parse HEAD)"
 
 "$THIS_DIR/../scripts/release-generate-proxies.js" --save
 "$THIS_DIR/../scripts/release-transpile.js" --overwrite
