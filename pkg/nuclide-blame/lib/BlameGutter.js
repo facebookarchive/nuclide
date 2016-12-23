@@ -40,6 +40,13 @@ function escapeHTML(str: string): string {
     .replace(/>/g, '&gt;');
 }
 
+function getHash(revision: ?RevisionInfo): ?string {
+  if (revision == null) {
+    return null;
+  }
+  return revision.hash;
+}
+
 export default class BlameGutter {
   _editor: atom$TextEditor;
   _blameProvider: BlameProvider;
@@ -193,9 +200,11 @@ export default class BlameGutter {
     }
 
     for (let bufferLine = 0; bufferLine < blameForEditor.length; ++bufferLine) {
+      const hash = getHash(blameForEditor[bufferLine]);
+      const isFirstLine = hash !== getHash(blameForEditor[bufferLine - 1]);
+      const isLastLine = hash !== getHash(blameForEditor[bufferLine + 1]);
+
       const blameInfo = blameForEditor[bufferLine];
-      const isFirstLine = blameForEditor[bufferLine] !== blameForEditor[bufferLine - 1];
-      const isLastLine = blameForEditor[bufferLine] !== blameForEditor[bufferLine + 1];
       if (blameInfo) {
         this._setBlameLine(bufferLine, blameInfo, isFirstLine, isLastLine, oldest, newest);
       }
