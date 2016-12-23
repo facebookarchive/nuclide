@@ -42,11 +42,11 @@ function createAtomWindow(urlToOpen: string) {
     protocol: 'file',
     slashes: true,
     pathname: path.join(loadSettings.resourcePath, 'static/index.html'),
-    hash: JSON.stringify({
+    hash: encodeURIComponent(JSON.stringify({
       ...loadSettings,
       windowInitializationScript: require.resolve(path.join('..', pkgJson.urlMain)),
       urlToOpen,
-    }),
+    })),
   }));
   return newWindow;
 }
