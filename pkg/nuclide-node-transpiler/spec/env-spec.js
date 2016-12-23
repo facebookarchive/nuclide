@@ -11,8 +11,13 @@
 
 /* eslint comma-dangle: [1, always-multiline], prefer-object-spread/prefer-object-spread: 0 */
 
-const {__DEV__} = require('./env');
+const fs = require('fs');
+const path = require('path');
 
-if (__DEV__) {
-  require('./require-hook');
-}
+describe('env', () => {
+  it('has correct __DEV__', () => {
+    // This should exist if we're running a test.
+    expect(fs.existsSync(path.join(__dirname, '../../../DEVELOPMENT'))).toBe(true);
+    expect(require('../lib/env').__DEV__).toBe(true);
+  });
+});

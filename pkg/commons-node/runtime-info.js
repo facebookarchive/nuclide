@@ -12,11 +12,11 @@ import {
   getOsType,
   getAtomVersion,
   getNuclideVersion,
-  isDevelopment,
   isRunningInClient,
 } from './system-info';
 import userInfo from './userInfo';
 import uuid from 'uuid';
+import {__DEV__} from '../nuclide-node-transpiler/lib/env';
 
 export type RuntimeInformation = {
   sessionId: string,
@@ -45,7 +45,7 @@ function getCacheableRuntimeInformation(): RuntimeInformation {
     osType: getOsType(),
     timestamp: 0,
     isClient: isRunningInClient(),
-    isDevelopment: isDevelopment(),
+    isDevelopment: __DEV__,
     atomVersion: isRunningInClient() ? getAtomVersion() : '',
     nuclideVersion: getNuclideVersion(),
     installerPackageVersion: 0,

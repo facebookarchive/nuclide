@@ -11,8 +11,7 @@
 
 /* eslint comma-dangle: [1, always-multiline], prefer-object-spread/prefer-object-spread: 0 */
 
-const {__DEV__} = require('./env');
+const path = require('path');
+const fs = require('fs');
 
-if (__DEV__) {
-  require('./require-hook');
-}
+module.exports.__DEV__ = fs.existsSync(path.join(__dirname, '../../../DEVELOPMENT'));

@@ -26,10 +26,6 @@ export const OS_TYPE = {
   OSX: 'darwin',
 };
 
-export const isDevelopment = once((): boolean => {
-  return fs.existsSync(nuclideUri.join(NUCLIDE_BASEDIR, 'DEVELOPMENT'));
-});
-
 // Prior to Atom v1.7.0, `atom.inSpecMode` had a chance of performing an IPC call that could be
 // expensive depending on how much work the other process was doing. Because this value will not
 // change during run time, memoize the value to ensure the IPC call is performed only once.
