@@ -61,13 +61,19 @@ function NavStackStatusBarTile(props: Props): React.Element<any> {
         icon="chevron-left"
         onClick={props.onBack}
         disabled={!props.enableBack}
-        title="Navigate Backwards"
+        tooltip={{
+          title: 'Navigate Backwards',
+          keyBindingCommand: 'nuclide-navigation-stack:navigate-backwards',
+        }}
       />
       <Button
         icon="chevron-right"
         onClick={props.onForward}
         disabled={!props.enableForward}
-        title="Navigate Forwards"
+        tooltip={{
+          title: 'Navigate Forwards',
+          keyBindingCommand: 'nuclide-navigation-stack:navigate-forwards',
+        }}
       />
     </ButtonGroup>
   );
