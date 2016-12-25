@@ -24,7 +24,7 @@ type DefaultProps = {
   onClick: (event: SyntheticMouseEvent) => mixed,
   onDidChange: (text: string) => mixed,
   onFocus: () => mixed,
-  onBlur: () => mixed,
+  onBlur: (blurEvent: Event) => mixed,
   unstyled: boolean,
 };
 
@@ -41,7 +41,7 @@ type Props = {
   onDidChange: (text: string) => mixed,
   onConfirm?: () => mixed,
   onCancel?: () => mixed,
-  onBlur: () => mixed,
+  onBlur: (blurEvent: Event) => mixed,
   size?: 'xs' | 'sm' | 'lg',
   unstyled: boolean,
   width?: ?number,
