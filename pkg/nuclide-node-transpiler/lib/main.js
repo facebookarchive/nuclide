@@ -11,8 +11,20 @@
 
 /* eslint comma-dangle: [1, always-multiline], prefer-object-spread/prefer-object-spread: 0 */
 
+/**
+ * To use the require hook, you should follow this pattern:
+ *
+ *   const {__DEV__} = require('nuclide-node-transpiler/lib/env');
+ *   if (__DEV__) {
+ *     require('nuclide-node-transpiler');
+ *   }
+ *
+ */
+
 const {__DEV__} = require('./env');
 
 if (__DEV__) {
   require('./require-hook');
+} else {
+  throw new Error('The require hook can only be enabled in __DEV__ mode.');
 }

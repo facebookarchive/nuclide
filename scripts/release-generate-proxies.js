@@ -13,7 +13,11 @@
 /* eslint comma-dangle: [1, always-multiline], prefer-object-spread/prefer-object-spread: 0 */
 /* eslint-disable no-console */
 
-require('../pkg/nuclide-node-transpiler');
+const {__DEV__} = require('../pkg/nuclide-node-transpiler/lib/env');
+
+if (__DEV__) {
+  require('../pkg/nuclide-node-transpiler');
+}
 
 const argv = require('yargs')
   .usage('Usage: $0 [options]')

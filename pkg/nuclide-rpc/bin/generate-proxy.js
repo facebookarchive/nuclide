@@ -11,13 +11,12 @@
 'use strict';
 
 /* eslint comma-dangle: [1, always-multiline], prefer-object-spread/prefer-object-spread: 0 */
-
 /* eslint-disable no-console */
 
-process.on('uncaughtException', err => {
-  console.error(err.stack);
-  process.exit(1);
-});
+const {__DEV__} = require('../../nuclide-node-transpiler/lib/env');
 
-require('../../nuclide-node-transpiler');
+if (__DEV__) {
+  require('../../nuclide-node-transpiler');
+}
+
 require('../lib/generate-proxy-main');

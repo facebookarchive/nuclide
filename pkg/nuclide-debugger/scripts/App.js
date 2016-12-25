@@ -10,10 +10,13 @@
 'use strict';
 
 /* eslint comma-dangle: [1, always-multiline], prefer-object-spread/prefer-object-spread: 0 */
-
 /* global XMLHttpRequest, atob */
 
-require('../../nuclide-node-transpiler');
+const {__DEV__} = require('../../nuclide-node-transpiler/lib/env');
+
+if (__DEV__) {
+  require('../../nuclide-node-transpiler');
+}
 
 /**
  * Override XHR.open to allow this page to be located outside the devtools

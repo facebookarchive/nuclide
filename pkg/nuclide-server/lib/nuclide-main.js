@@ -14,9 +14,11 @@
 /**
  * This is the main insertion point for starting nuclide-server.
  */
+const {__DEV__} = require('../../nuclide-node-transpiler/lib/env');
 
-// Set up the on-the-fly transpiler.
-require('../../nuclide-node-transpiler');
+if (__DEV__) {
+  require('../../nuclide-node-transpiler');
+}
 
 // Load the ES6+ server code now that the transpiler is in place.
 require('./main');

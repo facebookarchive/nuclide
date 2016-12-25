@@ -14,5 +14,10 @@
 
 // Regenerates the .proxy baseline files in the spec/fixtures directory.
 
-require('../../nuclide-node-transpiler');
+const {__DEV__} = require('../../nuclide-node-transpiler/lib/env');
+
+if (__DEV__) {
+  require('../../nuclide-node-transpiler');
+}
+
 require('../lib/regenerate-baselines-main');

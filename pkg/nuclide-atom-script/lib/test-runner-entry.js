@@ -11,6 +11,10 @@
 
 /* eslint comma-dangle: [1, always-multiline], prefer-object-spread/prefer-object-spread: 0 */
 
-require('../../nuclide-node-transpiler');
+const {__DEV__} = require('../../nuclide-node-transpiler/lib/env');
+
+if (__DEV__) {
+  require('../../nuclide-node-transpiler');
+}
 
 module.exports = require('./test-runner');

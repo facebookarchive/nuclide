@@ -11,13 +11,15 @@
 'use strict';
 
 /* eslint comma-dangle: [1, always-multiline], prefer-object-spread/prefer-object-spread: 0 */
-
 /* eslint-disable no-console */
 
 // jasmine-node test runner with Atom test globals and babel transpiling support.
 
-// Load nuclide-node-transpiler to start transpiling.
-require('../../nuclide-node-transpiler');
+const {__DEV__} = require('../../nuclide-node-transpiler/lib/env');
+
+if (__DEV__) {
+  require('../../nuclide-node-transpiler');
+}
 
 // Set this up before we call jasmine-node. jasmine-node does this same trick,
 // but neglects to respect the exit code, so we beat it the to the punch.

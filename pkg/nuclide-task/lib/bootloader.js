@@ -11,6 +11,7 @@
 import child_process from 'child_process';
 import EventEmitter from 'events';
 import invariant from 'assert';
+import {__DEV__} from '../../nuclide-node-transpiler/lib/env';
 
 export type InvokeRemoteMethodParams = {
   file: string,
@@ -41,10 +42,7 @@ export default class Task {
 
   _initialize() {
     invariant(this._child == null);
-    const child = this._child = child_process.fork(
-      '--require', [TRANSPILER_PATH, BOOTSTRAP_PATH],
-      {silent: true}, // Needed so stdout/stderr are available.
-    );
+    const child = this._child = this._fork();
     // eslint-disable-next-line no-console
     const log = buffer => { console.log(`TASK(${child.pid}): ${buffer}`); };
     child.stdout.on('data', log);
@@ -66,6 +64,21 @@ export default class Task {
       this._emitter.emit('exit');
       process.removeListener('exit', onExitCallback);
     });
+  }
+
+  _fork() {
+    // The transpiler is only loaded in development.
+    if (__DEV__) {
+      return child_process.fork(
+        '--require', [TRANSPILER_PATH, BOOTSTRAP_PATH],
+        {silent: true}, // Needed so stdout/stderr are available.
+      );
+    } else {
+      return child_process.fork(
+        BOOTSTRAP_PATH, [],
+        {silent: true}, // Needed so stdout/stderr are available.
+      );
+    }
   }
 
   /**
