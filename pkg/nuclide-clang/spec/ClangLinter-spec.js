@@ -90,7 +90,13 @@ describe('ClangDiagnosticsProvider', () => {
                 file: TEST_PATH,
                 point: new Point(0, 0),
               },
-              ranges: null,
+              // Invalid ranges should use the point as fallback.
+              ranges: [
+                {
+                  file: null,
+                  range: new Range([-1, -1], [-1, -1]),
+                },
+              ],
               spelling: 'test error',
             },
             {

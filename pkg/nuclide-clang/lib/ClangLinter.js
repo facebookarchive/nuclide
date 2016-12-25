@@ -25,16 +25,11 @@ const DEFAULT_FLAGS_WARNING =
   'Diagnostics are disabled due to lack of compilation flags. ' +
   'Build this file with Buck, or create a compile_commands.json file manually.';
 
-function fixSourceRange(
-  editor: atom$TextEditor,
+function isValidRange(
   clangRange: atom$Range,
-): atom$Range {
+): boolean {
   // Some ranges are unbounded/invalid (end with -1) or empty.
-  // Treat these as point diagnostics.
-  if (clangRange.end.row === -1 || clangRange.start.isEqual(clangRange.end)) {
-    return getRangeFromPoint(editor, clangRange.start);
-  }
-  return clangRange;
+  return clangRange.end.row !== -1 && !clangRange.start.isEqual(clangRange.end);
 }
 
 function getRangeFromPoint(
@@ -106,9 +101,9 @@ export default class ClangLinter {
         }
 
         let range;
-        if (diagnostic.ranges) {
+        if (diagnostic.ranges && isValidRange(diagnostic.ranges[0].range)) {
           // Use the first range from the diagnostic as the range for Linter.
-          range = fixSourceRange(editor, diagnostic.ranges[0].range);
+          range = diagnostic.ranges[0].range;
         } else {
           range = getRangeFromPoint(editor, diagnostic.location.point);
         }
@@ -133,7 +128,6 @@ export default class ClangLinter {
           const fixit = diagnostic.fixits[0];
           if (fixit != null) {
             fix = {
-              // Do not use fixSourceRange here, since we need this to be exact.
               range: fixit.range.range,
               newText: fixit.value,
             };
