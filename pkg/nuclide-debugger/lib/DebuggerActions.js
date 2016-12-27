@@ -54,7 +54,7 @@ const GK_DEBUGGER_REQUEST_SENDER = 'nuclide_debugger_request_sender';
 /**
  * Flux style action creator for actions that affect the debugger.
  */
-class DebuggerActions {
+export default class DebuggerActions {
   _disposables: CompositeDisposable;
   _dispatcher: DebuggerDispatcher;
   _store: DebuggerStore;
@@ -559,5 +559,3 @@ class DebuggerActions {
     );
   }
 }
-
-module.exports = DebuggerActions;

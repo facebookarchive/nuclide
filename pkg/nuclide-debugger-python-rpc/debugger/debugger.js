@@ -16,6 +16,7 @@ import net from 'net';
 import pathUtil from '../../commons-node/nuclideUri';
 import split from 'split';
 import uuid from 'uuid';
+import os from 'os';
 
 const METHOD_CONNECT = 'connect';
 const METHOD_EXIT = 'exit';
@@ -108,5 +109,5 @@ export function launchDebugger(
 }
 
 function createSocketPath(): string {
-  return pathUtil.join(require('os').tmpdir(), `${uuid.v4()}.sock`);
+  return pathUtil.join(os.tmpdir(), `${uuid.v4()}.sock`);
 }

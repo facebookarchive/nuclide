@@ -17,7 +17,7 @@ import File from './File';
 /**
  * Handles registering files encountered during debugging with the Chrome debugger
  */
-class FileCache {
+export default class FileCache {
   _callback: ClientCallback;
   _files: Map<string, File>;
 
@@ -51,5 +51,3 @@ class FileCache {
     return this.registerFile(filepath).getSource();
   }
 }
-
-module.exports = FileCache;

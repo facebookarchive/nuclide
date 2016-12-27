@@ -24,7 +24,7 @@ import {DebuggerSettings} from './DebuggerSettings';
 import invariant from 'assert';
 import {ActionTypes} from './DebuggerDispatcher';
 
-const DebuggerMode: {[key: string]: DebuggerModeType} = Object.freeze({
+export const DebuggerMode: {[key: string]: DebuggerModeType} = Object.freeze({
   STARTING: 'starting',
   RUNNING: 'running',
   PAUSED: 'paused',
@@ -38,7 +38,7 @@ const DEBUGGER_MODE_CHANGE_EVENT = 'debugger mode change';
 /**
  * Flux style Store holding all data used by the debugger plugin.
  */
-class DebuggerStore {
+export class DebuggerStore {
   _model: DebuggerModel;
   _dispatcher: DebuggerDispatcher;
   _dispatcherToken: string;
@@ -226,8 +226,3 @@ class DebuggerStore {
     this._emitter.emit(DEBUGGER_CHANGE_EVENT);
   }
 }
-
-module.exports = {
-  DebuggerMode,
-  DebuggerStore,
-};

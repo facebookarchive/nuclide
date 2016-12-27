@@ -13,15 +13,27 @@ import type {
   NuclideDebuggerProvider,
 } from '../../nuclide-debugger-interfaces/service';
 import type {OutputService} from '../../nuclide-console/lib/types';
-import DebuggerProvider from './DebuggerProvider';
+import type {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
+
 import {setOutputService} from '../../nuclide-debugger-base';
+import {HhvmLaunchAttachProvider} from './HhvmLaunchAttachProvider';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 export function consumeOutputService(api: OutputService): void {
   setOutputService(api);
 }
 
 export function createDebuggerProvider(): NuclideDebuggerProvider {
-  return DebuggerProvider;
+  return {
+    name: 'hhvm',
+    getLaunchAttachProvider(connection: NuclideUri): ?DebuggerLaunchAttachProvider {
+      if (nuclideUri.isRemote(connection)) {
+        return new HhvmLaunchAttachProvider('PHP', connection);
+      }
+      return null;
+    },
+  };
 }
 
 export function getHomeFragments(): HomeFragments {

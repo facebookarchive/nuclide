@@ -38,36 +38,28 @@ type FrameLocation = {
   scriptId: string,
 };
 
-function idOfFrame(frame: DbgpStackFrame): string {
+export function idOfFrame(frame: DbgpStackFrame): string {
   // TODO: Mangle in the transactionId of the most recent pause/status.
   return frame.$.level;
 }
 
-function functionOfFrame(frame: DbgpStackFrame): string {
+export function functionOfFrame(frame: DbgpStackFrame): string {
   return frame.$.where;
 }
 
 // Returns an absolute path
-function fileOfFrame(frame: DbgpStackFrame): string {
+export function fileOfFrame(frame: DbgpStackFrame): string {
   return uriToPath(fileUrlOfFrame(frame));
 }
 
-function fileUrlOfFrame(frame: DbgpStackFrame): string {
+export function fileUrlOfFrame(frame: DbgpStackFrame): string {
   return frame.$.filename;
 }
 
-function locationOfFrame(frame: DbgpStackFrame): FrameLocation {
+export function locationOfFrame(frame: DbgpStackFrame): FrameLocation {
   return {
     // TODO: columnNumber: from cmdbegin/end
     lineNumber: Number(frame.$.lineno) - 1,
     scriptId: fileOfFrame(frame),
   };
 }
-
-module.exports = {
-  idOfFrame,
-  functionOfFrame,
-  fileOfFrame,
-  fileUrlOfFrame,
-  locationOfFrame,
-};

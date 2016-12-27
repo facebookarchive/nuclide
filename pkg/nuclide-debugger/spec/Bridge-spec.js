@@ -11,7 +11,7 @@
 import invariant from 'assert';
 import DebuggerModel from '../lib/DebuggerModel';
 import {sleep} from '../../commons-node/promise';
-import utils from './utils';
+import * as utils from './utils';
 
 class MockWebview {
   _listeners: Map<string, Set<Function>>;

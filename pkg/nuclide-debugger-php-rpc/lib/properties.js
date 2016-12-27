@@ -23,7 +23,7 @@ import invariant from 'assert';
 import type {ObjectId} from './ObjectId';
 import type {DbgpProperty} from './DbgpSocket';
 
-function convertProperties(
+export function convertProperties(
   id: ObjectId,
   properties: Array<DbgpProperty>,
 ): Array<Runtime$PropertyDescriptor> {
@@ -34,7 +34,7 @@ function convertProperties(
 /**
  * Converts a DbgpProperty to a Chrome PropertyDescriptor.
  */
-function convertProperty(
+export function convertProperty(
   contextId: ObjectId,
   dbgpProperty: DbgpProperty,
 ): Runtime$PropertyDescriptor {
@@ -52,7 +52,7 @@ function convertProperty(
  * Given an ObjectId for a multi page object, gets PropertyDescriptors
  * for the object's children.
  */
-function getPagedProperties(pagedId: ObjectId): Array<Runtime$PropertyDescriptor> {
+export function getPagedProperties(pagedId: ObjectId): Array<Runtime$PropertyDescriptor> {
   invariant(pagedId.elementRange);
   const pagesize = pagedId.elementRange.pagesize;
   const endIndex = endIndexOfObjectId(pagedId);
@@ -73,9 +73,3 @@ function getPagedProperties(pagedId: ObjectId): Array<Runtime$PropertyDescriptor
     };
   });
 }
-
-module.exports = {
-  convertProperties,
-  convertProperty,
-  getPagedProperties,
-};

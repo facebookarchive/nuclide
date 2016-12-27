@@ -13,7 +13,7 @@ import Handler from './Handler';
 import type {ClientCallback} from './ClientCallback';
 
 // Handles all 'Console.*' Chrome dev tools messages
-class ConsoleHandler extends Handler {
+export default class ConsoleHandler extends Handler {
   constructor(clientCallback: ClientCallback) {
     super('Console', clientCallback);
   }
@@ -36,5 +36,3 @@ class ConsoleHandler extends Handler {
     return Promise.resolve();
   }
 }
-
-module.exports = ConsoleHandler;

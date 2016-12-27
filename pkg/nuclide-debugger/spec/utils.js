@@ -10,21 +10,27 @@
 
 let nextFileId = 0;
 
-function getUniquePath(): string {
+export function getUniquePath(): string {
   nextFileId++;
   return `/tmp/nuclide-debugger-BreakpointDisplayControllerTest-spec-${nextFileId}.m`;
 }
 
-async function createEditorWithUniquePath(): Promise<atom$TextEditor> {
+export async function createEditorWithUniquePath(): Promise<atom$TextEditor> {
   const path = getUniquePath();
   return atom.workspace.open(path);
 }
 
-function hasBreakpointDecorationInRow(editor: atom$TextEditor, row: number): boolean {
+export function hasBreakpointDecorationInRow(
+  editor: atom$TextEditor,
+  row: number,
+): boolean {
   return Boolean(getBreakpointDecorationInRow(editor, row));
 }
 
-function getBreakpointDecorationInRow(editor: atom$TextEditor, row: number): ?atom$Decoration {
+export function getBreakpointDecorationInRow(
+  editor: atom$TextEditor,
+  row: number,
+): ?atom$Decoration {
   const decorationArrays = editor.decorationsForScreenRowRange(row, row);
   for (const key in decorationArrays) {
     const decorations = decorationArrays[key];
@@ -39,10 +45,3 @@ function getBreakpointDecorationInRow(editor: atom$TextEditor, row: number): ?at
   }
   return null;
 }
-
-module.exports = {
-  createEditorWithUniquePath,
-  getBreakpointDecorationInRow,
-  getUniquePath,
-  hasBreakpointDecorationInRow,
-};

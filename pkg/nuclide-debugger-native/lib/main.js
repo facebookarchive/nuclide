@@ -12,11 +12,13 @@ import type {
   NuclideDebuggerProvider,
 } from '../../nuclide-debugger-interfaces/service';
 import type {OutputService} from '../../nuclide-console/lib/types';
+import type {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import logger from './utils';
 import {getConfig} from './utils';
 import {setOutputService} from '../../nuclide-debugger-base';
-import DebuggerProvider from './DebuggerProvider';
+import {LLDBLaunchAttachProvider} from './LLDBLaunchAttachProvider';
 
 export function activate(state: mixed): void {
   logger.setLogLevel(getConfig().clientLogLevel);
@@ -27,5 +29,10 @@ export function consumeOutputService(api: OutputService): void {
 }
 
 export function createDebuggerProvider(): NuclideDebuggerProvider {
-  return DebuggerProvider;
+  return {
+    name: 'lldb',
+    getLaunchAttachProvider(connection: NuclideUri): ?DebuggerLaunchAttachProvider {
+      return new LLDBLaunchAttachProvider('Native', connection);
+    },
+  };
 }

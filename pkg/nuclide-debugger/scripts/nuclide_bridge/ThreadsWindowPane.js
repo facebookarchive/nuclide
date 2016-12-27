@@ -199,7 +199,7 @@ class ThreadsWindowComponent extends React.Component<void, mixed, StateType> {
   }
 }
 
-class ThreadsWindowPane extends WebInspector.SidebarPane {
+export default class ThreadsWindowPane extends WebInspector.SidebarPane {
   constructor() {
     // WebInspector classes are not es6 classes, but babel forces a super call.
     super();
@@ -222,5 +222,3 @@ class ThreadsWindowPane extends WebInspector.SidebarPane {
   reset() {
   }
 }
-
-module.exports = ThreadsWindowPane;

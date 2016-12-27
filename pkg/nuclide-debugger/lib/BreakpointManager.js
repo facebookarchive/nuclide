@@ -15,7 +15,7 @@ import {CompositeDisposable} from 'atom';
 import {observeTextEditors} from '../../commons-atom/text-editor';
 import BreakpointDisplayController from './BreakpointDisplayController';
 
-class BreakpointManager {
+export default class BreakpointManager {
   _breakpointStore: BreakpointStore;
   _debuggerActions: DebuggerActions;
   _displayControllers: Map<atom$TextEditor, BreakpointDisplayController>;
@@ -66,5 +66,3 @@ class BreakpointManager {
     }
   }
 }
-
-module.exports = BreakpointManager;

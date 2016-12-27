@@ -767,4 +767,4 @@ function getIpcExpansionResult(properties: ?ExpansionResult): ?ExpansionResult {
     });
 }
 
-module.exports = new NuclideBridge();
+export default new NuclideBridge();

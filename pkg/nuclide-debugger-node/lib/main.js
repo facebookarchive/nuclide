@@ -11,15 +11,22 @@
 import type {
   NuclideDebuggerProvider,
 } from '../../nuclide-debugger-interfaces/service';
+import type {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import logger from './utils';
 import {getConfig} from './utils';
-import DebuggerProvider from './DebuggerProvider';
+import {NodeLaunchAttachProvider} from './NodeLaunchAttachProvider';
 
 export function activate(state: mixed): void {
   logger.setLogLevel(getConfig().clientLogLevel);
 }
 
 export function createDebuggerProvider(): NuclideDebuggerProvider {
-  return DebuggerProvider;
+  return {
+    name: 'Node',
+    getLaunchAttachProvider(connection: NuclideUri): ?DebuggerLaunchAttachProvider {
+      return new NodeLaunchAttachProvider('JavaScript', connection);
+    },
+  };
 }

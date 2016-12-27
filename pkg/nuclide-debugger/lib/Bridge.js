@@ -61,7 +61,7 @@ const INJECTED_CSS = [
   `,
 ].join('');
 
-class Bridge {
+export default class Bridge {
   _debuggerModel: DebuggerModel;
   _disposables: UniversalDisposable;
   // Contains disposable items should be disposed by
@@ -467,5 +467,3 @@ class Bridge {
   }
 
 }
-
-module.exports = Bridge;

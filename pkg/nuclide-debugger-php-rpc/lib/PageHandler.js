@@ -15,7 +15,7 @@ import Handler from './Handler';
 import type {ClientCallback} from './ClientCallback';
 
 // Handles all 'Page.*' Chrome dev tools messages
-class PageHandler extends Handler {
+export default class PageHandler extends Handler {
   constructor(
     clientCallback: ClientCallback,
   ) {
@@ -59,5 +59,3 @@ class PageHandler extends Handler {
     return Promise.resolve();
   }
 }
-
-module.exports = PageHandler;

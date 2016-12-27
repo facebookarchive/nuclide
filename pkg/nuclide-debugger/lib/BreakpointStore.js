@@ -40,7 +40,7 @@ const DELETEBREAKPOINT_ACTION = 'DeleteBreakpoint';
  * Mutations to this object fires off high level events to listeners such as UI
  * controllers, giving them a chance to update.
  */
-class BreakpointStore {
+export default class BreakpointStore {
   _disposables: IDisposable;
   _breakpoints: Map<string, LineToBreakpointMap>;
   _idToBreakpointMap: Map<number, FileLineBreakpoint>;
@@ -306,5 +306,3 @@ class BreakpointStore {
     this._disposables.dispose();
   }
 }
-
-module.exports = BreakpointStore;

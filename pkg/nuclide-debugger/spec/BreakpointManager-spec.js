@@ -14,7 +14,7 @@ import DebuggerDispatcher from '../lib/DebuggerDispatcher';
 import BreakpointManager from '../lib/BreakpointManager';
 import BreakpointStore from '../lib/BreakpointStore';
 import {hasBreakpointDecorationInRow} from './utils';
-import utils from './utils';
+import * as utils from './utils';
 import invariant from 'assert';
 
 describe('BreakpointManager', () => {

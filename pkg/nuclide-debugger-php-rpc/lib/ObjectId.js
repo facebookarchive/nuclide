@@ -59,15 +59,15 @@ export type ObjectId = {
 
 const WATCH_CONTEXT_ID = 'Watch Context Id';
 
-function getWatchContextObjectId(enableCount: number, frameIndex: number): ObjectId {
+export function getWatchContextObjectId(enableCount: number, frameIndex: number): ObjectId {
   return createContextObjectId(enableCount, frameIndex, WATCH_CONTEXT_ID);
 }
 
-function remoteObjectIdOfObjectId(id: ObjectId): Runtime$RemoteObjectId {
+export function remoteObjectIdOfObjectId(id: ObjectId): Runtime$RemoteObjectId {
   return JSON.stringify(id);
 }
 
-function createContextObjectId(
+export function createContextObjectId(
   enableCount: number,
   frameIndex: number,
   contextId: string,
@@ -79,7 +79,11 @@ function createContextObjectId(
   };
 }
 
-function pagedObjectId(objectId: ObjectId, fullname: string, elementRange: ElementRange): ObjectId {
+export function pagedObjectId(
+  objectId: ObjectId,
+  fullname: string,
+  elementRange: ElementRange,
+): ObjectId {
   const result = copyObjectId(objectId);
   result.fullname = fullname;
   result.elementRange = elementRange;
@@ -87,7 +91,7 @@ function pagedObjectId(objectId: ObjectId, fullname: string, elementRange: Eleme
   return result;
 }
 
-function singlePageObjectId(objectId: ObjectId, fullname: string, page: number): ObjectId {
+export function singlePageObjectId(objectId: ObjectId, fullname: string, page: number): ObjectId {
   const result = copyObjectId(objectId);
   result.fullname = fullname;
   result.page = page;
@@ -95,19 +99,19 @@ function singlePageObjectId(objectId: ObjectId, fullname: string, page: number):
   return result;
 }
 
-function isWatchContextObjectId(id: ObjectId): boolean {
+export function isWatchContextObjectId(id: ObjectId): boolean {
   return id.contextId === WATCH_CONTEXT_ID;
 }
 
-function isContextObjectId(id: ObjectId): boolean {
+export function isContextObjectId(id: ObjectId): boolean {
   return !id.hasOwnProperty('fullname');
 }
 
-function isSinglePageObjectId(id: ObjectId): boolean {
+export function isSinglePageObjectId(id: ObjectId): boolean {
   return id.hasOwnProperty('page');
 }
 
-function isPagedObjectId(id: ObjectId): boolean {
+export function isPagedObjectId(id: ObjectId): boolean {
   return id.hasOwnProperty('elementRange');
 }
 
@@ -115,20 +119,20 @@ function isPagedObjectId(id: ObjectId): boolean {
  * Extracts just the shared parts from an ObjectId. Does not use object.assign as objectId
  * may have fields which we must not copy.
  */
-function copyObjectId(id: ObjectId): ObjectId {
+export function copyObjectId(id: ObjectId): ObjectId {
   return createContextObjectId(id.enableCount, id.frameIndex, id.contextId);
 }
 
-function endIndexOfElementRange(elementRange: ElementRange): number {
+export function endIndexOfElementRange(elementRange: ElementRange): number {
   return elementRange.startIndex + elementRange.count;
 }
 
-function endIndexOfObjectId(id: ObjectId): number {
+export function endIndexOfObjectId(id: ObjectId): number {
   invariant(id.elementRange);
   return endIndexOfElementRange(id.elementRange);
 }
 
-function startIndexOfObjectId(id: ObjectId, pagesize: number): number {
+export function startIndexOfObjectId(id: ObjectId, pagesize: number): number {
   if (isSinglePageObjectId(id)) {
     invariant(id.page != null);
     return id.page * pagesize;
@@ -138,7 +142,7 @@ function startIndexOfObjectId(id: ObjectId, pagesize: number): number {
   }
 }
 
-function countOfObjectId(id: ObjectId, pagesize: number, parentEndIndex: number): number {
+export function countOfObjectId(id: ObjectId, pagesize: number, parentEndIndex: number): number {
   if (isSinglePageObjectId(id)) {
     return Math.min(pagesize, parentEndIndex - startIndexOfObjectId(id, pagesize));
   } else {
@@ -151,7 +155,7 @@ function countOfObjectId(id: ObjectId, pagesize: number, parentEndIndex: number)
  * Given a PagedObjectId, return an array of ObjectIds for its children.
  * Note that the children may be a combination of PagedObjectIds and SinglePageObjectIds.
  */
-function getChildIds(id: ObjectId): Array<ObjectId> {
+export function getChildIds(id: ObjectId): Array<ObjectId> {
   invariant(id.elementRange);
   const pagesize = id.elementRange.pagesize;
 
@@ -186,22 +190,3 @@ function getChildIds(id: ObjectId): Array<ObjectId> {
 
   return result;
 }
-
-
-module.exports = {
-  remoteObjectIdOfObjectId,
-  createContextObjectId,
-  pagedObjectId,
-  singlePageObjectId,
-  isContextObjectId,
-  isSinglePageObjectId,
-  isPagedObjectId,
-  copyObjectId,
-  endIndexOfElementRange,
-  endIndexOfObjectId,
-  startIndexOfObjectId,
-  countOfObjectId,
-  getChildIds,
-  getWatchContextObjectId,
-  isWatchContextObjectId,
-};

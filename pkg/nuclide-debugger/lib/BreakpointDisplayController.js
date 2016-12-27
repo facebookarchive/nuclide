@@ -30,7 +30,7 @@ type BreakpointDisplayControllerDelegate = {
  * Handles displaying breakpoints and processing events for a single text
  * editor.
  */
-class BreakpointDisplayController {
+export default class BreakpointDisplayController {
   _breakpointStore: BreakpointStore;
   _debuggerActions: DebuggerActions;
   _delegate: BreakpointDisplayControllerDelegate;
@@ -254,5 +254,3 @@ class BreakpointDisplayController {
     return marker;
   }
 }
-
-module.exports = BreakpointDisplayController;

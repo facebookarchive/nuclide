@@ -12,7 +12,7 @@ import logger from './utils';
 import {ClientCallback} from './ClientCallback';
 import type {UserMessageType} from './ClientCallback';
 
-class Handler {
+export default class Handler {
   _domain: string;
   _clientCallback: ClientCallback;
 
@@ -54,5 +54,3 @@ class Handler {
     this._clientCallback.sendUserMessage(type, message);
   }
 }
-
-module.exports = Handler;

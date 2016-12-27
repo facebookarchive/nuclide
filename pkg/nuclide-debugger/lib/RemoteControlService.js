@@ -11,7 +11,7 @@
 import type DebuggerModel from './DebuggerModel';
 import type {DebuggerProcessInfo} from '../../nuclide-debugger-base';
 
-class RemoteControlService {
+export default class RemoteControlService {
   _getModel: () => ?DebuggerModel;
 
   /**
@@ -59,5 +59,3 @@ class RemoteControlService {
     model.getActions().stopDebugging();
   }
 }
-
-module.exports = RemoteControlService;

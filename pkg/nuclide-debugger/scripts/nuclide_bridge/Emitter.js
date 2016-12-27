@@ -13,7 +13,7 @@ import WebInspector from '../../lib/WebInspector';
 /**
  * Wrapper around `WebInspector.Object` to act like `atom.Emitter`.
  */
-class Emitter {
+export default class Emitter {
   _underlying: WebInspector.Object;
 
   constructor() {
@@ -34,5 +34,3 @@ class Emitter {
     this._underlying.dispatchEventToListeners(eventType, value);
   }
 }
-
-module.exports = Emitter;

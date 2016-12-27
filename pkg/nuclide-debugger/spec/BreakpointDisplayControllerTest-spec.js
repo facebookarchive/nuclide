@@ -16,7 +16,7 @@ import BreakpointStore from '../lib/BreakpointStore';
 import {DebuggerStore} from '../lib/DebuggerStore';
 import DebuggerActions from '../lib/DebuggerActions';
 import DebuggerDispatcher from '../lib/DebuggerDispatcher';
-import utils from './utils';
+import * as utils from './utils';
 
 const controllerDelegate = {
   handleTextEditorDestroyed(controller: BreakpointDisplayController) {

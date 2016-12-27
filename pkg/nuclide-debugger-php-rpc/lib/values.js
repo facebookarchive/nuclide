@@ -24,7 +24,10 @@ import type {ObjectId} from './ObjectId';
 /**
  * Converts a dbgp value to a Chrome RemoteObject.
  */
-function convertValue(contextId: ObjectId, dbgpProperty: DbgpProperty): Runtime$RemoteObject {
+export function convertValue(
+  contextId: ObjectId,
+  dbgpProperty: DbgpProperty,
+): Runtime$RemoteObject {
   switch (dbgpProperty.$.type) {
     case 'string':
       return convertStringValue(dbgpProperty);
@@ -181,4 +184,5 @@ function toBool(value: string): mixed {
   }
 }
 
-module.exports = {convertValue};
+// Fake export to avoid babel's commonjs compat
+export const __BABEL_CJS_COMPAT__ = {};

@@ -13,7 +13,7 @@ import fsPromise from '../../commons-node/fsPromise';
 /**
  * A file in the file cache.
  */
-class File {
+export default class File {
   _path: string;
   _source: ?string;
 
@@ -40,6 +40,3 @@ class File {
     return await fsPromise.exists(this._path) && (await fsPromise.lstat(this._path)).isFile();
   }
 }
-
-
-module.exports = File;

@@ -78,10 +78,8 @@ class NuclideApp extends WebInspector.App {
   }
 }
 
-class NuclideAppProvider extends WebInspector.AppProvider {
+export default class NuclideAppProvider extends WebInspector.AppProvider {
   createApp(): WebInspector.App {
     return new NuclideApp();
   }
 }
-
-module.exports = NuclideAppProvider;

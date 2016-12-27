@@ -23,10 +23,9 @@ import Bridge from './Bridge';
 import {CompositeDisposable} from 'atom';
 import DebuggerDispatcher from './DebuggerDispatcher';
 import {DebuggerPauseController} from './DebuggerPauseController';
+import EventEmitter from 'events';
 
 import type {SerializedState} from '..';
-
-const {EventEmitter} = require('events');
 
 export const WORKSPACE_VIEW_URI = 'atom://nuclide/debugger';
 
