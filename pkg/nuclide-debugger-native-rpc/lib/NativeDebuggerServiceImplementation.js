@@ -242,11 +242,15 @@ export class NativeDebuggerService extends DebuggerRpcWebSocketService {
         }));
         this.getLogger().logError(`child process(${lldbProcess.pid}) stderr: ${errorMessage}`);
       });
-      lldbProcess.on('error', () => {
-        reject('lldb process error');
+      lldbProcess.on('error', (err: Object) => {
+        reject(`debugger server error: ${JSON.stringify(err)}`);
       });
-      lldbProcess.on('exit', () => {
-        reject('lldb process exit');
+      lldbProcess.on('exit', (code: number, signal: string) => {
+        let message = `debugger server exits with code: ${code}`;
+        if (signal != null) {
+          message += `, because of signal ${signal}`;
+        }
+        reject(message);
       });
     });
   }

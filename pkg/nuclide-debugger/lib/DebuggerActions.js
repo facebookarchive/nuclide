@@ -38,7 +38,6 @@ import {DebuggerMode} from './DebuggerStore';
 import passesGK from '../../commons-node/passesGK';
 import {track} from '../../nuclide-analytics';
 import {getLogger} from '../../nuclide-logging';
-import {stringifyError} from '../../commons-node/string';
 const logger = getLogger();
 
 const AnalyticsEvents = Object.freeze({
@@ -101,7 +100,7 @@ export default class DebuggerActions {
     } catch (err) {
       failTimerTracking(err);
       track(AnalyticsEvents.DEBUGGER_START_FAIL, {});
-      const errorMessage = `Failed to start debugger process: ${stringifyError(err)}`;
+      const errorMessage = `Failed to start debugger process: ${err}`;
       this.setError(errorMessage);
       atom.notifications.addError(errorMessage);
       this.stopDebugging();
