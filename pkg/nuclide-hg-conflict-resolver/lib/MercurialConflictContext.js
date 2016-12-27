@@ -115,7 +115,7 @@ export class MercurialConflictContext {
     );
     const repository = this._conflictingRepository;
     const notification = atom.notifications.addSuccess(
-      'All Conflicts Resolved<br/>\n' +
+      'All Conflicts Resolved\n' +
       'Click `Continue` to run: `hg rebase --continue`',
       {
         buttons: [{
