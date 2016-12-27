@@ -40,6 +40,13 @@ declare module 'electron' {
   declare var nativeImage: electron$nativeImage;
   declare var screen: electron$Screen;
   declare var shell: electron$shell;
+
+  declare type electron$BrowserWindow = electron$BrowserWindow;
+  declare type electron$Menu = electron$Menu;
+  declare type electron$MenuItem = electron$MenuItem;
+  declare type electron$NativeImage = electron$NativeImage;
+  declare type electron$Screen = electron$Screen;
+  declare type electron$WebContents = electron$WebContents;
 }
 
 // very common struct
