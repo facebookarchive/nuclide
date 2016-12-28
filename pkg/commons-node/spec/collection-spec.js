@@ -25,6 +25,7 @@ import {
   areSetsEqual,
   someOfIterable,
   filterIterable,
+  mapEqual,
   mapIterable,
 } from '../collection';
 
@@ -358,6 +359,24 @@ describe('filterIterable', () => {
       .toEqual([1, 2, 3, 4, 5]);
     expect(Array.from(filterIterable(new Set([1, 2, 3, 4, 5]), element => false))).toEqual([]);
     expect(Array.from(filterIterable([], element => true))).toEqual([]);
+  });
+});
+
+describe('mapEqual', () => {
+  it('checks primary elements', () => {
+    expect(mapEqual(
+      new Map([[1, true], [2, false], [5, true]]),
+      new Map([[1, true], [2, false], [5, true]]),
+    )).toBe(true);
+    expect(mapEqual(new Map([[1, true]]), new Map([[1, false]]))).toBe(false);
+    expect(mapEqual(new Map([[1, true]]), new Map([]))).toBe(false);
+    expect(mapEqual(new Map([[1, true]]), new Map([[2, false]]))).toBe(false);
+  });
+
+  it('checks object value elements', () => {
+    expect(mapEqual(new Map([[1, {x: 1}]]), new Map([[1, {x: 1}]]))).toBe(false);
+    expect(mapEqual(new Map([[1, {x: 1}]]), new Map([[1, {x: 1}]]), (v1, v2) => v1.x === v2.x))
+      .toBe(true);
   });
 });
 

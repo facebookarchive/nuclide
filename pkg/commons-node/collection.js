@@ -88,12 +88,14 @@ export function mapFilter<T, X>(
 export function mapEqual<T, X>(
   map1: Map<T, X>,
   map2: Map<T, X>,
+  equalComparator?: (val1: X, val2: X, key1?: T, key2?: T) => boolean,
 ) {
   if (map1.size !== map2.size) {
     return false;
   }
+  const equalFunction = equalComparator || ((a: X, b: X) => a === b);
   for (const [key1, value1] of map1) {
-    if (map2.get(key1) !== value1) {
+    if (!map2.has(key1) || !equalFunction(value1, (map2.get(key1): any))) {
       return false;
     }
   }
