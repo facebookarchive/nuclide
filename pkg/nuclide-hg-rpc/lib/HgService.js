@@ -134,6 +134,10 @@ export type RevisionInfo = {
   title: string,
 };
 
+export type RevisionShowInfo = {
+  diff: string,
+};
+
 export type AsyncExecuteRet = {
   command?: string,
   errorMessage?: string,
@@ -864,6 +868,18 @@ export class HgService {
       args.push('--clean');
     }
     return this._runSimpleInWorkingDirectory('checkout', args);
+  }
+
+  show(revision: number): ConnectableObservable<RevisionShowInfo> {
+    const args = ['show', `${revision}`, '-Tjson'];
+    const execOptions = {
+      cwd: this._workingDirectory,
+    };
+    return hgRunCommand(args, execOptions)
+      .map(stdout => {
+        return JSON.parse(stdout)[0];
+      })
+      .publish();
   }
 
   /**

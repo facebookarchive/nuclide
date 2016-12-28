@@ -16,6 +16,7 @@ import type {
   DiffInfo,
   LineDiff,
   RevisionInfo,
+  RevisionShowInfo,
   MergeConflict,
   RevisionFileChanges,
   StatusCodeIdValue,
@@ -678,6 +679,10 @@ export class HgRepositoryClient {
 
   checkoutReference(reference: string, create: boolean, options?: CheckoutOptions): Promise<void> {
     return this._service.checkout(reference, create, options);
+  }
+
+  show(revision: number): Observable<RevisionShowInfo> {
+    return this._service.show(revision).refCount();
   }
 
   purge(): Promise<void> {
