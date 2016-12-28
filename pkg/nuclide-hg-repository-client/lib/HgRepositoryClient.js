@@ -42,6 +42,7 @@ const STATUS_DEBOUNCE_DELAY_MS = 300;
 const REVISION_DEBOUNCE_DELAY = 300;
 
 export type RevisionStatusDisplay = {
+  id: number,
   name: string,
   className: ?string,
 };
