@@ -33,7 +33,7 @@ let instance: ?FileTreeActions;
  * FileTreeStore and the only way to update the store is through methods on FileTreeActions. The
  * dispatcher is a mechanism through which FileTreeActions interfaces with FileTreeStore.
  */
-class FileTreeActions {
+export default class FileTreeActions {
   _dispatcher: FileTreeDispatcher;
   _store: FileTreeStore;
   _disposableForRepository: Immutable.Map<atom$Repository, IDisposable>;
@@ -562,5 +562,3 @@ class FileTreeActions {
     disposable.dispose();
   }
 }
-
-module.exports = FileTreeActions;

@@ -34,7 +34,7 @@ function renderMatchedSubsequence(seq: string, key: Key): ?React.Element<any> {
   );
 }
 
-class FileResultComponent {
+export default class FileResultComponent {
   static getComponentForItem(
     item: FileResult,
     serviceName: string,
@@ -85,5 +85,3 @@ class FileResultComponent {
     );
   }
 }
-
-module.exports = FileResultComponent;

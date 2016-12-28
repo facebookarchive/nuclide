@@ -17,7 +17,7 @@ type Props = {
   textBuffer: TextBuffer,
 };
 
-class Console extends React.Component {
+export default class Console extends React.Component {
   props: Props;
   render() {
     return (
@@ -30,5 +30,3 @@ class Console extends React.Component {
     );
   }
 }
-
-module.exports = Console;

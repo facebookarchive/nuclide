@@ -20,7 +20,7 @@ import {filterName} from '../lib/FileTreeFilterHelper';
 import {Checkbox} from '../../nuclide-ui/Checkbox';
 import {StatusCodeNumber} from '../../nuclide-hg-rpc/lib/hg-constants';
 import {FileTreeStore} from '../lib/FileTreeStore';
-import {isValidRename} from '../lib/FileTreeHgHelpers';
+import FileTreeHgHelpers from '../lib/FileTreeHgHelpers';
 import addTooltip from '../../nuclide-ui/add-tooltip';
 import invariant from 'assert';
 import os from 'os';
@@ -333,7 +333,7 @@ export class FileTreeEntryComponent extends React.Component {
   _onDragEnter(event: DragEvent) {
     event.stopPropagation();
     const movableNodes = store.getSelectedNodes()
-      .filter(node => isValidRename(node, this.props.node.uri));
+      .filter(node => FileTreeHgHelpers.isValidRename(node, this.props.node.uri));
 
     // Ignores hover over invalid targets.
     if (!this.props.node.isContainer || movableNodes.size === 0) {

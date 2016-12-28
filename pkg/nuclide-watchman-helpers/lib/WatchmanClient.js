@@ -38,7 +38,7 @@ export type FileChange = {
   mode: number,
 };
 
-class WatchmanClient {
+export default class WatchmanClient {
   _subscriptions: Map<string, WatchmanSubscription>;
   _clientPromise: Promise<watchman.Client>;
   _watchmanVersionPromise: Promise<string>;
@@ -287,5 +287,3 @@ class WatchmanClient {
     });
   }
 }
-
-module.exports = WatchmanClient;

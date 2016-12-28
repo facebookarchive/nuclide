@@ -71,7 +71,7 @@ export type ObservableDiagnosticUpdater = {
   applyFixesForFile: (file: NuclideUri) => void,
 };
 
-import DiagnosticStore from './DiagnosticStore';
+export {default as DiagnosticStore} from './DiagnosticStore';
 
 /**
  * Linter APIs, for compatibility with the Atom linter package.
@@ -132,8 +132,4 @@ export type LinterProvider = {
   scope: 'file' | 'project',
   lintOnFly: boolean,
   lint: (textEditor: TextEditor) => ?Promise<?Array<LinterMessage>>,
-};
-
-module.exports = {
-  DiagnosticStore,
 };

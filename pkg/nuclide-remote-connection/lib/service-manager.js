@@ -45,7 +45,7 @@ function createLocalRpcClient(): RpcConnection<Transport> {
     localTransports.clientTransport, getAtomSideLoopbackMarshalers, servicesConfig);
 }
 
-function setUseLocalRpc(value: boolean): void {
+export function setUseLocalRpc(value: boolean): void {
   invariant(!knownLocalRpc, 'setUseLocalRpc must be called exactly once');
   knownLocalRpc = true;
   if (value) {
@@ -53,7 +53,7 @@ function setUseLocalRpc(value: boolean): void {
   }
 }
 
-function getlocalService(serviceName: string): Object {
+export function getlocalService(serviceName: string): Object {
   invariant(knownLocalRpc || isRunningInTest(), 'Must call setUseLocalRpc before getService');
   if (localRpcClient != null) {
     return localRpcClient.getService(serviceName);
@@ -71,7 +71,7 @@ function getlocalService(serviceName: string): Object {
  *    `nuclide://$host/$path`. The function will use the $host from remote path to
  *    create a remote service or create a local service if the uri is local path.
  */
-function getServiceByNuclideUri(
+export function getServiceByNuclideUri(
   serviceName: string,
   uri: ?NuclideUri = null,
 ): ?any {
@@ -83,7 +83,7 @@ function getServiceByNuclideUri(
  * Create or get cached service.
  * null connection implies get local service.
  */
-function getServiceByConnection(serviceName: string, connection: ?ServerConnection): Object {
+export function getServiceByConnection(serviceName: string, connection: ?ServerConnection): Object {
   if (connection == null) {
     return getlocalService(serviceName);
   } else {
@@ -95,7 +95,7 @@ function getServiceByConnection(serviceName: string, connection: ?ServerConnecti
  * Create or get a cached service. If hostname is null or empty string,
  * it returns a local service, otherwise a remote service will be returned.
  */
-function getService(serviceName: string, hostname: ?string): ?Object {
+export function getService(serviceName: string, hostname: ?string): ?Object {
   if (hostname) {
     const serverConnection = ServerConnection.getByHostname(hostname);
     if (serverConnection == null) {
@@ -106,11 +106,3 @@ function getService(serviceName: string, hostname: ?string): ?Object {
     return getlocalService(serviceName);
   }
 }
-
-module.exports = {
-  getService,
-  getServiceByConnection,
-  getServiceByNuclideUri,
-  setUseLocalRpc,
-  getlocalService,
-};

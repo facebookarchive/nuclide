@@ -49,7 +49,7 @@ export type ServerConnectionConfiguration = {
 //
 // A ServerConnection keeps a list of RemoteConnections - one for each open directory on the remote
 // machine. Once all RemoteConnections have been closed, then the ServerConnection will close.
-class ServerConnection {
+export class ServerConnection {
   _config: ServerConnectionConfiguration;
   _closed: boolean;
   _healthNotifier: ?ConnectionHealthNotifier;
@@ -363,9 +363,7 @@ class ServerConnection {
   }
 }
 
-module.exports = {
-  ServerConnection,
-  __test__: {
-    connections: ServerConnection._connections,
-  },
+
+export const __test__ = {
+  connections: ServerConnection._connections,
 };

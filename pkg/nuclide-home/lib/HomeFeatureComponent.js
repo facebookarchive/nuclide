@@ -21,7 +21,7 @@ type Props = {
   command: ?(string | () => void),
 };
 
-class HomeFeatureComponent extends React.Component {
+export default class HomeFeatureComponent extends React.Component {
   props: Props;
 
   constructor(props: Props) {
@@ -64,5 +64,3 @@ class HomeFeatureComponent extends React.Component {
     );
   }
 }
-
-module.exports = HomeFeatureComponent;

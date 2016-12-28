@@ -37,7 +37,7 @@ type NuclideServerOptions = {
   trackEventLoop?: boolean,
 };
 
-class NuclideServer {
+export default class NuclideServer {
   static _theServer: ?NuclideServer;
 
   _webServer: http$fixed$Server;
@@ -263,5 +263,3 @@ class NuclideServer {
     this._webServer.close();
   }
 }
-
-module.exports = NuclideServer;

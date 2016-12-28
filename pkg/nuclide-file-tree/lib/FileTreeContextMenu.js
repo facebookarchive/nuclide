@@ -136,7 +136,7 @@ const SHOW_IN_MENU_PRIORITY = 6000;
  * }
  * ```
  */
-class FileTreeContextMenu {
+export default class FileTreeContextMenu {
   _contextMenu: ContextMenu;
   _sourceControlMenu: ContextMenu;
   _store: FileTreeStore;
@@ -408,6 +408,3 @@ function generateNextInternalCommand(itemLabel: string): string {
   const cmdName = itemLabel.toLowerCase().replace(/[^\w]+/g, '-') + '-' + nextInternalCommandId++;
   return `nuclide-file-tree:${cmdName}`;
 }
-
-
-module.exports = FileTreeContextMenu;

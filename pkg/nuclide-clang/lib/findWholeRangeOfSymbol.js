@@ -30,7 +30,7 @@ const OBJC_SELECTOR_NAME_REGEX = /([^\s:]+:)+$/g;
  * @param extent The 'extent' of the symbol, as returned by libclang's Cursor.extent.
  * @return The true range of the symbol, which may extend beyond the `text` word.
  */
-function findWholeRangeOfSymbol(
+export default function findWholeRangeOfSymbol(
     textEditor: TextEditor,
     text: string,
     textRange: Range,
@@ -80,5 +80,3 @@ function findWholeRangeOfSymbol(
     return [textRange];
   }
 }
-
-module.exports = findWholeRangeOfSymbol;

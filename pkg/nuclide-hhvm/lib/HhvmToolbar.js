@@ -32,7 +32,7 @@ type Props = {
   projectStore: ProjectStore,
 };
 
-class HhvmToolbar extends React.Component {
+export default class HhvmToolbar extends React.Component {
   props: Props;
 
   constructor(props: Props) {
@@ -108,5 +108,3 @@ class HhvmToolbar extends React.Component {
     this.props.projectStore.setDebugMode(value);
   }
 }
-
-module.exports = HhvmToolbar;

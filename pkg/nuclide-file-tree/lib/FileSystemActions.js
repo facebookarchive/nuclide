@@ -24,7 +24,6 @@ import {
 import nuclideUri from '../../commons-node/nuclideUri';
 import {File} from 'atom';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
-import {keyToPath} from './FileTreeHelpers';
 import {repositoryForPath} from '../../commons-atom/vcs';
 
 let atomPanel: ?Object;
@@ -96,7 +95,7 @@ class FileSystemActions {
 
       return this._openAddFileDialogImpl(
         rootNode,
-        keyToPath(localPath),
+        FileTreeHelpers.keyToPath(localPath),
         dirPath,
         onDidConfirm,
       );
@@ -341,4 +340,4 @@ class FileSystemActions {
   }
 }
 
-module.exports = new FileSystemActions();
+export default new FileSystemActions();

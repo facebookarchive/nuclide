@@ -18,7 +18,7 @@ import {goToLocation} from '../../commons-atom/go-to-location';
 import {JS_GRAMMARS} from './constants';
 const JS_GRAMMARS_SET = new Set(JS_GRAMMARS);
 
-class FlowHyperclickProvider {
+export default class FlowHyperclickProvider {
   async getSuggestionForWord(
     textEditor: TextEditor,
     text: string,
@@ -49,5 +49,3 @@ class FlowHyperclickProvider {
     }
   }
 }
-
-module.exports = FlowHyperclickProvider;

@@ -19,7 +19,7 @@ import {trackTiming} from '../../nuclide-analytics';
 import nuclideUri from '../../commons-node/nuclideUri';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 
-class ProjectStore {
+export default class ProjectStore {
   _disposables: UniversalDisposable;
   _emitter: Emitter;
   _currentFilePath: string;
@@ -140,5 +140,3 @@ class ProjectStore {
     this._disposables.dispose();
   }
 }
-
-module.exports = ProjectStore;

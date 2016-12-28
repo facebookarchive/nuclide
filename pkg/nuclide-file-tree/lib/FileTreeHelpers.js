@@ -159,7 +159,7 @@ function updatePathInOpenedEditors(oldPath: NuclideUri, newPath: NuclideUri): vo
   });
 }
 
-module.exports = {
+export default {
   dirPathToKey,
   isDirKey,
   keyToName,

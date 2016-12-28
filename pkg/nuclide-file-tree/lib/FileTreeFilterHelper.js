@@ -24,11 +24,11 @@ function formatFilter(filter) {
   return result;
 }
 
-function matchesFilter(name: string, filter: string): boolean {
+export function matchesFilter(name: string, filter: string): boolean {
   return name.toLowerCase().indexOf(filter.toLowerCase()) !== -1;
 }
 
-function filterName(name: string, filter: string, isSelected: boolean): mixed {
+export function filterName(name: string, filter: string, isSelected: boolean): mixed {
   if (filter.length) {
     const classes = classnames({
       'nuclide-file-tree-entry-highlight': true,
@@ -59,8 +59,3 @@ function filterName(name: string, filter: string, isSelected: boolean): mixed {
   }
   return name;
 }
-
-module.exports = {
-  filterName,
-  matchesFilter,
-};

@@ -17,7 +17,7 @@ import {RemoteConnection, RemoteDirectory} from '../../nuclide-remote-connection
  */
 const REMOTE_PATH_URI_PREFIX = 'nuclide://';
 
-class RemoteDirectoryProvider {
+export default class RemoteDirectoryProvider {
   directoryForURISync(uri: string): ?RemoteDirectory {
     if (!uri.startsWith(REMOTE_PATH_URI_PREFIX)) {
       return null;
@@ -37,5 +37,3 @@ class RemoteDirectoryProvider {
     return Promise.resolve(this.directoryForURISync(uri));
   }
 }
-
-module.exports = RemoteDirectoryProvider;

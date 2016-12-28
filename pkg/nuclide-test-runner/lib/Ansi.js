@@ -8,12 +8,10 @@
  * @flow
  */
 
-const Ansi = Object.freeze({
+export default Object.freeze({
   BLUE: '\u001B[34m',
   GREEN: '\u001B[32m',
   RED: '\u001B[31m',
   RESET: '\u001B[39m',
   YELLOW: '\u001B[33m',
 });
-
-module.exports = Ansi;

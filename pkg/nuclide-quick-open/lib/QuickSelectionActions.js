@@ -10,7 +10,7 @@
 
 import QuickSelectionDispatcher, {ActionTypes} from './QuickSelectionDispatcher';
 
-const QuickSelectionActions = {
+export default {
 
   query(query: string): void {
     QuickSelectionDispatcher.getInstance().dispatch({
@@ -29,5 +29,3 @@ const QuickSelectionActions = {
   },
 
 };
-
-module.exports = QuickSelectionActions;

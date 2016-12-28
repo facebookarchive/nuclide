@@ -10,7 +10,7 @@
 
 import temp from 'temp';
 import singleton from '../../commons-node/singleton';
-import projects from '../projects';
+import * as projects from '../projects';
 
 const {PROJECT_PATH_WATCHER_INSTANCE_KEY} = projects.__test__;
 let firstProjectPath;

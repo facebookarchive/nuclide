@@ -37,7 +37,7 @@ StatusMessage[Status.SKIPPED] = `${Ansi.YELLOW}(SKIP)${Ansi.RESET}`;
 StatusMessage[Status.FATAL] = `${Ansi.RED}(FATAL)${Ansi.RESET}`;
 StatusMessage[Status.TIMEOUT] = `${Ansi.BLUE}(TIMEOUT)${Ansi.RESET}`;
 
-class TestRunModel {
+export default class TestRunModel {
   static Status: {[key: string]: TestRunStatus} = Status;
 
   startTime: ?number;
@@ -73,5 +73,3 @@ class TestRunModel {
     return `      ${StatusSymbol[status]} ${name} ${durationStr}s ${StatusMessage[status]}`;
   }
 }
-
-module.exports = TestRunModel;

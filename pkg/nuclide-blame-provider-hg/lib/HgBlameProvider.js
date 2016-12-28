@@ -64,7 +64,7 @@ try {
   // Ignore case where FbHgBlameProvider is unavailable.
 }
 
-module.exports = {
+export default {
   canProvideBlameForEditor,
   getBlameForEditor,
   getUrlForRevision,

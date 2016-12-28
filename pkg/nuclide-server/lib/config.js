@@ -8,8 +8,4 @@
  * @flow
  */
 
-const HEARTBEAT_CHANNEL = 'heartbeat';
-
-module.exports = {
-  HEARTBEAT_CHANNEL,
-};
+export const HEARTBEAT_CHANNEL = 'heartbeat';

@@ -26,7 +26,7 @@ const NUMBER_OF_PREVIOUS_LINES_TO_SEARCH_FOR_COLONS = 25;
  * This provides improved Objective-C indentation by aligning colons.
  * Clients must call `disable()` once they're done with an instance.
  */
-class ObjectiveCColonIndenter {
+export default class ObjectiveCColonIndenter {
   _subscriptions: ?CompositeDisposable;
   _insertTextSubscriptionsMap: Map<TextEditor, IDisposable>;
 
@@ -171,5 +171,3 @@ class ObjectiveCColonIndenter {
     return column;
   }
 }
-
-module.exports = ObjectiveCColonIndenter;

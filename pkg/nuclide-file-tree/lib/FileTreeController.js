@@ -58,7 +58,7 @@ class ProjectSelectionManager {
 
 export type FileTreeProjectSelectionManager = ProjectSelectionManager;
 
-class FileTreeController {
+export default class FileTreeController {
   _actions: FileTreeActions;
   _contextMenu: FileTreeContextMenu;
   _projectSelectionManager: ProjectSelectionManager;
@@ -655,5 +655,3 @@ class FileTreeController {
     return this._store.exportData();
   }
 }
-
-module.exports = FileTreeController;

@@ -8,7 +8,7 @@
  * @flow
  */
 
-module.exports = Object.freeze({
+export default Object.freeze({
   NONE: 0,
   LOCAL: 1,
   CONNECTED: 2,

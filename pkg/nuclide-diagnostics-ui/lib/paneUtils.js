@@ -19,7 +19,7 @@ function fileOfDiagnosticMessage(diagnostic: DiagnosticMessage): string {
   }
 }
 
-function getProjectRelativePathOfDiagnostic(diagnostic: DiagnosticMessage): string {
+export function getProjectRelativePathOfDiagnostic(diagnostic: DiagnosticMessage): string {
   if (diagnostic.filePath != null) {
     const [, relativePath] = atom.project.relativizePath(diagnostic.filePath);
     return relativePath;
@@ -28,7 +28,7 @@ function getProjectRelativePathOfDiagnostic(diagnostic: DiagnosticMessage): stri
   }
 }
 
-function compareMessagesByFile(a: DiagnosticMessage, b: DiagnosticMessage): number {
+export function compareMessagesByFile(a: DiagnosticMessage, b: DiagnosticMessage): number {
   // This will sort by:
   //  - errors before warnings
   //  - local before remote
@@ -61,8 +61,3 @@ const messageLevelRank: {[key: MessageType]: number} = {
 function compareMessagesByLevel(a: DiagnosticMessage, b: DiagnosticMessage): number {
   return messageLevelRank[a.type] - messageLevelRank[b.type];
 }
-
-module.exports = {
-  compareMessagesByFile,
-  getProjectRelativePathOfDiagnostic,
-};

@@ -91,6 +91,6 @@ class WebViewPane extends HTMLElement {
   }
 }
 
-module.exports = document.registerElement('sample-web-view', {
+export default document.registerElement('sample-web-view', {
   prototype: WebViewPane.prototype,
 });

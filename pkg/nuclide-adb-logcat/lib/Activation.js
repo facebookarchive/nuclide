@@ -18,7 +18,7 @@ import {LogTailer} from '../../nuclide-console/lib/LogTailer';
 import {CompositeDisposable, Disposable} from 'atom';
 import {Observable} from 'rxjs';
 
-class Activation {
+export default class Activation {
   _disposables: CompositeDisposable;
   _logTailer: LogTailer;
 
@@ -91,5 +91,3 @@ class Activation {
 }
 
 const isNoEntError = err => (err: any).code === 'ENOENT';
-
-module.exports = Activation;

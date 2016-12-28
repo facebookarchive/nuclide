@@ -78,7 +78,7 @@ function getProjectManager(): ProjectManager {
   );
 }
 
-function getAtomProjectRelativePath(path: NuclideUri): ?string {
+export function getAtomProjectRelativePath(path: NuclideUri): ?string {
   const [projectPath, relativePath] = atom.project.relativizePath(path);
   if (!projectPath) {
     return null;
@@ -86,29 +86,23 @@ function getAtomProjectRelativePath(path: NuclideUri): ?string {
   return relativePath;
 }
 
-function getAtomProjectRootPath(path: NuclideUri): ?string {
+export function getAtomProjectRootPath(path: NuclideUri): ?string {
   const [projectPath] = atom.project.relativizePath(path);
   return projectPath;
 }
 
-module.exports = {
-  getAtomProjectRelativePath,
+export function observeProjectPaths(callback: (projectPath: string) => void): IDisposable {
+  return getProjectManager().observeProjectPaths(callback);
+}
 
-  getAtomProjectRootPath,
+export function onDidAddProjectPath(callback: (projectPath: string) => void): IDisposable {
+  return getProjectManager().onDidAddProjectPath(callback);
+}
 
-  observeProjectPaths(callback: (projectPath: string) => void): IDisposable {
-    return getProjectManager().observeProjectPaths(callback);
-  },
+export function onDidRemoveProjectPath(callback: (projectPath: string) => void): IDisposable {
+  return getProjectManager().onDidRemoveProjectPath(callback);
+}
 
-  onDidAddProjectPath(callback: (projectPath: string) => void): IDisposable {
-    return getProjectManager().onDidAddProjectPath(callback);
-  },
-
-  onDidRemoveProjectPath(callback: (projectPath: string) => void): IDisposable {
-    return getProjectManager().onDidRemoveProjectPath(callback);
-  },
-
-  __test__: {
-    PROJECT_PATH_WATCHER_INSTANCE_KEY,
-  },
+export const __test__ = {
+  PROJECT_PATH_WATCHER_INSTANCE_KEY,
 };

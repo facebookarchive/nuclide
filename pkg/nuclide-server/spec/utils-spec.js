@@ -9,8 +9,8 @@
  */
 
 import http from 'http';
-import utils from '../lib/utils';
 import querystring from 'querystring';
+import * as utils from '../lib/utils';
 
 describe('NuclideServer utils test', () => {
   let server;

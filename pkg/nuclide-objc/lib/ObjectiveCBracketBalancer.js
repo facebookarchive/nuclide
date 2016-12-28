@@ -23,7 +23,7 @@ const GRAMMARS = [
  * This closes square brackets for Objective-C message calls.
  * Clients must call `disable()` once they're done with an instance.
  */
-class ObjectiveCBracketBalancer {
+export default class ObjectiveCBracketBalancer {
   _editingSubscriptionsMap: Map<TextEditor, IDisposable>;
   _languageListener: ?IDisposable;
 
@@ -151,5 +151,3 @@ class ObjectiveCBracketBalancer {
     }
   }
 }
-
-module.exports = ObjectiveCBracketBalancer;

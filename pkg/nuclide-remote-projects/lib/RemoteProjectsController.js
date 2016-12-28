@@ -17,7 +17,7 @@ import {isValidTextEditor} from '../../commons-atom/text-editor';
 import nuclideUri from '../../commons-node/nuclideUri';
 import ConnectionState from './ConnectionState';
 
-class RemoteProjectsController {
+export default class RemoteProjectsController {
   _disposables: CompositeDisposable;
   _statusBarDiv: ?HTMLElement;
   _statusBarTile: ?StatusBarTile;
@@ -136,5 +136,3 @@ class RemoteProjectsController {
     this._disposables.dispose();
   }
 }
-
-module.exports = RemoteProjectsController;

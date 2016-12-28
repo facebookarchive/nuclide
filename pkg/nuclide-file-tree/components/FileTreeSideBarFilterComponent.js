@@ -18,7 +18,7 @@ type Props = {
   found: boolean,
 };
 
-class FileTreeSidebarFilterComponent extends React.Component {
+export default class FileTreeSidebarFilterComponent extends React.Component {
   props: Props;
 
   render() {
@@ -36,5 +36,3 @@ class FileTreeSidebarFilterComponent extends React.Component {
     );
   }
 }
-
-module.exports = FileTreeSidebarFilterComponent;

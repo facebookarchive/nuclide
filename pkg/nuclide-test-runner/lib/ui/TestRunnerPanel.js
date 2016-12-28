@@ -49,7 +49,7 @@ type State = {
   selectedTestRunnerIndex: number,
 };
 
-class TestRunnerPanel extends React.Component {
+export default class TestRunnerPanel extends React.Component {
   props: Props;
   state: State;
   _paneContainer: Object;
@@ -279,5 +279,3 @@ class TestRunnerPanel extends React.Component {
     );
   }
 }
-
-module.exports = TestRunnerPanel;

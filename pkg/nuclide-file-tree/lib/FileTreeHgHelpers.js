@@ -194,7 +194,7 @@ async function deleteNodes(nodes: Array<FileTreeNode>): Promise<void> {
   }));
 }
 
-module.exports = {
+export default {
   getHgRepositoryForNode,
   isValidRename,
   renameNode,

@@ -45,7 +45,7 @@ function addSingleAdapter(
   }
 }
 
-function createAdapters(
+export function createAdapters(
   providers: LinterProvider | Array<LinterProvider>,
   ProviderBase?: typeof DiagnosticsProviderBase,
 ): Set<LinterAdapter> {
@@ -60,7 +60,7 @@ function createAdapters(
   return adapters;
 }
 
-function validateLinter(provider: LinterProvider): Array<string> {
+export function validateLinter(provider: LinterProvider): Array<string> {
   const errors = [];
   validate(provider, 'Must not be undefined', errors);
 
@@ -107,5 +107,3 @@ function validate(condition: mixed, msg: string, errors: Array<string>): void {
     errors.push(msg);
   }
 }
-
-module.exports = {createAdapters, validateLinter};

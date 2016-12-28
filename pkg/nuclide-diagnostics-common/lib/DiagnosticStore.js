@@ -30,7 +30,7 @@ import {MarkerTracker} from './MarkerTracker';
 import invariant from 'assert';
 import {BehaviorSubject, Subject, Observable} from 'rxjs';
 
-class DiagnosticStore {
+export default class DiagnosticStore {
   // A map from each diagnostic provider to:
   // a map from each file it has messages for to the array of messages for that file.
   _providerToFileToMessages: Map<DiagnosticProvider, Map<NuclideUri, Array<FileDiagnosticMessage>>>;
@@ -403,5 +403,3 @@ function notifyFixFailed() {
     'Failed to apply fix. Try saving to get fresh results and then try again.',
   );
 }
-
-module.exports = DiagnosticStore;

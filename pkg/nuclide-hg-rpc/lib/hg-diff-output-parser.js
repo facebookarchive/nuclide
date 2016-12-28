@@ -23,7 +23,7 @@ import type {DiffInfo} from './HgService';
 /**
  * Parses the output of `hg diff --unified 0`.
  */
-function parseHgDiffUnifiedOutput(output: string): DiffInfo {
+export function parseHgDiffUnifiedOutput(output: string): DiffInfo {
   const diffInfo = {
     added: 0,
     deleted: 0,
@@ -66,7 +66,7 @@ const SINGLE_UNIFIED_DIFF_BEGINNING_REGEX = /--- /;
  * @return A map of each file path in the output (relative to the root of the
  *   repo) to its parsed DiffInfo.
  */
-function parseMultiFileHgDiffUnifiedOutput(output: string): Map<string, DiffInfo> {
+export function parseMultiFileHgDiffUnifiedOutput(output: string): Map<string, DiffInfo> {
   const filePathToDiffInfo = new Map();
   // Split the output by the symbols '--- '. This is specified in the Unified diff format:
   // http://www.gnu.org/software/diffutils/manual/html_node/Detailed-Unified.html#Detailed-Unified.
@@ -88,8 +88,3 @@ function parseMultiFileHgDiffUnifiedOutput(output: string): Map<string, DiffInfo
   }
   return filePathToDiffInfo;
 }
-
-module.exports = {
-  parseHgDiffUnifiedOutput,
-  parseMultiFileHgDiffUnifiedOutput,
-};

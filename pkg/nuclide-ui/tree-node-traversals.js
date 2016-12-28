@@ -10,16 +10,17 @@
 
 import type {LazyTreeNode} from './LazyTreeNode';
 
-module.exports = {
-  /**
-   * Call `callback` on every node in the subtree, including `rootNode`.
-   */
-  forEachCachedNode(rootNode: LazyTreeNode, callback: (node: LazyTreeNode) => void) {
-    const stack = [rootNode];
-    while (stack.length !== 0) {
-      const node = stack.pop();
-      callback(node);
-      (node.getCachedChildren() || []).forEach(childNode => stack.push(childNode));
-    }
-  },
-};
+/**
+ * Call `callback` on every node in the subtree, including `rootNode`.
+ */
+export function forEachCachedNode(
+  rootNode: LazyTreeNode,
+  callback: (node: LazyTreeNode) => void,
+) {
+  const stack = [rootNode];
+  while (stack.length !== 0) {
+    const node = stack.pop();
+    callback(node);
+    (node.getCachedChildren() || []).forEach(childNode => stack.push(childNode));
+  }
+}

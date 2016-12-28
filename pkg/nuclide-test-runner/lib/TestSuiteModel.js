@@ -10,7 +10,7 @@
 
 import type {TestClassSummary, TestRunInfo} from './types';
 
-class TestSuiteModel {
+export default class TestSuiteModel {
   testClasses: Map<number, TestClassSummary>;
   testRuns: Map<number, TestRunInfo>;
 
@@ -39,5 +39,3 @@ class TestSuiteModel {
     }
   }
 }
-
-module.exports = TestSuiteModel;

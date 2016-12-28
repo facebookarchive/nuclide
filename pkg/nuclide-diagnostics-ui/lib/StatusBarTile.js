@@ -30,7 +30,7 @@ type DiagnosticCount = {
 // Stick this to the left of remote-projects (-99)
 const STATUS_BAR_PRIORITY = -99.5;
 
-class StatusBarTile {
+export default class StatusBarTile {
   _diagnosticUpdaters: Map<ObservableDiagnosticUpdater, DiagnosticCount>;
   _totalDiagnosticCount: DiagnosticCount;
   _subscriptions: UniversalDisposable;
@@ -177,5 +177,3 @@ class StatusBarTileComponent extends React.Component {
     track('diagnostics-show-table-from-status-bar');
   }
 }
-
-module.exports = StatusBarTile;

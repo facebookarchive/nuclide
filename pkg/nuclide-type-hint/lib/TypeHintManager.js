@@ -19,7 +19,7 @@ import {getLogger} from '../../nuclide-logging';
 
 const logger = getLogger();
 
-class TypeHintManager {
+export default class TypeHintManager {
   _typeHintProviders: Array<TypeHintProvider>;
   /**
    * This helps determine if we should show the type hint when toggling it via
@@ -84,5 +84,3 @@ class TypeHintManager {
     arrayRemove(this._typeHintProviders, provider);
   }
 }
-
-module.exports = TypeHintManager;

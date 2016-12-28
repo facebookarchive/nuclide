@@ -37,7 +37,7 @@ export type RequestOptions = {
  * the option:
  * {useQuerystring: false}
  */
-function asyncRequest(options: RequestOptions): Promise<ResponseBody> {
+export function asyncRequest(options: RequestOptions): Promise<ResponseBody> {
   return new Promise((resolve, reject) => {
     if (options.useQuerystring === undefined) {
       options.useQuerystring = true;
@@ -72,7 +72,7 @@ function asyncRequest(options: RequestOptions): Promise<ResponseBody> {
 /**
  * Write a text or convert to text response with an optional status code.
  */
-function sendTextResponse(
+export function sendTextResponse(
   response: http$fixed$ServerResponse,
   text: any,
   statusCode: ?number,
@@ -87,7 +87,7 @@ function sendTextResponse(
 /**
  * Write a json response text with an optional status code.
  */
-function sendJsonResponse(
+export function sendJsonResponse(
   response: http$fixed$ServerResponse,
   json: any,
   statusCode: ?number,
@@ -99,7 +99,7 @@ function sendJsonResponse(
 /**
   * Parses the request body in an anyc/promise way
   */
-function parseRequestBody(
+export function parseRequestBody(
   httpRequest: http$fixed$IncomingMessage,
   isJson: ?boolean,
 ): Promise<string> {
@@ -120,7 +120,7 @@ function parseRequestBody(
 /**
  * Parses the url parameters ?abc=erf&lol=432c
  */
-function getQueryParameters(requestUrl: string): QueryParams {
+export function getQueryParameters(requestUrl: string): QueryParams {
   const components: ?Object = url.parse(requestUrl, true);
   invariant(components != null);
   const {query} = components;
@@ -132,7 +132,7 @@ function getQueryParameters(requestUrl: string): QueryParams {
  * to send the metadata about the argument types with the data
  * to help the server understand and parse it.
  */
-function serializeArgs(args: Array<any>): SerializedArguments {
+export function serializeArgs(args: Array<any>): SerializedArguments {
   const argsOnHttp = [];
   const argTypes = [];
   args.forEach(arg => {
@@ -158,7 +158,7 @@ function serializeArgs(args: Array<any>): SerializedArguments {
  * Deserializes a url with query parameters: args, argTypes to an array
  * of the original arguments of the same types the client called the function with.
  */
-function deserializeArgs(requestUrl: string): Array<any> {
+export function deserializeArgs(requestUrl: string): Array<any> {
   let {args, argTypes} = getQueryParameters(requestUrl);
   args = args || [];
   argTypes = argTypes || [];
@@ -176,13 +176,3 @@ function deserializeArgs(requestUrl: string): Array<any> {
     }
   });
 }
-
-module.exports = {
-  asyncRequest,
-  deserializeArgs,
-  getQueryParameters,
-  parseRequestBody,
-  sendJsonResponse,
-  sendTextResponse,
-  serializeArgs,
-};

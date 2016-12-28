@@ -25,7 +25,7 @@ class VcsLogPaneItem extends CustomPaneItem {
   }
 }
 
-module.exports = document.registerElement(
+export default document.registerElement(
   'nuclide-vcs-log',
   {prototype: VcsLogPaneItem.prototype},
 );

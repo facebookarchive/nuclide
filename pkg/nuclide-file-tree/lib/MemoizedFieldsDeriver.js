@@ -13,7 +13,7 @@ import type {StoreConfigData, NodeCheckedStatus} from './FileTreeStore';
 import type {StatusCodeNumberValue} from '../../nuclide-hg-rpc/lib/HgService';
 
 import nuclideUri from '../../commons-node/nuclideUri';
-import {isDirKey, keyToPath, keyToName} from './FileTreeHelpers';
+import FileTreeHelpers from './FileTreeHelpers';
 import {StatusCodeNumber} from '../../nuclide-hg-rpc/lib/hg-constants';
 
 /**
@@ -63,10 +63,12 @@ export class MemoizedFieldsDeriver {
     this._rootUri = rootUri;
 
     this._isRoot = uri === rootUri;
-    this._name = keyToName(uri);
-    this._isContainer = isDirKey(uri);
+    this._name = FileTreeHelpers.keyToName(uri);
+    this._isContainer = FileTreeHelpers.isDirKey(uri);
     this._relativePath = uri.slice(rootUri.length);
-    this._localPath = keyToPath(nuclideUri.isRemote(uri) ? nuclideUri.parse(uri).path : uri);
+    this._localPath = FileTreeHelpers.keyToPath(
+      nuclideUri.isRemote(uri) ? nuclideUri.parse(uri).path : uri,
+    );
     this._splitPath = nuclideUri.split(uri);
 
     this._getRepo = memoize(this._repoGetter.bind(this));

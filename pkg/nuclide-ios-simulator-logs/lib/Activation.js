@@ -18,7 +18,7 @@ import {createProcessStream} from './createProcessStream';
 import {CompositeDisposable, Disposable} from 'atom';
 import {Observable} from 'rxjs';
 
-class Activation {
+export default class Activation {
   _disposables: CompositeDisposable;
   _iosLogTailer: LogTailer;
 
@@ -71,5 +71,3 @@ class Activation {
     this._disposables.dispose();
   }
 }
-
-module.exports = Activation;

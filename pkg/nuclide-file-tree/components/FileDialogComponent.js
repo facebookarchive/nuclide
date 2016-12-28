@@ -43,7 +43,7 @@ type Props = {
 /**
  * Component that displays UI to create a new file.
  */
-class FileDialogComponent extends React.Component {
+export default class FileDialogComponent extends React.Component {
   _disposables: UniversalDisposable;
   _isClosed: boolean;
 
@@ -164,5 +164,3 @@ class FileDialogComponent extends React.Component {
     }
   }
 }
-
-module.exports = FileDialogComponent;

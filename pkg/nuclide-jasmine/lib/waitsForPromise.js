@@ -15,7 +15,9 @@ type WaitsForPromiseOptions = {
   timeout?: number,
 };
 
-function waitsForPromise(...args: Array<WaitsForPromiseOptions | () => Promise<mixed>>): void {
+export default function waitsForPromise(
+  ...args: Array<WaitsForPromiseOptions | () => Promise<mixed>>
+): void {
   let shouldReject;
   let timeout;
   if (args.length > 1) {
@@ -56,5 +58,3 @@ function waitsForPromise(...args: Array<WaitsForPromiseOptions | () => Promise<m
 
   waitsFor(timeout, () => finished);
 }
-
-module.exports = waitsForPromise;

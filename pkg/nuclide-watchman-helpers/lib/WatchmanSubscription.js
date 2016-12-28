@@ -25,7 +25,7 @@ export type WatchmanSubscriptionOptions = {
  *   Notably, this value should be undefined if subscriptionRoot is the same as
  *   subscriptionPath.
  */
-class WatchmanSubscription extends Emitter {
+export default class WatchmanSubscription extends Emitter {
   subscriptionCount: number;
   root: string;
   path: string;
@@ -49,4 +49,3 @@ class WatchmanSubscription extends Emitter {
     this.options = subscriptionOptions;
   }
 }
-module.exports = WatchmanSubscription;

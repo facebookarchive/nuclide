@@ -15,7 +15,7 @@ export type FileList = Array<{path: FilePath, timestamp: TimeStamp}>;
 import {CompositeDisposable} from 'atom';
 import {trackTiming} from '../../nuclide-analytics';
 
-class RecentFilesService {
+export default class RecentFilesService {
   // Map uses `Map`'s insertion ordering to keep files in order.
   _fileList: Map<FilePath, TimeStamp>;
   _subscriptions: CompositeDisposable;
@@ -67,5 +67,3 @@ class RecentFilesService {
     this._subscriptions.dispose();
   }
 }
-
-module.exports = RecentFilesService;

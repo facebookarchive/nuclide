@@ -25,7 +25,7 @@ type Props = {
   testSuiteModel: ?TestSuiteModel,
 };
 
-class TestClassTree extends React.Component {
+export default class TestClassTree extends React.Component {
   props: Props;
 
   componentDidUpdate(prevProps: Object) {
@@ -98,5 +98,3 @@ class TestClassTree extends React.Component {
     return '';
   }
 }
-
-module.exports = TestClassTree;
