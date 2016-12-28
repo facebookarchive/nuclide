@@ -32,14 +32,12 @@ function resetTimeouts(): void {
 function fakeSetTimeout(callback: () => ?any, ms: number): number {
   const id = ++timeoutCount;
   timeouts.push([id, now + ms, callback]);
-  timeouts = timeouts
-      .sort(([id0, strikeTime0, cb0], [id1, strikeTime1, cb1]) => strikeTime0 - strikeTime1);
+  timeouts.sort(([, strikeTime0], [, strikeTime1]) => strikeTime0 - strikeTime1);
   return id;
 }
 
 function fakeClearTimeout(idToClear: number): void {
-  timeouts = timeouts
-      .filter(([id, strikeTime, callback]) => (id !== idToClear));
+  timeouts = timeouts.filter(([id]) => (id !== idToClear));
 }
 
 function fakeSetInterval(callback: () => ?any, ms: number): number {
@@ -74,9 +72,16 @@ function advanceClock(deltaMs: number): void {
 function useRealClock(): void {
   jasmine.unspy(global, 'setTimeout');
   jasmine.unspy(global, 'clearTimeout');
-  jasmine.unspy(global, 'setInterval');
-  jasmine.unspy(global, 'clearInterval');
   jasmine.unspy(Date, 'now');
+}
+
+/**
+ * Atom does this half-way mock.
+ * https://github.com/atom/atom/blob/v1.12.7/spec/spec-helper.coffee#L169-L174
+ */
+function useMockClock(): void {
+  spyOn(global, 'setInterval').andCallFake(fakeSetInterval);
+  spyOn(global, 'clearInterval').andCallFake(fakeClearInterval);
 }
 
 // Expose the fake timer utils to global to be used by npm spec tests.
@@ -87,9 +92,9 @@ global.fakeSetInterval = fakeSetInterval;
 global.fakeClearInterval = fakeClearInterval;
 global.advanceClock = advanceClock;
 jasmine.useRealClock = useRealClock;
-const attributes = {};
-attributes.get = function() { return now; };
-Object.defineProperty(global, 'now', attributes);
+jasmine.useMockClock = useMockClock;
+// $FlowIssue: https://github.com/facebook/flow/issues/285
+Object.defineProperty(global, 'now', {get: () => now});
 
 /**
  * This hook is a the first initialization code that happens before any jasmine test case is
@@ -101,6 +106,4 @@ beforeEach(() => {
   spyOn(Date, 'now').andCallFake(() => now);
   spyOn(global, 'setTimeout').andCallFake(fakeSetTimeout);
   spyOn(global, 'clearTimeout').andCallFake(fakeClearTimeout);
-  spyOn(global, 'setInterval').andCallFake(fakeSetInterval);
-  spyOn(global, 'clearInterval').andCallFake(fakeClearInterval);
 });

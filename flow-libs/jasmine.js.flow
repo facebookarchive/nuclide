@@ -133,5 +133,6 @@ declare var jasmine: {
   getEnv: () => JasmineEnvironment,
   pp: (value: mixed) => string,
   unspy: (obj: Object, methodName: string) => void,
+  useMockClock: () => void,
   useRealClock: () => void,
 };

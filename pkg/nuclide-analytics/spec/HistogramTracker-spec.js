@@ -14,6 +14,7 @@ describe('HistogramTracker', () => {
   let trackSpy;
   let tracker;
   beforeEach(() => {
+    jasmine.useMockClock();
     const trackModule = require('../lib/track');
     trackSpy = spyOn(trackModule, 'track');
     tracker = new HistogramTracker('test', 100, 10, 5);

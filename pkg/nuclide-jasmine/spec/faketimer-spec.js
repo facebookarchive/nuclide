@@ -39,6 +39,8 @@ describe('Fake timer test suite', () => {
   });
 
   it('test setInterval and clearInterval', () => {
+    jasmine.useMockClock();
+
     let firstExecuted = false;
 
     setInterval(() => { firstExecuted = true; }, 10);
@@ -126,5 +128,14 @@ describe('Fake timer test suite', () => {
 
     expect(firstExecutedCount).toBe(4);
     expect(secondExecutedCount).toBe(4);
+  });
+
+  it('test Date.now and global.now', () => {
+    const now1 = Date.now();
+    expect(now1).toEqual(global.now);
+    advanceClock(100);
+    const now2 = Date.now();
+    expect(now2 - now1).toEqual(100);
+    expect(now2).toEqual(global.now);
   });
 });
