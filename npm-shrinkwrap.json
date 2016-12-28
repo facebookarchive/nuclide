@@ -979,10 +979,10 @@
       "from": "fs.realpath@>=1.0.0 <2.0.0",
       "resolved": "https://registry.npmjs.org/fs.realpath/-/fs.realpath-1.0.0.tgz"
     },
-    "fuzzaldrin": {
-      "version": "2.1.0",
-      "from": "fuzzaldrin@2.1.0",
-      "resolved": "https://registry.npmjs.org/fuzzaldrin/-/fuzzaldrin-2.1.0.tgz"
+    "fuzzaldrin-plus": {
+      "version": "0.4.1",
+      "from": "fuzzaldrin-plus@0.4.1",
+      "resolved": "https://registry.npmjs.org/fuzzaldrin-plus/-/fuzzaldrin-plus-0.4.1.tgz"
     },
     "gaze": {
       "version": "0.3.4",

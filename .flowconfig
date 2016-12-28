@@ -3,7 +3,6 @@
 [ignore]
 ; ignore module source to prefer declaration
 <PROJECT_ROOT>/node_modules/classnames/.*
-<PROJECT_ROOT>/node_modules/fuzzaldrin/.*
 <PROJECT_ROOT>/node_modules/lru-cache/.*
 <PROJECT_ROOT>/node_modules/react/.*
 <PROJECT_ROOT>/node_modules/rxjs/.*

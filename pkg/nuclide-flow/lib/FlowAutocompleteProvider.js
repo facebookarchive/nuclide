@@ -11,7 +11,7 @@
 import type {FlowAutocompleteItem} from '../../nuclide-flow-rpc';
 
 import invariant from 'assert';
-import {filter} from 'fuzzaldrin';
+import fuzzaldrinPlus from 'fuzzaldrin-plus';
 
 import {trackTiming} from '../../nuclide-analytics';
 import AutocompleteCacher from '../../commons-atom/AutocompleteCacher';
@@ -126,7 +126,11 @@ function updateResults(
       replacementPrefix,
     };
   });
-  return filter(resultsWithCurrentPrefix, replacementPrefix, {key: 'displayText'});
+  // fuzzaldrin-plus filters everything when the query is empty.
+  if (replacementPrefix === '') {
+    return resultsWithCurrentPrefix;
+  }
+  return fuzzaldrinPlus.filter(resultsWithCurrentPrefix, replacementPrefix, {key: 'displayText'});
 }
 
 function getReplacementPrefix(originalPrefix: string): string {
