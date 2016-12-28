@@ -1,0 +1,25 @@
+'name': 'Mercurial Diff'
+'scopeName': 'source.mercurial.diff',
+'patterns': [
+  {
+    'begin': '^diff.*'
+    'name': 'meta.separator.mercurial.diff'
+    'end': '$'
+  }
+  {
+    'begin': '^@@.*'
+    'name': 'keyword.mercurial.diff'
+    'end': '$'
+  }
+  {
+    'begin': '^\\+.*'
+    'name': 'markup.inserted.mercurial.diff'
+    'end': '$'
+  }
+  {
+    'begin': '^\\-.*'
+    'name': 'markup.deleted.mercurial.diff'
+    'end': '$'
+  }
+]
+'scopeName': 'source.mercurial.diff'
