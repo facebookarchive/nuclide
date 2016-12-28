@@ -39,5 +39,4 @@ export default class NewMessagesNotification extends React.Component {
       </div>
     );
   }
-
 }

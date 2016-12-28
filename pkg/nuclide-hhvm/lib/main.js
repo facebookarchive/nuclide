@@ -39,7 +39,6 @@ class Activation {
     }
     return this._buildSystem;
   }
-
 }
 
 export default createPackage(Activation);

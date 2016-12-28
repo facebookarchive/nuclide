@@ -12,7 +12,6 @@ import {FlowRootContainer} from './FlowRootContainer';
 import {FlowExecInfoContainer} from './FlowExecInfoContainer';
 
 export class FlowServiceState {
-
   _rootContainer: ?FlowRootContainer;
   _execInfoContainer: ?FlowExecInfoContainer;
 

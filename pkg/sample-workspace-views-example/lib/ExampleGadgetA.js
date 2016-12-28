@@ -16,7 +16,6 @@ import {renderReactRoot} from '../../commons-atom/renderReactRoot';
 export const WORKSPACE_VIEW_URI_A = 'atom://nuclide/sample-workspace-views-example-a';
 
 export class ExampleGadgetA {
-
   getTitle(): string {
     return 'Example Gadget A';
   }
@@ -40,7 +39,6 @@ export class ExampleGadgetA {
   serialize(): Object {
     return {deserializer: 'ExampleGadgetA'};
   }
-
 }
 
 function View(): React.Element<any> {

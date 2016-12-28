@@ -14,7 +14,6 @@ import {DebuggerProcessInfo} from '../../../nuclide-debugger-base';
 import {ReactNativeDebuggerInstance} from './ReactNativeDebuggerInstance';
 
 export class ReactNativeProcessInfo extends DebuggerProcessInfo {
-
   constructor(targetUri: NuclideUri) {
     super('react-native', targetUri);
   }

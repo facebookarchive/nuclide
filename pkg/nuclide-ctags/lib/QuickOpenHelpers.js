@@ -39,7 +39,6 @@ async function getCtagsService(
 }
 
 export default class QuickOpenHelpers {
-
   static async isEligibleForDirectory(directory: atom$Directory): Promise<boolean> {
     const svc = await getCtagsService(directory);
     if (svc != null) {
@@ -108,5 +107,4 @@ export default class QuickOpenHelpers {
       service.dispose();
     }
   }
-
 }

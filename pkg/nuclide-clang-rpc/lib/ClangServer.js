@@ -72,7 +72,6 @@ export type ClangServerFlags = {
 };
 
 export default class ClangServer extends RpcProcess {
-
   static Status: {[key: string]: ClangServerStatus} = Object.freeze({
     READY: 'ready',
     COMPILING: 'compiling',
@@ -176,5 +175,4 @@ export default class ClangServer extends RpcProcess {
       .takeWhile(x => x !== ClangServer.Status.READY)
       .toPromise();
   }
-
 }

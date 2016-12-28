@@ -12,7 +12,6 @@ import Immutable from 'immutable';
 import {LazyTreeNode} from '../../../nuclide-ui/LazyTreeNode';
 
 class TestClassTreeNode extends LazyTreeNode {
-
   constructor(testClass: Object) {
     super(testClass, null, true, async () => Immutable.List.of());
   }
@@ -20,7 +19,6 @@ class TestClassTreeNode extends LazyTreeNode {
   getLabel(): string {
     return this.getItem().name;
   }
-
 }
 
 module.exports = TestClassTreeNode;

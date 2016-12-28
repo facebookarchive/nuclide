@@ -17,7 +17,6 @@ import {getLogger} from '../../nuclide-logging';
 const logger = getLogger();
 
 class FileWatcher {
-
   _editor: TextEditor;
   _subscriptions: ?CompositeDisposable;
 

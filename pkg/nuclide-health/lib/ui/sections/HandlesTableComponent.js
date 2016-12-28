@@ -23,7 +23,6 @@ type Props<T> = {
 
 export default class HandlesTableComponent<T: Object>
   extends React.Component<void, Props<T>, void> {
-
   props: Props<T>;
 
   previousHandleSummaries: Object;
@@ -87,5 +86,4 @@ export default class HandlesTableComponent<T: Object>
     this.previousHandleSummaries = handleSummaries;
     return component;
   }
-
 }

@@ -60,5 +60,4 @@ export default class DebuggerInspector extends React.PureComponent {
   _handleClickDevTools() {
     this.props.openDevTools();
   }
-
 }

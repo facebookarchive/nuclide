@@ -30,7 +30,6 @@ function getValidProjectPaths(): Array<string> {
 }
 
 class ProjectManager {
-
   _emitter: Emitter;
   _projectPaths: Set<string>;
 

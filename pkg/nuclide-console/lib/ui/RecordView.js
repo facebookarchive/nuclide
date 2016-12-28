@@ -101,7 +101,6 @@ export default class RecordView extends React.Component {
       </div>
     );
   }
-
 }
 
 function getComponent(type: ?string): ReactClass<any> {

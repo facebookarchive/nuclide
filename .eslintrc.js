@@ -242,7 +242,7 @@ module.exports = {
     'one-var': [1, 'never'],
     'operator-assignment': 1,
     'operator-linebreak': 0,
-    'padded-blocks': [1, 'never'],
+    'padded-blocks': [1, {blocks: 'never', classes: 'never', switches: 'never'}],
     'quote-props': [1, 'consistent-as-needed'],
     'quotes': [1, 'single', 'avoid-escape'],
     'require-jsdoc': 0,

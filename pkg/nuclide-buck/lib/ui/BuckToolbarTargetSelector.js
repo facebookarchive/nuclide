@@ -122,5 +122,4 @@ export default class BuckToolbarTargetSelector extends React.Component {
       />
     );
   }
-
 }

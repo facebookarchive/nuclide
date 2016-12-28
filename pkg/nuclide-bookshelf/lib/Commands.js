@@ -55,5 +55,4 @@ export class Commands {
       type: ActionType.RESTORE_PANE_ITEM_STATE,
     });
   }
-
 }

@@ -37,7 +37,6 @@ function limitString(str: string, length?: number = 20): string {
 }
 
 class Activation {
-
   _controller: ?TestRunnerController;
   _disposables: CompositeDisposable;
   _testRunners: Set<TestRunner>;
@@ -250,7 +249,6 @@ class Activation {
       ),
     );
   }
-
 }
 
 let activation: ?Activation;

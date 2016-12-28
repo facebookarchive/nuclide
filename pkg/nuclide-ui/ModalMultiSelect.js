@@ -154,7 +154,6 @@ export class ModalMultiSelect extends React.Component {
       </Modal>
     );
   }
-
 }
 
 type LabelComponentProps = {

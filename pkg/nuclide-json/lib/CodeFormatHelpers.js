@@ -11,7 +11,6 @@
 import {trackTiming} from '../../nuclide-analytics';
 
 export default class CodeFormatHelpers {
-
   static formatEntireFile(editor: atom$TextEditor, range: atom$Range): Promise<{
     newCursor?: number,
     formatted: string,
@@ -22,5 +21,4 @@ export default class CodeFormatHelpers {
       return Promise.resolve({formatted});
     });
   }
-
 }

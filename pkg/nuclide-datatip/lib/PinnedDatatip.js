@@ -249,5 +249,4 @@ export class PinnedDatatip {
     this._hostElement.remove();
     this._subscriptions.dispose();
   }
-
 }

@@ -432,5 +432,4 @@ export class Combobox extends React.Component {
       </div>
     );
   }
-
 }

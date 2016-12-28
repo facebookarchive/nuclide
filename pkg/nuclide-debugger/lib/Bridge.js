@@ -465,5 +465,4 @@ export default class Bridge {
     }
     this._webview.openDevTools();
   }
-
 }

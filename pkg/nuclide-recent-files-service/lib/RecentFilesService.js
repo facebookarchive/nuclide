@@ -66,7 +66,6 @@ class RecentFilesService {
   dispose() {
     this._subscriptions.dispose();
   }
-
 }
 
 module.exports = RecentFilesService;

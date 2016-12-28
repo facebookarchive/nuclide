@@ -253,7 +253,6 @@ export class LogTailer {
   getMessages(): Observable<Message> {
     return this._messages;
   }
-
 }
 
 class ProcessCancelledError extends Error {

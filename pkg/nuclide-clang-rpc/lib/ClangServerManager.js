@@ -43,7 +43,6 @@ async function augmentDefaultFlags(src: string, flags: Array<string>): Promise<A
 }
 
 export default class ClangServerManager {
-
   _flagsManager: ClangFlagsManager;
   _servers: LRUCache<string, ClangServer>;
   _checkMemoryUsage: () => Promise<void>;
@@ -180,5 +179,4 @@ export default class ClangServerManager {
       toDispose.forEach(key => this._servers.del(key));
     }
   }
-
 }

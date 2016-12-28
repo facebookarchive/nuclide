@@ -123,5 +123,4 @@ export default class BuckToolbarSettings extends React.Component {
       );
     }
   }
-
 }

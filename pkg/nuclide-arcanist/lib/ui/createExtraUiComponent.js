@@ -23,12 +23,10 @@ export function createExtraUiComponent(
   model: ArcToolbarModel,
 ): ReactClass<any> {
   return class ExtraUi extends React.Component {
-
     render(): React.Element<any> {
       return (
         <ArcToolbarSection model={model} />
       );
     }
-
   };
 }

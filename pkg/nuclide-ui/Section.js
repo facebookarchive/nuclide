@@ -38,7 +38,6 @@ type State = {
  * (defaults to false)
  */
 export class Section extends React.Component {
-
   props: Props;
   state: State;
 

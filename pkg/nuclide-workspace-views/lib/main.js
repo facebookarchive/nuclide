@@ -117,7 +117,6 @@ class Activation {
       },
     };
   }
-
 }
 
 function createPackageStore(rawState: Object): Store {

@@ -76,7 +76,6 @@ export class DebuggerHandler extends Handler {
 
   async handleMethod(id: number, method: string, params: Object): Promise<any> {
     switch (method) {
-
       // TODO: Add Console (aka logging) support
       case 'enable':
         this._debuggerEnable(id);

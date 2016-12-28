@@ -265,7 +265,6 @@ export class ConsoleContainer extends React.Component {
       };
     }
   }
-
 }
 
 function getSources(state: AppState): Array<Source> {

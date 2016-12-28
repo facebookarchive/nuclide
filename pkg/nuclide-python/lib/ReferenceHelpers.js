@@ -19,7 +19,6 @@ import nuclideUri from '../../commons-node/nuclideUri';
 import {Range, Point} from 'simple-text-buffer';
 
 export default class ReferenceHelpers {
-
   static getReferences(
     editor: TextEditor,
     position: atom$Point,
@@ -87,5 +86,4 @@ export default class ReferenceHelpers {
       references,
     };
   }
-
 }

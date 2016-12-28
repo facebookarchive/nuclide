@@ -48,7 +48,6 @@ type State = {
  * resizeable, dockable, etc.
  */
 export class PanelComponent extends React.Component {
-
   _animationFrameRequestSubscription: ?rxjs$Subscription;
   _resizeSubscriptions: ?CompositeDisposable;
 

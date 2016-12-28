@@ -36,5 +36,4 @@ export class SimpleModel<State: {}> {
     };
     this._states.next(nextState);
   }
-
 }

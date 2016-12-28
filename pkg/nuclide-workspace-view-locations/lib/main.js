@@ -97,7 +97,6 @@ class Activation {
       toggle: () => { this._toggleVisibility(id); },
     }));
   }
-
 }
 
 export default createPackage(Activation);

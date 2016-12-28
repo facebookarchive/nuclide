@@ -231,7 +231,6 @@ class Activation {
       priority: 2.5, // Between diff view and test runner
     };
   }
-
 }
 
 export default createPackage(Activation);

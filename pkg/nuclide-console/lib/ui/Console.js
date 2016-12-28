@@ -204,5 +204,4 @@ export default class Console extends React.Component {
     this._scrollPane.scrollTop = this._scrollPane.scrollHeight;
     this.setState({unseenMessages: false});
   }
-
 }

@@ -38,7 +38,6 @@ StatusMessage[Status.FATAL] = `${Ansi.RED}(FATAL)${Ansi.RESET}`;
 StatusMessage[Status.TIMEOUT] = `${Ansi.BLUE}(TIMEOUT)${Ansi.RESET}`;
 
 class TestRunModel {
-
   static Status: {[key: string]: TestRunStatus} = Status;
 
   startTime: ?number;

@@ -23,7 +23,6 @@ export const TASKS: Array<TaskMetadata> = [];
  * e.g. HHVM Debugger
  */
 export class ArcToolbarModel {
-
   _cwdApi: ?CwdApi;
   _outputMessages: Subject<Message>;
 
@@ -98,5 +97,4 @@ export class ArcToolbarModel {
   viewDeactivated(): void {
     throw new Error('arc build not supported');
   }
-
 }

@@ -40,5 +40,4 @@ export default class Activation {
   consumeCwdApi(api: CwdApi): void {
     return this._packagerActivation.consumeCwdApi(api);
   }
-
 }

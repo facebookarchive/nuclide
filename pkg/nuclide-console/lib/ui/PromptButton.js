@@ -61,5 +61,4 @@ export default class PromptButton extends React.Component {
     });
     menu.popup(currentWindow, event.clientX, event.clientY);
   }
-
 }

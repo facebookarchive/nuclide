@@ -15,7 +15,6 @@ import {React} from 'react-for-atom';
 export const WORKSPACE_VIEW_URI_B = 'atom://nuclide/sample-workspace-views-example-b';
 
 export class ExampleGadgetB extends React.Component {
-
   getTitle(): string {
     return 'Example Gadget B';
   }
@@ -43,5 +42,4 @@ export class ExampleGadgetB extends React.Component {
   serialize(): Object {
     return {deserializer: 'ExampleGadgetB'};
   }
-
 }

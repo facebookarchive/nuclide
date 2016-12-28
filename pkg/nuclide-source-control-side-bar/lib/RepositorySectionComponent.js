@@ -268,5 +268,4 @@ export default class RepositorySectionComponent extends React.Component {
       </li>
     );
   }
-
 }

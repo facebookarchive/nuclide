@@ -19,7 +19,6 @@ import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 const MAX_LINES = 10;
 
 export default class TypeHintProvider {
-
   typeHint(editor: atom$TextEditor, position: atom$Point): Promise<?TypeHint> {
     return trackTiming('nuclide-ocaml.typeHint', async () => {
       const path = editor.getPath();
@@ -48,5 +47,4 @@ export default class TypeHintProvider {
       };
     });
   }
-
 }

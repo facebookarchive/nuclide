@@ -89,7 +89,6 @@ function findShownNode(node: FileTreeNode): ?FileTreeNode {
 }
 
 export class RangeUtil {
-
   /**
    * Returns the current node if it is shown and selected
    * Otherwise, returns a nearby selected node.

@@ -11,7 +11,6 @@
 import {ShellMessageManager} from './ShellMessageManager';
 
 export class ShellActivation {
-
   _shellManager: ?ShellMessageManager;
 
   constructor() {
@@ -38,5 +37,4 @@ export class ShellActivation {
     };
     this._shellManager.send(message);
   }
-
 }

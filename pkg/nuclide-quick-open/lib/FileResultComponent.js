@@ -35,7 +35,6 @@ function renderMatchedSubsequence(seq: string, key: Key): ?React.Element<any> {
 }
 
 class FileResultComponent {
-
   static getComponentForItem(
     item: FileResult,
     serviceName: string,

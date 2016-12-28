@@ -49,7 +49,6 @@ function isEqualRevisions(
 }
 
 export default class RevisionsCache {
-
   _hgService: HgService;
   _revisions: BehaviorSubject<Array<RevisionInfo>>;
   _lazyRevisionFetcher: Observable<Array<RevisionInfo>>;
@@ -102,5 +101,4 @@ export default class RevisionsCache {
     return this._lazyRevisionFetcher
       .startWith(this.getCachedRevisions());
   }
-
 }

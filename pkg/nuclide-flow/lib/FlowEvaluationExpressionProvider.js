@@ -14,7 +14,6 @@ import {wordAtPosition} from '../../commons-atom/range';
 import {JAVASCRIPT_IDENTIFIER_REGEX} from './constants';
 
 export class FlowEvaluationExpressionProvider {
-
   getEvaluationExpression(
     editor: atom$TextEditor,
     position: atom$Point,

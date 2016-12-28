@@ -31,7 +31,6 @@ type DiagnosticCount = {
 const STATUS_BAR_PRIORITY = -99.5;
 
 class StatusBarTile {
-
   _diagnosticUpdaters: Map<ObservableDiagnosticUpdater, DiagnosticCount>;
   _totalDiagnosticCount: DiagnosticCount;
   _subscriptions: UniversalDisposable;

@@ -212,7 +212,6 @@ class FindReferencesModel {
       refGroups,
     };
   }
-
 }
 
 module.exports = FindReferencesModel;

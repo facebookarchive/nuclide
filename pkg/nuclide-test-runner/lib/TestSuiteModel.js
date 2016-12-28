@@ -11,7 +11,6 @@
 import type {TestClassSummary, TestRunInfo} from './types';
 
 class TestSuiteModel {
-
   testClasses: Map<number, TestClassSummary>;
   testRuns: Map<number, TestRunInfo>;
 
@@ -39,7 +38,6 @@ class TestSuiteModel {
       return this.testRuns.size / this.testClasses.size * 100;
     }
   }
-
 }
 
 module.exports = TestSuiteModel;

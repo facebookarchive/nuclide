@@ -107,5 +107,4 @@ export class MercurialConflictDetector {
     }
     this._repositorySubscriptions.clear();
   }
-
 }

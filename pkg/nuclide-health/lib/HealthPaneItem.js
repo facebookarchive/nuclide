@@ -90,5 +90,4 @@ export default class HealthPaneItem extends React.Component {
       </div>
     );
   }
-
 }

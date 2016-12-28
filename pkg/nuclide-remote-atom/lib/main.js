@@ -82,7 +82,6 @@ class Activation {
   dispose(): void {
     this._disposables.dispose();
   }
-
 }
 
 function openFile(

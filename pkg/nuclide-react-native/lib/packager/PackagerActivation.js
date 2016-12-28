@@ -120,7 +120,6 @@ export class PackagerActivation {
       }),
     );
   }
-
 }
 
 class NoReactNativeProjectError extends Error {

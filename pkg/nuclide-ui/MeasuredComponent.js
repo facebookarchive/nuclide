@@ -24,7 +24,6 @@ type Props = {
  * when the MeasuredComponent has mounted.
  */
 export class MeasuredComponent extends React.Component {
-
   props: Props;
   // Listens to the container DOM node for mutations
   _mutationObserverSubscription: rxjs$ISubscription;

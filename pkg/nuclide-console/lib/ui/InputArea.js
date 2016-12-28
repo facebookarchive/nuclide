@@ -125,5 +125,4 @@ export default class OutputTable extends React.Component {
       </div>
     );
   }
-
 }

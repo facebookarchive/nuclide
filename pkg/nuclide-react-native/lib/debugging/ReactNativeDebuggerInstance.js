@@ -79,7 +79,6 @@ export class ReactNativeDebuggerInstance extends DebuggerInstanceBase {
     // TODO(natthu): Assign random port instead.
     return `ws=localhost:${PORT}/`;
   }
-
 }
 
 /**

@@ -43,7 +43,6 @@ async function getServerArgs(src: string) {
 }
 
 export default class JediServerManager {
-
   // Cache the promises of additional paths to ensure that we never trigger two
   // calls for the same file name from external calls to getLinkTreePaths and
   // getTopLevelModulePath.
@@ -140,5 +139,4 @@ export default class JediServerManager {
     this._servers.reset();
     this._linkTreeManager.dispose();
   }
-
 }

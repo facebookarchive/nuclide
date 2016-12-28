@@ -22,7 +22,6 @@ import {observeTextEditors} from '../../commons-atom/text-editor';
 import {MultiMap} from '../../commons-node/collection';
 
 export class MarkerTracker {
-
   /**
    * Stores all current FileDiagnosticMessages, indexed by file. Includes those for files that are
    * not open.

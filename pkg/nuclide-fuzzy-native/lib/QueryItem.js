@@ -182,5 +182,4 @@ export default class QueryItem {
     }
     return null;
   }
-
 }

@@ -23,7 +23,6 @@ const logger = getLogger();
 
 /* Mostly implements https://atom.io/docs/api/latest/File */
 export class RemoteFile {
-
   _deleted: boolean;
   _emitter: Emitter;
   _encoding: ?string;

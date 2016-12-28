@@ -60,7 +60,6 @@ class FindAndReplaceProvider {
       this.name + ':' + command,
     );
   }
-
 }
 
 class ToolBarProvider {

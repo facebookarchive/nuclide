@@ -11,7 +11,6 @@
 import {CompositeDisposable} from 'atom';
 
 export default class SyncScroll {
-
   _subscriptions: CompositeDisposable;
   _syncInfo: Array<{
     scrollElement: atom$TextEditorElement,

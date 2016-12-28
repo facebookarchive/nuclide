@@ -22,7 +22,6 @@ const PROVIDER_ID: string = 'nuclide-definition-preview';
 const PROVIDER_TITLE: string = 'Definition Preview';
 
 class Activation {
-
   provider: ContextProvider;
   contextViewRegistration: ?IDisposable;
 

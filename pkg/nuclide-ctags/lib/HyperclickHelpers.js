@@ -39,7 +39,6 @@ function commonPrefixLength(a: string, b: string): number {
 }
 
 export default class HyperclickHelpers {
-
   static async getSuggestionForWord(
     textEditor: atom$TextEditor,
     text: string,
@@ -108,5 +107,4 @@ export default class HyperclickHelpers {
       ctagsService.dispose();
     }
   }
-
 }

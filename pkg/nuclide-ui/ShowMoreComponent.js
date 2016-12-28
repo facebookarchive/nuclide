@@ -30,7 +30,6 @@ type State = {
  * and expand the component to full height.
  */
 export class ShowMoreComponent extends React.Component {
-
   props: Props;
   state: State;
 

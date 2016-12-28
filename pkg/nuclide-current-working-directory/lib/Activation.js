@@ -66,5 +66,4 @@ export class Activation {
 
     this._cwdApi.setCwd(projectRoot);
   }
-
 }

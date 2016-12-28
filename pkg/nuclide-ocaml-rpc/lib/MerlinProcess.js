@@ -130,7 +130,6 @@ class MerlinProcessBase {
  *   https://github.com/the-lambda-church/merlin/tree/master/src/frontend
  */
 export class MerlinProcessV2_3_1 extends MerlinProcessBase {
-
   constructor(proc: child_process$ChildProcess) {
     super(proc);
   }
@@ -248,7 +247,6 @@ export class MerlinProcessV2_3_1 extends MerlinProcessBase {
  *   https://github.com/the-lambda-church/merlin/tree/master/src/frontend
  */
 export class MerlinProcessV2_5 extends MerlinProcessBase {
-
   constructor(proc: child_process$ChildProcess) {
     super(proc);
   }

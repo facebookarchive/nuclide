@@ -96,7 +96,6 @@ export function activate(rawState: Object): void {
 }
 
 class SourceControlSideBar {
-
   constructor() {
     track('scsidebar-show');
   }
@@ -134,7 +133,6 @@ class SourceControlSideBar {
       deserializer: 'nuclide.SourceControlSideBar',
     };
   }
-
 }
 
 export function deserializeSourceControlSideBar(state: mixed): ?SourceControlSideBar {

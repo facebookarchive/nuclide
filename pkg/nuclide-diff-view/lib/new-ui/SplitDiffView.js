@@ -355,7 +355,6 @@ function centerScrollToFirstChange(
 }
 
 export default class SplitDiffView {
-
   _disposables: UniversalDisposable;
 
   constructor(states: Observable<AppState>, actionCreators: BoundActionCreators) {

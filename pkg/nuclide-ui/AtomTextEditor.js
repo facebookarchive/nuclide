@@ -259,5 +259,4 @@ export class AtomTextEditor extends React.Component {
   componentWillUnmount(): void {
     this._editorDisposables.dispose();
   }
-
 }

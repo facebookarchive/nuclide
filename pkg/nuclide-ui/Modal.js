@@ -81,5 +81,4 @@ export class Modal extends React.Component {
       </Portal>
     );
   }
-
 }

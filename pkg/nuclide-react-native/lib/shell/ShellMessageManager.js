@@ -38,5 +38,4 @@ export class ShellMessageManager {
       };
     }
   }
-
 }

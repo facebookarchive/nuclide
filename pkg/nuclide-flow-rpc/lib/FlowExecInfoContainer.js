@@ -28,7 +28,6 @@ export type FlowExecInfo = {
 };
 
 export class FlowExecInfoContainer {
-
   // Map from file path to the closest ancestor directory containing a .flowconfig file (the file's
   // Flow root)
   _flowConfigDirCache: ConfigCache;

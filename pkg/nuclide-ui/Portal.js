@@ -57,5 +57,4 @@ export class Portal extends React.Component {
     // Don't actually render anything here.
     return null;
   }
-
 }

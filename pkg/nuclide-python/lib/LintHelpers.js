@@ -17,7 +17,6 @@ import {getDiagnosticRange} from './diagnostic-range';
 import {getEnableLinting, getLintExtensionBlacklist} from './config';
 
 export default class LintHelpers {
-
   static lint(editor: TextEditor): Promise<Array<LinterMessage>> {
     const src = editor.getPath();
     if (src == null || !getEnableLinting() ||
@@ -37,5 +36,4 @@ export default class LintHelpers {
       }));
     });
   }
-
 }

@@ -171,7 +171,6 @@ class Activation {
     }
     return this._statusBarTile;
   }
-
 }
 
 function gutterConsumeDiagnosticUpdates(

@@ -24,7 +24,6 @@ type MessageRecord = {
 };
 
 export class DedupedBusySignalProviderBase extends BusySignalProviderBase {
-
   // Invariant: All contained MessageRecords must have a count greater than or equal to one.
   _messageRecords: Map<string, MessageRecord>;
 

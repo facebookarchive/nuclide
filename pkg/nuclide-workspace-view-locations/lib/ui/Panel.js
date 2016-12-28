@@ -51,7 +51,6 @@ export class Panel extends React.Component {
       </div>
     );
   }
-
 }
 
 function getPreferredInitialSize(item: Object, position: Position): ?number {

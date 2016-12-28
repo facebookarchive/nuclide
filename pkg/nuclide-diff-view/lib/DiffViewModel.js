@@ -38,7 +38,6 @@ import {createEmptyAppState} from './redux/createEmptyAppState';
 const DID_UPDATE_STATE_EVENT = 'did-update-state';
 
 export default class DiffViewModel {
-
   _emitter: Emitter;
   _state: AppState;
   _progressUpdates: Subject<Message>;

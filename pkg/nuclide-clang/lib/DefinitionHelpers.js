@@ -22,7 +22,6 @@ import {trackTiming} from '../../nuclide-analytics';
 import {GRAMMAR_SET, IDENTIFIER_REGEXP} from './constants';
 
 export default class DefinitionHelpers {
-
   static getDefinition(
     editor: TextEditor,
     position: atom$Point,

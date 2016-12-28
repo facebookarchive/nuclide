@@ -11,7 +11,6 @@
 import type Immutable from 'immutable';
 
 export class LazyTreeNode {
-
   // Protected
   __isContainer: boolean;
   __item: any;
@@ -121,5 +120,4 @@ export class LazyTreeNode {
   invalidateCache(): void {
     this._isCacheValid = false;
   }
-
 }

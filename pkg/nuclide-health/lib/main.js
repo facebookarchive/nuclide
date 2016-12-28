@@ -168,7 +168,6 @@ class Activation {
     });
     track('nuclide-health', aggregateStats);
   }
-
 }
 
 function aggregate(

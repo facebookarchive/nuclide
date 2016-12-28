@@ -157,5 +157,4 @@ export default class HomePaneItem extends React.Component {
       this._disposables.dispose();
     }
   }
-
 }

@@ -121,7 +121,6 @@ export class DebugUiComponent extends React.Component {
   _handleCancelButtonClick(): void {
     callWorkspaceCommand('nuclide-debugger:toggle-launch-attach');
   }
-
 }
 
 function callWorkspaceCommand(command: string): void {

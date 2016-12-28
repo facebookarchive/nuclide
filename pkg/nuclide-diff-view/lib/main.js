@@ -180,7 +180,6 @@ function addActivePathCommands(
 }
 
 class Activation {
-
   _subscriptions: UniversalDisposable;
   _diffViewModel: ?DiffViewModel;
   _tryTriggerNuxService: ?TriggerNux;

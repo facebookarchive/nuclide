@@ -12,7 +12,6 @@ import {trackTiming} from '../../nuclide-analytics';
 import {getPythonServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 export default class CodeFormatHelpers {
-
   static formatEntireFile(editor: atom$TextEditor, range: atom$Range): Promise<{
     newCursor?: number,
     formatted: string,
@@ -37,5 +36,4 @@ export default class CodeFormatHelpers {
       return {formatted};
     });
   }
-
 }

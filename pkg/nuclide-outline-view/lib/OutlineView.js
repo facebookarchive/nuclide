@@ -135,7 +135,6 @@ class OutlineViewComponent extends React.Component {
         );
     }
   }
-
 }
 
 function renderTree(

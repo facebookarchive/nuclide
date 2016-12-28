@@ -57,7 +57,6 @@ export default class PanelRenderer {
       this._panel.destroy();
     }
   }
-
 }
 
 function addPanel(location: PanelLocation, options: atom$WorkspaceAddPanelOptions): atom$Panel {

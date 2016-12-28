@@ -341,7 +341,6 @@ class Activation {
   _getCommands() {
     return this._actionCreators;
   }
-
 }
 
 export default createPackage(Activation);

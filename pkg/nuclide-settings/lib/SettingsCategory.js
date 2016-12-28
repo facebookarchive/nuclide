@@ -58,7 +58,6 @@ export default class SettingsCategory extends React.Component {
       </section>
     );
   }
-
 }
 
 function ControlGroup(props: {children?: React.Children}): React.Element<any> {

@@ -19,7 +19,6 @@ import invariant from 'assert';
 import {Directory} from 'atom';
 
 export class MercurialConflictContext {
-
   /**
    * The mercurial repository in a conflict state.
    * This would be `null` all the time except the timeframe in which one of the

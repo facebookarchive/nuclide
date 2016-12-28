@@ -151,7 +151,6 @@ export class MultiSelectList extends React.Component {
       );
     });
   }
-
 }
 
 export type OptionComponentProps = {

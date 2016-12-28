@@ -204,7 +204,6 @@ function getCompletionPrefix(editor: atom$TextEditor): string {
 }
 
 export default class AutocompleteHelpers {
-
   static getAutocompleteSuggestions(
     request: atom$AutocompleteRequest,
   ): Promise<Array<atom$AutocompleteSuggestion>> {
@@ -276,7 +275,6 @@ export default class AutocompleteHelpers {
       };
     });
   }
-
 }
 
 export const __test__ = {

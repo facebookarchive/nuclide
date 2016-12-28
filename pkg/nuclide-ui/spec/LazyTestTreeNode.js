@@ -11,7 +11,6 @@
 import {LazyTreeNode} from '../LazyTreeNode';
 
 export class LazyTestTreeNode extends LazyTreeNode {
-
   constructor(
       item: any,
       parent: ?LazyTreeNode,
@@ -25,5 +24,4 @@ export class LazyTestTreeNode extends LazyTreeNode {
   getLabel(): string {
     return this.__item.label;
   }
-
 }

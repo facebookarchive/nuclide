@@ -561,7 +561,6 @@ class FileTreeActions {
     this.invalidateRemovedFolder();
     disposable.dispose();
   }
-
 }
 
 module.exports = FileTreeActions;

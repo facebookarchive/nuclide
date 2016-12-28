@@ -45,7 +45,6 @@ export class ProgressBar extends React.Component {
     invariant(this.props.progress != null);
     return <Bar progress={this.props.progress} />;
   }
-
 }
 
 type BarProps = {

@@ -531,7 +531,6 @@ class SearchResultManager {
     tabs.unshift(OMNISEARCH_PROVIDER);
     return tabs;
   }
-
 }
 
 export default SearchResultManager;

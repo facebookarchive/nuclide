@@ -23,7 +23,6 @@ import {trackTiming} from '../../nuclide-analytics';
 import {GRAMMAR_SET} from './constants';
 
 export default class DefinitionHelpers {
-
   static getDefinition(
     editor: TextEditor,
     position: atom$Point,

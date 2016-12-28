@@ -27,7 +27,6 @@ type Props = {
 };
 
 export default class UncommittedChangesTimelineNode extends React.Component {
-
   props: Props;
 
   constructor(props: Props) {

@@ -15,7 +15,6 @@ import {observeTextEditors} from '../../commons-atom/text-editor';
 import {getFormatOnSave} from './config';
 
 export default class CodeFormatManager {
-
   _subscriptions: ?CompositeDisposable;
   _codeFormatProviders: Array<CodeFormatProvider>;
   _pendingFormats: Map<atom$TextEditor, boolean>;

@@ -50,7 +50,6 @@ function getText(
 }
 
 export default class AutocompleteHelpers {
-
   static getAutocompleteSuggestions(
     request: atom$AutocompleteRequest,
   ): Promise<Array<atom$AutocompleteSuggestion>> {
@@ -112,5 +111,4 @@ export default class AutocompleteHelpers {
       };
     });
   }
-
 }

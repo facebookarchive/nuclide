@@ -85,5 +85,4 @@ export class ProjectSelection extends React.Component {
   runCommand(command: string): void {
     atom.commands.dispatch(atom.views.getView(atom.workspace), command);
   }
-
 }

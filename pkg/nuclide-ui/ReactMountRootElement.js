@@ -31,7 +31,6 @@ class ReactMountRootElement extends HTMLElement {
     if (this._reactElement == null) { return; }
     ReactDOM.unmountComponentAtNode(this);
   }
-
 }
 
 export default document.registerElement('nuclide-react-mount-root', {

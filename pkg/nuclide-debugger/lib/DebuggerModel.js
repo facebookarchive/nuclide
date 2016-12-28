@@ -160,5 +160,4 @@ export default class DebuggerModel {
   getPreferredInitialWidth(): number {
     return 500;
   }
-
 }

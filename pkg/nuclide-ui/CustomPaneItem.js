@@ -16,7 +16,6 @@ import {React, ReactDOM} from 'react-for-atom';
 import type {CustomPaneItemOptions} from './types';
 
 export class CustomPaneItem extends HTMLElement {
-
   _title: ?string;
   _iconName: ?string;
   _uri: ?string;

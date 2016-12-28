@@ -16,7 +16,6 @@ import type {SshConnectionConfiguration, SshHandshakeErrorType} from './SshHands
 const CONNECTION_EVENT = 'nuclide-remote-connection';
 
 export default class ConnectionTracker {
-
   _config: SshConnectionConfiguration;
   _connectionStartTime: number;
   _promptYubikeyTime: number;

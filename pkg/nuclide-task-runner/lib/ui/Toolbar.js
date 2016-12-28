@@ -101,7 +101,6 @@ export class Toolbar extends React.Component {
       </div>
     );
   }
-
 }
 
 function Placeholder(): React.Element<any> {

@@ -48,7 +48,6 @@ function getRangeFromPoint(
 }
 
 export default class ClangLinter {
-
   static lint(
     textEditor: atom$TextEditor,
   ): Promise<Array<LinterMessage>> {
@@ -158,5 +157,4 @@ export default class ClangLinter {
 
     return result;
   }
-
 }

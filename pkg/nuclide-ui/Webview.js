@@ -89,5 +89,4 @@ export class Webview extends React.Component<void, Props, void> {
       this.props.onDidFinishLoad(event);
     }
   }
-
 }

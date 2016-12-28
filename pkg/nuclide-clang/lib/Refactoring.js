@@ -31,7 +31,6 @@ async function checkDiagnostics(editor: atom$TextEditor): Promise<boolean> {
 }
 
 export default class RefactoringHelpers {
-
   static refactoringsAtPoint(
     editor: atom$TextEditor,
     point: atom$Point,
@@ -99,5 +98,4 @@ export default class RefactoringHelpers {
       edits: new Map([[path, edits]]),
     };
   }
-
 }

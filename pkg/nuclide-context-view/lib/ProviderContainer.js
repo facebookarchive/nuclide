@@ -25,7 +25,6 @@ type State = {
  * Each context provider view is rendered inside a ProviderContainer.
  */
 export class ProviderContainer extends React.Component {
-
   props: Props;
   state: State;
 

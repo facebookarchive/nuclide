@@ -70,7 +70,6 @@ export class CwdApi {
   getCwd(): ?Directory {
     return getDirectory(this._cwdPath$.getValue()) || getDirectory(this._getDefaultCwdPath());
   }
-
 }
 
 function getDirectory(path: ?string): ?Directory {

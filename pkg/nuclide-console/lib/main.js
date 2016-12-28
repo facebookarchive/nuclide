@@ -169,7 +169,6 @@ class Activation {
       records: this._store.getState().records,
     };
   }
-
 }
 
 function deserializeAppState(rawState: ?Object): AppState {

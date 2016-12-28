@@ -16,7 +16,6 @@ import {React} from 'react-for-atom';
 import type EmitterEvent from 'events';
 
 export class ReactNativeLaunchAttachProvider extends DebuggerLaunchAttachProvider {
-
   getActions(): Promise<Array<string>> {
     return Promise.resolve(['Attach']);
   }

@@ -14,7 +14,6 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 // This class is meant to be stubbed out.
 export default class MockHgService {
-
   waitForWatchmanSubscriptions(): Promise<void> {
     return Promise.resolve();
   }

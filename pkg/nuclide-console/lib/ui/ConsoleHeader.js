@@ -158,7 +158,6 @@ export default class ConsoleHeader extends React.Component {
       </Toolbar>
     );
   }
-
 }
 
 function sortAlpha(a: string, b: string): number {

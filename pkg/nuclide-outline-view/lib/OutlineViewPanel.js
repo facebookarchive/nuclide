@@ -63,5 +63,4 @@ export class OutlineViewPanelState {
       deserializer: 'nuclide.OutlineViewPanelState',
     };
   }
-
 }

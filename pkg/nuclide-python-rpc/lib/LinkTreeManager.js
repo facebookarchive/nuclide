@@ -19,7 +19,6 @@ const LINK_TREE_SUFFIXES = {
 };
 
 export default class LinkTreeManager {
-
   _getBuckTargetForDir(dirPath: string) {
     return `//${dirPath}:`;
   }
@@ -100,5 +99,4 @@ export default class LinkTreeManager {
 
   dispose() {
   }
-
 }

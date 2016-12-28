@@ -514,7 +514,6 @@ export class BuckBuildSystem {
         }),
     );
   }
-
 }
 
 // Make sure that TaskType reflects the types listed below.
