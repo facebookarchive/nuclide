@@ -143,6 +143,7 @@
     "language-thrift",
     "merge-conflicts",
     "nuclide-format-js",
+    "set-syntax",
     "sort-lines"
   ]
 }
