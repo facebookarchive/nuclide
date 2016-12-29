@@ -14,12 +14,13 @@ import type {FileResult} from './rpc-types';
 import {React} from 'react-for-atom';
 
 export type ProviderSpec = {
-  action?: string,
-  debounceDelay?: number,
+  action: string,
+  canOpenAll: boolean,
+  debounceDelay: number,
   name: string,
-  prompt?: string,
+  prompt: string,
   title: string,
-  priority?: number,
+  priority: number,
 };
 
 export type Store = {
@@ -37,6 +38,7 @@ export type Provider = {
 
   getPromptText?: () => string,
   getAction?: () => string,
+  getCanOpenAll?: () => boolean,
   getDebounceDelay?: () => number,
   isEligibleForDirectory?: (directory: atom$Directory) => Promise<boolean>,
   getComponentForItem?: (item: FileResult) => React.Element<any>,

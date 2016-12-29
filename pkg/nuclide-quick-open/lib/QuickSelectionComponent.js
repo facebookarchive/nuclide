@@ -776,7 +776,6 @@ export default class QuickSelectionComponent extends React.Component {
       hasSearchResult = true;
     }
     const currentProvider = this.getProvider();
-    const promptText = (currentProvider && currentProvider.prompt) || '';
     let omniSearchStatus = null;
     if (isOmniSearchActive && numQueriesOutstanding > 0) {
       omniSearchStatus = (
@@ -786,6 +785,7 @@ export default class QuickSelectionComponent extends React.Component {
         </span>
       );
     }
+    const disableOpenAll = !hasSearchResult || !currentProvider.canOpenAll;
     return (
       <div
         className="select-list omnisearch-modal"
@@ -795,12 +795,12 @@ export default class QuickSelectionComponent extends React.Component {
           <AtomInput
             className="omnisearch-pane"
             ref="queryInput"
-            placeholderText={promptText}
+            placeholderText={currentProvider.prompt}
           />
           <Button
             className="omnisearch-open-all"
             onClick={() => this.openAll(filesToOpen)}
-            disabled={!hasSearchResult}>
+            disabled={disableOpenAll}>
             Open All
           </Button>
         </div>

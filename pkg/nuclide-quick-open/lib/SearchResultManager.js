@@ -58,6 +58,7 @@ const DEFAULT_QUERY_DEBOUNCE_DELAY = 200;
 const LOADING_EVENT_DELAY = 200;
 const OMNISEARCH_PROVIDER = {
   action: 'nuclide-quick-open:find-anything-via-omni-search',
+  canOpenAll: false,
   debounceDelay: DEFAULT_QUERY_DEBOUNCE_DELAY,
   name: 'OmniSearchResultProvider',
   prompt: 'Search for anything...',
@@ -496,19 +497,19 @@ class SearchResultManager {
   _bakeProvider(provider: Provider): ProviderSpec {
     const providerName = provider.getName();
     const providerSpec = {
-      action: provider.getAction && provider.getAction() || '',
-      debounceDelay: (typeof provider.getDebounceDelay === 'function')
+      action: provider.getAction ? provider.getAction() : '',
+      canOpenAll: provider.getCanOpenAll ? provider.getCanOpenAll() : true,
+      debounceDelay: provider.getDebounceDelay
         ? provider.getDebounceDelay()
         : DEFAULT_QUERY_DEBOUNCE_DELAY,
       name: providerName,
       prompt: provider.getPromptText && provider.getPromptText() ||
         'Search ' + providerName,
       title: provider.getTabTitle && provider.getTabTitle() || providerName,
+      priority: provider.getPriority
+        ? provider.getPriority()
+        : Number.POSITIVE_INFINITY,
     };
-    // $FlowIssue priority property is optional
-    providerSpec.priority = typeof provider.getPriority === 'function'
-      ? provider.getPriority()
-      : Number.POSITIVE_INFINITY;
     return providerSpec;
   }
 

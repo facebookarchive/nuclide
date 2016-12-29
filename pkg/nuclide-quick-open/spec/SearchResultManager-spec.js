@@ -8,7 +8,7 @@
  * @flow
  */
 
-import type {Provider} from '../lib/types';
+import type {Provider, ProviderSpec} from '../lib/types';
 
 import nuclideUri from '../../commons-node/nuclideUri';
 
@@ -20,16 +20,18 @@ const PROJECT_ROOT1 = nuclideUri.join(__dirname, 'fixtures/root1');
 const PROJECT_ROOT2 = nuclideUri.join(__dirname, 'fixtures/root2');
 const PROJECT_ROOT3 = nuclideUri.join(__dirname, 'fixtures/root3');
 
-const FakeProvider = {
+const FakeProvider: Provider = {
   getProviderType: () => 'GLOBAL',
   getName: () => 'FakeProvider',
+  getCanOpenAll: () => false,
   isRenderable: () => true,
   getTabTitle: () => 'Nothing to see here',
   executeQuery: query => Promise.resolve([]),
 };
 
-const FakeProviderSpec = {
+const FakeProviderSpec: ProviderSpec = {
   action: '',
+  canOpenAll: false,
   debounceDelay: 200,
   name: 'FakeProvider',
   prompt: 'Search FakeProvider',

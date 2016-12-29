@@ -62,6 +62,14 @@ const ExampleProvider: Provider = {
   },
 
   /**
+   * Optional: return whether the "Open All" button is allowed for this provider.
+   * Default: true.
+   */
+  getCanOpenAll(): boolean {
+    return false;
+  },
+
+  /**
    * Optional: return a specific delay (in ms) used to debounce queries to this provider.
    * Default: 200ms. Useful for e.g. reducing the delay for cheap queries (e.g. opened files).
    */
