@@ -24,6 +24,7 @@ import {
   concatIterators,
   areSetsEqual,
   someOfIterable,
+  findInIterable,
   filterIterable,
   mapEqual,
   mapIterable,
@@ -348,6 +349,27 @@ describe('someOfIterable', () => {
       [],
       element => true,
     )).toEqual(false);
+  });
+});
+
+describe('findInIterable', () => {
+  it('return the first element of an iterable which fulfills a given predicate', () => {
+    expect(findInIterable(
+      new Set([1, 2, 3, 4, 5]),
+      element => element % 2 === 0,
+    )).toEqual(2);
+    expect(findInIterable(
+      new Set([1, 2, 3, 4, 5]),
+      element => element % 5 === 0,
+    )).toEqual(5);
+    expect(findInIterable(
+      new Set([1, 2, 3, 4, 5]),
+      element => element % 6 === 0,
+    )).toEqual(null);
+    expect(findInIterable(
+      [],
+      element => true,
+    )).toEqual(null);
   });
 });
 

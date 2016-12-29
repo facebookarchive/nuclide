@@ -321,6 +321,18 @@ export function someOfIterable<T>(
   return false;
 }
 
+export function findInIterable<T>(
+  iterable: Iterable<T>,
+  predicate: (element: T) => boolean,
+): ?T {
+  for (const element of iterable) {
+    if (predicate(element)) {
+      return element;
+    }
+  }
+  return null;
+}
+
 export function *filterIterable<T>(
   iterable: Iterable<T>,
   predicate: (element: T) => boolean,
