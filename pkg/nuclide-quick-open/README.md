@@ -9,10 +9,6 @@ symbol search or other, arbitrary services depending on which directories are mo
 The primary quick-open UI is invoked via `cmd+t`, which shows a combined list of results from all
 search providers, obtained asynchronously.
 
-# Example
-
-![Tab showing all results](./images/quick-open1.png)
-
 # Usage
 
 The following key bindings are supported:
