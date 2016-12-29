@@ -8,24 +8,30 @@
  * @flow
  */
 
-import QuickSelectionDispatcher, {ActionTypes} from './QuickSelectionDispatcher';
+import type QuickSelectionDispatcher from './QuickSelectionDispatcher';
 
-export default {
+import {ActionTypes} from './QuickSelectionDispatcher';
+
+export default class QuickSelectionActions {
+  _dispatcher: QuickSelectionDispatcher;
+
+  constructor(dispatcher: QuickSelectionDispatcher) {
+    this._dispatcher = dispatcher;
+  }
 
   query(query: string): void {
-    QuickSelectionDispatcher.getInstance().dispatch({
+    this._dispatcher.dispatch({
       actionType: ActionTypes.QUERY,
       query,
     });
-  },
+  }
 
   changeActiveProvider(providerName: string): void {
     setImmediate(() => {
-      QuickSelectionDispatcher.getInstance().dispatch({
+      this._dispatcher.dispatch({
         actionType: ActionTypes.ACTIVE_PROVIDER_CHANGED,
         providerName,
       });
     });
-  },
-
-};
+  }
+}

@@ -17,6 +17,8 @@ import type {
 import type {
   FileResult,
 } from './rpc-types';
+import type QuickSelectionDispatcher from './QuickSelectionDispatcher';
+import type QuickSelectionActions from './QuickSelectionActions';
 
 type ResultRenderer =
   (item: FileResult, serviceName: string, dirName: string) => React.Element<any>;
@@ -32,8 +34,7 @@ import {
 } from 'atom';
 import {triggerAfterWait} from '../../commons-node/promise';
 import debounce from '../../commons-node/debounce';
-import QuickSelectionDispatcher, {ActionTypes} from './QuickSelectionDispatcher';
-import QuickSelectionActions from './QuickSelectionActions';
+import {ActionTypes} from './QuickSelectionDispatcher';
 import FileResultComponent from './FileResultComponent';
 import ResultCache from './ResultCache';
 
@@ -79,7 +80,6 @@ function isValidProvider(provider): boolean {
   );
 }
 
-let searchResultManagerInstance = null;
 /**
  * A singleton cache for search providers and results.
  */
@@ -87,7 +87,8 @@ class SearchResultManager {
   _dispatcherToken: string;
   RESULTS_CHANGED: string;
   PROVIDERS_CHANGED: string;
-  _dispatcher: QuickSelectionDispatcher;
+  _quickSelectionActions: QuickSelectionActions;
+  _quickSelectionDispatcher: QuickSelectionDispatcher;
   _providersByDirectory: Map<atom$Directory, Set<Provider>>;
   _directories: Array<atom$Directory>;
   _resultCache: ResultCache;
@@ -99,14 +100,10 @@ class SearchResultManager {
   _activeProviderName: string;
   _isDisposed: boolean;
 
-  static getInstance(): SearchResultManager {
-    if (!searchResultManagerInstance) {
-      searchResultManagerInstance = new SearchResultManager();
-    }
-    return searchResultManagerInstance;
-  }
-
-  constructor() {
+  constructor(
+    quickSelectionActions: QuickSelectionActions,
+    quickSelectionDispatcher: QuickSelectionDispatcher,
+  ) {
     this._isDisposed = false;
     this.RESULTS_CHANGED = RESULTS_CHANGED;
     this.PROVIDERS_CHANGED = PROVIDERS_CHANGED;
@@ -130,7 +127,8 @@ class SearchResultManager {
     );
     this._emitter = new Emitter();
     this._subscriptions = new CompositeDisposable();
-    this._dispatcher = QuickSelectionDispatcher.getInstance();
+    this._quickSelectionActions = quickSelectionActions;
+    this._quickSelectionDispatcher = quickSelectionDispatcher;
     // Check is required for testing.
     if (atom.project) {
       this._subscriptions.add(atom.project.onDidChangePaths(
@@ -143,7 +141,7 @@ class SearchResultManager {
   }
 
   _setUpFlux(): void {
-    this._dispatcherToken = this._dispatcher.register(action => {
+    this._dispatcherToken = this._quickSelectionDispatcher.register(action => {
       switch (action.actionType) {
         case ActionTypes.QUERY:
           this.executeQuery(action.query);
@@ -171,6 +169,7 @@ class SearchResultManager {
   dispose(): void {
     this._isDisposed = true;
     this._subscriptions.dispose();
+    this._quickSelectionDispatcher.unregister(this._dispatcherToken);
   }
 
   /**
@@ -307,11 +306,10 @@ class SearchResultManager {
     }));
     // If the provider is renderable and specifies a keybinding, wire it up with the toggle command.
     if (isRenderableProvider && typeof service.getAction === 'function') {
-      const toggleAction: string = service.getAction();
-      // TODO replace with computed property once Flow supports it.
-      const actionSpec = {};
-      actionSpec[toggleAction] =
-        () => QuickSelectionActions.changeActiveProvider(service.getName());
+      const actionSpec = {
+        [service.getAction()]:
+          () => this._quickSelectionActions.changeActiveProvider(service.getName()),
+      };
       disposable.add(atom.commands.add('atom-workspace', actionSpec));
     }
     return disposable;

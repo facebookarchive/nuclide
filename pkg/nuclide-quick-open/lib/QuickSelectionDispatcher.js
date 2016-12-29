@@ -28,13 +28,4 @@ export const ActionTypes = Object.freeze({
 // Flow hack: Every QuickSelectionAction actionType must be in ActionTypes.
 (('': $PropertyType<QuickSelectionAction, 'actionType'>): $Keys<typeof ActionTypes>);
 
-let instance: ?QuickSelectionDispatcher = null;
-
-export default class QuickSelectionDispatcher extends Dispatcher<QuickSelectionAction> {
-  static getInstance(): QuickSelectionDispatcher {
-    if (!instance) {
-      instance = new QuickSelectionDispatcher();
-    }
-    return instance;
-  }
-}
+export default class QuickSelectionDispatcher extends Dispatcher<QuickSelectionAction> {}

@@ -16,6 +16,8 @@ import type {
 } from './types';
 
 import type {Tab} from '../../nuclide-ui/Tabs';
+import type QuickSelectionActions from './QuickSelectionActions';
+import type SearchResultManager from './SearchResultManager';
 
 type ResultContext = {
   nonEmptyResults: GroupedResult,
@@ -41,15 +43,11 @@ import debounce from '../../commons-node/debounce';
 import humanizeKeystroke from '../../commons-node/humanizeKeystroke';
 import {isEmpty} from '../../commons-node/collection';
 import {React, ReactDOM} from 'react-for-atom';
-import SearchResultManager from './SearchResultManager';
 import classnames from 'classnames';
 import {filterEmptyResults} from './searchResultHelpers';
 import nuclideUri from '../../commons-node/nuclideUri';
-import QuickSelectionActions from './QuickSelectionActions';
 
 const RESULTS_CHANGED_DEBOUNCE_DELAY = 50;
-
-const searchResultManager = SearchResultManager.getInstance();
 
 /**
  * Determine what the applicable shortcut for a given action is within this component's context.
@@ -64,23 +62,10 @@ function _findKeybindingForAction(action: string, target: HTMLElement): string {
   return humanizeKeystroke(keystroke);
 }
 
-function sortServiceNames(names: Array<string>): Array<string> {
-  return names.sort((serviceName1, serviceName2) => {
-    const provider1 = searchResultManager.getProviderByName(serviceName1);
-    const provider2 = searchResultManager.getProviderByName(serviceName2);
-    if (
-      provider1.priority == null ||
-      provider2.priority == null ||
-      provider1.priority === provider2.priority
-    ) {
-      return provider1.name.localeCompare(provider2.name);
-    }
-    return provider1.priority - provider2.priority;
-  });
-}
-
 type Props = {
   activeProvider: ProviderSpec,
+  searchResultManager: SearchResultManager,
+  quickSelectionActions: QuickSelectionActions,
   scrollableAreaHeightGap?: number,
   onBlur: () => void,
 };
@@ -102,6 +87,8 @@ export default class QuickSelectionComponent extends React.Component {
 
   _emitter: Emitter;
   _subscriptions: CompositeDisposable;
+  _searchResultManager: SearchResultManager;
+  _quickSelectionActions: QuickSelectionActions;
   _modalNode: HTMLElement;
   _debouncedQueryHandler: () => void;
   _boundSelect: () => void;
@@ -113,11 +100,15 @@ export default class QuickSelectionComponent extends React.Component {
     this._subscriptions = new CompositeDisposable();
     this._boundSelect = () => this.select();
     this._isMounted = false;
+    this._searchResultManager = props.searchResultManager;
+    this._quickSelectionActions = props.quickSelectionActions;
     this.state = {
-      activeTab: searchResultManager.getProviderByName(searchResultManager.getActiveProviderName()),
+      activeTab: this._searchResultManager.getProviderByName(
+        this._searchResultManager.getActiveProviderName(),
+      ),
       // treated as immutable
       resultsByService: {},
-      renderableProviders: searchResultManager.getRenderableProviders(),
+      renderableProviders: this._searchResultManager.getRenderableProviders(),
       selectedService: '',
       selectedDirectory: '',
       selectedItemIndex: -1,
@@ -188,12 +179,12 @@ export default class QuickSelectionComponent extends React.Component {
 
     const inputTextEditor = this.getInputTextEditor();
     this._subscriptions.add(
-      searchResultManager.on(
-        searchResultManager.PROVIDERS_CHANGED,
+      this._searchResultManager.on(
+        this._searchResultManager.PROVIDERS_CHANGED,
         this.handleProvidersChange,
       ),
-      searchResultManager.on(
-        searchResultManager.RESULTS_CHANGED,
+      this._searchResultManager.on(
+        this._searchResultManager.RESULTS_CHANGED,
         debounce(this.handleResultsChange, RESULTS_CHANGED_DEBOUNCE_DELAY, false),
       ),
     );
@@ -254,6 +245,21 @@ export default class QuickSelectionComponent extends React.Component {
     return this._emitter.on('items-changed', callback);
   }
 
+  _sortServiceNames(names: Array<string>): Array<string> {
+    return names.sort((serviceName1, serviceName2) => {
+      const provider1 = this._searchResultManager.getProviderByName(serviceName1);
+      const provider2 = this._searchResultManager.getProviderByName(serviceName2);
+      if (
+        provider1.priority == null ||
+        provider2.priority == null ||
+        provider1.priority === provider2.priority
+      ) {
+        return provider1.name.localeCompare(provider2.name);
+      }
+      return provider1.priority - provider2.priority;
+    });
+  }
+
   _updateQueryHandler(): void {
     this._debouncedQueryHandler = debounce(
       () => {
@@ -274,17 +280,17 @@ export default class QuickSelectionComponent extends React.Component {
     // This function is running on a timer (debounced), it is possible that it
     // may be called after the component has unmounted.
     if (this._isMounted) {
-      const activeProviderName = searchResultManager.getActiveProviderName();
+      const activeProviderName = this._searchResultManager.getActiveProviderName();
       this._updateResults(activeProviderName);
     }
   }
 
   _updateResults(activeProviderName: string): void {
-    const updatedResults = searchResultManager.getResults(
+    const updatedResults = this._searchResultManager.getResults(
       this.refs.queryInput.getText(),
       activeProviderName,
     );
-    const [topProviderName] = sortServiceNames(Object.keys(updatedResults));
+    const [topProviderName] = this._sortServiceNames(Object.keys(updatedResults));
     this.setState({
       resultsByService: updatedResults,
     }, () => {
@@ -302,8 +308,8 @@ export default class QuickSelectionComponent extends React.Component {
   }
 
   handleProvidersChange(): void {
-    const renderableProviders = searchResultManager.getRenderableProviders();
-    const activeProviderName = searchResultManager.getActiveProviderName();
+    const renderableProviders = this._searchResultManager.getRenderableProviders();
+    const activeProviderName = this._searchResultManager.getActiveProviderName();
     this._updateResults(activeProviderName);
     this.setState({
       renderableProviders,
@@ -336,7 +342,7 @@ export default class QuickSelectionComponent extends React.Component {
 
   _getCurrentResultContext(): ?ResultContext {
     const nonEmptyResults = filterEmptyResults(this.state.resultsByService);
-    const serviceNames = sortServiceNames(Object.keys(nonEmptyResults));
+    const serviceNames = this._sortServiceNames(Object.keys(nonEmptyResults));
     const currentServiceIndex = serviceNames.indexOf(this.state.selectedService);
     const currentService = nonEmptyResults[this.state.selectedService];
 
@@ -485,7 +491,7 @@ export default class QuickSelectionComponent extends React.Component {
     arrayOperation: typeof Array.prototype.shift | typeof Array.prototype.pop,
   ): ?{serviceName: string, directoryName: string, results: Array<mixed>} {
     const nonEmptyResults = filterEmptyResults(this.state.resultsByService);
-    const serviceName = arrayOperation.call(sortServiceNames(Object.keys(nonEmptyResults)));
+    const serviceName = arrayOperation.call(this._sortServiceNames(Object.keys(nonEmptyResults)));
     if (!serviceName) {
       return null;
     }
@@ -519,7 +525,7 @@ export default class QuickSelectionComponent extends React.Component {
   }
 
   componentForItem(item: any, serviceName: string, dirName: string): React.Element<any> {
-    return searchResultManager.getRendererForProvider(serviceName)(
+    return this._searchResultManager.getRendererForProvider(serviceName)(
       item,
       serviceName,
       dirName,
@@ -560,7 +566,7 @@ export default class QuickSelectionComponent extends React.Component {
   }
 
   setQuery(query: string) {
-    QuickSelectionActions.query(query);
+    this._quickSelectionActions.query(query);
   }
 
   getProvider(): ProviderSpec {
@@ -603,7 +609,7 @@ export default class QuickSelectionComponent extends React.Component {
   _handleTabChange(newTab: Tab): void {
     const providerName = newTab.name;
     if (providerName !== this.props.activeProvider.name) {
-      QuickSelectionActions.changeActiveProvider(providerName);
+      this._quickSelectionActions.changeActiveProvider(providerName);
     }
     this.refs.queryInput.focus();
   }
@@ -663,7 +669,7 @@ export default class QuickSelectionComponent extends React.Component {
     let numTotalResultsRendered = 0;
     const isOmniSearchActive = this.state.activeTab.name === 'OmniSearchResultProvider';
     let numQueriesOutstanding = 0;
-    const serviceNames = sortServiceNames(Object.keys(this.state.resultsByService));
+    const serviceNames = this._sortServiceNames(Object.keys(this.state.resultsByService));
     const services = serviceNames.map(serviceName => {
       let numResultsForService = 0;
       const directories = this.state.resultsByService[serviceName].results;

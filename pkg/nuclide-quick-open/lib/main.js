@@ -19,7 +19,6 @@ import {
   ReactDOM,
 } from 'react-for-atom';
 import QuickSelectionComponent from './QuickSelectionComponent';
-import {CompositeDisposable} from 'atom';
 import featureConfig from '../../commons-atom/featureConfig';
 import {goToLocation} from '../../commons-atom/go-to-location';
 import {track} from '../../nuclide-analytics';
@@ -28,10 +27,6 @@ import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import SearchResultManager from './SearchResultManager';
 import QuickSelectionActions from './QuickSelectionActions';
 import QuickSelectionDispatcher, {ActionTypes} from './QuickSelectionDispatcher';
-
-function getSearchResultManager() {
-  return SearchResultManager.getInstance();
-}
 
 const DEFAULT_PROVIDER = 'OmniSearchResultProvider';
 const TOPBAR_APPROX_HEIGHT = 100; // A reasonable heuristic that prevents us from having to measure.
@@ -69,30 +64,49 @@ const trackProviderChange = debounce(providerName => {
 
 class Activation {
   _currentProvider: Object;
+  _dispatcherToken: string;
   _previousFocus: ?HTMLElement;
   _reactDiv: ?HTMLElement;
   _searchComponent: ?QuickSelectionComponent;
   _searchPanel: ?atom$Panel;
-  _subscriptions: atom$CompositeDisposable;
+  _subscriptions: UniversalDisposable;
   _scrollableAreaHeightGap: number;
+  _searchResultManager: SearchResultManager;
+  _quickSelectionActions: QuickSelectionActions;
+  _quickSelectionDispatcher: QuickSelectionDispatcher;
 
   constructor() {
     this._previousFocus = null;
     this._scrollableAreaHeightGap = MODAL_MARGIN + TOPBAR_APPROX_HEIGHT;
-    this._subscriptions = new CompositeDisposable();
-    this._currentProvider = getSearchResultManager().getProviderByName(DEFAULT_PROVIDER);
-    QuickSelectionDispatcher.getInstance().register(action => {
+    this._quickSelectionDispatcher = new QuickSelectionDispatcher();
+    this._quickSelectionActions = new QuickSelectionActions(
+      this._quickSelectionDispatcher,
+    );
+    this._searchResultManager = new SearchResultManager(
+      this._quickSelectionActions,
+      this._quickSelectionDispatcher,
+    );
+    this._currentProvider = this._searchResultManager.getProviderByName(DEFAULT_PROVIDER);
+    this._dispatcherToken = this._quickSelectionDispatcher.register(action => {
       if (action.actionType === ActionTypes.ACTIVE_PROVIDER_CHANGED) {
         this._handleActiveProviderChange(action.providerName);
       }
     });
-
-    this._subscriptions.add(
+    this._subscriptions = new UniversalDisposable(
+      atom.commands.add('atom-workspace', {
+        'nuclide-quick-open:find-anything-via-omni-search': () => {
+          this.toggleOmniSearchProvider();
+        },
+      }),
       atom.commands.add('body', 'core:cancel', () => {
         if (this._searchPanel && this._searchPanel.isVisible()) {
           this.closeSearchPanel();
         }
       }),
+      () => {
+        this._searchResultManager.dispose();
+        this._quickSelectionDispatcher.unregister(this._dispatcherToken);
+      },
     );
 
     (this: any).closeSearchPanel = this.closeSearchPanel.bind(this);
@@ -123,6 +137,8 @@ class Activation {
       <QuickSelectionComponent
         activeProvider={this._currentProvider}
         scrollableAreaHeightGap={this._scrollableAreaHeightGap}
+        quickSelectionActions={this._quickSelectionActions}
+        searchResultManager={this._searchResultManager}
         onBlur={this.closeSearchPanel}
       />,
       this._reactDiv,
@@ -177,12 +193,12 @@ class Activation {
     // Toggle newProviderName before setting this._currentProvider to make
     // the search panel stay open.
     this.toggleProvider(newProviderName);
-    this._currentProvider = getSearchResultManager().getProviderByName(newProviderName);
+    this._currentProvider = this._searchResultManager.getProviderByName(newProviderName);
     this._render();
   }
 
   toggleOmniSearchProvider(): void {
-    QuickSelectionActions.changeActiveProvider('OmniSearchResultProvider');
+    this._quickSelectionActions.changeActiveProvider('OmniSearchResultProvider');
   }
 
   toggleProvider(providerName: string) {
@@ -194,7 +210,7 @@ class Activation {
         'quickopen-session': analyticsSessionId,
       },
     );
-    const provider = getSearchResultManager().getProviderByName(providerName);
+    const provider = this._searchResultManager.getProviderByName(providerName);
     // "toggle" behavior
     if (
       this._searchPanel != null &&
@@ -274,6 +290,18 @@ class Activation {
     }
   }
 
+  registerProvider(service: Provider): IDisposable {
+    return this._searchResultManager.registerProvider(service);
+  }
+
+  consumeCWDService(service: CwdApi): IDisposable {
+    const disposable = service.observeCwd(dir => {
+      this._searchResultManager.setCurrentWorkingRoot(dir);
+    });
+    this._subscriptions.add(disposable);
+    return disposable;
+  }
+
   consumeDeepLinkService(service: DeepLinkService): void {
     const subscription = new UniversalDisposable(
       service.subscribeToPath('quick-open-query', this._handleDeepLink),
@@ -295,33 +323,30 @@ class Activation {
 }
 
 let activation: ?Activation = null;
-function getActivation(): Activation {
-  if (activation == null) {
-    activation = new Activation();
-  }
-  return activation;
-}
-
-let listeners: ?CompositeDisposable = null;
 
 export function activate(): void {
-  listeners = new CompositeDisposable();
-  listeners.add(
-    atom.commands.add('atom-workspace', {
-      'nuclide-quick-open:find-anything-via-omni-search': () => {
-        getActivation().toggleOmniSearchProvider();
-      },
-    }),
-  );
-  getActivation();
+  activation = new Activation();
+}
+
+export function deactivate(): void {
+  invariant(activation != null);
+  activation.dispose();
+  activation = null;
 }
 
 export function registerProvider(service: Provider): IDisposable {
-  return getSearchResultManager().registerProvider(service);
+  invariant(activation != null);
+  return activation.registerProvider(service);
 }
 
-export function registerStore() {
-  return getSearchResultManager();
+export function consumeCWD(cwd: CwdApi): IDisposable {
+  invariant(activation != null);
+  return activation.consumeCWDService(cwd);
+}
+
+export function consumeDeepLinkService(service: DeepLinkService): void {
+  invariant(activation != null);
+  return activation.consumeDeepLinkService(service);
 }
 
 export function getHomeFragments(): HomeFragments {
@@ -334,29 +359,4 @@ export function getHomeFragments(): HomeFragments {
     },
     priority: 10,
   };
-}
-
-export function consumeDeepLinkService(service: DeepLinkService): void {
-  return getActivation().consumeDeepLinkService(service);
-}
-
-export function deactivate(): void {
-  if (activation) {
-    activation.dispose();
-    activation = null;
-  }
-  if (listeners) {
-    listeners.dispose();
-    listeners = null;
-  }
-  getSearchResultManager().dispose();
-}
-
-export function consumeCWD(cwd: CwdApi): IDisposable {
-  const disposable = cwd.observeCwd(dir => {
-    getSearchResultManager().setCurrentWorkingRoot(dir);
-  });
-  invariant(listeners != null);
-  listeners.add(disposable);
-  return disposable;
 }

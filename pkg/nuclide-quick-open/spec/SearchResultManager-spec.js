@@ -13,6 +13,9 @@ import type {Provider, ProviderSpec} from '../lib/types';
 import nuclideUri from '../../commons-node/nuclideUri';
 
 import SearchResultManager from '../lib/SearchResultManager';
+import QuickSelectionDispatcher from '../lib/QuickSelectionDispatcher';
+import QuickSelectionActions from '../lib/QuickSelectionActions';
+
 import {__test__} from '../lib/SearchResultManager';
 const {_getOmniSearchProviderSpec} = __test__;
 
@@ -78,8 +81,20 @@ function constructSingleProviderResult(provider: Provider, result: Object) {
 
 describe('SearchResultManager', () => {
   let searchResultManager: SearchResultManager = (null: any);
+
   beforeEach(() => {
-    searchResultManager = new SearchResultManager();
+    const quickSelectionDispatcher = new QuickSelectionDispatcher();
+    const quickSelectionActions = new QuickSelectionActions(
+      quickSelectionDispatcher,
+    );
+    searchResultManager = new SearchResultManager(
+      quickSelectionActions,
+      quickSelectionDispatcher,
+    );
+  });
+
+  afterEach(() => {
+    searchResultManager.dispose();
   });
 
   describe('getRenderableProviders', () => {
