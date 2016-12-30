@@ -266,6 +266,11 @@ declare class atom$ServiceHub {
   ): IDisposable,
 }
 
+type atom$PackageMetadata = {
+  name: string,
+  version: string,
+};
+
 declare class atom$PackageManager {
   // Event Subscription
   onDidLoadInitialPackages(callback: () => void): IDisposable,
@@ -303,6 +308,7 @@ declare class atom$PackageManager {
 
   // Accessing available packages
   getAvailablePackageNames(): Array<string>,
+  getAvailablePackageMetadata(): Array<atom$PackageMetadata>,
 
   // (Undocumented.)
   activate(): Promise<any>,
