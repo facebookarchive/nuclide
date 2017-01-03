@@ -38,9 +38,12 @@ export function getDeviceArchitecture(
   adbPath: NuclideUri,
   device: string,
 ): Promise<string> {
+  // SDB is a tool similar to ADB used with Tizen devices. `getprop` doesn't
+  // exist on Tizen, so we have to rely on uname instead.
   return runCommand(
     adbPath,
-    ['-s', device, 'shell', 'getprop', 'ro.product.cpu.abi'],
+    ['-s', device, 'shell'].concat(
+      adbPath.endsWith('sdb') ? ['uname', '-m'] : ['getprop', 'ro.product.cpu.abi']),
   ).map(s => s.trim())
   .toPromise();
 }
