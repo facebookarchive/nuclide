@@ -1,5 +1,18 @@
 # Nuclide Changelog
 
+## v0.195.0
+
+### Highlights
+
+* Upgrade to Atom 1.12.7
+* Add tooltip with key bindings for navigation stack
+
+### Bug Fixes
+
+* Fix native debugger callstack printing
+* task runner fixes
+* Improve C++ debugger start debugging failure error message
+
 ## v0.194.0
 
 * OCaml Hyperclick provider now only triggers on success.

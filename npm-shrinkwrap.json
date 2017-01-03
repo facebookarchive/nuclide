@@ -1,6 +1,6 @@
 {
   "name": "nuclide",
-  "version": "0.194.0",
+  "version": "0.195.0",
   "dependencies": {
     "abbrev": {
       "version": "1.0.9",
