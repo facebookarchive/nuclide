@@ -1,55 +1,80 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import type {Directory} from '../../nuclide-remote-connection';
-import type {
-  Provider,
-  ProviderResult,
-  ProviderSpec,
-} from './types';
-import type {
-  FileResult,
-} from './rpc-types';
-import type QuickSelectionDispatcher from './QuickSelectionDispatcher';
-import type QuickSelectionActions from './QuickSelectionActions';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.__test__ = undefined;
 
-type ResultRenderer =
-  (item: FileResult, serviceName: string, dirName: string) => React.Element<any>;
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-import invariant from 'assert';
-import {track} from '../../nuclide-analytics';
-import {getLogger} from '../../nuclide-logging';
-import {React} from 'react-for-atom';
-import {
-  CompositeDisposable,
-  Disposable,
-  Emitter,
-} from 'atom';
-import {triggerAfterWait} from '../../commons-node/promise';
-import debounce from '../../commons-node/debounce';
-import {ActionTypes} from './QuickSelectionDispatcher';
-import FileResultComponent from './FileResultComponent';
-import ResultCache from './ResultCache';
+var _nuclideAnalytics;
 
-const {performance} = global;
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
 
-function getDefaultResult(): ProviderResult {
+var _nuclideLogging;
+
+function _load_nuclideLogging() {
+  return _nuclideLogging = require('../../nuclide-logging');
+}
+
+var _reactForAtom = require('react-for-atom');
+
+var _atom = require('atom');
+
+var _promise;
+
+function _load_promise() {
+  return _promise = require('../../commons-node/promise');
+}
+
+var _debounce;
+
+function _load_debounce() {
+  return _debounce = _interopRequireDefault(require('../../commons-node/debounce'));
+}
+
+var _QuickSelectionDispatcher;
+
+function _load_QuickSelectionDispatcher() {
+  return _QuickSelectionDispatcher = require('./QuickSelectionDispatcher');
+}
+
+var _FileResultComponent;
+
+function _load_FileResultComponent() {
+  return _FileResultComponent = _interopRequireDefault(require('./FileResultComponent'));
+}
+
+var _ResultCache;
+
+function _load_ResultCache() {
+  return _ResultCache = _interopRequireDefault(require('./ResultCache'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const { performance } = global; /**
+                                 * Copyright (c) 2015-present, Facebook, Inc.
+                                 * All rights reserved.
+                                 *
+                                 * This source code is licensed under the license found in the LICENSE file in
+                                 * the root directory of this source tree.
+                                 *
+                                 * 
+                                 */
+
+function getDefaultResult() {
   return {
     error: null,
     loading: false,
-    results: [],
+    results: []
   };
 }
 
 const AnalyticsEvents = Object.freeze({
-  QUERY_SOURCE_PROVIDER: 'quickopen-query-source-provider',
+  QUERY_SOURCE_PROVIDER: 'quickopen-query-source-provider'
 });
 
 const RESULTS_CHANGED = 'results_changed';
@@ -64,46 +89,22 @@ const OMNISEARCH_PROVIDER = {
   name: 'OmniSearchResultProvider',
   prompt: 'Search for anything...',
   title: 'OmniSearch',
-  priority: 0,
+  priority: 0
 };
 const UPDATE_DIRECTORIES_DEBOUNCE_DELAY = 100;
 const GLOBAL_KEY = 'global';
 const DIRECTORY_KEY = 'directory';
 
-function isValidProvider(provider): boolean {
-  return (
-    typeof provider.getProviderType === 'function' &&
-    typeof provider.getName === 'function' && typeof provider.getName() === 'string' &&
-    typeof provider.isRenderable === 'function' &&
-    typeof provider.executeQuery === 'function' &&
-    typeof provider.getTabTitle === 'function'
-  );
+function isValidProvider(provider) {
+  return typeof provider.getProviderType === 'function' && typeof provider.getName === 'function' && typeof provider.getName() === 'string' && typeof provider.isRenderable === 'function' && typeof provider.executeQuery === 'function' && typeof provider.getTabTitle === 'function';
 }
 
 /**
  * A singleton cache for search providers and results.
  */
 class SearchResultManager {
-  _dispatcherToken: string;
-  RESULTS_CHANGED: string;
-  PROVIDERS_CHANGED: string;
-  _quickSelectionActions: QuickSelectionActions;
-  _quickSelectionDispatcher: QuickSelectionDispatcher;
-  _providersByDirectory: Map<atom$Directory, Set<Provider>>;
-  _directories: Array<atom$Directory>;
-  _resultCache: ResultCache;
-  _currentWorkingRoot: ?Directory;
-  _debouncedUpdateDirectories: () => mixed;
-  _emitter: Emitter;
-  _subscriptions: CompositeDisposable;
-  _registeredProviders: {[key: string]: Map<string, Provider>};
-  _activeProviderName: string;
-  _isDisposed: boolean;
 
-  constructor(
-    quickSelectionActions: QuickSelectionActions,
-    quickSelectionDispatcher: QuickSelectionDispatcher,
-  ) {
+  constructor(quickSelectionActions, quickSelectionDispatcher) {
     this._isDisposed = false;
     this.RESULTS_CHANGED = RESULTS_CHANGED;
     this.PROVIDERS_CHANGED = PROVIDERS_CHANGED;
@@ -113,40 +114,35 @@ class SearchResultManager {
     this._providersByDirectory = new Map();
     this._directories = [];
     this._currentWorkingRoot = null;
-    this._resultCache = new ResultCache(() => {
+    this._resultCache = new (_ResultCache || _load_ResultCache()).default(() => {
       // on result changed
       this._emitter.emit(RESULTS_CHANGED);
     });
     // `updateDirectories` joins providers and directories, which don't know anything about each
     // other. Debounce this call to reduce churn at startup, and when new providers get activated or
     // a new directory gets mounted.
-    this._debouncedUpdateDirectories = debounce(
-      () => this._updateDirectories(),
-      UPDATE_DIRECTORIES_DEBOUNCE_DELAY,
-      /* immediate */false,
-    );
-    this._emitter = new Emitter();
-    this._subscriptions = new CompositeDisposable();
+    this._debouncedUpdateDirectories = (0, (_debounce || _load_debounce()).default)(() => this._updateDirectories(), UPDATE_DIRECTORIES_DEBOUNCE_DELAY,
+    /* immediate */false);
+    this._emitter = new _atom.Emitter();
+    this._subscriptions = new _atom.CompositeDisposable();
     this._quickSelectionActions = quickSelectionActions;
     this._quickSelectionDispatcher = quickSelectionDispatcher;
     // Check is required for testing.
     if (atom.project) {
-      this._subscriptions.add(atom.project.onDidChangePaths(
-        this._debouncedUpdateDirectories.bind(this)),
-      );
+      this._subscriptions.add(atom.project.onDidChangePaths(this._debouncedUpdateDirectories.bind(this)));
       this._debouncedUpdateDirectories();
     }
     this._setUpFlux();
     this._activeProviderName = OMNISEARCH_PROVIDER.name;
   }
 
-  _setUpFlux(): void {
+  _setUpFlux() {
     this._dispatcherToken = this._quickSelectionDispatcher.register(action => {
       switch (action.actionType) {
-        case ActionTypes.QUERY:
+        case (_QuickSelectionDispatcher || _load_QuickSelectionDispatcher()).ActionTypes.QUERY:
           this.executeQuery(action.query);
           break;
-        case ActionTypes.ACTIVE_PROVIDER_CHANGED:
+        case (_QuickSelectionDispatcher || _load_QuickSelectionDispatcher()).ActionTypes.ACTIVE_PROVIDER_CHANGED:
           this._activeProviderName = action.providerName;
           this._emitter.emit(PROVIDERS_CHANGED);
           break;
@@ -154,19 +150,19 @@ class SearchResultManager {
     });
   }
 
-  getActiveProviderName(): string {
+  getActiveProviderName() {
     return this._activeProviderName;
   }
 
-  getRendererForProvider(providerName: string): ResultRenderer {
+  getRendererForProvider(providerName) {
     const provider = this._getProviderByName(providerName);
     if (!provider || !provider.getComponentForItem) {
-      return FileResultComponent.getComponentForItem;
+      return (_FileResultComponent || _load_FileResultComponent()).default.getComponentForItem;
     }
     return provider.getComponentForItem;
   }
 
-  dispose(): void {
+  dispose() {
     this._isDisposed = true;
     this._subscriptions.dispose();
     this._quickSelectionDispatcher.unregister(this._dispatcherToken);
@@ -176,66 +172,68 @@ class SearchResultManager {
    * Renew the cached list of directories, as well as the cached map of eligible providers
    * for every directory.
    */
-  async _updateDirectories(): Promise<void> {
-    const newDirectories = atom.project.getDirectories();
-    const newProvidersByDirectories = new Map();
-    const eligibilities = [];
-    newDirectories.forEach(directory => {
-      newProvidersByDirectories.set(directory, new Set());
-      for (const provider of this._registeredProviders[DIRECTORY_KEY].values()) {
-        invariant(
-          provider.isEligibleForDirectory != null,
-          `Directory provider ${provider.getName()} must provide \`isEligibleForDirectory()\`.`,
-        );
-        eligibilities.push(
-          provider.isEligibleForDirectory(directory).then(isEligible => ({
-            isEligible,
-            provider,
-            directory,
-          })).catch(err => {
-            getLogger().warn(
-              `isEligibleForDirectory failed for directory provider ${provider.getName()}`,
-              err,
-            );
+  _updateDirectories() {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const newDirectories = atom.project.getDirectories();
+      const newProvidersByDirectories = new Map();
+      const eligibilities = [];
+      newDirectories.forEach(function (directory) {
+        newProvidersByDirectories.set(directory, new Set());
+        for (const provider of _this._registeredProviders[DIRECTORY_KEY].values()) {
+          if (!(provider.isEligibleForDirectory != null)) {
+            throw new Error(`Directory provider ${ provider.getName() } must provide \`isEligibleForDirectory()\`.`);
+          }
+
+          eligibilities.push(provider.isEligibleForDirectory(directory).then(function (isEligible) {
+            return {
+              isEligible,
+              provider,
+              directory
+            };
+          }).catch(function (err) {
+            (0, (_nuclideLogging || _load_nuclideLogging()).getLogger)().warn(`isEligibleForDirectory failed for directory provider ${ provider.getName() }`, err);
             return {
               isEligible: false,
               provider,
-              directory,
+              directory
             };
-          }),
-        );
+          }));
+        }
+      });
+      const resolvedEligibilities = yield Promise.all(eligibilities);
+      for (const eligibility of resolvedEligibilities) {
+        const {
+          provider,
+          isEligible,
+          directory
+        } = eligibility;
+        if (isEligible) {
+          const providersForDirectory = newProvidersByDirectories.get(directory);
+
+          if (!(providersForDirectory != null)) {
+            throw new Error(`Providers for directory ${ directory.getPath() } not defined`);
+          }
+
+          providersForDirectory.add(provider);
+        }
       }
-    });
-    const resolvedEligibilities = await Promise.all(eligibilities);
-    for (const eligibility of resolvedEligibilities) {
-      const {
-        provider,
-        isEligible,
-        directory,
-      } = eligibility;
-      if (isEligible) {
-        const providersForDirectory = newProvidersByDirectories.get(directory);
-        invariant(
-          providersForDirectory != null,
-          `Providers for directory ${directory.getPath()} not defined`,
-        );
-        providersForDirectory.add(provider);
-      }
-    }
-    this._directories = newDirectories;
-    this._providersByDirectory = newProvidersByDirectories;
-    this._emitter.emit(PROVIDERS_CHANGED);
+      _this._directories = newDirectories;
+      _this._providersByDirectory = newProvidersByDirectories;
+      _this._emitter.emit(PROVIDERS_CHANGED);
+    })();
   }
 
-  on(name: string, callback: (v: any) => mixed): IDisposable {
+  on(name, callback) {
     return this._emitter.on(name, callback);
   }
 
-  setCurrentWorkingRoot(newRoot: ?Directory): void {
+  setCurrentWorkingRoot(newRoot) {
     this._currentWorkingRoot = newRoot;
   }
 
-  _sortDirectories(): Array<atom$Directory> {
+  _sortDirectories() {
     const currentWorkingRoot = this._currentWorkingRoot;
     if (currentWorkingRoot == null) {
       // Don't sort
@@ -269,23 +267,20 @@ class SearchResultManager {
     return directories;
   }
 
-  registerProvider(service: Provider): IDisposable {
+  registerProvider(service) {
     if (!isValidProvider(service)) {
       const providerName = service.getName && service.getName() || '<unknown>';
-      getLogger().error(`Quick-open provider ${providerName} is not a valid provider`);
+      (0, (_nuclideLogging || _load_nuclideLogging()).getLogger)().error(`Quick-open provider ${ providerName } is not a valid provider`);
     }
-    const isRenderableProvider =
-      typeof service.isRenderable === 'function' && service.isRenderable();
+    const isRenderableProvider = typeof service.isRenderable === 'function' && service.isRenderable();
     const isGlobalProvider = service.getProviderType() === 'GLOBAL';
-    const targetRegistry = isGlobalProvider
-      ? this._registeredProviders[GLOBAL_KEY]
-      : this._registeredProviders[DIRECTORY_KEY];
+    const targetRegistry = isGlobalProvider ? this._registeredProviders[GLOBAL_KEY] : this._registeredProviders[DIRECTORY_KEY];
     targetRegistry.set(service.getName(), service);
     if (!isGlobalProvider) {
       this._debouncedUpdateDirectories();
     }
-    const disposable = new CompositeDisposable();
-    disposable.add(new Disposable(() => {
+    const disposable = new _atom.CompositeDisposable();
+    disposable.add(new _atom.Disposable(() => {
       // This may be called after this package has been deactivated
       // and the SearchResultManager has been disposed.
       if (this._isDisposed) {
@@ -307,25 +302,19 @@ class SearchResultManager {
     // If the provider is renderable and specifies a keybinding, wire it up with the toggle command.
     if (isRenderableProvider && typeof service.getAction === 'function') {
       const actionSpec = {
-        [service.getAction()]:
-          () => this._quickSelectionActions.changeActiveProvider(service.getName()),
+        [service.getAction()]: () => this._quickSelectionActions.changeActiveProvider(service.getName())
       };
       disposable.add(atom.commands.add('atom-workspace', actionSpec));
     }
     return disposable;
   }
 
-  cacheResult(
-    query: string,
-    result: Array<FileResult>,
-    directory: string,
-    provider: Provider,
-  ): void {
+  cacheResult(query, result, directory, provider) {
     const providerName = provider.getName();
     this._resultCache.setCacheResult(providerName, directory, query, result, false, null);
   }
 
-  _setLoading(query: string, directory: string, provider: Provider): void {
+  _setLoading(query, directory, provider) {
     const providerName = provider.getName();
     const previousResult = this._resultCache.getCacheResult(providerName, directory, query);
 
@@ -333,26 +322,21 @@ class SearchResultManager {
       this._resultCache.rawSetCacheResult(providerName, directory, query, {
         results: [],
         error: null,
-        loading: true,
+        loading: true
       });
     }
   }
 
-  processResult(
-    query: string,
-    result: Array<FileResult>,
-    directory: string,
-    provider: Provider,
-  ): void {
+  processResult(query, result, directory, provider) {
     this.cacheResult(query, result, directory, provider);
     this._emitter.emit(RESULTS_CHANGED);
   }
 
-  sanitizeQuery(query: string): string {
+  sanitizeQuery(query) {
     return query.trim();
   }
 
-  executeQuery(rawQuery: string): void {
+  executeQuery(rawQuery) {
     const query = this.sanitizeQuery(rawQuery);
     for (const globalProvider of this._registeredProviders[GLOBAL_KEY].values()) {
       const startTime = performance.now();
@@ -360,15 +344,11 @@ class SearchResultManager {
         this._setLoading(query, GLOBAL_KEY, globalProvider);
         this._emitter.emit(RESULTS_CHANGED);
       };
-      triggerAfterWait(
-        globalProvider.executeQuery(query),
-        LOADING_EVENT_DELAY,
-        loadingFn,
-      ).then(result => {
-        track(AnalyticsEvents.QUERY_SOURCE_PROVIDER, {
+      (0, (_promise || _load_promise()).triggerAfterWait)(globalProvider.executeQuery(query), LOADING_EVENT_DELAY, loadingFn).then(result => {
+        (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)(AnalyticsEvents.QUERY_SOURCE_PROVIDER, {
           'quickopen-source-provider': globalProvider.getName(),
           'quickopen-query-duration': (performance.now() - startTime).toString(),
-          'quickopen-result-count': (result.length).toString(),
+          'quickopen-result-count': result.length.toString()
         });
         this.processResult(query, result, GLOBAL_KEY, globalProvider);
       });
@@ -389,15 +369,11 @@ class SearchResultManager {
           this._setLoading(query, path, directoryProvider);
           this._emitter.emit(RESULTS_CHANGED);
         };
-        triggerAfterWait(
-          directoryProvider.executeQuery(query, directory),
-          LOADING_EVENT_DELAY,
-          loadingFn,
-        ).then(result => {
-          track(AnalyticsEvents.QUERY_SOURCE_PROVIDER, {
+        (0, (_promise || _load_promise()).triggerAfterWait)(directoryProvider.executeQuery(query, directory), LOADING_EVENT_DELAY, loadingFn).then(result => {
+          (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)(AnalyticsEvents.QUERY_SOURCE_PROVIDER, {
             'quickopen-source-provider': directoryProvider.getName(),
             'quickopen-query-duration': (performance.now() - startTime).toString(),
-            'quickopen-result-count': (result.length).toString(),
+            'quickopen-result-count': result.length.toString()
           });
           this.processResult(query, result, path, directoryProvider);
         });
@@ -405,28 +381,27 @@ class SearchResultManager {
     });
   }
 
-  _isGlobalProvider(providerName: string): boolean {
+  _isGlobalProvider(providerName) {
     return this._registeredProviders[GLOBAL_KEY].has(providerName);
   }
 
-  _getProviderByName(providerName: string): Provider {
+  _getProviderByName(providerName) {
     let dirProviderName;
     if (this._isGlobalProvider(providerName)) {
       dirProviderName = this._registeredProviders[GLOBAL_KEY].get(providerName);
     } else {
       dirProviderName = this._registeredProviders[DIRECTORY_KEY].get(providerName);
     }
-    invariant(
-      dirProviderName != null,
-      `Provider ${providerName} is not registered with quick-open.`,
-    );
+
+    if (!(dirProviderName != null)) {
+      throw new Error(`Provider ${ providerName } is not registered with quick-open.`);
+    }
+
     return dirProviderName;
   }
 
-  _getResultsForProvider(query: string, providerName: string): Object {
-    const providerPaths = this._isGlobalProvider(providerName)
-      ? [GLOBAL_KEY]
-      : this._sortDirectories().map(d => d.getPath());
+  _getResultsForProvider(query, providerName) {
+    const providerPaths = this._isGlobalProvider(providerName) ? [GLOBAL_KEY] : this._sortDirectories().map(d => d.getPath());
     const provider = this._getProviderByName(providerName);
     const lastCachedQuery = this._resultCache.getLastCachedQuery(providerName);
     return {
@@ -435,30 +410,24 @@ class SearchResultManager {
         let cachedPaths;
         let cachedQueries;
         let cachedResult;
-        if (!(
-          (cachedPaths = this._resultCache.getAllCachedResults()[providerName]) &&
-          (cachedQueries = cachedPaths[path]) &&
-          (
-            (cachedResult = cachedQueries[query]) ||
-            // If the current query hasn't returned anything yet, try the last cached result.
-            lastCachedQuery != null && (cachedResult = cachedQueries[lastCachedQuery])
-          )
-        )) {
+        if (!((cachedPaths = this._resultCache.getAllCachedResults()[providerName]) && (cachedQueries = cachedPaths[path]) && ((cachedResult = cachedQueries[query]) ||
+        // If the current query hasn't returned anything yet, try the last cached result.
+        lastCachedQuery != null && (cachedResult = cachedQueries[lastCachedQuery])))) {
           cachedResult = {};
         }
         const defaultResult = getDefaultResult();
         const resultList = cachedResult.results || defaultResult.results;
         results[path] = {
-          results: resultList.map(result => ({...result, sourceProvider: providerName})),
+          results: resultList.map(result => Object.assign({}, result, { sourceProvider: providerName })),
           loading: cachedResult.loading || defaultResult.loading,
-          error: cachedResult.error || defaultResult.error,
+          error: cachedResult.error || defaultResult.error
         };
         return results;
-      }, {}),
+      }, {})
     };
   }
 
-  getResults(query: string, activeProviderName: string): Object {
+  getResults(query, activeProviderName) {
     const sanitizedQuery = this.sanitizeQuery(query);
     if (activeProviderName === OMNISEARCH_PROVIDER.name) {
       const omniSearchResults = [{}];
@@ -466,8 +435,7 @@ class SearchResultManager {
         const resultForProvider = this._getResultsForProvider(sanitizedQuery, providerName);
         // TODO replace this with a ranking algorithm.
         for (const dir in resultForProvider.results) {
-          resultForProvider.results[dir].results =
-            resultForProvider.results[dir].results.slice(0, MAX_OMNI_RESULTS_PER_SERVICE);
+          resultForProvider.results[dir].results = resultForProvider.results[dir].results.slice(0, MAX_OMNI_RESULTS_PER_SERVICE);
         }
         // TODO replace `partial` with computed property whenever Flow supports it.
         const partial = {};
@@ -482,9 +450,9 @@ class SearchResultManager {
     return partial;
   }
 
-  getProviderByName(providerName: string): ProviderSpec {
+  getProviderByName(providerName) {
     if (providerName === OMNISEARCH_PROVIDER.name) {
-      return {...OMNISEARCH_PROVIDER};
+      return Object.assign({}, OMNISEARCH_PROVIDER);
     }
     return this._bakeProvider(this._getProviderByName(providerName));
   }
@@ -492,50 +460,39 @@ class SearchResultManager {
   /**
    * Turn a Provider into a plain "spec" object consumed by QuickSelectionComponent.
    */
-  _bakeProvider(provider: Provider): ProviderSpec {
+  _bakeProvider(provider) {
     const providerName = provider.getName();
     const providerSpec = {
       action: provider.getAction ? provider.getAction() : '',
       canOpenAll: provider.getCanOpenAll ? provider.getCanOpenAll() : true,
-      debounceDelay: provider.getDebounceDelay
-        ? provider.getDebounceDelay()
-        : DEFAULT_QUERY_DEBOUNCE_DELAY,
+      debounceDelay: provider.getDebounceDelay ? provider.getDebounceDelay() : DEFAULT_QUERY_DEBOUNCE_DELAY,
       name: providerName,
-      prompt: provider.getPromptText && provider.getPromptText() ||
-        'Search ' + providerName,
+      prompt: provider.getPromptText && provider.getPromptText() || 'Search ' + providerName,
       title: provider.getTabTitle && provider.getTabTitle() || providerName,
-      priority: provider.getPriority
-        ? provider.getPriority()
-        : Number.POSITIVE_INFINITY,
+      priority: provider.getPriority ? provider.getPriority() : Number.POSITIVE_INFINITY
     };
     return providerSpec;
   }
 
-  getRenderableProviders(): Array<ProviderSpec> {
+  getRenderableProviders() {
     // Only render tabs for providers that are eligible for at least one directory.
-    const eligibleDirectoryProviders = Array.from(this._registeredProviders[DIRECTORY_KEY].values())
-      .filter(provider => {
-        for (const providers of this._providersByDirectory.values()) {
-          if (providers.has(provider)) {
-            return true;
-          }
+    const eligibleDirectoryProviders = Array.from(this._registeredProviders[DIRECTORY_KEY].values()).filter(provider => {
+      for (const providers of this._providersByDirectory.values()) {
+        if (providers.has(provider)) {
+          return true;
         }
-        return false;
-      });
-    const tabs = Array.from(this._registeredProviders[GLOBAL_KEY].values())
-      .concat(eligibleDirectoryProviders)
-      .filter(provider => provider.isRenderable())
-      .map(this._bakeProvider)
-      .sort((p1, p2) => p1.name.localeCompare(p2.name));
+      }
+      return false;
+    });
+    const tabs = Array.from(this._registeredProviders[GLOBAL_KEY].values()).concat(eligibleDirectoryProviders).filter(provider => provider.isRenderable()).map(this._bakeProvider).sort((p1, p2) => p1.name.localeCompare(p2.name));
     tabs.unshift(OMNISEARCH_PROVIDER);
     return tabs;
   }
 }
 
-export default SearchResultManager;
-
-export const __test__ = {
-  _getOmniSearchProviderSpec(): ProviderSpec {
+exports.default = SearchResultManager;
+const __test__ = exports.__test__ = {
+  _getOmniSearchProviderSpec() {
     return OMNISEARCH_PROVIDER;
-  },
+  }
 };

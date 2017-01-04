@@ -1,28 +1,35 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import {React} from 'react-for-atom';
-import {relativeDate} from '../commons-node/string';
-import addTooltip from './add-tooltip';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-type DefaultProps = {
-  delay: number,
-  shorten: boolean,
-  withToolip: boolean,
-};
-type Props = DefaultProps & {
-  date: Date,
-  delay?: number,
-  shorten?: boolean,
-  withToolip?: boolean,
-};
+var _reactForAtom = require('react-for-atom');
+
+var _string;
+
+function _load_string() {
+  return _string = require('../commons-node/string');
+}
+
+var _addTooltip;
+
+function _load_addTooltip() {
+  return _addTooltip = _interopRequireDefault(require('./add-tooltip'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; } /**
+                                                                                                                                                                                                                              * Copyright (c) 2015-present, Facebook, Inc.
+                                                                                                                                                                                                                              * All rights reserved.
+                                                                                                                                                                                                                              *
+                                                                                                                                                                                                                              * This source code is licensed under the license found in the LICENSE file in
+                                                                                                                                                                                                                              * the root directory of this source tree.
+                                                                                                                                                                                                                              *
+                                                                                                                                                                                                                              * 
+                                                                                                                                                                                                                              */
+
 const DEFAULT_RERENDER_DELAY = 10000; // ms
 
 /**
@@ -31,50 +38,44 @@ const DEFAULT_RERENDER_DELAY = 10000; // ms
  *
  * Does not respond to changes to the initial `delay` for simplicity's sake.
  */
-export default class RelativeDate extends React.Component {
-  props: Props;
-  _interval: ?number;
+class RelativeDate extends _reactForAtom.React.Component {
 
-  static defaultProps: DefaultProps = {
-    delay: DEFAULT_RERENDER_DELAY,
-    shorten: false,
-    withToolip: false,
+  componentDidMount() {
+    const { delay } = this.props;
+    this._interval = setInterval(() => this.forceUpdate(), delay);
   }
 
-  componentDidMount(): void {
-    const {delay} = this.props;
-    this._interval = setInterval(
-      () => this.forceUpdate(),
-      delay,
-    );
-  }
-
-  componentWillUnmount(): void {
+  componentWillUnmount() {
     if (this._interval != null) {
       clearInterval(this._interval);
     }
   }
 
-  render(): React.Element<any> {
+  render() {
     const {
       date,
       shorten,
-      withToolip,
-      ...remainingProps
+      withToolip
     } = this.props;
-    return (
-      <span
-        {...remainingProps}
-        ref={withToolip
-          ? addTooltip({
-            title: date.toLocaleString(),
-            delay: 200,
-            placement: 'top',
-          })
-          : null
-        }>
-        {relativeDate(date, undefined, shorten)}
-      </span>
+
+    const remainingProps = _objectWithoutProperties(this.props, ['date', 'shorten', 'withToolip']);
+
+    return _reactForAtom.React.createElement(
+      'span',
+      Object.assign({}, remainingProps, {
+        ref: withToolip ? (0, (_addTooltip || _load_addTooltip()).default)({
+          title: date.toLocaleString(),
+          delay: 200,
+          placement: 'top'
+        }) : null }),
+      (0, (_string || _load_string()).relativeDate)(date, undefined, shorten)
     );
   }
 }
+exports.default = RelativeDate;
+RelativeDate.defaultProps = {
+  delay: DEFAULT_RERENDER_DELAY,
+  shorten: false,
+  withToolip: false
+};
+module.exports = exports['default'];

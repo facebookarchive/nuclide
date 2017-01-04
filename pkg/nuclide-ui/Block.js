@@ -1,20 +1,23 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+"use strict";
 
-import {React} from 'react-for-atom';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Block = undefined;
 
-type Props = {
-  children?: mixed,
-};
+var _reactForAtom = require("react-for-atom");
 
 /** A Block. */
-export const Block = (props: Props) => (
-  <div className="block">{props.children}</div>
-);
+const Block = exports.Block = props => _reactForAtom.React.createElement(
+  "div",
+  { className: "block" },
+  props.children
+); /**
+    * Copyright (c) 2015-present, Facebook, Inc.
+    * All rights reserved.
+    *
+    * This source code is licensed under the license found in the LICENSE file in
+    * the root directory of this source tree.
+    *
+    * 
+    */

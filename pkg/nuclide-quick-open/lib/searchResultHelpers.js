@@ -1,19 +1,18 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import type {GroupedResult} from './types';
-import type {FileResult} from './rpc-types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.filterEmptyResults = filterEmptyResults;
+exports.flattenResults = flattenResults;
 
-import {isEmpty} from '../../commons-node/collection';
+var _collection;
 
-export function filterEmptyResults(resultsGroupedByService: GroupedResult): GroupedResult {
+function _load_collection() {
+  return _collection = require('../../commons-node/collection');
+}
+
+function filterEmptyResults(resultsGroupedByService) {
   const filteredTree = {};
 
   for (const serviceName in resultsGroupedByService) {
@@ -24,14 +23,22 @@ export function filterEmptyResults(resultsGroupedByService: GroupedResult): Grou
         nonEmptyDirectories[dirName] = directories[dirName];
       }
     }
-    if (!isEmpty(nonEmptyDirectories)) {
-      filteredTree[serviceName] = {results: nonEmptyDirectories};
+    if (!(0, (_collection || _load_collection()).isEmpty)(nonEmptyDirectories)) {
+      filteredTree[serviceName] = { results: nonEmptyDirectories };
     }
   }
   return filteredTree;
-}
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   */
 
-export function flattenResults(resultsGroupedByService: GroupedResult): Array<FileResult> {
+function flattenResults(resultsGroupedByService) {
   const items = [];
   for (const serviceName in resultsGroupedByService) {
     for (const dirName in resultsGroupedByService[serviceName].results) {

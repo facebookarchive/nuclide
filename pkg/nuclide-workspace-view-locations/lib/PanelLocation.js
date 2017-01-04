@@ -1,3 +1,102 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.PanelLocation = undefined;
+
+var _createPaneContainer;
+
+function _load_createPaneContainer() {
+  return _createPaneContainer = _interopRequireDefault(require('../../commons-atom/create-pane-container'));
+}
+
+var _PanelRenderer;
+
+function _load_PanelRenderer() {
+  return _PanelRenderer = _interopRequireDefault(require('../../commons-atom/PanelRenderer'));
+}
+
+var _renderReactRoot;
+
+function _load_renderReactRoot() {
+  return _renderReactRoot = require('../../commons-atom/renderReactRoot');
+}
+
+var _event;
+
+function _load_event() {
+  return _event = require('../../commons-node/event');
+}
+
+var _observable;
+
+function _load_observable() {
+  return _observable = require('../../commons-node/observable');
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../commons-node/UniversalDisposable'));
+}
+
+var _SimpleModel;
+
+function _load_SimpleModel() {
+  return _SimpleModel = require('../../commons-node/SimpleModel');
+}
+
+var _bindObservableAsProps;
+
+function _load_bindObservableAsProps() {
+  return _bindObservableAsProps = require('../../nuclide-ui/bindObservableAsProps');
+}
+
+var _observeAddedPaneItems;
+
+function _load_observeAddedPaneItems() {
+  return _observeAddedPaneItems = require('./observeAddedPaneItems');
+}
+
+var _observePanes;
+
+function _load_observePanes() {
+  return _observePanes = require('./observePanes');
+}
+
+var _syncPaneItemVisibility;
+
+function _load_syncPaneItemVisibility() {
+  return _syncPaneItemVisibility = require('./syncPaneItemVisibility');
+}
+
+var _PanelLocationIds;
+
+function _load_PanelLocationIds() {
+  return _PanelLocationIds = _interopRequireWildcard(require('./PanelLocationIds'));
+}
+
+var _Panel;
+
+function _load_Panel() {
+  return _Panel = require('./ui/Panel');
+}
+
+var _nullthrows;
+
+function _load_nullthrows() {
+  return _nullthrows = _interopRequireDefault(require('nullthrows'));
+}
+
+var _reactForAtom = require('react-for-atom');
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,72 +104,39 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
-
-import type {PanelLocationId, SerializedPanelLocation} from './types';
-import type {Viewable} from '../../nuclide-workspace-views/lib/types';
-
-import createPaneContainer from '../../commons-atom/create-pane-container';
-import PanelRenderer from '../../commons-atom/PanelRenderer';
-import {renderReactRoot} from '../../commons-atom/renderReactRoot';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
-import {nextAnimationFrame} from '../../commons-node/observable';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {SimpleModel} from '../../commons-node/SimpleModel';
-import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
-import {observeAddedPaneItems} from './observeAddedPaneItems';
-import {observePanes} from './observePanes';
-import {syncPaneItemVisibility} from './syncPaneItemVisibility';
-import * as PanelLocationIds from './PanelLocationIds';
-import {Panel} from './ui/Panel';
-import invariant from 'assert';
-import nullthrows from 'nullthrows';
-import {React} from 'react-for-atom';
-import {BehaviorSubject, Observable, Scheduler} from 'rxjs';
-
-type State = {
-  showDropAreas: boolean,
-  visible: boolean,
-};
 
 const HIDE_BUTTON_WRAPPER_CLASS = 'nuclide-workspace-views-panel-location-tabs-hide-button-wrapper';
 
 /**
  * Manages views for an Atom panel.
  */
-export class PanelLocation extends SimpleModel<State> {
-  _disposables: UniversalDisposable;
-  _paneContainer: atom$PaneContainer;
-  _panes: BehaviorSubject<Set<atom$Pane>>;
-  _panel: atom$Panel;
-  _panelRenderer: PanelRenderer;
-  _position: 'top' | 'right' | 'bottom' | 'left';
-  _size: ?number;
+class PanelLocation extends (_SimpleModel || _load_SimpleModel()).SimpleModel {
 
-  constructor(locationId: PanelLocationId, serializedState: Object = {}) {
+  constructor(locationId, serializedState = {}) {
     super();
-    (this: any)._handlePanelResize = this._handlePanelResize.bind(this);
+    this._handlePanelResize = this._handlePanelResize.bind(this);
     const serializedData = serializedState.data || {};
     this._paneContainer = deserializePaneContainer(serializedData.paneContainer);
-    this._position = nullthrows(locationsToPosition.get(locationId));
-    this._panelRenderer = new PanelRenderer({
+    this._position = (0, (_nullthrows || _load_nullthrows()).default)(locationsToPosition.get(locationId));
+    this._panelRenderer = new (_PanelRenderer || _load_PanelRenderer()).default({
       priority: 101, // Use a value higher than the default (100).
       location: this._position,
-      createItem: this._createItem.bind(this),
+      createItem: this._createItem.bind(this)
     });
-    this._panes = new BehaviorSubject(new Set());
+    this._panes = new _rxjsBundlesRxMinJs.BehaviorSubject(new Set());
     this._size = serializedData.size || null;
     this.state = {
       showDropAreas: false,
-      visible: serializedData.visible === true,
+      visible: serializedData.visible === true
     };
   }
 
   /**
    * Set up the subscriptions and make this thing "live."
    */
-  initialize(): void {
+  initialize() {
     const paneContainer = this._paneContainer;
 
     // Create a stream that represents a change in the items of any pane. We need to do custom logic
@@ -79,171 +145,140 @@ export class PanelLocation extends SimpleModel<State> {
     // Since we have multiple pane containers, they can.
     //
     // [1]: https://github.com/atom/atom/blob/v1.10.0/src/pane-container.coffee#L232-L236
-    const paneItemChanges = this._panes
-      .map(x => Array.from(x))
-      .switchMap(panes => {
-        const itemChanges: Array<Observable<mixed>> = panes.map(pane => (
-          Observable.merge(
-            observableFromSubscribeFunction(pane.onDidAddItem.bind(pane)),
-            observableFromSubscribeFunction(pane.onDidRemoveItem.bind(pane)),
-          )
-        ));
-        return Observable.merge(...itemChanges);
-      })
-      .share();
+    const paneItemChanges = this._panes.map(x => Array.from(x)).switchMap(panes => {
+      const itemChanges = panes.map(pane => _rxjsBundlesRxMinJs.Observable.merge((0, (_event || _load_event()).observableFromSubscribeFunction)(pane.onDidAddItem.bind(pane)), (0, (_event || _load_event()).observableFromSubscribeFunction)(pane.onDidRemoveItem.bind(pane))));
+      return _rxjsBundlesRxMinJs.Observable.merge(...itemChanges);
+    }).share();
 
-    this._disposables = new UniversalDisposable(
-      this._panelRenderer,
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default(this._panelRenderer, (0, (_observePanes || _load_observePanes()).observePanes)(paneContainer).subscribe(this._panes), (0, (_syncPaneItemVisibility || _load_syncPaneItemVisibility()).syncPaneItemVisibility)(this._panes,
+    // $FlowFixMe: Teach Flow about Symbol.observable
+    _rxjsBundlesRxMinJs.Observable.from(this).map(state => state.visible).distinctUntilChanged()),
 
-      observePanes(paneContainer).subscribe(this._panes),
+    // Add a tab bar to any panes created in the container.
+    // TODO: Account for the disabling of the atom-tabs package. We assume that it will be
+    //   activated, but that isn't necessarily true. Continuing to use the atom-tabs logic while
+    //   avoiding that assumption will likely mean a change to atom-tabs that makes it more
+    //   generic.
+    paneContainer.observePanes(pane => {
+      const tabBarView = document.createElement('ul', 'atom-tabs');
+      tabBarView.classList.add('nuclide-workspace-views-panel-location-tabs');
 
-      syncPaneItemVisibility(
-        this._panes,
-        // $FlowFixMe: Teach Flow about Symbol.observable
-        Observable.from(this)
-          .map(state => state.visible)
-          .distinctUntilChanged(),
-      ),
-
-      // Add a tab bar to any panes created in the container.
-      // TODO: Account for the disabling of the atom-tabs package. We assume that it will be
-      //   activated, but that isn't necessarily true. Continuing to use the atom-tabs logic while
-      //   avoiding that assumption will likely mean a change to atom-tabs that makes it more
-      //   generic.
-      paneContainer.observePanes(pane => {
-        const tabBarView = document.createElement('ul', 'atom-tabs');
-        tabBarView.classList.add('nuclide-workspace-views-panel-location-tabs');
-
-        const initializeTabBar = () => {
-          invariant(typeof tabBarView.initialize === 'function');
-          tabBarView.initialize(pane);
-          const paneElement = atom.views.getView(pane);
-          paneElement.insertBefore(tabBarView, paneElement.firstChild);
-
-          const hideButtonWrapper = document.createElement('div');
-          hideButtonWrapper.className = HIDE_BUTTON_WRAPPER_CLASS;
-          const hideButton = document.createElement('div');
-          hideButton.className = 'nuclide-workspace-views-panel-location-tabs-hide-button';
-          hideButton.onclick = () => { this.setState({visible: false}); };
-          hideButtonWrapper.appendChild(hideButton);
-          tabBarView.appendChild(hideButtonWrapper);
-        };
-
-        // It's possible that the tabs package may not have activated yet (and therefore that the
-        // atom-tabs element won't have been upgraded). If that's the case, wait for it to do so and
-        // then initialize the tab bar.
-        if (typeof tabBarView.initialize === 'function') {
-          initializeTabBar();
-        } else {
-          const disposables = new UniversalDisposable(
-            atom.packages.onDidActivatePackage(pkg => {
-              if (typeof tabBarView.initialize === 'function') {
-                initializeTabBar();
-                disposables.dispose();
-              }
-            }),
-            pane.onDidDestroy(() => { disposables.dispose(); }),
-          );
+      const initializeTabBar = () => {
+        if (!(typeof tabBarView.initialize === 'function')) {
+          throw new Error('Invariant violation: "typeof tabBarView.initialize === \'function\'"');
         }
-      }),
 
-      // The atom/tabs package identifies the pane item being dragged [based on the child index of
-      // the tab][1]. Since our button shares the same parent as the tabs, the tab indexes won't we
-      // correct unless our button appears after every tab element in the DOM. (It's not enough to
-      // use CSS `order` to visually reposition our button.) Therefore, we need to move our button
-      // to the end every time a pane is added.
-      //
-      // [1]: https://github.com/atom/tabs/blob/v0.103.1/lib/tab-bar-view.coffee#L232
-      paneItemChanges
-        // Since we're observing the pane items (and not the addition of tabs directly), we need to
-        // delay for an animation frame to give the TabBarView a chance to add the tab.
-        .audit(() => nextAnimationFrame)
-        .subscribe(() => {
-          const paneContainerEl = atom.views.getView(paneContainer);
-          Array.from(paneContainerEl.getElementsByClassName(HIDE_BUTTON_WRAPPER_CLASS))
-            .forEach(el => {
-              const parent = el.parentElement;
-              if (parent == null) {
-                return;
-              }
-              const buttonIndex = getChildIndex(el);
-              const tabs = parent.querySelectorAll('.tab');
-              const lastTab = tabs[tabs.length - 1];
-              if (lastTab == null) {
-                return;
-              }
-              if (buttonIndex < getChildIndex(lastTab)) {
-                parent.insertBefore(el, lastTab.nextSibling);
-              }
-            });
-        }),
+        tabBarView.initialize(pane);
+        const paneElement = atom.views.getView(pane);
+        paneElement.insertBefore(tabBarView, paneElement.firstChild);
 
-      // If you add an item to a panel (e.g. by drag & drop), make the panel visible.
-      paneItemChanges
-        .startWith(null)
-        .map(() => this._paneContainer.getPaneItems().length)
-        .pairwise()
-        .subscribe(([prev, next]) => {
-          // If the last item is removed, hide the panel.
-          if (next === 0) {
-            this.setState({visible: false});
-          } else if (next > prev) {
-            // If there are more items now than there were before, show the panel.
-            this.setState({visible: true});
+        const hideButtonWrapper = document.createElement('div');
+        hideButtonWrapper.className = HIDE_BUTTON_WRAPPER_CLASS;
+        const hideButton = document.createElement('div');
+        hideButton.className = 'nuclide-workspace-views-panel-location-tabs-hide-button';
+        hideButton.onclick = () => {
+          this.setState({ visible: false });
+        };
+        hideButtonWrapper.appendChild(hideButton);
+        tabBarView.appendChild(hideButtonWrapper);
+      };
+
+      // It's possible that the tabs package may not have activated yet (and therefore that the
+      // atom-tabs element won't have been upgraded). If that's the case, wait for it to do so and
+      // then initialize the tab bar.
+      if (typeof tabBarView.initialize === 'function') {
+        initializeTabBar();
+      } else {
+        const disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default(atom.packages.onDidActivatePackage(pkg => {
+          if (typeof tabBarView.initialize === 'function') {
+            initializeTabBar();
+            disposables.dispose();
           }
-        }),
+        }), pane.onDidDestroy(() => {
+          disposables.dispose();
+        }));
+      }
+    }),
 
-      // Show the drop areas while dragging.
-      Observable.fromEvent(document, 'dragstart')
-        .filter(event => isTab(event.target))
-        .switchMap(() => (
-          Observable.concat(
-            Observable.of(true),
-            Observable.merge(
-              // Use the capturing phase in case the event propagation is stopped.
-              Observable.fromEvent(document, 'dragend', {capture: true}),
-              Observable.fromEvent(document, 'drop', {capture: true}),
-            )
-              .take(1)
-              .mapTo(false),
-          )
-        ))
-        // Manipulating the DOM in the dragstart handler will fire the dragend event so we defer it.
-        // See https://groups.google.com/a/chromium.org/forum/?fromgroups=#!msg/chromium-bugs/YHs3orFC8Dc/ryT25b7J-NwJ
-        .observeOn(Scheduler.async)
-        .subscribe(showDropAreas => { this.setState({showDropAreas}); }),
+    // The atom/tabs package identifies the pane item being dragged [based on the child index of
+    // the tab][1]. Since our button shares the same parent as the tabs, the tab indexes won't we
+    // correct unless our button appears after every tab element in the DOM. (It's not enough to
+    // use CSS `order` to visually reposition our button.) Therefore, we need to move our button
+    // to the end every time a pane is added.
+    //
+    // [1]: https://github.com/atom/tabs/blob/v0.103.1/lib/tab-bar-view.coffee#L232
+    paneItemChanges
+    // Since we're observing the pane items (and not the addition of tabs directly), we need to
+    // delay for an animation frame to give the TabBarView a chance to add the tab.
+    .audit(() => (_observable || _load_observable()).nextAnimationFrame).subscribe(() => {
+      const paneContainerEl = atom.views.getView(paneContainer);
+      Array.from(paneContainerEl.getElementsByClassName(HIDE_BUTTON_WRAPPER_CLASS)).forEach(el => {
+        const parent = el.parentElement;
+        if (parent == null) {
+          return;
+        }
+        const buttonIndex = getChildIndex(el);
+        const tabs = parent.querySelectorAll('.tab');
+        const lastTab = tabs[tabs.length - 1];
+        if (lastTab == null) {
+          return;
+        }
+        if (buttonIndex < getChildIndex(lastTab)) {
+          parent.insertBefore(el, lastTab.nextSibling);
+        }
+      });
+    }),
 
-        // $FlowIssue: We need to teach flow about Symbol.observable.
-        Observable.from(this).subscribe(state => {
-          this._panelRenderer.render({
-            visible: state.showDropAreas || state.visible,
-          });
-        }),
+    // If you add an item to a panel (e.g. by drag & drop), make the panel visible.
+    paneItemChanges.startWith(null).map(() => this._paneContainer.getPaneItems().length).pairwise().subscribe(([prev, next]) => {
+      // If the last item is removed, hide the panel.
+      if (next === 0) {
+        this.setState({ visible: false });
+      } else if (next > prev) {
+        // If there are more items now than there were before, show the panel.
+        this.setState({ visible: true });
+      }
+    }),
 
-    );
+    // Show the drop areas while dragging.
+    _rxjsBundlesRxMinJs.Observable.fromEvent(document, 'dragstart').filter(event => isTab(event.target)).switchMap(() => _rxjsBundlesRxMinJs.Observable.concat(_rxjsBundlesRxMinJs.Observable.of(true), _rxjsBundlesRxMinJs.Observable.merge(
+    // Use the capturing phase in case the event propagation is stopped.
+    _rxjsBundlesRxMinJs.Observable.fromEvent(document, 'dragend', { capture: true }), _rxjsBundlesRxMinJs.Observable.fromEvent(document, 'drop', { capture: true })).take(1).mapTo(false)))
+    // Manipulating the DOM in the dragstart handler will fire the dragend event so we defer it.
+    // See https://groups.google.com/a/chromium.org/forum/?fromgroups=#!msg/chromium-bugs/YHs3orFC8Dc/ryT25b7J-NwJ
+    .observeOn(_rxjsBundlesRxMinJs.Scheduler.async).subscribe(showDropAreas => {
+      this.setState({ showDropAreas });
+    }),
+
+    // $FlowIssue: We need to teach flow about Symbol.observable.
+    _rxjsBundlesRxMinJs.Observable.from(this).subscribe(state => {
+      this._panelRenderer.render({
+        visible: state.showDropAreas || state.visible
+      });
+    }));
   }
 
-  _createItem(): Object {
+  _createItem() {
     // Create an item to display in the panel. Atom will associate this item with a view via the
     // view registry (and its `getElement` method). That view will be used to display views for this
     // panel.
     // $FlowIssue: We need to teach flow about Symbol.observable.
-    const props = Observable.from(this).map(state => ({
+    const props = _rxjsBundlesRxMinJs.Observable.from(this).map(state => ({
       initialSize: this._size,
       paneContainer: this._paneContainer,
       position: this._position,
-      onResize: this._handlePanelResize,
+      onResize: this._handlePanelResize
     }));
-    const Component = bindObservableAsProps(props, Panel);
-    return {getElement: () => renderReactRoot(<Component />)};
+    const Component = (0, (_bindObservableAsProps || _load_bindObservableAsProps()).bindObservableAsProps)(props, (_Panel || _load_Panel()).Panel);
+    return { getElement: () => (0, (_renderReactRoot || _load_renderReactRoot()).renderReactRoot)(_reactForAtom.React.createElement(Component, null)) };
   }
 
-  _handlePanelResize(size: number): void {
+  _handlePanelResize(size) {
     // If the user resizes the pane, store it so that we can serialize it for the next session.
     this._size = size;
   }
 
-  itemIsVisible(item: Viewable): boolean {
+  itemIsVisible(item) {
     if (!this.state.visible) {
       return false;
     }
@@ -255,12 +290,12 @@ export class PanelLocation extends SimpleModel<State> {
     return false;
   }
 
-  destroy(): void {
+  destroy() {
     this._disposables.dispose();
     this._paneContainer.destroy();
   }
 
-  destroyItem(item: Object): void {
+  destroyItem(item) {
     for (const pane of this._panes.getValue()) {
       for (const it of pane.getItems()) {
         if (it === item) {
@@ -270,7 +305,7 @@ export class PanelLocation extends SimpleModel<State> {
     }
   }
 
-  getItems(): Array<Viewable> {
+  getItems() {
     const items = [];
     for (const pane of this._panes.getValue()) {
       items.push(...pane.getItems());
@@ -278,11 +313,11 @@ export class PanelLocation extends SimpleModel<State> {
     return items;
   }
 
-  activate(): void {
-    this.setState({visible: true});
+  activate() {
+    this.setState({ visible: true });
   }
 
-  addItem(item: Viewable): void {
+  addItem(item) {
     let pane = this._paneContainer.paneForItem(item);
     if (pane == null) {
       pane = this._paneContainer.getActivePane();
@@ -290,7 +325,7 @@ export class PanelLocation extends SimpleModel<State> {
     pane.addItem(item);
   }
 
-  activateItem(item: Viewable): void {
+  activateItem(item) {
     let pane = this._paneContainer.paneForItem(item);
     if (pane == null) {
       pane = this._paneContainer.getActivePane();
@@ -301,9 +336,8 @@ export class PanelLocation extends SimpleModel<State> {
   /**
    * Hide the specified item. If the user toggles a visible item, we hide the entire pane.
    */
-  hideItem(item: Viewable): void {
-    const itemIsVisible = this._paneContainer.getPanes()
-      .some(pane => pane.getActiveItem() === item);
+  hideItem(item) {
+    const itemIsVisible = this._paneContainer.getPanes().some(pane => pane.getActiveItem() === item);
 
     // If the item's already hidden, we're done.
     if (!itemIsVisible) {
@@ -311,58 +345,56 @@ export class PanelLocation extends SimpleModel<State> {
     }
 
     // Otherwise, hide the panel altogether.
-    this.setState({visible: false});
+    this.setState({ visible: false });
   }
 
-  isVisible(): boolean {
+  isVisible() {
     return this.state.visible;
   }
 
-  toggle(): void {
-    this.setState({visible: !this.state.visible});
+  toggle() {
+    this.setState({ visible: !this.state.visible });
   }
 
-  serialize(): ?SerializedPanelLocation {
+  serialize() {
     return {
       deserializer: 'PanelLocation',
       data: {
         paneContainer: this._paneContainer == null ? null : this._paneContainer.serialize(),
         size: this._size,
-        visible: this.state.visible,
-      },
+        visible: this.state.visible
+      }
     };
   }
 
-  onDidAddItem(cb: (item: Viewable) => void): IDisposable {
-    return new UniversalDisposable(observeAddedPaneItems(this._paneContainer).subscribe(cb));
+  onDidAddItem(cb) {
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default((0, (_observeAddedPaneItems || _load_observeAddedPaneItems()).observeAddedPaneItems)(this._paneContainer).subscribe(cb));
   }
 }
 
-function deserializePaneContainer(serialized: ?Object): atom$PaneContainer {
-  const paneContainer = createPaneContainer();
+exports.PanelLocation = PanelLocation;
+function deserializePaneContainer(serialized) {
+  const paneContainer = (0, (_createPaneContainer || _load_createPaneContainer()).default)();
   if (serialized != null) {
     paneContainer.deserialize(serialized, atom.deserializers);
   }
   return paneContainer;
 }
 
-const locationsToPosition = new Map([
-  [PanelLocationIds.TOP_PANEL, 'top'],
-  [PanelLocationIds.RIGHT_PANEL, 'right'],
-  [PanelLocationIds.BOTTOM_PANEL, 'bottom'],
-  [PanelLocationIds.LEFT_PANEL, 'left'],
-]);
+const locationsToPosition = new Map([[(_PanelLocationIds || _load_PanelLocationIds()).TOP_PANEL, 'top'], [(_PanelLocationIds || _load_PanelLocationIds()).RIGHT_PANEL, 'right'], [(_PanelLocationIds || _load_PanelLocationIds()).BOTTOM_PANEL, 'bottom'], [(_PanelLocationIds || _load_PanelLocationIds()).LEFT_PANEL, 'left']]);
 
-function isTab(element: HTMLElement): boolean {
+function isTab(element) {
   let el = element;
   while (el != null) {
-    if (el.getAttribute('is') === 'tabs-tab') { return true; }
+    if (el.getAttribute('is') === 'tabs-tab') {
+      return true;
+    }
     el = el.parentElement;
   }
   return false;
 }
 
-function getChildIndex(el: HTMLElement): number {
+function getChildIndex(el) {
   const parent = el.parentElement;
   return parent == null ? -1 : Array.prototype.indexOf.call(parent.children, el);
 }

@@ -1,48 +1,42 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import addTooltip from '../../nuclide-ui/add-tooltip';
-import classnames from 'classnames';
-import ConnectionDetailsForm from './ConnectionDetailsForm';
-import {HR} from '../../nuclide-ui/HR';
-import {MutableListSelector} from '../../nuclide-ui/MutableListSelector';
-import {React} from 'react-for-atom';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import type {
-  NuclideRemoteConnectionParams,
-  NuclideRemoteConnectionParamsWithPassword,
-  NuclideRemoteConnectionProfile,
-} from './connection-types';
+var _addTooltip;
 
-type Props = {
-  // The initial list of connection profiles that will be displayed.
-  // Whenever a user add/removes profiles via the child NuclideListSelector,
-  // these props should be updated from the top-level by calling ReactDOM.render()
-  // again (with the new props) on the ConnectionDetailsPrompt.
-  connectionProfiles: ?Array<NuclideRemoteConnectionProfile>,
-  // If there is >= 1 connection profile, this index indicates the profile to use.
-  indexOfSelectedConnectionProfile: ?number,
-  // Function to call when 'enter'/'confirm' is selected by the user in this view.
-  onConfirm: () => mixed,
-  // Function to call when 'cancel' is selected by the user in this view.
-  onCancel: () => mixed,
-  onDidChange: () => mixed,
-  // Function that is called when the "+" button on the profiles list is clicked.
-  // The user's intent is to create a new profile.
-  onAddProfileClicked: () => mixed,
-  // Function that is called when the "-" button on the profiles list is clicked
-  // ** while a profile is selected **.
-  // The user's intent is to delete the currently-selected profile.
-  onDeleteProfileClicked: (indexOfSelectedConnectionProfile: number) => mixed,
-  onProfileClicked: (indexOfSelectedConnectionProfile: number) => mixed,
-};
+function _load_addTooltip() {
+  return _addTooltip = _interopRequireDefault(require('../../nuclide-ui/add-tooltip'));
+}
+
+var _classnames;
+
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
+
+var _ConnectionDetailsForm;
+
+function _load_ConnectionDetailsForm() {
+  return _ConnectionDetailsForm = _interopRequireDefault(require('./ConnectionDetailsForm'));
+}
+
+var _HR;
+
+function _load_HR() {
+  return _HR = require('../../nuclide-ui/HR');
+}
+
+var _MutableListSelector;
+
+function _load_MutableListSelector() {
+  return _MutableListSelector = require('../../nuclide-ui/MutableListSelector');
+}
+
+var _reactForAtom = require('react-for-atom');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * This component contains the entire view in which the user inputs their
@@ -52,34 +46,34 @@ type Props = {
  * 'profiles'. Clicking on a 'profile' in the NuclideListSelector auto-fills
  * the form with the information associated with that profile.
  */
-export default class ConnectionDetailsPrompt extends React.Component {
-  props: Props;
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ *
+ * 
+ */
 
-  _settingFormFieldsLock: boolean;
+class ConnectionDetailsPrompt extends _reactForAtom.React.Component {
 
-  constructor(props: Props) {
+  constructor(props) {
     super(props);
     this._settingFormFieldsLock = false;
 
-    (this: any)._handleConnectionDetailsFormDidChange =
-      this._handleConnectionDetailsFormDidChange.bind(this);
-    (this: any)._onDefaultProfileClicked = this._onDefaultProfileClicked.bind(this);
-    (this: any)._onDeleteProfileClicked = this._onDeleteProfileClicked.bind(this);
-    (this: any)._onProfileClicked = this._onProfileClicked.bind(this);
+    this._handleConnectionDetailsFormDidChange = this._handleConnectionDetailsFormDidChange.bind(this);
+    this._onDefaultProfileClicked = this._onDefaultProfileClicked.bind(this);
+    this._onDeleteProfileClicked = this._onDeleteProfileClicked.bind(this);
+    this._onProfileClicked = this._onProfileClicked.bind(this);
   }
 
-  componentDidUpdate(prevProps: Props, prevState: void) {
+  componentDidUpdate(prevProps, prevState) {
     // Manually update the contents of an existing `ConnectionDetailsForm`, because it contains
     // `AtomInput` components (which don't update their contents when their props change).
-    if (
-      prevProps.indexOfSelectedConnectionProfile !== this.props.indexOfSelectedConnectionProfile
-      || (
-        // If the connection profiles changed length, the effective selected profile also changed.
-        prevProps.connectionProfiles != null
-        && this.props.connectionProfiles != null
-        && prevProps.connectionProfiles.length !== this.props.connectionProfiles.length
-      )
-    ) {
+    if (prevProps.indexOfSelectedConnectionProfile !== this.props.indexOfSelectedConnectionProfile ||
+    // If the connection profiles changed length, the effective selected profile also changed.
+    prevProps.connectionProfiles != null && this.props.connectionProfiles != null && prevProps.connectionProfiles.length !== this.props.connectionProfiles.length) {
       const existingConnectionDetailsForm = this.refs['connection-details-form'];
       if (existingConnectionDetailsForm) {
         // Setting values in the ConnectionDetailsForm fires change events. However, this is a
@@ -94,27 +88,24 @@ export default class ConnectionDetailsPrompt extends React.Component {
     }
   }
 
-  focus(): void {
+  focus() {
     this.refs['connection-details-form'].focus();
   }
 
-  getFormFields(): NuclideRemoteConnectionParamsWithPassword {
+  getFormFields() {
     return this.refs['connection-details-form'].getFormFields();
   }
 
-  getPrefilledConnectionParams(): ?NuclideRemoteConnectionParams {
+  getPrefilledConnectionParams() {
     // If there are profiles, pre-fill the form with the information from the specified selected
     // profile.
-    if (this.props.connectionProfiles != null &&
-        this.props.connectionProfiles.length > 0 &&
-        this.props.indexOfSelectedConnectionProfile != null) {
-      const selectedProfile =
-        this.props.connectionProfiles[this.props.indexOfSelectedConnectionProfile];
+    if (this.props.connectionProfiles != null && this.props.connectionProfiles.length > 0 && this.props.indexOfSelectedConnectionProfile != null) {
+      const selectedProfile = this.props.connectionProfiles[this.props.indexOfSelectedConnectionProfile];
       return selectedProfile.params;
     }
   }
 
-  _handleConnectionDetailsFormDidChange(): void {
+  _handleConnectionDetailsFormDidChange() {
     if (this._settingFormFieldsLock) {
       return;
     }
@@ -122,11 +113,11 @@ export default class ConnectionDetailsPrompt extends React.Component {
     this.props.onDidChange();
   }
 
-  _onDefaultProfileClicked(): void {
+  _onDefaultProfileClicked() {
     this.props.onProfileClicked(0);
   }
 
-  _onDeleteProfileClicked(profileId: ?string): void {
+  _onDeleteProfileClicked(profileId) {
     if (profileId == null) {
       return;
     }
@@ -137,14 +128,14 @@ export default class ConnectionDetailsPrompt extends React.Component {
     this.props.onDeleteProfileClicked(parseInt(profileId, 10) + 1);
   }
 
-  _onProfileClicked(profileId: string): void {
+  _onProfileClicked(profileId) {
     // The id of a profile is its index in the list of props.
     // * This requires a `+ 1` because the default profile is sliced from the Array during render
     //   creating an effective offset of -1 for each index passed to the `MutableListSelector`.
     this.props.onProfileClicked(parseInt(profileId, 10) + 1);
   }
 
-  render(): React.Element<any> {
+  render() {
     // If there are profiles, pre-fill the form with the information from the
     // specified selected profile.
     const prefilledConnectionParams = this.getPrefilledConnectionParams() || {};
@@ -155,38 +146,40 @@ export default class ConnectionDetailsPrompt extends React.Component {
     if (connectionProfiles == null || connectionProfiles.length === 0) {
       listSelectorItems = [];
     } else {
-      const mostRecentClassName = classnames('list-item', {
-        selected: this.props.indexOfSelectedConnectionProfile === 0,
+      const mostRecentClassName = (0, (_classnames || _load_classnames()).default)('list-item', {
+        selected: this.props.indexOfSelectedConnectionProfile === 0
       });
 
-      defaultConnectionProfileList = (
-        <div className="block select-list">
-          <ol className="list-group" style={{marginTop: 0}}>
-            <li
-              className={mostRecentClassName}
-              onClick={this._onDefaultProfileClicked}
-              onDoubleClick={this.props.onConfirm}>
-              <span
-                className="icon icon-info pull-right connection-details-icon-info"
-                ref={addTooltip({
-                  // Intentionally *not* an arrow function so the jQuery Tooltip plugin can set the
-                  // context to the Tooltip instance.
-                  placement() {
-                    // Atom modals have z indices of 9999. This Tooltip needs to stack on top of the
-                    // modal; beat the modal's z-index.
-                    this.tip.style.zIndex = 10999;
-                    return 'right';
-                  },
-                  title:
-                    'The settings most recently used to connect. To save settings permanently, '
-                    + 'create a profile.',
-                })}
-              />
-              Most Recent
-            </li>
-          </ol>
-          <HR />
-        </div>
+      defaultConnectionProfileList = _reactForAtom.React.createElement(
+        'div',
+        { className: 'block select-list' },
+        _reactForAtom.React.createElement(
+          'ol',
+          { className: 'list-group', style: { marginTop: 0 } },
+          _reactForAtom.React.createElement(
+            'li',
+            {
+              className: mostRecentClassName,
+              onClick: this._onDefaultProfileClicked,
+              onDoubleClick: this.props.onConfirm },
+            _reactForAtom.React.createElement('span', {
+              className: 'icon icon-info pull-right connection-details-icon-info',
+              ref: (0, (_addTooltip || _load_addTooltip()).default)({
+                // Intentionally *not* an arrow function so the jQuery Tooltip plugin can set the
+                // context to the Tooltip instance.
+                placement() {
+                  // Atom modals have z indices of 9999. This Tooltip needs to stack on top of the
+                  // modal; beat the modal's z-index.
+                  this.tip.style.zIndex = 10999;
+                  return 'right';
+                },
+                title: 'The settings most recently used to connect. To save settings permanently, ' + 'create a profile.'
+              })
+            }),
+            'Most Recent'
+          )
+        ),
+        _reactForAtom.React.createElement((_HR || _load_HR()).HR, null)
       );
 
       listSelectorItems = connectionProfiles.slice(1).map((profile, index) => {
@@ -196,52 +189,58 @@ export default class ConnectionDetailsPrompt extends React.Component {
           deletable: profile.deletable,
           displayTitle: profile.displayTitle,
           id: String(index),
-          saveable: profile.saveable,
+          saveable: profile.saveable
         };
       });
     }
 
     // The default profile is sliced from the Array to render it separately, which means
     // decrementing the effective index into the Array passed to the `MutableListSelector`.
-    let idOfSelectedItem = (this.props.indexOfSelectedConnectionProfile == null)
-      ? null
-      : this.props.indexOfSelectedConnectionProfile - 1;
+    let idOfSelectedItem = this.props.indexOfSelectedConnectionProfile == null ? null : this.props.indexOfSelectedConnectionProfile - 1;
     if (idOfSelectedItem === null || idOfSelectedItem < 0) {
       idOfSelectedItem = null;
     } else {
       idOfSelectedItem = String(idOfSelectedItem);
     }
 
-    return (
-      <div className="nuclide-remote-projects-connection-dialog">
-        <div className="nuclide-remote-projects-connection-profiles">
-          {defaultConnectionProfileList}
-          <h6>Profiles</h6>
-          <MutableListSelector
-            items={listSelectorItems}
-            idOfSelectedItem={idOfSelectedItem}
-            onItemClicked={this._onProfileClicked}
-            onItemDoubleClicked={this.props.onConfirm}
-            onAddButtonClicked={this.props.onAddProfileClicked}
-            onDeleteButtonClicked={this._onDeleteProfileClicked}
-          />
-        </div>
-        <ConnectionDetailsForm
-          className="nuclide-remote-projects-connection-details"
-          initialUsername={prefilledConnectionParams.username}
-          initialServer={prefilledConnectionParams.server}
-          initialRemoteServerCommand={prefilledConnectionParams.remoteServerCommand}
-          initialCwd={prefilledConnectionParams.cwd}
-          initialSshPort={prefilledConnectionParams.sshPort}
-          initialPathToPrivateKey={prefilledConnectionParams.pathToPrivateKey}
-          initialAuthMethod={prefilledConnectionParams.authMethod}
-          initialDisplayTitle={prefilledConnectionParams.displayTitle}
-          onConfirm={this.props.onConfirm}
-          onCancel={this.props.onCancel}
-          onDidChange={this._handleConnectionDetailsFormDidChange}
-          ref="connection-details-form"
-        />
-      </div>
+    return _reactForAtom.React.createElement(
+      'div',
+      { className: 'nuclide-remote-projects-connection-dialog' },
+      _reactForAtom.React.createElement(
+        'div',
+        { className: 'nuclide-remote-projects-connection-profiles' },
+        defaultConnectionProfileList,
+        _reactForAtom.React.createElement(
+          'h6',
+          null,
+          'Profiles'
+        ),
+        _reactForAtom.React.createElement((_MutableListSelector || _load_MutableListSelector()).MutableListSelector, {
+          items: listSelectorItems,
+          idOfSelectedItem: idOfSelectedItem,
+          onItemClicked: this._onProfileClicked,
+          onItemDoubleClicked: this.props.onConfirm,
+          onAddButtonClicked: this.props.onAddProfileClicked,
+          onDeleteButtonClicked: this._onDeleteProfileClicked
+        })
+      ),
+      _reactForAtom.React.createElement((_ConnectionDetailsForm || _load_ConnectionDetailsForm()).default, {
+        className: 'nuclide-remote-projects-connection-details',
+        initialUsername: prefilledConnectionParams.username,
+        initialServer: prefilledConnectionParams.server,
+        initialRemoteServerCommand: prefilledConnectionParams.remoteServerCommand,
+        initialCwd: prefilledConnectionParams.cwd,
+        initialSshPort: prefilledConnectionParams.sshPort,
+        initialPathToPrivateKey: prefilledConnectionParams.pathToPrivateKey,
+        initialAuthMethod: prefilledConnectionParams.authMethod,
+        initialDisplayTitle: prefilledConnectionParams.displayTitle,
+        onConfirm: this.props.onConfirm,
+        onCancel: this.props.onCancel,
+        onDidChange: this._handleConnectionDetailsFormDidChange,
+        ref: 'connection-details-form'
+      })
     );
   }
 }
+exports.default = ConnectionDetailsPrompt;
+module.exports = exports['default'];
