@@ -8,7 +8,8 @@
  * @flow
  */
 
-export const GRAMMAR_SET = new Set(['source.python']);
+export const GRAMMARS = ['source.python'];
+export const GRAMMAR_SET = new Set(GRAMMARS);
 export const PACKAGE_NAME = 'nuclide-python';
 // Type mappings between Jedi types and autocomplete-plus types used for styling.
 export const TYPES = {

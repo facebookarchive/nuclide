@@ -13,11 +13,17 @@ import type {DefinitionProvider} from '../../nuclide-definition-service';
 import type {FindReferencesProvider} from '../../nuclide-find-references';
 import type {CodeFormatProvider} from '../../nuclide-code-format/lib/types';
 import type {LinterProvider} from '../../nuclide-diagnostics-common';
+import typeof * as PythonService from '../../nuclide-python-rpc/lib/PythonService';
+import type {ServerConnection} from '../../nuclide-remote-connection';
+import type {
+  AtomLanguageServiceConfig,
+} from '../../nuclide-language-service/lib/AtomLanguageService';
+import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
 
 import invariant from 'assert';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {DedupedBusySignalProviderBase} from '../../nuclide-busy-signal';
-import {GRAMMAR_SET} from './constants';
+import {GRAMMARS, GRAMMAR_SET} from './constants';
 import {getLintOnFly} from './config';
 import AutocompleteHelpers from './AutocompleteHelpers';
 import DefinitionHelpers from './DefinitionHelpers';
@@ -25,12 +31,39 @@ import OutlineHelpers from './OutlineHelpers';
 import ReferenceHelpers from './ReferenceHelpers';
 import CodeFormatHelpers from './CodeFormatHelpers';
 import LintHelpers from './LintHelpers';
+import {getServiceByConnection} from '../../nuclide-remote-connection';
+import {getNotifierByConnection} from '../../nuclide-open-files';
+import {AtomLanguageService} from '../../nuclide-language-service';
+
+const PYTHON_SERVICE_NAME = 'PythonService';
 
 let busySignalProvider: ?DedupedBusySignalProviderBase = null;
 
+async function connectionToPythonService(
+  connection: ?ServerConnection,
+): Promise<LanguageService> {
+  const pythonService: PythonService = getServiceByConnection(PYTHON_SERVICE_NAME, connection);
+  const fileNotifier = await getNotifierByConnection(connection);
+  const languageService = await pythonService.initialize(fileNotifier);
+
+  return languageService;
+}
+
+const atomConfig: AtomLanguageServiceConfig = {
+  name: 'Python',
+  grammars: GRAMMARS,
+};
+
+let pythonLanguageService: ?AtomLanguageService<LanguageService> = null;
+
 export function activate() {
   busySignalProvider = new DedupedBusySignalProviderBase();
+  if (pythonLanguageService == null) {
+    pythonLanguageService = new AtomLanguageService(connectionToPythonService, atomConfig);
+    pythonLanguageService.activate();
+  }
 }
+
 
 export function createAutocompleteProvider(): atom$AutocompleteProvider {
   return {
@@ -121,4 +154,8 @@ export function provideBusySignal(): DedupedBusySignalProviderBase {
 }
 
 export function deactivate() {
+  if (pythonLanguageService != null) {
+    pythonLanguageService.dispose();
+    pythonLanguageService = null;
+  }
 }
