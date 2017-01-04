@@ -14,7 +14,6 @@ import nuclideUri from '../../commons-node/nuclideUri';
 
 import SearchResultManager from '../lib/SearchResultManager';
 import QuickOpenProviderRegistry from '../lib/QuickOpenProviderRegistry';
-import QuickSelectionDispatcher from '../lib/QuickSelectionDispatcher';
 
 import {__test__} from '../lib/SearchResultManager';
 const {_getOmniSearchProviderSpec} = __test__;
@@ -84,11 +83,9 @@ describe('SearchResultManager', () => {
   let quickOpenProviderRegistry: QuickOpenProviderRegistry = (null: any);
 
   beforeEach(() => {
-    const quickSelectionDispatcher = new QuickSelectionDispatcher();
     quickOpenProviderRegistry = new QuickOpenProviderRegistry();
     searchResultManager = new SearchResultManager(
       quickOpenProviderRegistry,
-      quickSelectionDispatcher,
     );
   });
 

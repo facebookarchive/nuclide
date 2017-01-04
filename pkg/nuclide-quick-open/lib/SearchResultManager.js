@@ -19,9 +19,6 @@ import type {
 import type {
   FileResult,
 } from './rpc-types';
-import type QuickSelectionDispatcher, {
-  QuickSelectionAction,
-} from './QuickSelectionDispatcher';
 import type QuickOpenProviderRegistry from './QuickOpenProviderRegistry';
 
 type ResultRenderer =
@@ -38,7 +35,6 @@ import {
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {triggerAfterWait} from '../../commons-node/promise';
 import debounce from '../../commons-node/debounce';
-import {ActionTypes} from './QuickSelectionDispatcher';
 import FileResultComponent from './FileResultComponent';
 import ResultCache from './ResultCache';
 
@@ -61,9 +57,7 @@ const GLOBAL_KEY = 'global';
  * A singleton cache for search providers and results.
  */
 export default class SearchResultManager {
-  _dispatcherToken: string;
   _quickOpenProviderRegistry: QuickOpenProviderRegistry;
-  _quickSelectionDispatcher: QuickSelectionDispatcher;
   _providersByDirectory: Map<atom$Directory, Set<Provider>>;
   _providerSubscriptions: Map<Provider, IDisposable>;
   _directories: Array<atom$Directory>;
@@ -76,7 +70,6 @@ export default class SearchResultManager {
 
   constructor(
     quickOpenProviderRegistry: QuickOpenProviderRegistry,
-    quickSelectionDispatcher: QuickSelectionDispatcher,
   ) {
     this._providersByDirectory = new Map();
     this._providerSubscriptions = new Map();
@@ -96,7 +89,6 @@ export default class SearchResultManager {
     );
     this._emitter = new Emitter();
     this._subscriptions = new CompositeDisposable();
-    this._quickSelectionDispatcher = quickSelectionDispatcher;
     this._quickOpenProviderRegistry = quickOpenProviderRegistry;
     // Check is required for testing.
     if (atom.project) {
@@ -105,9 +97,6 @@ export default class SearchResultManager {
       );
       this._debouncedUpdateDirectories();
     }
-    this._dispatcherToken = this._quickSelectionDispatcher.register(
-      this._handleActions.bind(this),
-    );
     this._subscriptions.add(
       this._quickOpenProviderRegistry.observeProviders(
         this._registerProvider.bind(this),
@@ -119,16 +108,13 @@ export default class SearchResultManager {
     this._activeProviderName = OMNISEARCH_PROVIDER.name;
   }
 
-  _handleActions(action: QuickSelectionAction): void {
-    switch (action.actionType) {
-      case ActionTypes.QUERY:
-        this._executeQuery(action.query);
-        break;
-      case ActionTypes.ACTIVE_PROVIDER_CHANGED:
-        this._activeProviderName = action.providerName;
-        this._emitter.emit('providers-changed');
-        break;
-    }
+  executeQuery(query: string): void {
+    this._executeQuery(query);
+  }
+
+  setActiveProvider(providerName: string): void {
+    this._activeProviderName = providerName;
+    this._emitter.emit('providers-changed');
   }
 
   onResultsChanged(callback: () => void): IDisposable {
@@ -156,7 +142,6 @@ export default class SearchResultManager {
     this._providerSubscriptions.forEach(subscriptions => {
       subscriptions.dispose();
     });
-    this._quickSelectionDispatcher.unregister(this._dispatcherToken);
   }
 
   /**

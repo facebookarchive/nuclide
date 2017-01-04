@@ -27,11 +27,9 @@ export default class QuickSelectionActions {
   }
 
   changeActiveProvider(providerName: string): void {
-    setImmediate(() => {
-      this._dispatcher.dispatch({
-        actionType: ActionTypes.ACTIVE_PROVIDER_CHANGED,
-        providerName,
-      });
+    this._dispatcher.dispatch({
+      actionType: ActionTypes.ACTIVE_PROVIDER_CHANGED,
+      providerName,
     });
   }
 }

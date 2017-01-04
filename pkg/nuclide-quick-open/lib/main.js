@@ -61,7 +61,6 @@ class Activation {
     );
     this._searchResultManager = new SearchResultManager(
       this._quickOpenProviderRegistry,
-      this._quickSelectionDispatcher,
     );
     this._currentProvider = this._searchResultManager.getProviderByName(DEFAULT_PROVIDER);
     this._dispatcherToken = this._quickSelectionDispatcher.register(
@@ -86,6 +85,10 @@ class Activation {
     switch (action.actionType) {
       case ActionTypes.ACTIVE_PROVIDER_CHANGED:
         this._handleActiveProviderChange(action.providerName);
+        this._searchResultManager.setActiveProvider(action.providerName);
+        break;
+      case ActionTypes.QUERY:
+        this._searchResultManager.executeQuery(action.query);
         break;
     }
   }
