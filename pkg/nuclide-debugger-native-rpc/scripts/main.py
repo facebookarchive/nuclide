@@ -29,6 +29,7 @@ from chrome_channel import ChromeChannel
 from ipc_channel import IpcChannel
 import time
 
+
 def parse_args():
     '''Parse command line arguments.
 
