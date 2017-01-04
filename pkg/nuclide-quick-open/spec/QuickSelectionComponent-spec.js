@@ -81,7 +81,7 @@ xdescribe('QuickSelectionComponent', () => {
       component = untypedComponent;
       advanceClock(250);
 
-      component.clear();
+      component._clear();
     }).then(callback));
   }
 
@@ -98,7 +98,7 @@ xdescribe('QuickSelectionComponent', () => {
           }),
         },
       }, () => {
-        const selectedItemIndex = component.getSelectedIndex();
+        const selectedItemIndex = component._getSelectedIndex();
         expect(selectedItemIndex.selectedDirectory).toBe('');
         expect(selectedItemIndex.selectedService).toBe('');
         expect(selectedItemIndex.selectedItemIndex).toBe(-1);
@@ -109,8 +109,8 @@ xdescribe('QuickSelectionComponent', () => {
             resolve();
           });
 
-          component.moveSelectionDown();
-          component.select();
+          component._moveSelectionDown();
+          component._select();
         }));
       });
     });
@@ -119,7 +119,7 @@ xdescribe('QuickSelectionComponent', () => {
       withItemsSetTo({testDirectory: {testProvider: Promise.resolve({results: [1, 2, 3]})}}, () => {
         const componentNode = ReactDOM.findDOMNode(component);
 
-        const selectedItemIndex = component.getSelectedIndex();
+        const selectedItemIndex = component._getSelectedIndex();
         expect(selectedItemIndex.selectedDirectory).toBe('');
         expect(selectedItemIndex.selectedService).toBe('');
         expect(selectedItemIndex.selectedItemIndex).toBe(-1);
@@ -130,7 +130,7 @@ xdescribe('QuickSelectionComponent', () => {
             resolve();
           });
 
-          component.moveSelectionDown();
+          component._moveSelectionDown();
           atom.commands.dispatch(componentNode, 'core:confirm');
         }));
       });
@@ -143,7 +143,7 @@ xdescribe('QuickSelectionComponent', () => {
             resolve();
           });
 
-          component.select();
+          component._select();
         }));
       });
     });
@@ -168,7 +168,7 @@ xdescribe('QuickSelectionComponent', () => {
   describe('Selection', () => {
     it('should start out without selection', () => {
       withItemsSetTo({testDirectory: {testProvider: Promise.resolve({results: [1, 2, 3]})}}, () => {
-        const selectedItemIndex = component.getSelectedIndex();
+        const selectedItemIndex = component._getSelectedIndex();
         expect(selectedItemIndex.selectedDirectory).toBe('');
         expect(selectedItemIndex.selectedService).toBe('');
         expect(selectedItemIndex.selectedItemIndex).toBe(-1);
@@ -177,13 +177,13 @@ xdescribe('QuickSelectionComponent', () => {
 
     it('should move the selection and wrap at the top/bottom', () => {
       withItemsSetTo({testDirectory: {testProvider: Promise.resolve({results: [1, 2, 3]})}}, () => {
-        expect(component.getSelectedIndex().selectedItemIndex).toBe(-1);
+        expect(component._getSelectedIndex().selectedItemIndex).toBe(-1);
 
         waitsForPromise(() => new Promise((resolve, reject) => {
           component.onSelectionChanged(newIndex => {
             resolve(newIndex);
           });
-          component.moveSelectionDown();
+          component._moveSelectionDown();
         }).then(newIndex => {
           expect(newIndex.selectedItemIndex).toBe(0);
         }));
@@ -192,7 +192,7 @@ xdescribe('QuickSelectionComponent', () => {
           component.onSelectionChanged(newIndex => {
             resolve(newIndex);
           });
-          component.moveSelectionDown();
+          component._moveSelectionDown();
         }).then(newIndex => {
           expect(newIndex.selectedItemIndex).toBe(1);
         }));
@@ -201,7 +201,7 @@ xdescribe('QuickSelectionComponent', () => {
           component.onSelectionChanged(newIndex => {
             resolve(newIndex);
           });
-          component.moveSelectionDown();
+          component._moveSelectionDown();
         }).then(newIndex => {
           expect(newIndex.selectedItemIndex).toBe(2);
         }));
@@ -210,7 +210,7 @@ xdescribe('QuickSelectionComponent', () => {
           component.onSelectionChanged(newIndex => {
             resolve(newIndex);
           });
-          component.moveSelectionDown();
+          component._moveSelectionDown();
         }).then(newIndex => {
           expect(newIndex.selectedItemIndex).toBe(0);
         }));
@@ -219,7 +219,7 @@ xdescribe('QuickSelectionComponent', () => {
           component.onSelectionChanged(newIndex => {
             resolve(newIndex);
           });
-          component.moveSelectionUp();
+          component._moveSelectionUp();
         }).then(newIndex => {
           expect(newIndex.selectedItemIndex).toBe(2);
         }));
@@ -228,7 +228,7 @@ xdescribe('QuickSelectionComponent', () => {
           component.onSelectionChanged(newIndex => {
             resolve(newIndex);
           });
-          component.moveSelectionUp();
+          component._moveSelectionUp();
         }).then(newIndex => {
           expect(newIndex.selectedItemIndex).toBe(1);
         }));
@@ -237,7 +237,7 @@ xdescribe('QuickSelectionComponent', () => {
           component.onSelectionChanged(newIndex => {
             resolve(newIndex);
           });
-          component.moveSelectionUp();
+          component._moveSelectionUp();
         }).then(newIndex => {
           expect(newIndex.selectedItemIndex).toBe(0);
         }));
@@ -246,7 +246,7 @@ xdescribe('QuickSelectionComponent', () => {
           component.onSelectionChanged(newIndex => {
             resolve(newIndex);
           });
-          component.moveSelectionUp();
+          component._moveSelectionUp();
         }).then(newIndex => {
           expect(newIndex.selectedItemIndex).toBe(2);
         }));
@@ -267,7 +267,7 @@ xdescribe('QuickSelectionComponent', () => {
         ];
         let index = 0;
 
-        expect(component.getSelectedIndex().selectedItemIndex).toBe(-1);
+        expect(component._getSelectedIndex().selectedItemIndex).toBe(-1);
         waitsForPromise(() => new Promise((resolve, reject) => {
           component.onSelectionChanged(newIndex => {
             if (index === steps.length - 1) {
@@ -279,20 +279,20 @@ xdescribe('QuickSelectionComponent', () => {
               index++;
             }
           });
-          component.moveSelectionToTop();
+          component._moveSelectionToTop();
         }));
       });
     });
 
     it('should reset the selection when the list contents change', () => {
       withItemsSetTo({testDirectory: {testProvider: Promise.resolve({results: [1, 2, 3]})}}, () => {
-        expect(component.getSelectedIndex().selectedItemIndex).toBe(-1);
+        expect(component._getSelectedIndex().selectedItemIndex).toBe(-1);
 
         waitsForPromise(() => new Promise((resolve, reject) => {
           component.onSelectionChanged(newIndex => {
             resolve(newIndex);
           });
-          component.moveSelectionDown();
+          component._moveSelectionDown();
         }).then(newIndex => {
           expect(newIndex.selectedItemIndex).toBe(0);
         }));
@@ -300,7 +300,7 @@ xdescribe('QuickSelectionComponent', () => {
         withItemsSetTo(
           {testDirectory: {testProvider: Promise.resolve({results: [5, 6, 7]})}},
           () => {
-            expect(component.getSelectedIndex().selectedItemIndex).toBe(-1);
+            expect(component._getSelectedIndex().selectedItemIndex).toBe(-1);
           },
         );
       });
@@ -311,45 +311,45 @@ xdescribe('QuickSelectionComponent', () => {
         // enable setTimeout: https://discuss.atom.io/t/solved-settimeout-not-working-firing-in-specs-tests/11427
         jasmine.unspy(window, 'setTimeout');
 
-        expect(component.getSelectedIndex().selectedItemIndex).toBe(-1);
+        expect(component._getSelectedIndex().selectedItemIndex).toBe(-1);
 
         waitsForPromise(() => new Promise((resolve, reject) => {
           setTimeout(() => {
-            expect(component.getSelectedIndex().selectedItemIndex).toBe(-1);
+            expect(component._getSelectedIndex().selectedItemIndex).toBe(-1);
             resolve();
           }, 0);
-          component.moveSelectionDown();
+          component._moveSelectionDown();
         }));
 
         waitsForPromise(() => new Promise((resolve, reject) => {
           setTimeout(() => {
-            expect(component.getSelectedIndex().selectedItemIndex).toBe(-1);
+            expect(component._getSelectedIndex().selectedItemIndex).toBe(-1);
             resolve();
           }, 0);
-          component.moveSelectionToBottom();
+          component._moveSelectionToBottom();
         }));
 
         waitsForPromise(() => new Promise((resolve, reject) => {
           setTimeout(() => {
-            expect(component.getSelectedIndex().selectedItemIndex).toBe(-1);
+            expect(component._getSelectedIndex().selectedItemIndex).toBe(-1);
             resolve();
           }, 0);
-          component.moveSelectionUp();
+          component._moveSelectionUp();
         }));
 
         waitsForPromise(() => new Promise((resolve, reject) => {
           setTimeout(() => {
-            expect(component.getSelectedIndex().selectedItemIndex).toBe(-1);
+            expect(component._getSelectedIndex().selectedItemIndex).toBe(-1);
             resolve();
           }, 0);
-          component.moveSelectionToTop();
+          component._moveSelectionToTop();
         }));
       });
     });
 
     it('should allow input text to be set after mount', () => {
       component.setInputValue('foo');
-      const editor = component.getInputTextEditor().getModel();
+      const editor = component._getTextEditor();
       expect(editor.getText()).toBe('foo');
     });
   });

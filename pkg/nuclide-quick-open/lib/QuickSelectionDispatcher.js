@@ -10,7 +10,7 @@
 
 import Dispatcher from '../../commons-node/Dispatcher';
 
-type QuickSelectionAction =
+export type QuickSelectionAction =
   {
     actionType: 'ACTIVE_PROVIDER_CHANGED',
     providerName: string,

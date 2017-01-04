@@ -12,12 +12,10 @@ import type {Provider} from './types';
 import type {HomeFragments} from '../../nuclide-home/lib/types';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {DeepLinkService, DeepLinkParams} from '../../nuclide-deep-link/lib/types';
+import type {QuickSelectionAction} from './QuickSelectionDispatcher';
 
 import invariant from 'assert';
-import {
-  React,
-  ReactDOM,
-} from 'react-for-atom';
+import {React, ReactDOM} from 'react-for-atom';
 import QuickSelectionComponent from './QuickSelectionComponent';
 import featureConfig from '../../commons-atom/featureConfig';
 import {goToLocation} from '../../commons-atom/go-to-location';
@@ -29,40 +27,15 @@ import QuickSelectionActions from './QuickSelectionActions';
 import QuickSelectionDispatcher, {ActionTypes} from './QuickSelectionDispatcher';
 
 const DEFAULT_PROVIDER = 'OmniSearchResultProvider';
-const TOPBAR_APPROX_HEIGHT = 100; // A reasonable heuristic that prevents us from having to measure.
+// A reasonable heuristic that prevents us from having to measure:
+const TOPBAR_APPROX_HEIGHT = 100;
 const MODAL_MARGIN = 65;
-// don't pre-fill search input if selection is longer than this
+// Don't pre-fill search input if selection is longer than this:
 const MAX_SELECTION_LENGTH = 1000;
-
-/**
- * A "session" for the purpose of analytics. It exists from the moment the quick-open UI becomes
- * visible until it gets closed, either via file selection or cancellation.
- */
-let analyticsSessionId = null;
-const AnalyticsEvents = Object.freeze({
-  CHANGE_SELECTION: 'quickopen-change-selection',
-  CHANGE_TAB: 'quickopen-change-tab',
-  CLOSE_PANEL: 'quickopen-close-panel',
-  OPEN_PANEL: 'quickopen-open-panel',
-  SELECT_FILE: 'quickopen-select-file',
-});
-const AnalyticsDebounceDelays = Object.freeze({
-  CHANGE_TAB: 100,
-  CHANGE_SELECTION: 100,
-});
-
-const trackProviderChange = debounce(providerName => {
-  analyticsSessionId = analyticsSessionId || Date.now().toString();
-  track(
-    AnalyticsEvents.CHANGE_TAB,
-    {
-      'quickopen-provider': providerName,
-      'quickopen-session': analyticsSessionId,
-    },
-  );
-}, AnalyticsDebounceDelays.CHANGE_TAB);
+const ANALYTICS_CHANGE_SELECTION_DEBOUCE = 100;
 
 class Activation {
+  _analyticsSessionId: ?string;
   _currentProvider: Object;
   _dispatcherToken: string;
   _previousFocus: ?HTMLElement;
@@ -76,6 +49,7 @@ class Activation {
   _quickSelectionDispatcher: QuickSelectionDispatcher;
 
   constructor() {
+    this._analyticsSessionId = null;
     this._previousFocus = null;
     this._scrollableAreaHeightGap = MODAL_MARGIN + TOPBAR_APPROX_HEIGHT;
     this._quickSelectionDispatcher = new QuickSelectionDispatcher();
@@ -87,30 +61,30 @@ class Activation {
       this._quickSelectionDispatcher,
     );
     this._currentProvider = this._searchResultManager.getProviderByName(DEFAULT_PROVIDER);
-    this._dispatcherToken = this._quickSelectionDispatcher.register(action => {
-      if (action.actionType === ActionTypes.ACTIVE_PROVIDER_CHANGED) {
-        this._handleActiveProviderChange(action.providerName);
-      }
-    });
+    this._dispatcherToken = this._quickSelectionDispatcher.register(
+      this._handleActions.bind(this),
+    );
     this._subscriptions = new UniversalDisposable(
       atom.commands.add('atom-workspace', {
         'nuclide-quick-open:find-anything-via-omni-search': () => {
-          this.toggleOmniSearchProvider();
+          this._quickSelectionActions.changeActiveProvider('OmniSearchResultProvider');
         },
       }),
       atom.commands.add('body', 'core:cancel', () => {
         if (this._searchPanel && this._searchPanel.isVisible()) {
-          this.closeSearchPanel();
+          this._closeSearchPanel();
         }
       }),
-      () => {
-        this._searchResultManager.dispose();
-        this._quickSelectionDispatcher.unregister(this._dispatcherToken);
-      },
     );
+    (this: any)._closeSearchPanel = this._closeSearchPanel.bind(this);
+  }
 
-    (this: any).closeSearchPanel = this.closeSearchPanel.bind(this);
-    (this: any)._handleDeepLink = this._handleDeepLink.bind(this);
+  _handleActions(action: QuickSelectionAction): void {
+    switch (action.actionType) {
+      case ActionTypes.ACTIVE_PROVIDER_CHANGED:
+        this._handleActiveProviderChange(action.providerName);
+        break;
+    }
   }
 
   _render(): void {
@@ -139,7 +113,7 @@ class Activation {
         scrollableAreaHeightGap={this._scrollableAreaHeightGap}
         quickSelectionActions={this._quickSelectionActions}
         searchResultManager={this._searchResultManager}
-        onBlur={this.closeSearchPanel}
+        onBlur={this._closeSearchPanel}
       />,
       this._reactDiv,
     );
@@ -148,40 +122,30 @@ class Activation {
     if (this._searchComponent == null) {
       _searchComponent.onSelection(selection => {
         goToLocation(selection.path, selection.line, selection.column);
-
-        const query = _searchComponent.getInputTextEditor().textContent;
-        const providerName = this._currentProvider.name;
-        // default to empty string because `track` enforces string-only values
-        const sourceProvider = selection.sourceProvider || '';
-        track(
-          AnalyticsEvents.SELECT_FILE,
-          {
-            'quickopen-filepath': selection.path,
-            'quickopen-query': query,
-            'quickopen-provider': providerName, // The currently open "tab".
-            'quickopen-session': analyticsSessionId || '',
-            // Because the `provider` is usually OmniSearch, also track the original provider.
-            'quickopen-provider-source': sourceProvider,
-          },
-        );
-        this.closeSearchPanel();
+        track('quickopen-select-file', {
+          'quickopen-filepath': selection.path,
+          'quickopen-query': _searchComponent.getInputValue(),
+          // The currently open "tab".
+          'quickopen-provider': this._currentProvider.name,
+          'quickopen-session': this._analyticsSessionId || '',
+          // Because the `provider` is usually OmniSearch, also track the original provider.
+          'quickopen-provider-source': selection.sourceProvider || '',
+        });
+        this._closeSearchPanel();
       });
 
-      _searchComponent.onCancellation(() => this.closeSearchPanel());
+      _searchComponent.onCancellation(this._closeSearchPanel);
       _searchComponent.onSelectionChanged(debounce((selection: any) => {
         // Only track user-initiated selection-change events.
-        if (analyticsSessionId != null) {
-          track(
-            AnalyticsEvents.CHANGE_SELECTION,
-            {
-              'quickopen-selected-index': selection.selectedItemIndex.toString(),
-              'quickopen-selected-service': selection.selectedService,
-              'quickopen-selected-directory': selection.selectedDirectory,
-              'quickopen-session': analyticsSessionId,
-            },
-          );
+        if (this._analyticsSessionId != null) {
+          track('quickopen-change-selection', {
+            'quickopen-selected-index': selection.selectedItemIndex.toString(),
+            'quickopen-selected-service': selection.selectedService,
+            'quickopen-selected-directory': selection.selectedDirectory,
+            'quickopen-session': this._analyticsSessionId,
+          });
         }
-      }, AnalyticsDebounceDelays.CHANGE_SELECTION));
+      }, ANALYTICS_CHANGE_SELECTION_DEBOUCE));
     }
 
     this._searchComponent = _searchComponent;
@@ -189,62 +153,47 @@ class Activation {
 
 
   _handleActiveProviderChange(newProviderName: string): void {
-    trackProviderChange(newProviderName);
-    // Toggle newProviderName before setting this._currentProvider to make
-    // the search panel stay open.
-    this.toggleProvider(newProviderName);
-    this._currentProvider = this._searchResultManager.getProviderByName(newProviderName);
-    this._render();
-  }
-
-  toggleOmniSearchProvider(): void {
-    this._quickSelectionActions.changeActiveProvider('OmniSearchResultProvider');
-  }
-
-  toggleProvider(providerName: string) {
-    analyticsSessionId = analyticsSessionId || Date.now().toString();
-    track(
-      AnalyticsEvents.CHANGE_TAB,
-      {
-        'quickopen-provider': providerName,
-        'quickopen-session': analyticsSessionId,
-      },
-    );
-    const provider = this._searchResultManager.getProviderByName(providerName);
-    // "toggle" behavior
+    /**
+     * A "session" for the purpose of analytics. It exists from the moment the
+     * quick-open UI becomes visible until it gets closed, either via file
+     * selection or cancellation.
+     */
+    this._analyticsSessionId = this._analyticsSessionId || Date.now().toString();
+    track('quickopen-change-tab', {
+      'quickopen-provider': newProviderName,
+      'quickopen-session': this._analyticsSessionId,
+    });
     if (
       this._searchPanel != null &&
       this._searchPanel.isVisible() &&
-      providerName === this._currentProvider.name
+      newProviderName === this._currentProvider.name
     ) {
-      this.closeSearchPanel();
-      return;
+      this._closeSearchPanel();
+    } else {
+      const provider = this._searchResultManager.getProviderByName(newProviderName);
+      this._currentProvider = provider;
+      this._render();
+      this._showSearchPanel();
     }
-
-    this._currentProvider = provider;
-    this._render();
-    this.showSearchPanel();
   }
 
-  showSearchPanel(initialQuery?: string) {
+  _showSearchPanel(initialQuery?: string): void {
     this._previousFocus = document.activeElement;
     const {_searchComponent, _searchPanel} = this;
     if (_searchComponent != null && _searchPanel != null) {
       // Start a new search "session" for analytics purposes.
-      track(
-        AnalyticsEvents.OPEN_PANEL,
-        {
-          'quickopen-session': analyticsSessionId || '',
-        },
-      );
-      // showSearchPanel gets called when changing providers even if it's already shown.
+      track('quickopen-open-panel', {
+        'quickopen-session': this._analyticsSessionId || '',
+      });
+      // _showSearchPanel gets called when changing providers even if it's already shown.
       const isAlreadyVisible = _searchPanel.isVisible();
       _searchPanel.show();
       _searchComponent.focus();
       if (initialQuery != null) {
         _searchComponent.setInputValue(initialQuery);
       } else if (featureConfig.get('nuclide-quick-open.useSelection') && !isAlreadyVisible) {
-        const selectedText = this._getFirstSelectionText();
+        const editor = atom.workspace.getActiveTextEditor();
+        const selectedText = editor != null && editor.getSelections()[0].getText();
         if (selectedText && selectedText.length <= MAX_SELECTION_LENGTH) {
           _searchComponent.setInputValue(selectedText.split('\n')[0]);
         }
@@ -253,40 +202,20 @@ class Activation {
     }
   }
 
-  closeSearchPanel() {
+  _closeSearchPanel(): void {
     const {_searchComponent, _searchPanel} = this;
-    if (_searchComponent != null && _searchPanel != null) {
-      track(
-        AnalyticsEvents.CLOSE_PANEL,
-        {
-          'quickopen-session': analyticsSessionId || '',
-        },
-      );
+    if (_searchComponent != null && _searchPanel != null && _searchPanel.isVisible()) {
+      track('quickopen-close-panel', {
+        'quickopen-session': this._analyticsSessionId || '',
+      });
       _searchPanel.hide();
       _searchComponent.blur();
-      analyticsSessionId = null;
+      this._analyticsSessionId = null;
     }
 
     if (this._previousFocus != null) {
       this._previousFocus.focus();
       this._previousFocus = null;
-    }
-  }
-
-  _getFirstSelectionText(): ?string {
-    const editor = atom.workspace.getActiveTextEditor();
-    if (editor) {
-      return editor.getSelections()[0].getText();
-    }
-  }
-
-  _handleDeepLink(message: DeepLinkParams): void {
-    const {query} = message;
-    if (typeof query === 'string') {
-      if (this._searchComponent == null) {
-        this._render();
-      }
-      this.showSearchPanel(query);
     }
   }
 
@@ -302,15 +231,27 @@ class Activation {
     return disposable;
   }
 
-  consumeDeepLinkService(service: DeepLinkService): void {
-    const subscription = new UniversalDisposable(
-      service.subscribeToPath('quick-open-query', this._handleDeepLink),
+  consumeDeepLinkService(service: DeepLinkService): IDisposable {
+    const disposable = service.subscribeToPath(
+      'quick-open-query',
+      (params: DeepLinkParams): void => {
+        const {query} = params;
+        if (typeof query === 'string') {
+          if (this._searchComponent == null) {
+            this._render();
+          }
+          this._showSearchPanel(query);
+        }
+      },
     );
-    this._subscriptions.add(subscription);
+    this._subscriptions.add(disposable);
+    return disposable;
   }
 
   dispose(): void {
     this._subscriptions.dispose();
+    this._searchResultManager.dispose();
+    this._quickSelectionDispatcher.unregister(this._dispatcherToken);
     if (this._reactDiv != null) {
       ReactDOM.unmountComponentAtNode(this._reactDiv);
       this._reactDiv = null;
@@ -344,7 +285,7 @@ export function consumeCWD(cwd: CwdApi): IDisposable {
   return activation.consumeCWDService(cwd);
 }
 
-export function consumeDeepLinkService(service: DeepLinkService): void {
+export function consumeDeepLinkService(service: DeepLinkService): IDisposable {
   invariant(activation != null);
   return activation.consumeDeepLinkService(service);
 }

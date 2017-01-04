@@ -8,6 +8,8 @@
  * @flow
  */
 
+/* global performance */
+
 import type {Directory} from '../../nuclide-remote-connection';
 import type {
   Provider,
@@ -17,7 +19,9 @@ import type {
 import type {
   FileResult,
 } from './rpc-types';
-import type QuickSelectionDispatcher from './QuickSelectionDispatcher';
+import type QuickSelectionDispatcher, {
+  QuickSelectionAction,
+} from './QuickSelectionDispatcher';
 import type QuickSelectionActions from './QuickSelectionActions';
 
 type ResultRenderer =
@@ -38,22 +42,6 @@ import {ActionTypes} from './QuickSelectionDispatcher';
 import FileResultComponent from './FileResultComponent';
 import ResultCache from './ResultCache';
 
-const {performance} = global;
-
-function getDefaultResult(): ProviderResult {
-  return {
-    error: null,
-    loading: false,
-    results: [],
-  };
-}
-
-const AnalyticsEvents = Object.freeze({
-  QUERY_SOURCE_PROVIDER: 'quickopen-query-source-provider',
-});
-
-const RESULTS_CHANGED = 'results_changed';
-const PROVIDERS_CHANGED = 'providers_changed';
 const MAX_OMNI_RESULTS_PER_SERVICE = 5;
 const DEFAULT_QUERY_DEBOUNCE_DELAY = 200;
 const LOADING_EVENT_DELAY = 200;
@@ -83,10 +71,8 @@ function isValidProvider(provider): boolean {
 /**
  * A singleton cache for search providers and results.
  */
-class SearchResultManager {
+export default class SearchResultManager {
   _dispatcherToken: string;
-  RESULTS_CHANGED: string;
-  PROVIDERS_CHANGED: string;
   _quickSelectionActions: QuickSelectionActions;
   _quickSelectionDispatcher: QuickSelectionDispatcher;
   _providersByDirectory: Map<atom$Directory, Set<Provider>>;
@@ -105,8 +91,6 @@ class SearchResultManager {
     quickSelectionDispatcher: QuickSelectionDispatcher,
   ) {
     this._isDisposed = false;
-    this.RESULTS_CHANGED = RESULTS_CHANGED;
-    this.PROVIDERS_CHANGED = PROVIDERS_CHANGED;
     this._registeredProviders = {};
     this._registeredProviders[DIRECTORY_KEY] = new Map();
     this._registeredProviders[GLOBAL_KEY] = new Map();
@@ -115,7 +99,7 @@ class SearchResultManager {
     this._currentWorkingRoot = null;
     this._resultCache = new ResultCache(() => {
       // on result changed
-      this._emitter.emit(RESULTS_CHANGED);
+      this._emitter.emit('results-changed');
     });
     // `updateDirectories` joins providers and directories, which don't know anything about each
     // other. Debounce this call to reduce churn at startup, and when new providers get activated or
@@ -123,7 +107,7 @@ class SearchResultManager {
     this._debouncedUpdateDirectories = debounce(
       () => this._updateDirectories(),
       UPDATE_DIRECTORIES_DEBOUNCE_DELAY,
-      /* immediate */false,
+      /* immediate */ false,
     );
     this._emitter = new Emitter();
     this._subscriptions = new CompositeDisposable();
@@ -136,22 +120,30 @@ class SearchResultManager {
       );
       this._debouncedUpdateDirectories();
     }
-    this._setUpFlux();
+    this._dispatcherToken = this._quickSelectionDispatcher.register(
+      this._handleActions.bind(this),
+    );
     this._activeProviderName = OMNISEARCH_PROVIDER.name;
   }
 
-  _setUpFlux(): void {
-    this._dispatcherToken = this._quickSelectionDispatcher.register(action => {
-      switch (action.actionType) {
-        case ActionTypes.QUERY:
-          this.executeQuery(action.query);
-          break;
-        case ActionTypes.ACTIVE_PROVIDER_CHANGED:
-          this._activeProviderName = action.providerName;
-          this._emitter.emit(PROVIDERS_CHANGED);
-          break;
-      }
-    });
+  _handleActions(action: QuickSelectionAction): void {
+    switch (action.actionType) {
+      case ActionTypes.QUERY:
+        this._executeQuery(action.query);
+        break;
+      case ActionTypes.ACTIVE_PROVIDER_CHANGED:
+        this._activeProviderName = action.providerName;
+        this._emitter.emit('providers-changed');
+        break;
+    }
+  }
+
+  onResultsChanged(callback: () => void): IDisposable {
+    return this._emitter.on('results-changed', callback);
+  }
+
+  onProvidersChanged(callback: () => void): IDisposable {
+    return this._emitter.on('providers-changed', callback);
   }
 
   getActiveProviderName(): string {
@@ -224,11 +216,7 @@ class SearchResultManager {
     }
     this._directories = newDirectories;
     this._providersByDirectory = newProvidersByDirectories;
-    this._emitter.emit(PROVIDERS_CHANGED);
-  }
-
-  on(name: string, callback: (v: any) => mixed): IDisposable {
-    return this._emitter.on(name, callback);
+    this._emitter.emit('providers-changed');
   }
 
   setCurrentWorkingRoot(newRoot: ?Directory): void {
@@ -302,7 +290,7 @@ class SearchResultManager {
         this._activeProviderName = OMNISEARCH_PROVIDER.name;
       }
       this._resultCache.removeResultsForProvider(serviceName);
-      this._emitter.emit(PROVIDERS_CHANGED);
+      this._emitter.emit('providers-changed');
     }));
     // If the provider is renderable and specifies a keybinding, wire it up with the toggle command.
     if (isRenderableProvider && typeof service.getAction === 'function') {
@@ -315,7 +303,7 @@ class SearchResultManager {
     return disposable;
   }
 
-  cacheResult(
+  _cacheResult(
     query: string,
     result: Array<FileResult>,
     directory: string,
@@ -338,39 +326,39 @@ class SearchResultManager {
     }
   }
 
-  processResult(
+  _processResult(
     query: string,
     result: Array<FileResult>,
     directory: string,
     provider: Provider,
   ): void {
-    this.cacheResult(query, result, directory, provider);
-    this._emitter.emit(RESULTS_CHANGED);
+    this._cacheResult(query, result, directory, provider);
+    this._emitter.emit('results-changed');
   }
 
-  sanitizeQuery(query: string): string {
+  _sanitizeQuery(query: string): string {
     return query.trim();
   }
 
-  executeQuery(rawQuery: string): void {
-    const query = this.sanitizeQuery(rawQuery);
+  _executeQuery(rawQuery: string): void {
+    const query = this._sanitizeQuery(rawQuery);
     for (const globalProvider of this._registeredProviders[GLOBAL_KEY].values()) {
       const startTime = performance.now();
       const loadingFn = () => {
         this._setLoading(query, GLOBAL_KEY, globalProvider);
-        this._emitter.emit(RESULTS_CHANGED);
+        this._emitter.emit('results-changed');
       };
       triggerAfterWait(
         globalProvider.executeQuery(query),
         LOADING_EVENT_DELAY,
         loadingFn,
       ).then(result => {
-        track(AnalyticsEvents.QUERY_SOURCE_PROVIDER, {
+        track('quickopen-query-source-provider', {
           'quickopen-source-provider': globalProvider.getName(),
           'quickopen-query-duration': (performance.now() - startTime).toString(),
           'quickopen-result-count': (result.length).toString(),
         });
-        this.processResult(query, result, GLOBAL_KEY, globalProvider);
+        this._processResult(query, result, GLOBAL_KEY, globalProvider);
       });
     }
     if (this._providersByDirectory.size === 0) {
@@ -387,19 +375,19 @@ class SearchResultManager {
         const startTime = performance.now();
         const loadingFn = () => {
           this._setLoading(query, path, directoryProvider);
-          this._emitter.emit(RESULTS_CHANGED);
+          this._emitter.emit('results-changed');
         };
         triggerAfterWait(
           directoryProvider.executeQuery(query, directory),
           LOADING_EVENT_DELAY,
           loadingFn,
         ).then(result => {
-          track(AnalyticsEvents.QUERY_SOURCE_PROVIDER, {
+          track('quickopen-query-source-provider', {
             'quickopen-source-provider': directoryProvider.getName(),
             'quickopen-query-duration': (performance.now() - startTime).toString(),
             'quickopen-result-count': (result.length).toString(),
           });
-          this.processResult(query, result, path, directoryProvider);
+          this._processResult(query, result, path, directoryProvider);
         });
       }
     });
@@ -446,7 +434,11 @@ class SearchResultManager {
         )) {
           cachedResult = {};
         }
-        const defaultResult = getDefaultResult();
+        const defaultResult: ProviderResult = {
+          error: null,
+          loading: false,
+          results: [],
+        };
         const resultList = cachedResult.results || defaultResult.results;
         results[path] = {
           results: resultList.map(result => ({...result, sourceProvider: providerName})),
@@ -459,7 +451,7 @@ class SearchResultManager {
   }
 
   getResults(query: string, activeProviderName: string): Object {
-    const sanitizedQuery = this.sanitizeQuery(query);
+    const sanitizedQuery = this._sanitizeQuery(query);
     if (activeProviderName === OMNISEARCH_PROVIDER.name) {
       const omniSearchResults = [{}];
       for (const providerName in this._resultCache.getAllCachedResults()) {
@@ -531,8 +523,6 @@ class SearchResultManager {
     return tabs;
   }
 }
-
-export default SearchResultManager;
 
 export const __test__ = {
   _getOmniSearchProviderSpec(): ProviderSpec {

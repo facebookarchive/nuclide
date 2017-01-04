@@ -60,10 +60,10 @@ function querySingleProvider(
   providerName: string,
 ): Promise<Object> {
   return new Promise((resolve, reject) => {
-    searchResultManager.on(searchResultManager.RESULTS_CHANGED, () => {
+    searchResultManager.onResultsChanged(() => {
       resolve(searchResultManager.getResults(query, providerName));
     });
-    searchResultManager.executeQuery(query);
+    searchResultManager._executeQuery(query);
   });
 }
 
@@ -109,12 +109,9 @@ describe('SearchResultManager', () => {
       waitsForPromise(async () => {
         const fakeProviderDisposable = searchResultManager.registerProvider({...FakeProvider});
         let providersChangedCallCount = 0;
-        searchResultManager.on(
-          searchResultManager.PROVIDERS_CHANGED,
-          () => {
-            providersChangedCallCount++;
-          },
-        );
+        searchResultManager.onProvidersChanged(() => {
+          providersChangedCallCount++;
+        });
         await searchResultManager._updateDirectories();
         let renderableProviders = searchResultManager.getRenderableProviders();
         expect(renderableProviders.length).toEqual(2);

@@ -91,14 +91,12 @@ export default class QuickSelectionComponent extends React.Component {
   _quickSelectionActions: QuickSelectionActions;
   _modalNode: HTMLElement;
   _debouncedQueryHandler: () => void;
-  _boundSelect: () => void;
   _isMounted: boolean;
 
   constructor(props: Props) {
     super(props);
     this._emitter = new Emitter();
     this._subscriptions = new CompositeDisposable();
-    this._boundSelect = () => this.select();
     this._isMounted = false;
     this._searchResultManager = props.searchResultManager;
     this._quickSelectionActions = props.quickSelectionActions;
@@ -114,13 +112,61 @@ export default class QuickSelectionComponent extends React.Component {
       selectedItemIndex: -1,
       hasUserSelection: false,
     };
+    (this: any)._handleDocumentMouseDown = this._handleDocumentMouseDown.bind(this);
+    (this: any)._handleMoveDown = this._handleMoveDown.bind(this);
+    (this: any)._handleMoveToBottom = this._handleMoveToBottom.bind(this);
+    (this: any)._handleMoveToTop = this._handleMoveToTop.bind(this);
+    (this: any)._handleMoveUp = this._handleMoveUp.bind(this);
+    (this: any)._handleProvidersChange = this._handleProvidersChange.bind(this);
+    (this: any)._handleResultsChange = this._handleResultsChange.bind(this);
     (this: any)._handleTabChange = this._handleTabChange.bind(this);
-    (this: any).handleProvidersChange = this.handleProvidersChange.bind(this);
-    (this: any).handleResultsChange = this.handleResultsChange.bind(this);
-    (this: any).handleDocumentMouseDown = this.handleDocumentMouseDown.bind(this);
+    (this: any)._handleTextInputChange = this._handleTextInputChange.bind(this);
+    (this: any)._select = this._select.bind(this);
   }
 
-  componentWillReceiveProps(nextProps: any) {
+  /**
+   * Public API
+   */
+  onCancellation(callback: () => void): IDisposable {
+    return this._emitter.on('canceled', callback);
+  }
+
+  onSelection(callback: (selection: any) => void): IDisposable {
+    return this._emitter.on('selected', callback);
+  }
+
+  onSelectionChanged(callback: (selectionIndex: any) => void): IDisposable {
+    return this._emitter.on('selection-changed', callback);
+  }
+
+  onItemsChanged(callback: (newItems: GroupedResult) => void): IDisposable {
+    return this._emitter.on('items-changed', callback);
+  }
+
+  focus(): void {
+    this._getInputTextEditor().focus();
+  }
+
+  blur(): void {
+    this._getInputTextEditor().blur();
+  }
+
+  setInputValue(value: string): void {
+    this._getTextEditor().setText(value);
+  }
+
+  getInputValue(): string {
+    return this._getTextEditor().getText();
+  }
+
+  selectInput(): void {
+    this._getTextEditor().selectAll();
+  }
+
+  /**
+   * Private API
+   */
+  componentWillReceiveProps(nextProps: any): void {
     if (nextProps.activeProvider !== this.props.activeProvider) {
       if (nextProps.activeProvider) {
         this._getTextEditor().setPlaceholderText(nextProps.activeProvider.prompt);
@@ -131,7 +177,7 @@ export default class QuickSelectionComponent extends React.Component {
             resultsByService: newResults,
           },
           () => {
-            setImmediate(() => this.setQuery(this.refs.queryInput.getText()));
+            setImmediate(() => this._setQuery(this.refs.queryInput.getText()));
             this._updateQueryHandler();
             this._emitter.emit('items-changed', newResults);
           },
@@ -140,7 +186,7 @@ export default class QuickSelectionComponent extends React.Component {
     }
   }
 
-  componentDidUpdate(prevProps: any, prevState: any) {
+  componentDidUpdate(prevProps: any, prevState: any): void {
     if (prevState.resultsByService !== this.state.resultsByService) {
       this._emitter.emit('items-changed', this.state.resultsByService);
     }
@@ -158,40 +204,33 @@ export default class QuickSelectionComponent extends React.Component {
     this._isMounted = true;
     this._modalNode = ReactDOM.findDOMNode(this);
     this._subscriptions.add(
-      atom.commands.add(
-        this._modalNode,
-        'core:move-to-bottom',
-        this.handleMoveToBottom.bind(this),
-      ),
-      atom.commands.add(this._modalNode, 'core:move-to-top', this.handleMoveToTop.bind(this)),
-      atom.commands.add(this._modalNode, 'core:move-down', this.handleMoveDown.bind(this)),
-      atom.commands.add(this._modalNode, 'core:move-up', this.handleMoveUp.bind(this)),
-      atom.commands.add(this._modalNode, 'core:confirm', this.select.bind(this)),
+      atom.commands.add(this._modalNode, 'core:move-to-bottom', this._handleMoveToBottom),
+      atom.commands.add(this._modalNode, 'core:move-to-top', this._handleMoveToTop),
+      atom.commands.add(this._modalNode, 'core:move-down', this._handleMoveDown),
+      atom.commands.add(this._modalNode, 'core:move-up', this._handleMoveUp),
+      atom.commands.add(this._modalNode, 'core:confirm', this._select),
     );
 
     // Close quick open if user clicks outside the frame.
-    document.addEventListener('mousedown', this.handleDocumentMouseDown);
+    document.addEventListener('mousedown', this._handleDocumentMouseDown);
     this._subscriptions.add(
       new Disposable(() => {
-        document.removeEventListener('mousedown', this.handleDocumentMouseDown);
+        document.removeEventListener('mousedown', this._handleDocumentMouseDown);
       }),
     );
 
-    const inputTextEditor = this.getInputTextEditor();
     this._subscriptions.add(
-      this._searchResultManager.on(
-        this._searchResultManager.PROVIDERS_CHANGED,
-        this.handleProvidersChange,
+      this._searchResultManager.onProvidersChanged(
+        this._handleProvidersChange,
       ),
-      this._searchResultManager.on(
-        this._searchResultManager.RESULTS_CHANGED,
-        debounce(this.handleResultsChange, RESULTS_CHANGED_DEBOUNCE_DELAY, false),
+      this._searchResultManager.onResultsChanged(
+        debounce(this._handleResultsChange, RESULTS_CHANGED_DEBOUNCE_DELAY, false),
       ),
     );
 
     this._updateQueryHandler();
-    inputTextEditor.getModel().onDidChange(() => this._handleTextInputChange());
-    this.clear();
+    this._getTextEditor().onDidChange(this._handleTextInputChange);
+    this._clear();
   }
 
   componentWillUnmount(): void {
@@ -200,49 +239,33 @@ export default class QuickSelectionComponent extends React.Component {
     this._subscriptions.dispose();
   }
 
-  handleMoveToBottom(): void {
-    this.moveSelectionToBottom();
-    this.onUserDidChangeSelection();
+  _handleMoveToBottom(): void {
+    this._moveSelectionToBottom();
+    this._onUserDidChangeSelection();
   }
 
-  handleMoveToTop(): void {
-    this.moveSelectionToTop();
-    this.onUserDidChangeSelection();
+  _handleMoveToTop(): void {
+    this._moveSelectionToTop();
+    this._onUserDidChangeSelection();
   }
 
-  handleMoveDown(): void {
-    this.moveSelectionDown();
-    this.onUserDidChangeSelection();
+  _handleMoveDown(): void {
+    this._moveSelectionDown();
+    this._onUserDidChangeSelection();
   }
 
-  handleMoveUp(): void {
-    this.moveSelectionUp();
-    this.onUserDidChangeSelection();
+  _handleMoveUp(): void {
+    this._moveSelectionUp();
+    this._onUserDidChangeSelection();
   }
 
-  handleDocumentMouseDown(event: Event): void {
+  _handleDocumentMouseDown(event: Event): void {
     const modal = this.refs.modal;
     // If the click did not happen on the modal or on any of its descendants,
     // the click was elsewhere on the document and should close the modal.
     if (event.target !== modal && !modal.contains(event.target)) {
       this.props.onBlur();
     }
-  }
-
-  onCancellation(callback: () => void): IDisposable {
-    return this._emitter.on('canceled', callback);
-  }
-
-  onSelection(callback: (selection: any) => void): IDisposable {
-    return this._emitter.on('selected', callback);
-  }
-
-  onSelectionChanged(callback: (selectionIndex: any) => void): IDisposable {
-    return this._emitter.on('selection-changed', callback);
-  }
-
-  onItemsChanged(callback: (newItems: GroupedResult) => void): IDisposable {
-    return this._emitter.on('items-changed', callback);
   }
 
   _sortServiceNames(names: Array<string>): Array<string> {
@@ -264,10 +287,10 @@ export default class QuickSelectionComponent extends React.Component {
     this._debouncedQueryHandler = debounce(
       () => {
         if (this._isMounted) {
-          this.setKeyboardQuery(this.getInputTextEditor().getModel().getText());
+          this._setKeyboardQuery(this._getTextEditor().getText());
         }
       },
-      this.getProvider().debounceDelay || 0,
+      this.props.activeProvider.debounceDelay || 0,
       false,
     );
   }
@@ -276,7 +299,7 @@ export default class QuickSelectionComponent extends React.Component {
     this._debouncedQueryHandler();
   }
 
-  handleResultsChange(): void {
+  _handleResultsChange(): void {
     // This function is running on a timer (debounced), it is possible that it
     // may be called after the component has unmounted.
     if (this._isMounted) {
@@ -301,13 +324,13 @@ export default class QuickSelectionComponent extends React.Component {
       ) {
         const topProviderResults = this.state.resultsByService[topProviderName].results;
         if (!Object.keys(topProviderResults).some(dirName => topProviderResults[dirName].loading)) {
-          this.moveSelectionToTop();
+          this._moveSelectionToTop();
         }
       }
     });
   }
 
-  handleProvidersChange(): void {
+  _handleProvidersChange(): void {
     const renderableProviders = this._searchResultManager.getRenderableProviders();
     const activeProviderName = this._searchResultManager.getActiveProviderName();
     this._updateResults(activeProviderName);
@@ -317,27 +340,31 @@ export default class QuickSelectionComponent extends React.Component {
     });
   }
 
-  select(): void {
-    const selectedItem = this.getSelectedItem();
+  _select(): void {
+    const selectedItem = this._getItemAtIndex(
+      this.state.selectedService,
+      this.state.selectedDirectory,
+      this.state.selectedItemIndex,
+    );
     if (!selectedItem) {
-      this.cancel();
+      this._cancel();
     } else {
       this._emitter.emit('selected', selectedItem);
     }
   }
 
-  onUserDidChangeSelection() {
+  _onUserDidChangeSelection(): void {
     this.setState({
       hasUserSelection: true,
     });
   }
 
-  cancel(): void {
+  _cancel(): void {
     this._emitter.emit('canceled');
   }
 
-  clearSelection(): void {
-    this.setSelectedIndex('', '', -1);
+  _clearSelection(): void {
+    this._setSelectedIndex('', '', -1);
   }
 
   _getCurrentResultContext(): ?ResultContext {
@@ -369,16 +396,16 @@ export default class QuickSelectionComponent extends React.Component {
     };
   }
 
-  moveSelectionDown(): void {
+  _moveSelectionDown(): void {
     const context = this._getCurrentResultContext();
     if (!context) {
-      this.moveSelectionToTop();
+      this._moveSelectionToTop();
       return;
     }
 
     if (this.state.selectedItemIndex < context.currentDirectory.results.length - 1) {
       // only bump the index if remaining in current directory
-      this.setSelectedIndex(
+      this._setSelectedIndex(
         this.state.selectedService,
         this.state.selectedDirectory,
         this.state.selectedItemIndex + 1,
@@ -386,7 +413,7 @@ export default class QuickSelectionComponent extends React.Component {
     } else {
       // otherwise go to next directory...
       if (context.currentDirectoryIndex < context.directoryNames.length - 1) {
-        this.setSelectedIndex(
+        this._setSelectedIndex(
           this.state.selectedService,
           context.directoryNames[context.currentDirectoryIndex + 1],
           0,
@@ -397,25 +424,25 @@ export default class QuickSelectionComponent extends React.Component {
           const newServiceName = context.serviceNames[context.currentServiceIndex + 1];
           const newDirectoryName =
             Object.keys(context.nonEmptyResults[newServiceName].results).shift();
-          this.setSelectedIndex(newServiceName, newDirectoryName, 0);
+          this._setSelectedIndex(newServiceName, newDirectoryName, 0);
         } else {
           // ...or wrap around to the very top
-          this.moveSelectionToTop();
+          this._moveSelectionToTop();
         }
       }
     }
   }
 
-  moveSelectionUp(): void {
+  _moveSelectionUp(): void {
     const context = this._getCurrentResultContext();
     if (!context) {
-      this.moveSelectionToBottom();
+      this._moveSelectionToBottom();
       return;
     }
 
     if (this.state.selectedItemIndex > 0) {
       // only decrease the index if remaining in current directory
-      this.setSelectedIndex(
+      this._setSelectedIndex(
         this.state.selectedService,
         this.state.selectedDirectory,
         this.state.selectedItemIndex - 1,
@@ -423,7 +450,7 @@ export default class QuickSelectionComponent extends React.Component {
     } else {
       // otherwise, go to the previous directory...
       if (context.currentDirectoryIndex > 0) {
-        this.setSelectedIndex(
+        this._setSelectedIndex(
           this.state.selectedService,
           context.directoryNames[context.currentDirectoryIndex - 1],
           context.currentService
@@ -443,14 +470,14 @@ export default class QuickSelectionComponent extends React.Component {
           if (resultsForDirectory == null || resultsForDirectory.results == null) {
             return;
           }
-          this.setSelectedIndex(
+          this._setSelectedIndex(
             newServiceName,
             newDirectoryName,
             resultsForDirectory.results.length - 1,
           );
         } else {
           // ...or wrap around to the very bottom
-          this.moveSelectionToBottom();
+          this._moveSelectionToBottom();
         }
       }
     }
@@ -471,20 +498,20 @@ export default class QuickSelectionComponent extends React.Component {
     }
   }
 
-  moveSelectionToBottom(): void {
+  _moveSelectionToBottom(): void {
     const bottom = this._getOuterResults(Array.prototype.pop);
     if (!bottom) {
       return;
     }
-    this.setSelectedIndex(bottom.serviceName, bottom.directoryName, bottom.results.length - 1);
+    this._setSelectedIndex(bottom.serviceName, bottom.directoryName, bottom.results.length - 1);
   }
 
-  moveSelectionToTop(): void {
+  _moveSelectionToTop(): void {
     const top = this._getOuterResults(Array.prototype.shift);
     if (!top) {
       return;
     }
-    this.setSelectedIndex(top.serviceName, top.directoryName, 0);
+    this._setSelectedIndex(top.serviceName, top.directoryName, 0);
   }
 
   _getOuterResults(
@@ -504,15 +531,7 @@ export default class QuickSelectionComponent extends React.Component {
     };
   }
 
-  getSelectedItem(): ?Object {
-    return this.getItemAtIndex(
-      this.state.selectedService,
-      this.state.selectedDirectory,
-      this.state.selectedItemIndex,
-    );
-  }
-
-  getItemAtIndex(serviceName: string, directory: string, itemIndex: number): ?Object {
+  _getItemAtIndex(serviceName: string, directory: string, itemIndex: number): ?Object {
     if (
       itemIndex === -1 ||
       !this.state.resultsByService[serviceName] ||
@@ -524,7 +543,7 @@ export default class QuickSelectionComponent extends React.Component {
     return this.state.resultsByService[serviceName].results[directory].results[itemIndex];
   }
 
-  componentForItem(item: any, serviceName: string, dirName: string): React.Element<any> {
+  _componentForItem(item: any, serviceName: string, dirName: string): React.Element<any> {
     return this._searchResultManager.getRendererForProvider(serviceName)(
       item,
       serviceName,
@@ -532,7 +551,7 @@ export default class QuickSelectionComponent extends React.Component {
     );
   }
 
-  getSelectedIndex(): Selection {
+  _getSelectedIndex(): Selection {
     return {
       selectedDirectory: this.state.selectedDirectory,
       selectedService: this.state.selectedService,
@@ -540,18 +559,18 @@ export default class QuickSelectionComponent extends React.Component {
     };
   }
 
-  setSelectedIndex(service: string, directory: string, itemIndex: number) {
+  _setSelectedIndex(service: string, directory: string, itemIndex: number): void {
     this.setState({
       selectedService: service,
       selectedDirectory: directory,
       selectedItemIndex: itemIndex,
     }, () => {
-      this._emitter.emit('selection-changed', this.getSelectedIndex());
-      this.onUserDidChangeSelection();
+      this._emitter.emit('selection-changed', this._getSelectedIndex());
+      this._onUserDidChangeSelection();
     });
   }
 
-  resetSelection(): void {
+  _resetSelection(): void {
     this.setState({
       selectedService: '',
       selectedDirectory: '',
@@ -560,42 +579,22 @@ export default class QuickSelectionComponent extends React.Component {
     });
   }
 
-  setKeyboardQuery(query: string) {
-    this.resetSelection();
-    this.setQuery(query);
+  _setKeyboardQuery(query: string): void {
+    this._resetSelection();
+    this._setQuery(query);
   }
 
-  setQuery(query: string) {
+  _setQuery(query: string): void {
     this._quickSelectionActions.query(query);
   }
 
-  getProvider(): ProviderSpec {
-    return this.props.activeProvider;
+  _clear(): void {
+    this._getTextEditor().setText('');
+    this._clearSelection();
   }
 
-  getInputTextEditor(): atom$TextEditorElement {
+  _getInputTextEditor(): atom$TextEditorElement {
     return ReactDOM.findDOMNode(this.refs.queryInput);
-  }
-
-  clear(): void {
-    this.getInputTextEditor().getModel().setText('');
-    this.clearSelection();
-  }
-
-  focus(): void {
-    this.getInputTextEditor().focus();
-  }
-
-  blur(): void {
-    this.getInputTextEditor().blur();
-  }
-
-  setInputValue(value: string): void {
-    this._getTextEditor().setText(value);
-  }
-
-  selectInput(): void {
-    this._getTextEditor().selectAll();
   }
 
   _getTextEditor(): TextEditor {
@@ -649,18 +648,20 @@ export default class QuickSelectionComponent extends React.Component {
     );
   }
 
-  openAll(files: Array<Selection>): void {
+  _openAll(files: Array<Selection>): void {
     files.map(file => {
-      this._emitter.emit('selected',
-        this.getItemAtIndex(file.selectedService,
-          file.selectedDirectory,
-          file.selectedItemIndex));
+      const selectedItem = this._getItemAtIndex(
+        file.selectedService,
+        file.selectedDirectory,
+        file.selectedItemIndex,
+      );
+      this._emitter.emit('selected', selectedItem);
     });
   }
 
   _handleKeyPress(e: SyntheticKeyboardEvent, files: Array<Selection>): void {
     if (e.shiftKey && e.key === 'Enter') {
-      this.openAll(files);
+      this._openAll(files);
     }
   }
 
@@ -725,9 +726,9 @@ export default class QuickSelectionComponent extends React.Component {
                 'selected': isSelected,
               })}
               key={serviceName + dirName + itemIndex}
-              onMouseDown={this._boundSelect}
-              onMouseEnter={this.setSelectedIndex.bind(this, serviceName, dirName, itemIndex)}>
-              {this.componentForItem(item, serviceName, dirName)}
+              onMouseDown={this._select}
+              onMouseEnter={this._setSelectedIndex.bind(this, serviceName, dirName, itemIndex)}>
+              {this._componentForItem(item, serviceName, dirName)}
             </li>
           );
         });
@@ -781,7 +782,6 @@ export default class QuickSelectionComponent extends React.Component {
     } else {
       hasSearchResult = true;
     }
-    const currentProvider = this.getProvider();
     let omniSearchStatus = null;
     if (isOmniSearchActive && numQueriesOutstanding > 0) {
       omniSearchStatus = (
@@ -791,7 +791,7 @@ export default class QuickSelectionComponent extends React.Component {
         </span>
       );
     }
-    const disableOpenAll = !hasSearchResult || !currentProvider.canOpenAll;
+    const disableOpenAll = !hasSearchResult || !this.props.activeProvider.canOpenAll;
     return (
       <div
         className="select-list omnisearch-modal"
@@ -801,11 +801,11 @@ export default class QuickSelectionComponent extends React.Component {
           <AtomInput
             className="omnisearch-pane"
             ref="queryInput"
-            placeholderText={currentProvider.prompt}
+            placeholderText={this.props.activeProvider.prompt}
           />
           <Button
             className="omnisearch-open-all"
-            onClick={() => this.openAll(filesToOpen)}
+            onClick={() => this._openAll(filesToOpen)}
             disabled={disableOpenAll}>
             Open All
           </Button>
