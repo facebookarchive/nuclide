@@ -47,24 +47,29 @@ export class Activation {
 }
 
 // Mutable for testing.
-let activation: Activation = new Activation();
+let activation: ?Activation = new Activation();
 
 // exported for testing
 export function reset(): void {
-  activation.dispose();
-  activation = new Activation();
+  if (activation != null) {
+    activation.dispose();
+    activation = null;
+  }
 }
 export function getActivation(): Activation {
+  if (activation == null) {
+    activation = new Activation();
+  }
   return activation;
 }
 
 export function getNotifierByConnection(connection: ?ServerConnection): Promise<FileNotifier> {
-  return activation.notifiers.getForConnection(connection);
+  return getActivation().notifiers.getForConnection(connection);
 }
 
 export async function getFileVersionOfBuffer(buffer: atom$TextBuffer): Promise<?FileVersion> {
   const filePath = buffer.getPath();
-  const notifier = activation.notifiers.getForUri(filePath);
+  const notifier = getActivation().notifiers.getForUri(filePath);
   if (notifier == null) {
     return null;
   }

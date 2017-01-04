@@ -16,6 +16,7 @@ import child_process from 'child_process';
 import nuclideUri from '../../pkg/commons-node/nuclideUri';
 import {RemoteConnection, getServiceByNuclideUri} from '../../pkg/nuclide-remote-connection';
 import {getMountedReactRootNames} from '../../pkg/commons-atom/testHelpers';
+import {reset} from '../../pkg/nuclide-open-files';
 
 // TEST_NUCLIDE_SERVER_PORT can be set by the test runner to allow simultaneous remote tests.
 const SERVER_PORT = parseInt(process.env.TEST_NUCLIDE_SERVER_PORT, 10) || 9090;
@@ -101,6 +102,12 @@ export async function activateAllPackages(): Promise<Array<string>> {
 export function deactivateAllPackages(): void {
   atom.packages.deactivatePackages();
   atom.packages.unloadPackages();
+
+  // The nuclide-open-files package is an npm package which subscribes to events on the global
+  // atom objects. When a new test is started, those objects are discarded and new atom environment,
+  // atom project and atom workspaces are created.
+  // Reset the nuclide-open-files package so that those subscriptions are renewed for the next test.
+  reset();
 
   const mountedReactRootNames = getMountedReactRootNames();
   mountedReactRootNames.forEach(rootDisplayName => {
