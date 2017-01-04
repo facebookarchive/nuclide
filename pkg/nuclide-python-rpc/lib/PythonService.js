@@ -28,6 +28,7 @@ import type {Completion} from '../../nuclide-language-service/lib/LanguageServic
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
 import type {ConnectableObservable} from 'rxjs';
 
+import invariant from 'assert';
 import {asyncExecute} from '../../commons-node/process';
 import {maybeToString} from '../../commons-node/string';
 import fsPromise from '../../commons-node/fsPromise';
@@ -36,6 +37,8 @@ import JediServerManager from './JediServerManager';
 import {parseFlake8Output} from './flake8';
 import {ServerLanguageService} from '../../nuclide-language-service-rpc';
 import {itemsToOutline} from './outline';
+import {Point, Range} from 'simple-text-buffer';
+import {FileCache} from '../../nuclide-open-files-rpc';
 
 export type PythonCompletion = {
   type: string,
@@ -114,16 +117,23 @@ export async function initialize(
 ): Promise<LanguageService> {
   return new ServerLanguageService(
     fileNotifier,
-    new PythonSingleFileLanguageService(showGlobalVariables),
+    new PythonSingleFileLanguageService(
+      fileNotifier,
+      showGlobalVariables,
+    ),
   );
 }
 
 class PythonSingleFileLanguageService {
+  _fileCache: FileCache;
   _showGlobalVariables: boolean;
 
   constructor(
+    fileNotifier: FileNotifier,
     showGlobalVariables: boolean,
   ) {
+    invariant(fileNotifier instanceof FileCache);
+    this._fileCache = fileNotifier;
     this._showGlobalVariables = showGlobalVariables;
   }
 
@@ -162,12 +172,47 @@ class PythonSingleFileLanguageService {
     throw new Error('Not Yet Implemented');
   }
 
-  findReferences(
+  async findReferences(
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
   ): Promise<?FindReferencesReturn> {
-    throw new Error('Not Yet Implemented');
+    const result = await getReferences(
+        filePath,
+        buffer.getText(),
+        position.row,
+        position.column,
+      );
+
+    if (!result || result.length === 0) {
+      return {type: 'error', message: 'No usages were found.'};
+    }
+
+    const symbolName = result[0].text;
+
+    // Process this into the format nuclide-find-references expects.
+    const references = result.map(ref => {
+      return {
+        uri: ref.file,
+        name: ref.parentName,
+        range: new Range(
+          new Point(ref.line, ref.column),
+          new Point(ref.line, ref.column + ref.text.length),
+        ),
+      };
+    });
+
+    // Choose the project root as baseUri, or if no project exists,
+    // use the dirname of the src file.
+    const baseUri = this._fileCache.getContainingDirectory(filePath)
+      || nuclideUri.dirname(filePath);
+
+    return {
+      type: 'data',
+      baseUri,
+      referencedSymbolName: symbolName,
+      references,
+    };
   }
 
   getCoverage(

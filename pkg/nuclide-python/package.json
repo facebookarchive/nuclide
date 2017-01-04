@@ -92,11 +92,6 @@
       "versions": {
         "1.0.0": "provideLint"
       }
-    },
-    "nuclide-find-references.provider": {
-      "versions": {
-        "0.0.0": "provideReferences"
-      }
     }
   }
 }

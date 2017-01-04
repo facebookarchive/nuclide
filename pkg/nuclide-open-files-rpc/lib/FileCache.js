@@ -23,6 +23,7 @@ import invariant from 'assert';
 import {BehaviorSubject, Subject, Observable} from 'rxjs';
 import {FileVersionNotifier} from './FileVersionNotifier';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 import {FileEventKind} from './constants';
 
@@ -146,6 +147,19 @@ export class FileCache {
 
   getOpenDirectories(): Set<NuclideUri> {
     return this._directoryEvents.getValue();
+  }
+
+  // Returns directory which contains this path if any.
+  // Remote equivalent of atom.project.relativizePath()[1]
+  // TODO: Return the most nested open directory.
+  //       Note that Atom doesn't do this, though it should.
+  getContainingDirectory(filePath: NuclideUri): ?NuclideUri {
+    for (const dir of this.getOpenDirectories()) {
+      if (nuclideUri.contains(dir, filePath)) {
+        return dir;
+      }
+    }
+    return null;
   }
 
   getOpenFiles(): Iterator<NuclideUri> {

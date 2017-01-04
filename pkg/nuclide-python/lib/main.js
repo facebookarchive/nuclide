@@ -9,7 +9,6 @@
  */
 
 import type {DefinitionProvider} from '../../nuclide-definition-service';
-import type {FindReferencesProvider} from '../../nuclide-find-references';
 import type {LinterProvider} from '../../nuclide-diagnostics-common';
 import typeof * as PythonService from '../../nuclide-python-rpc/lib/PythonService';
 import type {ServerConnection} from '../../nuclide-remote-connection';
@@ -25,7 +24,6 @@ import {GRAMMARS, GRAMMAR_SET} from './constants';
 import {getLintOnFly} from './config';
 import AutocompleteHelpers from './AutocompleteHelpers';
 import DefinitionHelpers from './DefinitionHelpers';
-import ReferenceHelpers from './ReferenceHelpers';
 import LintHelpers from './LintHelpers';
 import {getServiceByConnection} from '../../nuclide-remote-connection';
 import {getNotifierByConnection} from '../../nuclide-open-files';
@@ -63,6 +61,10 @@ const atomConfig: AtomLanguageServiceConfig = {
     analyticsEventName: 'python.formatCode',
     formatEntireFile: true,
   },
+  findReferences: {
+    version: '0.0.0',
+    analyticsEventName: 'python.get-references',
+  },
 };
 
 let pythonLanguageService: ?AtomLanguageService<LanguageService> = null;
@@ -98,21 +100,6 @@ export function provideDefinitions(): DefinitionProvider {
     },
     getDefinitionById(filePath, id) {
       return DefinitionHelpers.getDefinitionById(filePath, id);
-    },
-  };
-}
-
-export function provideReferences(): FindReferencesProvider {
-  return {
-    async isEditorSupported(textEditor) {
-      const fileUri = textEditor.getPath();
-      if (!fileUri || !GRAMMAR_SET.has(textEditor.getGrammar().scopeName)) {
-        return false;
-      }
-      return true;
-    },
-    findReferences(editor, position) {
-      return ReferenceHelpers.getReferences(editor, position);
     },
   };
 }
