@@ -19,7 +19,7 @@ import type {
   PythonStatementItem,
 } from '../../nuclide-python-rpc';
 
-import {Point} from 'atom';
+import {Point} from 'simple-text-buffer';
 import {
   keyword,
   method,

@@ -8,7 +8,6 @@
  * @flow
  */
 
-import type {OutlineProvider} from '../../nuclide-outline-view';
 import type {DefinitionProvider} from '../../nuclide-definition-service';
 import type {FindReferencesProvider} from '../../nuclide-find-references';
 import type {CodeFormatProvider} from '../../nuclide-code-format/lib/types';
@@ -27,13 +26,13 @@ import {GRAMMARS, GRAMMAR_SET} from './constants';
 import {getLintOnFly} from './config';
 import AutocompleteHelpers from './AutocompleteHelpers';
 import DefinitionHelpers from './DefinitionHelpers';
-import OutlineHelpers from './OutlineHelpers';
 import ReferenceHelpers from './ReferenceHelpers';
 import CodeFormatHelpers from './CodeFormatHelpers';
 import LintHelpers from './LintHelpers';
 import {getServiceByConnection} from '../../nuclide-remote-connection';
 import {getNotifierByConnection} from '../../nuclide-open-files';
 import {AtomLanguageService} from '../../nuclide-language-service';
+import {getShowGlobalVariables} from './config';
 
 const PYTHON_SERVICE_NAME = 'PythonService';
 
@@ -44,7 +43,10 @@ async function connectionToPythonService(
 ): Promise<LanguageService> {
   const pythonService: PythonService = getServiceByConnection(PYTHON_SERVICE_NAME, connection);
   const fileNotifier = await getNotifierByConnection(connection);
-  const languageService = await pythonService.initialize(fileNotifier);
+  const languageService = await pythonService.initialize(
+    fileNotifier,
+    getShowGlobalVariables(),
+  );
 
   return languageService;
 }
@@ -52,6 +54,11 @@ async function connectionToPythonService(
 const atomConfig: AtomLanguageServiceConfig = {
   name: 'Python',
   grammars: GRAMMARS,
+  outlines: {
+    version: '0.0.0',
+    priority: 1,
+    analyticsEventName: 'python.outline',
+  },
 };
 
 let pythonLanguageService: ?AtomLanguageService<LanguageService> = null;
@@ -73,17 +80,6 @@ export function createAutocompleteProvider(): atom$AutocompleteProvider {
     suggestionPriority: 5,  // Higher than the snippets provider.
     getSuggestions(request) {
       return AutocompleteHelpers.getAutocompleteSuggestions(request);
-    },
-  };
-}
-
-export function provideOutlines(): OutlineProvider {
-  return {
-    grammarScopes: Array.from(GRAMMAR_SET),
-    priority: 1,
-    name: 'Python',
-    getOutline(editor) {
-      return OutlineHelpers.getOutline(editor);
     },
   };
 }

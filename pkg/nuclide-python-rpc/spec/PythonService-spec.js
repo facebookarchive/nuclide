@@ -16,8 +16,8 @@ import {
   getCompletions,
   getDefinitions,
   getReferences,
-  getOutline,
 } from '../lib/PythonService';
+import JediServerManager from '../lib/JediServerManager';
 
 // Test python file located at fixtures/serverdummy.py
 const TEST_FILE = nuclideUri.join(__dirname, 'fixtures', 'serverdummy.py');
@@ -29,8 +29,16 @@ process.env.NO_BUCKD = '1';
 // Line/column actual offsets are 0-indexed in this test, similar to what atom
 // provides as input.
 describe('PythonService', () => {
+  let serverManager: JediServerManager = (null: any);
+
   beforeEach(function() {
+    serverManager = new JediServerManager();
     addMatchers(this);
+  });
+
+  afterEach(() => {
+    serverManager.dispose();
+    serverManager = (null: any);
   });
 
   describe('Completions', () => {
@@ -296,6 +304,11 @@ describe('PythonService', () => {
   });
 
   describe('Outlines', () => {
+    async function getOutline(src, contents) {
+      const service = await serverManager.getJediService(src);
+      return service.get_outline(src, contents);
+    }
+
     function checkOutlineTree(testName: string) {
       waitsForPromise(async () => {
         const dirName = nuclideUri.join(__dirname, 'fixtures', 'outline-tests');

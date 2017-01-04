@@ -35,6 +35,7 @@ import nuclideUri from '../../commons-node/nuclideUri';
 import JediServerManager from './JediServerManager';
 import {parseFlake8Output} from './flake8';
 import {ServerLanguageService} from '../../nuclide-language-service-rpc';
+import {itemsToOutline} from './outline';
 
 export type PythonCompletion = {
   type: string,
@@ -105,20 +106,25 @@ export type PythonDiagnostic = {
   column: number,
 };
 
+const serverManager = new JediServerManager();
+
 export async function initialize(
   fileNotifier: FileNotifier,
+  showGlobalVariables: boolean,
 ): Promise<LanguageService> {
   return new ServerLanguageService(
     fileNotifier,
-    new PythonSingleFileLanguageService(fileNotifier),
+    new PythonSingleFileLanguageService(showGlobalVariables),
   );
 }
 
 class PythonSingleFileLanguageService {
-  constructor(
-    fileNotifier: FileNotifier,
-  ) {
+  _showGlobalVariables: boolean;
 
+  constructor(
+    showGlobalVariables: boolean,
+  ) {
+    this._showGlobalVariables = showGlobalVariables;
   }
 
   getDiagnostics(
@@ -170,11 +176,21 @@ class PythonSingleFileLanguageService {
     throw new Error('Not Yet Implemented');
   }
 
-  getOutline(
+  async getOutline(
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
   ): Promise<?Outline> {
-    throw new Error('Not Yet Implemented');
+    const service = await serverManager.getJediService(filePath);
+    const items = await service.get_outline(filePath, buffer.getText());
+
+    if (items == null) {
+      return null;
+    }
+
+    const mode = this._showGlobalVariables ? 'all' : 'constants';
+    return {
+      outlineTrees: itemsToOutline(mode, items),
+    };
   }
 
   typeHint(
@@ -242,8 +258,6 @@ function getFormatterPath() {
   return formatterPath;
 }
 
-const serverManager = new JediServerManager();
-
 export async function getCompletions(
   src: NuclideUri,
   contents: string,
@@ -287,14 +301,6 @@ export async function getReferences(
       line,
       column,
     );
-}
-
-export async function getOutline(
-  src: NuclideUri,
-  contents: string,
-): Promise<?Array<PythonOutlineItem>> {
-  const service = await serverManager.getJediService(src);
-  return service.get_outline(src, contents);
 }
 
 // Set to false if flake8 isn't found, so we don't repeatedly fail.
