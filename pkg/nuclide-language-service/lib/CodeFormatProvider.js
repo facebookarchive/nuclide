@@ -18,6 +18,7 @@ export type CodeFormatConfig = {
   version: '0.0.0',
   priority: number,
   analyticsEventName: string,
+  formatEntireFile: boolean,
 };
 
 export class CodeFormatProvider<T: LanguageService> {
@@ -49,13 +50,33 @@ export class CodeFormatProvider<T: LanguageService> {
     return atom.packages.serviceHub.provide(
       'nuclide-code-format.provider',
       config.version,
-      new CodeFormatProvider(
-        name,
-        selector,
-        config.priority,
-        config.analyticsEventName,
-        connectionToLanguageService,
-      ));
+      config.formatEntireFile
+        ? new FileFormatProvider(
+          name,
+          selector,
+          config.priority,
+          config.analyticsEventName,
+          connectionToLanguageService,
+        )
+        : new RangeFormatProvider(
+          name,
+          selector,
+          config.priority,
+          config.analyticsEventName,
+          connectionToLanguageService,
+        ));
+  }
+}
+
+class RangeFormatProvider<T: LanguageService> extends CodeFormatProvider<T> {
+  constructor(
+    name: string,
+    selector: string,
+    priority: number,
+    analyticsEventName: string,
+    connectionToLanguageService: ConnectionCache<T>,
+  ) {
+    super(name, selector, priority, analyticsEventName, connectionToLanguageService);
   }
 
   formatCode(editor: atom$TextEditor, range: atom$Range): Promise<string> {
@@ -70,6 +91,36 @@ export class CodeFormatProvider<T: LanguageService> {
       }
 
       return editor.getTextInBufferRange(range);
+    });
+  }
+}
+
+class FileFormatProvider<T: LanguageService> extends CodeFormatProvider<T> {
+  constructor(
+    name: string,
+    selector: string,
+    priority: number,
+    analyticsEventName: string,
+    connectionToLanguageService: ConnectionCache<T>,
+  ) {
+    super(name, selector, priority, analyticsEventName, connectionToLanguageService);
+  }
+
+  formatEntireFile(editor: atom$TextEditor, range: atom$Range): Promise<{
+    newCursor?: number,
+    formatted: string,
+  }> {
+    return trackTiming(this._analyticsEventName, async () => {
+      const fileVersion = await getFileVersionOfEditor(editor);
+      const languageService = this._connectionToLanguageService.getForUri(editor.getPath());
+      if (languageService != null && fileVersion != null) {
+        const result = await (await languageService).formatEntireFile(fileVersion, range);
+        if (result != null) {
+          return result;
+        }
+      }
+
+      return {formatted: editor.getText()};
     });
   }
 }

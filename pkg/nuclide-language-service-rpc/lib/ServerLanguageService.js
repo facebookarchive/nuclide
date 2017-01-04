@@ -96,6 +96,15 @@ export type SingleFileLanguageService = {
     range: atom$Range,
   ): Promise<?string>,
 
+  formatEntireFile(
+    filePath: NuclideUri,
+    buffer: simpleTextBuffer$TextBuffer,
+    range: atom$Range,
+  ): Promise<?{
+    newCursor?: number,
+    formatted: string,
+  }>,
+
   getEvaluationExpression(
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
@@ -227,6 +236,18 @@ export class ServerLanguageService {
       return null;
     }
     return this._service.formatSource(filePath, buffer, range);
+  }
+
+  async formatEntireFile(fileVersion: FileVersion, range: atom$Range): Promise<?{
+    newCursor?: number,
+    formatted: string,
+  }> {
+    const filePath = fileVersion.filePath;
+    const buffer = await getBufferAtVersion(fileVersion);
+    if (buffer == null) {
+      return null;
+    }
+    return this._service.formatEntireFile(filePath, buffer, range);
   }
 
   async getEvaluationExpression(

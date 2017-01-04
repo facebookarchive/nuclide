@@ -94,6 +94,7 @@ async function createLanguageService(): Promise<AtomLanguageService<HackLanguage
       version: '0.0.0',
       priority: 1,
       analyticsEventName: 'hack.formatCode',
+      formatEntireFile: false,
     },
     findReferences: {
       version: '0.0.0',

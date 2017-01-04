@@ -92,6 +92,11 @@ export interface LanguageService {
     range: atom$Range,
   ): Promise<?string>,
 
+  formatEntireFile(fileVersion: FileVersion, range: atom$Range): Promise<?{
+    newCursor?: number,
+    formatted: string,
+  }>,
+
   getEvaluationExpression(
     fileVersion: FileVersion,
     position: atom$Point,

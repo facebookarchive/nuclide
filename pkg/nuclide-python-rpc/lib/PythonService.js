@@ -217,6 +217,17 @@ class PythonSingleFileLanguageService {
     throw new Error('Not Yet Implemented');
   }
 
+  formatEntireFile(
+    filePath: NuclideUri,
+    buffer: simpleTextBuffer$TextBuffer,
+    range: atom$Range,
+  ): Promise<?{
+    newCursor?: number,
+    formatted: string,
+  }> {
+    throw new Error('Not implemented');
+  }
+
   getEvaluationExpression(
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
