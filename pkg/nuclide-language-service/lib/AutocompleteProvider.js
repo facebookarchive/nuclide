@@ -17,6 +17,7 @@ import {getFileVersionOfEditor} from '../../nuclide-open-files';
 export type AutocompleteConfig = {
   inclusionPriority: number,
   suggestionPriority: number,
+  disableForSelector: ?string,
   excludeLowerPriority: boolean,
   version: '2.0.0',
   analyticsEventName: string,
@@ -27,6 +28,7 @@ export class AutocompleteProvider<T: LanguageService> {
   selector: string;
   inclusionPriority: number;
   suggestionPriority: number;
+  disableForSelector: ?string;
   excludeLowerPriority: boolean;
   _analyticsEventName: string;
   _connectionToLanguageService: ConnectionCache<T>;
@@ -36,6 +38,7 @@ export class AutocompleteProvider<T: LanguageService> {
     selector: string,
     inclusionPriority: number,
     suggestionPriority: number,
+    disableForSelector: ?string,
     excludeLowerPriority: boolean,
     analyticsEventName: string,
     connectionToLanguageService: ConnectionCache<T>,
@@ -63,6 +66,7 @@ export class AutocompleteProvider<T: LanguageService> {
         grammars.map(grammar => '.' + grammar).join(', '),
         config.inclusionPriority,
         config.suggestionPriority,
+        config.disableForSelector,
         config.excludeLowerPriority,
         config.analyticsEventName,
         connectionToLanguageService,

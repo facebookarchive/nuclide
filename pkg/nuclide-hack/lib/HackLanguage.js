@@ -109,6 +109,7 @@ async function createLanguageService(): Promise<AtomLanguageService<HackLanguage
       inclusionPriority: 1,
       // The context-sensitive hack autocompletions are more relevant than snippets.
       suggestionPriority: 3,
+      disableForSelector: null,
       excludeLowerPriority: false,
       analyticsEventName: 'hack.getAutocompleteSuggestions',
     },
