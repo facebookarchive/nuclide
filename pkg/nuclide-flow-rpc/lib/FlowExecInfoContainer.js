@@ -18,6 +18,8 @@ import which from '../../commons-node/which';
 import {checkOutput} from '../../commons-node/process';
 import {ConfigCache} from '../../commons-node/ConfigCache';
 
+const FLOW_BIN_PATH = 'node_modules/.bin/flow';
+
 // All the information needed to execute Flow in a given root. The path to the Flow binary we want
 // to use may vary per root -- for now, only if we are using the version of Flow from `flow-bin`.
 // The options also vary, right now only because they set the cwd to the current Flow root.
@@ -112,7 +114,11 @@ export class FlowExecInfoContainer {
     if (!this._canUseFlowBin) {
       return null;
     }
-    return nuclideUri.join(root, 'node_modules/.bin/flow');
+    // If we are running on Windows, we should use the .cmd version of flow.
+    if (process.platform === 'win32') {
+      return nuclideUri.join(root, FLOW_BIN_PATH + '.cmd');
+    }
+    return nuclideUri.join(root, FLOW_BIN_PATH);
   }
 
   async findFlowConfigDir(localFile: string): Promise<?string> {
