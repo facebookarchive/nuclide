@@ -40,6 +40,7 @@ import {itemsToOutline} from './outline';
 import {Point, Range} from 'simple-text-buffer';
 import {FileCache} from '../../nuclide-open-files-rpc';
 import {getAutocompleteSuggestions} from './AutocompleteHelpers';
+import {getDefinition} from './DefinitionHelpers';
 
 export type PythonCompletion = {
   type: string,
@@ -181,14 +182,14 @@ class PythonSingleFileLanguageService {
     buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
   ): Promise<?DefinitionQueryResult> {
-    throw new Error('Not Yet Implemented');
+    return getDefinition(serverManager, filePath, buffer, position);
   }
 
   getDefinitionById(
     file: NuclideUri,
     id: string,
   ): Promise<?Definition> {
-    throw new Error('Not Yet Implemented');
+    return Promise.resolve(null);
   }
 
   async findReferences(
@@ -363,21 +364,6 @@ function getFormatterPath() {
   }
 
   return formatterPath;
-}
-
-export async function getDefinitions(
-  src: NuclideUri,
-  contents: string,
-  line: number,
-  column: number,
-): Promise<?Array<PythonDefinition>> {
-  const service = await serverManager.getJediService(src);
-  return service.get_definitions(
-      src,
-      contents,
-      line,
-      column,
-    );
 }
 
 export async function getReferences(

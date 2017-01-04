@@ -78,11 +78,6 @@
         "0.1.0": "provideBusySignal"
       }
     },
-    "nuclide-definition-provider": {
-      "versions": {
-        "0.0.0": "provideDefinitions"
-      }
-    },
     "linter": {
       "versions": {
         "1.0.0": "provideLint"

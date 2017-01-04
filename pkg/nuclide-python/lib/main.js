@@ -8,7 +8,6 @@
  * @flow
  */
 
-import type {DefinitionProvider} from '../../nuclide-definition-service';
 import type {LinterProvider} from '../../nuclide-diagnostics-common';
 import typeof * as PythonService from '../../nuclide-python-rpc/lib/PythonService';
 import type {ServerConnection} from '../../nuclide-remote-connection';
@@ -22,7 +21,6 @@ import invariant from 'assert';
 import {DedupedBusySignalProviderBase} from '../../nuclide-busy-signal';
 import {GRAMMARS, GRAMMAR_SET} from './constants';
 import {getLintOnFly} from './config';
-import DefinitionHelpers from './DefinitionHelpers';
 import LintHelpers from './LintHelpers';
 import {getServiceByConnection} from '../../nuclide-remote-connection';
 import {getNotifierByConnection} from '../../nuclide-open-files';
@@ -80,6 +78,12 @@ const atomConfig: AtomLanguageServiceConfig = {
     excludeLowerPriority: false,
     analyticsEventName: 'nuclide-python:getAutocompleteSuggestions',
   },
+  definition: {
+    version: '0.0.0',
+    priority: 20,
+    definitionEventName: 'python.get-definition',
+    definitionByIdEventName: 'python.get-definition-by-id',
+  },
 };
 
 let pythonLanguageService: ?AtomLanguageService<LanguageService> = null;
@@ -90,20 +94,6 @@ export function activate() {
     pythonLanguageService = new AtomLanguageService(connectionToPythonService, atomConfig);
     pythonLanguageService.activate();
   }
-}
-
-export function provideDefinitions(): DefinitionProvider {
-  return {
-    grammarScopes: Array.from(GRAMMAR_SET),
-    priority: 20,
-    name: 'PythonDefinitionProvider',
-    getDefinition(editor, position) {
-      return DefinitionHelpers.getDefinition(editor, position);
-    },
-    getDefinitionById(filePath, id) {
-      return DefinitionHelpers.getDefinitionById(filePath, id);
-    },
-  };
 }
 
 export function provideLint(): LinterProvider {

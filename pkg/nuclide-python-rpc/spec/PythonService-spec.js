@@ -13,13 +13,15 @@ import fs from 'fs';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {addMatchers} from '../../nuclide-test-helpers';
 import {
-  getDefinitions,
   getReferences,
 } from '../lib/PythonService';
+import {getDefinition} from '../lib/DefinitionHelpers';
 import {
   getCompletions,
 } from '../lib/AutocompleteHelpers';
 import JediServerManager from '../lib/JediServerManager';
+import TextBuffer from 'simple-text-buffer';
+import {Point} from 'simple-text-buffer';
 
 // Test python file located at fixtures/serverdummy.py
 const TEST_FILE = nuclideUri.join(__dirname, 'fixtures', 'serverdummy.py');
@@ -27,6 +29,10 @@ const FILE_CONTENTS = fs.readFileSync(TEST_FILE).toString('utf8');
 
 // Disable buckd so it doesn't linger around after the test.
 process.env.NO_BUCKD = '1';
+
+function bufferOfContents(contents: string): simpleTextBuffer$TextBuffer {
+  return new TextBuffer(contents);
+}
 
 // Line/column actual offsets are 0-indexed in this test, similar to what atom
 // provides as input.
@@ -135,7 +141,13 @@ describe('PythonService', () => {
       waitsForPromise(async () => {
         // Basically everything is wrong here, but politely reject the promise.
         try {
-          await getDefinitions('potato', 'tomato', 6, 15);
+          const service = await serverManager.getJediService(TEST_FILE);
+          await service.get_definitions(
+              'potato',
+              'tomato',
+              6,
+              15,
+            );
           // Fail - this line should not be reachable.
           invariant(false);
         } catch (e) {
@@ -149,66 +161,66 @@ describe('PythonService', () => {
     it('can find definitions for imported modules', () => {
       waitsForPromise(async () => {
         // line 9: import os
-        const response = await getDefinitions(TEST_FILE, FILE_CONTENTS, 7, 8);
-        invariant(response);
-        expect(response.length).toBeGreaterThan(0);
+        const response = await getDefinition(
+          serverManager, TEST_FILE, bufferOfContents(FILE_CONTENTS), new Point(7, 8));
+        invariant(response != null);
+        expect(response.definitions.length).toBeGreaterThan(0);
 
-        const definition = response[0];
-        expect(definition.text).toEqual('os');
-        expect(definition.type).toEqual('module');
+        const definition = response.definitions[0];
+        expect(definition.name).toEqual('os');
         // Path is machine dependent, so just check that it exists and isn't empty.
-        expect(definition.file.length).toBeGreaterThan(0);
+        expect(definition.path.length).toBeGreaterThan(0);
       });
     });
 
     it('follows imports until a non-import definition when possible', () => {
       waitsForPromise(async () => {
         // line 17: a = Test()
-        const response = await getDefinitions(TEST_FILE, FILE_CONTENTS, 16, 7);
-        invariant(response);
-        expect(response.length).toBeGreaterThan(0);
+        const response = await getDefinition(
+          serverManager, TEST_FILE, bufferOfContents(FILE_CONTENTS), new Point(16, 7));
+        invariant(response != null);
+        expect(response.definitions.length).toBeGreaterThan(0);
 
-        const definition = response[0];
-        expect(definition.text).toEqual('Test');
-        expect(definition.type).toEqual('class');
+        const definition = response.definitions[0];
+        expect(definition.name).toEqual('Test');
         // Result should be the class definition itself, not the import statement.
-        expect(definition.file.endsWith('decorated.py')).toBeTruthy();
-        expect(definition.line).toEqual(9);
-        expect(definition.column).toEqual(6);
+        expect(definition.path.endsWith('decorated.py')).toBeTruthy();
+        expect(definition.position.row).toEqual(9);
+        expect(definition.position.column).toEqual(6);
       });
     });
 
     it('follows imports until the furthest unresolvable import statement', () => {
       waitsForPromise(async () => {
         // line 27: b = Test2()
-        const response = await getDefinitions(TEST_FILE, FILE_CONTENTS, 26, 7);
-        invariant(response);
-        expect(response.length).toBeGreaterThan(0);
+        const response = await getDefinition(
+          serverManager, TEST_FILE, bufferOfContents(FILE_CONTENTS), new Point(26, 7));
+        invariant(response != null);
+        expect(response.definitions.length).toBeGreaterThan(0);
 
-        const definition = response[0];
-        expect(definition.text).toEqual('Test2');
-        expect(definition.type).toEqual('import');
+        const definition = response.definitions[0];
+        expect(definition.name).toEqual('Test2');
         // Result should be the import statement in decorated.py, since it's not
         // possible to follow further (the module doesn't exist in this case).
-        expect(definition.file.endsWith('decorated.py')).toBeTruthy();
-        expect(definition.line).toEqual(6);
-        expect(definition.column).toEqual(19);
+        expect(definition.path.endsWith('decorated.py')).toBeTruthy();
+        expect(definition.position.row).toEqual(6);
+        expect(definition.position.column).toEqual(19);
       });
     });
 
     it('can find the definitions of locally defined variables', () => {
       waitsForPromise(async () => {
         // line 15: potato3 = potato
-        const response = await getDefinitions(TEST_FILE, FILE_CONTENTS, 14, 12);
-        invariant(response);
-        expect(response.length).toBeGreaterThan(0);
+        const response = await getDefinition(
+          serverManager, TEST_FILE, bufferOfContents(FILE_CONTENTS), new Point(14, 12));
+        invariant(response != null);
+        expect(response.definitions.length).toBeGreaterThan(0);
 
-        const definition = response[0];
-        expect(definition.text).toEqual('potato');
-        expect(definition.type).toEqual('statement');
-        expect(definition.line).toEqual(12);
+        const definition = response.definitions[0];
+        expect(definition.name).toEqual('potato');
+        expect(definition.position.row).toEqual(12);
         // Local variable definition should be within the same file.
-        expect(definition.file).toEqual(TEST_FILE);
+        expect(definition.path).toEqual(TEST_FILE);
       });
     });
   });
