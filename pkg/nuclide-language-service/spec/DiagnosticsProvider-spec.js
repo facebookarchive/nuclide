@@ -12,6 +12,8 @@ import typeof * as DiagnosticsProviderFile from '../lib/DiagnosticsProvider';
 import type {FileDiagnosticsProvider} from '../lib/DiagnosticsProvider';
 import type {LanguageService} from '../lib/LanguageService';
 
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
+import {BusySignalProviderBase} from '../../nuclide-busy-signal';
 import {clearRequireCache, uncachedRequire} from '../../nuclide-test-helpers';
 
 describe('DiagnosticsProvider', () => {
@@ -27,7 +29,7 @@ describe('DiagnosticsProvider', () => {
       false,
       'hack.diagnostics',
       (null: any), // connectionToLanguageService
-      undefined, // busySignalProvider
+      new BusySignalProviderBase(),
       (FakeProviderBase: any),
     );
   });

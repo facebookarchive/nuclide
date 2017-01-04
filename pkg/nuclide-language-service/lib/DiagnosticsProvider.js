@@ -20,6 +20,7 @@ import type {
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
 import type {LanguageService} from './LanguageService';
 import type {CategoryLogger} from '../../nuclide-logging';
+import type {BusySignalProviderBase} from '../../nuclide-busy-signal';
 
 import {Cache} from '../../commons-node/cache';
 import {ConnectionCache} from '../../nuclide-remote-connection';
@@ -32,8 +33,6 @@ import {getFileVersionOfEditor} from '../../nuclide-open-files';
 import {Observable} from 'rxjs';
 import {ServerConnection} from '../../nuclide-remote-connection';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {BusySignalProviderBase} from '../../nuclide-busy-signal';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {ensureInvalidations} from '../../nuclide-language-service-rpc';
 
@@ -58,6 +57,7 @@ export function registerDiagnostics<T: LanguageService>(
   config: DiagnosticsConfig,
   logger: CategoryLogger,
   connectionToLanguageService: ConnectionCache<T>,
+  busySignalProvider: BusySignalProviderBase,
 ): IDisposable {
   const result = new UniversalDisposable();
   let provider;
@@ -69,6 +69,7 @@ export function registerDiagnostics<T: LanguageService>(
         config.shouldRunOnTheFly,
         config.analyticsEventName,
         connectionToLanguageService,
+        busySignalProvider,
       );
       result.add(provider);
       break;
@@ -110,7 +111,7 @@ export class FileDiagnosticsProvider<T: LanguageService> {
     shouldRunOnTheFly: boolean,
     analyticsEventName: string,
     connectionToLanguageService: ConnectionCache<T>,
-    busySignalProvider: BusySignalProviderBase = new BusySignalProviderBase(),
+    busySignalProvider: BusySignalProviderBase,
     ProviderBase: typeof DiagnosticsProviderBase = DiagnosticsProviderBase,
   ) {
     this.name = name;
@@ -131,12 +132,7 @@ export class FileDiagnosticsProvider<T: LanguageService> {
       onDidRemoveProjectPath(projectPath => {
         this.invalidateProjectPath(projectPath);
       }),
-      this._providerBase,
-      atom.packages.serviceHub.provide(
-        'nuclide-busy-signal',
-        '0.1.0',
-        busySignalProvider,
-      ));
+      this._providerBase);
   }
 
   _runDiagnostics(textEditor: atom$TextEditor): void {

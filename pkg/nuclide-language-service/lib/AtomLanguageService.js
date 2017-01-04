@@ -37,6 +37,8 @@ import {EvaluationExpressionProvider} from './EvaluationExpressionProvider';
 import {AutocompleteProvider} from './AutocompleteProvider';
 import {registerDiagnostics} from './DiagnosticsProvider';
 import {getCategoryLogger} from '../../nuclide-logging';
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
+import {DedupedBusySignalProviderBase} from '../../nuclide-busy-signal';
 
 export type AtomLanguageServiceConfig = {
   name: string,
@@ -77,6 +79,12 @@ export class AtomLanguageService<T: LanguageService> {
   }
 
   activate(): void {
+    const busySignalProvider = new DedupedBusySignalProviderBase();
+    this._subscriptions.add(atom.packages.serviceHub.provide(
+      'nuclide-busy-signal',
+      '0.1.0',
+      busySignalProvider));
+
     const highlightsConfig = this._config.highlights;
     if (highlightsConfig != null) {
       this._subscriptions.add(CodeHighlightProvider.register(
@@ -153,7 +161,8 @@ export class AtomLanguageService<T: LanguageService> {
         this._config.grammars,
         diagnosticsConfig,
         this._logger,
-        this._connectionToLanguageService));
+        this._connectionToLanguageService,
+        busySignalProvider));
     }
   }
 
