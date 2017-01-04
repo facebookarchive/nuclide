@@ -10,7 +10,6 @@
 
 import type {DefinitionProvider} from '../../nuclide-definition-service';
 import type {FindReferencesProvider} from '../../nuclide-find-references';
-import type {CodeFormatProvider} from '../../nuclide-code-format/lib/types';
 import type {LinterProvider} from '../../nuclide-diagnostics-common';
 import typeof * as PythonService from '../../nuclide-python-rpc/lib/PythonService';
 import type {ServerConnection} from '../../nuclide-remote-connection';
@@ -27,7 +26,6 @@ import {getLintOnFly} from './config';
 import AutocompleteHelpers from './AutocompleteHelpers';
 import DefinitionHelpers from './DefinitionHelpers';
 import ReferenceHelpers from './ReferenceHelpers';
-import CodeFormatHelpers from './CodeFormatHelpers';
 import LintHelpers from './LintHelpers';
 import {getServiceByConnection} from '../../nuclide-remote-connection';
 import {getNotifierByConnection} from '../../nuclide-open-files';
@@ -58,6 +56,12 @@ const atomConfig: AtomLanguageServiceConfig = {
     version: '0.0.0',
     priority: 1,
     analyticsEventName: 'python.outline',
+  },
+  codeFormat: {
+    version: '0.0.0',
+    priority: 1,
+    analyticsEventName: 'python.formatCode',
+    formatEntireFile: true,
   },
 };
 
@@ -109,20 +113,6 @@ export function provideReferences(): FindReferencesProvider {
     },
     findReferences(editor, position) {
       return ReferenceHelpers.getReferences(editor, position);
-    },
-  };
-}
-
-export function provideCodeFormat(): CodeFormatProvider {
-  return {
-    selector: 'source.python',
-    inclusionPriority: 1,
-    formatEntireFile(editor, range) {
-      invariant(busySignalProvider);
-      return busySignalProvider.reportBusy(
-        `Python: formatting \`${editor.getTitle()}\``,
-        () => CodeFormatHelpers.formatEntireFile(editor, range),
-      );
     },
   };
 }

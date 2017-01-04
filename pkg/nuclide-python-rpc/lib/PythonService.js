@@ -217,7 +217,7 @@ class PythonSingleFileLanguageService {
     throw new Error('Not Yet Implemented');
   }
 
-  formatEntireFile(
+  async formatEntireFile(
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
     range: atom$Range,
@@ -225,7 +225,39 @@ class PythonSingleFileLanguageService {
     newCursor?: number,
     formatted: string,
   }> {
-    throw new Error('Not implemented');
+    const contents = buffer.getText();
+    const start = range.start.row + 1;
+    const end = range.end.row + 1;
+    const libCommand = getFormatterPath();
+    const dirName = nuclideUri.dirname(nuclideUri.getPath(filePath));
+
+    const result = await asyncExecute(
+      libCommand,
+      ['--line', `${start}-${end}`],
+      {cwd: dirName, stdin: contents},
+    );
+
+    /*
+     * At the moment, yapf outputs 3 possible exit codes:
+     * 0 - success, no content change.
+     * 2 - success, contents changed.
+     * 1 - internal failure, most likely due to syntax errors.
+     *
+     * See: https://github.com/google/yapf/issues/228#issuecomment-198682079
+     */
+    if (result.exitCode === 1) {
+      throw new Error(`"${libCommand}" failed, likely due to syntax errors.`);
+    } else if (result.exitCode == null) {
+      throw new Error(
+        `"${libCommand}" failed with error: ${maybeToString(result.errorMessage)}, ` +
+        `stderr: ${result.stderr}, stdout: ${result.stdout}.`,
+      );
+    } else if (contents !== '' && result.stdout === '') {
+      // Throw error if the yapf output is empty, which is almost never desirable.
+      throw new Error('Empty output received from yapf.');
+    }
+
+    return {formatted: result.stdout};
   }
 
   getEvaluationExpression(
@@ -370,42 +402,4 @@ export async function getDiagnostics(
     );
   }
   return parseFlake8Output(src, result.stdout);
-}
-
-export async function formatCode(
-  src: NuclideUri,
-  contents: string,
-  start: number,
-  end: number,
-): Promise<string> {
-  const libCommand = getFormatterPath();
-  const dirName = nuclideUri.dirname(nuclideUri.getPath(src));
-
-  const result = await asyncExecute(
-    libCommand,
-    ['--line', `${start}-${end}`],
-    {cwd: dirName, stdin: contents},
-  );
-
-  /*
-   * At the moment, yapf outputs 3 possible exit codes:
-   * 0 - success, no content change.
-   * 2 - success, contents changed.
-   * 1 - internal failure, most likely due to syntax errors.
-   *
-   * See: https://github.com/google/yapf/issues/228#issuecomment-198682079
-   */
-  if (result.exitCode === 1) {
-    throw new Error(`"${libCommand}" failed, likely due to syntax errors.`);
-  } else if (result.exitCode == null) {
-    throw new Error(
-      `"${libCommand}" failed with error: ${maybeToString(result.errorMessage)}, ` +
-      `stderr: ${result.stderr}, stdout: ${result.stdout}.`,
-    );
-  } else if (contents !== '' && result.stdout === '') {
-    // Throw error if the yapf output is empty, which is almost never desirable.
-    throw new Error('Empty output received from yapf.');
-  }
-
-  return result.stdout;
 }
