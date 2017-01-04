@@ -124,7 +124,11 @@ export class AtomLanguageService<T: LanguageService> {
     const codeFormatConfig = this._config.codeFormat;
     if (codeFormatConfig != null) {
       this._subscriptions.add(CodeFormatProvider.register(
-        this._config.name, this._selector(), codeFormatConfig, this._connectionToLanguageService));
+        this._config.name,
+        this._selector(),
+        codeFormatConfig,
+        this._connectionToLanguageService,
+        busySignalProvider));
     }
 
     const findReferencesConfig = this._config.findReferences;
