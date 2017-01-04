@@ -40,7 +40,6 @@ class Activation {
   _currentProvider: Object;
   _dispatcherToken: string;
   _previousFocus: ?HTMLElement;
-  _reactDiv: ?HTMLElement;
   _searchComponent: ?QuickSelectionComponent;
   _searchPanel: ?atom$Panel;
   _subscriptions: UniversalDisposable;
@@ -94,10 +93,9 @@ class Activation {
   }
 
   _render(): void {
-    if (this._reactDiv == null) {
-      const _reactDiv = document.createElement('div');
+    if (this._searchPanel == null) {
       this._searchPanel = atom.workspace.addModalPanel({
-        item: _reactDiv,
+        item: document.createElement('div'),
         visible: false,
       });
       const modalView = atom.views.getView(this._searchPanel);
@@ -110,8 +108,10 @@ class Activation {
         left: `${MODAL_MARGIN}px`,
         right: `${MODAL_MARGIN}px`,
       });
-      this._reactDiv = _reactDiv;
     }
+
+    const searchPanel = this._searchPanel;
+    invariant(searchPanel != null);
 
     const _searchComponent = ReactDOM.render(
       <QuickSelectionComponent
@@ -121,7 +121,7 @@ class Activation {
         searchResultManager={this._searchResultManager}
         onBlur={this._closeSearchPanel}
       />,
-      this._reactDiv,
+      searchPanel.getItem(),
     );
     invariant(_searchComponent instanceof QuickSelectionComponent);
 
@@ -281,9 +281,11 @@ class Activation {
     this._subscriptions.dispose();
     this._searchResultManager.dispose();
     this._quickSelectionDispatcher.unregister(this._dispatcherToken);
-    if (this._reactDiv != null) {
-      ReactDOM.unmountComponentAtNode(this._reactDiv);
-      this._reactDiv = null;
+    if (this._searchComponent != null) {
+      const searchPanel = this._searchPanel;
+      invariant(searchPanel != null);
+      ReactDOM.unmountComponentAtNode(searchPanel.getItem());
+      this._searchComponent = null;
     }
     if (this._searchPanel != null) {
       this._searchPanel.destroy();
