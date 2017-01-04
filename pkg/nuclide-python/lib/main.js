@@ -22,13 +22,16 @@ import invariant from 'assert';
 import {DedupedBusySignalProviderBase} from '../../nuclide-busy-signal';
 import {GRAMMARS, GRAMMAR_SET} from './constants';
 import {getLintOnFly} from './config';
-import AutocompleteHelpers from './AutocompleteHelpers';
 import DefinitionHelpers from './DefinitionHelpers';
 import LintHelpers from './LintHelpers';
 import {getServiceByConnection} from '../../nuclide-remote-connection';
 import {getNotifierByConnection} from '../../nuclide-open-files';
 import {AtomLanguageService} from '../../nuclide-language-service';
-import {getShowGlobalVariables} from './config';
+import {
+  getShowGlobalVariables,
+  getAutocompleteArguments,
+  getIncludeOptionalArguments,
+} from './config';
 
 const PYTHON_SERVICE_NAME = 'PythonService';
 
@@ -41,7 +44,11 @@ async function connectionToPythonService(
   const fileNotifier = await getNotifierByConnection(connection);
   const languageService = await pythonService.initialize(
     fileNotifier,
-    getShowGlobalVariables(),
+    {
+      showGlobalVariables: getShowGlobalVariables(),
+      autocompleteArguments: getAutocompleteArguments(),
+      includeOptionalArguments: getIncludeOptionalArguments(),
+    },
   );
 
   return languageService;
@@ -65,6 +72,14 @@ const atomConfig: AtomLanguageServiceConfig = {
     version: '0.0.0',
     analyticsEventName: 'python.get-references',
   },
+  autocomplete: {
+    version: '2.0.0',
+    inclusionPriority: 5,
+    suggestionPriority: 5,  // Higher than the snippets provider.
+    disableForSelector: '.source.python .comment, .source.python .string',
+    excludeLowerPriority: false,
+    analyticsEventName: 'nuclide-python:getAutocompleteSuggestions',
+  },
 };
 
 let pythonLanguageService: ?AtomLanguageService<LanguageService> = null;
@@ -75,19 +90,6 @@ export function activate() {
     pythonLanguageService = new AtomLanguageService(connectionToPythonService, atomConfig);
     pythonLanguageService.activate();
   }
-}
-
-
-export function createAutocompleteProvider(): atom$AutocompleteProvider {
-  return {
-    selector: '.source.python',
-    disableForSelector: '.source.python .comment, .source.python .string',
-    inclusionPriority: 5,
-    suggestionPriority: 5,  // Higher than the snippets provider.
-    getSuggestions(request) {
-      return AutocompleteHelpers.getAutocompleteSuggestions(request);
-    },
-  };
 }
 
 export function provideDefinitions(): DefinitionProvider {

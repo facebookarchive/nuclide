@@ -39,6 +39,7 @@ import {ServerLanguageService} from '../../nuclide-language-service-rpc';
 import {itemsToOutline} from './outline';
 import {Point, Range} from 'simple-text-buffer';
 import {FileCache} from '../../nuclide-open-files-rpc';
+import {getAutocompleteSuggestions} from './AutocompleteHelpers';
 
 export type PythonCompletion = {
   type: string,
@@ -109,17 +110,23 @@ export type PythonDiagnostic = {
   column: number,
 };
 
+export type PythonServiceConfig = {
+  showGlobalVariables: boolean,
+  autocompleteArguments: boolean,
+  includeOptionalArguments: boolean,
+};
+
 const serverManager = new JediServerManager();
 
 export async function initialize(
   fileNotifier: FileNotifier,
-  showGlobalVariables: boolean,
+  config: PythonServiceConfig,
 ): Promise<LanguageService> {
   return new ServerLanguageService(
     fileNotifier,
     new PythonSingleFileLanguageService(
       fileNotifier,
-      showGlobalVariables,
+      config,
     ),
   );
 }
@@ -127,14 +134,18 @@ export async function initialize(
 class PythonSingleFileLanguageService {
   _fileCache: FileCache;
   _showGlobalVariables: boolean;
+  _autocompleteArguments: boolean;
+  _includeOptionalArguments: boolean;
 
   constructor(
     fileNotifier: FileNotifier,
-    showGlobalVariables: boolean,
+    config: PythonServiceConfig,
   ) {
     invariant(fileNotifier instanceof FileCache);
     this._fileCache = fileNotifier;
-    this._showGlobalVariables = showGlobalVariables;
+    this._showGlobalVariables = config.showGlobalVariables;
+    this._autocompleteArguments = config.autocompleteArguments;
+    this._includeOptionalArguments = config.includeOptionalArguments;
   }
 
   getDiagnostics(
@@ -154,7 +165,15 @@ class PythonSingleFileLanguageService {
     position: atom$Point,
     activatedManually: boolean,
   ): Promise<Array<Completion>> {
-    throw new Error('Not Yet Implemented');
+    return getAutocompleteSuggestions(
+      serverManager,
+      filePath,
+      buffer,
+      position,
+      activatedManually,
+      this._autocompleteArguments,
+      this._includeOptionalArguments,
+    );
   }
 
   getDefinition(
@@ -344,21 +363,6 @@ function getFormatterPath() {
   }
 
   return formatterPath;
-}
-
-export async function getCompletions(
-  src: NuclideUri,
-  contents: string,
-  line: number,
-  column: number,
-): Promise<?Array<PythonCompletion>> {
-  const service = await serverManager.getJediService(src);
-  return service.get_completions(
-      src,
-      contents,
-      line,
-      column,
-    );
 }
 
 export async function getDefinitions(

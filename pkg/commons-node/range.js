@@ -36,3 +36,16 @@ export function wordAtPositionFromBuffer(
     return null;
   }
 }
+
+// Matches a regex on the text of the line ending at endPosition.
+// regex should end with a '$'.
+// Useful for autocomplete.
+export function matchRegexEndingAt(
+  buffer: atom$TextBuffer | simpleTextBuffer$TextBuffer,
+  endPosition: atom$PointObject,
+  regex: RegExp,
+): ?string {
+  const line = buffer.getTextInRange([[endPosition.row, 0], endPosition]);
+  const match = regex.exec(line);
+  return match == null ? null : match[0];
+}
