@@ -22,7 +22,7 @@ import type {
 import type QuickSelectionDispatcher, {
   QuickSelectionAction,
 } from './QuickSelectionDispatcher';
-import type QuickSelectionActions from './QuickSelectionActions';
+import type QuickOpenProviderRegistry from './QuickOpenProviderRegistry';
 
 type ResultRenderer =
   (item: FileResult, serviceName: string, dirName: string) => React.Element<any>;
@@ -33,9 +33,9 @@ import {getLogger} from '../../nuclide-logging';
 import {React} from 'react-for-atom';
 import {
   CompositeDisposable,
-  Disposable,
   Emitter,
 } from 'atom';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {triggerAfterWait} from '../../commons-node/promise';
 import debounce from '../../commons-node/debounce';
 import {ActionTypes} from './QuickSelectionDispatcher';
@@ -56,45 +56,30 @@ const OMNISEARCH_PROVIDER = {
 };
 const UPDATE_DIRECTORIES_DEBOUNCE_DELAY = 100;
 const GLOBAL_KEY = 'global';
-const DIRECTORY_KEY = 'directory';
-
-function isValidProvider(provider): boolean {
-  return (
-    typeof provider.getProviderType === 'function' &&
-    typeof provider.getName === 'function' && typeof provider.getName() === 'string' &&
-    typeof provider.isRenderable === 'function' &&
-    typeof provider.executeQuery === 'function' &&
-    typeof provider.getTabTitle === 'function'
-  );
-}
 
 /**
  * A singleton cache for search providers and results.
  */
 export default class SearchResultManager {
   _dispatcherToken: string;
-  _quickSelectionActions: QuickSelectionActions;
+  _quickOpenProviderRegistry: QuickOpenProviderRegistry;
   _quickSelectionDispatcher: QuickSelectionDispatcher;
   _providersByDirectory: Map<atom$Directory, Set<Provider>>;
+  _providerSubscriptions: Map<Provider, IDisposable>;
   _directories: Array<atom$Directory>;
   _resultCache: ResultCache;
   _currentWorkingRoot: ?Directory;
   _debouncedUpdateDirectories: () => mixed;
   _emitter: Emitter;
   _subscriptions: CompositeDisposable;
-  _registeredProviders: {[key: string]: Map<string, Provider>};
   _activeProviderName: string;
-  _isDisposed: boolean;
 
   constructor(
-    quickSelectionActions: QuickSelectionActions,
+    quickOpenProviderRegistry: QuickOpenProviderRegistry,
     quickSelectionDispatcher: QuickSelectionDispatcher,
   ) {
-    this._isDisposed = false;
-    this._registeredProviders = {};
-    this._registeredProviders[DIRECTORY_KEY] = new Map();
-    this._registeredProviders[GLOBAL_KEY] = new Map();
     this._providersByDirectory = new Map();
+    this._providerSubscriptions = new Map();
     this._directories = [];
     this._currentWorkingRoot = null;
     this._resultCache = new ResultCache(() => {
@@ -111,8 +96,8 @@ export default class SearchResultManager {
     );
     this._emitter = new Emitter();
     this._subscriptions = new CompositeDisposable();
-    this._quickSelectionActions = quickSelectionActions;
     this._quickSelectionDispatcher = quickSelectionDispatcher;
+    this._quickOpenProviderRegistry = quickOpenProviderRegistry;
     // Check is required for testing.
     if (atom.project) {
       this._subscriptions.add(atom.project.onDidChangePaths(
@@ -122,6 +107,14 @@ export default class SearchResultManager {
     }
     this._dispatcherToken = this._quickSelectionDispatcher.register(
       this._handleActions.bind(this),
+    );
+    this._subscriptions.add(
+      this._quickOpenProviderRegistry.observeProviders(
+        this._registerProvider.bind(this),
+      ),
+      this._quickOpenProviderRegistry.onDidRemoveProvider(
+        this._deregisterProvider.bind(this),
+      ),
     );
     this._activeProviderName = OMNISEARCH_PROVIDER.name;
   }
@@ -159,8 +152,10 @@ export default class SearchResultManager {
   }
 
   dispose(): void {
-    this._isDisposed = true;
     this._subscriptions.dispose();
+    this._providerSubscriptions.forEach(subscriptions => {
+      subscriptions.dispose();
+    });
     this._quickSelectionDispatcher.unregister(this._dispatcherToken);
   }
 
@@ -174,7 +169,7 @@ export default class SearchResultManager {
     const eligibilities = [];
     newDirectories.forEach(directory => {
       newProvidersByDirectories.set(directory, new Set());
-      for (const provider of this._registeredProviders[DIRECTORY_KEY].values()) {
+      for (const provider of this._quickOpenProviderRegistry.getDirectoryProviders()) {
         invariant(
           provider.isEligibleForDirectory != null,
           `Directory provider ${provider.getName()} must provide \`isEligibleForDirectory()\`.`,
@@ -257,50 +252,40 @@ export default class SearchResultManager {
     return directories;
   }
 
-  registerProvider(service: Provider): IDisposable {
-    if (!isValidProvider(service)) {
-      const providerName = service.getName && service.getName() || '<unknown>';
-      getLogger().error(`Quick-open provider ${providerName} is not a valid provider`);
+  _registerProvider(service: Provider): void {
+    if (this._providerSubscriptions.get(service)) {
+      const serviceName = service.getName();
+      throw new Error(`${serviceName} has already been registered.`);
     }
-    const isRenderableProvider =
-      typeof service.isRenderable === 'function' && service.isRenderable();
-    const isGlobalProvider = service.getProviderType() === 'GLOBAL';
-    const targetRegistry = isGlobalProvider
-      ? this._registeredProviders[GLOBAL_KEY]
-      : this._registeredProviders[DIRECTORY_KEY];
-    targetRegistry.set(service.getName(), service);
-    if (!isGlobalProvider) {
+
+    const subscriptions = new UniversalDisposable();
+    this._providerSubscriptions.set(service, subscriptions);
+
+    if (service.getProviderType() === 'DIRECTORY') {
       this._debouncedUpdateDirectories();
     }
-    const disposable = new CompositeDisposable();
-    disposable.add(new Disposable(() => {
-      // This may be called after this package has been deactivated
-      // and the SearchResultManager has been disposed.
-      if (this._isDisposed) {
-        return;
-      }
-      const serviceName = service.getName();
-      targetRegistry.delete(serviceName);
-      this._providersByDirectory.forEach((providers, dir) => {
-        providers.delete(service);
-      });
-      // Reset the active provider to omnisearch if the disposed service is
-      // the current active provider.
-      if (serviceName === this._activeProviderName) {
-        this._activeProviderName = OMNISEARCH_PROVIDER.name;
-      }
-      this._resultCache.removeResultsForProvider(serviceName);
-      this._emitter.emit('providers-changed');
-    }));
-    // If the provider is renderable and specifies a keybinding, wire it up with the toggle command.
-    if (isRenderableProvider && typeof service.getAction === 'function') {
-      const actionSpec = {
-        [service.getAction()]:
-          () => this._quickSelectionActions.changeActiveProvider(service.getName()),
-      };
-      disposable.add(atom.commands.add('atom-workspace', actionSpec));
+  }
+
+  _deregisterProvider(service: Provider): void {
+    const serviceName = service.getName();
+    const subscriptions = this._providerSubscriptions.get(service);
+    if (subscriptions == null) {
+      throw new Error(`${serviceName} has already been deregistered.`);
     }
-    return disposable;
+
+    subscriptions.dispose();
+    this._providerSubscriptions.delete(service);
+
+    this._providersByDirectory.forEach(providers => {
+      providers.delete(service);
+    });
+
+    if (serviceName === this._activeProviderName) {
+      this._activeProviderName = OMNISEARCH_PROVIDER.name;
+    }
+
+    this._resultCache.removeResultsForProvider(serviceName);
+    this._emitter.emit('providers-changed');
   }
 
   _cacheResult(
@@ -342,7 +327,7 @@ export default class SearchResultManager {
 
   _executeQuery(rawQuery: string): void {
     const query = this._sanitizeQuery(rawQuery);
-    for (const globalProvider of this._registeredProviders[GLOBAL_KEY].values()) {
+    for (const globalProvider of this._quickOpenProviderRegistry.getGlobalProviders()) {
       const startTime = performance.now();
       const loadingFn = () => {
         this._setLoading(query, GLOBAL_KEY, globalProvider);
@@ -393,26 +378,18 @@ export default class SearchResultManager {
     });
   }
 
-  _isGlobalProvider(providerName: string): boolean {
-    return this._registeredProviders[GLOBAL_KEY].has(providerName);
-  }
-
   _getProviderByName(providerName: string): Provider {
-    let dirProviderName;
-    if (this._isGlobalProvider(providerName)) {
-      dirProviderName = this._registeredProviders[GLOBAL_KEY].get(providerName);
-    } else {
-      dirProviderName = this._registeredProviders[DIRECTORY_KEY].get(providerName);
-    }
+    const dirProvider =
+      this._quickOpenProviderRegistry.getProviderByName(providerName);
     invariant(
-      dirProviderName != null,
+      dirProvider != null,
       `Provider ${providerName} is not registered with quick-open.`,
     );
-    return dirProviderName;
+    return dirProvider;
   }
 
   _getResultsForProvider(query: string, providerName: string): Object {
-    const providerPaths = this._isGlobalProvider(providerName)
+    const providerPaths = this._quickOpenProviderRegistry.isProviderGlobal(providerName)
       ? [GLOBAL_KEY]
       : this._sortDirectories().map(d => d.getPath());
     const provider = this._getProviderByName(providerName);
@@ -505,7 +482,8 @@ export default class SearchResultManager {
 
   getRenderableProviders(): Array<ProviderSpec> {
     // Only render tabs for providers that are eligible for at least one directory.
-    const eligibleDirectoryProviders = Array.from(this._registeredProviders[DIRECTORY_KEY].values())
+    const eligibleDirectoryProviders =
+      this._quickOpenProviderRegistry.getDirectoryProviders()
       .filter(provider => {
         for (const providers of this._providersByDirectory.values()) {
           if (providers.has(provider)) {
@@ -514,7 +492,7 @@ export default class SearchResultManager {
         }
         return false;
       });
-    const tabs = Array.from(this._registeredProviders[GLOBAL_KEY].values())
+    const tabs = this._quickOpenProviderRegistry.getGlobalProviders()
       .concat(eligibleDirectoryProviders)
       .filter(provider => provider.isRenderable())
       .map(this._bakeProvider)

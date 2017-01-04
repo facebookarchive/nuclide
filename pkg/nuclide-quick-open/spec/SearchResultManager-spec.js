@@ -13,8 +13,8 @@ import type {Provider, ProviderSpec} from '../lib/types';
 import nuclideUri from '../../commons-node/nuclideUri';
 
 import SearchResultManager from '../lib/SearchResultManager';
+import QuickOpenProviderRegistry from '../lib/QuickOpenProviderRegistry';
 import QuickSelectionDispatcher from '../lib/QuickSelectionDispatcher';
-import QuickSelectionActions from '../lib/QuickSelectionActions';
 
 import {__test__} from '../lib/SearchResultManager';
 const {_getOmniSearchProviderSpec} = __test__;
@@ -81,14 +81,13 @@ function constructSingleProviderResult(provider: Provider, result: Object) {
 
 describe('SearchResultManager', () => {
   let searchResultManager: SearchResultManager = (null: any);
+  let quickOpenProviderRegistry: QuickOpenProviderRegistry = (null: any);
 
   beforeEach(() => {
     const quickSelectionDispatcher = new QuickSelectionDispatcher();
-    const quickSelectionActions = new QuickSelectionActions(
-      quickSelectionDispatcher,
-    );
+    quickOpenProviderRegistry = new QuickOpenProviderRegistry();
     searchResultManager = new SearchResultManager(
-      quickSelectionActions,
+      quickOpenProviderRegistry,
       quickSelectionDispatcher,
     );
   });
@@ -107,7 +106,7 @@ describe('SearchResultManager', () => {
   describe('provider/directory cache', () => {
     it('updates the cache when providers become (un)available', () => {
       waitsForPromise(async () => {
-        const fakeProviderDisposable = searchResultManager.registerProvider({...FakeProvider});
+        const fakeProviderDisposable = quickOpenProviderRegistry.addProvider({...FakeProvider});
         let providersChangedCallCount = 0;
         searchResultManager.onProvidersChanged(() => {
           providersChangedCallCount++;
@@ -130,7 +129,7 @@ describe('SearchResultManager', () => {
   describe('querying providers', () => {
     it('queries providers asynchronously, emits change events and returns filtered results', () => {
       waitsForPromise(async () => {
-        searchResultManager.registerProvider({...ExactStringMatchProvider});
+        quickOpenProviderRegistry.addProvider({...ExactStringMatchProvider});
         expect(await querySingleProvider(searchResultManager, 'yolo', 'ExactStringMatchProvider'))
           .toEqual(constructSingleProviderResult(ExactStringMatchProvider, {
             results: [
@@ -148,7 +147,7 @@ describe('SearchResultManager', () => {
 
     it('ignores trailing whitespace in querystring.', () => {
       waitsForPromise(async () => {
-        searchResultManager.registerProvider({...ExactStringMatchProvider});
+        quickOpenProviderRegistry.addProvider({...ExactStringMatchProvider});
         await Promise.all([
           '   yolo',
           'yolo   ',

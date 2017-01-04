@@ -23,6 +23,7 @@ import {track} from '../../nuclide-analytics';
 import debounce from '../../commons-node/debounce';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import SearchResultManager from './SearchResultManager';
+import QuickOpenProviderRegistry from './QuickOpenProviderRegistry';
 import QuickSelectionActions from './QuickSelectionActions';
 import QuickSelectionDispatcher, {ActionTypes} from './QuickSelectionDispatcher';
 
@@ -45,6 +46,7 @@ class Activation {
   _subscriptions: UniversalDisposable;
   _scrollableAreaHeightGap: number;
   _searchResultManager: SearchResultManager;
+  _quickOpenProviderRegistry: QuickOpenProviderRegistry;
   _quickSelectionActions: QuickSelectionActions;
   _quickSelectionDispatcher: QuickSelectionDispatcher;
 
@@ -52,12 +54,13 @@ class Activation {
     this._analyticsSessionId = null;
     this._previousFocus = null;
     this._scrollableAreaHeightGap = MODAL_MARGIN + TOPBAR_APPROX_HEIGHT;
+    this._quickOpenProviderRegistry = new QuickOpenProviderRegistry();
     this._quickSelectionDispatcher = new QuickSelectionDispatcher();
     this._quickSelectionActions = new QuickSelectionActions(
       this._quickSelectionDispatcher,
     );
     this._searchResultManager = new SearchResultManager(
-      this._quickSelectionActions,
+      this._quickOpenProviderRegistry,
       this._quickSelectionDispatcher,
     );
     this._currentProvider = this._searchResultManager.getProviderByName(DEFAULT_PROVIDER);
@@ -220,7 +223,30 @@ class Activation {
   }
 
   registerProvider(service: Provider): IDisposable {
-    return this._searchResultManager.registerProvider(service);
+    const subscriptions = new UniversalDisposable(
+      this._quickOpenProviderRegistry.addProvider(service),
+    );
+
+    // If the provider is renderable and specifies a keybinding, wire it up with
+    // the toggle command.
+    const serviceAction =
+      typeof service.isRenderable === 'function' &&
+      service.isRenderable() &&
+      typeof service.getAction === 'function' &&
+      service.getAction();
+
+    if (typeof serviceAction === 'string' && serviceAction.length > 0) {
+      subscriptions.add(
+        atom.commands.add('atom-workspace', {
+          [serviceAction]: () => {
+            const serviceName = service.getName();
+            this._quickSelectionActions.changeActiveProvider(serviceName);
+          },
+        }),
+      );
+    }
+
+    return subscriptions;
   }
 
   consumeCWDService(service: CwdApi): IDisposable {
