@@ -8,6 +8,7 @@ description: >
   Nuclide is built as a single package on top of Atom to provide hackability and the support of an active community.
 
   It provides a first-class development environment for React Native, Hack and Flow projects.
+logo: /static/og_image.png
 
 # baseurl determines the subpath of your site. For example if you're using an
 # organisation.github.io/reponame/ basic site URL, then baseurl would be set
@@ -20,7 +21,7 @@ description: >
 # This was also be set to the right thing automatically for local development
 # https://github.com/blog/2277-what-s-new-in-github-pages-with-jekyll-3-3
 # http://jekyllrb.com/news/2016/10/06/jekyll-3-3-is-here/
-url: "http://nuclide.io"
+url: "https://nuclide.io"
 
 # Note: There are new filters in Jekyll 3.3 to help with absolute and relative urls
 # absolute_url
@@ -86,3 +87,13 @@ color:
 # RSS Feed
 gems:
   - jekyll-feed
+  - jekyll-seo-tag
+  - jekyll-sitemap
+
+# Set default open graph image for all pages
+defaults:
+  -
+    scope:
+      path: ""
+    values:
+      image: /static/og_image.png
