@@ -42,7 +42,7 @@ import invariant from 'assert';
 import {Disposable} from 'atom';
 import nullthrows from 'nullthrows';
 import {applyMiddleware, bindActionCreators, createStore} from 'redux';
-import {Observable} from 'rxjs';
+import {Observable, ReplaySubject} from 'rxjs';
 import shallowEqual from 'shallowequal';
 
 // TODO: use a more general versioning mechanism.
@@ -88,13 +88,16 @@ class Activation {
       ...serializedState,
       showPlaceholderInitially,
       visible: showPlaceholderInitially,
-      visibilityTable,
     };
 
     const epics = Object.keys(Epics)
       .map(k => Epics[k])
       .filter(epic => typeof epic === 'function');
-    const rootEpic = combineEpics(...epics);
+    const epicOptions = {
+      visibilityTable,
+      states: new ReplaySubject(1),
+    };
+    const rootEpic = (actions, store) => combineEpics(...epics)(actions, store, epicOptions);
     this._store = createStore(
       Reducers.app,
       initialState,
@@ -110,10 +113,10 @@ class Activation {
     this._disposables = new UniversalDisposable(
       visibilityTable,
 
-      // We stick a stream of states onto the store so that epics can use them. This is less than
-      // ideal. See redux-observable/redux-observable#56
+      // We pass a stream of states to the epics expicitly. This is less than ideal. See
+      // redux-observable/redux-observable#56
       // $FlowFixMe: Teach flow about Symbol.observable
-      Observable.from(this._store).subscribe(initialState.states),
+      Observable.from(this._store).subscribe(epicOptions.states),
 
       // A stand-in for `atom.packages.didLoadInitialPackages` until atom/atom#12897
       Observable.interval(0).take(1)

@@ -10,8 +10,6 @@
 
 import type {AppState} from './types';
 
-import {ReplaySubject} from 'rxjs';
-
 export function createEmptyAppState(): AppState {
   return {
     activeTaskId: null,
@@ -20,13 +18,11 @@ export function createEmptyAppState(): AppState {
     taskRunners: new Map(),
     projectRoot: null,
     projectWasOpened: false,
-    states: new ReplaySubject(1),
     tasksAreReady: false,
     taskLists: new Map(),
     runningTaskInfo: null,
     viewIsInitialized: false,
     visible: false,
-    visibilityTable: null,
     previousSessionVisible: null,
   };
 }

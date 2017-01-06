@@ -20,7 +20,7 @@ import {createEmptyAppState} from '../lib/createEmptyAppState';
 import * as dummy from './dummy';
 import {createTask} from './dummy';
 import invariant from 'assert';
-import {ReplaySubject, Subject} from 'rxjs';
+import {Observable, ReplaySubject, Subject} from 'rxjs';
 
 function getRootEpic() {
   const epics = Object.keys(Epics)
@@ -41,7 +41,6 @@ describe('Epics', () => {
               activeTaskId: {taskRunnerId: 'build-system', type: 'test'},
               taskLists: new Map([['build-system', [createTask('build-system', 'test', false)]]]),
               projectWasOpened: true,
-              visibilityTable: createMockVisibilityTable([]),
             };
             const output = await runActions([Actions.tasksReady()], initialState)
               .first()
@@ -59,7 +58,6 @@ describe('Epics', () => {
               activeTaskId: {taskRunnerId: 'build-system', type: 'test'},
               taskLists: new Map([['build-system', [createTask('build-system', 'test')]]]),
               projectWasOpened: true,
-              visibilityTable: createMockVisibilityTable([]),
             };
             const output = await runActions([Actions.tasksReady()], initialState)
               .first()
@@ -78,7 +76,6 @@ describe('Epics', () => {
             activeTaskId: null,
             taskLists: new Map([['build-system', [createTask('build-system', 'test')]]]),
             projectWasOpened: true,
-            visibilityTable: createMockVisibilityTable([]),
           };
           const output = await runActions([Actions.tasksReady()], initialState)
             .first()
@@ -98,9 +95,12 @@ describe('Epics', () => {
             activeTaskId: null,
             taskLists: new Map([['build-system', [createTask('build-system', 'test')]]]),
             projectWasOpened: true,
-            visibilityTable: createMockVisibilityTable([{key: '/a', value: true}]),
           };
-          const output = await runActions([Actions.tasksReady()], initialState)
+          const output = await runActions(
+            [Actions.tasksReady()],
+            initialState,
+            {visibilityTable: createMockVisibilityTable([{key: '/a', value: true}])},
+          )
             .first()
             .toPromise();
           invariant(output.type === Actions.INITIALIZE_VIEW);
@@ -116,9 +116,12 @@ describe('Epics', () => {
             activeTaskId: {taskRunnerId: 'build-system', type: 'test'},
             taskLists: new Map([['build-system', [createTask('build-system', 'test')]]]),
             projectWasOpened: true,
-            visibilityTable: createMockVisibilityTable([{key: '/a', value: false}]),
           };
-          const output = await runActions([Actions.tasksReady()], initialState)
+          const output = await runActions(
+            [Actions.tasksReady()],
+            initialState,
+            {visibilityTable: createMockVisibilityTable([{key: '/a', value: false}])},
+          )
             .first()
             .toPromise();
           invariant(output.type === Actions.INITIALIZE_VIEW);
@@ -223,11 +226,19 @@ function createMockStore(state: Object): Store {
   return ((store: any): Store);
 }
 
-function runActions(actions: Array<Action>, initialState: AppState): ReplaySubject<Action> {
+function runActions(
+  actions: Array<Action>,
+  initialState: AppState,
+  options_?: Object,
+): ReplaySubject<Action> {
   const store = createMockStore(initialState);
   const input = new Subject();
   const output = new ReplaySubject();
-  getRootEpic()(new ActionsObservable(input), store).subscribe(output);
+  const options = {
+    visibilityTable: options_ && options_.visibilityTable || createMockVisibilityTable([]),
+    states: Observable.never(),
+  };
+  getRootEpic()(new ActionsObservable(input), store, options).subscribe(output);
   actions.forEach(input.next.bind(input));
   input.complete();
   return output;

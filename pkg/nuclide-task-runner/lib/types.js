@@ -22,7 +22,6 @@ export type AppState = {
   projectRoot: ?Directory,
   projectWasOpened: boolean,
   showPlaceholderInitially: boolean,
-  states: Observable<AppState>,
   taskLists: Map<string, Array<AnnotatedTaskMetadata>>,
   runningTaskInfo: ?{
     task: Task,
@@ -31,10 +30,11 @@ export type AppState = {
   tasksAreReady: boolean,
   viewIsInitialized: boolean,
   visible: boolean,
+};
 
-  // This really shouldn't be in the store. We just put it there so that we don't have to create our
-  // epics in a closure.
-  visibilityTable: ?LocalStorageJsonTable<boolean>,
+export type EpicOptions = {
+  states: Observable<AppState>,
+  visibilityTable: LocalStorageJsonTable<boolean>,
 };
 
 export type SerializedAppState = {

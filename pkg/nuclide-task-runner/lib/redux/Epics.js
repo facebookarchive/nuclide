@@ -12,6 +12,7 @@ import type {
   AnnotatedTaskMetadata,
   Action,
   AppState,
+  EpicOptions,
   Store,
   TaskId,
   TaskMetadata,
@@ -35,16 +36,17 @@ import {Observable} from 'rxjs';
 export function aggregateTaskListsEpic(
   actions: ActionsObservable<Action>,
   store: Store,
+  options: EpicOptions,
 ): Observable<Action> {
   // Wait until the initial packages have loaded.
   return actions.ofType(Actions.DID_LOAD_INITIAL_PACKAGES)
     .switchMap(() => {
-      // We get the state stream from the state. Ideally, we'd just use `Observable.from(store)`,
+      // We pass the state stream explicitly. Ideally, we'd just use `Observable.from(store)`,
       // but Redux gives us a partial store so we have to work around it.
       // See redux-observable/redux-observable#56
-      const {states} = store.getState();
+      const {states} = options;
 
-      const projectRoots = store.getState().states.map(state => state.projectRoot)
+      const projectRoots = states.map(state => state.projectRoot)
         .distinctUntilChanged((a, b) => {
           const aPath = a && a.getPath();
           const bPath = b && b.getPath();
@@ -160,6 +162,7 @@ export function tasksReadyEpic(
 export function initializeViewEpic(
   actions: ActionsObservable<Action>,
   store: Store,
+  options: EpicOptions,
 ): Observable<Action> {
   // Initialize the view when we have a task list.
   return actions.ofType(Actions.TASKS_READY)
@@ -171,8 +174,8 @@ export function initializeViewEpic(
       return state.projectWasOpened && !state.viewIsInitialized;
     })
     .map(() => {
-      const {activeTaskId, taskLists, visibilityTable, projectRoot} = store.getState();
-      invariant(visibilityTable != null);
+      const {activeTaskId, taskLists, projectRoot} = store.getState();
+      const {visibilityTable} = options;
       const projectRootPath = projectRoot == null ? null : projectRoot.getPath();
       const previousSessionVisible = projectRootPath == null
         ? undefined
