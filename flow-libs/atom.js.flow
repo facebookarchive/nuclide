@@ -477,14 +477,14 @@ declare class atom$Point {
   min(point1: atom$Point, point2: atom$Point): atom$Point,
   // TODO(t8220399): Change this to: `-1 | 0 | 1`.
   compare(other: atom$Point): number,
-  isEqual(otherRange: atom$Point | [number, number]): boolean,
+  isEqual(otherRange: atom$PointLike): boolean,
   isLessThan(other: atom$Point): boolean,
   isLessThanOrEqual(other: atom$Point): boolean,
   isGreaterThan(other: atom$Point): boolean,
   isGreaterThanOrEqual(other: atom$Point): boolean,
 
   // Operations
-  translate(other: atom$Point | [number, number]): atom$Point,
+  translate(other: atom$PointLike): atom$Point,
 
   // Conversion
   serialize(): Array<number>,
@@ -514,7 +514,7 @@ declare class atom$Range {
   start: atom$Point,
   end: atom$Point,
   isEmpty(): boolean,
-  isEqual(otherRange: atom$Range | [[number, number], [number, number]]): boolean,
+  isEqual(otherRange: atom$RangeLike): boolean,
   containsPoint(point: atom$PointLike, exclusive?: boolean): boolean,
   containsRange(other: atom$Range, exclusive?: boolean): boolean,
   union(other: atom$Range): atom$Range,
@@ -709,7 +709,7 @@ declare class atom$TextEditor extends atom$Model {
 
   // Reading Text
   getText(): string,
-  getTextInBufferRange(range: atom$Range | Array<number>): string,
+  getTextInBufferRange(range: atom$RangeLike): string,
   getLineCount(): number,
 
   // Mutating Text
@@ -730,7 +730,7 @@ declare class atom$TextEditor extends atom$Model {
   // History
   // TextEditor Coordinates
   screenPositionForBufferPosition(
-    bufferPosition: Array<number> | atom$Point,
+    bufferPosition: atom$PointLike,
     options?: {
       wrapBeyondNewlines?: boolean,
       wrapAtSoftNewlines?: boolean,
@@ -738,7 +738,7 @@ declare class atom$TextEditor extends atom$Model {
     },
   ): atom$Point,
   bufferPositionForScreenPosition(
-    bufferPosition: Array<number> | atom$Point,
+    bufferPosition: atom$PointLike,
     options?: {
       wrapBeyondNewlines?: boolean,
       wrapAtSoftNewlines?: boolean,
@@ -756,14 +756,14 @@ declare class atom$TextEditor extends atom$Model {
   getDecorations(options?: {class?: string, type?: string}): Array<atom$Decoration>,
 
   // Markers
-  markBufferPosition(position: atom$Point | Array<number>, options?: MarkerOptions): atom$Marker,
-  markBufferRange(range: atom$Range | Array<Array<number>>, options?: MarkerOptions): atom$Marker,
-  markScreenRange(range: atom$Range | Array<Array<number>>, options?: MarkerOptions): atom$Marker,
+  markBufferPosition(position: atom$PointLike, options?: MarkerOptions): atom$Marker,
+  markBufferRange(range: atom$RangeLike, options?: MarkerOptions): atom$Marker,
+  markScreenRange(range: atom$RangeLike, options?: MarkerOptions): atom$Marker,
 
   // Cursors
   getCursors(): Array<atom$Cursor>,
   setCursorBufferPosition(
-    position: atom$Point | Array<number>,
+    position: atom$PointLike,
     options?: {
       autoscroll?: boolean,
       wrapBeyondNewlines?: boolean,
@@ -845,7 +845,7 @@ declare class atom$TextEditor extends atom$Model {
 
   // Managing Syntax Scopes
   scopeDescriptorForBufferPosition(
-    bufferPosition: atom$Point | [number, number],
+    bufferPosition: atom$PointLike,
   ): atom$ScopeDescriptor,
 
   // Gutter
@@ -939,7 +939,7 @@ declare class atom$TextEditorElement extends HTMLElement {
   getModel(): atom$TextEditor,
   setModel(model: atom$TextEditor): void,
   pixelPositionForBufferPosition(
-    bufferPosition: {row: number, column: number} | Array<number> | atom$Point,
+    bufferPosition: atom$PointLike,
   ): {top: number, left: number},
   pixelPositionForScreenPosition(screenPosition: atom$Point): {
     left: number,
