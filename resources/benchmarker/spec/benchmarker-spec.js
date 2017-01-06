@@ -95,7 +95,6 @@ describe('Nuclide performance', () => {
 
       // If there is no result file (probably the first iteration of a new benchmark), create it.
       if (!resultFile) {
-        // $FlowFixMe
         resultFile = createResultFile(resultDir, benchmark, columns);
         setTestState({resultFile});
         console.log(`Writing raw results for ${String(benchmark.name)} to ${yellow(resultFile)}`);
@@ -212,9 +211,10 @@ function createResultDir(): string {
 
 function createResultFile(
   resultDir: string,
-  benchmark: {name: string},
+  benchmark: {name?: string},
   columns: Array<string>,
 ): string {
+  // $FlowFixMe
   const resultFile = path.join(resultDir, benchmark.name + '.tsv');
   writeTsv(resultFile, columns);
   return resultFile;

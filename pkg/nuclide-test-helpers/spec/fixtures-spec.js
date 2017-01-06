@@ -78,7 +78,7 @@ describe('generateFixture', () => {
       const fixturePath = await generateFixture(
         'fixture-to-generate',
         new Map([
-          ['foo.js'],
+          ['foo.js', undefined],
           ['bar/baz.txt', 'some text'],
         ]),
       );

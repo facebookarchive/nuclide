@@ -318,10 +318,9 @@ type TopLevelValueComponentProps = {
   className?: string,
   evaluationResult: ?EvaluationResult,
   fetchChildren: ?(objectId: string) => Observable<?ExpansionResult>,
-  expression: ?string,
+  expression?: string,
   simpleValueComponent: ReactClass<any>,
-  // $FlowIssue -- Flow's object spread operator inference is buggy.
-  shouldCacheChildren: ?boolean,
+  shouldCacheChildren?: boolean,
   // An (arbitrary) reference object used to track expansion state of the component's
   // children across multiple re-renders. To ensure persistent re-use of the  expansion state,
   // simply continue passing the same instance.
@@ -342,7 +341,6 @@ const expansionStates: WeakMap<Object, Map<string, NodeData>> = new WeakMap();
  * as after stepping in the debugger, which triggers a recursive re-fetch.
  */
 class TopLevelLazyNestedValueComponent extends React.Component {
-  // $FlowIssue `evaluationResult` gets injected via HOC.
   props: TopLevelValueComponentProps;
   shouldCacheChildren: boolean;
 

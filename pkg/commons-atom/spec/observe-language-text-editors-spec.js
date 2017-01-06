@@ -18,7 +18,7 @@ describe('observeLanguageTextEditors', () => {
   let javaGrammar: atom$Grammar = (null: any);
   let jsGrammar: atom$Grammar = (null: any);
   let nullGrammar: atom$Grammar = (null: any);
-  let grammarScopes: [string, string] = (null: any);
+  let grammarScopes: Array<string> = (null: any);
 
   beforeEach(() => {
     observeGrammarForTextEditors.__reset__();
