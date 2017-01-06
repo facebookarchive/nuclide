@@ -45,17 +45,17 @@ type Store<T: Action, U> = {
   getState(): U,
 };
 type Next<T: Action> = (action: T) => T;
-export type Epic<T: Action, U> =
-  (actions: ActionsObservable<T>, store: Store<T, U>) => Observable<T>;
+export type Epic<T: Action, U, E> =
+  (actions: ActionsObservable<T>, store: Store<T, U>, extra: E) => Observable<T>;
 
-export function combineEpics<T: Action, U>(...epics: Array<Epic<T, U>>): Epic<T, U> {
-  return (actions: ActionsObservable<T>, store: Store<T, U>) => {
-    const streams: Array<Observable<T>> = epics.map(epic => epic(actions, store));
+export function combineEpics<T: Action, U, E>(...epics: Array<Epic<T, U, E>>): Epic<T, U, E> {
+  return (actions: ActionsObservable<T>, store: Store<T, U>, extra: E) => {
+    const streams: Array<Observable<T>> = epics.map(epic => epic(actions, store, extra));
     return Observable.merge(...streams);
   };
 }
 
-export function createEpicMiddleware<T: Action, U>(rootEpic?: Epic<T, U>) {
+export function createEpicMiddleware<T: Action, U>(rootEpic?: Epic<T, U, void>) {
   const actions = new Subject();
   const actionsObs = new ActionsObservable(actions);
 

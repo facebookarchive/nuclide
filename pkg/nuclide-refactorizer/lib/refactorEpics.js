@@ -27,7 +27,7 @@ import * as Actions from './refactorActions';
 
 export function getEpics(
   providers: ProviderRegistry<RefactorProvider>,
-): Array<Epic<RefactorAction, RefactorState>> {
+): Array<Epic<RefactorAction, RefactorState, void>> {
   return [
     function getRefactoringsEpic(
       actions: ActionsObservable<RefactorAction>,
