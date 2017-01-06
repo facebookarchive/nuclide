@@ -21,6 +21,7 @@ import {
   createProcessStream,
   getOutputStream,
   killProcess,
+  killUnixProcessTree,
   observeProcess,
   observeProcessExit,
   parsePsOutput,
@@ -145,6 +146,18 @@ describe('commons-node/process', () => {
         spyOn(console, 'log'); // suppress log printing
         await killProcess((proc: any), false);
         expect(proc.kill).toHaveBeenCalled();
+      });
+    });
+
+    it('should kill the process tree when `killTree` is true', () => {
+      waitsForPromise(async () => {
+        // Create a tree that's more than level child deep.
+        const proc = child_process.spawn('bash', ['-c', '( (sleep 1000)& sleep 1000 )& wait']);
+        spyOn(console, 'error'); // suppress error printing
+        spyOn(console, 'log'); // suppress log printing
+        spyOn(process, 'kill').andCallThrough();
+        await killUnixProcessTree(proc);
+        expect(process.kill.callCount).toBeGreaterThan(2);
       });
     });
 

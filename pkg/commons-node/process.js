@@ -11,6 +11,7 @@
 import type {ProcessExitMessage, ProcessMessage, ProcessInfo} from './process-rpc-types';
 
 import child_process from 'child_process';
+import {MultiMap} from './collection';
 import nuclideUri from './nuclideUri';
 import {splitStream, takeWhileInclusive} from './observable';
 import {observeStream} from './stream';
@@ -377,12 +378,12 @@ function killWindowsProcessTree(pid: number): Promise<void> {
   });
 }
 
-async function killUnixProcessTree(childProcess: child_process$ChildProcess): Promise<void> {
-  const children = await getChildrenOfProcess(childProcess.pid);
-  for (const child of children) {
-    process.kill(child.pid, 'SIGTERM');
+export async function killUnixProcessTree(childProcess: child_process$ChildProcess): Promise<void> {
+  const descendants = await getDescendantsOfProcess(childProcess.pid);
+  // Kill the processes, starting with those of greatest depth.
+  for (const info of descendants.reverse()) {
+    process.kill(info.pid);
   }
-  childProcess.kill();
 }
 
 export function createProcessStream(
@@ -722,6 +723,30 @@ export async function getChildrenOfProcess(
 
   return processes.filter(processInfo =>
     processInfo.parentPid === processId);
+}
+
+/**
+ * Get a list of descendants, sorted by increasing depth (including the one with the provided pid).
+ */
+async function getDescendantsOfProcess(pid: number): Promise<Array<ProcessInfo>> {
+  const processes = await psTree();
+  let rootProcessInfo;
+  const pidToChildren = new MultiMap();
+  processes.forEach(info => {
+    if (info.pid === pid) {
+      rootProcessInfo = info;
+    }
+    pidToChildren.add(info.parentPid, info);
+  });
+  const descendants = rootProcessInfo == null ? [] : [rootProcessInfo];
+  // Walk through the array, adding the children of the current element to the end. This
+  // breadth-first traversal means that the elements will be sorted by depth.
+  for (let i = 0; i < descendants.length; i++) {
+    const info = descendants[i];
+    const children = pidToChildren.get(info.pid);
+    descendants.push(...Array.from(children));
+  }
+  return descendants;
 }
 
 function isWindowsPlatform(): boolean {
