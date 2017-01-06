@@ -160,9 +160,10 @@ function getPackagerObservable(projectRootPath: ?string): Observable<PackagerEve
       if (atom.devMode) {
         editor.push('--dev');
       }
-      return observeProcess(() => (
-        safeSpawn(command, args, {cwd, env: {...process.env, REACT_EDITOR: quote(editor)}})
-      ));
+      return observeProcess(
+        () => safeSpawn(command, args, {cwd, env: {...process.env, REACT_EDITOR: quote(editor)}}),
+        true, // Kill all descendant processes when unsubscribing
+      );
     })
     // Accumulate the stderr so that we can show it to the user if something goes wrong.
     .scan(
