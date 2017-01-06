@@ -8,6 +8,8 @@
  * @flow
  */
 
+/* global performance */
+
 /**
  * Polyfill for performance.now that works both on Atom (chrome) and node.
  * It returns a monotonically increasing timer in milliseconds.
@@ -17,13 +19,12 @@
  *   // ... code you want to benchmark ...
  *   const timeItTookInMilliseconds = performanceNow() - now;
  */
-const performanceNow = global.performance && global.performance.now ?
-  function() {
-    return global.performance.now();
-  } :
-  function() {
-    const [seconds, nanoseconds] = process.hrtime();
-    return seconds * 1000 + nanoseconds / 1000000;
-  };
 
-export default performanceNow;
+export default (
+  typeof performance !== 'undefined'
+    ? (): number => performance.now()
+    : (): number => {
+      const [seconds, nanoseconds] = process.hrtime();
+      return seconds * 1000 + nanoseconds / 1000000;
+    }
+);
