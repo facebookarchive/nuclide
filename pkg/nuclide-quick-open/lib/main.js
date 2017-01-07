@@ -266,7 +266,6 @@ class Activation {
 
   dispose(): void {
     this._subscriptions.dispose();
-    this._searchResultManager.dispose();
     this._quickSelectionDispatcher.unregister(this._dispatcherToken);
     if (this._searchComponent != null) {
       const searchPanel = this._searchPanel;
@@ -278,6 +277,9 @@ class Activation {
       this._searchPanel.destroy();
       this._searchPanel = null;
     }
+    // SearchResultManager's disposal causes QuickSelectionComponent to do work,
+    // so dispose of SearchResultManager after unmounting QuickSelectionComponent.
+    this._searchResultManager.dispose();
   }
 }
 

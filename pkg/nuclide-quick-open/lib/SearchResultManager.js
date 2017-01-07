@@ -41,6 +41,7 @@ import {triggerAfterWait} from '../../commons-node/promise';
 import debounce from '../../commons-node/debounce';
 import FileResultComponent from './FileResultComponent';
 import ResultCache from './ResultCache';
+import {arrayEqual, mapEqual} from '../../commons-node/collection';
 
 const MAX_OMNI_RESULTS_PER_SERVICE = 5;
 const DEFAULT_QUERY_DEBOUNCE_DELAY = 200;
@@ -94,14 +95,10 @@ export default class SearchResultManager {
     this._emitter = new Emitter();
     this._subscriptions = new CompositeDisposable();
     this._quickOpenProviderRegistry = quickOpenProviderRegistry;
-    // Check is required for testing.
-    if (atom.project) {
-      this._subscriptions.add(atom.project.onDidChangePaths(
-        this._debouncedUpdateDirectories.bind(this)),
-      );
-      this._debouncedUpdateDirectories();
-    }
     this._subscriptions.add(
+      atom.project.onDidChangePaths(
+        this._debouncedUpdateDirectories.bind(this),
+      ),
       this._quickOpenProviderRegistry.observeProviders(
         this._registerProvider.bind(this),
       ),
@@ -109,6 +106,7 @@ export default class SearchResultManager {
         this._deregisterProvider.bind(this),
       ),
     );
+    this._debouncedUpdateDirectories();
     this._activeProviderName = OMNISEARCH_PROVIDER.name;
   }
 
@@ -117,8 +115,10 @@ export default class SearchResultManager {
   }
 
   setActiveProvider(providerName: string): void {
-    this._activeProviderName = providerName;
-    this._emitter.emit('providers-changed');
+    if (this._activeProviderName !== providerName) {
+      this._activeProviderName = providerName;
+      this._emitter.emit('providers-changed');
+    }
   }
 
   onResultsChanged(callback: () => void): IDisposable {
@@ -141,6 +141,7 @@ export default class SearchResultManager {
   }
 
   dispose(): void {
+    this._emitter.dispose();
     this._subscriptions.dispose();
     this._providerSubscriptions.forEach(subscriptions => {
       subscriptions.dispose();
@@ -152,50 +153,42 @@ export default class SearchResultManager {
    * for every directory.
    */
   async _updateDirectories(): Promise<void> {
-    const newDirectories = atom.project.getDirectories();
-    const newProvidersByDirectories = new Map();
+    const directories = atom.project.getDirectories();
+    const providersByDirectories = new Map();
     const eligibilities = [];
-    newDirectories.forEach(directory => {
-      newProvidersByDirectories.set(directory, new Set());
+
+    directories.forEach(directory => {
+      const providersForDirectory = new Set();
+      providersByDirectories.set(directory, providersForDirectory);
       for (const provider of this._quickOpenProviderRegistry.getDirectoryProviders()) {
         eligibilities.push(
-          provider.isEligibleForDirectory(directory).then(isEligible => ({
-            isEligible,
-            provider,
-            directory,
-          })).catch(err => {
-            getLogger().warn(
-              `isEligibleForDirectory failed for directory provider ${provider.name}`,
-              err,
-            );
-            return {
-              isEligible: false,
-              provider,
-              directory,
-            };
-          }),
+          provider.isEligibleForDirectory(directory)
+            .catch(err => {
+              getLogger().warn(
+                `isEligibleForDirectory failed for directory provider ${provider.name}`,
+                err,
+              );
+              return false;
+            })
+            .then(isEligible => {
+              if (isEligible) {
+                providersForDirectory.add(provider);
+              }
+            }),
         );
       }
     });
-    const resolvedEligibilities = await Promise.all(eligibilities);
-    for (const eligibility of resolvedEligibilities) {
-      const {
-        provider,
-        isEligible,
-        directory,
-      } = eligibility;
-      if (isEligible) {
-        const providersForDirectory = newProvidersByDirectories.get(directory);
-        invariant(
-          providersForDirectory != null,
-          `Providers for directory ${directory.getPath()} not defined`,
-        );
-        providersForDirectory.add(provider);
-      }
+
+    await Promise.all(eligibilities);
+
+    if (!(
+      arrayEqual(this._directories, directories) &&
+      mapEqual(this._providersByDirectory, providersByDirectories)
+    )) {
+      this._directories = directories;
+      this._providersByDirectory = providersByDirectories;
+      this._emitter.emit('providers-changed');
     }
-    this._directories = newDirectories;
-    this._providersByDirectory = newProvidersByDirectories;
-    this._emitter.emit('providers-changed');
   }
 
   setCurrentWorkingRoot(newRoot: ?Directory): void {
@@ -410,7 +403,7 @@ export default class SearchResultManager {
   getResults(query: string, activeProviderName: string): GroupedResults {
     const sanitizedQuery = this._sanitizeQuery(query);
     if (activeProviderName === OMNISEARCH_PROVIDER.name) {
-      const omniSearchResults = [{}];
+      const omniSearchResults = {};
       for (const providerName in this._resultCache.getAllCachedResults()) {
         const resultForProvider = this._getResultsForProvider(sanitizedQuery, providerName);
         // TODO replace this with a ranking algorithm.
@@ -418,17 +411,13 @@ export default class SearchResultManager {
           resultForProvider.results[dir].results =
             resultForProvider.results[dir].results.slice(0, MAX_OMNI_RESULTS_PER_SERVICE);
         }
-        // TODO replace `partial` with computed property whenever Flow supports it.
-        const partial = {};
-        partial[providerName] = resultForProvider;
-        omniSearchResults.push(partial);
+        omniSearchResults[providerName] = resultForProvider;
       }
-      return Object.assign.apply(null, omniSearchResults);
+      return omniSearchResults;
+    } else {
+      const resultForProvider = this._getResultsForProvider(sanitizedQuery, activeProviderName);
+      return {[activeProviderName]: resultForProvider};
     }
-    // TODO replace `partial` with computed property whenever Flow supports it.
-    const partial = {};
-    partial[activeProviderName] = this._getResultsForProvider(sanitizedQuery, activeProviderName);
-    return partial;
   }
 
   getProviderByName(providerName: string): ProviderSpec {
@@ -470,19 +459,12 @@ export default class SearchResultManager {
   getRenderableProviders(): Array<ProviderSpec> {
     // Only render tabs for providers that are eligible for at least one directory.
     const eligibleDirectoryProviders =
-      this._quickOpenProviderRegistry.getDirectoryProviders()
-      .filter(provider => {
-        for (const providers of this._providersByDirectory.values()) {
-          if (providers.has(provider)) {
-            return true;
-          }
-        }
-        return false;
-      });
+      // $FlowIssue
+      Array.from(new Set(...this._providersByDirectory.values()));
     const tabs = this._quickOpenProviderRegistry.getGlobalProviders()
       .concat(eligibleDirectoryProviders)
       .filter(provider => (provider.display != null))
-      .map(this._bakeProvider)
+      .map(provider => this._bakeProvider(provider))
       .sort((p1, p2) => p1.name.localeCompare(p2.name));
     tabs.unshift(OMNISEARCH_PROVIDER);
     return tabs;
