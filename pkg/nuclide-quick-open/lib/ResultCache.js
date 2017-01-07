@@ -8,8 +8,8 @@
  * @flow
  */
 
-import type {ProviderResult} from './types';
-import type {FileResult} from './rpc-types';
+import type {FileResult} from './types';
+import type {ProviderResult} from './searchResultHelpers';
 
 import invariant from 'assert';
 

@@ -8,25 +8,25 @@
  * @flow
  */
 
-import type {
-  DirectoryName,
-  GroupedResult,
-  ProviderSpec,
-  ServiceName,
-} from './types';
-
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {Tab} from '../../nuclide-ui/Tabs';
 import type QuickSelectionActions from './QuickSelectionActions';
-import type SearchResultManager from './SearchResultManager';
+
+import type SearchResultManager, {ProviderSpec} from './SearchResultManager';
+import type {
+  ProviderResult,
+  GroupedResult,
+  GroupedResults,
+} from './searchResultHelpers';
 
 type ResultContext = {
-  nonEmptyResults: GroupedResult,
-  serviceNames: Array<ServiceName>,
+  nonEmptyResults: GroupedResults,
+  serviceNames: Array<string>,
   currentServiceIndex: number,
-  currentService: Object,
-  directoryNames: Array<DirectoryName>,
+  currentService: GroupedResult,
+  directoryNames: Array<NuclideUri>,
   currentDirectoryIndex: number,
-  currentDirectory: Object,
+  currentDirectory: ProviderResult,
 };
 
 type Selection = {
@@ -74,7 +74,7 @@ type State = {
   activeProviderName?: string,
   activeTab: ProviderSpec,
   hasUserSelection: boolean,
-  resultsByService: GroupedResult,
+  resultsByService: GroupedResults,
   renderableProviders: Array<ProviderSpec>,
   selectedService: string,
   selectedDirectory: string,
@@ -139,7 +139,7 @@ export default class QuickSelectionComponent extends React.Component {
     return this._emitter.on('selection-changed', callback);
   }
 
-  onItemsChanged(callback: (newItems: GroupedResult) => void): IDisposable {
+  onItemsChanged(callback: (newItems: GroupedResults) => void): IDisposable {
     return this._emitter.on('items-changed', callback);
   }
 

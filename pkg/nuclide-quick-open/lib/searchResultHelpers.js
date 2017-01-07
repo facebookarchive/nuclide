@@ -8,12 +8,27 @@
  * @flow
  */
 
-import type {GroupedResult} from './types';
-import type {FileResult} from './rpc-types';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {FileResult} from './types';
+
+export type ProviderResult = {
+  error: ?Object,
+  loading: boolean,
+  results: Array<FileResult>,
+};
+
+export type GroupedResult = {
+  results: {[key: NuclideUri]: ProviderResult},
+  title: string,
+};
+
+export type GroupedResults = {
+  [key: string]: GroupedResult,
+};
 
 import {isEmpty} from '../../commons-node/collection';
 
-export function filterEmptyResults(resultsGroupedByService: GroupedResult): GroupedResult {
+export function filterEmptyResults(resultsGroupedByService: GroupedResults): GroupedResults {
   const filteredTree = {};
 
   for (const serviceName in resultsGroupedByService) {
@@ -31,7 +46,7 @@ export function filterEmptyResults(resultsGroupedByService: GroupedResult): Grou
   return filteredTree;
 }
 
-export function flattenResults(resultsGroupedByService: GroupedResult): Array<FileResult> {
+export function flattenResults(resultsGroupedByService: GroupedResults): Array<FileResult> {
   const items = [];
   for (const serviceName in resultsGroupedByService) {
     for (const dirName in resultsGroupedByService[serviceName].results) {

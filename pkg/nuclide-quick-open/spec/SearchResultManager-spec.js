@@ -8,7 +8,8 @@
  * @flow
  */
 
-import type {Provider, ProviderSpec} from '../lib/types';
+import type {Provider} from '../lib/types';
+import type {ProviderSpec} from '../lib/SearchResultManager';
 
 import nuclideUri from '../../commons-node/nuclideUri';
 

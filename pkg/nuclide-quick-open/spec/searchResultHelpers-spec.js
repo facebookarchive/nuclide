@@ -8,14 +8,14 @@
  * @flow
  */
 
-import type {GroupedResult} from '../lib/types';
+import type {GroupedResults} from '../lib/searchResultHelpers';
 
 import {
   filterEmptyResults,
   flattenResults,
 } from '../lib/searchResultHelpers';
 
-const SEARCH_RESULTS_FIXTURE: GroupedResult = {
+const SEARCH_RESULTS_FIXTURE: GroupedResults = {
   searchService: {
     results: {
       shouldNotAppearInOutputFolder: {
@@ -66,7 +66,7 @@ const SEARCH_RESULTS_FIXTURE: GroupedResult = {
 describe('searchResultHelper', () => {
   describe('emptyResults', () => {
     it('does not include empty folders', () => {
-      const filteredResults: GroupedResult = filterEmptyResults(SEARCH_RESULTS_FIXTURE);
+      const filteredResults: GroupedResults = filterEmptyResults(SEARCH_RESULTS_FIXTURE);
 
       expect(filteredResults).toEqual({
         searchService: {

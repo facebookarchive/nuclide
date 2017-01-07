@@ -11,15 +11,19 @@
 /* global performance */
 
 import type {Directory} from '../../nuclide-remote-connection';
-import type {
-  Provider,
-  ProviderResult,
-  ProviderSpec,
-} from './types';
-import type {
-  FileResult,
-} from './rpc-types';
+import type {FileResult, Provider} from './types';
+import type {ProviderResult} from './searchResultHelpers';
 import type QuickOpenProviderRegistry from './QuickOpenProviderRegistry';
+
+export type ProviderSpec = {
+  action: string,
+  canOpenAll: boolean,
+  debounceDelay: number,
+  name: string,
+  prompt: string,
+  title: string,
+  priority: number,
+};
 
 type ResultRenderer =
   (item: FileResult, serviceName: string, dirName: string) => React.Element<any>;

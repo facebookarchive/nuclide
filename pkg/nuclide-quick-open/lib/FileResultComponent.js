@@ -8,7 +8,7 @@
  * @flow
  */
 
-import type {FileResult} from './rpc-types';
+import type {FileResult} from './types';
 
 import {React} from 'react-for-atom';
 import fileTypeClass from '../../commons-atom/file-type-class';

@@ -12,12 +12,10 @@ import nuclideUri from '../../commons-node/nuclideUri';
 import {React} from 'react-for-atom';
 
 import type {
+  FileResult,
   Provider,
   ProviderType,
 } from '../../nuclide-quick-open/lib/types';
-import type {
-  FileResult,
-} from '../../nuclide-quick-open/lib/rpc-types';
 
 import {arrayCompact} from '../../commons-node/collection';
 import {relativeDate} from '../../commons-node/string';
