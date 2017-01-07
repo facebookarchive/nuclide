@@ -27,7 +27,6 @@ import QuickOpenProviderRegistry from './QuickOpenProviderRegistry';
 import QuickSelectionActions from './QuickSelectionActions';
 import QuickSelectionDispatcher, {ActionTypes} from './QuickSelectionDispatcher';
 
-const DEFAULT_PROVIDER = 'OmniSearchResultProvider';
 // A reasonable heuristic that prevents us from having to measure:
 const TOPBAR_APPROX_HEIGHT = 100;
 const MODAL_MARGIN = 65;
@@ -37,7 +36,6 @@ const ANALYTICS_CHANGE_SELECTION_DEBOUCE = 100;
 
 class Activation {
   _analyticsSessionId: ?string;
-  _currentProvider: Object;
   _dispatcherToken: string;
   _previousFocus: ?HTMLElement;
   _searchComponent: ?QuickSelectionComponent;
@@ -61,7 +59,6 @@ class Activation {
     this._searchResultManager = new SearchResultManager(
       this._quickOpenProviderRegistry,
     );
-    this._currentProvider = this._searchResultManager.getProviderByName(DEFAULT_PROVIDER);
     this._dispatcherToken = this._quickSelectionDispatcher.register(
       this._handleActions.bind(this),
     );
@@ -84,7 +81,6 @@ class Activation {
     switch (action.actionType) {
       case ActionTypes.ACTIVE_PROVIDER_CHANGED:
         this._handleActiveProviderChange(action.providerName);
-        this._searchResultManager.setActiveProvider(action.providerName);
         break;
       case ActionTypes.QUERY:
         this._searchResultManager.executeQuery(action.query);
@@ -115,7 +111,6 @@ class Activation {
 
     const _searchComponent = ReactDOM.render(
       <QuickSelectionComponent
-        activeProvider={this._currentProvider}
         scrollableAreaHeightGap={this._scrollableAreaHeightGap}
         quickSelectionActions={this._quickSelectionActions}
         searchResultManager={this._searchResultManager}
@@ -132,7 +127,7 @@ class Activation {
           'quickopen-filepath': selection.path,
           'quickopen-query': _searchComponent.getInputValue(),
           // The currently open "tab".
-          'quickopen-provider': this._currentProvider.name,
+          'quickopen-provider': this._searchResultManager.getActiveProviderName(),
           'quickopen-session': this._analyticsSessionId || '',
           // Because the `provider` is usually OmniSearch, also track the original provider.
           'quickopen-provider-source': selection.sourceProvider || '',
@@ -172,12 +167,11 @@ class Activation {
     if (
       this._searchPanel != null &&
       this._searchPanel.isVisible() &&
-      newProviderName === this._currentProvider.name
+      this._searchResultManager.getActiveProviderName() === newProviderName
     ) {
       this._closeSearchPanel();
     } else {
-      const provider = this._searchResultManager.getProviderByName(newProviderName);
-      this._currentProvider = provider;
+      this._searchResultManager.setActiveProvider(newProviderName);
       this._render();
       this._showSearchPanel();
     }

@@ -63,7 +63,6 @@ function _findKeybindingForAction(action: string, target: HTMLElement): string {
 }
 
 type Props = {
-  activeProvider: ProviderSpec,
   searchResultManager: SearchResultManager,
   quickSelectionActions: QuickSelectionActions,
   scrollableAreaHeightGap?: number,
@@ -71,7 +70,6 @@ type Props = {
 };
 
 type State = {
-  activeProviderName?: string,
   activeTab: ProviderSpec,
   hasUserSelection: boolean,
   resultsByService: GroupedResults,
@@ -87,8 +85,6 @@ export default class QuickSelectionComponent extends React.Component {
 
   _emitter: Emitter;
   _subscriptions: CompositeDisposable;
-  _searchResultManager: SearchResultManager;
-  _quickSelectionActions: QuickSelectionActions;
   _modalNode: HTMLElement;
   _debouncedQueryHandler: () => void;
   _isMounted: boolean;
@@ -98,15 +94,13 @@ export default class QuickSelectionComponent extends React.Component {
     this._emitter = new Emitter();
     this._subscriptions = new CompositeDisposable();
     this._isMounted = false;
-    this._searchResultManager = props.searchResultManager;
-    this._quickSelectionActions = props.quickSelectionActions;
     this.state = {
-      activeTab: this._searchResultManager.getProviderByName(
-        this._searchResultManager.getActiveProviderName(),
+      activeTab: this.props.searchResultManager.getProviderByName(
+        this.props.searchResultManager.getActiveProviderName(),
       ),
       // treated as immutable
       resultsByService: {},
-      renderableProviders: this._searchResultManager.getRenderableProviders(),
+      renderableProviders: this.props.searchResultManager.getRenderableProviders(),
       selectedService: '',
       selectedDirectory: '',
       selectedItemIndex: -1,
@@ -166,27 +160,34 @@ export default class QuickSelectionComponent extends React.Component {
   /**
    * Private API
    */
-  componentWillReceiveProps(nextProps: any): void {
-    if (nextProps.activeProvider !== this.props.activeProvider) {
-      if (nextProps.activeProvider) {
-        this._getTextEditor().setPlaceholderText(nextProps.activeProvider.prompt);
-        const newResults = {};
-        this.setState(
-          {
-            activeTab: nextProps.activeProvider || this.state.activeTab,
-            resultsByService: newResults,
-          },
-          () => {
-            setImmediate(() => this._setQuery(this.refs.queryInput.getText()));
-            this._updateQueryHandler();
-            this._emitter.emit('items-changed', newResults);
-          },
-        );
-      }
+  componentWillReceiveProps(nextProps: Props): void {
+    // Prevent clowniness:
+    if (this.props.searchResultManager !== nextProps.searchResultManager) {
+      throw new Error('quick-open: searchResultManager instance changed.');
+    }
+    // TODO: Find a better way to trigger an update.
+    const nextProviderName = this.props.searchResultManager.getActiveProviderName();
+    if (this.state.activeTab.name === nextProviderName) {
+      process.nextTick(() => this._setQuery(this.refs.queryInput.getText()));
+    } else {
+      const activeProvider = this.props.searchResultManager.getProviderByName(nextProviderName);
+      this._getTextEditor().setPlaceholderText(activeProvider.prompt);
+      const newResults = {};
+      this.setState(
+        {
+          activeTab: activeProvider,
+          resultsByService: newResults,
+        },
+        () => {
+          process.nextTick(() => this._setQuery(this.refs.queryInput.getText()));
+          this._updateQueryHandler();
+          this._emitter.emit('items-changed', newResults);
+        },
+      );
     }
   }
 
-  componentDidUpdate(prevProps: any, prevState: any): void {
+  componentDidUpdate(prevProps: Props, prevState: State): void {
     if (prevState.resultsByService !== this.state.resultsByService) {
       this._emitter.emit('items-changed', this.state.resultsByService);
     }
@@ -220,10 +221,10 @@ export default class QuickSelectionComponent extends React.Component {
     );
 
     this._subscriptions.add(
-      this._searchResultManager.onProvidersChanged(
+      this.props.searchResultManager.onProvidersChanged(
         this._handleProvidersChange,
       ),
-      this._searchResultManager.onResultsChanged(
+      this.props.searchResultManager.onResultsChanged(
         debounce(this._handleResultsChange, RESULTS_CHANGED_DEBOUNCE_DELAY, false),
       ),
     );
@@ -270,8 +271,8 @@ export default class QuickSelectionComponent extends React.Component {
 
   _sortServiceNames(names: Array<string>): Array<string> {
     return names.sort((serviceName1, serviceName2) => {
-      const provider1 = this._searchResultManager.getProviderByName(serviceName1);
-      const provider2 = this._searchResultManager.getProviderByName(serviceName2);
+      const provider1 = this.props.searchResultManager.getProviderByName(serviceName1);
+      const provider2 = this.props.searchResultManager.getProviderByName(serviceName2);
       if (
         provider1.priority == null ||
         provider2.priority == null ||
@@ -290,7 +291,7 @@ export default class QuickSelectionComponent extends React.Component {
           this._setKeyboardQuery(this._getTextEditor().getText());
         }
       },
-      this.props.activeProvider.debounceDelay || 0,
+      this.state.activeTab.debounceDelay || 0,
       false,
     );
   }
@@ -303,18 +304,24 @@ export default class QuickSelectionComponent extends React.Component {
     // This function is running on a timer (debounced), it is possible that it
     // may be called after the component has unmounted.
     if (this._isMounted) {
-      const activeProviderName = this._searchResultManager.getActiveProviderName();
-      this._updateResults(activeProviderName);
+      this._updateResults();
     }
   }
 
-  _updateResults(activeProviderName: string): void {
-    const updatedResults = this._searchResultManager.getResults(
+  _handleProvidersChange(): void {
+    this._updateResults();
+  }
+
+  _updateResults(): void {
+    const activeProviderName = this.props.searchResultManager.getActiveProviderName();
+    const updatedResults = this.props.searchResultManager.getResults(
       this.refs.queryInput.getText(),
       activeProviderName,
     );
     const [topProviderName] = this._sortServiceNames(Object.keys(updatedResults));
+    const renderableProviders = this.props.searchResultManager.getRenderableProviders();
     this.setState({
+      renderableProviders,
       resultsByService: updatedResults,
     }, () => {
       if (
@@ -327,16 +334,6 @@ export default class QuickSelectionComponent extends React.Component {
           this._moveSelectionToTop();
         }
       }
-    });
-  }
-
-  _handleProvidersChange(): void {
-    const renderableProviders = this._searchResultManager.getRenderableProviders();
-    const activeProviderName = this._searchResultManager.getActiveProviderName();
-    this._updateResults(activeProviderName);
-    this.setState({
-      renderableProviders,
-      activeProviderName,
     });
   }
 
@@ -544,7 +541,7 @@ export default class QuickSelectionComponent extends React.Component {
   }
 
   _componentForItem(item: any, serviceName: string, dirName: string): React.Element<any> {
-    return this._searchResultManager.getRendererForProvider(serviceName)(
+    return this.props.searchResultManager.getRendererForProvider(serviceName)(
       item,
       serviceName,
       dirName,
@@ -585,7 +582,7 @@ export default class QuickSelectionComponent extends React.Component {
   }
 
   _setQuery(query: string): void {
-    this._quickSelectionActions.query(query);
+    this.props.quickSelectionActions.query(query);
   }
 
   _clear(): void {
@@ -606,9 +603,10 @@ export default class QuickSelectionComponent extends React.Component {
    *     _renderTabs(), which created the tab object in the first place.
    */
   _handleTabChange(newTab: Tab): void {
-    const providerName = newTab.name;
-    if (providerName !== this.props.activeProvider.name) {
-      this._quickSelectionActions.changeActiveProvider(providerName);
+    const newProviderName = newTab.name;
+    const currentProviderName = this.props.searchResultManager.getActiveProviderName();
+    if (newProviderName !== currentProviderName) {
+      this.props.quickSelectionActions.changeActiveProvider(newProviderName);
     }
     this.refs.queryInput.focus();
   }
@@ -791,7 +789,7 @@ export default class QuickSelectionComponent extends React.Component {
         </span>
       );
     }
-    const disableOpenAll = !hasSearchResult || !this.props.activeProvider.canOpenAll;
+    const disableOpenAll = !hasSearchResult || !this.state.activeTab.canOpenAll;
     return (
       <div
         className="select-list omnisearch-modal"
@@ -801,7 +799,7 @@ export default class QuickSelectionComponent extends React.Component {
           <AtomInput
             className="omnisearch-pane"
             ref="queryInput"
-            placeholderText={this.props.activeProvider.prompt}
+            placeholderText={this.state.activeTab.prompt}
           />
           <Button
             className="omnisearch-open-all"
