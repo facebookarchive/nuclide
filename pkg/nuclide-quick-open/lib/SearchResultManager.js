@@ -12,7 +12,7 @@
 
 import type {Directory} from '../../nuclide-remote-connection';
 import type {FileResult, Provider} from './types';
-import type {ProviderResult} from './searchResultHelpers';
+import type {GroupedResult, GroupedResults, ProviderResult} from './searchResultHelpers';
 import type QuickOpenProviderRegistry from './QuickOpenProviderRegistry';
 
 export type ProviderSpec = {
@@ -135,10 +135,9 @@ export default class SearchResultManager {
 
   getRendererForProvider(providerName: string): ResultRenderer {
     const provider = this._getProviderByName(providerName);
-    if (!provider || !provider.getComponentForItem) {
-      return FileResultComponent.getComponentForItem;
-    }
-    return provider.getComponentForItem;
+    return provider.getComponentForItem != null
+      ? provider.getComponentForItem
+      : FileResultComponent.getComponentForItem;
   }
 
   dispose(): void {
@@ -159,10 +158,6 @@ export default class SearchResultManager {
     newDirectories.forEach(directory => {
       newProvidersByDirectories.set(directory, new Set());
       for (const provider of this._quickOpenProviderRegistry.getDirectoryProviders()) {
-        invariant(
-          provider.isEligibleForDirectory != null,
-          `Directory provider ${provider.getName()} must provide \`isEligibleForDirectory()\`.`,
-        );
         eligibilities.push(
           provider.isEligibleForDirectory(directory).then(isEligible => ({
             isEligible,
@@ -170,7 +165,7 @@ export default class SearchResultManager {
             directory,
           })).catch(err => {
             getLogger().warn(
-              `isEligibleForDirectory failed for directory provider ${provider.getName()}`,
+              `isEligibleForDirectory failed for directory provider ${provider.name}`,
               err,
             );
             return {
@@ -243,23 +238,21 @@ export default class SearchResultManager {
 
   _registerProvider(service: Provider): void {
     if (this._providerSubscriptions.get(service)) {
-      const serviceName = service.getName();
-      throw new Error(`${serviceName} has already been registered.`);
+      throw new Error(`${service.name} has already been registered.`);
     }
 
     const subscriptions = new UniversalDisposable();
     this._providerSubscriptions.set(service, subscriptions);
 
-    if (service.getProviderType() === 'DIRECTORY') {
+    if (service.providerType === 'DIRECTORY') {
       this._debouncedUpdateDirectories();
     }
   }
 
   _deregisterProvider(service: Provider): void {
-    const serviceName = service.getName();
     const subscriptions = this._providerSubscriptions.get(service);
     if (subscriptions == null) {
-      throw new Error(`${serviceName} has already been deregistered.`);
+      throw new Error(`${service.name} has already been deregistered.`);
     }
 
     subscriptions.dispose();
@@ -269,11 +262,11 @@ export default class SearchResultManager {
       providers.delete(service);
     });
 
-    if (serviceName === this._activeProviderName) {
+    if (service.name === this._activeProviderName) {
       this._activeProviderName = OMNISEARCH_PROVIDER.name;
     }
 
-    this._resultCache.removeResultsForProvider(serviceName);
+    this._resultCache.removeResultsForProvider(service.name);
     this._emitter.emit('providers-changed');
   }
 
@@ -283,16 +276,14 @@ export default class SearchResultManager {
     directory: string,
     provider: Provider,
   ): void {
-    const providerName = provider.getName();
-    this._resultCache.setCacheResult(providerName, directory, query, result, false, null);
+    this._resultCache.setCacheResult(provider.name, directory, query, result, false, null);
   }
 
   _setLoading(query: string, directory: string, provider: Provider): void {
-    const providerName = provider.getName();
-    const previousResult = this._resultCache.getCacheResult(providerName, directory, query);
+    const previousResult = this._resultCache.getCacheResult(provider.name, directory, query);
 
     if (!previousResult) {
-      this._resultCache.rawSetCacheResult(providerName, directory, query, {
+      this._resultCache.rawSetCacheResult(provider.name, directory, query, {
         results: [],
         error: null,
         loading: true,
@@ -328,7 +319,7 @@ export default class SearchResultManager {
         loadingFn,
       ).then(result => {
         track('quickopen-query-source-provider', {
-          'quickopen-source-provider': globalProvider.getName(),
+          'quickopen-source-provider': globalProvider.name,
           'quickopen-query-duration': (performance.now() - startTime).toString(),
           'quickopen-result-count': (result.length).toString(),
         });
@@ -357,7 +348,7 @@ export default class SearchResultManager {
           loadingFn,
         ).then(result => {
           track('quickopen-query-source-provider', {
-            'quickopen-source-provider': directoryProvider.getName(),
+            'quickopen-source-provider': directoryProvider.name,
             'quickopen-query-duration': (performance.now() - startTime).toString(),
             'quickopen-result-count': (result.length).toString(),
           });
@@ -377,14 +368,14 @@ export default class SearchResultManager {
     return dirProvider;
   }
 
-  _getResultsForProvider(query: string, providerName: string): Object {
+  _getResultsForProvider(query: string, providerName: string): GroupedResult {
     const providerPaths = this._quickOpenProviderRegistry.isProviderGlobal(providerName)
       ? [GLOBAL_KEY]
       : this._sortDirectories().map(d => d.getPath());
-    const provider = this._getProviderByName(providerName);
+    const provider = this.getProviderByName(providerName);
     const lastCachedQuery = this._resultCache.getLastCachedQuery(providerName);
     return {
-      title: provider.getTabTitle(),
+      title: provider.title,
       results: providerPaths.reduce((results, path) => {
         let cachedPaths;
         let cachedQueries;
@@ -416,7 +407,7 @@ export default class SearchResultManager {
     };
   }
 
-  getResults(query: string, activeProviderName: string): Object {
+  getResults(query: string, activeProviderName: string): GroupedResults {
     const sanitizedQuery = this._sanitizeQuery(query);
     if (activeProviderName === OMNISEARCH_PROVIDER.name) {
       const omniSearchResults = [{}];
@@ -451,19 +442,26 @@ export default class SearchResultManager {
    * Turn a Provider into a plain "spec" object consumed by QuickSelectionComponent.
    */
   _bakeProvider(provider: Provider): ProviderSpec {
-    const providerName = provider.getName();
+    const {display} = provider;
     const providerSpec = {
-      action: provider.getAction ? provider.getAction() : '',
-      canOpenAll: provider.getCanOpenAll ? provider.getCanOpenAll() : true,
-      debounceDelay: provider.getDebounceDelay
-        ? provider.getDebounceDelay()
+      name: provider.name,
+      debounceDelay: provider.debounceDelay != null
+        ? provider.debounceDelay
         : DEFAULT_QUERY_DEBOUNCE_DELAY,
-      name: providerName,
-      prompt: provider.getPromptText && provider.getPromptText() ||
-        'Search ' + providerName,
-      title: provider.getTabTitle && provider.getTabTitle() || providerName,
-      priority: provider.getPriority
-        ? provider.getPriority()
+      title: display != null
+        ? display.title
+        : provider.name,
+      prompt: display != null
+        ? display.prompt
+        : `Search ${provider.name}`,
+      action: display != null && display.action != null
+        ? display.action
+        : '',
+      canOpenAll: display != null && display.canOpenAll != null
+        ? display.canOpenAll
+        : true,
+      priority: provider.priority != null
+        ? provider.priority
         : Number.POSITIVE_INFINITY,
     };
     return providerSpec;
@@ -483,7 +481,7 @@ export default class SearchResultManager {
       });
     const tabs = this._quickOpenProviderRegistry.getGlobalProviders()
       .concat(eligibleDirectoryProviders)
-      .filter(provider => provider.isRenderable())
+      .filter(provider => (provider.display != null))
       .map(this._bakeProvider)
       .sort((p1, p2) => p1.name.localeCompare(p2.name));
     tabs.unshift(OMNISEARCH_PROVIDER);

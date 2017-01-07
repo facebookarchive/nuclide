@@ -11,7 +11,6 @@
 import type {
   FileResult,
   Provider,
-  ProviderType,
 } from '../../nuclide-quick-open/lib/types';
 
 import {arrayCompact} from '../../commons-node/collection';
@@ -32,39 +31,18 @@ function getOpenTabsMatching(query: string): Array<FileResult> {
 }
 
 const OpenFileListProvider: Provider = {
-
-  getName(): string {
-    return 'OpenFileListProvider';
-  },
-
-  getProviderType(): ProviderType {
-    return 'GLOBAL';
-  },
-
-  getDebounceDelay(): number {
-    return 0;
-  },
-
-  isRenderable(): boolean {
-    return true;
-  },
-
-  getAction(): string {
-    return 'nuclide-open-filenames-provider:toggle-provider';
-  },
-
-  getPromptText(): string {
-    return 'Search names of open files';
-  },
-
-  getTabTitle(): string {
-    return 'Open Files';
+  providerType: 'GLOBAL',
+  name: 'OpenFileListProvider',
+  debounceDelay: 0,
+  display: {
+    title: 'Open Files',
+    prompt: 'Search names of open files',
+    action: 'nuclide-open-filenames-provider:toggle-provider',
   },
 
   executeQuery(query: string): Promise<Array<FileResult>> {
     return Promise.resolve(getOpenTabsMatching(query));
   },
-
 };
 
 module.exports = OpenFileListProvider;

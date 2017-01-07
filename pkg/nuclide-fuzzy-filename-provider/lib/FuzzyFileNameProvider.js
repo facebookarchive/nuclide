@@ -11,7 +11,6 @@
 import type {
   FileResult,
   Provider,
-  ProviderType,
 } from '../../nuclide-quick-open/lib/types';
 
 import {
@@ -22,51 +21,24 @@ import {
 import {getIgnoredNames} from './utils';
 
 export default ({
+  providerType: 'DIRECTORY',
+  name: 'FuzzyFileNameProvider',
+  debounceDelay: 0,
+  display: {
+    title: 'Filenames',
+    prompt: 'Fuzzy File Name Search',
+    action: 'nuclide-fuzzy-filename-provider:toggle-provider',
+  },
   // Give preference to filename results in OmniSearch.
-  getPriority: () => 1,
-
-  getName(): string {
-    return 'FuzzyFileNameProvider';
-  },
-
-  getProviderType(): ProviderType {
-    return 'DIRECTORY';
-  },
-
-  isRenderable(): boolean {
-    return true;
-  },
-
-  getDebounceDelay(): number {
-    return 0;
-  },
-
-  getAction(): string {
-    return 'nuclide-fuzzy-filename-provider:toggle-provider';
-  },
-
-  getPromptText(): string {
-    return 'Fuzzy File Name Search';
-  },
-
-  getTabTitle(): string {
-    return 'Filenames';
-  },
+  priority: 1,
 
   isEligibleForDirectory(directory: atom$Directory): Promise<boolean> {
     return directory.exists();
   },
 
-  async executeQuery(query: string, directory?: atom$Directory): Promise<Array<FileResult>> {
+  async executeQuery(query: string, directory: atom$Directory): Promise<Array<FileResult>> {
     if (query.length === 0) {
       return [];
-    }
-
-    if (directory == null) {
-      throw new Error(
-        'FuzzyFileNameProvider is a directory-specific provider but its executeQuery method was'
-        + ' called without a directory argument.',
-      );
     }
 
     const directoryPath = directory.getPath();

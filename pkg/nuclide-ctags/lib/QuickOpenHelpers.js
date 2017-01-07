@@ -66,8 +66,8 @@ export default class QuickOpenHelpers {
     );
   }
 
-  static async executeQuery(query: string, directory?: atom$Directory): Promise<Array<FileResult>> {
-    if (directory == null || query.length < MIN_QUERY_LENGTH) {
+  static async executeQuery(query: string, directory: atom$Directory): Promise<Array<FileResult>> {
+    if (query.length < MIN_QUERY_LENGTH) {
       return [];
     }
 

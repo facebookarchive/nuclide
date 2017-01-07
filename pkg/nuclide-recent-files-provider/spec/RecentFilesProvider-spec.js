@@ -8,13 +8,19 @@
  * @flow
  */
 
-import {RecentFilesProvider} from '../lib/RecentFilesProvider';
+import type {Provider} from '../../nuclide-quick-open/lib/types';
+
+import invariant from 'assert';
+import {
+  RecentFilesProvider,
+  setRecentFilesService,
+} from '../lib/RecentFilesProvider';
 import {
   React,
   TestUtils,
 } from 'react-for-atom';
 
-let provider: any;
+let provider: Provider = (null: any);
 
 const PROJECT_PATH = '/Users/testuser/';
 const PROJECT_PATH2 = '/Users/something_else/';
@@ -53,8 +59,9 @@ class Wrapper extends React.Component {
 
 describe('RecentFilesProvider', () => {
   beforeEach(() => {
+    // $FlowIssue
     provider = {...RecentFilesProvider};
-    provider.setRecentFilesService(FakeRecentFilesService);
+    setRecentFilesService(FakeRecentFilesService);
     spyOn(atom.project, 'getPaths').andCallFake(fakeGetProjectPaths);
   });
 
@@ -62,7 +69,9 @@ describe('RecentFilesProvider', () => {
     it('returns all recently opened files for currently mounted project directories', () => {
       waitsForPromise(async () => {
         fakeGetProjectPathsImpl = () => [PROJECT_PATH];
+        invariant(provider.providerType === 'GLOBAL');
         expect(await provider.executeQuery('')).toEqual(FAKE_RECENT_FILES);
+        invariant(provider.providerType === 'GLOBAL');
         fakeGetProjectPathsImpl = () => [PROJECT_PATH, PROJECT_PATH2];
         expect(await provider.executeQuery('')).toEqual(FAKE_RECENT_FILES);
       });
@@ -71,9 +80,11 @@ describe('RecentFilesProvider', () => {
     it('does not return files for project directories that are not currently mounted', () => {
       waitsForPromise(async () => {
         fakeGetProjectPathsImpl = () => [PROJECT_PATH2];
+        invariant(provider.providerType === 'GLOBAL');
         expect(await provider.executeQuery('')).toEqual([]);
 
         fakeGetProjectPathsImpl = () => [];
+        invariant(provider.providerType === 'GLOBAL');
         expect(await provider.executeQuery('')).toEqual([]);
       });
     });
@@ -82,11 +93,13 @@ describe('RecentFilesProvider', () => {
       waitsForPromise(async () => {
         fakeGetProjectPathsImpl = () => [PROJECT_PATH];
         const textEditor = await atom.workspace.open(FILE_PATHS[0]);
+        invariant(provider.providerType === 'GLOBAL');
         expect(await provider.executeQuery('')).toEqual([
           FAKE_RECENT_FILES[1],
           FAKE_RECENT_FILES[2],
         ]);
         textEditor.destroy();
+        invariant(provider.providerType === 'GLOBAL');
         expect(await provider.executeQuery('')).toEqual(FAKE_RECENT_FILES);
       });
     });
@@ -95,6 +108,7 @@ describe('RecentFilesProvider', () => {
       waitsForPromise(async () => {
         fakeGetProjectPathsImpl = () => [PROJECT_PATH];
         // 'foo/bla/foo.js' does not match 'bba', but `bar.js` and `baz.js` do.
+        invariant(provider.providerType === 'GLOBAL');
         const results = await provider.executeQuery('bba');
         // Do not cement exact scores or match indices in this test, since they are determined by
         // Fuzzy-native. Jasmine 1.3 does not support `jasmine.objectContaining`,
@@ -121,6 +135,7 @@ describe('RecentFilesProvider', () => {
         path: '/some/arbitrary/path',
         timestamp,
       };
+      invariant(provider.getComponentForItem != null);
       const reactElement = provider.getComponentForItem(mockResult);
       expect(reactElement.props.title).toEqual(new Date(mockResult.timestamp).toLocaleString());
       const renderedComponent = TestUtils.renderIntoDocument(<Wrapper>{reactElement}</Wrapper>);
@@ -147,21 +162,26 @@ describe('RecentFilesProvider', () => {
       const now = Date.now();
       const HOURS = 60 * 60 * 1000;
       const DAYS = 24 * HOURS;
+
+      invariant(provider.getComponentForItem != null);
       expect(provider.getComponentForItem({
         path: '/some/arbitrary/path',
         timestamp: now,
       }).props.style.opacity).toEqual(1);
 
+      invariant(provider.getComponentForItem != null);
       expect(provider.getComponentForItem({
         path: '/some/arbitrary/path',
         timestamp: now - 7 * HOURS,
       }).props.style.opacity).toEqual(1);
 
+      invariant(provider.getComponentForItem != null);
       expect(provider.getComponentForItem({
         path: '/some/arbitrary/path',
         timestamp: now - 8 * HOURS,
       }).props.style.opacity).not.toBeGreaterThan(1);
 
+      invariant(provider.getComponentForItem != null);
       expect(provider.getComponentForItem({
         path: '/some/arbitrary/path',
         timestamp: now - 10 * DAYS,

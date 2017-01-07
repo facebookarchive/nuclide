@@ -232,18 +232,11 @@ class Activation {
 
     // If the provider is renderable and specifies a keybinding, wire it up with
     // the toggle command.
-    const serviceAction =
-      typeof service.isRenderable === 'function' &&
-      service.isRenderable() &&
-      typeof service.getAction === 'function' &&
-      service.getAction();
-
-    if (typeof serviceAction === 'string' && serviceAction.length > 0) {
+    if (service.display != null && service.display.action != null) {
       subscriptions.add(
         atom.commands.add('atom-workspace', {
-          [serviceAction]: () => {
-            const serviceName = service.getName();
-            this._quickSelectionActions.changeActiveProvider(serviceName);
+          [service.display.action]: () => {
+            this._quickSelectionActions.changeActiveProvider(service.name);
           },
         }),
       );

@@ -11,7 +11,6 @@
 import type {
   FileResult,
   Provider,
-  ProviderType,
 } from '../../nuclide-quick-open/lib/types';
 import type {
   HackSearchPosition,
@@ -54,29 +53,12 @@ function bestIconForItem(item: HackSearchPosition): string {
 }
 
 export const HackSymbolProvider: Provider = {
-
-  getName(): string {
-    return 'HackSymbolProvider';
-  },
-
-  getProviderType(): ProviderType {
-    return 'DIRECTORY';
-  },
-
-  isRenderable(): boolean {
-    return true;
-  },
-
-  getAction(): string {
-    return 'nuclide-hack-symbol-provider:toggle-provider';
-  },
-
-  getPromptText(): string {
-    return 'Search Hack symbols. Available prefixes: @function %constant #class';
-  },
-
-  getTabTitle(): string {
-    return 'Hack Symbols';
+  providerType: 'DIRECTORY',
+  name: 'HackSymbolProvider',
+  display: {
+    title: 'Hack Symbols',
+    prompt: 'Search Hack symbols. Available prefixes: @function %constant #class',
+    action: 'nuclide-hack-symbol-provider:toggle-provider',
   },
 
   isEligibleForDirectory(directory: atom$Directory): Promise<boolean> {
@@ -85,9 +67,9 @@ export const HackSymbolProvider: Provider = {
 
   async executeQuery(
     query: string,
-    directory?: atom$Directory,
+    directory: atom$Directory,
   ): Promise<Array<FileResult>> {
-    if (query.length === 0 || directory == null) {
+    if (query.length === 0) {
       return [];
     }
 

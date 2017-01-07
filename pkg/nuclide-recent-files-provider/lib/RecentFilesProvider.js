@@ -14,7 +14,6 @@ import {React} from 'react-for-atom';
 import type {
   FileResult,
   Provider,
-  ProviderType,
 } from '../../nuclide-quick-open/lib/types';
 
 import {arrayCompact} from '../../commons-node/collection';
@@ -94,41 +93,17 @@ function opacityForTimestamp(timestamp: number): number {
 }
 
 export const RecentFilesProvider: Provider = {
-
-  getName(): string {
-    return 'RecentFilesProvider';
-  },
-
-  getProviderType(): ProviderType {
-    return 'GLOBAL';
-  },
-
-  getDebounceDelay(): number {
-    return 0;
-  },
-
-  isRenderable(): boolean {
-    return true;
-  },
-
-  getAction(): string {
-    return 'nuclide-recent-files-provider:toggle-provider';
-  },
-
-  getPromptText(): string {
-    return 'Search recently opened files';
-  },
-
-  getTabTitle(): string {
-    return 'Recent Files';
+  providerType: 'GLOBAL',
+  name: 'RecentFilesProvider',
+  debounceDelay: 0,
+  display: {
+    title: 'Recent Files',
+    prompt: 'Search recently opened files',
+    action: 'nuclide-recent-files-provider:toggle-provider',
   },
 
   executeQuery(query: string): Promise<Array<FileResult>> {
     return Promise.resolve(getRecentFilesMatching(query));
-  },
-
-  setRecentFilesService(service: RecentFilesService): void {
-    _recentFilesService = service;
   },
 
   getComponentForItem(item: FileResult): React.Element<any> {
@@ -157,5 +132,8 @@ export const RecentFilesProvider: Provider = {
       </div>
     );
   },
-
 };
+
+export function setRecentFilesService(service: RecentFilesService): void {
+  _recentFilesService = service;
+}

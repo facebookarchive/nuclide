@@ -10,61 +10,50 @@
 
 import type {
   Provider,
-  ProviderType,
+  DirectoryProviderType,
+  GlobalProviderType,
 } from './types';
 
 import {Emitter} from 'atom';
-import {getLogger} from '../../nuclide-logging';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
-
-function isValidProvider(provider): boolean {
-  return (
-    typeof provider.getProviderType === 'function' &&
-    typeof provider.getName === 'function' && typeof provider.getName() === 'string' &&
-    typeof provider.isRenderable === 'function' &&
-    typeof provider.executeQuery === 'function' &&
-    typeof provider.getTabTitle === 'function'
-  );
-}
 
 export default class QuickOpenProviderRegistry {
   _emitter: Emitter;
   _subscriptions: UniversalDisposable;
-  _registeredProviders: {[key: ProviderType]: Map<string, Provider>};
+  _directoryProviders: Map<string, DirectoryProviderType>;
+  _globalProviders: Map<string, GlobalProviderType>;
 
   constructor() {
     this._emitter = new Emitter();
     this._subscriptions = new UniversalDisposable();
-    this._registeredProviders = {
-      GLOBAL: new Map(),
-      DIRECTORY: new Map(),
-    };
+    this._directoryProviders = new Map();
+    this._globalProviders = new Map();
   }
 
   getProviders(): Array<Provider> {
     return [
       // $FlowIssue: Iterator is spreadable.
-      ...this._registeredProviders.GLOBAL.values(),
+      ...this._globalProviders.values(),
       // $FlowIssue: Iterator is spreadable.
-      ...this._registeredProviders.DIRECTORY.values(),
+      ...this._directoryProviders.values(),
     ];
   }
 
-  getGlobalProviders(): Array<Provider> {
-    return Array.from(this._registeredProviders.GLOBAL.values());
+  getGlobalProviders(): Array<GlobalProviderType> {
+    return Array.from(this._globalProviders.values());
   }
 
-  getDirectoryProviders(): Array<Provider> {
-    return Array.from(this._registeredProviders.DIRECTORY.values());
+  getDirectoryProviders(): Array<DirectoryProviderType> {
+    return Array.from(this._directoryProviders.values());
   }
 
   getProviderByName(serviceName: string): ?Provider {
-    return this._registeredProviders.GLOBAL.get(serviceName)
-        || this._registeredProviders.DIRECTORY.get(serviceName);
+    return this._globalProviders.get(serviceName)
+        || this._directoryProviders.get(serviceName);
   }
 
   isProviderGlobal(serviceName: string): boolean {
-    return this._registeredProviders.GLOBAL.has(serviceName);
+    return this._globalProviders.has(serviceName);
   }
 
   observeProviders(callback: (service: Provider) => void): IDisposable {
@@ -83,16 +72,18 @@ export default class QuickOpenProviderRegistry {
   }
 
   addProvider(service: Provider): IDisposable {
-    const serviceName = service.getName && service.getName() || '<unknown>';
-    if (!isValidProvider(service)) {
-      getLogger().error(`Quick-open provider ${serviceName} is not a valid provider`);
+    if (service.providerType === 'GLOBAL') {
+      this._globalProviders.set(service.name, service);
+    } else {
+      this._directoryProviders.set(service.name, service);
     }
-
-    const registry = this._registeredProviders[service.getProviderType()];
-    registry.set(serviceName, service);
     const disposable = new UniversalDisposable(
       () => {
-        registry.delete(serviceName);
+        if (service.providerType === 'GLOBAL') {
+          this._globalProviders.delete(service.name);
+        } else {
+          this._directoryProviders.delete(service.name);
+        }
         this._emitter.emit('did-remove-provider', service);
       },
     );

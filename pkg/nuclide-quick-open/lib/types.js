@@ -25,24 +25,35 @@ export type FileResult = {
   column?: number,
 };
 
-export type ProviderType = 'DIRECTORY' | 'GLOBAL';
-
-export type Provider = {
-  executeQuery(query: string, directory?: atom$Directory): Promise<Array<FileResult>>,
-  getProviderType(): ProviderType,
-  getName(): string,
-  isRenderable(): boolean,
-  getTabTitle(): string,
-
-  getPromptText?: () => string,
-  getAction?: () => string,
-  getCanOpenAll?: () => boolean,
-  getDebounceDelay?: () => number,
-  isEligibleForDirectory?: (directory: atom$Directory) => Promise<boolean>,
+export type DirectoryProviderType = {
+  providerType: 'DIRECTORY',
+  name: string,
+  debounceDelay?: number,
+  display?: {
+    title: string,
+    prompt: string,
+    action?: string,
+    canOpenAll?: boolean,
+  },
+  priority?: number,
+  isEligibleForDirectory(directory: atom$Directory): Promise<boolean>,
+  executeQuery(query: string, directory: atom$Directory): Promise<Array<FileResult>>,
   getComponentForItem?: (item: FileResult) => React.Element<any>,
-  /**
-   * An optional number ≥ 0 used to determine ranking order in OmniSearch.
-   * 0 == highest rank, +Infinity == lowest rank. Defaults to Number.POSITIVE_INFINITY.
-   */
-  getPriority?: () => number,
 };
+
+export type GlobalProviderType = {
+  providerType: 'GLOBAL',
+  name: string,
+  debounceDelay?: number,
+  display?: {
+    title: string,
+    prompt: string,
+    action?: string,
+    canOpenAll?: boolean,
+  },
+  priority?: number,
+  executeQuery(query: string): Promise<Array<FileResult>>,
+  getComponentForItem?: (item: FileResult) => React.Element<any>,
+};
+
+export type Provider = DirectoryProviderType | GlobalProviderType;

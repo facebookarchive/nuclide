@@ -61,7 +61,7 @@ describe('HackSymbolProvider', () => {
         isFileInProject = jasmine.createSpy('isFileInProject').andReturn(true);
 
         waitsForPromise(async () => {
-          invariant(HackSymbolProvider.isEligibleForDirectory != null);
+          invariant(HackSymbolProvider.providerType === 'DIRECTORY');
           const isEligible = await HackSymbolProvider.isEligibleForDirectory((mockDirectory: any));
           expect(isEligible).toBe(true);
           expect(isFileInProject).toHaveBeenCalledWith(path);
@@ -76,7 +76,7 @@ describe('HackSymbolProvider', () => {
         isFileInProject = jasmine.createSpy('isFileInProject').andReturn(false);
 
         waitsForPromise(async () => {
-          invariant(HackSymbolProvider.isEligibleForDirectory != null);
+          invariant(HackSymbolProvider.providerType === 'DIRECTORY');
           const isEligible = await HackSymbolProvider.isEligibleForDirectory((mockDirectory: any));
           expect(isEligible).toBe(false);
           expect(isFileInProject).toHaveBeenCalledWith(path);

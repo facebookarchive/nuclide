@@ -11,7 +11,6 @@
 import type {
   FileResult,
   Provider,
-  ProviderType,
 } from '../../nuclide-quick-open/lib/types';
 
 const FIXTURE = [
@@ -24,71 +23,57 @@ const FIXTURE = [
 ];
 
 const ExampleProvider: Provider = {
-
-  /**
-   * A unique name, used internally by quick-open to store cached results.
-   */
-  getName(): string {
-    return 'ExampleProvider';
-  },
-
   /**
    * One of 'GLOBAL', 'DIRECTORY'.
    * DIRECTORY providers work in the context of a mounted directory (e.g. Hack symbol search).
    * GLOBAL providers work regardless of mounted directories (e.g. open tabs search; web requests).
    */
-  getProviderType(): ProviderType {
-    return 'DIRECTORY';
-  },
+  providerType: 'DIRECTORY',
 
   /**
-   * Whether this provider can render in a dedicated tab. If returning `false`, results from the
+   * A unique name, used internally by quick-open to store cached results.
+   */
+  name: 'ExampleProvider',
+
+  /**
+   * Information used to render the provider in a dedicated tab. If omitted, results from the
    * provider will only be shown in the OmniSearch result list.
-   * If returning `true`, the provider should also provide the `getPromptText` and `getTabTitle`
-   * methods.
    */
-  isRenderable(): boolean {
-    return true;
-  },
+  display: {
+    /**
+     * The title of the quick-open tab that exclusively contains results from this provider.
+     */
+    title: 'IpsumSearch',
 
-  /**
-   * Returns the Atom action for toggling this provider. Used to render the associated keybinding.
-   * Only applies to renderable providers.
-   */
-  getAction(): string {
-    return 'sample-quickopen-provider-example:toggle-provider';
-  },
+    /**
+     * Shown as a placeholder in the query input.
+     */
+    prompt: 'Search Lorem Ipsum',
 
-  /**
-   * Optional: return whether the "Open All" button is allowed for this provider.
-   * Default: true.
-   */
-  getCanOpenAll(): boolean {
-    return false;
+    /**
+     * Optional: The Atom action for toggling this provider via a command. Used to render
+     * the associated keybinding.
+     */
+    action: 'sample-quickopen-provider-example:toggle-provider',
+
+    /**
+     * Optional: return whether the "Open All" button is allowed for this provider.
+     * Default: true.
+     */
+    canOpenAll: false,
   },
 
   /**
    * Optional: return a specific delay (in ms) used to debounce queries to this provider.
    * Default: 200ms. Useful for e.g. reducing the delay for cheap queries (e.g. opened files).
    */
-  getDebounceDelay(): number {
-    return 0;
-  },
+  debounceDelay: 0,
 
   /**
-   * Shown as a placeholder in the query input.
-   * Only applies to renderable providers.
+   * An optional number ≥ 0 used to determine ranking order in OmniSearch.
+   * 0 == highest rank, +Infinity == lowest rank. Defaults to Number.POSITIVE_INFINITY.
    */
-  getPromptText(): string {
-    return 'Search Lorem Ipsum';
-  },
-
-  /**
-   * The title of the quick-open tab that exclusively contains results from this provider.
-   */
-  getTabTitle(): string {
-    return 'IpsumSearch';
-  },
+  priority: 20,
 
   /**
    * Only required if providerType === 'DIRECTORY'.
@@ -99,8 +84,9 @@ const ExampleProvider: Provider = {
 
   /**
    * Return the actual search results.
+   * Only providerType === 'DIRECTORY' has `directory`.
    */
-  executeQuery(query: string, directory?: atom$Directory): Promise<Array<FileResult>> {
+  executeQuery(query: string, directory: atom$Directory): Promise<Array<FileResult>> {
     if (!query.length) {
       return Promise.resolve([]);
     }

@@ -29,10 +29,12 @@ export function getHyperclickProvider(): HyperclickProvider {
 
 export function getQuickOpenProvider(): QuickOpenProviderType {
   return {
-    getProviderType: () => 'DIRECTORY',
-    getName: () => 'CtagsSymbolProvider',
-    isRenderable: () => true,
-    getTabTitle: () => 'Ctags',
+    providerType: 'DIRECTORY',
+    name: 'CtagsSymbolProvider',
+    display: {
+      title: 'Ctags',
+      prompt: 'Search Ctags',
+    },
     isEligibleForDirectory(directory) {
       return QuickOpenHelpers.isEligibleForDirectory(directory);
     },

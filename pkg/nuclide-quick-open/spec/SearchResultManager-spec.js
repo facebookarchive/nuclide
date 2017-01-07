@@ -11,6 +11,7 @@
 import type {Provider} from '../lib/types';
 import type {ProviderSpec} from '../lib/SearchResultManager';
 
+import invariant from 'assert';
 import nuclideUri from '../../commons-node/nuclideUri';
 
 import SearchResultManager from '../lib/SearchResultManager';
@@ -24,34 +25,38 @@ const PROJECT_ROOT2 = nuclideUri.join(__dirname, 'fixtures/root2');
 const PROJECT_ROOT3 = nuclideUri.join(__dirname, 'fixtures/root3');
 
 const FakeProvider: Provider = {
-  getProviderType: () => 'GLOBAL',
-  getName: () => 'FakeProvider',
-  getCanOpenAll: () => false,
-  isRenderable: () => true,
-  getTabTitle: () => 'Nothing to see here',
+  providerType: 'GLOBAL',
+  name: 'FakeProvider',
+  display: {
+    title: 'Fake',
+    prompt: 'Search FakeProvider',
+    canOpenAll: false,
+  },
   executeQuery: query => Promise.resolve([]),
 };
 
-const FakeProviderSpec: ProviderSpec = {
+const FakeProviderSpec: ProviderSpec = Object.freeze({
   action: '',
   canOpenAll: false,
   debounceDelay: 200,
   name: 'FakeProvider',
   prompt: 'Search FakeProvider',
-  title: 'Nothing to see here',
+  title: 'Fake',
   priority: Number.POSITIVE_INFINITY,
-};
+});
 
 const TEST_STRINGS = ['yolo', 'foo', 'bar'];
-const ExactStringMatchProvider = {
-  getProviderType: () => 'GLOBAL',
-  getName: () => 'ExactStringMatchProvider',
-  isRenderable: () => true,
-  getTabTitle: () => 'Nothing to see here',
+const ExactStringMatchProvider: Provider = Object.freeze({
+  providerType: 'GLOBAL',
+  name: 'ExactStringMatchProvider',
+  display: {
+    title: 'ExactString',
+    prompt: 'Nothing to see here',
+  },
   executeQuery: query => Promise.resolve(
     TEST_STRINGS.filter(s => s === query).map(s => ({path: s})),
   ),
-};
+});
 
 // Promise-ify the flux cycle around SearchResultManager::executeQuery.
 function querySingleProvider(
@@ -69,9 +74,11 @@ function querySingleProvider(
 
 // Helper to construct expected result objects for a global provider.
 function constructSingleProviderResult(provider: Provider, result: Object) {
+  const {display} = provider;
+  invariant(display != null);
   const wrappedResult = {};
-  wrappedResult[provider.getName()] = {
-    title: provider.getTabTitle(),
+  wrappedResult[provider.name] = {
+    title: display.title,
     results: {
       global: {...result},
     },
@@ -104,7 +111,7 @@ describe('SearchResultManager', () => {
   describe('provider/directory cache', () => {
     it('updates the cache when providers become (un)available', () => {
       waitsForPromise(async () => {
-        const fakeProviderDisposable = quickOpenProviderRegistry.addProvider({...FakeProvider});
+        const fakeProviderDisposable = quickOpenProviderRegistry.addProvider(FakeProvider);
         let providersChangedCallCount = 0;
         searchResultManager.onProvidersChanged(() => {
           providersChangedCallCount++;
@@ -127,7 +134,7 @@ describe('SearchResultManager', () => {
   describe('querying providers', () => {
     it('queries providers asynchronously, emits change events and returns filtered results', () => {
       waitsForPromise(async () => {
-        quickOpenProviderRegistry.addProvider({...ExactStringMatchProvider});
+        quickOpenProviderRegistry.addProvider(ExactStringMatchProvider);
         expect(await querySingleProvider(searchResultManager, 'yolo', 'ExactStringMatchProvider'))
           .toEqual(constructSingleProviderResult(ExactStringMatchProvider, {
             results: [
@@ -145,7 +152,7 @@ describe('SearchResultManager', () => {
 
     it('ignores trailing whitespace in querystring.', () => {
       waitsForPromise(async () => {
-        quickOpenProviderRegistry.addProvider({...ExactStringMatchProvider});
+        quickOpenProviderRegistry.addProvider(ExactStringMatchProvider);
         await Promise.all([
           '   yolo',
           'yolo   ',

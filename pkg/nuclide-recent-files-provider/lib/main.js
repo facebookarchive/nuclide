@@ -9,14 +9,14 @@
  */
 
 import type {Provider} from '../../nuclide-quick-open/lib/types';
+import type RecentFilesService from '../../nuclide-recent-files-service/lib/RecentFilesService';
 
-import {RecentFilesProvider} from './RecentFilesProvider';
+import {RecentFilesProvider, setRecentFilesService} from './RecentFilesProvider';
 
 export function registerProvider(): Provider {
   return RecentFilesProvider;
 }
 
-export function consumeRecentFilesService(service: mixed) {
-  // $FlowFixMe
-  RecentFilesProvider.setRecentFilesService(service);
+export function consumeRecentFilesService(service: RecentFilesService): void {
+  setRecentFilesService(service);
 }
