@@ -397,7 +397,9 @@ export class Table extends React.Component {
           <thead className="nuclide-ui-table-header"><tr>{header}</tr></thead>
         </table>
         <div style={scrollableBodyStyle}>
-          <table className="nuclide-ui-table nuclide-ui-table-body">
+          <table
+            className="nuclide-ui-table nuclide-ui-table-body native-key-bindings"
+            tabIndex="-1">
             <tbody>{body}</tbody>
           </table>
         </div>
