@@ -110,6 +110,8 @@ export default class QuickSelectionComponent extends React.Component {
     (this: any)._handleDocumentMouseDown = this._handleDocumentMouseDown.bind(this);
     (this: any)._handleKeyPress = this._handleKeyPress.bind(this);
     (this: any)._handleMoveDown = this._handleMoveDown.bind(this);
+    (this: any)._handleMoveNextTab = this._handleMoveNextTab.bind(this);
+    (this: any)._handleMovePreviousTab = this._handleMovePreviousTab.bind(this);
     (this: any)._handleMoveToBottom = this._handleMoveToBottom.bind(this);
     (this: any)._handleMoveToTop = this._handleMoveToTop.bind(this);
     (this: any)._handleMoveUp = this._handleMoveUp.bind(this);
@@ -215,6 +217,8 @@ export default class QuickSelectionComponent extends React.Component {
       atom.commands.add(this._modalNode, 'core:move-down', this._handleMoveDown),
       atom.commands.add(this._modalNode, 'core:move-up', this._handleMoveUp),
       atom.commands.add(this._modalNode, 'core:confirm', this._select),
+      atom.commands.add(this._modalNode, 'pane:show-previous-item', this._handleMovePreviousTab),
+      atom.commands.add(this._modalNode, 'pane:show-next-item', this._handleMoveNextTab),
     );
 
     // Close quick open if user clicks outside the frame.
@@ -257,6 +261,26 @@ export default class QuickSelectionComponent extends React.Component {
         this._openAll();
       }
     }
+  }
+
+  _handleMovePreviousTab(): void {
+    const currentProviderName = this.props.searchResultManager.getActiveProviderName();
+    const currentTabIndex = this.state.renderableProviders
+      .findIndex(tab => tab.name === currentProviderName);
+    const previousProvider =
+      this.state.renderableProviders[currentTabIndex - 1] ||
+      this.state.renderableProviders[this.state.renderableProviders.length - 1];
+    this.props.quickSelectionActions.changeActiveProvider(previousProvider.name);
+  }
+
+  _handleMoveNextTab(): void {
+    const currentProviderName = this.props.searchResultManager.getActiveProviderName();
+    const currentTabIndex = this.state.renderableProviders
+      .findIndex(tab => tab.name === currentProviderName);
+    const nextProvider =
+      this.state.renderableProviders[currentTabIndex + 1] ||
+      this.state.renderableProviders[0];
+    this.props.quickSelectionActions.changeActiveProvider(nextProvider.name);
   }
 
   _handleMoveToBottom(): void {
