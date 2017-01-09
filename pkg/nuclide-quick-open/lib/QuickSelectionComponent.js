@@ -269,21 +269,6 @@ export default class QuickSelectionComponent extends React.Component {
     }
   }
 
-  _sortServiceNames(names: Array<string>): Array<string> {
-    return names.sort((serviceName1, serviceName2) => {
-      const provider1 = this.props.searchResultManager.getProviderByName(serviceName1);
-      const provider2 = this.props.searchResultManager.getProviderByName(serviceName2);
-      if (
-        provider1.priority == null ||
-        provider2.priority == null ||
-        provider1.priority === provider2.priority
-      ) {
-        return provider1.name.localeCompare(provider2.name);
-      }
-      return provider1.priority - provider2.priority;
-    });
-  }
-
   _updateQueryHandler(): void {
     this._debouncedQueryHandler = debounce(
       () => {
@@ -318,7 +303,7 @@ export default class QuickSelectionComponent extends React.Component {
       this.refs.queryInput.getText(),
       activeProviderName,
     );
-    const [topProviderName] = this._sortServiceNames(Object.keys(updatedResults));
+    const [topProviderName] = Object.keys(updatedResults);
     const renderableProviders = this.props.searchResultManager.getRenderableProviders();
     this.setState({
       renderableProviders,
@@ -356,14 +341,14 @@ export default class QuickSelectionComponent extends React.Component {
 
   _getCurrentResultContext(): ?ResultContext {
     const nonEmptyResults = filterEmptyResults(this.state.resultsByService);
-    const serviceNames = this._sortServiceNames(Object.keys(nonEmptyResults));
-    const currentServiceIndex = serviceNames.indexOf(this.state.selectedService);
     const currentService = nonEmptyResults[this.state.selectedService];
 
     if (!currentService) {
       return null;
     }
 
+    const serviceNames = Object.keys(nonEmptyResults);
+    const currentServiceIndex = serviceNames.indexOf(this.state.selectedService);
     const directoryNames = Object.keys(currentService.results);
     const currentDirectoryIndex = directoryNames.indexOf(this.state.selectedDirectory);
     const currentDirectory = currentService.results[this.state.selectedDirectory];
@@ -525,7 +510,7 @@ export default class QuickSelectionComponent extends React.Component {
     arrayOperation: typeof Array.prototype.shift | typeof Array.prototype.pop,
   ): ?{serviceName: string, directoryName: string, results: Array<mixed>} {
     const nonEmptyResults = filterEmptyResults(this.state.resultsByService);
-    const serviceName = arrayOperation.call(this._sortServiceNames(Object.keys(nonEmptyResults)));
+    const serviceName = arrayOperation.call(Object.keys(nonEmptyResults));
     if (!serviceName) {
       return null;
     }
@@ -670,8 +655,7 @@ export default class QuickSelectionComponent extends React.Component {
     let numTotalResultsRendered = 0;
     const isOmniSearchActive = this.state.activeTab.name === 'OmniSearchResultProvider';
     let numQueriesOutstanding = 0;
-    const serviceNames = this._sortServiceNames(Object.keys(this.state.resultsByService));
-    const services = serviceNames.map(serviceName => {
+    const services = Object.keys(this.state.resultsByService).map(serviceName => {
       let numResultsForService = 0;
       const directories = this.state.resultsByService[serviceName].results;
       const serviceTitle = this.state.resultsByService[serviceName].title;

@@ -10,8 +10,8 @@
 
 import type {Provider} from '../lib/types';
 import type {ProviderSpec} from '../lib/SearchResultManager';
+import type {ProviderResult, GroupedResult, GroupedResults} from '../lib/searchResultHelpers';
 
-import invariant from 'assert';
 import nuclideUri from '../../commons-node/nuclideUri';
 
 import SearchResultManager from '../lib/SearchResultManager';
@@ -63,7 +63,7 @@ function querySingleProvider(
   searchResultManager: SearchResultManager,
   query: string,
   providerName: string,
-): Promise<Object> {
+): Promise<GroupedResults> {
   return new Promise((resolve, reject) => {
     searchResultManager.onResultsChanged(() => {
       resolve(searchResultManager.getResults(query, providerName));
@@ -72,18 +72,39 @@ function querySingleProvider(
   });
 }
 
+function queryOmniSearchProvider(
+  quickOpenProviderRegistry: QuickOpenProviderRegistry,
+  searchResultManager: SearchResultManager,
+  query: string,
+): Promise<GroupedResults> {
+  return new Promise((resolve, reject) => {
+    let pendingUpdates = quickOpenProviderRegistry.getProviders().length;
+    searchResultManager.onResultsChanged(() => {
+      if (--pendingUpdates === 0) {
+        resolve(searchResultManager.getResults(query, 'OmniSearchResultProvider'));
+      }
+    });
+    searchResultManager._executeQuery(query);
+  });
+}
+
 // Helper to construct expected result objects for a global provider.
-function constructSingleProviderResult(provider: Provider, result: Object) {
-  const {display} = provider;
-  invariant(display != null);
-  const wrappedResult = {};
-  wrappedResult[provider.name] = {
-    title: display.title,
+function constructSingleProviderResult(
+  provider: Provider,
+  result: ProviderResult,
+): GroupedResults {
+  const groupResult: GroupedResult = {
+    priority: provider.priority != null
+      ? provider.priority
+      : Number.POSITIVE_INFINITY,
+    title: provider.display != null
+      ? provider.display.title
+      : provider.name,
     results: {
       global: {...result},
     },
   };
-  return wrappedResult;
+  return {[provider.name]: groupResult};
 }
 
 describe('SearchResultManager', () => {
@@ -171,6 +192,70 @@ describe('SearchResultManager', () => {
             },
           ));
         }));
+      });
+    });
+  });
+
+  describe('OmniSearch provider sorting', () => {
+    const FirstProvider: Provider = {
+      providerType: 'GLOBAL',
+      name: 'FirstProvider',
+      priority: 1,
+      executeQuery: query => Promise.resolve([]),
+    };
+    const SecondProvider: Provider = {
+      providerType: 'GLOBAL',
+      name: 'SecondProvider',
+      priority: 2,
+      executeQuery: query => Promise.resolve([]),
+    };
+    const ThirdProvider: Provider = {
+      providerType: 'GLOBAL',
+      name: 'ThirdProvider',
+      priority: 3,
+      executeQuery: query => Promise.resolve([]),
+    };
+    const allResults: GroupedResults = {
+      FirstProvider: {
+        title: 'FirstProvider',
+        priority: 1,
+        results: {global: {results: [], loading: false, error: null}},
+      },
+      SecondProvider: {
+        title: 'SecondProvider',
+        priority: 2,
+        results: {global: {results: [], loading: false, error: null}},
+      },
+      ThirdProvider: {
+        title: 'ThirdProvider',
+        priority: 3,
+        results: {global: {results: [], loading: false, error: null}},
+      },
+    };
+
+    it('returns results sorted by priority (1, 3, 2)', () => {
+      quickOpenProviderRegistry.addProvider(FirstProvider);
+      quickOpenProviderRegistry.addProvider(ThirdProvider);
+      quickOpenProviderRegistry.addProvider(SecondProvider);
+      waitsForPromise(async () => {
+        expect(
+          await queryOmniSearchProvider(quickOpenProviderRegistry, searchResultManager, ''),
+        ).toEqual(
+          allResults,
+        );
+      });
+    });
+
+    it('returns results sorted by priority (3, 2, 1)', () => {
+      quickOpenProviderRegistry.addProvider(ThirdProvider);
+      quickOpenProviderRegistry.addProvider(SecondProvider);
+      quickOpenProviderRegistry.addProvider(FirstProvider);
+      waitsForPromise(async () => {
+        expect(
+          await queryOmniSearchProvider(quickOpenProviderRegistry, searchResultManager, ''),
+        ).toEqual(
+          allResults,
+        );
       });
     });
   });

@@ -18,6 +18,7 @@ export type ProviderResult = {
 };
 
 export type GroupedResult = {
+  priority: number,
   results: {[key: NuclideUri]: ProviderResult},
   title: string,
 };

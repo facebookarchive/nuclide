@@ -368,6 +368,7 @@ export default class SearchResultManager {
     const provider = this.getProviderByName(providerName);
     const lastCachedQuery = this._resultCache.getLastCachedQuery(providerName);
     return {
+      priority: provider.priority,
       title: provider.title,
       results: providerPaths.reduce((results, path) => {
         let cachedPaths;
@@ -404,15 +405,24 @@ export default class SearchResultManager {
     const sanitizedQuery = this._sanitizeQuery(query);
     if (activeProviderName === OMNISEARCH_PROVIDER.name) {
       const omniSearchResults = {};
-      for (const providerName in this._resultCache.getAllCachedResults()) {
-        const resultForProvider = this._getResultsForProvider(sanitizedQuery, providerName);
-        // TODO replace this with a ranking algorithm.
-        for (const dir in resultForProvider.results) {
-          resultForProvider.results[dir].results =
-            resultForProvider.results[dir].results.slice(0, MAX_OMNI_RESULTS_PER_SERVICE);
-        }
-        omniSearchResults[providerName] = resultForProvider;
-      }
+      Object.keys(this._resultCache.getAllCachedResults())
+        .map(providerName => {
+          const resultForProvider = this._getResultsForProvider(sanitizedQuery, providerName);
+          // TODO replace this with a ranking algorithm.
+          for (const dir in resultForProvider.results) {
+            resultForProvider.results[dir].results =
+              resultForProvider.results[dir].results.slice(0, MAX_OMNI_RESULTS_PER_SERVICE);
+          }
+          return [providerName, resultForProvider];
+        })
+        .sort(([name1, result1], [name2, result2]) => {
+          return result1.priority === result2.priority
+            ? name1.localeCompare(name2)
+            : result1.priority - result2.priority;
+        })
+        .forEach(([providerName, resultForProvider]) => {
+          omniSearchResults[providerName] = resultForProvider;
+        });
       return omniSearchResults;
     } else {
       const resultForProvider = this._getResultsForProvider(sanitizedQuery, activeProviderName);
