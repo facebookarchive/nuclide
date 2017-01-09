@@ -54,9 +54,6 @@ export default class SwiftPMTaskRunnerToolbar extends React.Component {
         );
         break;
       default:
-        if (this.props.activeTaskType) {
-          throw new Error(`Unrecognized task type: ${this.props.activeTaskType}`);
-        }
         break;
     }
 

@@ -9,6 +9,7 @@
  */
 
 import type {LocalStorageJsonTable} from '../../commons-atom/LocalStorageJsonTable';
+import type {IconName} from '../../nuclide-ui/types';
 import type {Task} from '../../commons-node/tasks';
 import type {Directory} from '../../nuclide-remote-connection';
 import type {Observable} from 'rxjs';
@@ -58,6 +59,7 @@ export type TaskMetadata = {
   // Is this task applicable? For backwards compat, this isn't (currently) required, but tasks that
   // have it will be preferred.
   disabled?: boolean,
+  icon: IconName,
   // When multiple task runners are applicable, the priority determines the task selected by
   // default. Higher priorities will be taken first; the default is 0.
   // Tasks that do not set `disabled` will have a default priority of -1.

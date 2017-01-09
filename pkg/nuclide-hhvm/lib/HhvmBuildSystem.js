@@ -76,6 +76,7 @@ export default class HhvmBuildSystem {
         type: 'debug',
         label: 'Debug',
         description: 'Debug a HHVM project',
+        icon: 'triangle-right',
         disabled,
         priority: 1,  // Take precedence over the Arcanist build toolbar.
         runnable: !disabled,

@@ -537,7 +537,7 @@ const TASKS = [
     label: 'Test',
     description: 'Test the specfied Buck target',
     runnable: true,
-    icon: 'checklist',
+    icon: 'check',
   },
   {
     type: 'debug',
