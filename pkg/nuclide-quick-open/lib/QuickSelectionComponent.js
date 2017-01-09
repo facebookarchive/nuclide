@@ -45,7 +45,7 @@ import humanizeKeystroke from '../../commons-node/humanizeKeystroke';
 import {isEmpty} from '../../commons-node/collection';
 import {React, ReactDOM} from 'react-for-atom';
 import classnames from 'classnames';
-import {filterEmptyResults} from './searchResultHelpers';
+import {filterEmptyResults, flattenResults} from './searchResultHelpers';
 import nuclideUri from '../../commons-node/nuclideUri';
 
 const RESULTS_CHANGED_DEBOUNCE_DELAY = 50;
@@ -107,7 +107,9 @@ export default class QuickSelectionComponent extends React.Component {
       selectedItemIndex: -1,
       hasUserSelection: false,
     };
+    (this: any)._handleClickOpenAll = this._handleClickOpenAll.bind(this);
     (this: any)._handleDocumentMouseDown = this._handleDocumentMouseDown.bind(this);
+    (this: any)._handleKeyPress = this._handleKeyPress.bind(this);
     (this: any)._handleMoveDown = this._handleMoveDown.bind(this);
     (this: any)._handleMoveToBottom = this._handleMoveToBottom.bind(this);
     (this: any)._handleMoveToTop = this._handleMoveToTop.bind(this);
@@ -242,6 +244,20 @@ export default class QuickSelectionComponent extends React.Component {
     this._isMounted = false;
     this._emitter.dispose();
     this._subscriptions.dispose();
+  }
+
+  _handleClickOpenAll(): void {
+    if (this.state.activeTab.canOpenAll) {
+      this._openAll();
+    }
+  }
+
+  _handleKeyPress(e: SyntheticKeyboardEvent): void {
+    if (e.shiftKey && e.key === 'Enter') {
+      if (this.state.activeTab.canOpenAll) {
+        this._openAll();
+      }
+    }
   }
 
   _handleMoveToBottom(): void {
@@ -633,25 +649,13 @@ export default class QuickSelectionComponent extends React.Component {
     );
   }
 
-  _openAll(files: Array<Selection>): void {
-    files.map(file => {
-      const selectedItem = this._getItemAtIndex(
-        file.selectedService,
-        file.selectedDirectory,
-        file.selectedItemIndex,
-      );
-      this._emitter.emit('selected', selectedItem);
+  _openAll(): void {
+    flattenResults(this.state.resultsByService).forEach(result => {
+      this._emitter.emit('selected', result);
     });
   }
 
-  _handleKeyPress(e: SyntheticKeyboardEvent, files: Array<Selection>): void {
-    if (e.shiftKey && e.key === 'Enter') {
-      this._openAll(files);
-    }
-  }
-
   render(): React.Element<any> {
-    const filesToOpen = [];
     let numTotalResultsRendered = 0;
     const isOmniSearchActive = this.state.activeTab.name === 'OmniSearchResultProvider';
     let numQueriesOutstanding = 0;
@@ -697,11 +701,6 @@ export default class QuickSelectionComponent extends React.Component {
             dirName === this.state.selectedDirectory &&
             itemIndex === this.state.selectedItemIndex
           );
-          filesToOpen.push({
-            selectedService: serviceName,
-            selectedDirectory: dirName,
-            selectedItemIndex: itemIndex,
-          });
           return (
             <li
               className={classnames({
@@ -786,7 +785,7 @@ export default class QuickSelectionComponent extends React.Component {
       <div
         className="select-list omnisearch-modal"
         ref="modal"
-        onKeyPress={e => this._handleKeyPress(e, filesToOpen)}>
+        onKeyPress={this._handleKeyPress}>
         <div className="omnisearch-search-bar">
           <AtomInput
             className="omnisearch-pane"
@@ -795,7 +794,7 @@ export default class QuickSelectionComponent extends React.Component {
           />
           <Button
             className="omnisearch-open-all"
-            onClick={() => this._openAll(filesToOpen)}
+            onClick={this._handleClickOpenAll}
             disabled={disableOpenAll}>
             Open All
           </Button>
