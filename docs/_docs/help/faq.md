@@ -32,6 +32,29 @@ The output will contain installed Atom packages and their versions.
 Your installed version is the number following either the `nuclide` package or the first package
 starting with `nuclide-`. In the example above, the installed version is `X.Y.Z`.
 
+## How do I migrate from a pre-unified package version of Nuclide?
+
+If you previously installed Nuclide via the `nuclide-installer` package or by installing `nuclide-`
+packages individually, you should uninstall them first.
+
+The new `nuclide` package will automatically disable any deprecated `nuclide-*` packages and warn
+you on start up that you should uninstall them to ensure everything works as expected.
+
+Features you may have been familiar with as separate packages before, such as Hyperclick,
+Diagnostics, and File Tree, are now listed as features in Nuclide's Settings page and are togglable
+as if they were Atom packages. If you want to use only one or a few of the features of Nuclide, you
+can disable the rest of Nuclide without incurring any load time for the disabled features' code. All
+features are enabled by default.
+
+<img src="/static/images/blog/nuclide-feature-settings.png" style="width:800px" />
+
+### Migrating settings from previous packages
+
+If you changed settings in any of Nuclide's previous packages, the settings will be automatically
+migrated to their new location in the `nuclide.` namespace when you first launch Atom after
+installing the `nuclide` package. The settings will be configurable like before but under the
+Atom Settings rather than under the package's name.
+
 ## How do I return Nuclide to a known state?
 
 To reset Atom and Nuclide to factory settings, removing all your packages and settings, do the following:
@@ -172,3 +195,31 @@ One work-around is to make the tabs display in multiple rows.
 If you've encountered a *bug*, please see the [GitHub Issues page](https://github.com/facebook/nuclide/issues) to see if anyone else has encountered the same problem and to report it as an issue if it is new.
 
 If you have a *feature request* or *general question*, the [Nuclide Community](https://www.facebook.com/groups/nuclide/) Facebook group is a good place to post.
+
+## Why is Nuclide a single Atom package?
+
+The Atom ecosystem is centered around modular packages that can be installed and updated
+independently, and Nuclide took that same approach from the start. We wrote scripts to let our code
+live in a single repository but be released as many Atom packages. Nuclide releases were actually
+simultaneous releases of 40+ Atom packages. While this fit well with the Atom model, it meant we
+also had to distribute a "installer" package that oversaw the installation of top-level Atom
+packages.
+
+In practice, the installer process was computationally expensive, difficult to
+troubleshoot, and took roughly 40 minutes partially due to large amounts of network traffic. When
+all Nuclide packages were installed, they filled over 3GB of disk space. Nuclide packages are
+heavily interdependent, and because they were installed as top-level Atom packages they each had
+their own 'node_modules' directory with largely duplicate dependencies.
+
+By unifying Nuclide into a single Atom package, we aimed to improve installation, updates, and
+maintenance. The single 'nuclide' package does not require a special installer, only `apm install`
+like other Atom packages. This simplifies installation for everyone and makes Nuclide updates fast.
+Once installed, the 'nuclide' package takes under 110MB of disk space, a 95%+ reduction in disk use,
+and subsequently, network use during installation. The dramatic drop in disk use was possible
+because Nuclide's features now share a single 'node_modules' directory and use relative paths to
+require one another, eliminating the duplicate dependencies present when Nuclide was 40+ top-level
+Atom packages.
+
+We hope that simplifying the installation
+process will make [Nuclide's source](https://github.com/facebook/nuclide) more familiar to other
+Atom developers and make it easier for anyone to contribute.
