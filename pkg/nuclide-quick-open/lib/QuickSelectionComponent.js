@@ -12,6 +12,7 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {Tab} from '../../nuclide-ui/Tabs';
 import type QuickSelectionActions from './QuickSelectionActions';
 
+import type {FileResult} from './types';
 import type SearchResultManager, {ProviderSpec} from './SearchResultManager';
 import type {
   ProviderResult,
@@ -125,11 +126,11 @@ export default class QuickSelectionComponent extends React.Component {
     return this._emitter.on('canceled', callback);
   }
 
-  onSelection(callback: (selection: any) => void): IDisposable {
+  onSelection(callback: (selection: FileResult) => void): IDisposable {
     return this._emitter.on('selected', callback);
   }
 
-  onSelectionChanged(callback: (selectionIndex: any) => void): IDisposable {
+  onSelectionChanged(callback: (selectionIndex: Selection) => void): IDisposable {
     return this._emitter.on('selection-changed', callback);
   }
 
@@ -234,7 +235,7 @@ export default class QuickSelectionComponent extends React.Component {
 
     this._updateQueryHandler();
     this._getTextEditor().onDidChange(this._handleTextInputChange);
-    this._clear();
+    this._getTextEditor().setText('');
   }
 
   componentWillUnmount(): void {
@@ -244,23 +245,19 @@ export default class QuickSelectionComponent extends React.Component {
   }
 
   _handleMoveToBottom(): void {
-    this._moveSelectionToBottom();
-    this._onUserDidChangeSelection();
+    this._moveSelectionToBottom(/* userInitiated */ true);
   }
 
   _handleMoveToTop(): void {
-    this._moveSelectionToTop();
-    this._onUserDidChangeSelection();
+    this._moveSelectionToTop(/* userInitiated */ true);
   }
 
   _handleMoveDown(): void {
-    this._moveSelectionDown();
-    this._onUserDidChangeSelection();
+    this._moveSelectionDown(/* userInitiated */ true);
   }
 
   _handleMoveUp(): void {
-    this._moveSelectionUp();
-    this._onUserDidChangeSelection();
+    this._moveSelectionUp(/* userInitiated */ true);
   }
 
   _handleDocumentMouseDown(event: Event): void {
@@ -334,7 +331,7 @@ export default class QuickSelectionComponent extends React.Component {
       ) {
         const topProviderResults = this.state.resultsByService[topProviderName].results;
         if (!Object.keys(topProviderResults).some(dirName => topProviderResults[dirName].loading)) {
-          this._moveSelectionToTop();
+          this._moveSelectionToTop(/* userInitiated */ false);
         }
       }
     });
@@ -353,18 +350,8 @@ export default class QuickSelectionComponent extends React.Component {
     }
   }
 
-  _onUserDidChangeSelection(): void {
-    this.setState({
-      hasUserSelection: true,
-    });
-  }
-
   _cancel(): void {
     this._emitter.emit('canceled');
-  }
-
-  _clearSelection(): void {
-    this._setSelectedIndex('', '', -1);
   }
 
   _getCurrentResultContext(): ?ResultContext {
@@ -396,10 +383,10 @@ export default class QuickSelectionComponent extends React.Component {
     };
   }
 
-  _moveSelectionDown(): void {
+  _moveSelectionDown(userInitiated: boolean): void {
     const context = this._getCurrentResultContext();
     if (!context) {
-      this._moveSelectionToTop();
+      this._moveSelectionToTop(userInitiated);
       return;
     }
 
@@ -409,6 +396,7 @@ export default class QuickSelectionComponent extends React.Component {
         this.state.selectedService,
         this.state.selectedDirectory,
         this.state.selectedItemIndex + 1,
+        userInitiated,
       );
     } else {
       // otherwise go to next directory...
@@ -417,6 +405,7 @@ export default class QuickSelectionComponent extends React.Component {
           this.state.selectedService,
           context.directoryNames[context.currentDirectoryIndex + 1],
           0,
+          userInitiated,
         );
       } else {
         // ...or the next service...
@@ -424,19 +413,24 @@ export default class QuickSelectionComponent extends React.Component {
           const newServiceName = context.serviceNames[context.currentServiceIndex + 1];
           const newDirectoryName =
             Object.keys(context.nonEmptyResults[newServiceName].results).shift();
-          this._setSelectedIndex(newServiceName, newDirectoryName, 0);
+          this._setSelectedIndex(
+            newServiceName,
+            newDirectoryName,
+            0,
+            userInitiated,
+          );
         } else {
           // ...or wrap around to the very top
-          this._moveSelectionToTop();
+          this._moveSelectionToTop(userInitiated);
         }
       }
     }
   }
 
-  _moveSelectionUp(): void {
+  _moveSelectionUp(userInitiated: boolean): void {
     const context = this._getCurrentResultContext();
     if (!context) {
-      this._moveSelectionToBottom();
+      this._moveSelectionToBottom(userInitiated);
       return;
     }
 
@@ -446,6 +440,7 @@ export default class QuickSelectionComponent extends React.Component {
         this.state.selectedService,
         this.state.selectedDirectory,
         this.state.selectedItemIndex - 1,
+        userInitiated,
       );
     } else {
       // otherwise, go to the previous directory...
@@ -455,6 +450,7 @@ export default class QuickSelectionComponent extends React.Component {
           context.directoryNames[context.currentDirectoryIndex - 1],
           context.currentService
             .results[context.directoryNames[context.currentDirectoryIndex - 1]].results.length - 1,
+          userInitiated,
         );
       } else {
         // ...or the previous service...
@@ -474,10 +470,11 @@ export default class QuickSelectionComponent extends React.Component {
             newServiceName,
             newDirectoryName,
             resultsForDirectory.results.length - 1,
+            userInitiated,
           );
         } else {
           // ...or wrap around to the very bottom
-          this._moveSelectionToBottom();
+          this._moveSelectionToBottom(userInitiated);
         }
       }
     }
@@ -498,20 +495,30 @@ export default class QuickSelectionComponent extends React.Component {
     }
   }
 
-  _moveSelectionToBottom(): void {
+  _moveSelectionToBottom(userInitiated: boolean): void {
     const bottom = this._getOuterResults(Array.prototype.pop);
     if (!bottom) {
       return;
     }
-    this._setSelectedIndex(bottom.serviceName, bottom.directoryName, bottom.results.length - 1);
+    this._setSelectedIndex(
+      bottom.serviceName,
+      bottom.directoryName,
+      bottom.results.length - 1,
+      userInitiated,
+    );
   }
 
-  _moveSelectionToTop(): void {
+  _moveSelectionToTop(userInitiated: boolean): void {
     const top = this._getOuterResults(Array.prototype.shift);
     if (!top) {
       return;
     }
-    this._setSelectedIndex(top.serviceName, top.directoryName, 0);
+    this._setSelectedIndex(
+      top.serviceName,
+      top.directoryName,
+      0,
+      userInitiated,
+    );
   }
 
   _getOuterResults(
@@ -531,7 +538,7 @@ export default class QuickSelectionComponent extends React.Component {
     };
   }
 
-  _getItemAtIndex(serviceName: string, directory: string, itemIndex: number): ?Object {
+  _getItemAtIndex(serviceName: string, directory: string, itemIndex: number): ?FileResult {
     if (
       itemIndex === -1 ||
       !this.state.resultsByService[serviceName] ||
@@ -559,38 +566,30 @@ export default class QuickSelectionComponent extends React.Component {
     };
   }
 
-  _setSelectedIndex(service: string, directory: string, itemIndex: number): void {
-    this.setState({
+  _setSelectedIndex(
+    service: string,
+    directory: string,
+    itemIndex: number,
+    userInitiated: boolean,
+  ): void {
+    const newState = {
       selectedService: service,
       selectedDirectory: directory,
       selectedItemIndex: itemIndex,
-    }, () => {
+      hasUserSelection: userInitiated,
+    };
+    this.setState(newState, () => {
       this._emitter.emit('selection-changed', this._getSelectedIndex());
-      this._onUserDidChangeSelection();
-    });
-  }
-
-  _resetSelection(): void {
-    this.setState({
-      selectedService: '',
-      selectedDirectory: '',
-      selectedItemIndex: -1,
-      hasUserSelection: false,
     });
   }
 
   _setKeyboardQuery(query: string): void {
-    this._resetSelection();
+    this.setState({hasUserSelection: false});
     this._setQuery(query);
   }
 
   _setQuery(query: string): void {
     this.props.quickSelectionActions.query(query);
-  }
-
-  _clear(): void {
-    this._getTextEditor().setText('');
-    this._clearSelection();
   }
 
   _getInputTextEditor(): atom$TextEditorElement {
@@ -728,7 +727,13 @@ export default class QuickSelectionComponent extends React.Component {
               })}
               key={serviceName + dirName + itemIndex}
               onMouseDown={this._select}
-              onMouseEnter={this._setSelectedIndex.bind(this, serviceName, dirName, itemIndex)}>
+              onMouseEnter={this._setSelectedIndex.bind(
+                this,
+                serviceName,
+                dirName,
+                itemIndex,
+                /* userInitiated */ true,
+              )}>
               {this._componentForItem(item, serviceName, dirName)}
             </li>
           );
