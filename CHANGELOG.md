@@ -1,5 +1,24 @@
 # Nuclide Changelog
 
+## v0.196.0
+
+### Bug Fixes
+
+* Flow's autocomplete prefix matching is now more exact.
+* `flow-bin` is now correctly located on Windows.
+* When Nuclide kills a process, all of that process' children are gone too - this fixes an issue with the RN packager lingering around after being stopped.
+
+### UI
+
+* Datatips that expand beyond the bottom of the screen are now correctly displayed.
+* Descriptions from the diagnostics table can now be copied.
+* Long gutter popups (like from Diagnostics) are now narrower so they're easier to read.
+
+### Quick Open
+
+* `nuclide-quick-open`'s Atom service API got a major facelift.
+* Many internal improvements. It's faster, smoother and less jittery. More features coming to it soon.
+
 ## v0.195.0
 
 ### Highlights
