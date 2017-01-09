@@ -30,13 +30,19 @@ export default class CodeHighlightManager {
       false,
     );
     subscriptions.add(observeTextEditors(editor => {
-      subscriptions.add(editor.onDidChangeCursorPosition(event => {
+      const editorSubscriptions = new CompositeDisposable();
+      editorSubscriptions.add(editor.onDidChangeCursorPosition(event => {
         debouncedCallback(editor, event.newBufferPosition);
       }));
-      subscriptions.add(editor.onDidChange(event => {
+      editorSubscriptions.add(editor.onDidChange(event => {
         this._destroyMarkers();
         debouncedCallback(editor, editor.getCursorBufferPosition());
       }));
+      editorSubscriptions.add(editor.onDidDestroy(() => {
+        editorSubscriptions.dispose();
+        subscriptions.remove(editorSubscriptions);
+      }));
+      subscriptions.add(editorSubscriptions);
     }));
   }
 
