@@ -1,57 +1,62 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {RemoteDirectory, RemoteFile} from '../../nuclide-remote-connection';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {Directory as LocalDirectory} from 'atom';
-import {File as LocalFile} from 'atom';
-import {
-  RemoteConnection,
-  ServerConnection,
-} from '../../nuclide-remote-connection';
-import nuclideUri from '../../commons-node/nuclideUri';
+var _atom = require('atom');
 
-import crypto from 'crypto';
+var _nuclideRemoteConnection;
 
-export type Directory = LocalDirectory | RemoteDirectory;
-type File = LocalFile | RemoteFile;
-type Entry = LocalDirectory | RemoteDirectory | LocalFile | RemoteFile;
-
-function dirPathToKey(path: string): string {
-  return nuclideUri.ensureTrailingSeparator(nuclideUri.trimTrailingSeparator(path));
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
 }
 
-function isDirKey(key: string): boolean {
-  return nuclideUri.endsWithSeparator(key);
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
 }
 
-function keyToName(key: string): string {
-  return nuclideUri.basename(key);
+var _crypto = _interopRequireDefault(require('crypto'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function dirPathToKey(path) {
+  return (_nuclideUri || _load_nuclideUri()).default.ensureTrailingSeparator((_nuclideUri || _load_nuclideUri()).default.trimTrailingSeparator(path));
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   */
+
+function isDirKey(key) {
+  return (_nuclideUri || _load_nuclideUri()).default.endsWithSeparator(key);
 }
 
-function keyToPath(key: string): string {
-  return nuclideUri.trimTrailingSeparator(key);
+function keyToName(key) {
+  return (_nuclideUri || _load_nuclideUri()).default.basename(key);
 }
 
-function getParentKey(key: string): string {
-  return nuclideUri.ensureTrailingSeparator(nuclideUri.dirname(key));
+function keyToPath(key) {
+  return (_nuclideUri || _load_nuclideUri()).default.trimTrailingSeparator(key);
+}
+
+function getParentKey(key) {
+  return (_nuclideUri || _load_nuclideUri()).default.ensureTrailingSeparator((_nuclideUri || _load_nuclideUri()).default.dirname(key));
 }
 
 // The array this resolves to contains the `nodeKey` of each child
-function fetchChildren(nodeKey: string): Promise<Array<string>> {
+function fetchChildren(nodeKey) {
   const directory = getDirectoryByKey(nodeKey);
 
   return new Promise((resolve, reject) => {
     if (directory == null) {
-      reject(`Directory "${nodeKey}" not found or is inaccessible.`);
+      reject(`Directory "${ nodeKey }" not found or is inaccessible.`);
       return;
     }
 
@@ -74,45 +79,45 @@ function fetchChildren(nodeKey: string): Promise<Array<string>> {
   });
 }
 
-function getDirectoryByKey(key: string): ?Directory {
+function getDirectoryByKey(key) {
   const path = keyToPath(key);
   if (!isDirKey(key)) {
     return null;
-  } else if (nuclideUri.isRemote(path)) {
-    const connection = ServerConnection.getForUri(path);
+  } else if ((_nuclideUri || _load_nuclideUri()).default.isRemote(path)) {
+    const connection = (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).ServerConnection.getForUri(path);
     if (connection == null) {
       return null;
     }
     return connection.createDirectory(path);
   } else {
-    return new LocalDirectory(path);
+    return new _atom.Directory(path);
   }
 }
 
-function getFileByKey(key: string): ?File {
+function getFileByKey(key) {
   const path = keyToPath(key);
   if (isDirKey(key)) {
     return null;
-  } else if (nuclideUri.isRemote(path)) {
-    const connection = ServerConnection.getForUri(path);
+  } else if ((_nuclideUri || _load_nuclideUri()).default.isRemote(path)) {
+    const connection = (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).ServerConnection.getForUri(path);
     if (connection == null) {
       return null;
     }
     return connection.createFile(path);
   } else {
-    return new LocalFile(path);
+    return new _atom.File(path);
   }
 }
 
-function getEntryByKey(key: string): ?Entry {
+function getEntryByKey(key) {
   return getFileByKey(key) || getDirectoryByKey(key);
 }
 
-function getDisplayTitle(key: string): ?string {
+function getDisplayTitle(key) {
   const path = keyToPath(key);
 
-  if (nuclideUri.isRemote(path)) {
-    const connection = RemoteConnection.getForUri(path);
+  if ((_nuclideUri || _load_nuclideUri()).default.isRemote(path)) {
+    const connection = (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).RemoteConnection.getForUri(path);
 
     if (connection != null) {
       return connection.getDisplayTitle();
@@ -123,43 +128,40 @@ function getDisplayTitle(key: string): ?string {
 // Sometimes remote directories are instantiated as local directories but with invalid paths.
 // Also, until https://github.com/atom/atom/issues/10297 is fixed in 1.12,
 // Atom sometimes creates phantom "atom:" directories when opening atom:// URIs.
-function isValidDirectory(directory: Directory): boolean {
-  if (!isLocalEntry((directory: any))) {
+function isValidDirectory(directory) {
+  if (!isLocalEntry(directory)) {
     return true;
   }
 
   const dirPath = directory.getPath();
-  return nuclideUri.isAbsolute(dirPath);
+  return (_nuclideUri || _load_nuclideUri()).default.isAbsolute(dirPath);
 }
 
-function isLocalEntry(entry: Entry): boolean {
+function isLocalEntry(entry) {
   // TODO: implement `RemoteDirectory.isRemoteDirectory()`
   return !('getLocalPath' in entry);
 }
 
-function isContextClick(event: SyntheticMouseEvent): boolean {
-  return (
-    event.button === 2 ||
-    (event.button === 0 && event.ctrlKey === true && process.platform === 'darwin')
-  );
+function isContextClick(event) {
+  return event.button === 2 || event.button === 0 && event.ctrlKey === true && process.platform === 'darwin';
 }
 
-function buildHashKey(nodeKey: string): string {
-  return crypto.createHash('MD5').update(nodeKey).digest('base64');
+function buildHashKey(nodeKey) {
+  return _crypto.default.createHash('MD5').update(nodeKey).digest('base64');
 }
 
-function updatePathInOpenedEditors(oldPath: NuclideUri, newPath: NuclideUri): void {
+function updatePathInOpenedEditors(oldPath, newPath) {
   atom.workspace.getTextEditors().forEach(editor => {
     const buffer = editor.getBuffer();
     if (buffer.getPath() === oldPath) {
       // setPath will append the hostname when given the local path, so we
       // strip off the hostname here to avoid including it twice in the path.
-      buffer.setPath(nuclideUri.getPath(newPath));
+      buffer.setPath((_nuclideUri || _load_nuclideUri()).default.getPath(newPath));
     }
   });
 }
 
-export default {
+exports.default = {
   dirPathToKey,
   isDirKey,
   keyToName,
@@ -174,5 +176,6 @@ export default {
   isLocalEntry,
   isContextClick,
   buildHashKey,
-  updatePathInOpenedEditors,
+  updatePathInOpenedEditors
 };
+module.exports = exports['default'];

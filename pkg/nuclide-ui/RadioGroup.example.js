@@ -1,62 +1,70 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import {React} from 'react-for-atom';
-import {Block} from './Block';
-import RadioGroup from './RadioGroup';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.RadioGroupExamples = undefined;
 
-const labels = [
-  'choose',
-  'from',
-  'one of',
-  'several',
-  'options',
-];
+var _reactForAtom = require('react-for-atom');
 
-class RadioGroupExample extends React.Component {
-  state: {selectedIndex: number};
+var _Block;
 
-  constructor(props: any) {
+function _load_Block() {
+  return _Block = require('./Block');
+}
+
+var _RadioGroup;
+
+function _load_RadioGroup() {
+  return _RadioGroup = _interopRequireDefault(require('./RadioGroup'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const labels = ['choose', 'from', 'one of', 'several', 'options']; /**
+                                                                    * Copyright (c) 2015-present, Facebook, Inc.
+                                                                    * All rights reserved.
+                                                                    *
+                                                                    * This source code is licensed under the license found in the LICENSE file in
+                                                                    * the root directory of this source tree.
+                                                                    *
+                                                                    * 
+                                                                    */
+
+class RadioGroupExample extends _reactForAtom.React.Component {
+
+  constructor(props) {
     super(props);
-    (this: any).onSelectedChange = this.onSelectedChange.bind(this);
+    this.onSelectedChange = this.onSelectedChange.bind(this);
     this.state = {
-      selectedIndex: 0,
+      selectedIndex: 0
     };
   }
 
-  onSelectedChange(selectedIndex: number): void {
+  onSelectedChange(selectedIndex) {
     this.setState({
-      selectedIndex,
+      selectedIndex
     });
   }
 
-  render(): React.Element<any> {
-    return (
-      <Block>
-        <RadioGroup
-          selectedIndex={this.state.selectedIndex}
-          optionLabels={labels}
-          onSelectedChange={this.onSelectedChange}
-        />
-      </Block>
+  render() {
+    return _reactForAtom.React.createElement(
+      (_Block || _load_Block()).Block,
+      null,
+      _reactForAtom.React.createElement((_RadioGroup || _load_RadioGroup()).default, {
+        selectedIndex: this.state.selectedIndex,
+        optionLabels: labels,
+        onSelectedChange: this.onSelectedChange
+      })
     );
   }
 }
 
-export const RadioGroupExamples = {
+const RadioGroupExamples = exports.RadioGroupExamples = {
   sectionName: 'RadioGroup',
   description: '',
-  examples: [
-    {
-      title: '',
-      component: RadioGroupExample,
-    },
-  ],
+  examples: [{
+    title: '',
+    component: RadioGroupExample
+  }]
 };
