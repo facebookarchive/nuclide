@@ -42,7 +42,6 @@ import Tabs from '../../nuclide-ui/Tabs';
 import {CompositeDisposable, Disposable, Emitter} from 'atom';
 import debounce from '../../commons-node/debounce';
 import humanizeKeystroke from '../../commons-node/humanizeKeystroke';
-import {isEmpty} from '../../commons-node/collection';
 import {React, ReactDOM} from 'react-for-atom';
 import classnames from 'classnames';
 import {filterEmptyResults, flattenResults} from './searchResultHelpers';
@@ -641,14 +640,6 @@ export default class QuickSelectionComponent extends React.Component {
     );
   }
 
-  _renderEmptyMessage(message: string | React.Element<any>): React.Element<any> {
-    return (
-      <ul className="background-message centered">
-        <li>{message}</li>
-      </ul>
-    );
-  }
-
   _openAll(): void {
     flattenResults(this.state.resultsByService).forEach(result => {
       this._emitter.emit('selected', result);
@@ -762,15 +753,7 @@ export default class QuickSelectionComponent extends React.Component {
       }
       return directoriesForService;
     });
-    let noResultsMessage = null;
-    let hasSearchResult = false;
-    if (isEmpty(this.state.resultsByService)) {
-      noResultsMessage = this._renderEmptyMessage('Search away!');
-    } else if (numTotalResultsRendered === 0) {
-      noResultsMessage = this._renderEmptyMessage(<span>No results</span>);
-    } else {
-      hasSearchResult = true;
-    }
+    const hasSearchResult = numTotalResultsRendered > 0;
     let omniSearchStatus = null;
     if (isOmniSearchActive && numQueriesOutstanding > 0) {
       omniSearchStatus = (
@@ -778,6 +761,15 @@ export default class QuickSelectionComponent extends React.Component {
           <span className="loading loading-spinner-tiny inline-block" />
           {'Loading...'}
         </span>
+      );
+    } else if (isOmniSearchActive && !hasSearchResult) {
+      omniSearchStatus = (
+        <li>
+          <span>
+            <span className="icon icon-x" />
+              No results
+          </span>
+        </li>
       );
     }
     const disableOpenAll = !hasSearchResult || !this.state.activeTab.canOpenAll;
@@ -806,7 +798,6 @@ export default class QuickSelectionComponent extends React.Component {
             maxHeight: this.props.scrollableAreaHeightGap ?
               `calc(100vh - ${this.props.scrollableAreaHeightGap}px)` : '100vh',
           }}>
-          {noResultsMessage}
           <div className="omnisearch-pane">
             <ul className="list-tree" ref="selectionList">
               {services}
