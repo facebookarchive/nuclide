@@ -171,17 +171,20 @@ export default class QuickSelectionComponent extends React.Component {
       process.nextTick(() => this._setQuery(this.refs.queryInput.getText()));
     } else {
       const activeProvider = this.props.searchResultManager.getProviderByName(nextProviderName);
+      const lastResults = this.props.searchResultManager.getResults(
+        this.refs.queryInput.getText(),
+        nextProviderName,
+      );
       this._getTextEditor().setPlaceholderText(activeProvider.prompt);
-      const newResults = {};
       this.setState(
         {
           activeTab: activeProvider,
-          resultsByService: newResults,
+          resultsByService: lastResults,
         },
         () => {
           process.nextTick(() => this._setQuery(this.refs.queryInput.getText()));
           this._updateQueryHandler();
-          this._emitter.emit('items-changed', newResults);
+          this._emitter.emit('items-changed', lastResults);
         },
       );
     }
