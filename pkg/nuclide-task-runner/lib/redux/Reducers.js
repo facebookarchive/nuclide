@@ -22,7 +22,17 @@ export function app(state: AppState, action: Action): AppState {
       return {
         ...state,
         activeTaskId: taskId,
+        activeTaskRunnerId: taskId.taskRunnerId,
         previousSessionActiveTaskId: null,
+        previousSessionActiveTaskRunnerId: null,
+      };
+    }
+    case Actions.SELECT_TASK_RUNNER: {
+      const {taskRunnerId} = action.payload;
+      return {
+        ...state,
+        activeTaskRunnerId: taskRunnerId,
+        previousSessionActiveTaskRunnerId: null,
       };
     }
     case Actions.TASK_COMPLETED: {
@@ -94,6 +104,7 @@ export function app(state: AppState, action: Action): AppState {
         activeTaskId: initialTaskMeta == null
           ? null
           : {taskRunnerId: initialTaskMeta.taskRunnerId, type: initialTaskMeta.type},
+        activeTaskRunnerId: initialTaskMeta == null ? null : initialTaskMeta.taskRunnerId,
         previousSessionActiveTaskId: null,
       });
     }
@@ -138,6 +149,7 @@ function validateActiveTask(state: AppState): AppState {
   return {
     ...state,
     activeTaskId: null,
+    activeTaskRunnerId: null,
   };
 }
 

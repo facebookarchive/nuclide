@@ -27,7 +27,7 @@ import {diffSets} from '../../../commons-node/observable';
 import UniversalDisposable from '../../../commons-node/UniversalDisposable';
 import {getLogger} from '../../../nuclide-logging';
 import {getTaskMetadata} from '../getTaskMetadata';
-import {getActiveTaskId, getActiveTaskRunner} from '../redux/Selectors';
+import {getActiveTaskRunner} from '../redux/Selectors';
 import {taskIdsAreEqual} from '../taskIdsAreEqual';
 import * as Actions from './Actions';
 import invariant from 'assert';
@@ -205,7 +205,7 @@ export function runTaskEpic(
   return actions.ofType(Actions.RUN_TASK)
     .switchMap(action => {
       invariant(action.type === Actions.RUN_TASK);
-      const taskToRun = action.payload.taskId || getActiveTaskId(store.getState());
+      const taskToRun = action.payload.taskId || store.getState().activeTaskId;
 
       // Don't do anything if there's no active task.
       if (taskToRun == null) { return Observable.empty(); }

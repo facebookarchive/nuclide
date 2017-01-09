@@ -25,7 +25,9 @@ type Props = {
   progress: ?number,
   runTask: (taskId?: TaskId) => void,
   activeTaskId: ?TaskId,
+  activeTaskRunner: ?TaskRunnerInfo,
   selectTask: (taskId: TaskId) => void,
+  selectTaskRunner: (taskRunnerId: string) => void,
   stopTask: () => void,
   showPlaceholder: boolean,
   taskIsRunning: boolean,
@@ -66,10 +68,12 @@ export class Toolbar extends React.Component {
       <div style={{display: 'flex', flex: 1}}>
         <CommonControls
           activeTask={activeTask}
+          activeTaskRunner={this.props.activeTaskRunner}
           getActiveTaskRunnerIcon={this.props.getActiveTaskRunnerIcon}
           taskRunnerInfo={this.props.taskRunnerInfo}
           runTask={this.props.runTask}
           selectTask={this.props.selectTask}
+          selectTaskRunner={this.props.selectTaskRunner}
           taskIsRunning={this.props.taskIsRunning}
           taskLists={this.props.taskLists}
           stopTask={this.props.stopTask}

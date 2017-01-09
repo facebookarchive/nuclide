@@ -17,8 +17,10 @@ export type AppState = {
   // The explicitly selected task. If we're using a fallback, this will be null. Always use the
   // `getActiveTaskId` selector to get the value.
   activeTaskId: ?TaskId,
+  activeTaskRunnerId: ?string,
   taskRunners: Map<string, TaskRunner>,
   previousSessionActiveTaskId: ?TaskId,
+  previousSessionActiveTaskRunnerId: ?string,
   projectRoot: ?Directory,
   projectWasOpened: boolean,
   showPlaceholderInitially: boolean,
@@ -39,6 +41,7 @@ export type EpicOptions = {
 
 export type SerializedAppState = {
   previousSessionActiveTaskId: ?TaskId,
+  previousSessionActiveTaskRunnerId: ?string,
   previousSessionVisible: ?boolean,
   version?: number,
 };
@@ -111,6 +114,13 @@ export type InitializeViewAction = {
   type: 'INITIALIZE_VIEW',
   payload: {
     visible: boolean,
+  },
+};
+
+export type SelectTaskRunnerAction = {
+  type: 'SELECT_TASK_RUNNER',
+  payload: {
+    taskRunnerId: string,
   },
 };
 
@@ -219,6 +229,7 @@ export type Action =
   | InitializeViewAction
   | RunTaskAction
   | SelectTaskAction
+  | SelectTaskRunnerAction
   | SetProjectRootAction
   | SetTaskListsAction
   | SetToolbarVisibilityAction

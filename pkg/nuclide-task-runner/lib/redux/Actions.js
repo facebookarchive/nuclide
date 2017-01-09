@@ -17,6 +17,7 @@ import type {
   RegisterTaskRunnerAction,
   RunTaskAction,
   SelectTaskAction,
+  SelectTaskRunnerAction,
   SetProjectRootAction,
   SetTaskListsAction,
   SetToolbarVisibilityAction,
@@ -31,6 +32,7 @@ export const DID_LOAD_INITIAL_PACKAGES = 'DID_LOAD_INITIAL_PACKAGES';
 export const INITIALIZE_VIEW = 'INITIALIZE_VIEW';
 export const REGISTER_TASK_RUNNER = 'REGISTER_TASK_RUNNER';
 export const RUN_TASK = 'RUN_TASK';
+export const SELECT_TASK_RUNNER = 'SELECT_TASK_RUNNER';
 export const SELECT_TASK = 'SELECT_TASK';
 export const SET_PROJECT_ROOT = 'SET_PROJECT_ROOT';
 export const SET_TASK_LISTS = 'SET_TASK_LISTS';
@@ -74,6 +76,13 @@ export function selectTask(taskId: TaskId): SelectTaskAction {
   return {
     type: SELECT_TASK,
     payload: {taskId},
+  };
+}
+
+export function selectTaskRunner(taskRunnerId: string): SelectTaskRunnerAction {
+  return {
+    type: SELECT_TASK_RUNNER,
+    payload: {taskRunnerId},
   };
 }
 

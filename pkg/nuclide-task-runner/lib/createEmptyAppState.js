@@ -13,7 +13,9 @@ import type {AppState} from './types';
 export function createEmptyAppState(): AppState {
   return {
     activeTaskId: null,
+    activeTaskRunnerId: null,
     previousSessionActiveTaskId: null,
+    previousSessionActiveTaskRunnerId: null,
     showPlaceholderInitially: false,
     taskRunners: new Map(),
     projectRoot: null,

@@ -19,10 +19,12 @@ import {React} from 'react-for-atom';
 
 type Props = {
   activeTask: ?AnnotatedTaskMetadata,
+  activeTaskRunner: ?TaskRunnerInfo,
   getActiveTaskRunnerIcon: () => ?ReactClass<any>,
   taskRunnerInfo: Array<TaskRunnerInfo>,
   runTask: (taskId?: TaskId) => void,
   selectTask: (taskId: TaskId) => void,
+  selectTaskRunner: (taskRunnerId: string) => void,
   taskIsRunning: boolean,
   taskLists: Map<string, Array<AnnotatedTaskMetadata>>,
   stopTask: () => void,
@@ -106,6 +108,16 @@ export function CommonControls(props: Props): React.Element<any> {
 
 const abcSort = (a, b) => (a.toLowerCase() < b.toLowerCase() ? -1 : 1);
 const indent = label => `   ${label}`;
+
+// eslint-disable-next-line
+function getTaskRunnerOptions(
+  taskRunners: Array<TaskRunnerInfo>,
+): Array<Option> {
+  return taskRunners.map(taskRunner => ({
+    value: taskRunner.id,
+    label: taskRunner.name,
+  }));
+}
 
 function getTaskOptions(
   taskLists: Map<string, Array<AnnotatedTaskMetadata>>,

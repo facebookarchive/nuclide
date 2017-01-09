@@ -141,6 +141,7 @@ describe('Epics', () => {
         const state = {
           ...createEmptyAppState(),
           activeTaskId: {type: 'test-task', taskRunnerId: 'test'},
+          activeTaskRunnerId: 'test',
           taskRunners: new Map([['test', taskRunner]]),
           taskLists: new Map([['test', [
             {
@@ -179,6 +180,7 @@ describe('Epics', () => {
             type: 'test-task',
             taskRunnerId: 'test',
           },
+          activeTaskRunnerId: 'test',
           taskRunners: new Map([['test', taskRunner]]),
           taskLists: new Map([['test', [
             {

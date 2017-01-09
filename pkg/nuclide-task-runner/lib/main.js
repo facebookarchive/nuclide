@@ -35,7 +35,6 @@ import {trackEvent} from '../../nuclide-analytics';
 import {createEmptyAppState} from './createEmptyAppState';
 import * as Actions from './redux/Actions';
 import * as Epics from './redux/Epics';
-import {getActiveTaskId} from './redux/Selectors';
 import * as Reducers from './redux/Reducers';
 import {createPanelItem} from './ui/createPanelItem';
 import invariant from 'assert';
@@ -319,6 +318,8 @@ class Activation {
     const state = this._store.getState();
     return {
       previousSessionActiveTaskId: state.activeTaskId || state.previousSessionActiveTaskId,
+      previousSessionActiveTaskRunnerId:
+        state.activeTaskRunnerId || state.previousSessionActiveTaskRunnerId,
       previousSessionVisible: state.visible,
       version: SERIALIZED_VERSION,
     };
@@ -358,7 +359,7 @@ function trackTaskAction(
     ? task.getTrackingData()
     : {};
   const error = action.type === Actions.TASK_ERRORED ? action.payload.error : null;
-  const activeTaskId = getActiveTaskId(state);
+  const {activeTaskId} = state;
   trackEvent({
     type,
     data: {

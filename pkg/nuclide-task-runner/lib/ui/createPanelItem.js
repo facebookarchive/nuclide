@@ -14,7 +14,7 @@ import {bindObservableAsProps} from '../../../nuclide-ui/bindObservableAsProps';
 import {viewableFromReactElement} from '../../../commons-atom/viewableFromReactElement';
 import {nextAnimationFrame, throttle} from '../../../commons-node/observable';
 import * as Actions from '../redux/Actions';
-import {getActiveTaskId, getActiveTaskRunner} from '../redux/Selectors';
+import {getActiveTaskRunner} from '../redux/Selectors';
 import {Toolbar} from './Toolbar';
 import memoize from 'lodash.memoize';
 import {React} from 'react-for-atom';
@@ -25,6 +25,7 @@ export function createPanelItem(store: Store): Object {
   const staticProps = {
     runTask: taskId => { store.dispatch(Actions.runTask(taskId)); },
     selectTask: taskId => { store.dispatch(Actions.selectTask(taskId)); },
+    selectTaskRunner: taskRunnerId => { store.dispatch(Actions.selectTaskRunner(taskRunnerId)); },
     stopTask: () => { store.dispatch(Actions.stopTask()); },
   };
 
@@ -42,7 +43,7 @@ export function createPanelItem(store: Store): Object {
     .map(state => ({
       taskRunners: state.taskRunners,
       activeTaskRunner: getActiveTaskRunner(state),
-      activeTaskId: getActiveTaskId(state),
+      activeTaskId: state.activeTaskId,
       taskLists: state.taskLists,
     }))
     .distinctUntilChanged(shallowEqual)
@@ -51,6 +52,7 @@ export function createPanelItem(store: Store): Object {
         taskRunnerInfo: Array.from(taskRunners.values()),
         getExtraUi: getExtraUiFactory(activeTaskRunner),
         activeTaskId,
+        activeTaskRunner,
         taskLists,
         getActiveTaskRunnerIcon: () => activeTaskRunner && activeTaskRunner.getIcon(),
       };
