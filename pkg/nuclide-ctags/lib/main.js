@@ -33,7 +33,7 @@ export function getQuickOpenProvider(): QuickOpenProviderType {
     name: 'CtagsSymbolProvider',
     display: {
       title: 'Ctags',
-      prompt: 'Search Ctags',
+      prompt: 'Search Ctags...',
     },
     isEligibleForDirectory(directory) {
       return QuickOpenHelpers.isEligibleForDirectory(directory);

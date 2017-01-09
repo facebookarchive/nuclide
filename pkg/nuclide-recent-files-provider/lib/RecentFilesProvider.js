@@ -98,7 +98,7 @@ export const RecentFilesProvider: Provider = {
   debounceDelay: 0,
   display: {
     title: 'Recent Files',
-    prompt: 'Search recently opened files',
+    prompt: 'Search recently opened filenames...',
     action: 'nuclide-recent-files-provider:toggle-provider',
   },
 

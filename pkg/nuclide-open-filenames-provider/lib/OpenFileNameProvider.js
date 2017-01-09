@@ -36,7 +36,7 @@ const OpenFileListProvider: Provider = {
   debounceDelay: 0,
   display: {
     title: 'Open Files',
-    prompt: 'Search names of open files',
+    prompt: 'Search open filenames...',
     action: 'nuclide-open-filenames-provider:toggle-provider',
   },
 

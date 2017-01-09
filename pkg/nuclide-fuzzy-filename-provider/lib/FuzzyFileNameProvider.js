@@ -26,7 +26,7 @@ export default ({
   debounceDelay: 0,
   display: {
     title: 'Filenames',
-    prompt: 'Fuzzy File Name Search',
+    prompt: 'Fuzzy filename search...',
     action: 'nuclide-fuzzy-filename-provider:toggle-provider',
   },
   // Give preference to filename results in OmniSearch.

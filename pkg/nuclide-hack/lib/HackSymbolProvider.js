@@ -57,7 +57,7 @@ export const HackSymbolProvider: Provider = {
   name: 'HackSymbolProvider',
   display: {
     title: 'Hack Symbols',
-    prompt: 'Search Hack symbols. Available prefixes: @function %constant #class',
+    prompt: 'Search Hack symbols... (e.g. @function %constant #class)',
     action: 'nuclide-hack-symbol-provider:toggle-provider',
   },
 
