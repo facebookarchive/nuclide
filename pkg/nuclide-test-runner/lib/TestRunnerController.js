@@ -325,7 +325,7 @@ export class TestRunnerController {
       // track.
       progressValue = 100;
     }
-
+    this._root.style.display = 'flex';
     const component = ReactDOM.render(
       <TestRunnerPanel
         attachDebuggerBeforeRunning={this._attachDebuggerBeforeRunning}

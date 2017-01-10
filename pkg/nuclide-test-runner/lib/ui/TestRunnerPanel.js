@@ -209,7 +209,7 @@ export default class TestRunnerPanel extends React.Component {
     }
 
     return (
-      <PanelComponent dock="bottom">
+      <PanelComponent dock="bottom" doNotSetSize={true}>
         <div className="nuclide-test-runner-panel">
           <Toolbar location="top">
             <ToolbarLeft>

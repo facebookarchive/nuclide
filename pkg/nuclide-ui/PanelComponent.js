@@ -36,6 +36,11 @@ type Props = {
   noScroll: boolean,
   onResize: (width: number) => mixed,
   overflowX?: string,
+  /*
+   * When `true`, the height does not get set manually.
+   * Useful when the parent takes care of sizing the component.
+   */
+  doNotSetSize?: true,
 };
 
 type State = {
@@ -120,16 +125,18 @@ export class PanelComponent extends React.Component {
     }
 
     let containerStyle;
-    if (this.props.dock === 'left' || this.props.dock === 'right') {
-      containerStyle = {
-        width: this.state.length,
-        minWidth: MINIMUM_LENGTH,
-      };
-    } else if (this.props.dock === 'top' || this.props.dock === 'bottom') {
-      containerStyle = {
-        height: this.state.length,
-        minHeight: MINIMUM_LENGTH,
-      };
+    if (this.props.doNotSetSize !== true) {
+      if (this.props.dock === 'left' || this.props.dock === 'right') {
+        containerStyle = {
+          width: this.state.length,
+          minWidth: MINIMUM_LENGTH,
+        };
+      } else if (this.props.dock === 'top' || this.props.dock === 'bottom') {
+        containerStyle = {
+          height: this.state.length,
+          minHeight: MINIMUM_LENGTH,
+        };
+      }
     }
 
     const content = React.cloneElement(
