@@ -64,9 +64,8 @@ export default class HyperclickForTextEditor {
     this._subscriptions = new CompositeDisposable();
 
     this._onMouseMove = this._onMouseMove.bind(this);
-    this._textEditorView.addEventListener('mousemove', this._onMouseMove);
     this._onMouseDown = this._onMouseDown.bind(this);
-    this._setupMouseDownListener();
+    this._setupMouseListeners();
 
     this._onKeyDown = this._onKeyDown.bind(this);
     this._textEditorView.addEventListener('keydown', this._onKeyDown);
@@ -96,25 +95,27 @@ export default class HyperclickForTextEditor {
     );
   }
 
-  _setupMouseDownListener(): void {
+  _setupMouseListeners(): void {
     const getLinesDomNode = (): HTMLElement => {
       const {component} = this._textEditorView;
       invariant(component);
       return component.linesComponent.getDomNode();
     };
-    const removeMouseDownListener = () => {
+    const removeMouseListeners = () => {
       if (this._textEditorView.component == null) {
         return;
       }
       getLinesDomNode().removeEventListener('mousedown', this._onMouseDown);
+      getLinesDomNode().removeEventListener('mousemove', this._onMouseMove);
     };
-    const addMouseDownListener = () => {
+    const addMouseListeners = () => {
       getLinesDomNode().addEventListener('mousedown', this._onMouseDown);
+      getLinesDomNode().addEventListener('mousemove', this._onMouseMove);
     };
-    this._subscriptions.add(new Disposable(removeMouseDownListener));
-    this._subscriptions.add(this._textEditorView.onDidDetach(removeMouseDownListener));
-    this._subscriptions.add(this._textEditorView.onDidAttach(addMouseDownListener));
-    addMouseDownListener();
+    this._subscriptions.add(new Disposable(removeMouseListeners));
+    this._subscriptions.add(this._textEditorView.onDidDetach(removeMouseListeners));
+    this._subscriptions.add(this._textEditorView.onDidAttach(addMouseListeners));
+    addMouseListeners();
   }
 
   _confirmSuggestion(suggestion: HyperclickSuggestion): void {
@@ -374,7 +375,6 @@ export default class HyperclickForTextEditor {
   dispose() {
     this._isDestroyed = true;
     this._clearSuggestion();
-    this._textEditorView.removeEventListener('mousemove', this._onMouseMove);
     this._textEditorView.removeEventListener('keydown', this._onKeyDown);
     this._textEditorView.removeEventListener('keyup', this._onKeyUp);
     this._textEditorView.removeEventListener('contextmenu', this._onContextMenu);
