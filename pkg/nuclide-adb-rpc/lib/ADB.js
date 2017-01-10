@@ -26,7 +26,10 @@ export async function getDeviceList(
     .map(stdout => stdout.split(/\n+/g)
                      .slice(1)
                      .filter(s => s.length > 0)
-                     .map(s => s.split(/\s+/g)[0])).toPromise();
+                     .map(s => s.split(/\s+/g))
+                     .filter(a => a[1] !== 'offline')
+                     .map(a => a[0]))
+    .toPromise();
 
   return Promise.all(devices.map(async s => {
     const arch = await getDeviceArchitecture(adbPath, s);
