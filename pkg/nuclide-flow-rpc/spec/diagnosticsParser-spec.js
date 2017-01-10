@@ -9,6 +9,7 @@
  */
 
 import {flowStatusOutputToDiagnostics} from '../lib/diagnosticsParser';
+import {addMatchers} from '../../nuclide-test-helpers';
 
 const flowOutput = {
   passed: false,
@@ -133,6 +134,10 @@ const expected = {
 };
 
 describe('flowStatusOutputToDiagnostics', () => {
+  beforeEach(function() {
+    addMatchers(this);
+  });
+
   it('converts the flow status output', () => {
     expect(flowStatusOutputToDiagnostics('/flow-test', flowOutput)).toEqual(expected);
   });
