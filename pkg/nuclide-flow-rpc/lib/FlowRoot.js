@@ -19,6 +19,7 @@ import type {
   FlowOutlineTree,
 } from '..';
 
+import {Point} from 'simple-text-buffer';
 import semver from 'semver';
 
 import {getLogger} from '../../nuclide-logging';
@@ -96,10 +97,10 @@ export class FlowRoot {
       if (json.path) {
         return {
           file: json.path,
-          point: {
-            line: json.line - 1,
-            column: json.start - 1,
-          },
+          point: new Point(
+            json.line - 1,
+            json.start - 1,
+          ),
         };
       } else {
         return null;

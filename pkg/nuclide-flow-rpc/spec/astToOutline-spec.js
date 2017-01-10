@@ -10,6 +10,8 @@
 
 import type {FlowOutlineTree} from '..';
 
+import {Point} from 'simple-text-buffer';
+
 import {addMatchers} from '../../nuclide-test-helpers';
 
 import {astToOutline} from '../lib/astToOutline';
@@ -25,7 +27,7 @@ import exportsAST34 from './fixtures/exports-ast-v0.34.json';
 import typesASTOld from './fixtures/types-ast-old.json';
 import typesAST34 from './fixtures/types-ast-v0.34.json';
 
-const expectedClassOutline = [
+const expectedClassOutline: Array<FlowOutlineTree> = [
   {
     tokenizedText: [
       {value: 'export', kind: 'keyword'},
@@ -35,14 +37,8 @@ const expectedClassOutline = [
       {value: 'Foo', kind: 'class-name'},
     ],
     representativeName: 'Foo',
-    startPosition: {
-      line: 12,
-      column: 0,
-    },
-    endPosition: {
-      line: 22,
-      column: 1,
-    },
+    startPosition: new Point(12, 0),
+    endPosition: new Point(22, 1),
     children: [
       {
         tokenizedText: [
@@ -50,14 +46,8 @@ const expectedClassOutline = [
           {value: '=', kind: 'plain'},
         ],
         representativeName: 'field',
-        startPosition: {
-          line: 13,
-          column: 2,
-        },
-        endPosition: {
-          line: 13,
-          column: 14,
-        },
+        startPosition: new Point(13, 2),
+        endPosition: new Point(13, 14),
         children: [],
       },
       {
@@ -68,14 +58,8 @@ const expectedClassOutline = [
           {value: ')', kind: 'plain'},
         ],
         representativeName: 'bar',
-        startPosition: {
-          line: 15,
-          column: 2,
-        },
-        endPosition: {
-          line: 17,
-          column: 3,
-        },
+        startPosition: new Point(15, 2),
+        endPosition: new Point(17, 3),
         children: [],
       },
       {
@@ -87,14 +71,8 @@ const expectedClassOutline = [
           {value: ')', kind: 'plain'},
         ],
         representativeName: 'baz',
-        startPosition: {
-          line: 19,
-          column: 2,
-        },
-        endPosition: {
-          line: 19,
-          column: 35,
-        },
+        startPosition: new Point(19, 2),
+        endPosition: new Point(19, 35),
         children: [],
       },
       {
@@ -105,21 +83,15 @@ const expectedClassOutline = [
           {value: ')', kind: 'plain'},
         ],
         representativeName: 'foo',
-        startPosition: {
-          line: 21,
-          column: 2,
-        },
-        endPosition: {
-          line: 21,
-          column: 31,
-        },
+        startPosition: new Point(21, 2),
+        endPosition: new Point(21, 31),
         children: [],
       },
     ],
   },
 ];
 
-const expectedToplevelOutline = [
+const expectedToplevelOutline: Array<FlowOutlineTree> = [
   {
     tokenizedText: [
       {value: 'function', kind: 'keyword'},
@@ -133,14 +105,8 @@ const expectedToplevelOutline = [
       {value: ')', kind: 'plain'},
     ],
     representativeName: 'baz',
-    startPosition: {
-      line: 12,
-      column: 0,
-    },
-    endPosition: {
-      line: 15,
-      column: 1,
-    },
+    startPosition: new Point(12, 0),
+    endPosition: new Point(15, 1),
     children: [],
   },
   {
@@ -167,14 +133,8 @@ const expectedToplevelOutline = [
       {value: ')', kind: 'plain'},
     ],
     representativeName: 'foo',
-    startPosition: {
-      line: 17,
-      column: 0,
-    },
-    endPosition: {
-      line: 19,
-      column: 1,
-    },
+    startPosition: new Point(17, 0),
+    endPosition: new Point(19, 1),
     children: [],
   },
   {
@@ -187,14 +147,8 @@ const expectedToplevelOutline = [
       {kind: 'plain', value: ')'},
     ],
     representativeName: 'funExpr1',
-    startPosition: {
-      line: 21,
-      column: 0,
-    },
-    endPosition: {
-      line: 23,
-      column: 2,
-    },
+    startPosition: new Point(21, 0),
+    endPosition: new Point(23, 2),
     children: [],
   },
   {
@@ -210,14 +164,8 @@ const expectedToplevelOutline = [
       {kind: 'plain', value: ')'},
     ],
     representativeName: 'funExpr2',
-    startPosition: {
-      line: 25,
-      column: 0,
-    },
-    endPosition: {
-      line: 27,
-      column: 2,
-    },
+    startPosition: new Point(25, 0),
+    endPosition: new Point(27, 2),
     children: [],
   },
   {
@@ -227,14 +175,8 @@ const expectedToplevelOutline = [
       {kind: 'param', value: 'varFoo'},
     ],
     representativeName: 'varFoo',
-    startPosition: {
-      line: 29,
-      column: 0,
-    },
-    endPosition: {
-      line: 29,
-      column: 18,
-    },
+    startPosition: new Point(29, 0),
+    endPosition: new Point(29, 18),
     children: [],
   },
   {
@@ -244,14 +186,8 @@ const expectedToplevelOutline = [
       {kind: 'param', value: 'varBar'},
     ],
     representativeName: 'varBar',
-    startPosition: {
-      line: 31,
-      column: 0,
-    },
-    endPosition: {
-      line: 31,
-      column: 16,
-    },
+    startPosition: new Point(31, 0),
+    endPosition: new Point(31, 16),
     children: [],
   },
   {
@@ -261,14 +197,8 @@ const expectedToplevelOutline = [
       {kind: 'param', value: 'varBaz'},
     ],
     representativeName: 'varBaz',
-    startPosition: {
-      line: 33,
-      column: 0,
-    },
-    endPosition: {
-      line: 38,
-      column: 2,
-    },
+    startPosition: new Point(33, 0),
+    endPosition: new Point(38, 2),
     children: [],
   },
   {
@@ -282,14 +212,8 @@ const expectedToplevelOutline = [
       {kind: 'param', value: 'bar'},
       {kind: 'plain', value: '}'},
     ],
-    startPosition: {
-      line: 40,
-      column: 0,
-    },
-    endPosition: {
-      line: 40,
-      column: 36,
-    },
+    startPosition: new Point(40, 0),
+    endPosition: new Point(40, 36),
     children: [],
   },
   {
@@ -300,19 +224,13 @@ const expectedToplevelOutline = [
       {kind: 'param', value: 'baz'},
       {kind: 'plain', value: ']'},
     ],
-    startPosition: {
-      line: 41,
-      column: 0,
-    },
-    endPosition: {
-      line: 41,
-      column: 18,
-    },
+    startPosition: new Point(41, 0),
+    endPosition: new Point(41, 18),
     children: [],
   },
 ];
 
-const expectedJasmineOutline = [
+const expectedJasmineOutline: Array<FlowOutlineTree> = [
   {
     tokenizedText: [
       {value: 'describe', kind: 'method'},
@@ -320,14 +238,8 @@ const expectedJasmineOutline = [
       {value: 'foo', kind: 'string'},
     ],
     representativeName: 'foo',
-    startPosition: {
-      line: 12,
-      column: 0,
-    },
-    endPosition: {
-      line: 17,
-      column: 3,
-    },
+    startPosition: new Point(12, 0),
+    endPosition: new Point(17, 3),
     children: [
       {
         tokenizedText: [
@@ -336,14 +248,8 @@ const expectedJasmineOutline = [
           {value: 'should work', kind: 'string'},
         ],
         representativeName: 'should work',
-        startPosition: {
-          line: 14,
-          column: 2,
-        },
-        endPosition: {
-          line: 16,
-          column: 5,
-        },
+        startPosition: new Point(14, 2),
+        endPosition: new Point(16, 5),
         children: [],
       },
     ],
@@ -355,14 +261,8 @@ const expectedJasmineOutline = [
       {value: 'bar', kind: 'string'},
     ],
     representativeName: 'bar',
-    startPosition: {
-      line: 19,
-      column: 0,
-    },
-    endPosition: {
-      line: 22,
-      column: 3,
-    },
+    startPosition: new Point(19, 0),
+    endPosition: new Point(22, 3),
     children: [
       {
         tokenizedText: [
@@ -371,14 +271,8 @@ const expectedJasmineOutline = [
           {value: 'should work with a normal function', kind: 'string'},
         ],
         representativeName: 'should work with a normal function',
-        startPosition: {
-          line: 20,
-          column: 2,
-        },
-        endPosition: {
-          line: 21,
-          column: 5,
-        },
+        startPosition: new Point(20, 2),
+        endPosition: new Point(21, 5),
         children: [],
       },
     ],
@@ -390,14 +284,8 @@ const expectedExportsOutline: Array<FlowOutlineTree> = [
     tokenizedText: [
       {value: 'module.exports', kind: 'plain'},
     ],
-    startPosition: {
-      line: 12,
-      column: 0,
-    },
-    endPosition: {
-      line: 23,
-      column: 1,
-    },
+    startPosition: new Point(12, 0),
+    endPosition: new Point(23, 1),
     children: [
       {
         tokenizedText: [
@@ -405,14 +293,8 @@ const expectedExportsOutline: Array<FlowOutlineTree> = [
           {value: ':', kind: 'plain'},
         ],
         representativeName: 'foo',
-        startPosition: {
-          line: 13,
-          column: 2,
-        },
-        endPosition: {
-          line: 13,
-          column: 8,
-        },
+        startPosition: new Point(13, 2),
+        endPosition: new Point(13, 8),
         children: [],
       },
       {
@@ -423,14 +305,8 @@ const expectedExportsOutline: Array<FlowOutlineTree> = [
           {value: ')', kind: 'plain'},
         ],
         representativeName: 'bar',
-        startPosition: {
-          line: 14,
-          column: 2,
-        },
-        endPosition: {
-          line: 16,
-          column: 3,
-        },
+        startPosition: new Point(14, 2),
+        endPosition: new Point(16, 3),
         children: [],
       },
       {
@@ -441,14 +317,8 @@ const expectedExportsOutline: Array<FlowOutlineTree> = [
           {value: ')', kind: 'plain'},
         ],
         representativeName: 'baz',
-        startPosition: {
-          line: 17,
-          column: 2,
-        },
-        endPosition: {
-          line: 17,
-          column: 33,
-        },
+        startPosition: new Point(17, 2),
+        endPosition: new Point(17, 33),
         children: [],
       },
       {
@@ -459,14 +329,8 @@ const expectedExportsOutline: Array<FlowOutlineTree> = [
           {value: ')', kind: 'plain'},
         ],
         representativeName: 'asdf',
-        startPosition: {
-          line: 18,
-          column: 2,
-        },
-        endPosition: {
-          line: 18,
-          column: 24,
-        },
+        startPosition: new Point(18, 2),
+        endPosition: new Point(18, 24),
         children: [],
       },
       {
@@ -477,14 +341,8 @@ const expectedExportsOutline: Array<FlowOutlineTree> = [
           {value: ')', kind: 'plain'},
         ],
         representativeName: 'jkl',
-        startPosition: {
-          line: 19,
-          column: 2,
-        },
-        endPosition: {
-          line: 19,
-          column: 27,
-        },
+        startPosition: new Point(19, 2),
+        endPosition: new Point(19, 27),
         children: [],
       },
       {
@@ -495,14 +353,8 @@ const expectedExportsOutline: Array<FlowOutlineTree> = [
           {value: ')', kind: 'plain'},
         ],
         representativeName: 'asdfjkl',
-        startPosition: {
-          line: 20,
-          column: 2,
-        },
-        endPosition: {
-          line: 20,
-          column: 17,
-        },
+        startPosition: new Point(20, 2),
+        endPosition: new Point(20, 17),
         children: [],
       },
       {
@@ -510,14 +362,8 @@ const expectedExportsOutline: Array<FlowOutlineTree> = [
           {value: 'thing', kind: 'string'},
         ],
         representativeName: 'thing',
-        startPosition: {
-          line: 21,
-          column: 2,
-        },
-        endPosition: {
-          line: 21,
-          column: 7,
-        },
+        startPosition: new Point(21, 2),
+        endPosition: new Point(21, 7),
         children: [],
       },
       {
@@ -526,14 +372,8 @@ const expectedExportsOutline: Array<FlowOutlineTree> = [
           {value: ':', kind: 'plain'},
         ],
         representativeName: 'stuff',
-        startPosition: {
-          line: 22,
-          column: 2,
-        },
-        endPosition: {
-          line: 22,
-          column: 14,
-        },
+        startPosition: new Point(22, 2),
+        endPosition: new Point(22, 14),
         children: [],
       },
     ],
@@ -547,19 +387,13 @@ const expectedExportsOutline: Array<FlowOutlineTree> = [
       {value: 'class', kind: 'keyword'},
     ],
     represenativeName: undefined,
-    startPosition: {
-      line: 29,
-      column: 0,
-    },
-    endPosition: {
-      line: 29,
-      column: 23,
-    },
+    startPosition: new Point(29, 0),
+    endPosition: new Point(29, 23),
     children: [],
   },
 ];
 
-const expectedTypesOutline = [
+const expectedTypesOutline: Array<FlowOutlineTree> = [
   {
     tokenizedText: [
       {value: 'type', kind: 'keyword'},
@@ -567,14 +401,8 @@ const expectedTypesOutline = [
       {value: 'Foo', kind: 'type'},
     ],
     representativeName: 'Foo',
-    startPosition: {
-      line: 12,
-      column: 0,
-    },
-    endPosition: {
-      line: 12,
-      column: 18,
-    },
+    startPosition: new Point(12, 0),
+    endPosition: new Point(12, 18),
     children: [],
   },
   {
@@ -586,14 +414,8 @@ const expectedTypesOutline = [
       {value: 'Bar', kind: 'type'},
     ],
     representativeName: 'Bar',
-    startPosition: {
-      line: 13,
-      column: 0,
-    },
-    endPosition: {
-      line: 13,
-      column: 30,
-    },
+    startPosition: new Point(13, 0),
+    endPosition: new Point(13, 30),
     children: [],
   },
 ];

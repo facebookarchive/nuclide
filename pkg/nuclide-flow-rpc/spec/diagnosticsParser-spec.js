@@ -8,6 +8,8 @@
  * @flow
  */
 
+import {Point} from 'simple-text-buffer';
+
 import {flowStatusOutputToDiagnostics} from '../lib/diagnosticsParser';
 import {addMatchers} from '../../nuclide-test-helpers';
 
@@ -86,14 +88,8 @@ const expected = {
           descr: 'object literal',
           range: {
             file: '/flow-test/src/test.js',
-            start: {
-              line: 13,
-              column: 16,
-            },
-            end: {
-              line: 13,
-              column: 17,
-            },
+            start: new Point(13, 16),
+            end: new Point(13, 17),
           },
         },
         {
@@ -104,28 +100,16 @@ const expected = {
           descr: 'union: object type(s)',
           range: {
             file: '/flow-test/src/test.js',
-            start: {
-              line: 10,
-              column: 8,
-            },
-            end: {
-              line: 10,
-              column: 10,
-            },
+            start: new Point(10, 8),
+            end: new Point(10, 10),
           },
         },
         {
           descr: 'See also: assignment of property `bar`',
           range: {
             file: '/flow-test/src/test.js',
-            start: {
-              line: 13,
-              column: 5,
-            },
-            end: {
-              line: 13,
-              column: 12,
-            },
+            start: new Point(13, 5),
+            end: new Point(13, 12),
           },
         },
       ],
@@ -139,6 +123,6 @@ describe('flowStatusOutputToDiagnostics', () => {
   });
 
   it('converts the flow status output', () => {
-    expect(flowStatusOutputToDiagnostics('/flow-test', flowOutput)).toEqual(expected);
+    expect(flowStatusOutputToDiagnostics('/flow-test', flowOutput)).diffJson(expected);
   });
 });

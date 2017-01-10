@@ -41,7 +41,7 @@ export default class FlowHyperclickProvider {
       return {
         range,
         callback() {
-          goToLocation(location.file, location.point.line, location.point.column);
+          goToLocation(location.file, location.point.row, location.point.column);
         },
       };
     } else {

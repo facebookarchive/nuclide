@@ -23,8 +23,8 @@ export function extractRange(message: MessageComponent): atom$Range | void {
     return undefined;
   } else {
     return new Range(
-      [range.start.line - 1, range.start.column - 1],
-      [range.end.line - 1, range.end.column],
+      [range.start.row - 1, range.start.column - 1],
+      [range.end.row - 1, range.end.column],
     );
   }
 }

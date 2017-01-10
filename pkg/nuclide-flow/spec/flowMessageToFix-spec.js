@@ -10,7 +10,7 @@
 
 import type {Diagnostic} from '../../nuclide-flow-rpc';
 
-import {Range} from 'atom';
+import {Range, Point} from 'atom';
 
 import flowMessageToFix from '../lib/flowMessageToFix';
 
@@ -23,14 +23,8 @@ describe('flowMessageToFix', () => {
           descr: 'Error suppressing comment',
           range: {
             file: 'foo',
-            start: {
-              line: 6,
-              column: 1,
-            },
-            end: {
-              line: 6,
-              column: 13,
-            },
+            start: new Point(6, 1),
+            end: new Point(6, 13),
           },
         },
         {
@@ -55,14 +49,8 @@ describe('flowMessageToFix', () => {
           descr: 'Named import from module `./foo`',
           range: {
             file: 'foo',
-            start: {
-              line: 3,
-              column: 9,
-            },
-            end: {
-              line: 3,
-              column: 16,
-            },
+            start: new Point(3, 9),
+            end: new Point(3, 16),
           },
         },
         {

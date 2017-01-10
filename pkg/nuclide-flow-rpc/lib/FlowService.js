@@ -36,18 +36,13 @@ export type MessageComponent = {
 
 export type Range = {
   file: NuclideUri,
-  start: Point,
-  end: Point,
-};
-
-export type Point = {
-  line: number,
-  column: number,
+  start: atom$Point,
+  end: atom$Point,
 };
 
 export type Loc = {
   file: NuclideUri,
-  point: Point,
+  point: atom$Point,
 };
 
 // If types are added here, make sure to also add them to FlowConstants.js. This needs to be the
@@ -70,15 +65,15 @@ export type FlowOutlineTree = {
   tokenizedText: TokenizedText,
   representativeName?: string,
   children: Array<FlowOutlineTree>,
-  startPosition: Point,
-  endPosition: Point,
+  startPosition: atom$Point,
+  endPosition: atom$Point,
 };
 
 export type FlowCoverageResult = {
   percentage: number,
   uncoveredRanges: Array<{
-    start: Point,
-    end: Point,
+    start: atom$Point,
+    end: atom$Point,
   }>,
 };
 

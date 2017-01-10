@@ -8,7 +8,10 @@
  * @flow
  */
 
-import type {FlowOutlineTree, Point} from '..';
+import type {FlowOutlineTree} from '..';
+
+import {Point} from 'simple-text-buffer';
+
 import {arrayCompact} from '../../commons-node/collection';
 
 import type {TokenizedText} from '../../commons-node/tokenizedText-rpc-types';
@@ -26,8 +29,8 @@ import {
 import invariant from 'assert';
 
 type Extent = {
-  startPosition: Point,
-  endPosition: Point,
+  startPosition: atom$Point,
+  endPosition: atom$Point,
 };
 
 export function astToOutline(ast: any): Array<FlowOutlineTree> {
@@ -170,16 +173,16 @@ function declarationsTokenizedText(declarations: Array<any>): TokenizedText {
 
 function getExtent(item: any): Extent {
   return {
-    startPosition: {
+    startPosition: new Point(
       // It definitely makes sense that the lines we get are 1-based and the columns are
       // 0-based... convert to 0-based all around.
-      line: item.loc.start.line - 1,
-      column: item.loc.start.column,
-    },
-    endPosition: {
-      line: item.loc.end.line - 1,
-      column: item.loc.end.column,
-    },
+      item.loc.start.line - 1,
+      item.loc.start.column,
+    ),
+    endPosition: new Point(
+      item.loc.end.line - 1,
+      item.loc.end.column,
+    ),
   };
 }
 

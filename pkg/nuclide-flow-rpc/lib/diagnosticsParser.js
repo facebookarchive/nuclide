@@ -22,6 +22,8 @@ import type {
   FlowLoc,
 } from './flowOutputTypes';
 
+import {Point} from 'simple-text-buffer';
+
 export function flowStatusOutputToDiagnostics(
   root: string,
   statusOutput: FlowStatusOutput,
@@ -74,13 +76,13 @@ function maybeFlowLocToRange(loc: ?FlowLoc): ?Range {
 function flowLocToRange(loc: FlowLoc): Range {
   return {
     file: loc.source,
-    start: {
-      line: loc.start.line,
-      column: loc.start.column,
-    },
-    end: {
-      line: loc.end.line,
-      column: loc.end.column,
-    },
+    start: new Point(
+      loc.start.line,
+      loc.start.column,
+    ),
+    end: new Point(
+      loc.end.line,
+      loc.end.column,
+    ),
   };
 }

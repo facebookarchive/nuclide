@@ -8,7 +8,7 @@
  * @flow
  */
 
-import {Range} from 'atom';
+import {Range, Point} from 'atom';
 
 const testPath = 'myPath';
 
@@ -31,14 +31,8 @@ describe('FlowDiagnosticsProvider', () => {
             descr: 'message',
             range: {
               file: testPath,
-              start: {
-                line: 1,
-                column: 3,
-              },
-              end: {
-                line: 2,
-                column: 4,
-              },
+              start: new Point(1, 3),
+              end: new Point(2, 4),
             },
           },
         ],
@@ -73,14 +67,8 @@ describe('FlowDiagnosticsProvider', () => {
             descr: 'message',
             range: {
               file: testPath,
-              start: {
-                line: 1,
-                column: 3,
-              },
-              end: {
-                line: 2,
-                column: 4,
-              },
+              start: new Point(1, 3),
+              end: new Point(2, 4),
             },
           },
         ],
@@ -109,14 +97,8 @@ describe('FlowDiagnosticsProvider', () => {
             descr: 'message',
             range: {
               file: 'notMyPath',
-              start: {
-                line: 1,
-                column: 3,
-              },
-              end: {
-                line: 2,
-                column: 4,
-              },
+              start: new Point(1, 3),
+              end: new Point(2, 4),
             },
           },
         ],
@@ -136,14 +118,8 @@ describe('FlowDiagnosticsProvider', () => {
             descr: 'message',
             range: {
               file: testPath,
-              start: {
-                line: 1,
-                column: 3,
-              },
-              end: {
-                line: 2,
-                column: 4,
-              },
+              start: new Point(1, 3),
+              end: new Point(2, 4),
             },
           },
           {
@@ -151,14 +127,8 @@ describe('FlowDiagnosticsProvider', () => {
             descr: 'more message',
             range: {
               file: 'otherPath',
-              start: {
-                line: 5,
-                column: 7,
-              },
-              end: {
-                line: 6,
-                column: 8,
-              },
+              start: new Point(5, 7),
+              end: new Point(6, 8),
             },
           },
         ],

@@ -35,8 +35,8 @@ function flowCoverageToCoverage(flowCoverage: ?FlowCoverageResult): ?CoverageRes
     uncoveredRegions: flowCoverage.uncoveredRanges.map(
       flowRange => ({
         range: new Range(
-          [flowRange.start.line, flowRange.start.column],
-          [flowRange.end.line, flowRange.end.column],
+          [flowRange.start.row, flowRange.start.column],
+          [flowRange.end.row, flowRange.end.column],
         ),
       }),
     ),

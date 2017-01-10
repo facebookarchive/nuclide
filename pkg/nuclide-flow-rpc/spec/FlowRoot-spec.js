@@ -10,6 +10,8 @@
 
 import type {FlowRoot as FlowRootType} from '../lib/FlowRoot';
 
+import {Point} from 'simple-text-buffer';
+
 import {FlowExecInfoContainer} from '../lib/FlowExecInfoContainer';
 
 describe('FlowRoot', () => {
@@ -49,7 +51,7 @@ describe('FlowRoot', () => {
       waitsForPromise(async () => {
         // Flow uses 1-based indexing, Atom uses 0-based.
         expect(await runWith({path: file, line: 5, start: 8}))
-          .toEqual({file, point: {line: 4, column: 7}});
+          .toEqual({file, point: new Point(4, 7)});
       });
     });
 
