@@ -170,9 +170,9 @@ export function renderFileChanges(diffModel: DiffViewModel): React.Element<any> 
   };
 
   return (
-    <div>
+    <div className="nuclide-diff-view-tree">
       <div className="padded">File Changes{spinnerElement}</div>
-      <div className="nuclide-diff-view-tree">
+      <div>
         <MultiRootChangedFilesView
           commandPrefix="nuclide-diff-view"
           fileChanges={getMultiRootFileChanges(selectedFiles, rootPaths)}
