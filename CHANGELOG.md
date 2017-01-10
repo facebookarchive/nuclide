@@ -1,5 +1,9 @@
 # Nuclide Changelog
 
+## v0.197.0
+
+Hotfix for 0.196.0 with backwards-compatible Atom 1.13.x shadow DOM fixes.
+
 ## v0.196.0
 
 ### Bug Fixes
