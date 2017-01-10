@@ -22,7 +22,7 @@ describe('FlowDiagnosticsProvider', () => {
   });
 
   describe('processDiagnostics', () => {
-    it('should propertly transform a simple diagnostic', () => {
+    it('should properly transform a simple diagnostic', () => {
       const diags = [{
         level: 'error',
         messageComponents: [
