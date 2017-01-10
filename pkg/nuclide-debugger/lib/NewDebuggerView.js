@@ -16,7 +16,6 @@ import type {
   Callstack,
   ControlButtonSpecification,
   DebuggerModeType,
-  FileLineBreakpoints,
   ThreadItem,
 } from './types';
 
@@ -48,7 +47,6 @@ export class NewDebuggerView extends React.Component {
     debuggerMode: DebuggerModeType,
     selectedCallFrameIndex: number,
     callstack: ?Callstack,
-    breakpoints: ?FileLineBreakpoints,
     showThreadsWindow: boolean,
     threadList: Array<ThreadItem>,
     selectedThreadId: number,
@@ -84,7 +82,6 @@ export class NewDebuggerView extends React.Component {
       showThreadsWindow: Boolean(debuggerStore.getSettings().get('SupportThreadsWindow')),
       selectedCallFrameIndex: props.model.getCallstackStore().getSelectedCallFrameIndex(),
       callstack: props.model.getCallstackStore().getCallstack(),
-      breakpoints: props.model.getBreakpointStore().getAllBreakpoints(),
       threadList: threadStore.getThreadList(),
       selectedThreadId: threadStore.getSelectedThreadId(),
       customControlButtons: debuggerStore.getCustomControlButtons(),
@@ -116,14 +113,6 @@ export class NewDebuggerView extends React.Component {
         this.setState({
           selectedCallFrameIndex: callstackStore.getSelectedCallFrameIndex(),
           callstack: callstackStore.getCallstack(),
-        });
-      }),
-    );
-    const breakpointStore = this.props.model.getBreakpointStore();
-    this._disposables.add(
-      breakpointStore.onNeedUIUpdate(() => {
-        this.setState({
-          breakpoints: breakpointStore.getAllBreakpoints(),
         });
       }),
     );
@@ -194,7 +183,7 @@ export class NewDebuggerView extends React.Component {
           <div className="nuclide-debugger-section-content">
             <BreakpointListComponent
               actions={actions}
-              breakpoints={this.state.breakpoints}
+              breakpointStore={model.getBreakpointStore()}
             />
           </div>
         </Section>

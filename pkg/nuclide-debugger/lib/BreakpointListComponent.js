@@ -9,7 +9,9 @@
  */
 
 import type DebuggerActions from './DebuggerActions';
+import type BreakpointStore from './BreakpointStore';
 
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import invariant from 'assert';
 import {React} from 'react-for-atom';
 import nuclideUri from '../../commons-node/nuclideUri';
@@ -22,16 +24,42 @@ import type {FileLineBreakpoints, FileLineBreakpoint} from './types';
 
 type BreakpointListComponentProps = {
   actions: DebuggerActions,
+  breakpointStore: BreakpointStore,
+};
+
+type BreakpointListComponentState = {
   breakpoints: ?FileLineBreakpoints,
 };
 
 export class BreakpointListComponent extends React.Component {
   props: BreakpointListComponentProps;
+  state: BreakpointListComponentState;
+  _disposables: UniversalDisposable;
 
   constructor(props: BreakpointListComponentProps) {
     super(props);
     (this: any)._handleBreakpointEnabledChange = this._handleBreakpointEnabledChange.bind(this);
     (this: any)._handleBreakpointClick = this._handleBreakpointClick.bind(this);
+    this.state = {
+      breakpoints: this.props.breakpointStore.getAllBreakpoints(),
+    };
+  }
+
+  componentDidMount(): void {
+    const {breakpointStore} = this.props;
+    this._disposables = new UniversalDisposable(
+      breakpointStore.onNeedUIUpdate(() => {
+        this.setState({
+          breakpoints: breakpointStore.getAllBreakpoints(),
+        });
+      }),
+    );
+  }
+
+  componentWillUnmount(): void {
+    if (this._disposables != null) {
+      this._disposables.dispose();
+    }
   }
 
   _handleBreakpointEnabledChange(breakpoint: FileLineBreakpoint, enabled: boolean): void {
@@ -51,7 +79,7 @@ export class BreakpointListComponent extends React.Component {
   }
 
   render(): ?React.Element<any> {
-    const {breakpoints} = this.props;
+    const {breakpoints} = this.state;
     if (breakpoints == null || breakpoints.length === 0) {
       return <span>(no breakpoints)</span>;
     }
