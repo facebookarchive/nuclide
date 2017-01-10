@@ -2,7 +2,8 @@
 
 // Animation definitions cannot cross the shadow boundary,
 // and thus need to be loaded directly into the atom-text-editor scope.
-atom-text-editor::shadow {
+atom-text-editor::shadow,
+atom-text-editor {
   @keyframes RotatingBackground {
       0% {background-position-x: 0%}
       100% {background-position-x: 100%}

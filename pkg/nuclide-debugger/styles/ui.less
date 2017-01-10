@@ -92,7 +92,8 @@ Use flexbox cross-axis stretch to fill the vertical space.
   .nuclide-debugger-vfill-parent();
   .nuclide-debugger-vfill-child(); // child relative to .inspector
 
-  &::shadow object {
+  &::shadow object,
+  object {
     .nuclide-debugger-vfill-child();
     // The object element is generated with inline style height:100%.
     height: auto !important;
