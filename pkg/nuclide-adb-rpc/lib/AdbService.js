@@ -13,7 +13,7 @@ import type {ConnectableObservable} from 'rxjs';
 
 import * as ADB from './ADB';
 
-export type DeviceDescription = {name: string, architecture: string};
+export type DeviceDescription = {name: string, architecture: string, model: string};
 
 export function startServer(
   adbPath: NuclideUri,

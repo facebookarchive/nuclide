@@ -31,9 +31,10 @@ export async function getDeviceList(
                      .map(a => a[0]))
     .toPromise();
 
-  return Promise.all(devices.map(async s => {
-    const arch = await getDeviceArchitecture(adbPath, s);
-    return {name: s, architecture: arch};
+  return Promise.all(devices.map(async name => {
+    const architecture = await getDeviceArchitecture(adbPath, name);
+    const model = await getDeviceModel(adbPath, name);
+    return {name, architecture, model};
   }));
 }
 
@@ -49,4 +50,34 @@ export function getDeviceArchitecture(
       adbPath.endsWith('sdb') ? ['uname', '-m'] : ['getprop', 'ro.product.cpu.abi']),
   ).map(s => s.trim())
   .toPromise();
+}
+
+function getTizenModelConfigKey(
+  adbPath: NuclideUri,
+  device: string,
+  key: string,
+): Promise<string> {
+  const modelConfigPath = '/etc/config/model-config.xml';
+  return runCommand(adbPath, ['-s', device, 'shell', 'cat', modelConfigPath])
+    .map(stdout => stdout.split(/\n+/g)
+                     .filter(s => s.indexOf(key) !== -1)[0])
+    .map(s => {
+      const regex = /.*<.*>(.*)<.*>/g;
+      return regex.exec(s)[1];
+    })
+    .toPromise();
+}
+
+export function getDeviceModel(
+  adbPath: NuclideUri,
+  device: string,
+): Promise<string> {
+  if (adbPath.endsWith('sdb')) {
+    return getTizenModelConfigKey(adbPath, device, 'tizen.org/system/model_name');
+  } else {
+    return runCommand(adbPath, ['-s', device, 'shell', 'getprop', 'ro.product.model'])
+      .map(s => s.trim())
+      .map(s => (s === 'sdk' ? 'emulator' : s))
+      .toPromise();
+  }
 }
