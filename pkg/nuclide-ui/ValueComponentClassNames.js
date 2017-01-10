@@ -8,13 +8,20 @@
  * @flow
  */
 
+import classnames from 'classnames';
+
+// TODO remove this once Atom 1.13 is the de-factor Atom version
+function addSyntaxVariants(classNames: string): string {
+  return classnames(classNames, ...classNames.split(' ').map(name => `syntax--${name}`));
+}
+
 // A very basic heuristic for coloring the values.
 export const ValueComponentClassNames = {
-  string: 'string quoted double',
-  stringOpeningQuote: 'punctuation definition string begin',
-  stringClosingQuote: 'punctuation definition string end',
-  number: 'constant numeric',
-  nullish: 'constant language null',
-  identifier: 'variable',
-  boolean: 'constant language boolean',
+  string: addSyntaxVariants('string quoted double'),
+  stringOpeningQuote: addSyntaxVariants('punctuation definition string begin'),
+  stringClosingQuote: addSyntaxVariants('punctuation definition string end'),
+  number: addSyntaxVariants('constant numeric'),
+  nullish: addSyntaxVariants('constant language null'),
+  identifier: addSyntaxVariants('variable'),
+  boolean: addSyntaxVariants('constant language boolean'),
 };
