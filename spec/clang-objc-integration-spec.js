@@ -124,15 +124,29 @@ describe('Clang Integration Test (objc)', () => {
       }
       expect(getData(names[0])).toEqual({
         name: 'Hello',
-        classes: ['class', 'entity', 'name'],
+        classes: ['class', 'entity', 'name', 'syntax--class', 'syntax--entity', 'syntax--name'],
       });
       expect(getData(names[1])).toEqual({
         name: 'say:',
-        classes: ['entity', 'function', 'name'],
+        classes: [
+          'entity',
+          'function',
+          'name',
+          'syntax--entity',
+          'syntax--function',
+          'syntax--name',
+        ],
       });
       expect(getData(names[names.length - 1])).toEqual({
         name: 'main',
-        classes: ['entity', 'function', 'name'],
+        classes: [
+          'entity',
+          'function',
+          'name',
+          'syntax--entity',
+          'syntax--function',
+          'syntax--name',
+        ],
       });
 
       // Trigger Hyperclick on NSLog(...)
