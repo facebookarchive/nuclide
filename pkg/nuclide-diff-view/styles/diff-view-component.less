@@ -295,14 +295,17 @@ atom-text-editor, atom-text-editor::shadow {
   cursor: pointer;
   text-align: center;
 
+  &.syntax--added,
   &.added {
     background-color: @background-color-success;
   }
 
+  &.syntax--added,
   &.removed {
     background-color: @background-color-error;
   }
 
+  &.syntax--added,
   &.modified {
     background-color: @background-color-warning;
   }
