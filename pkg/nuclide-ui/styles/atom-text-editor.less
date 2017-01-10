@@ -2,43 +2,45 @@
 
 /* ANSI Grammar */
 
-atom-text-editor .ansi-escape-code,
-atom-text-editor::shadow .ansi-escape-code {
-// Ideally we'd like to just set this to `display:none`. But, unfortunately, having a display:none
-// content in Atom's text editor messes with its internal size measurement logic.
-// As a result it sometimes decides that on a horizontal resize of the containing panel
-// to resize the editor contents as well. This effectively prevents any horizontal scrolling.
-// As there's no overflown content after the resize.
-//
-// So, instead of display:none we set the text font size to 1px (0 didn't work) and color to
-// transparent, which visually make it almost invisible.
-  font-size: 1px;
-  color: rgba(0, 0, 0, 0);
-}
+atom-text-editor {
+  &::shadow .ansi-escape-code,
+  .ansi-escape-code {
+  // Ideally we'd like to just set this to `display:none`. But, unfortunately, having a display:none
+  // content in Atom's text editor messes with its internal size measurement logic.
+  // As a result it sometimes decides that on a horizontal resize of the containing panel
+  // to resize the editor contents as well. This effectively prevents any horizontal scrolling.
+  // As there's no overflown content after the resize.
+  //
+  // So, instead of display:none we set the text font size to 1px (0 didn't work) and color to
+  // transparent, which visually make it almost invisible.
+    font-size: 1px;
+    color: rgba(0, 0, 0, 0);
+  }
 
-atom-text-editor .ansi.green,
-atom-text-editor::shadow .ansi.green {
-  color: rgb(103, 248, 111);
-}
+  &::shadow .ansi.green,
+  .ansi.green {
+    color: rgb(103, 248, 111);
+  }
 
-atom-text-editor .ansi.purple,
-atom-text-editor::shadow .ansi.purple {
-  color: magenta;
-}
+  &::shadow .ansi.purple,
+  .ansi.purple {
+    color: magenta;
+  }
 
-atom-text-editor .ansi.red,
-atom-text-editor::shadow .ansi.red {
-  color: rgb(205, 0, 0);
-}
+  &::shadow .ansi.red,
+  .ansi.red {
+    color: rgb(205, 0, 0);
+  }
 
-atom-text-editor .ansi.yellow,
-atom-text-editor::shadow .ansi.yellow {
-  color: rgb(255, 250, 114);
-}
+  &::shadow .ansi.yellow,
+  .ansi.yellow {
+    color: rgb(255, 250, 114);
+  }
 
-atom-text-editor .ansi.intensive,
-atom-text-editor::shadow .ansi.intensive {
-  font-weight: bold;
+  &::shadow .ansi.intensive,
+  .ansi.intensive {
+    font-weight: bold;
+  }
 }
 
 .nuclide-text-editor-container {

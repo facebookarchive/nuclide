@@ -264,11 +264,10 @@ atom-text-editor, atom-text-editor::shadow {
         box-shadow: 0 0 0 1px @background-color-selected;
         color: @text-color-highlight;
 
-        &::shadow {
-          .cursor {
-            border-color: @text-color-highlight;
-            border-width: thin;
-          }
+        &::shadow .cursor,
+        .cursor {
+          border-color: @text-color-highlight;
+          border-width: thin;
         }
       }
 
@@ -283,7 +282,8 @@ atom-text-editor, atom-text-editor::shadow {
      *
      * Ref: https://atom.io/packages/block-cursor
      */
-     atom-text-editor::shadow .lines .line.cursor-line {
+     atom-text-editor::shadow .lines .line.cursor-line,
+     atom-text-editor .lines .line.cursor-line {
        background-color: transparent;
      }
   }

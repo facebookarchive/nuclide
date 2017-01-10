@@ -24,15 +24,18 @@
   cursor: pointer;
   text-align: center;
 
-  &.added {
+  &.added,
+  &.syntax--added {
     background-color: @background-color-success;
   }
 
-  &.removed {
+  &.removed,
+  &.syntax--removed {
     background-color: @background-color-error;
   }
 
-  &.modified {
+  &.modified,
+  &.syntax--modified {
     background-color: @background-color-warning;
   }
 
