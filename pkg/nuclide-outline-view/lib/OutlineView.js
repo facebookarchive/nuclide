@@ -32,16 +32,18 @@ type Props = {
   outlines: Observable<OutlineForUi>,
 };
 
+// TODO: (advinsky) remove the CSS rules without the `syntax--` prefix when Atom <1.13 is no longer
+// supported
 const TOKEN_KIND_TO_CLASS_NAME_MAP = {
-  'keyword': 'keyword',
-  'class-name': 'entity name class',
-  'constructor': 'entity name function',
-  'method': 'entity name function',
-  'param': 'variable',
-  'string': 'string',
+  'keyword': 'keyword syntax--keyword',
+  'class-name': 'entity name class syntax--entity syntax--name syntax--class',
+  'constructor': 'entity name function syntax--entity syntax--name syntax--function',
+  'method': 'entity name function syntax--entity syntax--name syntax--function',
+  'param': 'variable syntax--variable',
+  'string': 'string syntax--string',
   'whitespace': '',
   'plain': '',
-  'type': 'support type',
+  'type': 'support type syntax--support syntax--type',
 };
 
 export class OutlineView extends React.Component {
