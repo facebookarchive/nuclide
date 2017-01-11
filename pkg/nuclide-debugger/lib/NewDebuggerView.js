@@ -15,7 +15,6 @@ import type {
 import type {
   ControlButtonSpecification,
   DebuggerModeType,
-  ThreadItem,
 } from './types';
 
 import {CompositeDisposable} from 'atom';
@@ -45,8 +44,6 @@ export class NewDebuggerView extends React.Component {
     enableSingleThreadStepping: boolean,
     debuggerMode: DebuggerModeType,
     showThreadsWindow: boolean,
-    threadList: Array<ThreadItem>,
-    selectedThreadId: number,
     customControlButtons: Array<ControlButtonSpecification>,
   };
   _watchExpressionComponentWrapped: ReactClass<any>;
@@ -69,7 +66,6 @@ export class NewDebuggerView extends React.Component {
     );
     this._disposables = new CompositeDisposable();
     const debuggerStore = props.model.getStore();
-    const threadStore = props.model.getThreadStore();
     this.state = {
       allowSingleThreadStepping: Boolean(debuggerStore.getSettings().get('SingleThreadStepping')),
       debuggerMode: debuggerStore.getDebuggerMode(),
@@ -77,8 +73,6 @@ export class NewDebuggerView extends React.Component {
       togglePauseOnCaughtException: debuggerStore.getTogglePauseOnCaughtException(),
       enableSingleThreadStepping: debuggerStore.getEnableSingleThreadStepping(),
       showThreadsWindow: Boolean(debuggerStore.getSettings().get('SupportThreadsWindow')),
-      threadList: threadStore.getThreadList(),
-      selectedThreadId: threadStore.getSelectedThreadId(),
       customControlButtons: debuggerStore.getCustomControlButtons(),
     };
   }
@@ -102,15 +96,6 @@ export class NewDebuggerView extends React.Component {
         });
       }),
     );
-    const threadStore = this.props.model.getThreadStore();
-    this._disposables.add(
-      threadStore.onChange(() => {
-        this.setState({
-          threadList: threadStore.getThreadList(),
-          selectedThreadId: threadStore.getSelectedThreadId(),
-        });
-      }),
-    );
   }
 
   componentWillUnmount(): void {
@@ -130,8 +115,7 @@ export class NewDebuggerView extends React.Component {
           <div className="nuclide-debugger-section-content">
             <DebuggerThreadsComponent
               bridge={this.props.model.getBridge()}
-              threadList={this.state.threadList}
-              selectedThreadId={this.state.selectedThreadId}
+              threadStore={model.getThreadStore()}
             />
           </div>
         </Section>

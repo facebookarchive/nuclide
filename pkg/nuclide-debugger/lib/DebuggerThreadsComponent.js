@@ -11,12 +11,18 @@
 import {React} from 'react-for-atom';
 import type {ThreadItem} from './types';
 import type Bridge from './Bridge';
+import type ThreadStore from './ThreadStore';
 
 import {Icon} from '../../nuclide-ui/Icon';
 import {Table} from '../../nuclide-ui/Table';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 
 type DebuggerThreadsComponentProps = {
   bridge: Bridge,
+  threadStore: ThreadStore,
+};
+
+type DebuggerThreadsComponentState = {
   threadList: Array<ThreadItem>,
   selectedThreadId: number,
 };
@@ -32,13 +38,36 @@ const activeThreadIndicatorComponent = (props: {cellData: boolean}) => (
 
 export class DebuggerThreadsComponent extends React.Component {
   props: DebuggerThreadsComponentProps;
+  state: DebuggerThreadsComponentState;
+  _disposables: UniversalDisposable;
 
   constructor(props: DebuggerThreadsComponentProps) {
     super(props);
     (this: any)._handleSelectThread = this._handleSelectThread.bind(this);
+    this._disposables = new UniversalDisposable();
+    this.state = {
+      threadList: props.threadStore.getThreadList(),
+      selectedThreadId: props.threadStore.getSelectedThreadId(),
+    };
   }
 
-  _handleSelectThread(data: ThreadItem, selectedIndex: number): void {
+  componentDidMount(): void {
+    const {threadStore} = this.props;
+    this._disposables.add(
+      threadStore.onChange(() => {
+        this.setState({
+          threadList: threadStore.getThreadList(),
+          selectedThreadId: threadStore.getSelectedThreadId(),
+        });
+      }),
+    );
+  }
+
+  componentWillUnmount(): void {
+    this._disposables.dispose();
+  }
+
+  _handleSelectThread(data: ThreadItem): void {
     this.props.bridge.selectThread(data.id);
   }
 
@@ -46,7 +75,7 @@ export class DebuggerThreadsComponent extends React.Component {
     const {
       threadList,
       selectedThreadId,
-    } = this.props;
+    } = this.state;
     const columns = [
       {
         component: activeThreadIndicatorComponent,
