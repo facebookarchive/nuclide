@@ -28,6 +28,12 @@ export type LaunchTargetInfo = {
   lldbPythonPath?: ?string, // see DebuggerConfig
 };
 
+export type BootstrapDebuggerInfo = {
+  lldbBootstrapFiles: Array<string>,
+  basepath?: string,
+  lldbPythonPath?: ?string, // see DebuggerConfig
+};
+
 export type DebuggerConfig = { // config for lldb
   logLevel: LogLevel,
   pythonBinaryPath: string, // path of the actual python binary, e.g /usr/bin/python
@@ -59,6 +65,10 @@ export class NativeDebuggerService {
   }
 
   launch(launchInfo: LaunchTargetInfo): ConnectableObservable<void> {
+    throw new Error('Not implemented');
+  }
+
+  bootstrap(bootstrapInfo: BootstrapDebuggerInfo): ConnectableObservable<void> {
     throw new Error('Not implemented');
   }
 

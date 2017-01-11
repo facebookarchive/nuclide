@@ -50,6 +50,8 @@ def parse_args():
                         help='Receive the attach/launch arguments in JSON.')
     parser.add_argument('--lldb_python_path', type=str,
                         help='Path of the lldb python packages')
+    parser.add_argument('--lldb_bootstrap_files', type=str, nargs='+',
+                        help='Files with commands processed by lldb upon initialization')
 
     attach_group = parser.add_mutually_exclusive_group()
     attach_group.add_argument('--pname', '-n', type=str,
@@ -122,7 +124,12 @@ def start_debugging(debugger, arguments, ipc_channel, is_attach):
     lldb = get_lldb()
     listener = lldb.SBListener('Chrome Dev Tools Listener')
     error = lldb.SBError()
-    if getattr(arguments, 'executable_path', None):
+
+    if getattr(arguments, 'lldb_bootstrap_files', None):
+        bootstrap_files = arguments.lldb_bootstrap_files
+        for file in bootstrap_files:
+            debugger.HandleCommand(str('command source ' + file))
+    elif getattr(arguments, 'executable_path', None):
         argument_list = map(os.path.expanduser, map(str, arguments.launch_arguments)) \
             if arguments.launch_arguments else None
         environment_variables = [six.binary_type(arg) for arg in

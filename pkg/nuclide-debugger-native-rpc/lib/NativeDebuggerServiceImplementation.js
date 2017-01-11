@@ -13,6 +13,7 @@ import type {
   DebuggerConfig,
   AttachTargetInfo,
   LaunchTargetInfo,
+  BootstrapDebuggerInfo,
 } from './NativeDebuggerServiceInterface.js';
 
 import child_process from 'child_process';
@@ -38,8 +39,12 @@ type LaunchInfoArgsType = {
   basepath: string,
 };
 
-type LaunchAttachArgsType = AttachInfoArgsType | LaunchInfoArgsType;
+type BootstrapInfoArgsType = {
+  lldb_bootstrap_files: Array<string>,
+  basepath: string,
+};
 
+type LaunchAttachArgsType = AttachInfoArgsType | LaunchInfoArgsType | BootstrapInfoArgsType;
 
 export async function getAttachTargetInfoList(
   targetPid: ?number,
@@ -123,6 +128,16 @@ export class NativeDebuggerService extends DebuggerRpcWebSocketService {
       working_directory: launchInfo.workingDirectory,
       stdin_filepath: launchInfo.stdinFilePath ? launchInfo.stdinFilePath : '',
       basepath: launchInfo.basepath ? launchInfo.basepath : this._config.buckConfigRootFile,
+      lldb_python_path: this._config.lldbPythonPath,
+    };
+    return Observable.fromPromise(this._startDebugging(inferiorArguments)).publish();
+  }
+
+  bootstrap(bootstrapInfo: BootstrapDebuggerInfo): ConnectableObservable<void> {
+    this.getLogger().log(`bootstrap lldb: ${JSON.stringify(bootstrapInfo)}`);
+    const inferiorArguments = {
+      lldb_bootstrap_files: bootstrapInfo.lldbBootstrapFiles,
+      basepath: bootstrapInfo.basepath ? bootstrapInfo.basepath : this._config.buckConfigRootFile,
       lldb_python_path: this._config.lldbPythonPath,
     };
     return Observable.fromPromise(this._startDebugging(inferiorArguments)).publish();
