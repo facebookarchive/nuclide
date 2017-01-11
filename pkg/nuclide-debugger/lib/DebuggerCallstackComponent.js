@@ -17,8 +17,10 @@ import type {
   CallstackItem,
 } from './types';
 import type DebuggerActions from './DebuggerActions';
+import type CallstackStore from './CallstackStore';
 
 import nuclideUri from '../../commons-node/nuclideUri';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {
   ListView,
   ListViewItem,
@@ -27,17 +29,44 @@ import Bridge from './Bridge';
 
 type DebuggerCallstackComponentProps = {
   actions: DebuggerActions,
-  callstack: ?Callstack,
   bridge: Bridge,
+  callstackStore: CallstackStore,
+};
+
+type DebuggerCallstackComponentState = {
+  callstack: ?Callstack,
   selectedCallFrameIndex: number,
 };
 
 export class DebuggerCallstackComponent extends React.Component {
   props: DebuggerCallstackComponentProps;
+  state: DebuggerCallstackComponentState;
+  _disposables: UniversalDisposable;
 
   constructor(props: DebuggerCallstackComponentProps) {
     super(props);
     (this: any)._handleCallframeClick = this._handleCallframeClick.bind(this);
+    this._disposables = new UniversalDisposable();
+    this.state = {
+      callstack: props.callstackStore.getCallstack(),
+      selectedCallFrameIndex: props.callstackStore.getSelectedCallFrameIndex(),
+    };
+  }
+
+  componentDidMount(): void {
+    const {callstackStore} = this.props;
+    this._disposables.add(
+      callstackStore.onChange(() => {
+        this.setState({
+          selectedCallFrameIndex: callstackStore.getSelectedCallFrameIndex(),
+          callstack: callstackStore.getCallstack(),
+        });
+      }),
+    );
+  }
+
+  componentWillUnmount(): void {
+    this._disposables.dispose();
   }
 
   _handleCallframeClick(
@@ -49,7 +78,7 @@ export class DebuggerCallstackComponent extends React.Component {
   }
 
   render(): ?React.Element<any> {
-    const {callstack} = this.props;
+    const {callstack} = this.state;
     const items = callstack == null
       ? []
       : callstack.map((callstackItem, i) => {
@@ -74,7 +103,7 @@ export class DebuggerCallstackComponent extends React.Component {
         const itemClassNames = classnames(
           {
             'nuclide-debugger-callstack-item-selected':
-              this.props.selectedCallFrameIndex === i,
+              this.state.selectedCallFrameIndex === i,
           },
         );
         return <ListViewItem

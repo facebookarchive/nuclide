@@ -13,7 +13,6 @@ import type {
   WatchExpressionListStore,
 } from './WatchExpressionListStore';
 import type {
-  Callstack,
   ControlButtonSpecification,
   DebuggerModeType,
   ThreadItem,
@@ -45,8 +44,6 @@ export class NewDebuggerView extends React.Component {
     togglePauseOnCaughtException: boolean,
     enableSingleThreadStepping: boolean,
     debuggerMode: DebuggerModeType,
-    selectedCallFrameIndex: number,
-    callstack: ?Callstack,
     showThreadsWindow: boolean,
     threadList: Array<ThreadItem>,
     selectedThreadId: number,
@@ -80,8 +77,6 @@ export class NewDebuggerView extends React.Component {
       togglePauseOnCaughtException: debuggerStore.getTogglePauseOnCaughtException(),
       enableSingleThreadStepping: debuggerStore.getEnableSingleThreadStepping(),
       showThreadsWindow: Boolean(debuggerStore.getSettings().get('SupportThreadsWindow')),
-      selectedCallFrameIndex: props.model.getCallstackStore().getSelectedCallFrameIndex(),
-      callstack: props.model.getCallstackStore().getCallstack(),
       threadList: threadStore.getThreadList(),
       selectedThreadId: threadStore.getSelectedThreadId(),
       customControlButtons: debuggerStore.getCustomControlButtons(),
@@ -104,15 +99,6 @@ export class NewDebuggerView extends React.Component {
           showThreadsWindow: Boolean(debuggerStore.getSettings()
             .get('SupportThreadsWindow')),
           customControlButtons: debuggerStore.getCustomControlButtons(),
-        });
-      }),
-    );
-    const callstackStore = this.props.model.getCallstackStore();
-    this._disposables.add(
-      callstackStore.onChange(() => {
-        this.setState({
-          selectedCallFrameIndex: callstackStore.getSelectedCallFrameIndex(),
-          callstack: callstackStore.getCallstack(),
         });
       }),
     );
@@ -172,9 +158,8 @@ export class NewDebuggerView extends React.Component {
           <div className="nuclide-debugger-section-content">
             <DebuggerCallstackComponent
               actions={actions}
-              callstack={this.state.callstack}
-              bridge={this.props.model.getBridge()}
-              selectedCallFrameIndex={this.state.selectedCallFrameIndex}
+              bridge={model.getBridge()}
+              callstackStore={model.getCallstackStore()}
             />
           </div>
         </Section>
