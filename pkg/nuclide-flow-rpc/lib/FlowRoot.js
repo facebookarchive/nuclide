@@ -9,14 +9,16 @@
  */
 
 import type {Observable} from 'rxjs';
+
 import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
+
 import type {ServerStatusType, FlowCoverageResult, FlowAutocompleteItem} from '..';
 import type {FlowExecInfoContainer} from './FlowExecInfoContainer';
 
 import type {
   Diagnostics,
   Loc,
-  FlowOutlineTree,
 } from '..';
 
 import {Point} from 'simple-text-buffer';
@@ -303,7 +305,7 @@ export class FlowRoot {
     root: ?FlowRoot,
     currentContents: string,
     execInfoContainer: FlowExecInfoContainer,
-  ): Promise<?Array<FlowOutlineTree>> {
+  ): Promise<?Outline> {
     const json = await FlowRoot.flowGetAst(root, currentContents, execInfoContainer);
 
     try {

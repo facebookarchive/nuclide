@@ -8,7 +8,7 @@
  * @flow
  */
 
-import type {FlowOutlineTree} from '..';
+import type {Outline, OutlineTree} from '../../nuclide-outline-view/lib/rpc-types';
 
 import {Point} from 'simple-text-buffer';
 
@@ -33,15 +33,17 @@ type Extent = {
   endPosition: atom$Point,
 };
 
-export function astToOutline(ast: any): Array<FlowOutlineTree> {
-  return itemsToTrees(ast.body);
+export function astToOutline(ast: any): Outline {
+  return {
+    outlineTrees: itemsToTrees(ast.body),
+  };
 }
 
-function itemsToTrees(items: Array<any>): Array<FlowOutlineTree> {
+function itemsToTrees(items: Array<any>): Array<OutlineTree> {
   return arrayCompact(items.map(itemToTree));
 }
 
-function itemToTree(item: any): ?FlowOutlineTree {
+function itemToTree(item: any): ?OutlineTree {
   if (item == null) {
     return null;
   }
@@ -114,7 +116,7 @@ function exportDeclaration(
   item: any,
   extent: Extent,
   isDefault: boolean,
-): ?FlowOutlineTree {
+): ?OutlineTree {
   const tree = itemToTree(item.declaration);
   if (tree == null) {
     return null;
@@ -123,6 +125,8 @@ function exportDeclaration(
   if (isDefault) {
     tokenizedText.push(keyword('default'), whitespace(' '));
   }
+  // Flow always has tokenizedText
+  invariant(tree.tokenizedText != null);
   tokenizedText.push(...tree.tokenizedText);
   return {
     tokenizedText,
@@ -186,7 +190,7 @@ function getExtent(item: any): Extent {
   };
 }
 
-function functionOutline(name: string, params: Array<any>, extent: Extent): FlowOutlineTree {
+function functionOutline(name: string, params: Array<any>, extent: Extent): OutlineTree {
   return {
     tokenizedText: [
       keyword('function'),
@@ -202,7 +206,7 @@ function functionOutline(name: string, params: Array<any>, extent: Extent): Flow
   };
 }
 
-function typeAliasOutline(typeAliasExpression: any): FlowOutlineTree {
+function typeAliasOutline(typeAliasExpression: any): OutlineTree {
   invariant(typeAliasExpression.type === 'TypeAlias');
   const name = typeAliasExpression.id.name;
   return {
@@ -217,7 +221,7 @@ function typeAliasOutline(typeAliasExpression: any): FlowOutlineTree {
   };
 }
 
-function topLevelExpressionOutline(expressionStatement: any): ?FlowOutlineTree {
+function topLevelExpressionOutline(expressionStatement: any): ?OutlineTree {
   switch (expressionStatement.expression.type) {
     case 'CallExpression':
       return specOutline(expressionStatement, /* describeOnly */ true);
@@ -228,7 +232,7 @@ function topLevelExpressionOutline(expressionStatement: any): ?FlowOutlineTree {
   }
 }
 
-function moduleExportsOutline(assignmentStatement: any): ?FlowOutlineTree {
+function moduleExportsOutline(assignmentStatement: any): ?OutlineTree {
   invariant(assignmentStatement.type === 'AssignmentExpression');
 
   const left = assignmentStatement.left;
@@ -256,7 +260,7 @@ function isModuleExports(left: Object): boolean {
     left.property.name === 'exports';
 }
 
-function moduleExportsPropertyOutline(property: any): ?FlowOutlineTree {
+function moduleExportsPropertyOutline(property: any): ?OutlineTree {
   invariant(property.type === 'Property');
   if (property.key.type !== 'Identifier') {
     return null;
@@ -302,7 +306,7 @@ function moduleExportsPropertyOutline(property: any): ?FlowOutlineTree {
   };
 }
 
-function specOutline(expressionStatement: any, describeOnly: boolean = false): ?FlowOutlineTree {
+function specOutline(expressionStatement: any, describeOnly: boolean = false): ?OutlineTree {
   const expression = expressionStatement.expression;
   if (expression.type !== 'CallExpression') {
     return null;
@@ -412,7 +416,7 @@ function getFunctionBody(fn: ?any): ?Array<any> {
   return fn.body.body;
 }
 
-function variableDeclarationOutline(declaration: any): ?FlowOutlineTree {
+function variableDeclarationOutline(declaration: any): ?OutlineTree {
   // If there are multiple var declarations in one line, just take the first.
   return variableDeclaratorOutline(
            declaration.declarations[0],
@@ -425,7 +429,7 @@ function variableDeclaratorOutline(
   declarator: any,
   kind: string,
   extent: Extent,
-): ?FlowOutlineTree {
+): ?OutlineTree {
   if (declarator.init != null && (declarator.init.type === 'FunctionExpression'
       || declarator.init.type === 'ArrowFunctionExpression')) {
     return functionOutline(declarator.id.name, declarator.init.params, extent);

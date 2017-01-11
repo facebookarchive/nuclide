@@ -8,7 +8,7 @@
  * @flow
  */
 
-import type {FlowOutlineTree} from '..';
+import type {OutlineTree} from '../../nuclide-outline-view/lib/rpc-types';
 
 import {Point} from 'simple-text-buffer';
 
@@ -27,7 +27,7 @@ import exportsAST34 from './fixtures/exports-ast-v0.34.json';
 import typesASTOld from './fixtures/types-ast-old.json';
 import typesAST34 from './fixtures/types-ast-v0.34.json';
 
-const expectedClassOutline: Array<FlowOutlineTree> = [
+const expectedClassOutline: Array<OutlineTree> = [
   {
     tokenizedText: [
       {value: 'export', kind: 'keyword'},
@@ -91,7 +91,7 @@ const expectedClassOutline: Array<FlowOutlineTree> = [
   },
 ];
 
-const expectedToplevelOutline: Array<FlowOutlineTree> = [
+const expectedToplevelOutline: Array<OutlineTree> = [
   {
     tokenizedText: [
       {value: 'function', kind: 'keyword'},
@@ -230,7 +230,7 @@ const expectedToplevelOutline: Array<FlowOutlineTree> = [
   },
 ];
 
-const expectedJasmineOutline: Array<FlowOutlineTree> = [
+const expectedJasmineOutline: Array<OutlineTree> = [
   {
     tokenizedText: [
       {value: 'describe', kind: 'method'},
@@ -279,7 +279,7 @@ const expectedJasmineOutline: Array<FlowOutlineTree> = [
   },
 ];
 
-const expectedExportsOutline: Array<FlowOutlineTree> = [
+const expectedExportsOutline: Array<OutlineTree> = [
   {
     tokenizedText: [
       {value: 'module.exports', kind: 'plain'},
@@ -393,7 +393,7 @@ const expectedExportsOutline: Array<FlowOutlineTree> = [
   },
 ];
 
-const expectedTypesOutline: Array<FlowOutlineTree> = [
+const expectedTypesOutline: Array<OutlineTree> = [
   {
     tokenizedText: [
       {value: 'type', kind: 'keyword'},
@@ -427,29 +427,29 @@ describe('astToOutline', () => {
 
   it('should provide a class outline', () => {
     // Old version
-    expect(astToOutline(classASTOld)).diffJson(expectedClassOutline);
+    expect(astToOutline(classASTOld).outlineTrees).diffJson(expectedClassOutline);
     // Newer, introduced AssignmentPattern for default function args (v0.33), made a bunch of other
     // changes (v0.34)
-    expect(astToOutline(classAST34)).diffJson(expectedClassOutline);
+    expect(astToOutline(classAST34).outlineTrees).diffJson(expectedClassOutline);
   });
 
   it('should provide an outline for miscellaneous top-level statements', () => {
-    expect(astToOutline(toplevelASTOld)).diffJson(expectedToplevelOutline);
-    expect(astToOutline(toplevelAST34)).diffJson(expectedToplevelOutline);
+    expect(astToOutline(toplevelASTOld).outlineTrees).diffJson(expectedToplevelOutline);
+    expect(astToOutline(toplevelAST34).outlineTrees).diffJson(expectedToplevelOutline);
   });
 
   it('should provide an outline for Jasmine specs', () => {
-    expect(astToOutline(jasmineASTOld)).diffJson(expectedJasmineOutline);
-    expect(astToOutline(jasmineAST34)).diffJson(expectedJasmineOutline);
+    expect(astToOutline(jasmineASTOld).outlineTrees).diffJson(expectedJasmineOutline);
+    expect(astToOutline(jasmineAST34).outlineTrees).diffJson(expectedJasmineOutline);
   });
 
   it('should provide an outline for module.exports', () => {
-    expect(astToOutline(exportsASTOld)).diffJson(expectedExportsOutline);
-    expect(astToOutline(exportsAST34)).diffJson(expectedExportsOutline);
+    expect(astToOutline(exportsASTOld).outlineTrees).diffJson(expectedExportsOutline);
+    expect(astToOutline(exportsAST34).outlineTrees).diffJson(expectedExportsOutline);
   });
 
   it('should provide an outline for type declarations', () => {
-    expect(astToOutline(typesASTOld)).diffJson(expectedTypesOutline);
-    expect(astToOutline(typesAST34)).diffJson(expectedTypesOutline);
+    expect(astToOutline(typesASTOld).outlineTrees).diffJson(expectedTypesOutline);
+    expect(astToOutline(typesAST34).outlineTrees).diffJson(expectedTypesOutline);
   });
 });

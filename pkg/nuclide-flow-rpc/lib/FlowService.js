@@ -11,7 +11,6 @@
 import type {ConnectableObservable} from 'rxjs';
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {TokenizedText} from '../../commons-node/tokenizedText-rpc-types';
 import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
 import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 
@@ -77,14 +76,6 @@ export type ServerStatusType =
 export type ServerStatusUpdate = {
   pathToRoot: NuclideUri,
   status: ServerStatusType,
-};
-
-export type FlowOutlineTree = {
-  tokenizedText: TokenizedText,
-  representativeName?: string,
-  children: Array<FlowOutlineTree>,
-  startPosition: atom$Point,
-  endPosition: atom$Point,
 };
 
 export type FlowCoverageResult = {
@@ -195,7 +186,7 @@ class FlowSingleFileLanguageService {
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
   ): Promise<?Outline> {
-    throw new Error('Not Yet Implemented');
+    return flowGetOutline(filePath, buffer.getText());
   }
 
   typeHint(
@@ -332,7 +323,7 @@ export async function flowGetCoverage(
 export function flowGetOutline(
   file: ?NuclideUri,
   currentContents: string,
-): Promise<?Array<FlowOutlineTree>> {
+): Promise<?Outline> {
   return getState().getRootContainer().runWithOptionalRoot(
     file,
     root => FlowRoot.flowGetOutline(root, currentContents, getState().getExecInfoContainer()),

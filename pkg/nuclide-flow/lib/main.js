@@ -13,7 +13,6 @@ import type {
   BusySignalProviderBase as BusySignalProviderBaseType,
 } from '../../nuclide-busy-signal';
 import type {CoverageProvider} from '../../nuclide-type-coverage/lib/types';
-import type {OutlineProvider} from '../../nuclide-outline-view';
 import type {NuclideEvaluationExpressionProvider} from '../../nuclide-debugger-interfaces/service';
 import typeof * as FlowService from '../../nuclide-flow-rpc';
 import type {ServerConnection} from '../../nuclide-remote-connection';
@@ -39,7 +38,6 @@ import FlowHyperclickProvider from './FlowHyperclickProvider';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {DedupedBusySignalProviderBase} from '../../nuclide-busy-signal';
 import FlowDiagnosticsProvider from './FlowDiagnosticsProvider';
-import {FlowOutlineProvider} from './FlowOutlineProvider';
 import {FlowTypeHintProvider} from './FlowTypeHintProvider';
 import {FlowEvaluationExpressionProvider} from './FlowEvaluationExpressionProvider';
 import {getCurrentServiceInstances, getFlowServiceByConnection} from './FlowServiceFactory';
@@ -55,6 +53,11 @@ const PACKAGE_NAME = 'nuclide-flow';
 const languageServiceConfig: AtomLanguageServiceConfig = {
   name: 'Flow',
   grammars: JS_GRAMMARS,
+  outlines: {
+    version: '0.0.0',
+    priority: 1,
+    analyticsEventName: 'flow.outline',
+  },
 };
 
 let busySignalProvider;
@@ -151,16 +154,6 @@ export function provideDiagnostics() {
     }));
   }
   return flowDiagnosticsProvider;
-}
-
-export function provideOutlines(): OutlineProvider {
-  const provider = new FlowOutlineProvider();
-  return {
-    grammarScopes: JS_GRAMMARS,
-    priority: 1,
-    name: 'Flow',
-    getOutline: provider.getOutline.bind(provider),
-  };
 }
 
 export function createTypeHintProvider(): Object {
