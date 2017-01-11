@@ -3,7 +3,6 @@
 /* ANSI Grammar */
 
 atom-text-editor {
-  &::shadow .ansi-escape-code,
   .ansi-escape-code {
   // Ideally we'd like to just set this to `display:none`. But, unfortunately, having a display:none
   // content in Atom's text editor messes with its internal size measurement logic.
@@ -17,27 +16,22 @@ atom-text-editor {
     color: rgba(0, 0, 0, 0);
   }
 
-  &::shadow .ansi.green,
   .ansi.green {
     color: rgb(103, 248, 111);
   }
 
-  &::shadow .ansi.purple,
   .ansi.purple {
     color: magenta;
   }
 
-  &::shadow .ansi.red,
   .ansi.red {
     color: rgb(205, 0, 0);
   }
 
-  &::shadow .ansi.yellow,
   .ansi.yellow {
     color: rgb(255, 250, 114);
   }
 
-  &::shadow .ansi.intensive,
   .ansi.intensive {
     font-weight: bold;
   }

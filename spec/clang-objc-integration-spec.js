@@ -109,7 +109,7 @@ describe('Clang Integration Test (objc)', () => {
     let names;
     waitsFor('outline view to load', 10000, () => {
       names = atom.views.getView(atom.workspace)
-        .querySelectorAll('.nuclide-outline-view-item .name');
+        .querySelectorAll('.nuclide-outline-view-item .syntax--name');
       return names.length > 0;
     });
 
@@ -124,14 +124,11 @@ describe('Clang Integration Test (objc)', () => {
       }
       expect(getData(names[0])).toEqual({
         name: 'Hello',
-        classes: ['class', 'entity', 'name', 'syntax--class', 'syntax--entity', 'syntax--name'],
+        classes: ['syntax--class', 'syntax--entity', 'syntax--name'],
       });
       expect(getData(names[1])).toEqual({
         name: 'say:',
         classes: [
-          'entity',
-          'function',
-          'name',
           'syntax--entity',
           'syntax--function',
           'syntax--name',
@@ -140,9 +137,6 @@ describe('Clang Integration Test (objc)', () => {
       expect(getData(names[names.length - 1])).toEqual({
         name: 'main',
         classes: [
-          'entity',
-          'function',
-          'name',
           'syntax--entity',
           'syntax--function',
           'syntax--name',

@@ -188,7 +188,7 @@
 
 @blendAmount: 10%;
 
-atom-text-editor, atom-text-editor::shadow {
+atom-text-editor {
 
   .diff-view-insert .region {
     @add-color-faded: fade(@add-color, @blendAmount);
@@ -275,7 +275,6 @@ atom-text-editor, atom-text-editor::shadow {
      *
      * Ref: https://atom.io/packages/block-cursor
      */
-     atom-text-editor::shadow .lines .line.cursor-line,
      atom-text-editor .lines .line.cursor-line {
        background-color: transparent;
      }
@@ -288,18 +287,15 @@ atom-text-editor, atom-text-editor::shadow {
   cursor: pointer;
   text-align: center;
 
-  &.syntax--added,
-  &.added {
+  &.syntax--added {
     background-color: @background-color-success;
   }
 
-  &.syntax--added,
-  &.removed {
+  &.syntax--removed {
     background-color: @background-color-error;
   }
 
-  &.syntax--added,
-  &.modified {
+  &.syntax--modified {
     background-color: @background-color-warning;
   }
 

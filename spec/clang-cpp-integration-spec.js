@@ -116,7 +116,7 @@ describeRemotableTest('Clang Integration Test (C++)', context => {
     let names;
     waitsFor('outline view to load', 10000, () => {
       names = atom.views.getView(atom.workspace)
-        .querySelectorAll('.nuclide-outline-view-item .name');
+        .querySelectorAll('.nuclide-outline-view-item .syntax--name');
       return names.length > 0;
     });
 
@@ -126,18 +126,15 @@ describeRemotableTest('Clang Integration Test (C++)', context => {
       expect(names.length).toBe(4);
       expect(getOutlineData(names[0])).toEqual({
         name: 'TestClass<T>',
-        classes: ['class', 'entity', 'name', 'syntax--class', 'syntax--entity', 'syntax--name'],
+        classes: ['syntax--class', 'syntax--entity', 'syntax--name'],
       });
       expect(getOutlineData(names[1])).toEqual({
         name: 'member',
-        classes: ['class', 'entity', 'name', 'syntax--class', 'syntax--entity', 'syntax--name'],
+        classes: ['syntax--class', 'syntax--entity', 'syntax--name'],
       });
       expect(getOutlineData(names[2])).toEqual({
         name: 'method',
         classes: [
-          'entity',
-          'function',
-          'name',
           'syntax--entity',
           'syntax--function',
           'syntax--name',
@@ -146,9 +143,6 @@ describeRemotableTest('Clang Integration Test (C++)', context => {
       expect(getOutlineData(names[3])).toEqual({
         name: 'main',
         classes: [
-          'entity',
-          'function',
-          'name',
           'syntax--entity',
           'syntax--function',
           'syntax--name',

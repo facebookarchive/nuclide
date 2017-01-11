@@ -8,20 +8,15 @@
  * @flow
  */
 
-import classnames from 'classnames';
-
-// TODO remove this once Atom 1.13 is the de-factor Atom version
-function addSyntaxVariants(classNames: string): string {
-  return classnames(classNames, ...classNames.split(' ').map(name => `syntax--${name}`));
-}
-
 // A very basic heuristic for coloring the values.
+/* eslint-disable key-spacing */
 export const ValueComponentClassNames = {
-  string: addSyntaxVariants('string quoted double'),
-  stringOpeningQuote: addSyntaxVariants('punctuation definition string begin'),
-  stringClosingQuote: addSyntaxVariants('punctuation definition string end'),
-  number: addSyntaxVariants('constant numeric'),
-  nullish: addSyntaxVariants('constant language null'),
-  identifier: addSyntaxVariants('variable'),
-  boolean: addSyntaxVariants('constant language boolean'),
+  boolean:            'syntax--constant syntax--language syntax--boolean',
+  identifier:         'syntax--variable',
+  nullish:            'syntax--constant syntax--language syntax--null',
+  number:             'syntax--constant syntax--numeric',
+  string:             'syntax--string syntax--quoted syntax--double',
+  stringClosingQuote: 'syntax--punctuation syntax--definition syntax--string syntax--end',
+  stringOpeningQuote: 'syntax--punctuation syntax--definition syntax--string syntax--begin',
 };
+/* eslint-enable key-spacing */
