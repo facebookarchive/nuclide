@@ -12,10 +12,6 @@ import type DebuggerModel from './DebuggerModel';
 import type {
   WatchExpressionListStore,
 } from './WatchExpressionListStore';
-import type {
-  ControlButtonSpecification,
-  DebuggerModeType,
-} from './types';
 
 import {CompositeDisposable} from 'atom';
 import {
@@ -38,13 +34,7 @@ type Props = {
 export class NewDebuggerView extends React.Component {
   props: Props;
   state: {
-    allowSingleThreadStepping: boolean,
-    togglePauseOnException: boolean,
-    togglePauseOnCaughtException: boolean,
-    enableSingleThreadStepping: boolean,
-    debuggerMode: DebuggerModeType,
     showThreadsWindow: boolean,
-    customControlButtons: Array<ControlButtonSpecification>,
   };
   _watchExpressionComponentWrapped: ReactClass<any>;
   _scopesComponentWrapped: ReactClass<any>;
@@ -67,13 +57,7 @@ export class NewDebuggerView extends React.Component {
     this._disposables = new CompositeDisposable();
     const debuggerStore = props.model.getStore();
     this.state = {
-      allowSingleThreadStepping: Boolean(debuggerStore.getSettings().get('SingleThreadStepping')),
-      debuggerMode: debuggerStore.getDebuggerMode(),
-      togglePauseOnException: debuggerStore.getTogglePauseOnException(),
-      togglePauseOnCaughtException: debuggerStore.getTogglePauseOnCaughtException(),
-      enableSingleThreadStepping: debuggerStore.getEnableSingleThreadStepping(),
       showThreadsWindow: Boolean(debuggerStore.getSettings().get('SupportThreadsWindow')),
-      customControlButtons: debuggerStore.getCustomControlButtons(),
     };
   }
 
@@ -82,17 +66,7 @@ export class NewDebuggerView extends React.Component {
     this._disposables.add(
       debuggerStore.onChange(() => {
         this.setState({
-          // We need to refetch some values that we already got in the constructor
-          // since these values weren't necessarily properly intialized until now.
-          allowSingleThreadStepping: Boolean(debuggerStore.getSettings()
-            .get('SingleThreadStepping')),
-          debuggerMode: debuggerStore.getDebuggerMode(),
-          togglePauseOnException: debuggerStore.getTogglePauseOnException(),
-          togglePauseOnCaughtException: debuggerStore.getTogglePauseOnCaughtException(),
-          enableSingleThreadStepping: debuggerStore.getEnableSingleThreadStepping(),
-          showThreadsWindow: Boolean(debuggerStore.getSettings()
-            .get('SupportThreadsWindow')),
-          customControlButtons: debuggerStore.getCustomControlButtons(),
+          showThreadsWindow: Boolean(debuggerStore.getSettings().get('SupportThreadsWindow')),
         });
       }),
     );
@@ -127,12 +101,7 @@ export class NewDebuggerView extends React.Component {
           <div className="nuclide-debugger-section-content">
             <DebuggerSteppingComponent
               actions={actions}
-              debuggerMode={this.state.debuggerMode}
-              pauseOnException={this.state.togglePauseOnException}
-              pauseOnCaughtException={this.state.togglePauseOnCaughtException}
-              allowSingleThreadStepping={this.state.allowSingleThreadStepping}
-              singleThreadStepping={this.state.enableSingleThreadStepping}
-              customControlButtons={this.state.customControlButtons}
+              debuggerStore={model.getStore()}
             />
           </div>
         </Section>

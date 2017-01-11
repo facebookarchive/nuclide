@@ -10,6 +10,7 @@
 
 import type DebuggerActions from './DebuggerActions';
 import type {ControlButtonSpecification, DebuggerModeType} from './types';
+import type {DebuggerStore} from './DebuggerStore';
 
 import {
   React,
@@ -19,14 +20,19 @@ import {ButtonGroup} from '../../nuclide-ui/ButtonGroup';
 import {Checkbox} from '../../nuclide-ui/Checkbox';
 import ChromeActionRegistryActions from './ChromeActionRegistryActions';
 import {DebuggerMode} from './DebuggerStore';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 
 type DebuggerSteppingComponentProps = {
   actions: DebuggerActions,
+  debuggerStore: DebuggerStore,
+};
+
+type DebuggerSteppingComponentState = {
+  allowSingleThreadStepping: boolean,
   debuggerMode: DebuggerModeType,
   pauseOnException: boolean,
   pauseOnCaughtException: boolean,
-  allowSingleThreadStepping: boolean,
-  singleThreadStepping: boolean,
+  enableSingleThreadStepping: boolean,
   customControlButtons: Array<ControlButtonSpecification>,
 };
 
@@ -80,21 +86,54 @@ function SVGButton(props: {
 
 export class DebuggerSteppingComponent extends React.Component {
   props: DebuggerSteppingComponentProps;
+  state: DebuggerSteppingComponentState;
+  _disposables: UniversalDisposable;
 
   constructor(props: DebuggerSteppingComponentProps) {
     super(props);
+    this._disposables = new UniversalDisposable();
+    const {debuggerStore} = props;
+    this.state = {
+      allowSingleThreadStepping: Boolean(debuggerStore.getSettings().get('SingleThreadStepping')),
+      debuggerMode: debuggerStore.getDebuggerMode(),
+      pauseOnException: debuggerStore.getTogglePauseOnException(),
+      pauseOnCaughtException: debuggerStore.getTogglePauseOnCaughtException(),
+      enableSingleThreadStepping: debuggerStore.getEnableSingleThreadStepping(),
+      customControlButtons: debuggerStore.getCustomControlButtons(),
+    };
+  }
+
+  componentDidMount(): void {
+    const {debuggerStore} = this.props;
+    this._disposables.add(
+      debuggerStore.onChange(() => {
+        this.setState({
+          allowSingleThreadStepping: Boolean(debuggerStore.getSettings()
+            .get('SingleThreadStepping')),
+          debuggerMode: debuggerStore.getDebuggerMode(),
+          pauseOnException: debuggerStore.getTogglePauseOnException(),
+          pauseOnCaughtException: debuggerStore.getTogglePauseOnCaughtException(),
+          enableSingleThreadStepping: debuggerStore.getEnableSingleThreadStepping(),
+          customControlButtons: debuggerStore.getCustomControlButtons(),
+        });
+      }),
+    );
+  }
+
+  componentWillUnmount(): void {
+    this._disposables.dispose();
   }
 
   render(): ?React.Element<any> {
     const {
-      actions,
       debuggerMode,
       pauseOnException,
       pauseOnCaughtException,
       allowSingleThreadStepping,
-      singleThreadStepping,
+      enableSingleThreadStepping,
       customControlButtons,
-    } = this.props;
+    } = this.state;
+    const {actions} = this.props;
     const isPaused = debuggerMode === DebuggerMode.PAUSED;
     return (
       <div className="nuclide-debugger-stepping-component">
@@ -197,8 +236,8 @@ export class DebuggerSteppingComponent extends React.Component {
         {allowSingleThreadStepping ?
           <Checkbox
             className="nuclide-debugger-exception-checkbox"
-            onChange={() => actions.toggleSingleThreadStepping(!singleThreadStepping)}
-            checked={singleThreadStepping}
+            onChange={() => actions.toggleSingleThreadStepping(!enableSingleThreadStepping)}
+            checked={enableSingleThreadStepping}
             label={'Single Thread Stepping'}
           />
           : null
