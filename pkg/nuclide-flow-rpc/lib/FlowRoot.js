@@ -20,7 +20,6 @@ import type {
 } from '..';
 
 import {Point} from 'simple-text-buffer';
-import semver from 'semver';
 
 import {getLogger} from '../../nuclide-logging';
 const logger = getLogger();
@@ -247,53 +246,6 @@ export class FlowRoot {
   }
 
   async flowGetCoverage(path: NuclideUri): Promise<?FlowCoverageResult> {
-    // The coverage command doesn't actually have the required information until Flow v0.28. For
-    // earlier versions, we have to fall back on dump-types, which is slower especially in
-    // pathological cases. We can remove this entirely when we want to stop supporting versions
-    // earlier than v0.28.
-
-    const version = await this._version.getVersion();
-    // Fall back to dump types if we don't know the version
-    const useDumpTypes = version == null || semver.lte(version, '0.27.0');
-    return useDumpTypes ?
-      await this._getCoverageViaDumpTypes(path) :
-      await this._getCoverageViaCoverage(path);
-  }
-
-  async _getCoverageViaDumpTypes(path: NuclideUri): Promise<?FlowCoverageResult> {
-    const args = ['dump-types', '--json', path];
-    let result;
-    try {
-      result = await this._process.execFlow(args, {});
-    } catch (e) {
-      return null;
-    }
-    if (result == null) {
-      return null;
-    }
-    let json;
-    try {
-      json = parseJSON(args, result.stdout);
-    } catch (e) {
-      // The error is already logged in parseJSON
-      return null;
-    }
-
-    const allEntries = json;
-
-    const uncoveredEntries = allEntries.filter(item => item.type === '' || item.type === 'any');
-    const uncoveredRanges = uncoveredEntries.map(item => flowCoordsToAtomCoords(item.loc));
-
-    const uncoveredCount = uncoveredEntries.length;
-    const totalCount = allEntries.length;
-    const coveredCount = totalCount - uncoveredCount;
-    return {
-      percentage: totalCount === 0 ? 100 : coveredCount / totalCount * 100,
-      uncoveredRanges,
-    };
-  }
-
-  async _getCoverageViaCoverage(path: NuclideUri): Promise<?FlowCoverageResult> {
     const args = ['coverage', '--json', path];
     let result;
     try {
