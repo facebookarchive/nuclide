@@ -10,6 +10,8 @@
 
 import type {FlowLocNoSource} from './flowOutputTypes';
 
+import {Range} from 'simple-text-buffer';
+
 export function getStopFlowOnExit(): boolean {
   // $UPFixMe: This should use nuclide-features-config
   // Does not currently do so because this is an npm module that may run on the server.
@@ -19,16 +21,16 @@ export function getStopFlowOnExit(): boolean {
   return true;
 }
 
-export function flowCoordsToAtomCoords(flowCoords: FlowLocNoSource): FlowLocNoSource {
-  return {
-    start: {
-      line: flowCoords.start.line - 1,
-      column: flowCoords.start.column - 1,
-    },
-    end: {
-      line: flowCoords.end.line - 1,
+export function flowCoordsToAtomCoords(flowCoords: FlowLocNoSource): atom$Range {
+  return new Range(
+    [
+      flowCoords.start.line - 1,
+      flowCoords.start.column - 1,
+    ],
+    [
+      flowCoords.end.line - 1,
       // Yes, this is inconsistent. Yes, it works as expected in practice.
-      column: flowCoords.end.column,
-    },
-  };
+      flowCoords.end.column,
+    ],
+  );
 }

@@ -78,14 +78,6 @@ export type ServerStatusUpdate = {
   status: ServerStatusType,
 };
 
-export type FlowCoverageResult = {
-  percentage: number,
-  uncoveredRanges: Array<{
-    start: atom$Point,
-    end: atom$Point,
-  }>,
-};
-
 export type FlowAutocompleteItem = {
   name: string,
   type: string,
@@ -179,7 +171,7 @@ class FlowSingleFileLanguageService {
   getCoverage(
     filePath: NuclideUri,
   ): Promise<?CoverageResult> {
-    throw new Error('Not Yet Implemented');
+    return flowGetCoverage(filePath);
   }
 
   getOutline(
@@ -313,7 +305,7 @@ export async function flowGetType(
 
 export async function flowGetCoverage(
   file: NuclideUri,
-): Promise<?FlowCoverageResult> {
+): Promise<?CoverageResult> {
   return getState().getRootContainer().runWithRoot(
     file,
     root => root.flowGetCoverage(file),

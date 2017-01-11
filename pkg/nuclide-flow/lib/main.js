@@ -12,7 +12,6 @@ import type {HyperclickProvider} from '../../hyperclick/lib/types';
 import type {
   BusySignalProviderBase as BusySignalProviderBaseType,
 } from '../../nuclide-busy-signal';
-import type {CoverageProvider} from '../../nuclide-type-coverage/lib/types';
 import type {NuclideEvaluationExpressionProvider} from '../../nuclide-debugger-interfaces/service';
 import typeof * as FlowService from '../../nuclide-flow-rpc';
 import type {ServerConnection} from '../../nuclide-remote-connection';
@@ -42,8 +41,6 @@ import {FlowTypeHintProvider} from './FlowTypeHintProvider';
 import {FlowEvaluationExpressionProvider} from './FlowEvaluationExpressionProvider';
 import {getCurrentServiceInstances, getFlowServiceByConnection} from './FlowServiceFactory';
 
-import {getCoverage} from './FlowCoverageProvider';
-
 import {JS_GRAMMARS, JAVASCRIPT_WORD_REGEX} from './constants';
 const GRAMMARS_STRING = JS_GRAMMARS.join(', ');
 const diagnosticsOnFlySetting = 'nuclide-flow.diagnosticsOnFly';
@@ -57,6 +54,11 @@ const languageServiceConfig: AtomLanguageServiceConfig = {
     version: '0.0.0',
     priority: 1,
     analyticsEventName: 'flow.outline',
+  },
+  coverage: {
+    version: '0.0.0',
+    priority: 10,
+    analyticsEventName: 'flow.coverage',
   },
 };
 
@@ -164,17 +166,6 @@ export function createTypeHintProvider(): Object {
     providerName: PACKAGE_NAME,
     inclusionPriority: 1,
     typeHint,
-  };
-}
-
-export function createCoverageProvider(): CoverageProvider {
-  return {
-    displayName: 'Flow',
-    priority: 10,
-    grammarScopes: JS_GRAMMARS,
-    getCoverage(path) {
-      return getCoverage(path);
-    },
   };
 }
 

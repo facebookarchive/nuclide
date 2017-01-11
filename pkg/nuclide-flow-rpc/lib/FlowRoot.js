@@ -12,8 +12,9 @@ import type {Observable} from 'rxjs';
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
+import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
 
-import type {ServerStatusType, FlowCoverageResult, FlowAutocompleteItem} from '..';
+import type {ServerStatusType, FlowAutocompleteItem} from '..';
 import type {FlowExecInfoContainer} from './FlowExecInfoContainer';
 
 import type {
@@ -247,7 +248,7 @@ export class FlowRoot {
     return {type, rawType};
   }
 
-  async flowGetCoverage(path: NuclideUri): Promise<?FlowCoverageResult> {
+  async flowGetCoverage(path: NuclideUri): Promise<?CoverageResult> {
     const args = ['coverage', '--json', path];
     let result;
     try {
@@ -272,11 +273,13 @@ export class FlowRoot {
     const coveredCount = expressions.covered_count;
     const totalCount = uncoveredCount + coveredCount;
 
-    const uncoveredRanges = expressions.uncovered_locs.map(flowCoordsToAtomCoords);
+    const uncoveredRegions = expressions.uncovered_locs
+      .map(flowCoordsToAtomCoords)
+      .map(range => ({range}));
 
     return {
       percentage: totalCount === 0 ? 100 : coveredCount / totalCount * 100,
-      uncoveredRanges,
+      uncoveredRegions,
     };
   }
 
