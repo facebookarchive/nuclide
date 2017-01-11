@@ -1,3 +1,17 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.filterEmptyResults = filterEmptyResults;
+exports.flattenResults = flattenResults;
+
+var _collection;
+
+function _load_collection() {
+  return _collection = require('../../commons-node/collection');
+}
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,31 +19,10 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {FileResult} from './types';
-
-export type ProviderResult = {
-  error: ?Object,
-  loading: boolean,
-  results: Array<FileResult>,
-};
-
-export type GroupedResult = {
-  priority: number,
-  results: {[key: NuclideUri]: ProviderResult},
-  title: string,
-};
-
-export type GroupedResults = {
-  [key: string]: GroupedResult,
-};
-
-import {isEmpty} from '../../commons-node/collection';
-
-export function filterEmptyResults(resultsGroupedByService: GroupedResults): GroupedResults {
+function filterEmptyResults(resultsGroupedByService) {
   const filteredTree = {};
 
   for (const serviceName in resultsGroupedByService) {
@@ -40,14 +33,14 @@ export function filterEmptyResults(resultsGroupedByService: GroupedResults): Gro
         nonEmptyDirectories[dirName] = directories[dirName];
       }
     }
-    if (!isEmpty(nonEmptyDirectories)) {
-      filteredTree[serviceName] = {results: nonEmptyDirectories};
+    if (!(0, (_collection || _load_collection()).isEmpty)(nonEmptyDirectories)) {
+      filteredTree[serviceName] = { results: nonEmptyDirectories };
     }
   }
   return filteredTree;
 }
 
-export function flattenResults(resultsGroupedByService: GroupedResults): Array<FileResult> {
+function flattenResults(resultsGroupedByService) {
   const items = [];
   for (const serviceName in resultsGroupedByService) {
     for (const dirName in resultsGroupedByService[serviceName].results) {

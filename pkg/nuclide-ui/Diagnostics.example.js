@@ -1,152 +1,162 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import type {
-  FileDiagnosticMessage,
-} from '../nuclide-diagnostics-common/lib/rpc-types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DiagnosticsExamples = undefined;
 
-import {
-  Range,
-} from 'atom';
-import {React} from 'react-for-atom';
-import {Block} from './Block';
-import {DiagnosticsMessage} from './DiagnosticsMessage';
+var _atom = require('atom');
 
-const GOTOLOCATION = (path: string, line: number) => {
-  atom.notifications.addInfo(`Let's pretend I opened "${path}" at line ${line}.`);
-};
+var _reactForAtom = require('react-for-atom');
+
+var _Block;
+
+function _load_Block() {
+  return _Block = require('./Block');
+}
+
+var _DiagnosticsMessage;
+
+function _load_DiagnosticsMessage() {
+  return _DiagnosticsMessage = require('./DiagnosticsMessage');
+}
+
+const GOTOLOCATION = (path, line) => {
+  atom.notifications.addInfo(`Let's pretend I opened "${ path }" at line ${ line }.`);
+}; /**
+    * Copyright (c) 2015-present, Facebook, Inc.
+    * All rights reserved.
+    *
+    * This source code is licensed under the license found in the LICENSE file in
+    * the root directory of this source tree.
+    *
+    * 
+    */
+
 const FIXER = () => {
   atom.notifications.addInfo('TADA! Fixed.');
 };
 
-const messageWarning: FileDiagnosticMessage = {
+const messageWarning = {
   scope: 'file',
   providerName: 'CoolLinter',
   type: 'Warning',
   filePath: 'path/to/some/file.js',
-  text: 'A word of warning: Something might be broken here.',
+  text: 'A word of warning: Something might be broken here.'
 };
 
-const messageError: FileDiagnosticMessage = {
+const messageError = {
   scope: 'file',
   providerName: 'CoolLinter',
   type: 'Error',
   filePath: 'path/to/some/file.js',
-  text: 'Error! Something is definitely broken here.',
+  text: 'Error! Something is definitely broken here.'
 };
 
-const messageFixable: FileDiagnosticMessage = {
+const messageFixable = {
   scope: 'file',
   providerName: 'CoolLinter',
   type: 'Warning',
   filePath: 'path/to/some/file.js',
   text: 'Something looks broken here, but it can be fixed automatically via the "fix" button.',
   fix: {
-    oldRange: new Range([1, 1], [1, 6]),
-    newText: 'fixed',
-  },
+    oldRange: new _atom.Range([1, 1], [1, 6]),
+    newText: 'fixed'
+  }
 };
 
-const messageWithTrace: FileDiagnosticMessage = {
+const messageWithTrace = {
   scope: 'file',
   providerName: 'CoolLinter',
   type: 'Warning',
   filePath: 'path/to/some/file.js',
   text: 'Something is broken here.',
-  trace: [
-    {
-      type: 'Trace',
-      text: 'A diagnostics message can contain multiple trace lines',
-      filePath: 'path/to/random/file.js',
-      range: new Range([1, 1], [1, 6]),
-    },
-    {
-      type: 'Trace',
-      text: 'Trace lines can have paths and ranges, too.',
-      filePath: 'path/to/another/file.js',
-      range: new Range([2, 1], [2, 6]),
-    },
-    {
-      type: 'Trace',
-      text: 'Paths and ranges are optional.',
-    },
-  ],
+  trace: [{
+    type: 'Trace',
+    text: 'A diagnostics message can contain multiple trace lines',
+    filePath: 'path/to/random/file.js',
+    range: new _atom.Range([1, 1], [1, 6])
+  }, {
+    type: 'Trace',
+    text: 'Trace lines can have paths and ranges, too.',
+    filePath: 'path/to/another/file.js',
+    range: new _atom.Range([2, 1], [2, 6])
+  }, {
+    type: 'Trace',
+    text: 'Paths and ranges are optional.'
+  }]
 };
 
-const DiagnosticMessageWarningExample = (): React.Element<any> => (
-  <div>
-    <Block>
-      <DiagnosticsMessage
-        message={messageWarning}
-        goToLocation={GOTOLOCATION}
-        fixer={FIXER}
-      />
-    </Block>
-  </div>
+const DiagnosticMessageWarningExample = () => _reactForAtom.React.createElement(
+  'div',
+  null,
+  _reactForAtom.React.createElement(
+    (_Block || _load_Block()).Block,
+    null,
+    _reactForAtom.React.createElement((_DiagnosticsMessage || _load_DiagnosticsMessage()).DiagnosticsMessage, {
+      message: messageWarning,
+      goToLocation: GOTOLOCATION,
+      fixer: FIXER
+    })
+  )
 );
 
-const DiagnosticMessageErrorExample = (): React.Element<any> => (
-  <div>
-    <Block>
-      <DiagnosticsMessage
-        message={messageError}
-        goToLocation={GOTOLOCATION}
-        fixer={FIXER}
-      />
-    </Block>
-  </div>
+const DiagnosticMessageErrorExample = () => _reactForAtom.React.createElement(
+  'div',
+  null,
+  _reactForAtom.React.createElement(
+    (_Block || _load_Block()).Block,
+    null,
+    _reactForAtom.React.createElement((_DiagnosticsMessage || _load_DiagnosticsMessage()).DiagnosticsMessage, {
+      message: messageError,
+      goToLocation: GOTOLOCATION,
+      fixer: FIXER
+    })
+  )
 );
 
-const DiagnosticMessageFixableExample = (): React.Element<any> => (
-  <div>
-    <Block>
-      <DiagnosticsMessage
-        message={messageFixable}
-        goToLocation={GOTOLOCATION}
-        fixer={FIXER}
-      />
-    </Block>
-  </div>
+const DiagnosticMessageFixableExample = () => _reactForAtom.React.createElement(
+  'div',
+  null,
+  _reactForAtom.React.createElement(
+    (_Block || _load_Block()).Block,
+    null,
+    _reactForAtom.React.createElement((_DiagnosticsMessage || _load_DiagnosticsMessage()).DiagnosticsMessage, {
+      message: messageFixable,
+      goToLocation: GOTOLOCATION,
+      fixer: FIXER
+    })
+  )
 );
 
-const DiagnosticMessageTraceExample = (): React.Element<any> => (
-  <div>
-    <Block>
-      <DiagnosticsMessage
-        message={messageWithTrace}
-        goToLocation={GOTOLOCATION}
-        fixer={FIXER}
-      />
-    </Block>
-  </div>
+const DiagnosticMessageTraceExample = () => _reactForAtom.React.createElement(
+  'div',
+  null,
+  _reactForAtom.React.createElement(
+    (_Block || _load_Block()).Block,
+    null,
+    _reactForAtom.React.createElement((_DiagnosticsMessage || _load_DiagnosticsMessage()).DiagnosticsMessage, {
+      message: messageWithTrace,
+      goToLocation: GOTOLOCATION,
+      fixer: FIXER
+    })
+  )
 );
 
-export const DiagnosticsExamples = {
+const DiagnosticsExamples = exports.DiagnosticsExamples = {
   sectionName: 'DiagnosticsMessage',
   description: 'Display warnings & error messages',
-  examples: [
-    {
-      title: 'Warning',
-      component: DiagnosticMessageWarningExample,
-    },
-    {
-      title: 'Error',
-      component: DiagnosticMessageErrorExample,
-    },
-    {
-      title: 'Fixable warning:',
-      component: DiagnosticMessageFixableExample,
-    },
-    {
-      title: 'Warning with traces',
-      component: DiagnosticMessageTraceExample,
-    },
-  ],
+  examples: [{
+    title: 'Warning',
+    component: DiagnosticMessageWarningExample
+  }, {
+    title: 'Error',
+    component: DiagnosticMessageErrorExample
+  }, {
+    title: 'Fixable warning:',
+    component: DiagnosticMessageFixableExample
+  }, {
+    title: 'Warning with traces',
+    component: DiagnosticMessageTraceExample
+  }]
 };

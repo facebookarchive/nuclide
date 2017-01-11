@@ -1,29 +1,22 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-type AnyTeardown = (() => mixed) | rxjs$ISubscription | IDisposable;
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
 
 /**
  * Like a CompositeDisposable, but in addition to Disposable instances it can
  * also accept plain functions and Rx subscriptions.
  */
-export default class UniversalDisposable {
-  _tearDowns: Set<AnyTeardown>;
-  wasDisposed: boolean;
+class UniversalDisposable {
 
-  constructor(...tearDowns: Array<AnyTeardown>) {
+  constructor(...tearDowns) {
     this._tearDowns = new Set(tearDowns);
     this.wasDisposed = false;
   }
 
-  add(...tearDowns: Array<AnyTeardown>): void {
+  add(...tearDowns) {
     if (this.wasDisposed) {
       throw new Error('Cannot add to an already disposed UniversalDisposable!');
     }
@@ -31,7 +24,7 @@ export default class UniversalDisposable {
     tearDowns.forEach(td => this._tearDowns.add(td));
   }
 
-  remove(...tearDowns: Array<AnyTeardown>): void {
+  remove(...tearDowns) {
     if (this.wasDisposed) {
       return;
     }
@@ -39,7 +32,7 @@ export default class UniversalDisposable {
     tearDowns.forEach(td => this._tearDowns.delete(td));
   }
 
-  dispose(): void {
+  dispose() {
     if (this.wasDisposed) {
       return;
     }
@@ -57,11 +50,11 @@ export default class UniversalDisposable {
     this.wasDisposed = true;
   }
 
-  unsubscribe(): void {
+  unsubscribe() {
     this.dispose();
   }
 
-  clear(): void {
+  clear() {
     if (this.wasDisposed) {
       return;
     }
@@ -69,3 +62,14 @@ export default class UniversalDisposable {
     this._tearDowns.clear();
   }
 }
+exports.default = UniversalDisposable; /**
+                                        * Copyright (c) 2015-present, Facebook, Inc.
+                                        * All rights reserved.
+                                        *
+                                        * This source code is licensed under the license found in the LICENSE file in
+                                        * the root directory of this source tree.
+                                        *
+                                        * 
+                                        */
+
+module.exports = exports['default'];

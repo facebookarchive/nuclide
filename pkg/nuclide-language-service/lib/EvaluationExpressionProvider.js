@@ -1,73 +1,65 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
-import type {LanguageService} from './LanguageService';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.EvaluationExpressionProvider = undefined;
 
-import {trackTiming} from '../../nuclide-analytics';
-import {ConnectionCache} from '../../nuclide-remote-connection';
-import {getFileVersionOfEditor} from '../../nuclide-open-files';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-export type EvaluationExpressionConfig = {
-  version: '0.0.0',
-  analyticsEventName: string,
-};
+var _nuclideAnalytics;
 
-export class EvaluationExpressionProvider<T: LanguageService> {
-  selector: string;
-  name: string;
-  _analyticsEventName: string;
-  _connectionToLanguageService: ConnectionCache<T>;
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
 
-  constructor(
-    name: string,
-    selector: string,
-    analyticsEventName: string,
-    connectionToLanguageService: ConnectionCache<T>,
-  ) {
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+var _nuclideOpenFiles;
+
+function _load_nuclideOpenFiles() {
+  return _nuclideOpenFiles = require('../../nuclide-open-files');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class EvaluationExpressionProvider {
+
+  constructor(name, selector, analyticsEventName, connectionToLanguageService) {
     this.name = name;
     this.selector = selector;
     this._analyticsEventName = analyticsEventName;
     this._connectionToLanguageService = connectionToLanguageService;
   }
 
-  static register(
-    name: string,
-    selector: string,
-    config: EvaluationExpressionConfig,
-    connectionToLanguageService: ConnectionCache<T>,
-  ): IDisposable {
-    return atom.packages.serviceHub.provide(
-      'nuclide-evaluation-expression.provider',
-      config.version,
-      new EvaluationExpressionProvider(
-        name,
-        selector,
-        config.analyticsEventName,
-        connectionToLanguageService,
-      ));
+  static register(name, selector, config, connectionToLanguageService) {
+    return atom.packages.serviceHub.provide('nuclide-evaluation-expression.provider', config.version, new EvaluationExpressionProvider(name, selector, config.analyticsEventName, connectionToLanguageService));
   }
 
-  getEvaluationExpression(
-    editor: atom$TextEditor,
-    position: atom$Point,
-  ): Promise<?NuclideEvaluationExpression> {
-    return trackTiming(this._analyticsEventName, async () => {
-      const fileVersion = await getFileVersionOfEditor(editor);
-      const languageService = this._connectionToLanguageService.getForUri(editor.getPath());
+  getEvaluationExpression(editor, position) {
+    var _this = this;
+
+    return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackTiming)(this._analyticsEventName, (0, _asyncToGenerator.default)(function* () {
+      const fileVersion = yield (0, (_nuclideOpenFiles || _load_nuclideOpenFiles()).getFileVersionOfEditor)(editor);
+      const languageService = _this._connectionToLanguageService.getForUri(editor.getPath());
       if (languageService == null || fileVersion == null) {
         return null;
       }
 
-      return (await languageService).getEvaluationExpression(
-        fileVersion, position);
-    });
+      return (yield languageService).getEvaluationExpression(fileVersion, position);
+    }));
   }
 }
+exports.EvaluationExpressionProvider = EvaluationExpressionProvider; /**
+                                                                      * Copyright (c) 2015-present, Facebook, Inc.
+                                                                      * All rights reserved.
+                                                                      *
+                                                                      * This source code is licensed under the license found in the LICENSE file in
+                                                                      * the root directory of this source tree.
+                                                                      *
+                                                                      * 
+                                                                      */
