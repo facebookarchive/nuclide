@@ -31,7 +31,7 @@ type Props = {
   watchExpressionListStore: WatchExpressionListStore,
 };
 
-export class NewDebuggerView extends React.Component {
+export class NewDebuggerView extends React.PureComponent {
   props: Props;
   state: {
     showThreadsWindow: boolean,
