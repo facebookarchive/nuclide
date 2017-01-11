@@ -19,12 +19,12 @@ import {ConnectionCache} from '../../nuclide-remote-connection';
 import {trackTiming} from '../../nuclide-analytics';
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
 
-export type DefinitionConfig = {
+export type DefinitionConfig = {|
   version: '0.0.0',
   priority: number,
   definitionEventName: string,
   definitionByIdEventName: string,
-};
+|};
 
 export class DefinitionProvider<T: LanguageService> {
   name: string;

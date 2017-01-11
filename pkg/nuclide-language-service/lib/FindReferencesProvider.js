@@ -16,10 +16,10 @@ import {trackTiming} from '../../nuclide-analytics';
 import loadingNotification from '../../commons-atom/loading-notification';
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
 
-export type FindReferencesConfig = {
+export type FindReferencesConfig = {|
   version: '0.0.0',
   analyticsEventName: string,
-};
+|};
 
 export class FindReferencesProvider<T: LanguageService> {
   grammarScopes: Array<string>;

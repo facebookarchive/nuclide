@@ -15,11 +15,11 @@ import {ConnectionCache} from '../../nuclide-remote-connection';
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
 import {trackTiming} from '../../nuclide-analytics';
 
-export type TypeHintConfig = {
+export type TypeHintConfig = {|
   version: '0.0.0',
   priority: number,
   analyticsEventName: string,
-};
+|};
 
 export class TypeHintProvider<T: LanguageService> {
   providerName: string;

@@ -14,14 +14,14 @@ import {ConnectionCache} from '../../nuclide-remote-connection';
 import {trackTiming} from '../../nuclide-analytics';
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
 
-export type AutocompleteConfig = {
+export type AutocompleteConfig = {|
   inclusionPriority: number,
   suggestionPriority: number,
   disableForSelector: ?string,
   excludeLowerPriority: boolean,
   version: '2.0.0',
   analyticsEventName: string,
-};
+|};
 
 export class AutocompleteProvider<T: LanguageService> {
   name: string;

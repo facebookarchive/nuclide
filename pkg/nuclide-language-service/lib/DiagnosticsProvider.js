@@ -38,16 +38,16 @@ import {ensureInvalidations} from '../../nuclide-language-service-rpc';
 
 export type DiagnosticsConfig = FileDiagnosticsConfig | ObservableDiagnosticsConfig;
 
-export type FileDiagnosticsConfig = {
+export type FileDiagnosticsConfig = {|
   version: '0.1.0',
   shouldRunOnTheFly: boolean,
   analyticsEventName: string,
-};
+|};
 
-export type ObservableDiagnosticsConfig = {
+export type ObservableDiagnosticsConfig = {|
   version: '0.2.0',
   analyticsEventName: string,
-};
+|};
 
 const diagnosticService = 'nuclide-diagnostics-provider';
 

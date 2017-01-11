@@ -15,12 +15,12 @@ import {ConnectionCache} from '../../nuclide-remote-connection';
 import {trackTiming} from '../../nuclide-analytics';
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
 
-export type CodeFormatConfig = {
+export type CodeFormatConfig = {|
   version: '0.0.0',
   priority: number,
   analyticsEventName: string,
   formatEntireFile: boolean,
-};
+|};
 
 export class CodeFormatProvider<T: LanguageService> {
   name: string;

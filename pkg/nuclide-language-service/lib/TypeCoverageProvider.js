@@ -15,11 +15,11 @@ import type {LanguageService} from './LanguageService';
 import {ConnectionCache} from '../../nuclide-remote-connection';
 import {trackTiming} from '../../nuclide-analytics';
 
-export type TypeCoverageConfig = {
+export type TypeCoverageConfig = {|
   version: '0.0.0',
   priority: number,
   analyticsEventName: string,
-};
+|};
 
 // Provides Diagnostics for un-typed regions of Hack code.
 export class TypeCoverageProvider<T: LanguageService> {

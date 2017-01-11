@@ -15,10 +15,10 @@ import {trackTiming} from '../../nuclide-analytics';
 import {ConnectionCache} from '../../nuclide-remote-connection';
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
 
-export type EvaluationExpressionConfig = {
+export type EvaluationExpressionConfig = {|
   version: '0.0.0',
   analyticsEventName: string,
-};
+|};
 
 export class EvaluationExpressionProvider<T: LanguageService> {
   selector: string;

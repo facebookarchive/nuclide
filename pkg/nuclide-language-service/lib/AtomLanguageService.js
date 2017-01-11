@@ -40,7 +40,7 @@ import {getCategoryLogger} from '../../nuclide-logging';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {DedupedBusySignalProviderBase} from '../../nuclide-busy-signal';
 
-export type AtomLanguageServiceConfig = {
+export type AtomLanguageServiceConfig = {|
   name: string,
   grammars: Array<string>,
   highlights?: CodeHighlightConfig,
@@ -53,7 +53,7 @@ export type AtomLanguageServiceConfig = {
   evaluationExpression?: EvaluationExpressionConfig,
   autocomplete?: AutocompleteConfig,
   diagnostics?: DiagnosticsConfig,
-};
+|};
 
 export class AtomLanguageService<T: LanguageService> {
   _config: AtomLanguageServiceConfig;

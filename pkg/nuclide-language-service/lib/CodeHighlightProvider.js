@@ -15,11 +15,11 @@ import {ConnectionCache} from '../../nuclide-remote-connection';
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
 import {Range} from 'atom';
 
-export type CodeHighlightConfig = {
+export type CodeHighlightConfig = {|
   version: '0.0.0',
   priority: number,
   analyticsEventName: string,
-};
+|};
 
 export class CodeHighlightProvider<T: LanguageService> {
   name: string;
