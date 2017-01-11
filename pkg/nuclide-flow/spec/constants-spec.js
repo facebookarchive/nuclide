@@ -11,20 +11,9 @@
 import {JAVASCRIPT_WORD_REGEX} from '../lib/constants';
 
 describe('JAVASCRIPT_WORD_REGEX', () => {
-  function getAllMatches(r: RegExp, s: string): Array<string> {
-    // Reset the state of the RegExp.
-    r.lastIndex = 0;
-    const results = [];
-    let currentResult;
-    while ((currentResult = r.exec(s)) != null) {
-      results.push(currentResult[0]);
-    }
-    return results;
-  }
-
   // For brevity in specs.
   function matches(s) {
-    return getAllMatches(JAVASCRIPT_WORD_REGEX, s);
+    return s.match(JAVASCRIPT_WORD_REGEX);
   }
 
   it('should match numbers', () => {
