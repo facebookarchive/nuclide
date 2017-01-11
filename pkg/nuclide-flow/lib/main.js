@@ -16,6 +16,11 @@ import type {CoverageProvider} from '../../nuclide-type-coverage/lib/types';
 import type {OutlineProvider} from '../../nuclide-outline-view';
 import type {NuclideEvaluationExpressionProvider} from '../../nuclide-debugger-interfaces/service';
 import typeof * as FlowService from '../../nuclide-flow-rpc';
+import type {ServerConnection} from '../../nuclide-remote-connection';
+import type {
+  AtomLanguageServiceConfig,
+} from '../../nuclide-language-service/lib/AtomLanguageService';
+import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
 
 import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
@@ -25,6 +30,9 @@ import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {track} from '../../nuclide-analytics';
 import registerGrammar from '../../commons-atom/register-grammar';
 import {onDidRemoveProjectPath} from '../../commons-atom/projects';
+import {getNotifierByConnection} from '../../nuclide-open-files';
+import {AtomLanguageService} from '../../nuclide-language-service';
+
 import {FlowServiceWatcher} from './FlowServiceWatcher';
 import AutocompleteProvider from './FlowAutocompleteProvider';
 import FlowHyperclickProvider from './FlowHyperclickProvider';
@@ -34,7 +42,7 @@ import FlowDiagnosticsProvider from './FlowDiagnosticsProvider';
 import {FlowOutlineProvider} from './FlowOutlineProvider';
 import {FlowTypeHintProvider} from './FlowTypeHintProvider';
 import {FlowEvaluationExpressionProvider} from './FlowEvaluationExpressionProvider';
-import {getCurrentServiceInstances} from './FlowServiceFactory';
+import {getCurrentServiceInstances, getFlowServiceByConnection} from './FlowServiceFactory';
 
 import {getCoverage} from './FlowCoverageProvider';
 
@@ -44,27 +52,48 @@ const diagnosticsOnFlySetting = 'nuclide-flow.diagnosticsOnFly';
 
 const PACKAGE_NAME = 'nuclide-flow';
 
+const languageServiceConfig: AtomLanguageServiceConfig = {
+  name: 'Flow',
+  grammars: JS_GRAMMARS,
+};
+
 let busySignalProvider;
 
 let flowDiagnosticsProvider;
 
 let disposables;
 
+let flowLanguageService: ?AtomLanguageService<LanguageService> = null;
+
 export function activate() {
   if (!disposables) {
     disposables = new CompositeDisposable();
 
-    const watcher = new FlowServiceWatcher();
-    disposables.add(watcher);
+    flowLanguageService = new AtomLanguageService(connectionToFlowService, languageServiceConfig);
+    flowLanguageService.activate();
 
-    disposables.add(atom.commands.add(
-      'atom-workspace',
-      'nuclide-flow:restart-flow-server',
-      allowFlowServerRestart,
-    ));
+    disposables.add(
+      new FlowServiceWatcher(),
+      atom.commands.add(
+        'atom-workspace',
+        'nuclide-flow:restart-flow-server',
+        allowFlowServerRestart,
+      ),
+      flowLanguageService,
+    );
 
     registerGrammar('source.ini', '.flowconfig');
   }
+}
+
+async function connectionToFlowService(
+  connection: ?ServerConnection,
+): Promise<LanguageService> {
+  const flowService: FlowService = getFlowServiceByConnection(connection);
+  const fileNotifier = await getNotifierByConnection(connection);
+  const languageService = await flowService.initialize(fileNotifier);
+
+  return languageService;
 }
 
 /** Provider for autocomplete service. */

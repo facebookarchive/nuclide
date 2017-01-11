@@ -15,11 +15,12 @@ import type {
   ServerStatusUpdate,
 } from '../../nuclide-flow-rpc';
 import typeof * as FlowService from '../../nuclide-flow-rpc';
+import type {ServerConnection} from '../../nuclide-remote-connection';
 
 import invariant from 'assert';
 import {Subject} from 'rxjs';
 
-import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {getServiceByNuclideUri, getServiceByConnection} from '../../nuclide-remote-connection';
 
 const FLOW_SERVICE = 'FlowService';
 
@@ -27,17 +28,37 @@ const serverStatusUpdates: Subject<ServerStatusUpdate> = new Subject();
 
 const serviceInstances = new Set();
 
+type UriOrConnection = {
+  kind: 'uri',
+  uri: ?NuclideUri,
+} | {
+  kind: 'connection',
+  connection: ?ServerConnection,
+};
+
 export function getFlowServiceByNuclideUri(file: NuclideUri): FlowService {
-  return getFlowServiceByNullableUri(file);
+  return getFlowServiceByUriOrConnection({kind: 'uri', uri: file});
+}
+
+export function getFlowServiceByConnection(connection: ?ServerConnection): FlowService {
+  return getFlowServiceByUriOrConnection({kind: 'connection', connection});
 }
 
 export function getLocalFlowService(): FlowService {
-  return getFlowServiceByNullableUri(null);
+  return getFlowServiceByUriOrConnection({kind: 'uri', uri: null});
 }
 
 /** Returns the FlowService for the given URI, or the local FlowService if the given URI is null. */
-function getFlowServiceByNullableUri(file: ?NuclideUri): FlowService {
-  const flowService: ?FlowService = getServiceByNuclideUri(FLOW_SERVICE, file);
+function getFlowServiceByUriOrConnection(uriOrConnection: UriOrConnection): FlowService {
+  let flowService: ?FlowService;
+  switch (uriOrConnection.kind) {
+    case 'uri':
+      flowService = getServiceByNuclideUri(FLOW_SERVICE, uriOrConnection.uri);
+      break;
+    case 'connection':
+      flowService = getServiceByConnection(FLOW_SERVICE, uriOrConnection.connection);
+      break;
+  }
   invariant(flowService != null);
   if (!serviceInstances.has(flowService)) {
     serviceInstances.add(flowService);

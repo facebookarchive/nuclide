@@ -9,8 +9,27 @@
  */
 
 import type {ConnectableObservable} from 'rxjs';
+
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {TokenizedText} from '../../commons-node/tokenizedText-rpc-types';
+import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
+import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
+
+import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
+import type {
+  Definition,
+  DefinitionQueryResult,
+} from '../../nuclide-definition-service/lib/rpc-types';
+import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
+import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
+import type {FindReferencesReturn} from '../../nuclide-find-references/lib/rpc-types';
+import type {
+  DiagnosticProviderUpdate,
+  FileDiagnosticUpdate,
+} from '../../nuclide-diagnostics-common/lib/rpc-types';
+import type {Completion} from '../../nuclide-language-service/lib/LanguageService';
+import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
+import {ServerLanguageService} from '../../nuclide-language-service-rpc';
 
 // Diagnostic information, returned from findDiagnostics.
 export type Diagnostics = {
@@ -107,6 +126,128 @@ export function dispose(): void {
   if (state != null) {
     state.dispose();
     state = null;
+  }
+}
+
+export async function initialize(
+  fileNotifier: FileNotifier,
+): Promise<LanguageService> {
+  return new ServerLanguageService(
+    fileNotifier,
+    new FlowSingleFileLanguageService(fileNotifier),
+  );
+}
+
+class FlowSingleFileLanguageService {
+  constructor(fileNotifier: FileNotifier) { }
+
+  dispose(): void { }
+
+  getDiagnostics(
+    filePath: NuclideUri,
+    buffer: simpleTextBuffer$TextBuffer,
+  ): Promise<?DiagnosticProviderUpdate> {
+    throw new Error('Not Yet Implemented');
+  }
+
+  observeDiagnostics(): ConnectableObservable<FileDiagnosticUpdate> {
+    throw new Error('Not Yet Implemented');
+  }
+
+  getAutocompleteSuggestions(
+    filePath: NuclideUri,
+    buffer: simpleTextBuffer$TextBuffer,
+    position: atom$Point,
+    activatedManually: boolean,
+  ): Promise<Array<Completion>> {
+    throw new Error('Not Yet Implemented');
+  }
+
+  getDefinition(
+    filePath: NuclideUri,
+    buffer: simpleTextBuffer$TextBuffer,
+    position: atom$Point,
+  ): Promise<?DefinitionQueryResult> {
+    throw new Error('Not Yet Implemented');
+  }
+
+  getDefinitionById(
+    file: NuclideUri,
+    id: string,
+  ): Promise<?Definition> {
+    throw new Error('Not Yet Implemented');
+  }
+
+  findReferences(
+    filePath: NuclideUri,
+    buffer: simpleTextBuffer$TextBuffer,
+    position: atom$Point,
+  ): Promise<?FindReferencesReturn> {
+    throw new Error('Not Yet Implemented');
+  }
+
+  getCoverage(
+    filePath: NuclideUri,
+  ): Promise<?CoverageResult> {
+    throw new Error('Not Yet Implemented');
+  }
+
+  getOutline(
+    filePath: NuclideUri,
+    buffer: simpleTextBuffer$TextBuffer,
+  ): Promise<?Outline> {
+    throw new Error('Not Yet Implemented');
+  }
+
+  typeHint(
+    filePath: NuclideUri,
+    buffer: simpleTextBuffer$TextBuffer,
+    position: atom$Point,
+  ): Promise<?TypeHint> {
+    throw new Error('Not Yet Implemented');
+  }
+
+  highlight(
+    filePath: NuclideUri,
+    buffer: simpleTextBuffer$TextBuffer,
+    position: atom$Point,
+  ): Promise<Array<atom$Range>> {
+    throw new Error('Not Yet Implemented');
+  }
+
+  formatSource(
+    filePath: NuclideUri,
+    buffer: simpleTextBuffer$TextBuffer,
+    range: atom$Range,
+  ): Promise<?string> {
+    throw new Error('Not Yet Implemented');
+  }
+
+  formatEntireFile(
+    filePath: NuclideUri,
+    buffer: simpleTextBuffer$TextBuffer,
+    range: atom$Range,
+  ): Promise<?{
+    newCursor?: number,
+    formatted: string,
+  }> {
+    throw new Error('Not implemented');
+  }
+
+  getEvaluationExpression(
+    filePath: NuclideUri,
+    buffer: simpleTextBuffer$TextBuffer,
+    position: atom$Point,
+  ): Promise<?NuclideEvaluationExpression> {
+    throw new Error('Not Yet Implemented');
+  }
+
+  getProjectRoot(fileUri: NuclideUri): Promise<?NuclideUri> {
+    throw new Error('Not Yet Implemented');
+  }
+
+  isFileInProject(fileUri: NuclideUri): Promise<boolean> {
+    throw new Error('Not Yet Implemented');
   }
 }
 
