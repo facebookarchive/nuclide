@@ -10,7 +10,7 @@
 
 import type {Diagnostic} from '../../nuclide-flow-rpc';
 
-import {Range, Point} from 'atom';
+import {Range} from 'atom';
 
 import flowMessageToFix from '../lib/flowMessageToFix';
 
@@ -21,15 +21,14 @@ describe('flowMessageToFix', () => {
       messageComponents: [
         {
           descr: 'Error suppressing comment',
-          range: {
+          rangeInFile: {
             file: 'foo',
-            start: new Point(6, 1),
-            end: new Point(6, 13),
+            range: new Range([6, 1], [6, 13]),
           },
         },
         {
           descr: 'Unused suppression',
-          range: null,
+          rangeInFile: null,
         },
       ],
     };
@@ -47,15 +46,14 @@ describe('flowMessageToFix', () => {
       messageComponents: [
         {
           descr: 'Named import from module `./foo`',
-          range: {
+          rangeInFile: {
             file: 'foo',
-            start: new Point(3, 9),
-            end: new Point(3, 16),
+            range: new Range([3, 9], [3, 16]),
           },
         },
         {
           descr: 'This module has no named export called `FooBrBaaaaz`. Did you mean `foobar`?',
-          range: null,
+          rangeInFile: null,
         },
       ],
     };

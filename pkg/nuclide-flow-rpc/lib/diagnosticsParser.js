@@ -12,7 +12,7 @@ import type {
   Diagnostics,
   Diagnostic,
   MessageComponent,
-  Range,
+  RangeInFile,
 } from '..';
 
 import type {
@@ -22,7 +22,7 @@ import type {
   FlowLoc,
 } from './flowOutputTypes';
 
-import {Point} from 'simple-text-buffer';
+import {Range} from 'simple-text-buffer';
 
 export function flowStatusOutputToDiagnostics(
   root: string,
@@ -65,24 +65,26 @@ function flowMessageComponentToMessageComponent(
 ): MessageComponent {
   return {
     descr: component.descr,
-    range: maybeFlowLocToRange(component.loc),
+    rangeInFile: maybeFlowLocToRange(component.loc),
   };
 }
 
-function maybeFlowLocToRange(loc: ?FlowLoc): ?Range {
+function maybeFlowLocToRange(loc: ?FlowLoc): ?RangeInFile {
   return loc == null ? null : flowLocToRange(loc);
 }
 
-function flowLocToRange(loc: FlowLoc): Range {
+function flowLocToRange(loc: FlowLoc): RangeInFile {
   return {
     file: loc.source,
-    start: new Point(
-      loc.start.line,
-      loc.start.column,
-    ),
-    end: new Point(
-      loc.end.line,
-      loc.end.column,
+    range: new Range(
+      [
+        loc.start.line,
+        loc.start.column,
+      ],
+      [
+        loc.end.line,
+        loc.end.column,
+      ],
     ),
   };
 }

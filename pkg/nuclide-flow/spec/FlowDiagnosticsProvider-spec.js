@@ -8,7 +8,7 @@
  * @flow
  */
 
-import {Range, Point} from 'atom';
+import {Range} from 'atom';
 
 const testPath = 'myPath';
 
@@ -29,10 +29,9 @@ describe('FlowDiagnosticsProvider', () => {
           {
             level: 'error',
             descr: 'message',
-            range: {
+            rangeInFile: {
               file: testPath,
-              start: new Point(1, 3),
-              end: new Point(2, 4),
+              range: new Range([1, 3], [2, 4]),
             },
           },
         ],
@@ -65,10 +64,9 @@ describe('FlowDiagnosticsProvider', () => {
         messageComponents: [
           {
             descr: 'message',
-            range: {
+            rangeInFile: {
               file: testPath,
-              start: new Point(1, 3),
-              end: new Point(2, 4),
+              range: new Range([1, 3], [2, 4]),
             },
           },
         ],
@@ -95,10 +93,9 @@ describe('FlowDiagnosticsProvider', () => {
         messageComponents: [
           {
             descr: 'message',
-            range: {
+            rangeInFile: {
               file: 'notMyPath',
-              start: new Point(1, 3),
-              end: new Point(2, 4),
+              range: new Range([1, 3], [2, 4]),
             },
           },
         ],
@@ -116,19 +113,17 @@ describe('FlowDiagnosticsProvider', () => {
         messageComponents: [
           {
             descr: 'message',
-            range: {
+            rangeInFile: {
               file: testPath,
-              start: new Point(1, 3),
-              end: new Point(2, 4),
+              range: new Range([1, 3], [2, 4]),
             },
           },
           {
             level: 'error',
             descr: 'more message',
-            range: {
+            rangeInFile: {
               file: 'otherPath',
-              start: new Point(5, 7),
-              end: new Point(6, 8),
+              range: new Range([5, 7], [6, 8]),
             },
           },
         ],

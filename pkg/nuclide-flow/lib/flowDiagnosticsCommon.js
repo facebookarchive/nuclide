@@ -18,13 +18,13 @@ import {Range} from 'atom';
 export function extractRange(message: MessageComponent): atom$Range | void {
   // It's unclear why the 1-based to 0-based indexing works the way that it
   // does, but this has the desired effect in the UI, in practice.
-  const range = message.range;
-  if (range == null) {
+  const {rangeInFile} = message;
+  if (rangeInFile == null) {
     return undefined;
   } else {
     return new Range(
-      [range.start.row - 1, range.start.column - 1],
-      [range.end.row - 1, range.end.column],
+      [rangeInFile.range.start.row - 1, rangeInFile.range.start.column - 1],
+      [rangeInFile.range.end.row - 1, rangeInFile.range.end.column],
     );
   }
 }

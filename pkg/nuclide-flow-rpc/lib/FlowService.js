@@ -50,13 +50,12 @@ export type Diagnostic = {
 
 export type MessageComponent = {
   descr: string,
-  range: ?Range,
+  rangeInFile: ?RangeInFile,
 };
 
-export type Range = {
+export type RangeInFile = {
   file: NuclideUri,
-  start: atom$Point,
-  end: atom$Point,
+  range: atom$Range,
 };
 
 export type Loc = {

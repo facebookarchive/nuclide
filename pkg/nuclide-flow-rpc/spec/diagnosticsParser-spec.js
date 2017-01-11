@@ -8,7 +8,9 @@
  * @flow
  */
 
-import {Point} from 'simple-text-buffer';
+import type {Diagnostics} from '..';
+
+import {Range} from 'simple-text-buffer';
 
 import {flowStatusOutputToDiagnostics} from '../lib/diagnosticsParser';
 import {addMatchers} from '../../nuclide-test-helpers';
@@ -78,7 +80,7 @@ const flowOutput = {
   ],
 };
 
-const expected = {
+const expected: Diagnostics = {
   flowRoot: '/flow-test',
   messages: [
     {
@@ -86,30 +88,27 @@ const expected = {
       messageComponents: [
         {
           descr: 'object literal',
-          range: {
+          rangeInFile: {
             file: '/flow-test/src/test.js',
-            start: new Point(13, 16),
-            end: new Point(13, 17),
+            range: new Range([13, 16], [13, 17]),
           },
         },
         {
           descr: 'This type is incompatible with',
-          range: null,
+          rangeInFile: null,
         },
         {
           descr: 'union: object type(s)',
-          range: {
+          rangeInFile: {
             file: '/flow-test/src/test.js',
-            start: new Point(10, 8),
-            end: new Point(10, 10),
+            range: new Range([10, 8], [10, 10]),
           },
         },
         {
           descr: 'See also: assignment of property `bar`',
-          range: {
+          rangeInFile: {
             file: '/flow-test/src/test.js',
-            start: new Point(13, 5),
-            end: new Point(13, 12),
+            range: new Range([13, 5], [13, 12]),
           },
         },
       ],
