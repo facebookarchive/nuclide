@@ -11,7 +11,6 @@
 import type {AppState, Store} from './types';
 
 import {Observable} from 'rxjs';
-import passesGK from '../../commons-node/passesGK';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import featureConfig from '../../commons-atom/featureConfig';
 import {track} from '../../nuclide-analytics';
@@ -25,10 +24,8 @@ export default function observeBuildCommands(
   store: Store,
 ): IDisposable {
   return new UniversalDisposable(
-    Observable.fromPromise(passesGK('nuclide_buck_prompt'))
-      .filter(Boolean)
-      // $FlowFixMe: type symbol-observable
-      .switchMapTo(Observable.from(store))
+    // $FlowFixMe: type symbol-observable
+    Observable.from(store)
       .switchMap((state: AppState) => {
         const {buckRoot} = state;
         if (buckRoot == null) {
