@@ -96,6 +96,8 @@ export async function activateAllPackages(): Promise<Array<string>> {
   packageNames.push(nuclideUri.join(String(process.env.ATOM_HOME), 'packages/tool-bar'));
 
   await Promise.all(packageNames.map(pack => atom.packages.activatePackage(pack)));
+  // $FlowIgnore atom implementation detail
+  atom.packages.emitter.emit('did-activate-initial-packages');
   return atom.packages.getActivePackages().map(pack => pack.name);
 }
 

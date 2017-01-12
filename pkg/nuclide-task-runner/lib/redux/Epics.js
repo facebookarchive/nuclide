@@ -38,8 +38,8 @@ export function aggregateTaskListsEpic(
   store: Store,
   options: EpicOptions,
 ): Observable<Action> {
-  // Wait until the initial packages have loaded.
-  return actions.ofType(Actions.DID_LOAD_INITIAL_PACKAGES)
+  // Wait until the initial packages have activated.
+  return actions.ofType(Actions.DID_ACTIVATE_INITIAL_PACKAGES)
     .switchMap(() => {
       // We pass the state stream explicitly. Ideally, we'd just use `Observable.from(store)`,
       // but Redux gives us a partial store so we have to work around it.

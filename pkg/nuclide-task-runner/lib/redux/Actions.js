@@ -11,7 +11,7 @@
 import type {Directory} from '../../../nuclide-remote-connection';
 import type {
   AnnotatedTaskMetadata,
-  DidLoadInitialPackagesAction,
+  DidActivateInitialPackagesAction,
   InitializeViewAction,
   TaskRunner,
   RegisterTaskRunnerAction,
@@ -28,7 +28,7 @@ import type {
   UnregisterTaskRunnerAction,
 } from '../types';
 
-export const DID_LOAD_INITIAL_PACKAGES = 'DID_LOAD_INITIAL_PACKAGES';
+export const DID_ACTIVATE_INITIAL_PACKAGES = 'DID_ACTIVATE_INITIAL_PACKAGES';
 export const INITIALIZE_VIEW = 'INITIALIZE_VIEW';
 export const REGISTER_TASK_RUNNER = 'REGISTER_TASK_RUNNER';
 export const RUN_TASK = 'RUN_TASK';
@@ -47,8 +47,8 @@ export const TASK_ERRORED = 'TASK_ERRORED';
 export const TOGGLE_TOOLBAR_VISIBILITY = 'TOGGLE_TOOLBAR_VISIBILITY';
 export const UNREGISTER_TASK_RUNNER = 'UNREGISTER_TASK_RUNNER';
 
-export function didLoadInitialPackages(): DidLoadInitialPackagesAction {
-  return {type: DID_LOAD_INITIAL_PACKAGES};
+export function didActivateInitialPackages(): DidActivateInitialPackagesAction {
+  return {type: DID_ACTIVATE_INITIAL_PACKAGES};
 }
 
 export function initializeView(visible: boolean): InitializeViewAction {

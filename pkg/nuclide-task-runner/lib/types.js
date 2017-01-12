@@ -108,8 +108,8 @@ export type BoundActionCreators = {
 // Action types.
 //
 
-export type DidLoadInitialPackagesAction = {
-  type: 'DID_LOAD_INITIAL_PACKAGES',
+export type DidActivateInitialPackagesAction = {
+  type: 'DID_ACTIVATE_INITIAL_PACKAGES',
 };
 
 export type InitializeViewAction = {
@@ -227,7 +227,7 @@ export type UnregisterTaskRunnerAction = {
 };
 
 export type Action =
-  DidLoadInitialPackagesAction
+  DidActivateInitialPackagesAction
   | InitializeViewAction
   | RunTaskAction
   | SelectTaskAction

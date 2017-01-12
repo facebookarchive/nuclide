@@ -29,6 +29,7 @@ import createPackage from '../../commons-atom/createPackage';
 import {LocalStorageJsonTable} from '../../commons-atom/LocalStorageJsonTable';
 import PanelRenderer from '../../commons-atom/PanelRenderer';
 import {arrayRemove} from '../../commons-node/collection';
+import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {combineEpics, createEpicMiddleware} from '../../commons-node/redux-observable';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {trackEvent} from '../../nuclide-analytics';
@@ -117,10 +118,9 @@ class Activation {
       // $FlowFixMe: Teach flow about Symbol.observable
       Observable.from(this._store).subscribe(epicOptions.states),
 
-      // A stand-in for `atom.packages.didLoadInitialPackages` until atom/atom#12897
-      Observable.interval(0).take(1)
-        .map(() => Actions.didLoadInitialPackages())
-        .subscribe(this._store.dispatch),
+      activateInitialPackagesObservable().subscribe(() => {
+        this._store.dispatch(Actions.didActivateInitialPackages());
+      }),
 
       // Whenever the visiblity changes, store the value in localStorage so that we can use it
       // to decide whether we should show the placeholder at the beginning of the next session.
@@ -348,6 +348,13 @@ class Activation {
 }
 
 export default createPackage(Activation);
+
+function activateInitialPackagesObservable(): Observable<void> {
+  if (atom.packages.hasActivatedInitialPackages) { return Observable.of(undefined); }
+  return observableFromSubscribeFunction(
+    atom.packages.onDidActivateInitialPackages.bind(atom.packages),
+  );
+}
 
 function trackTaskAction(
   type: string,
