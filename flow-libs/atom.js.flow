@@ -477,8 +477,7 @@ declare class atom$Point {
 
   // Comparison
   min(point1: atom$Point, point2: atom$Point): atom$Point,
-  // TODO(t8220399): Change this to: `-1 | 0 | 1`.
-  compare(other: atom$Point): number,
+  compare(other: atom$Point): -1 | 0 | 1,
   isEqual(otherRange: atom$PointLike): boolean,
   isLessThan(other: atom$Point): boolean,
   isLessThanOrEqual(other: atom$Point): boolean,
