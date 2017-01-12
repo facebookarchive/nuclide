@@ -257,6 +257,10 @@ declare class atom$Marker {
   isValid(): boolean,
   isDestroyed(): boolean,
   onDidDestroy(callback: () => void): IDisposable,
+  setBufferRange(
+    range: atom$RangeLike,
+    properties?: {reversed: boolean},
+  ): void,
 }
 
 declare class atom$ServiceHub {
@@ -883,6 +887,9 @@ declare class atom$TextEditor extends atom$Model {
   isFoldedAtBufferRow(row: number): boolean,
   getLastBufferRow(): number,
 
+  // Undocumented properties
+  presenter: ?atom$TextEditorPresenter,
+
   // Undocumented Methods
   getDefaultCharWidth(): number,
   getLineHeightInPixels(): number,
@@ -920,6 +927,7 @@ declare class atom$TextEditorComponent {
 declare class atom$TextEditorPresenter {
   startBlinkingCursors: () => void,
   stopBlinkingCursors(visible: boolean): void,
+  updateLineNumberGutterState(): void,
 }
 
 /**
@@ -1733,6 +1741,7 @@ declare class atom$Token {
 }
 
 declare class atom$Selection {
+  clear(): void,
   getText(): string,
   insertText(
     text: string,
