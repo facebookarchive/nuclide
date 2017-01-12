@@ -347,7 +347,8 @@ export function getMultiRootFileChanges(
 
 export function confirmAndDeletePath(nuclideFilePath: NuclideUri): void {
   const result = atom.confirm({
-    message: 'Are you sure you want to delete?',
+    message: 'Are you sure you want to delete the following item?',
+    detailedMessage: `You are deleting: \n ${nuclideUri.getPath(nuclideFilePath)}`,
     buttons: ['Delete', 'Cancel'],
   });
   invariant(result === 0 || result === 1);
