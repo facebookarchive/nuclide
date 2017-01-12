@@ -13,6 +13,8 @@
 ; large dirs that are not imported
 <PROJECT_ROOT>/docs/.*
 <PROJECT_ROOT>/pkg/nuclide-debugger/VendorLib/devtools/.*
+; Don't want to flow type templates
+<PROJECT_ROOT>/resources/fb-templates/.*
 
 [libs]
 flow-libs/
