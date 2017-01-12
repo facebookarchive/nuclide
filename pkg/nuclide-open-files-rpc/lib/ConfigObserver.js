@@ -39,7 +39,6 @@ export class ConfigObserver {
       .switchMap(() => Observable.fromPromise(this._computeOpenConfigs()))
       .distinctUntilChanged(areSetsEqual)
       // Filter out initial empty set, which duplicates the initial value of the BehaviorSubject
-      // $FlowFixMe: add skipWhile to flow-typed rx definitions
       .skipWhile(dirs => dirs.size === 0)
       .subscribe(this._currentConfigs);
   }

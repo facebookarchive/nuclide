@@ -1,5 +1,5 @@
-// flow-typed signature: 63881eb1a99201523c5de9425b65bb60
-// flow-typed version: f8dc1b6b98/rxjs_v5.0.x/flow_>=v0.34.x
+// flow-typed signature: b9d543b638b8cc400867dc77c09d7f52
+// flow-typed version: bc47c53b2c/rxjs_v5.0.x/flow_>=v0.34.x
 
 // FIXME(samgoldman) Remove top-level interface once Babel supports
 // `declare interface` syntax.
@@ -226,6 +226,8 @@ declare class rxjs$Observable<+T> {
   skip(count: number): rxjs$Observable<T>;
 
   skipUntil(other: rxjs$Observable<any> | Promise<any>): rxjs$Observable<T>;
+
+  skipWhile(predicate: (value: T) => boolean): rxjs$Observable<T>;
 
   startWith(...values: Array<T>): rxjs$Observable<T>;
 

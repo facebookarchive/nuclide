@@ -187,7 +187,6 @@ export function combineEventStreams(
 
     // Error/info logs from the process represent exit/error conditions, so always take them.
     // We ensure that error/info logs will not duplicate messages from the websocket.
-    // $FlowFixMe: add skipWhile to flow-typed rx definitions
     processEvents
       .skipWhile(isRegularLogMessage),
   );
