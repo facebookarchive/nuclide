@@ -16,10 +16,6 @@ import featureConfig from '../../commons-atom/featureConfig';
 import {getFlowServiceByNuclideUri} from './FlowServiceFactory';
 import {Range} from 'atom';
 import {JAVASCRIPT_WORD_REGEX} from './constants';
-import {getLogger} from '../../nuclide-logging';
-import prettyPrintTypes from './prettyPrintTypes';
-
-const logger = getLogger();
 
 export class FlowTypeHintProvider {
   async typeHint(editor: TextEditor, position: atom$Point): Promise<?TypeHint> {
@@ -59,15 +55,8 @@ export class FlowTypeHintProvider {
     } else {
       range = new Range(position, position);
     }
-    let prettyPrinted;
-    try {
-      prettyPrinted = prettyPrintTypes(type);
-    } catch (e) {
-      logger.error(`Problem pretty printing type hint: ${e.message}`);
-      prettyPrinted = type;
-    }
     return {
-      hint: prettyPrinted,
+      hint: type,
       range,
     };
   }

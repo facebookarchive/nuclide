@@ -31,7 +31,7 @@ import {flowCoordsToAtomCoords} from './FlowHelpers';
 
 import {FlowProcess} from './FlowProcess';
 import {FlowVersion} from './FlowVersion';
-
+import prettyPrintTypes from './prettyPrintTypes';
 import {astToOutline} from './astToOutline';
 import {flowStatusOutputToDiagnostics} from './diagnosticsParser';
 
@@ -240,7 +240,12 @@ export class FlowRoot {
     if (!type || type === '(unknown)') {
       return null;
     }
-    return type;
+    try {
+      return prettyPrintTypes(type);
+    } catch (e) {
+      logger.error(`Problem pretty printing type hint: ${e.message}`);
+      return type;
+    }
   }
 
   async flowGetCoverage(path: NuclideUri): Promise<?CoverageResult> {
