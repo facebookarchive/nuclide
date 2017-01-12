@@ -18,7 +18,7 @@ import AutocompleteCacher from '../../commons-atom/AutocompleteCacher';
 import passesGK from '../../commons-node/passesGK';
 
 import {getFlowServiceByNuclideUri} from './FlowServiceFactory';
-import {JAVASCRIPT_WHOLE_STRING_IDENTIFIER_REGEX} from './constants';
+import {JAVASCRIPT_WHOLE_STRING_IDENTIFIER_REGEX} from '../../nuclide-flow-common';
 
 export default class FlowAutocompleteProvider {
   _cacher: AutocompleteCacher<?Array<atom$AutocompleteSuggestion>>;

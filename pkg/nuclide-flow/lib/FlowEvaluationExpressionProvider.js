@@ -11,7 +11,7 @@
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
 
 import {wordAtPosition} from '../../commons-atom/range';
-import {JAVASCRIPT_IDENTIFIER_REGEX} from './constants';
+import {JAVASCRIPT_IDENTIFIER_REGEX} from '../../nuclide-flow-common';
 
 export class FlowEvaluationExpressionProvider {
   getEvaluationExpression(
