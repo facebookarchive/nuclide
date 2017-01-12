@@ -33,9 +33,9 @@ export function activate(rawState: ?Object): void {
     new Disposable(() => { buildSystem = null; }),
     new Disposable(() => { initialState = null; }),
   );
-  registerGrammar('source.python', 'BUCK');
-  registerGrammar('source.json', 'BUCK.autodeps');
-  registerGrammar('source.ini', '.buckconfig');
+  registerGrammar('source.python', ['BUCK']);
+  registerGrammar('source.json', ['BUCK.autodeps']);
+  registerGrammar('source.ini', ['.buckconfig']);
 }
 
 export function deactivate(): void {

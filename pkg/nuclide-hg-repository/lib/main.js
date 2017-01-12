@@ -142,7 +142,7 @@ export function activate(state: any): void {
     ],
   }));
 
-  registerGrammar('source.ini', '.hgrc');
+  registerGrammar('source.ini', ['.hgrc']);
 }
 
 export function addItemsToFileTreeContextMenu(contextMenu: FileTreeContextMenu): IDisposable {

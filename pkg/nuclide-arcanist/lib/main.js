@@ -35,7 +35,7 @@ class Activation {
   constructor(state: ?Object) {
     this._disposables = new CompositeDisposable();
     this._busySignalProvider = new DedupedBusySignalProviderBase();
-    registerGrammar('source.json', '.arcconfig');
+    registerGrammar('source.json', ['.arcconfig']);
   }
 
   dispose(): void {

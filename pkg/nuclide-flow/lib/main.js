@@ -87,7 +87,7 @@ export function activate() {
       flowLanguageService,
     );
 
-    registerGrammar('source.ini', '.flowconfig');
+    registerGrammar('source.ini', ['.flowconfig']);
   }
 }
 

@@ -8,8 +8,6 @@
  * @flow
  */
 
-import invariant from 'assert';
-
 /**
  * Utility to make it easier to register a file extension with a grammar,
  * overwriting existing registrations or adding duplicates. The
@@ -27,21 +25,31 @@ import invariant from 'assert';
  */
 export default function registerGrammar(
   scopeName: string,
-  extension: string,
+  extensions: Array<string>,
 ): boolean {
   let customFileTypes = atom.config.get('core.customFileTypes');
-  if (!customFileTypes || typeof customFileTypes !== 'object') {
+  if (customFileTypes == null || typeof customFileTypes !== 'object') {
     customFileTypes = {};
   }
-  invariant(customFileTypes);
+
   let customFileType = customFileTypes[scopeName];
   if (!Array.isArray(customFileType)) {
-    customFileType = [];
+    customFileTypes[scopeName] = customFileType = [];
   }
-  if (customFileType.indexOf(extension) === -1) {
-    customFileTypes[scopeName] = customFileType.concat(extension);
+
+  let didChange = false;
+  for (let i = 0; i < extensions.length; i++) {
+    const extension = extensions[i];
+    if (!customFileType.includes(extension)) {
+      customFileType.push(extension);
+      didChange = true;
+    }
+  }
+
+  if (didChange) {
     atom.config.set('core.customFileTypes', customFileTypes);
     return true;
   }
+
   return false;
 }
