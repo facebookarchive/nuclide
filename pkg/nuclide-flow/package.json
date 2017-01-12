@@ -49,12 +49,6 @@
         "default": true,
         "description": "Display tooltips with Flow types"
       },
-      "enableStructuredTypeHints": {
-        "title": "Enable Tree-structured Type Hints",
-        "type": "boolean",
-        "default": false,
-        "description": "EXPERIMENTAL: Show tree-structured type hints. Type hints must first be enabled. Requires Flow v0.17.0"
-      },
       "warnOnNotInstalled": {
         "title": "Warn when Flow is not found",
         "type": "boolean",

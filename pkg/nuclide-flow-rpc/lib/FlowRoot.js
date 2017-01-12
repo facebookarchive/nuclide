@@ -207,8 +207,7 @@ export class FlowRoot {
     currentContents: string,
     line_: number,
     column_: number,
-    includeRawType: boolean,
-  ): Promise<?{type: string, rawType: ?string}> {
+  ): Promise<?string> {
     let line = line_;
     let column = column_;
     const options = {};
@@ -219,9 +218,6 @@ export class FlowRoot {
     column++;
     const args =
       ['type-at-pos', '--json', '--path', file, line, column];
-    if (includeRawType) {
-      args.push('--raw');
-    }
 
     let result;
     try {
@@ -241,11 +237,10 @@ export class FlowRoot {
       return null;
     }
     const type = json.type;
-    const rawType = json.raw_type;
     if (!type || type === '(unknown)') {
       return null;
     }
-    return {type, rawType};
+    return type;
   }
 
   async flowGetCoverage(path: NuclideUri): Promise<?CoverageResult> {

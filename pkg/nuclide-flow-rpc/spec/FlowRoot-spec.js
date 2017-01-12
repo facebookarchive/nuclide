@@ -91,7 +91,7 @@ describe('FlowRoot', () => {
   describe('flowGetType', () => {
     function runWithString(outputString) {
       mockExec(outputString);
-      return flowRoot.flowGetType(file, currentContents, line, column, false);
+      return flowRoot.flowGetType(file, currentContents, line, column);
     }
     function runWith(outputType) {
       return runWithString(JSON.stringify({type: outputType}));
@@ -99,7 +99,7 @@ describe('FlowRoot', () => {
 
     it('should return the type on success', () => {
       waitsForPromise(async () => {
-        expect(await runWith('thisIsAType')).toEqual({type: 'thisIsAType', rawType: undefined});
+        expect(await runWith('thisIsAType')).toEqual('thisIsAType');
       });
     });
 
@@ -127,7 +127,7 @@ describe('FlowRoot', () => {
         // this causes some errors to get logged, but I don't think it's a big
         // deal and I don't know how to mock a module
         expect(
-          await flowRoot.flowGetType(file, currentContents, line, column, false),
+          await flowRoot.flowGetType(file, currentContents, line, column),
         ).toBe(null);
       });
     });

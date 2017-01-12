@@ -289,8 +289,7 @@ export async function flowGetType(
   currentContents: string,
   line: number,
   column: number,
-  includeRawType: boolean,
-): Promise<?{type: string, rawType: ?string}> {
+): Promise<?string> {
   return getState().getRootContainer().runWithRoot(
     file,
     root => root.flowGetType(
@@ -298,7 +297,6 @@ export async function flowGetType(
       currentContents,
       line,
       column,
-      includeRawType,
     ),
   );
 }

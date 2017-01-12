@@ -8,7 +8,7 @@
  * @flow
  */
 
-import type {TypeHint, HintTree} from '../../nuclide-type-hint/lib/rpc-types';
+import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 
 import invariant from 'assert';
 import {wordAtPosition} from '../../commons-atom/range';
@@ -39,19 +39,15 @@ export class FlowTypeHintProvider {
     const flowService = await getFlowServiceByNuclideUri(filePath);
     invariant(flowService);
 
-    const enableStructuredTypeHints: boolean =
-      (featureConfig.get('nuclide-flow.enableStructuredTypeHints'): any);
-    const getTypeResult = await flowService.flowGetType(
+    const type = await flowService.flowGetType(
       filePath,
       contents,
       position.row,
       position.column,
-      enableStructuredTypeHints,
     );
-    if (getTypeResult == null) {
+    if (type == null) {
       return null;
     }
-    const {type, rawType} = getTypeResult;
 
     // TODO(nmote) refine this regex to better capture JavaScript expressions.
     // Having this regex be not quite right is just a display issue, though --
@@ -70,119 +66,9 @@ export class FlowTypeHintProvider {
       logger.error(`Problem pretty printing type hint: ${e.message}`);
       prettyPrinted = type;
     }
-    const result = {
+    return {
       hint: prettyPrinted,
       range,
     };
-    const hintTree = getTypeHintTree(rawType);
-    if (hintTree) {
-      return {
-        ...result,
-        hintTree,
-      };
-    } else {
-      return result;
-    }
-  }
-}
-
-export function getTypeHintTree(typeHint: ?string): ?HintTree {
-  if (!typeHint) {
-    return null;
-  }
-  try {
-    const json = JSON.parse(typeHint);
-    return jsonToTree(json);
-  } catch (e) {
-    logger.error(`Problem parsing type hint: ${e.message}`);
-    // If there is any problem parsing just fall back on the original string
-    return null;
-  }
-}
-
-const OBJECT = 'ObjT';
-const NUMBER = 'NumT';
-const STRING = 'StrT';
-const BOOLEAN = 'BoolT';
-const MAYBE = 'MaybeT';
-const ANYOBJECT = 'AnyObjT';
-const ARRAY = 'ArrT';
-const FUNCTION = 'FunT';
-
-function jsonToTree(json: Object): HintTree {
-  const kind = json.kind;
-  switch (kind) {
-    case OBJECT:
-      const propTypes = json.type.propTypes;
-      const children = [];
-      for (const prop of propTypes) {
-        const propName = prop.name;
-        const childTree = jsonToTree(prop.type);
-        // Instead of making single child node just for the type name, we'll graft the type onto the
-        // end of the property name.
-        children.push({
-          value: `${propName}: ${childTree.value}`,
-          children: childTree.children,
-        });
-      }
-      return {
-        value: 'Object',
-        children,
-      };
-    case NUMBER:
-      return {
-        value: 'number',
-      };
-    case STRING:
-      return {
-        value: 'string',
-      };
-    case BOOLEAN:
-      return {
-        value: 'boolean',
-      };
-    case MAYBE:
-      const childTree = jsonToTree(json.type);
-      return {
-        value: `?${childTree.value}`,
-        children: childTree.children,
-      };
-    case ANYOBJECT:
-      return {
-        value: 'Object',
-      };
-    case ARRAY:
-      const elemType = jsonToTree(json.elemType);
-      return {
-        value: `Array<${elemType.value}>`,
-        children: elemType.children,
-      };
-    case FUNCTION:
-      const paramNames = json.funType.paramNames;
-      const paramTypes = json.funType.paramTypes;
-      invariant(Array.isArray(paramNames));
-      const parameters = paramNames.map((name, i) => {
-        const type = jsonToTree(paramTypes[i]);
-        return {
-          value: `${name}: ${type.value}`,
-          children: type.children,
-        };
-      });
-      const returnType = jsonToTree(json.funType.returnType);
-      return {
-        value: 'Function',
-        children: [
-          {
-            value: 'Parameters',
-            children: parameters,
-          },
-          {
-            value: `Return Type: ${returnType.value}`,
-            children: returnType.children,
-          },
-        ],
-      };
-    default:
-      throw new Error(`Kind ${kind} not supported`);
   }
 }
