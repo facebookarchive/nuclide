@@ -39,6 +39,13 @@ export default class DebuggerLaunchAttachProvider {
   }
 
   /**
+   * Whether this provider is enabled or not.
+   */
+  isEnabled(): Promise<boolean> {
+    return Promise.resolve(true);
+  }
+
+  /**
    * Returns a unique key which can be associated with the component.
    */
   getUniqueKey(): number {

@@ -15,6 +15,7 @@ import type DebuggerActions from './DebuggerActions';
 import {Dropdown} from '../../nuclide-ui/Dropdown';
 import {React} from 'react-for-atom';
 import nuclideUri from '../../commons-node/nuclideUri';
+import {asyncFilter} from '../../commons-node/promise';
 
 import type EventEmitter from 'events';
 
@@ -28,7 +29,7 @@ type StateType = {
   connectionsUpdatedDisposable: IDisposable,
   // Current available Nuclide connections.
   connections: Array<string>,
-  // Availble launch/attach providers for current selected connection.
+  // Availble and enabled launch/attach providers for current selected connection.
   availableProviders: Array<DebuggerLaunchAttachProvider>,
   // Customized launch/attach actions supported by this (connection + provider) combination.
   providerActions: Array<string>,
@@ -139,14 +140,18 @@ export class DebuggerLaunchAttachUI extends React.Component<void, PropsType, Sta
       connectionsDropdownIndex: newIndex,
     });
     const selectedConnection = this.state.connections[newIndex];
+    // Fire and forget.
     this._resetAvailableDebuggingTypes(selectedConnection);
   }
 
   // Reset debugging types dropdown for input connection.
-  _resetAvailableDebuggingTypes(connection: string): void {
+  async _resetAvailableDebuggingTypes(connection: string): Promise<void> {
     this._clearPreviousProviders();
-    const availableProviders =
-      this.props.store.getLaunchAttachProvidersForConnection(connection);
+    const availableProviders = await asyncFilter(
+      this.props.store.getLaunchAttachProvidersForConnection(connection),
+      provider => provider.isEnabled(),
+    );
+
     this.setState({
       availableProviders,
       debuggingTypeDropdownIndex: 0,
