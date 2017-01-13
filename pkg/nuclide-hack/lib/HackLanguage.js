@@ -64,12 +64,12 @@ async function createLanguageService(): Promise<AtomLanguageService<HackLanguage
   const atomConfig: AtomLanguageServiceConfig = {
     name: 'Hack',
     grammars: HACK_GRAMMARS,
-    highlights: {
+    highlight: {
       version: '0.0.0',
       priority: 1,
       analyticsEventName: 'hack.codehighlight',
     },
-    outlines: {
+    outline: {
       version: '0.0.0',
       priority: 1,
       analyticsEventName: 'hack.outline',

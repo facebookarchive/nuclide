@@ -48,7 +48,7 @@ const PACKAGE_NAME = 'nuclide-flow';
 const languageServiceConfig: AtomLanguageServiceConfig = {
   name: 'Flow',
   grammars: JS_GRAMMARS,
-  outlines: {
+  outline: {
     version: '0.0.0',
     priority: 1,
     analyticsEventName: 'flow.outline',

@@ -43,8 +43,8 @@ import {DedupedBusySignalProviderBase} from '../../nuclide-busy-signal';
 export type AtomLanguageServiceConfig = {|
   name: string,
   grammars: Array<string>,
-  highlights?: CodeHighlightConfig,
-  outlines?: OutlineViewConfig,
+  highlight?: CodeHighlightConfig,
+  outline?: OutlineViewConfig,
   coverage?: TypeCoverageConfig,
   definition?: DefinitionConfig,
   typeHint?: TypeHintConfig,
@@ -85,19 +85,19 @@ export class AtomLanguageService<T: LanguageService> {
       '0.1.0',
       busySignalProvider));
 
-    const highlightsConfig = this._config.highlights;
-    if (highlightsConfig != null) {
+    const highlightConfig = this._config.highlight;
+    if (highlightConfig != null) {
       this._subscriptions.add(CodeHighlightProvider.register(
         this._config.name,
         this._selector(),
-        highlightsConfig,
+        highlightConfig,
         this._connectionToLanguageService));
     }
 
-    const outlinesConfig = this._config.outlines;
-    if (outlinesConfig != null) {
+    const outlineConfig = this._config.outline;
+    if (outlineConfig != null) {
       this._subscriptions.add(OutlineViewProvider.register(
-        this._config.name, this._selector(), outlinesConfig, this._connectionToLanguageService));
+        this._config.name, this._selector(), outlineConfig, this._connectionToLanguageService));
     }
 
     const coverageConfig = this._config.coverage;

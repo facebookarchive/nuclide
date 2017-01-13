@@ -55,7 +55,7 @@ async function connectionToPythonService(
 const atomConfig: AtomLanguageServiceConfig = {
   name: 'Python',
   grammars: GRAMMARS,
-  outlines: {
+  outline: {
     version: '0.0.0',
     priority: 1,
     analyticsEventName: 'python.outline',
