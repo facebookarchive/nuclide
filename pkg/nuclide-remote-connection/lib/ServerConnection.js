@@ -31,6 +31,7 @@ import SharedObservableCache from '../../commons-node/SharedObservableCache';
 
 import {NuclideSocket} from '../../nuclide-server/lib/NuclideSocket';
 import {getVersion} from '../../nuclide-version';
+import lookupPreferIpv6 from './lookup-prefer-ip-v6';
 
 export type ServerConnectionConfiguration = {
   host: string, // host nuclide server is running on.
@@ -193,7 +194,10 @@ export class ServerConnection {
     // Test connection first. First time we get here we're checking to reestablish
     // connection using cached credentials. This will fail fast (faster than infoService)
     // when we don't have cached credentials yet.
-    const heartbeatVersion = await client.getTransport().testConnection();
+    const [heartbeatVersion, ip] = await Promise.all([
+      client.getTransport().testConnection(),
+      lookupPreferIpv6(this._config.host),
+    ]);
     if (clientVersion !== heartbeatVersion) {
       throwVersionMismatch(heartbeatVersion);
     }
@@ -207,7 +211,7 @@ export class ServerConnection {
     this._monitorConnectionHeartbeat();
 
     ServerConnection._connections.set(this.getRemoteHostname(), this);
-    setConnectionConfig(this._config);
+    setConnectionConfig(this._config, ip);
     ServerConnection._emitter.emit('did-add', this);
   }
 

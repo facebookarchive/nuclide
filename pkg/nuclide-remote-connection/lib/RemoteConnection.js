@@ -96,13 +96,14 @@ export class RemoteConnection {
    * Create a connection by reusing the configuration of last successful connection associated with
    * given host. If the server's certs has been updated or there is no previous successful
    * connection, null (resolved by promise) is returned.
+   * Configurations may also be retrieved by IP address.
    */
   static async createConnectionBySavedConfig(
-    host: string,
+    hostOrIp: string,
     cwd: string,
     displayTitle: string,
   ): Promise<?RemoteConnection> {
-    const connectionConfig = getConnectionConfig(host);
+    const connectionConfig = getConnectionConfig(hostOrIp);
     if (!connectionConfig) {
       return null;
     }
@@ -111,7 +112,7 @@ export class RemoteConnection {
       return await RemoteConnection.findOrCreate(config);
     } catch (e) {
       const log = e.name === 'VersionMismatchError' ? logger.warn : logger.error;
-      log(`Failed to reuse connectionConfiguration for ${host}`, e);
+      log(`Failed to reuse connectionConfiguration for ${hostOrIp}`, e);
       return null;
     }
   }

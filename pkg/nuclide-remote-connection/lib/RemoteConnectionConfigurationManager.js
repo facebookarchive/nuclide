@@ -56,7 +56,10 @@ export function getConnectionConfig(host: string): ?ServerConnectionConfiguratio
   }
 }
 
-export function setConnectionConfig(config: ServerConnectionConfiguration): void {
+export function setConnectionConfig(
+  config: ServerConnectionConfiguration,
+  ipAddress: string,
+): void {
   // Don't attempt to store insecure connections.
   // Insecure connections are used for testing and will fail the encryption call below.
   if (isInsecure(config)) {
@@ -64,10 +67,11 @@ export function setConnectionConfig(config: ServerConnectionConfiguration): void
   }
 
   try {
-    localStorage.setItem(
-      getStorageKey(config.host),
-      JSON.stringify(encryptConfig(config)),
-    );
+    const encrypted = JSON.stringify(encryptConfig(config));
+    localStorage.setItem(getStorageKey(config.host), encrypted);
+    // Store configurations by their IP address as well.
+    // This way, multiple aliases for the same hostname can reuse a single connection.
+    localStorage.setItem(getStorageKey(ipAddress), encrypted);
   } catch (e) {
     logger.error(`Failed to store configuration file for ${config.host}.`, e);
   }

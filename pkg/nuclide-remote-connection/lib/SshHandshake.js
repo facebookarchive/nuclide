@@ -194,26 +194,34 @@ export class SshHandshake {
       return;
     }
 
-    const connection = await RemoteConnection.createConnectionBySavedConfig(
-      this._config.host,
-      this._config.cwd,
-      this._config.displayTitle,
-    );
-
-    if (connection) {
-      this._didConnect(connection);
-      return;
-    }
-
-    let address = null;
+    let address;
     try {
       address = await lookupPreferIpv6(config.host);
     } catch (e) {
-      this._error(
+      return this._error(
         'Failed to resolve DNS.',
         SshHandshake.ErrorType.HOST_NOT_FOUND,
         e,
       );
+    }
+
+    const connection =
+      await RemoteConnection.createConnectionBySavedConfig(
+        this._config.host,
+        this._config.cwd,
+        this._config.displayTitle,
+      ) ||
+      // We save connections by their IP address as well, in case a different hostname
+      // was used for the same server.
+      await RemoteConnection.createConnectionBySavedConfig(
+        address,
+        this._config.cwd,
+        this._config.displayTitle,
+      );
+
+    if (connection) {
+      this._didConnect(connection);
+      return;
     }
 
     if (config.authMethod === SupportedMethods.SSL_AGENT) {
