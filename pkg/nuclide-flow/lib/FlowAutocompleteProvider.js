@@ -15,7 +15,6 @@ import fuzzaldrinPlus from 'fuzzaldrin-plus';
 
 import {trackTiming} from '../../nuclide-analytics';
 import AutocompleteCacher from '../../commons-atom/AutocompleteCacher';
-import passesGK from '../../commons-node/passesGK';
 
 import {getFlowServiceByNuclideUri} from './FlowServiceFactory';
 import {JAVASCRIPT_WHOLE_STRING_IDENTIFIER_REGEX} from '../../nuclide-flow-common';
@@ -62,11 +61,7 @@ export default class FlowAutocompleteProvider {
       return null;
     }
 
-    if (await passesGK('nuclide_fast_autocomplete')) {
-      return this._cacher.getSuggestions(request);
-    } else {
-      return getSuggestionsFromFlow(request);
-    }
+    return this._cacher.getSuggestions(request);
   }
 }
 
