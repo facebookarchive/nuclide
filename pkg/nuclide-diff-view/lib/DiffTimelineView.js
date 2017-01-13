@@ -15,6 +15,8 @@ import type {
 } from '../../nuclide-hg-repository-client/lib/HgRepositoryClient';
 
 import {CompositeDisposable} from 'atom';
+import {getHeadRevision} from './utils';
+import {hgConstants} from '../../nuclide-hg-rpc';
 import {React} from 'react-for-atom';
 import RevisionTimelineNode from './RevisionTimelineNode';
 import UncommittedChangesTimelineNode from './UncommittedChangesTimelineNode';
@@ -111,11 +113,22 @@ function RevisionsTimelineComponent(props: RevisionsComponentProps): React.Eleme
     revision => revision.id === compareRevisionId,
   );
 
+  const headRevision = getHeadRevision(revisions);
+  const {CommitPhase} = hgConstants;
+  const canPublish = headRevision != null && headRevision.phase === CommitPhase.DRAFT;
+  const publishTooltip = {
+    delay: 100,
+    placement: 'top',
+    title: 'Publish your last commit to a Phabricator differential revision.',
+  };
+
   return (
     <div className="revision-timeline-wrap">
       <Button
         className="pull-right"
+        disabled={!canPublish}
         size={ButtonSizes.SMALL}
+        tooltip={publishTooltip}
         onClick={props.onClickPublish}>
         Publish to Phabricator
       </Button>

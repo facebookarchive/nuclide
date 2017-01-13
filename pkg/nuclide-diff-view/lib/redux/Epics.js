@@ -53,6 +53,7 @@ import {
   getEmptyTextDiff,
 } from './createEmptyAppState';
 import {getPhabricatorRevisionFromCommitMessage} from '../../../nuclide-arcanist-rpc/lib/utils';
+import {hgConstants} from '../../../nuclide-hg-rpc';
 import {notifyInternalError} from '../notifications';
 import {startTracking, track} from '../../../nuclide-analytics';
 import nuclideUri from '../../../commons-node/nuclideUri';
@@ -483,12 +484,16 @@ export function setViewModeEpic(
         return Observable.empty();
       }
 
-      const headCommitMessageChanges = observeRepositoryHeadRevision(activeRepository)
+      const headRevisionChanges = observeRepositoryHeadRevision(activeRepository)
         .filter(headRevision => headRevision != null)
         .map(headRevision => {
           invariant(headRevision != null);
-          return headRevision.description;
+          return headRevision;
         }).distinctUntilChanged();
+
+      const headCommitMessageChanges = headRevisionChanges
+          .map(headRevision => headRevision.description)
+          .distinctUntilChanged();
 
       if (viewMode === DiffMode.COMMIT_MODE) {
         const commitModeChanges = Observable.of(store.getState().commit.mode)
@@ -537,6 +542,8 @@ export function setViewModeEpic(
         });
       }
 
+      const {CommitPhase} = hgConstants;
+
       const isPublishReady = () =>
         store.getState().publish.state !== PublishModeState.AWAITING_PUBLISH;
 
@@ -553,13 +560,23 @@ export function setViewModeEpic(
             }))
             : Observable.empty(),
 
-          headCommitMessageChanges.switchMap(headCommitMessage => {
+          headRevisionChanges.switchMap(headRevision => {
             if (!isPublishReady()) {
               // An amend can come as part of publishing new revisions.
               // So, skip updating if there's an ongoing publish.
               return Observable.empty();
+            } else if (headRevision.phase !== CommitPhase.DRAFT) {
+              atom.notifications.addWarning(
+                'Cannot publish public commits',
+                {detail: 'Did you forget to commit your changes?'},
+              );
+              return Observable.from([
+                Actions.setViewMode(DiffMode.BROWSE_MODE),
+                Actions.updatePublishState(getEmptyPublishState()),
+              ]);
             }
 
+            const headCommitMessage = headRevision.description;
             const phabricatorRevision = getPhabricatorRevisionFromCommitMessage(headCommitMessage);
 
             let publishMessage;
