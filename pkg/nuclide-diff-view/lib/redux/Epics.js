@@ -726,6 +726,7 @@ export function publishDiff(
     const {publish: {mode}, shouldRebaseOnAmend, verbatimModeEnabled} = store.getState();
 
     const amendCleanupMessage = mode === PublishMode.CREATE ? message : null;
+    dispatchConsoleToggle(true);
 
     return Observable.concat(
       Observable.of(Actions.updatePublishState({
@@ -737,6 +738,7 @@ export function publishDiff(
         repository,
         amendCleanupMessage,
         shouldRebaseOnAmend,
+        publishUpdates,
       )).switchMap(cleanResult => {
         if (cleanResult == null) {
           atom.notifications.addWarning('You have uncommitted changes!', {
@@ -755,7 +757,6 @@ export function publishDiff(
           .filter(headRevision => headRevision != null)
           .first().switchMap(headRevision => {
             invariant(headRevision != null);
-            dispatchConsoleToggle(true);
 
             switch (mode) {
               case PublishMode.CREATE:
@@ -788,17 +789,17 @@ export function publishDiff(
           .concat(Observable.of(
             Actions.updatePublishState(getEmptyPublishState()),
             Actions.setViewMode(DiffMode.BROWSE_MODE),
-          )).catch(error => {
-            atom.notifications.addError('Couldn\'t Publish to Phabricator', {
-              detail: error.message,
-              nativeFriendly: true,
-            });
-            return Observable.of(Actions.updatePublishState({
-              mode,
-              message,
-              state: PublishModeState.PUBLISH_ERROR,
-            }));
-          });
+          ));
+      }).catch(error => {
+        atom.notifications.addError('Couldn\'t Publish to Phabricator', {
+          detail: error.message,
+          nativeFriendly: true,
+        });
+        return Observable.of(Actions.updatePublishState({
+          mode,
+          message,
+          state: PublishModeState.PUBLISH_ERROR,
+        }));
       }),
     );
   });

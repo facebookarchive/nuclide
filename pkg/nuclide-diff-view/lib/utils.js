@@ -40,6 +40,7 @@ import {hgConstants} from '../../nuclide-hg-rpc';
 import {bufferUntil} from '../../commons-node/observable';
 import {getLogger} from '../../nuclide-logging';
 import {Observable, Subject} from 'rxjs';
+import {pipeProcessMessagesToConsole} from '../../commons-atom/streamProcessToConsoleMessages';
 import stripAnsi from 'strip-ansi';
 import {shell} from 'electron';
 import url from 'url';
@@ -143,6 +144,7 @@ export async function promptToCleanDirtyChanges(
   repository: HgRepositoryClient,
   commitMessage: ?string,
   shouldRebaseOnAmend: boolean,
+  publishUpdates: Subject<Message>,
 ): Promise<?{allowUntracked: boolean, amended: boolean}> {
   const dirtyFileChanges = getDirtyFileChanges(repository);
 
@@ -199,9 +201,9 @@ export async function promptToCleanDirtyChanges(
     }
   }
   if (shouldAmend) {
-    await repository
-      .amend(commitMessage, getAmendMode(shouldRebaseOnAmend))
-      .toArray().toPromise();
+    await amendWithErrorOnFailure(
+      repository, commitMessage, getAmendMode(shouldRebaseOnAmend), publishUpdates,
+    ).toPromise();
     amended = true;
   }
   return {
@@ -388,6 +390,28 @@ export function viewModeToDiffOption(viewMode: DiffModeType): DiffOptionType {
   }
 }
 
+function amendWithErrorOnFailure(
+  repository: HgRepositoryClient,
+  commitMessage: ?string,
+  amendMode: AmendModeValue,
+  publishUpdates: Subject<Message>,
+): Observable<void> {
+  return Observable.defer(() => {
+    // Defer the update till amend flow start time.
+    publishUpdates.next({text: 'Amending commit with your changes', level: 'info'});
+    return Observable.empty();
+  }).concat(repository.amend(commitMessage, hgConstants.AmendMode.CLEAN).flatMap(message => {
+    // Side Effect: streaming progress to console.
+    pipeProcessMessagesToConsole('Amend', publishUpdates, message);
+
+    if (message.kind === 'exit' && message.exitCode !== 0) {
+      return Observable.throw(new Error('Failed to amend commit - aborting publish!'));
+    }
+    return Observable.empty();
+  }))
+  .ignoreElements();
+}
+
 // TODO(most): Cleanup to avoid using `.do()` and have side effects:
 // (notifications & publish updates).
 export function createPhabricatorRevision(
@@ -406,9 +430,8 @@ export function createPhabricatorRevision(
     // We intentionally amend in clean mode here, because creating the revision
     // amends the commit message (with the revision url), breaking the stack on top of it.
     // Consider prompting for `hg amend --fixup` after to rebase the stack when needed.
-    amendStream = repository.amend(publishMessage, hgConstants.AmendMode.CLEAN).do({
-      complete: () => atom.notifications.addSuccess('Commit amended with the updated message'),
-    });
+    amendStream = amendWithErrorOnFailure(
+      repository, publishMessage, hgConstants.AmendMode.CLEAN, publishUpdates);
   }
 
   return Observable.concat(
