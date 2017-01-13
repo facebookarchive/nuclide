@@ -122,6 +122,16 @@ describe('SearchResultManager', () => {
     searchResultManager.dispose();
   });
 
+  describe('getLastQuery', () => {
+    it('should store the raw query', () => {
+      expect(searchResultManager.getLastQuery()).toBe(null);
+      searchResultManager.executeQuery('aaa');
+      expect(searchResultManager.getLastQuery()).toBe('aaa');
+      searchResultManager.executeQuery('  aaa  ');
+      expect(searchResultManager.getLastQuery()).toBe('  aaa  ');
+    });
+  });
+
   describe('getRenderableProviders', () => {
     it('Should return OmniSearchProvider even if no actual providers are available.', () => {
       const renderableProviders = searchResultManager.getRenderableProviders();

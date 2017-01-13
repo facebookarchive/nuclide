@@ -72,10 +72,13 @@ export default class SearchResultManager {
   _emitter: Emitter;
   _subscriptions: CompositeDisposable;
   _activeProviderName: string;
+  _lastRawQuery: ?string;
 
   constructor(
     quickOpenProviderRegistry: QuickOpenProviderRegistry,
   ) {
+    this._activeProviderName = OMNISEARCH_PROVIDER.name;
+    this._lastRawQuery = null;
     this._providersByDirectory = new Map();
     this._providerSubscriptions = new Map();
     this._directories = [];
@@ -107,7 +110,6 @@ export default class SearchResultManager {
       ),
     );
     this._debouncedUpdateDirectories();
-    this._activeProviderName = OMNISEARCH_PROVIDER.name;
   }
 
   executeQuery(query: string): void {
@@ -131,6 +133,10 @@ export default class SearchResultManager {
 
   getActiveProviderName(): string {
     return this._activeProviderName;
+  }
+
+  getLastQuery(): ?string {
+    return this._lastRawQuery;
   }
 
   getRendererForProvider(providerName: string): ResultRenderer {
@@ -299,6 +305,7 @@ export default class SearchResultManager {
   }
 
   _executeQuery(rawQuery: string): void {
+    this._lastRawQuery = rawQuery;
     const query = this._sanitizeQuery(rawQuery);
     for (const globalProvider of this._quickOpenProviderRegistry.getGlobalProviders()) {
       const startTime = performance.now();
