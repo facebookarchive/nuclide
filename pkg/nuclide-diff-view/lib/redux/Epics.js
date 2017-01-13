@@ -625,8 +625,7 @@ export function commit(
     let consoleShown = false;
 
     // If the commit/amend and publish option are chosen
-    let optionalPublishAction;
-    if (shouldPublishOnCommit) {
+    function getPublishActions(): Observable<Action> {
       let publishMode;
       let publishUpdateMessage;
       if (publish.message == null) {
@@ -637,21 +636,19 @@ export function commit(
         publishMode = PublishMode.UPDATE;
       }
 
-      optionalPublishAction = Observable.of(
-          Actions.updatePublishState({
-            ...publish,
-            mode: publishMode,
-          }),
-          Actions.publishDiff(
-            repository,
-            publishUpdateMessage,
-            isPrepareMode,
-            null,
-            publishUpdates,
-          ),
-        );
-    } else {
-      optionalPublishAction = Observable.empty();
+      return Observable.of(
+        Actions.updatePublishState({
+          ...publish,
+          mode: publishMode,
+        }),
+        Actions.publishDiff(
+          repository,
+          publishUpdateMessage,
+          isPrepareMode,
+          null,
+          publishUpdates,
+        ),
+      );
     }
 
     const resetCommitAction = Actions.updateCommitState({
@@ -695,24 +692,24 @@ export function commit(
         if (processMessage.kind !== 'exit') {
           return Observable.empty();
         } else if (processMessage.exitCode !== 0) {
-          optionalPublishAction = Observable.empty();
           return Observable.of(resetCommitAction);
+        }
+        const resetFromCommitViewActions = Observable.of(
+          Actions.setViewMode(DiffMode.BROWSE_MODE),
+          Actions.updateCommitState(getEmptyCommitState()),
+        );
+        if (shouldPublishOnCommit) {
+          return resetFromCommitViewActions.concat(getPublishActions());
         } else {
-          return Observable.of(
-            Actions.setViewMode(DiffMode.BROWSE_MODE),
-            Actions.updateCommitState(getEmptyCommitState()),
-          );
+          return resetFromCommitViewActions;
         }
       })
       .catch(error => {
         atom.notifications.addError('Couldn\'t commit code', {
           detail: error,
         });
-        optionalPublishAction = Observable.empty();
         return Observable.of(resetCommitAction);
       }),
-
-      optionalPublishAction,
     );
   });
 }
