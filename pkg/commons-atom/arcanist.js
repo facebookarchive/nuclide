@@ -13,7 +13,13 @@
 import LRUCache from 'lru-cache';
 import {getArcanistServiceByNuclideUri} from '../nuclide-remote-connection';
 
-const arcInfoCache = new LRUCache({max: 200});
+export type ArcProjectInfo = {
+  projectId: string,
+  directory: string,
+};
+
+const arcInfoCache: LRUCache<string, Promise<?ArcProjectInfo>> = new LRUCache({max: 200});
+const arcInfoResultCache: LRUCache<string, ?ArcProjectInfo> = new LRUCache({max: 200});
 const STORAGE_KEY = 'nuclide.last-arc-project-path';
 
 /**
@@ -21,10 +27,7 @@ const STORAGE_KEY = 'nuclide.last-arc-project-path';
  * The service also caches this, but since this is called so frequently we should
  * try to avoid going over the RPC layer as well.
  */
-export function findArcProjectIdAndDirectory(src: string): Promise<?{
-  projectId: string,
-  directory: string,
-}> {
+export function findArcProjectIdAndDirectory(src: string): Promise<?ArcProjectInfo> {
   let cached = arcInfoCache.get(src);
   if (cached == null) {
     const arcService = getArcanistServiceByNuclideUri(src);
@@ -37,6 +40,7 @@ export function findArcProjectIdAndDirectory(src: string): Promise<?{
             result.directory,
           );
         }
+        arcInfoResultCache.set(src, result);
         return result;
       })
       .catch(err => {
@@ -47,6 +51,15 @@ export function findArcProjectIdAndDirectory(src: string): Promise<?{
     arcInfoCache.set(src, cached);
   }
   return cached;
+}
+
+/**
+ * A best-effort function that only works if findArcProjectIdAndDirectory
+ * has completed at some point in the past.
+ * This is actually the common case due to its ubiquity.
+ */
+export function getCachedArcProjectIdAndDirectory(src: string): ?ArcProjectInfo {
+  return arcInfoResultCache.get(src);
 }
 
 export function getLastProjectPath(projectId: string): ?string {
