@@ -22,8 +22,7 @@ import {JAVASCRIPT_WHOLE_STRING_IDENTIFIER_REGEX} from '../../nuclide-flow-commo
 export default class FlowAutocompleteProvider {
   _cacher: AutocompleteCacher<?Array<atom$AutocompleteSuggestion>>;
   constructor() {
-    this._cacher = new AutocompleteCacher({
-      getSuggestions: getSuggestionsFromFlow,
+    this._cacher = new AutocompleteCacher(getSuggestionsFromFlow, {
       updateResults,
       shouldFilter,
     });

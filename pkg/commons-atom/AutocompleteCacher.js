@@ -9,7 +9,6 @@
  */
 
 export type AutocompleteCacherConfig<T> = {|
- getSuggestions: (request: atom$AutocompleteRequest) => Promise<T>,
  updateResults: (
    request: atom$AutocompleteRequest,
    firstResult: T,
@@ -29,11 +28,16 @@ type AutocompleteSession<T> = {
 };
 
 export default class AutocompleteCacher<T> {
+  _getSuggestions: (request: atom$AutocompleteRequest) => Promise<T>;
   _config: AutocompleteCacherConfig<T>;
 
   _session: ?AutocompleteSession<T>;
 
-  constructor(config: AutocompleteCacherConfig<T>) {
+  constructor(
+    getSuggestions: (request: atom$AutocompleteRequest) => Promise<T>,
+    config: AutocompleteCacherConfig<T>,
+  ) {
+    this._getSuggestions = getSuggestions;
     this._config = config;
   }
 
@@ -47,7 +51,7 @@ export default class AutocompleteCacher<T> {
       };
       return result;
     } else {
-      const result = this._config.getSuggestions(request);
+      const result = this._getSuggestions(request);
       this._session = {
         firstResult: result,
         lastRequest: request,

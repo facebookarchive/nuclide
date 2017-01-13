@@ -33,8 +33,7 @@ describe('AutocompleteCacher', () => {
   let separateMockedRequest: atom$AutocompleteRequest = (null: any);
 
   function initializeAutocompleteCacher() {
-    autocompleteCacher = new AutocompleteCacher({
-      getSuggestions,
+    autocompleteCacher = new AutocompleteCacher(getSuggestions, {
       updateResults,
       shouldFilter,
     });
