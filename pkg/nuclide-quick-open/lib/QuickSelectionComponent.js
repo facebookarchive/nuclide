@@ -44,8 +44,12 @@ import debounce from '../../commons-node/debounce';
 import humanizeKeystroke from '../../commons-node/humanizeKeystroke';
 import {React, ReactDOM} from 'react-for-atom';
 import classnames from 'classnames';
-import {filterEmptyResults, flattenResults} from './searchResultHelpers';
 import nuclideUri from '../../commons-node/nuclideUri';
+import {
+  filterEmptyResults,
+  flattenResults,
+  getOuterResults,
+} from './searchResultHelpers';
 
 const RESULTS_CHANGED_DEBOUNCE_DELAY = 50;
 
@@ -512,7 +516,7 @@ export default class QuickSelectionComponent extends React.Component {
   }
 
   _moveSelectionToBottom(userInitiated: boolean): void {
-    const bottom = this._getOuterResults(Array.prototype.pop);
+    const bottom = getOuterResults('bottom', this.state.resultsByService);
     if (!bottom) {
       return;
     }
@@ -525,7 +529,7 @@ export default class QuickSelectionComponent extends React.Component {
   }
 
   _moveSelectionToTop(userInitiated: boolean): void {
-    const top = this._getOuterResults(Array.prototype.shift);
+    const top = getOuterResults('top', this.state.resultsByService);
     if (!top) {
       return;
     }
@@ -535,23 +539,6 @@ export default class QuickSelectionComponent extends React.Component {
       0,
       userInitiated,
     );
-  }
-
-  _getOuterResults(
-    arrayOperation: typeof Array.prototype.shift | typeof Array.prototype.pop,
-  ): ?{serviceName: string, directoryName: string, results: Array<mixed>} {
-    const nonEmptyResults = filterEmptyResults(this.state.resultsByService);
-    const serviceName = arrayOperation.call(Object.keys(nonEmptyResults));
-    if (!serviceName) {
-      return null;
-    }
-    const service = nonEmptyResults[serviceName];
-    const directoryName = arrayOperation.call(Object.keys(service.results));
-    return {
-      serviceName,
-      directoryName,
-      results: nonEmptyResults[serviceName].results[directoryName].results,
-    };
   }
 
   _getItemAtIndex(serviceName: string, directory: string, itemIndex: number): ?FileResult {

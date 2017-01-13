@@ -17,6 +17,12 @@ export type ProviderResult = {
   results: Array<FileResult>,
 };
 
+export type OuterResults = {
+  serviceName: string,
+  directoryName: NuclideUri,
+  results: Array<FileResult>,
+};
+
 export type GroupedResult = {
   priority: number,
   results: {[key: NuclideUri]: ProviderResult},
@@ -31,7 +37,6 @@ import {isEmpty} from '../../commons-node/collection';
 
 export function filterEmptyResults(resultsGroupedByService: GroupedResults): GroupedResults {
   const filteredTree = {};
-
   for (const serviceName in resultsGroupedByService) {
     const directories = resultsGroupedByService[serviceName].results;
     const nonEmptyDirectories = {};
@@ -55,4 +60,28 @@ export function flattenResults(resultsGroupedByService: GroupedResults): Array<F
     }
   }
   return Array.prototype.concat.apply([], items);
+}
+
+export function getOuterResults(
+  location: 'top' | 'bottom',
+  resultsByService: GroupedResults,
+): ?OuterResults {
+  const nonEmptyResults = filterEmptyResults(resultsByService);
+  const serviceNames = Object.keys(nonEmptyResults);
+  const serviceName = location === 'top'
+    ? serviceNames[0]
+    : serviceNames[serviceNames.length - 1];
+  if (serviceName == null) {
+    return null;
+  }
+  const directoryNames = Object.keys(nonEmptyResults[serviceName].results);
+  const directoryName = location === 'top'
+    ? directoryNames[0]
+    : directoryNames[directoryNames.length - 1];
+  const results = nonEmptyResults[serviceName].results[directoryName].results;
+  return {
+    serviceName,
+    directoryName,
+    results,
+  };
 }

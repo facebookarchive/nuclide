@@ -13,6 +13,7 @@ import type {GroupedResults} from '../lib/searchResultHelpers';
 import {
   filterEmptyResults,
   flattenResults,
+  getOuterResults,
 } from '../lib/searchResultHelpers';
 
 const SEARCH_RESULTS_FIXTURE: GroupedResults = {
@@ -70,7 +71,6 @@ describe('searchResultHelper', () => {
   describe('emptyResults', () => {
     it('does not include empty folders', () => {
       const filteredResults: GroupedResults = filterEmptyResults(SEARCH_RESULTS_FIXTURE);
-
       expect(filteredResults).toEqual({
         searchService: {
           results: {
@@ -99,6 +99,26 @@ describe('searchResultHelper', () => {
       expect(flattenResults(SEARCH_RESULTS_FIXTURE)).toEqual(
         [{path: 'foo'}, {path: 'bar'}],
       );
+    });
+  });
+
+  describe('getOuterResults', () => {
+    it('works with top', () => {
+      const topOuterResults = getOuterResults('top', SEARCH_RESULTS_FIXTURE);
+      expect(topOuterResults).toEqual({
+        serviceName: 'searchService',
+        directoryName: 'folderB',
+        results: [{path: 'foo'}],
+      });
+    });
+
+    it('works with bottom', () => {
+      const topOuterResults = getOuterResults('bottom', SEARCH_RESULTS_FIXTURE);
+      expect(topOuterResults).toEqual({
+        serviceName: 'symbolService',
+        directoryName: 'folderA',
+        results: [{path: 'bar'}],
+      });
     });
   });
 });
