@@ -26,7 +26,8 @@ import type {
 import type {ConnectableObservable} from 'rxjs';
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
 
-// A remotable version of atom$AutocompleteSuggestion
+// Identical to atom$AutocompleteSuggestion. Repeated here so the RPC framework can serialize using
+// this type.
 export type Completion = {
   text?: string,
   snippet?: string,
@@ -42,6 +43,11 @@ export type Completion = {
   description?: ?string,
   descriptionMoreURL?: ?string,
 };
+
+// These assertions ensure that Completion and atom$AutocompleteSuggestion are kept in sync. If you
+// are getting errors here, you have probably just updated one without updating the other.
+((({}: any): Completion): atom$AutocompleteSuggestion);
+((({}: any): atom$AutocompleteSuggestion): Completion);
 
 export interface LanguageService {
 
