@@ -8,11 +8,12 @@
  * @flow
  */
 
-import type {Provider} from './types';
+import type {FileResult, Provider} from './types';
 import type {HomeFragments} from '../../nuclide-home/lib/types';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {DeepLinkService, DeepLinkParams} from '../../nuclide-deep-link/lib/types';
 import type {QuickSelectionAction} from './QuickSelectionDispatcher';
+import type {SelectionIndex} from './QuickSelectionComponent';
 
 import invariant from 'assert';
 import {React, ReactDOM} from 'react-for-atom';
@@ -74,7 +75,13 @@ class Activation {
         }
       }),
     );
+
     (this: any)._closeSearchPanel = this._closeSearchPanel.bind(this);
+    (this: any)._handleSelection = this._handleSelection.bind(this);
+    (this: any)._handleSelectionChanged = debounce(
+      this._handleSelectionChanged.bind(this),
+      ANALYTICS_CHANGE_SELECTION_DEBOUCE,
+    );
   }
 
   _handleActions(action: QuickSelectionAction): void {
@@ -114,44 +121,51 @@ class Activation {
         scrollableAreaHeightGap={this._scrollableAreaHeightGap}
         quickSelectionActions={this._quickSelectionActions}
         searchResultManager={this._searchResultManager}
-        onBlur={this._closeSearchPanel}
+        onSelection={this._handleSelection}
+        onCancellation={this._closeSearchPanel}
       />,
       searchPanel.getItem(),
     );
     invariant(_searchComponent instanceof QuickSelectionComponent);
-
-    if (this._searchComponent == null) {
-      _searchComponent.onSelection(selection => {
-        goToLocation(selection.path, selection.line, selection.column);
-        track('quickopen-select-file', {
-          'quickopen-filepath': selection.path,
-          'quickopen-query': _searchComponent.getInputValue(),
-          // The currently open "tab".
-          'quickopen-provider': this._searchResultManager.getActiveProviderName(),
-          'quickopen-session': this._analyticsSessionId || '',
-          // Because the `provider` is usually OmniSearch, also track the original provider.
-          'quickopen-provider-source': selection.sourceProvider || '',
-        });
-        this._closeSearchPanel();
-      });
-
-      _searchComponent.onCancellation(this._closeSearchPanel);
-      _searchComponent.onSelectionChanged(debounce((selection: any) => {
-        // Only track user-initiated selection-change events.
-        if (this._analyticsSessionId != null) {
-          track('quickopen-change-selection', {
-            'quickopen-selected-index': selection.selectedItemIndex.toString(),
-            'quickopen-selected-service': selection.selectedService,
-            'quickopen-selected-directory': selection.selectedDirectory,
-            'quickopen-session': this._analyticsSessionId,
-          });
-        }
-      }, ANALYTICS_CHANGE_SELECTION_DEBOUCE));
-    }
-
     this._searchComponent = _searchComponent;
   }
 
+  _handleSelection(
+    selections: Array<FileResult>,
+    providerName: string,
+    query: string,
+  ): void {
+    for (let i = 0; i < selections.length; i++) {
+      const selection = selections[i];
+      goToLocation(selection.path, selection.line, selection.column);
+      track('quickopen-select-file', {
+        'quickopen-filepath': selection.path,
+        'quickopen-query': query,
+        // The currently open "tab".
+        'quickopen-provider': providerName,
+        'quickopen-session': this._analyticsSessionId || '',
+        // Because the `provider` is usually OmniSearch, also track the original provider.
+        'quickopen-provider-source': selection.sourceProvider || '',
+      });
+    }
+    this._closeSearchPanel();
+  }
+
+  _handleSelectionChanged(
+    selectionIndex: SelectionIndex,
+    providerName: string,
+    query: string,
+  ): void {
+    // Only track user-initiated selection-change events.
+    if (this._analyticsSessionId != null) {
+      track('quickopen-change-selection', {
+        'quickopen-selected-index': selectionIndex.selectedItemIndex.toString(),
+        'quickopen-selected-service': selectionIndex.selectedService,
+        'quickopen-selected-directory': selectionIndex.selectedDirectory,
+        'quickopen-session': this._analyticsSessionId,
+      });
+    }
+  }
 
   _handleActiveProviderChange(newProviderName: string): void {
     /**

@@ -30,7 +30,7 @@ type ResultContext = {
   currentDirectory: ProviderResult,
 };
 
-type Selection = {
+export type SelectionIndex = {
   selectedDirectory: string,
   selectedService: string,
   selectedItemIndex: number,
@@ -39,7 +39,7 @@ type Selection = {
 import {AtomInput} from '../../nuclide-ui/AtomInput';
 import {Button} from '../../nuclide-ui/Button';
 import Tabs from '../../nuclide-ui/Tabs';
-import {CompositeDisposable, Disposable, Emitter} from 'atom';
+import {CompositeDisposable, Disposable} from 'atom';
 import debounce from '../../commons-node/debounce';
 import humanizeKeystroke from '../../commons-node/humanizeKeystroke';
 import {React, ReactDOM} from 'react-for-atom';
@@ -62,12 +62,23 @@ function _findKeybindingForAction(action: string, target: HTMLElement): string {
   return humanizeKeystroke(keystroke);
 }
 
-type Props = {
+type Props = {|
   searchResultManager: SearchResultManager,
   quickSelectionActions: QuickSelectionActions,
   scrollableAreaHeightGap?: number,
-  onBlur: () => void,
-};
+  onCancellation: () => void,
+  onSelection: (
+    selections: Array<FileResult>,
+    providerName: string,
+    query: string,
+  ) => void,
+  onItemsChanged?: (newItems: GroupedResults) => void,
+  onSelectionChanged?: (
+    selectionIndex: SelectionIndex,
+    providerName: string,
+    query: string,
+  ) => void,
+|};
 
 type State = {
   activeTab: ProviderSpec,
@@ -83,7 +94,6 @@ export default class QuickSelectionComponent extends React.Component {
   props: Props;
   state: State;
 
-  _emitter: Emitter;
   _subscriptions: CompositeDisposable;
   _modalNode: HTMLElement;
   _debouncedQueryHandler: () => void;
@@ -91,7 +101,6 @@ export default class QuickSelectionComponent extends React.Component {
 
   constructor(props: Props) {
     super(props);
-    this._emitter = new Emitter();
     this._subscriptions = new CompositeDisposable();
     this._isMounted = false;
     this.state = {
@@ -125,22 +134,6 @@ export default class QuickSelectionComponent extends React.Component {
   /**
    * Public API
    */
-  onCancellation(callback: () => void): IDisposable {
-    return this._emitter.on('canceled', callback);
-  }
-
-  onSelection(callback: (selection: FileResult) => void): IDisposable {
-    return this._emitter.on('selected', callback);
-  }
-
-  onSelectionChanged(callback: (selectionIndex: Selection) => void): IDisposable {
-    return this._emitter.on('selection-changed', callback);
-  }
-
-  onItemsChanged(callback: (newItems: GroupedResults) => void): IDisposable {
-    return this._emitter.on('items-changed', callback);
-  }
-
   focus(): void {
     this._getInputTextEditor().focus();
   }
@@ -188,7 +181,9 @@ export default class QuickSelectionComponent extends React.Component {
         () => {
           process.nextTick(() => this._setQuery(this.refs.queryInput.getText()));
           this._updateQueryHandler();
-          this._emitter.emit('items-changed', lastResults);
+          if (this.props.onItemsChanged != null) {
+            this.props.onItemsChanged(lastResults);
+          }
         },
       );
     }
@@ -196,9 +191,10 @@ export default class QuickSelectionComponent extends React.Component {
 
   componentDidUpdate(prevProps: Props, prevState: State): void {
     if (prevState.resultsByService !== this.state.resultsByService) {
-      this._emitter.emit('items-changed', this.state.resultsByService);
+      if (this.props.onItemsChanged != null) {
+        this.props.onItemsChanged(this.state.resultsByService);
+      }
     }
-
     if (
       prevState.selectedItemIndex !== this.state.selectedItemIndex ||
       prevState.selectedService !== this.state.selectedService ||
@@ -245,7 +241,6 @@ export default class QuickSelectionComponent extends React.Component {
 
   componentWillUnmount(): void {
     this._isMounted = false;
-    this._emitter.dispose();
     this._subscriptions.dispose();
   }
 
@@ -304,7 +299,7 @@ export default class QuickSelectionComponent extends React.Component {
     // If the click did not happen on the modal or on any of its descendants,
     // the click was elsewhere on the document and should close the modal.
     if (event.target !== modal && !modal.contains(event.target)) {
-      this.props.onBlur();
+      this.props.onCancellation();
     }
   }
 
@@ -368,14 +363,12 @@ export default class QuickSelectionComponent extends React.Component {
       this.state.selectedItemIndex,
     );
     if (!selectedItem) {
-      this._cancel();
+      this.props.onCancellation();
     } else {
-      this._emitter.emit('selected', selectedItem);
+      const providerName = this.props.searchResultManager.getActiveProviderName();
+      const query = this._getTextEditor().getText();
+      this.props.onSelection([selectedItem], providerName, query);
     }
-  }
-
-  _cancel(): void {
-    this._emitter.emit('canceled');
   }
 
   _getCurrentResultContext(): ?ResultContext {
@@ -582,7 +575,7 @@ export default class QuickSelectionComponent extends React.Component {
     );
   }
 
-  _getSelectedIndex(): Selection {
+  _getSelectedIndex(): SelectionIndex {
     return {
       selectedDirectory: this.state.selectedDirectory,
       selectedService: this.state.selectedService,
@@ -603,7 +596,12 @@ export default class QuickSelectionComponent extends React.Component {
       hasUserSelection: userInitiated,
     };
     this.setState(newState, () => {
-      this._emitter.emit('selection-changed', this._getSelectedIndex());
+      const selectedIndex = this._getSelectedIndex();
+      const providerName = this.props.searchResultManager.getActiveProviderName();
+      const query = this._getTextEditor().getText();
+      if (this.props.onSelectionChanged != null) {
+        this.props.onSelectionChanged(selectedIndex, providerName, query);
+      }
     });
   }
 
@@ -665,9 +663,10 @@ export default class QuickSelectionComponent extends React.Component {
   }
 
   _openAll(): void {
-    flattenResults(this.state.resultsByService).forEach(result => {
-      this._emitter.emit('selected', result);
-    });
+    const selections = flattenResults(this.state.resultsByService);
+    const providerName = this.props.searchResultManager.getActiveProviderName();
+    const query = this._getTextEditor().getText();
+    this.props.onSelection(selections, providerName, query);
   }
 
   render(): React.Element<any> {
