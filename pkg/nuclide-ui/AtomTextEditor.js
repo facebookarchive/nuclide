@@ -74,6 +74,7 @@ function setupTextEditor(props: Props): TextEditorSetup {
 
 type DefaultProps = {
   autoGrow: boolean,
+  correctContainerWidth: boolean,
   disabled: boolean,
   gutterHidden: boolean,
   lineNumberGutterVisible: boolean,
@@ -86,6 +87,7 @@ type DefaultProps = {
 type Props = {
   autoGrow: boolean,
   className?: string,
+  correctContainerWidth: boolean,
   disabled: boolean,
   gutterHidden: boolean,
   grammar?: ?Object,
@@ -101,6 +103,7 @@ type Props = {
 
 export class AtomTextEditor extends React.Component {
   static defaultProps: DefaultProps = {
+    correctContainerWidth: true,
     disabled: false,
     gutterHidden: false,
     lineNumberGutterVisible: true,
@@ -153,16 +156,18 @@ export class AtomTextEditor extends React.Component {
       return;
     }
 
-    this._editorDisposables.add(textEditorElement.onDidAttach(() => {
-      const correctlySizedElement = textEditorElement.querySelector(
-        '* /deep/ .lines > :first-child > :first-child',
-      );
-      if (correctlySizedElement == null) {
-        return;
-      }
-      const {width} = correctlySizedElement.style;
-      container.style.width = width;
-    }));
+    if (this.props.correctContainerWidth) {
+      this._editorDisposables.add(textEditorElement.onDidAttach(() => {
+        const correctlySizedElement = textEditorElement.querySelector(
+          '* /deep/ .lines > :first-child > :first-child',
+        );
+        if (correctlySizedElement == null) {
+          return;
+        }
+        const {width} = correctlySizedElement.style;
+        container.style.width = width;
+      }));
+    }
   }
 
   componentWillReceiveProps(nextProps: Props): void {
