@@ -622,9 +622,12 @@ export default class QuickSelectionComponent extends React.Component {
   }
 
   _renderTabs(): React.Element<any> {
+    const workspace = atom.views.getView(atom.workspace);
     const tabs = this.state.renderableProviders.map(tab => {
       let keyBinding = null; // TODO
-      const humanizedKeybinding = _findKeybindingForAction(tab.action || '', this._modalNode);
+      const humanizedKeybinding = tab.action
+        ? _findKeybindingForAction(tab.action, workspace)
+        : '';
       if (humanizedKeybinding !== '') {
         keyBinding = (
           <kbd className="key-binding">
