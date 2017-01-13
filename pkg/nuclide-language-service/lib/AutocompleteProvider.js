@@ -47,6 +47,7 @@ export class AutocompleteProvider<T: LanguageService> {
     this.selector = selector;
     this.inclusionPriority = inclusionPriority;
     this.suggestionPriority = suggestionPriority;
+    this.disableForSelector = disableForSelector;
     this.excludeLowerPriority = excludeLowerPriority;
     this._analyticsEventName = analyticsEventName;
     this._connectionToLanguageService = connectionToLanguageService;
