@@ -889,17 +889,19 @@ export class HgRepositoryClient {
   commit(message: string): Observable<ProcessMessage> {
     return this._service.commit(message)
       .refCount()
-      .do({
-        complete: this._clearClientCache.bind(this),
-      });
+      .do(this._clearOnSuccessExit.bind(this));
   }
 
   amend(message: ?string, amendMode: AmendModeValue): Observable<ProcessMessage> {
     return this._service.amend(message, amendMode)
       .refCount()
-      .do({
-        complete: this._clearClientCache.bind(this),
-      });
+      .do(this._clearOnSuccessExit.bind(this));
+  }
+
+  _clearOnSuccessExit(message: ProcessMessage) {
+    if (message.kind === 'exit' && message.exitCode === 0) {
+      this._clearClientCache();
+    }
   }
 
   revert(filePaths: Array<NuclideUri>, toRevision?: ?string): Promise<void> {
