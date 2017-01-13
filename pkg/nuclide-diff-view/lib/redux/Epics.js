@@ -679,18 +679,18 @@ export function commit(
             );
           case CommitMode.AMEND:
             track('diff-view-commit-amend');
-            return repository.amend(message, getAmendMode(shouldRebaseOnAmend))
-              .do(processMessage => {
-                if (!consoleShown && SHOW_CONSOLE_ON_PROCESS_EVENTS.includes(processMessage.kind)) {
-                  dispatchConsoleToggle(true);
-                  consoleShown = true;
-                }
-              });
+            return repository.amend(message, getAmendMode(shouldRebaseOnAmend));
           default:
             return Observable.throw(new Error(`Invalid Commit Mode ${mode}`));
         }
       }))
-      .do(pipeProcessMessagesToConsole.bind(null, mode, publishUpdates))
+      .do(processMessage => {
+        pipeProcessMessagesToConsole(mode, publishUpdates, processMessage);
+        if (!consoleShown && SHOW_CONSOLE_ON_PROCESS_EVENTS.includes(processMessage.kind)) {
+          dispatchConsoleToggle(true);
+          consoleShown = true;
+        }
+      })
       .switchMap(processMessage => {
         if (processMessage.kind !== 'exit') {
           return Observable.empty();
