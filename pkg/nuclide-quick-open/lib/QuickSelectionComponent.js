@@ -65,7 +65,6 @@ function _findKeybindingForAction(action: string, target: HTMLElement): string {
 type Props = {|
   searchResultManager: SearchResultManager,
   quickSelectionActions: QuickSelectionActions,
-  scrollableAreaHeightGap?: number,
   onCancellation: () => void,
   onSelection: (
     selections: Array<FileResult>,
@@ -815,12 +814,7 @@ export default class QuickSelectionComponent extends React.Component {
           </Button>
         </div>
         {this._renderTabs()}
-        <div
-          className="omnisearch-results"
-          style={{
-            maxHeight: this.props.scrollableAreaHeightGap ?
-              `calc(100vh - ${this.props.scrollableAreaHeightGap}px)` : '100vh',
-          }}>
+        <div className="omnisearch-results">
           <div className="omnisearch-pane">
             <ul className="list-tree" ref="selectionList">
               {services}

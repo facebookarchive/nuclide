@@ -1,5 +1,17 @@
 @import "ui-variables";
 
+@quick-open-modal-margin: 65px;
+
+// These styles are for Atom Dark, which sets a fixed width for modals.
+atom-panel.modal.nuclide-quick-open {
+  margin-left: 0;
+  max-width: none;
+  position: absolute;
+  width: auto;
+  left: @quick-open-modal-margin;
+  right: @quick-open-modal-margin;
+}
+
 .quick-open-file-search-match {
   color: @text-color-highlight;
   font-weight: bold;
@@ -38,6 +50,9 @@
   overflow-y: scroll;
   padding: 10px;
   position: relative;
+  // A reasonable heuristic that prevents us from having to measure:
+  // Top bar approx height (165px) + Modal top margin (50px) = 195px
+  max-height: calc(~'100vh - 195px');
 }
 
 .omnisearch-pane {

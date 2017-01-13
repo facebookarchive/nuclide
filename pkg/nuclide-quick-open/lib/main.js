@@ -28,9 +28,6 @@ import QuickOpenProviderRegistry from './QuickOpenProviderRegistry';
 import QuickSelectionActions from './QuickSelectionActions';
 import QuickSelectionDispatcher, {ActionTypes} from './QuickSelectionDispatcher';
 
-// A reasonable heuristic that prevents us from having to measure:
-const TOPBAR_APPROX_HEIGHT = 100;
-const MODAL_MARGIN = 65;
 // Don't pre-fill search input if selection is longer than this:
 const MAX_SELECTION_LENGTH = 1000;
 const ANALYTICS_CHANGE_SELECTION_DEBOUCE = 100;
@@ -42,7 +39,6 @@ class Activation {
   _searchComponent: ?QuickSelectionComponent;
   _searchPanel: ?atom$Panel;
   _subscriptions: UniversalDisposable;
-  _scrollableAreaHeightGap: number;
   _searchResultManager: SearchResultManager;
   _quickOpenProviderRegistry: QuickOpenProviderRegistry;
   _quickSelectionActions: QuickSelectionActions;
@@ -51,7 +47,6 @@ class Activation {
   constructor() {
     this._analyticsSessionId = null;
     this._previousFocus = null;
-    this._scrollableAreaHeightGap = MODAL_MARGIN + TOPBAR_APPROX_HEIGHT;
     this._quickOpenProviderRegistry = new QuickOpenProviderRegistry();
     this._quickSelectionDispatcher = new QuickSelectionDispatcher();
     this._quickSelectionActions = new QuickSelectionActions(
@@ -100,16 +95,7 @@ class Activation {
       this._searchPanel = atom.workspace.addModalPanel({
         item: document.createElement('div'),
         visible: false,
-      });
-      const modalView = atom.views.getView(this._searchPanel);
-      // These styles are for Atom Dark, which sets a fixed width for modals.
-      Object.assign(modalView.style, {
-        marginLeft: '0',
-        maxWidth: 'none',
-        position: 'absolute',
-        width: 'auto',
-        left: `${MODAL_MARGIN}px`,
-        right: `${MODAL_MARGIN}px`,
+        className: 'nuclide-quick-open',
       });
     }
 
@@ -118,7 +104,6 @@ class Activation {
 
     const _searchComponent = ReactDOM.render(
       <QuickSelectionComponent
-        scrollableAreaHeightGap={this._scrollableAreaHeightGap}
         quickSelectionActions={this._quickSelectionActions}
         searchResultManager={this._searchResultManager}
         onSelection={this._handleSelection}
