@@ -13,16 +13,16 @@ import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/type
 import type {PanelLocationId} from './types';
 
 import createPackage from '../../commons-atom/createPackage';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {PaneLocation} from './PaneLocation';
 import {PanelLocation} from './PanelLocation';
 import PanelLocationIds from './PanelLocationIds';
-import {CompositeDisposable} from 'atom';
 
 // This package doesn't actually serialize its own state. The reason is that we want to centralize
 // that so that we can (eventually) associate them with profiles or workspace configurations.
 
 class Activation {
-  _disposables: CompositeDisposable;
+  _disposables: UniversalDisposable;
   _panelLocations: Map<string, PanelLocation>;
 
   // The initial visiblity of each panel. A null/undefined value signifies that the serialized
@@ -30,7 +30,7 @@ class Activation {
   _initialPanelVisibility: Map<PanelLocationId, ?boolean>;
 
   constructor() {
-    this._disposables = new CompositeDisposable();
+    this._disposables = new UniversalDisposable();
     this._panelLocations = new Map();
     this._initialPanelVisibility = new Map();
   }
@@ -52,8 +52,12 @@ class Activation {
   }
 
   consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
+    const layout = require('../../nuclide-ui/VendorLib/atom-tabs/lib/layout');
+    layout.activate();
     this._disposables.add(
+      () => { layout.deactivate(); },
       api.registerLocation({id: 'pane', create: () => new PaneLocation()}),
+      // $FlowIssue: Flow is having issues with multiple spreads.
       ...PanelLocationIds.map(id => api.registerLocation({
         id,
         create: serializedState_ => {
