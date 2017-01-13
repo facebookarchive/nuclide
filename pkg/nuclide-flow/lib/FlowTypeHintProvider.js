@@ -15,7 +15,7 @@ import {wordAtPosition} from '../../commons-atom/range';
 import featureConfig from '../../commons-atom/featureConfig';
 import {getFlowServiceByNuclideUri} from './FlowServiceFactory';
 import {Range} from 'atom';
-import {JAVASCRIPT_WORD_REGEX} from './constants';
+import {JAVASCRIPT_WORD_REGEX} from '../../nuclide-flow-common';
 
 export class FlowTypeHintProvider {
   async typeHint(editor: TextEditor, position: atom$Point): Promise<?TypeHint> {

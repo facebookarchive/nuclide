@@ -8,7 +8,7 @@
  * @flow
  */
 
-import {JAVASCRIPT_WORD_REGEX} from '../lib/constants';
+import {JAVASCRIPT_WORD_REGEX} from '..';
 
 describe('JAVASCRIPT_WORD_REGEX', () => {
   // For brevity in specs.

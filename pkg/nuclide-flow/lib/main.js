@@ -30,6 +30,7 @@ import registerGrammar from '../../commons-atom/register-grammar';
 import {onDidRemoveProjectPath} from '../../commons-atom/projects';
 import {getNotifierByConnection} from '../../nuclide-open-files';
 import {AtomLanguageService} from '../../nuclide-language-service';
+import {JAVASCRIPT_WORD_REGEX} from '../../nuclide-flow-common';
 
 import {FlowServiceWatcher} from './FlowServiceWatcher';
 import AutocompleteProvider from './FlowAutocompleteProvider';
@@ -41,7 +42,7 @@ import {FlowTypeHintProvider} from './FlowTypeHintProvider';
 import {FlowEvaluationExpressionProvider} from './FlowEvaluationExpressionProvider';
 import {getCurrentServiceInstances, getFlowServiceByConnection} from './FlowServiceFactory';
 
-import {JS_GRAMMARS, JAVASCRIPT_WORD_REGEX} from './constants';
+import {JS_GRAMMARS} from './constants';
 const GRAMMARS_STRING = JS_GRAMMARS.join(', ');
 const diagnosticsOnFlySetting = 'nuclide-flow.diagnosticsOnFly';
 
