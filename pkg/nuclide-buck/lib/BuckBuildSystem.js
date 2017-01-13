@@ -78,6 +78,8 @@ const DEBUGGABLE_RULES = new Set([
   ...INSTALLABLE_RULES,
   'cxx_binary',
   'cxx_test',
+  'rust_binary',
+  'rust_test',
 ]);
 
 function isInstallableRule(ruleType: ?string) {
