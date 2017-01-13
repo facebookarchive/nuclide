@@ -87,9 +87,9 @@ describe('Diff View Utils', () => {
       {stderr: 'more text here\n'},
     ];
     const output = [
-      {level: 'error', text: 'hello\n'},
-      {level: 'error', text: 'world\n'},
-      {level: 'error', text: 'more text here\n'},
+      {level: 'log', text: 'hello\n'},
+      {level: 'log', text: 'world\n'},
+      {level: 'log', text: 'more text here\n'},
     ];
     testInputSync(input, output);
   });
@@ -99,14 +99,14 @@ describe('Diff View Utils', () => {
       const input = [
         {stdout: JSON.stringify({type: 'error', message: 'Hello!'})},
       ];
-      const output = [];
+      const output = [{level: 'error', text: 'Hello!'}];
       let error = null;
       try {
         await testInput(input, output);
       } catch (err) {
         error = err;
       }
-      expect(error).not.toBeNull('No exception thrown');
+      expect(error).toBeNull('Exception thrown!');
     });
   });
 });

@@ -92,13 +92,12 @@ export function processArcanistOutput(
       switch (decodedJSON.type) {
         case 'phutil:out':
         case 'phutil:out:raw':
+        case 'phutil:err':
           messages.push({level: 'log', text: stripAnsi(decodedJSON.message)});
           break;
-        case 'phutil:err':
+        case 'error':
           messages.push({level: 'error', text: stripAnsi(decodedJSON.message)});
           break;
-        case 'error':
-          return Observable.throw(new Error(`Arc Error: ${decodedJSON.message}`));
         default:
           getLogger().info(
             'Unhandled message type:',
@@ -106,6 +105,7 @@ export function processArcanistOutput(
             'Message payload:',
             decodedJSON.message,
           );
+          messages.push({level: 'log', text: stripAnsi(decodedJSON.message)});
           break;
       }
       return messages;
@@ -134,13 +134,9 @@ export function processArcanistOutput(
     .map(messages => ({
       level: messages[0].level,
       text: messages.map(message => message.text).join(''),
-    })).catch(error =>
-        Observable.throw(new Error(
-        'Failed publish to Phabricator\n' +
-        'You could have missed test plan or mistyped reviewers.\n' +
-        'Please fix and try again.',
-      )),
-    );
+    })).catch(error => {
+      return Observable.throw(new Error('Check the console ouput for issues.'));
+    });
 }
 
 export async function promptToCleanDirtyChanges(
