@@ -8,7 +8,6 @@
  * @flow
  */
 
-import type {HyperclickProvider} from '../../hyperclick/lib/types';
 import type {
   BusySignalProviderBase as BusySignalProviderBaseType,
 } from '../../nuclide-busy-signal';
@@ -30,11 +29,9 @@ import registerGrammar from '../../commons-atom/register-grammar';
 import {onDidRemoveProjectPath} from '../../commons-atom/projects';
 import {getNotifierByConnection} from '../../nuclide-open-files';
 import {AtomLanguageService} from '../../nuclide-language-service';
-import {JAVASCRIPT_WORD_REGEX} from '../../nuclide-flow-common';
 
 import {FlowServiceWatcher} from './FlowServiceWatcher';
 import AutocompleteProvider from './FlowAutocompleteProvider';
-import FlowHyperclickProvider from './FlowHyperclickProvider';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {DedupedBusySignalProviderBase} from '../../nuclide-busy-signal';
 import FlowDiagnosticsProvider from './FlowDiagnosticsProvider';
@@ -60,6 +57,12 @@ const languageServiceConfig: AtomLanguageServiceConfig = {
     version: '0.0.0',
     priority: 10,
     analyticsEventName: 'flow.coverage',
+  },
+  definition: {
+    version: '0.0.0',
+    priority: 20,
+    definitionEventName: 'flow.get-definition',
+    definitionByIdEventName: 'flow.get-definition-by-id',
   },
 };
 
@@ -123,18 +126,6 @@ export function createAutocompleteProvider(): atom$AutocompleteProvider {
     getSuggestions(request) {
       return autocompleteProvider.getSuggestions(request);
     },
-  };
-}
-
-export function getHyperclickProvider(): HyperclickProvider {
-  const flowHyperclickProvider = new FlowHyperclickProvider();
-  const getSuggestionForWord =
-      flowHyperclickProvider.getSuggestionForWord.bind(flowHyperclickProvider);
-  return {
-    wordRegExp: JAVASCRIPT_WORD_REGEX,
-    priority: 20,
-    providerName: PACKAGE_NAME,
-    getSuggestionForWord,
   };
 }
 

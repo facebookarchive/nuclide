@@ -28,7 +28,10 @@ import type {
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
 import type {Completion} from '../../nuclide-language-service/lib/LanguageService';
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
+
 import {ServerLanguageService} from '../../nuclide-language-service-rpc';
+import {wordAtPositionFromBuffer} from '../../commons-node/range';
+import {JAVASCRIPT_WORD_REGEX} from '../../nuclide-flow-common';
 
 // Diagnostic information, returned from findDiagnostics.
 export type Diagnostics = {
@@ -145,12 +148,32 @@ class FlowSingleFileLanguageService {
     throw new Error('Not Yet Implemented');
   }
 
-  getDefinition(
+  async getDefinition(
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
   ): Promise<?DefinitionQueryResult> {
-    throw new Error('Not Yet Implemented');
+    const match = wordAtPositionFromBuffer(buffer, position, JAVASCRIPT_WORD_REGEX);
+    if (match == null) {
+      return null;
+    }
+    const loc = await flowFindDefinition(
+      filePath,
+      buffer.getText(),
+      position.row + 1,
+      position.column + 1,
+    );
+    if (loc == null) {
+      return null;
+    }
+    return {
+      queryRange: [match.range],
+      definitions: [{
+        path: loc.file,
+        position: loc.point,
+        language: 'Flow',
+      }],
+    };
   }
 
   getDefinitionById(
