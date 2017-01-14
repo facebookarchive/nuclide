@@ -105,15 +105,15 @@ describe('Nuclide performance', () => {
       await sleepUntilNoRequests();
 
       // Run the benchmark for this iteration/repetition and append the results to the result file.
-      const repetitionDescription =
+      const iterationDescription =
         benchmark.getIterationDescription != null ?
-        `; ${benchmark.getIterationDescription(repetition)}` :
+        `; ${benchmark.getIterationDescription(iteration)}` :
         '';
 
       console.log(yellow(`${String(benchmark.name)}: ` +
                           `iteration ${iteration + 1} of ${benchmark.iterations}, ` +
                           `repetition ${repetition + 1} of ${benchmark.repetitions}` +
-                          repetitionDescription));
+                          iterationDescription));
       const result = await benchmark.run(iteration);
       result.iteration = iteration;
       writeTsv(resultFile, columns, result);
