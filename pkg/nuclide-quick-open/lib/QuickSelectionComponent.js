@@ -261,7 +261,7 @@ export default class QuickSelectionComponent extends React.Component {
     }
   }
 
-  _handleMovePreviousTab(): void {
+  _handleMovePreviousTab(event: Event): void {
     const currentProviderName = this.props.searchResultManager.getActiveProviderName();
     const currentTabIndex = this.state.renderableProviders
       .findIndex(tab => tab.name === currentProviderName);
@@ -269,9 +269,10 @@ export default class QuickSelectionComponent extends React.Component {
       this.state.renderableProviders[currentTabIndex - 1] ||
       this.state.renderableProviders[this.state.renderableProviders.length - 1];
     this.props.quickSelectionActions.changeActiveProvider(previousProvider.name);
+    event.stopImmediatePropagation();
   }
 
-  _handleMoveNextTab(): void {
+  _handleMoveNextTab(event: Event): void {
     const currentProviderName = this.props.searchResultManager.getActiveProviderName();
     const currentTabIndex = this.state.renderableProviders
       .findIndex(tab => tab.name === currentProviderName);
@@ -279,6 +280,7 @@ export default class QuickSelectionComponent extends React.Component {
       this.state.renderableProviders[currentTabIndex + 1] ||
       this.state.renderableProviders[0];
     this.props.quickSelectionActions.changeActiveProvider(nextProvider.name);
+    event.stopImmediatePropagation();
   }
 
   _handleMoveToBottom(): void {
