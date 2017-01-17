@@ -41,7 +41,9 @@ check out the following tips:
 
 *Node Version*
 
-A version of [Node](https://nodejs.org/) that is equal to or greater than that specified in ["node" (under "engines") in the package information](https://github.com/facebook/nuclide/blob/master/package.json) is required. Use the command-line to verify your Node version by running:
+<p id="node"></p>
+
+Use the command-line to verify your Node version by running:
 
 ```bash
 node --version

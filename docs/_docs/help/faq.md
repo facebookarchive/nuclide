@@ -32,6 +32,8 @@ The output will contain installed Atom packages and their versions.
 Your installed version is the number following either the `nuclide` package or the first package
 starting with `nuclide-`. In the example above, the installed version is `X.Y.Z`.
 
+<p id="nuclide"></p>
+
 ## How do I migrate from a pre-unified package version of Nuclide?
 
 If you previously installed Nuclide via the `nuclide-installer` package or by installing `nuclide-`

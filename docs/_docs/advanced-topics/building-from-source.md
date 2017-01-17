@@ -18,9 +18,11 @@ those willing to live on the bleeding edge, you can install Nuclide from source.
 You must have the [general prerequisites](/docs/editor/setup#mac__prerequisites) installed. In
 addition, you must have
 
-- Xcode (for Command Line Tools)
-- A version of [Node](https://nodejs.org/) that is equal to or greater than that specified in ["node" (under "engines") in the package information](https://github.com/facebook/nuclide/blob/master/package.json).
-- Atom Shell Commands (open Atom and go to `Atom | Install Shell Commands`) installed as well.
+<ul>
+  <li>Xcode (for Command Line Tools)</li>
+  <li id="node"></li>
+  <li>Atom Shell Commands (open Atom and go to `Atom | Install Shell Commands`) installed as well.</li>
+</ul>
 
 > Xcode can be installed from the App Store. Installation can take a *long, long* time. So be patient.
 
