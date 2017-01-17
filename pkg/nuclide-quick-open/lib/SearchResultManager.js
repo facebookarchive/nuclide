@@ -91,7 +91,7 @@ export default class SearchResultManager {
     // other. Debounce this call to reduce churn at startup, and when new providers get activated or
     // a new directory gets mounted.
     this._debouncedUpdateDirectories = debounce(
-      () => this._updateDirectories(),
+      this._updateDirectories.bind(this),
       UPDATE_DIRECTORIES_DEBOUNCE_DELAY,
       /* immediate */ false,
     );
@@ -100,7 +100,7 @@ export default class SearchResultManager {
     this._quickOpenProviderRegistry = quickOpenProviderRegistry;
     this._subscriptions.add(
       atom.project.onDidChangePaths(
-        this._debouncedUpdateDirectories.bind(this),
+        this._debouncedUpdateDirectories,
       ),
       this._quickOpenProviderRegistry.observeProviders(
         this._registerProvider.bind(this),

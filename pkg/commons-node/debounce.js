@@ -18,7 +18,10 @@ export default function debounce<
   func: TFunc,
   wait: number,
   immediate?: boolean = false,
-): (a: A, b: B, c: C, d: D, e: E, f: F, g: G) => (TReturn | void) {
+): {
+  (a: A, b: B, c: C, d: D, e: E, f: F, g: G): TReturn | void,
+  dispose(): void,
+} {
   // Taken from: https://github.com/jashkenas/underscore/blob/b10b2e6d72/underscore.js#L815.
   let timeout: ?number;
   let args: ?[A, B, C, D, E, F, G];
@@ -43,7 +46,7 @@ export default function debounce<
     }
   };
 
-  return function(): (TReturn | void) {
+  const debounced = function(): (TReturn | void) {
     context = this;
     args = (arguments: [A, B, C, D, E, F, G]);
     timestamp = Date.now();
@@ -58,4 +61,13 @@ export default function debounce<
 
     return result;
   };
+
+  debounced.dispose = () => {
+    if (timeout) {
+      clearTimeout(timeout);
+      timeout = context = args = null;
+    }
+  };
+
+  return debounced;
 }
