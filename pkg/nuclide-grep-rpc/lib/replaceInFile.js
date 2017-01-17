@@ -1,0 +1,68 @@
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ *
+ * @flow
+ */
+
+import fs from 'fs';
+import temp from 'temp';
+import {Observable} from 'rxjs';
+import {attachEvent} from '../../commons-node/event';
+import fsPromise from '../../commons-node/fsPromise';
+import {observeStream} from '../../commons-node/stream';
+import {splitStream} from '../../commons-node/observable';
+
+// Returns the number of replacements made.
+export default function replaceInFile(
+  path: string,
+  regex: RegExp,
+  replacement: string,
+): Observable<number> {
+  return Observable.defer(() => {
+    const readStream = fs.createReadStream(path);
+    // Write the replaced output to a temporary file.
+    // We'll overwrite the original when we're done.
+    const tempStream: fs.WriteStream = temp.createWriteStream();
+
+    return Observable.concat(
+      // Replace the output line-by-line. This obviously doesn't work for multi-line regexes,
+      // but this mimics the behavior of Atom's `scandal` find-and-replace backend.
+      splitStream(observeStream(readStream))
+        .map(line => {
+          const matches = line.match(regex);
+          if (matches != null) {
+            tempStream.write(line.replace(regex, replacement));
+            return matches.length;
+          }
+          tempStream.write(line);
+          return 0;
+        })
+        .reduce((acc, curr) => acc + curr, 0),
+
+      // Wait for the temporary file to finish.
+      // We need to ensure that the event handler is attached before end().
+      Observable.create(observer => {
+        const disposable = attachEvent(tempStream, 'finish', () => {
+          observer.complete();
+        });
+        tempStream.end();
+        return () => disposable.dispose();
+      }),
+
+      // Overwrite the original file with the temporary file.
+      // $FlowIssue: fs.WriteStream contains a path.
+      Observable.fromPromise(fsPromise.rename(tempStream.path, path))
+        .ignoreElements(),
+    )
+      .catch(err => {
+        // Make sure we clean up the temporary file if an error occurs.
+        // $FlowIssue: fs.WriteStream contains a path.
+        fsPromise.unlink(tempStream.path).catch(() => {});
+        return Observable.throw(err);
+      });
+  });
+}

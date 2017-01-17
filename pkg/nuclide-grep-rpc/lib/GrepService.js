@@ -10,9 +10,10 @@
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
-import {ConnectableObservable} from 'rxjs';
+import {ConnectableObservable, Observable} from 'rxjs';
 
 import nuclideUri from '../../commons-node/nuclideUri';
+import replaceInFile from './replaceInFile';
 import search from './scanhandler';
 
 export type search$Match = {
@@ -27,6 +28,16 @@ export type search$FileResult = {
   matches: Array<search$Match>,
 };
 
+export type search$ReplaceResult = {
+  type: 'success',
+  filePath: NuclideUri,
+  replacements: number,
+} | {
+  type: 'error',
+  filePath: NuclideUri,
+  message: string,
+};
+
 export function grepSearch(
   directory: NuclideUri,
   regex: RegExp,
@@ -36,4 +47,30 @@ export function grepSearch(
     // Transform filePath's to absolute paths.
     return {filePath: nuclideUri.join(directory, update.filePath), matches: update.matches};
   }).publish();
+}
+
+export function grepReplace(
+  filePaths: Array<NuclideUri>,
+  regex: RegExp,
+  replacementText: string,
+  concurrency: number = 4,
+): ConnectableObservable<search$ReplaceResult> {
+  return Observable.from(filePaths)
+    .mergeMap(
+      filePath => replaceInFile(filePath, regex, replacementText)
+        .map(replacements => ({
+          type: 'success',
+          filePath,
+          replacements,
+        }))
+        .catch(err => {
+          return Observable.of({
+            type: 'error',
+            filePath,
+            message: err.message,
+          });
+        }),
+      concurrency,
+    )
+    .publish();
 }
