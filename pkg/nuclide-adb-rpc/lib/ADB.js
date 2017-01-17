@@ -13,6 +13,8 @@ import type {DeviceDescription} from './AdbService';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import {runCommand} from '../../commons-node/process';
 
+import * as os from 'os';
+
 export function startServer(
   adbPath: NuclideUri,
 ): ConnectableObservable<string> {
@@ -80,4 +82,30 @@ export function getDeviceModel(
       .map(s => (s === 'sdk' ? 'emulator' : s))
       .toPromise();
   }
+}
+
+export async function getPidFromPackageName(
+  adbPath: NuclideUri,
+  packageName: string,
+): Promise<number> {
+  const pidLine = (await runCommand(
+    adbPath,
+    ['shell', 'ps', packageName],
+  ).toPromise()).split(os.EOL)[1]; // First line is output header.
+  if (pidLine == null) {
+    throw new Error(`Can not find a running process with package name: ${packageName}`);
+  }
+  // First column is 'USER', second is 'PID'.
+  return parseInt(pidLine.trim().split(/\s+/)[1], /* radix */10);
+}
+
+export function forwardJdwpPortToPid(
+  adbPath: NuclideUri,
+  tcpPort: number,
+  pid: number,
+): Promise<string> {
+  return runCommand(
+    adbPath,
+    ['forward', `tcp:${tcpPort}`, `jdwp:${pid}`],
+  ).toPromise();
 }

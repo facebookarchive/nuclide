@@ -33,3 +33,18 @@ export function getDeviceArchitecture(
 ): Promise<string> {
   return ADB.getDeviceArchitecture(adbPath, device);
 }
+
+export function getPidFromPackageName(
+  adbPath: NuclideUri,
+  packageName: string,
+): Promise<number> {
+  return ADB.getPidFromPackageName(adbPath, packageName);
+}
+
+export function forwardJdwpPortToPid(
+  adbPath: NuclideUri,
+  tcpPort: number,
+  pid: number,
+): Promise<string> {
+  return ADB.forwardJdwpPortToPid(adbPath, tcpPort, pid);
+}
