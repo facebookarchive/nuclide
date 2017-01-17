@@ -34,6 +34,7 @@ import RemoteDirectorySearcher from './RemoteDirectorySearcher';
 import RemoteDirectoryProvider from './RemoteDirectoryProvider';
 import RemoteProjectsController from './RemoteProjectsController';
 import RemoteProjectsServiceImpl from './RemoteProjectsService';
+import patchAtomWorkspaceReplace from './patchAtomWorkspaceReplace';
 
 const logger = getLogger();
 
@@ -443,6 +444,8 @@ export function activate(
       return textEditorPromise;
     }
   }));
+
+  subscriptions.add(patchAtomWorkspaceReplace());
 
   // If RemoteDirectoryProvider is called before this, and it failed
   // to provide a RemoteDirectory for a
