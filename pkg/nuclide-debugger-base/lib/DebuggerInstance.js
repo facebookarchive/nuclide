@@ -177,9 +177,10 @@ export class DebuggerInstance extends DebuggerInstanceBase {
   _handleServerMessage(message_: string): void {
     let message = message_;
     this.getLogger().log('Recieved server message: ' + message);
+    const processedMessage = this.preProcessServerMessage(message);
     const webSocket = this._chromeWebSocket;
     if (webSocket) {
-      message = this._translateMessageIfNeeded(message);
+      message = this._translateMessageIfNeeded(processedMessage);
       webSocket.send(message);
     } else {
       this.getLogger().logError('Why isn\'t chrome websocket available?');
@@ -196,9 +197,20 @@ export class DebuggerInstance extends DebuggerInstanceBase {
     this.dispose();
   }
 
-  _handleChromeSocketMessage(message: string): void {
+  async _handleChromeSocketMessage(message: string): Promise<void> {
     this.getLogger().log('Recieved Chrome message: ' + message);
-    this._rpcService.sendCommand(translateMessageToServer(message));
+    const processedMessage = await this.preProcessClientMessage(message);
+    this._rpcService.sendCommand(translateMessageToServer(processedMessage));
+  }
+
+  // Preprocessing hook for client messsages before sending to server.
+  preProcessClientMessage(message: string): Promise<string> {
+    return Promise.resolve(message);
+  }
+
+  // Preprocessing hook for server messages before sending to client UI.
+  preProcessServerMessage(message: string): string {
+    return message;
   }
 
   _handleChromeSocketError(error: Error): void {
