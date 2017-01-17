@@ -189,7 +189,7 @@ export function fetchSmartlogRevisions(
 ): ConnectableObservable<Array<RevisionInfo>> {
   // This will get the `smartlog()` expression revisions
   // and the head revision commits to the nearest public commit parent.
-  const revisionExpression = 'smartlog(all) + ancestor(smartlog(all)) + last(::. & public())::.';
+  const revisionExpression = 'smartlog(all) + parents(smartlog(all))';
   return fetchRevisionsInfo(revisionExpression, workingDirectory, {shouldLimit: false})
     .publish();
 }
