@@ -1,5 +1,30 @@
 # Nuclide Changelog
 
+## v0.198.0
+
+### Highlights
+
+* Project-level replace now works remotely.
+
+### General
+
+* Fix bug causing server crash when using different hostnames for the same server.
+* Atom 1.13 is now the minimal required version of Atom.
+
+### Source Control
+
+*  Improved Commit Workflow:
+  * Warn against publishing public commits.
+  * Improved console logging for arcanist errors.
+  * Toggle console, showing the error in case of failed commits.
+  * Publish only after successful commit/amend.
+
+### Flow
+
+* Remove experimental structured type hints option from Flow.
+* Enabled definition preview in Context View.
+
+
 ## v0.197.0
 
 Hotfix for 0.196.0 with backwards-compatible Atom 1.13.x shadow DOM fixes.
