@@ -92,6 +92,7 @@ type State = {
   selectedService: string,
   selectedDirectory: string,
   selectedItemIndex: number,
+  initialQuery: string,
 };
 
 export default class QuickSelectionComponent extends React.Component {
@@ -105,18 +106,29 @@ export default class QuickSelectionComponent extends React.Component {
   constructor(props: Props) {
     super(props);
     this._subscriptions = new CompositeDisposable();
+
+    const initialProviderName =
+      this.props.searchResultManager.getActiveProviderName();
+    const initialActiveTab =
+      this.props.searchResultManager.getProviderByName(initialProviderName);
+    const initialQuery =
+      this.props.searchResultManager.getLastQuery() || '';
+    const initialResults =
+      this.props.searchResultManager.getResults(initialQuery, initialProviderName);
+    const topOuterResult = getOuterResults('top', initialResults);
+
     this.state = {
-      activeTab: this.props.searchResultManager.getProviderByName(
-        this.props.searchResultManager.getActiveProviderName(),
-      ),
+      activeTab: initialActiveTab,
       // treated as immutable
-      resultsByService: {},
+      resultsByService: initialResults,
       renderableProviders: this.props.searchResultManager.getRenderableProviders(),
-      selectedService: '',
-      selectedDirectory: '',
-      selectedItemIndex: -1,
+      selectedService: topOuterResult != null ? topOuterResult.serviceName : '',
+      selectedDirectory: topOuterResult != null ? topOuterResult.directoryName : '',
+      selectedItemIndex: topOuterResult != null ? 0 : -1,
       hasUserSelection: false,
+      initialQuery,
     };
+
     (this: any)._handleClickOpenAll = this._handleClickOpenAll.bind(this);
     (this: any)._handleDocumentMouseDown = this._handleDocumentMouseDown.bind(this);
     (this: any)._handleKeyPress = this._handleKeyPress.bind(this);
@@ -151,10 +163,6 @@ export default class QuickSelectionComponent extends React.Component {
 
   setInputValue(value: string): void {
     this._getTextEditor().setText(value);
-  }
-
-  selectInput(): void {
-    this._getTextEditor().selectAll();
   }
 
   /**
@@ -223,12 +231,15 @@ export default class QuickSelectionComponent extends React.Component {
       atom.commands.add(modalNode, 'core:confirm', this._select),
       atom.commands.add(modalNode, 'pane:show-previous-item', this._handleMovePreviousTab),
       atom.commands.add(modalNode, 'pane:show-next-item', this._handleMoveNextTab),
+      atom.commands.add('body', 'core:cancel', () => { this.props.onCancellation(); }),
       this.props.searchResultManager.onProvidersChanged(this._handleProvidersChange),
       this.props.searchResultManager.onResultsChanged(this._debouncedResultsChange),
       this._getTextEditor().onDidChange(this._handleTextInputChange),
     );
 
-    this._getTextEditor().setText('');
+    // TODO: Find a better way to trigger an update.
+    this._getTextEditor().setText(this.refs.queryInput.getText());
+    this._getTextEditor().selectAll();
 
     document.addEventListener('mousedown', this._handleDocumentMouseDown);
   }
@@ -295,8 +306,11 @@ export default class QuickSelectionComponent extends React.Component {
   _handleDocumentMouseDown(event: Event): void {
     // If the click did not happen on the modal or on any of its descendants,
     // the click was elsewhere on the document and should close the modal.
+    // Otherwise, refocus the input box.
     if (event.target !== this.refs.modal && !this.refs.modal.contains(event.target)) {
       this.props.onCancellation();
+    } else {
+      process.nextTick(() => this._getInputTextEditor().focus());
     }
   }
 
@@ -605,7 +619,6 @@ export default class QuickSelectionComponent extends React.Component {
     if (newProviderName !== currentProviderName) {
       this.props.quickSelectionActions.changeActiveProvider(newProviderName);
     }
-    this._getInputTextEditor().focus();
   }
 
   _renderTabs(): React.Element<any> {
@@ -781,6 +794,7 @@ export default class QuickSelectionComponent extends React.Component {
           <AtomInput
             className="omnisearch-pane"
             ref="queryInput"
+            initialValue={this.state.initialQuery}
             placeholderText={this.state.activeTab.prompt}
           />
           <Button

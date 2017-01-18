@@ -66,11 +66,6 @@ class Activation {
           this._quickSelectionActions.changeActiveProvider('OmniSearchResultProvider');
         },
       }),
-      atom.commands.add('body', 'core:cancel', () => {
-        if (this._searchPanel && this._searchPanel.isVisible()) {
-          this._closeSearchPanel();
-        }
-      }),
     );
 
     (this: any)._closeSearchPanel = this._closeSearchPanel.bind(this);
@@ -173,50 +168,58 @@ class Activation {
       />,
       searchPanel.getItem(),
     );
-
     invariant(searchComponent instanceof QuickSelectionComponent);
-    this._searchComponent = searchComponent;
+
+    if (
+      this._searchComponent != null &&
+      this._searchComponent !== searchComponent
+    ) {
+      throw new Error('Only one QuickSelectionComponent can be rendered at a time.');
+    }
 
     // Start a new search "session" for analytics purposes.
     track('quickopen-open-panel', {
       'quickopen-session': this._analyticsSessionId || '',
     });
 
-    // _showSearchPanel gets called when changing providers even if it's already shown.
-    const isAlreadyVisible = searchPanel.isVisible();
-
-    if (!isAlreadyVisible) {
+    if (this._searchComponent == null) {
+      this._searchComponent = searchComponent;
       this._previousFocus = document.activeElement;
-      searchPanel.show();
     }
 
     if (initialQuery != null) {
       searchComponent.setInputValue(initialQuery);
-      searchComponent.selectInput();
-    } else if (featureConfig.get('nuclide-quick-open.useSelection') && !isAlreadyVisible) {
+    } else if (
+      !searchPanel.isVisible() &&
+      featureConfig.get('nuclide-quick-open.useSelection')
+    ) {
+      // Only on initial render should you use the current selection as a query.
       const editor = atom.workspace.getActiveTextEditor();
       const selectedText = editor != null && editor.getSelections()[0].getText();
       if (selectedText && selectedText.length <= MAX_SELECTION_LENGTH) {
         searchComponent.setInputValue(selectedText.split('\n')[0]);
-        searchComponent.selectInput();
       }
     }
 
-    if (!isAlreadyVisible) {
-      searchComponent.selectInput();
+    if (!searchPanel.isVisible()) {
+      searchPanel.show();
+      searchComponent.focus();
     }
-
-    searchComponent.focus();
   }
 
   _closeSearchPanel(): void {
-    const {_searchComponent, _searchPanel} = this;
-    if (_searchComponent != null && _searchPanel != null && _searchPanel.isVisible()) {
+    if (this._searchComponent != null) {
+      invariant(this._searchPanel != null);
+      ReactDOM.unmountComponentAtNode(this._searchPanel.getItem());
+      this._searchComponent = null;
       track('quickopen-close-panel', {
         'quickopen-session': this._analyticsSessionId || '',
       });
-      _searchPanel.hide();
       this._analyticsSessionId = null;
+    }
+
+    if (this._searchPanel != null && this._searchPanel.isVisible()) {
+      this._searchPanel.hide();
     }
 
     if (this._previousFocus != null) {
@@ -270,12 +273,7 @@ class Activation {
   dispose(): void {
     this._subscriptions.dispose();
     this._quickSelectionDispatcher.unregister(this._dispatcherToken);
-    if (this._searchComponent != null) {
-      const searchPanel = this._searchPanel;
-      invariant(searchPanel != null);
-      ReactDOM.unmountComponentAtNode(searchPanel.getItem());
-      this._searchComponent = null;
-    }
+    this._closeSearchPanel();
     if (this._searchPanel != null) {
       this._searchPanel.destroy();
       this._searchPanel = null;
