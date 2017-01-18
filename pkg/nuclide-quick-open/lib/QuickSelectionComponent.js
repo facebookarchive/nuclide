@@ -39,7 +39,7 @@ export type SelectionIndex = {
 import {AtomInput} from '../../nuclide-ui/AtomInput';
 import {Button} from '../../nuclide-ui/Button';
 import Tabs from '../../nuclide-ui/Tabs';
-import {CompositeDisposable, Disposable} from 'atom';
+import {CompositeDisposable} from 'atom';
 import debounce from '../../commons-node/debounce';
 import humanizeKeystroke from '../../commons-node/humanizeKeystroke';
 import {React, ReactDOM} from 'react-for-atom';
@@ -99,7 +99,6 @@ export default class QuickSelectionComponent extends React.Component {
   state: State;
 
   _subscriptions: CompositeDisposable;
-  _modalNode: HTMLElement;
   _debouncedQueryHandler: ?({(): void} & IDisposable);
   _debouncedResultsChange: {(): void} & IDisposable;
 
@@ -150,16 +149,8 @@ export default class QuickSelectionComponent extends React.Component {
     this._getInputTextEditor().focus();
   }
 
-  blur(): void {
-    this._getInputTextEditor().blur();
-  }
-
   setInputValue(value: string): void {
     this._getTextEditor().setText(value);
-  }
-
-  getInputValue(): string {
-    return this._getTextEditor().getText();
   }
 
   selectInput(): void {
@@ -177,7 +168,10 @@ export default class QuickSelectionComponent extends React.Component {
     // TODO: Find a better way to trigger an update.
     const nextProviderName = this.props.searchResultManager.getActiveProviderName();
     if (this.state.activeTab.name === nextProviderName) {
-      process.nextTick(() => this._setQuery(this.refs.queryInput.getText()));
+      process.nextTick(() => {
+        const query = this.refs.queryInput.getText();
+        this.props.quickSelectionActions.query(query);
+      });
     } else {
       const activeProvider = this.props.searchResultManager.getProviderByName(nextProviderName);
       const lastResults = this.props.searchResultManager.getResults(
@@ -191,7 +185,10 @@ export default class QuickSelectionComponent extends React.Component {
           resultsByService: lastResults,
         },
         () => {
-          process.nextTick(() => this._setQuery(this.refs.queryInput.getText()));
+          process.nextTick(() => {
+            const query = this.refs.queryInput.getText();
+            this.props.quickSelectionActions.query(query);
+          });
           this._updateQueryHandler();
           if (this.props.onItemsChanged != null) {
             this.props.onItemsChanged(lastResults);
@@ -217,39 +214,27 @@ export default class QuickSelectionComponent extends React.Component {
   }
 
   componentDidMount(): void {
-    this._modalNode = ReactDOM.findDOMNode(this);
+    const modalNode = ReactDOM.findDOMNode(this);
     this._subscriptions.add(
-      atom.commands.add(this._modalNode, 'core:move-to-bottom', this._handleMoveToBottom),
-      atom.commands.add(this._modalNode, 'core:move-to-top', this._handleMoveToTop),
-      atom.commands.add(this._modalNode, 'core:move-down', this._handleMoveDown),
-      atom.commands.add(this._modalNode, 'core:move-up', this._handleMoveUp),
-      atom.commands.add(this._modalNode, 'core:confirm', this._select),
-      atom.commands.add(this._modalNode, 'pane:show-previous-item', this._handleMovePreviousTab),
-      atom.commands.add(this._modalNode, 'pane:show-next-item', this._handleMoveNextTab),
+      atom.commands.add(modalNode, 'core:move-to-bottom', this._handleMoveToBottom),
+      atom.commands.add(modalNode, 'core:move-to-top', this._handleMoveToTop),
+      atom.commands.add(modalNode, 'core:move-down', this._handleMoveDown),
+      atom.commands.add(modalNode, 'core:move-up', this._handleMoveUp),
+      atom.commands.add(modalNode, 'core:confirm', this._select),
+      atom.commands.add(modalNode, 'pane:show-previous-item', this._handleMovePreviousTab),
+      atom.commands.add(modalNode, 'pane:show-next-item', this._handleMoveNextTab),
+      this.props.searchResultManager.onProvidersChanged(this._handleProvidersChange),
+      this.props.searchResultManager.onResultsChanged(this._debouncedResultsChange),
+      this._getTextEditor().onDidChange(this._handleTextInputChange),
     );
 
-    // Close quick open if user clicks outside the frame.
-    document.addEventListener('mousedown', this._handleDocumentMouseDown);
-    this._subscriptions.add(
-      new Disposable(() => {
-        document.removeEventListener('mousedown', this._handleDocumentMouseDown);
-      }),
-    );
-
-    this._subscriptions.add(
-      this.props.searchResultManager.onProvidersChanged(
-        this._handleProvidersChange,
-      ),
-      this.props.searchResultManager.onResultsChanged(
-        this._handleResultsChange,
-      ),
-    );
-
-    this._getTextEditor().onDidChange(this._handleTextInputChange);
     this._getTextEditor().setText('');
+
+    document.addEventListener('mousedown', this._handleDocumentMouseDown);
   }
 
   componentWillUnmount(): void {
+    document.removeEventListener('mousedown', this._handleDocumentMouseDown);
     invariant(this._debouncedQueryHandler != null);
     this._debouncedQueryHandler.dispose();
     this._subscriptions.dispose();
@@ -308,10 +293,9 @@ export default class QuickSelectionComponent extends React.Component {
   }
 
   _handleDocumentMouseDown(event: Event): void {
-    const modal = this.refs.modal;
     // If the click did not happen on the modal or on any of its descendants,
     // the click was elsewhere on the document and should close the modal.
-    if (event.target !== modal && !modal.contains(event.target)) {
+    if (event.target !== this.refs.modal && !this.refs.modal.contains(event.target)) {
       this.props.onCancellation();
     }
   }
@@ -324,7 +308,9 @@ export default class QuickSelectionComponent extends React.Component {
     }
     this._debouncedQueryHandler = debounce(
       () => {
-        this._setKeyboardQuery(this._getTextEditor().getText());
+        this.setState({hasUserSelection: false});
+        const query = this._getTextEditor().getText();
+        this.props.quickSelectionActions.query(query);
       },
       this.state.activeTab.debounceDelay || 0,
       false,
@@ -601,15 +587,6 @@ export default class QuickSelectionComponent extends React.Component {
     });
   }
 
-  _setKeyboardQuery(query: string): void {
-    this.setState({hasUserSelection: false});
-    this._setQuery(query);
-  }
-
-  _setQuery(query: string): void {
-    this.props.quickSelectionActions.query(query);
-  }
-
   _getInputTextEditor(): atom$TextEditorElement {
     return ReactDOM.findDOMNode(this.refs.queryInput);
   }
@@ -628,7 +605,7 @@ export default class QuickSelectionComponent extends React.Component {
     if (newProviderName !== currentProviderName) {
       this.props.quickSelectionActions.changeActiveProvider(newProviderName);
     }
-    this.refs.queryInput.focus();
+    this._getInputTextEditor().focus();
   }
 
   _renderTabs(): React.Element<any> {

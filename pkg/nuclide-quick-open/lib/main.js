@@ -47,6 +47,8 @@ class Activation {
   constructor() {
     this._analyticsSessionId = null;
     this._previousFocus = null;
+    this._searchComponent = null;
+    this._searchPanel = null;
     this._quickOpenProviderRegistry = new QuickOpenProviderRegistry();
     this._quickSelectionDispatcher = new QuickSelectionDispatcher();
     this._quickSelectionActions = new QuickSelectionActions(
@@ -88,31 +90,6 @@ class Activation {
         this._searchResultManager.executeQuery(action.query);
         break;
     }
-  }
-
-  _render(): void {
-    if (this._searchPanel == null) {
-      this._searchPanel = atom.workspace.addModalPanel({
-        item: document.createElement('div'),
-        visible: false,
-        className: 'nuclide-quick-open',
-      });
-    }
-
-    const searchPanel = this._searchPanel;
-    invariant(searchPanel != null);
-
-    const _searchComponent = ReactDOM.render(
-      <QuickSelectionComponent
-        quickSelectionActions={this._quickSelectionActions}
-        searchResultManager={this._searchResultManager}
-        onSelection={this._handleSelection}
-        onCancellation={this._closeSearchPanel}
-      />,
-      searchPanel.getItem(),
-    );
-    invariant(_searchComponent instanceof QuickSelectionComponent);
-    this._searchComponent = _searchComponent;
   }
 
   _handleSelection(
@@ -171,34 +148,65 @@ class Activation {
       this._closeSearchPanel();
     } else {
       this._searchResultManager.setActiveProvider(newProviderName);
-      this._render();
       this._showSearchPanel();
     }
   }
 
   _showSearchPanel(initialQuery?: string): void {
-    this._previousFocus = document.activeElement;
-    const {_searchComponent, _searchPanel} = this;
-    if (_searchComponent != null && _searchPanel != null) {
-      // Start a new search "session" for analytics purposes.
-      track('quickopen-open-panel', {
-        'quickopen-session': this._analyticsSessionId || '',
+    if (this._searchPanel == null) {
+      this._searchPanel = atom.workspace.addModalPanel({
+        item: document.createElement('div'),
+        visible: false,
+        className: 'nuclide-quick-open',
       });
-      // _showSearchPanel gets called when changing providers even if it's already shown.
-      const isAlreadyVisible = _searchPanel.isVisible();
-      _searchPanel.show();
-      _searchComponent.focus();
-      if (initialQuery != null) {
-        _searchComponent.setInputValue(initialQuery);
-      } else if (featureConfig.get('nuclide-quick-open.useSelection') && !isAlreadyVisible) {
-        const editor = atom.workspace.getActiveTextEditor();
-        const selectedText = editor != null && editor.getSelections()[0].getText();
-        if (selectedText && selectedText.length <= MAX_SELECTION_LENGTH) {
-          _searchComponent.setInputValue(selectedText.split('\n')[0]);
-        }
-      }
-      _searchComponent.selectInput();
     }
+
+    const searchPanel = this._searchPanel;
+    invariant(searchPanel != null);
+
+    const searchComponent = ReactDOM.render(
+      <QuickSelectionComponent
+        quickSelectionActions={this._quickSelectionActions}
+        searchResultManager={this._searchResultManager}
+        onSelection={this._handleSelection}
+        onCancellation={this._closeSearchPanel}
+      />,
+      searchPanel.getItem(),
+    );
+
+    invariant(searchComponent instanceof QuickSelectionComponent);
+    this._searchComponent = searchComponent;
+
+    // Start a new search "session" for analytics purposes.
+    track('quickopen-open-panel', {
+      'quickopen-session': this._analyticsSessionId || '',
+    });
+
+    // _showSearchPanel gets called when changing providers even if it's already shown.
+    const isAlreadyVisible = searchPanel.isVisible();
+
+    if (!isAlreadyVisible) {
+      this._previousFocus = document.activeElement;
+      searchPanel.show();
+    }
+
+    if (initialQuery != null) {
+      searchComponent.setInputValue(initialQuery);
+      searchComponent.selectInput();
+    } else if (featureConfig.get('nuclide-quick-open.useSelection') && !isAlreadyVisible) {
+      const editor = atom.workspace.getActiveTextEditor();
+      const selectedText = editor != null && editor.getSelections()[0].getText();
+      if (selectedText && selectedText.length <= MAX_SELECTION_LENGTH) {
+        searchComponent.setInputValue(selectedText.split('\n')[0]);
+        searchComponent.selectInput();
+      }
+    }
+
+    if (!isAlreadyVisible) {
+      searchComponent.selectInput();
+    }
+
+    searchComponent.focus();
   }
 
   _closeSearchPanel(): void {
@@ -208,7 +216,6 @@ class Activation {
         'quickopen-session': this._analyticsSessionId || '',
       });
       _searchPanel.hide();
-      _searchComponent.blur();
       this._analyticsSessionId = null;
     }
 
@@ -252,9 +259,6 @@ class Activation {
       (params: DeepLinkParams): void => {
         const {query} = params;
         if (typeof query === 'string') {
-          if (this._searchComponent == null) {
-            this._render();
-          }
           this._showSearchPanel(query);
         }
       },
