@@ -15,10 +15,10 @@ import {IwdpLaunchAttachProvider} from './IwdpLaunchAttachProvider';
 
 export function createDebuggerProvider(): NuclideDebuggerProvider {
   return {
-    name: 'IWDP',
+    name: 'Mobile JS',
     getLaunchAttachProvider: connection => {
       if (nuclideUri.isLocal(connection)) {
-        return new IwdpLaunchAttachProvider('iOS Webkit Debug Proxy', connection);
+        return new IwdpLaunchAttachProvider('Mobile JS', connection);
       } else {
         return null;
       }

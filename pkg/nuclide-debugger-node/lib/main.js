@@ -26,7 +26,7 @@ export function createDebuggerProvider(): NuclideDebuggerProvider {
   return {
     name: 'Node',
     getLaunchAttachProvider(connection: NuclideUri): ?DebuggerLaunchAttachProvider {
-      return new NodeLaunchAttachProvider('JavaScript', connection);
+      return new NodeLaunchAttachProvider('NodeJS', connection);
     },
   };
 }
