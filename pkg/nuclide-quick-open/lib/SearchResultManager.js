@@ -477,8 +477,15 @@ export default class SearchResultManager {
   getRenderableProviders(): Array<ProviderSpec> {
     // Only render tabs for providers that are eligible for at least one directory.
     const eligibleDirectoryProviders =
-      // $FlowIssue
-      Array.from(new Set(...this._providersByDirectory.values()));
+      this._quickOpenProviderRegistry.getDirectoryProviders()
+        .filter(eligibleProvider => {
+          for (const [, directoryProviders] of this._providersByDirectory) {
+            if (directoryProviders.has(eligibleProvider)) {
+              return true;
+            }
+          }
+          return false;
+        });
     const tabs = this._quickOpenProviderRegistry.getGlobalProviders()
       .concat(eligibleDirectoryProviders)
       .filter(provider => (provider.display != null))
