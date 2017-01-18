@@ -154,9 +154,8 @@ function getPackagerObservable(projectRootPath: ?string): Observable<PackagerEve
       const {command, cwd, args} = commandInfo;
       const remote = electron.remote;
       invariant(remote != null);
-      const app = remote.require('app');
       // Tell the packager to use this Atom to edit the files.
-      const editor = [app.getPath('exe')];
+      const editor = [remote.app.getPath('exe')];
       if (atom.devMode) {
         editor.push('--dev');
       }

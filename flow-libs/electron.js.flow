@@ -102,7 +102,23 @@ declare class WebviewElement extends HTMLElement {
  * https://github.com/electron/electron/blob/master/docs/api/app.md
  */
 
-type electron$app = {};
+type electron$app = {
+  quit(): void,
+  exit(exitCode?: number): void,
+  relaunch(options?: {args?: Array<string>, execPath?: string}): void,
+  isReady(): boolean,
+  focus(): void,
+  getAppPath(): string,
+  getPath(name: string): string,
+  setPath(name: string, path: string): void,
+  getVersion(): string,
+  getName(): string,
+  setName(name: string): void,
+  getLocale(): string,
+  makeSingleInstance(callback: (argv: Array<string>, workingDirectory: string) => void): boolean,
+  releaseSingleInstance(): void,
+  disableHardwareAcceleration(): void,
+};
 
 /**
  * https://github.com/electron/electron/blob/master/docs/api/auto-updater.md
