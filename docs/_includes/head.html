@@ -40,9 +40,15 @@
         var atomText = "Nuclide requires an Atom version that is greater or equal to " + atomVersion[1] + ".";
         var nuclideText = "The current version of Nuclide is " + nuclideVersion + ".";
 
-        document.getElementById("node").innerHTML = nodeText;
-        document.getElementById("atom").innerHTML = atomText;
-        document.getElementById("nuclide").innerHTML = nuclideText;
+        if(document.getElementById("node")) {
+          document.getElementById("node").innerHTML = nodeText;
+        }
+        if(document.getElementById("atom")) {
+          document.getElementById("atom").innerHTML = atomText;
+        }
+        if(document.getElementById("nuclide")) {
+          document.getElementById("nuclide").innerHTML = nuclideText;
+        }
       }
     });
   </script>

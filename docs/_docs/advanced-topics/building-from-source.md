@@ -67,9 +67,9 @@ Verify the installation:
 
 ### Prerequisites
 
-You must have the [general prerequisites](/docs/editor/setup#linux__prerequisites) installed. In
-addition, you must have a version of Node that is equal to or greater than that specified
-in ["node" (under "engines") in the package information](https://github.com/facebook/nuclide/blob/master/package.json)
+You must have the [general prerequisites](/docs/editor/setup#linux__prerequisites) installed.
+
+<p id="node"></p>
 
 To install Node, see [Node.js's download page](https://nodejs.org/en/download/) for steps that work best for your setup.
 
