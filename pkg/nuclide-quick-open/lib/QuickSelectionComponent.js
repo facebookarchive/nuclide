@@ -44,6 +44,7 @@ import debounce from '../../commons-node/debounce';
 import humanizeKeystroke from '../../commons-node/humanizeKeystroke';
 import {React, ReactDOM} from 'react-for-atom';
 import classnames from 'classnames';
+import invariant from 'assert';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {
   filterEmptyResults,
@@ -99,13 +100,12 @@ export default class QuickSelectionComponent extends React.Component {
 
   _subscriptions: CompositeDisposable;
   _modalNode: HTMLElement;
-  _debouncedQueryHandler: () => void;
-  _isMounted: boolean;
+  _debouncedQueryHandler: ?({(): void} & IDisposable);
+  _debouncedResultsChange: {(): void} & IDisposable;
 
   constructor(props: Props) {
     super(props);
     this._subscriptions = new CompositeDisposable();
-    this._isMounted = false;
     this.state = {
       activeTab: this.props.searchResultManager.getProviderByName(
         this.props.searchResultManager.getActiveProviderName(),
@@ -132,6 +132,15 @@ export default class QuickSelectionComponent extends React.Component {
     (this: any)._handleTabChange = this._handleTabChange.bind(this);
     (this: any)._handleTextInputChange = this._handleTextInputChange.bind(this);
     (this: any)._select = this._select.bind(this);
+
+    this._debouncedResultsChange = debounce(
+      this._handleResultsChange,
+      RESULTS_CHANGED_DEBOUNCE_DELAY,
+      false,
+    );
+    this._subscriptions.add(this._debouncedResultsChange);
+
+    this._updateQueryHandler();
   }
 
   /**
@@ -208,7 +217,6 @@ export default class QuickSelectionComponent extends React.Component {
   }
 
   componentDidMount(): void {
-    this._isMounted = true;
     this._modalNode = ReactDOM.findDOMNode(this);
     this._subscriptions.add(
       atom.commands.add(this._modalNode, 'core:move-to-bottom', this._handleMoveToBottom),
@@ -233,17 +241,17 @@ export default class QuickSelectionComponent extends React.Component {
         this._handleProvidersChange,
       ),
       this.props.searchResultManager.onResultsChanged(
-        debounce(this._handleResultsChange, RESULTS_CHANGED_DEBOUNCE_DELAY, false),
+        this._handleResultsChange,
       ),
     );
 
-    this._updateQueryHandler();
     this._getTextEditor().onDidChange(this._handleTextInputChange);
     this._getTextEditor().setText('');
   }
 
   componentWillUnmount(): void {
-    this._isMounted = false;
+    invariant(this._debouncedQueryHandler != null);
+    this._debouncedQueryHandler.dispose();
     this._subscriptions.dispose();
   }
 
@@ -309,11 +317,14 @@ export default class QuickSelectionComponent extends React.Component {
   }
 
   _updateQueryHandler(): void {
+    // Use "if" and not "invariant" since this may be the first time we're
+    // setting up the debounced handler.
+    if (this._debouncedQueryHandler != null) {
+      this._debouncedQueryHandler.dispose();
+    }
     this._debouncedQueryHandler = debounce(
       () => {
-        if (this._isMounted) {
-          this._setKeyboardQuery(this._getTextEditor().getText());
-        }
+        this._setKeyboardQuery(this._getTextEditor().getText());
       },
       this.state.activeTab.debounceDelay || 0,
       false,
@@ -321,15 +332,12 @@ export default class QuickSelectionComponent extends React.Component {
   }
 
   _handleTextInputChange(): void {
+    invariant(this._debouncedQueryHandler != null);
     this._debouncedQueryHandler();
   }
 
   _handleResultsChange(): void {
-    // This function is running on a timer (debounced), it is possible that it
-    // may be called after the component has unmounted.
-    if (this._isMounted) {
-      this._updateResults();
-    }
+    this._updateResults();
   }
 
   _handleProvidersChange(): void {

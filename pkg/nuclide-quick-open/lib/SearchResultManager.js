@@ -68,7 +68,7 @@ export default class SearchResultManager {
   _directories: Array<atom$Directory>;
   _resultCache: ResultCache;
   _currentWorkingRoot: ?Directory;
-  _debouncedUpdateDirectories: () => mixed;
+  _debouncedUpdateDirectories: {(): Promise<void> | void} & IDisposable;
   _emitter: Emitter;
   _subscriptions: CompositeDisposable;
   _activeProviderName: string;
@@ -99,6 +99,7 @@ export default class SearchResultManager {
     this._subscriptions = new CompositeDisposable();
     this._quickOpenProviderRegistry = quickOpenProviderRegistry;
     this._subscriptions.add(
+      this._debouncedUpdateDirectories,
       atom.project.onDidChangePaths(
         this._debouncedUpdateDirectories,
       ),
