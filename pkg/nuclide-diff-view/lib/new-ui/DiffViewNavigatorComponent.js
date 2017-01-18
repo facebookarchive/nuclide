@@ -15,6 +15,8 @@ import type {
 import type DiffViewModel from '../DiffViewModel';
 import typeof * as BoundActionCreators from '../redux/Actions';
 
+import invariant from 'assert';
+
 import createPaneContainer from '../../../commons-atom/create-pane-container';
 import {
   DiffMode,
@@ -196,6 +198,7 @@ export default class DiffViewNavigatorComponent extends React.Component {
       const dismissHandler = () => {
         actionCreators.setViewMode(DiffMode.BROWSE_MODE);
       };
+      invariant(document.body != null);
       const modalMaxHeight = document.body.clientHeight - 100;
       return (
         <div>

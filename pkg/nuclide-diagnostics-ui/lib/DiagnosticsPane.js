@@ -33,12 +33,12 @@ type DescriptionField = {
 };
 
 export type DisplayDiagnostic = {
-  type: string,
-  providerName: string,
-  filePath: string,
-  range: number,
-  description: DescriptionField,
-  diagnostic: DiagnosticMessage,
+  +type: string,
+  +providerName: string,
+  +filePath: string,
+  +range: number,
+  +description: DescriptionField,
+  +diagnostic: DiagnosticMessage,
 };
 
 // Maximum number of results to render in the table before truncating and displaying a "Max results

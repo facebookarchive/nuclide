@@ -368,6 +368,7 @@ export class FileTreeEntryComponent extends React.Component {
 
     const fileIcon = target.cloneNode(false);
     fileIcon.style.cssText = 'position: absolute; top: 0; left: 0; color: #fff; opacity: .8;';
+    invariant(document.body != null);
     document.body.appendChild(fileIcon);
 
     const {dataTransfer} = event;
@@ -376,7 +377,10 @@ export class FileTreeEntryComponent extends React.Component {
       dataTransfer.setDragImage(fileIcon, -8, -4);
       dataTransfer.setData('initialPath', this.props.node.uri);
     }
-    nextAnimationFrame.subscribe(() => { document.body.removeChild(fileIcon); });
+    nextAnimationFrame.subscribe(() => {
+      invariant(document.body != null);
+      document.body.removeChild(fileIcon);
+    });
   }
 
   _onDragOver(event: DragEvent) {

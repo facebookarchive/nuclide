@@ -24,12 +24,13 @@ import nuclideUri from '../commons-node/nuclideUri';
  */
 export function dispatchKeyboardEvent(
   key: string,
-  target: HTMLElement,
+  target: ?HTMLElement,
   metaKeys: {alt?: boolean, cmd?: boolean, ctrl?: boolean, shift?: boolean} = {},
 ): void {
   const {alt, cmd, ctrl, shift} = metaKeys;
   // Atom requires `key` to be uppercase when `shift` is specified.
   invariant(shift !== true || key.toUpperCase() === key);
+  invariant(target != null);
   const event = atom.keymaps.constructor.buildKeydownEvent(key, {
     target,
     alt: Boolean(alt),

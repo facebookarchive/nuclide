@@ -436,6 +436,7 @@ export default class Bridge {
       // to live in the DOM. We render it into the body to keep it separate from our view, which may
       // be detached. If the webview were a child, it would cause the webview to reload when
       // reattached, and we'd lose our state.
+      invariant(document.body != null);
       document.body.appendChild(webview);
 
       this._setWebviewElement(webview);

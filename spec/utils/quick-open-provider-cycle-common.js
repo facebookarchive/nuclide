@@ -73,6 +73,7 @@ export function runTest(context: TestContext) {
     runs(() => {
       const quickOpenPackage = atom.packages.getActivePackage(PACKAGE_NAME);
       invariant(quickOpenPackage, `The "${PACKAGE_NAME}" package is not active!`);
+      invariant(document.activeElement != null);
       atom.commands.dispatch(
         document.activeElement,
         'nuclide-quick-open:find-anything-via-omni-search',

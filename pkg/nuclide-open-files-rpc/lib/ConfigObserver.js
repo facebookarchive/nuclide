@@ -48,9 +48,11 @@ export class ConfigObserver {
       .concat(Array.from(this._fileCache.getOpenFiles())
         .filter(filePath => this._fileExtensions.indexOf(nuclideUri.extname(filePath)) !== -1));
 
-    return new Set(
+    const result = new Set(
       (await Promise.all(paths.map(path => this._findConfigDir(path))))
       .filter(path => path != null));
+    // $FlowIssue Flow doesn't understand filter
+    return (result: Set<NuclideUri>);
   }
 
   observeConfigs(): Observable<Set<NuclideUri>> {

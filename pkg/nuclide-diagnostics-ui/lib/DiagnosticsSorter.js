@@ -23,13 +23,14 @@ export function sortDiagnostics(
     return diagnostics;
   }
   const cmp: any = sortedColumnName === 'range' ? _cmpNumber : _cmpString;
-  const getter = (displayDiagnostic: {data: DisplayDiagnostic}) => (
+  const getter = (displayDiagnostic: {+data: DisplayDiagnostic}) => (
     sortedColumnName === 'description'
       ? displayDiagnostic.data.description.text
       : displayDiagnostic.data[sortedColumnName]
     );
   // $FlowFixMe -- this whole thing is poorly typed
   return [...diagnostics].sort((a, b) => {
+    // $FlowFixMe -- this whole thing is poorly typed
     return cmp(getter(a), getter(b), !sortDescending);
   });
 }

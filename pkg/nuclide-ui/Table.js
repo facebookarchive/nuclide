@@ -31,9 +31,9 @@ export type Column = {
   component?: ReactClass<any>,
 };
 export type Row = {
-  className?: string,
-  data: {
-    [key: ColumnKey]: ?mixed,
+  +className?: string,
+  +data: {
+    +[key: ColumnKey]: ?mixed,
   },
 };
 type WidthMap = {

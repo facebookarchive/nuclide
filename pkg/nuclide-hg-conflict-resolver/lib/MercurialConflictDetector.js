@@ -38,11 +38,12 @@ export class MercurialConflictDetector {
   }
 
   _updateRepositories(): void {
-    const repositories = new Set(
+    const repositories: Set<HgRepositoryClient> = (new Set(
       atom.project.getRepositories().filter(
         repository => repository != null && repository.getType() === 'hg',
       ),
-    );
+    // Flow doesn't understand the implications of the filter, so we need to cast.
+    ): Set<any>);
     // Dispose removed projects repositories, if any.
     for (const [repository, repositorySubscription] of this._repositorySubscriptions) {
       if (repositories.has(repository)) {

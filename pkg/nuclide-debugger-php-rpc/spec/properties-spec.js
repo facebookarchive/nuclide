@@ -97,10 +97,10 @@ describe('debugger-php-rpc properties', () => {
 
   it('getPagedProperties - single and partial pages', () => {
     expect(getPagedProperties(
+      // $FlowFixMe - fix test type.
       {
         enableCount: 12,
         frameIndex: 1,
-        // $FlowFixMe - fix test type.
         contextId: 2,
         fullname: 'fullname-value',
         elementRange: {
@@ -151,10 +151,10 @@ describe('debugger-php-rpc properties', () => {
 
   it('getPagedProperties - page of pages', () => {
     expect(getPagedProperties(
+      // $FlowFixMe - fix test type.
       {
         enableCount: 12,
         frameIndex: 1,
-        // $FlowFixMe - fix test type.
         contextId: 2,
         fullname: 'fullname-value',
         elementRange: {

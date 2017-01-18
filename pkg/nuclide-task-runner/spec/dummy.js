@@ -66,12 +66,11 @@ export function createTask(
   disabled: ?boolean = undefined,
   priority: number = 0,
 ): AnnotatedTaskMetadata {
+  // $FlowIgnore: For tests, it's fine if this exists and is undefined.
   return {
     type,
     label: type,
     description: type,
-    icon: 'alert',
-    // $FlowIgnore: For tests, it's fine if this exists and is undefined.
     disabled,
     priority,
     runnable: true,

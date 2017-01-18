@@ -14,6 +14,7 @@ type ComboboxOption = {
   matchIndex: number,
 };
 
+import invariant from 'assert';
 import UniversalDisposable from '../commons-node/UniversalDisposable';
 import {Observable} from 'rxjs';
 import {AtomInput} from './AtomInput';
@@ -210,6 +211,7 @@ export class Combobox extends React.Component {
   _getOptionsElement(): HTMLElement {
     if (this._optionsElement == null) {
       this._optionsElement = document.createElement('div');
+      invariant(document.body != null);
       document.body.appendChild(this._optionsElement);
       this._subscriptions.add(
         () => { this._optionsElement.remove(); },

@@ -85,10 +85,10 @@ export class PackagerActivation {
       new Disposable(() => { this._logTailer.stop(); }),
       atom.commands.add('atom-workspace', {
         'nuclide-react-native:start-packager': event => {
-          // $FlowFixMe
           const detail = event.detail != null && typeof event.detail === 'object'
             ? event.detail
             : undefined;
+          // $FlowFixMe
           this._logTailer.start(detail);
         },
         'nuclide-react-native:stop-packager': () => this._logTailer.stop(),
