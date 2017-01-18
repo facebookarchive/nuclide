@@ -35,6 +35,8 @@ import {Section} from '../../nuclide-ui/Section';
 import featureConfig from '../../commons-atom/featureConfig';
 import {goToLocation} from '../../commons-atom/go-to-location';
 import {track} from '../../nuclide-analytics';
+import invariant from 'assert';
+import {remote} from 'electron';
 
 type State = {
   shouldRenderToolbar: boolean,
@@ -124,6 +126,30 @@ export default class FileTreeSidebarComponent extends React.Component {
       throttle(remeasureEvents, () => nextAnimationFrame).subscribe(() => {
         this._updateScrollerHeight();
       }),
+
+      // Customize the context menu to remove items that match the 'atom-pane' selector.
+      Observable.fromEvent(ReactDOM.findDOMNode(this), 'contextmenu')
+        .switchMap(event => {
+          if (event.button !== 2) {
+            return Observable.never();
+          }
+
+          event.preventDefault();
+          event.stopPropagation();
+
+          // Find all the item sets that match the 'atom-pane' selector. We're going to remove these
+          // by changing their selector.
+          const paneItemSets =
+            atom.contextMenu.itemSets.filter(itemSet => itemSet.selector === 'atom-pane');
+          // Override the selector while we get the template.
+          paneItemSets.forEach(itemSet => { itemSet.selector = 'do-not-match-anything'; });
+          const menuTemplate = atom.contextMenu.templateForEvent(event);
+          paneItemSets.forEach(itemSet => { itemSet.selector = 'atom-pane'; });
+          // Wrap the disposable in an observable. This way we don't have to manually track these
+          // disposables, they'll be managed for us.
+          return Observable.create(() => showMenuForEvent(event, menuTemplate));
+        })
+        .subscribe(),
     );
   }
 
@@ -448,4 +474,28 @@ function getCurrentBuffers(): Array<atom$TextBuffer> {
   });
 
   return buffers;
+}
+
+/**
+ * Shows the provided menu template. This will result in [an extra call to `templateForEvent()`][1],
+ * but it means that we still go through `showMenuForEvent()`, maintaining its behavior wrt
+ * (a)synchronousness. See atom/atom#13398.
+ *
+ * [1]: https://github.com/atom/atom/blob/v1.13.0/src/context-menu-manager.coffee#L200
+ */
+function showMenuForEvent(event, menuTemplate): UniversalDisposable {
+  invariant(remote != null);
+  const win = (remote.getCurrentWindow(): any);
+  const originalEmit = win.emit;
+  const restore = () => { win.emit = originalEmit; };
+  win.emit = (eventType, ...args) => {
+    if (eventType !== 'context-menu') {
+      return originalEmit(eventType, ...args);
+    }
+    const result = originalEmit('context-menu', menuTemplate);
+    restore();
+    return result;
+  };
+  atom.contextMenu.showForEvent(event);
+  return new UniversalDisposable(restore);
 }

@@ -1142,10 +1142,15 @@ declare class atom$Clipboard {
 declare class atom$ContextMenuManager {
   add(itemsBySelector: {[cssSelector: string]: Array<atom$ContextMenuItem>}): IDisposable,
   itemSets: Array<atom$ContextMenuItemSet>,
+
+  // Undocumented methods
+  showForEvent(event: Event): void,
+  templateForEvent(event: Event): Array<Object>,
 }
 
 declare class atom$ContextMenuItemSet {
   items: Array<atom$ContextMenuItem>,
+  selector: string,
 }
 
 type atom$ContextMenuItem = {
