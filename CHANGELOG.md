@@ -1,5 +1,10 @@
 # Nuclide Changelog
 
+## v0.199.0
+
+Hotfix for quick-open providers selection for multiple projects case.
+
+
 ## v0.198.0
 
 ### Highlights
