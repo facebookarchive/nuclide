@@ -1,3 +1,49 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createPaneContainer;
+
+function _load_createPaneContainer() {
+  return _createPaneContainer = _interopRequireDefault(require('../../../commons-atom/create-pane-container'));
+}
+
+var _constants;
+
+function _load_constants() {
+  return _constants = require('../constants');
+}
+
+var _reactForAtom = require('react-for-atom');
+
+var _DiffViewComponent;
+
+function _load_DiffViewComponent() {
+  return _DiffViewComponent = require('../DiffViewComponent');
+}
+
+var _Modal;
+
+function _load_Modal() {
+  return _Modal = require('../../../nuclide-ui/Modal');
+}
+
+var _SectionDirectionNavigator;
+
+function _load_SectionDirectionNavigator() {
+  return _SectionDirectionNavigator = _interopRequireDefault(require('./SectionDirectionNavigator'));
+}
+
+var _notifications;
+
+function _load_notifications() {
+  return _notifications = require('../notifications');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,210 +51,166 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
 
-import type {
-  AppState,
-  NavigationSectionStatusType,
-} from '../types';
-import type DiffViewModel from '../DiffViewModel';
-import typeof * as BoundActionCreators from '../redux/Actions';
+class DiffViewNavigatorComponent extends _reactForAtom.React.Component {
 
-import createPaneContainer from '../../../commons-atom/create-pane-container';
-import {
-  DiffMode,
-  DIFF_EDITOR_MARKER_CLASS,
-} from '../constants';
-import {
-  React,
-  ReactDOM,
-} from 'react-for-atom';
-import {
-  centerScrollToBufferLine,
-  navigationSectionStatusToEditorElement,
-  renderCommitView,
-  renderFileChanges,
-  renderPublishView,
-  renderTimelineView,
-} from '../DiffViewComponent';
-import {Modal} from '../../../nuclide-ui/Modal';
-import SectionDirectionNavigator from './SectionDirectionNavigator';
-import {notifyInternalError} from '../notifications';
-
-type Props = AppState & {
-  actionCreators: BoundActionCreators,
-  // TODO(most): deprecate the model - use `actionCreators` instead.
-  diffModel: DiffViewModel,
-  tryTriggerNux: () => mixed,
-};
-
-export default class DiffViewNavigatorComponent extends React.Component {
-  props: Props;
-  _paneContainer: Object;
-  _navigatorPane: atom$Pane;
-  _fileChangesPane: atom$Pane;
-
-  constructor(props: Props) {
+  constructor(props) {
     super(props);
-    (this: any)._handleNavigateToSection = this._handleNavigateToSection.bind(this);
+    this._handleNavigateToSection = this._handleNavigateToSection.bind(this);
   }
 
-  componentDidMount(): void {
-    this._paneContainer = createPaneContainer();
-    ReactDOM.findDOMNode(this.refs.paneContainer).appendChild(
-      atom.views.getView(this._paneContainer),
-    );
+  componentDidMount() {
+    this._paneContainer = (0, (_createPaneContainer || _load_createPaneContainer()).default)();
+    _reactForAtom.ReactDOM.findDOMNode(this.refs.paneContainer).appendChild(atom.views.getView(this._paneContainer));
     this._navigatorPane = this._paneContainer.getActivePane();
     this._fileChangesPane = this._navigatorPane.splitRight({
-      flexScale: 0.5,
+      flexScale: 0.5
     });
     this._renderPaneElements();
 
     this.props.tryTriggerNux();
   }
 
-  componentDidUpdate(): void {
+  componentDidUpdate() {
     this._renderPaneElements();
   }
 
-  render(): React.Element<any> {
-    return (
-      <div className="nuclide-diff-view-navigator-root" ref="paneContainer" />
-    );
+  render() {
+    return _reactForAtom.React.createElement('div', { className: 'nuclide-diff-view-navigator-root', ref: 'paneContainer' });
   }
 
-  _renderPaneElements(): void {
-    ReactDOM.render(
-      this._renderNavigator(),
-      this._getPaneElement(this._navigatorPane),
-    );
-    ReactDOM.render(
-      this._renderFileChanges(),
-      this._getPaneElement(this._fileChangesPane),
-    );
+  _renderPaneElements() {
+    _reactForAtom.ReactDOM.render(this._renderNavigator(), this._getPaneElement(this._navigatorPane));
+    _reactForAtom.ReactDOM.render(this._renderFileChanges(), this._getPaneElement(this._fileChangesPane));
   }
 
-  componentWillUnmount(): void {
+  componentWillUnmount() {
     const panes = [this._navigatorPane, this._fileChangesPane];
     panes.forEach(pane => {
-      ReactDOM.unmountComponentAtNode(ReactDOM.findDOMNode(this._getPaneElement(pane)));
+      _reactForAtom.ReactDOM.unmountComponentAtNode(_reactForAtom.ReactDOM.findDOMNode(this._getPaneElement(pane)));
       pane.destroy();
     });
   }
 
-  _renderNavigator(): React.Element<any> {
-    return (
-      <div className="nuclide-diff-view-navigator-timeline-container">
-        {this._renderNavigationState()}
-      </div>
+  _renderNavigator() {
+    return _reactForAtom.React.createElement(
+      'div',
+      { className: 'nuclide-diff-view-navigator-timeline-container' },
+      this._renderNavigationState()
     );
   }
 
-  _renderFileChanges(): React.Element<any> {
+  _renderFileChanges() {
     const {
-      fileDiff: {activeSectionIndex, filePath, navigationSections},
-      isLoadingFileDiff,
+      fileDiff: { activeSectionIndex, filePath, navigationSections },
+      isLoadingFileDiff
     } = this.props;
 
     let sectionNavigator;
     if (isLoadingFileDiff) {
-      sectionNavigator = (
-        <div className="padded">
-          Loading Changes ...
-        </div>
+      sectionNavigator = _reactForAtom.React.createElement(
+        'div',
+        { className: 'padded' },
+        'Loading Changes ...'
       );
     } else if (navigationSections.length === 0) {
-      sectionNavigator = (
-        <div className="padded">
-          No active diff changes
-        </div>
+      sectionNavigator = _reactForAtom.React.createElement(
+        'div',
+        { className: 'padded' },
+        'No active diff changes'
       );
     } else {
-      sectionNavigator = (
-        <div className="padded">
-          <span>Changed Sections: </span>
-          <SectionDirectionNavigator
-            commandTarget={`.${DIFF_EDITOR_MARKER_CLASS}`}
-            filePath={filePath}
-            navigationSections={navigationSections}
-            selectedNavigationSectionIndex={activeSectionIndex}
-            onNavigateToNavigationSection={this._handleNavigateToSection}
-          />
-        </div>
+      sectionNavigator = _reactForAtom.React.createElement(
+        'div',
+        { className: 'padded' },
+        _reactForAtom.React.createElement(
+          'span',
+          null,
+          'Changed Sections: '
+        ),
+        _reactForAtom.React.createElement((_SectionDirectionNavigator || _load_SectionDirectionNavigator()).default, {
+          commandTarget: `.${ (_constants || _load_constants()).DIFF_EDITOR_MARKER_CLASS }`,
+          filePath: filePath,
+          navigationSections: navigationSections,
+          selectedNavigationSectionIndex: activeSectionIndex,
+          onNavigateToNavigationSection: this._handleNavigateToSection
+        })
       );
     }
 
-    return (
-      <div className="nuclide-diff-view-navigator-file-changes-container">
-        <div>
-          {sectionNavigator}
-        </div>
-        {renderFileChanges(this.props.diffModel)}
-      </div>
+    return _reactForAtom.React.createElement(
+      'div',
+      { className: 'nuclide-diff-view-navigator-file-changes-container' },
+      _reactForAtom.React.createElement(
+        'div',
+        null,
+        sectionNavigator
+      ),
+      (0, (_DiffViewComponent || _load_DiffViewComponent()).renderFileChanges)(this.props.diffModel)
     );
   }
 
-  _getPaneElement(pane: atom$Pane): HTMLElement {
+  _getPaneElement(pane) {
     // $FlowFixMe querySelector returns ?HTMLElement
     return atom.views.getView(pane).querySelector('.item-views');
   }
 
-  _handleNavigateToSection(
-    status: NavigationSectionStatusType,
-    lineNumber: number,
-  ): void {
-    const {diffEditors} = this.props;
+  _handleNavigateToSection(status, lineNumber) {
+    const { diffEditors } = this.props;
     if (diffEditors == null) {
-      notifyInternalError(new Error('diffEditors cannot be null while navigating!'));
+      (0, (_notifications || _load_notifications()).notifyInternalError)(new Error('diffEditors cannot be null while navigating!'));
       return;
     }
-    const {newDiffEditor, oldDiffEditor} = diffEditors;
-    const textEditorElement = navigationSectionStatusToEditorElement(
-      oldDiffEditor.getEditorDomElement(),
-      newDiffEditor.getEditorDomElement(),
-      status,
-    );
-    centerScrollToBufferLine(textEditorElement, lineNumber);
+    const { newDiffEditor, oldDiffEditor } = diffEditors;
+    const textEditorElement = (0, (_DiffViewComponent || _load_DiffViewComponent()).navigationSectionStatusToEditorElement)(oldDiffEditor.getEditorDomElement(), newDiffEditor.getEditorDomElement(), status);
+    (0, (_DiffViewComponent || _load_DiffViewComponent()).centerScrollToBufferLine)(textEditorElement, lineNumber);
   }
 
-  _renderNavigationState(): React.Element<any> {
-    const {diffModel, viewMode} = this.props;
+  _renderNavigationState() {
+    const { diffModel, viewMode } = this.props;
     switch (viewMode) {
-      case DiffMode.BROWSE_MODE:
-        return renderTimelineView(diffModel);
-      case DiffMode.COMMIT_MODE:
-        return renderCommitView(diffModel);
-      case DiffMode.PUBLISH_MODE:
+      case (_constants || _load_constants()).DiffMode.BROWSE_MODE:
+        return (0, (_DiffViewComponent || _load_DiffViewComponent()).renderTimelineView)(diffModel);
+      case (_constants || _load_constants()).DiffMode.COMMIT_MODE:
+        return (0, (_DiffViewComponent || _load_DiffViewComponent()).renderCommitView)(diffModel);
+      case (_constants || _load_constants()).DiffMode.PUBLISH_MODE:
         return this._renderPublishView();
       default:
-        throw new Error(`Invalid Diff Mode: ${viewMode}`);
+        throw new Error(`Invalid Diff Mode: ${ viewMode }`);
     }
   }
 
-  _renderPublishView(): React.Element<any> {
-    const {actionCreators, diffModel, shouldDockPublishView} = this.props;
+  _renderPublishView() {
+    const { actionCreators, diffModel, shouldDockPublishView } = this.props;
 
-    const publishViewElement = renderPublishView(diffModel);
+    const publishViewElement = (0, (_DiffViewComponent || _load_DiffViewComponent()).renderPublishView)(diffModel);
     if (shouldDockPublishView) {
       return publishViewElement;
     } else {
       const dismissHandler = () => {
-        actionCreators.setViewMode(DiffMode.BROWSE_MODE);
+        actionCreators.setViewMode((_constants || _load_constants()).DiffMode.BROWSE_MODE);
       };
       const modalMaxHeight = document.body.clientHeight - 100;
-      return (
-        <div>
-          {renderTimelineView(diffModel)}
-          <Modal onDismiss={dismissHandler}>
-            <div
-              style={{maxHeight: modalMaxHeight}}
-              className="nuclide-diff-view-modal-diff-mode">
-              {publishViewElement}
-            </div>
-          </Modal>
-        </div>
+      return _reactForAtom.React.createElement(
+        'div',
+        null,
+        (0, (_DiffViewComponent || _load_DiffViewComponent()).renderTimelineView)(diffModel),
+        _reactForAtom.React.createElement(
+          (_Modal || _load_Modal()).Modal,
+          { onDismiss: dismissHandler },
+          _reactForAtom.React.createElement(
+            'div',
+            {
+              style: { maxHeight: modalMaxHeight },
+              className: 'nuclide-diff-view-modal-diff-mode' },
+            publishViewElement
+          )
+        )
       );
     }
   }
 }
+exports.default = DiffViewNavigatorComponent;
+module.exports = exports['default'];

@@ -1,3 +1,125 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.createPanelItem = createPanelItem;
+
+var _bindObservableAsProps;
+
+function _load_bindObservableAsProps() {
+  return _bindObservableAsProps = require('../../../nuclide-ui/bindObservableAsProps');
+}
+
+var _viewableFromReactElement;
+
+function _load_viewableFromReactElement() {
+  return _viewableFromReactElement = require('../../../commons-atom/viewableFromReactElement');
+}
+
+var _observable;
+
+function _load_observable() {
+  return _observable = require('../../../commons-node/observable');
+}
+
+var _Actions;
+
+function _load_Actions() {
+  return _Actions = _interopRequireWildcard(require('../redux/Actions'));
+}
+
+var _Selectors;
+
+function _load_Selectors() {
+  return _Selectors = require('../redux/Selectors');
+}
+
+var _Toolbar;
+
+function _load_Toolbar() {
+  return _Toolbar = require('./Toolbar');
+}
+
+var _lodash;
+
+function _load_lodash() {
+  return _lodash = _interopRequireDefault(require('lodash.memoize'));
+}
+
+var _reactForAtom = require('react-for-atom');
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _shallowequal;
+
+function _load_shallowequal() {
+  return _shallowequal = _interopRequireDefault(require('shallowequal'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function createPanelItem(store) {
+  const staticProps = {
+    runTask: taskId => {
+      store.dispatch((_Actions || _load_Actions()).runTask(taskId));
+    },
+    selectTask: taskId => {
+      store.dispatch((_Actions || _load_Actions()).selectTask(taskId));
+    },
+    selectTaskRunner: taskRunnerId => {
+      store.dispatch((_Actions || _load_Actions()).selectTaskRunner(taskRunnerId));
+    },
+    stopTask: () => {
+      store.dispatch((_Actions || _load_Actions()).stopTask());
+    }
+  };
+
+  // $FlowFixMe: We need to teach Flow about Symbol.observable
+  const states = _rxjsBundlesRxMinJs.Observable.from(store).distinctUntilChanged();
+
+  // We don't want to refresh the UI with a "pending" state while we wait for the initial tasks to
+  // become ready; that would cause too many updates in quick succession. So we make the parts of
+  // the state related to the selected task "sticky." Other parts of the state, however, we always
+  // need to update immediately (e.g. progress).
+  const stickyProps = states.filter(state => state.tasksAreReady).startWith(store.getState())
+  // Map to a subset of state so we can ignore changes of the other parts.
+  .map(state => ({
+    taskRunners: state.taskRunners,
+    activeTaskRunner: (0, (_Selectors || _load_Selectors()).getActiveTaskRunner)(state),
+    activeTaskId: state.activeTaskId,
+    taskLists: state.taskLists
+  })).distinctUntilChanged((_shallowequal || _load_shallowequal()).default).map(({ taskRunners, activeTaskRunner, activeTaskId, taskLists }) => {
+    return {
+      taskRunnerInfo: Array.from(taskRunners.values()),
+      getExtraUi: getExtraUiFactory(activeTaskRunner),
+      activeTaskId,
+      activeTaskRunner,
+      taskLists,
+      getActiveTaskRunnerIcon: () => activeTaskRunner && activeTaskRunner.getIcon()
+    };
+  });
+  const otherProps = states.map(state => {
+    return Object.assign({}, staticProps, {
+      // Don't let people click on things if we're using "stale" sticky props.
+      disabled: !state.tasksAreReady,
+      progress: state.runningTaskInfo && state.runningTaskInfo.progress,
+      taskIsRunning: state.runningTaskInfo != null,
+      showPlaceholder: !state.viewIsInitialized && state.showPlaceholderInitially
+    });
+  }).distinctUntilChanged((_shallowequal || _load_shallowequal()).default);
+  // Throttle to animation frames.
+  const props = (0, (_observable || _load_observable()).throttle)(_rxjsBundlesRxMinJs.Observable.combineLatest(stickyProps, otherProps, (a, b) => Object.assign({}, a, b)), () => (_observable || _load_observable()).nextAnimationFrame);
+  const StatefulToolbar = (0, (_bindObservableAsProps || _load_bindObservableAsProps()).bindObservableAsProps)(props, (_Toolbar || _load_Toolbar()).Toolbar);
+  return (0, (_viewableFromReactElement || _load_viewableFromReactElement()).viewableFromReactElement)(_reactForAtom.React.createElement(StatefulToolbar, null));
+}
+
+/**
+ * Since `getExtraUi` may create a React class dynamically, we want to ensure that we only ever call
+ * it once. To do that, we memoize the function and cache the result.
+ */
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,90 +127,22 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
 
-import type {Store, TaskRunner} from '../types';
-
-import {bindObservableAsProps} from '../../../nuclide-ui/bindObservableAsProps';
-import {viewableFromReactElement} from '../../../commons-atom/viewableFromReactElement';
-import {nextAnimationFrame, throttle} from '../../../commons-node/observable';
-import * as Actions from '../redux/Actions';
-import {getActiveTaskRunner} from '../redux/Selectors';
-import {Toolbar} from './Toolbar';
-import memoize from 'lodash.memoize';
-import {React} from 'react-for-atom';
-import {Observable} from 'rxjs';
-import shallowEqual from 'shallowequal';
-
-export function createPanelItem(store: Store): Object {
-  const staticProps = {
-    runTask: taskId => { store.dispatch(Actions.runTask(taskId)); },
-    selectTask: taskId => { store.dispatch(Actions.selectTask(taskId)); },
-    selectTaskRunner: taskRunnerId => { store.dispatch(Actions.selectTaskRunner(taskRunnerId)); },
-    stopTask: () => { store.dispatch(Actions.stopTask()); },
-  };
-
-  // $FlowFixMe: We need to teach Flow about Symbol.observable
-  const states = Observable.from(store).distinctUntilChanged();
-
-  // We don't want to refresh the UI with a "pending" state while we wait for the initial tasks to
-  // become ready; that would cause too many updates in quick succession. So we make the parts of
-  // the state related to the selected task "sticky." Other parts of the state, however, we always
-  // need to update immediately (e.g. progress).
-  const stickyProps = states
-    .filter(state => state.tasksAreReady)
-    .startWith(store.getState())
-    // Map to a subset of state so we can ignore changes of the other parts.
-    .map(state => ({
-      taskRunners: state.taskRunners,
-      activeTaskRunner: getActiveTaskRunner(state),
-      activeTaskId: state.activeTaskId,
-      taskLists: state.taskLists,
-    }))
-    .distinctUntilChanged(shallowEqual)
-    .map(({taskRunners, activeTaskRunner, activeTaskId, taskLists}) => {
-      return {
-        taskRunnerInfo: Array.from(taskRunners.values()),
-        getExtraUi: getExtraUiFactory(activeTaskRunner),
-        activeTaskId,
-        activeTaskRunner,
-        taskLists,
-        getActiveTaskRunnerIcon: () => activeTaskRunner && activeTaskRunner.getIcon(),
-      };
-    });
-  const otherProps = states
-    .map(state => {
-      return {
-        ...staticProps,
-        // Don't let people click on things if we're using "stale" sticky props.
-        disabled: !state.tasksAreReady,
-        progress: state.runningTaskInfo && state.runningTaskInfo.progress,
-        taskIsRunning: state.runningTaskInfo != null,
-        showPlaceholder: !state.viewIsInitialized && state.showPlaceholderInitially,
-      };
-    })
-    .distinctUntilChanged(shallowEqual);
-  // Throttle to animation frames.
-  const props = throttle(
-    Observable.combineLatest(stickyProps, otherProps, (a, b) => ({...a, ...b})),
-    () => nextAnimationFrame,
-  );
-  const StatefulToolbar = bindObservableAsProps(props, Toolbar);
-  return viewableFromReactElement(<StatefulToolbar />);
-}
-
-/**
- * Since `getExtraUi` may create a React class dynamically, we want to ensure that we only ever call
- * it once. To do that, we memoize the function and cache the result.
- */
 const extraUiFactories = new WeakMap();
-function getExtraUiFactory(taskRunner: ?TaskRunner): ?() => ReactClass<any> {
+function getExtraUiFactory(taskRunner) {
   let getExtraUi = extraUiFactories.get(taskRunner);
-  if (getExtraUi != null) { return getExtraUi; }
-  if (taskRunner == null) { return null; }
-  if (taskRunner.getExtraUi == null) { return null; }
-  getExtraUi = memoize(taskRunner.getExtraUi.bind(taskRunner));
+  if (getExtraUi != null) {
+    return getExtraUi;
+  }
+  if (taskRunner == null) {
+    return null;
+  }
+  if (taskRunner.getExtraUi == null) {
+    return null;
+  }
+  getExtraUi = (0, (_lodash || _load_lodash()).default)(taskRunner.getExtraUi.bind(taskRunner));
   extraUiFactories.set(taskRunner, getExtraUi);
   return getExtraUi;
 }

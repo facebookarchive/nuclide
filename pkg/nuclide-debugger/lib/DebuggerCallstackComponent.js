@@ -1,3 +1,44 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DebuggerCallstackComponent = undefined;
+
+var _classnames;
+
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
+
+var _reactForAtom = require('react-for-atom');
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../commons-node/UniversalDisposable'));
+}
+
+var _ListView;
+
+function _load_ListView() {
+  return _ListView = require('../../nuclide-ui/ListView');
+}
+
+var _Bridge;
+
+function _load_Bridge() {
+  return _Bridge = _interopRequireDefault(require('./Bridge'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,74 +46,36 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
 
-import classnames from 'classnames';
-import {
-  React,
-} from 'react-for-atom';
-import type {
-  Callstack,
-  CallstackItem,
-} from './types';
-import type DebuggerActions from './DebuggerActions';
-import type CallstackStore from './CallstackStore';
+class DebuggerCallstackComponent extends _reactForAtom.React.Component {
 
-import nuclideUri from '../../commons-node/nuclideUri';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {
-  ListView,
-  ListViewItem,
-} from '../../nuclide-ui/ListView';
-import Bridge from './Bridge';
-
-type DebuggerCallstackComponentProps = {
-  actions: DebuggerActions,
-  bridge: Bridge,
-  callstackStore: CallstackStore,
-};
-
-type DebuggerCallstackComponentState = {
-  callstack: ?Callstack,
-  selectedCallFrameIndex: number,
-};
-
-export class DebuggerCallstackComponent extends React.Component {
-  props: DebuggerCallstackComponentProps;
-  state: DebuggerCallstackComponentState;
-  _disposables: UniversalDisposable;
-
-  constructor(props: DebuggerCallstackComponentProps) {
+  constructor(props) {
     super(props);
-    (this: any)._handleCallframeClick = this._handleCallframeClick.bind(this);
-    this._disposables = new UniversalDisposable();
+    this._handleCallframeClick = this._handleCallframeClick.bind(this);
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
     this.state = {
       callstack: props.callstackStore.getCallstack(),
-      selectedCallFrameIndex: props.callstackStore.getSelectedCallFrameIndex(),
+      selectedCallFrameIndex: props.callstackStore.getSelectedCallFrameIndex()
     };
   }
 
-  componentDidMount(): void {
-    const {callstackStore} = this.props;
-    this._disposables.add(
-      callstackStore.onChange(() => {
-        this.setState({
-          selectedCallFrameIndex: callstackStore.getSelectedCallFrameIndex(),
-          callstack: callstackStore.getCallstack(),
-        });
-      }),
-    );
+  componentDidMount() {
+    const { callstackStore } = this.props;
+    this._disposables.add(callstackStore.onChange(() => {
+      this.setState({
+        selectedCallFrameIndex: callstackStore.getSelectedCallFrameIndex(),
+        callstack: callstackStore.getCallstack()
+      });
+    }));
   }
 
-  componentWillUnmount(): void {
+  componentWillUnmount() {
     this._disposables.dispose();
   }
 
-  _handleCallframeClick(
-    callFrameIndex: number,
-    clickedCallframe: ?CallstackItem,
-  ): void {
+  _handleCallframeClick(callFrameIndex, clickedCallframe) {
     if (callFrameIndex === this.state.selectedCallFrameIndex) {
       // Bail if we click the frame we're already on to prevent a re-render.
       return;
@@ -81,49 +84,57 @@ export class DebuggerCallstackComponent extends React.Component {
     this.props.actions.setSelectedCallFrameIndex(callFrameIndex);
   }
 
-  render(): ?React.Element<any> {
-    const {callstack} = this.state;
-    const items = callstack == null
-      ? []
-      : callstack.map((callstackItem, i) => {
-        const {
-          name,
-          location,
-        } = callstackItem;
-        // Callstack paths may have a format like file://foo/bar, or
-        // lldb://asm/0x1234. These are not valid paths that can be used to
-        // construct a nuclideUri so we need to skip the protocol prefix.
-        const path = nuclideUri.basename(location.path.replace(/^[a-zA-Z]+:\/\//, ''));
-        const content = (
-          <div className="nuclide-debugger-callstack-item" key={i}>
-            <span className="nuclide-debugger-callstack-name">
-              {name}
-            </span>
-            <span>
-              {path}:{location.line + 1}
-            </span>
-          </div>
-        );
-        const itemClassNames = classnames(
-          {
-            'nuclide-debugger-callstack-item-selected':
-              this.state.selectedCallFrameIndex === i,
-          },
-        );
-        return <ListViewItem
-                  key={i}
-                  className={itemClassNames}
-                  value={callstackItem}>
-                  {content}
-                </ListViewItem>;
+  render() {
+    const { callstack } = this.state;
+    const items = callstack == null ? [] : callstack.map((callstackItem, i) => {
+      const {
+        name,
+        location
+      } = callstackItem;
+      // Callstack paths may have a format like file://foo/bar, or
+      // lldb://asm/0x1234. These are not valid paths that can be used to
+      // construct a nuclideUri so we need to skip the protocol prefix.
+      const path = (_nuclideUri || _load_nuclideUri()).default.basename(location.path.replace(/^[a-zA-Z]+:\/\//, ''));
+      const content = _reactForAtom.React.createElement(
+        'div',
+        { className: 'nuclide-debugger-callstack-item', key: i },
+        _reactForAtom.React.createElement(
+          'span',
+          { className: 'nuclide-debugger-callstack-name' },
+          name
+        ),
+        _reactForAtom.React.createElement(
+          'span',
+          null,
+          path,
+          ':',
+          location.line + 1
+        )
+      );
+      const itemClassNames = (0, (_classnames || _load_classnames()).default)({
+        'nuclide-debugger-callstack-item-selected': this.state.selectedCallFrameIndex === i
       });
-    return callstack == null
-      ? <span>(callstack unavailable)</span>
-      : <ListView
-          alternateBackground={true}
-          selectable={true}
-          onSelect={this._handleCallframeClick}>
-          {items}
-        </ListView>;
+      return _reactForAtom.React.createElement(
+        (_ListView || _load_ListView()).ListViewItem,
+        {
+          key: i,
+          className: itemClassNames,
+          value: callstackItem },
+        content
+      );
+    });
+    return callstack == null ? _reactForAtom.React.createElement(
+      'span',
+      null,
+      '(callstack unavailable)'
+    ) : _reactForAtom.React.createElement(
+      (_ListView || _load_ListView()).ListView,
+      {
+        alternateBackground: true,
+        selectable: true,
+        onSelect: this._handleCallframeClick },
+      items
+    );
   }
 }
+exports.DebuggerCallstackComponent = DebuggerCallstackComponent;
