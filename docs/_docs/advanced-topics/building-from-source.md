@@ -20,7 +20,7 @@ addition, you must have
 
 <ul>
   <li>Xcode (for Command Line Tools)</li>
-  <li id="node"></li>
+  <li class="node"></li>
   <li>Atom Shell Commands (open Atom and go to `Atom | Install Shell Commands`) installed as well.</li>
 </ul>
 
@@ -69,7 +69,7 @@ Verify the installation:
 
 You must have the [general prerequisites](/docs/editor/setup#linux__prerequisites) installed.
 
-<p id="node"></p>
+<p class="node"></p>
 
 To install Node, see [Node.js's download page](https://nodejs.org/en/download/) for steps that work best for your setup.
 
