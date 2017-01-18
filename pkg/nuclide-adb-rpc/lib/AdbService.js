@@ -34,6 +34,13 @@ export function getDeviceArchitecture(
   return ADB.getDeviceArchitecture(adbPath, device);
 }
 
+export function getDeviceModel(
+  adbPath: NuclideUri,
+  device: string,
+): Promise<string> {
+  return ADB.getDeviceModel(adbPath, device);
+}
+
 export function getPidFromPackageName(
   adbPath: NuclideUri,
   packageName: string,
