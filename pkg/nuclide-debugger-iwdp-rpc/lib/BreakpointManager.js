@@ -15,6 +15,7 @@ import type {
   BreakpointId,
   BreakpointParams,
   Breakpoint,
+  PauseOnExceptionState,
 } from './types';
 import type {DebuggerConnection} from './DebuggerConnection';
 import type {FileCache} from './FileCache';
@@ -28,6 +29,8 @@ export class BreakpointManager {
   _fileCache: FileCache;
   _connections: Set<DebuggerConnection>;
   _sendMessageToClient: (message: Object) => void;
+  _setPauseOnExceptionsState: PauseOnExceptionState;
+  _resolvePendingExceptionBreakpointMessage: ?() => mixed;
 
   constructor(fileCache: FileCache, sendMessageToClient: (message: Object) => void) {
     this._breakpoints = new Map();
@@ -35,6 +38,7 @@ export class BreakpointManager {
     this._connections = new Set();
     this._sendMessageToClient = sendMessageToClient;
     this._disposables = new UniversalDisposable(() => this._connections.clear());
+    this._setPauseOnExceptionsState = 'none';
   }
 
   addConnection(connection: DebuggerConnection): Promise<mixed> {
@@ -43,7 +47,7 @@ export class BreakpointManager {
       // Send file/line breakpoints.
       this._sendLineBreakpointsToTarget(connection),
       // Send exception breakpoints.
-      // TODO;
+      this._sendSetPauseOnExceptionToTarget(connection),
     ]);
   }
 
@@ -79,6 +83,42 @@ export class BreakpointManager {
     }
     // Wait for `setBreakpointByUrl` messages to go out and come back.
     await Promise.all(responsePromises);
+  }
+
+  _sendSetPauseOnExceptionToTarget(connection: DebuggerConnection): Promise<mixed> {
+    const resolve = this._resolvePendingExceptionBreakpointMessage;
+    if (resolve != null) {
+      resolve();
+      return Promise.resolve();
+    }
+    return connection.sendCommand({
+      method: 'Debugger.setPauseOnExceptions',
+      params: this._setPauseOnExceptionsState,
+    });
+  }
+
+  async setPauseOnExceptions(message: Object): Promise<Object> {
+    this._setPauseOnExceptionsState = message.params.state;
+    if (this._connections.size === 0) {
+      // Wait for a connection to come in.
+      await new Promise(resolve => {
+        this._resolvePendingExceptionBreakpointMessage = resolve;
+      });
+      this._resolvePendingExceptionBreakpointMessage = null;
+    }
+    return this._setPauseOnExceptions(message);
+  }
+
+  async _setPauseOnExceptions(message: Object): Promise<Object> {
+    const responses = await this._sendMessageToAllTargets(message);
+    log(`setPauseOnExceptions yielded: ${JSON.stringify(responses)}`);
+    for (const response of responses) {
+      // We can receive multiple responses, so just send the first non-error one.
+      if (response.result != null && response.error == null) {
+        return response;
+      }
+    }
+    return responses[0];
   }
 
   /**
@@ -146,7 +186,6 @@ export class BreakpointManager {
     }
     return responses[0];
   }
-
 
   /**
    * removeBreakpoint must send this message to each connection managed by the multiplexer.

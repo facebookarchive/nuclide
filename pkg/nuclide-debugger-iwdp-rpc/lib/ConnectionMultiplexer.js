@@ -20,7 +20,6 @@ import {Subject} from 'rxjs';
 
 import type {
   DeviceInfo,
-  PauseOnExceptionState,
   RuntimeStatus,
 } from './types';
 
@@ -46,14 +45,12 @@ export class ConnectionMultiplexer {
   _newConnections: Subject<DebuggerConnection>;
   _fileCache: FileCache;
   _breakpointManager: BreakpointManager;
-  _setPauseOnExceptionsState: PauseOnExceptionState;
   _freshConnectionId: number;
 
   constructor(sendMessageToClient: (message: Object) => void) {
     this._connections = new Set();
     this._sendMessageToClient = message => sendMessageToClient(message);
     this._fileCache = new FileCache();
-    this._setPauseOnExceptionsState = 'none';
     this._freshConnectionId = 0;
     this._newConnections = new Subject();
     this._breakpointManager = new BreakpointManager(
@@ -128,7 +125,7 @@ export class ConnectionMultiplexer {
         break;
       }
       case 'setPauseOnExceptions': {
-        const response = await this._setPauseOnExceptions(message);
+        const response = await this._breakpointManager.setPauseOnExceptions(message);
         this._sendMessageToClient(response);
         break;
       }
@@ -242,26 +239,6 @@ export class ConnectionMultiplexer {
     return Promise.resolve();
   }
 
-  async _setPauseOnExceptions(message: Object): Promise<Object> {
-    if (this._connections.size === 0) {
-      return {id: message.id, error: {message: 'setPauseOnExceptions sent with no connections.'}};
-    }
-    this._setPauseOnExceptionsState = message.params.state;
-    const responsePromises = [];
-    for (const connection of this._connections) {
-      responsePromises.push(connection.sendCommand(message));
-    }
-    const responses = await Promise.all(responsePromises);
-    log(`setPauseOnExceptions yielded: ${JSON.stringify(responses)}`);
-    for (const response of responses) {
-      // We can receive multiple responses, so just send the first non-error one.
-      if (response.result != null && response.error == null) {
-        return response;
-      }
-    }
-    return responses[0];
-  }
-
   async add(deviceInfo: DeviceInfo): Promise<void> {
     const connection = this._connectToContext(deviceInfo);
     this._newConnections.next(connection);
@@ -285,7 +262,6 @@ export class ConnectionMultiplexer {
     await this._sendPreludeToTarget(connection);
     // 2. Add this connection to the breakpoint manager so that will handle breakpoints.
     await this._breakpointManager.addConnection(connection);
-    await this._sendSetPauseOnExceptionToTarget(connection);
   }
 
   async _sendPreludeToTarget(connection: DebuggerConnection): Promise<void> {
@@ -299,14 +275,6 @@ export class ConnectionMultiplexer {
       logError(err);
       throw new Error(err);
     }
-  }
-
-  async _sendSetPauseOnExceptionToTarget(connection: DebuggerConnection): Promise<void> {
-    // Drop the responses on the floor, since setting initial pauseOnException is handled by CM.
-    await connection.sendCommand({
-      method: 'Debugger.setPauseOnExceptions',
-      params: this._setPauseOnExceptionsState,
-    });
   }
 
   _handleStatusChange(status: RuntimeStatus, connection: DebuggerConnection): void {
