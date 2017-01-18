@@ -154,16 +154,9 @@ export class PanelComponent extends React.Component {
       );
     }
 
-    // Use the `tree-view-resizer` class from Atom's [tree-view][1] because it is targeted by some
-    // themes, like [spacegray-dark-ui][2], to customize the scroll bar in the tree-view. Use this
-    // inside `PanelComponent` rather than just file-tree so any scrollable panels created with this
-    // component are styled accordingly.
-    //
-    // [1] https://github.com/atom/tree-view/blob/v0.201.5/lib/tree-view.coffee#L28
-    // [2] https://github.com/cannikin/spacegray-dark-ui/blob/v0.12.0/styles/tree-view.less#L21
     return (
       <div
-        className={`nuclide-ui-panel-component tree-view-resizer ${this.props.dock}`}
+        className={`nuclide-ui-panel-component ${this.props.dock}`}
         hidden={this.props.hidden}
         style={containerStyle}>
         <div className={`nuclide-ui-panel-component-resize-handle ${this.props.dock}`}
