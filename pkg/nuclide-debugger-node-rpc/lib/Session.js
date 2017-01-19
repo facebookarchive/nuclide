@@ -27,6 +27,7 @@ function CustomSession(config: Object, debuggerPort: number, wsConnection: WS): 
     'ServiceWorker.enable',
     'Emulation.setScriptExecutionDisabled',
     'Page.setOverlayMessage',
+    'Debugger.setDebuggerSettings',
   );
 }
 
