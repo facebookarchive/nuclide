@@ -100,6 +100,17 @@ export function getDeviceModel(
   }
 }
 
+export function getAPIVersion(
+  adbPath: NuclideUri,
+  device: string,
+): Promise<string> {
+  if (adbPath.endsWith('sdb')) {
+    return getTizenModelConfigKey(adbPath, device, 'tizen.org/feature/platform.core.api.version');
+  } else {
+    return getAndroidProp(adbPath, device, 'ro.build.version.sdk').toPromise();
+  }
+}
+
 export async function getPidFromPackageName(
   adbPath: NuclideUri,
   packageName: string,

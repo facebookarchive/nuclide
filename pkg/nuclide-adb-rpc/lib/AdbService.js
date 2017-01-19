@@ -41,6 +41,13 @@ export function getDeviceModel(
   return ADB.getDeviceModel(adbPath, device);
 }
 
+export function getAPIVersion(
+  adbPath: NuclideUri,
+  device: string,
+): Promise<string> {
+  return ADB.getAPIVersion(adbPath, device);
+}
+
 export function getPidFromPackageName(
   adbPath: NuclideUri,
   packageName: string,
