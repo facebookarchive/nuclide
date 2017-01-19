@@ -1,3 +1,26 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.BreakpointManager = undefined;
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../commons-node/UniversalDisposable'));
+}
+
+var _logger;
+
+function _load_logger() {
+  return _logger = require('./logger');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,100 +28,82 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
 
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {logger} from './logger';
-
-import type {
-  BreakpointId,
-  BreakpointParams,
-  Breakpoint,
-} from './types';
-import type {DebuggerConnection} from './DebuggerConnection';
-import type {FileCache} from './FileCache';
-
-const {log} = logger;
+const { log } = (_logger || _load_logger()).logger;
 const BREAKPOINT_ID_PREFIX = 'NUCLIDE';
 
-export class BreakpointManager {
-  _disposables: UniversalDisposable;
-  _breakpoints: Map<BreakpointId, Breakpoint>;
-  _fileCache: FileCache;
-  _connections: Set<DebuggerConnection>;
-  _sendMessageToClient: (message: Object) => void;
+class BreakpointManager {
 
-  constructor(fileCache: FileCache, sendMessageToClient: (message: Object) => void) {
+  constructor(fileCache, sendMessageToClient) {
     this._breakpoints = new Map();
     this._fileCache = fileCache;
     this._connections = new Set();
     this._sendMessageToClient = sendMessageToClient;
-    this._disposables = new UniversalDisposable(() => this._connections.clear());
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default(() => this._connections.clear());
   }
 
-  addConnection(connection: DebuggerConnection): Promise<mixed> {
+  addConnection(connection) {
     this._connections.add(connection);
     return Promise.all([
-      // Send file/line breakpoints.
-      this._sendLineBreakpointsToTarget(connection),
-      // Send exception breakpoints.
-      // TODO;
-    ]);
+    // Send file/line breakpoints.
+    this._sendLineBreakpointsToTarget(connection)]);
   }
 
-  async _sendLineBreakpointsToTarget(connection: DebuggerConnection): Promise<void> {
-    const responsePromises = [];
-    for (const breakpoint of this._breakpoints.values()) {
-      const {params} = breakpoint;
-      const responsePromise = connection.sendCommand({
-        method: 'Debugger.setBreakpointByUrl',
-        params: {
-          ...params,
-          url: this._fileCache.getUrlFromFilePath(params.url),
-        },
-      });
-      if (breakpoint.resolved) {
-        responsePromises.push(responsePromise);
-      } else {
-        responsePromises.push(
-          responsePromise.then(response => {
+  _sendLineBreakpointsToTarget(connection) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const responsePromises = [];
+      for (const breakpoint of _this._breakpoints.values()) {
+        const { params } = breakpoint;
+        const responsePromise = connection.sendCommand({
+          method: 'Debugger.setBreakpointByUrl',
+          params: Object.assign({}, params, {
+            url: _this._fileCache.getUrlFromFilePath(params.url)
+          })
+        });
+        if (breakpoint.resolved) {
+          responsePromises.push(responsePromise);
+        } else {
+          responsePromises.push(responsePromise.then(function (response) {
             // We are assuming that breakpoints will only be unresolved if they are sent when there
             // are no connections present.
             breakpoint.resolved = true;
-            this._sendMessageToClient({
+            _this._sendMessageToClient({
               method: 'Debugger.breakpointResolved',
               params: {
                 breakpointId: breakpoint.nuclideId,
-                location: response.result.location,
-              },
+                location: response.result.location
+              }
             });
-          }),
-        );
+          }));
+        }
       }
-    }
-    // Wait for `setBreakpointByUrl` messages to go out and come back.
-    await Promise.all(responsePromises);
+      // Wait for `setBreakpointByUrl` messages to go out and come back.
+      yield Promise.all(responsePromises);
+    })();
   }
 
   /**
    * setBreakpointByUrl must send this breakpoint to each connection managed by the multiplexer.
    */
-  setBreakpointByUrl(message: Object): Promise<Object> {
+  setBreakpointByUrl(message) {
     if (this._connections.size === 0) {
       return Promise.resolve(this._setUnresolvedBreakpointByUrl(message));
     }
     return this._setBreakpointByUrl(message);
   }
 
-  _setUnresolvedBreakpointByUrl(message: Object): Object {
-    const {params} = message;
+  _setUnresolvedBreakpointByUrl(message) {
+    const { params } = message;
     const nuclideId = createNuclideId(params);
-    const breakpoint: Breakpoint = {
+    const breakpoint = {
       nuclideId,
       params,
       jscId: null,
-      resolved: false,
+      resolved: false
     };
     this._breakpoints.set(nuclideId, breakpoint);
     return {
@@ -108,69 +113,69 @@ export class BreakpointManager {
         // Chrome devtools used to rely on `locations` being set, but Nuclide tracks the unresolved
         // location independently from this response.
         locations: [],
-        resolved: false,
-      },
-    };
-  }
-
-  async _setBreakpointByUrl(message: Object): Promise<Object> {
-    const {params} = message;
-    const nuclideId = createNuclideId(params);
-    const breakpoint: Breakpoint = {
-      nuclideId,
-      params,
-      jscId: null,
-      resolved: true,
-    };
-    this._breakpoints.set(nuclideId, breakpoint);
-    const targetMessage = {
-      ...message,
-      params: {
-        ...message.params,
-        url: this._fileCache.getUrlFromFilePath(message.params.url),
-      },
-    };
-    const responses = await this._sendMessageToAllTargets(targetMessage);
-    log(`setBreakpointByUrl yielded: ${JSON.stringify(responses)}`);
-    for (const response of responses) {
-      // We will receive multiple responses, so just send the first non-error one.
-      if (
-        response.result != null
-        && response.error == null
-        && response.result.breakpointId != null
-      ) {
-        breakpoint.jscId = response.result.breakpointId;
-        response.result.breakpointId = nuclideId;
-        return response;
+        resolved: false
       }
-    }
-    return responses[0];
+    };
   }
 
+  _setBreakpointByUrl(message) {
+    var _this2 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const { params } = message;
+      const nuclideId = createNuclideId(params);
+      const breakpoint = {
+        nuclideId,
+        params,
+        jscId: null,
+        resolved: true
+      };
+      _this2._breakpoints.set(nuclideId, breakpoint);
+      const targetMessage = Object.assign({}, message, {
+        params: Object.assign({}, message.params, {
+          url: _this2._fileCache.getUrlFromFilePath(message.params.url)
+        })
+      });
+      const responses = yield _this2._sendMessageToAllTargets(targetMessage);
+      log(`setBreakpointByUrl yielded: ${ JSON.stringify(responses) }`);
+      for (const response of responses) {
+        // We will receive multiple responses, so just send the first non-error one.
+        if (response.result != null && response.error == null && response.result.breakpointId != null) {
+          breakpoint.jscId = response.result.breakpointId;
+          response.result.breakpointId = nuclideId;
+          return response;
+        }
+      }
+      return responses[0];
+    })();
+  }
 
   /**
    * removeBreakpoint must send this message to each connection managed by the multiplexer.
    */
-  async removeBreakpoint(message: Object): Promise<Object> {
-    const {id} = message;
-    const {breakpointId} = message.params;
-    const breakpoint = this._breakpoints.get(breakpointId);
-    if (breakpoint == null) {
-      return {id};
-    }
-    const targetMessage = {
-      ...message,
-      params: {
-        breakpointId: breakpoint.jscId,
-      },
-    };
-    const responses = await this._sendMessageToAllTargets(targetMessage);
-    log(`removeBreakpoint yielded: ${JSON.stringify(responses)}`);
-    this._breakpoints.delete(breakpoint.nuclideId);
-    return {id};
+  removeBreakpoint(message) {
+    var _this3 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const { id } = message;
+      const { breakpointId } = message.params;
+      const breakpoint = _this3._breakpoints.get(breakpointId);
+      if (breakpoint == null) {
+        return { id };
+      }
+      const targetMessage = Object.assign({}, message, {
+        params: {
+          breakpointId: breakpoint.jscId
+        }
+      });
+      const responses = yield _this3._sendMessageToAllTargets(targetMessage);
+      log(`removeBreakpoint yielded: ${ JSON.stringify(responses) }`);
+      _this3._breakpoints.delete(breakpoint.nuclideId);
+      return { id };
+    })();
   }
 
-  _sendMessageToAllTargets(message: Object): Promise<Array<Object>> {
+  _sendMessageToAllTargets(message) {
     const responsePromises = [];
     for (const connection of this._connections) {
       responsePromises.push(connection.sendCommand(message));
@@ -178,11 +183,12 @@ export class BreakpointManager {
     return Promise.all(responsePromises);
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
   }
 }
 
-function createNuclideId(params: BreakpointParams): BreakpointId {
-  return `${BREAKPOINT_ID_PREFIX}_${params.url}:${params.lineNumber}`;
+exports.BreakpointManager = BreakpointManager;
+function createNuclideId(params) {
+  return `${ BREAKPOINT_ID_PREFIX }_${ params.url }:${ params.lineNumber }`;
 }

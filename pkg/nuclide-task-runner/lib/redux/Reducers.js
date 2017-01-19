@@ -1,141 +1,142 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import type {Action, AnnotatedTaskMetadata, AppState, TaskId} from '../types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.app = app;
 
-import * as Actions from './Actions';
-import {taskIdsAreEqual} from '../taskIdsAreEqual';
+var _Actions;
+
+function _load_Actions() {
+  return _Actions = _interopRequireWildcard(require('./Actions'));
+}
+
+var _taskIdsAreEqual;
+
+function _load_taskIdsAreEqual() {
+  return _taskIdsAreEqual = require('../taskIdsAreEqual');
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 // Normally there would be more than one reducer. Since we were using a single reducer here before
 // we ported to Redux, we just left it this way.
-export function app(state: AppState, action: Action): AppState {
+function app(state, action) {
   switch (action.type) {
-    case Actions.SELECT_TASK: {
-      const {taskId} = action.payload;
-      return {
-        ...state,
-        activeTaskId: taskId,
-        activeTaskRunnerId: taskId.taskRunnerId,
-        previousSessionActiveTaskId: null,
-        previousSessionActiveTaskRunnerId: null,
-      };
-    }
-    case Actions.SELECT_TASK_RUNNER: {
-      const {taskRunnerId} = action.payload;
-      return {
-        ...state,
-        activeTaskRunnerId: taskRunnerId,
-        previousSessionActiveTaskRunnerId: null,
-      };
-    }
-    case Actions.TASK_COMPLETED: {
-      return {
-        ...state,
-        runningTaskInfo: null,
-      };
-    }
-    case Actions.TASK_PROGRESS: {
-      const {progress} = action.payload;
-      return {
-        ...state,
-        runningTaskInfo: {
-          ...state.runningTaskInfo,
-          progress,
-        },
-      };
-    }
-    case Actions.TASK_ERRORED: {
-      return {
-        ...state,
-        runningTaskInfo: null,
-      };
-    }
-    case Actions.TASK_STARTED: {
-      const {task} = action.payload;
-      return {
-        ...state,
-        runningTaskInfo: {
-          task,
-          progress: null,
-        },
-      };
-    }
-    case Actions.TASK_STOPPED: {
-      return {
-        ...state,
-        runningTaskInfo: null,
-      };
-    }
-    case Actions.SET_TOOLBAR_VISIBILITY: {
-      const {visible} = action.payload;
-      return {...state, visible};
-    }
-    case Actions.SET_PROJECT_ROOT: {
-      const {projectRoot} = action.payload;
-      return {
-        ...state,
-        projectRoot,
-        projectWasOpened: state.projectWasOpened || (projectRoot != null),
-        tasksAreReady: false,
-      };
-    }
-    case Actions.SET_TASK_LISTS: {
-      const {taskLists} = action.payload;
-      return validateActiveTask({...state, taskLists});
-    }
-    case Actions.TASKS_READY: {
-      // When the tasks become ready, select a default task.
-      const initialTaskMeta = getInitialTaskMeta(
-        state.previousSessionActiveTaskId,
-        state.activeTaskId,
-        state.taskLists,
-      );
+    case (_Actions || _load_Actions()).SELECT_TASK:
+      {
+        const { taskId } = action.payload;
+        return Object.assign({}, state, {
+          activeTaskId: taskId,
+          activeTaskRunnerId: taskId.taskRunnerId,
+          previousSessionActiveTaskId: null,
+          previousSessionActiveTaskRunnerId: null
+        });
+      }
+    case (_Actions || _load_Actions()).SELECT_TASK_RUNNER:
+      {
+        const { taskRunnerId } = action.payload;
+        return Object.assign({}, state, {
+          activeTaskRunnerId: taskRunnerId,
+          previousSessionActiveTaskRunnerId: null
+        });
+      }
+    case (_Actions || _load_Actions()).TASK_COMPLETED:
+      {
+        return Object.assign({}, state, {
+          runningTaskInfo: null
+        });
+      }
+    case (_Actions || _load_Actions()).TASK_PROGRESS:
+      {
+        const { progress } = action.payload;
+        return Object.assign({}, state, {
+          runningTaskInfo: Object.assign({}, state.runningTaskInfo, {
+            progress
+          })
+        });
+      }
+    case (_Actions || _load_Actions()).TASK_ERRORED:
+      {
+        return Object.assign({}, state, {
+          runningTaskInfo: null
+        });
+      }
+    case (_Actions || _load_Actions()).TASK_STARTED:
+      {
+        const { task } = action.payload;
+        return Object.assign({}, state, {
+          runningTaskInfo: {
+            task,
+            progress: null
+          }
+        });
+      }
+    case (_Actions || _load_Actions()).TASK_STOPPED:
+      {
+        return Object.assign({}, state, {
+          runningTaskInfo: null
+        });
+      }
+    case (_Actions || _load_Actions()).SET_TOOLBAR_VISIBILITY:
+      {
+        const { visible } = action.payload;
+        return Object.assign({}, state, { visible });
+      }
+    case (_Actions || _load_Actions()).SET_PROJECT_ROOT:
+      {
+        const { projectRoot } = action.payload;
+        return Object.assign({}, state, {
+          projectRoot,
+          projectWasOpened: state.projectWasOpened || projectRoot != null,
+          tasksAreReady: false
+        });
+      }
+    case (_Actions || _load_Actions()).SET_TASK_LISTS:
+      {
+        const { taskLists } = action.payload;
+        return validateActiveTask(Object.assign({}, state, { taskLists }));
+      }
+    case (_Actions || _load_Actions()).TASKS_READY:
+      {
+        // When the tasks become ready, select a default task.
+        const initialTaskMeta = getInitialTaskMeta(state.previousSessionActiveTaskId, state.activeTaskId, state.taskLists);
 
-      return validateActiveTask({
-        ...state,
-        tasksAreReady: true,
-        activeTaskId: initialTaskMeta == null
-          ? null
-          : {taskRunnerId: initialTaskMeta.taskRunnerId, type: initialTaskMeta.type},
-        activeTaskRunnerId: initialTaskMeta == null ? null : initialTaskMeta.taskRunnerId,
-        previousSessionActiveTaskId: null,
-      });
-    }
-    case Actions.INITIALIZE_VIEW: {
-      const {visible} = action.payload;
-      return {
-        ...state,
-        viewIsInitialized: true,
-        visible,
-        previousSessionVisible: null,
-      };
-    }
-    case Actions.REGISTER_TASK_RUNNER: {
-      const {taskRunner} = action.payload;
-      return {
-        ...state,
-        taskRunners: new Map(state.taskRunners).set(taskRunner.id, taskRunner),
-      };
-    }
-    case Actions.UNREGISTER_TASK_RUNNER: {
-      const {id} = action.payload;
-      const taskRunners = new Map(state.taskRunners);
-      const taskLists = new Map(state.taskLists);
-      taskRunners.delete(id);
-      taskLists.delete(id);
-      return validateActiveTask({
-        ...state,
-        taskRunners,
-        taskLists,
-      });
-    }
+        return validateActiveTask(Object.assign({}, state, {
+          tasksAreReady: true,
+          activeTaskId: initialTaskMeta == null ? null : { taskRunnerId: initialTaskMeta.taskRunnerId, type: initialTaskMeta.type },
+          activeTaskRunnerId: initialTaskMeta == null ? null : initialTaskMeta.taskRunnerId,
+          previousSessionActiveTaskId: null
+        }));
+      }
+    case (_Actions || _load_Actions()).INITIALIZE_VIEW:
+      {
+        const { visible } = action.payload;
+        return Object.assign({}, state, {
+          viewIsInitialized: true,
+          visible,
+          previousSessionVisible: null
+        });
+      }
+    case (_Actions || _load_Actions()).REGISTER_TASK_RUNNER:
+      {
+        const { taskRunner } = action.payload;
+        return Object.assign({}, state, {
+          taskRunners: new Map(state.taskRunners).set(taskRunner.id, taskRunner)
+        });
+      }
+    case (_Actions || _load_Actions()).UNREGISTER_TASK_RUNNER:
+      {
+        const { id } = action.payload;
+        const taskRunners = new Map(state.taskRunners);
+        const taskLists = new Map(state.taskLists);
+        taskRunners.delete(id);
+        taskLists.delete(id);
+        return validateActiveTask(Object.assign({}, state, {
+          taskRunners,
+          taskLists
+        }));
+      }
   }
 
   return state;
@@ -144,28 +145,37 @@ export function app(state: AppState, action: Action): AppState {
 /**
  * Ensure that the active task is in the task list. If not, pick a fallback.
  */
-function validateActiveTask(state: AppState): AppState {
-  if (activeTaskIsValid(state)) { return state; }
-  return {
-    ...state,
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ *
+ * 
+ */
+
+function validateActiveTask(state) {
+  if (activeTaskIsValid(state)) {
+    return state;
+  }
+  return Object.assign({}, state, {
     activeTaskId: null,
-    activeTaskRunnerId: null,
-  };
+    activeTaskRunnerId: null
+  });
 }
 
 /**
  * Is the active task a valid one according to the tasks we have?
  */
-function activeTaskIsValid(state: AppState): boolean {
-  if (state.activeTaskId == null) { return false; }
-  const {activeTaskId} = state;
+function activeTaskIsValid(state) {
+  if (state.activeTaskId == null) {
+    return false;
+  }
+  const { activeTaskId } = state;
   for (const taskList of state.taskLists.values()) {
     for (const taskMeta of taskList) {
-      if (
-        taskMeta.taskRunnerId === activeTaskId.taskRunnerId
-        && taskMeta.type === activeTaskId.type
-        && !taskMeta.disabled
-      ) {
+      if (taskMeta.taskRunnerId === activeTaskId.taskRunnerId && taskMeta.type === activeTaskId.type && !taskMeta.disabled) {
         return true;
       }
     }
@@ -175,11 +185,7 @@ function activeTaskIsValid(state: AppState): boolean {
 
 const flatten = arr => Array.prototype.concat.apply([], arr);
 
-function getInitialTaskMeta(
-  previousSessionActiveTaskId: ?TaskId,
-  activeTaskId: ?TaskId,
-  taskLists: Map<string, Array<AnnotatedTaskMetadata>>,
-): ?AnnotatedTaskMetadata {
+function getInitialTaskMeta(previousSessionActiveTaskId, activeTaskId, taskLists) {
   const allTaskMetadatas = flatten(Array.from(taskLists.values()));
   let candidate;
 
@@ -190,12 +196,12 @@ function getInitialTaskMeta(
     }
 
     // If the task we're waiting to restore is present, use that.
-    if (previousSessionActiveTaskId && taskIdsAreEqual(taskMeta, previousSessionActiveTaskId)) {
+    if (previousSessionActiveTaskId && (0, (_taskIdsAreEqual || _load_taskIdsAreEqual()).taskIdsAreEqual)(taskMeta, previousSessionActiveTaskId)) {
       return taskMeta;
     }
 
     // If the task that's already active is present, use that.
-    if (activeTaskId && taskIdsAreEqual(taskMeta, activeTaskId)) {
+    if (activeTaskId && (0, (_taskIdsAreEqual || _load_taskIdsAreEqual()).taskIdsAreEqual)(taskMeta, activeTaskId)) {
       return taskMeta;
     }
 

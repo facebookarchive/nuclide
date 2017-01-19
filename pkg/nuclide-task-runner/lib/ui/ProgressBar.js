@@ -1,68 +1,67 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import invariant from 'assert';
-import classnames from 'classnames';
-import {React} from 'react-for-atom';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ProgressBar = undefined;
 
-type Props = {
-  progress: ?number,
-  visible: boolean,
-};
+var _classnames;
 
-export class ProgressBar extends React.Component {
-  props: Props;
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
 
-  render(): ?React.Element<any> {
-    const className = classnames(
-      'nuclide-task-runner-progress-bar', {
-        indeterminate: this._isIndeterminate(),
-      },
-    );
-    return (
-      <div className={className} hidden={!this.props.visible}>
-        {this._renderBar()}
-      </div>
+var _reactForAtom = require('react-for-atom');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class ProgressBar extends _reactForAtom.React.Component {
+
+  render() {
+    const className = (0, (_classnames || _load_classnames()).default)('nuclide-task-runner-progress-bar', {
+      indeterminate: this._isIndeterminate()
+    });
+    return _reactForAtom.React.createElement(
+      'div',
+      { className: className, hidden: !this.props.visible },
+      this._renderBar()
     );
   }
 
-  _isIndeterminate(): boolean {
+  _isIndeterminate() {
     return this.props.progress == null;
   }
 
-  _renderBar(): ?React.Element<any> {
+  _renderBar() {
     if (this._isIndeterminate()) {
       return null;
     }
 
-    invariant(this.props.progress != null);
-    return <Bar progress={this.props.progress} />;
+    if (!(this.props.progress != null)) {
+      throw new Error('Invariant violation: "this.props.progress != null"');
+    }
+
+    return _reactForAtom.React.createElement(Bar, { progress: this.props.progress });
   }
 }
 
-type BarProps = {
-  progress: number,
-};
+exports.ProgressBar = ProgressBar; /**
+                                    * Copyright (c) 2015-present, Facebook, Inc.
+                                    * All rights reserved.
+                                    *
+                                    * This source code is licensed under the license found in the LICENSE file in
+                                    * the root directory of this source tree.
+                                    *
+                                    * 
+                                    */
 
-class Bar extends React.Component {
-  props: BarProps;
+class Bar extends _reactForAtom.React.Component {
 
-  render(): React.Element<any> {
-    const pct = Math.max(0,
-      Math.min(100, this.props.progress * 100),
-    );
-    return (
-      <div
-        className="nuclide-task-runner-progress-bar-bar"
-        style={{width: `${pct}%`}}
-      />
-    );
+  render() {
+    const pct = Math.max(0, Math.min(100, this.props.progress * 100));
+    return _reactForAtom.React.createElement('div', {
+      className: 'nuclide-task-runner-progress-bar-bar',
+      style: { width: `${ pct }%` }
+    });
   }
 }

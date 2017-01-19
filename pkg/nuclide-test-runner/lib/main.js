@@ -1,3 +1,30 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.consumeTestRunner = consumeTestRunner;
+exports.addItemsToFileTreeContextMenu = addItemsToFileTreeContextMenu;
+exports.consumeToolBar = consumeToolBar;
+exports.deserializeTestRunnerPanelState = deserializeTestRunnerPanelState;
+exports.consumeWorkspaceViewsService = consumeWorkspaceViewsService;
+
+var _atom = require('atom');
+
+var _TestRunnerController;
+
+function _load_TestRunnerController() {
+  return _TestRunnerController = require('./TestRunnerController');
+}
+
+var _nuclideLogging;
+
+function _load_nuclideLogging() {
+  return _nuclideLogging = require('../../nuclide-logging');
+}
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,20 +32,10 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
 
-import type FileTreeContextMenu from '../../nuclide-file-tree/lib/FileTreeContextMenu';
-import type {TestRunner} from './types';
-import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
-import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
-
-import invariant from 'assert';
-import {CompositeDisposable, Disposable} from 'atom';
-import {TestRunnerController, WORKSPACE_VIEW_URI} from './TestRunnerController';
-import {getLogger} from '../../nuclide-logging';
-
-const logger = getLogger();
+const logger = (0, (_nuclideLogging || _load_nuclideLogging()).getLogger)();
 
 const FILE_TREE_CONTEXT_MENU_PRIORITY = 200;
 
@@ -29,100 +46,83 @@ const FILE_TREE_CONTEXT_MENU_PRIORITY = 200;
  *     > limitString('foobar', 4)
  *     'fo…ar'
  */
-function limitString(str: string, length?: number = 20): string {
+function limitString(str, length = 20) {
   const strLength = str.length;
-  return (strLength > length) ?
-    `${str.substring(0, length / 2)}…${str.substring(str.length - length / 2)}` :
-    str;
+  return strLength > length ? `${ str.substring(0, length / 2) }…${ str.substring(str.length - length / 2) }` : str;
 }
 
 class Activation {
-  _controller: ?TestRunnerController;
-  _disposables: CompositeDisposable;
-  _testRunners: Set<TestRunner>;
 
   constructor() {
     this._testRunners = new Set();
-    this._disposables = new CompositeDisposable();
-    this._disposables.add(
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-test-runner:toggle-panel',
-        () => {
-          this.getController().togglePanel();
-        },
-      ),
-    );
-    this._disposables.add(
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-test-runner:run-tests',
-        () => {
-          this.getController().runTests();
-        },
-      ),
-    );
+    this._disposables = new _atom.CompositeDisposable();
+    this._disposables.add(atom.commands.add('atom-workspace', 'nuclide-test-runner:toggle-panel', () => {
+      this.getController().togglePanel();
+    }));
+    this._disposables.add(atom.commands.add('atom-workspace', 'nuclide-test-runner:run-tests', () => {
+      this.getController().runTests();
+    }));
     // Listen for run events on files in the file tree
-    this._disposables.add(
-      atom.commands.add(
-        '.tree-view .entry.file.list-item',
-        'nuclide-test-runner:run-tests',
-        event => {
-          const target = ((event.currentTarget: any): HTMLElement).querySelector('.name');
-          invariant(target != null);
-          this.getController().runTests(target.dataset.path);
-          // Ensure ancestors of this element don't attempt to run tests as well.
-          event.stopPropagation();
-        },
-      ),
-    );
+    this._disposables.add(atom.commands.add('.tree-view .entry.file.list-item', 'nuclide-test-runner:run-tests', event => {
+      const target = event.currentTarget.querySelector('.name');
+
+      if (!(target != null)) {
+        throw new Error('Invariant violation: "target != null"');
+      }
+
+      this.getController().runTests(target.dataset.path);
+      // Ensure ancestors of this element don't attempt to run tests as well.
+      event.stopPropagation();
+    }));
     // Listen for run events on directories in the file tree
-    this._disposables.add(
-      atom.commands.add(
-        '.tree-view .entry.directory.list-nested-item',
-        'nuclide-test-runner:run-tests',
-        event => {
-          const target = ((event.currentTarget: any): HTMLElement).querySelector('.name');
-          invariant(target != null);
-          this.getController().runTests(target.dataset.path);
-          // Ensure ancestors of this element don't attempt to run tests as well.
-          event.stopPropagation();
-        },
-      ),
-    );
+    this._disposables.add(atom.commands.add('.tree-view .entry.directory.list-nested-item', 'nuclide-test-runner:run-tests', event => {
+      const target = event.currentTarget.querySelector('.name');
+
+      if (!(target != null)) {
+        throw new Error('Invariant violation: "target != null"');
+      }
+
+      this.getController().runTests(target.dataset.path);
+      // Ensure ancestors of this element don't attempt to run tests as well.
+      event.stopPropagation();
+    }));
   }
 
-  addItemsToFileTreeContextMenu(contextMenu: FileTreeContextMenu): IDisposable {
-    const fileItem = this._createRunTestsContextMenuItem(/* isForFile */ true, contextMenu);
-    const directoryItem = this._createRunTestsContextMenuItem(/* isForFile */ false, contextMenu);
+  addItemsToFileTreeContextMenu(contextMenu) {
+    const fileItem = this._createRunTestsContextMenuItem( /* isForFile */true, contextMenu);
+    const directoryItem = this._createRunTestsContextMenuItem( /* isForFile */false, contextMenu);
 
     // Create a separator menu item that displays if either the file or directory item displays.
-    invariant(fileItem.shouldDisplay);
+
+    if (!fileItem.shouldDisplay) {
+      throw new Error('Invariant violation: "fileItem.shouldDisplay"');
+    }
+
     const fileItemShouldDisplay = fileItem.shouldDisplay.bind(fileItem);
-    invariant(directoryItem.shouldDisplay);
+
+    if (!directoryItem.shouldDisplay) {
+      throw new Error('Invariant violation: "directoryItem.shouldDisplay"');
+    }
+
     const directoryItemShouldDisplay = directoryItem.shouldDisplay.bind(directoryItem);
-    const separatorShouldDisplay = (event: MouseEvent) => {
+    const separatorShouldDisplay = event => {
       return fileItemShouldDisplay(event) || directoryItemShouldDisplay(event);
     };
     const separator = {
       type: 'separator',
-      shouldDisplay: separatorShouldDisplay,
+      shouldDisplay: separatorShouldDisplay
     };
 
-    const menuItemSubscriptions = new CompositeDisposable();
-    menuItemSubscriptions.add(
-      contextMenu.addItemToTestSection(fileItem, FILE_TREE_CONTEXT_MENU_PRIORITY),
-      contextMenu.addItemToTestSection(directoryItem, FILE_TREE_CONTEXT_MENU_PRIORITY + 1),
-      contextMenu.addItemToTestSection(separator, FILE_TREE_CONTEXT_MENU_PRIORITY + 2),
-    );
+    const menuItemSubscriptions = new _atom.CompositeDisposable();
+    menuItemSubscriptions.add(contextMenu.addItemToTestSection(fileItem, FILE_TREE_CONTEXT_MENU_PRIORITY), contextMenu.addItemToTestSection(directoryItem, FILE_TREE_CONTEXT_MENU_PRIORITY + 1), contextMenu.addItemToTestSection(separator, FILE_TREE_CONTEXT_MENU_PRIORITY + 2));
     this._disposables.add(menuItemSubscriptions);
 
-    return new Disposable(() => this._disposables.remove(menuItemSubscriptions));
+    return new _atom.Disposable(() => this._disposables.remove(menuItemSubscriptions));
   }
 
-  addTestRunner(testRunner: TestRunner): ?Disposable {
+  addTestRunner(testRunner) {
     if (this._testRunners.has(testRunner)) {
-      logger.info(`Attempted to add test runner "${testRunner.label}" that was already added`);
+      logger.info(`Attempted to add test runner "${ testRunner.label }" that was already added`);
       return;
     }
 
@@ -136,7 +136,7 @@ class Activation {
       this.getController().didUpdateTestRunners();
     }
 
-    return new Disposable(() => {
+    return new _atom.Disposable(() => {
       this._testRunners.delete(testRunner);
       // Tell the controller to re-render only if it exists so test runner services won't force
       // construction if the panel is still invisible.
@@ -146,27 +146,26 @@ class Activation {
     });
   }
 
-  addToolBar(getToolBar: GetToolBar): IDisposable {
+  addToolBar(getToolBar) {
     const toolBar = getToolBar('nuclide-test-runner');
     toolBar.addButton({
       icon: 'checklist',
       callback: 'nuclide-test-runner:toggle-panel',
       tooltip: 'Toggle Test Runner',
-      priority: 600,
+      priority: 600
     });
-    const disposable = new Disposable(() => { toolBar.removeItems(); });
+    const disposable = new _atom.Disposable(() => {
+      toolBar.removeItems();
+    });
     this._disposables.add(disposable);
     return disposable;
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
   }
 
-  _createRunTestsContextMenuItem(
-    isForFile: boolean,
-    contextMenu: FileTreeContextMenu,
-  ): atom$ContextMenuItem {
+  _createRunTestsContextMenuItem(isForFile, contextMenu) {
     let label;
     let shouldDisplayItem;
     if (isForFile) {
@@ -187,19 +186,23 @@ class Activation {
       // Intentionally **not** an arrow function because Atom sets the context when calling this and
       // allows dynamically setting values by assigning to `this`.
       created(event) {
-        let target = (((event.target): any): HTMLElement);
+        let target = event.target;
         if (target.dataset.name === undefined) {
           // If the event did not happen on the `name` span, search for it in the descendants.
           target = target.querySelector('.name');
         }
-        invariant(target != null);
+
+        if (!(target != null)) {
+          throw new Error('Invariant violation: "target != null"');
+        }
+
         if (target.dataset.name === undefined) {
           // If no necessary `.name` descendant is found, don't display a context menu.
           return;
         }
         const name = target.dataset.name;
         this.command = 'nuclide-test-runner:run-tests';
-        this.label = `${label} '${limitString(name)}'`;
+        this.label = `${ label } '${ limitString(name) }'`;
       },
       shouldDisplay: event => {
         // Don't show a testing option if there are no test runners.
@@ -211,7 +214,7 @@ class Activation {
           return false;
         }
 
-        let target = (((event.target): any): HTMLElement);
+        let target = event.target;
         if (target.dataset.name === undefined) {
           // If the event did not happen on the `name` span, search for it in the descendants.
           target = target.querySelector('.name');
@@ -219,78 +222,82 @@ class Activation {
         // If no descendant has the necessary dataset to create this menu item, don't create
         // it.
         return target != null && target.dataset.name != null && target.dataset.path != null;
-      },
+      }
     };
   }
 
   getController() {
     let controller = this._controller;
     if (controller == null) {
-      controller = new TestRunnerController(this._testRunners);
+      controller = new (_TestRunnerController || _load_TestRunnerController()).TestRunnerController(this._testRunners);
       this._controller = controller;
     }
     return controller;
   }
 
-  consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
-    this._disposables.add(
-      api.addOpener(uri => {
-        if (uri === WORKSPACE_VIEW_URI) {
-          return this.getController();
-        }
-      }),
-      new Disposable(
-        () => api.destroyWhere(item => item instanceof TestRunnerController),
-      ),
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-test-runner:toggle-panel',
-        event => { api.toggle(WORKSPACE_VIEW_URI, (event: any).detail); },
-      ),
-    );
+  consumeWorkspaceViewsService(api) {
+    this._disposables.add(api.addOpener(uri => {
+      if (uri === (_TestRunnerController || _load_TestRunnerController()).WORKSPACE_VIEW_URI) {
+        return this.getController();
+      }
+    }), new _atom.Disposable(() => api.destroyWhere(item => item instanceof (_TestRunnerController || _load_TestRunnerController()).TestRunnerController)), atom.commands.add('atom-workspace', 'nuclide-test-runner:toggle-panel', event => {
+      api.toggle((_TestRunnerController || _load_TestRunnerController()).WORKSPACE_VIEW_URI, event.detail);
+    }));
   }
 }
 
-let activation: ?Activation;
+let activation;
 
-export function activate(): void {
+function activate() {
   if (!activation) {
     activation = new Activation();
   }
 }
 
-export function deactivate(): void {
+function deactivate() {
   if (activation) {
     activation.dispose();
     activation = null;
   }
 }
 
-export function consumeTestRunner(testRunner: TestRunner): ?Disposable {
+function consumeTestRunner(testRunner) {
   if (activation) {
     return activation.addTestRunner(testRunner);
   }
 }
 
-export function addItemsToFileTreeContextMenu(contextMenu: FileTreeContextMenu): IDisposable {
-  invariant(activation);
+function addItemsToFileTreeContextMenu(contextMenu) {
+  if (!activation) {
+    throw new Error('Invariant violation: "activation"');
+  }
+
   return activation.addItemsToFileTreeContextMenu(contextMenu);
 }
 
-export function consumeToolBar(getToolBar: GetToolBar): IDisposable {
-  invariant(activation);
+function consumeToolBar(getToolBar) {
+  if (!activation) {
+    throw new Error('Invariant violation: "activation"');
+  }
+
   return activation.addToolBar(getToolBar);
 }
 
-export function deserializeTestRunnerPanelState(): TestRunnerController {
+function deserializeTestRunnerPanelState() {
   // Workaround until the bug where deserialize is ran before activation
   activate();
 
-  invariant(activation);
+  if (!activation) {
+    throw new Error('Invariant violation: "activation"');
+  }
+
   return activation.getController();
 }
 
-export function consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
-  invariant(activation);
+function consumeWorkspaceViewsService(api) {
+  if (!activation) {
+    throw new Error('Invariant violation: "activation"');
+  }
+
   return activation.consumeWorkspaceViewsService(api);
 }
