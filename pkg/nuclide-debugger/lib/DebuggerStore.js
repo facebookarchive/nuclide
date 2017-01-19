@@ -86,8 +86,12 @@ export class DebuggerStore {
   dispose() {
     this._emitter.dispose();
     this._dispatcher.unregister(this._dispatcherToken);
-    if (this._debuggerInstance) {
-      this._debuggerInstance.dispose();
+    const debuggerInstance = this._debuggerInstance;
+    if (debuggerInstance != null) {
+      // On package deactivation, this field is expected to be nulled out, which must happen here
+      // because the dispatcher for this store is now unregistered.
+      this._debuggerInstance = null;
+      debuggerInstance.dispose();
     }
   }
 
