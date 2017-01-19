@@ -21,6 +21,7 @@ import {
 } from 'react-for-atom';
 
 import debounce from '../../commons-node/debounce';
+import invariant from 'assert';
 import {arrayCompact, arrayRemove} from '../../commons-node/collection';
 import {track, trackTiming} from '../../nuclide-analytics';
 import {getLogger} from '../../nuclide-logging';
@@ -103,73 +104,93 @@ async function fetchDatatip(editor, position, allProviders, onPinClick) {
     return null;
   }
 
-  let combinedRange = null;
-  const renderedProviders = arrayCompact(await Promise.all(
-    providers.map(async (provider: DatatipProvider): Promise<?Object> => {
-      const name = getProviderName(provider);
-      const datatip = await trackTiming(
-        name + '.datatip',
-        () => provider.datatip(editor, position),
-      );
-      if (!datatip) {
-        return null;
-      }
-      const {pinnable, component, range} = datatip;
-      const ProvidedComponent = component;
+  const datatipsAndProviders = arrayCompact(await Promise.all(
+    providers.map(
+      async (
+        provider: DatatipProvider,
+      ): Promise<?{datatip: ?Datatip, provider: DatatipProvider}> => {
+        const name = getProviderName(provider);
+        const datatip = await trackTiming(
+          name + '.datatip',
+          () => provider.datatip(editor, position),
+        );
 
-      // We track the timing above, but we still want to know the number of
-      // popups that are shown.
-      track('datatip-popup', {
-        scope: scopeName,
-        providerName: name,
-        rangeStartRow: String(range.start.row),
-        rangeStartColumn: String(range.start.column),
-        rangeEndRow: String(range.end.row),
-        rangeEndColumn: String(range.end.column),
-      });
+        if (!datatip) {
+          return null;
+        }
 
-      if (!combinedRange) {
-        combinedRange = range;
-      } else {
-        combinedRange = combinedRange.union(range);
-      }
-
-      let action;
-      let actionTitle;
-      // Datatips are pinnable by default, unless explicitly specified
-      // otherwise.
-      if (pinnable !== false) {
-        action = DATATIP_ACTIONS.PIN;
-        actionTitle = 'Pin this Datatip';
-      }
-
-      return (
-        <DatatipComponent
-          action={action}
-          actionTitle={actionTitle}
-          onActionClick={() => onPinClick(editor, datatip)}
-          key={name}>
-          <ProvidedComponent />
-        </DatatipComponent>
-      );
-    }),
+        return {
+          datatip,
+          provider,
+        };
+      },
+    ),
   ));
-  if (renderedProviders.length === 0) {
+
+  // Providers are already sorted by priority and we've already removed the ones
+  // with no datatip, so just grab the first one.
+  const [topDatatipAndProvider] = datatipsAndProviders;
+  if (topDatatipAndProvider == null) {
     return null;
   }
+  const topDatatip = topDatatipAndProvider.datatip;
+  invariant(topDatatip != null);
+
+  const {range} = topDatatip;
+  const providerName = getProviderName(topDatatipAndProvider.provider);
+
+  track('datatip-popup', {
+    scope: scopeName,
+    providerName,
+    rangeStartRow: String(range.start.row),
+    rangeStartColumn: String(range.start.column),
+    rangeEndRow: String(range.end.row),
+    rangeEndColumn: String(range.end.column),
+  });
+
+  const renderedProvider = renderProvider(topDatatip, editor, providerName, onPinClick);
 
   return {
-    range: combinedRange,
-    renderedProviders: <div>{renderedProviders}</div>,
+    range,
+    renderedProvider,
   };
+}
+
+function renderProvider(
+  datatip: Datatip,
+  editor: atom$TextEditor,
+  providerName: string,
+  onPinClick: (editor: atom$TextEditor, datatip: Datatip) => void,
+): React.Element<any> {
+  const {pinnable, component} = datatip;
+  const ProvidedComponent = component;
+
+  let action;
+  let actionTitle;
+  // Datatips are pinnable by default, unless explicitly specified
+  // otherwise.
+  if (pinnable !== false) {
+    action = DATATIP_ACTIONS.PIN;
+    actionTitle = 'Pin this Datatip';
+  }
+
+  return (
+    <DatatipComponent
+      action={action}
+      actionTitle={actionTitle}
+      onActionClick={() => onPinClick(editor, datatip)}
+      key={providerName}>
+      <ProvidedComponent />
+    </DatatipComponent>
+  );
 }
 
 function renderDatatip(
   editor,
   element,
-  {range, renderedProviders}: {
+  {range, renderedProvider}: {
     range: atom$Range,
-    renderedProviders: React.Element<any>,
+    renderedProvider: React.Element<any>,
   },
 ): atom$Marker {
   // Transform the matched element range to the hint range.
@@ -178,7 +199,7 @@ function renderDatatip(
     {invalidate: 'never'},
   );
 
-  ReactDOM.render(renderedProviders, element);
+  ReactDOM.render(renderedProvider, element);
   element.style.display = 'block';
 
   editor.decorateMarker(marker, {
@@ -505,7 +526,7 @@ class DatatipManagerForEditor {
     range: atom$Range,
     pinnable?: boolean,
     editor: TextEditor,
-    ): PinnedDatatip {
+  ): PinnedDatatip {
     const datatip = new PinnedDatatip(
       /* datatip */ {component, range, pinnable},
       editor,
