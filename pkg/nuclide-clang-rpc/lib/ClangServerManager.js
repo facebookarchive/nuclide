@@ -85,7 +85,7 @@ export default class ClangServerManager {
       }
     }
     const [serverArgs, flagsResult] = await Promise.all([
-      findClangServerArgs(),
+      findClangServerArgs(src),
       this._getFlags(src, defaultFlags),
     ]);
     if (flagsResult == null) {

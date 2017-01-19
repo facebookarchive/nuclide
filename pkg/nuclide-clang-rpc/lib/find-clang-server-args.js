@@ -20,7 +20,7 @@ export type ClangServerArgs = {
   pythonPathEnv: ?string,
 };
 
-export default async function findClangServerArgs(): Promise<ClangServerArgs> {
+export default async function findClangServerArgs(src?: string): Promise<ClangServerArgs> {
   if (fbFindClangServerArgs === undefined) {
     fbFindClangServerArgs = null;
     try {
@@ -58,7 +58,7 @@ export default async function findClangServerArgs(): Promise<ClangServerArgs> {
     pythonPathEnv: nuclideUri.join(__dirname, '../VendorLib'),
   };
   if (typeof fbFindClangServerArgs === 'function') {
-    const clangServerArgsOverrides = await fbFindClangServerArgs();
+    const clangServerArgsOverrides = await fbFindClangServerArgs(src);
     return {...clangServerArgs, ...clangServerArgsOverrides};
   } else {
     return clangServerArgs;
