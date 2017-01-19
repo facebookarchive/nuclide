@@ -17,6 +17,7 @@ import type {
   DebuggerModeType,
 } from './types';
 
+import dedent from 'dedent';
 import invariant from 'assert';
 import {
   Disposable,
@@ -180,7 +181,15 @@ export default class BreakpointStore {
     userAction: boolean = true,
   ): void {
     const lineMap = this._breakpoints.get(path);
-    invariant(lineMap != null);
+    invariant(
+      lineMap != null,
+      dedent`
+        Expected a non-null lineMap.
+        path: ${path},
+        line: ${line},
+        userAction: ${userAction}
+      `,
+    );
     const breakpoint = lineMap.get(line);
     if (lineMap.delete(line)) {
       invariant(breakpoint);
