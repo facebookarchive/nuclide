@@ -15,6 +15,7 @@ import {GRAMMARS} from './constants';
 import {trackTiming} from '../../nuclide-analytics';
 import {Range} from 'atom';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
+import featureConfig from '../../commons-atom/featureConfig';
 
 module.exports = {
   name: 'nuclide-ocaml',
@@ -24,6 +25,9 @@ module.exports = {
   invalidateOnClose: true,
 
   lint(textEditor: atom$TextEditor): Promise<Array<LinterMessage>> {
+    if (!featureConfig.get('nuclide-ocaml.enableDiagnostics')) {
+      return Promise.resolve([]);
+    }
     return trackTiming('nuclide-ocaml.lint', async () => {
       const filePath = textEditor.getPath();
       if (filePath == null) {
