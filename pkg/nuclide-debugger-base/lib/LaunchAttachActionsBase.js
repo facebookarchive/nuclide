@@ -47,6 +47,7 @@ export class LaunchAttachActionsBase {
 
   _updateAutoRefresh(): void {
     if (this._parentUIVisible && this._attachUIVisible) {
+      this.updateAttachTargetList();
       this._refreshTimerId = setInterval(
         this.updateAttachTargetList,
         ATTACH_TARGET_LIST_REFRESH_INTERVAL,
