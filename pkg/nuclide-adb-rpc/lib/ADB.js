@@ -8,12 +8,46 @@
  * @flow
  */
 
-import type {ConnectableObservable} from 'rxjs';
+import type {Observable, ConnectableObservable} from 'rxjs';
 import type {DeviceDescription} from './AdbService';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import {runCommand} from '../../commons-node/process';
 
 import * as os from 'os';
+
+function runAdbCommand(
+  adbPath: NuclideUri,
+  device: string,
+  command: Array<string>,
+): Observable<string> {
+  return runCommand(adbPath, ['-s', device].concat(command));
+}
+
+function getAndroidProp(
+  adbPath: NuclideUri,
+  device: string,
+  key: string,
+): Observable<string> {
+  return runAdbCommand(adbPath, device, ['shell', 'getprop', key])
+    .map(s => s.trim());
+}
+
+function getTizenModelConfigKey(
+  adbPath: NuclideUri,
+  device: string,
+  key: string,
+): Promise<string> {
+  const modelConfigPath = '/etc/config/model-config.xml';
+
+  return runAdbCommand(adbPath, device, ['shell', 'cat', modelConfigPath])
+    .map(stdout => stdout.split(/\n+/g)
+                     .filter(s => s.indexOf(key) !== -1)[0])
+    .map(s => {
+      const regex = /.*<.*>(.*)<.*>/g;
+      return regex.exec(s)[1];
+    })
+    .toPromise();
+}
 
 export function startServer(
   adbPath: NuclideUri,
@@ -46,28 +80,11 @@ export function getDeviceArchitecture(
 ): Promise<string> {
   // SDB is a tool similar to ADB used with Tizen devices. `getprop` doesn't
   // exist on Tizen, so we have to rely on uname instead.
-  return runCommand(
-    adbPath,
-    ['-s', device, 'shell'].concat(
-      adbPath.endsWith('sdb') ? ['uname', '-m'] : ['getprop', 'ro.product.cpu.abi']),
-  ).map(s => s.trim())
-  .toPromise();
-}
-
-function getTizenModelConfigKey(
-  adbPath: NuclideUri,
-  device: string,
-  key: string,
-): Promise<string> {
-  const modelConfigPath = '/etc/config/model-config.xml';
-  return runCommand(adbPath, ['-s', device, 'shell', 'cat', modelConfigPath])
-    .map(stdout => stdout.split(/\n+/g)
-                     .filter(s => s.indexOf(key) !== -1)[0])
-    .map(s => {
-      const regex = /.*<.*>(.*)<.*>/g;
-      return regex.exec(s)[1];
-    })
-    .toPromise();
+  if (adbPath.endsWith('sdb')) {
+    return runAdbCommand(adbPath, device, ['shell', 'uname', '-m']).toPromise();
+  } else {
+    return getAndroidProp(adbPath, device, 'ro.product.cpu.abi').toPromise();
+  }
 }
 
 export function getDeviceModel(
@@ -77,8 +94,7 @@ export function getDeviceModel(
   if (adbPath.endsWith('sdb')) {
     return getTizenModelConfigKey(adbPath, device, 'tizen.org/system/model_name');
   } else {
-    return runCommand(adbPath, ['-s', device, 'shell', 'getprop', 'ro.product.model'])
-      .map(s => s.trim())
+    return getAndroidProp(adbPath, device, 'ro.product.model')
       .map(s => (s === 'sdk' ? 'emulator' : s))
       .toPromise();
   }
