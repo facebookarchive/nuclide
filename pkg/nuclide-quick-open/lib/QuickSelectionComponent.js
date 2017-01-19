@@ -36,23 +36,21 @@ export type SelectionIndex = {
   selectedItemIndex: number,
 };
 
+import {Observable, Scheduler} from 'rxjs';
 import {AtomInput} from '../../nuclide-ui/AtomInput';
 import {Button} from '../../nuclide-ui/Button';
 import Tabs from '../../nuclide-ui/Tabs';
-import {CompositeDisposable} from 'atom';
-import debounce from '../../commons-node/debounce';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import {observableFromSubscribeFunction} from '../../commons-node/event';
 import humanizeKeystroke from '../../commons-node/humanizeKeystroke';
 import {React, ReactDOM} from 'react-for-atom';
 import classnames from 'classnames';
-import invariant from 'assert';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {
   filterEmptyResults,
   flattenResults,
   getOuterResults,
 } from './searchResultHelpers';
-
-const RESULTS_CHANGED_DEBOUNCE_DELAY = 50;
 
 /**
  * Determine what the applicable shortcut for a given action is within this component's context.
@@ -99,13 +97,11 @@ export default class QuickSelectionComponent extends React.Component {
   props: Props;
   state: State;
 
-  _subscriptions: CompositeDisposable;
-  _debouncedQueryHandler: ?({(): void} & IDisposable);
-  _debouncedResultsChange: {(): void} & IDisposable;
+  _subscriptions: UniversalDisposable;
 
   constructor(props: Props) {
     super(props);
-    this._subscriptions = new CompositeDisposable();
+    this._subscriptions = new UniversalDisposable();
 
     const initialProviderName =
       this.props.searchResultManager.getActiveProviderName();
@@ -143,15 +139,6 @@ export default class QuickSelectionComponent extends React.Component {
     (this: any)._handleTabChange = this._handleTabChange.bind(this);
     (this: any)._handleTextInputChange = this._handleTextInputChange.bind(this);
     (this: any)._select = this._select.bind(this);
-
-    this._debouncedResultsChange = debounce(
-      this._handleResultsChange,
-      RESULTS_CHANGED_DEBOUNCE_DELAY,
-      false,
-    );
-    this._subscriptions.add(this._debouncedResultsChange);
-
-    this._updateQueryHandler();
   }
 
   /**
@@ -197,7 +184,6 @@ export default class QuickSelectionComponent extends React.Component {
             const query = this.refs.queryInput.getText();
             this.props.quickSelectionActions.query(query);
           });
-          this._updateQueryHandler();
           if (this.props.onItemsChanged != null) {
             this.props.onItemsChanged(lastResults);
           }
@@ -232,22 +218,34 @@ export default class QuickSelectionComponent extends React.Component {
       atom.commands.add(modalNode, 'pane:show-previous-item', this._handleMovePreviousTab),
       atom.commands.add(modalNode, 'pane:show-next-item', this._handleMoveNextTab),
       atom.commands.add('body', 'core:cancel', () => { this.props.onCancellation(); }),
-      this.props.searchResultManager.onProvidersChanged(this._handleProvidersChange),
-      this.props.searchResultManager.onResultsChanged(this._debouncedResultsChange),
-      this._getTextEditor().onDidChange(this._handleTextInputChange),
+      Observable.fromEvent(document, 'mousedown')
+        .subscribe(this._handleDocumentMouseDown),
+      observableFromSubscribeFunction(cb => this._getTextEditor().onDidChange(cb))
+        // $FlowFixMe: Missing def for debounce and timer.
+        .debounce(() => Observable.timer(this.state.activeTab.debounceDelay || 0))
+        .subscribe(this._handleTextInputChange),
+      observableFromSubscribeFunction(
+          cb => this.props.searchResultManager.onProvidersChanged(cb),
+        )
+        .debounceTime(0, Scheduler.animationFrame)
+        .subscribe(this._handleProvidersChange),
+      observableFromSubscribeFunction(
+          cb => this.props.searchResultManager.onResultsChanged(cb),
+        )
+        .debounceTime(50)
+        // debounceTime seems to have issues canceling scheduled work. So
+        // schedule it after we've debounced the events. See
+        // https://github.com/ReactiveX/rxjs/pull/2135
+        .debounceTime(0, Scheduler.animationFrame)
+        .subscribe(this._handleResultsChange),
     );
 
     // TODO: Find a better way to trigger an update.
     this._getTextEditor().setText(this.refs.queryInput.getText());
     this._getTextEditor().selectAll();
-
-    document.addEventListener('mousedown', this._handleDocumentMouseDown);
   }
 
   componentWillUnmount(): void {
-    document.removeEventListener('mousedown', this._handleDocumentMouseDown);
-    invariant(this._debouncedQueryHandler != null);
-    this._debouncedQueryHandler.dispose();
     this._subscriptions.dispose();
   }
 
@@ -314,26 +312,10 @@ export default class QuickSelectionComponent extends React.Component {
     }
   }
 
-  _updateQueryHandler(): void {
-    // Use "if" and not "invariant" since this may be the first time we're
-    // setting up the debounced handler.
-    if (this._debouncedQueryHandler != null) {
-      this._debouncedQueryHandler.dispose();
-    }
-    this._debouncedQueryHandler = debounce(
-      () => {
-        this.setState({hasUserSelection: false});
-        const query = this._getTextEditor().getText();
-        this.props.quickSelectionActions.query(query);
-      },
-      this.state.activeTab.debounceDelay || 0,
-      false,
-    );
-  }
-
   _handleTextInputChange(): void {
-    invariant(this._debouncedQueryHandler != null);
-    this._debouncedQueryHandler();
+    this.setState({hasUserSelection: false});
+    const query = this._getTextEditor().getText();
+    this.props.quickSelectionActions.query(query);
   }
 
   _handleResultsChange(): void {
