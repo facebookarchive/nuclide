@@ -23,10 +23,10 @@ import type {
   Callstack,
   ControlButtonSpecification,
   DebuggerModeType,
-  ExpansionResult,
   ExpressionResult,
   GetPropertiesResult,
   NuclideThreadData,
+  ScopeSection,
   ThreadItem,
 } from './types';
 
@@ -472,13 +472,10 @@ export default class DebuggerActions {
     });
   }
 
-  updateScopes(scopeVariables: ExpansionResult, scopeName: string): void {
+  updateScopes(scopeSections: Array<ScopeSection>): void {
     this._dispatcher.dispatch({
       actionType: ActionTypes.UPDATE_SCOPES,
-      data: {
-        scopeVariables,
-        scopeName,
-      },
+      data: scopeSections,
     });
   }
 

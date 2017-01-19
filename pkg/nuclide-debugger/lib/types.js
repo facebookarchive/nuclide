@@ -158,7 +158,22 @@ declare class WebInspector$DebuggerModel$Location {
 declare class WebInspector$CallFrame {
   script: WebInspector$Script,
   functionName: string,
+  id: number,
   location(): WebInspector$DebuggerModel$Location,
+  scopeChain(): Array<WebInspector$DebuggerModel$Scope>,
+}
+
+declare class WebInspector$DebuggerModel$Scope {
+  object(): WebInspector$RemoteObjectImpl,
+}
+
+declare class WebInspector$RemoteObjectImpl {
+  type: string,
+  subtype: ?string,
+  objectId: ?string,
+  value: any,
+  description: ?string,
+  getOwnProperties(cb: (properties: Array<Object>) => void): void,
 }
 
 declare class WebInspector$Event {

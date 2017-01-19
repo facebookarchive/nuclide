@@ -166,17 +166,13 @@ class NuclideBridge {
             return;
           }
           this.updateProperties(properties, internalProperties);
-          const neededProperties = getIpcExpansionResult(properties);
-          if (neededProperties != null && scopeName != null) {
-            ipcRenderer.sendToHost('notification', 'ScopesUpdate', neededProperties, scopeName);
-          }
         }
         // $FlowFixMe.
         WebInspector.RemoteObject.loadFromObject(
           this.object,
           Boolean(this.ignoreHasOwnProperty),
           // We use the scope object's `description` field as the scope's section header in the UI.
-          callback.bind(this, this.object.description),
+          callback.bind(this),
         );
       };
   }
@@ -272,6 +268,7 @@ class NuclideBridge {
       sourceURL: uiLocation.uiSourceCode.uri(),
       lineNumber: uiLocation.lineNumber,
     });
+    this._updateScopes(frame);
   }
 
   _handleOpenSourceLocation(event: WebInspector.Event) {
@@ -306,7 +303,35 @@ class NuclideBridge {
     if (target != null) {
       const selectedFrame = target.debuggerModel.callFrames[callframeIndex];
       target.debuggerModel.setSelectedCallFrame(selectedFrame);
+      this._updateScopes(selectedFrame);
     }
+  }
+
+  async _updateScopes(frame: WebInspector$CallFrame): Promise<void> {
+    const scopes = frame.scopeChain();
+    // We need to wait for the backend to send us the scope data, and only want to continue when
+    // we have each scope.
+    const scopeSections = await Promise.all(scopes.map(scope => {
+      const scopeObj = scope.object();
+      return new Promise(
+        resolve => scopeObj.getOwnProperties(
+          scopeVariables => resolve({name: scopeObj.description, scopeVariables}),
+        ),
+      );
+    }));
+    ipcRenderer.sendToHost('notification', 'ScopesUpdate', scopeSections.map(scope => {
+      const {name, scopeVariables} = scope;
+      return {
+        name,
+        scopeVariables: scopeVariables.map(scopeVariable => {
+          const {name: variableName, value: scopeValue} = scopeVariable;
+          return {
+            name: variableName,
+            value: getIpcEvaluationResult(false /* wasThrown */, scopeValue),
+          };
+        }),
+      };
+    }));
   }
 
   _sendCallstack(): void {

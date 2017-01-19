@@ -12,7 +12,7 @@ import type DebuggerModel from './DebuggerModel';
 import type {
   Callstack,
   EvalCommand,
-  ExpansionResult,
+  ScopeSection,
   NuclideThreadData,
   ThreadItem,
   BreakpointUserChangeArgType,
@@ -210,8 +210,8 @@ export default class Bridge {
     this._debuggerModel.getActions().updateCallstack(callstack);
   }
 
-  _handleScopesUpdate(scopeVariables: ExpansionResult, scopeName: string): void {
-    this._debuggerModel.getActions().updateScopes(scopeVariables, scopeName);
+  _handleScopesUpdate(scopeSections: Array<ScopeSection>): void {
+    this._debuggerModel.getActions().updateScopes(scopeSections);
   }
 
   _handleIpcMessage(stdEvent: Event): void {
@@ -264,7 +264,7 @@ export default class Bridge {
             this._handleCallstackUpdate(event.args[1]);
             break;
           case 'ScopesUpdate':
-            this._handleScopesUpdate(event.args[1], event.args[2]);
+            this._handleScopesUpdate(event.args[1]);
             break;
           case 'ThreadsUpdate':
             this._handleThreadsUpdate(event.args[1]);

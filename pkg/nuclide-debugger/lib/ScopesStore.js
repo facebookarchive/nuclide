@@ -9,7 +9,7 @@
  */
 
 import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';
-import type {ScopeSection, ExpansionResult} from './types';
+import type {ScopeSection} from './types';
 
 import {
   Disposable,
@@ -42,7 +42,7 @@ export default class ScopesStore {
         this._handleClearInterface();
         break;
       case ActionTypes.UPDATE_SCOPES:
-        this._handleUpdateScopes(payload.data.scopeVariables, payload.data.scopeName);
+        this._handleUpdateScopes(payload.data);
         break;
       default:
         return;
@@ -53,12 +53,8 @@ export default class ScopesStore {
     this._scopes.next([]);
   }
 
-  _handleUpdateScopes(scopeVariables: ExpansionResult, scopeName: string): void {
-    const scopeSection = {
-      name: scopeName,
-      scopeVariables,
-    };
-    this._scopes.next([...this._scopes.getValue(), scopeSection]);
+  _handleUpdateScopes(scopeSections: Array<ScopeSection>): void {
+    this._scopes.next(scopeSections);
   }
 
   getScopes(): Observable<Array<ScopeSection>> {

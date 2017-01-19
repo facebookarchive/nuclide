@@ -19,7 +19,7 @@ import type {
   Callstack,
   ControlButtonSpecification,
   DebuggerModeType,
-  ExpansionResult,
+  ScopeSection,
   ExpressionResult,
   GetPropertiesResult,
   NuclideThreadData,
@@ -154,7 +154,7 @@ export type DebuggerAction =
   } |
   {
     actionType: 'UPDATE_SCOPES',
-    data: {scopeVariables: ExpansionResult, scopeName: string},
+    data: Array<ScopeSection>,
   } |
   {
     actionType: 'TOGGLE_PAUSE_ON_EXCEPTION',
