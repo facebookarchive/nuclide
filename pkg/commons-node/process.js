@@ -18,7 +18,6 @@ import {observeStream} from './stream';
 import {maybeToString} from './string';
 import {Observable} from 'rxjs';
 import invariant from 'assert';
-import semver from 'semver';
 import {quote} from 'shell-quote';
 import performanceNow from './performanceNow';
 
@@ -654,30 +653,21 @@ export function runCommand(
 let cachedOriginalEnvironment = null;
 
 let loadedShellResolve;
-let loadedShellTimeout;
 const loadedShellPromise = new Promise(resolve => {
   loadedShellResolve = resolve;
 }).then(() => {
   // No need to include default paths now that the environment is loaded.
   DEFAULT_PATH_INCLUDE = [];
   cachedOriginalEnvironment = null;
-  loadedShellTimeout = null;
 });
 
 invariant(loadedShellResolve);
 if (typeof atom === 'undefined' || atom.inSpecMode()) {
   // This doesn't apply server-side or in tests, so just immediately resolve.
   loadedShellResolve();
-} else if (semver.lt(atom.getVersion(), '1.12.7')) {
-  // Atom <= 1.12.6 has a bug where our hook won't trigger if we activate too late.
-  // Apply a 10 second timeout to prevent the case where this never resolves.
-  loadedShellTimeout = setTimeout(loadedShellResolve, 10000);
 }
 
 export function loadedShellEnvironment(): void {
-  if (loadedShellTimeout != null) {
-    clearTimeout(loadedShellTimeout);
-  }
   loadedShellResolve();
 }
 
