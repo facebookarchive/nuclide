@@ -18,12 +18,12 @@ describe('AutocompleteCacher', () => {
   let getSuggestions: JasmineSpy = (null: any);
   let updateResults: JasmineSpy = (null: any);
   let shouldFilter: JasmineSpy | void = undefined;
-  let mockedSuggestions: Promise<Array<string>> = (null: any);
+  let mockedSuggestions: Promise<?Array<string>> = (null: any);
   let mockedUpdateResults: Array<string> = (null: any);
   // returned from the second call
   let secondMockedUpdateResults: Array<string> = (null: any);
 
-  let autocompleteCacher: AutocompleteCacher<Array<string>> = (null: any);
+  let autocompleteCacher: AutocompleteCacher<?Array<string>> = (null: any);
 
   let mockedRequest: atom$AutocompleteRequest = (null: any);
   let mockedRequest2: atom$AutocompleteRequest = (null: any);
@@ -104,7 +104,7 @@ describe('AutocompleteCacher', () => {
       await autocompleteCacher.getSuggestions(mockedRequest);
       const secondResults = await autocompleteCacher.getSuggestions(mockedRequest2);
 
-      expect(getSuggestions.callCount).toBe(1);
+      expect(getSuggestions.callCount).toBe(2);
       expect(getSuggestions).toHaveBeenCalledWith(mockedRequest);
 
       expect(updateResults.callCount).toBe(1);
@@ -124,7 +124,7 @@ describe('AutocompleteCacher', () => {
 
       const secondResultPromise = autocompleteCacher.getSuggestions(mockedRequest2);
 
-      expect(getSuggestions.callCount).toBe(1);
+      expect(getSuggestions.callCount).toBe(2);
       expect(getSuggestions).toHaveBeenCalledWith(mockedRequest);
       expect(updateResults).not.toHaveBeenCalled();
 
@@ -135,7 +135,7 @@ describe('AutocompleteCacher', () => {
       expect(updateResults).toHaveBeenCalledWith(mockedRequest2, await firstResultPromise);
 
       expect(await secondResultPromise).toBe(mockedUpdateResults);
-      expect(getSuggestions.callCount).toBe(1);
+      expect(getSuggestions.callCount).toBe(2);
     });
   });
 
@@ -149,7 +149,7 @@ describe('AutocompleteCacher', () => {
       const secondResult = autocompleteCacher.getSuggestions(mockedRequest2);
       const finalResult = autocompleteCacher.getSuggestions(mockedRequest3);
 
-      expect(getSuggestions.callCount).toBe(1);
+      expect(getSuggestions.callCount).toBe(3);
       expect(getSuggestions).toHaveBeenCalledWith(mockedRequest);
       expect(updateResults).not.toHaveBeenCalled();
 
@@ -164,7 +164,7 @@ describe('AutocompleteCacher', () => {
         [mockedRequest3, await mockedSuggestions],
       ]);
 
-      expect(getSuggestions.callCount).toBe(1);
+      expect(getSuggestions.callCount).toBe(3);
     });
   });
 
@@ -182,6 +182,26 @@ describe('AutocompleteCacher', () => {
       expect(updateResults).not.toHaveBeenCalled();
 
       expect(secondResults).toBe(await mockedSuggestions);
+    });
+  });
+
+  it('should pass a new request through if the first returned null', () => {
+    waitsForPromise(async () => {
+      mockedSuggestions = Promise.resolve(null);
+      await autocompleteCacher.getSuggestions(mockedRequest);
+
+      const secondMockedSuggestion = [];
+      mockedSuggestions = Promise.resolve(secondMockedSuggestion);
+      const secondResults = await autocompleteCacher.getSuggestions(mockedRequest2);
+
+      expect(getSuggestions.calls.map(call => call.args)).toEqual([
+        [mockedRequest],
+        [mockedRequest2],
+      ]);
+
+      expect(updateResults).not.toHaveBeenCalled();
+
+      expect(secondResults).toBe(secondMockedSuggestion);
     });
   });
 
@@ -210,7 +230,7 @@ describe('AutocompleteCacher', () => {
         await autocompleteCacher.getSuggestions(mockedRequest);
         const secondResults = await autocompleteCacher.getSuggestions(mockedRequest2);
 
-        expect(getSuggestions.callCount).toBe(1);
+        expect(getSuggestions.callCount).toBe(2);
         expect(getSuggestions).toHaveBeenCalledWith(mockedRequest);
 
         expect(updateResults.callCount).toBe(1);

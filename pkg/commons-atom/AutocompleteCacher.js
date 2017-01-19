@@ -34,6 +34,9 @@ export default class AutocompleteCacher<T> {
   _session: ?AutocompleteSession<T>;
 
   constructor(
+    // If getSuggestions returns null or undefined, it means that we should not filter that result
+    // to serve later queries, even if shouldFilter returns true. If there are truly no results, it
+    // is recommended that getSuggestions return an empty Array.
     getSuggestions: (request: atom$AutocompleteRequest) => Promise<T>,
     config: AutocompleteCacherConfig<T>,
   ) {
@@ -43,10 +46,20 @@ export default class AutocompleteCacher<T> {
 
   getSuggestions(request: atom$AutocompleteRequest): Promise<T> {
     const session = this._session;
-    if (session != null && this._canFilterResults(session, request)) {
-      const result = this._filterSuggestions(request, session.firstResult);
+    if (session != null && this._canMaybeFilterResults(session, request)) {
+      // We need to send this request speculatively because if firstResult resolves to `null`, we'll
+      // need this result. If we wait for firstResult to resolve before sending it, satisfying this
+      // request could take as much as two round trips to the server. We could avoid this in some
+      // cases by checking if firstResult has already been resolved. If it has already resolved to a
+      // non-null value, we can skip this request.
+      const resultFromLanguageService = this._getSuggestions(request);
+      const result = this._filterSuggestionsIfPossible(
+        request,
+        session.firstResult,
+        resultFromLanguageService,
+      );
       this._session = {
-        firstResult: session.firstResult,
+        firstResult: getNewFirstResult(session.firstResult, resultFromLanguageService),
         lastRequest: request,
       };
       return result;
@@ -60,14 +73,22 @@ export default class AutocompleteCacher<T> {
     }
   }
 
-  async _filterSuggestions(
+  async _filterSuggestionsIfPossible(
     request: atom$AutocompleteRequest,
-    firstResult: Promise<T>,
+    firstResultPromise: Promise<T>,
+    resultFromLanguageService: Promise<T>,
   ): Promise<T> {
-    return this._config.updateResults(request, await firstResult);
+    const firstResult = await firstResultPromise;
+    if (firstResult != null) {
+      return this._config.updateResults(request, firstResult);
+    } else {
+      return resultFromLanguageService;
+    }
   }
 
-  _canFilterResults(
+  // This doesn't guarantee we can filter results -- if the previous result turns out to be null, we
+  // may still have to use the results from the language service.
+  _canMaybeFilterResults(
     session: AutocompleteSession<T>,
     currentRequest: atom$AutocompleteRequest,
   ): boolean {
@@ -78,6 +99,18 @@ export default class AutocompleteCacher<T> {
     return lastRequest.bufferPosition.row === currentRequest.bufferPosition.row &&
         lastRequest.bufferPosition.column + 1 === currentRequest.bufferPosition.column &&
         shouldFilter(lastRequest, currentRequest);
+  }
+}
+
+async function getNewFirstResult<T>(
+  firstResultPromise: Promise<T>,
+  resultFromLanguageService: Promise<T>,
+): Promise<T> {
+  const firstResult = await firstResultPromise;
+  if (firstResult != null) {
+    return firstResult;
+  } else {
+    return resultFromLanguageService;
   }
 }
 
