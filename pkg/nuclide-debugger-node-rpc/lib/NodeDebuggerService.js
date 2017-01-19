@@ -113,7 +113,7 @@ export class NodeDebuggerService {
   async _connectWithDebuggerHost(serverAddress: string): Promise<WS> {
     logInfo(`Connecting debugger host with address: ${serverAddress}`);
     const ws = new WS(serverAddress);
-    this._subscriptions.add(new Disposable(() => ws.terminate()));
+    this._subscriptions.add(new Disposable(() => ws.close()));
     return new Promise((resolve, reject) => {
       ws.on('open', () => {
         // Successfully connected with debugger host, fulfill the promise.
