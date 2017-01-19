@@ -14,7 +14,7 @@ import {
   getNuclideVersion,
   isRunningInClient,
 } from './system-info';
-import userInfo from './userInfo';
+import os from 'os';
 import uuid from 'uuid';
 import {__DEV__} from '../nuclide-node-transpiler/lib/env';
 
@@ -41,7 +41,7 @@ function getCacheableRuntimeInformation(): RuntimeInformation {
 
   cachedInformation = {
     sessionId: uuid.v4(),
-    user: userInfo().username,
+    user: os.userInfo().username,
     osType: getOsType(),
     timestamp: 0,
     isClient: isRunningInClient(),

@@ -11,11 +11,11 @@
 import type {NuclideRemoteConnectionParams} from './connection-types';
 
 import nuclideUri from '../../commons-node/nuclideUri';
-import userInfo from '../../commons-node/userInfo';
+import os from 'os';
 import {SshHandshake} from '../../nuclide-remote-connection';
 
 export function getConnectionDialogDefaultSettings(): NuclideRemoteConnectionParams {
-  const {username, homedir} = userInfo();
+  const {username, homedir} = os.userInfo();
   return {
     server: '',
     username,

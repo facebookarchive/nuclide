@@ -12,7 +12,6 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import {arrayCompact} from '../../commons-node/collection';
 import fs from '../../commons-node/fsPromise';
-import userInfo from '../../commons-node/userInfo';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {getLogger} from '../../nuclide-logging';
 import {asyncFind} from '../../commons-node/promise';
@@ -121,7 +120,7 @@ function findPathToConfigDirectory(clearDirectory: boolean): Promise<?string> {
   // because nuclide-server is local, so it should only write out its state to
   // a local directory.
 
-  const {homedir, username} = userInfo();
+  const {homedir, username} = os.userInfo();
 
   const candidateDirectories: Array<?string> = [
     // Start with the tmpdir

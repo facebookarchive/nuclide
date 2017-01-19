@@ -12,12 +12,11 @@ import type {LoggingAppender} from './types';
 import ScribeProcess from '../../commons-node/ScribeProcess';
 import {isRunningInTest, isRunningInClient} from '../../commons-node/system-info';
 import fsPromise from '../../commons-node/fsPromise';
-import userInfo from '../../commons-node/userInfo';
 
 import os from 'os';
 import nuclideUri from '../../commons-node/nuclideUri';
 
-const LOG_DIRECTORY = nuclideUri.join(os.tmpdir(), `/nuclide-${userInfo().username}-logs`);
+const LOG_DIRECTORY = nuclideUri.join(os.tmpdir(), `/nuclide-${os.userInfo().username}-logs`);
 export const LOG_FILE_PATH = nuclideUri.join(LOG_DIRECTORY, 'nuclide.log');
 
 let logDirectoryInitialized = false;
