@@ -117,8 +117,8 @@ export async function getPidFromPackageName(
 ): Promise<number> {
   const pidLine = (await runCommand(
     adbPath,
-    ['shell', 'ps', packageName],
-  ).toPromise()).split(os.EOL)[1]; // First line is output header.
+    ['shell', 'ps', '|', 'grep', '-i', packageName],
+  ).toPromise()).split(os.EOL)[0];
   if (pidLine == null) {
     throw new Error(`Can not find a running process with package name: ${packageName}`);
   }
