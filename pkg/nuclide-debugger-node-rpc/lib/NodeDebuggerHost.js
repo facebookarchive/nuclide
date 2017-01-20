@@ -44,6 +44,8 @@ export class NodeDebuggerHost {
       const config = {
         debugPort,
         preload: false, // This makes the node inspector not load all the source files on startup.
+        inject: false, // This causes the node inspector to fail to send an initial pause message
+                       // on attach.  We don't use this feature, so we turn it off.
       };
       const session = new Session(config, debugPort, websocket);
       Observable.fromEvent(session, 'close').subscribe(this._close$);
