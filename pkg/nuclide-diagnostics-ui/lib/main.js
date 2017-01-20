@@ -8,6 +8,7 @@
  * @flow
  */
 
+import type {DiagnosticMessage} from '../../nuclide-diagnostics-common';
 import type {
   FileMessageUpdate,
   ObservableDiagnosticUpdater,
@@ -218,24 +219,18 @@ function addAtomCommands(diagnosticUpdater: ObservableDiagnosticUpdater): IDispo
     track('diagnostics-panel-open-all-files-with-errors');
     diagnosticUpdater.allMessageUpdates
       .first()
-      .subscribe(messages => {
-        if (messages.length > MAX_OPEN_ALL_FILES) {
+      .subscribe((messages: Array<DiagnosticMessage>) => {
+        const errorsToOpen = getTopMostErrorLocationsByFilePath(messages);
+
+        if (errorsToOpen.size > MAX_OPEN_ALL_FILES) {
           atom.notifications.addError(
             `Diagnostics: Will not open more than ${MAX_OPEN_ALL_FILES} files`,
           );
           return;
         }
-        for (let index = 0; index < messages.length; index++) {
-          const rowData = messages[index];
-          if (rowData.scope === 'file' && rowData.filePath != null) {
-            const uri = rowData.filePath;
-            // If initialLine is N, Atom will navigate to line N+1.
-            // Flow sometimes reports a row of -1, so this ensures the line is at least one.
-            const line = Math.max(rowData.range ? rowData.range.start.row : 0, 0);
-            const column = 0;
-            goToLocation(uri, line, column);
-          }
-        }
+
+        const column = 0;
+        errorsToOpen.forEach((line, uri) => goToLocation(uri, line, column));
       });
   };
 
@@ -252,6 +247,31 @@ function addAtomCommands(diagnosticUpdater: ObservableDiagnosticUpdater): IDispo
     ),
     new KeyboardShortcuts(diagnosticUpdater),
   );
+}
+
+function getTopMostErrorLocationsByFilePath(
+  messages: Array<DiagnosticMessage>,
+): Map<string, number> {
+  const errorLocations: Map<string, number> = new Map();
+
+  messages.forEach(message => {
+    if (message.scope !== 'file' || message.filePath == null) {
+      return;
+    }
+    const filePath = message.filePath;
+    // If initialLine is N, Atom will navigate to line N+1.
+    // Flow sometimes reports a row of -1, so this ensures the line is at least one.
+    let line = Math.max(message.range ? message.range.start.row : 0, 0);
+
+    const prevMinLine = errorLocations.get(filePath);
+    if (prevMinLine != null) {
+      line = Math.min(prevMinLine, line);
+    }
+
+    errorLocations.set(filePath, line);
+  });
+
+  return errorLocations;
 }
 
 // TODO(peterhal): The current index should really live in the DiagnosticStore.
