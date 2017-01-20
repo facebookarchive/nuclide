@@ -1,64 +1,67 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {
-  LocalFileEvent,
-  FileVersion,
-} from './rpc-types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.FileVersionNotifier = undefined;
 
-import {FileEventKind} from './constants';
-import {Deferred} from '../../commons-node/promise';
-import {MultiMap} from '../../commons-node/collection';
+var _constants;
 
-export class FileVersionNotifier {
-  _versions: Map<NuclideUri, number>;
-  _requests: MultiMap<NuclideUri, Request>;
+function _load_constants() {
+  return _constants = require('./constants');
+}
+
+var _promise;
+
+function _load_promise() {
+  return _promise = require('../../commons-node/promise');
+}
+
+var _collection;
+
+function _load_collection() {
+  return _collection = require('../../commons-node/collection');
+}
+
+class FileVersionNotifier {
 
   constructor() {
     this._versions = new Map();
-    this._requests = new MultiMap();
+    this._requests = new (_collection || _load_collection()).MultiMap();
   }
 
   // If any out of sync state is detected then an Error is thrown.
   // This will force the client to send a 'sync' event to get back on track.
-  onEvent(event: LocalFileEvent): void {
+  onEvent(event) {
     const filePath = event.fileVersion.filePath;
     const changeCount = event.fileVersion.version;
     switch (event.kind) {
-      case FileEventKind.OPEN:
+      case (_constants || _load_constants()).FileEventKind.OPEN:
         this._versions.set(filePath, changeCount);
         break;
-      case FileEventKind.CLOSE:
+      case (_constants || _load_constants()).FileEventKind.CLOSE:
         this._versions.delete(filePath);
         break;
-      case FileEventKind.EDIT:
+      case (_constants || _load_constants()).FileEventKind.EDIT:
         this._versions.set(filePath, changeCount);
         break;
       default:
-        throw new Error(`Unexpected LocalFileEvent.kind: ${event.kind}`);
+        throw new Error(`Unexpected LocalFileEvent.kind: ${ event.kind }`);
     }
     this._checkRequests(filePath);
   }
 
-  dispose(): void {
+  dispose() {
     for (const request of this._requests.values()) {
       request.reject(createRejectError());
     }
   }
 
-  getVersion(filePath: NuclideUri): ?number {
+  getVersion(filePath) {
     return this._versions.get(filePath);
   }
 
-  waitForBufferAtVersion(fileVersion: FileVersion): Promise<boolean> {
+  waitForBufferAtVersion(fileVersion) {
     const filePath = fileVersion.filePath;
     const version = fileVersion.version;
     const currentVersion = this._versions.get(filePath);
@@ -72,7 +75,7 @@ export class FileVersionNotifier {
     return request.promise;
   }
 
-  _checkRequests(filePath: NuclideUri): void {
+  _checkRequests(filePath) {
     const currentVersion = this._versions.get(filePath);
     if (currentVersion == null) {
       return;
@@ -89,15 +92,23 @@ export class FileVersionNotifier {
   }
 }
 
-function createRejectError(): Error {
+exports.FileVersionNotifier = FileVersionNotifier; /**
+                                                    * Copyright (c) 2015-present, Facebook, Inc.
+                                                    * All rights reserved.
+                                                    *
+                                                    * This source code is licensed under the license found in the LICENSE file in
+                                                    * the root directory of this source tree.
+                                                    *
+                                                    * 
+                                                    */
+
+function createRejectError() {
   return new Error('File modified past requested change');
 }
 
-class Request extends Deferred<boolean> {
-  filePath: NuclideUri;
-  changeCount: number;
+class Request extends (_promise || _load_promise()).Deferred {
 
-  constructor(filePath: NuclideUri, changeCount: number) {
+  constructor(filePath, changeCount) {
     super();
 
     this.filePath = filePath;

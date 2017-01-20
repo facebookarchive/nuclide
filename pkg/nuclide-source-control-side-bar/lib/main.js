@@ -1,3 +1,88 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.activate = activate;
+exports.deserializeSourceControlSideBar = deserializeSourceControlSideBar;
+exports.consumeWorkspaceViewsService = consumeWorkspaceViewsService;
+exports.deactivate = deactivate;
+exports.serialize = serialize;
+
+var _ActionType;
+
+function _load_ActionType() {
+  return _ActionType = _interopRequireWildcard(require('./ActionType'));
+}
+
+var _applyActionMiddleware;
+
+function _load_applyActionMiddleware() {
+  return _applyActionMiddleware = require('./applyActionMiddleware');
+}
+
+var _bindObservableAsProps;
+
+function _load_bindObservableAsProps() {
+  return _bindObservableAsProps = require('../../nuclide-ui/bindObservableAsProps');
+}
+
+var _bookmarkIsEqual;
+
+function _load_bookmarkIsEqual() {
+  return _bookmarkIsEqual = _interopRequireDefault(require('./bookmarkIsEqual'));
+}
+
+var _Commands;
+
+function _load_Commands() {
+  return _Commands = _interopRequireDefault(require('./Commands'));
+}
+
+var _renderReactRoot;
+
+function _load_renderReactRoot() {
+  return _renderReactRoot = require('../../commons-atom/renderReactRoot');
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../commons-node/UniversalDisposable'));
+}
+
+var _event;
+
+function _load_event() {
+  return _event = require('../../commons-node/event');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _SideBarComponent;
+
+function _load_SideBarComponent() {
+  return _SideBarComponent = _interopRequireDefault(require('./SideBarComponent'));
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _vcs;
+
+function _load_vcs() {
+  return _vcs = require('../../commons-atom/vcs');
+}
+
+var _reactForAtom = require('react-for-atom');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,49 +90,11 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
 
-import type {
-  Action,
-  SetBookmarkIsLoading,
-  UnsetBookmarkIsLoading,
-  UpdateUncommittedChanges,
-} from './types';
-import type {BookmarkInfo} from '../../nuclide-hg-rpc/lib/HgService';
-import type {Observable} from 'rxjs';
-import type {FileChangeStatusValue} from '../../commons-atom/vcs';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
-
-import invariant from 'assert';
-import * as ActionType from './ActionType';
-import {applyActionMiddleware} from './applyActionMiddleware';
-import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
-import bookmarkIsEqual from './bookmarkIsEqual';
-import Commands from './Commands';
-import {renderReactRoot} from '../../commons-atom/renderReactRoot';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
-import {BehaviorSubject, Subject} from 'rxjs';
-import SideBarComponent from './SideBarComponent';
-import {track} from '../../nuclide-analytics';
-import {getDirtyFileChanges} from '../../commons-atom/vcs';
-import {React} from 'react-for-atom';
-
-export type AppState = {
-  uncommittedChanges: Map<NuclideUri, Map<NuclideUri, FileChangeStatusValue>>,
-  projectBookmarks: Map<string, Array<BookmarkInfo>>,
-  projectDirectories: Array<atom$Directory>,
-  projectRepositories: Map<string, atom$Repository>,
-  repositoryBookmarksIsLoading: WeakMap<atom$Repository, Array<BookmarkInfo>>,
-};
-
-function createStateStream(
-  actions: Observable<Action>,
-  initialState: AppState,
-): BehaviorSubject<AppState> {
-  const states = new BehaviorSubject(initialState);
+function createStateStream(actions, initialState) {
+  const states = new _rxjsBundlesRxMinJs.BehaviorSubject(initialState);
   actions.scan(accumulateState, initialState).subscribe(states);
   return states;
 }
@@ -58,49 +105,44 @@ function getInitialState() {
     projectBookmarks: new Map(),
     projectDirectories: [],
     projectRepositories: new Map(),
-    repositoryBookmarksIsLoading: new WeakMap(),
+    repositoryBookmarksIsLoading: new WeakMap()
   };
 }
 
-let commands: Commands;
-let disposables: UniversalDisposable;
-let states: BehaviorSubject<AppState>;
+let commands;
+let disposables;
+let states;
 let activated = false;
 let restored;
 
 const WORKSPACE_VIEW_URI = 'atom://nuclide/source-control';
 
-export function activate(rawState: Object): void {
+function activate(rawState) {
   activated = true;
   restored = rawState != null && rawState.restored === true;
   const initialState = getInitialState();
-  const actions = new Subject();
-  states = createStateStream(
-    applyActionMiddleware(actions, () => states.getValue()),
-    initialState,
-  );
+  const actions = new _rxjsBundlesRxMinJs.Subject();
+  states = createStateStream((0, (_applyActionMiddleware || _load_applyActionMiddleware()).applyActionMiddleware)(actions, () => states.getValue()), initialState);
 
-  const dispatch = action => { actions.next(action); };
-  commands = new Commands(dispatch, () => states.getValue());
+  const dispatch = action => {
+    actions.next(action);
+  };
+  commands = new (_Commands || _load_Commands()).default(dispatch, () => states.getValue());
 
-  disposables = new UniversalDisposable(
-    () => { activated = false; },
-    observableFromSubscribeFunction(
-      atom.project.onDidChangePaths.bind(atom.project),
-    )
-      .startWith(null) // Start with a fake event to fetch initial directories.
-      .subscribe(() => {
-        commands.fetchProjectDirectories();
-      }),
-  );
+  disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default(() => {
+    activated = false;
+  }, (0, (_event || _load_event()).observableFromSubscribeFunction)(atom.project.onDidChangePaths.bind(atom.project)).startWith(null) // Start with a fake event to fetch initial directories.
+  .subscribe(() => {
+    commands.fetchProjectDirectories();
+  }));
 }
 
 class SourceControlSideBar {
   constructor() {
-    track('scsidebar-show');
+    (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('scsidebar-show');
   }
 
-  getElement(): HTMLElement {
+  getElement() {
     const props = states.map(state => ({
       createBookmark: commands.createBookmark,
       deleteBookmark: commands.deleteBookmark,
@@ -110,32 +152,32 @@ class SourceControlSideBar {
       renameBookmark: commands.renameBookmark,
       repositoryBookmarksIsLoading: state.repositoryBookmarksIsLoading,
       updateToBookmark: commands.updateToBookmark,
-      uncommittedChanges: state.uncommittedChanges,
+      uncommittedChanges: state.uncommittedChanges
     }));
-    const BoundSideBarComponent = bindObservableAsProps(props, SideBarComponent);
-    return renderReactRoot(<BoundSideBarComponent />);
+    const BoundSideBarComponent = (0, (_bindObservableAsProps || _load_bindObservableAsProps()).bindObservableAsProps)(props, (_SideBarComponent || _load_SideBarComponent()).default);
+    return (0, (_renderReactRoot || _load_renderReactRoot()).renderReactRoot)(_reactForAtom.React.createElement(BoundSideBarComponent, null));
   }
 
-  getDefaultLocation(): string {
+  getDefaultLocation() {
     return 'left-panel';
   }
 
-  getTitle(): string {
+  getTitle() {
     return 'Source Control';
   }
 
-  getURI(): string {
+  getURI() {
     return WORKSPACE_VIEW_URI;
   }
 
-  serialize(): Object {
+  serialize() {
     return {
-      deserializer: 'nuclide.SourceControlSideBar',
+      deserializer: 'nuclide.SourceControlSideBar'
     };
   }
 }
 
-export function deserializeSourceControlSideBar(state: mixed): ?SourceControlSideBar {
+function deserializeSourceControlSideBar(state) {
   // It's possible for this method to be called before the package has been activated (if this was
   // serialized as part of the workspace instead of nuclide-workspace-views).
   // TODO: Once atom/atom#13358 makes it into stable, we can switch from using 'activate()' to
@@ -146,63 +188,54 @@ export function deserializeSourceControlSideBar(state: mixed): ?SourceControlSid
   return new SourceControlSideBar();
 }
 
-export function consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
-  disposables.add(
-    api.addOpener(uri => {
-      if (uri === WORKSPACE_VIEW_URI) {
-        return new SourceControlSideBar();
-      }
-    }),
-    () => api.destroyWhere(item => item instanceof SourceControlSideBar),
-    atom.commands.add(
-      'atom-workspace',
-      'nuclide-source-control-side-bar:toggle',
-      event => { api.toggle(WORKSPACE_VIEW_URI, (event: any).detail); },
-    ),
-  );
+function consumeWorkspaceViewsService(api) {
+  disposables.add(api.addOpener(uri => {
+    if (uri === WORKSPACE_VIEW_URI) {
+      return new SourceControlSideBar();
+    }
+  }), () => api.destroyWhere(item => item instanceof SourceControlSideBar), atom.commands.add('atom-workspace', 'nuclide-source-control-side-bar:toggle', event => {
+    api.toggle(WORKSPACE_VIEW_URI, event.detail);
+  }));
   // If this is the first time we're opening this workspace, open the source control side bar.
   if (!restored) {
-    api.open(WORKSPACE_VIEW_URI, {searchAllPanes: true, activatePane: false, activateItem: false});
+    api.open(WORKSPACE_VIEW_URI, { searchAllPanes: true, activatePane: false, activateItem: false });
   }
 }
 
-function accumulateSetBookmarkIsLoading(state: AppState, action: SetBookmarkIsLoading): AppState {
+function accumulateSetBookmarkIsLoading(state, action) {
   const {
     bookmark,
-    repository,
+    repository
   } = action.payload;
   let repositoryBookmarksIsLoading;
   if (state.repositoryBookmarksIsLoading.has(repository)) {
     repositoryBookmarksIsLoading = state.repositoryBookmarksIsLoading.get(repository);
-    invariant(repositoryBookmarksIsLoading != null);
+
+    if (!(repositoryBookmarksIsLoading != null)) {
+      throw new Error('Invariant violation: "repositoryBookmarksIsLoading != null"');
+    }
   } else {
     repositoryBookmarksIsLoading = [];
   }
 
-  const bookmarkIndex = repositoryBookmarksIsLoading.findIndex(
-    loadingBookmark => bookmarkIsEqual(loadingBookmark, bookmark));
+  const bookmarkIndex = repositoryBookmarksIsLoading.findIndex(loadingBookmark => (0, (_bookmarkIsEqual || _load_bookmarkIsEqual()).default)(loadingBookmark, bookmark));
   if (bookmarkIndex === -1) {
     repositoryBookmarksIsLoading.push(bookmark);
   }
 
-  return {
-    ...state,
-    repositoryBookmarksIsLoading:
-      state.repositoryBookmarksIsLoading.set(repository, repositoryBookmarksIsLoading),
-  };
+  return Object.assign({}, state, {
+    repositoryBookmarksIsLoading: state.repositoryBookmarksIsLoading.set(repository, repositoryBookmarksIsLoading)
+  });
 }
 
-function accumulateRepositoriesUncommittedChanges(
-  state: AppState,
-  action: UpdateUncommittedChanges,
-): AppState {
+function accumulateRepositoriesUncommittedChanges(state, action) {
   const {
     directory,
-    repository,
+    repository
   } = action.payload;
 
   if (repository.getType() === 'hg') {
-    const uncommittedChanges = getDirtyFileChanges(repository);
+    const uncommittedChanges = (0, (_vcs || _load_vcs()).getDirtyFileChanges)(repository);
     const filteredUncommitedChangesMap = new Map();
     // The get dirty file changes gets changes for the whole repository and
     // for most part only a directory in the repository is imported. This filter
@@ -212,26 +245,18 @@ function accumulateRepositoriesUncommittedChanges(
         filteredUncommitedChangesMap.set(filePath, fileStatus);
       }
     }
-    return {
-      ...state,
-      uncommittedChanges:
-        new Map(state.uncommittedChanges).set(
-          directory.getPath(),
-          filteredUncommitedChangesMap,
-        ),
-    };
+    return Object.assign({}, state, {
+      uncommittedChanges: new Map(state.uncommittedChanges).set(directory.getPath(), filteredUncommitedChangesMap)
+    });
   }
 
   return state;
 }
 
-function accumulateUnsetBookmarkIsLoading(
-  state: AppState,
-  action: UnsetBookmarkIsLoading,
-): AppState {
+function accumulateUnsetBookmarkIsLoading(state, action) {
   const {
     bookmark,
-    repository,
+    repository
   } = action.payload;
   const repositoryBookmarksIsLoading = state.repositoryBookmarksIsLoading.get(repository);
   if (repositoryBookmarksIsLoading == null) {
@@ -239,8 +264,7 @@ function accumulateUnsetBookmarkIsLoading(
     return state;
   }
 
-  const bookmarkIndex = repositoryBookmarksIsLoading.findIndex(
-    loadingBookmark => bookmarkIsEqual(loadingBookmark, bookmark));
+  const bookmarkIndex = repositoryBookmarksIsLoading.findIndex(loadingBookmark => (0, (_bookmarkIsEqual || _load_bookmarkIsEqual()).default)(loadingBookmark, bookmark));
   if (bookmarkIndex >= 0) {
     repositoryBookmarksIsLoading.splice(bookmarkIndex, 1);
   }
@@ -248,23 +272,19 @@ function accumulateUnsetBookmarkIsLoading(
   return state;
 }
 
-function accumulateState(state: AppState, action: Action): AppState {
+function accumulateState(state, action) {
   switch (action.type) {
-    case ActionType.UPDATE_UNCOMMITTED_CHANGES:
+    case (_ActionType || _load_ActionType()).UPDATE_UNCOMMITTED_CHANGES:
       return accumulateRepositoriesUncommittedChanges(state, action);
-    case ActionType.SET_BOOKMARK_IS_LOADING:
+    case (_ActionType || _load_ActionType()).SET_BOOKMARK_IS_LOADING:
       return accumulateSetBookmarkIsLoading(state, action);
-    case ActionType.UNSET_BOOKMARK_IS_LOADING:
+    case (_ActionType || _load_ActionType()).UNSET_BOOKMARK_IS_LOADING:
       return accumulateUnsetBookmarkIsLoading(state, action);
-    case ActionType.SET_DIRECTORY_REPOSITORY:
-      return {
-        ...state,
-        projectRepositories: state.projectRepositories.set(
-          action.payload.directory.getPath(),
-          action.payload.repository,
-        ),
-      };
-    case ActionType.SET_PROJECT_DIRECTORIES:
+    case (_ActionType || _load_ActionType()).SET_DIRECTORY_REPOSITORY:
+      return Object.assign({}, state, {
+        projectRepositories: state.projectRepositories.set(action.payload.directory.getPath(), action.payload.repository)
+      });
+    case (_ActionType || _load_ActionType()).SET_PROJECT_DIRECTORIES:
       // This event is the state of the world coming from Atom. If directories no longer exist,
       // their other stored states should be wiped out to prevent holding references to old data.
       // Copy only the repositories and bookmarks for directories in the next state.
@@ -284,16 +304,15 @@ function accumulateState(state: AppState, action: Action): AppState {
         }
       });
 
-      return {
-        ...state,
+      return Object.assign({}, state, {
         projectBookmarks: nextProjectBookmarks,
         projectDirectories: action.payload.projectDirectories,
-        projectRepositories: nextProjectRepositories,
-      };
-    case ActionType.SET_REPOSITORY_BOOKMARKS:
+        projectRepositories: nextProjectRepositories
+      });
+    case (_ActionType || _load_ActionType()).SET_REPOSITORY_BOOKMARKS:
       const {
         bookmarks,
-        repository,
+        repository
       } = action.payload;
 
       let nextBookmarksIsLoading;
@@ -304,32 +323,25 @@ function accumulateState(state: AppState, action: Action): AppState {
         // Transfer only the loading state of bookmarks that are in the next list of bookmarks.
         // Other loading states should be wiped out.
         nextBookmarksIsLoading = bookmarksIsLoading.filter(loadingBookmark => {
-          return bookmarks.some(bookmark => bookmarkIsEqual(bookmark, loadingBookmark));
+          return bookmarks.some(bookmark => (0, (_bookmarkIsEqual || _load_bookmarkIsEqual()).default)(bookmark, loadingBookmark));
         });
       }
 
-      return {
-        ...state,
-        projectBookmarks: state.projectBookmarks.set(
-          repository.getPath(),
-          bookmarks,
-        ),
-        repositoryBookmarksIsLoading: state.repositoryBookmarksIsLoading.set(
-          repository,
-          nextBookmarksIsLoading,
-        ),
-      };
+      return Object.assign({}, state, {
+        projectBookmarks: state.projectBookmarks.set(repository.getPath(), bookmarks),
+        repositoryBookmarksIsLoading: state.repositoryBookmarksIsLoading.set(repository, nextBookmarksIsLoading)
+      });
   }
 
-  throw new Error(`Unrecognized action type: ${action.type}`);
+  throw new Error(`Unrecognized action type: ${ action.type }`);
 }
 
-export function deactivate(): void {
+function deactivate() {
   disposables.dispose();
 }
 
-export function serialize(): Object {
+function serialize() {
   return {
-    restored: true,
+    restored: true
   };
 }

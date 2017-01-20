@@ -1,42 +1,49 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import {Observable, Subject} from 'rxjs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-export default class ClientCallback {
-  _serverMessageObservable: Subject<any>;  // For server messages.
-  _userOutputObservable: Subject<any>;     // For user visible output messages.
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+class ClientCallback {
+  // For user visible output messages.
 
   constructor() {
-    this._serverMessageObservable = new Subject();
-    this._userOutputObservable = new Subject();
-  }
+    this._serverMessageObservable = new _rxjsBundlesRxMinJs.Subject();
+    this._userOutputObservable = new _rxjsBundlesRxMinJs.Subject();
+  } // For server messages.
 
-  getServerMessageObservable(): Observable<string> {
+
+  getServerMessageObservable() {
     return this._serverMessageObservable;
   }
 
-  getOutputWindowObservable(): Observable<string> {
+  getOutputWindowObservable() {
     return this._userOutputObservable;
   }
 
-  sendChromeMessage(message: string): void {
+  sendChromeMessage(message) {
     this._serverMessageObservable.next(message);
   }
 
-  sendUserOutputMessage(message: string): void {
+  sendUserOutputMessage(message) {
     this._userOutputObservable.next(message);
   }
 
-  dispose(): void {
+  dispose() {
     this._serverMessageObservable.complete();
     this._userOutputObservable.complete();
   }
 }
+exports.default = ClientCallback; /**
+                                   * Copyright (c) 2015-present, Facebook, Inc.
+                                   * All rights reserved.
+                                   *
+                                   * This source code is licensed under the license found in the LICENSE file in
+                                   * the root directory of this source tree.
+                                   *
+                                   * 
+                                   */
+
+module.exports = exports['default'];

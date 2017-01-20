@@ -1,121 +1,156 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import type {AnnotatedTaskMetadata, TaskId, TaskRunnerInfo} from '../types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Toolbar = undefined;
 
-import {Button, ButtonSizes} from '../../../nuclide-ui/Button';
-import {CommonControls} from './CommonControls';
-import {ProgressBar} from './ProgressBar';
-import {getTaskMetadata} from '../getTaskMetadata';
-import classnames from 'classnames';
-import {React} from 'react-for-atom';
+var _Button;
 
-type Props = {
-  disabled: boolean,
-  taskRunnerInfo: Array<TaskRunnerInfo>,
-  getActiveTaskRunnerIcon: () => ?ReactClass<any>,
-  getExtraUi: ?() => ReactClass<any>,
-  progress: ?number,
-  runTask: (taskId?: TaskId) => void,
-  activeTaskId: ?TaskId,
-  activeTaskRunner: ?TaskRunnerInfo,
-  selectTask: (taskId: TaskId) => void,
-  selectTaskRunner: (taskRunnerId: string) => void,
-  stopTask: () => void,
-  showPlaceholder: boolean,
-  taskIsRunning: boolean,
-  taskLists: Map<string, Array<AnnotatedTaskMetadata>>,
-};
+function _load_Button() {
+  return _Button = require('../../../nuclide-ui/Button');
+}
 
-export class Toolbar extends React.Component {
-  props: Props;
+var _CommonControls;
 
-  _renderExtraUi(): ?React.Element<any> {
+function _load_CommonControls() {
+  return _CommonControls = require('./CommonControls');
+}
+
+var _ProgressBar;
+
+function _load_ProgressBar() {
+  return _ProgressBar = require('./ProgressBar');
+}
+
+var _getTaskMetadata;
+
+function _load_getTaskMetadata() {
+  return _getTaskMetadata = require('../getTaskMetadata');
+}
+
+var _classnames;
+
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
+
+var _reactForAtom = require('react-for-atom');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class Toolbar extends _reactForAtom.React.Component {
+
+  _renderExtraUi() {
     if (this.props.activeTaskId) {
       const ExtraUi = this.props.getExtraUi && this.props.getExtraUi();
-      return ExtraUi ? <ExtraUi activeTaskType={this.props.activeTaskId.type} /> : null;
+      return ExtraUi ? _reactForAtom.React.createElement(ExtraUi, { activeTaskType: this.props.activeTaskId.type }) : null;
     }
     const runnerCount = this.props.taskRunnerInfo.length;
     if (runnerCount === 0) {
-      return <span>Please install and enable a task runner</span>;
+      return _reactForAtom.React.createElement(
+        'span',
+        null,
+        'Please install and enable a task runner'
+      );
     } else {
-      const waitingForTasks = !Array.from(this.props.taskLists.values())
-        .some(taskList => taskList.length > 0);
+      const waitingForTasks = !Array.from(this.props.taskLists.values()).some(taskList => taskList.length > 0);
       if (waitingForTasks) {
         if (runnerCount === 1) {
           const runnerName = this.props.taskRunnerInfo[0].name;
-          return <span>Waiting for tasks from {runnerName}...</span>;
+          return _reactForAtom.React.createElement(
+            'span',
+            null,
+            'Waiting for tasks from ',
+            runnerName,
+            '...'
+          );
         }
-        return <span>Waiting for tasks from {runnerCount} task runners...</span>;
+        return _reactForAtom.React.createElement(
+          'span',
+          null,
+          'Waiting for tasks from ',
+          runnerCount,
+          ' task runners...'
+        );
       }
-      return <span>No Task Selected</span>;
+      return _reactForAtom.React.createElement(
+        'span',
+        null,
+        'No Task Selected'
+      );
     }
   }
 
-  _renderContents(activeTask: ?AnnotatedTaskMetadata): React.Element<any> {
+  _renderContents(activeTask) {
     if (this.props.showPlaceholder) {
-      return <Placeholder />;
+      return _reactForAtom.React.createElement(Placeholder, null);
     }
 
-    return (
-      <div style={{display: 'flex', flex: 1}}>
-        <CommonControls
-          activeTask={activeTask}
-          activeTaskRunner={this.props.activeTaskRunner}
-          getActiveTaskRunnerIcon={this.props.getActiveTaskRunnerIcon}
-          taskRunnerInfo={this.props.taskRunnerInfo}
-          runTask={this.props.runTask}
-          selectTask={this.props.selectTask}
-          selectTaskRunner={this.props.selectTaskRunner}
-          taskIsRunning={this.props.taskIsRunning}
-          taskLists={this.props.taskLists}
-          stopTask={this.props.stopTask}
-        />
-        {this._renderExtraUi()}
-        <ProgressBar
-          progress={this.props.progress}
-          visible={this.props.taskIsRunning}
-        />
-      </div>
+    return _reactForAtom.React.createElement(
+      'div',
+      { style: { display: 'flex', flex: 1 } },
+      _reactForAtom.React.createElement((_CommonControls || _load_CommonControls()).CommonControls, {
+        activeTask: activeTask,
+        activeTaskRunner: this.props.activeTaskRunner,
+        getActiveTaskRunnerIcon: this.props.getActiveTaskRunnerIcon,
+        taskRunnerInfo: this.props.taskRunnerInfo,
+        runTask: this.props.runTask,
+        selectTask: this.props.selectTask,
+        selectTaskRunner: this.props.selectTaskRunner,
+        taskIsRunning: this.props.taskIsRunning,
+        taskLists: this.props.taskLists,
+        stopTask: this.props.stopTask
+      }),
+      this._renderExtraUi(),
+      _reactForAtom.React.createElement((_ProgressBar || _load_ProgressBar()).ProgressBar, {
+        progress: this.props.progress,
+        visible: this.props.taskIsRunning
+      })
     );
   }
 
-  render(): ?React.Element<any> {
+  render() {
     const activeTaskId = this.props.activeTaskId;
-    const activeTask = activeTaskId == null
-      ? null
-      : getTaskMetadata(activeTaskId, this.props.taskLists);
+    const activeTask = activeTaskId == null ? null : (0, (_getTaskMetadata || _load_getTaskMetadata()).getTaskMetadata)(activeTaskId, this.props.taskLists);
 
-    const className = classnames('nuclide-task-runner-toolbar', {
-      disabled: this.props.disabled,
+    const className = (0, (_classnames || _load_classnames()).default)('nuclide-task-runner-toolbar', {
+      disabled: this.props.disabled
     });
 
-    return (
-      <div className={className}>
-        <div className="nuclide-task-runner-toolbar-contents padded">
-          {this._renderContents(activeTask)}
-        </div>
-      </div>
+    return _reactForAtom.React.createElement(
+      'div',
+      { className: className },
+      _reactForAtom.React.createElement(
+        'div',
+        { className: 'nuclide-task-runner-toolbar-contents padded' },
+        this._renderContents(activeTask)
+      )
     );
   }
 }
 
-function Placeholder(): React.Element<any> {
+exports.Toolbar = Toolbar; /**
+                            * Copyright (c) 2015-present, Facebook, Inc.
+                            * All rights reserved.
+                            *
+                            * This source code is licensed under the license found in the LICENSE file in
+                            * the root directory of this source tree.
+                            *
+                            * 
+                            */
+
+function Placeholder() {
   return (
     // Themes actually change the size of UI elements (sometimes even dynamically!) and can
     // therefore change the size of the toolbar! To try to ensure that the placholder has the same
     // height as the toolbar, we put a dummy button in it and hide it with CSS.
-    <Button
-      className="nuclide-task-runner-placeholder"
-      size={ButtonSizes.SMALL}>
-      Seeing this button is a bug!
-    </Button>
+    _reactForAtom.React.createElement(
+      (_Button || _load_Button()).Button,
+      {
+        className: 'nuclide-task-runner-placeholder',
+        size: (_Button || _load_Button()).ButtonSizes.SMALL },
+      'Seeing this button is a bug!'
+    )
   );
 }
