@@ -154,7 +154,9 @@ export async function getIPsForHosts(hosts: Array<string>,
     host => lookupPreferIpv6(host).catch(() => {}),
   );
   const values = await Promise.all(promise_array);
-  return values;
+  return values.filter(element => {
+    return element !== undefined;
+  });
 }
 
 /**

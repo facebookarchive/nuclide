@@ -11,6 +11,7 @@
 import addTooltip from '../../nuclide-ui/add-tooltip';
 import classnames from 'classnames';
 import ConnectionDetailsForm from './ConnectionDetailsForm';
+import {getIPsForHosts} from './connection-profile-utils';
 import {getUniqueHostsForProfiles} from './connection-profile-utils';
 import {HR} from '../../nuclide-ui/HR';
 import {MutableListSelector} from '../../nuclide-ui/MutableListSelector';
@@ -45,6 +46,12 @@ type Props = {
   onProfileClicked: (indexOfSelectedConnectionProfile: number) => mixed,
 };
 
+type State = {
+  IPs: ?Promise<Array<string>>,
+  shouldDisplayTooltipWarning: boolean,
+};
+
+
 /**
  * This component contains the entire view in which the user inputs their
  * connection information when connecting to a remote project.
@@ -55,12 +62,18 @@ type Props = {
  */
 export default class ConnectionDetailsPrompt extends React.Component {
   props: Props;
+  state: State;
 
   _settingFormFieldsLock: boolean;
 
   constructor(props: Props) {
     super(props);
     this._settingFormFieldsLock = false;
+
+    this.state = {
+      IPs: null,
+      shouldDisplayTooltipWarning: false,
+    };
 
     (this: any)._handleConnectionDetailsFormDidChange =
       this._handleConnectionDetailsFormDidChange.bind(this);
@@ -69,7 +82,15 @@ export default class ConnectionDetailsPrompt extends React.Component {
     (this: any)._onProfileClicked = this._onProfileClicked.bind(this);
   }
 
-  componentDidUpdate(prevProps: Props, prevState: void) {
+  componentDidMount() {
+    if (this.props.connectionProfiles) {
+      this.setState({IPs: getIPsForHosts(
+        getUniqueHostsForProfiles(this.props.connectionProfiles))});
+    }
+    this._checkForHostCollisions();
+  }
+
+  componentDidUpdate(prevProps: Props, prevState: State) {
     // Manually update the contents of an existing `ConnectionDetailsForm`, because it contains
     // `AtomInput` components (which don't update their contents when their props change).
     if (
@@ -93,6 +114,13 @@ export default class ConnectionDetailsPrompt extends React.Component {
         existingConnectionDetailsForm.focus();
       }
     }
+
+    if (prevProps.connectionProfiles !== this.props.connectionProfiles
+      && this.props.connectionProfiles) {
+      this.setState({IPs: getIPsForHosts(
+        getUniqueHostsForProfiles(this.props.connectionProfiles))});
+    }
+    this._checkForHostCollisions();
   }
 
   focus(): void {
@@ -154,6 +182,21 @@ export default class ConnectionDetailsPrompt extends React.Component {
     // * This requires a `+ 1` because the default profile is sliced from the Array during render
     //   creating an effective offset of -1 for each index passed to the `MutableListSelector`.
     this.props.onProfileClicked(parseInt(profileId, 10) + 1);
+  }
+
+  async _checkForHostCollisions() {
+    if (this.state.IPs) {
+      const IPs = await this.state.IPs;
+      if (IPs.length !== new Set(IPs).size) {
+        if (!this.state.shouldDisplayTooltipWarning) {
+          this.setState({shouldDisplayTooltipWarning: true});
+        }
+      } else {
+        if (this.state.shouldDisplayTooltipWarning) {
+          this.setState({shouldDisplayTooltipWarning: false});
+        }
+      }
+    }
   }
 
   render(): React.Element<any> {
@@ -225,11 +268,37 @@ export default class ConnectionDetailsPrompt extends React.Component {
       idOfSelectedItem = String(idOfSelectedItem);
     }
 
+    let toolTipWarning;
+    if (this.state.shouldDisplayTooltipWarning) {
+      toolTipWarning =
+          <span
+                style={{paddingLeft: 10}}
+                className="icon icon-info pull-right nuclide-remote-projects-tooltip-warning"
+                ref={addTooltip({
+                  // Intentionally *not* an arrow function so the jQuery
+                  // Tooltip plugin can set the context to the Tooltip
+                  // instance.
+                  placement() {
+                    // Atom modals have z indices of 9999. This Tooltip needs
+                    // to stack on top of the modal; beat the modal's z-index.
+                    this.tip.style.zIndex = 10999;
+                    return 'right';
+                  },
+                  title:
+                    'Two or more of your profiles use host names that resolve '
+                    + 'to the same IP address. Consider unifying them to avoid '
+                    + 'potential collisions.',
+                })}
+          />;
+    }
+
     return (
       <div className="nuclide-remote-projects-connection-dialog">
         <div className="nuclide-remote-projects-connection-profiles">
           {defaultConnectionProfileList}
-          <h6>Profiles</h6>
+          <h6>Profiles
+            {toolTipWarning}
+          </h6>
           <MutableListSelector
             items={listSelectorItems}
             idOfSelectedItem={idOfSelectedItem}
