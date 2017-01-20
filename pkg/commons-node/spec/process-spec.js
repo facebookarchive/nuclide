@@ -10,6 +10,7 @@
 
 import type {ProcessExitMessage} from '../process-rpc-types';
 
+import {sleep} from '../promise';
 import child_process from 'child_process';
 import invariant from 'assert';
 import mockSpawn from 'mock-spawn';
@@ -151,11 +152,13 @@ describe('commons-node/process', () => {
 
     it('should kill the process tree when `killTree` is true', () => {
       waitsForPromise(async () => {
+        jasmine.useRealClock();
         // Create a tree that's more than level child deep.
         const proc = child_process.spawn('bash', ['-c', '( (sleep 1000)& sleep 1000 )& wait']);
         spyOn(console, 'error'); // suppress error printing
         spyOn(console, 'log'); // suppress log printing
         spyOn(process, 'kill').andCallThrough();
+        await sleep(250); // Give some time for the processes to spawn.
         await killUnixProcessTree(proc);
         expect(process.kill.callCount).toBeGreaterThan(2);
       });
