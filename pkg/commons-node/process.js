@@ -377,11 +377,22 @@ function killWindowsProcessTree(pid: number): Promise<void> {
   });
 }
 
+export function killPid(pid: number): void {
+  try {
+    process.kill(pid);
+  } catch (err) {
+    if (err.code !== 'ESRCH') {
+      throw err;
+    }
+  }
+}
+
+
 export async function killUnixProcessTree(childProcess: child_process$ChildProcess): Promise<void> {
   const descendants = await getDescendantsOfProcess(childProcess.pid);
   // Kill the processes, starting with those of greatest depth.
   for (const info of descendants.reverse()) {
-    process.kill(info.pid);
+    killPid(info.pid);
   }
 }
 
