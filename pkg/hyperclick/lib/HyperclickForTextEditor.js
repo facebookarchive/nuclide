@@ -187,7 +187,12 @@ export default class HyperclickForTextEditor {
     }
 
     if (this._lastSuggestionAtMouse) {
-      this._confirmSuggestion(this._lastSuggestionAtMouse);
+      const lastSuggestionAtMouse = this._lastSuggestionAtMouse;
+      // Move the cursor to the click location to force a navigation-stack push.
+      const newCursorPosition = this._getMousePositionAsBufferPosition();
+      this._textEditor.setCursorBufferPosition(newCursorPosition);
+
+      this._confirmSuggestion(lastSuggestionAtMouse);
       // Prevent the <meta-click> event from adding another cursor.
       event.stopPropagation();
     }
