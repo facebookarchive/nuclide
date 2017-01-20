@@ -69,8 +69,9 @@ export async function getDeviceList(
 
   return Promise.all(devices.map(async name => {
     const architecture = await getDeviceArchitecture(adbPath, name);
+    const apiVersion = await getAPIVersion(adbPath, name);
     const model = await getDeviceModel(adbPath, name);
-    return {name, architecture, model};
+    return {name, architecture, apiVersion, model};
   }));
 }
 
