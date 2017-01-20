@@ -49,6 +49,8 @@
   flex-basis: 0;
   overflow: auto;
   padding-right: 0.5em;
+  display: flex;
+  flex-direction: column;
 
   span {
     -webkit-user-select: initial;
@@ -56,12 +58,13 @@
 }
 
 .nuclide-debugger-section-header {
-  border-bottom: 1px @base-border-color solid;
-  padding-bottom: 2px;
+  border-top: 1px @base-border-color solid;
+  padding: 0px 5px;
 }
 
-.nuclide-debugger-section-header:last-of-type {
-  border-bottom: none;
+.nuclide-debugger-controls-section {
+  border: 1px @base-border-color solid;
+  padding-top: 5px;
 }
 
 .nuclide-debugger-webview {
@@ -104,7 +107,7 @@ Use flexbox cross-axis stretch to fill the vertical space.
 .nuclide-debugger-section-content {
   max-height: 20em;
   overflow-y: auto;
-  margin-bottom: 15px;
+  margin-bottom: 5px;
 }
 
 /* Watch Expressions */

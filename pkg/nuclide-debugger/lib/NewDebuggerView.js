@@ -19,6 +19,11 @@ import {
 } from 'react-for-atom';
 import {Section} from '../../nuclide-ui/Section';
 import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
+import {
+  FlexDirections,
+  ResizableFlexContainer,
+  ResizableFlexItem,
+} from '../../nuclide-ui/ResizableFlexContainer';
 import {WatchExpressionComponent} from './WatchExpressionComponent';
 import {ScopesComponent} from './ScopesComponent';
 import {BreakpointListComponent} from './BreakpointListComponent';
@@ -84,66 +89,81 @@ export class NewDebuggerView extends React.PureComponent {
     const WatchExpressionComponentWrapped = this._watchExpressionComponentWrapped;
     const ScopesComponentWrapped = this._scopesComponentWrapped;
     const threadsSection = this.state.showThreadsWindow
-      ? <Section collapsable={true} headline="Threads"
-                 className="nuclide-debugger-section-header">
-          <div className="nuclide-debugger-section-content">
-            <DebuggerThreadsComponent
-              bridge={this.props.model.getBridge()}
-              threadStore={model.getThreadStore()}
-            />
-          </div>
-        </Section>
+      ? <ResizableFlexItem initialFlexScale={1}>
+          <Section headline="Threads"
+            className="nuclide-debugger-section-header">
+            <div className="nuclide-debugger-section-content">
+              <DebuggerThreadsComponent
+                bridge={this.props.model.getBridge()}
+                threadStore={model.getThreadStore()}
+              />
+            </div>
+          </Section>
+        </ResizableFlexItem>
       : null;
     return (
       <div className="nuclide-debugger-container-new">
-        <Section collapsable={true} headline="Debugger Controls"
-                 className="nuclide-debugger-section-header">
+        <div className="nuclide-debugger-section-header nuclide-debugger-controls-section">
           <div className="nuclide-debugger-section-content">
             <DebuggerSteppingComponent
               actions={actions}
               debuggerStore={model.getStore()}
             />
           </div>
-        </Section>
-        {threadsSection}
-        <Section collapsable={true} headline="Call Stack"
-                 className="nuclide-debugger-section-header">
-          <div className="nuclide-debugger-section-content">
-            <DebuggerCallstackComponent
-              actions={actions}
-              bridge={model.getBridge()}
-              callstackStore={model.getCallstackStore()}
-            />
-          </div>
-        </Section>
-        <Section collapsable={true} headline="Breakpoints"
-                 className="nuclide-debugger-section-header">
-          <div className="nuclide-debugger-section-content">
-            <BreakpointListComponent
-              actions={actions}
-              breakpointStore={model.getBreakpointStore()}
-            />
-          </div>
-        </Section>
-        <Section collapsable={true} headline="Scopes"
-                 className="nuclide-debugger-section-header">
-          <div className="nuclide-debugger-section-content">
-            <ScopesComponentWrapped
-              watchExpressionStore={model.getWatchExpressionStore()}
-            />
-          </div>
-        </Section>
-        <Section collapsable={true} headline="Watch Expressions"
-                 className="nuclide-debugger-section-header">
-          <div className="nuclide-debugger-section-content">
-            <WatchExpressionComponentWrapped
-              onAddWatchExpression={actions.addWatchExpression.bind(model)}
-              onRemoveWatchExpression={actions.removeWatchExpression.bind(model)}
-              onUpdateWatchExpression={actions.updateWatchExpression.bind(model)}
-              watchExpressionStore={model.getWatchExpressionStore()}
-            />
-          </div>
-        </Section>
+        </div>
+        <ResizableFlexContainer direction={FlexDirections.VERTICAL}>
+          {threadsSection}
+          <ResizableFlexItem initialFlexScale={1}>
+            <Section headline="Call Stack"
+              key="callStack"
+              className="nuclide-debugger-section-header">
+              <div className="nuclide-debugger-section-content">
+                <DebuggerCallstackComponent
+                  actions={actions}
+                  bridge={model.getBridge()}
+                  callstackStore={model.getCallstackStore()}
+                />
+              </div>
+            </Section>
+          </ResizableFlexItem>
+          <ResizableFlexItem initialFlexScale={1}>
+            <Section headline="Breakpoints"
+              key="breakpoints"
+              className="nuclide-debugger-section-header">
+              <div className="nuclide-debugger-section-content">
+                <BreakpointListComponent
+                  actions={actions}
+                  breakpointStore={model.getBreakpointStore()}
+                />
+              </div>
+            </Section>
+          </ResizableFlexItem>
+          <ResizableFlexItem initialFlexScale={1}>
+            <Section headline="Scopes"
+              key="scopes"
+              className="nuclide-debugger-section-header">
+              <div className="nuclide-debugger-section-content">
+                <ScopesComponentWrapped
+                  watchExpressionStore={model.getWatchExpressionStore()}
+                />
+              </div>
+            </Section>
+          </ResizableFlexItem>
+          <ResizableFlexItem initialFlexScale={1}>
+            <Section headline="Watch Expressions"
+              key="watchExpressions"
+              className="nuclide-debugger-section-header">
+              <div className="nuclide-debugger-section-content">
+                <WatchExpressionComponentWrapped
+                  onAddWatchExpression={actions.addWatchExpression.bind(model)}
+                  onRemoveWatchExpression={actions.removeWatchExpression.bind(model)}
+                  onUpdateWatchExpression={actions.updateWatchExpression.bind(model)}
+                  watchExpressionStore={model.getWatchExpressionStore()}
+                />
+              </div>
+            </Section>
+          </ResizableFlexItem>
+        </ResizableFlexContainer>
       </div>
     );
   }
