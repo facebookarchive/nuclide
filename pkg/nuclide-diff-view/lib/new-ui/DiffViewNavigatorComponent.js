@@ -16,15 +16,17 @@ import type DiffViewModel from '../DiffViewModel';
 import typeof * as BoundActionCreators from '../redux/Actions';
 
 import invariant from 'assert';
-
-import createPaneContainer from '../../../commons-atom/create-pane-container';
+import {
+  FlexDirections,
+  ResizableFlexContainer,
+  ResizableFlexItem,
+} from '../../../nuclide-ui/ResizableFlexContainer';
 import {
   DiffMode,
   DIFF_EDITOR_MARKER_CLASS,
 } from '../constants';
 import {
   React,
-  ReactDOM,
 } from 'react-for-atom';
 import {
   centerScrollToBufferLine,
@@ -47,7 +49,6 @@ type Props = AppState & {
 
 export default class DiffViewNavigatorComponent extends React.Component {
   props: Props;
-  _paneContainer: Object;
   _navigatorPane: atom$Pane;
   _fileChangesPane: atom$Pane;
 
@@ -57,53 +58,23 @@ export default class DiffViewNavigatorComponent extends React.Component {
   }
 
   componentDidMount(): void {
-    this._paneContainer = createPaneContainer();
-    ReactDOM.findDOMNode(this.refs.paneContainer).appendChild(
-      atom.views.getView(this._paneContainer),
-    );
-    this._navigatorPane = this._paneContainer.getActivePane();
-    this._fileChangesPane = this._navigatorPane.splitRight({
-      flexScale: 0.5,
-    });
-    this._renderPaneElements();
-
     this.props.tryTriggerNux();
-  }
-
-  componentDidUpdate(): void {
-    this._renderPaneElements();
   }
 
   render(): React.Element<any> {
     return (
-      <div className="nuclide-diff-view-navigator-root" ref="paneContainer" />
-    );
-  }
-
-  _renderPaneElements(): void {
-    ReactDOM.render(
-      this._renderNavigator(),
-      this._getPaneElement(this._navigatorPane),
-    );
-    ReactDOM.render(
-      this._renderFileChanges(),
-      this._getPaneElement(this._fileChangesPane),
-    );
-  }
-
-  componentWillUnmount(): void {
-    const panes = [this._navigatorPane, this._fileChangesPane];
-    panes.forEach(pane => {
-      ReactDOM.unmountComponentAtNode(ReactDOM.findDOMNode(this._getPaneElement(pane)));
-      pane.destroy();
-    });
-  }
-
-  _renderNavigator(): React.Element<any> {
-    return (
-      <div className="nuclide-diff-view-navigator-timeline-container">
-        {this._renderNavigationState()}
-      </div>
+      <ResizableFlexContainer
+        className="nuclide-diff-view-navigator-root"
+        direction={FlexDirections.HORIZONTAL}>
+        <ResizableFlexItem initialFlexScale={1}>
+          <div className="nuclide-diff-view-navigator-timeline-container">
+            {this._renderNavigationState()}
+          </div>
+        </ResizableFlexItem>
+        <ResizableFlexItem initialFlexScale={0.5}>
+          {this._renderFileChanges()}
+        </ResizableFlexItem>
+      </ResizableFlexContainer>
     );
   }
 
@@ -149,11 +120,6 @@ export default class DiffViewNavigatorComponent extends React.Component {
         {renderFileChanges(this.props.diffModel)}
       </div>
     );
-  }
-
-  _getPaneElement(pane: atom$Pane): HTMLElement {
-    // $FlowFixMe querySelector returns ?HTMLElement
-    return atom.views.getView(pane).querySelector('.item-views');
   }
 
   _handleNavigateToSection(

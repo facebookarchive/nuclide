@@ -30,6 +30,7 @@ import {TableExamples} from '../../nuclide-ui/Table.example';
 import {RelativeDateExamples} from '../../nuclide-ui/RelativeDate.example';
 import {MultiRootChangedFilesViewExample} from '../../nuclide-ui/MultiRootChangedFilesView.example';
 import {ToggleExamples} from '../../nuclide-ui/Toggle.example';
+import {ResizableFlexContainerExamples} from '../../nuclide-ui/ResizableFlexContainer.example';
 
 const playgroundComponents = [
   ButtonExamples,
@@ -37,6 +38,7 @@ const playgroundComponents = [
   CheckboxExamples,
   ToggleExamples,
   TabExamples,
+  ResizableFlexContainerExamples,
   RadioGroupExamples,
   TextInputExamples,
   ToolbarExamples,
