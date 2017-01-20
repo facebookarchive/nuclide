@@ -41,6 +41,7 @@ type Props = {
   onSave: (profile: NuclideRemoteConnectionProfile) => mixed,
   // The inputs to pre-fill the form with.
   initialFormFields: NuclideNewConnectionProfileInitialFields,
+  profileHosts: ?Array<string>,
 };
 
 const PROFILE_NAME_LABEL = 'Profile Name';
@@ -105,6 +106,7 @@ export default class CreateConnectionProfileForm extends React.Component<void, P
           initialPathToPrivateKey={initialFields.pathToPrivateKey}
           initialAuthMethod={initialFields.authMethod}
           initialDisplayTitle={initialFields.displayTitle}
+          profileHosts={this.props.profileHosts}
           onCancel={emptyFunction}
           onConfirm={this._clickSave}
           onDidChange={emptyFunction}

@@ -22,6 +22,7 @@ import {
 import ConnectionDialog from './ConnectionDialog';
 import CreateConnectionProfileForm from './CreateConnectionProfileForm';
 import {getLogger} from '../../nuclide-logging';
+import {getUniqueHostsForProfiles} from './connection-profile-utils';
 import {PromiseQueue} from '../../commons-node/promise-executors';
 import {React, ReactDOM} from 'react-for-atom';
 
@@ -141,6 +142,7 @@ export function openConnectionDialog(options?: {
         onCancel: closeNewProfileForm,
         onSave,
         initialFormFields: defaultConnectionProfile.params,
+        profileHosts: getUniqueHostsForProfiles(compositeConnectionProfiles),
       };
 
       newProfilePanel = atom.workspace.addModalPanel({item: hostElementForNewProfileForm});

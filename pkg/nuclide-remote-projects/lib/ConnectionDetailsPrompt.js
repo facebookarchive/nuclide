@@ -11,6 +11,7 @@
 import addTooltip from '../../nuclide-ui/add-tooltip';
 import classnames from 'classnames';
 import ConnectionDetailsForm from './ConnectionDetailsForm';
+import {getUniqueHostsForProfiles} from './connection-profile-utils';
 import {HR} from '../../nuclide-ui/HR';
 import {MutableListSelector} from '../../nuclide-ui/MutableListSelector';
 import {React} from 'react-for-atom';
@@ -123,6 +124,10 @@ export default class ConnectionDetailsPrompt extends React.Component {
   }
 
   _onDefaultProfileClicked(): void {
+    const existingConnectionDetailsForm = this.refs['connection-details-form'];
+    if (existingConnectionDetailsForm) {
+      existingConnectionDetailsForm.promptChanged();
+    }
     this.props.onProfileClicked(0);
   }
 
@@ -130,7 +135,10 @@ export default class ConnectionDetailsPrompt extends React.Component {
     if (profileId == null) {
       return;
     }
-
+    const existingConnectionDetailsForm = this.refs['connection-details-form'];
+    if (existingConnectionDetailsForm) {
+      existingConnectionDetailsForm.promptChanged();
+    }
     // The id of a profile is its index in the list of props.
     // * This requires a `+ 1` because the default profile is sliced from the Array during render
     //   creating an effective offset of -1 for each index passed to the `MutableListSelector`.
@@ -138,6 +146,10 @@ export default class ConnectionDetailsPrompt extends React.Component {
   }
 
   _onProfileClicked(profileId: string): void {
+    const existingConnectionDetailsForm = this.refs['connection-details-form'];
+    if (existingConnectionDetailsForm) {
+      existingConnectionDetailsForm.promptChanged();
+    }
     // The id of a profile is its index in the list of props.
     // * This requires a `+ 1` because the default profile is sliced from the Array during render
     //   creating an effective offset of -1 for each index passed to the `MutableListSelector`.
@@ -148,13 +160,14 @@ export default class ConnectionDetailsPrompt extends React.Component {
     // If there are profiles, pre-fill the form with the information from the
     // specified selected profile.
     const prefilledConnectionParams = this.getPrefilledConnectionParams() || {};
-
+    let uniqueHosts;
     let defaultConnectionProfileList;
     let listSelectorItems;
     const connectionProfiles = this.props.connectionProfiles;
     if (connectionProfiles == null || connectionProfiles.length === 0) {
       listSelectorItems = [];
     } else {
+      uniqueHosts = getUniqueHostsForProfiles(connectionProfiles);
       const mostRecentClassName = classnames('list-item', {
         selected: this.props.indexOfSelectedConnectionProfile === 0,
       });
@@ -236,6 +249,7 @@ export default class ConnectionDetailsPrompt extends React.Component {
           initialPathToPrivateKey={prefilledConnectionParams.pathToPrivateKey}
           initialAuthMethod={prefilledConnectionParams.authMethod}
           initialDisplayTitle={prefilledConnectionParams.displayTitle}
+          profileHosts={uniqueHosts}
           onConfirm={this.props.onConfirm}
           onCancel={this.props.onCancel}
           onDidChange={this._handleConnectionDetailsFormDidChange}

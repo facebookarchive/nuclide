@@ -22,6 +22,7 @@ import type {
 
 import invariant from 'assert';
 import featureConfig from '../../commons-atom/featureConfig';
+import lookupPreferIpv6 from '../../nuclide-remote-connection/lib/lookup-prefer-ip-v6';
 
 /**
  * Section: Default Connection Profile
@@ -85,7 +86,6 @@ export function getDefaultConnectionProfile(options?: {
   };
 }
 
-
 /**
  * Section: User-created Connection Profiles
  */
@@ -132,6 +132,30 @@ export function onSavedConnectionProfilesDidChange(
   );
 }
 
+/**
+ * Returns an array of host names for a given array of connection profiles
+ */
+export function getUniqueHostsForProfiles(
+  profiles: Array<NuclideRemoteConnectionProfile>,
+): Array<string> {
+  const uniqueHosts = new Set();
+  for (let i = 0; i < profiles.length; i++) {
+    uniqueHosts.add(profiles[i].params.server);
+  }
+  return Array.from(uniqueHosts);
+}
+
+/**
+ * Returns an array of IP addresses for a given array of host names
+ */
+export async function getIPsForHosts(hosts: Array<string>,
+): Promise<Array<string>> {
+  const promise_array = hosts.map(
+    host => lookupPreferIpv6(host).catch(() => {}),
+  );
+  const values = await Promise.all(promise_array);
+  return values;
+}
 
 /**
  * Section: Default/Last-Used Connection Profiles

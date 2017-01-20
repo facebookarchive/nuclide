@@ -15,8 +15,11 @@ import type {
 
 import {getOfficialRemoteServerCommand} from './connection-profile-utils';
 
+import addTooltip from '../../nuclide-ui/add-tooltip';
 import {AtomInput} from '../../nuclide-ui/AtomInput';
 import {CompositeDisposable} from 'atom';
+import {getIPsForHosts} from './connection-profile-utils';
+import lookupPreferIpv6 from '../../nuclide-remote-connection/lib/lookup-prefer-ip-v6';
 import RadioGroup from '../../nuclide-ui/RadioGroup';
 import {React, ReactDOM} from 'react-for-atom';
 import {SshHandshake} from '../../nuclide-remote-connection';
@@ -41,15 +44,18 @@ type Props = {
   onCancel: () => mixed,
   onConfirm: () => mixed,
   onDidChange: () => mixed,
+  profileHosts: ?Array<string>,
 };
 
 type State = {
   cwd: string,
   displayTitle: string,
+  IPs: ?Promise<Array<string>>,
   pathToPrivateKey: string,
   remoteServerCommand: string,
   selectedAuthMethodIndex: number,
   server: string,
+  shouldDisplayTooltipWarning: boolean,
   sshPort: string,
   username: string,
 };
@@ -60,9 +66,12 @@ export default class ConnectionDetailsForm extends React.Component {
   state: State;
 
   _disposables: ?CompositeDisposable;
+  _promptChanged: boolean;
 
   constructor(props: Props) {
     super(props);
+
+    this._promptChanged = false;
     this.state = {
       username: props.initialUsername,
       server: props.initialServer,
@@ -72,10 +81,13 @@ export default class ConnectionDetailsForm extends React.Component {
       pathToPrivateKey: props.initialPathToPrivateKey,
       selectedAuthMethodIndex: authMethods.indexOf(props.initialAuthMethod),
       displayTitle: props.initialDisplayTitle,
+      IPs: null,
+      shouldDisplayTooltipWarning: false,
     };
 
     (this: any)._handleAuthMethodChange = this._handleAuthMethodChange.bind(this);
     (this: any)._handleInputDidChange = this._handleInputDidChange.bind(this);
+    (this: any)._handleInputDidChangeForServer = this._handleInputDidChangeForServer.bind(this);
     (this: any)._handleKeyFileInputClick = this._handleKeyFileInputClick.bind(this);
     (this: any)._handlePasswordInputClick = this._handlePasswordInputClick.bind(this);
   }
@@ -99,6 +111,16 @@ export default class ConnectionDetailsForm extends React.Component {
 
   _handleInputDidChange(): void {
     this.props.onDidChange();
+  }
+
+  _handleInputDidChangeForServer() {
+    // If the input changed due to a higher level change in the
+    // ConnectionDetailsPrompt, don't check for host collisions
+    if (!this._promptChanged) {
+      this._checkForHostCollisions(this._getText('server'));
+      this.props.onDidChange();
+    }
+    this._promptChanged = false;
   }
 
   _handleKeyFileInputClick(event: SyntheticEvent): void {
@@ -126,6 +148,35 @@ export default class ConnectionDetailsForm extends React.Component {
         ReactDOM.findDOMNode(this.refs.password).focus();
       },
     );
+  }
+
+  async _checkForHostCollisions(hostName: string) {
+    const uniqueHosts = this.props.profileHosts;
+    if (uniqueHosts == null || this.state.IPs == null) {
+      return;
+    }
+    const IPs = await this.state.IPs;
+    const ip = await lookupPreferIpv6(hostName)
+      .catch(() => {
+        return;
+      });
+    let shouldDisplayWarning = false;
+    if (ip == null) {
+      if (this.state.shouldDisplayTooltipWarning) {
+        this.setState({shouldDisplayTooltipWarning: false});
+      }
+    } else {
+      for (let i = 0; i < uniqueHosts.length; i++) {
+        if (hostName !== uniqueHosts[i]) {
+          if (ip === IPs[i]) {
+            shouldDisplayWarning = true;
+          }
+        }
+      }
+      if (this.state.shouldDisplayTooltipWarning !== shouldDisplayWarning) {
+        this.setState({shouldDisplayTooltipWarning: shouldDisplayWarning});
+      }
+    }
   }
 
   render(): React.Element<any> {
@@ -174,6 +225,30 @@ export default class ConnectionDetailsForm extends React.Component {
         Use ssh-agent
       </div>
     );
+    let toolTipWarning;
+    if (this.state.shouldDisplayTooltipWarning) {
+      toolTipWarning =
+          <span
+                style={{paddingLeft: 10}}
+                className={'icon icon-info pull-right nuclide-remote-projects-tooltip-warning'}
+                ref={addTooltip({
+                  // Intentionally *not* an arrow function so the jQuery
+                  // Tooltip plugin can set the context to the Tooltip
+                  // instance.
+                  placement() {
+                    // Atom modals have z indices of 9999. This Tooltip needs
+                    // to stack on top of the modal; beat the modal's z-index.
+                    this.tip.style.zIndex = 10999;
+                    return 'right';
+                  },
+                  title:
+                    'One of your profiles uses a host name that resolves to the'
+                    + ' same IP as this one. Consider using the uniform host '
+                    + 'name to avoid potential collisions.',
+                })}
+          />;
+    }
+
     return (
       <div className={className}>
         <div className="form-group">
@@ -187,10 +262,12 @@ export default class ConnectionDetailsForm extends React.Component {
         </div>
         <div className="form-group nuclide-auth-server-group">
           <div className="nuclide-auth-server">
-            <label>Server:</label>
+            <label>Server:
+              {toolTipWarning}
+            </label>
             <AtomInput
               initialValue={this.state.server}
-              onDidChange={this._handleInputDidChange}
+              onDidChange={this._handleInputDidChangeForServer}
               ref="server"
               unstyled={true}
             />
@@ -257,6 +334,9 @@ export default class ConnectionDetailsForm extends React.Component {
       'core:cancel',
       event => this.props.onCancel(),
     ));
+    if (this.props.profileHosts) {
+      this.setState({IPs: getIPsForHosts(this.props.profileHosts)});
+    }
   }
 
   componentWillUnmount() {
@@ -345,5 +425,10 @@ export default class ConnectionDetailsForm extends React.Component {
     if (passwordInput) {
       passwordInput.value = '';
     }
+  }
+
+  promptChanged(): void {
+    this._promptChanged = true;
+    this.setState({shouldDisplayTooltipWarning: false});
   }
 }
