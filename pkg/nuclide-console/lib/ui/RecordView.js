@@ -24,6 +24,8 @@ type Props = {
   getProvider: (id: string) => ?OutputProvider,
 };
 
+const URL_REGEX = /https?:\/\/[\S]+/i;
+
 export default class RecordView extends React.Component {
   props: Props;
 
@@ -39,11 +41,60 @@ export default class RecordView extends React.Component {
     } else if (record.data != null) {
       const provider = this.props.getProvider(record.sourceId);
       return this._renderNestedValueComponent(record, provider);
+    } else if (record.text.match(URL_REGEX)) {
+      return this._renderTextWithURL(record.text);
     } else {
       // If there's not text, use a space to make sure the row doesn't collapse.
       const text = record.text || ' ';
       return <pre>{text}</pre>;
     }
+  }
+
+  _renderTextWithURL(text: string): React.Element<any> {
+    type TextOrLink =
+      | {type: 'link', href: string}
+      | {type: 'text', text: string};
+    return (
+      <span>
+        {text.split(' ')
+          .map((word: string): TextOrLink => {
+            if (word.match(URL_REGEX)) {
+              return {
+                type: 'link',
+                href: word,
+              };
+            }
+            return {
+              type: 'text',
+              text: word,
+            };
+          })
+          .reduce((collection: Array<TextOrLink>, current: TextOrLink) => {
+            const lastIndex = collection.length - 1;
+            const lastItem: ?TextOrLink = collection[lastIndex];
+            if (lastItem
+              && lastItem.type === 'text'
+              && current.type === 'text'
+            ) {
+              lastItem.text += ' ' + current.text;
+              return collection;
+            }
+            collection.push(current);
+            return collection;
+          }, [])
+          .map((current: TextOrLink, i: number): React.Element<any> => {
+            if (current.type === 'text') {
+              return <pre key={'d' + i}>{' '}{current.text}{' '}</pre>;
+            }
+            return (
+              <a key={'d' + i} href={current.href} target="_blank">
+                {current.href}
+              </a>
+            );
+          })
+        }
+      </span>
+    );
   }
 
   shouldComponentUpdate(nextProps: Props): boolean {
