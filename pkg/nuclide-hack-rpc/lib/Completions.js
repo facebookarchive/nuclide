@@ -97,6 +97,15 @@ function processCompletions(
   const contentsLine = contents.substring(
     contents.lastIndexOf('\n', offset - 1) + 1,
     offset).toLowerCase();
+
+  const lineEndOrNotFound = contents.indexOf('\n', offset);
+  const lineEnd =
+    lineEndOrNotFound !== -1 ? lineEndOrNotFound : contents.length;
+  const contentsRestOfLine = contents.substring(offset, lineEnd);
+  const nextCharIndex = contentsRestOfLine.search(/\S/);
+  const alreadyHasParams =
+    nextCharIndex !== -1 && contentsRestOfLine[nextCharIndex] === '(';
+
   return completionsResponse.map((completion: HackCompletion) => {
     const {name, type, func_details} = completion;
     const resultPrefix = contents.substring(
@@ -108,9 +117,11 @@ function processCompletions(
       description: matchTypeOfType(type),
     };
     if (func_details != null) {
+      const completionParams =
+        alreadyHasParams ? null : func_details.params;
       return {
         ...commonResult,
-        snippet: matchSnippet(name, func_details.params),
+        snippet: matchSnippet(name, completionParams),
         leftLabel: func_details.return_type,
         rightLabel: paramSignature(func_details.params),
         type: 'function',
