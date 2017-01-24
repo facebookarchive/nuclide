@@ -70,7 +70,7 @@ async function debugBuckTarget(
     // Allow overriding of a test's default arguments if provided.
     arguments: (runArguments.length ? runArguments : targetOutput.args) || [],
     environmentVariables: env,
-    workingDirectory: '', // use the default
+    workingDirectory: remoteBuckRoot,
     basepath: remoteBuckRoot,
     lldbPythonPath: null,
   });
