@@ -29,16 +29,20 @@ import {React, ReactDOM} from 'react-for-atom';
 const logger = getLogger();
 let dialogPromiseQueue: ?PromiseQueue = null;
 
+export type OpenConnectionDialogOptions = {
+  initialServer: string,
+  initialCwd: string,
+  initialRemoteServerCommand?: string,
+};
+
 /**
  * Opens the remote connection dialog flow, which includes asking the user
  * for connection parameters (e.g. username, server name, etc), and optionally
  * asking for additional (e.g. 2-fac) authentication.
  */
-export function openConnectionDialog(options?: {
-  initialServer: string,
-  initialCwd: string,
-  initialRemoteServerCommand?: string,
-}): Promise<?RemoteConnection> {
+export function openConnectionDialog(
+  options?: OpenConnectionDialogOptions,
+): Promise<?RemoteConnection> {
   if (!dialogPromiseQueue) {
     dialogPromiseQueue = new PromiseQueue();
   }

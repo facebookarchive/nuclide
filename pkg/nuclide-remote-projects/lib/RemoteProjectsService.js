@@ -9,6 +9,7 @@
  */
 
 import type {SerializableRemoteConnectionConfiguration} from '..';
+import type {OpenConnectionDialogOptions} from './open-connection';
 
 import {ReplaySubject} from 'rxjs';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
@@ -54,5 +55,9 @@ export default class RemoteProjectsService {
       initialServer: host,
       initialCwd: cwd,
     });
+  }
+
+  openConnectionDialog(options: OpenConnectionDialogOptions): Promise<?RemoteConnection> {
+    return openConnectionDialog(options);
   }
 }

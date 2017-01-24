@@ -13,6 +13,7 @@ import type {
   RemoteConnectionConfiguration,
 } from '../../nuclide-remote-connection/lib/RemoteConnection';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {OpenConnectionDialogOptions} from './open-connection';
 
 import {loadBufferForUri, bufferForUri} from '../../commons-atom/text-buffer';
 import {getLogger} from '../../nuclide-logging';
@@ -52,6 +53,14 @@ export type RemoteProjectsService = {
    */
   createRemoteConnection(
     config: SerializableRemoteConnectionConfiguration,
+  ): Promise<?RemoteConnection>,
+
+  /**
+   * Start the flow to open a remote connection by opening a connection dialog, regardless of
+   * the previously cached connections.
+   */
+  openConnectionDialog(
+    config: OpenConnectionDialogOptions,
   ): Promise<?RemoteConnection>,
 };
 
