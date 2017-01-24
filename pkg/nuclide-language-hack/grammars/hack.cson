@@ -997,7 +997,7 @@
           (function)
           (?:\\s+|(\\s*&\\s*))
           (?:
-            (__(?:call|construct|destruct|get|set|isset|unset|tostring|clone|set_state|sleep|wakeup|autoload|invoke|callStatic))
+            (__(?:call|construct|destruct|get|set|isset|unset|tostring|clone|set_state|sleep|wakeup|autoload|invoke|callStatic)(?=[^a-zA-Z0-9_\\x7f-\\xff]))
             |
             ([a-zA-Z0-9_]+)
           )

@@ -1498,4 +1498,71 @@ describe('PHP grammar', () => {
   grammarTest(nuclideUri.join(__dirname, 'fixtures/syntax_test_hack_typedecl.php'));
   grammarTest(nuclideUri.join(__dirname, 'fixtures/syntax_test_hack_generics.php'));
   grammarTest(nuclideUri.join(__dirname, 'fixtures/syntax_test_xhp.php'));
+
+  describe('magic method parsing', () => {
+    it('recognizes magic methods', () => {
+      expect(grammar).toBeTruthy();
+      grammar = grammar || {};
+      const tokens = grammar.tokenizeLines(CLASS_WITH_MAGIC_METHOD);
+      expect(tokens[2][7]).toEqual({
+        value: '__get',
+        scopes: [
+          'text.html.hack',
+          'meta.embedded.block.php',
+          'source.hack',
+          'meta.function.php',
+          'support.function.magic.php',
+        ],
+      });
+    });
+
+    it('recognizes magic methods with line breaks after the identifier', () => {
+      expect(grammar).toBeTruthy();
+      grammar = grammar || {};
+      const tokens = grammar.tokenizeLines(CLASS_WITH_TRICKY_MAGIC_METHOD);
+      expect(tokens[2][7]).toEqual({
+        value: '__get',
+        scopes: [
+          'text.html.hack',
+          'meta.embedded.block.php',
+          'source.hack',
+          'meta.function.php',
+          'support.function.magic.php',
+        ],
+      });
+    });
+
+    it("recognizes when methods aren't magic methods (even though they're close)", () => {
+      expect(grammar).toBeTruthy();
+      grammar = grammar || {};
+      const tokens = grammar.tokenizeLines(CLASS_WITHOUT_MAGIC_METHOD);
+      expect(tokens[2][7]).toEqual({
+        value: '__getSomething',
+        scopes: [
+          'text.html.hack',
+          'meta.embedded.block.php',
+          'source.hack',
+          'meta.function.php',
+          'entity.name.function.php',
+        ],
+      });
+    });
+  });
 });
+
+const CLASS_WITH_MAGIC_METHOD = `<?hh
+class TestClass {
+  final public function __get(): void {
+  }
+}`;
+const CLASS_WITH_TRICKY_MAGIC_METHOD = `<?hh
+class TestClass {
+  final public function __get
+    (): void {
+  }
+}`;
+const CLASS_WITHOUT_MAGIC_METHOD = `<?hh
+class TestClass {
+  final public function __getSomething(): void {
+  }
+}`;
