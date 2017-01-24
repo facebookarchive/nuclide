@@ -12,6 +12,7 @@ import type {FlowRoot as FlowRootType} from '../lib/FlowRoot';
 
 import {Point} from 'simple-text-buffer';
 
+import {FlowRoot} from '../lib/FlowRoot';
 import {FlowExecInfoContainer} from '../lib/FlowExecInfoContainer';
 
 describe('FlowRoot', () => {
@@ -26,9 +27,6 @@ describe('FlowRoot', () => {
   let fakeExecFlow: any;
 
   function newFlowService() {
-    // We do a require here instead of just importing at the top of the file because the describe
-    // block below needs to mock things, and has to use uncachedRequire.
-    const {FlowRoot} = require('../lib/FlowRoot');
     return new FlowRoot(root, new FlowExecInfoContainer());
   }
 
