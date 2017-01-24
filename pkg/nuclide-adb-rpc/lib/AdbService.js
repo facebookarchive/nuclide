@@ -1,69 +1,56 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {ConnectableObservable} from 'rxjs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.startServer = startServer;
+exports.getDeviceList = getDeviceList;
+exports.getDeviceArchitecture = getDeviceArchitecture;
+exports.getDeviceModel = getDeviceModel;
+exports.getAPIVersion = getAPIVersion;
+exports.getPidFromPackageName = getPidFromPackageName;
+exports.forwardJdwpPortToPid = forwardJdwpPortToPid;
 
-import * as ADB from './ADB';
+var _ADB;
 
-export type DeviceDescription = {
-  name: string,
-  architecture: string,
-  apiVersion: string,
-  model: string,
-};
-
-export function startServer(
-  adbPath: NuclideUri,
-): ConnectableObservable<string> {
-  return ADB.startServer(adbPath);
+function _load_ADB() {
+  return _ADB = _interopRequireWildcard(require('./ADB'));
 }
 
-export function getDeviceList(
-  adbPath: NuclideUri,
-): Promise<Array<DeviceDescription>> {
-  return ADB.getDeviceList(adbPath);
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function startServer(adbPath) {
+  return (_ADB || _load_ADB()).startServer(adbPath);
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   */
+
+function getDeviceList(adbPath) {
+  return (_ADB || _load_ADB()).getDeviceList(adbPath);
 }
 
-export function getDeviceArchitecture(
-  adbPath: NuclideUri,
-  device: string,
-): Promise<string> {
-  return ADB.getDeviceArchitecture(adbPath, device);
+function getDeviceArchitecture(adbPath, device) {
+  return (_ADB || _load_ADB()).getDeviceArchitecture(adbPath, device);
 }
 
-export function getDeviceModel(
-  adbPath: NuclideUri,
-  device: string,
-): Promise<string> {
-  return ADB.getDeviceModel(adbPath, device);
+function getDeviceModel(adbPath, device) {
+  return (_ADB || _load_ADB()).getDeviceModel(adbPath, device);
 }
 
-export function getAPIVersion(
-  adbPath: NuclideUri,
-  device: string,
-): Promise<string> {
-  return ADB.getAPIVersion(adbPath, device);
+function getAPIVersion(adbPath, device) {
+  return (_ADB || _load_ADB()).getAPIVersion(adbPath, device);
 }
 
-export function getPidFromPackageName(
-  adbPath: NuclideUri,
-  packageName: string,
-): Promise<number> {
-  return ADB.getPidFromPackageName(adbPath, packageName);
+function getPidFromPackageName(adbPath, packageName) {
+  return (_ADB || _load_ADB()).getPidFromPackageName(adbPath, packageName);
 }
 
-export function forwardJdwpPortToPid(
-  adbPath: NuclideUri,
-  tcpPort: number,
-  pid: number,
-): Promise<string> {
-  return ADB.forwardJdwpPortToPid(adbPath, tcpPort, pid);
+function forwardJdwpPortToPid(adbPath, tcpPort, pid) {
+  return (_ADB || _load_ADB()).forwardJdwpPortToPid(adbPath, tcpPort, pid);
 }

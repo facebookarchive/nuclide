@@ -1,3 +1,40 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.convertProperties = convertProperties;
+exports.convertProperty = convertProperty;
+exports.getPagedProperties = getPagedProperties;
+
+var _utils;
+
+function _load_utils() {
+  return _utils = _interopRequireDefault(require('./utils'));
+}
+
+var _ObjectId;
+
+function _load_ObjectId() {
+  return _ObjectId = require('./ObjectId');
+}
+
+var _values;
+
+function _load_values() {
+  return _values = require('./values');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function convertProperties(id, properties) {
+  (_utils || _load_utils()).default.log('Got properties: ' + JSON.stringify(properties));
+  return properties.map(property => convertProperty(id, property));
+}
+
+/**
+ * Converts a DbgpProperty to a Chrome PropertyDescriptor.
+ */
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,45 +42,16 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
 
-
-import logger from './utils';
-import {
-  remoteObjectIdOfObjectId,
-  endIndexOfObjectId,
-  startIndexOfObjectId,
-  countOfObjectId,
-  getChildIds,
-} from './ObjectId';
-import {convertValue} from './values';
-import invariant from 'assert';
-
-import type {ObjectId} from './ObjectId';
-import type {DbgpProperty} from './DbgpSocket';
-
-export function convertProperties(
-  id: ObjectId,
-  properties: Array<DbgpProperty>,
-): Array<Runtime$PropertyDescriptor> {
-  logger.log('Got properties: ' + JSON.stringify(properties));
-  return properties.map(property => convertProperty(id, property));
-}
-
-/**
- * Converts a DbgpProperty to a Chrome PropertyDescriptor.
- */
-export function convertProperty(
-  contextId: ObjectId,
-  dbgpProperty: DbgpProperty,
-): Runtime$PropertyDescriptor {
-  logger.log('Converting to Chrome property: ' + JSON.stringify(dbgpProperty));
+function convertProperty(contextId, dbgpProperty) {
+  (_utils || _load_utils()).default.log('Converting to Chrome property: ' + JSON.stringify(dbgpProperty));
   const result = {
     configurable: false,
     enumerable: true,
     name: dbgpProperty.$.name || 'Anonymous Property',
-    value: convertValue(contextId, dbgpProperty),
+    value: (0, (_values || _load_values()).convertValue)(contextId, dbgpProperty)
   };
   return result;
 }
@@ -52,24 +60,27 @@ export function convertProperty(
  * Given an ObjectId for a multi page object, gets PropertyDescriptors
  * for the object's children.
  */
-export function getPagedProperties(pagedId: ObjectId): Array<Runtime$PropertyDescriptor> {
-  invariant(pagedId.elementRange);
-  const pagesize = pagedId.elementRange.pagesize;
-  const endIndex = endIndexOfObjectId(pagedId);
+function getPagedProperties(pagedId) {
+  if (!pagedId.elementRange) {
+    throw new Error('Invariant violation: "pagedId.elementRange"');
+  }
 
-  const childIds = getChildIds(pagedId);
+  const pagesize = pagedId.elementRange.pagesize;
+  const endIndex = (0, (_ObjectId || _load_ObjectId()).endIndexOfObjectId)(pagedId);
+
+  const childIds = (0, (_ObjectId || _load_ObjectId()).getChildIds)(pagedId);
   return childIds.map(childId => {
-    const childStartIndex = startIndexOfObjectId(childId, pagesize);
-    const childCount = countOfObjectId(childId, pagesize, endIndex);
+    const childStartIndex = (0, (_ObjectId || _load_ObjectId()).startIndexOfObjectId)(childId, pagesize);
+    const childCount = (0, (_ObjectId || _load_ObjectId()).countOfObjectId)(childId, pagesize, endIndex);
     return {
       configurable: false,
       enumerable: true,
-      name: `Elements(${childStartIndex}..${childStartIndex + childCount - 1})`,
+      name: `Elements(${ childStartIndex }..${ childStartIndex + childCount - 1 })`,
       value: {
-        description: `${childCount} elements`,
+        description: `${ childCount } elements`,
         type: 'object',
-        objectId: remoteObjectIdOfObjectId(childId),
-      },
+        objectId: (0, (_ObjectId || _load_ObjectId()).remoteObjectIdOfObjectId)(childId)
+      }
     };
   });
 }

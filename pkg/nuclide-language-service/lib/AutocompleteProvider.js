@@ -1,3 +1,32 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.AutocompleteProvider = undefined;
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _nuclideOpenFiles;
+
+function _load_nuclideOpenFiles() {
+  return _nuclideOpenFiles = require('../../nuclide-open-files');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,44 +34,12 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
 
-import type {LanguageService} from './LanguageService';
+class AutocompleteProvider {
 
-import {ConnectionCache} from '../../nuclide-remote-connection';
-import {trackTiming} from '../../nuclide-analytics';
-import {getFileVersionOfEditor} from '../../nuclide-open-files';
-
-export type AutocompleteConfig = {|
-  inclusionPriority: number,
-  suggestionPriority: number,
-  disableForSelector: ?string,
-  excludeLowerPriority: boolean,
-  version: '2.0.0',
-  analyticsEventName: string,
-|};
-
-export class AutocompleteProvider<T: LanguageService> {
-  name: string;
-  selector: string;
-  inclusionPriority: number;
-  suggestionPriority: number;
-  disableForSelector: ?string;
-  excludeLowerPriority: boolean;
-  _analyticsEventName: string;
-  _connectionToLanguageService: ConnectionCache<T>;
-
-  constructor(
-    name: string,
-    selector: string,
-    inclusionPriority: number,
-    suggestionPriority: number,
-    disableForSelector: ?string,
-    excludeLowerPriority: boolean,
-    analyticsEventName: string,
-    connectionToLanguageService: ConnectionCache<T>,
-  ) {
+  constructor(name, selector, inclusionPriority, suggestionPriority, disableForSelector, excludeLowerPriority, analyticsEventName, connectionToLanguageService) {
     this.name = name;
     this.selector = selector;
     this.inclusionPriority = inclusionPriority;
@@ -53,43 +50,24 @@ export class AutocompleteProvider<T: LanguageService> {
     this._connectionToLanguageService = connectionToLanguageService;
   }
 
-  static register(
-    name: string,
-    grammars: Array<string>,
-    config: AutocompleteConfig,
-    connectionToLanguageService: ConnectionCache<T>,
-  ): IDisposable {
-    return atom.packages.serviceHub.provide(
-      'autocomplete.provider',
-      config.version,
-      new AutocompleteProvider(
-        name,
-        grammars.map(grammar => '.' + grammar).join(', '),
-        config.inclusionPriority,
-        config.suggestionPriority,
-        config.disableForSelector,
-        config.excludeLowerPriority,
-        config.analyticsEventName,
-        connectionToLanguageService,
-      ));
+  static register(name, grammars, config, connectionToLanguageService) {
+    return atom.packages.serviceHub.provide('autocomplete.provider', config.version, new AutocompleteProvider(name, grammars.map(grammar => '.' + grammar).join(', '), config.inclusionPriority, config.suggestionPriority, config.disableForSelector, config.excludeLowerPriority, config.analyticsEventName, connectionToLanguageService));
   }
 
-  getSuggestions(
-    request: atom$AutocompleteRequest,
-  ): Promise<?Array<atom$AutocompleteSuggestion>> {
-    return trackTiming(
-      this._analyticsEventName,
-      async () => {
-        const {editor, activatedManually} = request;
-        const fileVersion = await getFileVersionOfEditor(editor);
-        const languageService = this._connectionToLanguageService.getForUri(editor.getPath());
-        if (languageService == null || fileVersion == null) {
-          return [];
-        }
-        const position = editor.getLastCursor().getBufferPosition();
+  getSuggestions(request) {
+    var _this = this;
 
-        return (await languageService).getAutocompleteSuggestions(
-          fileVersion, position, activatedManually == null ? false : activatedManually);
-      });
+    return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackTiming)(this._analyticsEventName, (0, _asyncToGenerator.default)(function* () {
+      const { editor, activatedManually } = request;
+      const fileVersion = yield (0, (_nuclideOpenFiles || _load_nuclideOpenFiles()).getFileVersionOfEditor)(editor);
+      const languageService = _this._connectionToLanguageService.getForUri(editor.getPath());
+      if (languageService == null || fileVersion == null) {
+        return [];
+      }
+      const position = editor.getLastCursor().getBufferPosition();
+
+      return (yield languageService).getAutocompleteSuggestions(fileVersion, position, activatedManually == null ? false : activatedManually);
+    }));
   }
 }
+exports.AutocompleteProvider = AutocompleteProvider;
