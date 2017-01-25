@@ -141,6 +141,7 @@ class HackLanguageServiceImpl extends ServerLanguageService {
     fileVersion: FileVersion,
     position: atom$Point,
     activatedManually: boolean,
+    prefix: string,
   ): Promise<Array<Completion>> {
     if (this._useIdeConnection) {
       const process = await getHackProcess(this._fileCache, fileVersion.filePath);
@@ -153,7 +154,7 @@ class HackLanguageServiceImpl extends ServerLanguageService {
       // Babel workaround: w/o the es2015-classes transform, async functions can't call `super`.
       // https://github.com/babel/babel/issues/3930
       return ServerLanguageService.prototype.getAutocompleteSuggestions
-        .call(this, fileVersion, position, activatedManually);
+        .call(this, fileVersion, position, activatedManually, prefix);
     }
   }
 

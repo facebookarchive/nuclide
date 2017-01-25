@@ -144,6 +144,7 @@ class FlowSingleFileLanguageService {
     buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
     activatedManually: boolean,
+    prefix: string,
   ): Promise<Array<Completion>> {
     throw new Error('Not Yet Implemented');
   }

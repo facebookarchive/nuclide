@@ -80,7 +80,7 @@ export class AutocompleteProvider<T: LanguageService> {
     return trackTiming(
       this._analyticsEventName,
       async () => {
-        const {editor, activatedManually} = request;
+        const {editor, activatedManually, prefix} = request;
         const fileVersion = await getFileVersionOfEditor(editor);
         const languageService = this._connectionToLanguageService.getForUri(editor.getPath());
         if (languageService == null || fileVersion == null) {
@@ -89,7 +89,7 @@ export class AutocompleteProvider<T: LanguageService> {
         const position = editor.getLastCursor().getBufferPosition();
 
         return (await languageService).getAutocompleteSuggestions(
-          fileVersion, position, activatedManually == null ? false : activatedManually);
+          fileVersion, position, activatedManually == null ? false : activatedManually, prefix);
       });
   }
 }

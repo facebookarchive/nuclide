@@ -50,6 +50,7 @@ export type SingleFileLanguageService = {
     buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
     activatedManually: boolean,
+    prefix: string,
   ): Promise<Array<Completion>>,
 
   getDefinition(
@@ -147,6 +148,7 @@ export class ServerLanguageService {
     fileVersion: FileVersion,
     position: atom$Point,
     activatedManually: boolean,
+    prefix: string,
   ): Promise<Array<Completion>> {
     const filePath = fileVersion.filePath;
     const buffer = await getBufferAtVersion(fileVersion);
@@ -154,7 +156,12 @@ export class ServerLanguageService {
       return [];
     }
     return this._service.getAutocompleteSuggestions(
-      filePath, buffer, position, activatedManually);
+      filePath,
+      buffer,
+      position,
+      activatedManually,
+      prefix,
+    );
   }
 
   async getDefinition(
