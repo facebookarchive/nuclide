@@ -13,7 +13,7 @@ import type {AutocompleteCacherConfig} from '../../commons-atom/AutocompleteCach
 import type {Completion, LanguageService} from './LanguageService';
 
 import {ConnectionCache} from '../../nuclide-remote-connection';
-import {trackTiming} from '../../nuclide-analytics';
+import {trackTiming, track} from '../../nuclide-analytics';
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
 import AutocompleteCacher from '../../commons-atom/AutocompleteCacher';
 
@@ -24,6 +24,7 @@ export type AutocompleteConfig = {|
   excludeLowerPriority: boolean,
   version: '2.0.0',
   analyticsEventName: string,
+  onDidInsertSuggestionAnalyticsEventName: ?string,
   autocompleteCacherConfig: ?AutocompleteCacherConfig<?Array<Completion>>,
 |};
 
@@ -34,6 +35,7 @@ export class AutocompleteProvider<T: LanguageService> {
   suggestionPriority: number;
   disableForSelector: ?string;
   excludeLowerPriority: boolean;
+  onDidInsertSuggestion: ?() => mixed;
   _analyticsEventName: string;
   _connectionToLanguageService: ConnectionCache<T>;
   _autocompleteCacher: ?AutocompleteCacher<?Array<Completion>>;
@@ -46,6 +48,7 @@ export class AutocompleteProvider<T: LanguageService> {
     disableForSelector: ?string,
     excludeLowerPriority: boolean,
     analyticsEventName: string,
+    onDidInsertSuggestionAnalyticsEventName: ?string,
     autocompleteCacherConfig: ?AutocompleteCacherConfig<?Array<Completion>>,
     connectionToLanguageService: ConnectionCache<T>,
   ) {
@@ -63,6 +66,12 @@ export class AutocompleteProvider<T: LanguageService> {
         request => this._getSuggestionsFromLanguageService(request),
         autocompleteCacherConfig,
       );
+    }
+
+    if (onDidInsertSuggestionAnalyticsEventName != null) {
+      this.onDidInsertSuggestion = () => {
+        track(onDidInsertSuggestionAnalyticsEventName);
+      };
     }
   }
 
@@ -83,6 +92,7 @@ export class AutocompleteProvider<T: LanguageService> {
         config.disableForSelector,
         config.excludeLowerPriority,
         config.analyticsEventName,
+        config.onDidInsertSuggestionAnalyticsEventName,
         config.autocompleteCacherConfig,
         connectionToLanguageService,
       ));

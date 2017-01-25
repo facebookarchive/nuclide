@@ -113,6 +113,7 @@ async function createLanguageService(): Promise<AtomLanguageService<HackLanguage
       excludeLowerPriority: false,
       analyticsEventName: 'hack.getAutocompleteSuggestions',
       autocompleteCacherConfig: null,
+      onDidInsertSuggestionAnalyticsEventName: null,
     },
     diagnostics: diagnosticsConfig,
   };
