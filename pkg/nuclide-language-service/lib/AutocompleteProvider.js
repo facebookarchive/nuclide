@@ -106,12 +106,14 @@ export class AutocompleteProvider<T: LanguageService> {
     request: atom$AutocompleteRequest,
   ): Promise<?Array<Completion>> {
     const {editor, activatedManually, prefix} = request;
+    const position = editor.getLastCursor().getBufferPosition();
+    const path = editor.getPath();
     const fileVersion = await getFileVersionOfEditor(editor);
-    const languageService = this._connectionToLanguageService.getForUri(editor.getPath());
+
+    const languageService = this._connectionToLanguageService.getForUri(path);
     if (languageService == null || fileVersion == null) {
       return [];
     }
-    const position = editor.getLastCursor().getBufferPosition();
 
     return (await languageService).getAutocompleteSuggestions(
       fileVersion, position, activatedManually == null ? false : activatedManually, prefix);
