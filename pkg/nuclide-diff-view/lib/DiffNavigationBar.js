@@ -77,11 +77,11 @@ export class DiffNavigationBar extends React.Component {
 function sectionStatusToClassName(statusType: NavigationSectionStatusType): string {
   switch (statusType) {
     case NavigationSectionStatus.ADDED:
-      return 'added';
+      return 'syntax--added';
     case NavigationSectionStatus.CHANGED:
-      return 'modified';
+      return 'syntax--modified';
     case NavigationSectionStatus.REMOVED:
-      return 'removed';
+      return 'syntax--removed';
     case NavigationSectionStatus.NEW_ELEMENT:
     case NavigationSectionStatus.OLD_ELEMENT:
       return 'icon icon-comment';
