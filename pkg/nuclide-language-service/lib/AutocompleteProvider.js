@@ -24,7 +24,7 @@ export type AutocompleteConfig = {|
   excludeLowerPriority: boolean,
   version: '2.0.0',
   analyticsEventName: string,
-  onDidInsertSuggestionAnalyticsEventName: ?string,
+  onDidInsertSuggestionAnalyticsEventName: string,
   autocompleteCacherConfig: ?AutocompleteCacherConfig<?Array<Completion>>,
 |};
 
@@ -35,7 +35,7 @@ export class AutocompleteProvider<T: LanguageService> {
   suggestionPriority: number;
   disableForSelector: ?string;
   excludeLowerPriority: boolean;
-  onDidInsertSuggestion: ?() => mixed;
+  onDidInsertSuggestion: () => mixed;
   _analyticsEventName: string;
   _connectionToLanguageService: ConnectionCache<T>;
   _autocompleteCacher: ?AutocompleteCacher<?Array<Completion>>;
@@ -48,7 +48,7 @@ export class AutocompleteProvider<T: LanguageService> {
     disableForSelector: ?string,
     excludeLowerPriority: boolean,
     analyticsEventName: string,
-    onDidInsertSuggestionAnalyticsEventName: ?string,
+    onDidInsertSuggestionAnalyticsEventName: string,
     autocompleteCacherConfig: ?AutocompleteCacherConfig<?Array<Completion>>,
     connectionToLanguageService: ConnectionCache<T>,
   ) {
@@ -68,11 +68,9 @@ export class AutocompleteProvider<T: LanguageService> {
       );
     }
 
-    if (onDidInsertSuggestionAnalyticsEventName != null) {
-      this.onDidInsertSuggestion = () => {
-        track(onDidInsertSuggestionAnalyticsEventName);
-      };
-    }
+    this.onDidInsertSuggestion = () => {
+      track(onDidInsertSuggestionAnalyticsEventName);
+    };
   }
 
   static register(

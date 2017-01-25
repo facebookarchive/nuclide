@@ -78,7 +78,7 @@ const atomConfig: AtomLanguageServiceConfig = {
     excludeLowerPriority: false,
     analyticsEventName: 'nuclide-python:getAutocompleteSuggestions',
     autocompleteCacherConfig: null,
-    onDidInsertSuggestionAnalyticsEventName: null,
+    onDidInsertSuggestionAnalyticsEventName: 'nuclide-python.autocomplete-chosen',
   },
   definition: {
     version: '0.0.0',
