@@ -95,7 +95,7 @@ The [Project Explorer](/docs/editor/basics/#project-explorer)'s File Tree tab in
 | `Option-Right` | `Alt-Right` | `recursive-expand-directory` | Expand all the directories from the current to the final directory child. | `Ctrl-Alt-]` |
 | `Option-Left` | `Alt-Left` | `recursive-collapse-directory` | Collapse all the directories to the top parent. | `Ctrl-Alt-[`
 | `Ctrl-{` | `Ctrl-{` | `recursive-collapse-all` | Collapse the entire [Project Explorer](/docs/editor/basics/#project-explorer)'s File Tree to the root. | |
-| `Backspace` | `Backspace` | `remove` | Remove a file or directory from the tree. You will be prompted first to avoid accidental mistakes. | `Delete` |
+| `Delete` | `Delete` | `remove` | Remove a file or directory from the tree. You will be prompted first to avoid accidental mistakes. | |
 | `Cmd-\` | `Ctrl-\` | `toggle` | Toggles whether the [Project Explorer](/docs/editor/basics/#project-explorer)'s File Tree is shown. | `Cmd-K`, `Cmd-B` |
 | `Home` | `Home` | `move-to-top` | Move the selection to the very top of the [Project Explorer](/docs/editor/basics/#project-explorer)'s File Tree. | |
 | `End` | `End` | `move-to-bottom` | Move the selection to the very bottom of the [Project Explorer](/docs/editor/basics/#project-explorer)'s File Tree. | |
