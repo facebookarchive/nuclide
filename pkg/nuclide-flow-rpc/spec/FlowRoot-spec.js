@@ -11,8 +11,9 @@
 import type {FlowRoot as FlowRootType} from '../lib/FlowRoot';
 
 import {Point} from 'simple-text-buffer';
+import invariant from 'assert';
 
-import {FlowRoot} from '../lib/FlowRoot';
+import {FlowRoot, groupParamNames} from '../lib/FlowRoot';
 import {FlowExecInfoContainer} from '../lib/FlowExecInfoContainer';
 
 describe('FlowRoot', () => {
@@ -128,6 +129,139 @@ describe('FlowRoot', () => {
           await flowRoot.flowGetType(file, currentContents, line, column),
         ).toBe(null);
       });
+    });
+  });
+
+  describe('flowGetAutocompleteSuggestions', () => {
+    let prefix: string = (null: any);
+    let resultNames: Array<string> = (null: any);
+    let result: Array<Object>;
+    let activatedManually: boolean = (undefined: any);
+
+    beforeEach(() => {
+      waitsForPromise(async () => {
+        prefix = '';
+        activatedManually = false;
+        resultNames = [
+          'Foo',
+          'foo',
+          'Bar',
+          'BigLongNameOne',
+          'BigLongNameTwo',
+        ];
+        result = resultNames.map(name => ({name, type: 'foo'}));
+      });
+    });
+
+    function run() {
+      mockExec(JSON.stringify({result}));
+      return flowRoot.flowGetAutocompleteSuggestions(
+        file,
+        currentContents,
+        new Point(line, column),
+        activatedManually,
+        prefix,
+      );
+    }
+
+    async function getNameArray(_: void): Promise<Array<?string>> {
+      const suggestions = await run();
+      if (suggestions == null) {
+        return [];
+      }
+      return suggestions.map(item => item.text);
+    }
+
+    async function getNameSet(_: void): Promise<Set<?string>> {
+      return new Set(await getNameArray());
+    }
+
+    function hasEqualElements(set1: Set<?string>, set2: Set<?string>): boolean {
+      if (set1.size !== set2.size) {
+        return false;
+      }
+      for (const item of set1) {
+        if (!set2.has(item)) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    it('should not provide suggestions when no characters have been typed', () => {
+      waitsForPromise(async () => {
+        expect(hasEqualElements(await getNameSet(), new Set())).toBe(true);
+      });
+    });
+
+    it('should always provide suggestions when activated manually', () => {
+      activatedManually = true;
+      waitsForPromise(async () => {
+        expect(hasEqualElements(await getNameSet(), new Set(resultNames))).toBe(true);
+      });
+    });
+
+    it('should always provide suggestions when the prefix contains .', () => {
+      prefix = '   .   ';
+      waitsForPromise(async () => {
+        expect(hasEqualElements(await getNameSet(), new Set(resultNames))).toBe(true);
+      });
+    });
+
+    it('should expose extra information about a function', () => {
+      prefix = 'f';
+      waitsForPromise(async () => {
+        result = [
+          {
+            name: 'foo',
+            type: '(param1: type1, param2: type2) => ret',
+            func_details: {
+              params: [
+                {name: 'param1', type: 'type1'},
+                {name: 'param2', type: 'type2'},
+              ],
+              return_type: 'ret',
+            },
+          },
+        ];
+        const results = await run();
+        invariant(results != null);
+        const fooResult = results[0];
+        expect(fooResult.displayText).toEqual('foo');
+        expect(fooResult.snippet).toEqual('foo(${1:param1}, ${2:param2})');
+        expect(fooResult.type).toEqual('function');
+        expect(fooResult.leftLabel).toEqual('ret');
+        expect(fooResult.rightLabel).toEqual('(param1: type1, param2: type2)');
+      });
+    });
+  });
+
+  describe('groupParamNames', () => {
+    it('should return a group for each argument', () => {
+      const args = ['arg1', 'arg2'];
+      expect(groupParamNames(args)).toEqual(args.map(arg => [arg]));
+    });
+
+    it('should group optional params', () => {
+      const args = ['arg1', 'arg2?'];
+      expect(groupParamNames(args)).toEqual([args]);
+    });
+
+    it('should only group optional params at the end', () => {
+      // I have no idea why you are even allowed to have optional params in the middle, but I guess
+      // we have to deal with it.
+      const args = ['arg1', 'arg2?', 'arg3', 'arg4?'];
+      const expectedGrouping = [['arg1'], ['arg2?'], ['arg3', 'arg4?']];
+      expect(groupParamNames(args)).toEqual(expectedGrouping);
+    });
+
+    it('should group all params if they are all optional', () => {
+      const args = ['arg1?', 'arg2?'];
+      expect(groupParamNames(args)).toEqual([args]);
+    });
+
+    it('should return an empty array for no arguments', () => {
+      expect(groupParamNames([])).toEqual([]);
     });
   });
 });

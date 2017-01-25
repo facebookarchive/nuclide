@@ -81,20 +81,6 @@ export type ServerStatusUpdate = {
   status: ServerStatusType,
 };
 
-export type FlowAutocompleteItem = {
-  name: string,
-  type: string,
-  func_details: ?{
-    return_type: string,
-    params: Array<{name: string, type: string}>,
-  },
-  path: string,
-  line: number,
-  endline: number,
-  start: number,
-  end: number,
-};
-
 import {FlowRoot} from './FlowRoot';
 import {FlowServiceState} from './FlowServiceState';
 
@@ -295,14 +281,16 @@ export function flowGetAutocompleteSuggestions(
   file: NuclideUri,
   currentContents: string,
   position: atom$Point,
+  activatedManually: ?boolean,
   prefix: string,
-): Promise<?Array<FlowAutocompleteItem>> {
+): Promise<?Array<Completion>> {
   return getState().getRootContainer().runWithRoot(
     file,
     root => root.flowGetAutocompleteSuggestions(
       file,
       currentContents,
       position,
+      activatedManually,
       prefix,
     ),
   );

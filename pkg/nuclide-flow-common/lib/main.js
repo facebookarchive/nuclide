@@ -27,3 +27,9 @@ const strRegexes = ['`', "'", '"'].map(makeStrRegex);
 const regexStrings = [].concat(strRegexes, [identifierOrNumber]).map(s => `(${s})`);
 
 export const JAVASCRIPT_WORD_REGEX = new RegExp(regexStrings.join('|'), 'g');
+
+export function getReplacementPrefix(originalPrefix: string): string {
+  // Ignore prefix unless it's an identifier (this keeps us from eating leading
+  // dots, colons, etc).
+  return JAVASCRIPT_WHOLE_STRING_IDENTIFIER_REGEX.test(originalPrefix) ? originalPrefix : '';
+}
