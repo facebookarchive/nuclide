@@ -8,6 +8,8 @@
  * @flow
  */
 
+import fuzzaldrinPlus from 'fuzzaldrin-plus';
+
 // A simple heuristic for identifier names in JavaScript.
 export const JAVASCRIPT_IDENTIFIER_REGEX = /[$_a-zA-Z][$_\w]*/g;
 
@@ -32,4 +34,38 @@ export function getReplacementPrefix(originalPrefix: string): string {
   // Ignore prefix unless it's an identifier (this keeps us from eating leading
   // dots, colons, etc).
   return JAVASCRIPT_WHOLE_STRING_IDENTIFIER_REGEX.test(originalPrefix) ? originalPrefix : '';
+}
+
+export function shouldFilter(
+  lastRequest: atom$AutocompleteRequest,
+  currentRequest: atom$AutocompleteRequest,
+): boolean {
+  const prefixIsIdentifier = JAVASCRIPT_WHOLE_STRING_IDENTIFIER_REGEX.test(currentRequest.prefix);
+  const previousPrefixIsDot = /^\s*\.\s*$/.test(lastRequest.prefix);
+  const currentPrefixIsSingleChar = currentRequest.prefix.length === 1;
+  const startsWithPrevious = currentRequest.prefix.length - 1 === lastRequest.prefix.length &&
+      currentRequest.prefix.startsWith(lastRequest.prefix);
+  return prefixIsIdentifier &&
+      ((previousPrefixIsDot && currentPrefixIsSingleChar) || startsWithPrevious);
+}
+
+export function filterResultsByPrefix(
+  prefix: string,
+  results: ?Array<atom$AutocompleteSuggestion>,
+): ?Array<atom$AutocompleteSuggestion> {
+  if (results == null) {
+    return null;
+  }
+  const replacementPrefix = getReplacementPrefix(prefix);
+  const resultsWithCurrentPrefix = results.map(result => {
+    return {
+      ...result,
+      replacementPrefix,
+    };
+  });
+  // fuzzaldrin-plus filters everything when the query is empty.
+  if (replacementPrefix === '') {
+    return resultsWithCurrentPrefix;
+  }
+  return fuzzaldrinPlus.filter(resultsWithCurrentPrefix, replacementPrefix, {key: 'displayText'});
 }

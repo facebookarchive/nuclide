@@ -31,7 +31,7 @@ import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interface
 
 import {ServerLanguageService} from '../../nuclide-language-service-rpc';
 import {wordAtPositionFromBuffer} from '../../commons-node/range';
-import {JAVASCRIPT_WORD_REGEX} from '../../nuclide-flow-common';
+import {filterResultsByPrefix, JAVASCRIPT_WORD_REGEX} from '../../nuclide-flow-common';
 
 // Diagnostic information, returned from findDiagnostics.
 export type Diagnostics = {
@@ -125,14 +125,21 @@ class FlowSingleFileLanguageService {
     throw new Error('Not Yet Implemented');
   }
 
-  getAutocompleteSuggestions(
+  async getAutocompleteSuggestions(
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
     activatedManually: boolean,
     prefix: string,
   ): Promise<?Array<Completion>> {
-    throw new Error('Not Yet Implemented');
+    const results = await flowGetAutocompleteSuggestions(
+      filePath,
+      buffer.getText(),
+      position,
+      activatedManually,
+      prefix,
+    );
+    return filterResultsByPrefix(prefix, results);
   }
 
   async getDefinition(

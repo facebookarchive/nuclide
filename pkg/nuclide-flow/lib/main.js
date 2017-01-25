@@ -24,14 +24,13 @@ import {CompositeDisposable} from 'atom';
 
 import featureConfig from '../../commons-atom/featureConfig';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
-import {track} from '../../nuclide-analytics';
 import registerGrammar from '../../commons-atom/register-grammar';
 import {onDidRemoveProjectPath} from '../../commons-atom/projects';
 import {getNotifierByConnection} from '../../nuclide-open-files';
 import {AtomLanguageService} from '../../nuclide-language-service';
+import {filterResultsByPrefix, shouldFilter} from '../../nuclide-flow-common';
 
 import {FlowServiceWatcher} from './FlowServiceWatcher';
-import AutocompleteProvider from './FlowAutocompleteProvider';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {DedupedBusySignalProviderBase} from '../../nuclide-busy-signal';
 import FlowDiagnosticsProvider from './FlowDiagnosticsProvider';
@@ -45,27 +44,6 @@ const diagnosticsOnFlySetting = 'nuclide-flow.diagnosticsOnFly';
 
 const PACKAGE_NAME = 'nuclide-flow';
 
-const languageServiceConfig: AtomLanguageServiceConfig = {
-  name: 'Flow',
-  grammars: JS_GRAMMARS,
-  outline: {
-    version: '0.0.0',
-    priority: 1,
-    analyticsEventName: 'flow.outline',
-  },
-  coverage: {
-    version: '0.0.0',
-    priority: 10,
-    analyticsEventName: 'flow.coverage',
-  },
-  definition: {
-    version: '0.0.0',
-    priority: 20,
-    definitionEventName: 'flow.get-definition',
-    definitionByIdEventName: 'flow.get-definition-by-id',
-  },
-};
-
 let busySignalProvider;
 
 let flowDiagnosticsProvider;
@@ -78,7 +56,10 @@ export function activate() {
   if (!disposables) {
     disposables = new CompositeDisposable();
 
-    flowLanguageService = new AtomLanguageService(connectionToFlowService, languageServiceConfig);
+    flowLanguageService = new AtomLanguageService(
+      connectionToFlowService,
+      getLanguageServiceConfig(),
+    );
     flowLanguageService.activate();
 
     disposables.add(
@@ -103,30 +84,6 @@ async function connectionToFlowService(
   const languageService = await flowService.initialize(fileNotifier);
 
   return languageService;
-}
-
-/** Provider for autocomplete service. */
-export function createAutocompleteProvider(): atom$AutocompleteProvider {
-  const excludeLowerPriority = Boolean(featureConfig.get('nuclide-flow.excludeOtherAutocomplete'));
-  const flowResultsFirst = Boolean(featureConfig.get('nuclide-flow.flowAutocompleteResultsFirst'));
-
-  const autocompleteProvider = new AutocompleteProvider();
-
-  return {
-    selector: JS_GRAMMARS.map(grammar => '.' + grammar).join(', '),
-    disableForSelector: '.source.js .comment',
-    inclusionPriority: 1,
-    // We want to get ranked higher than the snippets provider by default,
-    // but it's configurable
-    suggestionPriority: flowResultsFirst ? 5 : 1,
-    onDidInsertSuggestion: () => {
-      track('nuclide-flow.autocomplete-chosen');
-    },
-    excludeLowerPriority,
-    getSuggestions(request) {
-      return autocompleteProvider.getSuggestions(request);
-    },
-  };
 }
 
 export function provideBusySignal(): BusySignalProviderBaseType {
@@ -193,4 +150,44 @@ function allowFlowServerRestart(): void {
   for (const service of getCurrentServiceInstances()) {
     service.allowServerRestart();
   }
+}
+
+function getLanguageServiceConfig(): AtomLanguageServiceConfig {
+  const excludeLowerPriority = Boolean(featureConfig.get('nuclide-flow.excludeOtherAutocomplete'));
+  const flowResultsFirst = Boolean(featureConfig.get('nuclide-flow.flowAutocompleteResultsFirst'));
+  return {
+    name: 'Flow',
+    grammars: JS_GRAMMARS,
+    outline: {
+      version: '0.0.0',
+      priority: 1,
+      analyticsEventName: 'flow.outline',
+    },
+    coverage: {
+      version: '0.0.0',
+      priority: 10,
+      analyticsEventName: 'flow.coverage',
+    },
+    definition: {
+      version: '0.0.0',
+      priority: 20,
+      definitionEventName: 'flow.get-definition',
+      definitionByIdEventName: 'flow.get-definition-by-id',
+    },
+    autocomplete: {
+      version: '2.0.0',
+      disableForSelector: '.source.js .comment',
+      excludeLowerPriority,
+      // We want to get ranked higher than the snippets provider by default,
+      // but it's configurable
+      suggestionPriority: flowResultsFirst ? 5 : 1,
+      inclusionPriority: 1,
+      analyticsEventName: 'flow.autocomplete',
+      autocompleteCacherConfig: {
+        updateResults: (request, results) => filterResultsByPrefix(request.prefix, results),
+        shouldFilter,
+      },
+      onDidInsertSuggestionAnalyticsEventName: 'nuclide-flow.autocomplete-chosen',
+    },
+  };
 }
