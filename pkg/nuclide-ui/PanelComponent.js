@@ -206,6 +206,11 @@ export class PanelComponent extends React.Component {
   }
 
   _handleMouseMove(event: SyntheticMouseEvent): void {
+    if (event.buttons === 0) { // We missed the mouseup event. For some reason it happens on Windows
+      this._handleMouseUp(event);
+      return;
+    }
+
     const containerEl = ReactDOM.findDOMNode(this);
     let length = 0;
     switch (this.props.dock) {
