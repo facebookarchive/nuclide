@@ -51,7 +51,7 @@ export type SingleFileLanguageService = {
     position: atom$Point,
     activatedManually: boolean,
     prefix: string,
-  ): Promise<Array<Completion>>,
+  ): Promise<?Array<Completion>>,
 
   getDefinition(
     filePath: NuclideUri,
@@ -149,7 +149,7 @@ export class ServerLanguageService {
     position: atom$Point,
     activatedManually: boolean,
     prefix: string,
-  ): Promise<Array<Completion>> {
+  ): Promise<?Array<Completion>> {
     const filePath = fileVersion.filePath;
     const buffer = await getBufferAtVersion(fileVersion);
     if (buffer == null) {

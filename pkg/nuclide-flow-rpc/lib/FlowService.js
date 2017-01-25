@@ -131,7 +131,7 @@ class FlowSingleFileLanguageService {
     position: atom$Point,
     activatedManually: boolean,
     prefix: string,
-  ): Promise<Array<Completion>> {
+  ): Promise<?Array<Completion>> {
     throw new Error('Not Yet Implemented');
   }
 

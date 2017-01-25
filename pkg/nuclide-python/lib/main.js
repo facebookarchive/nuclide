@@ -77,6 +77,7 @@ const atomConfig: AtomLanguageServiceConfig = {
     disableForSelector: '.source.python .comment, .source.python .string',
     excludeLowerPriority: false,
     analyticsEventName: 'nuclide-python:getAutocompleteSuggestions',
+    autocompleteCacherConfig: null,
   },
   definition: {
     version: '0.0.0',

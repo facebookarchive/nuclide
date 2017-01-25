@@ -142,7 +142,7 @@ class HackLanguageServiceImpl extends ServerLanguageService {
     position: atom$Point,
     activatedManually: boolean,
     prefix: string,
-  ): Promise<Array<Completion>> {
+  ): Promise<?Array<Completion>> {
     if (this._useIdeConnection) {
       const process = await getHackProcess(this._fileCache, fileVersion.filePath);
       if (process == null) {

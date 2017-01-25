@@ -8,11 +8,14 @@
  * @flow
  */
 
-import type {LanguageService} from './LanguageService';
+import type {AutocompleteCacherConfig} from '../../commons-atom/AutocompleteCacher';
+
+import type {Completion, LanguageService} from './LanguageService';
 
 import {ConnectionCache} from '../../nuclide-remote-connection';
 import {trackTiming} from '../../nuclide-analytics';
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
+import AutocompleteCacher from '../../commons-atom/AutocompleteCacher';
 
 export type AutocompleteConfig = {|
   inclusionPriority: number,
@@ -21,6 +24,7 @@ export type AutocompleteConfig = {|
   excludeLowerPriority: boolean,
   version: '2.0.0',
   analyticsEventName: string,
+  autocompleteCacherConfig: ?AutocompleteCacherConfig<?Array<Completion>>,
 |};
 
 export class AutocompleteProvider<T: LanguageService> {
@@ -32,6 +36,7 @@ export class AutocompleteProvider<T: LanguageService> {
   excludeLowerPriority: boolean;
   _analyticsEventName: string;
   _connectionToLanguageService: ConnectionCache<T>;
+  _autocompleteCacher: ?AutocompleteCacher<?Array<Completion>>;
 
   constructor(
     name: string,
@@ -41,6 +46,7 @@ export class AutocompleteProvider<T: LanguageService> {
     disableForSelector: ?string,
     excludeLowerPriority: boolean,
     analyticsEventName: string,
+    autocompleteCacherConfig: ?AutocompleteCacherConfig<?Array<Completion>>,
     connectionToLanguageService: ConnectionCache<T>,
   ) {
     this.name = name;
@@ -51,6 +57,13 @@ export class AutocompleteProvider<T: LanguageService> {
     this.excludeLowerPriority = excludeLowerPriority;
     this._analyticsEventName = analyticsEventName;
     this._connectionToLanguageService = connectionToLanguageService;
+
+    if (autocompleteCacherConfig != null) {
+      this._autocompleteCacher = new AutocompleteCacher(
+        request => this._getSuggestionsFromLanguageService(request),
+        autocompleteCacherConfig,
+      );
+    }
   }
 
   static register(
@@ -70,6 +83,7 @@ export class AutocompleteProvider<T: LanguageService> {
         config.disableForSelector,
         config.excludeLowerPriority,
         config.analyticsEventName,
+        config.autocompleteCacherConfig,
         connectionToLanguageService,
       ));
   }
@@ -79,17 +93,27 @@ export class AutocompleteProvider<T: LanguageService> {
   ): Promise<?Array<atom$AutocompleteSuggestion>> {
     return trackTiming(
       this._analyticsEventName,
-      async () => {
-        const {editor, activatedManually, prefix} = request;
-        const fileVersion = await getFileVersionOfEditor(editor);
-        const languageService = this._connectionToLanguageService.getForUri(editor.getPath());
-        if (languageService == null || fileVersion == null) {
-          return [];
+      () => {
+        if (this._autocompleteCacher != null) {
+          return this._autocompleteCacher.getSuggestions(request);
+        } else {
+          return this._getSuggestionsFromLanguageService(request);
         }
-        const position = editor.getLastCursor().getBufferPosition();
-
-        return (await languageService).getAutocompleteSuggestions(
-          fileVersion, position, activatedManually == null ? false : activatedManually, prefix);
       });
+  }
+
+  async _getSuggestionsFromLanguageService(
+    request: atom$AutocompleteRequest,
+  ): Promise<?Array<Completion>> {
+    const {editor, activatedManually, prefix} = request;
+    const fileVersion = await getFileVersionOfEditor(editor);
+    const languageService = this._connectionToLanguageService.getForUri(editor.getPath());
+    if (languageService == null || fileVersion == null) {
+      return [];
+    }
+    const position = editor.getLastCursor().getBufferPosition();
+
+    return (await languageService).getAutocompleteSuggestions(
+      fileVersion, position, activatedManually == null ? false : activatedManually, prefix);
   }
 }

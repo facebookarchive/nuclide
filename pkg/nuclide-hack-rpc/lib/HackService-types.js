@@ -52,7 +52,7 @@ export interface HackLanguageService extends LanguageService {
     position: atom$Point,
     activatedManually: boolean,
     prefix: string,
-  ): Promise<Array<Completion>>,
+  ): Promise<?Array<Completion>>,
 
   getDefinition(
     fileVersion: FileVersion,
