@@ -352,3 +352,19 @@ export function *mapIterable<T, M>(
     yield projectorFn(element);
   }
 }
+
+export function firstOfIterable<T>(iterable: Iterable<T>): ?T {
+  return findInIterable(iterable, () => true);
+}
+
+export function iterableIsEmpty<T>(iterable: Iterable<T>): boolean {
+  // eslint-disable-next-line no-unused-vars
+  for (const element of iterable) {
+    return false;
+  }
+  return true;
+}
+
+export function iterableContains<T>(iterable: Iterable<T>, value: T): boolean {
+  return !iterableIsEmpty(filterIterable(iterable, element => element === value));
+}

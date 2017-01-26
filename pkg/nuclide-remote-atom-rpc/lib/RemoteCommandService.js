@@ -9,9 +9,12 @@
  */
 
 import type {AtomCommands} from './rpc-types';
+import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 
 import {CompositeDisposable} from 'event-kit';
 import {CommandServer} from './CommandServer';
+import {FileCache} from '../../nuclide-open-files-rpc/lib/FileCache';
+import invariant from 'assert';
 
 // This interface is exposed by the nuclide server process to the client side
 // Atom process.
@@ -22,8 +25,13 @@ export class RemoteCommandService {
     this._disposables = new CompositeDisposable();
   }
 
-  async _registerAtomCommands(atomCommands: AtomCommands): Promise<void> {
-    this._disposables.add(await CommandServer.register(atomCommands));
+  async _registerAtomCommands(
+    fileNotifier: FileNotifier,
+    atomCommands: AtomCommands,
+  ): Promise<void> {
+    invariant(fileNotifier instanceof FileCache);
+    const fileCache = fileNotifier;
+    this._disposables.add(await CommandServer.register(fileCache, atomCommands));
   }
 
   dispose(): void {
@@ -32,10 +40,11 @@ export class RemoteCommandService {
 
   // Called by Atom once for each new remote connection.
   static async registerAtomCommands(
+    fileNotifier: FileNotifier,
     atomCommands: AtomCommands,
   ): Promise<RemoteCommandService> {
     const result = new RemoteCommandService();
-    await result._registerAtomCommands(atomCommands);
+    await result._registerAtomCommands(fileNotifier, atomCommands);
     return result;
   }
 }

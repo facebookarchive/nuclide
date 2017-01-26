@@ -25,6 +25,7 @@ import {observeEditorDestroy} from '../../commons-atom/text-editor';
 import {Observable} from 'rxjs';
 import {RemoteConnection, ServerConnection} from '../../nuclide-remote-connection';
 import nuclideUri from '../../commons-node/nuclideUri';
+import {getNotifierByConnection} from '../../nuclide-open-files';
 
 const REMOTE_COMMAND_SERVICE = 'RemoteCommandService';
 
@@ -75,7 +76,9 @@ class Activation {
         async connection => {
           const service: RemoteCommandServiceType =
             getServiceByConnection(REMOTE_COMMAND_SERVICE, connection);
-          return service.RemoteCommandService.registerAtomCommands(this._commands);
+          const fileNotifier = await getNotifierByConnection(connection);
+          return service.RemoteCommandService.registerAtomCommands(
+            fileNotifier, this._commands);
         });
   }
 
