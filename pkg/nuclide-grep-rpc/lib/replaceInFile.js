@@ -55,7 +55,7 @@ export default function replaceInFile(
 
       // Overwrite the original file with the temporary file.
       // $FlowIssue: fs.WriteStream contains a path.
-      Observable.fromPromise(fsPromise.rename(tempStream.path, path))
+      Observable.defer(() => fsPromise.rename(tempStream.path, path))
         .ignoreElements(),
     )
       .catch(err => {
