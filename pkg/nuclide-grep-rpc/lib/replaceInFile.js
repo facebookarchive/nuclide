@@ -28,6 +28,9 @@ export default function replaceInFile(
     // We'll overwrite the original when we're done.
     const tempStream: fs.WriteStream = temp.createWriteStream();
 
+    // $FlowIssue: fs.WriteStream contains a path.
+    const tempPath = tempStream.path;
+
     return Observable.concat(
       // Replace the output line-by-line. This obviously doesn't work for multi-line regexes,
       // but this mimics the behavior of Atom's `scandal` find-and-replace backend.
@@ -53,16 +56,23 @@ export default function replaceInFile(
         return () => disposable.dispose();
       }),
 
+      // Copy the permissions from the orignal file.
+      Observable.defer(() => copyPermissions(path, tempPath))
+        .ignoreElements(),
+
       // Overwrite the original file with the temporary file.
-      // $FlowIssue: fs.WriteStream contains a path.
-      Observable.defer(() => fsPromise.rename(tempStream.path, path))
+      Observable.defer(() => fsPromise.rename(tempPath, path))
         .ignoreElements(),
     )
       .catch(err => {
         // Make sure we clean up the temporary file if an error occurs.
-        // $FlowIssue: fs.WriteStream contains a path.
-        fsPromise.unlink(tempStream.path).catch(() => {});
+        fsPromise.unlink(tempPath).catch(() => {});
         return Observable.throw(err);
       });
   });
+}
+
+async function copyPermissions(from: string, to: string): Promise<void> {
+  const {mode} = await fsPromise.stat(from);
+  await fsPromise.chmod(to, mode);
 }
