@@ -2,8 +2,9 @@
 
 [![Circle Status](https://circleci.com/gh/facebook/nuclide/tree/master.svg?style=shield&circle-token=a805ec51c07ae99799ce548795383dd1f1e4dc76)](https://circleci.com/gh/facebook/nuclide)
 
-[Nuclide](http://nuclide.io/) is a collection of features for [Atom](https://atom.io/) to provide
-IDE-like functionality for a variety of programming languages and technologies.
+[Nuclide](http://nuclide.io/) is a collection of features for [Atom](https://atom.io/) to provide IDE-like functionality for a variety of programming languages and technologies.
+
+The [Nuclide license](https://github.com/facebook/nuclide/blob/master/LICENSE) has certain limitations around distribution and should not be considered an [open source license](https://opensource.org/licenses/alphabetical). However, this does not affect your ability to [fork the project and make contributions](https://github.com/facebook/nuclide/blob/master/CONTRIBUTING.md).
 
 ---
 
