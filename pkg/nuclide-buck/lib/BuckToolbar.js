@@ -94,10 +94,13 @@ export default class BuckToolbar extends React.Component {
           `Check your Current Working Root: ${maybeToString(projectRoot)}`;
       }
 
+      title += '<br />Click icon to retry';
+
       status =
         <span
           className="icon icon-alert"
           ref={addTooltip({title, delay: 0})}
+          onClick={() => this.props.setBuildTarget(buildTarget)}
         />;
     }
 
