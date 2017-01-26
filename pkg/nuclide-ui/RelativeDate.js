@@ -58,6 +58,8 @@ export default class RelativeDate extends React.Component {
   render(): React.Element<any> {
     const {
       date,
+      // eslint-disable-next-line no-unused-vars
+      delay: _,
       shorten,
       withToolip,
       ...remainingProps
