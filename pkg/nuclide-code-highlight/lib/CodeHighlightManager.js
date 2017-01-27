@@ -56,6 +56,9 @@ export default class CodeHighlightManager {
 
     const originalChangeCount = editor.getBuffer().changeCount;
     const highlightedRanges = await this._getHighlightedRanges(editor, position);
+    if (highlightedRanges == null) {
+      return;
+    }
 
     // If the cursor has moved, or the file was edited
     // the highlighted ranges we just computed are useless, so abort
@@ -77,11 +80,11 @@ export default class CodeHighlightManager {
   async _getHighlightedRanges(
     editor: atom$TextEditor,
     position: atom$Point,
-  ): Promise<Array<atom$Range>> {
+  ): Promise<?Array<atom$Range>> {
     const {scopeName} = editor.getGrammar();
     const [provider] = this._getMatchingProvidersForScopeName(scopeName);
     if (!provider) {
-      return [];
+      return null;
     }
 
     return provider.highlight(editor, position);

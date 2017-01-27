@@ -12,7 +12,7 @@ export type CodeHighlightProvider = {
   highlight(
     editor: atom$TextEditor,
     bufferPosition: atom$Point,
-  ): Promise<Array<atom$Range>>,
+  ): Promise<?Array<atom$Range>>,
   inclusionPriority: number,
   selector: string,
 };

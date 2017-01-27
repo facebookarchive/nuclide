@@ -270,7 +270,7 @@ class PythonSingleFileLanguageService {
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
-  ): Promise<Array<atom$Range>> {
+  ): Promise<?Array<atom$Range>> {
     throw new Error('Not Yet Implemented');
   }
 

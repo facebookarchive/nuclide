@@ -42,17 +42,20 @@ export class CodeHighlightProvider<T: LanguageService> {
     this._connectionToLanguageService = connectionToLanguageService;
   }
 
-  highlight(editor: atom$TextEditor, position: atom$Point): Promise<Array<atom$Range>> {
+  highlight(editor: atom$TextEditor, position: atom$Point): Promise<?Array<atom$Range>> {
     return trackTiming(this._analyticsEventName, async () => {
       const fileVersion = await getFileVersionOfEditor(editor);
       const languageService = this._connectionToLanguageService.getForUri(editor.getPath());
       if (languageService == null || fileVersion == null) {
-        return [];
+        return null;
       }
 
-      return (await (await languageService).highlight(
-        fileVersion,
-        position)).map(range => new Range(range.start, range.end));
+      const result = await (await languageService).highlight(fileVersion, position);
+      if (result == null) {
+        return null;
+      }
+
+      return result.map(range => new Range(range.start, range.end));
     });
   }
 

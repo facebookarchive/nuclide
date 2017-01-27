@@ -92,7 +92,7 @@ export interface LanguageService {
   highlight(
     fileVersion: FileVersion,
     position: atom$Point,
-  ): Promise<Array<atom$Range>>,
+  ): Promise<?Array<atom$Range>>,
 
   formatSource(
     fileVersion: FileVersion,

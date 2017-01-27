@@ -89,7 +89,7 @@ export type SingleFileLanguageService = {
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
-  ): Promise<Array<atom$Range>>,
+  ): Promise<?Array<atom$Range>>,
 
   formatSource(
     filePath: NuclideUri,
@@ -224,7 +224,7 @@ export class ServerLanguageService {
   async highlight(
     fileVersion: FileVersion,
     position: atom$Point,
-  ): Promise<Array<atom$Range>> {
+  ): Promise<?Array<atom$Range>> {
     const filePath = fileVersion.filePath;
     const buffer = await getBufferAtVersion(fileVersion);
     if (buffer == null) {

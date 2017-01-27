@@ -400,12 +400,12 @@ class HackSingleFileLanguageService {
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
-  ): Promise<Array<atom$Range>> {
+  ): Promise<?Array<atom$Range>> {
     const contents = buffer.getText();
 
     const id = getIdentifierAtPosition(buffer, position);
     if (id == null) {
-      return [];
+      return null;
     }
 
     const result: ?HackHighlightRefsResult = (await callHHClient(
@@ -415,7 +415,7 @@ class HackSingleFileLanguageService {
       /* file */ filePath,
     ): any);
     return result == null
-      ? []
+      ? null
       : result.map(hackRangeToAtomRange);
   }
 
