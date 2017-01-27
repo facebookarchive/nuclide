@@ -10,7 +10,6 @@
 
 import type {TaskEvent} from '../../commons-node/tasks';
 import type {TaskMetadata} from '../../nuclide-task-runner/lib/types';
-import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {Level, Message} from '../../nuclide-console/lib/types';
 import type {Observable, Subject} from 'rxjs';
 
@@ -23,15 +22,15 @@ export const TASKS: Array<TaskMetadata> = [];
  * e.g. HHVM Debugger
  */
 export class ArcToolbarModel {
-  _cwdApi: ?CwdApi;
+  _projectPath: ?string
   _outputMessages: Subject<Message>;
 
   constructor(outputMessages: Subject<Message>) {
     this._outputMessages = outputMessages;
   }
 
-  setCwdApi(cwdApi: ?CwdApi): void {
-    this._cwdApi = cwdApi;
+  setProjectPath(projectPath: ?string) {
+    this._projectPath = projectPath;
   }
 
   logOutput(text: string, level: Level) {
@@ -39,15 +38,7 @@ export class ArcToolbarModel {
   }
 
   getActiveProjectPath(): ?string {
-    if (this._cwdApi == null) {
-      return atom.project.getPaths()[0];
-    }
-    const workingDirectory = this._cwdApi.getCwd();
-    if (workingDirectory != null) {
-      return workingDirectory.getPath();
-    } else {
-      return null;
-    }
+    return this._projectPath;
   }
 
   onChange(callback: () => mixed): IDisposable {
@@ -58,7 +49,7 @@ export class ArcToolbarModel {
     throw new Error('arc build targets not supported');
   }
 
-  isArcSupported(): boolean {
+  isArcSupported(): ?boolean {
     return false;
   }
 

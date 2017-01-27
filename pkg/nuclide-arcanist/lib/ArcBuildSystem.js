@@ -11,8 +11,8 @@
 import type {Task, TaskEvent} from '../../commons-node/tasks';
 import type {TaskMetadata} from '../../nuclide-task-runner/lib/types';
 import type {ArcToolbarModel as ArcToolbarModelType} from './ArcToolbarModel';
-import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {Message} from '../../nuclide-console/lib/types';
+import type {Directory} from '../../nuclide-remote-connection';
 
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {taskFromObservable} from '../../commons-node/tasks';
@@ -27,7 +27,6 @@ export default class ArcBuildSystem {
   id: string;
   name: string;
   _tasks: ?Observable<Array<TaskMetadata>>;
-  _cwdApi: ?CwdApi;
   _outputMessages: Subject<Message>;
   _disposables: UniversalDisposable;
 
@@ -39,9 +38,32 @@ export default class ArcBuildSystem {
     this._disposables = new UniversalDisposable(this._outputMessages);
   }
 
-  setCwdApi(cwdApi: ?CwdApi): void {
-    this._cwdApi = cwdApi;
-    this._model.setCwdApi(cwdApi);
+  setProjectRoot(projectRoot: ?Directory): void {
+    this.setProjectRootNew(projectRoot, (enabled, taskList) => {});
+  }
+
+  setProjectRootNew(
+    projectRoot: ?Directory,
+    callback: (enabled: boolean, taskList: Array<TaskMetadata>) => mixed,
+  ): IDisposable {
+    const path = projectRoot ? projectRoot.getPath() : null;
+    this._model.setProjectPath(path);
+
+    const storeReady = observableFromSubscribeFunction(this._model.onChange.bind(this._model))
+      .map(() => this._model)
+      .startWith(this._model)
+      .filter(model => model.isArcSupported() !== null && model.getActiveProjectPath() === path);
+
+    const enabledObservable = storeReady
+      .map(model => model.isArcSupported() === true)
+      .distinctUntilChanged();
+
+    const tasksObservable = storeReady.map(model => model.getTaskList());
+
+    return new UniversalDisposable(
+      Observable.combineLatest(enabledObservable, tasksObservable)
+        .subscribe(([enabled, tasks]) => callback(enabled, tasks)),
+    );
   }
 
   _getModel(): ArcToolbarModelType {
