@@ -27,6 +27,7 @@ export default class SwiftPMTaskRunnerStore {
   _Xswiftc: string;
   _testBuildPath: string;
   _compileCommands: Map<string, string>;
+  _projectRoot: ?string;
 
   constructor(dispatcher: SwiftPMTaskRunnerDispatcher, initialState: ?SwiftPMTaskRunnerStoreState) {
     this._dispatcher = dispatcher;
@@ -55,6 +56,9 @@ export default class SwiftPMTaskRunnerStore {
 
     this._dispatcher.register(action => {
       switch (action.actionType) {
+        case ActionTypes.UPDATE_PROJECT_ROOT:
+          this._projectRoot = action.projectRoot;
+          break;
         case ActionTypes.UPDATE_CHDIR:
           this._chdir = action.chdir;
           break;
@@ -72,6 +76,7 @@ export default class SwiftPMTaskRunnerStore {
           this._compileCommands = action.compileCommands;
           break;
       }
+      this.emitChange();
     });
   }
 
@@ -110,6 +115,10 @@ export default class SwiftPMTaskRunnerStore {
 
   getBuildPath(): string {
     return this._buildPath;
+  }
+
+  getProjectRoot(): ?string {
+    return this._projectRoot;
   }
 
   getFlag(): string {

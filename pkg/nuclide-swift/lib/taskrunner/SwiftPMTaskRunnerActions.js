@@ -20,6 +20,13 @@ export default class SwiftPMTaskRunnerActions {
     this._dispatcher = dispatcher;
   }
 
+  updateProjectRoot(projectRoot: ?string): void {
+    this._dispatcher.dispatch({
+      actionType: ActionTypes.UPDATE_PROJECT_ROOT,
+      projectRoot,
+    });
+  }
+
   updateChdir(chdir: string): void {
     this._dispatcher.dispatch({
       actionType: ActionTypes.UPDATE_CHDIR,

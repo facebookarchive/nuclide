@@ -12,6 +12,10 @@ import Dispatcher from '../../../commons-node/Dispatcher';
 
 type SwiftPMTaskRunnerAction =
   {
+    actionType: 'UPDATE_PROJECT_ROOT',
+    projectRoot: ?string,
+  } |
+  {
     actionType: 'UPDATE_CHDIR',
     chdir: string,
   } |
@@ -33,6 +37,7 @@ type SwiftPMTaskRunnerAction =
   };
 
 export const ActionTypes = Object.freeze({
+  UPDATE_PROJECT_ROOT: 'UPDATE_PROJECT_ROOT',
   UPDATE_CHDIR: 'UPDATE_CHDIR',
   UPDATE_BUILD_SETTINGS: 'UPDATE_BUILD_SETTINGS',
   UPDATE_TEST_SETTINGS: 'UPDATE_TEST_SETTINGS',

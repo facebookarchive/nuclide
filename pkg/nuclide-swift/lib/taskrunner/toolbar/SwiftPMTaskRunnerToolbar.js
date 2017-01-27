@@ -62,9 +62,9 @@ export default class SwiftPMTaskRunnerToolbar extends React.Component {
         <AtomInput
           className="inline-block"
           size="sm"
-          initialValue={this.props.store.getChdir()}
+          value={this.props.store.getChdir()}
           onDidChange={chdir => this._onChdirChange(chdir)}
-          placeholderText="Path to Swift package"
+          placeholderText="Relative path to Swift package"
           width={400}
         />
         <Button
