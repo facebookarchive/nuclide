@@ -73,10 +73,6 @@ export class DebuggerCallstackComponent extends React.Component {
     callFrameIndex: number,
     clickedCallframe: ?CallstackItem,
   ): void {
-    if (callFrameIndex === this.state.selectedCallFrameIndex) {
-      // Bail if we click the frame we're already on to prevent a re-render.
-      return;
-    }
     this.props.bridge.setSelectedCallFrameIndex(callFrameIndex);
     this.props.actions.setSelectedCallFrameIndex(callFrameIndex);
   }
