@@ -1,0 +1,16 @@
+{
+  "build-configs": {
+    "test": {
+      "input-dirs": [
+        "__queries__"
+      ],
+      "exclude-dirs": [
+        "__excludedQueries__"
+      ],
+      "schema-file": "./__schema__/StarWarsSchema.graphql",
+      "custom-validation-rules": "./__schema__/customRules.js"
+    },
+    "testWithoutSchema": {
+    }
+  }
+}
