@@ -73,8 +73,6 @@ export function createCodeFormatProvider(): CodeFormatProvider {
     selector: Array.from(GRAMMARS).join(', '),
     inclusionPriority: 1,
     formatEntireFile: (editor, range) => getEntireFormatting(editor, range),
-    // TODO: (chenglou) see implementation file. Re-enable this.
-    // formatCode: getPartialFormatting,
   };
 }
 
