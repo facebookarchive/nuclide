@@ -61,7 +61,7 @@ export default class ArcToolbarSection extends React.Component {
         icon="sync"
         size={ButtonSizes.SMALL}
         onClick={this._reloadBuildTargets}
-        tooltip={{title: 'Reload build steps', delay: 100, placement: 'bottom'}}
+        tooltip={{title: 'Reload build steps', delay: {show: 500, hide: 0}, placement: 'bottom'}}
       />
     );
   }
