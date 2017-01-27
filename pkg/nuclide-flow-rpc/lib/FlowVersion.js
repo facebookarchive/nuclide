@@ -8,6 +8,7 @@
  * @flow
  */
 
+import semver from 'semver';
 import {VERSION_TIMEOUT_MS} from './FlowConstants';
 
 type VersionWithTimestamp = {
@@ -33,6 +34,14 @@ export class FlowVersion {
 
   invalidateVersion(): void {
     this._lastVersion = null;
+  }
+
+  async satisfies(range: string): Promise<boolean> {
+    const version = await this.getVersion();
+    if (version == null) {
+      return false;
+    }
+    return semver.satisfies(version, range);
   }
 
   async getVersion(): Promise<?string> {

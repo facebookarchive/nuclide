@@ -59,4 +59,22 @@ describe('FlowVersion', () => {
       expect(getVersionSpy.callCount).toEqual(2);
     });
   });
+
+  describe('satisfies', () => {
+    it('work with older versions', () => {
+      waitsForPromise(async () => {
+        fakeVersion = '0.20.0';
+        const satisfies = await flowVersion.satisfies('>=0.30.0');
+        expect(satisfies).toEqual(false);
+      });
+    });
+
+    it('work with newer versions', () => {
+      waitsForPromise(async () => {
+        fakeVersion = '0.40.0';
+        const satisfies = await flowVersion.satisfies('>=0.30.0');
+        expect(satisfies).toEqual(true);
+      });
+    });
+  });
 });
