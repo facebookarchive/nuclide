@@ -21,6 +21,7 @@ import {MultiRootChangedFilesView} from '../../nuclide-ui/MultiRootChangedFilesV
 import {React} from 'react-for-atom';
 import {Section} from '../../nuclide-ui/Section';
 import url from 'url';
+import {Observable} from 'rxjs';
 
 type Props = {
   bookmarks: ?Array<BookmarkInfo>,
@@ -185,19 +186,29 @@ export default class RepositorySectionComponent extends React.Component {
               );
             }
 
-            let onContextMenu;
-            if (!isLoading) {
-              // When the bookmark is not loading, show its context menu so actions can be taken on
-              // it.
-              onContextMenu = this._handleBookmarkContextMenu.bind(this, bookmark);
-            }
+            // We need to use native event handling so that we can preempt Electron's menu.
+            let sub;
+            const cb = el => {
+              if (el == null) {
+                if (sub != null) {
+                  sub.unsubscribe();
+                  sub = null;
+                }
+                return;
+              }
+              sub = Observable.fromEvent(el, 'contextmenu')
+                .filter(() => !isLoading)
+                .subscribe(event => {
+                  this._handleBookmarkContextMenu(bookmark, event);
+                });
+            };
 
             return (
               <li
+                ref={cb}
                 className={liClassName}
                 key={bookmark.bookmark}
                 onClick={this._handleBookmarkClick.bind(this, bookmark)}
-                onContextMenu={onContextMenu}
                 title={title}>
                 <span className={iconClassName}>
                   {loadingSpinner}

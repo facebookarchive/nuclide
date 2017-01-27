@@ -160,6 +160,9 @@ export default class SideBarComponent extends React.Component {
     repository: atom$Repository,
     event: SyntheticMouseEvent,
   ): void {
+    // Prevent the normal context menu.
+    event.stopPropagation();
+
     const menu = remote.Menu.buildFromTemplate([
       {
         click: () => {
