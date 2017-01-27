@@ -26,6 +26,7 @@ import {goToLocation} from '../../commons-atom/go-to-location';
 import {isValidTextEditor} from '../../commons-atom/text-editor';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 
+import {Disposable} from 'atom';
 import os from 'os';
 import {shell} from 'electron';
 
@@ -47,8 +48,9 @@ class ProjectSelectionManager {
     this._store = FileTreeStore.getInstance();
   }
 
-  addExtraContent(content: React.Element<any>) {
+  addExtraContent(content: React.Element<any>): IDisposable {
     this._actions.addExtraProjectSelectionContent(content);
+    return new Disposable(() => this._actions.removeExtraProjectSelectionContent(content));
   }
 
   getExtraContent(): Immutable.List<React.Element<any>> {

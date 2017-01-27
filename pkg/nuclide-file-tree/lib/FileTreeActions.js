@@ -84,6 +84,13 @@ export default class FileTreeActions {
     });
   }
 
+  removeExtraProjectSelectionContent(content: React.Element<any>): void {
+    this._dispatcher.dispatch({
+      actionType: ActionTypes.REMOVE_EXTRA_PROJECT_SELECTION_CONTENT,
+      content,
+    });
+  }
+
   expandNode(rootKey: string, nodeKey: string): void {
     this._dispatcher.dispatch({
       actionType: ActionTypes.EXPAND_NODE,
