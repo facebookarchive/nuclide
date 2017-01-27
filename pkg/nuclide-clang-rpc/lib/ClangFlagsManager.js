@@ -17,7 +17,7 @@ import {trackTiming} from '../../nuclide-analytics';
 import fsPromise from '../../commons-node/fsPromise';
 import {getLogger} from '../../nuclide-logging';
 import * as BuckService from '../../nuclide-buck-rpc';
-import {isHeaderFile, isSourceFile, findIncludingSourceFile} from './utils';
+import {isHeaderFile, isSourceFile, findIncludingSourceFile, commonPrefix} from './utils';
 
 const logger = getLogger();
 
@@ -85,14 +85,14 @@ function overrideIncludePath(src: string): string {
 
 export default class ClangFlagsManager {
   _cachedBuckFlags: Map<string, Promise<Map<string, ClangFlags>>>;
-  _compilationDatabases: Set<string>;
+  _compilationDatabases: Map<string, Map<string, ClangFlags>>;
   _realpathCache: Object;
   _pathToFlags: Map<string, Promise<?ClangFlags>>;
 
   constructor() {
     this._pathToFlags = new Map();
     this._cachedBuckFlags = new Map();
-    this._compilationDatabases = new Set();
+    this._compilationDatabases = new Map();
     this._realpathCache = {};
   }
 
@@ -144,15 +144,70 @@ export default class ClangFlagsManager {
     );
   }
 
+  _findSourceFileForHeaderFromCompilationDatabase(
+    header: string,
+    dbFlags: Map<string, ClangFlags>,
+  ): ?string {
+    const basename = ClangFlagsManager._getFileBasename(header);
+    const inferredSrcs = Array.from(dbFlags.keys())
+      .filter(path => ClangFlagsManager._getFileBasename(path) === basename && isSourceFile(path))
+      .map(path => { return {score: commonPrefix(path, header), path}; })
+      .sort((a, b) => b.score - a.score); // prefer bigger matches
+    if (inferredSrcs.length > 0) {
+      return inferredSrcs[0].path;
+    }
+    return null;
+  }
+
+  _getXFlagForSourceFile(sourceFile: string): string {
+    const ext = nuclideUri.extname(sourceFile);
+    if (ext === '.mm') {
+      return 'objective-c++';
+    } else if (ext === '.m') {
+      return 'objective-c';
+    } else if (ext === '.c') {
+      return 'c';
+    } else {
+      return 'c++';
+    }
+  }
+
+  async _getFlagsFromSourceFileForHeader(
+    sourceFile: string,
+  ): Promise<?ClangFlags> {
+    const data = await this._getFlagsForSrcCached(sourceFile);
+    if (data != null) {
+      const {rawData} = data;
+      if (rawData != null) {
+        const xFlag = this._getXFlagForSourceFile(sourceFile);
+        let {flags} = rawData;
+        if (typeof flags === 'string') {
+          if (!flags.includes('-x ')) {
+            flags += ` -x ${xFlag}`;
+            rawData.flags = flags;
+          }
+        } else {
+          if (flags.find(s => s === '-x') === undefined) {
+            rawData.flags = flags.concat(['-x', xFlag]);
+          }
+        }
+      }
+    }
+    return data;
+  }
+
   async __getFlagsForSrcImpl(src: string): Promise<?ClangFlags> {
     // Look for a manually provided compilation database.
     const dbDir = await fsPromise.findNearestFile(
       COMPILATION_DATABASE_FILE,
       nuclideUri.dirname(src),
     );
+    let dbFlags = null;
     if (dbDir != null) {
       const dbFile = nuclideUri.join(dbDir, COMPILATION_DATABASE_FILE);
-      const dbFlags = await this._loadFlagsFromCompilationDatabase(dbFile);
+      dbFlags = await this._loadFlagsFromCompilationDatabase(dbFile);
+    }
+    if (dbFlags != null) {
       const flags = dbFlags.get(src);
       if (flags != null) {
         return flags;
@@ -175,9 +230,12 @@ export default class ClangFlagsManager {
       if (projectRoot == null) {
         return null;
       }
-      const sourceFile = await ClangFlagsManager._findSourceFileForHeader(src, projectRoot);
+      let sourceFile = await ClangFlagsManager._findSourceFileForHeader(src, projectRoot);
+      if (sourceFile == null && dbFlags != null) {
+        sourceFile = this._findSourceFileForHeaderFromCompilationDatabase(src, dbFlags);
+      }
       if (sourceFile != null) {
-        return this._getFlagsForSrcCached(sourceFile);
+        return this._getFlagsFromSourceFileForHeader(sourceFile);
       }
     }
 
@@ -199,11 +257,12 @@ export default class ClangFlagsManager {
   }
 
   async _loadFlagsFromCompilationDatabase(dbFile: string): Promise<Map<string, ClangFlags>> {
-    const flags = new Map();
-    if (this._compilationDatabases.has(dbFile)) {
-      return flags;
+    const cache = this._compilationDatabases.get(dbFile);
+    if (cache != null) {
+      return cache;
     }
 
+    const flags = new Map();
     try {
       const contents = await fsPromise.readFile(dbFile, 'utf8');
       const data = JSON.parse(contents);
@@ -232,7 +291,7 @@ export default class ClangFlagsManager {
           this._pathToFlags.set(realpath, Promise.resolve(result));
         }
       }));
-      this._compilationDatabases.add(dbFile);
+      this._compilationDatabases.set(dbFile, flags);
     } catch (e) {
       logger.error(`Error reading compilation flags from ${dbFile}`, e);
     }

@@ -28,6 +28,14 @@ export function isSourceFile(filename: string): boolean {
   return SOURCE_EXTENSIONS.has(nuclideUri.extname(filename));
 }
 
+export function commonPrefix(a: string, b: string): number {
+  let len = 0;
+  while (len < a.length && len < b.length && a[len] === b[len]) {
+    len++;
+  }
+  return len;
+}
+
 function processGrepResult(
   result: string,
   headerFile: string,

@@ -199,10 +199,10 @@ describe('ClangFlagsManager', () => {
       const spy = ownerSpy.andReturn(['//test:__default_headers__']);
       const dir = nuclideUri.join(__dirname, 'fixtures');
       result = await flagsManager.getFlagsForSrc(nuclideUri.join(dir, 'testInternal.h'));
-      expect(nullthrows(result).flags).toEqual(['-fPIC', '-O3']);
+      expect(nullthrows(result).flags).toEqual(['-fPIC', '-O3', '-x', 'c++']);
 
       result = await flagsManager.getFlagsForSrc(nuclideUri.join(dir, 'test-inl.h'));
-      expect(nullthrows(result).flags).toEqual(['-fPIC', '-O3']);
+      expect(nullthrows(result).flags).toEqual(['-fPIC', '-O3', '-x', 'c++']);
 
       result = await flagsManager.getFlagsForSrc(nuclideUri.join(dir, 'test2.h'));
       expect(nullthrows(result).flags).toBeNull();
