@@ -54,6 +54,10 @@ export function setProjectRoot(projectRoot: ?string): Action {
   return {type: SET_PROJECT_ROOT, projectRoot};
 }
 
+export function setBuckRoot(buckRoot: ?string): Action {
+  return {type: SET_BUCK_ROOT, buckRoot};
+}
+
 export function setBuildTarget(buildTarget: string): Action {
   return {type: SET_BUILD_TARGET, buildTarget};
 }

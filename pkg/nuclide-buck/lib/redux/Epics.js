@@ -29,7 +29,7 @@ export function setProjectRootEpic(
         Observable.fromPromise(getBuckProjectRoot(projectRoot));
       return rootObs
         .switchMap(buckRoot => Observable.of(
-          {type: Actions.SET_BUCK_ROOT, buckRoot},
+          Actions.setBuckRoot(buckRoot),
           // Also refresh the rule type of the current target.
           Actions.setBuildTarget(store.getState().buildTarget),
         ));

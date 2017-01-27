@@ -204,8 +204,40 @@ export class BuckBuildSystem {
   }
 
   setProjectRoot(projectRoot: ?Directory): void {
+    this.setProjectRootNew(projectRoot, (enabled, tasklist) => {});
+  }
+
+  setProjectRootNew(
+    projectRoot: ?Directory,
+    callback: (enabled: boolean, taskList: Array<TaskMetadata>) => mixed,
+  ): IDisposable {
     const path = projectRoot == null ? null : projectRoot.getPath();
+
+    // $FlowFixMe: type symbol-observable
+    const storeReady: Observable<AppState> = Observable.from(this._getStore())
+      .distinctUntilChanged()
+      .filter((state: AppState) => !state.isLoadingBuckProject && state.projectRoot === path)
+      .share();
+
+    const enabledObservable = storeReady
+      .map(state => state.buckRoot != null)
+      .distinctUntilChanged();
+
+    const tasksObservable = storeReady
+      .map(state => {
+        const {buildRuleType} = state;
+        return TASKS.map(task => ({
+          ...task,
+          disabled: state.isLoadingPlatforms || !shouldEnableTask(task.type, buildRuleType),
+        }));
+      });
+
+    const subscription = Observable.combineLatest(enabledObservable, tasksObservable)
+      .subscribe(([enabled, tasks]) => callback(enabled, tasks));
+
     this._getStore().dispatch(Actions.setProjectRoot(path));
+
+    return new UniversalDisposable(subscription);
   }
 
   _logOutput(text: string, level: Level) {
