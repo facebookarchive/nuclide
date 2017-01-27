@@ -64,7 +64,7 @@ export type TaskMetadata = {
   // default. Higher priorities will be taken first; the default is 0.
   // Tasks that do not set `disabled` will have a default priority of -1.
   priority?: number,
-  runnable: boolean, // Can the action be run now?
+  runnable?: boolean, // Can the action be run now?
   cancelable?: boolean, // By default, this is true (all tasks are cancelable).
 };
 
@@ -81,6 +81,11 @@ export type TaskRunner = {
   +getIcon: () => ReactClass<any>,
   +runTask: (taskName: string) => Task,
   +setProjectRoot?: (projectRoot: ?Directory) => void,
+  // Will replace setProjectRoot and observeTaskList
+  +setProjectRootNew?: (
+    projectRoot: ?Directory,
+    callback: (enabled: boolean, taskList: Array<TaskMetadata>) => mixed,
+  ) => IDisposable,
 };
 
 export type TaskRunnerInfo = {
