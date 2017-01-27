@@ -85,6 +85,10 @@ export default class HhvmBuildSystem {
     ];
   }
 
+  getPriority(): number {
+    return 1; // Take precedence over the Arcanist build toolbar.
+  }
+
   getIcon(): ReactClass<any> {
     return () => <Icon icon="nuclicon-hhvm" className="nuclide-hhvm-task-runner-icon" />;
   }
@@ -101,6 +105,37 @@ export default class HhvmBuildSystem {
   }
 
   setProjectRoot(projectRoot: ?Directory): void {
-    this._projectStore.setProjectRoot(projectRoot == null ? null : projectRoot.getPath());
+    this.setProjectRootNew(projectRoot, (enabled, taskList) => {});
+  }
+
+  setProjectRootNew(
+    projectRoot: ?Directory,
+    callback: (enabled: boolean, taskList: Array<TaskMetadata>) => mixed,
+  ): IDisposable {
+    const path = projectRoot == null ? null : projectRoot.getPath();
+
+    const enabledObservable =
+      observableFromSubscribeFunction(this._projectStore.onChange.bind(this._projectStore))
+        .map(() => this._projectStore)
+        .filter(store => store.getProjectRoot() === path && store.isHHVMProject() !== null)
+        .map(store => store.isHHVMProject() === true)
+        .distinctUntilChanged();
+
+    const tasksObservable = Observable.of([
+      {
+        type: 'debug',
+        label: 'Debug',
+        description: 'Debug an HHVM project',
+        icon: 'nuclicon-debugger',
+        cancelable: false,
+      },
+    ]);
+
+    const subscription = Observable.combineLatest(enabledObservable, tasksObservable)
+      .subscribe(([enabled, tasks]) => callback(enabled, tasks));
+
+    this._projectStore.setProjectRoot(path);
+
+    return new UniversalDisposable(subscription);
   }
 }
