@@ -27,6 +27,10 @@ import nuclideUri from '../../commons-node/nuclideUri';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 const LLDB_PROCESS_ID_REGEX = /lldb -p ([0-9]+)/;
+const ANDROID_ACTIVITY_REGEX = /Starting activity (.*)\/(.*)\.\.\./;
+const ANDROID_TARGET_REGEX = /OK +(.+\.apk)/;
+const LLDB_TARGET_TYPE = 'LLDB';
+const ANDROID_TARGET_TYPE = 'android';
 
 async function getDebuggerService(): Promise<RemoteControlService> {
   atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
@@ -87,6 +91,19 @@ async function debugPidWithLLDB(pid: number, buckRoot: string) {
   debuggerService.startDebugging(attachInfo);
 }
 
+async function debugAndroidActivity(buckProjectPath: string, androidActivity: string) {
+  const service = getServiceByNuclideUri('JavaDebuggerService', buckProjectPath);
+  if (service == null) {
+    throw new Error('Java debugger service is not available.');
+  }
+
+  const javaDebuggerService = service.JavaDebuggerService;
+  const debuggerService = await getDebuggerService();
+  debuggerService.startDebugging(
+    javaDebuggerService.prototype.getAndroidLaunchInfo(buckProjectPath, androidActivity),
+    );
+}
+
 async function _getAttachProcessInfoFromPid(
   pid: number,
   buckProjectPath: string,
@@ -105,7 +122,7 @@ async function _getAttachProcessInfoFromPid(
   );
 }
 
-export function getLLDBBuildEvents(
+export function getDeployBuildEvents(
   processStream: Observable<ProcessMessage>,
   buckService: BuckService,
   buckRoot: string,
@@ -142,32 +159,59 @@ export function getLLDBBuildEvents(
     });
 }
 
-export function getLLDBInstallEvents(
+export function getDeployInstallEvents(
   processStream: Observable<ProcessMessage>,
   buckRoot: string,
 ): Observable<BuckEvent> {
+  let targetType = LLDB_TARGET_TYPE;
   return compact(
     processStream.map(message => {
       if (message.kind === 'stdout' || message.kind === 'stderr') {
+        const androidTypeMatch = message.data.match(ANDROID_TARGET_REGEX);
+        if (androidTypeMatch != null) {
+          targetType = ANDROID_TARGET_TYPE;
+        }
+
+        if (targetType === ANDROID_TARGET_TYPE) {
+          const activity = message.data.match(ANDROID_ACTIVITY_REGEX);
+          if (activity != null) {
+            return {targetType, targetApp: activity[1]};
+          }
+        }
+
         const pidMatch = message.data.match(LLDB_PROCESS_ID_REGEX);
         if (pidMatch != null) {
-          return parseInt(pidMatch[1], 10);
+          return {targetType, targetApp: pidMatch[1]};
         }
       }
     }),
   )
     .take(1)
-    .switchMap(lldbPid => {
+    .switchMap(targetInfo => {
       return processStream
         .filter(message => message.kind === 'exit' && message.exitCode === 0)
         .switchMap(() => {
-          return Observable.fromPromise(debugPidWithLLDB(lldbPid, buckRoot))
-            .ignoreElements()
-            .startWith({
-              type: 'log',
-              message: `Attaching LLDB debugger to pid ${lldbPid}...`,
-              level: 'info',
-            });
+          if (targetInfo.targetType === LLDB_TARGET_TYPE) {
+            return Observable.fromPromise(
+              debugPidWithLLDB(parseInt(targetInfo.targetApp, 10), buckRoot))
+              .ignoreElements()
+              .startWith({
+                type: 'log',
+                message: `Attaching LLDB debugger to pid ${targetInfo.targetApp}...`,
+                level: 'info',
+              });
+          } else if (targetInfo.targetType === ANDROID_TARGET_TYPE) {
+            return Observable.fromPromise(
+              debugAndroidActivity(buckRoot, targetInfo.targetApp))
+              .ignoreElements()
+              .startWith({
+                type: 'log',
+                message: `Attaching Java debugger to pid ${targetInfo.targetApp}...`,
+                level: 'info',
+              });
+          }
+
+          return Observable.throw(new Error('Unexpected target type'));
         });
     });
 }

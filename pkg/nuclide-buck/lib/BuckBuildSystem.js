@@ -60,9 +60,9 @@ import {
   getEventsFromProcess,
 } from './BuckEventStream';
 import {
-  getLLDBBuildEvents,
-  getLLDBInstallEvents,
-} from './LLDBEventStream';
+  getDeployBuildEvents,
+  getDeployInstallEvents,
+} from './DeployEventStream';
 import observeBuildCommands from './observeBuildCommands';
 import {React} from 'react-for-atom';
 
@@ -71,6 +71,7 @@ const SOCKET_TIMEOUT = 30000;
 const INSTALLABLE_RULES = new Set([
   'apple_bundle',
   'apk_genrule',
+  'android_binary',
 ]);
 
 const DEBUGGABLE_RULES = new Set([
@@ -80,6 +81,7 @@ const DEBUGGABLE_RULES = new Set([
   'cxx_test',
   'rust_binary',
   'rust_test',
+  'android_binary',
 ]);
 
 function isInstallableRule(ruleType: ?string) {
@@ -474,11 +476,11 @@ export class BuckBuildSystem {
               mergedEvents,
               featureConfig.get('nuclide-buck.compileErrorDiagnostics') ?
                 getDiagnosticEvents(mergedEvents, buckRoot) : Observable.empty(),
-              isDebug && subcommand === 'install' ? getLLDBInstallEvents(
+              isDebug && subcommand === 'install' ? getDeployInstallEvents(
                 processMessages,
                 buckRoot,
               ) : Observable.empty(),
-              isDebug && subcommand === 'build' ? getLLDBBuildEvents(
+              isDebug && subcommand === 'build' ? getDeployBuildEvents(
                 processMessages,
                 buckService,
                 buckRoot,
