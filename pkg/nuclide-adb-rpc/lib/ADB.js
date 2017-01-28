@@ -10,12 +10,16 @@
 
 import type {Observable, ConnectableObservable} from 'rxjs';
 import type {DeviceDescription} from './AdbService';
+import type {ProcessMessage} from '../../commons-node/process-rpc-types';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import {runCommand} from '../../commons-node/process';
+
+import invariant from 'assert';
+import nuclideUri from '../../commons-node/nuclideUri';
+import {safeSpawn, observeProcess, runCommand} from '../../commons-node/process';
 
 import * as os from 'os';
 
-function runAdbCommand(
+function runShortAdbCommand(
   adbPath: NuclideUri,
   device: string,
   command: Array<string>,
@@ -23,12 +27,20 @@ function runAdbCommand(
   return runCommand(adbPath, ['-s', device].concat(command));
 }
 
+function runLongAdbCommand(
+  adbPath: NuclideUri,
+  device: string,
+  command: string[],
+): Observable<ProcessMessage> {
+  return observeProcess(() => safeSpawn(adbPath, ['-s', device].concat(command)), true);
+}
+
 function getAndroidProp(
   adbPath: NuclideUri,
   device: string,
   key: string,
 ): Observable<string> {
-  return runAdbCommand(adbPath, device, ['shell', 'getprop', key])
+  return runShortAdbCommand(adbPath, device, ['shell', 'getprop', key])
     .map(s => s.trim());
 }
 
@@ -39,7 +51,7 @@ function getTizenModelConfigKey(
 ): Promise<string> {
   const modelConfigPath = '/etc/config/model-config.xml';
 
-  return runAdbCommand(adbPath, device, ['shell', 'cat', modelConfigPath])
+  return runShortAdbCommand(adbPath, device, ['shell', 'cat', modelConfigPath])
     .map(stdout => stdout.split(/\n+/g)
                      .filter(s => s.indexOf(key) !== -1)[0])
     .map(s => {
@@ -82,7 +94,7 @@ export function getDeviceArchitecture(
   // SDB is a tool similar to ADB used with Tizen devices. `getprop` doesn't
   // exist on Tizen, so we have to rely on uname instead.
   if (adbPath.endsWith('sdb')) {
-    return runAdbCommand(adbPath, device, ['shell', 'uname', '-m']).toPromise();
+    return runShortAdbCommand(adbPath, device, ['shell', 'uname', '-m']).toPromise();
   } else {
     return getAndroidProp(adbPath, device, 'ro.product.cpu.abi').toPromise();
   }
@@ -110,6 +122,23 @@ export function getAPIVersion(
   } else {
     return getAndroidProp(adbPath, device, 'ro.build.version.sdk').toPromise();
   }
+}
+
+export function installPackage(
+  adbPath: NuclideUri,
+  device: string,
+  packagePath: NuclideUri,
+): Observable<ProcessMessage> {
+  invariant(!nuclideUri.isRemote(packagePath));
+  return runLongAdbCommand(adbPath, device, ['install', packagePath]);
+}
+
+export function uninstallPackage(
+  adbPath: NuclideUri,
+  device: string,
+  packageName: string,
+): Observable<ProcessMessage> {
+  return runLongAdbCommand(adbPath, device, ['uninstall', packageName]);
 }
 
 export async function getPidFromPackageName(

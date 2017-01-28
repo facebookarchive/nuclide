@@ -10,6 +10,7 @@
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {ConnectableObservable} from 'rxjs';
+import type {ProcessMessage} from '../../commons-node/process-rpc-types';
 
 import * as ADB from './ADB';
 
@@ -51,6 +52,22 @@ export function getAPIVersion(
   device: string,
 ): Promise<string> {
   return ADB.getAPIVersion(adbPath, device);
+}
+
+export function installPackage(
+  adbPath: NuclideUri,
+  device: string,
+  packagePath: NuclideUri,
+): ConnectableObservable<ProcessMessage> {
+  return ADB.installPackage(adbPath, device, packagePath).publish();
+}
+
+export function uninstallPackage(
+  adbPath: NuclideUri,
+  device: string,
+  packageName: string,
+): ConnectableObservable<ProcessMessage> {
+  return ADB.uninstallPackage(adbPath, device, packageName).publish();
 }
 
 export function getPidFromPackageName(
