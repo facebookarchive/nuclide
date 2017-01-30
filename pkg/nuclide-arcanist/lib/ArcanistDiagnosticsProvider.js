@@ -92,57 +92,57 @@ export class ArcanistDiagnosticsProvider {
   async __runLint(textEditor: TextEditor): Promise<void> {
     const filePath = textEditor.getPath();
     invariant(filePath);
-    try {
-      const diagnostics = await this._findDiagnostics(filePath);
-      if (diagnostics == null) {
-        return;
-      }
 
-      const fileDiagnostics = diagnostics.map(diagnostic => {
-        const range = new Range(
-          [diagnostic.row, diagnostic.col],
-          [diagnostic.row, textEditor.getBuffer().lineLengthForRow(diagnostic.row)],
-        );
-        let text;
-        if (Array.isArray(diagnostic.text)) {
-          // Sometimes `arc lint` returns an array of strings for the text, rather than just a
-          // string :(.
-          text = diagnostic.text.join(' ');
-        } else {
-          text = diagnostic.text;
-        }
-        const maybeProperties = {};
-        if (diagnostic.original != null &&
-          diagnostic.replacement != null &&
-          // Sometimes linters set original and replacement to the same value. Obviously that won't
-          // fix anything.
-          diagnostic.original !== diagnostic.replacement
-        ) {
-          // Copy the object so the type refinements hold...
-          maybeProperties.fix = this._getFix({...diagnostic});
-        }
-        return {
-          scope: 'file',
-          providerName: 'Arc' + (diagnostic.code ? `: ${diagnostic.code}` : ''),
-          type: diagnostic.type,
-          text,
-          filePath: diagnostic.filePath,
-          range,
-          ...maybeProperties,
-        };
-      });
-      const diagnosticsUpdate = {
-        filePathToMessages: new Map([[filePath, fileDiagnostics]]),
-      };
-      // If the editor has been closed since we made the request, we don't want to display the
-      // errors. This ties in with the fact that we invalidate errors for a file when it is closed.
-      if (!textEditor.isDestroyed()) {
-        this._providerBase.publishMessageUpdate(diagnosticsUpdate);
-      }
-    } catch (error) {
-      logger.error(error);
+    let diagnostics;
+    try {
+      diagnostics = await this._findDiagnostics(filePath);
+    } catch (err) {
+      logger.error(`_findDiagnostics error: ${err}`);
+    }
+
+    // If the editor has been closed since we made the request, we don't want to display the
+    // errors. This ties in with the fact that we invalidate errors for a file when it is closed.
+    if (diagnostics == null || textEditor.isDestroyed()) {
       return;
     }
+
+    const fileDiagnostics = diagnostics.map(diagnostic => {
+      const range = new Range(
+        [diagnostic.row, diagnostic.col],
+        [diagnostic.row, textEditor.getBuffer().lineLengthForRow(diagnostic.row)],
+      );
+      let text;
+      if (Array.isArray(diagnostic.text)) {
+        // Sometimes `arc lint` returns an array of strings for the text, rather than just a
+        // string :(.
+        text = diagnostic.text.join(' ');
+      } else {
+        text = diagnostic.text;
+      }
+      const maybeProperties = {};
+      if (diagnostic.original != null &&
+        diagnostic.replacement != null &&
+        // Sometimes linters set original and replacement to the same value. Obviously that won't
+        // fix anything.
+        diagnostic.original !== diagnostic.replacement
+      ) {
+        // Copy the object so the type refinements hold...
+        maybeProperties.fix = this._getFix({...diagnostic});
+      }
+      return {
+        scope: 'file',
+        providerName: 'Arc' + (diagnostic.code ? `: ${diagnostic.code}` : ''),
+        type: diagnostic.type,
+        text,
+        filePath: diagnostic.filePath,
+        range,
+        ...maybeProperties,
+      };
+    });
+    const diagnosticsUpdate = {
+      filePathToMessages: new Map([[filePath, fileDiagnostics]]),
+    };
+    this._providerBase.publishMessageUpdate(diagnosticsUpdate);
   }
 
   async _findDiagnostics(filePath: string): Promise<?Array<ArcDiagnostic>> {
