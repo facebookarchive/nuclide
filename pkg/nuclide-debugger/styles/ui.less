@@ -132,9 +132,18 @@ Use flexbox cross-axis stretch to fill the vertical space.
   flex-grow: 1;
 }
 
+.nuclide-debugger-watch-expression-value-content {
+  overflow-x: auto;
+}
+
 .nuclide-debugger-watch-expression-xout {
   cursor: pointer;
   opacity: 0;
+}
+
+.nuclide-debugger-watch-expression-xout.icon::before {
+  margin-right: 0px;
+  text-align: center;
 }
 
 .nuclide-debugger-watch-expression-row:hover {

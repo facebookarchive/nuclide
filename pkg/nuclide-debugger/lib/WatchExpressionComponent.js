@@ -155,7 +155,10 @@ export class WatchExpressionComponent extends React.Component {
         )}
         key={index}>
         <div
-          className="nuclide-debugger-expression-value-content"
+          className={classnames(
+            'nuclide-debugger-expression-value-content',
+            'nuclide-debugger-watch-expression-value-content',
+          )}
           onDoubleClick={this._setRowBeingEdited.bind(this, index)}>
           <ValueComponent
             expression={expression}
