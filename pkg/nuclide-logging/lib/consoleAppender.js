@@ -26,6 +26,18 @@ function layout(loggingEvent: any): Array<any> {
   } else {
     data.unshift(eventInfo);
   }
+
+  // When logging an Error object, just print the messsage and the stack trace.
+  // Since we attach other properties to the object like `stackTrace`, these
+  // can be really noisy.
+  for (let i = 0; i < data.length; i++) {
+    if (data[i] instanceof Error) {
+      // `stack` will often have `message` in its first line, but not always,
+      // like in the case of remote errors.
+      data[i] = data[i].message + '\n' + data[i].stack;
+    }
+  }
+
   return data;
 }
 
