@@ -145,7 +145,7 @@ describe('Buck building via toolbar', () => {
 
     waitsFor(
       'the build to finish',
-      30000,
+      60000,
       () => {
         const consoleOutput = workspaceView.querySelectorAll('.nuclide-console-record pre');
         if (consoleOutput.length > 0) {
