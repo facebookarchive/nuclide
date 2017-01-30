@@ -9,6 +9,7 @@
  */
 
 
+import dedent from 'dedent';
 import logger from './utils';
 import {base64Decode, base64Encode, isContinuationCommand, isEvaluationCommand} from './helpers';
 import EventEmitter from 'events';
@@ -481,7 +482,11 @@ export class DbgpSocket {
       params,
     );
     if (response.error) {
-      throw new Error('Error setting breakpoint: ' + JSON.stringify(response));
+      throw new Error(dedent`
+        Error setting breakpoint for command: breakpoint_set ${params}
+        Got response: ${JSON.stringify(response)}
+        BreakpointInfo is: ${JSON.stringify(breakpointInfo)}
+      `);
     }
     // TODO: Validate that response.$.state === 'enabled'
     return response.$.id;
