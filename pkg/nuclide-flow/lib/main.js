@@ -153,11 +153,19 @@ function allowFlowServerRestart(): void {
 }
 
 function getLanguageServiceConfig(): AtomLanguageServiceConfig {
+  const enableHighlight = featureConfig.get('nuclide-flow.enableReferencesHighlight');
   const excludeLowerPriority = Boolean(featureConfig.get('nuclide-flow.excludeOtherAutocomplete'));
   const flowResultsFirst = Boolean(featureConfig.get('nuclide-flow.flowAutocompleteResultsFirst'));
   return {
     name: 'Flow',
     grammars: JS_GRAMMARS,
+    highlight: enableHighlight ?
+      {
+        version: '0.0.0',
+        priority: 1,
+        analyticsEventName: 'flow.codehighlight',
+      } :
+      undefined,
     outline: {
       version: '0.0.0',
       priority: 1,

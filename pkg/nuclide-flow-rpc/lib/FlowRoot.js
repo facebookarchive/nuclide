@@ -25,7 +25,7 @@ import type {
 } from '..';
 
 import invariant from 'assert';
-import {Point} from 'simple-text-buffer';
+import {Range, Point} from 'simple-text-buffer';
 
 import {getReplacementPrefix} from '../../nuclide-flow-common';
 import {getLogger} from '../../nuclide-logging';
@@ -112,6 +112,43 @@ export class FlowRoot {
         return null;
       }
     } catch (e) {
+      return null;
+    }
+  }
+
+  async flowFindRefs(
+    file: NuclideUri,
+    currentContents: string,
+    position: atom$Point,
+  ): Promise<?Array<atom$Range>> {
+    // `flow find-refs` came out in v0.38.0
+    // https://github.com/facebook/flow/releases/tag/v0.38.0
+    const isSupported = await this._version.satisfies('>=0.38.0');
+    if (!isSupported) {
+      return null;
+    }
+
+    const options = {stdin: currentContents};
+    const args = [
+      'find-refs', '--json', '--path', file, position.row + 1, position.column + 1,
+    ];
+    try {
+      const result = await this._process.execFlow(args, options);
+      if (result == null) {
+        return null;
+      }
+      const json = parseJSON(args, result.stdout);
+      if (!Array.isArray(json)) {
+        return null;
+      }
+      return json.map(loc => {
+        return new Range(
+          new Point(loc.start.line - 1, loc.start.column - 1),
+          new Point(loc.end.line - 1, loc.end.column),
+        );
+      });
+    } catch (e) {
+      logger.error(`flowFindRefs error: ${String(e)}`);
       return null;
     }
   }

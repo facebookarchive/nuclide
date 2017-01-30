@@ -211,7 +211,11 @@ class FlowSingleFileLanguageService {
     buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
   ): Promise<?Array<atom$Range>> {
-    throw new Error('Not Yet Implemented');
+    return flowFindRefs(
+      filePath,
+      buffer.getText(),
+      position,
+    );
   }
 
   formatSource(
@@ -346,6 +350,21 @@ export function flowGetAst(
   return getState().getRootContainer().runWithOptionalRoot(
     file,
     root => FlowRoot.flowGetAst(root, currentContents, getState().getExecInfoContainer()),
+  );
+}
+
+export async function flowFindRefs(
+  file: NuclideUri,
+  currentContents: string,
+  position: atom$Point,
+): Promise<?Array<atom$Range>> {
+  return getState().getRootContainer().runWithRoot(
+    file,
+    root => root.flowFindRefs(
+      file,
+      currentContents,
+      position,
+    ),
   );
 }
 
