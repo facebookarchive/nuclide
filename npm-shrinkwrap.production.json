@@ -124,9 +124,9 @@
       "resolved": "https://registry.npmjs.org/brace-expansion/-/brace-expansion-1.1.6.tgz"
     },
     "bser": {
-      "version": "1.0.2",
+      "version": "1.0.3",
       "from": "bser@>=1.0.2 <2.0.0",
-      "resolved": "https://registry.npmjs.org/bser/-/bser-1.0.2.tgz"
+      "resolved": "https://registry.npmjs.org/bser/-/bser-1.0.3.tgz"
     },
     "buffer-shims": {
       "version": "1.0.0",
@@ -1211,9 +1211,9 @@
       "resolved": "https://registry.npmjs.org/verror/-/verror-1.3.6.tgz"
     },
     "whatwg-fetch": {
-      "version": "2.0.1",
+      "version": "2.0.2",
       "from": "whatwg-fetch@>=0.10.0",
-      "resolved": "https://registry.npmjs.org/whatwg-fetch/-/whatwg-fetch-2.0.1.tgz"
+      "resolved": "https://registry.npmjs.org/whatwg-fetch/-/whatwg-fetch-2.0.2.tgz"
     },
     "window-size": {
       "version": "0.1.4",
