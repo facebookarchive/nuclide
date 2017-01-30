@@ -1273,6 +1273,11 @@
         }
       }
     },
+    "jest-editor-support": {
+      "version": "18.1.0",
+      "from": "jest-editor-support@18.1.0",
+      "resolved": "https://registry.npmjs.org/jest-editor-support/-/jest-editor-support-18.1.0.tgz"
+    },
     "jodid25519": {
       "version": "1.0.2",
       "from": "jodid25519@>=1.0.0 <2.0.0",
@@ -1280,9 +1285,9 @@
       "optional": true
     },
     "js-tokens": {
-      "version": "3.0.0",
+      "version": "3.0.1",
       "from": "js-tokens@>=3.0.0 <4.0.0",
-      "resolved": "https://registry.npmjs.org/js-tokens/-/js-tokens-3.0.0.tgz"
+      "resolved": "https://registry.npmjs.org/js-tokens/-/js-tokens-3.0.1.tgz"
     },
     "js-yaml": {
       "version": "3.7.0",
@@ -2288,6 +2293,12 @@
       "from": "typedarray@>=0.0.6 <0.0.7",
       "resolved": "https://registry.npmjs.org/typedarray/-/typedarray-0.0.6.tgz",
       "dev": true
+    },
+    "typescript": {
+      "version": "2.1.5",
+      "from": "typescript@>=2.0.10 <3.0.0",
+      "resolved": "https://registry.npmjs.org/typescript/-/typescript-2.1.5.tgz",
+      "optional": true
     },
     "ua-parser-js": {
       "version": "0.7.12",
