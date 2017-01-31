@@ -97,11 +97,17 @@ async function debugAndroidActivity(buckProjectPath: string, androidActivity: st
     throw new Error('Java debugger service is not available.');
   }
 
-  const javaDebuggerService = service.JavaDebuggerService;
   const debuggerService = await getDebuggerService();
-  debuggerService.startDebugging(
-    javaDebuggerService.prototype.getAndroidLaunchInfo(buckProjectPath, androidActivity),
-    );
+  try {
+    /* eslint-disable nuclide-internal/no-cross-atom-imports */
+    // $FlowFB
+    const procInfo = require('../../fb-debugger-java/lib/AdbProcessInfo');
+    debuggerService.startDebugging(new procInfo.AdbProcessInfo(buckProjectPath,
+      androidActivity));
+    /* eslint-enable nuclide-internal/no-cross-atom-imports */
+  } catch (e) {
+    throw new Error('Java debugger service is not available.');
+  }
 }
 
 async function _getAttachProcessInfoFromPid(
