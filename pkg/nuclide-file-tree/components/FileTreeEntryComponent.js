@@ -82,23 +82,28 @@ export class FileTreeEntryComponent extends React.Component {
   }
 
   componentWillReceiveProps(nextProps: Props): void {
-    if (nextProps.node.isLoading) {
-      const spinnerDelay = nextProps.node.wasFetched ?
-        SUBSEQUENT_FETCH_SPINNER_DELAY :
-        INITIAL_FETCH_SPINNER_DELAY;
-
-      this._loadingTimeout = setTimeout(() => {
+    if (nextProps.node.isLoading !== this.props.node.isLoading) {
+      if (this._loadingTimeout != null) {
+        clearTimeout(this._loadingTimeout);
         this._loadingTimeout = null;
+      }
+
+      if (nextProps.node.isLoading) {
+        const spinnerDelay = nextProps.node.wasFetched ?
+          SUBSEQUENT_FETCH_SPINNER_DELAY :
+          INITIAL_FETCH_SPINNER_DELAY;
+
+        this._loadingTimeout = setTimeout(() => {
+          this._loadingTimeout = null;
+          this.setState({
+            isLoading: Boolean(this.props.node.isLoading),
+          });
+        }, spinnerDelay);
+      } else {
         this.setState({
-          isLoading: Boolean(this.props.node.isLoading),
+          isLoading: false,
         });
-      }, spinnerDelay);
-    } else {
-      clearTimeout(this._loadingTimeout);
-      this._loadingTimeout = null;
-      this.setState({
-        isLoading: false,
-      });
+      }
     }
   }
 
