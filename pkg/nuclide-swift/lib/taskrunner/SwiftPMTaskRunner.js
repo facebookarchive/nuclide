@@ -15,7 +15,6 @@ import type {Directory} from '../../../nuclide-remote-connection';
 import type {SwiftPMTaskRunnerStoreState} from './SwiftPMTaskRunnerStoreState';
 
 import {Observable, Subject} from 'rxjs';
-import {Disposable} from 'atom';
 import {React} from 'react-for-atom';
 import UniversalDisposable from '../../../commons-node/UniversalDisposable';
 import fsPromise from '../../../commons-node/fsPromise';
@@ -115,11 +114,6 @@ export class SwiftPMTaskRunner {
     };
   }
 
-  observeTaskList(callback: (taskList: Array<TaskMetadata>) => mixed): IDisposable {
-    callback(SwiftPMTaskRunnerTaskMetadata);
-    return new Disposable();
-  }
-
   getIcon(): ReactClass<any> {
     return () => <Icon icon="nuclicon-swift" className="nuclide-swift-task-runner-icon" />;
   }
@@ -208,11 +202,7 @@ export class SwiftPMTaskRunner {
     return this._outputMessages;
   }
 
-  setProjectRoot(directory: ?Directory): void {
-    this.setProjectRootNew(directory, (enabled, taskList) => {});
-  }
-
-  setProjectRootNew(
+  setProjectRoot(
     projectRoot: ?Directory,
     callback: (enabled: boolean, taskList: Array<TaskMetadata>) => mixed,
   ): IDisposable {

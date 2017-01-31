@@ -65,7 +65,7 @@ describe('Epics', () => {
         const task = new dummy.createTask('test task');
         taskRunner = {
           ...taskRunner,
-          setProjectRootNew: (projectRoot, callback) => {
+          setProjectRoot: (projectRoot, callback) => {
             callback(true, [task]);
             return new UniversalDisposable();
           },

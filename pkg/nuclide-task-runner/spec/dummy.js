@@ -33,7 +33,7 @@ export class TaskRunner {
     return ((null: any): ReactClass<any>);
   }
 
-  setProjectRootNew(
+  setProjectRoot(
     projectRoot: ?Directory,
     callback: (enabled: boolean, taskList: Array<TaskMetadata>) => mixed,
   ): IDisposable {

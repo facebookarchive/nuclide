@@ -26,7 +26,6 @@ export default class ArcBuildSystem {
   _extraUi: ?ReactClass<any>;
   id: string;
   name: string;
-  _tasks: ?Observable<Array<TaskMetadata>>;
   _outputMessages: Subject<Message>;
   _disposables: UniversalDisposable;
 
@@ -38,11 +37,7 @@ export default class ArcBuildSystem {
     this._disposables = new UniversalDisposable(this._outputMessages);
   }
 
-  setProjectRoot(projectRoot: ?Directory): void {
-    this.setProjectRootNew(projectRoot, (enabled, taskList) => {});
-  }
-
-  setProjectRootNew(
+  setProjectRoot(
     projectRoot: ?Directory,
     callback: (enabled: boolean, taskList: Array<TaskMetadata>) => mixed,
   ): IDisposable {
@@ -75,19 +70,6 @@ export default class ArcBuildSystem {
       ArcToolbarModel = require('./ArcToolbarModel').ArcToolbarModel;
     }
     return new ArcToolbarModel(this._outputMessages);
-  }
-
-  observeTaskList(cb: (taskList: Array<TaskMetadata>) => mixed): IDisposable {
-    if (this._tasks == null) {
-      this._tasks = Observable.concat(
-        Observable.of(this._model.getTaskList()),
-        observableFromSubscribeFunction(this._model.onChange.bind(this._model))
-          .map(() => this._model.getTaskList()),
-      );
-    }
-    return new UniversalDisposable(
-      this._tasks.subscribe({next: cb}),
-    );
   }
 
   getExtraUi(): ReactClass<any> {

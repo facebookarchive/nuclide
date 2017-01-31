@@ -65,7 +65,7 @@ export type TaskRunner = {
   +runTask: (taskType: string) => Task,
   // Returns a callback that executes when the task runner determines whether it should be enabled
   // or when the task list changes for the project root
-  +setProjectRootNew: (
+  +setProjectRoot: (
     projectRoot: ?Directory,
     callback: (enabled: boolean, taskList: Array<TaskMetadata>) => mixed,
     ) => IDisposable,

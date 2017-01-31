@@ -109,7 +109,7 @@ export function combineTaskRunnerStatesEpic(
       const runnersAndStates = taskRunners.map(taskRunner => (
         Observable.create(observer => (
           new UniversalDisposable(
-            taskRunner.setProjectRootNew(projectRoot, (enabled, tasks) => {
+            taskRunner.setProjectRoot(projectRoot, (enabled, tasks) => {
               observer.next([taskRunner, {enabled, tasks: enabled ? tasks : []}]);
             }),
           )

@@ -40,19 +40,6 @@ export default class HhvmBuildSystem {
     this._projectStore.dispose();
   }
 
-  observeTaskList(callback: (taskList: Array<TaskMetadata>) => mixed): IDisposable {
-    return new UniversalDisposable(
-      Observable.concat(
-        Observable.of(this.getTaskList()),
-        observableFromSubscribeFunction(this._projectStore.onChange.bind(this._projectStore))
-          .map(() => this.getTaskList()),
-      )
-        // Wait until the project type has finished loading.
-        .filter(() => this._projectStore.isHHVMProject() != null)
-        .subscribe(callback),
-    );
-  }
-
   getExtraUi(): ReactClass<any> {
     if (this._extraUi == null) {
       const projectStore = this._projectStore;
@@ -67,22 +54,6 @@ export default class HhvmBuildSystem {
       );
     }
     return this._extraUi;
-  }
-
-  getTaskList(): Array<TaskMetadata> {
-    const disabled = !this._projectStore.isHHVMProject();
-    return [
-      {
-        type: 'debug',
-        label: 'Debug',
-        description: 'Debug a HHVM project',
-        icon: 'triangle-right',
-        disabled,
-        priority: 1,  // Take precedence over the Arcanist build toolbar.
-        runnable: !disabled,
-        cancelable: false,
-      },
-    ];
   }
 
   getPriority(): number {
@@ -104,11 +75,7 @@ export default class HhvmBuildSystem {
     );
   }
 
-  setProjectRoot(projectRoot: ?Directory): void {
-    this.setProjectRootNew(projectRoot, (enabled, taskList) => {});
-  }
-
-  setProjectRootNew(
+  setProjectRoot(
     projectRoot: ?Directory,
     callback: (enabled: boolean, taskList: Array<TaskMetadata>) => mixed,
   ): IDisposable {

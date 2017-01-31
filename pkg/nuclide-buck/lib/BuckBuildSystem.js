@@ -99,7 +99,7 @@ function shouldEnableTask(taskType: TaskType, ruleType: ?string): boolean {
     case 'debug':
       return ruleType != null && isDebuggableRule(ruleType);
     default:
-      return true;
+      return ruleType != null;
   }
 }
 
@@ -123,7 +123,6 @@ export class BuckBuildSystem {
   id: string;
   name: string;
   _serializedState: ?SerializedState;
-  _tasks: Observable<Array<TaskMetadata>>;
   _outputMessages: Subject<Message>;
   _diagnosticUpdates: Subject<DiagnosticProviderUpdate>;
   _diagnosticInvalidations: Subject<InvalidationMessage>;
@@ -139,30 +138,6 @@ export class BuckBuildSystem {
     this._diagnosticInvalidations = new Subject();
     this._disposables.add(this._outputMessages);
     this._platformService = new PlatformService();
-  }
-
-  getTaskList() {
-    const {buckRoot, buildTarget, buildRuleType} = this._getStore().getState();
-    return TASKS
-      .map(task => ({
-        ...task,
-        disabled: buckRoot == null,
-        runnable: buckRoot != null && Boolean(buildTarget) &&
-          shouldEnableTask(task.type, buildRuleType),
-      }));
-  }
-
-  observeTaskList(cb: (taskList: Array<TaskMetadata>) => mixed): IDisposable {
-    if (this._tasks == null) {
-      // $FlowFixMe: type symbol-observable
-      this._tasks = Observable.from(this._getStore())
-        // Wait until we're done loading the buck project.
-        .filter((state: AppState) => !state.isLoadingBuckProject)
-        .map(() => this.getTaskList());
-    }
-    return new UniversalDisposable(
-      this._tasks.subscribe({next: cb}),
-    );
   }
 
   getExtraUi(): ReactClass<any> {
@@ -205,11 +180,7 @@ export class BuckBuildSystem {
     return this._platformService;
   }
 
-  setProjectRoot(projectRoot: ?Directory): void {
-    this.setProjectRootNew(projectRoot, (enabled, tasklist) => {});
-  }
-
-  setProjectRootNew(
+  setProjectRoot(
     projectRoot: ?Directory,
     callback: (enabled: boolean, taskList: Array<TaskMetadata>) => mixed,
   ): IDisposable {
@@ -552,34 +523,29 @@ export class BuckBuildSystem {
   }
 }
 
-// Make sure that TaskType reflects the types listed below.
 const TASKS = [
   {
     type: 'build',
     label: 'Build',
     description: 'Build the specified Buck target',
-    runnable: true,
     icon: 'tools',
   },
   {
     type: 'run',
     label: 'Run',
     description: 'Run the specfied Buck target',
-    runnable: true,
     icon: 'triangle-right',
   },
   {
     type: 'test',
     label: 'Test',
     description: 'Test the specfied Buck target',
-    runnable: true,
     icon: 'check',
   },
   {
     type: 'debug',
     label: 'Debug',
     description: 'Debug the specfied Buck target',
-    runnable: true,
     icon: 'nuclicon-debugger',
   },
 ];
