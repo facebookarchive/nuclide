@@ -15,11 +15,8 @@ import type {
   TaskRunnerServiceApi,
   SerializedAppState,
   Store,
-  TaskStartedAction,
-  TaskStoppedAction,
-  TaskCompletedAction,
-  TaskErroredAction,
   TaskRunner,
+  ToolbarStatePreference,
 } from './types';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
@@ -28,26 +25,25 @@ import syncAtomCommands from '../../commons-atom/sync-atom-commands';
 import createPackage from '../../commons-atom/createPackage';
 import {LocalStorageJsonTable} from '../../commons-atom/LocalStorageJsonTable';
 import PanelRenderer from '../../commons-atom/PanelRenderer';
-import {arrayRemove} from '../../commons-node/collection';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
+import {arrayEqual} from '../../commons-node/collection';
 import {combineEpics, createEpicMiddleware} from '../../commons-node/redux-observable';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {trackEvent} from '../../nuclide-analytics';
-import {createEmptyAppState} from './createEmptyAppState';
 import * as Actions from './redux/Actions';
 import * as Epics from './redux/Epics';
 import * as Reducers from './redux/Reducers';
+import {trackingMiddleware} from './trackingMiddleware';
 import {createPanelItem} from './ui/createPanelItem';
 import invariant from 'assert';
 import {Disposable} from 'atom';
-import nullthrows from 'nullthrows';
-import {applyMiddleware, bindActionCreators, createStore} from 'redux';
-import {Observable, ReplaySubject} from 'rxjs';
-import shallowEqual from 'shallowequal';
+import {applyMiddleware, bindActionCreators, combineReducers, createStore} from 'redux';
+import {Observable} from 'rxjs';
 
 // TODO: use a more general versioning mechanism.
 // Perhaps Atom should provide packages with some way of doing this.
 const SERIALIZED_VERSION = 2;
+// These match task types with shortcuts defined in nuclide-task-runner.json
+const COMMON_TASK_TYPES = ['build', 'run', 'test', 'debug'];
 
 class Activation {
   _disposables: UniversalDisposable;
@@ -57,53 +53,30 @@ class Activation {
 
   constructor(rawState: ?SerializedAppState): void {
     let serializedState = rawState;
-    if (serializedState == null || serializedState.version !== SERIALIZED_VERSION) {
-      serializedState = {};
+    if (serializedState != null && serializedState.version !== SERIALIZED_VERSION) {
+      serializedState = null;
     }
 
     // The serialized state that Atom gives us here is based on the open roots. However, users often
     // open an empty window and then add a root (especially with remote projects). We need to go
     // outside of Atom's normal serialization mechanism to account for this.
-    const visibilityTable = new LocalStorageJsonTable('nuclide:nuclide-task-runner:visibility');
-
-    // If the task runner toolbar was shown previously, we'll display a placholder until the view
-    // initializes so there's not a jump in the UI. Unfortunately, since we haven't yet been
-    // connected to the current working directory service at this point, we don't know what root to
-    // check the previous visibility of. We could just assume it's
-    // `atom.project.getDirectories()[0]`, but using explicitly serialized package state is better.
-    const {previousSessionVisible} = serializedState;
-    let showPlaceholderInitially;
-    if (typeof previousSessionVisible === 'boolean') {
-      showPlaceholderInitially = previousSessionVisible;
-    } else {
-      // This collection of roots wasn't seen before. Just fall back to the state of the last known
-      // session.
-      const entries = visibilityTable.getEntries();
-      const previousEntry = entries[entries.length - 1];
-      showPlaceholderInitially = previousEntry && previousEntry.value;
-    }
-
-    const initialState = {
-      ...createEmptyAppState(),
-      ...serializedState,
-      showPlaceholderInitially,
-      visible: showPlaceholderInitially,
-    };
+    const preferencesForWorkingRoots =
+      new LocalStorageJsonTable('nuclide:nuclide-task-runner:working-root-preferences');
 
     const epics = Object.keys(Epics)
       .map(k => Epics[k])
       .filter(epic => typeof epic === 'function');
-    const epicOptions = {
-      visibilityTable,
-      states: new ReplaySubject(1),
-    };
+    const epicOptions = {preferencesForWorkingRoots};
     const rootEpic = (actions, store) => combineEpics(...epics)(actions, store, epicOptions);
     this._store = createStore(
-      Reducers.app,
-      initialState,
+      combineReducers(Reducers),
+      {visible: getInitialVisibility(serializedState, preferencesForWorkingRoots)},
       applyMiddleware(createEpicMiddleware(rootEpic), trackingMiddleware),
     );
-    const states = Observable.from(this._store).filter(state => state != null);
+    const states = Observable.from(this._store)
+      .filter((state: AppState) => state.taskRunnersReady)
+      .distinctUntilChanged()
+      .share();
     this._actionCreators = bindActionCreators(Actions, this._store.dispatch);
     this._panelRenderer = new PanelRenderer({
       location: 'top',
@@ -111,29 +84,11 @@ class Activation {
     });
 
     this._disposables = new UniversalDisposable(
-      visibilityTable,
-
-      // We pass a stream of states to the epics expicitly. This is less than ideal. See
-      // redux-observable/redux-observable#56
-      // $FlowFixMe: Teach flow about Symbol.observable
-      Observable.from(this._store).subscribe(epicOptions.states),
+      preferencesForWorkingRoots,
 
       activateInitialPackagesObservable().subscribe(() => {
         this._store.dispatch(Actions.didActivateInitialPackages());
       }),
-
-      // Whenever the visiblity changes, store the value in localStorage so that we can use it
-      // to decide whether we should show the placeholder at the beginning of the next session.
-      states
-        .filter(state => state.viewIsInitialized && state.projectRoot)
-        .map(state => ({
-          visible: state.visible,
-          projectRootPath: state.projectRoot && state.projectRoot.getPath(),
-        }))
-        .distinctUntilChanged(shallowEqual)
-        .subscribe(({projectRootPath, visible}) => {
-          visibilityTable.setItem(projectRootPath, visible);
-        }),
 
       this._panelRenderer,
       atom.commands.add('atom-workspace', {
@@ -147,91 +102,75 @@ class Activation {
             this._actionCreators.toggleToolbarVisibility();
           }
         },
-        'nuclide-task-runner:run-selected-task': event => {
-          const detail = event != null ? (event: any).detail : null;
-          const taskId = detail != null && detail.taskRunnerId && detail.type ? detail : null;
-          this._actionCreators.runTask(taskId);
-        },
       }),
 
-      // Add a command for each task type. If there's more than one of the same type runnable, the
-      // first is used.
-      // TODO: Instead, prompt user for which to use and remember their choice.
+      // Add a command for each enabled task in each enabled task runner
       syncAtomCommands(
         states
-          .debounceTime(500)
-          .map(state => state.taskLists)
+          .map(state => state.statesForTaskRunners)
           .distinctUntilChanged()
-          .map(taskLists => {
-            const allTasks = Array.prototype.concat(...Array.from(taskLists.values()));
-            const types = allTasks
-              .filter(taskMeta => taskMeta.runnable)
-              .map(taskMeta => taskMeta.type);
-            return new Set(types);
-          }),
-        taskType => ({
-          'atom-workspace': {
-            [`nuclide-task-runner:${taskType}`]: () => {
-              const state = this._store.getState();
-              const {activeTaskId, taskRunners} = state;
-              const taskRunnerIds = Array.from(taskRunners.keys());
-              // Give precedence to the task runner of the selected task.
-              if (activeTaskId != null) {
-                arrayRemove(taskRunnerIds, activeTaskId.taskRunnerId);
-                taskRunnerIds.unshift(activeTaskId.taskRunnerId);
-              }
-              for (const taskRunnerId of taskRunnerIds) {
-                const taskList = state.taskLists.get(taskRunnerId);
-                if (taskList == null) { continue; }
-                for (const taskMeta of taskList) {
-                  if (taskMeta.runnable && taskMeta.type === taskType) {
-                    this._actionCreators.runTask(taskMeta);
-                    return;
-                  }
+          .map(statesForTaskRunners => {
+            const taskRunnersAndTasks = new Set();
+            statesForTaskRunners.forEach((state, taskRunner) => {
+              state.tasks.forEach(task => {
+                if (task.disabled !== true) {
+                  taskRunnersAndTasks.add([taskRunner, task]);
                 }
-              }
-            },
-          },
-        }),
-      ),
-
-      // Add a command for each individual task ID.
-      syncAtomCommands(
-        states
-          .debounceTime(500)
-          .map(state => state.taskLists)
-          .distinctUntilChanged()
-          .map(taskLists => {
-            const state = this._store.getState();
-            const taskIds = new Set();
-            for (const [taskRunnerId, taskList] of taskLists) {
-              const taskRunnerName = nullthrows(state.taskRunners.get(taskRunnerId)).name;
-              for (const taskMeta of taskList) {
-                taskIds.add({taskRunnerId, taskRunnerName, type: taskMeta.type});
-              }
-            }
-            return taskIds;
+              });
+            });
+            return taskRunnersAndTasks;
           }),
-        taskId => ({
+          ([taskRunner, taskMeta]) => ({
+            'atom-workspace': {
+              [`nuclide-task-runner:${taskRunner.name.toLowerCase()}-${taskMeta.type}`]: () => {
+                this._actionCreators.runTask({...taskMeta, taskRunner});
+              },
+            },
+          }),
+      ),
+
+      // Add a command for each enabled common task with mapped keyboard shortcuts
+      syncAtomCommands(
+        states
+         .map(state => {
+           const {activeTaskRunner, isUpdatingTaskRunners} = state;
+           if (isUpdatingTaskRunners || !activeTaskRunner) { return []; }
+           const taskRunnerState = state.statesForTaskRunners.get(activeTaskRunner);
+           if (!taskRunnerState) { return []; }
+           return taskRunnerState.tasks;
+         })
+         .distinctUntilChanged(arrayEqual)
+         .map(tasks => new Set(tasks.filter(task =>
+           task.disabled !== true && COMMON_TASK_TYPES.includes(task.type)))),
+        taskMeta => ({
           'atom-workspace': {
-            [`nuclide-task-runner:${taskId.taskRunnerName}-${taskId.type}`]: () => {
-              this._actionCreators.runTask(taskId);
+            [`nuclide-task-runner:${taskMeta.type}`]: () => {
+              this._actionCreators.runTask(
+                {...taskMeta, taskRunner: this._store.getState().activeTaskRunner},
+              );
             },
           },
         }),
       ),
 
-      // Add a toggle command for each task runner.
+      // Add a toggle command for each enabled task runner
       syncAtomCommands(
         states
-          .debounceTime(500)
-          .map(state => state.taskRunners)
+          .map(state => state.statesForTaskRunners)
           .distinctUntilChanged()
-          .map(taskRunners => new Set(taskRunners.values())),
+          .map(statesForTaskRunners => {
+            const taskRunners = new Set();
+            statesForTaskRunners.forEach((state, runner) => {
+              if (state.enabled) {
+                taskRunners.add(runner);
+              }
+            });
+            return taskRunners;
+          }),
         taskRunner => ({
           'atom-workspace': {
-            [`nuclide-task-runner:toggle-${taskRunner.name}-toolbar`]: () => {
-              this._actionCreators.toggleToolbarVisibility(taskRunner.id);
+            [`nuclide-task-runner:toggle-${taskRunner.name.toLowerCase()}-toolbar`]: () => {
+              this._actionCreators.toggleToolbarVisibility(taskRunner);
             },
           },
         }),
@@ -272,7 +211,7 @@ class Activation {
     const buttonUpdatesDisposable = new UniversalDisposable(
       // $FlowFixMe: Update rx defs to accept ish with Symbol.observable
       Observable.from(this._store).subscribe(state => {
-        if (state.taskRunners.size > 0) {
+        if (state.taskRunners.length > 0) {
           element.removeAttribute('hidden');
         } else {
           element.setAttribute('hidden', 'hidden');
@@ -317,9 +256,6 @@ class Activation {
   serialize(): SerializedAppState {
     const state = this._store.getState();
     return {
-      previousSessionActiveTaskId: state.activeTaskId || state.previousSessionActiveTaskId,
-      previousSessionActiveTaskRunnerId:
-        state.activeTaskRunnerId || state.previousSessionActiveTaskRunnerId,
       previousSessionVisible: state.visible,
       version: SERIALIZED_VERSION,
     };
@@ -340,11 +276,6 @@ class Activation {
       },
     };
   }
-
-  // Exported for testing :'(
-  _getCommands() {
-    return this._actionCreators;
-  }
 }
 
 export default createPackage(Activation);
@@ -356,43 +287,21 @@ function activateInitialPackagesObservable(): Observable<void> {
   );
 }
 
-function trackTaskAction(
-  type: string,
-  action: TaskStartedAction | TaskStoppedAction | TaskCompletedAction | TaskErroredAction,
-  state: AppState,
-): void {
-  const task = action.payload.task;
-  const taskTrackingData = task != null && typeof task.getTrackingData === 'function'
-    ? task.getTrackingData()
-    : {};
-  const error = action.type === Actions.TASK_ERRORED ? action.payload.error : null;
-  const {activeTaskId} = state;
-  trackEvent({
-    type,
-    data: {
-      ...taskTrackingData,
-      taskRunnerId: activeTaskId && activeTaskId.taskRunnerId,
-      taskType: activeTaskId && activeTaskId.type,
-      errorMessage: error != null ? error.message : null,
-      stackTrace: error != null ? String(error.stack) : null,
-    },
-  });
-}
-
-const trackingMiddleware = store => next => action => {
-  switch (action.type) {
-    case Actions.TASK_STARTED:
-      trackTaskAction('nuclide-task-runner:task-started', action, store.getState());
-      break;
-    case Actions.TASK_STOPPED:
-      trackTaskAction('nuclide-task-runner:task-stopped', action, store.getState());
-      break;
-    case Actions.TASK_COMPLETED:
-      trackTaskAction('nuclide-task-runner:task-completed', action, store.getState());
-      break;
-    case Actions.TASK_ERRORED:
-      trackTaskAction('nuclide-task-runner:task-errored', action, store.getState());
-      break;
+function getInitialVisibility(
+  serializedState: ?SerializedAppState,
+  preferencesForWorkingRoots: LocalStorageJsonTable<?ToolbarStatePreference>,
+): boolean {
+  // Unfortunately, since we haven't yet been connected to the current working directory service,
+  //  we don't know what root to check the previous visibility of. We could just assume it's
+  // `atom.project.getDirectories()[0]`, but using explicitly serialized package state is better.
+  if (serializedState && typeof serializedState.previousSessionVisible === 'boolean') {
+    return serializedState.previousSessionVisible;
+  } else {
+    // This collection of roots wasn't seen before.
+    // Just fall back to the state of the last known session.
+    const entries = preferencesForWorkingRoots.getEntries();
+    const lastEntry = entries[entries.length - 1];
+    if (!lastEntry || !lastEntry.value) { return false; }
+    return lastEntry.value.visible;
   }
-  return next(action);
-};
+}

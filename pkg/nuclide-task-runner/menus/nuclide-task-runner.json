@@ -9,10 +9,6 @@
             {
               "label": "Toggle Toolbar Visibility",
               "command": "nuclide-task-runner:toggle-toolbar-visibility"
-            },
-            {
-              "label": "Run Selected Task",
-              "command": "nuclide-task-runner:run-selected-task"
             }
           ]
         }

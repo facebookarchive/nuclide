@@ -17,22 +17,22 @@ type Props = {
   selected?: boolean,
   size?: ButtonSize,
   children?: mixed,
-  iconComponent: ReactClass<any>,
+  iconComponent: ?ReactClass<any>,
 };
 
 export function TaskRunnerButton(props: Props): React.Element<any> {
   const IconComponent = props.iconComponent;
+  const icon = IconComponent ? <IconComponent /> : null;
   const buttonProps = {...props};
   delete buttonProps.label;
   delete buttonProps.iconComponent;
   return (
     <Button
       {...buttonProps}
-      className="nuclide-task-runner-system-task-button">
-      <div className="nuclide-task-runner-system-icon-wrapper">
-        <IconComponent />
+      className="nuclide-task-runner-task-runner-button">
+      <div className="nuclide-task-runner-task-runner-icon-wrapper">
+        {icon}
       </div>
-      <div className="nuclide-task-runner-system-task-button-divider" />
       {props.children}
     </Button>
   );

@@ -9,16 +9,14 @@
  */
 
 import type {LocalStorageJsonTable} from '../../commons-atom/LocalStorageJsonTable';
-import type {Action, AppState, Store} from '../lib/types';
-import type {Directory} from '../../nuclide-remote-connection';
+import type {Action, Store, ToolbarStatePreference} from '../lib/types';
 
 import {ActionsObservable, combineEpics} from '../../commons-node/redux-observable';
 import {taskFromObservable} from '../../commons-node/tasks';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import * as Actions from '../lib/redux/Actions';
 import * as Epics from '../lib/redux/Epics';
-import {createEmptyAppState} from '../lib/createEmptyAppState';
 import * as dummy from './dummy';
-import {createTask} from './dummy';
 import invariant from 'assert';
 import {Observable, ReplaySubject, Subject} from 'rxjs';
 
@@ -30,102 +28,144 @@ function getRootEpic() {
 }
 
 describe('Epics', () => {
-  describe('initializeViewEpic', () => {
-    describe("when there's no visiblity from the previous session", () => {
-      describe("when there's an active task", () => {
-        it('shows the toolbar if the active task is explicitly enabled', () => {
-          waitsForPromise(async () => {
-            const initialState = {
-              ...createEmptyAppState(),
-              projectRoot: createMockDirectory('/a'),
-              activeTaskId: {taskRunnerId: 'build-system', type: 'test'},
-              taskLists: new Map([['build-system', [createTask('build-system', 'test', false)]]]),
-              projectWasOpened: true,
-            };
-            const output = await runActions([Actions.tasksReady()], initialState)
-              .first()
-              .toPromise();
-            invariant(output.type === Actions.INITIALIZE_VIEW);
-            expect(output.payload.visible).toBe(true);
-          });
-        });
+  describe('SET_PROJECT_ROOT', () => {
+    describe('when task runners arent ready', () => {
+      const state = {taskRunnersReady: false};
 
-        it("doesn't show the toolbar if the active task doesn't have a disabled value", () => {
-          waitsForPromise(async () => {
-            const initialState = {
-              ...createEmptyAppState(),
-              projectRoot: createMockDirectory('/a'),
-              activeTaskId: {taskRunnerId: 'build-system', type: 'test'},
-              taskLists: new Map([['build-system', [createTask('build-system', 'test')]]]),
-              projectWasOpened: true,
-            };
-            const output = await runActions([Actions.tasksReady()], initialState)
-              .first()
-              .toPromise();
-            invariant(output.type === Actions.INITIALIZE_VIEW);
-            expect(output.payload.visible).toBe(false);
-          });
-        });
-      });
-
-      it('hides the toolbar the first time tasks become ready without an active task', () => {
+      it('does nothing', () => {
         waitsForPromise(async () => {
-          const initialState = {
-            ...createEmptyAppState(),
-            projectRoot: createMockDirectory('/a'),
-            activeTaskId: null,
-            taskLists: new Map([['build-system', [createTask('build-system', 'test')]]]),
-            projectWasOpened: true,
-          };
-          const output = await runActions([Actions.tasksReady()], initialState)
-            .first()
+          const output = await runActions([Actions.setProjectRoot(null)], state)
+            .toArray()
             .toPromise();
-          invariant(output.type === Actions.INITIALIZE_VIEW);
-          expect(output.payload.visible).toBe(false);
+          expect(output).toEqual([]);
         });
       });
     });
 
-    describe("when there's a serialized visibility from the previous session", () => {
-      it('shows the toolbar if the value is true (even with no task)', () => {
+    describe('when there are no task runners', () => {
+      const state = {taskRunnersReady: true, taskRunners: []};
+
+      it('set task runners states to an empty map', () => {
         waitsForPromise(async () => {
-          const initialState = {
-            ...createEmptyAppState(),
-            projectRoot: createMockDirectory('/a'),
-            activeTaskId: null,
-            taskLists: new Map([['build-system', [createTask('build-system', 'test')]]]),
-            projectWasOpened: true,
-          };
-          const output = await runActions(
-            [Actions.tasksReady()],
-            initialState,
-            {visibilityTable: createMockVisibilityTable([{key: '/a', value: true}])},
-          )
+          const output = await runActions([Actions.setProjectRoot(null)], state)
             .first()
             .toPromise();
-          invariant(output.type === Actions.INITIALIZE_VIEW);
-          expect(output.payload.visible).toBe(true);
+          invariant(output.type === Actions.SET_STATES_FOR_TASK_RUNNERS);
+          expect(output.payload.statesForTaskRunners).toEqual(new Map());
+        });
+      });
+    });
+
+    describe('when there are task runners', () => {
+      let taskRunner;
+      let state;
+
+      beforeEach(() => {
+        taskRunner = new dummy.TaskRunner();
+        const task = new dummy.createTask('test task');
+        taskRunner = {
+          ...taskRunner,
+          setProjectRootNew: (projectRoot, callback) => {
+            callback(true, [task]);
+            return new UniversalDisposable();
+          },
+        };
+        state = {
+          taskRunnersReady: true,
+          taskRunners: [taskRunner],
+        };
+      });
+
+      it('updates states after collecting them from all task runners', () => {
+        waitsForPromise(async () => {
+          const output = await runActions([Actions.setProjectRoot(null)], state)
+            .first()
+            .toPromise();
+          invariant(output.type === Actions.SET_STATES_FOR_TASK_RUNNERS);
+          const runnerState = output.payload.statesForTaskRunners.get(taskRunner);
+          invariant(runnerState);
+          expect(runnerState.enabled).toEqual(true);
+          expect(runnerState.tasks[0].type).toEqual('test task');
+        });
+      });
+    });
+  });
+
+  describe('SET_STATES_FOR_TASK_RUNNERS', () => {
+    let state;
+    let newStates;
+
+    beforeEach(() => {
+      const disabledTaskRunner = new dummy.TaskRunner('a');
+      const loPriTaskRunner = new dummy.TaskRunner('b');
+      let hiPriTaskRunner = new dummy.TaskRunner('c');
+      hiPriTaskRunner = {
+        ...hiPriTaskRunner,
+        getPriority: () => 1,
+      };
+
+      newStates = new Map([
+        [disabledTaskRunner, {enabled: false, tasks: []}],
+        [loPriTaskRunner, {enabled: true, tasks: []}],
+        [hiPriTaskRunner, {enabled: true, tasks: []}],
+      ]);
+
+      state = {
+        projectRoot: {getPath: () => 'foo'},
+        taskRunners: [disabledTaskRunner, loPriTaskRunner, hiPriTaskRunner],
+        statesForTaskRunners: newStates,
+      };
+    });
+
+    describe('if this working root doesnt have a preference', () => {
+      it('does nothing about visibility to prevent UI jumps', () => {
+        waitsForPromise(async () => {
+          const output = await runActions([Actions.setStatesForTaskRunners(newStates)], state)
+            .toArray()
+            .toPromise();
+          expect(output.length).toEqual(1);
+          expect(output[0].type).toEqual(Actions.SELECT_TASK_RUNNER);
         });
       });
 
-      it('hides the toolbar if the value is false (even with an enabled task)', () => {
+      it('selects an enabled runner with the highest priority', () => {
         waitsForPromise(async () => {
-          const initialState = {
-            ...createEmptyAppState(),
-            projectRoot: createMockDirectory('/a'),
-            activeTaskId: {taskRunnerId: 'build-system', type: 'test'},
-            taskLists: new Map([['build-system', [createTask('build-system', 'test')]]]),
-            projectWasOpened: true,
-          };
-          const output = await runActions(
-            [Actions.tasksReady()],
-            initialState,
-            {visibilityTable: createMockVisibilityTable([{key: '/a', value: false}])},
-          )
-            .first()
+          const output = await runActions([Actions.setStatesForTaskRunners(newStates)], state)
+            .toArray()
             .toPromise();
-          invariant(output.type === Actions.INITIALIZE_VIEW);
-          expect(output.payload.visible).toBe(false);
+          expect(output.length).toEqual(1);
+          const action = output[0];
+          invariant(action.type === Actions.SELECT_TASK_RUNNER);
+          invariant(action.payload.taskRunner);
+          expect(action.payload.taskRunner.id).toEqual('c');
+        });
+      });
+    });
+
+    describe('if this root has a preference', () => {
+      let preference;
+      beforeEach(() => {
+        preference = {taskRunnerId: 'b', visible: true};
+      });
+
+      it('restores task runner and visibility based on the preference', () => {
+        waitsForPromise(async () => {
+          const output = await runActions(
+            [Actions.setStatesForTaskRunners(newStates)],
+            state,
+            createMockPreferences([{key: 'foo', value: preference}]),
+        )
+            .toArray()
+            .toPromise();
+          expect(output.length).toEqual(2);
+          const visibilityAction = output[0];
+          const taskRunnerAction = output[1];
+          invariant(visibilityAction.type === Actions.SET_TOOLBAR_VISIBILITY);
+          invariant(taskRunnerAction.type === Actions.SELECT_TASK_RUNNER);
+          expect(visibilityAction.payload.visible).toEqual(true);
+          expect(visibilityAction.payload.updateUserPreferences).toEqual(false);
+          invariant(taskRunnerAction.payload.taskRunner);
+          expect(taskRunnerAction.payload.taskRunner.id).toEqual('b');
         });
       });
     });
@@ -139,25 +179,17 @@ describe('Epics', () => {
         spyOn(taskRunner, 'runTask').andReturn(task);
         spyOn(task, 'cancel');
         const state = {
-          ...createEmptyAppState(),
-          activeTaskId: {type: 'test-task', taskRunnerId: 'test'},
-          activeTaskRunnerId: 'test',
-          taskRunners: new Map([['test', taskRunner]]),
-          taskLists: new Map([['test', [
-            {
-              type: 'test-task',
-              taskRunnerId: 'test',
-              taskRunnerName: 'Build System',
-              label: 'Test Task',
-              description: 'A great task to test',
-              icon: 'alert',
-              runnable: true,
-            },
-          ]]]),
+          activeTaskRunner: taskRunner,
+          taskRunners: [taskRunner],
         };
+        const taskMeta = dummy.createTask('test');
+
         const actions = [
-          Actions.runTask({type: 'test-task', taskRunnerId: 'test'}),
-          {type: Actions.TASK_STOPPED, payload: {task}},
+          Actions.runTask({...taskMeta, taskRunner}),
+          {type: Actions.TASK_STOPPED,
+            payload:
+           {taskStatus: {metadata: taskMeta, task, progress: 1}},
+          },
         ];
         await runActions(actions, state).toArray().toPromise();
         expect(task.cancel).toHaveBeenCalled();
@@ -176,36 +208,13 @@ describe('Epics', () => {
         spyOn(taskRunner, 'runTask').andReturn(task);
 
         const state = {
-          ...createEmptyAppState(),
-          activeTaskId: {
-            type: 'test-task',
-            taskRunnerId: 'test',
-          },
-          activeTaskRunnerId: 'test',
-          taskRunners: new Map([['test', taskRunner]]),
-          taskLists: new Map([['test', [
-            {
-              type: 'test-task',
-              taskRunnerId: 'test',
-              taskRunnerName: 'Build System',
-              label: 'Test Task',
-              description: 'A great task to test',
-              icon: 'alert',
-              runnable: true,
-            },
-          ]]]),
+          activeTaskRunner: taskRunner,
+          taskRunners: [taskRunner],
         };
+        const taskMeta = dummy.createTask('test');
 
         const output = runActions(
-          [{
-            type: Actions.RUN_TASK,
-            payload: {
-              taskId: {
-                type: 'test-task',
-                taskRunnerId: 'test',
-              },
-            },
-          }],
+          [Actions.runTask({...taskMeta, taskRunner})],
           state,
         );
 
@@ -232,14 +241,15 @@ function createMockStore(state: Object): Store {
 
 function runActions(
   actions: Array<Action>,
-  initialState: AppState,
-  options_?: Object,
+  initialState: Object,
+  preferencesForWorkingRoots: LocalStorageJsonTable<?ToolbarStatePreference>
+    = createMockPreferences([]),
 ): ReplaySubject<Action> {
   const store = createMockStore(initialState);
   const input = new Subject();
   const output = new ReplaySubject();
   const options = {
-    visibilityTable: options_ && options_.visibilityTable || createMockVisibilityTable([]),
+    preferencesForWorkingRoots,
     states: Observable.never(),
   };
   getRootEpic()(new ActionsObservable(input), store, options).subscribe(output);
@@ -248,15 +258,9 @@ function runActions(
   return output;
 }
 
-function createMockDirectory(path: string): Directory {
-  const directory = {
-    getPath: () => path,
-  };
-  return ((directory: any): Directory);
-}
-
-function createMockVisibilityTable(
-  db: Array<{key: string, value: boolean}>,
-): LocalStorageJsonTable<boolean> {
-  return ((new dummy.VisibilityTable(db): any): LocalStorageJsonTable<boolean>);
+function createMockPreferences(
+  db: Array<{key: string, value: ?ToolbarStatePreference}>,
+): LocalStorageJsonTable<?ToolbarStatePreference> {
+  return ((new dummy.ToolbarStatePreferences(db): any):
+    LocalStorageJsonTable<?ToolbarStatePreference>);
 }

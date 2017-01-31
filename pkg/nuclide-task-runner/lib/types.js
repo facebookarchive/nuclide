@@ -12,85 +12,71 @@ import type {LocalStorageJsonTable} from '../../commons-atom/LocalStorageJsonTab
 import type {IconName} from '../../nuclide-ui/types';
 import type {Task} from '../../commons-node/tasks';
 import type {Directory} from '../../nuclide-remote-connection';
-import type {Observable} from 'rxjs';
 
 export type AppState = {
-  // The explicitly selected task. If we're using a fallback, this will be null. Always use the
-  // `getActiveTaskId` selector to get the value.
-  activeTaskId: ?TaskId,
-  activeTaskRunnerId: ?string,
-  taskRunners: Map<string, TaskRunner>,
-  previousSessionActiveTaskId: ?TaskId,
-  previousSessionActiveTaskRunnerId: ?string,
+  taskRunnersReady: boolean,
+  isUpdatingTaskRunners: boolean,
   projectRoot: ?Directory,
-  projectWasOpened: boolean,
-  showPlaceholderInitially: boolean,
-  taskLists: Map<string, Array<AnnotatedTaskMetadata>>,
-  runningTaskInfo: ?{
-    task: Task,
-    progress: ?number,
-  },
-  tasksAreReady: boolean,
-  viewIsInitialized: boolean,
+
+  visible: boolean,
+
+  // selected task runner, won't be null as long as there's at least one runner enabled
+  activeTaskRunner: ?TaskRunner,
+  taskRunners: Array<TaskRunner>,
+  statesForTaskRunners: Map<TaskRunner, TaskRunnerState>,
+
+  runningTask: ?TaskStatus,
+};
+
+export type ToolbarStatePreference = {
+  taskRunnerId: ?string,
   visible: boolean,
 };
 
 export type EpicOptions = {
-  states: Observable<AppState>,
-  visibilityTable: LocalStorageJsonTable<boolean>,
+  preferencesForWorkingRoots: LocalStorageJsonTable<?ToolbarStatePreference>,
 };
 
 export type SerializedAppState = {
-  previousSessionActiveTaskId: ?TaskId,
-  previousSessionActiveTaskRunnerId: ?string,
   previousSessionVisible: ?boolean,
   version?: number,
 };
 
-export type TaskId = {
-  type: string,
-  taskRunnerId: string,
+export type TaskStatus = {
+  metadata: TaskMetadata,
+  task: Task,
+  progress: ?number,
 };
 
 export type TaskMetadata = {
   type: string,
   label: string,
   description: string,
-  // Is this task applicable? For backwards compat, this isn't (currently) required, but tasks that
-  // have it will be preferred.
-  disabled?: boolean,
   icon: IconName,
-  // When multiple task runners are applicable, the priority determines the task selected by
-  // default. Higher priorities will be taken first; the default is 0.
-  // Tasks that do not set `disabled` will have a default priority of -1.
-  priority?: number,
-  runnable?: boolean, // Can the action be run now?
+  disabled?: boolean,
   cancelable?: boolean, // By default, this is true (all tasks are cancelable).
 };
 
-export type AnnotatedTaskMetadata = TaskMetadata & {
-  taskRunnerId: string,
-  taskRunnerName: string,
-};
-
 export type TaskRunner = {
-  +id: string,
-  +name: string,
-  +getExtraUi?: () => ReactClass<any>, // activeTaskType will be provided as a nullable property.
-  +observeTaskList: (callback: (taskList: Array<TaskMetadata>) => mixed) => IDisposable,
-  +getIcon: () => ReactClass<any>,
-  +runTask: (taskName: string) => Task,
-  +setProjectRoot?: (projectRoot: ?Directory) => void,
-  // Will replace setProjectRoot and observeTaskList
-  +setProjectRootNew?: (
-    projectRoot: ?Directory,
-    callback: (enabled: boolean, taskList: Array<TaskMetadata>) => mixed,
-  ) => IDisposable,
-};
-
-export type TaskRunnerInfo = {
   id: string,
   name: string,
+  +getExtraUi?: () => ReactClass<any>,
+  +getIcon: () => ReactClass<any>,
+  +runTask: (taskType: string) => Task,
+  // Returns a callback that executes when the task runner determines whether it should be enabled
+  // or when the task list changes for the project root
+  +setProjectRootNew: (
+    projectRoot: ?Directory,
+    callback: (enabled: boolean, taskList: Array<TaskMetadata>) => mixed,
+    ) => IDisposable,
+  // Priority to decide which task runner to select when multiple are available for a project
+  // Default priority is 0, ties are resolved alphabetically.
+  +getPriority?: () => number,
+};
+
+export type TaskRunnerState = {
+  enabled: boolean,
+  tasks: Array<TaskMetadata>,
 };
 
 export type Store = {
@@ -100,8 +86,7 @@ export type Store = {
 
 export type BoundActionCreators = {
   registerTaskRunner(taskRunner: TaskRunner): void,
-  runTask(taskId: ?TaskId): void,
-  selectTask(taskId: TaskId): void,
+  runTask(taskId: TaskMetadata): void,
   setProjectRoot(dir: ?Directory): void,
   setToolbarVisibility(visible: boolean): void,
   stopTask(): void,
@@ -117,31 +102,25 @@ export type DidActivateInitialPackagesAction = {
   type: 'DID_ACTIVATE_INITIAL_PACKAGES',
 };
 
-export type InitializeViewAction = {
-  type: 'INITIALIZE_VIEW',
-  payload: {
-    visible: boolean,
-  },
-};
-
 export type SelectTaskRunnerAction = {
   type: 'SELECT_TASK_RUNNER',
   payload: {
-    taskRunnerId: string,
+    taskRunner: ?TaskRunner,
+    updateUserPreferences: boolean,
   },
 };
 
-export type SelectTaskAction = {
-  type: 'SELECT_TASK',
+export type SetStatesForTaskRunnersAction = {
+  type: 'SET_STATES_FOR_TASK_RUNNERS',
   payload: {
-    taskId: TaskId,
+    statesForTaskRunners: Map<TaskRunner, TaskRunnerState>,
   },
 };
 
 export type TaskCompletedAction = {
   type: 'TASK_COMPLETED',
   payload: {
-    task: Task,
+    taskStatus: TaskStatus,
   },
 };
 
@@ -156,21 +135,21 @@ export type TaskErroredAction = {
   type: 'TASK_ERRORED',
   payload: {
     error: Error,
-    task: ?Task,
+    taskStatus: TaskStatus,
   },
 };
 
 export type TaskStartedAction = {
   type: 'TASK_STARTED',
   payload: {
-    task: Task,
+    taskStatus: TaskStatus,
   },
 };
 
 export type TaskStoppedAction = {
   type: 'TASK_STOPPED',
   payload: {
-    task: Task,
+    taskStatus: TaskStatus,
   },
 };
 
@@ -181,10 +160,17 @@ export type RegisterTaskRunnerAction = {
   },
 };
 
+export type UnregisterTaskRunnerAction = {
+  type: 'UNREGISTER_TASK_RUNNER',
+  payload: {
+    taskRunner: TaskRunner,
+  },
+};
+
 export type RunTaskAction = {
   type: 'RUN_TASK',
   payload: {
-    taskId: ?TaskId,
+    taskMeta: TaskMetadata & {taskRunner: TaskRunner},
   },
 };
 
@@ -199,6 +185,7 @@ export type SetToolbarVisibilityAction = {
   type: 'SET_TOOLBAR_VISIBILITY',
   payload: {
     visible: boolean,
+    updateUserPreferences: boolean,
   },
 };
 
@@ -209,42 +196,21 @@ export type StopTaskAction = {
 export type ToggleToolbarVisibilityAction = {
   type: 'TOGGLE_TOOLBAR_VISIBILITY',
   payload: {
-    taskRunnerId: ?string,
-  },
-};
-
-export type SetTaskListsAction = {
-  type: 'SET_TASK_LISTS',
-  payload: {
-    taskLists: Map<string, Array<AnnotatedTaskMetadata>>,
-  },
-};
-
-export type TasksReadyAction = {
-  type: 'TASKS_READY',
-};
-
-export type UnregisterTaskRunnerAction = {
-  type: 'UNREGISTER_TASK_RUNNER',
-  payload: {
-    id: string,
+    taskRunner: ?TaskRunner,
   },
 };
 
 export type Action =
   DidActivateInitialPackagesAction
-  | InitializeViewAction
   | RunTaskAction
-  | SelectTaskAction
   | SelectTaskRunnerAction
+  | SetStatesForTaskRunnersAction
   | SetProjectRootAction
-  | SetTaskListsAction
   | SetToolbarVisibilityAction
   | StopTaskAction
   | TaskCompletedAction
   | TaskProgressAction
   | TaskErroredAction
-  | TasksReadyAction
   | TaskStartedAction
   | TaskStoppedAction
   | ToggleToolbarVisibilityAction

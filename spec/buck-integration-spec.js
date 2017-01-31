@@ -12,7 +12,6 @@
 
 import {sleep} from '../pkg/commons-node/promise';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import activation from '../pkg/nuclide-task-runner';
 import {
   activateAllPackages,
   jasmineIntegrationTestSetup,
@@ -53,20 +52,16 @@ describe('Buck building via toolbar', () => {
 
     runs(() => {
       // Select the Buck build system.
-      const commands = activation._getCommands();
-      invariant(commands != null);
-      commands.selectTask({taskRunnerId: 'buck', type: 'build'});
+      atom.commands.dispatch(
+        workspaceView,
+        'nuclide-task-runner:toggle-buck-toolbar',
+      );
     });
 
     waitsFor(
       'the toolbar to be shown',
       500,
       () => {
-        atom.commands.dispatch(
-          workspaceView,
-          'nuclide-task-runner:toggle-toolbar-visibility',
-          {visible: true},
-        );
         buildToolbar = document.querySelector('.nuclide-task-runner-toolbar');
         return Boolean(buildToolbar);
       },
@@ -108,7 +103,7 @@ describe('Buck building via toolbar', () => {
       },
     );
 
-    waitsForPromise(async () => {
+    waitsForPromise({timeout: 25000}, async () => {
       // It shouldn't have errored.
       invariant(listGroup != null);
       const errorMessageEl = listGroup.querySelector('.text-error');
@@ -122,19 +117,20 @@ describe('Buck building via toolbar', () => {
       // Set the target.
       listElements[0].click();
 
-      // Since there's some debouncing going on, wait for the state to update before building.
-      await sleep(1000);
+      // It takes a while for build to become enabled because platforms are being determined
+      await sleep(15000);
 
       // Run the project
-      atom.commands.dispatch(workspaceView, 'nuclide-task-runner:run-selected-task');
+      atom.commands.dispatch(workspaceView, 'nuclide-task-runner:buck-build');
 
       invariant(buildToolbar != null);
       // The Build task should be selected.
       const button = buildToolbar.querySelector(
-        '.nuclide-task-runner-toolbar-contents .nuclide-task-runner-system-task-button',
+        '.nuclide-task-runner-toolbar-contents .nuclide-task-runner-task-runner-button',
       );
       invariant(button != null);
-      expect(button.textContent).toBe('Build');
+      const icon = button.querySelector('.icon-nuclicon-buck');
+      expect(icon).toExist();
     });
 
     waitsFor(

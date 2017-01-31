@@ -9,9 +9,10 @@
  */
 
 import type {Task} from '../../commons-node/tasks';
-import type {AnnotatedTaskMetadata, TaskMetadata} from '../lib/types';
-
+import type {TaskMetadata, ToolbarStatePreference} from '../lib/types';
+import type {Directory} from '../../nuclide-remote-connection';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
+
 import {Subject} from 'rxjs';
 
 type Entry<T> = {key: string, value: T};
@@ -32,10 +33,11 @@ export class TaskRunner {
     return ((null: any): ReactClass<any>);
   }
 
-  observeTaskList(callback: (taskList: Array<TaskMetadata>) => mixed): IDisposable {
-    return new UniversalDisposable(
-      this._taskLists.subscribe(taskList => { callback(taskList); }),
-    );
+  setProjectRootNew(
+    projectRoot: ?Directory,
+    callback: (enabled: boolean, taskList: Array<TaskMetadata>) => mixed,
+  ): IDisposable {
+    return new UniversalDisposable();
   }
 
   runTask(taskName: string): Task {
@@ -43,38 +45,32 @@ export class TaskRunner {
   }
 }
 
-export class VisibilityTable {
-  _db: Array<Entry<boolean>>;
+export class ToolbarStatePreferences {
+  _db: Array<Entry<?ToolbarStatePreference>>;
 
-  constructor(db: Array<Entry<boolean>>) {
+  constructor(db: Array<Entry<?ToolbarStatePreference>>) {
     this._db = db;
   }
 
-  getItem(key: string): ?boolean {
+  getItem(key: string): ?ToolbarStatePreference {
     const entry = this._db[0];
     return entry == null ? null : entry.value;
   }
 
-  getEntries(): Array<Entry<boolean>> {
+  getEntries(): Array<Entry<?ToolbarStatePreference>> {
     return this._db;
   }
 }
 
 export function createTask(
-  taskRunnerId: string,
   type: string,
-  disabled: ?boolean = undefined,
-  priority: number = 0,
-): AnnotatedTaskMetadata {
-  // $FlowIgnore: For tests, it's fine if this exists and is undefined.
+  disabled?: boolean,
+): TaskMetadata {
   return {
     type,
     label: type,
     description: type,
+    icon: 'alert',
     disabled,
-    priority,
-    runnable: true,
-    taskRunnerId,
-    taskRunnerName: taskRunnerId,
   };
 }

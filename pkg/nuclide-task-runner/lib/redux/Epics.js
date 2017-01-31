@@ -9,193 +9,165 @@
  */
 
 import type {
-  AnnotatedTaskMetadata,
   Action,
   AppState,
   EpicOptions,
   Store,
-  TaskId,
   TaskMetadata,
   TaskRunner,
+  TaskRunnerState,
 } from '../types';
 import type {ActionsObservable} from '../../../commons-node/redux-observable';
-
-import {areSetsEqual} from '../../../commons-node/collection';
-import {observableFromTask} from '../../../commons-node/tasks';
-import {observableFromSubscribeFunction} from '../../../commons-node/event';
-import {diffSets} from '../../../commons-node/observable';
 import UniversalDisposable from '../../../commons-node/UniversalDisposable';
+
+import {observableFromTask} from '../../../commons-node/tasks';
 import {getLogger} from '../../../nuclide-logging';
-import {getTaskMetadata} from '../getTaskMetadata';
-import {getActiveTaskRunner} from '../redux/Selectors';
-import {taskIdsAreEqual} from '../taskIdsAreEqual';
 import * as Actions from './Actions';
 import invariant from 'assert';
+import nullthrows from 'nullthrows';
 import {Observable} from 'rxjs';
 
-export function aggregateTaskListsEpic(
+export function setProjectRootEpic(
   actions: ActionsObservable<Action>,
   store: Store,
   options: EpicOptions,
 ): Observable<Action> {
-  // Wait until the initial packages have activated.
-  return actions.ofType(Actions.DID_ACTIVATE_INITIAL_PACKAGES)
+  return actions.ofType(
+    Actions.REGISTER_TASK_RUNNER,
+    Actions.UNREGISTER_TASK_RUNNER,
+    Actions.DID_ACTIVATE_INITIAL_PACKAGES)
+    // Refreshes everything. Not the most efficient, but good enough
+   .map(() => Actions.setProjectRoot(store.getState().projectRoot));
+}
+
+export function setActiveTaskRunnerEpic(
+  actions: ActionsObservable<Action>,
+  store: Store,
+  options: EpicOptions,
+): Observable<Action> {
+  return actions.ofType(Actions.SET_STATES_FOR_TASK_RUNNERS)
     .switchMap(() => {
-      // We pass the state stream explicitly. Ideally, we'd just use `Observable.from(store)`,
-      // but Redux gives us a partial store so we have to work around it.
-      // See redux-observable/redux-observable#56
-      const {states} = options;
+      const {projectRoot} = store.getState();
 
-      const projectRoots = states.map(state => state.projectRoot)
-        .distinctUntilChanged((a, b) => {
-          const aPath = a && a.getPath();
-          const bPath = b && b.getPath();
-          return aPath === bPath;
-        });
-      const taskRunnersByIdStream: Observable<Map<string, TaskRunner>> = states
-        .map(state => state.taskRunners)
-        .distinctUntilChanged();
+      if (!projectRoot) { return Observable.of(Actions.selectTaskRunner(null, false)); }
 
-      const diffs = Observable.merge(
-        // We want to make sure that we don't call `observeTaskList()` when nothing's changed, so we
-        // use `diffSets()` to identify changes.
-        diffSets(taskRunnersByIdStream.map(taskRunnersById => new Set(taskRunnersById.keys()))),
-        // If the project root changes, get tasks from all of them.
-        projectRoots
-          .skip(1)
-          .switchMap(() => {
-            const taskRunnerIds = new Set(store.getState().taskRunners.keys());
-            return Observable.of(
-              {added: new Set(), removed: taskRunnerIds},
-              {added: taskRunnerIds, removed: new Set()},
-            );
-          }),
-      )
-        .share();
+      const {activeTaskRunner, taskRunners, statesForTaskRunners} = store.getState();
+      const {preferencesForWorkingRoots} = options;
+      const preference = preferencesForWorkingRoots.getItem(projectRoot.getPath());
 
-      // Create a stream containing the task list updates, tagged by task runner id.
-      const taskListsByIdStream: Observable<Map<string, Array<AnnotatedTaskMetadata>>> = diffs
-        .mergeMap(({added}) => (
-          // Get an observable of task lists for each task runner. Tag it with the task runner id
-          // so that we can tie them back later.
-          Observable.from(added).mergeMap(taskRunnerId => {
-            const taskRunner = store.getState().taskRunners.get(taskRunnerId);
-            invariant(taskRunner != null);
-            const taskLists = observableFromSubscribeFunction(cb => {
-              if (taskRunner.setProjectRoot != null) {
-                const {projectRoot} = store.getState();
-                invariant(taskRunner.setProjectRoot != null);
-                taskRunner.setProjectRoot(projectRoot);
-              }
-              return taskRunner.observeTaskList(cb);
-            })
-              // Stop listening to the task list when the runner's removed or the project root
-              // changes.
-              .takeUntil(diffs.filter(diff => diff.removed.has(taskRunnerId)))
-              .map(taskList => {
-                // Annotate each task with some info about its runner.
-                const annotatedTaskList = taskList.map(task => ({
-                  ...task,
-                  taskRunnerId,
-                  taskRunnerName: taskRunner.name,
-                }));
-                // Tag each task list with the id of its runner for adding to the map.
-                return {taskRunnerId, taskList: annotatedTaskList};
-              })
-              // When it completes, null the task list for this task runner.
-              .concat(Observable.of({taskRunnerId, taskList: null}))
-              .publish();
+      let visibilityAction;
+      let taskRunner = activeTaskRunner;
 
-            // Use `Observable.create()` to make sure we only have one subscription to taskLists and
-            // that we don't miss any elements.
-            return Observable.create(observer => (
-              new UniversalDisposable(
-                Observable.merge(
-                  taskLists,
-                  Observable.of({taskRunnerId, taskList: []})
-                    // Use a more generous timeout on the initial load to allow for
-                    // package initialization, lazy imports, the RPC framework, etc.
-                    .delay(store.getState().viewIsInitialized ? 1000 : 5000)
-                    .takeUntil(taskLists.take(1)),
-                )
-                  .subscribe(observer),
-                taskLists.connect(),
-              )
-            ));
-          })
-        ))
-        .scan(
-          // Combine the lists from each task runner into a single map.
-          (acc_, {taskRunnerId, taskList}) => {
-            const acc = new Map(acc_);
-            if (taskList == null) {
-              acc.delete(taskRunnerId);
-            } else {
-              acc.set(taskRunnerId, taskList);
-            }
-            return acc;
-          },
-          new Map(),
-        );
-
-      return taskListsByIdStream.map(taskListsById => Actions.setTaskLists(taskListsById));
-    });
-}
-
-export function tasksReadyEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions.ofType(Actions.SET_TASK_LISTS)
-    .switchMap(action => {
-      invariant(action.type === Actions.SET_TASK_LISTS);
-      const {taskLists} = action.payload;
-      const state = store.getState();
-      const tasksBecameReady = !state.tasksAreReady && areSetsEqual(
-        new Set(taskLists.keys()),
-        new Set(state.taskRunners.keys()),
-      );
-      return tasksBecameReady ? [Actions.tasksReady()] : [];
-    });
-}
-
-export function initializeViewEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-  options: EpicOptions,
-): Observable<Action> {
-  // Initialize the view when we have a task list.
-  return actions.ofType(Actions.TASKS_READY)
-    // If a project hasn't been opened yet, we defer this until one has been. When that happens, a
-    // directory will be added -> the current working root will be set -> we'll request taks lists
-    // -> this action will be called again and we'll initialize.
-    .filter(() => {
-      const state = store.getState();
-      return state.projectWasOpened && !state.viewIsInitialized;
-    })
-    .map(() => {
-      const {activeTaskId, taskLists, projectRoot} = store.getState();
-      const {visibilityTable} = options;
-      const projectRootPath = projectRoot == null ? null : projectRoot.getPath();
-      const previousSessionVisible = projectRootPath == null
-        ? undefined
-        : visibilityTable.getItem(projectRootPath);
-
-      // Initialize the view if we've yet to do so.
-      let visible;
-      if (previousSessionVisible != null) {
-        // Use the last known state, if we have one.
-        visible = previousSessionVisible;
+      if (preference) {
+        // The user had a session for this root in the past, restore it
+        visibilityAction = Observable.of(Actions.setToolbarVisibility(preference.visible, false));
+        const preferredId = preference.taskRunnerId;
+        if (!activeTaskRunner || activeTaskRunner.id !== preferredId) {
+          const preferredRunner = taskRunners.find(runner => runner.id === preferredId);
+          const state = preferredRunner && statesForTaskRunners.get(preferredRunner);
+          if (state && state.enabled) {
+            taskRunner = preferredRunner;
+          }
+        }
       } else {
-        // Otherwise, only show the toolbar if the initial task is enabled. (It's okay if a
-        // task runner doesn't give us a "disabled" property for now, but we're not going to
-        // show the bar for possibly irrelevant tasks.)
-        const activeTaskMeta = activeTaskId == null ? null : getTaskMeta(activeTaskId, taskLists);
-        visible = activeTaskMeta != null && activeTaskMeta.disabled === false;
+        // This is a new root, try to make as few UI changes as possible
+        visibilityAction = Observable.empty();
+        taskRunner = activeTaskRunner;
       }
 
-      return Actions.initializeView(visible);
+      // We have nothing to go with, let's make best effort to select a task runner
+      if (!taskRunner) {
+        taskRunner = getBestEffortTaskRunner(taskRunners, statesForTaskRunners);
+      }
+
+      return Observable.concat(
+        visibilityAction,
+        Observable.of(Actions.selectTaskRunner(taskRunner, false)),
+      );
     });
+}
+
+export function combineTaskRunnerStatesEpic(
+  actions: ActionsObservable<Action>,
+  store: Store,
+  options: EpicOptions,
+): Observable<Action> {
+  return actions.ofType(Actions.SET_PROJECT_ROOT)
+    .switchMap(() => {
+      const {projectRoot, taskRunners, taskRunnersReady} = store.getState();
+
+      if (!taskRunnersReady) {
+        // We will dispatch another set project root when everyone is ready.
+        return Observable.empty();
+      }
+
+      if (taskRunners.length === 0) {
+        return Observable.of(Actions.setStatesForTaskRunners(new Map()));
+      }
+
+      // This depends on the epic above, triggering setProjectRoot when taskRunners change
+      const runnersAndStates = taskRunners.map(taskRunner => (
+        Observable.create(observer => (
+          new UniversalDisposable(
+            taskRunner.setProjectRootNew(projectRoot, (enabled, tasks) => {
+              observer.next([taskRunner, {enabled, tasks: enabled ? tasks : []}]);
+            }),
+          )
+        ))
+      ));
+
+      return Observable.from(runnersAndStates)
+        // $FlowFixMe: type combineAll
+        .combineAll()
+        .map(tuples => {
+          const statesForTaskRunners = new Map();
+          tuples.forEach(([taskRunner, state]) => {
+            statesForTaskRunners.set(taskRunner, state);
+          });
+          return statesForTaskRunners;
+        })
+        .map(statesForTaskRunners => Actions.setStatesForTaskRunners(statesForTaskRunners));
+    });
+}
+
+export function updatePreferredVisibilityEpic(
+  actions: ActionsObservable<Action>,
+  store: Store,
+  options: EpicOptions,
+): Observable<Action> {
+  return actions.ofType(Actions.SET_TOOLBAR_VISIBILITY)
+    .do(action => {
+      invariant(action.type === Actions.SET_TOOLBAR_VISIBILITY);
+      const {visible, updateUserPreferences} = action.payload;
+      const {projectRoot, activeTaskRunner} = store.getState();
+
+      if (updateUserPreferences && projectRoot) {
+        // The user explicitly changed the visibility, remember this state
+        const {preferencesForWorkingRoots} = options;
+        const taskRunnerId = activeTaskRunner ? activeTaskRunner.id : null;
+        preferencesForWorkingRoots.setItem(projectRoot.getPath(), {taskRunnerId, visible});
+      }
+    }).ignoreElements();
+}
+
+export function updatePreferredTaskRunnerEpic(
+  actions: ActionsObservable<Action>,
+  store: Store,
+  options: EpicOptions,
+): Observable<Action> {
+  return actions.ofType(Actions.SELECT_TASK_RUNNER)
+    .do(action => {
+      invariant(action.type === Actions.SELECT_TASK_RUNNER);
+      const {updateUserPreferences} = action.payload;
+      const {projectRoot, activeTaskRunner} = store.getState();
+
+      if (updateUserPreferences && projectRoot && activeTaskRunner) {
+        // The user explicitly selected this task runner, remember this state
+        const {preferencesForWorkingRoots} = options;
+        const updatedPreference = {visible: true, taskRunnerId: activeTaskRunner.id};
+        preferencesForWorkingRoots.setItem(projectRoot.getPath(), updatedPreference);
+      }
+    }).ignoreElements();
 }
 
 export function runTaskEpic(
@@ -205,37 +177,28 @@ export function runTaskEpic(
   return actions.ofType(Actions.RUN_TASK)
     .switchMap(action => {
       invariant(action.type === Actions.RUN_TASK);
-      const taskToRun = action.payload.taskId || store.getState().activeTaskId;
-
-      // Don't do anything if there's no active task.
-      if (taskToRun == null) { return Observable.empty(); }
-
+      const state = store.getState();
       // Don't do anything if a task is already running.
-      if (store.getState().runningTaskInfo != null) { return Observable.empty(); }
+      if (state.runningTask) { return Observable.empty(); }
+
+      const taskMeta = action.payload.taskMeta;
+
+      const {activeTaskRunner} = state;
+      const newTaskRunner = taskMeta.taskRunner;
 
       return Observable.concat(
-        taskIdsAreEqual(store.getState().activeTaskId, taskToRun)
+        activeTaskRunner === newTaskRunner
           ? Observable.empty()
-          : Observable.of(Actions.selectTask(taskToRun)),
+          : Observable.of(Actions.selectTaskRunner(newTaskRunner, true)),
         store.getState().visible
           ? Observable.empty()
-          : Observable.of(Actions.setToolbarVisibility(true)),
+          : Observable.of(Actions.setToolbarVisibility(true, true)),
         Observable.defer(() => {
-          const state = store.getState();
-          const activeTaskRunner = getActiveTaskRunner(state);
-
-          if (activeTaskRunner == null) {
+          if (taskMeta.disabled) {
             return Observable.empty();
           }
 
-          const taskMeta = getTaskMetadata(taskToRun, state.taskLists);
-          invariant(taskMeta != null);
-
-          if (!taskMeta.runnable) {
-            return Observable.empty();
-          }
-
-          return createTaskObservable(activeTaskRunner, taskMeta, () => store.getState())
+          return createTaskObservable(taskMeta, store.getState)
             // Stop listening once the task is done.
             .takeUntil(
               actions.ofType(Actions.TASK_COMPLETED, Actions.TASK_ERRORED, Actions.TASK_STOPPED),
@@ -251,12 +214,11 @@ export function stopTaskEpic(
 ): Observable<Action> {
   return actions.ofType(Actions.STOP_TASK)
     .switchMap(action => {
-      const {runningTaskInfo} = store.getState();
-      const task = runningTaskInfo == null ? null : runningTaskInfo.task;
-      if (task == null) { return Observable.empty(); }
+      const {runningTask} = store.getState();
+      if (!runningTask) { return Observable.empty(); }
       return Observable.of({
         type: Actions.TASK_STOPPED,
-        payload: {task},
+        payload: {taskStatus: runningTask},
       });
     });
 }
@@ -269,38 +231,22 @@ export function toggleToolbarVisibilityEpic(
     .switchMap(action => {
       invariant(action.type === Actions.TOGGLE_TOOLBAR_VISIBILITY);
       const state = store.getState();
-      const {taskRunnerId} = action.payload;
+      const {activeTaskRunner, statesForTaskRunners} = state;
+      const {taskRunner} = action.payload;
 
-      // If no taskRunnerId is provided, just toggle the visibility.
-      if (taskRunnerId == null) {
-        return Observable.of(Actions.setToolbarVisibility(!state.visible));
+      // If changing to a new task runner, select it and show it.
+      if (taskRunner != null) {
+        const taskRunnerState = statesForTaskRunners.get(taskRunner);
+        if (taskRunnerState != null && taskRunnerState.enabled && taskRunner !== activeTaskRunner) {
+          return Observable.of(
+            Actions.setToolbarVisibility(true, true),
+            Actions.selectTaskRunner(taskRunner, true),
+          );
+        }
       }
 
-      // If the active task corresponds to the task runner you want to toggle, just toggle the
-      // visibility.
-      const {activeTaskId} = state;
-      if (activeTaskId != null && activeTaskId.taskRunnerId === taskRunnerId) {
-        return Observable.of(Actions.setToolbarVisibility(!state.visible));
-      }
-
-      // Choose the first task for that task runner.
-      const taskListForRunner = state.taskLists.get(taskRunnerId) || [];
-      const taskIdToSelect = taskListForRunner.length > 0 ? taskListForRunner[0] : null;
-      if (taskIdToSelect == null) {
-        const taskRunner = state.taskRunners.get(taskRunnerId);
-        invariant(taskRunner != null);
-        atom.notifications.addWarning(`The ${taskRunner.name} task runner doesn't have any tasks!`);
-      }
-
-      return Observable.concat(
-        // Make sure the toolbar is shown.
-        Observable.of(Actions.setToolbarVisibility(true)),
-
-        // Select the task.
-        taskIdToSelect == null
-          ? Observable.empty()
-          : Observable.of(Actions.selectTask(taskIdToSelect)),
-      );
+      // Otherwise, just toggle the visibility.
+      return Observable.of(Actions.setToolbarVisibility(!state.visible, true));
     });
 }
 
@@ -310,21 +256,21 @@ let taskFailedNotification;
  * Run a task and transform its output into domain-specific actions.
  */
 function createTaskObservable(
-  taskRunner: TaskRunner,
-  taskMeta: TaskMetadata,
+  taskMeta: TaskMetadata & {taskRunner: TaskRunner},
   getState: () => AppState,
 ): Observable<Action> {
   return Observable.defer(() => {
     if (taskFailedNotification != null) {
       taskFailedNotification.dismiss();
     }
-    const task = taskRunner.runTask(taskMeta.type);
+    const task = taskMeta.taskRunner.runTask(taskMeta.type);
+    const taskStatus = {metadata: taskMeta, task};
     const events = observableFromTask(task);
 
     return Observable
       .of({
         type: Actions.TASK_STARTED,
-        payload: {task},
+        payload: {taskStatus},
       })
       .concat(
         events
@@ -336,7 +282,7 @@ function createTaskObservable(
       )
       .concat(Observable.of({
         type: Actions.TASK_COMPLETED,
-        payload: {task},
+        payload: {taskStatus: {...taskStatus, progress: 1}},
       }));
   })
     .catch(error => {
@@ -349,27 +295,38 @@ function createTaskObservable(
       );
       taskFailedNotification.onDidDismiss(() => { taskFailedNotification = null; });
       getLogger().error('Error running task:', taskMeta, error);
-      const {runningTaskInfo} = getState();
       return Observable.of({
         type: Actions.TASK_ERRORED,
         payload: {
           error,
-          task: runningTaskInfo == null ? null : runningTaskInfo.task,
+          taskStatus: nullthrows(getState().runningTask),
         },
       });
     })
     .share();
 }
 
-function getTaskMeta(
-  taskId: TaskId,
-  taskLists: Map<string, Array<AnnotatedTaskMetadata>>,
-): ?AnnotatedTaskMetadata {
-  for (const taskList of taskLists.values()) {
-    for (const taskMeta of taskList) {
-      if (taskIdsAreEqual(taskId, taskMeta)) {
-        return taskMeta;
-      }
+function getBestEffortTaskRunner(
+  taskRunners: Array<TaskRunner>,
+  statesForTaskRunners: Map<TaskRunner, TaskRunnerState>,
+): ?TaskRunner {
+  return taskRunners.reduce((memo, runner) => {
+    const state = statesForTaskRunners.get(runner);
+    // Disabled task runners aren't selectable
+    if (!state || !state.enabled) {
+      return memo;
     }
-  }
+    // Select at least something
+    if (memo == null) {
+      return runner;
+    }
+
+    // Highest priority wins
+    const memoPriority = memo.getPriority && memo.getPriority() || 0;
+    const runnerPriority = runner.getPriority && runner.getPriority() || 0;
+    if (runnerPriority > memoPriority) {
+      return runner;
+    }
+    return memo;
+  }, null);
 }

@@ -14,19 +14,17 @@ import {bindObservableAsProps} from '../../../nuclide-ui/bindObservableAsProps';
 import {viewableFromReactElement} from '../../../commons-atom/viewableFromReactElement';
 import {nextAnimationFrame, throttle} from '../../../commons-node/observable';
 import * as Actions from '../redux/Actions';
-import {getActiveTaskRunner} from '../redux/Selectors';
 import {Toolbar} from './Toolbar';
-import memoize from 'lodash.memoize';
 import {React} from 'react-for-atom';
 import {Observable} from 'rxjs';
-import shallowEqual from 'shallowequal';
+import shallowequal from 'shallowequal';
 
 export function createPanelItem(store: Store): Object {
   const staticProps = {
-    runTask: taskId => { store.dispatch(Actions.runTask(taskId)); },
-    selectTask: taskId => { store.dispatch(Actions.selectTask(taskId)); },
-    selectTaskRunner: taskRunnerId => { store.dispatch(Actions.selectTaskRunner(taskRunnerId)); },
-    stopTask: () => { store.dispatch(Actions.stopTask()); },
+    runTask: taskMeta => { store.dispatch(Actions.runTask(taskMeta)); },
+    selectTaskRunner:
+     taskRunner => { store.dispatch(Actions.selectTaskRunner(taskRunner, true)); },
+    stopRunningTask: () => { store.dispatch(Actions.stopTask()); },
   };
 
   // $FlowFixMe: We need to teach Flow about Symbol.observable
@@ -37,58 +35,44 @@ export function createPanelItem(store: Store): Object {
   // the state related to the selected task "sticky." Other parts of the state, however, we always
   // need to update immediately (e.g. progress).
   const stickyProps = states
-    .filter(state => state.tasksAreReady)
+    .filter(state => state.taskRunnersReady && !state.isUpdatingTaskRunners)
     .startWith(store.getState())
-    // Map to a subset of state so we can ignore changes of the other parts.
     .map(state => ({
       taskRunners: state.taskRunners,
-      activeTaskRunner: getActiveTaskRunner(state),
-      activeTaskId: state.activeTaskId,
-      taskLists: state.taskLists,
+      statesForTaskRunners: state.statesForTaskRunners,
+      activeTaskRunner: state.activeTaskRunner,
+      iconComponent: state.activeTaskRunner ? state.activeTaskRunner.getIcon() : null,
+      extraUiComponent: getExtraUiComponent(state.activeTaskRunner),
     }))
-    .distinctUntilChanged(shallowEqual)
-    .map(({taskRunners, activeTaskRunner, activeTaskId, taskLists}) => {
-      return {
-        taskRunnerInfo: Array.from(taskRunners.values()),
-        getExtraUi: getExtraUiFactory(activeTaskRunner),
-        activeTaskId,
-        activeTaskRunner,
-        taskLists,
-        getActiveTaskRunnerIcon: () => activeTaskRunner && activeTaskRunner.getIcon(),
-      };
-    });
-  const otherProps = states
-    .map(state => {
-      return {
-        ...staticProps,
-        // Don't let people click on things if we're using "stale" sticky props.
-        disabled: !state.tasksAreReady,
-        progress: state.runningTaskInfo && state.runningTaskInfo.progress,
-        taskIsRunning: state.runningTaskInfo != null,
-        showPlaceholder: !state.viewIsInitialized && state.showPlaceholderInitially,
-      };
-    })
-    .distinctUntilChanged(shallowEqual);
-  // Throttle to animation frames.
+     .distinctUntilChanged(shallowequal);
+
+  const alwaysUpToDateProps = states
+    .map(state => ({
+      ...staticProps,
+      toolbarDisabled: !state.taskRunnersReady || state.isUpdatingTaskRunners,
+      progress: state.runningTask ? state.runningTask.progress : null,
+      taskIsRunning: state.runningTask != null,
+      runningTaskIsCancelable:
+        state.runningTask ? state.runningTask.metadata.cancelable !== false : undefined,
+    }));
+
   const props = throttle(
-    Observable.combineLatest(stickyProps, otherProps, (a, b) => ({...a, ...b})),
+    Observable.combineLatest(stickyProps, alwaysUpToDateProps, (a, b) => ({...a, ...b})),
     () => nextAnimationFrame,
   );
+
   const StatefulToolbar = bindObservableAsProps(props, Toolbar);
   return viewableFromReactElement(<StatefulToolbar />);
 }
 
-/**
- * Since `getExtraUi` may create a React class dynamically, we want to ensure that we only ever call
- * it once. To do that, we memoize the function and cache the result.
- */
-const extraUiFactories = new WeakMap();
-function getExtraUiFactory(taskRunner: ?TaskRunner): ?() => ReactClass<any> {
-  let getExtraUi = extraUiFactories.get(taskRunner);
-  if (getExtraUi != null) { return getExtraUi; }
-  if (taskRunner == null) { return null; }
-  if (taskRunner.getExtraUi == null) { return null; }
-  getExtraUi = memoize(taskRunner.getExtraUi.bind(taskRunner));
-  extraUiFactories.set(taskRunner, getExtraUi);
-  return getExtraUi;
+// Since `getExtraUi` may create a React class dynamically, the classes are cached
+const extraUiComponentCache = new WeakMap();
+function getExtraUiComponent(taskRunner: ?TaskRunner): ?ReactClass<any> {
+  if (!taskRunner) { return null; }
+  let extraUi = extraUiComponentCache.get(taskRunner);
+  if (extraUi != null) { return extraUi; }
+  if (!taskRunner.getExtraUi) { return null; }
+  extraUi = taskRunner.getExtraUi();
+  extraUiComponentCache.set(taskRunner, extraUi);
+  return extraUi;
 }
