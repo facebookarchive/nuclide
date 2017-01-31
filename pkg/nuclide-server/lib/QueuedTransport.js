@@ -80,19 +80,6 @@ export class QueuedTransport {
     transport.onClose(() => this._onClose(transport));
   }
 
-  _onMessage(transport: UnreliableTransport, message: Object): void {
-    if (this._isClosed) {
-      logger.error('Received socket message after connection closed', new Error());
-      return;
-    }
-    if (this._transport !== transport) {
-      // This shouldn't happen, but ...
-      logger.error('Received message after transport closed', new Error());
-    }
-
-    this._emitter.emit('message', message);
-  }
-
   _onClose(transport: UnreliableTransport): void {
     invariant(transport.isClosed());
 
@@ -102,7 +89,7 @@ export class QueuedTransport {
     }
     if (transport !== this._transport) {
       // This should not happen...
-      logger.error('Orphaned transport closed', new Error());
+      logger.error('Orphaned transport closed');
       return;
     }
 

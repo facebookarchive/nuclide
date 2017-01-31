@@ -50,7 +50,7 @@ class Activation {
           // Wait a bit before starting the initial search, since it's a heavy op.
           scheduleIdleCallback(() => {
             this._initialSearch(projectPath).catch(err => {
-              logger.error(`Error starting fuzzy filename search for ${projectPath}`, err);
+              logger.error(`Error starting fuzzy filename search for ${projectPath}: ${err}`);
               this._disposeSearch(projectPath);
             });
           }, {timeout: 5000}),

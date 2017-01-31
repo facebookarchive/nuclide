@@ -91,7 +91,7 @@ export class WebSocketTransport {
 
   _onSocketMessage(message: string): void {
     if (this._socket == null) {
-      logger.error('Received socket message after connection closed', new Error());
+      logger.error('Received socket message after connection closed');
       return;
     }
     this._messages.next(message);
