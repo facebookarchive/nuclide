@@ -20,15 +20,11 @@ type SwiftPMTaskRunnerAction =
     chdir: string,
   } |
   {
-    actionType: 'UPDATE_BUILD_SETTINGS',
+    actionType: 'UPDATE_SETTINGS',
     configuration: string,
     Xcc: string,
     Xlinker: string,
     Xswiftc: string,
-    buildPath: string,
-  } |
-  {
-    actionType: 'UPDATE_TEST_SETTINGS',
     buildPath: string,
   } |
   {
@@ -39,8 +35,7 @@ type SwiftPMTaskRunnerAction =
 export const ActionTypes = Object.freeze({
   UPDATE_PROJECT_ROOT: 'UPDATE_PROJECT_ROOT',
   UPDATE_CHDIR: 'UPDATE_CHDIR',
-  UPDATE_BUILD_SETTINGS: 'UPDATE_BUILD_SETTINGS',
-  UPDATE_TEST_SETTINGS: 'UPDATE_TEST_SETTINGS',
+  UPDATE_SETTINGS: 'UPDATE_SETTINGS',
   UPDATE_COMPILE_COMMANDS: 'UPDATE_COMPILE_COMMANDS',
 });
 

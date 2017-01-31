@@ -13,7 +13,6 @@ import type {
   DeploymentTarget,
   Platform,
   PlatformGroup,
-  TaskType,
   TaskSettings,
 } from './types';
 
@@ -30,11 +29,10 @@ import {LoadingSpinner} from '../../nuclide-ui/LoadingSpinner';
 import addTooltip from '../../nuclide-ui/add-tooltip';
 
 type Props = {
-  activeTaskType: ?TaskType,
   appState: AppState,
   setBuildTarget(buildTarget: string): void,
   setDeploymentTarget(deploymentTarget: DeploymentTarget): void,
-  setTaskSettings(taskType: TaskType, settings: TaskSettings): void,
+  setTaskSettings(settings: TaskSettings): void,
 };
 
 type State = {
@@ -76,7 +74,7 @@ export default class BuckToolbar extends React.Component {
       status =
         <div ref={addTooltip({title, delay: 0})}>
           <LoadingSpinner
-            className="inline-block"
+            className="inline-block buck-spinner"
             size="EXTRA_SMALL"
           />
         </div>;
@@ -128,7 +126,6 @@ export default class BuckToolbar extends React.Component {
       );
     }
 
-    const {activeTaskType} = this.props;
     return (
       <div className="nuclide-buck-toolbar">
         <BuckToolbarTargetSelector
@@ -138,17 +135,15 @@ export default class BuckToolbar extends React.Component {
         <Button
           className="nuclide-buck-settings icon icon-gear"
           size={ButtonSizes.SMALL}
-          disabled={activeTaskType == null || buckRoot == null}
           onClick={() => this._showSettings()}
         />
         {widgets}
-        {this.state.settingsVisible && activeTaskType != null ?
+        {this.state.settingsVisible ?
           <BuckToolbarSettings
             currentBuckRoot={buckRoot}
-            settings={taskSettings[activeTaskType] || {}}
-            buildType={activeTaskType}
+            settings={taskSettings}
             onDismiss={() => this._hideSettings()}
-            onSave={settings => this._saveSettings(activeTaskType, settings)}
+            onSave={settings => this._saveSettings(settings)}
           /> :
           null}
       </div>
@@ -167,8 +162,8 @@ export default class BuckToolbar extends React.Component {
     this.setState({settingsVisible: false});
   }
 
-  _saveSettings(taskType: TaskType, settings: TaskSettings) {
-    this.props.setTaskSettings(taskType, settings);
+  _saveSettings(settings: TaskSettings) {
+    this.props.setTaskSettings(settings);
     this._hideSettings();
   }
 

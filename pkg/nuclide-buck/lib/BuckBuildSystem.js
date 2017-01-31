@@ -148,8 +148,8 @@ export class BuckBuildSystem {
           store.dispatch(Actions.setBuildTarget(buildTarget)),
         setDeploymentTarget: deploymentTarget =>
           store.dispatch(Actions.setDeploymentTarget(deploymentTarget)),
-        setTaskSettings: (taskType, settings) =>
-          store.dispatch(Actions.setTaskSettings(taskType, settings)),
+        setTaskSettings: settings =>
+          store.dispatch(Actions.setTaskSettings(settings)),
       };
       this._extraUi = bindObservableAsProps(
         // $FlowFixMe: type symbol-observable
@@ -262,6 +262,7 @@ export class BuckBuildSystem {
     );
 
     const state = this._getStore().getState();
+
     const {selectedDeploymentTarget} = state;
     let fullTargetName = state.buildTarget;
     let udid = null;
@@ -276,7 +277,7 @@ export class BuckBuildSystem {
       taskType,
       state.buckRoot,
       fullTargetName,
-      state.taskSettings[taskType] || {},
+      state.taskSettings,
       isInstallableRule(state.buildRuleType),
       udid,
     );

@@ -25,7 +25,6 @@ export default class SwiftPMTaskRunnerStore {
   _Xcc: string;
   _Xlinker: string;
   _Xswiftc: string;
-  _testBuildPath: string;
   _compileCommands: Map<string, string>;
   _projectRoot: ?string;
 
@@ -40,7 +39,6 @@ export default class SwiftPMTaskRunnerStore {
       this._Xcc = initialState.Xcc ? initialState.Xcc : '';
       this._Xlinker = initialState.Xlinker ? initialState.Xlinker : '';
       this._Xswiftc = initialState.Xswiftc ? initialState.Xswiftc : '';
-      this._testBuildPath = initialState.testBuildPath ? initialState.testBuildPath : '';
       this._compileCommands = initialState.compileCommands ?
         new Map(objectEntries(initialState.compileCommands)) : new Map();
     } else {
@@ -50,7 +48,6 @@ export default class SwiftPMTaskRunnerStore {
       this._Xcc = '';
       this._Xlinker = '';
       this._Xswiftc = '';
-      this._testBuildPath = '';
       this._compileCommands = new Map();
     }
 
@@ -62,15 +59,12 @@ export default class SwiftPMTaskRunnerStore {
         case ActionTypes.UPDATE_CHDIR:
           this._chdir = action.chdir;
           break;
-        case ActionTypes.UPDATE_BUILD_SETTINGS:
+        case ActionTypes.UPDATE_SETTINGS:
           this._configuration = action.configuration;
           this._Xcc = action.Xcc;
           this._Xlinker = action.Xlinker;
           this._Xswiftc = action.Xswiftc;
           this._buildPath = action.buildPath;
-          break;
-        case ActionTypes.UPDATE_TEST_SETTINGS:
-          this._testBuildPath = action.buildPath;
           break;
         case ActionTypes.UPDATE_COMPILE_COMMANDS:
           this._compileCommands = action.compileCommands;
@@ -93,7 +87,6 @@ export default class SwiftPMTaskRunnerStore {
       Xlinker: this.getXlinker(),
       Xswiftc: this.getXswiftc(),
       compileCommands: objectFromMap(this.getCompileCommands()),
-      testBuildPath: this.getTestBuildPath(),
     };
   }
 
@@ -135,10 +128,6 @@ export default class SwiftPMTaskRunnerStore {
 
   getXswiftc(): string {
     return this._Xswiftc;
-  }
-
-  getTestBuildPath(): string {
-    return this._testBuildPath;
   }
 
   getCompileCommands(): Map<string, string> {

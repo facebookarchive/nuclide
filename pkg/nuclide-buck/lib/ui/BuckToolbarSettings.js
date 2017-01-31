@@ -8,7 +8,7 @@
  * @flow
  */
 
-import type {TaskSettings, TaskType} from '../types';
+import type {TaskSettings} from '../types';
 
 import {React} from 'react-for-atom';
 import {quote} from 'shell-quote';
@@ -22,7 +22,6 @@ import {Modal} from '../../../nuclide-ui/Modal';
 type Props = {
   currentBuckRoot: ?string,
   settings: TaskSettings,
-  buildType: TaskType,
   onDismiss: () => void,
   onSave: (settings: TaskSettings) => void,
 };
@@ -46,29 +45,10 @@ export default class BuckToolbarSettings extends React.Component {
   }
 
   render(): React.Element<any> {
-    let runArguments;
-    if (this.props.buildType === 'debug' || this.props.buildType === 'run') {
-      runArguments = (
-        <div>
-          <label>Run Arguments:</label>
-          <AtomInput
-            tabIndex="0"
-            initialValue={this.state.runArguments}
-            placeholderText="Custom command-line arguments to pass to the app/binary"
-            onDidChange={this._onRunArgsChange.bind(this)}
-            onConfirm={this._onSave.bind(this)}
-          />
-        </div>
-      );
-    }
-
     return (
       <Modal onDismiss={this.props.onDismiss}>
         <div className="block">
           <div className="block">
-            <h5>
-              Buck Settings for build type: <b>{this.props.buildType}</b>
-            </h5>
             <label>Current Buck root:</label>
             <p>
               <code>
@@ -83,7 +63,16 @@ export default class BuckToolbarSettings extends React.Component {
               onDidChange={this._onArgsChange.bind(this)}
               onConfirm={this._onSave.bind(this)}
             />
-            {runArguments}
+            <div>
+              <label>Run Arguments:</label>
+              <AtomInput
+                tabIndex="0"
+                initialValue={this.state.runArguments}
+                placeholderText="Custom command-line arguments to pass to the app/binary"
+                onDidChange={this._onRunArgsChange.bind(this)}
+                onConfirm={this._onSave.bind(this)}
+              />
+            </div>
           </div>
           <div style={{display: 'flex', justifyContent: 'flex-end'}}>
             <ButtonGroup>

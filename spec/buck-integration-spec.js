@@ -103,27 +103,36 @@ describe('Buck building via toolbar', () => {
       },
     );
 
+    waitsFor(
+      'platforms to load',
+      120000,
+      () => {
+        // It shouldn't have errored.
+        invariant(listGroup != null);
+        const errorMessageEl = listGroup.querySelector('.text-error');
+        const errorText = errorMessageEl == null ? null : errorMessageEl.innerText;
+        expect(errorMessageEl).toBeNull(`Buck failed with the following error: ${errorText || ''}`);
+
+        const listElements = listGroup.querySelectorAll('li');
+        const targets = Array.from(listElements).map(el => el.textContent);
+        expect(targets).toEqual(['test_app_alias']);
+
+        // Set the target.
+        listElements[0].click();
+
+        invariant(buildToolbar != null);
+
+        // The Build task should be selected.
+        const spinner = buildToolbar.querySelector('.buck-spinner');
+        return spinner == null;
+      });
+
     waitsForPromise({timeout: 25000}, async () => {
-      // It shouldn't have errored.
-      invariant(listGroup != null);
-      const errorMessageEl = listGroup.querySelector('.text-error');
-      const errorText = errorMessageEl == null ? null : errorMessageEl.innerText;
-      expect(errorMessageEl).toBeNull(`Buck failed with the following error: ${errorText || ''}`);
-
-      const listElements = listGroup.querySelectorAll('li');
-      const targets = Array.from(listElements).map(el => el.textContent);
-      expect(targets).toEqual(['test_app_alias']);
-
-      // Set the target.
-      listElements[0].click();
-
-      // It takes a while for build to become enabled because platforms are being determined
-      await sleep(15000);
+      invariant(buildToolbar != null);
 
       // Run the project
       atom.commands.dispatch(workspaceView, 'nuclide-task-runner:buck-build');
 
-      invariant(buildToolbar != null);
       // The Build task should be selected.
       const button = buildToolbar.querySelector(
         '.nuclide-task-runner-toolbar-contents .nuclide-task-runner-task-runner-button',

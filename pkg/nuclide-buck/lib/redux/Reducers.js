@@ -62,10 +62,7 @@ export default function accumulateState(state: AppState, action: Action): AppSta
     case Actions.SET_TASK_SETTINGS:
       return {
         ...state,
-        taskSettings: {
-          ...state.taskSettings,
-          [action.taskType]: action.settings,
-        },
+        taskSettings: action.settings,
       };
   }
   return state;

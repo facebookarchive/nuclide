@@ -98,16 +98,11 @@ export class SwiftPMTaskRunner {
   getExtraUi(): ReactClass<any> {
     const {store, actions} = this._getFlux();
     return class ExtraUi extends React.Component {
-      props: {
-        activeTaskType: ?string,
-      };
-
       render(): React.Element<any> {
         return (
           <SwiftPMTaskRunnerToolbar
             store={store}
             actions={actions}
-            activeTaskType={this.props.activeTaskType}
           />
         );
       }

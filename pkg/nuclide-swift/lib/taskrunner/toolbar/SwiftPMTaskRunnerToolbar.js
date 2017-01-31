@@ -11,12 +11,7 @@
 import {React} from 'react-for-atom';
 import {AtomInput} from '../../../../nuclide-ui/AtomInput';
 import {Button, ButtonSizes} from '../../../../nuclide-ui/Button';
-import {
-  SwiftPMTaskRunnerBuildTaskMetadata,
-  SwiftPMTaskRunnerTestTaskMetadata,
-} from '../SwiftPMTaskRunnerTaskMetadata';
-import SwiftPMBuildSettingsModal from './SwiftPMBuildSettingsModal';
-import SwiftPMTestSettingsModal from './SwiftPMTestSettingsModal';
+import SwiftPMSettingsModal from './SwiftPMSettingsModal';
 
 export default class SwiftPMTaskRunnerToolbar extends React.Component {
   state: {settingsVisible: boolean};
@@ -28,35 +23,6 @@ export default class SwiftPMTaskRunnerToolbar extends React.Component {
   }
 
   render(): React.Element<any> {
-    const settingsElements = [];
-    switch (this.props.activeTaskType) {
-      case SwiftPMTaskRunnerBuildTaskMetadata.type:
-        settingsElements.push(
-          <SwiftPMBuildSettingsModal
-            configuration={this.props.store.getConfiguration()}
-            Xcc={this.props.store.getXcc()}
-            Xlinker={this.props.store.getXlinker()}
-            Xswiftc={this.props.store.getXswiftc()}
-            buildPath={this.props.store.getBuildPath()}
-            onDismiss={() => this._hideSettings()}
-            onSave={(configuration, Xcc, Xlinker, Xswiftc, buildPath) =>
-              this._saveBuildSettings(configuration, Xcc, Xlinker, Xswiftc, buildPath)}
-          />,
-        );
-        break;
-      case SwiftPMTaskRunnerTestTaskMetadata.type:
-        settingsElements.push(
-          <SwiftPMTestSettingsModal
-            buildPath={this.props.store.getTestBuildPath()}
-            onDismiss={() => this._hideSettings()}
-            onSave={buildPath => this._saveTestSettings(buildPath)}
-          />,
-        );
-        break;
-      default:
-        break;
-    }
-
     return (
       <div className="nuclide-swift-task-runner-toolbar">
         <AtomInput
@@ -70,10 +36,20 @@ export default class SwiftPMTaskRunnerToolbar extends React.Component {
         <Button
           className="nuclide-swift-settings icon icon-gear"
           size={ButtonSizes.SMALL}
-          disabled={false}
           onClick={() => this._showSettings()}
         />
-        {this.state.settingsVisible ? settingsElements : null}
+        {this.state.settingsVisible ?
+          <SwiftPMSettingsModal
+            configuration={this.props.store.getConfiguration()}
+            Xcc={this.props.store.getXcc()}
+            Xlinker={this.props.store.getXlinker()}
+            Xswiftc={this.props.store.getXswiftc()}
+            buildPath={this.props.store.getBuildPath()}
+            onDismiss={() => this._hideSettings()}
+            onSave={(configuration, Xcc, Xlinker, Xswiftc, buildPath) =>
+              this._saveSettings(configuration, Xcc, Xlinker, Xswiftc, buildPath)}
+          />
+           : null}
       </div>
     );
   }
@@ -90,25 +66,20 @@ export default class SwiftPMTaskRunnerToolbar extends React.Component {
     this.setState({settingsVisible: false});
   }
 
-  _saveBuildSettings(
+  _saveSettings(
     configuration: string,
     Xcc: string,
     Xlinker: string,
     Xswiftc: string,
     buildPath: string,
   ) {
-    this.props.actions.updateBuildSettings(
+    this.props.actions.updateSettings(
       configuration,
       Xcc,
       Xlinker,
       Xswiftc,
       buildPath,
     );
-    this._hideSettings();
-  }
-
-  _saveTestSettings(buildPath: string) {
-    this.props.actions.updateTestSettings(buildPath);
     this._hideSettings();
   }
 }

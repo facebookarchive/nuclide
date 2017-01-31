@@ -8,7 +8,7 @@
  * @flow
  */
 
-import type {DeploymentTarget, PlatformGroup, TaskSettings, TaskType} from '../types';
+import type {DeploymentTarget, PlatformGroup, TaskSettings} from '../types';
 
 export type Action =
   {|
@@ -25,7 +25,6 @@ export type Action =
   |} |
   {|
     type: 'SET_TASK_SETTINGS',
-    taskType: TaskType,
     settings: TaskSettings,
   |} |
   // The actions below are meant to be used in Epics only.
@@ -66,6 +65,6 @@ export function setDeploymentTarget(deploymentTarget: DeploymentTarget): Action 
   return {type: SET_DEPLOYMENT_TARGET, deploymentTarget};
 }
 
-export function setTaskSettings(taskType: TaskType, settings: TaskSettings): Action {
-  return {type: SET_TASK_SETTINGS, taskType, settings};
+export function setTaskSettings(settings: TaskSettings): Action {
+  return {type: SET_TASK_SETTINGS, settings};
 }

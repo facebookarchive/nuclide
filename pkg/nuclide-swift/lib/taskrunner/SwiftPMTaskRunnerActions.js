@@ -34,7 +34,7 @@ export default class SwiftPMTaskRunnerActions {
     });
   }
 
-  updateBuildSettings(
+  updateSettings(
     configuration: string,
     Xcc: string,
     Xlinker: string,
@@ -42,18 +42,11 @@ export default class SwiftPMTaskRunnerActions {
     buildPath: string,
   ): void {
     this._dispatcher.dispatch({
-      actionType: ActionTypes.UPDATE_BUILD_SETTINGS,
+      actionType: ActionTypes.UPDATE_SETTINGS,
       configuration,
       Xcc,
       Xlinker,
       Xswiftc,
-      buildPath,
-    });
-  }
-
-  updateTestSettings(buildPath: string): void {
-    this._dispatcher.dispatch({
-      actionType: ActionTypes.UPDATE_TEST_SETTINGS,
       buildPath,
     });
   }

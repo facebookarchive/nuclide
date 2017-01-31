@@ -33,7 +33,7 @@ export type AppState = {
   buildTarget: string,
   buildRuleType: ?string,
   selectedDeploymentTarget: ?DeploymentTarget,
-  taskSettings: {[key: TaskType]: TaskSettings},
+  taskSettings: TaskSettings,
 };
 
 export type Store = {
@@ -43,7 +43,7 @@ export type Store = {
 
 export type SerializedState = {
   buildTarget: ?string,
-  taskSettings?: {[key: TaskType]: TaskSettings},
+  taskSettings?: ?TaskSettings,
   selectedDeploymentTarget: ?DeploymentTarget,
 };
 

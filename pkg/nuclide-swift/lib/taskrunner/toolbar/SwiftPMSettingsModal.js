@@ -39,7 +39,7 @@ type State = {
   buildPath: string,
 };
 
-export default class SwiftPMBuildSettingsModal extends React.Component {
+export default class SwiftPMSettingsModal extends React.Component {
   props: Props;
   state: State;
 

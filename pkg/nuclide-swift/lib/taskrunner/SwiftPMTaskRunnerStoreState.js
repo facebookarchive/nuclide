@@ -16,5 +16,4 @@ export type SwiftPMTaskRunnerStoreState = {
   Xlinker: string,
   Xswiftc: string,
   compileCommands: Object,
-  testBuildPath: string,
 };
