@@ -14,6 +14,7 @@ import type {Directory} from '../../nuclide-remote-connection';
 import type {TaskMetadata} from '../../nuclide-task-runner/lib/types';
 import type {Level, Message} from '../../nuclide-console/lib/types';
 import typeof * as BuckService from '../../nuclide-buck-rpc';
+import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import type {
   AppState,
   BuckBuilderBuildOptions,
@@ -87,19 +88,27 @@ const DEBUGGABLE_RULES = new Set([
 function isInstallableRule(ruleType: ?string) {
   return INSTALLABLE_RULES.has(ruleType);
 }
-
-function isDebuggableRule(ruleType: string) {
-  return DEBUGGABLE_RULES.has(ruleType);
+function isDebuggableRule(ruleType: string, target: ?string) {
+  return DEBUGGABLE_RULES.has(ruleType) && isDebuggerAvailableForTarget(ruleType, target);
 }
 
-function shouldEnableTask(taskType: TaskType, ruleType: ?string): boolean {
+function isDebuggerAvailableForTarget(ruleType: string, target: ?string): boolean {
+  switch (ruleType) {
+    case 'android_binary':
+      return (getServiceByNuclideUri('JavaDebuggerService', target) != null);
+    default:
+      return true;
+  }
+}
+
+function shouldEnableTask(taskType: TaskType, ruleType: ?string, target: ?string): boolean {
   switch (taskType) {
     case 'run':
       return ruleType != null && isInstallableRule(ruleType);
     case 'debug':
-      return ruleType != null && isDebuggableRule(ruleType);
+      return ruleType != null && isDebuggableRule(ruleType, target);
     default:
-      return ruleType != null;
+      return true;
   }
 }
 
@@ -199,9 +208,10 @@ export class BuckBuildSystem {
     const tasksObservable = storeReady
       .map(state => {
         const {buildRuleType} = state;
+        const target = this._getStore().getState().buildTarget;
         return TASKS.map(task => ({
           ...task,
-          disabled: state.isLoadingPlatforms || !shouldEnableTask(task.type, buildRuleType),
+          disabled: state.isLoadingPlatforms || !shouldEnableTask(task.type, buildRuleType, target),
         }));
       });
 
