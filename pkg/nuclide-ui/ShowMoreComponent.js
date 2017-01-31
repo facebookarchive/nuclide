@@ -58,7 +58,10 @@ export class ShowMoreComponent extends React.Component {
 
     const showMessage = showingMore ? 'Show Less' : 'Show More';
     const conditionalStyle = !showingMore
-      ? {'max-height': `${maxHeight}px`, 'overflow-y': 'hidden'}
+      ? {
+        maxHeight: `${maxHeight}px`,
+        overflowY: 'hidden',
+      }
       : {};
     const displayNoneIfBelowMaxHeight = currentHeight <= maxHeight ? {display: 'none'} : {};
     const showMoreButton =
