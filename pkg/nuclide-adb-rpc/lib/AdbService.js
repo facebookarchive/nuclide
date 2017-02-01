@@ -1,3 +1,26 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.startServer = startServer;
+exports.getDeviceList = getDeviceList;
+exports.getDeviceArchitecture = getDeviceArchitecture;
+exports.getDeviceModel = getDeviceModel;
+exports.getAPIVersion = getAPIVersion;
+exports.installPackage = installPackage;
+exports.uninstallPackage = uninstallPackage;
+exports.getPidFromPackageName = getPidFromPackageName;
+exports.forwardJdwpPortToPid = forwardJdwpPortToPid;
+
+var _ADB;
+
+function _load_ADB() {
+  return _ADB = _interopRequireWildcard(require('./ADB'));
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,82 +28,41 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {ConnectableObservable} from 'rxjs';
-import type {ProcessMessage} from '../../commons-node/process-rpc-types';
-
-import * as ADB from './ADB';
-
-export type DeviceDescription = {
-  name: string,
-  architecture: string,
-  apiVersion: string,
-  model: string,
-};
-
-export function startServer(
-  adbPath: NuclideUri,
-): ConnectableObservable<string> {
-  return ADB.startServer(adbPath);
+function startServer(adbPath) {
+  return (_ADB || _load_ADB()).startServer(adbPath);
 }
 
-export function getDeviceList(
-  adbPath: NuclideUri,
-): Promise<Array<DeviceDescription>> {
-  return ADB.getDeviceList(adbPath);
+function getDeviceList(adbPath) {
+  return (_ADB || _load_ADB()).getDeviceList(adbPath);
 }
 
-export function getDeviceArchitecture(
-  adbPath: NuclideUri,
-  device: string,
-): Promise<string> {
-  return ADB.getDeviceArchitecture(adbPath, device);
+function getDeviceArchitecture(adbPath, device) {
+  return (_ADB || _load_ADB()).getDeviceArchitecture(adbPath, device);
 }
 
-export function getDeviceModel(
-  adbPath: NuclideUri,
-  device: string,
-): Promise<string> {
-  return ADB.getDeviceModel(adbPath, device);
+function getDeviceModel(adbPath, device) {
+  return (_ADB || _load_ADB()).getDeviceModel(adbPath, device);
 }
 
-export function getAPIVersion(
-  adbPath: NuclideUri,
-  device: string,
-): Promise<string> {
-  return ADB.getAPIVersion(adbPath, device);
+function getAPIVersion(adbPath, device) {
+  return (_ADB || _load_ADB()).getAPIVersion(adbPath, device);
 }
 
-export function installPackage(
-  adbPath: NuclideUri,
-  device: string,
-  packagePath: NuclideUri,
-): ConnectableObservable<ProcessMessage> {
-  return ADB.installPackage(adbPath, device, packagePath).publish();
+function installPackage(adbPath, device, packagePath) {
+  return (_ADB || _load_ADB()).installPackage(adbPath, device, packagePath).publish();
 }
 
-export function uninstallPackage(
-  adbPath: NuclideUri,
-  device: string,
-  packageName: string,
-): ConnectableObservable<ProcessMessage> {
-  return ADB.uninstallPackage(adbPath, device, packageName).publish();
+function uninstallPackage(adbPath, device, packageName) {
+  return (_ADB || _load_ADB()).uninstallPackage(adbPath, device, packageName).publish();
 }
 
-export function getPidFromPackageName(
-  adbPath: NuclideUri,
-  packageName: string,
-): Promise<number> {
-  return ADB.getPidFromPackageName(adbPath, packageName);
+function getPidFromPackageName(adbPath, packageName) {
+  return (_ADB || _load_ADB()).getPidFromPackageName(adbPath, packageName);
 }
 
-export function forwardJdwpPortToPid(
-  adbPath: NuclideUri,
-  tcpPort: number,
-  pid: number,
-): Promise<string> {
-  return ADB.forwardJdwpPortToPid(adbPath, tcpPort, pid);
+function forwardJdwpPortToPid(adbPath, tcpPort, pid) {
+  return (_ADB || _load_ADB()).forwardJdwpPortToPid(adbPath, tcpPort, pid);
 }

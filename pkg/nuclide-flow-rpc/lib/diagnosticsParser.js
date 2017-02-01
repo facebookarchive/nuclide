@@ -1,41 +1,23 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import type {
-  Diagnostics,
-  Diagnostic,
-  MessageComponent,
-  RangeInFile,
-} from '..';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.flowStatusOutputToDiagnostics = flowStatusOutputToDiagnostics;
 
-import type {
-  FlowStatusOutput,
-  FlowStatusError,
-  FlowStatusErrorMessageComponent,
-  FlowLoc,
-} from './flowOutputTypes';
+var _simpleTextBuffer;
 
-import {Range} from 'simple-text-buffer';
+function _load_simpleTextBuffer() {
+  return _simpleTextBuffer = require('simple-text-buffer');
+}
 
-export function flowStatusOutputToDiagnostics(
-  root: string,
-  statusOutput: FlowStatusOutput,
-): Diagnostics {
-  const errors: Array<FlowStatusError> = statusOutput.errors;
-  const messages: Array<Diagnostic> = errors.map((flowStatusError: FlowStatusError) => {
-    const flowMessageComponents: Array<FlowStatusErrorMessageComponent> =
-      flowStatusError.message;
+function flowStatusOutputToDiagnostics(root, statusOutput) {
+  const errors = statusOutput.errors;
+  const messages = errors.map(flowStatusError => {
+    const flowMessageComponents = flowStatusError.message;
     const level = flowStatusError.level;
 
-    const messageComponents: Array<MessageComponent> =
-      flowMessageComponents.map(flowMessageComponentToMessageComponent);
+    const messageComponents = flowMessageComponents.map(flowMessageComponentToMessageComponent);
     const operation = flowStatusError.operation;
     if (operation != null) {
       const operationComponent = flowMessageComponentToMessageComponent(operation);
@@ -44,47 +26,44 @@ export function flowStatusOutputToDiagnostics(
     }
     const extra = flowStatusError.extra;
     if (extra != null) {
-      const flatExtra = [].concat(...extra.map(({message}) => message));
+      const flatExtra = [].concat(...extra.map(({ message }) => message));
       messageComponents.push(...flatExtra.map(flowMessageComponentToMessageComponent));
     }
 
     return {
       level,
-      messageComponents,
+      messageComponents
     };
   });
 
   return {
     flowRoot: root,
-    messages,
+    messages
   };
-}
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   */
 
-function flowMessageComponentToMessageComponent(
-  component: FlowStatusErrorMessageComponent,
-): MessageComponent {
+function flowMessageComponentToMessageComponent(component) {
   return {
     descr: component.descr,
-    rangeInFile: maybeFlowLocToRange(component.loc),
+    rangeInFile: maybeFlowLocToRange(component.loc)
   };
 }
 
-function maybeFlowLocToRange(loc: ?FlowLoc): ?RangeInFile {
+function maybeFlowLocToRange(loc) {
   return loc == null ? null : flowLocToRange(loc);
 }
 
-function flowLocToRange(loc: FlowLoc): RangeInFile {
+function flowLocToRange(loc) {
   return {
     file: loc.source,
-    range: new Range(
-      [
-        loc.start.line,
-        loc.start.column,
-      ],
-      [
-        loc.end.line,
-        loc.end.column,
-      ],
-    ),
+    range: new (_simpleTextBuffer || _load_simpleTextBuffer()).Range([loc.start.line, loc.start.column], [loc.end.line, loc.end.column])
   };
 }

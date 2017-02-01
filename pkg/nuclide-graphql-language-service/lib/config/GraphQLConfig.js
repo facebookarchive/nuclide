@@ -1,68 +1,68 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import type {Uri} from '../types/Types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.GraphQLConfig = exports.GraphQLRC = exports.getGraphQLConfig = undefined;
 
-// eslint-disable-next-line nuclide-internal/prefer-nuclide-uri
-import path from 'path';
-import fs from 'fs';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-const CONFIG_LIST_NAME = 'build-configs';
-const SCHEMA_PATH = 'schema-file';
-const CUSTOM_VALIDATION_RULES_MODULE_PATH = 'custom-validation-rules';
-
-export async function getGraphQLConfig(configDir: Uri): Promise<GraphQLRC> {
-  const rawGraphQLConfig = await new Promise((resolve, reject) =>
-    fs.readFile(
-      path.join(configDir, '.graphqlrc'),
-      'utf8',
-      (error, response) => {
+let getGraphQLConfig = exports.getGraphQLConfig = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (configDir) {
+    const rawGraphQLConfig = yield new Promise(function (resolve, reject) {
+      return _fs.default.readFile(_path.default.join(configDir, '.graphqlrc'), 'utf8', function (error, response) {
         if (error) {
           // eslint-disable-next-line no-console
-          console.error(
-            '.graphqlrc file is not available in the provided config ' +
-            `directory: ${configDir}\nPlease check the config directory ` +
-            'path and try again.',
-          );
+          console.error('.graphqlrc file is not available in the provided config ' + `directory: ${configDir}\nPlease check the config directory ` + 'path and try again.');
           reject();
         }
         resolve(response);
-      },
-    ),
-  );
-  try {
-    const graphqlrc = JSON.parse(rawGraphQLConfig);
-    return new GraphQLRC(graphqlrc, configDir);
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('Parsing JSON in .graphqlrc file has failed.');
-    throw new Error(error);
-  }
-}
+      });
+    });
+    try {
+      const graphqlrc = JSON.parse(rawGraphQLConfig);
+      return new GraphQLRC(graphqlrc, configDir);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Parsing JSON in .graphqlrc file has failed.');
+      throw new Error(error);
+    }
+  });
 
-export class GraphQLRC {
-  _graphqlrc: Object;
-  _rootDir: Uri;
-  _configs: {[name: string]: GraphQLConfig};
+  return function getGraphQLConfig(_x) {
+    return _ref.apply(this, arguments);
+  };
+})();
 
-  constructor(graphqlrc: Object, root: Uri) {
+var _path = _interopRequireDefault(require('path'));
+
+var _fs = _interopRequireDefault(require('fs'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// eslint-disable-next-line nuclide-internal/prefer-nuclide-uri
+const CONFIG_LIST_NAME = 'build-configs'; /**
+                                           * Copyright (c) 2015-present, Facebook, Inc.
+                                           * All rights reserved.
+                                           *
+                                           * This source code is licensed under the license found in the LICENSE file in
+                                           * the root directory of this source tree.
+                                           *
+                                           * 
+                                           */
+
+const SCHEMA_PATH = 'schema-file';
+const CUSTOM_VALIDATION_RULES_MODULE_PATH = 'custom-validation-rules';
+
+class GraphQLRC {
+
+  constructor(graphqlrc, root) {
     this._graphqlrc = graphqlrc;
     this._rootDir = root;
     this._configs = {};
     if (this._graphqlrc[CONFIG_LIST_NAME]) {
       Object.keys(this._graphqlrc[CONFIG_LIST_NAME]).forEach(name => {
-        this._configs[name] = new GraphQLConfig(
-          name,
-          this._graphqlrc[CONFIG_LIST_NAME][name],
-          this._rootDir,
-        );
+        this._configs[name] = new GraphQLConfig(name, this._graphqlrc[CONFIG_LIST_NAME][name], this._rootDir);
       });
     }
   }
@@ -71,75 +71,66 @@ export class GraphQLRC {
     return this._rootDir;
   }
 
-  getConfigNames(): Array<string> {
+  getConfigNames() {
     return Object.keys(this._graphqlrc[CONFIG_LIST_NAME]);
   }
 
-  getConfig(name: string): GraphQLConfig {
+  getConfig(name) {
     const config = this._configs[name];
     if (config === undefined) {
-      throw new Error(
-        `Config ${name} not defined. Choose one of: ` +
-        Object.keys(this._graphqlrc[CONFIG_LIST_NAME]).join(', '),
-      );
+      throw new Error(`Config ${name} not defined. Choose one of: ` + Object.keys(this._graphqlrc[CONFIG_LIST_NAME]).join(', '));
     }
     return config;
   }
 
-  getConfigByFilePath(filePath: Uri): ?GraphQLConfig {
-    const name = this.getConfigNames().find(configName =>
-      this.getConfig(configName).isFileInInputDirs(filePath),
-    );
+  getConfigByFilePath(filePath) {
+    const name = this.getConfigNames().find(configName => this.getConfig(configName).isFileInInputDirs(filePath));
 
     return name ? this._configs[name] : null;
   }
 }
 
-export class GraphQLConfig {
-  _config: Object;
-  _name: string;
-  _rootDir: Uri;
+exports.GraphQLRC = GraphQLRC;
+class GraphQLConfig {
 
-  constructor(name: string, config: Object, rootDir: Uri): void {
+  constructor(name, config, rootDir) {
     this._name = name;
     this._rootDir = rootDir;
     this._config = config;
   }
 
-  getRootDir(): Uri {
+  getRootDir() {
     return this._rootDir;
   }
 
-  getName(): string {
+  getName() {
     return this._name;
   }
 
-  getConfig(): Object {
+  getConfig() {
     return this._config;
   }
 
-  getInputDirs(): Array<string> {
+  getInputDirs() {
     return this._config['input-dirs'] ? this._config['input-dirs'] : [];
   }
 
-  getExcludeDirs(): Array<string> {
+  getExcludeDirs() {
     return this._config['exclude-dirs'] ? this._config['exclude-dirs'] : [];
   }
 
-  isFileInInputDirs(fileName: string): boolean {
+  isFileInInputDirs(fileName) {
     if (!this.getInputDirs()) {
       return false;
     }
-    return this.getInputDirs().some(
-      dirPath => fileName.indexOf(dirPath) !== -1,
-    );
+    return this.getInputDirs().some(dirPath => fileName.indexOf(dirPath) !== -1);
   }
 
-  getSchemaPath(): ?Uri {
+  getSchemaPath() {
     return this._config[SCHEMA_PATH] || null;
   }
 
-  getCustomValidationRulesModulePath(): ?Uri {
+  getCustomValidationRulesModulePath() {
     const modulePath = this._config[CUSTOM_VALIDATION_RULES_MODULE_PATH];
     if (!modulePath) {
       return null;
@@ -147,18 +138,21 @@ export class GraphQLConfig {
     return this._normalizePath(modulePath);
   }
 
-  _normalizePath(modulePath: Uri): Uri {
+  _normalizePath(modulePath) {
     let resolvedPath;
-    if (modulePath.startsWith('~')) { // home directory
-      const homeDirPath = (process.platform === 'win32') ?
-        process.env.USERPROFILE : process.env.HOME;
-      resolvedPath = path.join(homeDirPath || '', modulePath.slice(1));
-    } else if (modulePath.startsWith('./')) { // relative local directory
-      resolvedPath = path.join(this._rootDir, modulePath);
-    } else { // `/` or an actual module name (node_modules)
+    if (modulePath.startsWith('~')) {
+      // home directory
+      const homeDirPath = process.platform === 'win32' ? process.env.USERPROFILE : process.env.HOME;
+      resolvedPath = _path.default.join(homeDirPath || '', modulePath.slice(1));
+    } else if (modulePath.startsWith('./')) {
+      // relative local directory
+      resolvedPath = _path.default.join(this._rootDir, modulePath);
+    } else {
+      // `/` or an actual module name (node_modules)
       resolvedPath = modulePath;
     }
 
     return resolvedPath;
   }
 }
+exports.GraphQLConfig = GraphQLConfig;

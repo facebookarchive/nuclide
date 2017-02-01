@@ -1,3 +1,9 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.normalizeRemoteObjectValue = normalizeRemoteObjectValue;
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,20 +11,19 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
 
-import type {EvaluationResult} from './types';
-
-import invariant from 'assert';
-
-export function normalizeRemoteObjectValue(remoteObject: ?Object): ?EvaluationResult {
+function normalizeRemoteObjectValue(remoteObject) {
   if (remoteObject == null) {
     return null;
   }
   const modifiedProperties = {};
   const normalizeUnderscores = field => {
-    invariant(remoteObject != null);
+    if (!(remoteObject != null)) {
+      throw new Error('Invariant violation: "remoteObject != null"');
+    }
+
     modifiedProperties[field] = remoteObject[field];
     const underscoreField = `_${field}`;
     if (remoteObject.hasOwnProperty(underscoreField) && remoteObject[underscoreField] != null) {
@@ -28,8 +33,5 @@ export function normalizeRemoteObjectValue(remoteObject: ?Object): ?EvaluationRe
     }
   };
   ['type', 'description', 'objectId', 'value'].forEach(normalizeUnderscores);
-  return {
-    ...remoteObject,
-    ...modifiedProperties,
-  };
+  return Object.assign({}, remoteObject, modifiedProperties);
 }

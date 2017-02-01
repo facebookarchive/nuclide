@@ -1,3 +1,25 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _atom = require('atom');
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _createEmptyAppState;
+
+function _load_createEmptyAppState() {
+  return _createEmptyAppState = require('./redux/createEmptyAppState');
+}
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,147 +27,112 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
-
-import type {Message} from '../../nuclide-console/lib/types';
-import type {
-  AppState,
-  CommitModeType,
-  DiffModeType,
-} from './types';
-import type {
-  RevisionInfo,
-} from '../../nuclide-hg-rpc/lib/HgService';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import typeof * as BoundActionCreators from './redux/Actions';
-
-export type DiffEntityOptions = {
-  file?: NuclideUri,
-  directory?: NuclideUri,
-  viewMode?: DiffModeType,
-  commitMode?: CommitModeType,
-  // Only open the split diff view, not the source control navigator.
-  onlyDiff?: boolean,
-};
-
-import {Emitter} from 'atom';
-import invariant from 'assert';
-import {track} from '../../nuclide-analytics';
-import {Subject} from 'rxjs';
-import {createEmptyAppState} from './redux/createEmptyAppState';
 
 const DID_UPDATE_STATE_EVENT = 'did-update-state';
 
-export default class DiffViewModel {
-  _emitter: Emitter;
-  _state: AppState;
-  _progressUpdates: Subject<Message>;
-  _actionCreators: BoundActionCreators;
+class DiffViewModel {
 
-  constructor(actionCreators: BoundActionCreators, progressUpdates: Subject<Message>) {
+  constructor(actionCreators, progressUpdates) {
     this._actionCreators = actionCreators;
     this._progressUpdates = progressUpdates;
-    this._emitter = new Emitter();
-    this._state = createEmptyAppState();
+    this._emitter = new _atom.Emitter();
+    this._state = (0, (_createEmptyAppState || _load_createEmptyAppState()).createEmptyAppState)();
   }
 
-  diffFile(filePath: NuclideUri): void {
+  diffFile(filePath) {
     this._actionCreators.diffFile(filePath);
   }
 
-  getDirtyFileChangesCount(): number {
-    const {activeRepositoryState: {dirtyFiles}} = this._state;
+  getDirtyFileChangesCount() {
+    const { activeRepositoryState: { dirtyFiles } } = this._state;
     return dirtyFiles.size;
   }
 
-  setViewMode(viewMode: DiffModeType): void {
+  setViewMode(viewMode) {
     this._actionCreators.setViewMode(viewMode);
   }
 
-  setCompareRevision(revision: RevisionInfo): void {
-    track('diff-view-set-revision');
-    invariant(this._state.activeRepository != null, 'There must be an active repository!');
+  setCompareRevision(revision) {
+    (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('diff-view-set-revision');
+
+    if (!(this._state.activeRepository != null)) {
+      throw new Error('There must be an active repository!');
+    }
+
     this._actionCreators.setCompareId(this._state.activeRepository, revision.id);
   }
 
-  publishDiff(
-    publishMessage: string,
-    isPrepareMode: boolean,
-    lintExcuse: ?string,
-  ): void {
+  publishDiff(publishMessage, isPrepareMode, lintExcuse) {
     const activeRepository = this._state.activeRepository;
-    invariant(activeRepository != null, 'Cannot publish without an active stack!');
 
-    this._actionCreators.publishDiff(
-      activeRepository,
-      publishMessage,
-      isPrepareMode,
-      lintExcuse,
-      this._progressUpdates,
-    );
+    if (!(activeRepository != null)) {
+      throw new Error('Cannot publish without an active stack!');
+    }
+
+    this._actionCreators.publishDiff(activeRepository, publishMessage, isPrepareMode, lintExcuse, this._progressUpdates);
   }
 
-  updatePublishMessage(message: ?string): void {
-    const {publish} = this._state;
-    this._actionCreators.updatePublishState({
-      ...publish,
-      message,
-    });
+  updatePublishMessage(message) {
+    const { publish } = this._state;
+    this._actionCreators.updatePublishState(Object.assign({}, publish, {
+      message
+    }));
   }
 
-  onDidUpdateState(callback: () => mixed): IDisposable {
+  onDidUpdateState(callback) {
     return this._emitter.on(DID_UPDATE_STATE_EVENT, callback);
   }
 
-  commit(message: string, bookmarkName: ?string): void {
+  commit(message, bookmarkName) {
     if (message === '') {
-      atom.notifications.addError('Commit aborted', {detail: 'Commit message empty'});
+      atom.notifications.addError('Commit aborted', { detail: 'Commit message empty' });
       return;
     }
     const activeRepository = this._state.activeRepository;
-    invariant(activeRepository != null, 'No active repository stack');
-    this._actionCreators.commit(
-      activeRepository,
-      message,
-      this._progressUpdates,
-      bookmarkName,
-    );
+
+    if (!(activeRepository != null)) {
+      throw new Error('No active repository stack');
+    }
+
+    this._actionCreators.commit(activeRepository, message, this._progressUpdates, bookmarkName);
   }
 
-  injectState(newState: AppState): void {
+  injectState(newState) {
     this._state = newState;
     this._emitter.emit(DID_UPDATE_STATE_EVENT);
   }
 
-  getState(): AppState {
+  getState() {
     return this._state;
   }
 
-  setCommitMode(commitMode: CommitModeType): void {
+  setCommitMode(commitMode) {
     this._actionCreators.setCommitMode(commitMode);
   }
 
-  setShouldAmendRebase(shouldRebaseOnAmend: boolean): void {
+  setShouldAmendRebase(shouldRebaseOnAmend) {
     this._actionCreators.setShouldRebaseOnAmend(shouldRebaseOnAmend);
   }
 
-  setShouldPublishOnCommit(shoulPublishOnCommit: boolean): void {
+  setShouldPublishOnCommit(shoulPublishOnCommit) {
     this._actionCreators.setShouldPublishOnCommit(shoulPublishOnCommit);
   }
 
-  updatePublishStateWithMessage(message: ?string): void {
-    this._actionCreators.updatePublishState({
-      ...this._state.publish,
-      message,
-    });
+  updatePublishStateWithMessage(message) {
+    this._actionCreators.updatePublishState(Object.assign({}, this._state.publish, {
+      message
+    }));
   }
 
-  setIsPrepareMode(isPrepareMode: boolean): void {
+  setIsPrepareMode(isPrepareMode) {
     this._actionCreators.setIsPrepareMode(isPrepareMode);
   }
 
-  setVerbatimModeEnabled(verbatimModeEnabled: boolean): void {
+  setVerbatimModeEnabled(verbatimModeEnabled) {
     this._actionCreators.setVerbatimModeEnabled(verbatimModeEnabled);
   }
 }
+exports.default = DiffViewModel;
+module.exports = exports['default'];

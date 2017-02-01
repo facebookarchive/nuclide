@@ -1,3 +1,28 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Table = undefined;
+
+var _classnames;
+
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
+
+var _reactForAtom = require('react-for-atom');
+
+var _atom = require('atom');
+
+var _Icon;
+
+function _load_Icon() {
+  return _Icon = require('./Icon');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,122 +30,39 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
 
-import classnames from 'classnames';
-import {
-  React,
-  ReactDOM,
-} from 'react-for-atom';
-import {Disposable} from 'atom';
-import {Icon} from './Icon';
-
-const DefaultEmptyComponent =
-  () => <div className="nuclide-ui-table-empty-message">Empty table</div>;
+const DefaultEmptyComponent = () => _reactForAtom.React.createElement(
+  'div',
+  { className: 'nuclide-ui-table-empty-message' },
+  'Empty table'
+);
 
 // ColumnKey must be unique within the containing collection.
-type ColumnKey = string;
-export type Column = {
-  title: string,
-  key: ColumnKey,
-  // Percentage. The `width`s of all columns must add up to 1.
-  width?: number,
-  // Optional React component for rendering cell contents.
-  // The component receives the cell value via `props.data`.
-  component?: ReactClass<any>,
-};
-export type Row = {
-  +className?: string,
-  +data: {
-    +[key: ColumnKey]: ?mixed,
-  },
-};
-type WidthMap = {
-  [key: ColumnKey]: number,
-};
-type Props = {
-  /**
-   * Optional classname for the entire table.
-   */
-   className?: string,
-  /**
-   * Optional max-height for the body container.
-   * Useful for making the table scrollable while keeping the header fixed.
-   */
-  maxBodyHeight?: string,
-  columns: Array<Column>,
-  rows: Array<Row>,
-  /**
-   * Whether to shade even and odd items differently. Default behavior is `true`.
-   */
-  alternateBackground?: number,
-  /**
-   * Whether column widths can be resized interactively via drag&drop. Default behavior is `true`.
-   */
-  resizeable?: boolean,
-  children?: React.Element<any>,
-  /**
-   * Whether columns can be sorted.
-   * If specified, `onSort`, `sortedColumn`, and `sortDescending` must also be specified.
-   */
-  sortable?: boolean,
-  onSort?: (sortedBy: ?ColumnKey, sortDescending: boolean) => void,
-  sortedColumn?: ?ColumnKey,
-  sortDescending?: boolean,
-  /**
-   * Whether items can be selected.
-   * If specified, `onSelect` must also be specified.
-   */
-  selectable?: boolean,
-  selectedIndex?: ?number,
-  /**
-   * Handler to be called upon selection. Called iff `selectable` is `true`.
-   */
-  onSelect?: (selectedItem: any, selectedIndex: number) => mixed,
-  /**
-   * Optional React Component to override the default message when zero rows are provided.
-   * Useful for showing loading spinners and custom messages.
-   */
-  emptyComponent?: ReactClass<any>,
-  /**
-   * Whether a table row will be collapsed if its content is too large
-   */
-  collapsable?: boolean,
-};
-type State = {
-  columnWidthRatios: WidthMap,
-};
+class Table extends _reactForAtom.React.Component {
 
-export class Table extends React.Component {
-  props: Props;
-  state: State;
-  _globalEventsDisposable: ?Disposable;
-  _resizeStartX: ?number;
-  _tableWidth: ?number;
-  _columnBeingResized: ?ColumnKey;
-
-  constructor(props: Props) {
+  constructor(props) {
     super(props);
     this._globalEventsDisposable = null;
     this._resizeStartX = null;
     this._tableWidth = null;
     this._columnBeingResized = null;
-    (this: any)._handleResizerGlobalMouseUp = this._handleResizerGlobalMouseUp.bind(this);
-    (this: any)._handleResizerGlobalMouseMove = this._handleResizerGlobalMouseMove.bind(this);
+    this._handleResizerGlobalMouseUp = this._handleResizerGlobalMouseUp.bind(this);
+    this._handleResizerGlobalMouseMove = this._handleResizerGlobalMouseMove.bind(this);
     this.state = {
-      columnWidthRatios: this._getInitialWidthsForColumns(this.props.columns),
+      columnWidthRatios: this._getInitialWidthsForColumns(this.props.columns)
     };
   }
 
-  _getInitialWidthsForColumns(columns: Array<Column>): WidthMap {
+  _getInitialWidthsForColumns(columns) {
     const columnWidthRatios = {};
     let assignedWidth = 0;
     const unresolvedColumns = [];
     columns.forEach(column => {
       const {
         key,
-        width,
+        width
       } = column;
       if (width != null) {
         columnWidthRatios[key] = width;
@@ -137,40 +79,36 @@ export class Table extends React.Component {
   }
 
   /* Applies sizing constraints, and returns whether the column width actually changed. */
-  _updateWidths(resizedColumn: ColumnKey, newColumnSize: number): boolean {
-    const {columnWidthRatios} = this.state;
-    const {columns} = this.props;
+  _updateWidths(resizedColumn, newColumnSize) {
+    const { columnWidthRatios } = this.state;
+    const { columns } = this.props;
     const originalColumnSize = columnWidthRatios[resizedColumn];
-    const columnAfterResizedColumn = columns[
-      columns.findIndex(column => column.key === resizedColumn) + 1
-    ].key;
+    const columnAfterResizedColumn = columns[columns.findIndex(column => column.key === resizedColumn) + 1].key;
     const followingColumnSize = columnWidthRatios[columnAfterResizedColumn];
-    const constrainedNewColumnSize =
-      Math.max(0, Math.min(newColumnSize, followingColumnSize + originalColumnSize));
+    const constrainedNewColumnSize = Math.max(0, Math.min(newColumnSize, followingColumnSize + originalColumnSize));
     if (Math.abs(newColumnSize - constrainedNewColumnSize) > Number.EPSILON) {
       return false;
     }
     const updatedColumnWidths = {};
     columns.forEach(column => {
-      const {key} = column;
+      const { key } = column;
       let width;
       if (column.key === resizedColumn) {
         width = constrainedNewColumnSize;
       } else if (column.key === columnAfterResizedColumn) {
-        width =
-          columnWidthRatios[resizedColumn] - constrainedNewColumnSize + columnWidthRatios[key];
+        width = columnWidthRatios[resizedColumn] - constrainedNewColumnSize + columnWidthRatios[key];
       } else {
         width = columnWidthRatios[key];
       }
       updatedColumnWidths[key] = width;
     });
     this.setState({
-      columnWidthRatios: updatedColumnWidths,
+      columnWidthRatios: updatedColumnWidths
     });
     return true;
   }
 
-  _handleResizerMouseDown(key: ColumnKey, event: SyntheticMouseEvent): void {
+  _handleResizerMouseDown(key, event) {
     if (this._globalEventsDisposable != null) {
       this._unsubscribeFromGlobalEvents();
     }
@@ -182,9 +120,9 @@ export class Table extends React.Component {
     document.addEventListener('mousemove', this._handleResizerGlobalMouseMove);
     document.addEventListener('mouseup', this._handleResizerGlobalMouseUp);
     this._resizeStartX = event.pageX;
-    this._tableWidth = ReactDOM.findDOMNode(this.refs.table).getBoundingClientRect().width;
+    this._tableWidth = _reactForAtom.ReactDOM.findDOMNode(this.refs.table).getBoundingClientRect().width;
     this._columnBeingResized = key;
-    this._globalEventsDisposable = new Disposable(() => {
+    this._globalEventsDisposable = new _atom.Disposable(() => {
       document.removeEventListener('mousemove', this._handleResizerGlobalMouseMove);
       document.removeEventListener('mouseup', this._handleResizerGlobalMouseUp);
       this._resizeStartX = null;
@@ -193,7 +131,7 @@ export class Table extends React.Component {
     });
   }
 
-  _unsubscribeFromGlobalEvents(): void {
+  _unsubscribeFromGlobalEvents() {
     if (this._globalEventsDisposable == null) {
       return;
     }
@@ -201,59 +139,47 @@ export class Table extends React.Component {
     this._globalEventsDisposable = null;
   }
 
-  _handleResizerGlobalMouseUp(event: MouseEvent): void {
+  _handleResizerGlobalMouseUp(event) {
     this._unsubscribeFromGlobalEvents();
   }
 
-  _handleResizerGlobalMouseMove(event: MouseEvent): void {
-    if (
-      this._resizeStartX == null ||
-      this._tableWidth == null ||
-      this._columnBeingResized == null
-    ) {
+  _handleResizerGlobalMouseMove(event) {
+    if (this._resizeStartX == null || this._tableWidth == null || this._columnBeingResized == null) {
       return;
     }
-    const {pageX} = ((event: any): MouseEvent);
+    const { pageX } = event;
     const deltaX = pageX - this._resizeStartX;
     const currentColumnSize = this.state.columnWidthRatios[this._columnBeingResized];
-    const didUpdate = this._updateWidths(
-      this._columnBeingResized,
-      (this._tableWidth * currentColumnSize + deltaX) / this._tableWidth,
-    );
+    const didUpdate = this._updateWidths(this._columnBeingResized, (this._tableWidth * currentColumnSize + deltaX) / this._tableWidth);
     if (didUpdate) {
       this._resizeStartX = pageX;
     }
   }
 
-  _dispose(): void {
+  _dispose() {
     this._unsubscribeFromGlobalEvents();
   }
 
-  componentWillUnmount(): void {
+  componentWillUnmount() {
     this._dispose();
   }
 
-  _handleSortByColumn(sortedBy: ColumnKey): void {
+  _handleSortByColumn(sortedBy) {
     const {
       onSort,
       sortDescending,
-      sortedColumn,
+      sortedColumn
     } = this.props;
     if (onSort == null) {
       return;
     }
-    onSort(
-      sortedBy,
-      sortDescending == null || sortedBy !== sortedColumn
-        ? false
-        : !sortDescending,
-    );
+    onSort(sortedBy, sortDescending == null || sortedBy !== sortedColumn ? false : !sortDescending);
   }
 
-  _handleRowClick(selectedIndex: number, event: SyntheticMouseEvent): void {
+  _handleRowClick(selectedIndex, event) {
     const {
       onSelect,
-      rows,
+      rows
     } = this.props;
     if (onSelect == null) {
       return;
@@ -262,11 +188,11 @@ export class Table extends React.Component {
     onSelect(selectedItem.data, selectedIndex);
   }
 
-  _renderEmptyCellContent(): React.Element<any> {
-    return <div />;
+  _renderEmptyCellContent() {
+    return _reactForAtom.React.createElement('div', null);
   }
 
-  render(): React.Element<any> {
+  render() {
     const {
       alternateBackground,
       className,
@@ -277,28 +203,26 @@ export class Table extends React.Component {
       selectedIndex,
       sortable,
       sortedColumn,
-      sortDescending,
+      sortDescending
     } = this.props;
     const header = columns.map((column, i) => {
       const {
         title,
-        key,
+        key
       } = column;
-      const resizeHandle = i === columns.length - 1
-        ? null
-        : <div
-            className="nuclide-ui-table-header-resize-handle"
-            onMouseDown={this._handleResizerMouseDown.bind(this, key)}
-            onClick={(e: SyntheticMouseEvent) => {
-              // Prevent sortable column header click event from firing.
-              e.stopPropagation();
-            }}
-          />;
+      const resizeHandle = i === columns.length - 1 ? null : _reactForAtom.React.createElement('div', {
+        className: 'nuclide-ui-table-header-resize-handle',
+        onMouseDown: this._handleResizerMouseDown.bind(this, key),
+        onClick: e => {
+          // Prevent sortable column header click event from firing.
+          e.stopPropagation();
+        }
+      });
       const width = this.state.columnWidthRatios[key];
       const optionalHeaderCellProps = {};
       if (width != null) {
         optionalHeaderCellProps.style = {
-          width: width + '%',
+          width: width + '%'
         };
       }
       let sortIndicator;
@@ -307,38 +231,42 @@ export class Table extends React.Component {
         optionalHeaderCellProps.onClick = this._handleSortByColumn.bind(this, key);
         titleOverlay += ' – click to sort';
         if (sortedColumn === key) {
-          sortIndicator =
-            <span> <Icon icon={sortDescending ? 'triangle-down' : 'triangle-up'} /></span>;
+          sortIndicator = _reactForAtom.React.createElement(
+            'span',
+            null,
+            ' ',
+            _reactForAtom.React.createElement((_Icon || _load_Icon()).Icon, { icon: sortDescending ? 'triangle-down' : 'triangle-up' })
+          );
         }
       }
-      return (
-        <th
-          className={classnames({
+      return _reactForAtom.React.createElement(
+        'th',
+        Object.assign({
+          className: (0, (_classnames || _load_classnames()).default)({
             'nuclide-ui-table-header-cell': true,
-            'nuclide-ui-table-header-cell-sortable': sortable,
-          })}
-          title={titleOverlay}
-          key={key}
-          {...optionalHeaderCellProps}>
-          {title}
-          {sortIndicator}
-          {resizeHandle}
-        </th>
+            'nuclide-ui-table-header-cell-sortable': sortable
+          }),
+          title: titleOverlay,
+          key: key
+        }, optionalHeaderCellProps),
+        title,
+        sortIndicator,
+        resizeHandle
       );
     });
     let body = rows.map((row, i) => {
       const {
         className: rowClassName,
-        data,
+        data
       } = row;
       const renderedRow = columns.map((column, j) => {
         const {
           key,
-          component: Component,
+          component: Component
         } = column;
         let datum = data[key];
         if (Component != null) {
-          datum = <Component data={datum} />;
+          datum = _reactForAtom.React.createElement(Component, { data: datum });
         } else if (datum == null) {
           datum = this._renderEmptyCellContent();
         }
@@ -349,13 +277,13 @@ export class Table extends React.Component {
             cellStyle.width = width + '%';
           }
         }
-        return (
-          <td
-            className="nuclide-ui-table-body-cell"
-            key={j}
-            style={cellStyle}>
-            {datum}
-          </td>
+        return _reactForAtom.React.createElement(
+          'td',
+          {
+            className: 'nuclide-ui-table-body-cell',
+            key: j,
+            style: cellStyle },
+          datum
         );
       });
       const rowProps = {};
@@ -363,47 +291,71 @@ export class Table extends React.Component {
         rowProps.onClick = this._handleRowClick.bind(this, i);
       }
       const isSelectedRow = selectedIndex != null && i === selectedIndex;
-      return (
-        <tr
-          className={classnames(
-            rowClassName,
-            {
-              'nuclide-ui-table-row-selectable': selectable,
-              'nuclide-ui-table-row-selected': isSelectedRow,
-              'nuclide-ui-table-row-alternate': alternateBackground !== false && i % 2 === 1,
-              'nuclide-ui-table-collapsed-row': this.props.collapsable && !isSelectedRow,
-            },
-          )}
-          key={i}
-          {...rowProps}>
-          {renderedRow}
-        </tr>
+      return _reactForAtom.React.createElement(
+        'tr',
+        Object.assign({
+          className: (0, (_classnames || _load_classnames()).default)(rowClassName, {
+            'nuclide-ui-table-row-selectable': selectable,
+            'nuclide-ui-table-row-selected': isSelectedRow,
+            'nuclide-ui-table-row-alternate': alternateBackground !== false && i % 2 === 1,
+            'nuclide-ui-table-collapsed-row': this.props.collapsable && !isSelectedRow
+          }),
+          key: i
+        }, rowProps),
+        renderedRow
       );
     });
     if (rows.length === 0) {
       const EmptyComponent = this.props.emptyComponent || DefaultEmptyComponent;
-      body = <tr><td><EmptyComponent /></td></tr>;
+      body = _reactForAtom.React.createElement(
+        'tr',
+        null,
+        _reactForAtom.React.createElement(
+          'td',
+          null,
+          _reactForAtom.React.createElement(EmptyComponent, null)
+        )
+      );
     }
     const scrollableBodyStyle = {};
     if (maxBodyHeight != null) {
       scrollableBodyStyle.maxHeight = maxBodyHeight;
       scrollableBodyStyle.overflowY = 'auto';
     }
-    return (
-      <div className={className}>
-        <table
-          className="nuclide-ui-table"
-          ref="table">
-          <thead className="nuclide-ui-table-header"><tr>{header}</tr></thead>
-        </table>
-        <div style={scrollableBodyStyle}>
-          <table
-            className="nuclide-ui-table nuclide-ui-table-body native-key-bindings"
-            tabIndex="-1">
-            <tbody>{body}</tbody>
-          </table>
-        </div>
-      </div>
+    return _reactForAtom.React.createElement(
+      'div',
+      { className: className },
+      _reactForAtom.React.createElement(
+        'table',
+        {
+          className: 'nuclide-ui-table',
+          ref: 'table' },
+        _reactForAtom.React.createElement(
+          'thead',
+          { className: 'nuclide-ui-table-header' },
+          _reactForAtom.React.createElement(
+            'tr',
+            null,
+            header
+          )
+        )
+      ),
+      _reactForAtom.React.createElement(
+        'div',
+        { style: scrollableBodyStyle },
+        _reactForAtom.React.createElement(
+          'table',
+          {
+            className: 'nuclide-ui-table nuclide-ui-table-body native-key-bindings',
+            tabIndex: '-1' },
+          _reactForAtom.React.createElement(
+            'tbody',
+            null,
+            body
+          )
+        )
+      )
     );
   }
 }
+exports.Table = Table;
