@@ -62,6 +62,11 @@ export type RemoteProjectsService = {
   openConnectionDialog(
     config: OpenConnectionDialogOptions,
   ): Promise<?RemoteConnection>,
+
+  /**
+   * Find an existing connection or create one given the remote connetion details.
+   */
+  findOrCreate(config: RemoteConnectionConfiguration): Promise<RemoteConnection>,
 };
 
 /**
