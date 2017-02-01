@@ -20,7 +20,7 @@ describe('DiagnosticsProvider', () => {
   let diagnosticsProvider: FileDiagnosticsProvider<LanguageService> = (null: any);
 
   beforeEach(() => {
-    class FakeProviderBase { }
+    class FakeProviderBase { dispose() {} }
     const file: DiagnosticsProviderFile
       = (uncachedRequire(require, '../lib/DiagnosticsProvider'): any);
     diagnosticsProvider = new file.FileDiagnosticsProvider(

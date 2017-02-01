@@ -15,46 +15,47 @@ type AnyTeardown = (() => mixed) | rxjs$ISubscription | IDisposable;
  * also accept plain functions and Rx subscriptions.
  */
 export default class UniversalDisposable {
-  _tearDowns: Set<AnyTeardown>;
-  wasDisposed: boolean;
+  disposed: boolean;
+  teardowns: Set<AnyTeardown>;
 
-  constructor(...tearDowns: Array<AnyTeardown>) {
-    this._tearDowns = new Set(tearDowns);
-    this.wasDisposed = false;
+  constructor(...teardowns: Array<AnyTeardown>) {
+    this.teardowns = new Set();
+    this.disposed = false;
+    if (teardowns.length) {
+      this.add(...teardowns);
+    }
   }
 
-  add(...tearDowns: Array<AnyTeardown>): void {
-    if (this.wasDisposed) {
+  add(...teardowns: Array<AnyTeardown>): void {
+    if (this.disposed) {
       throw new Error('Cannot add to an already disposed UniversalDisposable!');
     }
-
-    tearDowns.forEach(td => this._tearDowns.add(td));
+    for (let i = 0; i < teardowns.length; i++) {
+      assertTeardown(teardowns[i]);
+      this.teardowns.add(teardowns[i]);
+    }
   }
 
-  remove(...tearDowns: Array<AnyTeardown>): void {
-    if (this.wasDisposed) {
-      return;
+  remove(teardown: AnyTeardown): void {
+    if (!this.disposed) {
+      this.teardowns.delete(teardown);
     }
-
-    tearDowns.forEach(td => this._tearDowns.delete(td));
   }
 
   dispose(): void {
-    if (this.wasDisposed) {
-      return;
+    if (!this.disposed) {
+      this.disposed = true;
+      this.teardowns.forEach(teardown => {
+        if (typeof teardown.dispose === 'function') {
+          teardown.dispose();
+        } else if (typeof teardown.unsubscribe === 'function') {
+          teardown.unsubscribe();
+        } else if (typeof teardown === 'function') {
+          teardown();
+        }
+      });
+      this.teardowns = (null: any);
     }
-
-    this._tearDowns.forEach(t => {
-      if (typeof t === 'function') {
-        t();
-      } else if (typeof t.dispose === 'function') {
-        t.dispose();
-      } else if (typeof t.unsubscribe === 'function') {
-        t.unsubscribe();
-      }
-    });
-    this._tearDowns.clear();
-    this.wasDisposed = true;
   }
 
   unsubscribe(): void {
@@ -62,10 +63,19 @@ export default class UniversalDisposable {
   }
 
   clear(): void {
-    if (this.wasDisposed) {
-      return;
+    if (!this.disposed) {
+      this.teardowns.clear();
     }
-
-    this._tearDowns.clear();
   }
+}
+
+function assertTeardown(teardown: AnyTeardown): void {
+  if (
+    typeof teardown.dispose === 'function' ||
+    typeof teardown.unsubscribe === 'function' ||
+    typeof teardown === 'function'
+  ) {
+    return;
+  }
+  throw new TypeError('Arguments to UniversalDisposable.add must be disposable');
 }

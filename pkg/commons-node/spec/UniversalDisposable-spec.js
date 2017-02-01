@@ -136,7 +136,8 @@ describe('UniversalDisposable', () => {
     );
 
     universal.remove(unsubscribe);
-    universal.remove(dispose, foo);
+    universal.remove(dispose);
+    universal.remove(foo);
 
     universal.dispose();
 
@@ -178,5 +179,43 @@ describe('UniversalDisposable', () => {
     universal.dispose();
 
     expect(ids).toEqual([1, 3, 4, 2]);
+  });
+
+  describe('teardown priority', () => {
+    it('calls dispose()', () => {
+      const foo: Function = jasmine.createSpy('foo');
+      foo.dispose = jasmine.createSpy('dispose');
+      foo.unsubscribe = jasmine.createSpy('unsubscribe');
+
+      const universal = new UniversalDisposable(foo);
+      universal.dispose();
+
+      expect(foo.dispose.wasCalled).toBe(true);
+      expect(foo.unsubscribe.wasCalled).toBe(false);
+      expect(foo.wasCalled).toBe(false);
+    });
+
+    it('calls unsubscribe()', () => {
+      const foo: Function = jasmine.createSpy('foo');
+      foo.dispose = null;
+      foo.unsubscribe = jasmine.createSpy('unsubscribe');
+
+      const universal = new UniversalDisposable(foo);
+      universal.dispose();
+
+      expect(foo.unsubscribe.wasCalled).toBe(true);
+      expect(foo.wasCalled).toBe(false);
+    });
+
+    it('calls the function', () => {
+      const foo: Function = jasmine.createSpy('foo');
+      foo.dispose = null;
+      foo.unsubscribe = null;
+
+      const universal = new UniversalDisposable(foo);
+      universal.dispose();
+
+      expect(foo.wasCalled).toBe(true);
+    });
   });
 });
