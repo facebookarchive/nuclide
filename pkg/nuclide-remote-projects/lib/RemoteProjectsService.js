@@ -10,6 +10,9 @@
 
 import type {SerializableRemoteConnectionConfiguration} from '..';
 import type {OpenConnectionDialogOptions} from './open-connection';
+import type {
+  RemoteConnectionConfiguration,
+} from '../../nuclide-remote-connection/lib/RemoteConnection';
 
 import {ReplaySubject} from 'rxjs';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
@@ -59,5 +62,9 @@ export default class RemoteProjectsService {
 
   openConnectionDialog(options: OpenConnectionDialogOptions): Promise<?RemoteConnection> {
     return openConnectionDialog(options);
+  }
+
+  async findOrCreate(config: RemoteConnectionConfiguration): Promise<RemoteConnection> {
+    return RemoteConnection.findOrCreate(config);
   }
 }
