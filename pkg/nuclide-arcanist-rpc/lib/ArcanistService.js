@@ -21,6 +21,7 @@ import {
   getOriginalEnvironment,
   getOutputStream,
   observeProcess,
+  runCommand,
   safeSpawn,
   scriptSafeSpawnAndObserveOutput,
 } from '../../commons-node/process';
@@ -76,6 +77,17 @@ export async function readArcConfig(fileName: NuclideUri): Promise<?any> {
     arcProjectMap.set(arcConfigDirectory, result);
   }
   return arcProjectMap.get(arcConfigDirectory);
+}
+
+export async function getArcConfigKey(
+  fileName: NuclideUri,
+  key: string,
+): Promise<?string> {
+  return _callArcGetConfig(fileName, key)
+    .map(s => s.split(':')[1]
+               .trim()
+               .replace(/"/g, ''))
+    .toPromise();
 }
 
 export async function findArcProjectIdOfPath(fileName: NuclideUri): Promise<?string> {
@@ -162,6 +174,16 @@ async function getArcExecOptions(
   }
 
   return options;
+}
+
+function _callArcGetConfig(
+  filePath: NuclideUri,
+  name: string,
+): Observable<string> {
+  const args = ['get-config', name];
+  return Observable
+    .fromPromise(getArcExecOptions(filePath))
+    .switchMap(opts => runCommand('arc', args, opts));
 }
 
 function _callArcDiff(
