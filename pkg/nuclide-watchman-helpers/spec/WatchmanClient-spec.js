@@ -35,6 +35,9 @@ describe('WatchmanClient test suite', () => {
         ['non-used-file.txt', 'def'],
         ['nested/nested-test.txt', 'ghi'],
       ]));
+      // TODO(hansonw): This is a big change in Watchman behavior- figure out what
+      // this means for Nuclide's use.
+      dirPath = fs.realpathSync(dirPath);
       waits(1010);
     });
   });
