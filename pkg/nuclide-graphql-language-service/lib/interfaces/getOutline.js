@@ -64,14 +64,21 @@ function outlineTreeConverter(docText: string): OutlineTreeConverterType {
       tokenizedText.push(buildToken('plain', node.name));
       return {tokenizedText, ...meta(node)};
     },
-    OperationDefinition: node => ({
-      tokenizedText: [
-        buildToken('keyword', node.operation),
-        buildToken('whitespace', ' '),
-        buildToken('class-name', node.name),
-      ],
-      ...meta(node),
-    }),
+    OperationDefinition: node => {
+      const nodeName = node.name || 'AnonymousQuery';
+      const metaObject = meta(node);
+      if (metaObject.representativeName === null) {
+        metaObject.representativeName = nodeName;
+      }
+      return {
+        tokenizedText: [
+          buildToken('keyword', node.operation),
+          buildToken('whitespace', ' '),
+          buildToken('class-name', nodeName),
+        ],
+        ...metaObject,
+      };
+    },
     Document: node => node.definitions,
     SelectionSet: node => concatMap(
       node.selections,
