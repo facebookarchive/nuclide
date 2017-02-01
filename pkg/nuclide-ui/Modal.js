@@ -75,6 +75,7 @@ export class Modal extends React.Component {
       <Portal container={this._container}>
         <div
           tabIndex="0"
+          {...this.props}
           ref={this._handleContainerInnerElement}>
           {this.props.children}
         </div>
