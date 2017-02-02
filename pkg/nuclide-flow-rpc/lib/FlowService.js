@@ -39,11 +39,6 @@ export type NewDiagnostics = {
   messages: Array<FileDiagnosticMessage>,
 };
 
-export type MessageComponent = {
-  descr: string,
-  rangeInFile: ?RangeInFile,
-};
-
 export type RangeInFile = {
   file: NuclideUri,
   range: atom$Range,

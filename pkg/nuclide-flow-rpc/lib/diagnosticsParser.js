@@ -17,15 +17,12 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import type {
   NewDiagnostics,
-  MessageComponent,
-  RangeInFile,
 } from '..';
 
 import type {
   FlowStatusOutput,
   FlowStatusError,
   FlowStatusErrorMessageComponent,
-  FlowLoc,
 } from './flowOutputTypes';
 
 import invariant from 'assert';
@@ -42,35 +39,6 @@ export function flowStatusOutputToDiagnostics(
   return {
     flowRoot: root,
     messages: diagnosticMessages,
-  };
-}
-
-function flowMessageComponentToMessageComponent(
-  component: FlowStatusErrorMessageComponent,
-): MessageComponent {
-  return {
-    descr: component.descr,
-    rangeInFile: maybeFlowLocToRange(component.loc),
-  };
-}
-
-function maybeFlowLocToRange(loc: ?FlowLoc): ?RangeInFile {
-  return loc == null ? null : flowLocToRange(loc);
-}
-
-function flowLocToRange(loc: FlowLoc): RangeInFile {
-  return {
-    file: loc.source,
-    range: new Range(
-      [
-        loc.start.line,
-        loc.start.column,
-      ],
-      [
-        loc.end.line,
-        loc.end.column,
-      ],
-    ),
   };
 }
 
@@ -160,12 +128,12 @@ function namedImportTypo(diagnostic: FileDiagnosticMessage): ?Fix {
  * files.
  */
 
-function extractPath(message: MessageComponent): NuclideUri | void {
-  return message.rangeInFile == null ? undefined : message.rangeInFile.file;
+function extractPath(message: FlowStatusErrorMessageComponent): NuclideUri | void {
+  return message.loc == null ? undefined : message.loc.source;
 }
 
 // A trace object is very similar to an error object.
-function flowMessageToTrace(message: MessageComponent): Trace {
+function flowMessageToTrace(message: FlowStatusErrorMessageComponent): Trace {
   return {
     type: 'Trace',
     text: message.descr,
@@ -175,44 +143,24 @@ function flowMessageToTrace(message: MessageComponent): Trace {
 }
 
 function flowMessageToDiagnosticMessage(flowStatusError: FlowStatusError) {
-  const flowMessageComponents: Array<FlowStatusErrorMessageComponent> =
-    flowStatusError.message;
+  const flowMessageComponents: Array<FlowStatusErrorMessageComponent> = flowStatusError.message;
 
-  const messageComponents: Array<MessageComponent> =
-    flowMessageComponents.map(flowMessageComponentToMessageComponent);
-  const operation = flowStatusError.operation;
-  if (operation != null) {
-    const operationComponent = flowMessageComponentToMessageComponent(operation);
-    operationComponent.descr = 'See also: ' + operationComponent.descr;
-    messageComponents.push(operationComponent);
-  }
-  const extra = flowStatusError.extra;
-  if (extra != null) {
-    const flatExtra = [].concat(...extra.map(({message}) => message));
-    messageComponents.push(...flatExtra.map(flowMessageComponentToMessageComponent));
-  }
-
-  const flowMessage = messageComponents[0];
+  const mainMessage = flowMessageComponents[0];
 
   // The Flow type does not capture this, but the first message always has a path, and the
   // diagnostics package requires a FileDiagnosticMessage to have a path.
-  const path = extractPath(flowMessage);
+  const path = extractPath(mainMessage);
   invariant(path != null, 'Expected path to not be null or undefined');
 
   const diagnosticMessage: FileDiagnosticMessage = {
     scope: 'file',
     providerName: 'Flow',
     type: flowStatusError.level === 'error' ? 'Error' : 'Warning',
-    text: flowMessage.descr,
+    text: mainMessage.descr,
     filePath: path,
-    range: extractRange(flowMessage),
+    range: extractRange(mainMessage),
+    trace: extractTraces(flowStatusError),
   };
-
-  // When the message is an array with multiple elements, the second element
-  // onwards comprise the trace for the error.
-  if (messageComponents.length > 1) {
-    diagnosticMessage.trace = messageComponents.slice(1).map(flowMessageToTrace);
-  }
 
   const fix = diagnosticToFix(diagnosticMessage);
   if (fix != null) {
@@ -222,19 +170,50 @@ function flowMessageToDiagnosticMessage(flowStatusError: FlowStatusError) {
   return diagnosticMessage;
 }
 
+function extractTraces(flowStatusError: FlowStatusError): Array<Trace> | void {
+  const flowMessageComponents: Array<FlowStatusErrorMessageComponent> = flowStatusError.message;
+
+  const trace: Array<Trace> = [];
+  // When the message is an array with multiple elements, the second element
+  // onwards comprise the trace for the error.
+  if (flowMessageComponents.length > 1) {
+    trace.push(...flowMessageComponents.slice(1).map(flowMessageToTrace));
+  }
+
+  const operation = flowStatusError.operation;
+  if (operation != null) {
+    const operationComponent = flowMessageToTrace(operation);
+    invariant(operationComponent.text != null);
+    operationComponent.text = 'See also: ' + operationComponent.text;
+    trace.push(operationComponent);
+  }
+  const extra = flowStatusError.extra;
+  if (extra != null) {
+    const flatExtra = [].concat(...extra.map(({message}) => message));
+    trace.push(...flatExtra.map(flowMessageToTrace));
+  }
+
+  if (trace.length > 0) {
+    return trace;
+  } else {
+    return undefined;
+  }
+}
+
+
 // Use `atom$Range | void` rather than `?atom$Range` to exclude `null`, so that the type is
 // compatible with the `range` property, which is an optional property rather than a nullable
 // property.
-export function extractRange(message: MessageComponent): atom$Range | void {
+export function extractRange(message: FlowStatusErrorMessageComponent): atom$Range | void {
   // It's unclear why the 1-based to 0-based indexing works the way that it
   // does, but this has the desired effect in the UI, in practice.
-  const {rangeInFile} = message;
-  if (rangeInFile == null) {
+  const flowRange = message.loc;
+  if (flowRange == null) {
     return undefined;
   } else {
     return new Range(
-      [rangeInFile.range.start.row - 1, rangeInFile.range.start.column - 1],
-      [rangeInFile.range.end.row - 1, rangeInFile.range.end.column],
+      [flowRange.start.line - 1, flowRange.start.column - 1],
+      [flowRange.end.line - 1, flowRange.end.column],
     );
   }
 }
