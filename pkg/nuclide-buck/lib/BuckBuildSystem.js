@@ -66,6 +66,7 @@ import {
 } from './DeployEventStream';
 import observeBuildCommands from './observeBuildCommands';
 import {React} from 'react-for-atom';
+import passesGK from '../../commons-node/passesGK';
 
 const SOCKET_TIMEOUT = 30000;
 
@@ -85,11 +86,22 @@ const DEBUGGABLE_RULES = new Set([
   'android_binary',
 ]);
 
+const NUCLIDE_JAVA_DEBUGGER_GK = 'nuclide_debugger_java';
+
 function isInstallableRule(ruleType: ?string) {
   return INSTALLABLE_RULES.has(ruleType);
 }
-function isDebuggableRule(ruleType: string, target: ?string) {
+
+function isDebuggableRule(ruleType: string, target: ?string): boolean {
   return DEBUGGABLE_RULES.has(ruleType) && isDebuggerAvailableForTarget(ruleType, target);
+}
+
+function passesDebuggerGatekeeper(ruleType: ?string, javaDebuggerGk: boolean): boolean {
+  if (ruleType !== 'android_binary') {
+    return true;
+  }
+
+  return javaDebuggerGk;
 }
 
 function isDebuggerAvailableForTarget(ruleType: string, target: ?string): boolean {
@@ -101,7 +113,8 @@ function isDebuggerAvailableForTarget(ruleType: string, target: ?string): boolea
   }
 }
 
-function shouldEnableTask(taskType: TaskType, ruleType: ?string, target: ?string): boolean {
+async function shouldEnableTask(taskType: TaskType, ruleType: ?string, target: ?string):
+  Promise<boolean> {
   switch (taskType) {
     case 'run':
       return ruleType != null && isInstallableRule(ruleType);
@@ -206,14 +219,21 @@ export class BuckBuildSystem {
       .distinctUntilChanged();
 
     const tasksObservable = storeReady
-      .map(state => {
-        const {buildRuleType} = state;
-        const target = this._getStore().getState().buildTarget;
-        return TASKS.map(task => ({
-          ...task,
-          disabled: state.isLoadingPlatforms || !shouldEnableTask(task.type, buildRuleType, target),
-        }));
-      });
+      .mergeMap(state => Observable.fromPromise(passesGK(NUCLIDE_JAVA_DEBUGGER_GK))
+          .map(javaDebuggerGk => {
+            const {buildRuleType} = state;
+            const target = this._getStore().getState().buildTarget;
+            return TASKS.map(task => {
+              const enable = shouldEnableTask(task.type, buildRuleType, target);
+              const passesGk = (task.type !== 'debug') ? true :
+                passesDebuggerGatekeeper(buildRuleType, javaDebuggerGk);
+              return ({
+                ...task,
+                disabled: state.isLoadingPlatforms || !enable || !passesGk,
+              });
+            });
+          }),
+      );
 
     const subscription = Observable.combineLatest(enabledObservable, tasksObservable)
       .subscribe(([enabled, tasks]) => callback(enabled, tasks));
