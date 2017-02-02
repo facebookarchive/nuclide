@@ -251,6 +251,7 @@ export class ConnectionMultiplexer {
         .getStatusChanges()
         .subscribe(status => this._handleStatusChange(status, connection)),
       connection.subscribeToEvents(this.sendCommand.bind(this)),
+      connection,
     );
     this._connections.add(connection);
     return connection;
