@@ -25,6 +25,7 @@ import type {FindReferencesReturn} from '../../nuclide-find-references/lib/rpc-t
 import type {
   DiagnosticProviderUpdate,
   FileDiagnosticUpdate,
+  FileDiagnosticMessage,
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
 import type {Completion} from '../../nuclide-language-service/lib/LanguageService';
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
@@ -38,6 +39,11 @@ export type Diagnostics = {
   // The location of the .flowconfig where these messages came from.
   flowRoot: NuclideUri,
   messages: Array<Diagnostic>,
+};
+
+export type NewDiagnostics = {
+  flowRoot: NuclideUri,
+  messages: Array<FileDiagnosticMessage>,
 };
 
 /*
@@ -278,7 +284,7 @@ export function flowFindDefinition(
 export function flowFindDiagnostics(
   file: NuclideUri,
   currentContents: ?string,
-): Promise<?Diagnostics> {
+): Promise<?NewDiagnostics> {
   return getState().getRootContainer().runWithRoot(
     file,
     root => root.flowFindDiagnostics(

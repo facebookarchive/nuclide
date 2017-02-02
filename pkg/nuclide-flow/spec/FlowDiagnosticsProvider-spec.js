@@ -8,6 +8,8 @@
  * @flow
  */
 
+import type {FileDiagnosticMessage} from '../../nuclide-diagnostics-common/lib/rpc-types';
+
 import {Range} from 'atom';
 
 const testPath = 'myPath';
@@ -22,132 +24,25 @@ describe('FlowDiagnosticsProvider', () => {
   });
 
   describe('processDiagnostics', () => {
-    it('should properly transform a simple diagnostic', () => {
-      const diags = [{
-        level: 'error',
-        messageComponents: [
-          {
-            level: 'error',
-            descr: 'message',
-            rangeInFile: {
-              file: testPath,
-              range: new Range([1, 3], [2, 4]),
-            },
-          },
-        ],
-      }];
-
-      const expectedOutput = {
-        scope: 'file',
-        providerName: 'Flow',
-        text: 'message',
-        type: 'Error',
-        filePath: testPath,
-        range: new Range([0, 2], [1, 4]),
-      };
-
-      const message = flowDiagnosticsProvider
-        ._processDiagnostics(diags, testPath)
-        .filePathToMessages.get(testPath)[0];
-      expect(message).toEqual(expectedOutput);
-    });
-
     it('should invalidate errors from the current file if Flow returns none', () => {
       const diags = [];
       const update = flowDiagnosticsProvider._processDiagnostics(diags, testPath);
       expect(update.filePathToMessages.has(testPath)).toBe(true);
     });
 
-    it('should keep warnings as warnings', () => {
-      const diags = [{
-        level: 'warning',
-        messageComponents: [
-          {
-            descr: 'message',
-            rangeInFile: {
-              file: testPath,
-              range: new Range([1, 3], [2, 4]),
-            },
-          },
-        ],
-      }];
-
-      const expectedOutput = {
-        scope: 'file',
-        providerName: 'Flow',
-        text: 'message',
-        type: 'Warning',
-        filePath: testPath,
-        range: new Range([0, 2], [1, 4]),
-      };
-
-      const message = flowDiagnosticsProvider
-        ._processDiagnostics(diags, testPath)
-        .filePathToMessages.get(testPath)[0];
-      expect(message).toEqual(expectedOutput);
-    });
-
     it('should not filter diagnostics not in the target file', () => {
-      const diags = [{
-        level: 'warning',
-        messageComponents: [
-          {
-            descr: 'message',
-            rangeInFile: {
-              file: 'notMyPath',
-              range: new Range([1, 3], [2, 4]),
-            },
-          },
-        ],
+      const diags: Array<FileDiagnosticMessage> = [{
+        providerName: 'Flow',
+        scope: 'file',
+        type: 'Warning',
+        filePath: 'notMyPath',
+        range: new Range([1, 3], [2, 4]),
       }];
 
       const allMessages = flowDiagnosticsProvider
         ._processDiagnostics(diags, testPath)
         .filePathToMessages;
       expect(allMessages.has('notMyPath')).toBe(true);
-    });
-
-    it('should create traces for diagnostics spanning multiple messages', () => {
-      const diags = [{
-        level: 'error',
-        messageComponents: [
-          {
-            descr: 'message',
-            rangeInFile: {
-              file: testPath,
-              range: new Range([1, 3], [2, 4]),
-            },
-          },
-          {
-            level: 'error',
-            descr: 'more message',
-            rangeInFile: {
-              file: 'otherPath',
-              range: new Range([5, 7], [6, 8]),
-            },
-          },
-        ],
-      }];
-
-      const expectedOutput = {
-        scope: 'file',
-        providerName: 'Flow',
-        type: 'Error',
-        text: 'message',
-        filePath: testPath,
-        range: new Range([0, 2], [1, 4]),
-        trace: [{
-          type: 'Trace',
-          filePath: 'otherPath',
-          text: 'more message',
-          range: new Range([4, 6], [5, 8]),
-        }],
-      };
-
-      const message = flowDiagnosticsProvider
-        ._processDiagnostics(diags, testPath)
-        .filePathToMessages.get(testPath)[0];
-      expect(message).toEqual(expectedOutput);
     });
   });
 

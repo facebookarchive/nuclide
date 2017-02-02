@@ -8,11 +8,11 @@
  * @flow
  */
 
-import type {Diagnostics} from '..';
+import type {NewDiagnostics, Diagnostic} from '..';
 
 import {Range} from 'simple-text-buffer';
 
-import {flowStatusOutputToDiagnostics} from '../lib/diagnosticsParser';
+import {flowStatusOutputToDiagnostics, flowMessageToFix} from '../lib/diagnosticsParser';
 import {addMatchers} from '../../nuclide-test-helpers';
 
 const flowOutput = {
@@ -77,41 +77,65 @@ const flowOutput = {
       kind: 'infer',
       level: 'error',
     },
-  ],
-};
-
-const expected: Diagnostics = {
-  flowRoot: '/flow-test',
-  messages: [
     {
-      level: 'error',
-      messageComponents: [
+      kind: 'infer',
+      level: 'warning',
+      message: [
         {
-          descr: 'object literal',
-          rangeInFile: {
-            file: '/flow-test/src/test.js',
-            range: new Range([13, 16], [13, 17]),
-          },
-        },
-        {
-          descr: 'This type is incompatible with',
-          rangeInFile: null,
-        },
-        {
-          descr: 'union: object type(s)',
-          rangeInFile: {
-            file: '/flow-test/src/test.js',
-            range: new Range([10, 8], [10, 10]),
-          },
-        },
-        {
-          descr: 'See also: assignment of property `bar`',
-          rangeInFile: {
-            file: '/flow-test/src/test.js',
-            range: new Range([13, 5], [13, 12]),
+          descr: 'message',
+          loc: {
+            source: 'myPath',
+            start: {
+              line: 1,
+              column: 3,
+            },
+            end: {
+              line: 2,
+              column: 4,
+            },
           },
         },
       ],
+    },
+  ],
+};
+
+const expected: NewDiagnostics = {
+  flowRoot: '/flow-test',
+  messages: [
+    {
+      type: 'Error',
+      scope: 'file',
+      providerName: 'Flow',
+      filePath: '/flow-test/src/test.js',
+      text: 'object literal',
+      range: new Range([12, 15], [12, 17]),
+      trace: [
+        {
+          type: 'Trace',
+          text: 'This type is incompatible with',
+        },
+        {
+          type: 'Trace',
+          text: 'union: object type(s)',
+          filePath: '/flow-test/src/test.js',
+          range: new Range([9, 7], [9, 10]),
+        },
+        {
+          type: 'Trace',
+          text: 'See also: assignment of property `bar`',
+          filePath: '/flow-test/src/test.js',
+          range: new Range([12, 4], [12, 12]),
+        },
+      ],
+    },
+    {
+      type: 'Warning',
+      scope: 'file',
+      providerName: 'Flow',
+      filePath: 'myPath',
+      text: 'message',
+      range: new Range([0, 2], [1, 4]),
     },
   ],
 };
@@ -123,5 +147,62 @@ describe('flowStatusOutputToDiagnostics', () => {
 
   it('converts the flow status output', () => {
     expect(flowStatusOutputToDiagnostics('/flow-test', flowOutput)).diffJson(expected);
+  });
+});
+
+describe('flowMessageToFix', () => {
+  beforeEach(function() {
+    addMatchers(this);
+  });
+
+  it('should provide a fix for an unused suppression comment', () => {
+    const diagnostic: Diagnostic = {
+      level: 'error',
+      messageComponents: [
+        {
+          descr: 'Error suppressing comment',
+          rangeInFile: {
+            file: 'foo',
+            range: new Range([6, 1], [6, 13]),
+          },
+        },
+        {
+          descr: 'Unused suppression',
+          rangeInFile: null,
+        },
+      ],
+    };
+    const fix = flowMessageToFix(diagnostic);
+    expect(fix).diffJson({
+      oldRange: new Range([5, 0], [5, 13]),
+      newText: '',
+      speculative: true,
+    });
+  });
+
+  it('should provide a fix for named import typos', () => {
+    const diagnostic: Diagnostic = {
+      level: 'error',
+      messageComponents: [
+        {
+          descr: 'Named import from module `./foo`',
+          rangeInFile: {
+            file: 'foo',
+            range: new Range([3, 9], [3, 16]),
+          },
+        },
+        {
+          descr: 'This module has no named export called `FooBrBaaaaz`. Did you mean `foobar`?',
+          rangeInFile: null,
+        },
+      ],
+    };
+    const fix = flowMessageToFix(diagnostic);
+    expect(fix).diffJson({
+      oldRange: new Range([2, 8], [2, 16]),
+      oldText: 'FooBrBaaaaz',
+      newText: 'foobar',
+      speculative: true,
+    });
   });
 });

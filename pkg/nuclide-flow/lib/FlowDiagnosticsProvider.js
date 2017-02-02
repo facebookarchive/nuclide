@@ -17,12 +17,9 @@ import type {
 import type {
   FileDiagnosticMessage,
   DiagnosticProviderUpdate,
-  Trace,
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
 import type {
-  Diagnostics,
-  Diagnostic,
-  MessageComponent,
+  NewDiagnostics,
 } from '../../nuclide-flow-rpc';
 
 import {trackTiming} from '../../nuclide-analytics';
@@ -31,78 +28,14 @@ import {RequestSerializer} from '../../commons-node/promise';
 import {DiagnosticsProviderBase} from '../../nuclide-diagnostics-provider-base';
 import invariant from 'assert';
 import {JS_GRAMMARS} from './constants';
-import {extractRange} from './flowDiagnosticsCommon';
-import flowMessageToFix from './flowMessageToFix';
 import {getLogger} from '../../nuclide-logging';
 
 const logger = getLogger();
 
-/**
- * Currently, a diagnostic from Flow is an object with a "message" property.
- * Each item in the "message" array is an object with the following fields:
- *     - path (string) File that contains the error.
- *     - descr (string) Description of the error.
- *     - line (number) Start line.
- *     - endline (number) End line.
- *     - start (number) Start column.
- *     - end (number) End column.
- *     - code (number) Presumably an error code.
- * The message array may have more than one item. For example, if there is a
- * type incompatibility error, the first item in the message array blames the
- * usage of the wrong type and the second blames the declaration of the type
- * with which the usage disagrees. Note that these could occur in different
- * files.
- */
-
-function extractPath(message: MessageComponent): NuclideUri | void {
-  return message.rangeInFile == null ? undefined : message.rangeInFile.file;
-}
-
-// A trace object is very similar to an error object.
-function flowMessageToTrace(message: MessageComponent): Trace {
-  return {
-    type: 'Trace',
-    text: message.descr,
-    filePath: extractPath(message),
-    range: extractRange(message),
-  };
-}
-
-function flowMessageToDiagnosticMessage(diagnostic: Diagnostic) {
-  const flowMessage = diagnostic.messageComponents[0];
-
-  // The Flow type does not capture this, but the first message always has a path, and the
-  // diagnostics package requires a FileDiagnosticMessage to have a path.
-  const path = extractPath(flowMessage);
-  invariant(path != null, 'Expected path to not be null or undefined');
-
-  const diagnosticMessage: FileDiagnosticMessage = {
-    scope: 'file',
-    providerName: 'Flow',
-    type: diagnostic.level === 'error' ? 'Error' : 'Warning',
-    text: flowMessage.descr,
-    filePath: path,
-    range: extractRange(flowMessage),
-  };
-
-  const fix = flowMessageToFix(diagnostic);
-  if (fix != null) {
-    diagnosticMessage.fix = fix;
-  }
-
-  // When the message is an array with multiple elements, the second element
-  // onwards comprise the trace for the error.
-  if (diagnostic.messageComponents.length > 1) {
-    diagnosticMessage.trace = diagnostic.messageComponents.slice(1).map(flowMessageToTrace);
-  }
-
-  return diagnosticMessage;
-}
-
 class FlowDiagnosticsProvider {
   _providerBase: DiagnosticsProviderBase;
   _busySignalProvider: BusySignalProviderBase;
-  _requestSerializer: RequestSerializer<?Diagnostics>;
+  _requestSerializer: RequestSerializer<?NewDiagnostics>;
 
   /**
     * Maps flow root to the set of file paths under that root for which we have
@@ -155,7 +88,7 @@ class FlowDiagnosticsProvider {
     if (result.status === 'outdated') {
       return;
     }
-    const diagnostics: ?Diagnostics = result.result;
+    const diagnostics: ?NewDiagnostics = result.result;
     if (!diagnostics) {
       return;
     }
@@ -175,9 +108,12 @@ class FlowDiagnosticsProvider {
        * Each message consists of several different components, each with its
        * own text and path.
        */
-      for (const messageComponent of message.messageComponents) {
-        if (messageComponent.rangeInFile != null) {
-          pathsForRoot.add(messageComponent.rangeInFile.file);
+      pathsForRoot.add(message.filePath);
+      if (message.trace != null) {
+        for (const trace of message.trace) {
+          if (trace.filePath != null) {
+            pathsForRoot.add(trace.filePath);
+          }
         }
       }
     }
@@ -221,12 +157,9 @@ class FlowDiagnosticsProvider {
   }
 
   _processDiagnostics(
-    diagnostics: Array<Diagnostic>,
+    diagnostics: Array<FileDiagnosticMessage>,
     currentFile: string,
   ): DiagnosticProviderUpdate {
-    // convert array messages to Error Objects with Traces
-    const fileDiagnostics = diagnostics.map(flowMessageToDiagnosticMessage);
-
     const filePathToMessages = new Map();
 
     // This invalidates the errors in the current file. If Flow, when running in this root, has
@@ -244,7 +177,7 @@ class FlowDiagnosticsProvider {
     // from another root. But such is life.
     filePathToMessages.set(currentFile, []);
 
-    for (const diagnostic of fileDiagnostics) {
+    for (const diagnostic of diagnostics) {
       const path = diagnostic.filePath;
       let diagnosticArray = filePathToMessages.get(path);
       if (!diagnosticArray) {

@@ -20,7 +20,7 @@ import type {FlowExecInfoContainer} from './FlowExecInfoContainer';
 import type {FlowAutocompleteOutput, FlowAutocompleteItem} from './flowOutputTypes';
 
 import type {
-  Diagnostics,
+  NewDiagnostics,
   Loc,
 } from '..';
 
@@ -161,7 +161,7 @@ export class FlowRoot {
   async flowFindDiagnostics(
     file: NuclideUri,
     currentContents: ?string,
-  ): Promise<?Diagnostics> {
+  ): Promise<?NewDiagnostics> {
     await this._forceRecheck(file);
 
     const options = {};
