@@ -17,7 +17,9 @@ import type {
   ClangOutlineTree,
 } from '../../nuclide-clang-rpc/lib/rpc-types';
 import typeof * as ClangService from '../../nuclide-clang-rpc';
+import type {ClangCompilationDatabaseProvider} from './types';
 
+import {Disposable} from 'atom';
 import featureConfig from '../../commons-atom/featureConfig';
 import {
   getClangServiceByNuclideUri,
@@ -29,6 +31,8 @@ type NuclideClangConfig = {
   defaultFlags: Array<string>,
 };
 
+const compilationDatabaseProviders: Set<ClangCompilationDatabaseProvider> = new Set();
+
 function getDefaultFlags(): ?Array<string> {
   const config: NuclideClangConfig = (featureConfig.get('nuclide-clang'): any);
   if (!config.enableDefaultFlags) {
@@ -37,9 +41,27 @@ function getDefaultFlags(): ?Array<string> {
   return config.defaultFlags;
 }
 
+async function getCompilationDatabaseFile(src: string): Promise<?string> {
+  const compilationDatabases = await Promise.all(
+    Array.from(compilationDatabaseProviders.values())
+      .map(provider => provider.getCompilationDatabaseFile(src)),
+  );
+  for (const compilationDatabase of compilationDatabases) {
+    if (compilationDatabase != null) {
+      return compilationDatabase;
+    }
+  }
+  return null;
+}
+
 const clangServices = new WeakSet();
 
 module.exports = {
+  registerCompilationDatabaseProvider(
+    provider: ClangCompilationDatabaseProvider,
+  ): Disposable {
+    return new Disposable(() => compilationDatabaseProviders.delete(provider));
+  },
 
   async getDiagnostics(
     editor: atom$TextEditor,
@@ -61,7 +83,7 @@ module.exports = {
     }
 
     return service
-        .compile(src, contents, defaultFlags)
+        .compile(src, contents, await getCompilationDatabaseFile(src), defaultFlags)
         .refCount()
         .toPromise();
   },
@@ -80,16 +102,16 @@ module.exports = {
     const defaultFlags = getDefaultFlags();
     const service = getClangServiceByNuclideUri(src);
 
-    return service
-      .getCompletions(
-        src,
-        editor.getText(),
-        line,
-        column,
-        tokenStartColumn,
-        prefix,
-        defaultFlags,
-      );
+    return getCompilationDatabaseFile(src).then(compilationDBFile => service.getCompletions(
+      src,
+      editor.getText(),
+      line,
+      column,
+      tokenStartColumn,
+      prefix,
+      compilationDBFile,
+      defaultFlags,
+    ));
   },
 
   /**
@@ -107,8 +129,14 @@ module.exports = {
     }
     const defaultFlags = getDefaultFlags();
     const service = getClangServiceByNuclideUri(src);
-    return service
-        .getDeclaration(src, editor.getText(), line, column, defaultFlags);
+    return getCompilationDatabaseFile(src).then(compilationDBFile => service.getDeclaration(
+      src,
+      editor.getText(),
+      line,
+      column,
+      compilationDBFile,
+      defaultFlags,
+    ));
   },
 
   getDeclarationInfo(
@@ -127,8 +155,14 @@ module.exports = {
       return Promise.resolve(null);
     }
 
-    return service
-        .getDeclarationInfo(src, editor.getText(), line, column, defaultFlags);
+    return getCompilationDatabaseFile(src).then(compilationDBFile => service.getDeclarationInfo(
+      src,
+      editor.getText(),
+      line,
+      column,
+      compilationDBFile,
+      defaultFlags,
+    ));
   },
 
   getOutline(editor: atom$TextEditor): Promise<?Array<ClangOutlineTree>> {
@@ -138,8 +172,12 @@ module.exports = {
     }
     const defaultFlags = getDefaultFlags();
     const service = getClangServiceByNuclideUri(src);
-    return service
-        .getOutline(src, editor.getText(), defaultFlags);
+    return getCompilationDatabaseFile(src).then(compilationDBFile => service.getOutline(
+      src,
+      editor.getText(),
+      compilationDBFile,
+      defaultFlags,
+    ));
   },
 
   getLocalReferences(
@@ -158,8 +196,14 @@ module.exports = {
       return Promise.resolve(null);
     }
 
-    return service
-        .getLocalReferences(src, editor.getText(), line, column, defaultFlags);
+    return getCompilationDatabaseFile(src).then(compilationDBFile => service.getLocalReferences(
+      src,
+      editor.getText(),
+      line,
+      column,
+      compilationDBFile,
+      defaultFlags,
+    ));
   },
 
   async formatCode(editor: atom$TextEditor, range: atom$Range): Promise<{

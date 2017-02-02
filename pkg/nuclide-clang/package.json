@@ -52,6 +52,13 @@
     "language-c:grammar-used",
     "language-objective-c:grammar-used"
   ],
+  "consumedServices": {
+    "nuclide.clang.compilation-database": {
+      "versions": {
+        "0.0.0": "consumeCompilationDatabase"
+      }
+    }
+  },
   "providedServices": {
     "autocomplete.provider": {
       "versions": {

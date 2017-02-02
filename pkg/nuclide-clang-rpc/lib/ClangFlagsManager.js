@@ -8,6 +8,8 @@
  * @flow
  */
 
+import type {NuclideUri} from '../../commons-node/nuclideUri';
+
 import invariant from 'assert';
 import os from 'os';
 import nuclideUri from '../../commons-node/nuclideUri';
@@ -108,8 +110,8 @@ export default class ClangFlagsManager {
    *     about the src file. For example, null will be returned if src is not
    *     under the project root.
    */
-  async getFlagsForSrc(src: string): Promise<?ClangFlags> {
-    const data = await this._getFlagsForSrcCached(src);
+  async getFlagsForSrc(src: string, compilationDBFile: ?NuclideUri): Promise<?ClangFlags> {
+    const data = await this._getFlagsForSrcCached(src, compilationDBFile);
     if (data == null) {
       return null;
     }
@@ -128,19 +130,20 @@ export default class ClangFlagsManager {
     return data;
   }
 
-  _getFlagsForSrcCached(src: string): Promise<?ClangFlags> {
-    let cached = this._pathToFlags.get(src);
+  _getFlagsForSrcCached(src: string, compilationDBFile: ?NuclideUri): Promise<?ClangFlags> {
+    const cacheKey = `${src}-${compilationDBFile || ''}`;
+    let cached = this._pathToFlags.get(cacheKey);
     if (cached == null) {
-      cached = this._getFlagsForSrcImpl(src);
-      this._pathToFlags.set(src, cached);
+      cached = this._getFlagsForSrcImpl(src, compilationDBFile);
+      this._pathToFlags.set(cacheKey, cached);
     }
     return cached;
   }
 
-  _getFlagsForSrcImpl(src: string): Promise<?ClangFlags> {
+  _getFlagsForSrcImpl(src: string, compilationDBFile: ?NuclideUri): Promise<?ClangFlags> {
     return trackTiming(
       'nuclide-clang.get-flags',
-      () => this.__getFlagsForSrcImpl(src),
+      () => this.__getFlagsForSrcImpl(src, compilationDBFile),
     );
   }
 
@@ -174,8 +177,9 @@ export default class ClangFlagsManager {
 
   async _getFlagsFromSourceFileForHeader(
     sourceFile: string,
+    compilationDBFile: ?NuclideUri,
   ): Promise<?ClangFlags> {
-    const data = await this._getFlagsForSrcCached(sourceFile);
+    const data = await this._getFlagsForSrcCached(sourceFile, compilationDBFile);
     if (data != null) {
       const {rawData} = data;
       if (rawData != null) {
@@ -196,16 +200,22 @@ export default class ClangFlagsManager {
     return data;
   }
 
-  async __getFlagsForSrcImpl(src: string): Promise<?ClangFlags> {
-    // Look for a manually provided compilation database.
-    const dbDir = await fsPromise.findNearestFile(
-      COMPILATION_DATABASE_FILE,
-      nuclideUri.dirname(src),
-    );
+  async __getFlagsForSrcImpl(src: string, compilationDBFile: ?NuclideUri): Promise<?ClangFlags> {
     let dbFlags = null;
-    if (dbDir != null) {
-      const dbFile = nuclideUri.join(dbDir, COMPILATION_DATABASE_FILE);
-      dbFlags = await this._loadFlagsFromCompilationDatabase(dbFile);
+    let dbDir = null;
+    if (compilationDBFile != null) {
+      // Look for a compilation database provided by the client.
+      dbFlags = await this._loadFlagsFromCompilationDatabase(compilationDBFile);
+    } else {
+      // Look for a manually provided compilation database.
+      dbDir = await fsPromise.findNearestFile(
+        COMPILATION_DATABASE_FILE,
+        nuclideUri.dirname(src),
+      );
+      if (dbDir != null) {
+        const dbFile = nuclideUri.join(dbDir, COMPILATION_DATABASE_FILE);
+        dbFlags = await this._loadFlagsFromCompilationDatabase(dbFile);
+      }
     }
     if (dbFlags != null) {
       const flags = dbFlags.get(src);
@@ -235,7 +245,7 @@ export default class ClangFlagsManager {
         sourceFile = this._findSourceFileForHeaderFromCompilationDatabase(src, dbFlags);
       }
       if (sourceFile != null) {
-        return this._getFlagsFromSourceFileForHeader(sourceFile);
+        return this._getFlagsFromSourceFileForHeader(sourceFile, compilationDBFile);
       }
     }
 

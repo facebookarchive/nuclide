@@ -9,6 +9,7 @@
  */
 
 import type {ClangServerFlags} from './ClangServer';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import LRUCache from 'lru-cache';
 import os from 'os';
@@ -73,6 +74,7 @@ export default class ClangServerManager {
   async getClangServer(
     src: string,
     contents: string,
+    compilationDBFile: ?NuclideUri,
     defaultFlags?: ?Array<string>,
     restartIfChanged?: boolean,
   ): Promise<?ClangServer> {
@@ -86,7 +88,7 @@ export default class ClangServerManager {
     }
     const [serverArgs, flagsResult] = await Promise.all([
       findClangServerArgs(src),
-      this._getFlags(src, defaultFlags),
+      this._getFlags(src, compilationDBFile, defaultFlags),
     ]);
     if (flagsResult == null) {
       return null;
@@ -108,9 +110,10 @@ export default class ClangServerManager {
   // 2. Otherwise, fall back to default flags.
   async _getFlags(
     src: string,
+    compilationDBFile: ?NuclideUri,
     defaultFlags: ?Array<string>,
   ): Promise<?ClangServerFlags> {
-    const flagsData = await this._flagsManager.getFlagsForSrc(src)
+    const flagsData = await this._flagsManager.getFlagsForSrc(src, compilationDBFile)
       .catch(e => {
         getLogger().error(`Error getting flags for ${src}:`, e);
         return null;

@@ -19,9 +19,10 @@ import type {
   Definition,
   DefinitionQueryResult,
 } from '../../nuclide-definition-service/lib/rpc-types';
+import type {ClangCompilationDatabaseProvider} from './types';
 
 import invariant from 'assert';
-import {CompositeDisposable} from 'atom';
+import {CompositeDisposable, Disposable} from 'atom';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {BusySignalProviderBase} from '../../nuclide-busy-signal';
 import AutocompleteHelpers from './AutocompleteHelpers';
@@ -32,7 +33,7 @@ import TypeHintHelpers from './TypeHintHelpers';
 import Refactoring from './Refactoring';
 import ClangLinter from './ClangLinter';
 import {GRAMMARS, GRAMMAR_SET, PACKAGE_NAME} from './constants';
-import {reset} from './libclang';
+import {reset, registerCompilationDatabaseProvider} from './libclang';
 
 let busySignalProvider: ?BusySignalProviderBase = null;
 let subscriptions: ?CompositeDisposable = null;
@@ -154,6 +155,10 @@ export function provideRefactoring(): RefactorProvider {
       return Refactoring.refactor(request);
     },
   };
+}
+
+export function consumeCompilationDatabase(provider: ClangCompilationDatabaseProvider): Disposable {
+  return registerCompilationDatabaseProvider(provider);
 }
 
 export function deactivate() {
