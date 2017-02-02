@@ -34,26 +34,9 @@ import {ServerLanguageService} from '../../nuclide-language-service-rpc';
 import {wordAtPositionFromBuffer} from '../../commons-node/range';
 import {filterResultsByPrefix, JAVASCRIPT_WORD_REGEX} from '../../nuclide-flow-common';
 
-// Diagnostic information, returned from findDiagnostics.
-export type Diagnostics = {
-  // The location of the .flowconfig where these messages came from.
-  flowRoot: NuclideUri,
-  messages: Array<Diagnostic>,
-};
-
 export type NewDiagnostics = {
   flowRoot: NuclideUri,
   messages: Array<FileDiagnosticMessage>,
-};
-
-/*
- * Each error or warning can consist of any number of different messages from
- * Flow to help explain the problem and point to different locations that may be
- * of interest.
- */
-export type Diagnostic = {
-  level: string,
-  messageComponents: Array<MessageComponent>,
 };
 
 export type MessageComponent = {

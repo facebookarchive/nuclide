@@ -17,7 +17,6 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import type {
   NewDiagnostics,
-  Diagnostic,
   MessageComponent,
   RangeInFile,
 } from '..';
@@ -37,33 +36,8 @@ export function flowStatusOutputToDiagnostics(
   statusOutput: FlowStatusOutput,
 ): NewDiagnostics {
   const errors: Array<FlowStatusError> = statusOutput.errors;
-  const messages: Array<Diagnostic> = errors.map((flowStatusError: FlowStatusError) => {
-    const flowMessageComponents: Array<FlowStatusErrorMessageComponent> =
-      flowStatusError.message;
-    const level = flowStatusError.level;
-
-    const messageComponents: Array<MessageComponent> =
-      flowMessageComponents.map(flowMessageComponentToMessageComponent);
-    const operation = flowStatusError.operation;
-    if (operation != null) {
-      const operationComponent = flowMessageComponentToMessageComponent(operation);
-      operationComponent.descr = 'See also: ' + operationComponent.descr;
-      messageComponents.push(operationComponent);
-    }
-    const extra = flowStatusError.extra;
-    if (extra != null) {
-      const flatExtra = [].concat(...extra.map(({message}) => message));
-      messageComponents.push(...flatExtra.map(flowMessageComponentToMessageComponent));
-    }
-
-    return {
-      level,
-      messageComponents,
-    };
-  });
-
   const diagnosticMessages: Array<FileDiagnosticMessage> =
-      messages.map(flowMessageToDiagnosticMessage);
+      errors.map(flowMessageToDiagnosticMessage);
 
   return {
     flowRoot: root,
@@ -101,7 +75,7 @@ function flowLocToRange(loc: FlowLoc): RangeInFile {
 }
 
 // Exported for testing
-export function flowMessageToFix(diagnostic: Diagnostic): ?Fix {
+export function diagnosticToFix(diagnostic: FileDiagnosticMessage): ?Fix {
   for (const extractionFunction of fixExtractionFunctions) {
     const fix = extractionFunction(diagnostic);
     if (fix != null) {
@@ -112,17 +86,18 @@ export function flowMessageToFix(diagnostic: Diagnostic): ?Fix {
   return null;
 }
 
-const fixExtractionFunctions: Array<(diagnostic: Diagnostic) => ?Fix> = [
+const fixExtractionFunctions: Array<(diagnostic: FileDiagnosticMessage) => ?Fix> = [
   unusedSuppressionFix,
   namedImportTypo,
 ];
 
-function unusedSuppressionFix(diagnostic: Diagnostic): ?Fix {
+function unusedSuppressionFix(diagnostic: FileDiagnosticMessage): ?Fix {
   // Automatically remove unused suppressions:
-  if (diagnostic.messageComponents.length === 2 &&
-      diagnostic.messageComponents[0].descr === 'Error suppressing comment' &&
-      diagnostic.messageComponents[1].descr === 'Unused suppression') {
-    const oldRange = extractRange(diagnostic.messageComponents[0]);
+  if (diagnostic.trace != null &&
+      diagnostic.trace.length === 1 &&
+      diagnostic.text === 'Error suppressing comment' &&
+      diagnostic.trace[0].text === 'Unused suppression') {
+    const oldRange = diagnostic.range;
     invariant(oldRange != null);
     return {
       newText: '',
@@ -134,26 +109,30 @@ function unusedSuppressionFix(diagnostic: Diagnostic): ?Fix {
   return null;
 }
 
-function namedImportTypo(diagnostic: Diagnostic): ?Fix {
-  if (diagnostic.messageComponents.length !== 2) {
+function namedImportTypo(diagnostic: FileDiagnosticMessage): ?Fix {
+  const trace = diagnostic.trace;
+  const text = diagnostic.text;
+  if (trace == null || trace.length !== 1 || text == null) {
+    return null;
+  }
+  const traceText = trace[0].text;
+  if (traceText == null) {
     return null;
   }
 
-  const firstComponent = diagnostic.messageComponents[0];
-  const secondComponent = diagnostic.messageComponents[1];
-  if (!/^Named import from module `[^`]*`$/.test(firstComponent.descr)) {
+  if (!/^Named import from module `[^`]*`$/.test(text)) {
     return null;
   }
 
   const regex = /^This module has no named export called `([^`]*)`. Did you mean `([^`]*)`\?$/;
-  const match = regex.exec(secondComponent.descr);
+  const match = regex.exec(traceText);
   if (match == null) {
     return null;
   }
 
   const oldText = match[1];
   const newText = match[2];
-  const oldRange = extractRange(diagnostic.messageComponents[0]);
+  const oldRange = diagnostic.range;
   invariant(oldRange != null);
 
   return {
@@ -195,8 +174,25 @@ function flowMessageToTrace(message: MessageComponent): Trace {
   };
 }
 
-function flowMessageToDiagnosticMessage(diagnostic: Diagnostic) {
-  const flowMessage = diagnostic.messageComponents[0];
+function flowMessageToDiagnosticMessage(flowStatusError: FlowStatusError) {
+  const flowMessageComponents: Array<FlowStatusErrorMessageComponent> =
+    flowStatusError.message;
+
+  const messageComponents: Array<MessageComponent> =
+    flowMessageComponents.map(flowMessageComponentToMessageComponent);
+  const operation = flowStatusError.operation;
+  if (operation != null) {
+    const operationComponent = flowMessageComponentToMessageComponent(operation);
+    operationComponent.descr = 'See also: ' + operationComponent.descr;
+    messageComponents.push(operationComponent);
+  }
+  const extra = flowStatusError.extra;
+  if (extra != null) {
+    const flatExtra = [].concat(...extra.map(({message}) => message));
+    messageComponents.push(...flatExtra.map(flowMessageComponentToMessageComponent));
+  }
+
+  const flowMessage = messageComponents[0];
 
   // The Flow type does not capture this, but the first message always has a path, and the
   // diagnostics package requires a FileDiagnosticMessage to have a path.
@@ -206,21 +202,21 @@ function flowMessageToDiagnosticMessage(diagnostic: Diagnostic) {
   const diagnosticMessage: FileDiagnosticMessage = {
     scope: 'file',
     providerName: 'Flow',
-    type: diagnostic.level === 'error' ? 'Error' : 'Warning',
+    type: flowStatusError.level === 'error' ? 'Error' : 'Warning',
     text: flowMessage.descr,
     filePath: path,
     range: extractRange(flowMessage),
   };
 
-  const fix = flowMessageToFix(diagnostic);
-  if (fix != null) {
-    diagnosticMessage.fix = fix;
-  }
-
   // When the message is an array with multiple elements, the second element
   // onwards comprise the trace for the error.
-  if (diagnostic.messageComponents.length > 1) {
-    diagnosticMessage.trace = diagnostic.messageComponents.slice(1).map(flowMessageToTrace);
+  if (messageComponents.length > 1) {
+    diagnosticMessage.trace = messageComponents.slice(1).map(flowMessageToTrace);
+  }
+
+  const fix = diagnosticToFix(diagnosticMessage);
+  if (fix != null) {
+    diagnosticMessage.fix = fix;
   }
 
   return diagnosticMessage;

@@ -8,11 +8,12 @@
  * @flow
  */
 
-import type {NewDiagnostics, Diagnostic} from '..';
+import type {FileDiagnosticMessage} from '../../nuclide-diagnostics-common/lib/rpc-types';
+import type {NewDiagnostics} from '..';
 
 import {Range} from 'simple-text-buffer';
 
-import {flowStatusOutputToDiagnostics, flowMessageToFix} from '../lib/diagnosticsParser';
+import {flowStatusOutputToDiagnostics, diagnosticToFix} from '../lib/diagnosticsParser';
 import {addMatchers} from '../../nuclide-test-helpers';
 
 const flowOutput = {
@@ -150,29 +151,27 @@ describe('flowStatusOutputToDiagnostics', () => {
   });
 });
 
-describe('flowMessageToFix', () => {
+describe('diagnosticToFix', () => {
   beforeEach(function() {
     addMatchers(this);
   });
 
   it('should provide a fix for an unused suppression comment', () => {
-    const diagnostic: Diagnostic = {
-      level: 'error',
-      messageComponents: [
+    const diagnostic: FileDiagnosticMessage = {
+      filePath: 'foo',
+      providerName: 'Flow',
+      scope: 'file',
+      type: 'Error',
+      text: 'Error suppressing comment',
+      range: new Range([5, 0], [5, 13]),
+      trace: [
         {
-          descr: 'Error suppressing comment',
-          rangeInFile: {
-            file: 'foo',
-            range: new Range([6, 1], [6, 13]),
-          },
-        },
-        {
-          descr: 'Unused suppression',
-          rangeInFile: null,
+          type: 'Trace',
+          text: 'Unused suppression',
         },
       ],
     };
-    const fix = flowMessageToFix(diagnostic);
+    const fix = diagnosticToFix(diagnostic);
     expect(fix).diffJson({
       oldRange: new Range([5, 0], [5, 13]),
       newText: '',
@@ -181,23 +180,22 @@ describe('flowMessageToFix', () => {
   });
 
   it('should provide a fix for named import typos', () => {
-    const diagnostic: Diagnostic = {
-      level: 'error',
-      messageComponents: [
+    const diagnostic: FileDiagnosticMessage = {
+      type: 'Error',
+      scope: 'file',
+      providerName: 'Flow',
+      filePath: 'foo',
+      range: new Range([2, 8], [2, 16]),
+      text: 'Named import from module `./foo`',
+      trace: [
         {
-          descr: 'Named import from module `./foo`',
-          rangeInFile: {
-            file: 'foo',
-            range: new Range([3, 9], [3, 16]),
-          },
-        },
-        {
-          descr: 'This module has no named export called `FooBrBaaaaz`. Did you mean `foobar`?',
+          type: 'Trace',
+          text: 'This module has no named export called `FooBrBaaaaz`. Did you mean `foobar`?',
           rangeInFile: null,
         },
       ],
     };
-    const fix = flowMessageToFix(diagnostic);
+    const fix = diagnosticToFix(diagnostic);
     expect(fix).diffJson({
       oldRange: new Range([2, 8], [2, 16]),
       oldText: 'FooBrBaaaaz',
