@@ -229,8 +229,9 @@ class FlowSingleFileLanguageService {
     throw new Error('Not Yet Implemented');
   }
 
-  getProjectRoot(fileUri: NuclideUri): Promise<?NuclideUri> {
-    throw new Error('Not Yet Implemented');
+  async getProjectRoot(fileUri: NuclideUri): Promise<?NuclideUri> {
+    const flowRoot = await getState().getRootContainer().getRootForPath(fileUri);
+    return flowRoot == null ? null : flowRoot.getPathToRoot();
   }
 
   isFileInProject(fileUri: NuclideUri): Promise<boolean> {
