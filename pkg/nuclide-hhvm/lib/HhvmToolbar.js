@@ -10,10 +10,12 @@
 
 import type ProjectStore from './ProjectStore';
 import type {DebugMode} from './types';
+import {shell} from 'electron';
 
 import {HACK_GRAMMARS} from '../../nuclide-hack-common/lib/constants.js';
 import {AtomInput} from '../../nuclide-ui/AtomInput';
 import {Dropdown} from '../../nuclide-ui/Dropdown';
+import {Button} from '../../nuclide-ui/Button';
 import {React} from 'react-for-atom';
 
 const WEB_SERVER_OPTION = {label: 'Attach to WebServer', value: 'webserver'};
@@ -91,7 +93,7 @@ export default class HhvmToolbar extends React.Component {
           ref="dropdown"
           size="sm"
         />
-        <div className="inline-block" style={{width: '500px'}}>
+        <div className="inline-block" style={{width: '300px'}}>
           <AtomInput
             ref="debugTarget"
             initialValue={store.getDebugTarget()}
@@ -100,6 +102,14 @@ export default class HhvmToolbar extends React.Component {
             size="sm"
           />
         </div>
+        {!isDebugScript ?
+          <Button
+            size="SMALL"
+            onClick={() => {
+              shell.openExternal('https://' + store.getDebugTarget());
+            }}>
+            Open
+          </Button> : null}
       </div>
     );
   }
