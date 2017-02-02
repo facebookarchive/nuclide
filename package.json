@@ -87,6 +87,7 @@
     "temp": "0.8.3",
     "urlregexp": "1.0.2",
     "uuid": "3.0.1",
+    "vscode-jsonrpc": "3.0.3",
     "ws": "1.1.1",
     "xml2js": "0.4.17",
     "yargs": "3.32.0"
