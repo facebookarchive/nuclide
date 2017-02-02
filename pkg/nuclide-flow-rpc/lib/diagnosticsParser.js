@@ -16,10 +16,6 @@ import type {
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import type {
-  NewDiagnostics,
-} from '..';
-
-import type {
   FlowStatusOutput,
   FlowStatusError,
   FlowStatusErrorMessageComponent,
@@ -29,17 +25,9 @@ import invariant from 'assert';
 import {Range} from 'simple-text-buffer';
 
 export function flowStatusOutputToDiagnostics(
-  root: string,
   statusOutput: FlowStatusOutput,
-): NewDiagnostics {
-  const errors: Array<FlowStatusError> = statusOutput.errors;
-  const diagnosticMessages: Array<FileDiagnosticMessage> =
-      errors.map(flowMessageToDiagnosticMessage);
-
-  return {
-    flowRoot: root,
-    messages: diagnosticMessages,
-  };
+): Array<FileDiagnosticMessage> {
+  return statusOutput.errors.map(flowMessageToDiagnosticMessage);
 }
 
 // Exported for testing

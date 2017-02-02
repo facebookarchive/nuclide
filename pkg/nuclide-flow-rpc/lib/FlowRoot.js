@@ -14,13 +14,13 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
 import type {Completion} from '../../nuclide-language-service/lib/LanguageService';
+import type {DiagnosticProviderUpdate} from '../../nuclide-diagnostics-common/lib/rpc-types';
 
 import type {ServerStatusType} from '..';
 import type {FlowExecInfoContainer} from './FlowExecInfoContainer';
 import type {FlowAutocompleteOutput, FlowAutocompleteItem} from './flowOutputTypes';
 
 import type {
-  NewDiagnostics,
   Loc,
 } from '..';
 
@@ -161,7 +161,7 @@ export class FlowRoot {
   async flowFindDiagnostics(
     file: NuclideUri,
     currentContents: ?string,
-  ): Promise<?NewDiagnostics> {
+  ): Promise<?DiagnosticProviderUpdate> {
     await this._forceRecheck(file);
 
     const options = {};
@@ -207,7 +207,23 @@ export class FlowRoot {
       return null;
     }
 
-    return flowStatusOutputToDiagnostics(this._root, json);
+    const diagnostics = flowStatusOutputToDiagnostics(json);
+
+    const filePathToMessages = new Map();
+
+    for (const diagnostic of diagnostics) {
+      const path = diagnostic.filePath;
+      let diagnosticArray = filePathToMessages.get(path);
+      if (!diagnosticArray) {
+        diagnosticArray = [];
+        filePathToMessages.set(path, diagnosticArray);
+      }
+      diagnosticArray.push(diagnostic);
+    }
+
+    return {
+      filePathToMessages,
+    };
   }
 
   async flowGetAutocompleteSuggestions(

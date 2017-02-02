@@ -9,7 +9,6 @@
  */
 
 import type {FileDiagnosticMessage} from '../../nuclide-diagnostics-common/lib/rpc-types';
-import type {NewDiagnostics} from '..';
 
 import {Range} from 'simple-text-buffer';
 
@@ -101,45 +100,42 @@ const flowOutput = {
   ],
 };
 
-const expected: NewDiagnostics = {
-  flowRoot: '/flow-test',
-  messages: [
-    {
-      type: 'Error',
-      scope: 'file',
-      providerName: 'Flow',
-      filePath: '/flow-test/src/test.js',
-      text: 'object literal',
-      range: new Range([12, 15], [12, 17]),
-      trace: [
-        {
-          type: 'Trace',
-          text: 'This type is incompatible with',
-        },
-        {
-          type: 'Trace',
-          text: 'union: object type(s)',
-          filePath: '/flow-test/src/test.js',
-          range: new Range([9, 7], [9, 10]),
-        },
-        {
-          type: 'Trace',
-          text: 'See also: assignment of property `bar`',
-          filePath: '/flow-test/src/test.js',
-          range: new Range([12, 4], [12, 12]),
-        },
-      ],
-    },
-    {
-      type: 'Warning',
-      scope: 'file',
-      providerName: 'Flow',
-      filePath: 'myPath',
-      text: 'message',
-      range: new Range([0, 2], [1, 4]),
-    },
-  ],
-};
+const expected: Array<FileDiagnosticMessage> = [
+  {
+    type: 'Error',
+    scope: 'file',
+    providerName: 'Flow',
+    filePath: '/flow-test/src/test.js',
+    text: 'object literal',
+    range: new Range([12, 15], [12, 17]),
+    trace: [
+      {
+        type: 'Trace',
+        text: 'This type is incompatible with',
+      },
+      {
+        type: 'Trace',
+        text: 'union: object type(s)',
+        filePath: '/flow-test/src/test.js',
+        range: new Range([9, 7], [9, 10]),
+      },
+      {
+        type: 'Trace',
+        text: 'See also: assignment of property `bar`',
+        filePath: '/flow-test/src/test.js',
+        range: new Range([12, 4], [12, 12]),
+      },
+    ],
+  },
+  {
+    type: 'Warning',
+    scope: 'file',
+    providerName: 'Flow',
+    filePath: 'myPath',
+    text: 'message',
+    range: new Range([0, 2], [1, 4]),
+  },
+];
 
 describe('flowStatusOutputToDiagnostics', () => {
   beforeEach(function() {
@@ -147,7 +143,7 @@ describe('flowStatusOutputToDiagnostics', () => {
   });
 
   it('converts the flow status output', () => {
-    expect(flowStatusOutputToDiagnostics('/flow-test', flowOutput)).diffJson(expected);
+    expect(flowStatusOutputToDiagnostics(flowOutput)).diffJson(expected);
   });
 });
 

@@ -25,7 +25,6 @@ import {CompositeDisposable} from 'atom';
 import featureConfig from '../../commons-atom/featureConfig';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import registerGrammar from '../../commons-atom/register-grammar';
-import {onDidRemoveProjectPath} from '../../commons-atom/projects';
 import {getNotifierByConnection} from '../../nuclide-open-files';
 import {AtomLanguageService} from '../../nuclide-language-service';
 import {filterResultsByPrefix, shouldFilter} from '../../nuclide-flow-common';
@@ -33,14 +32,12 @@ import {filterResultsByPrefix, shouldFilter} from '../../nuclide-flow-common';
 import {FlowServiceWatcher} from './FlowServiceWatcher';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {DedupedBusySignalProviderBase} from '../../nuclide-busy-signal';
-import FlowDiagnosticsProvider from './FlowDiagnosticsProvider';
 import {FlowTypeHintProvider} from './FlowTypeHintProvider';
 import {FlowEvaluationExpressionProvider} from './FlowEvaluationExpressionProvider';
 import {getCurrentServiceInstances, getFlowServiceByConnection} from './FlowServiceFactory';
 
 import {JS_GRAMMARS} from './constants';
 const GRAMMARS_STRING = JS_GRAMMARS.join(', ');
-const diagnosticsOnFlySetting = 'nuclide-flow.diagnosticsOnFly';
 
 const PACKAGE_NAME = 'nuclide-flow';
 
@@ -91,20 +88,6 @@ export function provideBusySignal(): BusySignalProviderBaseType {
     busySignalProvider = new DedupedBusySignalProviderBase();
   }
   return busySignalProvider;
-}
-
-export function provideDiagnostics() {
-  if (!flowDiagnosticsProvider) {
-    const busyProvider = this.provideBusySignal();
-    const runOnTheFly = ((featureConfig.get(diagnosticsOnFlySetting): any): boolean);
-    flowDiagnosticsProvider = new FlowDiagnosticsProvider(runOnTheFly, busyProvider);
-    invariant(disposables);
-    disposables.add(onDidRemoveProjectPath(projectPath => {
-      invariant(flowDiagnosticsProvider);
-      flowDiagnosticsProvider.invalidateProjectPath(projectPath);
-    }));
-  }
-  return flowDiagnosticsProvider;
 }
 
 export function createTypeHintProvider(): Object {
@@ -196,6 +179,11 @@ function getLanguageServiceConfig(): AtomLanguageServiceConfig {
         shouldFilter,
       },
       onDidInsertSuggestionAnalyticsEventName: 'nuclide-flow.autocomplete-chosen',
+    },
+    diagnostics: {
+      version: '0.1.0',
+      shouldRunOnTheFly: false,
+      analyticsEventName: 'flow.run-diagnostics',
     },
   };
 }

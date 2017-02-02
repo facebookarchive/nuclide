@@ -25,7 +25,6 @@ import type {FindReferencesReturn} from '../../nuclide-find-references/lib/rpc-t
 import type {
   DiagnosticProviderUpdate,
   FileDiagnosticUpdate,
-  FileDiagnosticMessage,
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
 import type {Completion} from '../../nuclide-language-service/lib/LanguageService';
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
@@ -33,16 +32,6 @@ import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interface
 import {ServerLanguageService} from '../../nuclide-language-service-rpc';
 import {wordAtPositionFromBuffer} from '../../commons-node/range';
 import {filterResultsByPrefix, JAVASCRIPT_WORD_REGEX} from '../../nuclide-flow-common';
-
-export type NewDiagnostics = {
-  flowRoot: NuclideUri,
-  messages: Array<FileDiagnosticMessage>,
-};
-
-export type RangeInFile = {
-  file: NuclideUri,
-  range: atom$Range,
-};
 
 export type Loc = {
   file: NuclideUri,
@@ -102,7 +91,7 @@ class FlowSingleFileLanguageService {
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
   ): Promise<?DiagnosticProviderUpdate> {
-    throw new Error('Not Yet Implemented');
+    return flowFindDiagnostics(filePath, null);
   }
 
   observeDiagnostics(): ConnectableObservable<FileDiagnosticUpdate> {
@@ -263,7 +252,7 @@ export function flowFindDefinition(
 export function flowFindDiagnostics(
   file: NuclideUri,
   currentContents: ?string,
-): Promise<?NewDiagnostics> {
+): Promise<?DiagnosticProviderUpdate> {
   return getState().getRootContainer().runWithRoot(
     file,
     root => root.flowFindDiagnostics(

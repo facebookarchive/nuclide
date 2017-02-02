@@ -71,11 +71,6 @@
     "language-javascript:grammar-used"
   ],
   "providedServices": {
-    "nuclide-diagnostics-provider": {
-      "versions": {
-        "0.1.0": "provideDiagnostics"
-      }
-    },
     "nuclide-type-hint.provider": {
       "versions": {
         "0.0.0": "createTypeHintProvider"
