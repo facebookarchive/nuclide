@@ -46,6 +46,7 @@ export class DebuggerConnection {
   _events: Subject<Object>;
   _connectionId: number;
   _deviceInfo: DeviceInfo;
+  _webSocketClosed: boolean;
 
   constructor(connectionId: number, deviceInfo: DeviceInfo) {
     this._deviceInfo = deviceInfo;
@@ -54,15 +55,26 @@ export class DebuggerConnection {
     this._events = new Subject();
     this._id = 0;
     this._pendingRequests = new Map();
+    this._webSocketClosed = false;
     this._status = new BehaviorSubject(RUNNING);
     const {webSocketDebuggerUrl} = deviceInfo;
     const webSocket = new WS(webSocketDebuggerUrl);
     // It's not enough to just construct the websocket -- we have to also wait for it to open.
     this._webSocketPromise = new Promise(resolve => webSocket.on('open', () => resolve(webSocket)));
-    webSocket.on('close', () => this._status.next(ENDED));
+    webSocket.on(
+      'close',
+      () => {
+        this._webSocketClosed = true;
+        this._status.next(ENDED);
+      },
+    );
     const socketMessages: Observable<string> = createWebSocketListener(webSocket);
     this._disposables = new UniversalDisposable(
-      () => webSocket.close(),
+      () => {
+        if (!this._webSocketClosed) {
+          webSocket.close();
+        }
+      },
       socketMessages.subscribe(message => this._handleSocketMessage(message)),
     );
     log(`DebuggerConnection created with device info: ${JSON.stringify(deviceInfo)}`);

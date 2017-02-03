@@ -319,7 +319,12 @@ export class ConnectionMultiplexer {
   }
 
   _handleEndedMode(connection: DebuggerConnection): void {
-    // Coming soon....
+    this._breakpointManager.removeConnection(connection);
+    const wasFound = this._connections.delete(connection);
+    if (wasFound) {
+      this._disposables.remove(connection);
+      connection.dispose();
+    }
   }
 
   _updateThreads(): void {

@@ -51,6 +51,10 @@ export class BreakpointManager {
     ]);
   }
 
+  removeConnection(connection: DebuggerConnection): void {
+    this._connections.delete(connection);
+  }
+
   async _sendLineBreakpointsToTarget(connection: DebuggerConnection): Promise<void> {
     const responsePromises = [];
     for (const breakpoint of this._breakpoints.values()) {
