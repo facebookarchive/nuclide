@@ -17,6 +17,7 @@ import {RUNNING, PAUSED, ENDED} from './constants';
 import invariant from 'assert';
 
 import type {DeviceInfo, RuntimeStatus} from './types';
+import type {AnyTeardown} from '../../commons-node/UniversalDisposable';
 
 type Id = number;
 type onResponseReceived = (response: Object) => void;
@@ -131,6 +132,12 @@ export class DebuggerConnection {
 
   getId(): number {
     return this._connectionId;
+  }
+
+  onDispose(...teardowns: Array<AnyTeardown>): void {
+    for (const teardown of teardowns) {
+      this._disposables.add(teardown);
+    }
   }
 
   dispose(): void {

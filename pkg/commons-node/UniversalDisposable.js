@@ -8,7 +8,7 @@
  * @flow
  */
 
-type AnyTeardown = (() => mixed) | rxjs$ISubscription | IDisposable;
+export type AnyTeardown = (() => mixed) | rxjs$ISubscription | IDisposable;
 
 /**
  * Like a CompositeDisposable, but in addition to Disposable instances it can

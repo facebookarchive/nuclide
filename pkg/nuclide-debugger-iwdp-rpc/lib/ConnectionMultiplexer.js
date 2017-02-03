@@ -246,13 +246,15 @@ export class ConnectionMultiplexer {
 
   _connectToContext(deviceInfo: DeviceInfo): DebuggerConnection {
     const connection = new DebuggerConnection(this._freshConnectionId++, deviceInfo);
-    this._disposables.add(
+    // While it is the CM's responsibility to create these subscriptions, their lifetimes are the
+    // same as the connection, so their disposal will be handled by the connection.
+    connection.onDispose(
       connection
         .getStatusChanges()
         .subscribe(status => this._handleStatusChange(status, connection)),
       connection.subscribeToEvents(this.sendCommand.bind(this)),
-      connection,
     );
+    this._disposables.add(connection);
     this._connections.add(connection);
     return connection;
   }
