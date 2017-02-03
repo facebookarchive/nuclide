@@ -61,6 +61,8 @@ describe('SocketServer', () => {
       const result = await echoService.echoString('Hello World!');
 
       expect(result).toBe('Hello World!');
+
+      server.dispose();
     });
   });
 });
