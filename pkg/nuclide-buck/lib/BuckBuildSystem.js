@@ -113,15 +113,14 @@ function isDebuggerAvailableForTarget(ruleType: string, target: ?string): boolea
   }
 }
 
-async function shouldEnableTask(taskType: TaskType, ruleType: ?string, target: ?string):
-  Promise<boolean> {
+function shouldEnableTask(taskType: TaskType, ruleType: ?string, target: ?string): boolean {
   switch (taskType) {
     case 'run':
       return ruleType != null && isInstallableRule(ruleType);
     case 'debug':
       return ruleType != null && isDebuggableRule(ruleType, target);
     default:
-      return true;
+      return ruleType != null;
   }
 }
 
