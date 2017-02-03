@@ -24,7 +24,8 @@ function runShortAdbCommand(
   device: string,
   command: Array<string>,
 ): Observable<string> {
-  return runCommand(adbPath, ['-s', device].concat(command));
+  const deviceArg = (device != null && device !== '') ? ['-s', device] : [];
+  return runCommand(adbPath, deviceArg.concat(command));
 }
 
 function runLongAdbCommand(
@@ -32,7 +33,8 @@ function runLongAdbCommand(
   device: string,
   command: string[],
 ): Observable<ProcessMessage> {
-  return observeProcess(() => safeSpawn(adbPath, ['-s', device].concat(command)), true);
+  const deviceArg = (device != null && device !== '') ? ['-s', device] : [];
+  return observeProcess(() => safeSpawn(adbPath, deviceArg.concat(command)), true);
 }
 
 function getAndroidProp(
@@ -75,7 +77,7 @@ export async function getDeviceList(
                      .slice(1)
                      .filter(s => s.length > 0)
                      .map(s => s.split(/\s+/g))
-                     .filter(a => a[1] !== 'offline')
+                     .filter(a => (a[1] !== 'offline' && a[0] !== ''))
                      .map(a => a[0]))
     .toPromise();
 
@@ -143,10 +145,12 @@ export function uninstallPackage(
 
 export async function getPidFromPackageName(
   adbPath: NuclideUri,
+  device: string,
   packageName: string,
 ): Promise<number> {
-  const pidLine = (await runCommand(
+  const pidLine = (await runShortAdbCommand(
     adbPath,
+    device,
     ['shell', 'ps', '|', 'grep', '-i', packageName],
   ).toPromise()).split(os.EOL)[0];
   if (pidLine == null) {
@@ -158,11 +162,39 @@ export async function getPidFromPackageName(
 
 export function forwardJdwpPortToPid(
   adbPath: NuclideUri,
+  device: string,
   tcpPort: number,
   pid: number,
 ): Promise<string> {
-  return runCommand(
+  return runShortAdbCommand(
     adbPath,
+    device,
     ['forward', `tcp:${tcpPort}`, `jdwp:${pid}`],
+  ).toPromise();
+}
+
+export function enableWaitForDebugger(
+  adbPath: NuclideUri,
+  device: string,
+  packageName: string,
+): Promise<string> {
+  return runShortAdbCommand(
+    adbPath,
+    device,
+    ['shell', 'am', 'set-debug-app', packageName],
+  ).toPromise();
+}
+
+export function launchActivity(
+  adbPath: NuclideUri,
+  device: string,
+  packageName: string,
+  activity: string,
+  action: string,
+): Promise<string> {
+  return runShortAdbCommand(
+    adbPath,
+    device,
+    ['shell', 'am', 'start', '-a', action, '-n', `${packageName}/${activity}`],
   ).toPromise();
 }

@@ -72,15 +72,35 @@ export function uninstallPackage(
 
 export function getPidFromPackageName(
   adbPath: NuclideUri,
+  device: string,
   packageName: string,
 ): Promise<number> {
-  return ADB.getPidFromPackageName(adbPath, packageName);
+  return ADB.getPidFromPackageName(adbPath, device, packageName);
 }
 
 export function forwardJdwpPortToPid(
   adbPath: NuclideUri,
+  device: string,
   tcpPort: number,
   pid: number,
 ): Promise<string> {
-  return ADB.forwardJdwpPortToPid(adbPath, tcpPort, pid);
+  return ADB.forwardJdwpPortToPid(adbPath, device, tcpPort, pid);
+}
+
+export function enableWaitForDebugger(
+  adbPath: NuclideUri,
+  device: string,
+  packageName: string,
+): Promise<string> {
+  return ADB.enableWaitForDebugger(adbPath, device, packageName);
+}
+
+export function launchActivity(
+  adbPath: NuclideUri,
+  device: string,
+  packageName: string,
+  activity: string,
+  action: string,
+): Promise<string> {
+  return ADB.launchActivity(adbPath, device, packageName, activity, action);
 }
