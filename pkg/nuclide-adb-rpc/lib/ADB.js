@@ -15,6 +15,7 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import invariant from 'assert';
 import nuclideUri from '../../commons-node/nuclideUri';
+import {arrayCompact} from '../../commons-node/collection';
 import {safeSpawn, observeProcess, runCommand} from '../../commons-node/process';
 
 import * as os from 'os';
@@ -77,16 +78,22 @@ export async function getDeviceList(
                      .slice(1)
                      .filter(s => s.length > 0)
                      .map(s => s.split(/\s+/g))
-                     .filter(a => (a[1] !== 'offline' && a[0] !== ''))
+                     .filter(a => a[0] !== '')
                      .map(a => a[0]))
     .toPromise();
 
-  return Promise.all(devices.map(async name => {
-    const architecture = await getDeviceArchitecture(adbPath, name);
-    const apiVersion = await getAPIVersion(adbPath, name);
-    const model = await getDeviceModel(adbPath, name);
-    return {name, architecture, apiVersion, model};
+  const deviceTable = await Promise.all(devices.map(async name => {
+    try {
+      const architecture = await getDeviceArchitecture(adbPath, name);
+      const apiVersion = await getAPIVersion(adbPath, name);
+      const model = await getDeviceModel(adbPath, name);
+      return {name, architecture, apiVersion, model};
+    } catch (error) {
+      return null;
+    }
   }));
+
+  return arrayCompact(deviceTable);
 }
 
 export function getDeviceArchitecture(
