@@ -43,8 +43,6 @@ const PACKAGE_NAME = 'nuclide-flow';
 
 let busySignalProvider;
 
-let flowDiagnosticsProvider;
-
 let disposables;
 
 let flowLanguageService: ?AtomLanguageService<LanguageService> = null;
@@ -122,10 +120,6 @@ export function deactivate() {
   if (disposables) {
     disposables.dispose();
     disposables = null;
-  }
-  if (flowDiagnosticsProvider) {
-    flowDiagnosticsProvider.dispose();
-    flowDiagnosticsProvider = null;
   }
 }
 
