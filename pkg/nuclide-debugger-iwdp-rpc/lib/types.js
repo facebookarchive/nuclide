@@ -29,7 +29,7 @@ export type PackagerDeviceInfo = DeviceInfo & {
   deviceName: string,
 };
 
-export type RuntimeStatus = 'RUNNING' | 'PAUSED';
+export type RuntimeStatus = 'RUNNING' | 'PAUSED' | 'ENDED';
 export type BreakpointId = string;
 export type BreakpointParams = {
   lineNumber: number,

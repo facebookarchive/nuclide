@@ -13,7 +13,7 @@ import WS from 'ws';
 import {Observable, BehaviorSubject, Subject} from 'rxjs';
 import {createWebSocketListener} from './createWebSocketListener';
 import {logger} from './logger';
-import {RUNNING, PAUSED} from './constants';
+import {RUNNING, PAUSED, ENDED} from './constants';
 import invariant from 'assert';
 
 import type {DeviceInfo, RuntimeStatus} from './types';
@@ -58,6 +58,7 @@ export class DebuggerConnection {
     const webSocket = new WS(webSocketDebuggerUrl);
     // It's not enough to just construct the websocket -- we have to also wait for it to open.
     this._webSocketPromise = new Promise(resolve => webSocket.on('open', () => resolve(webSocket)));
+    webSocket.on('close', () => this._status.next(ENDED));
     const socketMessages: Observable<string> = createWebSocketListener(webSocket);
     this._disposables = new UniversalDisposable(
       () => webSocket.close(),

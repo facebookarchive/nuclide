@@ -8,5 +8,8 @@
  * @flow
  */
 
-export const RUNNING = 'RUNNING';
-export const PAUSED = 'PAUSED';
+import type {RuntimeStatus} from './types';
+
+export const RUNNING: RuntimeStatus = 'RUNNING';
+export const PAUSED: RuntimeStatus = 'PAUSED';
+export const ENDED: RuntimeStatus = 'ENDED';

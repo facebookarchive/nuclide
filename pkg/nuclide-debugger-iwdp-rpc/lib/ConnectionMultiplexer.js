@@ -14,7 +14,7 @@ import {DebuggerConnection} from './DebuggerConnection';
 import {PRELUDE_MESSAGES} from './prelude';
 import {FileCache} from './FileCache';
 import invariant from 'assert';
-import {RUNNING, PAUSED} from './constants';
+import {RUNNING, PAUSED, ENDED} from './constants';
 import {BreakpointManager} from './BreakpointManager';
 import {Subject} from 'rxjs';
 
@@ -288,6 +288,10 @@ export class ConnectionMultiplexer {
         this._handlePausedMode(connection);
         break;
       }
+      case ENDED: {
+        this._handleEndedMode(connection);
+        break;
+      }
       default: {
         invariant(false, `Unknown status: ${status}`);
       }
@@ -310,6 +314,10 @@ export class ConnectionMultiplexer {
     if (this._enabledConnection == null) {
       this._enabledConnection = connection;
     }
+  }
+
+  _handleEndedMode(connection: DebuggerConnection): void {
+    // Coming soon....
   }
 
   _updateThreads(): void {
