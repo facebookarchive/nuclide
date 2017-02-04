@@ -9,18 +9,13 @@
  */
 
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import WS from 'ws';
 import {Observable, BehaviorSubject, Subject} from 'rxjs';
-import {createWebSocketListener} from './createWebSocketListener';
 import {logger} from './logger';
 import {RUNNING, PAUSED, ENDED} from './constants';
-import invariant from 'assert';
+import {Socket} from './Socket';
 
 import type {DeviceInfo, RuntimeStatus} from './types';
 import type {AnyTeardown} from '../../commons-node/UniversalDisposable';
-
-type Id = number;
-type onResponseReceived = (response: Object) => void;
 
 const {log} = logger;
 
@@ -37,73 +32,30 @@ const {log} = logger;
  * `subscribeToEvents` API, which accepts a callback called when events are emitted from the target.
  */
 export class DebuggerConnection {
-  _webSocket: ?WS;
-  _webSocketPromise: Promise<WS>;
   _disposables: UniversalDisposable;
   _status: BehaviorSubject<RuntimeStatus>;
-  _pendingRequests: Map<Id, onResponseReceived>;
-  _id: number;
   _events: Subject<Object>;
   _connectionId: number;
   _deviceInfo: DeviceInfo;
-  _webSocketClosed: boolean;
+  _socket: Socket;
 
   constructor(connectionId: number, deviceInfo: DeviceInfo) {
     this._deviceInfo = deviceInfo;
     this._connectionId = connectionId;
-    this._webSocket = null;
     this._events = new Subject();
-    this._id = 0;
-    this._pendingRequests = new Map();
-    this._webSocketClosed = false;
     this._status = new BehaviorSubject(RUNNING);
     const {webSocketDebuggerUrl} = deviceInfo;
-    const webSocket = new WS(webSocketDebuggerUrl);
-    // It's not enough to just construct the websocket -- we have to also wait for it to open.
-    this._webSocketPromise = new Promise(resolve => webSocket.on('open', () => resolve(webSocket)));
-    webSocket.on(
-      'close',
-      () => {
-        this._webSocketClosed = true;
-        this._status.next(ENDED);
-      },
+    this._socket = new Socket(
+      webSocketDebuggerUrl,
+      this._handleChromeEvent.bind(this),
+      () => this._status.next(ENDED),
     );
-    const socketMessages: Observable<string> = createWebSocketListener(webSocket);
-    this._disposables = new UniversalDisposable(
-      () => {
-        if (!this._webSocketClosed) {
-          webSocket.close();
-        }
-      },
-      socketMessages.subscribe(message => this._handleSocketMessage(message)),
-    );
+    this._disposables = new UniversalDisposable(this._socket);
     log(`DebuggerConnection created with device info: ${JSON.stringify(deviceInfo)}`);
   }
 
-  async sendCommand(message: Object): Promise<Object> {
-    if (this._webSocket == null) {
-      this._webSocket = await this._webSocketPromise;
-    }
-    const webSocket = this._webSocket;
-    if (message.id == null) {
-      message.id = this._id++;
-    }
-    return new Promise(resolve => {
-      this._pendingRequests.set(message.id, resolve);
-      webSocket.send(JSON.stringify(message));
-    });
-  }
-
-  _handleSocketMessage(message: string): void {
-    const obj = JSON.parse(message);
-    if (isEvent(obj)) {
-      this._handleChromeEvent(obj);
-    } else {
-      const resolve = this._pendingRequests.get(obj.id);
-      invariant(resolve != null, `Got response for a request that wasn't sent: ${message}`);
-      this._pendingRequests.delete(obj.id);
-      resolve(obj);
-    }
+  sendCommand(message: Object): Promise<Object> {
+    return this._socket.sendCommand(message);
   }
 
   _handleChromeEvent(message: Object): void {
@@ -155,8 +107,4 @@ export class DebuggerConnection {
   dispose(): void {
     this._disposables.dispose();
   }
-}
-
-function isEvent(obj: Object): boolean {
-  return obj.id == null;
 }
