@@ -95,7 +95,7 @@ function createSerializableRemoteConnectionConfiguration(
   };
 }
 
-function addRemoteFolderToProject(connection: RemoteConnection) {
+function addRemoteFolderToProject(connection: RemoteConnection): IDisposable {
   const workingDirectoryUri = connection.getUriForInitialWorkingDirectory();
   // If restoring state, then the project already exists with local directory and wrong repo
   // instances. Hence, we remove it here, if existing, and add the new path for which we added a
@@ -175,6 +175,8 @@ function addRemoteFolderToProject(connection: RemoteConnection) {
     invariant(action);
     action();
   }
+
+  return subscription;
 }
 
 function closeOpenFilesForRemoteProject(connection: RemoteConnection): void {
@@ -376,7 +378,7 @@ export function activate(
   remoteProjectsService = new RemoteProjectsServiceImpl();
 
   subscriptions.add(RemoteConnection.onDidAddRemoteConnection(connection => {
-    addRemoteFolderToProject(connection);
+    subscriptions.add(addRemoteFolderToProject(connection));
 
 
     // On Atom restart, it tries to open uri paths as local `TextEditor` pane items.
