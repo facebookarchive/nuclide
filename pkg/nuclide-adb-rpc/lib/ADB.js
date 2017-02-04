@@ -25,7 +25,7 @@ function runShortAdbCommand(
   device: string,
   command: Array<string>,
 ): Observable<string> {
-  const deviceArg = (device != null && device !== '') ? ['-s', device] : [];
+  const deviceArg = (device !== '') ? ['-s', device] : [];
   return runCommand(adbPath, deviceArg.concat(command));
 }
 
@@ -34,7 +34,7 @@ function runLongAdbCommand(
   device: string,
   command: string[],
 ): Observable<ProcessMessage> {
-  const deviceArg = (device != null && device !== '') ? ['-s', device] : [];
+  const deviceArg = (device !== '') ? ['-s', device] : [];
   return observeProcess(() => safeSpawn(adbPath, deviceArg.concat(command)), true);
 }
 
@@ -76,7 +76,7 @@ export async function getDeviceList(
   const devices = await runCommand(adbPath, ['devices'])
     .map(stdout => stdout.split(/\n+/g)
                      .slice(1)
-                     .filter(s => s.length > 0)
+                     .filter(s => (s.length > 0 && !s.trim().startsWith('*')))
                      .map(s => s.split(/\s+/g))
                      .filter(a => a[0] !== '')
                      .map(a => a[0]))
