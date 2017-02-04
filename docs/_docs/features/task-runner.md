@@ -15,6 +15,10 @@ Nuclide provides the Task Runner toolbar for building, running, testing, and deb
 
 Nuclide supports the [Build](#build), [Run](#run), [Test](#test), and [Debug](#debug) workflows for [Buck](/docs/features/buck), matching the corresponding Buck command-line tasks.
 
+>Your project must contain a `.buckconfig` file for the Buck tasks to be available in the Task Runner.
+
+Click the **Toggle Task Runner Toolbar** button on the [Nuclide toolbar](/docs/features/toolbar/#buttons) to display options for building, running, testing, and debugging your Buck project.
+
 ### Build
 
 The Build task invokes [`buck build`](https://buckbuild.com/command/build.html),
@@ -23,41 +27,42 @@ displaying build output in the [Console](/docs/features/debugger/#basics__evalua
 In the Task Runner toolbar's text box, type in the name of the build target exactly
 as you would specify on the command-line, i.e., `//path/to/dir:target_name#flavor`.
 
-Note that the usual leading `//` is optional.
+>The usual leading `//` is optional.
 
-<img src="/static/images/docs/feature-task-runner-buck-build.png" />
+![](/static/images/docs/feature-task-runner-buck-build.png)
 
-Clicking on the Settings button (i.e., the gear icon) opens a dialog where you can provide extra flags to Buck.
+Clicking on the **Settings** button (i.e., the gear icon) opens a dialog where you can provide extra flags to Buck.
 
 <img src="/static/images/docs/feature-task-runner-buck-build-settings.png" width="625" />
 
-Upon clicking **Build**, build progress displays via a blue progress bar below the toolbar and also periodically via messages in the [Console](/docs/features/debugger/#basics__evaluation).
+Upon clicking the **Build** button (i.e., the crossed tools icon), build progress displays via a blue progress bar below the toolbar and also periodically via messages in the [Console](/docs/features/debugger/#basics__evaluation).
 
-Click the Stop button (i.e., the square icon) at any time to cancel an ongoing build.
+Click the **Stop** button (i.e., the square icon) at any time to cancel an ongoing build.
 
-<img src="/static/images/docs/feature-task-runer-buck-build-console.png" />
+![](/static/images/docs/feature-task-runer-buck-build-console.png)
 
-In addition to showing up in the [Console](/docs/features/debugger/#basics__evaluation), C++ compilation errors will surface in the [Diagnostics Table](/docs/editor/basics/#code-diagnostics).  Buck diagnostics will be cleared upon triggering a new build.
+C++ compilation errors will appear in both the [Console](/docs/features/debugger/#basics__evaluation) and the [Diagnostics Table](/docs/editor/basics/#code-diagnostics).  Buck diagnostics are cleared upon triggering a new build.
 
-<img src="/static/images/docs/feature-task-runner-buck-build-diagnostics.png" />
+![](/static/images/docs/feature-task-runner-buck-build-diagnostics.png)
 
 ### Run
 
 The Run task is only enabled for iOS and Android application targets ([`apple_bundle`](https://buckbuild.com/rule/android_binary.html), [`android_binary`](https://buckbuild.com/rule/android_binary.html), and [`apk_genrule`](https://buckbuild.com/rule/apk_genrule.html) rules). It invokes [`buck install --run`](https://buckbuild.com/command/install.html) and builds, installs, then runs the app. Build output will be reported as documented in the [Build workflow](#build) section above.
 
-<img src="/static/images/docs/feature-task-runner-buck-run.png" />
+![](/static/images/docs/feature-task-runner-buck-run.png)
 
-The iOS simulator type can be explicitly selected via the drop-down menu to the right of the toolbar's Settings button.
-
-The **React Native Server Mode** checkbox optionally starts the React Native packager
-and debugging server while the app installs.
+The iOS simulator type can be explicitly selected via the drop-down menu to the right of the toolbar's **Settings** button (i.e., the gear icon).
 
 ### Test
+
+![](/static/images/docs/feature-task-runner-buck-test.png)
 
 The Test task invokes [`buck test`](https://buckbuild.com/command/test.html), building and running valid test targets (e.g., `cxx_test`).
 Build output will be reported as documented in the [Build workflow](#build) section above.
 
 ### Debug
+
+![](/static/images/docs/feature-task-runner-buck-debug.png)
 
 The Debug task is only enabled for the following target types:
 
@@ -71,7 +76,7 @@ The [LLDB debugger](/docs/languages/cpp/#debugging) is invoked after a successfu
 
 For iOS applications, the Debug task invokes [`buck install --run --wait-for-debugger`](https://buckbuild.com/command/install.html), then attaches LLDB to the simulator process once the app starts.
 
-As with the Run task, the iOS simulator type can be selected from the drop-down menu to the right of the toolbar's Settings button.  The `React Native Server Mode` checkbox must be selected for React Native apps to enable JavaScript debugging.
+As with the Run task, the iOS simulator type can be selected from the drop-down menu to the right of the toolbar's **Settings** button (i.e., the gear icon).
 
 *C++ unit tests*
 
@@ -79,45 +84,41 @@ For C++ unit tests, LLDB is launched against the unit test binary with the `args
 
 *C++ binaries*
 
-For C++ binaries, LLDB is launched directly against the output binary after a successful `buck build`.  Extra launch arguments can be specified using the Settings button.
-
-<img src="/static/images/docs/feature-task-runner-buck-debug.png" width="564" />
+For C++ binaries, LLDB is launched directly against the output binary after a successful `buck build`.  Extra launch arguments can be specified using the **Settings** button (i.e., the gear icon).
 
 ## Swift
 
 The Task Runner toolbar can build [Swift](/docs/languages/swift) packages and run their tests.
 
+>Your project must contain a `Package.swift` file for the Swift tasks to be available in the Task Runner.
+
+Click the **Toggle Task Runner Toolbar** button on the [Nuclide toolbar](/docs/features/toolbar/#buttons) to display options for building or testing a Swift package.
+
 ### Building a Swift package
 
-1. Click the **Toggle Task Runner Toolbar** button on the [Nuclide toolbar](/docs/features/toolbar/#buttons) (or use the [Command Palette](/docs/editor/basics/#command-palette) to issue the **Nuclide Task Runner: Toggle Swift Toolbar** command) to display options for building a Swift package.<br /><br />
-![](/static/images/docs/feature-task-runner-swift-build-toolbar.png)
+<img src="/static/images/docs/feature-task-runner-swift-build-toolbar.png" style="width:700px" />
 
-2. Select **Build** from the Swift Task drop-down menu.
-3. Enter the path to a Swift package's root directory, then click the **Build** button to build the package. (This path is entered automatically if your project root is set to
-a Swift package root.) Build output is displayed in the [Console](/docs/features/debugger/#basics__evaluation) below the [Editing Area](/docs/editor/basics/#editing-area).
+Enter the path to a Swift package's root directory, then click the **Build** button (i.e., the crossed tools icon) to build the package. (This path is not needed if your project's working root contains a Swift package.) Build output is displayed in the [Console](/docs/features/debugger/#basics__evaluation) below the [Editing Area](/docs/editor/basics/#editing-area).
 
 ![](/static/images/docs/feature-task-runner-swift-build-output.png)
 
-You can customize build settings, such as whether to build the package in a *Debug* or *Release* configuration, by clicking the Settings button (i.e., the gear icon) to the right
-of the toolbar's text box.
+You can customize build settings, such as whether to build the package in a *Debug* or *Release* configuration, by clicking the **Settings** button (i.e., the gear icon) to the right of the toolbar's text box.
 
 ![](/static/images/docs/feature-task-runner-swift-build-settings.png)
 
 ### Running a Swift package's tests
 
-1. Select **Test** from the Swift Task drop-down menu to display options for running a Swift package's tests.<br /><br />
-![](/static/images/docs/feature-task-runner-swift-test-toolbar.png)
+<img src="/static/images/docs/feature-task-runner-swift-test-toolbar.png" style="width:700px" />
 
-2. Enter the path to a Swift package's root directory, then click the **Test** button to run the package's tests. (This path is entered automatically if your project root is set
-to a Swift package root.) Test output is displayed in the [Console](/docs/features/debugger/#basics__evaluation) below the [Editing Area](/docs/editor/basics/#editing-area).
+Enter the path to a Swift package's root directory, then click the **Test** button (i.e., the checkmark icon) to run the package's tests.  (This path is not needed if your project's working root contains a Swift package.) Test output is displayed in the [Console](/docs/features/debugger/#basics__evaluation) below the [Editing Area](/docs/editor/basics/#editing-area).
 
 ![](/static/images/docs/feature-task-runner-swift-test-output.png)
 
-Clicking the Settings button (i.e., the gear icon) to the right of the toolbar's text box displays additional settings for running your Swift package's tests.
+Clicking the **Settings** button (i.e., the gear icon) to the right of the toolbar's text box displays additional settings for running your Swift package's tests.
 
 ## HHVM Debug Toolbar
 
-Nuclide provides an HHVM toolbar in the Task Runner for debugging [Hack](/docs/languages/hack) projects. You can launch the toolbar by clicking the **Toggle Task Runner Toolbar** button in the [Nuclide toolbar](/docs/features/toolbar/#buttons) or from the [Command Palette](/docs/editor/basics/#command-palette) with `Nuclide Task Runner: Toggle HHVM Toolbar`.
+Nuclide provides an HHVM toolbar in the Task Runner for debugging [Hack](/docs/languages/hack) projects. You can launch the toolbar by clicking the **Toggle Task Runner Toolbar** button in the [Nuclide toolbar](/docs/features/toolbar/#buttons).
 
 ![](/static/images/docs/feature-task-runner-hack-toolbar.png)
 
@@ -129,7 +130,7 @@ You can choose either **Attach to WebServer** or **Launch Script** from the drop
 
 Set [breakpoints](/docs/features/debugger/#basics__breakpoints) in your code.
 
-Click the **Debug** button to open the Debugger; it will stop at the first breakpoint.
+Click the **Debug** button (i.e., the bug icon) to open the Debugger; it will stop at the first breakpoint.
 
 You can then follow the [basic Debugger information](/docs/features/debugger/#basics) and use the additional features of the [Console](/docs/languages/hack/#debugging__console), [Evaluation](/docs/languages/hack/#debugging__evaluation), [Filtering](/docs/languages/hack/#debugging__filtering) and [other HHVM-specific debugging settings]( /docs/languages/hack/#debugging__other-settings) to debug your code.
 
