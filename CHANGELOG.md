@@ -1,5 +1,22 @@
 # Nuclide Changelog
 
+## v0.204.0
+
+### Mobile JS
+
+* Improved disposal logic for the experimental debugger, resulting in fewer crashes.
+
+### Hack
+
+* With this week's HHVM release, asynchronous callstacks in the debugger will no longer be missing frames.
+
+### Improvements and Fixes
+
+* Improved Atom responsiveness when using flow by offloading more work to the nuclide-server.
+* Fixed issue with remote connection that would cause Atom to not be able to serialize state.
+* Improved task runner toolbar UI.
+
+
 ## v0.203.0
 
 Hotfix for internal changes.
