@@ -87,14 +87,6 @@ export function forwardJdwpPortToPid(
   return ADB.forwardJdwpPortToPid(adbPath, device, tcpPort, pid);
 }
 
-export function enableWaitForDebugger(
-  adbPath: NuclideUri,
-  device: string,
-  packageName: string,
-): Promise<string> {
-  return ADB.enableWaitForDebugger(adbPath, device, packageName);
-}
-
 export function launchActivity(
   adbPath: NuclideUri,
   device: string,
@@ -103,4 +95,13 @@ export function launchActivity(
   action: string,
 ): Promise<string> {
   return ADB.launchActivity(adbPath, device, packageName, activity, action);
+}
+
+export function activityExists(
+  adbPath: NuclideUri,
+  device: string,
+  packageName: string,
+  activity: string,
+): Promise<boolean> {
+  return ADB.activityExists(adbPath, device, packageName, activity);
 }

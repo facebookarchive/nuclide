@@ -180,18 +180,6 @@ export function forwardJdwpPortToPid(
   ).toPromise();
 }
 
-export function enableWaitForDebugger(
-  adbPath: NuclideUri,
-  device: string,
-  packageName: string,
-): Promise<string> {
-  return runShortAdbCommand(
-    adbPath,
-    device,
-    ['shell', 'am', 'set-debug-app', packageName],
-  ).toPromise();
-}
-
 export function launchActivity(
   adbPath: NuclideUri,
   device: string,
@@ -202,6 +190,20 @@ export function launchActivity(
   return runShortAdbCommand(
     adbPath,
     device,
-    ['shell', 'am', 'start', '-a', action, '-n', `${packageName}/${activity}`],
+    ['shell', 'am', 'start', '-D', '-N', '-W', '-a', action, '-n', `${packageName}/${activity}`],
   ).toPromise();
+}
+
+export function activityExists(
+  adbPath: NuclideUri,
+  device: string,
+  packageName: string,
+  activity: string,
+): Promise<boolean> {
+  const packageActivityString = `${packageName}/${activity}`;
+  const deviceArg = (device !== '') ? ['-s', device] : [];
+  const command = deviceArg.concat(['shell', 'dumpsys', 'package']);
+  return runCommand(adbPath, command)
+    .map(stdout => stdout.includes(packageActivityString))
+    .toPromise();
 }
