@@ -26,6 +26,8 @@ const logger = getLogger();
 const BUCK_TIMEOUT = 10 * 60 * 1000;
 
 const COMPILATION_DATABASE_FILE = 'compile_commands.json';
+const PROJECT_CLANG_FLAGS_FILE = '.nuclide_clang_config.json';
+
 /**
  * Facebook puts all headers in a <target>:__default_headers__ build target by default.
  * This target will never produce compilation flags, so make sure to ignore it.
@@ -68,6 +70,11 @@ export type ClangFlags = {
   flagsFile: ?string,
 };
 
+type ClangProjectFlags = {
+  extraCompilerFlags: Array<string>,
+  ignoredCompilerFlags: Array<string>,
+};
+
 let _overrideIncludePath = undefined;
 function overrideIncludePath(src: string): string {
   if (_overrideIncludePath === undefined) {
@@ -90,12 +97,14 @@ export default class ClangFlagsManager {
   _compilationDatabases: Map<string, Map<string, ClangFlags>>;
   _realpathCache: Object;
   _pathToFlags: Map<string, Promise<?ClangFlags>>;
+  _clangProjectFlags: Map<string, Promise<?ClangProjectFlags>>;
 
   constructor() {
     this._pathToFlags = new Map();
     this._cachedBuckFlags = new Map();
     this._compilationDatabases = new Map();
     this._realpathCache = {};
+    this._clangProjectFlags = new Map();
   }
 
   reset() {
@@ -103,6 +112,7 @@ export default class ClangFlagsManager {
     this._cachedBuckFlags.clear();
     this._compilationDatabases.clear();
     this._realpathCache = {};
+    this._clangProjectFlags.clear();
   }
 
   /**
@@ -124,6 +134,7 @@ export default class ClangFlagsManager {
         if (typeof flags === 'string') {
           flags = shellParse(flags);
         }
+        flags = await this._getModifiedFlags(src, flags);
         data.flags = ClangFlagsManager.sanitizeCommand(rawData.file, flags, rawData.directory);
       }
     }
@@ -200,6 +211,26 @@ export default class ClangFlagsManager {
     return data;
   }
 
+  async _getModifiedFlags(src: string, originalFlags: Array<string>): Promise<Array<string>> {
+    // Look for the project-wide flags
+    const projectFlagsDir = await fsPromise.findNearestFile(
+      PROJECT_CLANG_FLAGS_FILE,
+      nuclideUri.dirname(src),
+    );
+    if (projectFlagsDir == null) {
+      return originalFlags;
+    }
+    const projectFlagsFile = nuclideUri.join(projectFlagsDir, PROJECT_CLANG_FLAGS_FILE);
+    const projectFlags = await this._loadProjectCompilerFlags(projectFlagsFile);
+    if (projectFlags == null) {
+      return originalFlags;
+    }
+
+    return originalFlags
+      .filter(flag => projectFlags.ignoredCompilerFlags.indexOf(flag) === -1)
+      .concat(projectFlags.extraCompilerFlags);
+  }
+
   async __getFlagsForSrcImpl(src: string, compilationDBFile: ?NuclideUri): Promise<?ClangFlags> {
     let dbFlags = null;
     let dbDir = null;
@@ -264,6 +295,39 @@ export default class ClangFlagsManager {
     }
 
     return null;
+  }
+
+  async _loadProjectCompilerFlags(flagsFile: string): Promise<?ClangProjectFlags> {
+    let cached = this._clangProjectFlags.get(flagsFile);
+    if (cached == null) {
+      cached = this._loadProjectCompilerFlagsImpl(flagsFile);
+      this._clangProjectFlags.set(flagsFile, cached);
+    }
+    return cached;
+  }
+
+  async _loadProjectCompilerFlagsImpl(flagsFile: string): Promise<?ClangProjectFlags> {
+    let result = null;
+    try {
+      const contents = await fsPromise.readFile(flagsFile, 'utf8');
+      const data = JSON.parse(contents);
+      invariant(data instanceof Object);
+      const {extra_compiler_flags, ignored_compiler_flags} = data;
+      const extraCompilerFlags = [];
+      const ignoredCompilerFlags = [];
+
+      if (extra_compiler_flags != null) {
+        extra_compiler_flags.forEach(flag => extraCompilerFlags.push(flag));
+      }
+      if (ignored_compiler_flags != null) {
+        ignored_compiler_flags.forEach(flag => ignoredCompilerFlags.push(flag));
+      }
+      result = {extraCompilerFlags, ignoredCompilerFlags};
+    } catch (e) {
+      logger.error(`Error reading compilation flags from ${flagsFile}`, e);
+    }
+
+    return result;
   }
 
   async _loadFlagsFromCompilationDatabase(dbFile: string): Promise<Map<string, ClangFlags>> {
