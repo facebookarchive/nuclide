@@ -31,7 +31,7 @@ defines that function.
 
 ![](/static/images/docs/feature-outline-view-click.png)
 
-> Outline View currently supports Hack, PHP, Flow, JavaScript, Python, C++ and JSON files. If you
+> Outline View currently supports Hack, PHP, Flow, JavaScript, Python, C++, JSON, and GraphQL files. If you
 > have Outline View opened for a file that is not supported, you will see a message similar to
 > *"Outline view does not currently support..."*
 

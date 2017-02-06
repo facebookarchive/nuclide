@@ -33,6 +33,7 @@
   - id: language-cpp
   - id: language-python
   - id: language-swift
+  - id: language-graphql
   - id: language-other
 - title: Platforms
   items:
