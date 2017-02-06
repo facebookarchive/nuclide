@@ -1,3 +1,22 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getFlowServiceByNuclideUri = getFlowServiceByNuclideUri;
+exports.getFlowServiceByConnection = getFlowServiceByConnection;
+exports.getLocalFlowService = getLocalFlowService;
+exports.getServerStatusUpdates = getServerStatusUpdates;
+exports.getCurrentServiceInstances = getCurrentServiceInstances;
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,65 +24,46 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
-
-import type {Observable} from 'rxjs';
-
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {
-  ServerStatusUpdate,
-} from '../../nuclide-flow-rpc';
-import typeof * as FlowService from '../../nuclide-flow-rpc';
-import type {ServerConnection} from '../../nuclide-remote-connection';
-
-import invariant from 'assert';
-import {Subject} from 'rxjs';
-
-import {getServiceByNuclideUri, getServiceByConnection} from '../../nuclide-remote-connection';
 
 const FLOW_SERVICE = 'FlowService';
 
-const serverStatusUpdates: Subject<ServerStatusUpdate> = new Subject();
+const serverStatusUpdates = new _rxjsBundlesRxMinJs.Subject();
 
 const serviceInstances = new Set();
 
-type UriOrConnection = {
-  kind: 'uri',
-  uri: ?NuclideUri,
-} | {
-  kind: 'connection',
-  connection: ?ServerConnection,
-};
-
-export function getFlowServiceByNuclideUri(file: NuclideUri): FlowService {
-  return getFlowServiceByUriOrConnection({kind: 'uri', uri: file});
+function getFlowServiceByNuclideUri(file) {
+  return getFlowServiceByUriOrConnection({ kind: 'uri', uri: file });
 }
 
-export function getFlowServiceByConnection(connection: ?ServerConnection): FlowService {
-  return getFlowServiceByUriOrConnection({kind: 'connection', connection});
+function getFlowServiceByConnection(connection) {
+  return getFlowServiceByUriOrConnection({ kind: 'connection', connection });
 }
 
-export function getLocalFlowService(): FlowService {
-  return getFlowServiceByUriOrConnection({kind: 'uri', uri: null});
+function getLocalFlowService() {
+  return getFlowServiceByUriOrConnection({ kind: 'uri', uri: null });
 }
 
 /** Returns the FlowService for the given URI, or the local FlowService if the given URI is null. */
-function getFlowServiceByUriOrConnection(uriOrConnection: UriOrConnection): FlowService {
-  let flowService: ?FlowService;
+function getFlowServiceByUriOrConnection(uriOrConnection) {
+  let flowService;
   switch (uriOrConnection.kind) {
     case 'uri':
-      flowService = getServiceByNuclideUri(FLOW_SERVICE, uriOrConnection.uri);
+      flowService = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getServiceByNuclideUri)(FLOW_SERVICE, uriOrConnection.uri);
       break;
     case 'connection':
-      flowService = getServiceByConnection(FLOW_SERVICE, uriOrConnection.connection);
+      flowService = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getServiceByConnection)(FLOW_SERVICE, uriOrConnection.connection);
       break;
   }
-  invariant(flowService != null);
+
+  if (!(flowService != null)) {
+    throw new Error('Invariant violation: "flowService != null"');
+  }
+
   if (!serviceInstances.has(flowService)) {
     serviceInstances.add(flowService);
-    const statusUpdates: Observable<ServerStatusUpdate>
-      = flowService.getServerStatusUpdates().refCount();
+    const statusUpdates = flowService.getServerStatusUpdates().refCount();
     // TODO Unsubscribe at some point. To do that, we need a hook into the service framework so we
     // can learn when a given service instance is gone. I would expect the service framework to send
     // onCompleted when it disconnects, but that seemingly doesn't happen. So, we should do this
@@ -75,10 +75,10 @@ function getFlowServiceByUriOrConnection(uriOrConnection: UriOrConnection): Flow
   return flowService;
 }
 
-export function getServerStatusUpdates(): Observable<ServerStatusUpdate> {
+function getServerStatusUpdates() {
   return serverStatusUpdates.asObservable();
 }
 
-export function getCurrentServiceInstances(): Set<FlowService> {
+function getCurrentServiceInstances() {
   return new Set(serviceInstances);
 }

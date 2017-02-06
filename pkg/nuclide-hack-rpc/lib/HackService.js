@@ -1,175 +1,186 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
-import type {
-  HackRange,
-  HackCompletionsResult,
-  HackDiagnosticsResult,
-} from './rpc-types';
-import type {
-  HackLanguageService,
-  HackSearchPosition,
-} from './HackService-types';
-import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
-import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
-import type {
-  Definition,
-  DefinitionQueryResult,
-} from '../../nuclide-definition-service/lib/rpc-types';
-import type {HackDefinition} from './Definitions';
-import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
-import type {HackIdeOutline, HackIdeOutlineItem} from './OutlineView';
-import type {HackTypedRegion} from './TypedRegions';
-import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
-import type {FindReferencesReturn} from '../../nuclide-find-references/lib/rpc-types';
-import type {HackReferencesResult} from './FindReferences';
-import type {
-  DiagnosticProviderUpdate,
-  FileDiagnosticUpdate,
-} from '../../nuclide-diagnostics-common/lib/rpc-types';
-import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
-import type {Completion} from '../../nuclide-language-service/lib/LanguageService';
-import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
-import type {HackDiagnosticsMessage} from './HackConnectionService';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.initialize = undefined;
 
-import {Observable} from 'rxjs';
-import {wordAtPositionFromBuffer} from '../../commons-node/range';
-import invariant from 'assert';
-import {retryLimit} from '../../commons-node/promise';
-import {
-  callHHClient,
-  HACK_WORD_REGEX,
-} from './HackHelpers';
-import {
-  findHackConfigDir,
-  setHackCommand,
-  getHackCommand,
-  logger,
-  HACK_FILE_EXTENSIONS,
-} from './hack-config';
-import {
-  getHackProcess,
-  observeConnections,
-  ensureProcesses,
-  closeProcesses,
-} from './HackProcess';
-import {convertDefinitions} from './Definitions';
-import {
-  hackRangeToAtomRange,
-  atomPointOfHackRangeStart,
-} from './HackHelpers';
-import {outlineFromHackIdeOutline} from './OutlineView';
-import {convertCoverage} from './TypedRegions';
-import {convertReferences} from './FindReferences';
-import {hasPrefix, findHackPrefix, convertCompletions} from './Completions';
-import {
-  hackMessageToDiagnosticMessage,
-  convertDiagnostics,
-} from './Diagnostics';
-import {executeQuery} from './SymbolSearch';
-import {FileCache, ConfigObserver} from '../../nuclide-open-files-rpc';
-import {getEvaluationExpression} from './EvaluationExpression';
-import {ServerLanguageService, ensureInvalidations} from '../../nuclide-language-service-rpc';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-export type SymbolTypeValue = 0 | 1 | 2 | 3 | 4;
+let initialize = exports.initialize = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (hackCommand, useIdeConnection, logLevel, fileNotifier) {
+    (0, (_hackConfig || _load_hackConfig()).setHackCommand)(hackCommand);
+    (_hackConfig || _load_hackConfig()).logger.setLogLevel(logLevel);
+    yield (0, (_hackConfig || _load_hackConfig()).getHackCommand)();
+    return new HackLanguageServiceImpl(useIdeConnection, fileNotifier);
+  });
 
-export type HackTypeAtPosResult = {
-  type: ?string,
-  pos: ?HackRange,
-};
+  return function initialize(_x, _x2, _x3, _x4) {
+    return _ref.apply(this, arguments);
+  };
+})();
 
-export type HackHighlightRefsResult = Array<HackRange>;
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
-export type HackFormatSourceResult = {
-  error_message: string,
-  result: string,
-  internal_error: boolean,
-};
+var _range;
 
-const HH_DIAGNOSTICS_DELAY_MS = 600;
-const HH_CLIENT_MAX_TRIES = 10;
-
-export async function initialize(
-  hackCommand: string,
-  useIdeConnection: boolean,
-  logLevel: LogLevel,
-  fileNotifier: FileNotifier,
-): Promise<HackLanguageService> {
-  setHackCommand(hackCommand);
-  logger.setLogLevel(logLevel);
-  await getHackCommand();
-  return new HackLanguageServiceImpl(useIdeConnection, fileNotifier);
+function _load_range() {
+  return _range = require('../../commons-node/range');
 }
 
-class HackLanguageServiceImpl extends ServerLanguageService {
-  _useIdeConnection: boolean;
-  _resources: UniversalDisposable;
+var _promise;
 
-  constructor(useIdeConnection: boolean, fileNotifier: FileNotifier) {
+function _load_promise() {
+  return _promise = require('../../commons-node/promise');
+}
+
+var _HackHelpers;
+
+function _load_HackHelpers() {
+  return _HackHelpers = require('./HackHelpers');
+}
+
+var _hackConfig;
+
+function _load_hackConfig() {
+  return _hackConfig = require('./hack-config');
+}
+
+var _HackProcess;
+
+function _load_HackProcess() {
+  return _HackProcess = require('./HackProcess');
+}
+
+var _Definitions;
+
+function _load_Definitions() {
+  return _Definitions = require('./Definitions');
+}
+
+var _OutlineView;
+
+function _load_OutlineView() {
+  return _OutlineView = require('./OutlineView');
+}
+
+var _TypedRegions;
+
+function _load_TypedRegions() {
+  return _TypedRegions = require('./TypedRegions');
+}
+
+var _FindReferences;
+
+function _load_FindReferences() {
+  return _FindReferences = require('./FindReferences');
+}
+
+var _Completions;
+
+function _load_Completions() {
+  return _Completions = require('./Completions');
+}
+
+var _Diagnostics;
+
+function _load_Diagnostics() {
+  return _Diagnostics = require('./Diagnostics');
+}
+
+var _SymbolSearch;
+
+function _load_SymbolSearch() {
+  return _SymbolSearch = require('./SymbolSearch');
+}
+
+var _nuclideOpenFilesRpc;
+
+function _load_nuclideOpenFilesRpc() {
+  return _nuclideOpenFilesRpc = require('../../nuclide-open-files-rpc');
+}
+
+var _EvaluationExpression;
+
+function _load_EvaluationExpression() {
+  return _EvaluationExpression = require('./EvaluationExpression');
+}
+
+var _nuclideLanguageServiceRpc;
+
+function _load_nuclideLanguageServiceRpc() {
+  return _nuclideLanguageServiceRpc = require('../../nuclide-language-service-rpc');
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../commons-node/UniversalDisposable'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const HH_DIAGNOSTICS_DELAY_MS = 600; /**
+                                      * Copyright (c) 2015-present, Facebook, Inc.
+                                      * All rights reserved.
+                                      *
+                                      * This source code is licensed under the license found in the LICENSE file in
+                                      * the root directory of this source tree.
+                                      *
+                                      * 
+                                      */
+
+const HH_CLIENT_MAX_TRIES = 10;
+
+class HackLanguageServiceImpl extends (_nuclideLanguageServiceRpc || _load_nuclideLanguageServiceRpc()).ServerLanguageService {
+
+  constructor(useIdeConnection, fileNotifier) {
     super(fileNotifier, new HackSingleFileLanguageService(useIdeConnection, fileNotifier));
     this._useIdeConnection = useIdeConnection;
-    this._resources = new UniversalDisposable();
+    this._resources = new (_UniversalDisposable || _load_UniversalDisposable()).default();
     if (useIdeConnection) {
-      invariant(fileNotifier instanceof FileCache);
-      const configObserver = new ConfigObserver(
-        fileNotifier,
-        HACK_FILE_EXTENSIONS,
-        findHackConfigDir,
-      );
-      this._resources.add(
-        configObserver,
-        configObserver.observeConfigs().subscribe(configs => {
-          ensureProcesses(fileNotifier, configs);
-        }));
+      if (!(fileNotifier instanceof (_nuclideOpenFilesRpc || _load_nuclideOpenFilesRpc()).FileCache)) {
+        throw new Error('Invariant violation: "fileNotifier instanceof FileCache"');
+      }
+
+      const configObserver = new (_nuclideOpenFilesRpc || _load_nuclideOpenFilesRpc()).ConfigObserver(fileNotifier, (_hackConfig || _load_hackConfig()).HACK_FILE_EXTENSIONS, (_hackConfig || _load_hackConfig()).findHackConfigDir);
+      this._resources.add(configObserver, configObserver.observeConfigs().subscribe(configs => {
+        (0, (_HackProcess || _load_HackProcess()).ensureProcesses)(fileNotifier, configs);
+      }));
       this._resources.add(() => {
-        closeProcesses(fileNotifier);
+        (0, (_HackProcess || _load_HackProcess()).closeProcesses)(fileNotifier);
       });
     }
   }
 
-  async getAutocompleteSuggestions(
-    fileVersion: FileVersion,
-    position: atom$Point,
-    activatedManually: boolean,
-    prefix: string,
-  ): Promise<?Array<Completion>> {
-    if (this._useIdeConnection) {
-      const process = await getHackProcess(this._fileCache, fileVersion.filePath);
-      if (process == null) {
-        return [];
+  getAutocompleteSuggestions(fileVersion, position, activatedManually, prefix) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      if (_this._useIdeConnection) {
+        const process = yield (0, (_HackProcess || _load_HackProcess()).getHackProcess)(_this._fileCache, fileVersion.filePath);
+        if (process == null) {
+          return [];
+        } else {
+          return process.getAutocompleteSuggestions(fileVersion, position, activatedManually);
+        }
       } else {
-        return process.getAutocompleteSuggestions(fileVersion, position, activatedManually);
+        // Babel workaround: w/o the es2015-classes transform, async functions can't call `super`.
+        // https://github.com/babel/babel/issues/3930
+        return (_nuclideLanguageServiceRpc || _load_nuclideLanguageServiceRpc()).ServerLanguageService.prototype.getAutocompleteSuggestions.call(_this, fileVersion, position, activatedManually, prefix);
       }
-    } else {
-      // Babel workaround: w/o the es2015-classes transform, async functions can't call `super`.
-      // https://github.com/babel/babel/issues/3930
-      return ServerLanguageService.prototype.getAutocompleteSuggestions
-        .call(this, fileVersion, position, activatedManually, prefix);
-    }
+    })();
   }
 
   /**
    * Performs a Hack symbol search in the specified directory.
    */
-  executeQuery(
-    rootDirectory: NuclideUri,
-    queryString: string,
-  ): Promise<Array<HackSearchPosition>> {
-    return executeQuery(rootDirectory, queryString);
+  executeQuery(rootDirectory, queryString) {
+    return (0, (_SymbolSearch || _load_SymbolSearch()).executeQuery)(rootDirectory, queryString);
   }
 
-  dispose(): void {
-    logger.logInfo('Disposing HackLanguageServiceImpl');
+  dispose() {
+    (_hackConfig || _load_hackConfig()).logger.logInfo('Disposing HackLanguageServiceImpl');
 
     this._resources.dispose();
     super.dispose();
@@ -177,338 +188,293 @@ class HackLanguageServiceImpl extends ServerLanguageService {
 }
 
 class HackSingleFileLanguageService {
-  _useIdeConnection: boolean;
-  _fileCache: FileCache;
 
-  constructor(useIdeConnection: boolean, fileNotifier: FileNotifier) {
+  constructor(useIdeConnection, fileNotifier) {
     this._useIdeConnection = useIdeConnection;
-    invariant(fileNotifier instanceof FileCache);
+
+    if (!(fileNotifier instanceof (_nuclideOpenFilesRpc || _load_nuclideOpenFilesRpc()).FileCache)) {
+      throw new Error('Invariant violation: "fileNotifier instanceof FileCache"');
+    }
+
     this._fileCache = fileNotifier;
   }
 
-  async getDiagnostics(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-  ): Promise<?DiagnosticProviderUpdate> {
-    const hhResult: ?HackDiagnosticsResult = (await retryLimit(
-      () => callHHClient(
-        /* args */ [],
-        /* errorStream */ true,
-        /* processInput */ null,
-        /* file */ filePath,
-      ),
-      result => result != null,
-      HH_CLIENT_MAX_TRIES,
-      HH_DIAGNOSTICS_DELAY_MS,
-    ): any);
-    if (!hhResult) {
-      return null;
-    }
+  getDiagnostics(filePath, buffer) {
+    return (0, _asyncToGenerator.default)(function* () {
+      const hhResult = yield (0, (_promise || _load_promise()).retryLimit)(function () {
+        return (0, (_HackHelpers || _load_HackHelpers()).callHHClient)(
+        /* args */[],
+        /* errorStream */true,
+        /* processInput */null,
+        /* file */filePath);
+      }, function (result) {
+        return result != null;
+      }, HH_CLIENT_MAX_TRIES, HH_DIAGNOSTICS_DELAY_MS);
+      if (!hhResult) {
+        return null;
+      }
 
-    return convertDiagnostics(hhResult);
+      return (0, (_Diagnostics || _load_Diagnostics()).convertDiagnostics)(hhResult);
+    })();
   }
 
-  observeDiagnostics(): Observable<FileDiagnosticUpdate> {
-    logger.logTrace('observeDiagnostics');
-    invariant(this._useIdeConnection);
-    return observeConnections(this._fileCache)
-      .mergeMap(connection => {
-        logger.logTrace('notifyDiagnostics');
-        return ensureInvalidations(
-            logger,
-            connection.notifyDiagnostics()
-            .refCount()
-            .catch(error => {
-              logger.logError(`Error: notifyDiagnostics ${error}`);
-              return Observable.empty();
-            })
-            .map((hackDiagnostics: HackDiagnosticsMessage) => {
-              logger.logTrace(`Got hack error in ${hackDiagnostics.filename}`);
-              return ({
-                filePath: hackDiagnostics.filename,
-                messages: hackDiagnostics.errors.map(diagnostic =>
-                  hackMessageToDiagnosticMessage(diagnostic.message)),
-              });
-            }));
-      });
-  }
+  observeDiagnostics() {
+    (_hackConfig || _load_hackConfig()).logger.logTrace('observeDiagnostics');
 
-  async getAutocompleteSuggestions(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    position: atom$Point,
-    activatedManually: boolean,
-  ): Promise<Array<Completion>> {
-    const contents = buffer.getText();
-    const offset = buffer.characterIndexForPosition(position);
-
-    const replacementPrefix = findHackPrefix(buffer, position);
-    if (replacementPrefix === '' && !hasPrefix(buffer, position)) {
-      return [];
+    if (!this._useIdeConnection) {
+      throw new Error('Invariant violation: "this._useIdeConnection"');
     }
 
-    const markedContents = markFileForCompletion(contents, offset);
-    const result: ?HackCompletionsResult = (await callHHClient(
-      /* args */ ['--auto-complete'],
-      /* errorStream */ false,
-      /* processInput */ markedContents,
-      /* file */ filePath,
-    ): any);
-    return convertCompletions(contents, offset, replacementPrefix, result);
+    return (0, (_HackProcess || _load_HackProcess()).observeConnections)(this._fileCache).mergeMap(connection => {
+      (_hackConfig || _load_hackConfig()).logger.logTrace('notifyDiagnostics');
+      return (0, (_nuclideLanguageServiceRpc || _load_nuclideLanguageServiceRpc()).ensureInvalidations)((_hackConfig || _load_hackConfig()).logger, connection.notifyDiagnostics().refCount().catch(error => {
+        (_hackConfig || _load_hackConfig()).logger.logError(`Error: notifyDiagnostics ${error}`);
+        return _rxjsBundlesRxMinJs.Observable.empty();
+      }).map(hackDiagnostics => {
+        (_hackConfig || _load_hackConfig()).logger.logTrace(`Got hack error in ${hackDiagnostics.filename}`);
+        return {
+          filePath: hackDiagnostics.filename,
+          messages: hackDiagnostics.errors.map(diagnostic => (0, (_Diagnostics || _load_Diagnostics()).hackMessageToDiagnosticMessage)(diagnostic.message))
+        };
+      }));
+    });
   }
 
-  async getDefinition(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    position: atom$Point,
-  ): Promise<?DefinitionQueryResult> {
-    const contents = buffer.getText();
+  getAutocompleteSuggestions(filePath, buffer, position, activatedManually) {
+    return (0, _asyncToGenerator.default)(function* () {
+      const contents = buffer.getText();
+      const offset = buffer.characterIndexForPosition(position);
 
-    const result: ?Array<HackDefinition> = (await callHHClient(
-      /* args */ ['--ide-get-definition', formatAtomLineColumn(position)],
-      /* errorStream */ false,
-      /* processInput */ contents,
-      /* cwd */ filePath,
-    ): any);
-    if (result == null) {
-      return null;
-    }
-    const projectRoot = (result: any).hackRoot;
-    invariant(typeof projectRoot === 'string');
+      const replacementPrefix = (0, (_Completions || _load_Completions()).findHackPrefix)(buffer, position);
+      if (replacementPrefix === '' && !(0, (_Completions || _load_Completions()).hasPrefix)(buffer, position)) {
+        return [];
+      }
 
-    const hackDefinitions = Array.isArray(result) ? result : [result];
-    return convertDefinitions(hackDefinitions, filePath, projectRoot);
+      const markedContents = markFileForCompletion(contents, offset);
+      const result = yield (0, (_HackHelpers || _load_HackHelpers()).callHHClient)(
+      /* args */['--auto-complete'],
+      /* errorStream */false,
+      /* processInput */markedContents,
+      /* file */filePath);
+      return (0, (_Completions || _load_Completions()).convertCompletions)(contents, offset, replacementPrefix, result);
+    })();
   }
 
-  async getDefinitionById(
-    file: NuclideUri,
-    id: string,
-  ): Promise<?Definition> {
-    const definition: ?HackIdeOutlineItem = (await callHHClient(
-      /* args */ ['--get-definition-by-id', id],
-      /* errorStream */ false,
-      /* processInput */ null,
-      /* cwd */ file,
-    ): any);
-    if (definition == null) {
-      return null;
-    }
+  getDefinition(filePath, buffer, position) {
+    return (0, _asyncToGenerator.default)(function* () {
+      const contents = buffer.getText();
 
-    const result = {
-      path: definition.position.filename,
-      position: atomPointOfHackRangeStart(definition.position),
-      name: definition.name,
-      language: 'php',
-      // TODO: range
-      projectRoot: (definition: any).hackRoot,
-    };
-    if (typeof definition.id === 'string') {
-      return {
-        ...result,
-        id: definition.id,
+      const result = yield (0, (_HackHelpers || _load_HackHelpers()).callHHClient)(
+      /* args */['--ide-get-definition', formatAtomLineColumn(position)],
+      /* errorStream */false,
+      /* processInput */contents,
+      /* cwd */filePath);
+      if (result == null) {
+        return null;
+      }
+      const projectRoot = result.hackRoot;
+
+      if (!(typeof projectRoot === 'string')) {
+        throw new Error('Invariant violation: "typeof projectRoot === \'string\'"');
+      }
+
+      const hackDefinitions = Array.isArray(result) ? result : [result];
+      return (0, (_Definitions || _load_Definitions()).convertDefinitions)(hackDefinitions, filePath, projectRoot);
+    })();
+  }
+
+  getDefinitionById(file, id) {
+    return (0, _asyncToGenerator.default)(function* () {
+      const definition = yield (0, (_HackHelpers || _load_HackHelpers()).callHHClient)(
+      /* args */['--get-definition-by-id', id],
+      /* errorStream */false,
+      /* processInput */null,
+      /* cwd */file);
+      if (definition == null) {
+        return null;
+      }
+
+      const result = {
+        path: definition.position.filename,
+        position: (0, (_HackHelpers || _load_HackHelpers()).atomPointOfHackRangeStart)(definition.position),
+        name: definition.name,
+        language: 'php',
+        // TODO: range
+        projectRoot: definition.hackRoot
       };
-    } else {
-      return result;
-    }
+      if (typeof definition.id === 'string') {
+        return Object.assign({}, result, {
+          id: definition.id
+        });
+      } else {
+        return result;
+      }
+    })();
   }
 
-  async findReferences(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    position: atom$Point,
-  ): Promise<?FindReferencesReturn> {
-    const contents = buffer.getText();
+  findReferences(filePath, buffer, position) {
+    return (0, _asyncToGenerator.default)(function* () {
+      const contents = buffer.getText();
 
-    const result: ?HackReferencesResult = (await callHHClient(
-      /* args */ ['--ide-find-refs', formatAtomLineColumn(position)],
-      /* errorStream */ false,
-      /* processInput */ contents,
-      /* cwd */ filePath,
-    ): any);
-    if (result == null || result.length === 0) {
-      return {type: 'error', message: 'No references found.'};
-    }
+      const result = yield (0, (_HackHelpers || _load_HackHelpers()).callHHClient)(
+      /* args */['--ide-find-refs', formatAtomLineColumn(position)],
+      /* errorStream */false,
+      /* processInput */contents,
+      /* cwd */filePath);
+      if (result == null || result.length === 0) {
+        return { type: 'error', message: 'No references found.' };
+      }
 
-    const projectRoot: NuclideUri = (result: any).hackRoot;
+      const projectRoot = result.hackRoot;
 
-    return convertReferences(result, projectRoot);
+      return (0, (_FindReferences || _load_FindReferences()).convertReferences)(result, projectRoot);
+    })();
   }
 
-  async getCoverage(
-    filePath: NuclideUri,
-  ): Promise<?CoverageResult> {
-    const result: ?Array<HackTypedRegion> = (await callHHClient(
-      /* args */ ['--colour', filePath],
-      /* errorStream */ false,
-      /* processInput */ null,
-      /* file */ filePath,
-    ): any);
+  getCoverage(filePath) {
+    return (0, _asyncToGenerator.default)(function* () {
+      const result = yield (0, (_HackHelpers || _load_HackHelpers()).callHHClient)(
+      /* args */['--colour', filePath],
+      /* errorStream */false,
+      /* processInput */null,
+      /* file */filePath);
 
-    return convertCoverage(filePath, result);
+      return (0, (_TypedRegions || _load_TypedRegions()).convertCoverage)(filePath, result);
+    })();
   }
 
-  async getOutline(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-  ): Promise<?Outline> {
-    const contents = buffer.getText();
+  getOutline(filePath, buffer) {
+    return (0, _asyncToGenerator.default)(function* () {
+      const contents = buffer.getText();
 
-    const result: ?HackIdeOutline = (await callHHClient(
-      /* args */ ['--ide-outline'],
-      /* errorStream */ false,
-      /* processInput */ contents,
-      filePath,
-    ): any);
-    if (result == null) {
-      return null;
-    }
+      const result = yield (0, (_HackHelpers || _load_HackHelpers()).callHHClient)(
+      /* args */['--ide-outline'],
+      /* errorStream */false,
+      /* processInput */contents, filePath);
+      if (result == null) {
+        return null;
+      }
 
-    return outlineFromHackIdeOutline(result);
+      return (0, (_OutlineView || _load_OutlineView()).outlineFromHackIdeOutline)(result);
+    })();
   }
 
-  async typeHint(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    position: atom$Point,
-  ): Promise<?TypeHint> {
-    const contents = buffer.getText();
+  typeHint(filePath, buffer, position) {
+    return (0, _asyncToGenerator.default)(function* () {
+      const contents = buffer.getText();
 
-    const match = getIdentifierAndRange(buffer, position);
-    if (match == null) {
-      return null;
-    }
+      const match = getIdentifierAndRange(buffer, position);
+      if (match == null) {
+        return null;
+      }
 
-    const result: ?HackTypeAtPosResult = (await callHHClient(
-      /* args */ ['--type-at-pos', formatAtomLineColumn(position)],
-      /* errorStream */ false,
-      /* processInput */ contents,
-      /* file */ filePath,
-    ): any);
+      const result = yield (0, (_HackHelpers || _load_HackHelpers()).callHHClient)(
+      /* args */['--type-at-pos', formatAtomLineColumn(position)],
+      /* errorStream */false,
+      /* processInput */contents,
+      /* file */filePath);
 
-    if (result == null || result.type == null || result.type === '_') {
-      return null;
-    } else {
-      return {
-        hint: result.type,
-        // TODO: Use hack range for type hints, not nuclide range.
-        range: match.range,
-      };
-    }
+      if (result == null || result.type == null || result.type === '_') {
+        return null;
+      } else {
+        return {
+          hint: result.type,
+          // TODO: Use hack range for type hints, not nuclide range.
+          range: match.range
+        };
+      }
+    })();
   }
 
-  async highlight(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    position: atom$Point,
-  ): Promise<?Array<atom$Range>> {
-    const contents = buffer.getText();
+  highlight(filePath, buffer, position) {
+    return (0, _asyncToGenerator.default)(function* () {
+      const contents = buffer.getText();
 
-    const id = getIdentifierAtPosition(buffer, position);
-    if (id == null) {
-      return null;
-    }
+      const id = getIdentifierAtPosition(buffer, position);
+      if (id == null) {
+        return null;
+      }
 
-    const result: ?HackHighlightRefsResult = (await callHHClient(
-      /* args */ ['--ide-highlight-refs', formatAtomLineColumn(position)],
-      /* errorStream */ false,
-      /* processInput */ contents,
-      /* file */ filePath,
-    ): any);
-    return result == null
-      ? null
-      : result.map(hackRangeToAtomRange);
+      const result = yield (0, (_HackHelpers || _load_HackHelpers()).callHHClient)(
+      /* args */['--ide-highlight-refs', formatAtomLineColumn(position)],
+      /* errorStream */false,
+      /* processInput */contents,
+      /* file */filePath);
+      return result == null ? null : result.map((_HackHelpers || _load_HackHelpers()).hackRangeToAtomRange);
+    })();
   }
 
-  async formatSource(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    range: atom$Range,
-  ): Promise<?string> {
-    const contents = buffer.getText();
-    const startOffset = buffer.characterIndexForPosition(range.start) + 1;
-    const endOffset = buffer.characterIndexForPosition(range.end) + 1;
+  formatSource(filePath, buffer, range) {
+    return (0, _asyncToGenerator.default)(function* () {
+      const contents = buffer.getText();
+      const startOffset = buffer.characterIndexForPosition(range.start) + 1;
+      const endOffset = buffer.characterIndexForPosition(range.end) + 1;
 
-    const response: ?HackFormatSourceResult = (await callHHClient(
-      /* args */ ['--format', startOffset, endOffset],
-      /* errorStream */ false,
-      /* processInput */ contents,
-      /* file */ filePath,
-    ): any);
+      const response = yield (0, (_HackHelpers || _load_HackHelpers()).callHHClient)(
+      /* args */['--format', startOffset, endOffset],
+      /* errorStream */false,
+      /* processInput */contents,
+      /* file */filePath);
 
-    if (response == null) {
-      throw new Error('Error formatting hack source.');
-    } else if (response.internal_error) {
-      throw new Error('Internal error formatting hack source.');
-    } else if (response.error_message !== '') {
-      throw new Error(`Error formatting hack source: ${response.error_message}`);
-    }
-    return response.result;
+      if (response == null) {
+        throw new Error('Error formatting hack source.');
+      } else if (response.internal_error) {
+        throw new Error('Internal error formatting hack source.');
+      } else if (response.error_message !== '') {
+        throw new Error(`Error formatting hack source: ${response.error_message}`);
+      }
+      return response.result;
+    })();
   }
 
-  formatEntireFile(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    range: atom$Range,
-  ): Promise<?{
-    newCursor?: number,
-    formatted: string,
-  }> {
+  formatEntireFile(filePath, buffer, range) {
     throw new Error('Not implemented');
   }
 
-  async getEvaluationExpression(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    position: atom$Point,
-  ): Promise<?NuclideEvaluationExpression> {
-    return getEvaluationExpression(filePath, buffer, position);
+  getEvaluationExpression(filePath, buffer, position) {
+    return (0, _asyncToGenerator.default)(function* () {
+      return (0, (_EvaluationExpression || _load_EvaluationExpression()).getEvaluationExpression)(filePath, buffer, position);
+    })();
   }
 
-  getProjectRoot(fileUri: NuclideUri): Promise<?NuclideUri> {
-    return findHackConfigDir(fileUri);
+  getProjectRoot(fileUri) {
+    return (0, (_hackConfig || _load_hackConfig()).findHackConfigDir)(fileUri);
   }
 
   /**
    * @param fileUri a file path.  It cannot be a directory.
    * @return whether the file represented by fileUri is inside of a Hack project.
    */
-  async isFileInProject(fileUri: NuclideUri): Promise<boolean> {
-    const hhconfigPath = await findHackConfigDir(fileUri);
-    return hhconfigPath != null;
+  isFileInProject(fileUri) {
+    return (0, _asyncToGenerator.default)(function* () {
+      const hhconfigPath = yield (0, (_hackConfig || _load_hackConfig()).findHackConfigDir)(fileUri);
+      return hhconfigPath != null;
+    })();
   }
 
-  dispose(): void {
-  }
+  dispose() {}
 }
 
-function formatAtomLineColumn(position: atom$Point): string {
+function formatAtomLineColumn(position) {
   return formatLineColumn(position.row + 1, position.column + 1);
 }
 
-function formatLineColumn(line: number, column: number): string {
+function formatLineColumn(line, column) {
   return `${line}:${column}`;
 }
 
 // Calculate the offset of the cursor from the beginning of the file.
 // Then insert AUTO332 in at this offset. (Hack uses this as a marker.)
-function markFileForCompletion(contents: string, offset: number): string {
-  return contents.substring(0, offset) +
-      'AUTO332' + contents.substring(offset, contents.length);
+function markFileForCompletion(contents, offset) {
+  return contents.substring(0, offset) + 'AUTO332' + contents.substring(offset, contents.length);
 }
 
-function getIdentifierAndRange(
-  buffer: simpleTextBuffer$TextBuffer,
-  position: atom$PointObject,
-): ?{id: string, range: atom$Range} {
-  const matchData = wordAtPositionFromBuffer(buffer, position, HACK_WORD_REGEX);
-  return (matchData == null || matchData.wordMatch.length === 0) ? null
-      : {id: matchData.wordMatch[0], range: matchData.range};
+function getIdentifierAndRange(buffer, position) {
+  const matchData = (0, (_range || _load_range()).wordAtPositionFromBuffer)(buffer, position, (_HackHelpers || _load_HackHelpers()).HACK_WORD_REGEX);
+  return matchData == null || matchData.wordMatch.length === 0 ? null : { id: matchData.wordMatch[0], range: matchData.range };
 }
 
-function getIdentifierAtPosition(
-  buffer: simpleTextBuffer$TextBuffer,
-  position: atom$PointObject,
-): ?string {
+function getIdentifierAtPosition(buffer, position) {
   const result = getIdentifierAndRange(buffer, position);
   return result == null ? null : result.id;
 }

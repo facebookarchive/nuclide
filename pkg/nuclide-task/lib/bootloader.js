@@ -1,50 +1,56 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import child_process from 'child_process';
-import EventEmitter from 'events';
-import invariant from 'assert';
-import {__DEV__} from '../../nuclide-node-transpiler/lib/env';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-export type InvokeRemoteMethodParams = {
-  file: string,
-  method?: string,
-  args?: Array<any>,
-};
+var _child_process = _interopRequireDefault(require('child_process'));
 
-export type RemoteMessage = {id: string} & InvokeRemoteMethodParams;
+var _events = _interopRequireDefault(require('events'));
 
-const BOOTSTRAP_PATH = require.resolve('./bootstrap');
+var _env;
+
+function _load_env() {
+  return _env = require('../../nuclide-node-transpiler/lib/env');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const BOOTSTRAP_PATH = require.resolve('./bootstrap'); /**
+                                                        * Copyright (c) 2015-present, Facebook, Inc.
+                                                        * All rights reserved.
+                                                        *
+                                                        * This source code is licensed under the license found in the LICENSE file in
+                                                        * the root directory of this source tree.
+                                                        *
+                                                        * 
+                                                        */
+
 const TRANSPILER_PATH = require.resolve('../../nuclide-node-transpiler');
 
 /**
  * Task creates and manages communication with another Node process. In addition
  * to executing ordinary .js files, the other Node process can also run .js files
- * under the Babel transpiler, so long as they have the @flow pragma.
+ * under the Babel transpiler, so long as they have the  pragma.
  */
-export default class Task {
-  _id: number;
-  _emitter: EventEmitter;
-  _child: ?child_process$ChildProcess;
+class Task {
 
   constructor() {
     this._id = 0;
-    this._emitter = new EventEmitter();
+    this._emitter = new _events.default();
     this._child = null;
   }
 
   _initialize() {
-    invariant(this._child == null);
+    if (!(this._child == null)) {
+      throw new Error('Invariant violation: "this._child == null"');
+    }
+
     const child = this._child = this._fork();
     // eslint-disable-next-line no-console
-    const log = buffer => { console.log(`TASK(${child.pid}): ${buffer}`); };
+    const log = buffer => {
+      console.log(`TASK(${child.pid}): ${buffer}`);
+    };
     child.stdout.on('data', log);
     child.stderr.on('data', log);
     child.on('message', response => {
@@ -58,7 +64,9 @@ export default class Task {
       this._emitter.emit('child-process-error', buffer);
     });
 
-    const onExitCallback = () => { child.kill(); };
+    const onExitCallback = () => {
+      child.kill();
+    };
     process.on('exit', onExitCallback);
     child.on('exit', () => {
       this._emitter.emit('exit');
@@ -68,16 +76,10 @@ export default class Task {
 
   _fork() {
     // The transpiler is only loaded in development.
-    if (__DEV__) {
-      return child_process.fork(
-        '--require', [TRANSPILER_PATH, BOOTSTRAP_PATH],
-        {silent: true}, // Needed so stdout/stderr are available.
-      );
+    if ((_env || _load_env()).__DEV__) {
+      return _child_process.default.fork('--require', [TRANSPILER_PATH, BOOTSTRAP_PATH], { silent: true });
     } else {
-      return child_process.fork(
-        BOOTSTRAP_PATH, [],
-        {silent: true}, // Needed so stdout/stderr are available.
-      );
+      return _child_process.default.fork(BOOTSTRAP_PATH, [], { silent: true });
     }
   }
 
@@ -104,7 +106,7 @@ export default class Task {
    *     method. If an error is thrown, a rejected Promise will be returned
    *     instead.
    */
-  invokeRemoteMethod(params: InvokeRemoteMethodParams): Promise<any> {
+  invokeRemoteMethod(params) {
     if (this._child == null) {
       this._initialize();
     }
@@ -114,7 +116,7 @@ export default class Task {
       id: requestId,
       file: params.file,
       method: params.method,
-      args: params.args,
+      args: params.args
     };
 
     return new Promise((resolve, reject) => {
@@ -133,16 +135,20 @@ export default class Task {
         }
       });
       this._emitter.once('error', reject);
-      invariant(this._child != null);
+
+      if (!(this._child != null)) {
+        throw new Error('Invariant violation: "this._child != null"');
+      }
+
       this._child.send(request);
     });
   }
 
-  onError(callback: (buffer: Buffer) => any): void {
+  onError(callback) {
     this._emitter.on('child-process-error', callback);
   }
 
-  onExit(callback: () => mixed): void {
+  onExit(callback) {
     this._emitter.on('exit', callback);
   }
 
@@ -153,3 +159,5 @@ export default class Task {
     this._emitter.removeAllListeners();
   }
 }
+exports.default = Task;
+module.exports = exports['default'];

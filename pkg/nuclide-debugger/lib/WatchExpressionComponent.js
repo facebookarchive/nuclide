@@ -1,3 +1,50 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.WatchExpressionComponent = undefined;
+
+var _WatchExpressionStore;
+
+function _load_WatchExpressionStore() {
+  return _WatchExpressionStore = require('./WatchExpressionStore');
+}
+
+var _reactForAtom = require('react-for-atom');
+
+var _classnames;
+
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
+
+var _AtomInput;
+
+function _load_AtomInput() {
+  return _AtomInput = require('../../nuclide-ui/AtomInput');
+}
+
+var _bindObservableAsProps;
+
+function _load_bindObservableAsProps() {
+  return _bindObservableAsProps = require('../../nuclide-ui/bindObservableAsProps');
+}
+
+var _LazyNestedValueComponent;
+
+function _load_LazyNestedValueComponent() {
+  return _LazyNestedValueComponent = require('../../nuclide-ui/LazyNestedValueComponent');
+}
+
+var _SimpleValueComponent;
+
+function _load_SimpleValueComponent() {
+  return _SimpleValueComponent = _interopRequireDefault(require('../../nuclide-ui/SimpleValueComponent'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,56 +52,25 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
 
-import type {
-  ExpansionResult,
-  EvaluatedExpression,
-  EvaluatedExpressionList,
-} from './types';
-import {WatchExpressionStore} from './WatchExpressionStore';
-import type {Observable} from 'rxjs';
+class WatchExpressionComponent extends _reactForAtom.React.Component {
 
-import {
-  React,
-} from 'react-for-atom';
-import classnames from 'classnames';
-import {AtomInput} from '../../nuclide-ui/AtomInput';
-import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
-import {LazyNestedValueComponent} from '../../nuclide-ui/LazyNestedValueComponent';
-import SimpleValueComponent from '../../nuclide-ui/SimpleValueComponent';
-
-type WatchExpressionComponentProps = {
-  watchExpressions: EvaluatedExpressionList,
-  onAddWatchExpression: (expression: string) => void,
-  onRemoveWatchExpression: (index: number) => void,
-  onUpdateWatchExpression: (index: number, newExpression: string) => void,
-  watchExpressionStore: WatchExpressionStore,
-};
-
-export class WatchExpressionComponent extends React.Component {
-  props: WatchExpressionComponentProps;
-  state: {
-    rowBeingEdited: ?number,
-  };
-  coreCancelDisposable: ?IDisposable;
-  _expansionStates: Map<string /* expression */, /* unique reference for expression */ Object>;
-
-  constructor(props: WatchExpressionComponentProps) {
+  constructor(props) {
     super(props);
-    (this: any)._renderExpression = this._renderExpression.bind(this);
-    (this: any)._onConfirmNewExpression = this._onConfirmNewExpression.bind(this);
-    (this: any)._resetExpressionEditState = this._resetExpressionEditState.bind(this);
-    (this: any)._onEditorCancel = this._onEditorCancel.bind(this);
-    (this: any)._onEditorBlur = this._onEditorBlur.bind(this);
+    this._renderExpression = this._renderExpression.bind(this);
+    this._onConfirmNewExpression = this._onConfirmNewExpression.bind(this);
+    this._resetExpressionEditState = this._resetExpressionEditState.bind(this);
+    this._onEditorCancel = this._onEditorCancel.bind(this);
+    this._onEditorBlur = this._onEditorBlur.bind(this);
     this._expansionStates = new Map();
     this.state = {
-      rowBeingEdited: null,
+      rowBeingEdited: null
     };
   }
 
-  _getExpansionStateIdForExpression(expression: string): Object {
+  _getExpansionStateIdForExpression(expression) {
     let expansionStateId = this._expansionStates.get(expression);
     if (expansionStateId == null) {
       expansionStateId = {};
@@ -63,48 +79,45 @@ export class WatchExpressionComponent extends React.Component {
     return expansionStateId;
   }
 
-  removeExpression(index: number, event: MouseEvent): void {
+  removeExpression(index, event) {
     event.stopPropagation();
     this.props.onRemoveWatchExpression(index);
   }
 
-  addExpression(expression: string): void {
+  addExpression(expression) {
     this.props.onAddWatchExpression(expression);
   }
 
-  _onConfirmNewExpression(): void {
+  _onConfirmNewExpression() {
     const text = this.refs.newExpressionEditor.getText();
     this.addExpression(text);
     this.refs.newExpressionEditor.setText('');
   }
 
-  _onConfirmExpressionEdit(index: number): void {
+  _onConfirmExpressionEdit(index) {
     const text = this.refs.editExpressionEditor.getText();
     this.props.onUpdateWatchExpression(index, text);
     this._resetExpressionEditState();
   }
 
-  _onEditorCancel(): void {
+  _onEditorCancel() {
     this._resetExpressionEditState();
   }
 
-  _onEditorBlur(): void {
+  _onEditorBlur() {
     this._resetExpressionEditState();
   }
 
-  _setRowBeingEdited(index: number): void {
+  _setRowBeingEdited(index) {
     this.setState({
-      rowBeingEdited: index,
+      rowBeingEdited: index
     });
     if (this.coreCancelDisposable) {
       this.coreCancelDisposable.dispose();
     }
-    this.coreCancelDisposable = atom.commands.add(
-      'atom-workspace',
-      {
-        'core:cancel': () => this._resetExpressionEditState(),
-      },
-    );
+    this.coreCancelDisposable = atom.commands.add('atom-workspace', {
+      'core:cancel': () => this._resetExpressionEditState()
+    });
     setTimeout(() => {
       if (this.refs.editExpressionEditor) {
         this.refs.editExpressionEditor.focus();
@@ -112,93 +125,76 @@ export class WatchExpressionComponent extends React.Component {
     }, 16);
   }
 
-  _resetExpressionEditState(): void {
+  _resetExpressionEditState() {
     if (this.coreCancelDisposable) {
       this.coreCancelDisposable.dispose();
       this.coreCancelDisposable = null;
     }
-    this.setState({rowBeingEdited: null});
+    this.setState({ rowBeingEdited: null });
   }
 
-  _renderExpression(
-    fetchChildren: (objectId: string) => Observable<?ExpansionResult>,
-    watchExpression: EvaluatedExpression,
-    index: number,
-  ): React.Element<any> {
+  _renderExpression(fetchChildren, watchExpression, index) {
     const {
       expression,
-      value,
+      value
     } = watchExpression;
     if (index === this.state.rowBeingEdited) {
-      return (
-        <AtomInput
-          className="nuclide-debugger-watch-expression-input"
-          key={index}
-          onConfirm={this._onConfirmExpressionEdit.bind(this, index)}
-          onCancel={this._onEditorCancel}
-          onBlur={this._onEditorBlur}
-          ref="editExpressionEditor"
-          size="sm"
-          initialValue={expression}
-        />
-      );
+      return _reactForAtom.React.createElement((_AtomInput || _load_AtomInput()).AtomInput, {
+        className: 'nuclide-debugger-watch-expression-input',
+        key: index,
+        onConfirm: this._onConfirmExpressionEdit.bind(this, index),
+        onCancel: this._onEditorCancel,
+        onBlur: this._onEditorBlur,
+        ref: 'editExpressionEditor',
+        size: 'sm',
+        initialValue: expression
+      });
     }
-    const ValueComponent = bindObservableAsProps(
-      value.map(v => ({evaluationResult: v})),
-      LazyNestedValueComponent,
-    );
-    return (
-      <div
-        className={classnames(
-          'nuclide-debugger-expression-value-row',
-          'nuclide-debugger-watch-expression-row',
-        )}
-        key={index}>
-        <div
-          className={classnames(
-            'nuclide-debugger-expression-value-content',
-            'nuclide-debugger-watch-expression-value-content',
-          )}
-          onDoubleClick={this._setRowBeingEdited.bind(this, index)}>
-          <ValueComponent
-            expression={expression}
-            fetchChildren={fetchChildren}
-            simpleValueComponent={SimpleValueComponent}
-            expansionStateId={this._getExpansionStateIdForExpression(expression)}
-          />
-        </div>
-        <i
-          className="icon icon-x nuclide-debugger-watch-expression-xout"
-          onClick={this.removeExpression.bind(this, index)}
-        />
-      </div>
+    const ValueComponent = (0, (_bindObservableAsProps || _load_bindObservableAsProps()).bindObservableAsProps)(value.map(v => ({ evaluationResult: v })), (_LazyNestedValueComponent || _load_LazyNestedValueComponent()).LazyNestedValueComponent);
+    return _reactForAtom.React.createElement(
+      'div',
+      {
+        className: (0, (_classnames || _load_classnames()).default)('nuclide-debugger-expression-value-row', 'nuclide-debugger-watch-expression-row'),
+        key: index },
+      _reactForAtom.React.createElement(
+        'div',
+        {
+          className: (0, (_classnames || _load_classnames()).default)('nuclide-debugger-expression-value-content', 'nuclide-debugger-watch-expression-value-content'),
+          onDoubleClick: this._setRowBeingEdited.bind(this, index) },
+        _reactForAtom.React.createElement(ValueComponent, {
+          expression: expression,
+          fetchChildren: fetchChildren,
+          simpleValueComponent: (_SimpleValueComponent || _load_SimpleValueComponent()).default,
+          expansionStateId: this._getExpansionStateIdForExpression(expression)
+        })
+      ),
+      _reactForAtom.React.createElement('i', {
+        className: 'icon icon-x nuclide-debugger-watch-expression-xout',
+        onClick: this.removeExpression.bind(this, index)
+      })
     );
   }
 
-  render(): ?React.Element<any> {
+  render() {
     const {
       watchExpressions,
-      watchExpressionStore,
+      watchExpressionStore
     } = this.props;
     const fetchChildren = watchExpressionStore.getProperties.bind(watchExpressionStore);
     const expressions = watchExpressions.map(this._renderExpression.bind(this, fetchChildren));
-    const addNewExpressionInput = (
-      <AtomInput
-        className={classnames(
-          'nuclide-debugger-watch-expression-input',
-          'nuclide-debugger-watch-expression-add-new-input',
-        )}
-        onConfirm={this._onConfirmNewExpression}
-        ref="newExpressionEditor"
-        size="sm"
-        placeholderText="add new watch expression"
-      />
-    );
-    return (
-      <div className="nuclide-debugger-expression-value-list">
-        {expressions}
-        {addNewExpressionInput}
-      </div>
+    const addNewExpressionInput = _reactForAtom.React.createElement((_AtomInput || _load_AtomInput()).AtomInput, {
+      className: (0, (_classnames || _load_classnames()).default)('nuclide-debugger-watch-expression-input', 'nuclide-debugger-watch-expression-add-new-input'),
+      onConfirm: this._onConfirmNewExpression,
+      ref: 'newExpressionEditor',
+      size: 'sm',
+      placeholderText: 'add new watch expression'
+    });
+    return _reactForAtom.React.createElement(
+      'div',
+      { className: 'nuclide-debugger-expression-value-list' },
+      expressions,
+      addNewExpressionInput
     );
   }
 }
+exports.WatchExpressionComponent = WatchExpressionComponent;
