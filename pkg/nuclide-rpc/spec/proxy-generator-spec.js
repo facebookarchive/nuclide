@@ -136,6 +136,14 @@ describe('objectToLiteral helper function', () => {
     expect(generate(__test__.objectToLiteral(new Map())).code).diffLines('new Map()');
   });
 
+  it('works on objects with simple keys', () => {
+    expect(generate(__test__.objectToLiteral({a: 1})).code).diffLines('{\n  a: 1\n}');
+  });
+
+  it('works on objects with complex keys', () => {
+    expect(generate(__test__.objectToLiteral({'.': 1})).code).diffLines('{\n  ".": 1\n}');
+  });
+
   it('works on null', () => {
     expect(generate(__test__.objectToLiteral(null)).code).diffLines('null');
   });
@@ -183,5 +191,6 @@ const objSrc = `\
   d: undefined,
   f: [],
   g: {},
-  j: new Map([["array", [false, {}, [0], new Map()]]])
+  j: new Map([["array", [false, {}, [0], new Map()]]]),
+  ".": 1
 }`;

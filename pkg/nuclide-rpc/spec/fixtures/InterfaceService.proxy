@@ -237,63 +237,52 @@ Object.defineProperty(module.exports, "inject", {
   }
 });
 Object.defineProperty(module.exports, "defs", {
-  value: new Map([["Object", {
-    kind: "alias",
-    name: "Object",
-    location: {
-      type: "builtin"
-    }
-  }], ["Date", {
-    kind: "alias",
-    name: "Date",
-    location: {
-      type: "builtin"
-    }
-  }], ["RegExp", {
-    kind: "alias",
-    name: "RegExp",
-    location: {
-      type: "builtin"
-    }
-  }], ["Buffer", {
-    kind: "alias",
-    name: "Buffer",
-    location: {
-      type: "builtin"
-    }
-  }], ["fs.Stats", {
-    kind: "alias",
-    name: "fs.Stats",
-    location: {
-      type: "builtin"
-    }
-  }], ["Vector2", {
-    kind: "interface",
-    name: "Vector2",
-    location: {
-      type: "source",
-      fileName: "InterfaceService.def",
-      line: 1
-    },
-    constructorArgs: [{
-      name: "x",
-      type: {
-        location: {
-          type: "source",
-          fileName: "InterfaceService.def",
-          line: 2
-        },
-        kind: "number"
+  value: {
+    Object: {
+      kind: "alias",
+      name: "Object",
+      location: {
+        type: "builtin"
       }
-    }, {
-      name: "y",
-      type: {
-        location: {
-          type: "source",
-          fileName: "InterfaceService.def",
-          line: 2
-        },
-        kind: "nullable",
+    },
+    Date: {
+      kind: "alias",
+      name: "Date",
+      location: {
+        type: "builtin"
+      }
+    },
+    RegExp: {
+      kind: "alias",
+      name: "RegExp",
+      location: {
+        type: "builtin"
+      }
+    },
+    Buffer: {
+      kind: "alias",
+      name: "Buffer",
+      location: {
+        type: "builtin"
+      }
+    },
+    "fs.Stats": {
+      kind: "alias",
+      name: "fs.Stats",
+      location: {
+        type: "builtin"
+      }
+    },
+    Vector2: {
+      kind: "interface",
+      name: "Vector2",
+      location: {
+        type: "source",
+        fileName: "InterfaceService.def",
+        line: 1
+      },
+      constructorArgs: [{
+        name: "x",
         type: {
           location: {
             type: "source",
@@ -302,254 +291,285 @@ Object.defineProperty(module.exports, "defs", {
           },
           kind: "number"
         }
-      }
-    }],
-    staticMethods: new Map([["distance", {
-      location: {
-        type: "source",
-        fileName: "InterfaceService.def",
-        line: 3
-      },
-      kind: "function",
-      argumentTypes: [{
-        name: "a",
-        type: {
-          location: {
-            type: "source",
-            fileName: "InterfaceService.def",
-            line: 3
-          },
-          kind: "named",
-          name: "Vector2"
-        }
       }, {
-        name: "b",
+        name: "y",
         type: {
           location: {
             type: "source",
             fileName: "InterfaceService.def",
-            line: 3
+            line: 2
           },
-          kind: "named",
-          name: "Vector2"
+          kind: "nullable",
+          type: {
+            location: {
+              type: "source",
+              fileName: "InterfaceService.def",
+              line: 2
+            },
+            kind: "number"
+          }
         }
       }],
-      returnType: {
-        location: {
-          type: "source",
-          fileName: "InterfaceService.def",
-          line: 3
-        },
-        kind: "promise",
-        type: {
+      staticMethods: {
+        distance: {
           location: {
             type: "source",
             fileName: "InterfaceService.def",
             line: 3
           },
-          kind: "number"
+          kind: "function",
+          argumentTypes: [{
+            name: "a",
+            type: {
+              location: {
+                type: "source",
+                fileName: "InterfaceService.def",
+                line: 3
+              },
+              kind: "named",
+              name: "Vector2"
+            }
+          }, {
+            name: "b",
+            type: {
+              location: {
+                type: "source",
+                fileName: "InterfaceService.def",
+                line: 3
+              },
+              kind: "named",
+              name: "Vector2"
+            }
+          }],
+          returnType: {
+            location: {
+              type: "source",
+              fileName: "InterfaceService.def",
+              line: 3
+            },
+            kind: "promise",
+            type: {
+              location: {
+                type: "source",
+                fileName: "InterfaceService.def",
+                line: 3
+              },
+              kind: "number"
+            }
+          }
         }
-      }
-    }]]),
-    instanceMethods: new Map([["len", {
-      location: {
-        type: "source",
-        fileName: "InterfaceService.def",
-        line: 4
       },
-      kind: "function",
-      argumentTypes: [],
-      returnType: {
-        location: {
-          type: "source",
-          fileName: "InterfaceService.def",
-          line: 4
-        },
-        kind: "promise",
-        type: {
+      instanceMethods: {
+        len: {
           location: {
             type: "source",
             fileName: "InterfaceService.def",
             line: 4
           },
-          kind: "number"
-        }
-      }
-    }], ["watchChanges", {
-      location: {
-        type: "source",
-        fileName: "InterfaceService.def",
-        line: 6
-      },
-      kind: "function",
-      argumentTypes: [],
-      returnType: {
-        location: {
-          type: "source",
-          fileName: "InterfaceService.def",
-          line: 6
+          kind: "function",
+          argumentTypes: [],
+          returnType: {
+            location: {
+              type: "source",
+              fileName: "InterfaceService.def",
+              line: 4
+            },
+            kind: "promise",
+            type: {
+              location: {
+                type: "source",
+                fileName: "InterfaceService.def",
+                line: 4
+              },
+              kind: "number"
+            }
+          }
         },
-        kind: "observable",
-        type: {
+        watchChanges: {
           location: {
             type: "source",
             fileName: "InterfaceService.def",
             line: 6
           },
-          kind: "number"
+          kind: "function",
+          argumentTypes: [],
+          returnType: {
+            location: {
+              type: "source",
+              fileName: "InterfaceService.def",
+              line: 6
+            },
+            kind: "observable",
+            type: {
+              location: {
+                type: "source",
+                fileName: "InterfaceService.def",
+                line: 6
+              },
+              kind: "number"
+            }
+          }
+        },
+        dispose: {
+          location: {
+            type: "source",
+            fileName: "InterfaceService.def",
+            line: 11
+          },
+          kind: "function",
+          argumentTypes: [],
+          returnType: {
+            location: {
+              type: "source",
+              fileName: "InterfaceService.def",
+              line: 11
+            },
+            kind: "void"
+          }
         }
       }
-    }], ["dispose", {
-      location: {
-        type: "source",
-        fileName: "InterfaceService.def",
-        line: 11
-      },
-      kind: "function",
-      argumentTypes: [],
-      returnType: {
-        location: {
-          type: "source",
-          fileName: "InterfaceService.def",
-          line: 11
-        },
-        kind: "void"
-      }
-    }]])
-  }], ["getCurrentDirection", {
-    kind: "function",
-    name: "getCurrentDirection",
-    location: {
-      type: "source",
-      fileName: "InterfaceService.def",
-      line: 14
     },
-    type: {
+    getCurrentDirection: {
+      kind: "function",
+      name: "getCurrentDirection",
       location: {
         type: "source",
         fileName: "InterfaceService.def",
         line: 14
       },
-      kind: "function",
-      argumentTypes: [],
-      returnType: {
+      type: {
         location: {
           type: "source",
           fileName: "InterfaceService.def",
           line: 14
         },
-        kind: "promise",
-        type: {
+        kind: "function",
+        argumentTypes: [],
+        returnType: {
           location: {
             type: "source",
             fileName: "InterfaceService.def",
             line: 14
           },
-          kind: "named",
-          name: "Vector2"
+          kind: "promise",
+          type: {
+            location: {
+              type: "source",
+              fileName: "InterfaceService.def",
+              line: 14
+            },
+            kind: "named",
+            name: "Vector2"
+          }
         }
       }
-    }
-  }], ["Iface", {
-    kind: "interface",
-    name: "Iface",
-    location: {
-      type: "source",
-      fileName: "InterfaceService.def",
-      line: 30
     },
-    constructorArgs: null,
-    staticMethods: new Map(),
-    instanceMethods: new Map([["p", {
+    Iface: {
+      kind: "interface",
+      name: "Iface",
       location: {
         type: "source",
         fileName: "InterfaceService.def",
-        line: 31
+        line: 30
       },
-      kind: "function",
-      argumentTypes: [{
-        name: "a",
-        type: {
+      constructorArgs: null,
+      staticMethods: {},
+      instanceMethods: {
+        p: {
           location: {
             type: "source",
             fileName: "InterfaceService.def",
             line: 31
           },
-          kind: "number"
-        }
-      }],
-      returnType: {
-        location: {
-          type: "source",
-          fileName: "InterfaceService.def",
-          line: 31
+          kind: "function",
+          argumentTypes: [{
+            name: "a",
+            type: {
+              location: {
+                type: "source",
+                fileName: "InterfaceService.def",
+                line: 31
+              },
+              kind: "number"
+            }
+          }],
+          returnType: {
+            location: {
+              type: "source",
+              fileName: "InterfaceService.def",
+              line: 31
+            },
+            kind: "promise",
+            type: {
+              location: {
+                type: "source",
+                fileName: "InterfaceService.def",
+                line: 31
+              },
+              kind: "number"
+            }
+          }
         },
-        kind: "promise",
-        type: {
+        f: {
           location: {
             type: "source",
             fileName: "InterfaceService.def",
-            line: 31
+            line: 32
           },
-          kind: "number"
-        }
-      }
-    }], ["f", {
-      location: {
-        type: "source",
-        fileName: "InterfaceService.def",
-        line: 32
-      },
-      kind: "function",
-      argumentTypes: [],
-      returnType: {
-        location: {
-          type: "source",
-          fileName: "InterfaceService.def",
-          line: 32
+          kind: "function",
+          argumentTypes: [],
+          returnType: {
+            location: {
+              type: "source",
+              fileName: "InterfaceService.def",
+              line: 32
+            },
+            kind: "void"
+          }
         },
-        kind: "void"
-      }
-    }], ["o", {
-      location: {
-        type: "source",
-        fileName: "InterfaceService.def",
-        line: 33
-      },
-      kind: "function",
-      argumentTypes: [],
-      returnType: {
-        location: {
-          type: "source",
-          fileName: "InterfaceService.def",
-          line: 33
-        },
-        kind: "observable",
-        type: {
+        o: {
           location: {
             type: "source",
             fileName: "InterfaceService.def",
             line: 33
           },
-          kind: "string"
+          kind: "function",
+          argumentTypes: [],
+          returnType: {
+            location: {
+              type: "source",
+              fileName: "InterfaceService.def",
+              line: 33
+            },
+            kind: "observable",
+            type: {
+              location: {
+                type: "source",
+                fileName: "InterfaceService.def",
+                line: 33
+              },
+              kind: "string"
+            }
+          }
+        },
+        dispose: {
+          location: {
+            type: "source",
+            fileName: "InterfaceService.def",
+            line: 35
+          },
+          kind: "function",
+          argumentTypes: [],
+          returnType: {
+            location: {
+              type: "source",
+              fileName: "InterfaceService.def",
+              line: 35
+            },
+            kind: "void"
+          }
         }
       }
-    }], ["dispose", {
-      location: {
-        type: "source",
-        fileName: "InterfaceService.def",
-        line: 35
-      },
-      kind: "function",
-      argumentTypes: [],
-      returnType: {
-        location: {
-          type: "source",
-          fileName: "InterfaceService.def",
-          line: 35
-        },
-        kind: "void"
-      }
-    }]])
-  }]])
+    }
+  }
 });

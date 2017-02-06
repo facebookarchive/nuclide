@@ -83,10 +83,10 @@ export const fsStatsType: NamedType = {
   name: 'fs.Stats',
 };
 
-export const namedBuiltinTypes: Set<string> = new Set();
-
-namedBuiltinTypes.add(objectType.name);
-namedBuiltinTypes.add(dateType.name);
-namedBuiltinTypes.add(regExpType.name);
-namedBuiltinTypes.add(bufferType.name);
-namedBuiltinTypes.add(fsStatsType.name);
+export const namedBuiltinTypes: Array<string> = [
+  objectType.name,
+  dateType.name,
+  regExpType.name,
+  bufferType.name,
+  fsStatsType.name,
+];

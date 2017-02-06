@@ -35,6 +35,13 @@
         }
     },
     "Vector2": {
+        "kind": "interface",
+        "name": "Vector2",
+        "location": {
+            "type": "source",
+            "fileName": "InterfaceService.def",
+            "line": 1
+        },
         "constructorArgs": [
             {
                 "name": "x",
@@ -67,6 +74,58 @@
                 }
             }
         ],
+        "staticMethods": {
+            "distance": {
+                "location": {
+                    "type": "source",
+                    "fileName": "InterfaceService.def",
+                    "line": 3
+                },
+                "kind": "function",
+                "argumentTypes": [
+                    {
+                        "name": "a",
+                        "type": {
+                            "location": {
+                                "type": "source",
+                                "fileName": "InterfaceService.def",
+                                "line": 3
+                            },
+                            "kind": "named",
+                            "name": "Vector2"
+                        }
+                    },
+                    {
+                        "name": "b",
+                        "type": {
+                            "location": {
+                                "type": "source",
+                                "fileName": "InterfaceService.def",
+                                "line": 3
+                            },
+                            "kind": "named",
+                            "name": "Vector2"
+                        }
+                    }
+                ],
+                "returnType": {
+                    "location": {
+                        "type": "source",
+                        "fileName": "InterfaceService.def",
+                        "line": 3
+                    },
+                    "kind": "promise",
+                    "type": {
+                        "location": {
+                            "type": "source",
+                            "fileName": "InterfaceService.def",
+                            "line": 3
+                        },
+                        "kind": "number"
+                    }
+                }
+            }
+        },
         "instanceMethods": {
             "len": {
                 "location": {
@@ -135,58 +194,6 @@
                     "kind": "void"
                 }
             }
-        },
-        "staticMethods": {
-            "distance": {
-                "location": {
-                    "type": "source",
-                    "fileName": "InterfaceService.def",
-                    "line": 3
-                },
-                "kind": "function",
-                "argumentTypes": [
-                    {
-                        "name": "a",
-                        "type": {
-                            "location": {
-                                "type": "source",
-                                "fileName": "InterfaceService.def",
-                                "line": 3
-                            },
-                            "kind": "named",
-                            "name": "Vector2"
-                        }
-                    },
-                    {
-                        "name": "b",
-                        "type": {
-                            "location": {
-                                "type": "source",
-                                "fileName": "InterfaceService.def",
-                                "line": 3
-                            },
-                            "kind": "named",
-                            "name": "Vector2"
-                        }
-                    }
-                ],
-                "returnType": {
-                    "location": {
-                        "type": "source",
-                        "fileName": "InterfaceService.def",
-                        "line": 3
-                    },
-                    "kind": "promise",
-                    "type": {
-                        "location": {
-                            "type": "source",
-                            "fileName": "InterfaceService.def",
-                            "line": 3
-                        },
-                        "kind": "number"
-                    }
-                }
-            }
         }
     },
     "getCurrentDirection": {
@@ -225,7 +232,15 @@
         }
     },
     "Iface": {
+        "kind": "interface",
+        "name": "Iface",
+        "location": {
+            "type": "source",
+            "fileName": "InterfaceService.def",
+            "line": 30
+        },
         "constructorArgs": null,
+        "staticMethods": {},
         "instanceMethods": {
             "p": {
                 "location": {
@@ -323,7 +338,6 @@
                     "kind": "void"
                 }
             }
-        },
-        "staticMethods": {}
+        }
     }
 }

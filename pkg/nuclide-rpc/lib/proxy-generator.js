@@ -132,7 +132,8 @@ export function generateProxy(
     ]),
   );
 
-  defs.forEach(definition => {
+  Object.keys(defs).forEach(defName => {
+    const definition = defs[defName];
     const name = definition.name;
     switch (definition.kind) {
       case 'function':
@@ -227,7 +228,8 @@ function generateInterfaceProxy(def: InterfaceDefinition): any {
   const methodDefinitions = [];
 
   // Generate proxies for static methods.
-  def.staticMethods.forEach((funcType, methodName) => {
+  Object.keys(def.staticMethods).forEach(methodName => {
+    const funcType = def.staticMethods[methodName];
     const funcProxy = generateFunctionProxy(`${def.name}/${methodName}`, funcType);
     methodDefinitions.push(t.classMethod(
       'method',
@@ -250,7 +252,8 @@ function generateInterfaceProxy(def: InterfaceDefinition): any {
     location: def.location,
     name: def.name,
   };
-  def.instanceMethods.forEach((funcType, methodName) => {
+  Object.keys(def.instanceMethods).forEach(methodName => {
+    const funcType = def.instanceMethods[methodName];
     // dispose method is generated custom at the end
     if (methodName === 'dispose') {
       return;
@@ -469,7 +472,10 @@ function objectToLiteral(obj: any): any {
     // {a: 1, b: 2}
     return t.objectExpression(
       Object.keys(obj).map(key =>
-        t.objectProperty(t.identifier(key), objectToLiteral(obj[key])),
+        t.objectProperty(
+          t.isValidIdentifier(key) ? t.identifier(key) : t.stringLiteral(key),
+          objectToLiteral(obj[key]),
+        ),
       ),
     );
   }

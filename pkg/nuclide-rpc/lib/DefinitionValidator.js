@@ -51,14 +51,15 @@ export function validateDefinitions(definitions: Definitions): void {
   }
 
   function gatherKnownTypes(): void {
-    for (const definition of definitions.values()) {
+    Object.keys(definitions).forEach(name => {
+      const definition = definitions[name];
       switch (definition.kind) {
         case 'alias':
         case 'interface':
           namedTypes.set(definition.name, definition);
           break;
       }
-    }
+    });
   }
 
   function checkTypeForMissingNames(type: Type): void {
@@ -120,13 +121,14 @@ export function validateDefinitions(definitions: Definitions): void {
   }
 
   function findRecursiveAliases() {
-    for (const definition of definitions.values()) {
+    Object.keys(definitions).forEach(name => {
+      const definition = definitions[name];
       switch (definition.kind) {
         case 'alias':
           checkAliasLayout(definition);
           break;
       }
-    }
+    });
   }
 
   function checkAliasLayout(alias: AliasDefinition): void {
@@ -209,7 +211,8 @@ export function validateDefinitions(definitions: Definitions): void {
   }
 
   function validateReturnTypes(): void {
-    for (const definition of definitions.values()) {
+    Object.keys(definitions).forEach(defName => {
+      const definition = definitions[defName];
       switch (definition.kind) {
         case 'function':
           validateType(definition.type);
@@ -223,11 +226,15 @@ export function validateDefinitions(definitions: Definitions): void {
           if (definition.constructorArgs != null) {
             definition.constructorArgs.forEach(parameter => validateType(parameter.type));
           }
-          definition.instanceMethods.forEach(validateType);
-          definition.staticMethods.forEach(validateType);
+          Object.keys(definition.instanceMethods).forEach(methodName => {
+            validateType(definition.instanceMethods[methodName]);
+          });
+          Object.keys(definition.staticMethods).forEach(methodName => {
+            validateType(definition.staticMethods[methodName]);
+          });
           break;
       }
-    }
+    });
   }
 
   // Validates a type which must be a return type.
@@ -618,7 +625,8 @@ export function validateDefinitions(definitions: Definitions): void {
   }
 
   function visitAllTypes(operation: (type: Type) => void): void {
-    for (const definition of definitions.values()) {
+    Object.keys(definitions).forEach(name => {
+      const definition = definitions[name];
       switch (definition.kind) {
         case 'function':
           operation(definition.type);
@@ -632,11 +640,15 @@ export function validateDefinitions(definitions: Definitions): void {
           if (definition.constructorArgs != null) {
             definition.constructorArgs.forEach(parameter => operation(parameter.type));
           }
-          definition.instanceMethods.forEach(operation);
-          definition.staticMethods.forEach(operation);
+          Object.keys(definition.instanceMethods).forEach(methodName => {
+            operation(definition.instanceMethods[methodName]);
+          });
+          Object.keys(definition.staticMethods).forEach(methodName => {
+            operation(definition.staticMethods[methodName]);
+          });
           break;
       }
-    }
+    });
   }
 
   function error(type: Type, message: string) {

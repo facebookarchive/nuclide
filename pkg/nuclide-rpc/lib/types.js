@@ -14,7 +14,7 @@ export type ReturnType = 'promise' | 'observable' | 'void';
  * `Definitions` encodes all of the information in a service defintion file that is required to
  * generate a remote proxy.
  */
-export type Definitions = Map<string, Definition>;
+export type Definitions = {[name: string]: Definition};
 
 export type Definition = FunctionDefinition | InterfaceDefinition | AliasDefinition;
 
@@ -37,8 +37,8 @@ export type InterfaceDefinition = {
   name: string,
   location: Location,
   constructorArgs: ?Array<Parameter>,
-  instanceMethods: Map<string, FunctionType>,
-  staticMethods: Map<string, FunctionType>,
+  instanceMethods: {[name: string]: FunctionType},
+  staticMethods: {[name: string]: FunctionType},
 };
 
 // A type alias.

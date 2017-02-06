@@ -137,86 +137,59 @@ Object.defineProperty(module.exports, "inject", {
   }
 });
 Object.defineProperty(module.exports, "defs", {
-  value: new Map([["Object", {
-    kind: "alias",
-    name: "Object",
-    location: {
-      type: "builtin"
-    }
-  }], ["Date", {
-    kind: "alias",
-    name: "Date",
-    location: {
-      type: "builtin"
-    }
-  }], ["RegExp", {
-    kind: "alias",
-    name: "RegExp",
-    location: {
-      type: "builtin"
-    }
-  }], ["Buffer", {
-    kind: "alias",
-    name: "Buffer",
-    location: {
-      type: "builtin"
-    }
-  }], ["fs.Stats", {
-    kind: "alias",
-    name: "fs.Stats",
-    location: {
-      type: "builtin"
-    }
-  }], ["TestFunctionA", {
-    kind: "function",
-    name: "TestFunctionA",
-    location: {
-      type: "source",
-      fileName: "FunctionService.def",
-      line: 1
+  value: {
+    Object: {
+      kind: "alias",
+      name: "Object",
+      location: {
+        type: "builtin"
+      }
     },
-    type: {
+    Date: {
+      kind: "alias",
+      name: "Date",
+      location: {
+        type: "builtin"
+      }
+    },
+    RegExp: {
+      kind: "alias",
+      name: "RegExp",
+      location: {
+        type: "builtin"
+      }
+    },
+    Buffer: {
+      kind: "alias",
+      name: "Buffer",
+      location: {
+        type: "builtin"
+      }
+    },
+    "fs.Stats": {
+      kind: "alias",
+      name: "fs.Stats",
+      location: {
+        type: "builtin"
+      }
+    },
+    TestFunctionA: {
+      kind: "function",
+      name: "TestFunctionA",
       location: {
         type: "source",
         fileName: "FunctionService.def",
         line: 1
       },
-      kind: "function",
-      argumentTypes: [{
-        name: "arg1",
-        type: {
-          location: {
-            type: "source",
-            fileName: "FunctionService.def",
-            line: 1
-          },
-          kind: "string"
-        }
-      }, {
-        name: "arg2",
-        type: {
-          location: {
-            type: "source",
-            fileName: "FunctionService.def",
-            line: 1
-          },
-          kind: "boolean"
-        }
-      }],
-      returnType: {
+      type: {
         location: {
           type: "source",
           fileName: "FunctionService.def",
           line: 1
         },
-        kind: "promise",
-        type: {
-          location: {
-            type: "source",
-            fileName: "FunctionService.def",
-            line: 1
-          },
-          kind: "array",
+        kind: "function",
+        argumentTypes: [{
+          name: "arg1",
           type: {
             location: {
               type: "source",
@@ -225,171 +198,176 @@ Object.defineProperty(module.exports, "defs", {
             },
             kind: "string"
           }
+        }, {
+          name: "arg2",
+          type: {
+            location: {
+              type: "source",
+              fileName: "FunctionService.def",
+              line: 1
+            },
+            kind: "boolean"
+          }
+        }],
+        returnType: {
+          location: {
+            type: "source",
+            fileName: "FunctionService.def",
+            line: 1
+          },
+          kind: "promise",
+          type: {
+            location: {
+              type: "source",
+              fileName: "FunctionService.def",
+              line: 1
+            },
+            kind: "array",
+            type: {
+              location: {
+                type: "source",
+                fileName: "FunctionService.def",
+                line: 1
+              },
+              kind: "string"
+            }
+          }
         }
       }
-    }
-  }], ["TestFunctionB", {
-    kind: "function",
-    name: "TestFunctionB",
-    location: {
-      type: "source",
-      fileName: "FunctionService.def",
-      line: 3
     },
-    type: {
+    TestFunctionB: {
+      kind: "function",
+      name: "TestFunctionB",
       location: {
         type: "source",
         fileName: "FunctionService.def",
         line: 3
       },
-      kind: "function",
-      argumentTypes: [],
-      returnType: {
+      type: {
         location: {
           type: "source",
           fileName: "FunctionService.def",
           line: 3
         },
-        kind: "observable",
-        type: {
+        kind: "function",
+        argumentTypes: [],
+        returnType: {
           location: {
             type: "source",
             fileName: "FunctionService.def",
             line: 3
           },
-          kind: "number"
+          kind: "observable",
+          type: {
+            location: {
+              type: "source",
+              fileName: "FunctionService.def",
+              line: 3
+            },
+            kind: "number"
+          }
         }
       }
-    }
-  }], ["TestFunctionC", {
-    kind: "function",
-    name: "TestFunctionC",
-    location: {
-      type: "source",
-      fileName: "FunctionService.def",
-      line: 5
     },
-    type: {
+    TestFunctionC: {
+      kind: "function",
+      name: "TestFunctionC",
       location: {
         type: "source",
         fileName: "FunctionService.def",
         line: 5
       },
-      kind: "function",
-      argumentTypes: [],
-      returnType: {
+      type: {
         location: {
           type: "source",
           fileName: "FunctionService.def",
           line: 5
         },
-        kind: "void"
+        kind: "function",
+        argumentTypes: [],
+        returnType: {
+          location: {
+            type: "source",
+            fileName: "FunctionService.def",
+            line: 5
+          },
+          kind: "void"
+        }
       }
-    }
-  }], ["TestFunctionD", {
-    kind: "function",
-    name: "TestFunctionD",
-    location: {
-      type: "source",
-      fileName: "FunctionService.def",
-      line: 7
     },
-    type: {
+    TestFunctionD: {
+      kind: "function",
+      name: "TestFunctionD",
       location: {
         type: "source",
         fileName: "FunctionService.def",
         line: 7
       },
-      kind: "function",
-      argumentTypes: [{
-        name: "p1",
-        type: {
-          location: {
-            type: "source",
-            fileName: "FunctionService.def",
-            line: 7
-          },
-          kind: "nullable",
-          type: {
-            location: {
-              type: "source",
-              fileName: "FunctionService.def",
-              line: 7
-            },
-            kind: "named",
-            name: "Object"
-          }
-        }
-      }, {
-        name: "p2",
-        type: {
-          location: {
-            type: "source",
-            fileName: "FunctionService.def",
-            line: 7
-          },
-          kind: "nullable",
-          type: {
-            location: {
-              type: "source",
-              fileName: "FunctionService.def",
-              line: 7
-            },
-            kind: "named",
-            name: "Object"
-          }
-        }
-      }],
-      returnType: {
+      type: {
         location: {
           type: "source",
           fileName: "FunctionService.def",
           line: 7
         },
-        kind: "void"
+        kind: "function",
+        argumentTypes: [{
+          name: "p1",
+          type: {
+            location: {
+              type: "source",
+              fileName: "FunctionService.def",
+              line: 7
+            },
+            kind: "nullable",
+            type: {
+              location: {
+                type: "source",
+                fileName: "FunctionService.def",
+                line: 7
+              },
+              kind: "named",
+              name: "Object"
+            }
+          }
+        }, {
+          name: "p2",
+          type: {
+            location: {
+              type: "source",
+              fileName: "FunctionService.def",
+              line: 7
+            },
+            kind: "nullable",
+            type: {
+              location: {
+                type: "source",
+                fileName: "FunctionService.def",
+                line: 7
+              },
+              kind: "named",
+              name: "Object"
+            }
+          }
+        }],
+        returnType: {
+          location: {
+            type: "source",
+            fileName: "FunctionService.def",
+            line: 7
+          },
+          kind: "void"
+        }
       }
-    }
-  }], ["PN", {
-    kind: "alias",
-    location: {
-      type: "source",
-      fileName: "FunctionService.def",
-      line: 9
     },
-    name: "PN",
-    definition: {
+    PN: {
+      kind: "alias",
       location: {
         type: "source",
         fileName: "FunctionService.def",
         line: 9
       },
-      kind: "promise",
-      type: {
-        location: {
-          type: "source",
-          fileName: "FunctionService.def",
-          line: 9
-        },
-        kind: "number"
-      }
-    }
-  }], ["ReturnAlias", {
-    kind: "function",
-    name: "ReturnAlias",
-    location: {
-      type: "source",
-      fileName: "FunctionService.def",
-      line: 11
-    },
-    type: {
-      location: {
-        type: "source",
-        fileName: "FunctionService.def",
-        line: 11
-      },
-      kind: "function",
-      argumentTypes: [],
-      returnType: {
+      name: "PN",
+      definition: {
         location: {
           type: "source",
           fileName: "FunctionService.def",
@@ -405,6 +383,40 @@ Object.defineProperty(module.exports, "defs", {
           kind: "number"
         }
       }
+    },
+    ReturnAlias: {
+      kind: "function",
+      name: "ReturnAlias",
+      location: {
+        type: "source",
+        fileName: "FunctionService.def",
+        line: 11
+      },
+      type: {
+        location: {
+          type: "source",
+          fileName: "FunctionService.def",
+          line: 11
+        },
+        kind: "function",
+        argumentTypes: [],
+        returnType: {
+          location: {
+            type: "source",
+            fileName: "FunctionService.def",
+            line: 9
+          },
+          kind: "promise",
+          type: {
+            location: {
+              type: "source",
+              fileName: "FunctionService.def",
+              line: 9
+            },
+            kind: "number"
+          }
+        }
+      }
     }
-  }]])
+  }
 });

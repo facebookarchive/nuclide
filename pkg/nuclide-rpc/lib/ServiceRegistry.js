@@ -14,7 +14,7 @@ import {createProxyFactory} from './main';
 import {TypeRegistry} from './TypeRegistry';
 import type {
   FunctionType,
-  Definition,
+  Definitions,
   InterfaceDefinition,
   Type,
 } from './types';
@@ -95,7 +95,9 @@ export class ServiceRegistry {
       });
 
       // Register type aliases.
-      factory.defs.forEach((definition: Definition) => {
+      const defs: Definitions = factory.defs;
+      Object.keys(defs).forEach(defName => {
+        const definition = defs[defName];
         const name = definition.name;
         switch (definition.kind) {
           case 'alias':
@@ -125,7 +127,8 @@ export class ServiceRegistry {
                 context.unmarshal(objectId, name, context.getService(service.name)[name]));
 
             // Register all of the static methods as remote functions.
-            definition.staticMethods.forEach((funcType, funcName) => {
+            Object.keys(definition.staticMethods).forEach(funcName => {
+              const funcType = definition.staticMethods[funcName];
               this._registerFunction(`${name}/${funcName}`, localImpl[name][funcName], funcType);
             });
             break;

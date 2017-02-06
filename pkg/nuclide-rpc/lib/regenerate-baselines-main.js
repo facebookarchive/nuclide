@@ -32,43 +32,13 @@ for (const file of fs.readdirSync(dir)) {
 
     stripLocationsFileName(definitions);
 
-    const json = mapDefinitions(definitions);
     fs.writeFileSync(
       definitionPath.replace('.def', '.def.json'),
-      JSON.stringify(json, null, 4),
+      JSON.stringify(definitions, null, 4),
       'utf8',
     );
 
     const code = generateProxy(serviceName, preserveFunctionNames, definitions);
     fs.writeFileSync(definitionPath.replace('.def', '.proxy'), code, 'utf8');
   }
-}
-
-function mapDefinitions(map) {
-  const obj = {};
-  for (const it of map.values()) {
-    let value;
-    switch (it.kind) {
-      case 'interface':
-        value = {
-          constructorArgs: it.constructorArgs,
-          instanceMethods: mapToJSON(it.instanceMethods),
-          staticMethods: mapToJSON(it.staticMethods),
-        };
-        break;
-      default:
-        value = it;
-        break;
-    }
-    obj[it.name] = value;
-  }
-  return obj;
-}
-
-function mapToJSON(map) {
-  const result = {};
-  for (const it of map.entries()) {
-    result[it[0]] = it[1];
-  }
-  return result;
 }

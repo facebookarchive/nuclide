@@ -51,23 +51,23 @@ export function parseServiceDefinition(
 }
 
 class ServiceParser {
-  _defs: Map<string, Definition>;
+  _defs: Definitions;
   _filesTodo: Array<string>;
   _filesSeen: Set<string>;
 
   constructor(predefinedTypes: Array<string>) {
-    this._defs = new Map();
+    this._defs = {};
     this._filesTodo = [];
     this._filesSeen = new Set();
 
     // Add all builtin types
     const defineBuiltinType = name => {
-      invariant(!this._defs.has(name), 'Duplicate builtin type');
-      this._defs.set(name, {
+      invariant(!this._defs.hasOwnProperty(name), 'Duplicate builtin type');
+      this._defs[name] = {
         kind: 'alias',
         name,
         location: {type: 'builtin'},
-      });
+      };
     };
     namedBuiltinTypes.forEach(defineBuiltinType);
     predefinedTypes.forEach(defineBuiltinType);
@@ -115,21 +115,21 @@ type FileType = 'import' | 'service';
 class FileParser {
   _fileType: FileType;
   _fileName: string;
-  _defs: Map<string, Definition>;
+  _defs: Definitions;
   // Maps type names to the imported name and file that they are imported from.
-  _imports: Map<string, Import>;
+  _imports: {[name: string]: Import};
   // Set of files required by imports
   _importsUsed: Set<string>;
 
   constructor(
     fileName: string,
     fileType: FileType,
-    defs: Map<string, Definition>,
+    defs: Definitions,
   ) {
     this._fileType = fileType;
     this._fileName = fileName;
     this._defs = defs;
-    this._imports = new Map();
+    this._imports = {};
     this._importsUsed = new Set();
   }
 
@@ -166,7 +166,7 @@ class FileParser {
   // Returns set of imported files required.
   // The file names returned are relative to the file being parsed.
   parse(source: string): Set<string> {
-    this._imports = new Map();
+    this._imports = {};
 
     const ast = babylon.parse(source, {
       sourceType: 'module',
@@ -240,24 +240,24 @@ class FileParser {
       if (specifier.type === 'ImportSpecifier') {
         const imported = specifier.imported.name;
         const local = specifier.local.name;
-        this._imports.set(local, {
+        this._imports[local] = {
           imported,
           file: from,
           added: false,
           location: this._locationOfNode(specifier),
-        });
+        };
       }
     }
   }
 
   _add(definition: Definition): void {
-    if (this._defs.has(definition.name)) {
-      const existingDef = this._defs.get(definition.name);
+    if (this._defs.hasOwnProperty(definition.name)) {
+      const existingDef = this._defs[definition.name];
       invariant(existingDef != null);
       throw this._errorLocations([definition.location, existingDef.location],
         `Duplicate definition for ${definition.name}`);
     } else {
-      this._defs.set(definition.name, definition);
+      this._defs[definition.name] = definition;
     }
   }
 
@@ -324,8 +324,8 @@ class FileParser {
       name: declaration.id.name,
       location: this._locationOfNode(declaration),
       constructorArgs: [],
-      staticMethods: new Map(),
-      instanceMethods: new Map(),
+      staticMethods: {},
+      instanceMethods: {},
     };
 
     const classBody = declaration.body;
@@ -344,7 +344,7 @@ class FileParser {
         }
       }
     }
-    if (!def.instanceMethods.has('dispose')) {
+    if (!def.instanceMethods.hasOwnProperty('dispose')) {
       throw this._error(declaration, 'Remotable interfaces must include a dispose method');
     }
     return def;
@@ -372,8 +372,8 @@ class FileParser {
       name: declaration.id.name,
       location: this._locationOfNode(declaration),
       constructorArgs: null,
-      staticMethods: new Map(),
-      instanceMethods: new Map(),
+      staticMethods: {},
+      instanceMethods: {},
     };
 
     invariant(declaration.body.type === 'ObjectTypeAnnotation');
@@ -388,20 +388,19 @@ class FileParser {
         this._defineMethod(name, type, def.instanceMethods);
       }
     }
-    if (!def.instanceMethods.has('dispose')) {
+    if (!def.instanceMethods.hasOwnProperty('dispose')) {
       throw this._error(declaration, 'Remotable interfaces must include a dispose method');
     }
     return def;
   }
 
-  _defineMethod(name: string, type: FunctionType, peers: Map<string, FunctionType>): void {
-    if (peers.has(name)) {
-      // $FlowFixMe(peterhal)
-      const relatedLocation: SourceLocation = (peers.get(name).location: any);
-      throw this._errorLocations([(type.location: any), relatedLocation],
+  _defineMethod(name: string, type: FunctionType, peers: {[name: string]: FunctionType}): void {
+    if (peers.hasOwnProperty(name)) {
+      const peer = peers[name];
+      throw this._errorLocations([type.location, peer.location],
         `Duplicate method definition ${name}`);
     } else {
-      peers.set(name, type);
+      peers[name] = type;
     }
   }
 
@@ -644,8 +643,8 @@ class FileParser {
         this._assert(typeAnnotation, typeAnnotation.typeParameters == null,
             `Unknown generic type ${id}.`);
 
-        const imp = this._imports.get(id);
-        if (!this._defs.has(id) && imp != null && !imp.added) {
+        const imp = this._imports.hasOwnProperty(id) ? this._imports[id] : null;
+        if (!this._defs.hasOwnProperty(id) && imp != null && !imp.added) {
           imp.added = true;
           this._importsUsed.add(imp.file);
           if (id !== imp.imported) {

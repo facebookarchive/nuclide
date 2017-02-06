@@ -518,8 +518,9 @@ export class RpcConnection<TransportType: Transport> {
     const interfaceName = this._objectRegistry.getInterface(call.objectId);
     const classDefinition = this._getClassDefinition(interfaceName);
     invariant(classDefinition != null);
-    const type = classDefinition.definition.instanceMethods.get(call.method);
-    invariant(type != null);
+    const {instanceMethods} = classDefinition.definition;
+    const type = instanceMethods[call.method];
+    invariant(instanceMethods.hasOwnProperty(call.method) && type != null);
 
     const marshalledArgs = await this._getTypeRegistry().unmarshalArguments(
       this._objectRegistry, call.args, type.argumentTypes);
