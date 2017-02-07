@@ -182,7 +182,7 @@ export default class DiffCommitView extends React.Component {
             label="Publish"
             onChange={this._onTogglePublish}
             ref={this._addTooltip(
-              'Whether to automatically publish the revision' +
+              'Whether to automatically publish the revision ' +
               'to Phabricator after committing or amending it.',
             )}
           />
