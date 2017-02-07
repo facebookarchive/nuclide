@@ -72,6 +72,11 @@ export type PlatformGroup = {
 export type Platform = {
   name: string,
   flavor: string,
+  deviceGroups: Array<DeviceGroup>,
+};
+
+export type DeviceGroup = {
+  name: ?string,
   devices: Array<Device>,
 };
 

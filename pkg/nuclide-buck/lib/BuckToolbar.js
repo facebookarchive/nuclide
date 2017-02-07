@@ -15,6 +15,7 @@ import type {
   PlatformGroup,
   TaskSettings,
 } from './types';
+import type {Option} from '../../nuclide-ui/Dropdown';
 
 import {React} from 'react-for-atom';
 import shallowequal from 'shallowequal';
@@ -24,9 +25,9 @@ import BuckToolbarTargetSelector from './ui/BuckToolbarTargetSelector';
 import {maybeToString} from '../../commons-node/string';
 import {Button, ButtonSizes} from '../../nuclide-ui/Button';
 import {Dropdown} from '../../nuclide-ui/Dropdown';
-import type {Option} from '../../nuclide-ui/Dropdown';
 import {LoadingSpinner} from '../../nuclide-ui/LoadingSpinner';
 import addTooltip from '../../nuclide-ui/add-tooltip';
+import invariant from 'assert';
 
 type Props = {
   appState: AppState,
@@ -188,7 +189,8 @@ export default class BuckToolbar extends React.Component {
       disabled: true,
     };
 
-    const selectableOptions = platform.devices.map(device => {
+    invariant(platform.deviceGroups.length === 1);
+    const selectableOptions = platform.deviceGroups[0].devices.map(device => {
       return {
         label: `  ${device.name}`,
         selectedLabel: device.name,
@@ -205,25 +207,45 @@ export default class BuckToolbar extends React.Component {
       disabled: true,
     };
 
-    const selectableOptions = platformGroup.platforms.map(platform => {
-      if (platform.devices.length) {
-        return {
+    const selectableOptions = [];
+
+    for (const platform of platformGroup.platforms) {
+      if (platform.deviceGroups.length) {
+        const submenu = [];
+
+        for (const deviceGroup of platform.deviceGroups) {
+          if (deviceGroup.name) {
+            submenu.push({
+              label: deviceGroup.name,
+              value: deviceGroup.name,
+              disabled: true,
+            });
+          }
+
+          for (const device of deviceGroup.devices) {
+            submenu.push({
+              label: `  ${device.name}`,
+              selectedLabel: device.name,
+              value: {platform, device},
+            });
+          }
+
+          submenu.push({type: 'separator'});
+        }
+
+        selectableOptions.push({
           type: 'submenu',
           label: `  ${platform.name}`,
-          submenu: platform.devices.map(device => ({
-            label: device.name,
-            selectedLabel: `${device.name}`,
-            value: {platform, device},
-          })),
-        };
+          submenu,
+        });
       } else {
-        return {
+        selectableOptions.push({
           label: `  ${platform.name}`,
           selectedLabel: platform.name,
           value: {platform, device: null},
-        };
+        });
       }
-    });
+    }
 
     return {header, selectableOptions};
   }

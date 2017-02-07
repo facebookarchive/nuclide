@@ -95,9 +95,11 @@ function selectValidDeploymentTarget(
         if (platform.name === currentPlatformName) {
           existingPlatform = platform;
           if (currentDeviceName) {
-            for (const device of platform.devices) {
-              if (device.name === currentDeviceName) {
-                existingDevice = device;
+            for (const deviceGroup of platform.deviceGroups) {
+              for (const device of deviceGroup.devices) {
+                if (device.udid === currentDeviceName) {
+                  existingDevice = device;
+                }
               }
             }
           }
@@ -115,8 +117,9 @@ function selectValidDeploymentTarget(
     existingPlatform = platformGroups[0].platforms[0];
   }
 
-  if (!existingDevice && existingPlatform.devices.length) {
-    existingDevice = existingPlatform.devices[0];
+  if (!existingDevice && existingPlatform.deviceGroups.length
+       && existingPlatform.deviceGroups[0].devices.length) {
+    existingDevice = existingPlatform.deviceGroups[0].devices[0];
   }
 
   return {platform: existingPlatform, device: existingDevice};

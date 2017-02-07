@@ -47,10 +47,15 @@ function provideIosDevices(
       platforms: [{
         name: 'iOS Simulators',
         flavor: 'iphonesimulator-x86_64',
-        devices: devices.map(device => ({
-          name: `${device.name} (${device.os})`,
-          udid: device.udid,
-        })),
+        deviceGroups: [
+          {
+            name: 'iOS Simulators',
+            devices: devices.map(device => ({
+              name: `${device.name} (${device.os})`,
+              udid: device.udid,
+            })),
+          },
+        ],
       }],
     };
   });
