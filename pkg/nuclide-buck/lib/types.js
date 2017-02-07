@@ -34,6 +34,9 @@ export type AppState = {
   buildRuleType: ?string,
   selectedDeploymentTarget: ?DeploymentTarget,
   taskSettings: TaskSettings,
+
+  lastSessionPlatformName: ?string,
+  lastSessionDeviceName: ?string,
 };
 
 export type Store = {
@@ -44,7 +47,8 @@ export type Store = {
 export type SerializedState = {
   buildTarget: ?string,
   taskSettings?: ?TaskSettings,
-  selectedDeploymentTarget: ?DeploymentTarget,
+  selectedPlatformName: ?string,
+  selectedDeviceName: ?string,
 };
 
 export type BuildArtifactTask = Task & {

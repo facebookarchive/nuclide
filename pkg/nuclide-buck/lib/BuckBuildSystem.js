@@ -259,8 +259,10 @@ export class BuckBuildSystem {
         isLoadingPlatforms: false,
         buildTarget: this._serializedState.buildTarget || '',
         buildRuleType: null,
-        selectedDeploymentTarget: this._serializedState.selectedDeploymentTarget,
+        selectedDeploymentTarget: null,
         taskSettings: this._serializedState.taskSettings || {},
+        lastSessionPlatformName: this._serializedState.selectedPlatformName,
+        lastSessionDeviceName: this._serializedState.selectedDeviceName,
       };
       const epics = Object.keys(Epics)
         .map(k => Epics[k])
@@ -387,7 +389,15 @@ export class BuckBuildSystem {
       return;
     }
     const {buildTarget, taskSettings, selectedDeploymentTarget} = this._store.getState();
-    return {buildTarget, taskSettings, selectedDeploymentTarget};
+    const selectedDeviceName = selectedDeploymentTarget && selectedDeploymentTarget.device
+      ? selectedDeploymentTarget.device.name : null;
+    const selectedPlatformName = selectedDeploymentTarget
+      ? selectedDeploymentTarget.platform.name : null;
+    return {
+      buildTarget,
+      taskSettings,
+      selectedPlatformName,
+      selectedDeviceName};
   }
 
   _runTaskType(

@@ -45,9 +45,18 @@ export default function accumulateState(state: AppState, action: Action): AppSta
       };
     case Actions.SET_PLATFORM_GROUPS:
       const {platformGroups} = action;
-      const previouslySelected = state.selectedDeploymentTarget;
+      let currentPlatformName;
+      let currentDeviceName;
+      if (state.selectedDeploymentTarget) {
+        currentPlatformName = state.selectedDeploymentTarget.platform.name;
+        currentDeviceName = state.selectedDeploymentTarget.device
+          ? state.selectedDeploymentTarget.device.name : null;
+      } else {
+        currentPlatformName = state.lastSessionPlatformName;
+        currentDeviceName = state.lastSessionDeviceName;
+      }
       const selectedDeploymentTarget
-        = selectValidDeploymentTarget(previouslySelected, platformGroups);
+        = selectValidDeploymentTarget(currentPlatformName, currentDeviceName, platformGroups);
       return {
         ...state,
         platformGroups,
@@ -58,6 +67,8 @@ export default function accumulateState(state: AppState, action: Action): AppSta
       return {
         ...state,
         selectedDeploymentTarget: action.deploymentTarget,
+        lastSessionPlatformName: null,
+        lastSessionDeviceName: null,
       };
     case Actions.SET_TASK_SETTINGS:
       return {
@@ -69,7 +80,8 @@ export default function accumulateState(state: AppState, action: Action): AppSta
 }
 
 function selectValidDeploymentTarget(
-  previouslySelected: ?DeploymentTarget,
+  currentPlatformName: ?string,
+  currentDeviceName: ?string,
   platformGroups: Array<PlatformGroup>): ?DeploymentTarget {
   if (!platformGroups.length) {
     return null;
@@ -77,16 +89,14 @@ function selectValidDeploymentTarget(
 
   let existingDevice = null;
   let existingPlatform = null;
-  if (previouslySelected) {
-    const previousPlatform = previouslySelected.platform;
-    const previousDevice = previouslySelected.device;
+  if (currentPlatformName) {
     for (const platformGroup of platformGroups) {
       for (const platform of platformGroup.platforms) {
-        if (platform.flavor === previousPlatform.flavor) {
+        if (platform.name === currentPlatformName) {
           existingPlatform = platform;
-          if (previousDevice) {
+          if (currentDeviceName) {
             for (const device of platform.devices) {
-              if (device.udid === previousDevice.udid) {
+              if (device.name === currentDeviceName) {
                 existingDevice = device;
               }
             }
