@@ -70,8 +70,16 @@ export function setActiveTaskRunnerEpic(
           }
         }
       } else {
-        // This is a new root, try to make as few UI changes as possible
-        visibilityAction = Observable.empty();
+        const atLeastOneTaskRunnerEnabled = taskRunners.some(runner => {
+          const state = statesForTaskRunners.get(runner);
+          return state && state.enabled;
+        });
+        if (atLeastOneTaskRunnerEnabled) {
+          // Advertise the toolbar if there's a chance it's useful at this new working root.
+          visibilityAction = Observable.of(Actions.setToolbarVisibility(true, true));
+        } else {
+          visibilityAction = Observable.empty();
+        }
         taskRunner = activeTaskRunner;
       }
 

@@ -118,13 +118,16 @@ describe('Epics', () => {
     });
 
     describe('if this working root doesnt have a preference', () => {
-      it('does nothing about visibility to prevent UI jumps', () => {
+      it('shows the toolbar since it might be useful', () => {
         waitsForPromise(async () => {
           const output = await runActions([Actions.setStatesForTaskRunners(newStates)], state)
             .toArray()
             .toPromise();
-          expect(output.length).toEqual(1);
-          expect(output[0].type).toEqual(Actions.SELECT_TASK_RUNNER);
+          expect(output.length).toEqual(2);
+          const action = output[0];
+          invariant(action.type === Actions.SET_TOOLBAR_VISIBILITY);
+          expect(action.payload.updateUserPreferences).toEqual(true);
+          expect(action.payload.visible).toEqual(true);
         });
       });
 
@@ -133,8 +136,8 @@ describe('Epics', () => {
           const output = await runActions([Actions.setStatesForTaskRunners(newStates)], state)
             .toArray()
             .toPromise();
-          expect(output.length).toEqual(1);
-          const action = output[0];
+          expect(output.length).toEqual(2);
+          const action = output[1];
           invariant(action.type === Actions.SELECT_TASK_RUNNER);
           invariant(action.payload.taskRunner);
           expect(action.payload.taskRunner.id).toEqual('c');
