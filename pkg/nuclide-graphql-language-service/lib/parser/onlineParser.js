@@ -1,3 +1,16 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = onlineParser;
+
+var _Rules;
+
+function _load_Rules() {
+  return _Rules = require('./Rules');
+}
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,7 +18,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
 
 /**
@@ -28,31 +41,12 @@
  *
  */
 
-import type CharacterStream from './CharacterStream';
-import typeof {
-  LexRules as LexRulesType,
-  ParseRules as ParseRulesType,
-} from './Rules';
-import type {State, Token} from '../types/Types';
-
-import {LexRules, ParseRules, isIgnored} from './Rules';
-
-type ParserOptions = {
-  eatWhitespace: (stream: CharacterStream) => boolean,
-  lexRules: LexRulesType,
-  parseRules: ParseRulesType,
-  editorConfig: {[name: string]: any},
-};
-
-export default function onlineParser(options: ParserOptions = {
-  eatWhitespace: stream => stream.eatWhile(isIgnored),
-  lexRules: LexRules,
-  parseRules: ParseRules,
-  editorConfig: {},
-}): {
-  startState: () => State,
-  token: (stream: CharacterStream, state: State) => string,
-} {
+function onlineParser(options = {
+  eatWhitespace: stream => stream.eatWhile((_Rules || _load_Rules()).isIgnored),
+  lexRules: (_Rules || _load_Rules()).LexRules,
+  parseRules: (_Rules || _load_Rules()).ParseRules,
+  editorConfig: {}
+}) {
   return {
     startState() {
       const initialState = {
@@ -63,23 +57,19 @@ export default function onlineParser(options: ParserOptions = {
         type: null,
         rule: null,
         needsSeperator: false,
-        prevState: null,
+        prevState: null
       };
       pushRule(options.parseRules, initialState, 'Document');
       return initialState;
     },
-    token(stream: CharacterStream, state: State) {
+    token(stream, state) {
       return getToken(stream, state, options);
-    },
+    }
   };
 }
 
-function getToken(
-  stream: CharacterStream,
-  state: State,
-  options: ParserOptions,
-): string {
-  const {lexRules, parseRules, eatWhitespace, editorConfig} = options;
+function getToken(stream, state, options) {
+  const { lexRules, parseRules, eatWhitespace, editorConfig } = options;
   // Restore state after an empty-rule.
   if (state.rule && state.rule.length === 0) {
     popRule(state);
@@ -91,8 +81,7 @@ function getToken(
   // Remember initial indentation
   if (stream.sol()) {
     const tabSize = editorConfig && editorConfig.tabSize || 2;
-    state.indentLevel =
-      Math.floor(stream.indentation() / tabSize);
+    state.indentLevel = Math.floor(stream.indentation() / tabSize);
   }
 
   // Consume spaces and ignored characters
@@ -130,10 +119,7 @@ function getToken(
       // current level to match.
       const levels = state.levels = (state.levels || []).slice(0, -1);
       if (state.indentLevel) {
-        if (
-          levels.length > 0 &&
-          levels[levels.length - 1] < state.indentLevel
-        ) {
+        if (levels.length > 0 && levels[levels.length - 1] < state.indentLevel) {
           state.indentLevel = levels[levels.length - 1];
         }
       }
@@ -142,11 +128,7 @@ function getToken(
 
   while (state.rule) {
     // If this is a forking rule, determine what rule to use based on
-    // the current token, otherwise expect based on the current step.
-    let expected: any =
-      typeof state.rule === 'function' ?
-        state.step === 0 ? state.rule(token, stream) : null :
-        state.rule[state.step];
+    let expected = typeof state.rule === 'function' ? state.step === 0 ? state.rule(token, stream) : null : state.rule[state.step];
 
     // Seperator between list elements if necessary.
     if (state.needsSeperator) {
@@ -193,7 +175,7 @@ function getToken(
 }
 
 // Utility function to assign from object to another object.
-function assign(to: Object, from: Object): Object {
+function assign(to, from) {
   const keys = Object.keys(from);
   for (let i = 0; i < keys.length; i++) {
     to[keys[i]] = from[keys[i]];
@@ -204,15 +186,15 @@ function assign(to: Object, from: Object): Object {
 // A special rule set for parsing comment tokens.
 const SpecialParseRules = {
   Invalid: [],
-  Comment: [],
+  Comment: []
 };
 
 // Push a new rule onto the state.
-function pushRule(rules: ParseRulesType, state: State, ruleKind: string): void {
+function pushRule(rules, state, ruleKind) {
   if (!rules[ruleKind]) {
     throw new TypeError('Unknown rule: ' + ruleKind);
   }
-  state.prevState = {...state};
+  state.prevState = Object.assign({}, state);
   state.kind = ruleKind;
   state.name = null;
   state.type = null;
@@ -222,7 +204,7 @@ function pushRule(rules: ParseRulesType, state: State, ruleKind: string): void {
 }
 
 // Pop the current rule from the state.
-function popRule(state: State): void {
+function popRule(state) {
   // Check if there's anything to pop
   if (!state.prevState) {
     return;
@@ -237,7 +219,7 @@ function popRule(state: State): void {
 }
 
 // Advance the step of the current rule.
-function advanceRule(state: State, successful: boolean): void {
+function advanceRule(state, successful) {
   // If this is advancing successfully and the current state is a list, give
   // it an opportunity to repeat itself.
   if (isList(state)) {
@@ -261,10 +243,7 @@ function advanceRule(state: State, successful: boolean): void {
   state.step++;
 
   // While the current rule is completed.
-  while (
-    state.rule &&
-    !(Array.isArray(state.rule) && state.step < state.rule.length)
-  ) {
+  while (state.rule && !(Array.isArray(state.rule) && state.step < state.rule.length)) {
     popRule(state);
 
     if (state.rule) {
@@ -281,20 +260,15 @@ function advanceRule(state: State, successful: boolean): void {
   }
 }
 
-function isList(state: State): ?boolean {
-  return Array.isArray(state.rule) &&
-    typeof state.rule[state.step] !== 'string' &&
-    state.rule[state.step].isList;
+function isList(state) {
+  return Array.isArray(state.rule) && typeof state.rule[state.step] !== 'string' && state.rule[state.step].isList;
 }
 
 // Unwind the state after an unsuccessful match.
-function unsuccessful(state: State): void {
+function unsuccessful(state) {
   // Fall back to the parent rule until you get to an optional or list rule or
   // until the entire stack of rules is empty.
-  while (
-    state.rule &&
-    !(Array.isArray(state.rule) && state.rule[state.step].ofRule)
-  ) {
+  while (state.rule && !(Array.isArray(state.rule) && state.rule[state.step].ofRule)) {
     popRule(state);
   }
 
@@ -306,12 +280,13 @@ function unsuccessful(state: State): void {
 }
 
 // Given a stream, returns a { kind, value } pair, or null.
-function lex(lexRules: LexRulesType, stream: CharacterStream): ?Token {
+function lex(lexRules, stream) {
   const kinds = Object.keys(lexRules);
   for (let i = 0; i < kinds.length; i++) {
     const match = stream.match(lexRules[kinds[i]]);
     if (match && match instanceof Array) {
-      return {kind: kinds[i], value: match[0]};
+      return { kind: kinds[i], value: match[0] };
     }
   }
 }
+module.exports = exports['default'];

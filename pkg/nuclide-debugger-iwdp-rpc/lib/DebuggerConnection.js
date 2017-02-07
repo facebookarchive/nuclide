@@ -1,23 +1,39 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {Observable, BehaviorSubject, Subject} from 'rxjs';
-import {logger} from './logger';
-import {RUNNING, PAUSED, ENDED} from './constants';
-import {Socket} from './Socket';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DebuggerConnection = undefined;
 
-import type {DeviceInfo, RuntimeStatus} from './types';
-import type {AnyTeardown} from '../../commons-node/UniversalDisposable';
+var _UniversalDisposable;
 
-const {log} = logger;
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../commons-node/UniversalDisposable'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _logger;
+
+function _load_logger() {
+  return _logger = require('./logger');
+}
+
+var _constants;
+
+function _load_constants() {
+  return _constants = require('./constants');
+}
+
+var _Socket;
+
+function _load_Socket() {
+  return _Socket = require('./Socket');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const { log } = (_logger || _load_logger()).logger;
 
 /**
  * A connection to a JSContext on the device (or simulator/emulator).  There are 2 channels of
@@ -31,80 +47,81 @@ const {log} = logger;
  * `Debugger.paused` events.  Interested parties can subscribe to these events via the
  * `subscribeToEvents` API, which accepts a callback called when events are emitted from the target.
  */
-export class DebuggerConnection {
-  _disposables: UniversalDisposable;
-  _status: BehaviorSubject<RuntimeStatus>;
-  _events: Subject<Object>;
-  _connectionId: number;
-  _deviceInfo: DeviceInfo;
-  _socket: Socket;
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ *
+ * 
+ */
 
-  constructor(connectionId: number, deviceInfo: DeviceInfo) {
+class DebuggerConnection {
+
+  constructor(connectionId, deviceInfo) {
     this._deviceInfo = deviceInfo;
     this._connectionId = connectionId;
-    this._events = new Subject();
-    this._status = new BehaviorSubject(RUNNING);
-    const {webSocketDebuggerUrl} = deviceInfo;
-    this._socket = new Socket(
-      webSocketDebuggerUrl,
-      this._handleChromeEvent.bind(this),
-      () => this._status.next(ENDED),
-    );
-    this._disposables = new UniversalDisposable(this._socket);
+    this._events = new _rxjsBundlesRxMinJs.Subject();
+    this._status = new _rxjsBundlesRxMinJs.BehaviorSubject((_constants || _load_constants()).RUNNING);
+    const { webSocketDebuggerUrl } = deviceInfo;
+    this._socket = new (_Socket || _load_Socket()).Socket(webSocketDebuggerUrl, this._handleChromeEvent.bind(this), () => this._status.next((_constants || _load_constants()).ENDED));
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default(this._socket);
     log(`DebuggerConnection created with device info: ${JSON.stringify(deviceInfo)}`);
   }
 
-  sendCommand(message: Object): Promise<Object> {
+  sendCommand(message) {
     return this._socket.sendCommand(message);
   }
 
-  _handleChromeEvent(message: Object): void {
+  _handleChromeEvent(message) {
     switch (message.method) {
-      case 'Debugger.paused': {
-        this._status.next(PAUSED);
-        break;
-      }
-      case 'Debugger.resumed': {
-        this._status.next(RUNNING);
-        break;
-      }
+      case 'Debugger.paused':
+        {
+          this._status.next((_constants || _load_constants()).PAUSED);
+          break;
+        }
+      case 'Debugger.resumed':
+        {
+          this._status.next((_constants || _load_constants()).RUNNING);
+          break;
+        }
     }
     this._events.next(message);
   }
 
-  subscribeToEvents(toFrontend: (message: Object) => void): IDisposable {
-    return new UniversalDisposable(
-      this._events.subscribe(toFrontend),
-    );
+  subscribeToEvents(toFrontend) {
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default(this._events.subscribe(toFrontend));
   }
 
-  isPaused(): boolean {
-    return this._status.getValue() === PAUSED;
+  isPaused() {
+    return this._status.getValue() === (_constants || _load_constants()).PAUSED;
   }
 
-  getName(): string {
+  getName() {
     return this._deviceInfo.title;
   }
 
-  getStatus(): RuntimeStatus {
+  getStatus() {
     return this._status.getValue();
   }
 
-  getStatusChanges(): Observable<RuntimeStatus> {
+  getStatusChanges() {
     return this._status.asObservable();
   }
 
-  getId(): number {
+  getId() {
     return this._connectionId;
   }
 
-  onDispose(...teardowns: Array<AnyTeardown>): void {
+  onDispose(...teardowns) {
     for (const teardown of teardowns) {
       this._disposables.add(teardown);
     }
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
   }
 }
+exports.DebuggerConnection = DebuggerConnection;

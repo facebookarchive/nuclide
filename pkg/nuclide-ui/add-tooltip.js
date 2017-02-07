@@ -1,14 +1,11 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import {React, ReactDOM} from 'react-for-atom';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = addTooltip;
+
+var _reactForAtom = require('react-for-atom');
 
 /**
 * Adds a self-disposing Atom's tooltip to a react element.
@@ -21,9 +18,7 @@ import {React, ReactDOM} from 'react-for-atom';
 *   this._myDiv = c;
 * }} />
 */
-export default function addTooltip(
-  options: atom$TooltipsAddOptions,
-): (elementRef: React.Element<any>) => void {
+function addTooltip(options) {
   let prevRefDisposable;
 
   let immediate = null;
@@ -36,7 +31,7 @@ export default function addTooltip(
 
     if (elementRef != null) {
       // $FlowFixMe -- findDOMNode takes a React.Component or an HTMLElement.
-      const node = ReactDOM.findDOMNode(elementRef);
+      const node = _reactForAtom.ReactDOM.findDOMNode(elementRef);
 
       // Sooooo... Atom tooltip does the keybinding lookup at creation time
       // instead of display time. And, it uses a CSS selector to figure out
@@ -46,14 +41,20 @@ export default function addTooltip(
       // keybinding. By deferring it to the end of the event loop, it is now
       // in the DOM and has the proper keybinding.
       immediate = setImmediate(() => {
-        prevRefDisposable = atom.tooltips.add(
-          node,
-          {
-            keyBindingTarget: node,
-            ...options,
-          },
-        );
+        prevRefDisposable = atom.tooltips.add(node, Object.assign({
+          keyBindingTarget: node
+        }, options));
       });
     }
   };
-}
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   */
+
+module.exports = exports['default'];
