@@ -430,7 +430,9 @@ export function observeProcessExit(
 export function getOutputStream(
   process: child_process$ChildProcess,
   killTreeOnComplete?: boolean = false,
+  splitByLines?: boolean = true,
 ): Observable<ProcessMessage> {
+  const chunk = splitByLines ? splitStream : x => x;
   return Observable.defer(() => {
     // We need to start listening for the exit event immediately, but defer emitting it until the
     // (buffered) output streams end.
@@ -443,9 +445,9 @@ export function getOutputStream(
     // This utility, however, treats the exit event as stream-ending, which helps us to avoid easy
     // bugs. We give a short (100ms) timeout for the stdout and stderr streams to close.
     const close = exit.delay(100);
-    const stdout = splitStream(observeStream(process.stdout).takeUntil(close))
+    const stdout = chunk(observeStream(process.stdout).takeUntil(close))
       .map(data => ({kind: 'stdout', data}));
-    const stderr = splitStream(observeStream(process.stderr).takeUntil(close))
+    const stderr = chunk(observeStream(process.stderr).takeUntil(close))
       .map(data => ({kind: 'stderr', data}));
 
     return takeWhileInclusive(
@@ -467,6 +469,17 @@ export function observeProcess(
   killTreeOnComplete?: boolean = false,
 ): Observable<ProcessMessage> {
   return _createProcessStream(createProcess, false, killTreeOnComplete).flatMap(getOutputStream);
+}
+
+/**
+ * Observe the stdout, stderr and exit code of a process.
+ */
+export function observeProcessRaw(
+  createProcess: () => child_process$ChildProcess,
+  killTreeOnComplete?: boolean = false,
+): Observable<ProcessMessage> {
+  return _createProcessStream(createProcess, false, killTreeOnComplete)
+    .flatMap(process => getOutputStream(process, false, false));
 }
 
 let FB_INCLUDE_PATHS;

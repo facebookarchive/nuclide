@@ -24,6 +24,7 @@ import {
   killProcess,
   killUnixProcessTree,
   observeProcess,
+  observeProcessRaw,
   observeProcessExit,
   parsePsOutput,
   runCommand,
@@ -440,6 +441,22 @@ describe('commons-node/process', () => {
       // If the stream doesn't complete, this will timeout.
       waitsForPromise({timeout: 1000}, async () => {
         await observeProcess(() => safeSpawn('fakeCommand')).toArray().toPromise();
+      });
+    });
+  });
+
+  describe('observeProcessRaw', () => {
+    it("doesn't split on line breaks", () => {
+      spyOn(console, 'error');
+      spyOn(console, 'log'); // suppress log printing
+      const createChild = () => safeSpawn(
+        process.execPath,
+        ['-e', 'process.stdout.write("stdout1\\nstdout2\\n"); process.exit(1)'],
+      );
+      waitsForPromise({timeout: 1000}, async () => {
+        const event = await observeProcessRaw(createChild).take(1).toPromise();
+        invariant(event.kind === 'stdout');
+        expect(event.data).toBe('stdout1\nstdout2\n');
       });
     });
   });
