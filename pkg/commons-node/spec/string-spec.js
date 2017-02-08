@@ -9,11 +9,13 @@
  */
 
 import {
+  indent,
   maybeToString,
   relativeDate,
   countOccurrences,
   shellParse,
   shorten,
+  splitOnce,
   removeCommonPrefix,
   removeCommonSuffix,
 } from '../string';
@@ -170,5 +172,32 @@ describe('shorten', () => {
     expect(shorten('test', 3)).toEqual('tes');
     expect(shorten('test', 100)).toEqual('test');
     expect(shorten('test', 1, '...')).toEqual('t...');
+  });
+});
+
+describe('splitOnce', () => {
+  it('splits once', () => {
+    expect(splitOnce('ab-cd-ef', '-')).toEqual(['ab', 'cd-ef']);
+  });
+  it("handles when there's no match", () => {
+    expect(splitOnce('ab-cd-ef', '_')).toEqual(['ab-cd-ef', null]);
+  });
+});
+
+describe('indent', () => {
+  it('indents lines', () => {
+    expect(indent('a\nb')).toBe('  a\n  b');
+  });
+
+  it("doesn't indent empty lines", () => {
+    expect(indent('a\n\nb')).toBe('  a\n\n  b');
+  });
+
+  it('uses the provided level', () => {
+    expect(indent('a\n\nb', 4)).toBe('    a\n\n    b');
+  });
+
+  it('uses the provided character', () => {
+    expect(indent('a\n\nb', 1, '\t')).toBe('\ta\n\n\tb');
   });
 });

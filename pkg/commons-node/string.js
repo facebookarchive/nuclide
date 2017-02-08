@@ -150,3 +150,20 @@ export function removeCommonSuffix(a: string, b: string): [string, string] {
 export function shorten(str: string, maxLength: number, suffix?: string): string {
   return str.length < maxLength ? str : str.slice(0, maxLength) + (suffix || '');
 }
+
+/**
+ * Like String.split, but only splits once.
+ */
+export function splitOnce(str: string, separator: string): [string, ?string] {
+  const index = str.indexOf(separator);
+  return index === -1
+    ? [str, null]
+    : [str.slice(0, index), str.slice(index + separator.length)];
+}
+
+/**
+ * Indents each line by the specified number of characters.
+ */
+export function indent(str: string, level: number = 2, char: string = ' '): string {
+  return str.replace(/^([^\n])/gm, char.repeat(level) + '$1');
+}
