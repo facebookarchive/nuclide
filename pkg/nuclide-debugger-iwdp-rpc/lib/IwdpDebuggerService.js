@@ -13,11 +13,12 @@ import {connectToPackager} from './connectToPackager';
 import {connectToIwdp} from './connectToIwdp';
 import {ConnectionMultiplexer} from './ConnectionMultiplexer';
 import {logger} from './logger';
+import {Observable} from 'rxjs';
 
-import type {ConnectableObservable, Observable} from 'rxjs';
+import type {ConnectableObservable} from 'rxjs';
 import type {DeviceInfo, TargetEnvironment} from './types';
 
-const {log} = logger;
+const {log, logError} = logger;
 let lastServiceObjectDispose = null;
 
 import {ClientCallback} from '../../nuclide-debugger-common/lib/main';
@@ -49,10 +50,16 @@ export class IwdpDebuggerService {
   attach(targetEnvironment: TargetEnvironment): Promise<string> {
     const connection = connectToTarget(targetEnvironment);
     this._disposables.add(
-      connection.subscribe(deviceInfo => {
-        log(`Got device info: ${JSON.stringify(deviceInfo)}`);
-        this._connectionMultiplexer.add(deviceInfo);
-      }),
+      connection.subscribe(
+        deviceInfo => {
+          log(`Got device info: ${JSON.stringify(deviceInfo)}`);
+          this._connectionMultiplexer.add(deviceInfo);
+        },
+        err => {
+          logError(`The debug proxy was killed!  Error: ${err}`);
+          this.dispose();
+        },
+      ),
     );
     return Promise.resolve('IWDP Connected');
   }
