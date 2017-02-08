@@ -21,6 +21,30 @@ export type Device = {
   os: string,
 };
 
+export function parseDevicesFromFbsimctlOutput(output: string): Array<Device> {
+  const devices = [];
+
+  output.split('\n').forEach(line => {
+    const columns = line.split('|').map(string => string.trim());
+    if (columns.length !== 5) {
+      return;
+    }
+
+    if (!columns[4].match(/^iOS (.+)$/)) {
+      return;
+    }
+
+    devices.push({
+      name: columns[1],
+      udid: columns[0],
+      state: validateState(columns[2]),
+      os: columns[4],
+    });
+  });
+
+  return devices;
+}
+
 export function parseDevicesFromSimctlOutput(output: string): Array<Device> {
   const devices = [];
   let currentOS = null;
@@ -63,6 +87,29 @@ function validateState(rawState: ?string): ?DeviceState {
     default: return null;
   }
 }
+
+export const getFbsimctlDevices: () => Observable<Array<Device>> = memoize(() => (
+  observeProcess(() => safeSpawn('fbsimctl', ['--simulators', 'list']))
+    .map(event => {
+      // Throw errors.
+      if (event.kind === 'error') {
+        const error = new Error();
+        error.name = 'FbsimctlError';
+        throw error;
+      }
+      return event;
+    })
+    .reduce(
+      (acc, event) => (event.kind === 'stdout' ? acc + event.data : acc),
+      '',
+    )
+    .map(parseDevicesFromFbsimctlOutput)
+    .catch(error => (
+      // Users may not have fbsimctl installed. If the command failed, just return an empty list.
+      error.name === 'FbsimctlError' ? Observable.of([]) : Observable.throw(error)
+    ))
+    .share()
+));
 
 export const getDevices: () => Observable<Array<Device>> = memoize(() => (
   observeProcess(() => safeSpawn('xcrun', ['simctl', 'list', 'devices']))
