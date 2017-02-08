@@ -9,6 +9,7 @@
  */
 
 import {
+  bufferUntil,
   diffSets,
   cacheWhileSubscribed,
   nextAnimationFrame,
@@ -439,5 +440,27 @@ describe('nextAnimationFrame', () => {
     expect(window.cancelAnimationFrame).not.toHaveBeenCalled();
     sub.unsubscribe();
     expect(window.cancelAnimationFrame).toHaveBeenCalled();
+  });
+});
+
+describe('bufferUntil', () => {
+  it('buffers based on the predicate', () => {
+    waitsForPromise(async () => {
+      const chunks = await bufferUntil(Observable.of(1, 2, 3, 4), x => x % 2 === 0)
+        .toArray()
+        .toPromise();
+      expect(chunks).toEqual([[1, 2], [3, 4]]);
+    });
+  });
+  it('provides the current buffer', () => {
+    waitsForPromise(async () => {
+      const chunks = await bufferUntil(
+          Observable.of(1, 2, 3, 4),
+          (x, buffer) => buffer.length === 2,
+        )
+        .toArray()
+        .toPromise();
+      expect(chunks).toEqual([[1, 2], [3, 4]]);
+    });
   });
 });
