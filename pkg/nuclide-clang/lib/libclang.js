@@ -60,6 +60,7 @@ module.exports = {
   registerCompilationDatabaseProvider(
     provider: ClangCompilationDatabaseProvider,
   ): Disposable {
+    compilationDatabaseProviders.add(provider);
     return new Disposable(() => compilationDatabaseProviders.delete(provider));
   },
 
