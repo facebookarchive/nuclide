@@ -1,28 +1,38 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import invariant from 'assert';
-import {CompositeDisposable} from 'atom';
-import {WorkingSetsStore} from './WorkingSetsStore';
-import {WorkingSetsConfig} from './WorkingSetsConfig';
-import {PathsObserver} from './PathsObserver';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.provideWorkingSetsStore = provideWorkingSetsStore;
+
+var _atom = require('atom');
+
+var _WorkingSetsStore;
+
+function _load_WorkingSetsStore() {
+  return _WorkingSetsStore = require('./WorkingSetsStore');
+}
+
+var _WorkingSetsConfig;
+
+function _load_WorkingSetsConfig() {
+  return _WorkingSetsConfig = require('./WorkingSetsConfig');
+}
+
+var _PathsObserver;
+
+function _load_PathsObserver() {
+  return _PathsObserver = require('./PathsObserver');
+}
 
 class Activation {
-  workingSetsStore: WorkingSetsStore;
-  _workingSetsConfig: WorkingSetsConfig;
-  _disposables: CompositeDisposable;
 
   constructor() {
-    this.workingSetsStore = new WorkingSetsStore();
-    this._workingSetsConfig = new WorkingSetsConfig();
-    this._disposables = new CompositeDisposable();
+    this.workingSetsStore = new (_WorkingSetsStore || _load_WorkingSetsStore()).WorkingSetsStore();
+    this._workingSetsConfig = new (_WorkingSetsConfig || _load_WorkingSetsConfig()).WorkingSetsConfig();
+    this._disposables = new _atom.CompositeDisposable();
 
     this._disposables.add(this.workingSetsStore.onSaveDefinitions(definitions => {
       this._workingSetsConfig.setDefinitions(definitions);
@@ -32,24 +42,27 @@ class Activation {
       this.workingSetsStore.updateDefinitions(definitions);
     }));
 
-    this._disposables.add(atom.commands.add(
-      'atom-workspace',
-      'working-sets:toggle-last-selected',
-      this.workingSetsStore.toggleLastSelected.bind(this.workingSetsStore),
-    ));
+    this._disposables.add(atom.commands.add('atom-workspace', 'working-sets:toggle-last-selected', this.workingSetsStore.toggleLastSelected.bind(this.workingSetsStore)));
 
-    this._disposables.add(new PathsObserver(this.workingSetsStore));
+    this._disposables.add(new (_PathsObserver || _load_PathsObserver()).PathsObserver(this.workingSetsStore));
   }
 
-  deactivate(): void {
+  deactivate() {
     this._disposables.dispose();
   }
-}
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   */
 
+let activation = null;
 
-let activation: ?Activation = null;
-
-export function activate() {
+function activate() {
   if (activation != null) {
     return;
   }
@@ -57,7 +70,7 @@ export function activate() {
   activation = new Activation();
 }
 
-export function deactivate() {
+function deactivate() {
   if (activation == null) {
     return;
   }
@@ -66,8 +79,10 @@ export function deactivate() {
   activation = null;
 }
 
-export function provideWorkingSetsStore(): WorkingSetsStore {
-  invariant(activation, 'Was requested to provide service from a non-activated package');
+function provideWorkingSetsStore() {
+  if (!activation) {
+    throw new Error('Was requested to provide service from a non-activated package');
+  }
 
   return activation.workingSetsStore;
 }

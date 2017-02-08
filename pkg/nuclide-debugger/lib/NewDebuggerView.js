@@ -1,174 +1,225 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import type DebuggerModel from './DebuggerModel';
-import type {
-  WatchExpressionListStore,
-} from './WatchExpressionListStore';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.NewDebuggerView = undefined;
 
-import {CompositeDisposable} from 'atom';
-import {
-  React,
-} from 'react-for-atom';
-import {Section} from '../../nuclide-ui/Section';
-import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
-import {
-  FlexDirections,
-  ResizableFlexContainer,
-  ResizableFlexItem,
-} from '../../nuclide-ui/ResizableFlexContainer';
-import {WatchExpressionComponent} from './WatchExpressionComponent';
-import {ScopesComponent} from './ScopesComponent';
-import {BreakpointListComponent} from './BreakpointListComponent';
-import {DebuggerSteppingComponent} from './DebuggerSteppingComponent';
-import {DebuggerCallstackComponent} from './DebuggerCallstackComponent';
-import {DebuggerThreadsComponent} from './DebuggerThreadsComponent';
+var _atom = require('atom');
 
-type Props = {
-  model: DebuggerModel,
-  watchExpressionListStore: WatchExpressionListStore,
-};
+var _reactForAtom = require('react-for-atom');
 
-export class NewDebuggerView extends React.PureComponent {
-  props: Props;
-  state: {
-    showThreadsWindow: boolean,
-  };
-  _watchExpressionComponentWrapped: ReactClass<any>;
-  _scopesComponentWrapped: ReactClass<any>;
-  _disposables: CompositeDisposable;
+var _Section;
 
-  constructor(props: Props) {
+function _load_Section() {
+  return _Section = require('../../nuclide-ui/Section');
+}
+
+var _bindObservableAsProps;
+
+function _load_bindObservableAsProps() {
+  return _bindObservableAsProps = require('../../nuclide-ui/bindObservableAsProps');
+}
+
+var _ResizableFlexContainer;
+
+function _load_ResizableFlexContainer() {
+  return _ResizableFlexContainer = require('../../nuclide-ui/ResizableFlexContainer');
+}
+
+var _WatchExpressionComponent;
+
+function _load_WatchExpressionComponent() {
+  return _WatchExpressionComponent = require('./WatchExpressionComponent');
+}
+
+var _ScopesComponent;
+
+function _load_ScopesComponent() {
+  return _ScopesComponent = require('./ScopesComponent');
+}
+
+var _BreakpointListComponent;
+
+function _load_BreakpointListComponent() {
+  return _BreakpointListComponent = require('./BreakpointListComponent');
+}
+
+var _DebuggerSteppingComponent;
+
+function _load_DebuggerSteppingComponent() {
+  return _DebuggerSteppingComponent = require('./DebuggerSteppingComponent');
+}
+
+var _DebuggerCallstackComponent;
+
+function _load_DebuggerCallstackComponent() {
+  return _DebuggerCallstackComponent = require('./DebuggerCallstackComponent');
+}
+
+var _DebuggerThreadsComponent;
+
+function _load_DebuggerThreadsComponent() {
+  return _DebuggerThreadsComponent = require('./DebuggerThreadsComponent');
+}
+
+class NewDebuggerView extends _reactForAtom.React.PureComponent {
+
+  constructor(props) {
     super(props);
-    this._watchExpressionComponentWrapped = bindObservableAsProps(
-      props.model.getWatchExpressionListStore().getWatchExpressions().map(
-        watchExpressions => ({watchExpressions}),
-      ),
-      WatchExpressionComponent,
-    );
-    this._scopesComponentWrapped = bindObservableAsProps(
-      props.model.getScopesStore().getScopes().map(
-        scopes => ({scopes}),
-      ),
-      ScopesComponent,
-    );
-    this._disposables = new CompositeDisposable();
+    this._watchExpressionComponentWrapped = (0, (_bindObservableAsProps || _load_bindObservableAsProps()).bindObservableAsProps)(props.model.getWatchExpressionListStore().getWatchExpressions().map(watchExpressions => ({ watchExpressions })), (_WatchExpressionComponent || _load_WatchExpressionComponent()).WatchExpressionComponent);
+    this._scopesComponentWrapped = (0, (_bindObservableAsProps || _load_bindObservableAsProps()).bindObservableAsProps)(props.model.getScopesStore().getScopes().map(scopes => ({ scopes })), (_ScopesComponent || _load_ScopesComponent()).ScopesComponent);
+    this._disposables = new _atom.CompositeDisposable();
     const debuggerStore = props.model.getStore();
     this.state = {
-      showThreadsWindow: Boolean(debuggerStore.getSettings().get('SupportThreadsWindow')),
+      showThreadsWindow: Boolean(debuggerStore.getSettings().get('SupportThreadsWindow'))
     };
   }
 
-  componentDidMount(): void {
+  componentDidMount() {
     const debuggerStore = this.props.model.getStore();
-    this._disposables.add(
-      debuggerStore.onChange(() => {
-        this.setState({
-          showThreadsWindow: Boolean(debuggerStore.getSettings().get('SupportThreadsWindow')),
-        });
-      }),
-    );
+    this._disposables.add(debuggerStore.onChange(() => {
+      this.setState({
+        showThreadsWindow: Boolean(debuggerStore.getSettings().get('SupportThreadsWindow'))
+      });
+    }));
   }
 
-  componentWillUnmount(): void {
+  componentWillUnmount() {
     this._dispose();
   }
 
-  render(): React.Element<any> {
+  render() {
     const {
-      model,
+      model
     } = this.props;
     const actions = model.getActions();
     const WatchExpressionComponentWrapped = this._watchExpressionComponentWrapped;
     const ScopesComponentWrapped = this._scopesComponentWrapped;
-    const threadsSection = this.state.showThreadsWindow
-      ? <ResizableFlexItem initialFlexScale={1}>
-          <Section headline="Threads"
-            className="nuclide-debugger-section-header">
-            <div className="nuclide-debugger-section-content">
-              <DebuggerThreadsComponent
-                bridge={this.props.model.getBridge()}
-                threadStore={model.getThreadStore()}
-              />
-            </div>
-          </Section>
-        </ResizableFlexItem>
-      : null;
-    return (
-      <div className="nuclide-debugger-container-new">
-        <div className="nuclide-debugger-section-header nuclide-debugger-controls-section">
-          <div className="nuclide-debugger-section-content">
-            <DebuggerSteppingComponent
-              actions={actions}
-              debuggerStore={model.getStore()}
-            />
-          </div>
-        </div>
-        <ResizableFlexContainer direction={FlexDirections.VERTICAL}>
-          {threadsSection}
-          <ResizableFlexItem initialFlexScale={1}>
-            <Section headline="Call Stack"
-              key="callStack"
-              className="nuclide-debugger-section-header">
-              <div className="nuclide-debugger-section-content">
-                <DebuggerCallstackComponent
-                  actions={actions}
-                  bridge={model.getBridge()}
-                  callstackStore={model.getCallstackStore()}
-                />
-              </div>
-            </Section>
-          </ResizableFlexItem>
-          <ResizableFlexItem initialFlexScale={1}>
-            <Section headline="Breakpoints"
-              key="breakpoints"
-              className="nuclide-debugger-section-header">
-              <div className="nuclide-debugger-section-content">
-                <BreakpointListComponent
-                  actions={actions}
-                  breakpointStore={model.getBreakpointStore()}
-                />
-              </div>
-            </Section>
-          </ResizableFlexItem>
-          <ResizableFlexItem initialFlexScale={1}>
-            <Section headline="Scopes"
-              key="scopes"
-              className="nuclide-debugger-section-header">
-              <div className="nuclide-debugger-section-content">
-                <ScopesComponentWrapped
-                  watchExpressionStore={model.getWatchExpressionStore()}
-                />
-              </div>
-            </Section>
-          </ResizableFlexItem>
-          <ResizableFlexItem initialFlexScale={1}>
-            <Section headline="Watch Expressions"
-              key="watchExpressions"
-              className="nuclide-debugger-section-header">
-              <div className="nuclide-debugger-section-content">
-                <WatchExpressionComponentWrapped
-                  onAddWatchExpression={actions.addWatchExpression.bind(model)}
-                  onRemoveWatchExpression={actions.removeWatchExpression.bind(model)}
-                  onUpdateWatchExpression={actions.updateWatchExpression.bind(model)}
-                  watchExpressionStore={model.getWatchExpressionStore()}
-                />
-              </div>
-            </Section>
-          </ResizableFlexItem>
-        </ResizableFlexContainer>
-      </div>
+    const threadsSection = this.state.showThreadsWindow ? _reactForAtom.React.createElement(
+      (_ResizableFlexContainer || _load_ResizableFlexContainer()).ResizableFlexItem,
+      { initialFlexScale: 1 },
+      _reactForAtom.React.createElement(
+        (_Section || _load_Section()).Section,
+        { headline: 'Threads',
+          className: 'nuclide-debugger-section-header' },
+        _reactForAtom.React.createElement(
+          'div',
+          { className: 'nuclide-debugger-section-content' },
+          _reactForAtom.React.createElement((_DebuggerThreadsComponent || _load_DebuggerThreadsComponent()).DebuggerThreadsComponent, {
+            bridge: this.props.model.getBridge(),
+            threadStore: model.getThreadStore()
+          })
+        )
+      )
+    ) : null;
+    return _reactForAtom.React.createElement(
+      'div',
+      { className: 'nuclide-debugger-container-new' },
+      _reactForAtom.React.createElement(
+        'div',
+        { className: 'nuclide-debugger-section-header nuclide-debugger-controls-section' },
+        _reactForAtom.React.createElement(
+          'div',
+          { className: 'nuclide-debugger-section-content' },
+          _reactForAtom.React.createElement((_DebuggerSteppingComponent || _load_DebuggerSteppingComponent()).DebuggerSteppingComponent, {
+            actions: actions,
+            debuggerStore: model.getStore()
+          })
+        )
+      ),
+      _reactForAtom.React.createElement(
+        (_ResizableFlexContainer || _load_ResizableFlexContainer()).ResizableFlexContainer,
+        { direction: (_ResizableFlexContainer || _load_ResizableFlexContainer()).FlexDirections.VERTICAL },
+        threadsSection,
+        _reactForAtom.React.createElement(
+          (_ResizableFlexContainer || _load_ResizableFlexContainer()).ResizableFlexItem,
+          { initialFlexScale: 1 },
+          _reactForAtom.React.createElement(
+            (_Section || _load_Section()).Section,
+            { headline: 'Call Stack',
+              key: 'callStack',
+              className: 'nuclide-debugger-section-header' },
+            _reactForAtom.React.createElement(
+              'div',
+              { className: 'nuclide-debugger-section-content' },
+              _reactForAtom.React.createElement((_DebuggerCallstackComponent || _load_DebuggerCallstackComponent()).DebuggerCallstackComponent, {
+                actions: actions,
+                bridge: model.getBridge(),
+                callstackStore: model.getCallstackStore()
+              })
+            )
+          )
+        ),
+        _reactForAtom.React.createElement(
+          (_ResizableFlexContainer || _load_ResizableFlexContainer()).ResizableFlexItem,
+          { initialFlexScale: 1 },
+          _reactForAtom.React.createElement(
+            (_Section || _load_Section()).Section,
+            { headline: 'Breakpoints',
+              key: 'breakpoints',
+              className: 'nuclide-debugger-section-header' },
+            _reactForAtom.React.createElement(
+              'div',
+              { className: 'nuclide-debugger-section-content' },
+              _reactForAtom.React.createElement((_BreakpointListComponent || _load_BreakpointListComponent()).BreakpointListComponent, {
+                actions: actions,
+                breakpointStore: model.getBreakpointStore()
+              })
+            )
+          )
+        ),
+        _reactForAtom.React.createElement(
+          (_ResizableFlexContainer || _load_ResizableFlexContainer()).ResizableFlexItem,
+          { initialFlexScale: 1 },
+          _reactForAtom.React.createElement(
+            (_Section || _load_Section()).Section,
+            { headline: 'Scopes',
+              key: 'scopes',
+              className: 'nuclide-debugger-section-header' },
+            _reactForAtom.React.createElement(
+              'div',
+              { className: 'nuclide-debugger-section-content' },
+              _reactForAtom.React.createElement(ScopesComponentWrapped, {
+                watchExpressionStore: model.getWatchExpressionStore()
+              })
+            )
+          )
+        ),
+        _reactForAtom.React.createElement(
+          (_ResizableFlexContainer || _load_ResizableFlexContainer()).ResizableFlexItem,
+          { initialFlexScale: 1 },
+          _reactForAtom.React.createElement(
+            (_Section || _load_Section()).Section,
+            { headline: 'Watch Expressions',
+              key: 'watchExpressions',
+              className: 'nuclide-debugger-section-header' },
+            _reactForAtom.React.createElement(
+              'div',
+              { className: 'nuclide-debugger-section-content' },
+              _reactForAtom.React.createElement(WatchExpressionComponentWrapped, {
+                onAddWatchExpression: actions.addWatchExpression.bind(model),
+                onRemoveWatchExpression: actions.removeWatchExpression.bind(model),
+                onUpdateWatchExpression: actions.updateWatchExpression.bind(model),
+                watchExpressionStore: model.getWatchExpressionStore()
+              })
+            )
+          )
+        )
+      )
     );
   }
 
-  _dispose(): void {
+  _dispose() {
     this._disposables.dispose();
   }
 }
+exports.NewDebuggerView = NewDebuggerView; /**
+                                            * Copyright (c) 2015-present, Facebook, Inc.
+                                            * All rights reserved.
+                                            *
+                                            * This source code is licensed under the license found in the LICENSE file in
+                                            * the root directory of this source tree.
+                                            *
+                                            * 
+                                            */

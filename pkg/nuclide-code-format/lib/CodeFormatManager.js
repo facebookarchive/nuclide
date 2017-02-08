@@ -1,3 +1,27 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _atom = require('atom');
+
+var _textEditor;
+
+function _load_textEditor() {
+  return _textEditor = require('../../commons-atom/text-editor');
+}
+
+var _config;
+
+function _load_config() {
+  return _config = require('./config');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,56 +29,46 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
 
-import type {CodeFormatProvider} from './types';
-
-import {CompositeDisposable, Range} from 'atom';
-import {observeTextEditors} from '../../commons-atom/text-editor';
-import {getFormatOnSave} from './config';
-
-export default class CodeFormatManager {
-  _subscriptions: ?CompositeDisposable;
-  _codeFormatProviders: Array<CodeFormatProvider>;
-  _pendingFormats: Map<atom$TextEditor, boolean>;
+class CodeFormatManager {
 
   constructor() {
-    const subscriptions = this._subscriptions = new CompositeDisposable();
-    subscriptions.add(atom.commands.add(
-      'atom-text-editor',
-      'nuclide-code-format:format-code',
-      // Atom doesn't accept in-command modification of the text editor contents.
-      () => process.nextTick(this._formatCodeInActiveTextEditor.bind(this)),
-    ));
-    subscriptions.add(observeTextEditors(this._addEditor.bind(this)));
+    const subscriptions = this._subscriptions = new _atom.CompositeDisposable();
+    subscriptions.add(atom.commands.add('atom-text-editor', 'nuclide-code-format:format-code',
+    // Atom doesn't accept in-command modification of the text editor contents.
+    () => process.nextTick(this._formatCodeInActiveTextEditor.bind(this))));
+    subscriptions.add((0, (_textEditor || _load_textEditor()).observeTextEditors)(this._addEditor.bind(this)));
     this._codeFormatProviders = [];
     this._pendingFormats = new Map();
   }
 
-  _addEditor(editor: atom$TextEditor): void {
+  _addEditor(editor) {
+    var _this = this;
+
     if (!this._subscriptions) {
       return;
     }
 
-    this._subscriptions.add(editor.getBuffer().onDidSave(async () => {
-      if (getFormatOnSave() && !this._pendingFormats.get(editor)) {
+    this._subscriptions.add(editor.getBuffer().onDidSave((0, _asyncToGenerator.default)(function* () {
+      if ((0, (_config || _load_config()).getFormatOnSave)() && !_this._pendingFormats.get(editor)) {
         // Because formatting code is async, we need to resave the file once
         // we're done formatting, but prevent resaving from retriggering the
         // onDidSave callback, which would be an infinite cycle.
-        this._pendingFormats.set(editor, true);
+        _this._pendingFormats.set(editor, true);
         try {
-          const didFormat = await this._formatCodeInTextEditor(editor, false);
+          const didFormat = yield _this._formatCodeInTextEditor(editor, false);
           if (didFormat) {
             // TextEditor.save is synchronous for local files, but our custom
             // NuclideTextBuffer.saveAs implementation is asynchronous.
-            await editor.save();
+            yield editor.save();
           }
         } finally {
-          this._pendingFormats.delete(editor);
+          _this._pendingFormats.delete(editor);
         }
       }
-    }));
+    })));
 
     editor.onDidDestroy(() => {
       this._pendingFormats.delete(editor);
@@ -63,7 +77,7 @@ export default class CodeFormatManager {
 
   // Checks whether contents are same in the buffer post-format, throwing if
   // anything has changed.
-  _checkContentsAreSame(before: string, after: string): void {
+  _checkContentsAreSame(before, after) {
     if (before !== after) {
       throw new Error('The file contents were changed before formatting was complete.');
     }
@@ -71,91 +85,90 @@ export default class CodeFormatManager {
 
   // Formats code in the active editor, returning whether or not the code
   // formatted successfully.
-  async _formatCodeInActiveTextEditor(): Promise<boolean> {
-    const editor = atom.workspace.getActiveTextEditor();
-    if (!editor) {
-      atom.notifications.addError('No active text editor to format its code!');
-      return false;
-    }
+  _formatCodeInActiveTextEditor() {
+    var _this2 = this;
 
-    return this._formatCodeInTextEditor(editor);
+    return (0, _asyncToGenerator.default)(function* () {
+      const editor = atom.workspace.getActiveTextEditor();
+      if (!editor) {
+        atom.notifications.addError('No active text editor to format its code!');
+        return false;
+      }
+
+      return _this2._formatCodeInTextEditor(editor);
+    })();
   }
 
   // Formats code in the editor specified, returning whether or not the code
   // formatted successfully.
-  async _formatCodeInTextEditor(
-    editor: atom$TextEditor,
-    displayErrors: boolean = true,
-  ): Promise<boolean> {
-    const {scopeName} = editor.getGrammar();
-    const matchingProviders = this._getMatchingProvidersForScopeName(scopeName);
+  _formatCodeInTextEditor(editor, displayErrors = true) {
+    var _this3 = this;
 
-    if (!matchingProviders.length) {
-      if (displayErrors) {
-        atom.notifications.addError('No Code-Format providers registered for scope: ' + scopeName);
-      }
-      return false;
-    }
+    return (0, _asyncToGenerator.default)(function* () {
+      const { scopeName } = editor.getGrammar();
+      const matchingProviders = _this3._getMatchingProvidersForScopeName(scopeName);
 
-    const buffer = editor.getBuffer();
-    const selectionRange = editor.getSelectedBufferRange();
-    const {start: selectionStart, end: selectionEnd} = selectionRange;
-    let formatRange = null;
-    const selectionRangeEmpty = selectionRange.isEmpty();
-    if (selectionRangeEmpty) {
-      // If no selection is done, then, the whole file is wanted to be formatted.
-      formatRange = buffer.getRange();
-    } else {
-      // Format selections should start at the begining of the line,
-      // and include the last selected line end.
-      formatRange = new Range(
-          [selectionStart.row, 0],
-          [selectionEnd.row + 1, 0],
-      );
-    }
-    const contents = editor.getText();
-
-    try {
-      const provider = matchingProviders[0];
-      if (provider.formatCode != null &&
-        (!selectionRangeEmpty || provider.formatEntireFile == null)) {
-        const formatted = await provider.formatCode(editor, formatRange);
-        // Throws if contents have changed since the time of triggering format code.
-        this._checkContentsAreSame(contents, editor.getText());
-
-        if (selectionRangeEmpty) {
-          buffer.setTextViaDiff(formatted);
-        } else {
-          editor.setTextInBufferRange(formatRange, formatted);
+      if (!matchingProviders.length) {
+        if (displayErrors) {
+          atom.notifications.addError('No Code-Format providers registered for scope: ' + scopeName);
         }
-        return true;
-      } else if (provider.formatEntireFile != null) {
-        const {newCursor, formatted} = await provider.formatEntireFile(editor, formatRange);
-        // Throws if contents have changed since the time of triggering format code.
-        this._checkContentsAreSame(contents, editor.getText());
+        return false;
+      }
 
-        buffer.setTextViaDiff(formatted);
-
-        const newPosition = (newCursor != null)
-          ? buffer.positionForCharacterIndex(newCursor)
-          : editor.getCursorBufferPosition();
-
-        // We call setCursorBufferPosition even when there is no newCursor,
-        // because it unselects the text selection.
-        editor.setCursorBufferPosition(newPosition);
-        return true;
+      const buffer = editor.getBuffer();
+      const selectionRange = editor.getSelectedBufferRange();
+      const { start: selectionStart, end: selectionEnd } = selectionRange;
+      let formatRange = null;
+      const selectionRangeEmpty = selectionRange.isEmpty();
+      if (selectionRangeEmpty) {
+        // If no selection is done, then, the whole file is wanted to be formatted.
+        formatRange = buffer.getRange();
       } else {
-        throw new Error('code-format providers must implement formatCode or formatEntireFile');
+        // Format selections should start at the begining of the line,
+        // and include the last selected line end.
+        formatRange = new _atom.Range([selectionStart.row, 0], [selectionEnd.row + 1, 0]);
       }
-    } catch (e) {
-      if (displayErrors) {
-        atom.notifications.addError('Failed to format code: ' + e.message);
+      const contents = editor.getText();
+
+      try {
+        const provider = matchingProviders[0];
+        if (provider.formatCode != null && (!selectionRangeEmpty || provider.formatEntireFile == null)) {
+          const formatted = yield provider.formatCode(editor, formatRange);
+          // Throws if contents have changed since the time of triggering format code.
+          _this3._checkContentsAreSame(contents, editor.getText());
+
+          if (selectionRangeEmpty) {
+            buffer.setTextViaDiff(formatted);
+          } else {
+            editor.setTextInBufferRange(formatRange, formatted);
+          }
+          return true;
+        } else if (provider.formatEntireFile != null) {
+          const { newCursor, formatted } = yield provider.formatEntireFile(editor, formatRange);
+          // Throws if contents have changed since the time of triggering format code.
+          _this3._checkContentsAreSame(contents, editor.getText());
+
+          buffer.setTextViaDiff(formatted);
+
+          const newPosition = newCursor != null ? buffer.positionForCharacterIndex(newCursor) : editor.getCursorBufferPosition();
+
+          // We call setCursorBufferPosition even when there is no newCursor,
+          // because it unselects the text selection.
+          editor.setCursorBufferPosition(newPosition);
+          return true;
+        } else {
+          throw new Error('code-format providers must implement formatCode or formatEntireFile');
+        }
+      } catch (e) {
+        if (displayErrors) {
+          atom.notifications.addError('Failed to format code: ' + e.message);
+        }
+        return false;
       }
-      return false;
-    }
+    })();
   }
 
-  _getMatchingProvidersForScopeName(scopeName: string): Array<CodeFormatProvider> {
+  _getMatchingProvidersForScopeName(scopeName) {
     const matchingProviders = this._codeFormatProviders.filter(provider => {
       const providerGrammars = provider.selector.split(/, ?/);
       return provider.inclusionPriority > 0 && providerGrammars.indexOf(scopeName) !== -1;
@@ -166,7 +179,7 @@ export default class CodeFormatManager {
     });
   }
 
-  addProvider(provider: CodeFormatProvider) {
+  addProvider(provider) {
     this._codeFormatProviders.push(provider);
   }
 
@@ -179,3 +192,5 @@ export default class CodeFormatManager {
     this._pendingFormats.clear();
   }
 }
+exports.default = CodeFormatManager;
+module.exports = exports['default'];

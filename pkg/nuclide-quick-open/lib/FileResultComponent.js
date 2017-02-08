@@ -1,3 +1,25 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _reactForAtom = require('react-for-atom');
+
+var _fileTypeClass;
+
+function _load_fileTypeClass() {
+  return _fileTypeClass = _interopRequireDefault(require('../../commons-atom/file-type-class'));
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,41 +27,30 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
 
-import type {FileResult} from './types';
-
-import {React} from 'react-for-atom';
-import fileTypeClass from '../../commons-atom/file-type-class';
-import nuclideUri from '../../commons-node/nuclideUri';
-
-type Key = number | string;
-
-function renderSubsequence(seq: string, props: Object): ?React.Element<any> {
-  return seq.length === 0 ? null : <span {...props}>{seq}</span>;
-}
-
-function renderUnmatchedSubsequence(seq: string, key: Key): ?React.Element<any> {
-  return renderSubsequence(seq, {key});
-}
-
-function renderMatchedSubsequence(seq: string, key: Key): ?React.Element<any> {
-  return renderSubsequence(
-    seq,
-    {
-      key,
-      className: 'quick-open-file-search-match',
-    },
+function renderSubsequence(seq, props) {
+  return seq.length === 0 ? null : _reactForAtom.React.createElement(
+    'span',
+    props,
+    seq
   );
 }
 
-export default class FileResultComponent {
-  static getComponentForItem(
-    item: FileResult,
-    serviceName: string,
-    dirName: string,
-  ): React.Element<any> {
+function renderUnmatchedSubsequence(seq, key) {
+  return renderSubsequence(seq, { key });
+}
+
+function renderMatchedSubsequence(seq, key) {
+  return renderSubsequence(seq, {
+    key,
+    className: 'quick-open-file-search-match'
+  });
+}
+
+class FileResultComponent {
+  static getComponentForItem(item, serviceName, dirName) {
     // Trim the `dirName` off the `filePath` since that's shown by the group
     let filePath = item.path;
     let matchIndexes = item.matchIndexes || [];
@@ -75,13 +86,15 @@ export default class FileResultComponent {
     });
     pathComponents.push(renderUnmatchedSubsequence(filePath.slice(start, filePath.length), 'last'));
 
-    const filenameClasses = ['file', 'icon', fileTypeClass(filePath)].join(' ');
+    const filenameClasses = ['file', 'icon', (0, (_fileTypeClass || _load_fileTypeClass()).default)(filePath)].join(' ');
     // `data-name` is support for the "file-icons" package.
     // See: https://atom.io/packages/file-icons
-    return (
-      <div className={filenameClasses} data-name={nuclideUri.basename(filePath)}>
-        {pathComponents}
-      </div>
+    return _reactForAtom.React.createElement(
+      'div',
+      { className: filenameClasses, 'data-name': (_nuclideUri || _load_nuclideUri()).default.basename(filePath) },
+      pathComponents
     );
   }
 }
+exports.default = FileResultComponent;
+module.exports = exports['default'];

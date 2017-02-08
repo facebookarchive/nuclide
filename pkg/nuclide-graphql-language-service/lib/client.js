@@ -1,3 +1,34 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = main;
+
+var _fs = _interopRequireDefault(require('fs'));
+
+var _graphql;
+
+function _load_graphql() {
+  return _graphql = require('graphql');
+}
+
+var _path = _interopRequireDefault(require('path'));
+
+var _getDiagnostics;
+
+function _load_getDiagnostics() {
+  return _getDiagnostics = require('./interfaces/getDiagnostics');
+}
+
+var _getOutline;
+
+function _load_getOutline() {
+  return _getOutline = require('./interfaces/getOutline');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,22 +36,15 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
 
-import invariant from 'assert';
-import fs from 'fs';
-import {buildSchema, buildClientSchema} from 'graphql';
-// eslint-disable-next-line nuclide-internal/prefer-nuclide-uri
-import path from 'path';
-
-import {getDiagnostics} from './interfaces/getDiagnostics';
-import {getOutline} from './interfaces/getOutline';
-
 const GRAPHQL_SUCCESS_CODE = 0;
+// eslint-disable-next-line nuclide-internal/prefer-nuclide-uri
+
 const GRAPHQL_FAILURE_CODE = 1;
 
-export default function main(command: string, argv: Object) {
+function main(command, argv) {
   const filePath = argv.file && argv.file.trim();
   const text = argv.text;
   const schemaPath = argv.schemaPath && argv.schemaPath.trim();
@@ -38,50 +62,43 @@ export default function main(command: string, argv: Object) {
 }
 
 function parseSchema(schemaPath) {
-  const buffer = fs.readFileSync(schemaPath);
+  const buffer = _fs.default.readFileSync(schemaPath);
   return buffer.toString();
 }
 
 function generateSchema(schemaPath) {
   const schemaDSL = parseSchema(schemaPath);
-  const schemaFileExt = path.extname(schemaPath);
+  const schemaFileExt = _path.default.extname(schemaPath);
   switch (schemaFileExt) {
     case '.graphql':
-      return buildSchema(schemaDSL);
+      return (0, (_graphql || _load_graphql()).buildSchema)(schemaDSL);
     case '.json':
-      return buildClientSchema(JSON.parse(schemaDSL));
+      return (0, (_graphql || _load_graphql()).buildClientSchema)(JSON.parse(schemaDSL));
     default:
       throw new Error('Unsupported schema file extention');
   }
 }
 
-function ensureText(
-  filePath: ?string,
-  queryText: ?string,
-): string {
+function ensureText(filePath, queryText) {
   let text = queryText;
   // Always honor text argument over filePath.
   // If text isn't available, try reading from the filePath.
   if (!text) {
-    invariant(
-      filePath,
-      'A path to the GraphQL file or its contents is required.',
-    );
-    text = fs.readFileSync(filePath, 'utf8');
+    if (!filePath) {
+      throw new Error('A path to the GraphQL file or its contents is required.');
+    }
+
+    text = _fs.default.readFileSync(filePath, 'utf8');
   }
   return text;
 }
 
-function performLint(
-  filePath: string,
-  queryText?: string,
-  schemaPath?: string,
-) {
+function performLint(filePath, queryText, schemaPath) {
   try {
     const text = ensureText(filePath, queryText);
 
     const schema = schemaPath ? generateSchema(schemaPath) : null;
-    const resultArray = getDiagnostics(filePath, text, schema);
+    const resultArray = (0, (_getDiagnostics || _load_getDiagnostics()).getDiagnostics)(filePath, text, schema);
     const resultObject = resultArray.reduce((prev, cur, index) => {
       prev[index] = cur;
       return prev;
@@ -94,13 +111,10 @@ function performLint(
   }
 }
 
-function performOutline(
-  filePath: ?string,
-  queryText: ?string,
-): number {
+function performOutline(filePath, queryText) {
   try {
     const text = ensureText(filePath, queryText);
-    const outline = getOutline(text);
+    const outline = (0, (_getOutline || _load_getOutline()).getOutline)(text);
     process.stdout.write(JSON.stringify(outline));
   } catch (error) {
     process.stderr.write(error);
@@ -108,3 +122,4 @@ function performOutline(
   }
   return GRAPHQL_SUCCESS_CODE;
 }
+module.exports = exports['default'];

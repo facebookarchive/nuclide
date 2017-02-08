@@ -1,121 +1,156 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import type {ReferenceGroup} from '../types';
-import type {Reference} from '../rpc-types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {React} from 'react-for-atom';
-import classnames from 'classnames';
-import nuclideUri from '../../../commons-node/nuclideUri';
-import {goToLocation} from '../../../commons-atom/go-to-location';
-import {CodeSnippet} from '../../../nuclide-ui/CodeSnippet';
+var _reactForAtom = require('react-for-atom');
 
-type Props = {
-  uri: string,
-  grammar: atom$Grammar,
-  previewText: Array<string>,
-  refGroups: Array<ReferenceGroup>,
-  basePath: string,
-  clickCallback: () => void,
-  isSelected: boolean,
-};
+var _classnames;
 
-type State = {
-  isExpanded: boolean,
-};
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
 
-export default class FileReferencesView extends React.Component {
-  props: Props;
-  state: State;
+var _nuclideUri;
 
-  constructor(props: Props) {
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../../commons-node/nuclideUri'));
+}
+
+var _goToLocation;
+
+function _load_goToLocation() {
+  return _goToLocation = require('../../../commons-atom/go-to-location');
+}
+
+var _CodeSnippet;
+
+function _load_CodeSnippet() {
+  return _CodeSnippet = require('../../../nuclide-ui/CodeSnippet');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class FileReferencesView extends _reactForAtom.React.Component {
+
+  constructor(props) {
     super(props);
     this.state = {
-      isExpanded: true,
+      isExpanded: true
     };
-    (this: any)._onFileClick = this._onFileClick.bind(this);
-    (this: any)._onFileNameClick = this._onFileNameClick.bind(this);
+    this._onFileClick = this._onFileClick.bind(this);
+    this._onFileNameClick = this._onFileNameClick.bind(this);
   }
 
-  _onRefClick(evt: SyntheticEvent, ref: Reference) {
-    goToLocation(this.props.uri, ref.range.start.row, ref.range.start.column);
+  _onRefClick(evt, ref) {
+    (0, (_goToLocation || _load_goToLocation()).goToLocation)(this.props.uri, ref.range.start.row, ref.range.start.column);
     evt.stopPropagation();
   }
 
   _onFileClick() {
     this.props.clickCallback();
     this.setState({
-      isExpanded: !this.state.isExpanded,
+      isExpanded: !this.state.isExpanded
     });
   }
 
-  _onFileNameClick(evt: SyntheticEvent, line?: number) {
-    goToLocation(this.props.uri, line);
+  _onFileNameClick(evt, line) {
+    (0, (_goToLocation || _load_goToLocation()).goToLocation)(this.props.uri, line);
     evt.stopPropagation();
   }
 
-  render(): React.Element<any> {
-    const groups = this.props.refGroups.map((group: ReferenceGroup, i) => {
+  render() {
+    const groups = this.props.refGroups.map((group, i) => {
       const firstRef = group.references[0];
       const lastRef = group.references[group.references.length - 1];
 
       let caller;
       if (firstRef.name && firstRef.name === lastRef.name) {
-        caller = <span> in <code>{firstRef.name}</code></span>;
+        caller = _reactForAtom.React.createElement(
+          'span',
+          null,
+          ' in ',
+          _reactForAtom.React.createElement(
+            'code',
+            null,
+            firstRef.name
+          )
+        );
       }
       const startRange = firstRef.range.start;
       const endRange = lastRef.range.end;
-      return (
-        <li key={group.startLine} className="nuclide-find-references-ref">
-          <div
-            className="nuclide-find-references-ref-name"
-            onClick={evt => this._onRefClick(evt, firstRef)}>
-            {'Line '}
-            {startRange.row + 1}:{startRange.column + 1} - {endRange.row + 1}:{endRange.column + 1}
-            {caller}
-          </div>
-          <CodeSnippet
-            grammar={this.props.grammar}
-            text={this.props.previewText[i]}
-            highlights={group.references.map(ref => ref.range)}
-            startLine={group.startLine}
-            endLine={group.endLine}
-            onClick={evt => this._onRefClick(evt, firstRef)}
-            onLineClick={this._onFileNameClick}
-          />
-        </li>
+      return _reactForAtom.React.createElement(
+        'li',
+        { key: group.startLine, className: 'nuclide-find-references-ref' },
+        _reactForAtom.React.createElement(
+          'div',
+          {
+            className: 'nuclide-find-references-ref-name',
+            onClick: evt => this._onRefClick(evt, firstRef) },
+          'Line ',
+          startRange.row + 1,
+          ':',
+          startRange.column + 1,
+          ' - ',
+          endRange.row + 1,
+          ':',
+          endRange.column + 1,
+          caller
+        ),
+        _reactForAtom.React.createElement((_CodeSnippet || _load_CodeSnippet()).CodeSnippet, {
+          grammar: this.props.grammar,
+          text: this.props.previewText[i],
+          highlights: group.references.map(ref => ref.range),
+          startLine: group.startLine,
+          endLine: group.endLine,
+          onClick: evt => this._onRefClick(evt, firstRef),
+          onLineClick: this._onFileNameClick
+        })
       );
     });
-    const outerClassName = classnames('nuclide-find-references-file list-nested-item', {
+    const outerClassName = (0, (_classnames || _load_classnames()).default)('nuclide-find-references-file list-nested-item', {
       collapsed: !this.state.isExpanded,
       expanded: this.state.isExpanded,
-      selected: this.props.isSelected,
+      selected: this.props.isSelected
     });
 
-    return (
-      <li className={`${outerClassName}`}>
-        <div
-          className="nuclide-find-references-filename list-item"
-          onClick={this._onFileClick}>
-          <span className="icon-file-text icon" />
-          <a onClick={this._onFileNameClick}>
-            {nuclideUri.relative(this.props.basePath, this.props.uri)}
-          </a>
-          <span className="nuclide-find-references-ref-count badge badge-small">
-            {groups.length}
-          </span>
-        </div>
-        <ul className="nuclide-find-references-refs list-tree">
-          {groups}
-        </ul>
-      </li>
+    return _reactForAtom.React.createElement(
+      'li',
+      { className: `${outerClassName}` },
+      _reactForAtom.React.createElement(
+        'div',
+        {
+          className: 'nuclide-find-references-filename list-item',
+          onClick: this._onFileClick },
+        _reactForAtom.React.createElement('span', { className: 'icon-file-text icon' }),
+        _reactForAtom.React.createElement(
+          'a',
+          { onClick: this._onFileNameClick },
+          (_nuclideUri || _load_nuclideUri()).default.relative(this.props.basePath, this.props.uri)
+        ),
+        _reactForAtom.React.createElement(
+          'span',
+          { className: 'nuclide-find-references-ref-count badge badge-small' },
+          groups.length
+        )
+      ),
+      _reactForAtom.React.createElement(
+        'ul',
+        { className: 'nuclide-find-references-refs list-tree' },
+        groups
+      )
     );
   }
 }
+exports.default = FileReferencesView; /**
+                                       * Copyright (c) 2015-present, Facebook, Inc.
+                                       * All rights reserved.
+                                       *
+                                       * This source code is licensed under the license found in the LICENSE file in
+                                       * the root directory of this source tree.
+                                       *
+                                       * 
+                                       */
+
+module.exports = exports['default'];
