@@ -8,7 +8,7 @@
  * @flow
  */
 
-import {observeProcess, safeSpawn} from '../../commons-node/process';
+import {runCommand} from '../../commons-node/process';
 import memoize from 'lodash.memoize';
 import {Observable} from 'rxjs';
 
@@ -25,20 +25,29 @@ export function parseDevicesFromFbsimctlOutput(output: string): Array<Device> {
   const devices = [];
 
   output.split('\n').forEach(line => {
-    const columns = line.split('|').map(string => string.trim());
-    if (columns.length !== 5) {
+    let event;
+    try {
+      event = JSON.parse(line);
+    } catch (e) {
+      return;
+    }
+    if (!event || !event.event_name || event.event_name !== 'list' || !event.subject) {
+      return;
+    }
+    const simulator = event.subject;
+    if (!simulator.state || !simulator.os || !simulator.name || !simulator.udid) {
       return;
     }
 
-    if (!columns[4].match(/^iOS (.+)$/)) {
+    if (!simulator.os.match(/^iOS (.+)$/)) {
       return;
     }
 
     devices.push({
-      name: columns[1],
-      udid: columns[0],
-      state: validateState(columns[2]),
-      os: columns[4],
+      name: simulator.name,
+      udid: simulator.udid,
+      state: validateState(simulator.state),
+      os: simulator.os,
     });
   });
 
@@ -89,48 +98,22 @@ function validateState(rawState: ?string): ?DeviceState {
 }
 
 export const getFbsimctlDevices: () => Observable<Array<Device>> = memoize(() => (
-  observeProcess(() => safeSpawn('fbsimctl', ['--simulators', 'list']))
-    .map(event => {
-      // Throw errors.
-      if (event.kind === 'error') {
-        const error = new Error();
-        error.name = 'FbsimctlError';
-        throw error;
-      }
-      return event;
-    })
-    .reduce(
-      (acc, event) => (event.kind === 'stdout' ? acc + event.data : acc),
-      '',
-    )
+  runCommand('fbsimctl', ['--json', '--simulators', 'list'])
     .map(parseDevicesFromFbsimctlOutput)
     .catch(error => (
       // Users may not have fbsimctl installed. If the command failed, just return an empty list.
-      error.name === 'FbsimctlError' ? Observable.of([]) : Observable.throw(error)
+      Observable.of([])
     ))
     .share()
 ));
 
 export const getDevices: () => Observable<Array<Device>> = memoize(() => (
-  observeProcess(() => safeSpawn('xcrun', ['simctl', 'list', 'devices']))
-    .map(event => {
-      // Throw errors.
-      if (event.kind === 'error') {
-        const error = new Error();
-        error.name = 'XcrunError';
-        throw error;
-      }
-      return event;
-    })
-    .reduce(
-      (acc, event) => (event.kind === 'stdout' ? acc + event.data : acc),
-      '',
-    )
+  runCommand('xcrun', ['simctl', 'list', 'devices'])
     .map(parseDevicesFromSimctlOutput)
     .catch(error => (
       // Users may not have xcrun installed, particularly if they are using Buck for non-iOS
       // projects. If the command failed, just return an empty list.
-      error.name === 'XcrunError' ? Observable.of([]) : Observable.throw(error)
+      Observable.of([])
     ))
     .share()
 ));
