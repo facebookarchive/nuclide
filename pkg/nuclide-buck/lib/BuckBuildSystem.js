@@ -388,11 +388,20 @@ export class BuckBuildSystem {
     if (this._store == null) {
       return;
     }
-    const {buildTarget, taskSettings, selectedDeploymentTarget} = this._store.getState();
-    const selectedDeviceName = selectedDeploymentTarget && selectedDeploymentTarget.device
-      ? selectedDeploymentTarget.device.name : null;
-    const selectedPlatformName = selectedDeploymentTarget
-      ? selectedDeploymentTarget.platform.name : null;
+    const state = this._store.getState();
+    const {buildTarget, taskSettings, selectedDeploymentTarget} = state;
+    let selectedPlatformName;
+    let selectedDeviceName;
+    if (selectedDeploymentTarget) {
+      selectedPlatformName = selectedDeploymentTarget.platform.name;
+      selectedDeviceName = selectedDeploymentTarget.device
+        ? selectedDeploymentTarget.device.name : null;
+    } else {
+      // In case the user quits before the session is restored, forward the session restoration.
+      selectedPlatformName = state.lastSessionPlatformName;
+      selectedDeviceName = state.lastSessionDeviceName;
+    }
+
     return {
       buildTarget,
       taskSettings,
