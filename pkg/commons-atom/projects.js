@@ -10,13 +10,8 @@
 
 import type {NuclideUri} from '../commons-node/nuclideUri';
 
-import {Emitter, Directory} from 'atom';
+import {Directory} from 'atom';
 import nuclideUri from '../commons-node/nuclideUri';
-import singleton from '../commons-node/singleton';
-
-const REMOVE_PROJECT_EVENT = 'did-remove-project';
-const ADD_PROJECT_EVENT = 'did-add-project';
-const PROJECT_PATH_WATCHER_INSTANCE_KEY = '_nuclide_project_path_watcher';
 
 function getValidProjectPaths(): Array<string> {
   return atom.project.getDirectories().filter(directory => {
@@ -27,55 +22,6 @@ function getValidProjectPaths(): Array<string> {
     }
     return true;
   }).map(directory => directory.getPath());
-}
-
-class ProjectManager {
-  _emitter: Emitter;
-  _projectPaths: Set<string>;
-
-  constructor() {
-    this._emitter = new Emitter();
-    this._projectPaths = new Set(getValidProjectPaths());
-    atom.project.onDidChangePaths(this._updateProjectPaths.bind(this));
-  }
-
-  _updateProjectPaths(newProjectPaths: Array<string>): void {
-    const oldProjectPathSet = this._projectPaths;
-    const newProjectPathSet = new Set(getValidProjectPaths());
-    for (const oldProjectPath of oldProjectPathSet) {
-      if (!newProjectPathSet.has(oldProjectPath)) {
-        this._emitter.emit(REMOVE_PROJECT_EVENT, oldProjectPath);
-      }
-    }
-    for (const newProjectPath of newProjectPathSet) {
-      if (!oldProjectPathSet.has(newProjectPath)) {
-        this._emitter.emit(ADD_PROJECT_EVENT, newProjectPath);
-      }
-    }
-    this._projectPaths = newProjectPathSet;
-  }
-
-  observeProjectPaths(callback: (projectPath: string) => void): IDisposable {
-    for (const projectPath of this._projectPaths) {
-      callback(projectPath);
-    }
-    return this._emitter.on(ADD_PROJECT_EVENT, callback);
-  }
-
-  onDidAddProjectPath(callback: (projectPath: string) => void): IDisposable {
-    return this._emitter.on(ADD_PROJECT_EVENT, callback);
-  }
-
-  onDidRemoveProjectPath(callback: (projectPath: string) => void): IDisposable {
-    return this._emitter.on(REMOVE_PROJECT_EVENT, callback);
-  }
-}
-
-function getProjectManager(): ProjectManager {
-  return singleton.get(
-    PROJECT_PATH_WATCHER_INSTANCE_KEY,
-    () => new ProjectManager(),
-  );
 }
 
 export function getAtomProjectRelativePath(path: NuclideUri): ?string {
@@ -92,17 +38,44 @@ export function getAtomProjectRootPath(path: NuclideUri): ?string {
 }
 
 export function observeProjectPaths(callback: (projectPath: string) => void): IDisposable {
-  return getProjectManager().observeProjectPaths(callback);
+  getValidProjectPaths().forEach(callback);
+  return onDidAddProjectPath(callback);
 }
 
 export function onDidAddProjectPath(callback: (projectPath: string) => void): IDisposable {
-  return getProjectManager().onDidAddProjectPath(callback);
+  let projectPaths: Array<string> = getValidProjectPaths();
+  let changing: boolean = false;
+  return atom.project.onDidChangePaths(() => {
+    if (changing) {
+      throw new Error('Cannot update projects in the middle of an update');
+    }
+    changing = true;
+    const newProjectPaths = getValidProjectPaths();
+    for (const newProjectPath of newProjectPaths) {
+      if (!projectPaths.includes(newProjectPath)) {
+        callback(newProjectPath);
+      }
+    }
+    changing = false;
+    projectPaths = newProjectPaths;
+  });
 }
 
 export function onDidRemoveProjectPath(callback: (projectPath: string) => void): IDisposable {
-  return getProjectManager().onDidRemoveProjectPath(callback);
+  let projectPaths: Array<string> = getValidProjectPaths();
+  let changing: boolean = false;
+  return atom.project.onDidChangePaths(() => {
+    if (changing) {
+      throw new Error('Cannot update projects in the middle of an update');
+    }
+    changing = true;
+    const newProjectPaths = getValidProjectPaths();
+    for (const projectPath of projectPaths) {
+      if (!newProjectPaths.includes(projectPath)) {
+        callback(projectPath);
+      }
+    }
+    changing = false;
+    projectPaths = newProjectPaths;
+  });
 }
-
-export const __test__ = {
-  PROJECT_PATH_WATCHER_INSTANCE_KEY,
-};
