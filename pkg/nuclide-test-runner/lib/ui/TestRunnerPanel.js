@@ -15,7 +15,6 @@ import invariant from 'assert';
 import nuclideUri from '../../../commons-node/nuclideUri';
 import Console from './Console';
 import {Dropdown} from '../../../nuclide-ui/Dropdown';
-import {PanelComponent} from '../../../nuclide-ui/PanelComponent';
 import {Toolbar} from '../../../nuclide-ui/Toolbar';
 import {ToolbarLeft} from '../../../nuclide-ui/ToolbarLeft';
 import {ToolbarRight} from '../../../nuclide-ui/ToolbarRight';
@@ -209,39 +208,37 @@ export default class TestRunnerPanel extends React.Component {
     }
 
     return (
-      <PanelComponent dock="bottom" doNotSetSize={true}>
-        <div className="nuclide-test-runner-panel">
-          <Toolbar location="top">
-            <ToolbarLeft>
-              {dropdown}
-              {runStopButton}
-              {attachDebuggerCheckbox}
-              <Button
-                size={ButtonSizes.SMALL}
-                icon="trashcan"
-                className="trashcan inline-block"
-                disabled={this.isDisabled() ||
-                  this.props.executionState === TestRunnerPanel.ExecutionState.RUNNING}
-                onClick={this.props.onClickClear}
-                title="Clear Output"
-              />
-              {pathMsg}
-            </ToolbarLeft>
-            <ToolbarRight>
-              {runMsg}
-              <progress className="inline-block" max="100" {...progressAttrs} />
-              <Button
-                onClick={this.props.onClickClose}
-                className="inline-block"
-                icon="x"
-                size={ButtonSizes.SMALL}
-                title="Close Panel"
-              />
-            </ToolbarRight>
-          </Toolbar>
-          <div className="nuclide-test-runner-console" ref="paneContainer" />
-        </div>
-      </PanelComponent>
+      <div className="nuclide-test-runner-panel">
+        <Toolbar location="top">
+          <ToolbarLeft>
+            {dropdown}
+            {runStopButton}
+            {attachDebuggerCheckbox}
+            <Button
+              size={ButtonSizes.SMALL}
+              icon="trashcan"
+              className="trashcan inline-block"
+              disabled={this.isDisabled() ||
+                this.props.executionState === TestRunnerPanel.ExecutionState.RUNNING}
+              onClick={this.props.onClickClear}
+              title="Clear Output"
+            />
+            {pathMsg}
+          </ToolbarLeft>
+          <ToolbarRight>
+            {runMsg}
+            <progress className="inline-block" max="100" {...progressAttrs} />
+            <Button
+              onClick={this.props.onClickClose}
+              className="inline-block"
+              icon="x"
+              size={ButtonSizes.SMALL}
+              title="Close Panel"
+            />
+          </ToolbarRight>
+        </Toolbar>
+        <div className="nuclide-test-runner-console" ref="paneContainer" />
+      </div>
     );
   }
 
