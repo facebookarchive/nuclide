@@ -55,7 +55,7 @@ export class Toolbar extends React.Component {
       if (taskRunnerState) {
         taskRunnerOptions = getTaskRunnerOptions(taskRunners, this.props.statesForTaskRunners);
         const ExtraUi = this.props.extraUiComponent;
-        const extraUi = ExtraUi ? <ExtraUi /> : null;
+        const extraUi = ExtraUi ? <ExtraUi key="extraui" /> : null;
         const taskButtons = this._renderTaskButtons();
         taskRunnerSpecificContent = [taskButtons, extraUi];
         dropdownVisibility = {};
@@ -87,19 +87,19 @@ export class Toolbar extends React.Component {
   _renderTaskButtons(): ?React.Element<any> {
     const taskButtons = this._getButtonsForTasks();
     return (
-      <span className="inline-block">
-          <ButtonGroup>
-            {taskButtons}
-            <Button
-              className="nuclide-task-button"
-              key="stop"
-              size={ButtonSizes.SMALL}
-              icon="primitive-square"
-              tooltip={tooltip('Stop')}
-              disabled={this.props.runningTaskIsCancelable !== true}
-              onClick={this.props.stopRunningTask}
-            />
-          </ButtonGroup>
+      <span className="inline-block" key="taskButtons">
+        <ButtonGroup>
+          {taskButtons}
+          <Button
+            className="nuclide-task-button"
+            key="stop"
+            size={ButtonSizes.SMALL}
+            icon="primitive-square"
+            tooltip={tooltip('Stop')}
+            disabled={this.props.runningTaskIsCancelable !== true}
+            onClick={this.props.stopRunningTask}
+          />
+        </ButtonGroup>
       </span>
     );
   }
