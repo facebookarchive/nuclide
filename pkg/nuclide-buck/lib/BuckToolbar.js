@@ -225,7 +225,7 @@ export default class BuckToolbar extends React.Component {
           for (const device of deviceGroup.devices) {
             submenu.push({
               label: `  ${device.name}`,
-              selectedLabel: device.name,
+              selectedLabel: `${device.name} @ ${platform.name}`,
               value: {platform, device},
             });
           }

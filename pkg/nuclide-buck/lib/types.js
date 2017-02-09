@@ -12,10 +12,13 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {Task} from '../../commons-node/tasks';
 import type {Action} from './redux/Actions';
 import type {PlatformService} from './PlatformService';
+import type {Observable} from 'rxjs';
+import type {TaskEvent} from '../../commons-node/tasks';
+import type {BuckBuildSystem} from '../../nuclide-buck/lib/BuckBuildSystem';
 
-export type TaskType = 'build' | 'test' | 'run' | 'debug';
+export type TaskType = 'build' | 'run' | 'test' | 'debug';
 
-export type BuckSubcommand = 'build' | 'install' | 'test';
+export type BuckSubcommand = 'build' | 'run' | 'install' | 'test' | 'debug';
 
 export type TaskSettings = {
   arguments?: Array<string>,
@@ -71,7 +74,9 @@ export type PlatformGroup = {
 
 export type Platform = {
   name: string,
-  flavor: string,
+  tasks: Set<TaskType>,
+  runTask: (builder: BuckBuildSystem, type: TaskType, buildTarget: string, device: ?Device)
+    => Observable<TaskEvent>,
   deviceGroups: Array<DeviceGroup>,
 };
 
@@ -82,7 +87,6 @@ export type DeviceGroup = {
 
 export type Device = {
   name: string,
-  udid: string,
 };
 
 export type DeploymentTarget = {

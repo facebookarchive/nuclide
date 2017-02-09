@@ -14,7 +14,6 @@ import type {Directory} from '../../nuclide-remote-connection';
 import type {TaskMetadata} from '../../nuclide-task-runner/lib/types';
 import type {Level, Message} from '../../nuclide-console/lib/types';
 import typeof * as BuckService from '../../nuclide-buck-rpc';
-import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import type {
   AppState,
   BuckBuilderBuildOptions,
@@ -66,74 +65,27 @@ import {
 } from './DeployEventStream';
 import observeBuildCommands from './observeBuildCommands';
 import {React} from 'react-for-atom';
-import passesGK from '../../commons-node/passesGK';
 
 const SOCKET_TIMEOUT = 30000;
 
-const INSTALLABLE_RULES = new Set([
-  'apple_bundle',
-  'apk_genrule',
-  'android_binary',
-]);
-
 const DEBUGGABLE_RULES = new Set([
-  // $FlowFixMe: spreadable sets
-  ...INSTALLABLE_RULES,
   'cxx_binary',
   'cxx_test',
   'rust_binary',
   'rust_test',
-  'android_binary',
 ]);
 
-const NUCLIDE_JAVA_DEBUGGER_GK = 'nuclide_debugger_java';
+const RUNNABLE_RULES = new Set([
+]);
 
-function isInstallableRule(ruleType: ?string) {
-  return INSTALLABLE_RULES.has(ruleType);
-}
-
-function isDebuggableRule(ruleType: string, target: ?string): boolean {
-  return DEBUGGABLE_RULES.has(ruleType) && isDebuggerAvailableForTarget(ruleType, target);
-}
-
-function passesDebuggerGatekeeper(ruleType: ?string, javaDebuggerGk: boolean): boolean {
-  if (ruleType !== 'android_binary') {
-    return true;
-  }
-
-  return javaDebuggerGk;
-}
-
-function isDebuggerAvailableForTarget(ruleType: string, target: ?string): boolean {
-  switch (ruleType) {
-    case 'android_binary':
-      return (getServiceByNuclideUri('JavaDebuggerService', target) != null);
+function shouldEnableTask(taskType: TaskType, ruleType: string): boolean {
+  switch (taskType) {
+    case 'run':
+      return RUNNABLE_RULES.has(ruleType);
+    case 'debug':
+      return DEBUGGABLE_RULES.has(ruleType);
     default:
       return true;
-  }
-}
-
-function shouldEnableTask(taskType: TaskType, ruleType: ?string, target: ?string): boolean {
-  switch (taskType) {
-    case 'run':
-      return ruleType != null && isInstallableRule(ruleType);
-    case 'debug':
-      return ruleType != null && isDebuggableRule(ruleType, target);
-    default:
-      return ruleType != null;
-  }
-}
-
-function getSubcommand(taskType: TaskType, isInstallable: boolean): BuckSubcommand {
-  switch (taskType) {
-    case 'run':
-      return 'install';
-    case 'debug':
-      // For mobile builds, install the build on the device.
-      // Otherwise, run a regular build and invoke the debugger on the output.
-      return isInstallable ? 'install' : 'build';
-    default:
-      return taskType;
   }
 }
 
@@ -218,21 +170,24 @@ export class BuckBuildSystem {
       .distinctUntilChanged();
 
     const tasksObservable = storeReady
-      .mergeMap(state => Observable.fromPromise(passesGK(NUCLIDE_JAVA_DEBUGGER_GK))
-          .map(javaDebuggerGk => {
-            const {buildRuleType} = state;
-            const target = this._getStore().getState().buildTarget;
-            return TASKS.map(task => {
-              const enable = shouldEnableTask(task.type, buildRuleType, target);
-              const passesGk = (task.type !== 'debug') ? true :
-                passesDebuggerGatekeeper(buildRuleType, javaDebuggerGk);
-              return ({
-                ...task,
-                disabled: state.isLoadingPlatforms || !enable || !passesGk,
-              });
-            });
-          }),
-      );
+      .map(state => {
+        const {buildRuleType, selectedDeploymentTarget} = state;
+        const tasksFromPlatform = selectedDeploymentTarget ?
+          selectedDeploymentTarget.platform.tasks : null;
+        return TASKS.map(task => {
+          let disabled = state.isLoadingPlatforms || buildRuleType == null;
+          if (!disabled) {
+            if (tasksFromPlatform) {
+              disabled = !tasksFromPlatform.has(task.type);
+            } else {
+              invariant(buildRuleType);
+              // No platform provider selected, fall back to default logic
+              disabled = !shouldEnableTask(task.type, buildRuleType);
+            }
+          }
+          return {...task, disabled};
+        });
+      });
 
     const subscription = Observable.combineLatest(enabledObservable, tasksObservable)
       .subscribe(([enabled, tasks]) => callback(enabled, tasks));
@@ -293,25 +248,23 @@ export class BuckBuildSystem {
     );
 
     const state = this._getStore().getState();
+    const {buildTarget, selectedDeploymentTarget} = state;
 
-    const {selectedDeploymentTarget} = state;
-    let fullTargetName = state.buildTarget;
-    let udid = null;
+    let resultStream;
     if (selectedDeploymentTarget) {
-      const separator = !fullTargetName.includes('#') ? '#' : ',';
-      fullTargetName += separator + selectedDeploymentTarget.platform.flavor;
-      if (selectedDeploymentTarget.device) {
-        udid = selectedDeploymentTarget.device.udid;
-      }
+      const {platform, device} = selectedDeploymentTarget;
+      resultStream = platform.runTask(this, taskType, buildTarget, device);
+    } else {
+      const subcommand = taskType === 'debug' ? 'build' : taskType;
+      resultStream = this.runSubcommand(
+        subcommand,
+        buildTarget,
+        {},
+        taskType === 'debug',
+        null,
+      );
     }
-    const resultStream = this._runTaskType(
-      taskType,
-      state.buckRoot,
-      fullTargetName,
-      state.taskSettings,
-      isInstallableRule(state.buildRuleType),
-      udid,
-    );
+
     const task = taskFromObservable(resultStream);
     return {
       ...task,
@@ -319,10 +272,11 @@ export class BuckBuildSystem {
         this._logOutput('Build cancelled.', 'warning');
         task.cancel();
       },
-      getTrackingData: () => {
-        const {buckRoot, buildTarget, taskSettings} = this._getStore().getState();
-        return {buckRoot, buildTarget, taskSettings};
-      },
+      getTrackingData: () => ({
+        buckRoot: state.buckRoot,
+        buildTarget: state.buildTarget,
+        taskSettings: state.taskSettings,
+      }),
     };
   }
 
@@ -337,9 +291,8 @@ export class BuckBuildSystem {
 
     const task = taskFromObservable(
       Observable.concat(
-        this._runTaskType(
+        this.runSubcommand(
           'build',
-          root,
           target,
           {},
           false,
@@ -409,16 +362,16 @@ export class BuckBuildSystem {
       selectedDeviceName};
   }
 
-  _runTaskType(
-    taskType: TaskType,
-    buckRoot: ?string,
+  runSubcommand(
+    subcommand: BuckSubcommand,
     buildTarget: string,
-    settings: TaskSettings,
-    isInstallable: boolean,
-    deviceUdid: ?string,
+    additionalSettings: TaskSettings,
+    isDebug: boolean,
+    udid: ?string,
   ): Observable<TaskEvent> {
     // Clear Buck diagnostics every time we run build.
     this._diagnosticInvalidations.next({scope: 'all'});
+    const {buckRoot, taskSettings} = this._getStore().getState();
 
     if (buckRoot == null || buildTarget == null) {
       // All tasks should have been disabled.
@@ -431,7 +384,7 @@ export class BuckBuildSystem {
       {visible: true},
     );
 
-    const subcommand = getSubcommand(taskType, isInstallable);
+    const settings = {...taskSettings, ...additionalSettings};
     let argString = '';
     if (settings.arguments != null && settings.arguments.length > 0) {
       argString = ' ' + quote(settings.arguments);
@@ -455,7 +408,6 @@ export class BuckBuildSystem {
           this._logOutput('Enable httpserver in your .buckconfig for better output.', 'warning');
         }
 
-        const isDebug = taskType === 'debug';
         const processMessages = runBuckCommand(
           buckService,
           buckRoot,
@@ -463,7 +415,7 @@ export class BuckBuildSystem {
           subcommand,
           settings.arguments || [],
           isDebug,
-          deviceUdid,
+          udid,
         ).share();
         const processEvents = getEventsFromProcess(processMessages).share();
 
@@ -625,6 +577,8 @@ function runBuckCommand(
     return buckService.buildWithOutput(buckRoot, [buildTarget], args).refCount();
   } else if (subcommand === 'test') {
     return buckService.testWithOutput(buckRoot, [buildTarget], args).refCount();
+  } else if (subcommand === 'run') {
+    throw Error('TODO: Implement run');
   } else {
     throw Error(`Unknown subcommand: ${subcommand}`);
   }

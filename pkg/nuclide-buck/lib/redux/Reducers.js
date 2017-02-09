@@ -97,9 +97,14 @@ function selectValidDeploymentTarget(
           if (currentDeviceName) {
             for (const deviceGroup of platform.deviceGroups) {
               for (const device of deviceGroup.devices) {
-                if (device.udid === currentDeviceName) {
+                if (device.name === currentDeviceName) {
                   existingDevice = device;
+                  break;
                 }
+              }
+
+              if (existingDevice) {
+                break;
               }
             }
           }

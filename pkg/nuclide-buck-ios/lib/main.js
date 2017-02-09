@@ -8,12 +8,15 @@
  * @flow
  */
 
-import type {PlatformGroup} from '../../nuclide-buck/lib/types';
+import type {BuckBuildSystem} from '../../nuclide-buck/lib/BuckBuildSystem';
+import type {Device, PlatformGroup, TaskType} from '../../nuclide-buck/lib/types';
+import type {TaskEvent} from '../../commons-node/tasks';
 import type {PlatformService} from '../../nuclide-buck/lib/PlatformService';
 
 import {Disposable} from 'atom';
 import {Observable} from 'rxjs';
 import * as IosSimulator from '../../nuclide-ios-common';
+import invariant from 'assert';
 
 let disposable: ?Disposable = null;
 
@@ -36,8 +39,7 @@ function provideIosDevices(
   if (ruleType !== 'apple_bundle') {
     return Observable.of(null);
   }
-  return IosSimulator.getDevices()
-  .map(devices => {
+  return IosSimulator.getDevices().map(devices => {
     if (!devices.length) {
       return null;
     }
@@ -46,7 +48,8 @@ function provideIosDevices(
       name: 'iOS Simulators',
       platforms: [{
         name: 'iOS Simulators',
-        flavor: 'iphonesimulator-x86_64',
+        tasks: new Set(['build', 'run', 'test', 'debug']),
+        runTask,
         deviceGroups: [
           {
             name: 'iOS Simulators',
@@ -59,4 +62,22 @@ function provideIosDevices(
       }],
     };
   });
+}
+
+function runTask(
+  builder: BuckBuildSystem,
+  taskType: TaskType,
+  buildTarget: string,
+  device: ?Device,
+): Observable<TaskEvent> {
+  let subcommand = taskType;
+  invariant(device);
+  invariant(device.udid);
+  invariant(typeof device.udid === 'string');
+
+  if (subcommand === 'run' || subcommand === 'debug') {
+    subcommand = 'install';
+  }
+
+  return builder.runSubcommand(subcommand, buildTarget, {}, taskType === 'debug', device.udid);
 }
