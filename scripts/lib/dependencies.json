@@ -1,10 +1,10 @@
 {
   "atom": {
     "clientOnly": true,
-    "version-cmd": ["atom-beta", "--version"],
-    "version-output": "Atom    : 1.14.0-beta4\nElectron: 1.3.13\nChrome  : 52.0.2743.82\nNode    : 6.5.0",
-    "url": "https://github.com/atom/atom/releases/download/v1.14.0-beta4/atom-mac.zip",
-    "shasum": "9812309f5225b38a079ec8f0ec87a7f2bcc91d8b71dd0b87c0760f8843af1f8b"
+    "version-cmd": ["atom", "--version"],
+    "version-output": "Atom    : 1.14.0\nElectron: 1.3.13\nChrome  : 52.0.2743.82\nNode    : 6.5.0",
+    "url": "https://github.com/atom/atom/releases/download/v1.14.0/atom-mac.zip",
+    "shasum": "95fa8630278e329df04ae1484a767b9d65643fd2da80040d0fab8e12d48d7d5f"
   },
   "flow": {
     "clientOnly": false,
