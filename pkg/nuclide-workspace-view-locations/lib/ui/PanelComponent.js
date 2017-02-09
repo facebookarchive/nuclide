@@ -11,36 +11,21 @@
 /* global getComputedStyle */
 
 import {nextAnimationFrame} from '../../../commons-node/observable';
-import {PanelComponentScroller} from '../../../nuclide-ui/PanelComponentScroller';
 import {CompositeDisposable} from 'atom';
 import {React, ReactDOM} from 'react-for-atom';
 
 const MINIMUM_LENGTH = 100;
 
 type DefaultProps = {
-  hidden: boolean,
   initialLength: number,
-  noScroll: boolean,
   onResize: (width: number) => mixed,
 };
 
 type Props = {
   children?: mixed,
   dock: 'top' | 'right' | 'bottom' | 'left',
-  hidden: boolean,
   initialLength: number,
-  /*
-   * When `true`, this component does not wrap its children in a scrolling container and instead
-   * provides a simple container with visible (the default in CSS) overflow. Default: false.
-   */
-  noScroll: boolean,
   onResize: (width: number) => mixed,
-  overflowX?: string,
-  /*
-   * When `true`, the height does not get set manually.
-   * Useful when the parent takes care of sizing the component.
-   */
-  doNotSetSize?: true,
 };
 
 type State = {
@@ -59,9 +44,7 @@ export class PanelComponent extends React.Component {
   props: Props;
   state: State;
   static defaultProps: DefaultProps = {
-    hidden: false,
     initialLength: 200,
-    noScroll: false,
     onResize: width => {},
   };
 
@@ -73,7 +56,6 @@ export class PanelComponent extends React.Component {
     };
 
     // Bind main events to this object. _updateSize is only ever bound within these.
-    (this: any)._handleDoubleClick = this._handleDoubleClick.bind(this);
     (this: any)._handleMouseDown = this._handleMouseDown.bind(this);
     (this: any)._handleMouseMove = this._handleMouseMove.bind(this);
     (this: any)._handleMouseUp = this._handleMouseUp.bind(this);
@@ -125,69 +107,34 @@ export class PanelComponent extends React.Component {
     }
 
     let containerStyle;
-    if (this.props.doNotSetSize !== true) {
-      if (this.props.dock === 'left' || this.props.dock === 'right') {
-        containerStyle = {
-          width: this.state.length,
-          minWidth: MINIMUM_LENGTH,
-        };
-      } else if (this.props.dock === 'top' || this.props.dock === 'bottom') {
-        containerStyle = {
-          height: this.state.length,
-          minHeight: MINIMUM_LENGTH,
-        };
-      }
+    if (this.props.dock === 'left' || this.props.dock === 'right') {
+      containerStyle = {
+        width: this.state.length,
+        minWidth: MINIMUM_LENGTH,
+      };
+    } else if (this.props.dock === 'top' || this.props.dock === 'bottom') {
+      containerStyle = {
+        height: this.state.length,
+        minHeight: MINIMUM_LENGTH,
+      };
     }
 
-    const content = React.cloneElement(
-      React.Children.only(this.props.children),
-      {ref: 'child'});
-
-    let wrappedContent;
-    if (this.props.noScroll) {
-      wrappedContent = content;
-    } else {
-      wrappedContent = (
-        <PanelComponentScroller overflowX={this.props.overflowX}>
-          {content}
-        </PanelComponentScroller>
-      );
-    }
+    const content = React.cloneElement(React.Children.only(this.props.children), {ref: 'child'});
 
     return (
       <div
         className={`nuclide-ui-panel-component ${this.props.dock}`}
-        hidden={this.props.hidden}
         style={containerStyle}>
         <div className={`nuclide-ui-panel-component-resize-handle ${this.props.dock}`}
           ref="handle"
           onMouseDown={this._handleMouseDown}
-          onDoubleClick={this._handleDoubleClick}
         />
         <div className="nuclide-ui-panel-component-content">
-          {wrappedContent}
+          {content}
         </div>
         {resizeCursorOverlay}
       </div>
     );
-  }
-
-  /**
-   * Returns the current resizable length.
-   *
-   * For panels docked left or right, the length is the width. For panels
-   * docked top or bottom, it's the height.
-   */
-  getLength(): number {
-    return this.state.length;
-  }
-
-  focus(): void {
-    this.refs.child.focus();
-  }
-
-  getChildComponent(): React.Component<any, any, any> {
-    return this.refs.child;
   }
 
   _handleMouseDown(event: SyntheticMouseEvent): void {
@@ -235,28 +182,6 @@ export class PanelComponent extends React.Component {
       this._resizeSubscriptions.dispose();
     }
     this.setState({isResizing: false});
-  }
-
-  /**
-   * Resize the pane to fit its contents.
-   */
-  _handleDoubleClick(): void {
-    // Reset size to 0 and read the content's natural width (after re-layout)
-    // to determine the size to scale to.
-    this.setState({length: 0});
-    this.forceUpdate(() => {
-      let length = 0;
-      const childNode = ReactDOM.findDOMNode(this.refs.child);
-      const handle = ReactDOM.findDOMNode(this.refs.handle);
-      if (this.props.dock === 'left' || this.props.dock === 'right') {
-        length = childNode.offsetWidth + handle.offsetWidth;
-      } else if (this.props.dock === 'top' || this.props.dock === 'bottom') {
-        length = childNode.offsetHeight + handle.offsetHeight;
-      } else {
-        throw new Error('unhandled dock');
-      }
-      this._updateSize(length);
-    });
   }
 
   // Whether this is width or height depends on the orientation of this panel.

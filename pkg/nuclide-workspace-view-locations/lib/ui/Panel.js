@@ -43,7 +43,6 @@ export class Panel extends React.Component {
       <div className="nuclide-workspace-views-panel">
         <PanelComponent
           initialLength={this._getInitialSize() || undefined}
-          noScroll={true}
           onResize={this.props.onResize}
           dock={this.props.position}>
           <View item={this.props.paneContainer} />
