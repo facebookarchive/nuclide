@@ -1411,7 +1411,7 @@ declare class atom$TextBuffer {
   onDidChangePath(callback: () => mixed): IDisposable,
   onDidChangeEncoding(callback: () => mixed): IDisposable,
   onWillSave(callback: () => mixed): IDisposable,
-  onDidSave(callback: () => mixed): IDisposable,
+  onDidSave(callback: (event: {path: string}) => mixed): IDisposable,
   onDidDelete(callback: () => mixed): IDisposable,
   onWillReload(callback: () => mixed): IDisposable,
   onDidReload(callback: () => mixed): IDisposable,
