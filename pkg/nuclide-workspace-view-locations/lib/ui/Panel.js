@@ -8,7 +8,7 @@
  * @flow
  */
 
-import {PanelComponent} from '../../../nuclide-ui/PanelComponent';
+import {PanelComponent} from './PanelComponent';
 import {View} from '../../../nuclide-ui/View';
 import {React} from 'react-for-atom';
 
