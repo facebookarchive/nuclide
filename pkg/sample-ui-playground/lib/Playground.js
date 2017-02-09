@@ -31,9 +31,11 @@ import {RelativeDateExamples} from '../../nuclide-ui/RelativeDate.example';
 import {MultiRootChangedFilesViewExample} from '../../nuclide-ui/MultiRootChangedFilesView.example';
 import {ToggleExamples} from '../../nuclide-ui/Toggle.example';
 import {ResizableFlexContainerExamples} from '../../nuclide-ui/ResizableFlexContainer.example';
+import {ModalExamples} from '../../nuclide-ui/Modal.example';
 
 const playgroundComponents = [
   ButtonExamples,
+  ModalExamples,
   ProgressIndicatorExamples,
   CheckboxExamples,
   ToggleExamples,
