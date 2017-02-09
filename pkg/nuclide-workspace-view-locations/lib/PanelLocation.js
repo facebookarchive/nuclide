@@ -24,7 +24,7 @@ import {observeAddedPaneItems} from './observeAddedPaneItems';
 import {observePanes} from './observePanes';
 import {syncPaneItemVisibility} from './syncPaneItemVisibility';
 import * as PanelLocationIds from './PanelLocationIds';
-import {Panel} from './ui/Panel';
+import {PanelComponent} from './ui/PanelComponent';
 import nullthrows from 'nullthrows';
 import {React} from 'react-for-atom';
 import {BehaviorSubject, Observable, Scheduler} from 'rxjs';
@@ -208,7 +208,7 @@ export class PanelLocation extends SimpleModel<State> {
       position: this._position,
       onResize: this._handlePanelResize,
     }));
-    const Component = bindObservableAsProps(props, Panel);
+    const Component = bindObservableAsProps(props, PanelComponent);
     return {getElement: () => renderReactRoot(<Component />)};
   }
 

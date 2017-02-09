@@ -11,26 +11,29 @@
 /* global getComputedStyle */
 
 import {nextAnimationFrame} from '../../../commons-node/observable';
+import {View} from '../../../nuclide-ui/View';
 import {CompositeDisposable} from 'atom';
 import {React, ReactDOM} from 'react-for-atom';
 
 const MINIMUM_LENGTH = 100;
+const DEFAULT_INITIAL_SIZE = 300;
+
+type Position = 'top' | 'right' | 'bottom' | 'left';
 
 type DefaultProps = {
-  initialSize: number,
   onResize: (width: number) => mixed,
 };
 
 type Props = {
-  children?: mixed,
-  position: 'top' | 'right' | 'bottom' | 'left',
-  initialSize: number,
+  paneContainer: atom$PaneContainer,
+  position: Position,
+  initialSize: ?number,
   onResize: (width: number) => mixed,
 };
 
 type State = {
   isResizing: boolean,
-  size: number,
+  size: ?number,
 };
 
 /**
@@ -43,7 +46,6 @@ export class PanelComponent extends React.Component {
   props: Props;
   state: State;
   static defaultProps: DefaultProps = {
-    initialSize: 200,
     onResize: width => {},
   };
 
@@ -105,33 +107,35 @@ export class PanelComponent extends React.Component {
       resizeCursorOverlay = <div className={className} />;
     }
 
+    const size = this.state.size == null ? this._getInitialSize() : this.state.size;
+
     let containerStyle;
     if (this.props.position === 'left' || this.props.position === 'right') {
       containerStyle = {
-        width: this.state.size,
+        width: size,
         minWidth: MINIMUM_LENGTH,
       };
     } else if (this.props.position === 'top' || this.props.position === 'bottom') {
       containerStyle = {
-        height: this.state.size,
+        height: size,
         minHeight: MINIMUM_LENGTH,
       };
     }
 
-    const content = React.cloneElement(React.Children.only(this.props.children), {ref: 'child'});
-
     return (
-      <div
-        className={`nuclide-ui-panel-component ${this.props.position}`}
-        style={containerStyle}>
-        <div className={`nuclide-ui-panel-component-resize-handle ${this.props.position}`}
-          ref="handle"
-          onMouseDown={this._handleMouseDown}
-        />
-        <div className="nuclide-ui-panel-component-content">
-          {content}
+      <div className="nuclide-workspace-views-panel">
+        <div
+          className={`nuclide-ui-panel-component ${this.props.position}`}
+          style={containerStyle}>
+          <div className={`nuclide-ui-panel-component-resize-handle ${this.props.position}`}
+            ref="handle"
+            onMouseDown={this._handleMouseDown}
+          />
+          <div className="nuclide-ui-panel-component-content">
+            <View ref="child" item={this.props.paneContainer} />
+          </div>
+          {resizeCursorOverlay}
         </div>
-        {resizeCursorOverlay}
       </div>
     );
   }
@@ -187,5 +191,38 @@ export class PanelComponent extends React.Component {
   _updateSize(newSize: number): void {
     this.setState({size: newSize});
     this.props.onResize.call(null, newSize);
+  }
+
+  _getInitialSize(): number {
+    let initialSize;
+
+    if (this.props.initialSize != null) {
+      initialSize = this.props.initialSize;
+    } else {
+      // The item may not have been activated yet. If that's the case, just use the first item.
+      const activePaneItem =
+        this.props.paneContainer.getActivePaneItem() || this.props.paneContainer.getPaneItems()[0];
+      if (activePaneItem != null) {
+        initialSize = getPreferredInitialSize(activePaneItem, this.props.position);
+      }
+    }
+    return initialSize == null ? DEFAULT_INITIAL_SIZE : initialSize;
+  }
+}
+
+function getPreferredInitialSize(item: Object, position: Position): ?number {
+  switch (position) {
+    case 'top':
+    case 'bottom':
+      return typeof item.getPreferredInitialHeight === 'function'
+        ? item.getPreferredInitialHeight()
+        : null;
+    case 'left':
+    case 'right':
+      return typeof item.getPreferredInitialWidth === 'function'
+        ? item.getPreferredInitialWidth()
+        : null;
+    default:
+      throw new Error(`Invalid position: ${position}`);
   }
 }
