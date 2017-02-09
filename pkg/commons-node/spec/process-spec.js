@@ -536,6 +536,19 @@ describe('commons-node/process', () => {
         expect(error.stderr).toBe('oopsy');
       });
     });
+
+    // Previously we had a bug where we mutated the seed and subsequent subscriptions would use the
+    // mutated value.
+    it("doesn't share a mutable seed (regression test)", () => {
+      waitsForPromise(async () => {
+        const observable = runCommand(
+          process.execPath,
+          ['-e', 'process.stdout.write("hello"); process.exit(0)'],
+        );
+        await observable.toPromise();
+        expect(await observable.toPromise()).toBe('hello');
+      });
+    });
   });
 
   describe('exitEventToMessage', () => {

@@ -622,31 +622,28 @@ export function runCommand(
   options?: Object = {},
   killTreeOnComplete?: boolean = false,
 ): Observable<string> {
+  const seed = {
+    error: null,
+    stdout: [],
+    stderr: [],
+    exitMessage: null,
+  };
   return observeProcess(() => safeSpawn(command, args, options), killTreeOnComplete)
     .reduce(
       (acc, event) => {
         switch (event.kind) {
           case 'stdout':
-            acc.stdout += event.data;
-            break;
+            return {...acc, stdout: acc.stdout.concat(event.data)};
           case 'stderr':
-            acc.stderr += event.data;
-            break;
+            return {...acc, stderr: acc.stderr.concat(event.data)};
           case 'error':
-            acc.error = event.error;
-            break;
+            return {...acc, error: event.error};
           case 'exit':
-            acc.exitMessage = event;
-            break;
+            return {...acc, exitMessage: event};
         }
         return acc;
       },
-    {
-      error: ((null: any): Object),
-      stdout: '',
-      stderr: '',
-      exitMessage: ((null: any): ?ProcessExitMessage),
-    },
+      seed,
     )
     .map(acc => {
       if (acc.error != null) {
@@ -658,17 +655,18 @@ export function runCommand(
           originalError: acc.error, // Just in case.
         });
       }
+      const stdout = acc.stdout.join('');
       if (acc.exitMessage != null && acc.exitMessage.exitCode !== 0) {
         throw new ProcessExitError({
           command,
           args,
           options,
           exitMessage: acc.exitMessage,
-          stdout: acc.stdout,
-          stderr: acc.stderr,
+          stdout,
+          stderr: acc.stderr.join(''),
         });
       }
-      return acc.stdout;
+      return stdout;
     });
 }
 
