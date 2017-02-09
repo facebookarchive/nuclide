@@ -40,10 +40,14 @@ describe('ArcanistDiagnosticsProvider', () => {
       // so we 'getPath()' here.
       const filePath = editor.getPath();
 
-      // We have to destroy panes themselves, not merely the pane items, in order
-      // to trigger the callbacks that ArcanistDiagnosticsProvider registers on
-      // atom.workspace.onWillDestroyPaneItem.
       const theOnlyPane = atom.workspace.getPanes()[0];
+
+      // Reaching into the class to trigger the Provider's TextEditor event
+      // callback during test. atom.workspace.getActiveTextEditor() is returns
+      // undefined during test causing TextEventDispatcher to queue rather
+      // than execute events.
+      provider._runLintWithBusyMessage(editor);
+
       theOnlyPane.destroy();
 
       expect(provider._providerBase.publishMessageInvalidation).toHaveBeenCalledWith({
@@ -56,14 +60,21 @@ describe('ArcanistDiagnosticsProvider', () => {
   it('should not invalidate the messages when there are multiple buffers with the file', () => {
     spyOn(provider._providerBase, 'publishMessageInvalidation');
     waitsForPromise(async () => {
-      await atom.workspace.open(tempFile);
+      const firstEditor = await atom.workspace.open(tempFile);
+
+      // Reaching into the class to trigger the Provider's TextEditor event
+      // callback during test. atom.workspace.getActiveTextEditor() is returns
+      // undefined during test causing TextEventDispatcher to queue rather
+      // than execute events.
+      provider._runLintWithBusyMessage(firstEditor);
+
       // Open a second pane, containing a second editor with the same file.
       const paneToSplit = atom.workspace.getPanes()[0];
-      paneToSplit.splitLeft({copyActiveItem: true});
+      const secondPane = paneToSplit.splitLeft({copyActiveItem: true});
+      const item: any = secondPane.itemAtIndex(0);
+      const secondEditor = (item: TextEditor);
+      provider._runLintWithBusyMessage(secondEditor);
 
-      // We have to destroy panes themselves, not merely the pane items, in order
-      // to trigger the callbacks that ArcanistDiagnosticsProvider registers on
-      // atom.workspace.onWillDestroyPaneItem.
       paneToSplit.destroy();
       expect(provider._providerBase.publishMessageInvalidation).not.toHaveBeenCalled();
     });

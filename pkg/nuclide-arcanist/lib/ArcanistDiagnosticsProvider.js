@@ -19,6 +19,7 @@ import type {
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
 
 import type {ArcDiagnostic} from '../../nuclide-arcanist-rpc';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import {CompositeDisposable, Range} from 'atom';
 import {Subject} from 'rxjs';
@@ -26,11 +27,11 @@ import {DiagnosticsProviderBase} from '../../nuclide-diagnostics-provider-base';
 
 import featureConfig from '../../commons-atom/featureConfig';
 import {trackTiming} from '../../nuclide-analytics';
-import onWillDestroyTextBuffer from '../../commons-atom/on-will-destroy-text-buffer';
 import {removeCommonSuffix} from '../../commons-node/string';
 import invariant from 'assert';
 import {getLogger} from '../../nuclide-logging';
 import {getArcanistServiceByNuclideUri} from '../../nuclide-remote-connection';
+
 
 const logger = getLogger();
 
@@ -39,6 +40,7 @@ export class ArcanistDiagnosticsProvider {
   _runningProcess: Map<string, Subject<Array<ArcDiagnostic>>>;
   _subscriptions: atom$CompositeDisposable;
   _busySignalProvider: BusySignalProviderBase;
+  _bufferSubs: Map<NuclideUri, IDisposable>;
 
   constructor(busySignalProvider: BusySignalProviderBase) {
     this._busySignalProvider = busySignalProvider;
@@ -51,21 +53,12 @@ export class ArcanistDiagnosticsProvider {
     this._providerBase = new DiagnosticsProviderBase(baseOptions);
     this._subscriptions.add(this._providerBase);
     this._runningProcess = new Map();
-    this._subscriptions.add(onWillDestroyTextBuffer(buffer => {
-      const path: ?string = buffer.getPath();
-      if (!path) {
-        return;
-      }
-      const runningProcess = this._runningProcess.get(path);
-      if (runningProcess != null) {
-        runningProcess.complete();
-      }
-      this._providerBase.publishMessageInvalidation({scope: 'file', filePaths: [path]});
-    }));
+    this._bufferSubs = new Map();
   }
 
   dispose(): void {
     this._subscriptions.dispose();
+    this._bufferSubs.forEach((sub, path, _) => sub.dispose());
   }
 
   /** The returned Promise will resolve when results have been published. */
@@ -74,11 +67,40 @@ export class ArcanistDiagnosticsProvider {
     if (path == null) {
       return Promise.resolve();
     }
+
+    const textBuffer = textEditor.getBuffer();
+    this._subscribeToBuffer(textBuffer);
+
     return this._busySignalProvider.reportBusy(
       `Waiting for arc lint results for \`${textEditor.getTitle()}\``,
       () => this._runLint(textEditor),
       {onlyForFile: path},
     );
+  }
+
+  _subscribeToBuffer(textBuffer: atom$TextBuffer): void {
+    const path = textBuffer.getPath();
+    if (path != null && !this._bufferSubs.has(path)) {
+      this._bufferSubs.set(
+        path,
+        textBuffer.onDidDestroy(() => this._handleBufferDidDestroy(path)),
+      );
+    }
+  }
+
+  _handleBufferDidDestroy(path: string) {
+    const sub = this._bufferSubs.get(path);
+    invariant(sub != null,
+      'Missing TextBufffer subscription for ' + path);
+    sub.dispose();
+    this._bufferSubs.delete(path);
+
+    const runningProcess = this._runningProcess.get(path);
+    if (runningProcess != null) {
+      runningProcess.complete();
+    }
+
+    this._providerBase.publishMessageInvalidation({scope: 'file', filePaths: [path]});
   }
 
   /** Do not call this directly -- call _runLintWithBusyMessage */
