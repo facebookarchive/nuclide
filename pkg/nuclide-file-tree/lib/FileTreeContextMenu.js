@@ -332,6 +332,21 @@ export default class FileTreeContextMenu {
     return this._addItemToMenu(originalItem, this._contextMenu, TEST_SECTION_PRIORITY + priority);
   }
 
+  /**
+   * @param priority must be an integer in the range [0, 1000).
+   */
+  addItemToProjectMenu(originalItem: FileTreeContextMenuItem, priority: number): IDisposable {
+    if (priority < 0 || priority >= 1000) {
+      throw Error(`Illegal priority value: ${priority}`);
+    }
+
+    return this._addItemToMenu(
+      originalItem,
+      this._contextMenu,
+      ADD_PROJECT_MENU_PRIORITY + priority,
+    );
+  }
+
   addItemToSourceControlMenu(originalItem: FileTreeContextMenuItem, priority: number): IDisposable {
     return this._addItemToMenu(originalItem, this._sourceControlMenu, priority);
   }
