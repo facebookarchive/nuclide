@@ -17,6 +17,7 @@ import {Observable} from 'rxjs';
 
 import type {ConnectableObservable} from 'rxjs';
 import type {DeviceInfo, TargetEnvironment} from './types';
+import type {AtomNotification} from '../../nuclide-debugger-base/lib/types';
 
 const {log, logError} = logger;
 let lastServiceObjectDispose = null;
@@ -47,6 +48,10 @@ export class IwdpDebuggerService {
     return this._clientCallback.getServerMessageObservable().publish();
   }
 
+  getAtomNotificationObservable(): ConnectableObservable<AtomNotification> {
+    return this._clientCallback.getAtomNotificationObservable().publish();
+  }
+
   attach(targetEnvironment: TargetEnvironment): Promise<string> {
     const connection = connectToTarget(targetEnvironment);
     this._disposables.add(
@@ -57,7 +62,13 @@ export class IwdpDebuggerService {
         },
         err => {
           logError(`The debug proxy was killed!  Error: ${err}`);
-          this.dispose();
+          this._clientCallback.sendAtomNotification(
+            'warning',
+            'The session has ended because the debug proxy was killed!',
+          );
+          // We need to wait for the event loop to run before disposing, otherwise our atom
+          // notification never makes it through the service framework.
+          process.nextTick(() => this.dispose());
         },
       ),
     );

@@ -8,23 +8,30 @@
  * @flow
  */
 
+import type {AtomNotification, AtomNotificationType} from '../../nuclide-debugger-base/lib/types';
 import {Observable, Subject} from 'rxjs';
 
 export default class ClientCallback {
   _serverMessageObservable: Subject<any>;  // For server messages.
   _userOutputObservable: Subject<any>;     // For user visible output messages.
+  _atomNotificationObservable: Subject<AtomNotification>;
 
   constructor() {
     this._serverMessageObservable = new Subject();
     this._userOutputObservable = new Subject();
+    this._atomNotificationObservable = new Subject();
   }
 
   getServerMessageObservable(): Observable<string> {
-    return this._serverMessageObservable;
+    return this._serverMessageObservable.asObservable();
   }
 
   getOutputWindowObservable(): Observable<string> {
-    return this._userOutputObservable;
+    return this._userOutputObservable.asObservable();
+  }
+
+  getAtomNotificationObservable(): Observable<AtomNotification> {
+    return this._atomNotificationObservable.asObservable();
   }
 
   sendChromeMessage(message: string): void {
@@ -33,6 +40,10 @@ export default class ClientCallback {
 
   sendUserOutputMessage(message: string): void {
     this._userOutputObservable.next(message);
+  }
+
+  sendAtomNotification(type: AtomNotificationType, message: string): void {
+    this._atomNotificationObservable.next({type, message});
   }
 
   dispose(): void {

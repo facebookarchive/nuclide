@@ -1538,6 +1538,7 @@ declare class atom$NotificationManager {
   onDidAddNotification(callback: (notification: atom$Notification) => void): IDisposable,
 
   // Adding Notifications
+  add(type: string, message: string, options?: atom$NotificationOptions): atom$Notification,
   addSuccess(message: string, options?: atom$NotificationOptions): atom$Notification,
   addInfo(message: string, options?: atom$NotificationOptions): atom$Notification,
   addWarning(message: string, options?: atom$NotificationOptions): atom$Notification,

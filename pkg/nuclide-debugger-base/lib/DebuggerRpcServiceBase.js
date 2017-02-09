@@ -10,6 +10,7 @@
 
 import type {ConnectableObservable} from 'rxjs';
 import type {CategoryLogger} from '../../nuclide-logging';
+import type {AtomNotification} from './types';
 
 import WS from 'ws';
 import {ClientCallback} from '../../nuclide-debugger-common';
@@ -41,6 +42,10 @@ export class DebuggerRpcServiceBase {
 
   getServerMessageObservable(): ConnectableObservable<string> {
     return this._clientCallback.getServerMessageObservable().publish();
+  }
+
+  getAtomNotificationObservable(): ConnectableObservable<AtomNotification> {
+    return this._clientCallback.getAtomNotificationObservable().publish();
   }
 
   dispose(): Promise<void> {

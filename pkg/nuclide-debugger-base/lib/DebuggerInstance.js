@@ -24,6 +24,7 @@ import type {
   PhpDebuggerService,
 } from '../../nuclide-debugger-php-rpc/lib/PhpDebuggerService';
 import type {CategoryLogger} from '../../nuclide-logging';
+import type {AtomNotification} from './types';
 
 import {Emitter} from 'atom';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
@@ -103,12 +104,27 @@ export class DebuggerInstance extends DebuggerInstanceBase {
   }
 
   _registerServerHandlers(): void {
-    this._disposables.add(new UniversalDisposable(
+    const disposables = new UniversalDisposable(
       this._rpcService.getServerMessageObservable().refCount().subscribe(
         this._handleServerMessage.bind(this),
         this._handleServerError.bind(this),
         this._handleSessionEnd.bind(this),
-    )));
+      ),
+    );
+    if (rpcServiceSupportsAtomNotifications(this._rpcService)) {
+      disposables.add(
+        this._rpcService
+          .getAtomNotificationObservable()
+          .refCount()
+          .subscribe(this._handleAtomNotification.bind(this)),
+      );
+    }
+    this._disposables.add(disposables);
+  }
+
+  _handleAtomNotification(notification: AtomNotification): void {
+    const {type, message} = notification;
+    atom.notifications.add(type, message);
   }
 
   getWebsocketAddress(): Promise<string> {
@@ -226,4 +242,8 @@ export class DebuggerInstance extends DebuggerInstanceBase {
   dispose() {
     this._disposables.dispose();
   }
+}
+
+function rpcServiceSupportsAtomNotifications(service: Object): boolean {
+  return typeof service.getAtomNotificationObservable === 'function';
 }
