@@ -18,9 +18,10 @@ import type {
   TaskRunnerState,
 } from '../types';
 import type {ActionsObservable} from '../../../commons-node/redux-observable';
-import UniversalDisposable from '../../../commons-node/UniversalDisposable';
 
+import {save} from '../../../commons-atom/text-buffer';
 import {observableFromTask} from '../../../commons-node/tasks';
+import UniversalDisposable from '../../../commons-node/UniversalDisposable';
 import {getLogger} from '../../../nuclide-logging';
 import * as Actions from './Actions';
 import invariant from 'assert';
@@ -178,19 +179,67 @@ export function updatePreferredTaskRunnerEpic(
     }).ignoreElements();
 }
 
+/**
+ * Verifies that all the files are saved prior to running a task.
+ */
+export function verifySavedBeforeRunningTaskEpic(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Action> {
+  return actions
+    .filter(action => action.type === Actions.RUN_TASK && action.payload.verifySaved === true)
+    .switchMap(action => {
+      invariant(action.type === Actions.RUN_TASK);
+      const {taskMeta} = action.payload;
+      const unsavedEditors = atom.workspace.getTextEditors()
+        .filter(editor => editor.getPath() != null && editor.isModified());
+
+      // Everything saved? Run it!
+      if (unsavedEditors.length === 0) {
+        return Observable.of(Actions.runTask(taskMeta, false));
+      }
+
+      return promptForShouldSave(taskMeta).switchMap(shouldSave => {
+        if (shouldSave) {
+          const saveAll = Observable.defer(() => {
+            const stillUnsaved = atom.workspace.getTextEditors()
+              .filter(editor => editor.getPath() != null && editor.isModified());
+            return Promise.all(
+              unsavedEditors
+                .filter(editor => stillUnsaved.indexOf(editor) !== -1)
+                .map(editor => save(editor.getBuffer())),
+            );
+          });
+          return Observable.concat(
+            saveAll.ignoreElements(),
+            Observable.of(Actions.runTask(taskMeta)),
+          )
+            .catch(err => {
+              atom.notifications.addError(
+                'An unexpected error occurred while saving the files.',
+                {dismissable: true, detail: err.stack.toString()},
+              );
+              return Observable.empty();
+            });
+        }
+        return Observable.of(Actions.runTask(taskMeta, false));
+      });
+    });
+}
+
 export function runTaskEpic(
   actions: ActionsObservable<Action>,
   store: Store,
 ): Observable<Action> {
-  return actions.ofType(Actions.RUN_TASK)
+  return actions
+    .filter(action => action.type === Actions.RUN_TASK && action.payload.verifySaved === false)
     .switchMap(action => {
       invariant(action.type === Actions.RUN_TASK);
       const state = store.getState();
       // Don't do anything if a task is already running.
       if (state.runningTask) { return Observable.empty(); }
 
-      const taskMeta = action.payload.taskMeta;
-
+      const {taskMeta} = action.payload;
       const {activeTaskRunner} = state;
       const newTaskRunner = taskMeta.taskRunner;
 
@@ -337,4 +386,53 @@ function getBestEffortTaskRunner(
     }
     return memo;
   }, null);
+}
+
+/**
+ * Returns an observable that:
+ *   - prompts for whether the files should be saved before running the given task when subscribed
+ *   - contains 0 or 1 elements:
+ *       - `true` if the file should be saved before running
+ *       - `false` if it shouldn't be
+ *       - nothing if the user decides to cancel
+ *   - dismisses the notification when unsubscribed
+ */
+function promptForShouldSave(taskMeta: TaskMetadata): Observable<boolean> {
+  return Observable.create(observer => {
+    let notification = atom.notifications.addInfo(
+      'You have files with unsaved changes.',
+      {
+        dismissable: true,
+        description: `Do you want to save them before running the ${taskMeta.label} task?`,
+        buttons: [
+          {
+            text: `Save All & ${taskMeta.label}`,
+            onDidClick() {
+              observer.next(true);
+              observer.complete();
+            },
+          },
+          {
+            text: `${taskMeta.label} Without Saving`,
+            onDidClick() {
+              observer.next(false);
+              observer.complete();
+            },
+          },
+          {
+            text: 'Cancel',
+            className: 'icon icon-circle-slash',
+            onDidClick() {
+              observer.complete();
+            },
+          },
+        ],
+      },
+    );
+    return () => {
+      invariant(notification != null);
+      notification.dismiss();
+      notification = null;
+    };
+  });
 }

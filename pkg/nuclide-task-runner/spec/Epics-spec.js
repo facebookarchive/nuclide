@@ -188,7 +188,7 @@ describe('Epics', () => {
         const taskMeta = dummy.createTask('test');
 
         const actions = [
-          Actions.runTask({...taskMeta, taskRunner}),
+          Actions.runTask({...taskMeta, taskRunner}, false),
           {type: Actions.TASK_STOPPED,
             payload:
            {taskStatus: {metadata: taskMeta, task, progress: 1}},
@@ -217,7 +217,7 @@ describe('Epics', () => {
         const taskMeta = dummy.createTask('test');
 
         const output = runActions(
-          [Actions.runTask({...taskMeta, taskRunner})],
+          [Actions.runTask({...taskMeta, taskRunner}, false)],
           state,
         );
 

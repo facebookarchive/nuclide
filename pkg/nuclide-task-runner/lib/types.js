@@ -171,6 +171,7 @@ export type RunTaskAction = {
   type: 'RUN_TASK',
   payload: {
     taskMeta: TaskMetadata & {taskRunner: TaskRunner},
+    verifySaved: boolean,
   },
 };
 

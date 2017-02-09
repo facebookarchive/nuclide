@@ -53,10 +53,16 @@ export function registerTaskRunner(taskRunner: TaskRunner): RegisterTaskRunnerAc
   };
 }
 
-export function runTask(taskMeta: TaskMetadata & {taskRunner: TaskRunner}): RunTaskAction {
+export function runTask(
+  taskMeta: TaskMetadata & {taskRunner: TaskRunner},
+  verifySaved: boolean = true,
+): RunTaskAction {
   return {
     type: RUN_TASK,
-    payload: {taskMeta},
+    payload: {
+      verifySaved,
+      taskMeta,
+    },
   };
 }
 
