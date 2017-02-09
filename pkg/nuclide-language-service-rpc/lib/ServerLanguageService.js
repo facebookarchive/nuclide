@@ -287,7 +287,7 @@ export function ensureInvalidations(
   diagnostics: Observable<FileDiagnosticUpdate>,
 ): Observable<FileDiagnosticUpdate> {
   const filesWithErrors = new Set();
-  const trackedDiagnotics: Observable<FileDiagnosticUpdate> =
+  const trackedDiagnostics: Observable<FileDiagnosticUpdate> =
     diagnostics
     .do((diagnostic: FileDiagnosticUpdate) => {
       const filePath = diagnostic.filePath;
@@ -312,5 +312,5 @@ export function ensureInvalidations(
       }));
     });
 
-  return trackedDiagnotics.concat(fileInvalidations);
+  return trackedDiagnostics.concat(fileInvalidations);
 }
