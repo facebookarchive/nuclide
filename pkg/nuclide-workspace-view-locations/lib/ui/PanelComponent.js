@@ -17,25 +17,24 @@ import {React, ReactDOM} from 'react-for-atom';
 const MINIMUM_LENGTH = 100;
 
 type DefaultProps = {
-  initialLength: number,
+  initialSize: number,
   onResize: (width: number) => mixed,
 };
 
 type Props = {
   children?: mixed,
-  dock: 'top' | 'right' | 'bottom' | 'left',
-  initialLength: number,
+  position: 'top' | 'right' | 'bottom' | 'left',
+  initialSize: number,
   onResize: (width: number) => mixed,
 };
 
 type State = {
   isResizing: boolean,
-  length: number,
+  size: number,
 };
 
 /**
- * A container for centralizing the logic for making panels scrollable,
- * resizeable, dockable, etc.
+ * A container for centralizing the logic for making panels resizable.
  */
 export class PanelComponent extends React.Component {
   _animationFrameRequestSubscription: ?rxjs$Subscription;
@@ -44,7 +43,7 @@ export class PanelComponent extends React.Component {
   props: Props;
   state: State;
   static defaultProps: DefaultProps = {
-    initialLength: 200,
+    initialSize: 200,
     onResize: width => {},
   };
 
@@ -52,7 +51,7 @@ export class PanelComponent extends React.Component {
     super(props);
     this.state = {
       isResizing: false,
-      length: this.props.initialLength,
+      size: this.props.initialSize,
     };
 
     // Bind main events to this object. _updateSize is only ever bound within these.
@@ -102,19 +101,19 @@ export class PanelComponent extends React.Component {
     // is resizing the panel, even if their mouse leaves the handle.
     let resizeCursorOverlay = null;
     if (this.state.isResizing) {
-      resizeCursorOverlay =
-        <div className={`nuclide-ui-panel-component-resize-cursor-overlay ${this.props.dock}`} />;
+      const className = `nuclide-ui-panel-component-resize-cursor-overlay ${this.props.position}`;
+      resizeCursorOverlay = <div className={className} />;
     }
 
     let containerStyle;
-    if (this.props.dock === 'left' || this.props.dock === 'right') {
+    if (this.props.position === 'left' || this.props.position === 'right') {
       containerStyle = {
-        width: this.state.length,
+        width: this.state.size,
         minWidth: MINIMUM_LENGTH,
       };
-    } else if (this.props.dock === 'top' || this.props.dock === 'bottom') {
+    } else if (this.props.position === 'top' || this.props.position === 'bottom') {
       containerStyle = {
-        height: this.state.length,
+        height: this.state.size,
         minHeight: MINIMUM_LENGTH,
       };
     }
@@ -123,9 +122,9 @@ export class PanelComponent extends React.Component {
 
     return (
       <div
-        className={`nuclide-ui-panel-component ${this.props.dock}`}
+        className={`nuclide-ui-panel-component ${this.props.position}`}
         style={containerStyle}>
-        <div className={`nuclide-ui-panel-component-resize-handle ${this.props.dock}`}
+        <div className={`nuclide-ui-panel-component-resize-handle ${this.props.position}`}
           ref="handle"
           onMouseDown={this._handleMouseDown}
         />
@@ -159,22 +158,22 @@ export class PanelComponent extends React.Component {
     }
 
     const containerEl = ReactDOM.findDOMNode(this);
-    let length = 0;
-    switch (this.props.dock) {
+    let size = 0;
+    switch (this.props.position) {
       case 'left':
-        length = event.pageX - containerEl.getBoundingClientRect().left;
+        size = event.pageX - containerEl.getBoundingClientRect().left;
         break;
       case 'top':
-        length = event.pageY - containerEl.getBoundingClientRect().top;
+        size = event.pageY - containerEl.getBoundingClientRect().top;
         break;
       case 'bottom':
-        length = containerEl.getBoundingClientRect().bottom - event.pageY;
+        size = containerEl.getBoundingClientRect().bottom - event.pageY;
         break;
       case 'right':
-        length = containerEl.getBoundingClientRect().right - event.pageX;
+        size = containerEl.getBoundingClientRect().right - event.pageX;
         break;
     }
-    this._updateSize(length);
+    this._updateSize(size);
   }
 
   _handleMouseUp(event: SyntheticMouseEvent): void {
@@ -186,7 +185,7 @@ export class PanelComponent extends React.Component {
 
   // Whether this is width or height depends on the orientation of this panel.
   _updateSize(newSize: number): void {
-    this.setState({length: newSize});
+    this.setState({size: newSize});
     this.props.onResize.call(null, newSize);
   }
 }
