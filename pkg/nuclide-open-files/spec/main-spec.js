@@ -61,10 +61,17 @@ describe('nuclide-open-files', () => {
 
     it('open/close', () => {
       const buffer = new TextBuffer({filePath: 'f1', text: 'contents1'});
+      let waiting = true;
       runs(() => {
         // simulates an open
         atom.project.addBuffer(buffer);
-
+        // Wait one turn before destroying the text buffer, which calls `setText('')`.
+        setImmediate(() => {
+          waiting = false;
+        });
+      });
+      waitsFor(() => waiting === false);
+      runs(() => {
         // close
         buffer.destroy();
       });
@@ -88,6 +95,7 @@ describe('nuclide-open-files', () => {
     });
 
     it('open with delayed load sends initial open event after load', () => {
+      let waiting = true;
       const buffer = new TextBuffer({filePath: 'f1'});
       runs(() => {
         // simulates an open
@@ -96,6 +104,14 @@ describe('nuclide-open-files', () => {
         // simulates a load ...
         buffer.setText('contents1');
 
+        // Wait one turn before destroying the text buffer, which calls `setText('')`.
+        setImmediate(() => {
+          waiting = false;
+        });
+      });
+      waitsFor(() => waiting === false);
+
+      runs(() => {
         // close
         buffer.destroy();
       });
@@ -165,6 +181,7 @@ describe('nuclide-open-files', () => {
     });
 
     it('rename', () => {
+      let waiting = true;
       const buffer = new TextBuffer({filePath: 'f1', text: 'contents1'});
       runs(() => {
         atom.project.addBuffer(buffer);
@@ -172,7 +189,14 @@ describe('nuclide-open-files', () => {
       waitsFor(() => eventCount >= 1);
       runs(() => {
         buffer.setPath('f2');
+        // Wait one turn before destroying the text buffer, which calls `setText('')`.
+        setImmediate(() => {
+          waiting = false;
+        });
+      });
+      waitsFor(() => waiting === false);
 
+      runs(() => {
         buffer.destroy();
       });
       waitsFor(() => eventCount >= 4);
@@ -206,12 +230,20 @@ describe('nuclide-open-files', () => {
     });
 
     it('rename new file', () => {
+      let waiting = true;
       const buffer = new TextBuffer('contents1');
       runs(() => {
         atom.project.addBuffer(buffer);
 
         buffer.setPath('f2');
+        // Wait one turn before destroying the text buffer, which calls `setText('')`.
+        setImmediate(() => {
+          waiting = false;
+        });
+      });
+      waitsFor(() => waiting === false);
 
+      runs(() => {
         buffer.destroy();
       });
       waitsFor(() => eventCount >= 2);
@@ -234,22 +266,41 @@ describe('nuclide-open-files', () => {
     });
 
     it('broken deserialized URIs dont create events', () => {
+      let brokenBuffer1;
+      let brokenBuffer2;
+      let buffer3;
+      let waiting = true;
       runs(() => {
-        const brokenBuffer1 = new TextBuffer({filePath: 'nuclide:/f1', text: 'contents1'});
-        const brokenBuffer2 = new TextBuffer({filePath: 'nuclide:\\f1', text: 'contents1'});
+        brokenBuffer1 = new TextBuffer({filePath: 'nuclide:/f1', text: 'contents1'});
+        brokenBuffer2 = new TextBuffer({filePath: 'nuclide:\\f1', text: 'contents1'});
         atom.project.addBuffer(brokenBuffer1);
         atom.project.addBuffer(brokenBuffer2);
 
+        // Wait one turn before destroying the text buffers, which calls `setText('')`.
+        setImmediate(() => {
+          waiting = false;
+        });
+      });
+      waitsFor(() => waiting === false);
+      runs(() => {
         // close
         brokenBuffer1.destroy();
         brokenBuffer2.destroy();
 
         // simulates an open
-        const buffer = new TextBuffer({filePath: 'f1', text: 'contents1'});
-        atom.project.addBuffer(buffer);
+        buffer3 = new TextBuffer({filePath: 'f1', text: 'contents1'});
+        atom.project.addBuffer(buffer3);
 
+        waiting = true;
+        // Wait one turn before destroying the text buffer, which calls `setText('')`.
+        setImmediate(() => {
+          waiting = false;
+        });
+      });
+      waitsFor(() => waiting === false);
+      runs(() => {
         // close
-        buffer.destroy();
+        buffer3.destroy();
       });
       waitsFor(() => eventCount >= 2);
 
