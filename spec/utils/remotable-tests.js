@@ -21,6 +21,7 @@ import {
 } from './integration-test-helpers';
 import {setLocalProject} from '../../pkg/commons-atom/testHelpers';
 import nuclideUri from '../../pkg/commons-node/nuclideUri';
+import fsPromise from '../../pkg/commons-node/fsPromise';
 import invariant from 'assert';
 
 export type TestContext = {
@@ -50,10 +51,14 @@ class LocalTestContext {
     });
   }
 
-  setProject(projectPath: string): Promise<void> {
+  async setProject(projectPath: string): Promise<void> {
+    // Nuclide doesn't officially support mounting symlinks as projects,
+    // as some of its dependencies, such as Flow, return canonicalized paths.
+    // Therefore, we canonicalize projects paths in tests:
+    const resolvedProjectPath = await fsPromise.realpath(projectPath);
     invariant(this._projectPath == null, 'Call setProject exactly once');
-    setLocalProject(projectPath);
-    this._projectPath = projectPath;
+    setLocalProject(resolvedProjectPath);
+    this._projectPath = resolvedProjectPath;
     return Promise.resolve();
   }
 
