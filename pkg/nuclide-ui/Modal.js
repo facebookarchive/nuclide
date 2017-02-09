@@ -71,11 +71,13 @@ export class Modal extends React.Component {
   }
 
   render() {
+    const props = {...this.props};
+    delete props.onDismiss;
     return (
       <Portal container={this._container}>
         <div
           tabIndex="0"
-          {...this.props}
+          {...props}
           ref={this._handleContainerInnerElement}>
           {this.props.children}
         </div>
