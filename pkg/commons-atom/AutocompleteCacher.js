@@ -8,6 +8,8 @@
  * @flow
  */
 
+import passesGK from '../commons-node/passesGK';
+
 export type AutocompleteCacherConfig<T> = {|
  updateResults: (
    request: atom$AutocompleteRequest,
@@ -20,6 +22,7 @@ export type AutocompleteCacherConfig<T> = {|
    currentRequest: atom$AutocompleteRequest,
    // TODO pass originalResult here if any client requires it
  ) => boolean,
+ gatekeeper?: string,
 |};
 
 type AutocompleteSession<T> = {
@@ -31,6 +34,7 @@ export default class AutocompleteCacher<T> {
   _getSuggestions: (request: atom$AutocompleteRequest) => Promise<T>;
   _config: AutocompleteCacherConfig<T>;
 
+  _enabled: boolean;
   _session: ?AutocompleteSession<T>;
 
   constructor(
@@ -42,9 +46,23 @@ export default class AutocompleteCacher<T> {
   ) {
     this._getSuggestions = getSuggestions;
     this._config = config;
+    this._setEnabled();
+  }
+
+  async _setEnabled(): Promise<void> {
+    const gk = this._config.gatekeeper;
+    if (gk == null) {
+      this._enabled = true;
+    } else {
+      this._enabled = false;
+      this._enabled = await passesGK(gk);
+    }
   }
 
   getSuggestions(request: atom$AutocompleteRequest): Promise<T> {
+    if (!this._enabled) {
+      return this._getSuggestions(request);
+    }
     const session = this._session;
     if (session != null && this._canMaybeFilterResults(session, request)) {
       // We need to send this request speculatively because if firstResult resolves to `null`, we'll
