@@ -11,7 +11,6 @@
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {ConnectableObservable} from 'rxjs';
 import type {ProcessMessage} from '../../commons-node/process-rpc-types';
-
 import * as ADB from './ADB';
 
 export type DeviceDescription = {
@@ -19,6 +18,12 @@ export type DeviceDescription = {
   architecture: string,
   apiVersion: string,
   model: string,
+};
+
+export type AndroidJavaProcess = {
+  user: string,
+  pid: string,
+  name: string,
 };
 
 export function startServer(
@@ -104,4 +109,11 @@ export function activityExists(
   activity: string,
 ): Promise<boolean> {
   return ADB.activityExists(adbPath, device, packageName, activity);
+}
+
+export async function getJavaProcesses(
+  adbPath: NuclideUri,
+  device: string,
+): Promise<Array<AndroidJavaProcess>> {
+  return ADB.getJavaProcesses(adbPath, device);
 }

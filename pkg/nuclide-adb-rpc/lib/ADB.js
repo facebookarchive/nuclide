@@ -9,15 +9,19 @@
  */
 
 import type {Observable, ConnectableObservable} from 'rxjs';
-import type {DeviceDescription} from './AdbService';
+import type {DeviceDescription, AndroidJavaProcess} from './AdbService';
 import type {ProcessMessage} from '../../commons-node/process-rpc-types';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import invariant from 'assert';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {arrayCompact} from '../../commons-node/collection';
-import {safeSpawn, observeProcess, runCommand} from '../../commons-node/process';
-
+import {
+  safeSpawn,
+  observeProcess,
+  runCommand,
+  observeProcessRaw,
+} from '../../commons-node/process';
 import * as os from 'os';
 
 function runShortAdbCommand(
@@ -205,5 +209,75 @@ export function activityExists(
   const command = deviceArg.concat(['shell', 'dumpsys', 'package']);
   return runCommand(adbPath, command)
     .map(stdout => stdout.includes(packageActivityString))
+    .toPromise();
+}
+
+export function parsePsTableOutput(
+  output: string,
+  desiredFields: Array<string>,
+): Array<Object> {
+  const lines = output.split(/\n/);
+  const header = lines[0];
+  const cols = header.split(/\s+/);
+  const colMapping = {};
+
+  for (let i = 0; i < cols.length; i++) {
+    const columnName = cols[i].toLowerCase();
+    if (desiredFields.includes(columnName)) {
+      colMapping[i] = columnName;
+    }
+  }
+
+  const formattedData = [];
+  const data = lines.slice(1);
+  data
+    .filter(row => row.trim() !== '')
+    .forEach(row => {
+      const rowData = row.split(/\s+/);
+      const rowObj = {};
+      for (let i = 0; i < rowData.length; i++) {
+        // Android's ps output has an extra column "S" in the data that doesn't appear
+        // in the header. Skip that column's value.
+        const effectiveColumn = i;
+        if (rowData[i] === 'S' && i < rowData.length - 1) {
+          i++;
+        }
+
+        if (colMapping[effectiveColumn] !== undefined) {
+          rowObj[colMapping[effectiveColumn]] = rowData[i];
+        }
+      }
+
+      formattedData.push(rowObj);
+    });
+
+  return formattedData;
+}
+
+export async function getJavaProcesses(
+  adbPath: NuclideUri,
+  device: string,
+): Promise<Array<AndroidJavaProcess>> {
+  const allProcesses = await runShortAdbCommand(adbPath, device, ['shell', 'ps'])
+    .map(stdout => {
+      const psOutput = stdout.trim();
+      return parsePsTableOutput(psOutput, ['user', 'pid', 'name']);
+    })
+    .toPromise();
+
+  const args = ((device !== '') ? ['-s', device] : []).concat('jdwp');
+  return observeProcessRaw(() => safeSpawn(adbPath, args), true)
+    .take(1)
+    .map(output => {
+      const jdwpPids = new Set();
+      if (output.kind === 'stdout') {
+        const block: string = output.data;
+        block.split(/\s+/).forEach(pid => {
+          jdwpPids.add(pid.trim());
+        });
+      }
+
+      return allProcesses.filter(row => jdwpPids.has(row.pid));
+    })
     .toPromise();
 }
