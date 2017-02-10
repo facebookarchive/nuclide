@@ -97,7 +97,9 @@ export class BreakpointManager {
     }
     return connection.sendCommand({
       method: 'Debugger.setPauseOnExceptions',
-      params: this._setPauseOnExceptionsState,
+      params: {
+        state: this._setPauseOnExceptionsState,
+      },
     });
   }
 
