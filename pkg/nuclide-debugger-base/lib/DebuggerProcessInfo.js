@@ -11,6 +11,7 @@
 import type DebuggerInstanceBase from './DebuggerInstance';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {ControlButtonSpecification} from '../../nuclide-debugger/lib/types';
+import type {ThreadColumn} from '../../nuclide-debugger-base/lib/types';
 
 export default class DebuggerProcessInfo {
   _serviceName: string;
@@ -27,6 +28,11 @@ export default class DebuggerProcessInfo {
 
   getTargetUri(): NuclideUri {
     return this._targetUri;
+  }
+
+  getThreadColumns(): ?Array<ThreadColumn> {
+    // Use the debugger view's default columns.
+    return null;
   }
 
   // Whether or not this ProcessInfo supports threading or not.

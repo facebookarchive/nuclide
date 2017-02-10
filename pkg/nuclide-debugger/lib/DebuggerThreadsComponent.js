@@ -12,7 +12,7 @@ import {React} from 'react-for-atom';
 import type {ThreadItem} from './types';
 import type Bridge from './Bridge';
 import type ThreadStore from './ThreadStore';
-
+import type {ThreadColumn} from '../../nuclide-debugger-base/lib/types';
 import {Icon} from '../../nuclide-ui/Icon';
 import {Table} from '../../nuclide-ui/Table';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
@@ -20,6 +20,7 @@ import UniversalDisposable from '../../commons-node/UniversalDisposable';
 type DebuggerThreadsComponentProps = {
   bridge: Bridge,
   threadStore: ThreadStore,
+  customThreadColumns: Array<ThreadColumn>,
 };
 
 type DebuggerThreadsComponentState = {
@@ -76,13 +77,15 @@ export class DebuggerThreadsComponent extends React.Component {
       threadList,
       selectedThreadId,
     } = this.state;
-    const columns = [
-      {
-        component: activeThreadIndicatorComponent,
-        title: '',
-        key: 'isSelected',
-        width: 0.05,
-      },
+    const activeThreadCol = {
+      component: activeThreadIndicatorComponent,
+      title: '',
+      key: 'isSelected',
+      width: 0.05,
+    };
+
+    const defaultColumns = [
+      activeThreadCol,
       {
         title: 'ID',
         key: 'id',
@@ -99,6 +102,15 @@ export class DebuggerThreadsComponent extends React.Component {
         width: 0.25,
       },
     ];
+
+    // Individual debuggers can override the displayed columns.
+    const customColumns = this.props.customThreadColumns.length === 0 ? [] :
+      [activeThreadCol].concat(this.props.customThreadColumns.map(col => ({
+        title: col.title,
+        key: col.key,
+      })));
+
+    const columns = customColumns.length > 0 ? customColumns : defaultColumns;
     const emptyComponent = () =>
       <div className="nuclide-debugger-thread-list-empty">
         {threadList == null ? '(threads unavailable)' : 'no threads to display'}
@@ -124,6 +136,7 @@ export class DebuggerThreadsComponent extends React.Component {
         emptyComponent={emptyComponent}
         rows={rows}
         selectable={true}
+        resizable={true}
         onSelect={this._handleSelectThread}
       />
     );

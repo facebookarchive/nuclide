@@ -13,3 +13,8 @@ export type AtomNotification = {
   type: AtomNotificationType,
   message: string,
 };
+
+export type ThreadColumn = {
+  key: string,
+  title: string,
+};

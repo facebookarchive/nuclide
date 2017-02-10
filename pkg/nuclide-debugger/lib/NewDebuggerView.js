@@ -30,6 +30,7 @@ import {BreakpointListComponent} from './BreakpointListComponent';
 import {DebuggerSteppingComponent} from './DebuggerSteppingComponent';
 import {DebuggerCallstackComponent} from './DebuggerCallstackComponent';
 import {DebuggerThreadsComponent} from './DebuggerThreadsComponent';
+import type {ThreadColumn} from '../../nuclide-debugger-base/lib/types';
 
 type Props = {
   model: DebuggerModel,
@@ -40,6 +41,7 @@ export class NewDebuggerView extends React.PureComponent {
   props: Props;
   state: {
     showThreadsWindow: boolean,
+    customThreadColumns: Array<ThreadColumn>,
   };
   _watchExpressionComponentWrapped: ReactClass<any>;
   _scopesComponentWrapped: ReactClass<any>;
@@ -63,6 +65,7 @@ export class NewDebuggerView extends React.PureComponent {
     const debuggerStore = props.model.getStore();
     this.state = {
       showThreadsWindow: Boolean(debuggerStore.getSettings().get('SupportThreadsWindow')),
+      customThreadColumns: (debuggerStore.getSettings().get('CustomThreadColumns'): any) || [],
     };
   }
 
@@ -72,6 +75,7 @@ export class NewDebuggerView extends React.PureComponent {
       debuggerStore.onChange(() => {
         this.setState({
           showThreadsWindow: Boolean(debuggerStore.getSettings().get('SupportThreadsWindow')),
+          customThreadColumns: (debuggerStore.getSettings().get('CustomThreadColumns'): any) || [],
         });
       }),
     );
@@ -96,6 +100,7 @@ export class NewDebuggerView extends React.PureComponent {
               <DebuggerThreadsComponent
                 bridge={this.props.model.getBridge()}
                 threadStore={model.getThreadStore()}
+                customThreadColumns={this.state.customThreadColumns}
               />
             </div>
           </Section>

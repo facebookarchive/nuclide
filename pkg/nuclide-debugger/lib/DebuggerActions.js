@@ -82,6 +82,12 @@ export default class DebuggerActions {
         && await passesGK(GK_DEBUGGER_THREADS_WINDOW) &&
         await this._allowThreadsForPhp(processInfo);
       this._store.getSettings().set('SupportThreadsWindow', supportThreadsWindow);
+      if (supportThreadsWindow) {
+        const customColumns = processInfo.getThreadColumns();
+        if (customColumns != null) {
+          this._store.getSettings().set('CustomThreadColumns', customColumns);
+        }
+      }
       const singleThreadStepping = processInfo.supportSingleThreadStepping();
       if (singleThreadStepping) {
         this._store.getSettings().set('SingleThreadStepping', singleThreadStepping);

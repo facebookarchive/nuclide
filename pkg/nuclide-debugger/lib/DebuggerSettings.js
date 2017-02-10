@@ -8,15 +8,19 @@
  * @flow
  */
 
+import type {ThreadColumn} from '../../nuclide-debugger-base/lib/types';
+
 export class DebuggerSettings {
   _settings: {
     SupportThreadsWindow: boolean,
+    CustomThreadColumns: Array<ThreadColumn>,
   };
 
   constructor() {
     this._settings = {
       SupportThreadsWindow: false,
       SingleThreadStepping: false,
+      CustomThreadColumns: [],
     };
   }
 
