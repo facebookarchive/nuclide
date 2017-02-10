@@ -57,7 +57,6 @@ class Activation {
     this._disposables.add(
       () => { layout.deactivate(); },
       api.registerLocation({id: 'pane', create: () => new PaneLocation()}),
-      // $FlowIssue: Flow is having issues with multiple spreads.
       ...PanelLocationIds.map(id => api.registerLocation({
         id,
         create: serializedState_ => {

@@ -30,7 +30,6 @@ export function waitsForHyperclickResult(
     dispatchKeyboardEvent('enter', document.activeElement, {cmd: true, alt: true});
   });
 
-  // $FlowIssue looks pretty legit to me
   waitsForFilePosition(endFile, ...endPosition);
 }
 

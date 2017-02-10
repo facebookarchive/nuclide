@@ -59,7 +59,6 @@ export class NuxStore {
 
     // Merge the two maps. If a key exists in both input maps, the value from
     // the latter (backend cache) will be used in the resulting map.
-    // $FlowIgnore - Flow thinks the spread operator is incompatible with Map
     this._nuxMap = new Map([...nuclideNuxState, ...fbNuxState]);
   }
 
@@ -87,7 +86,6 @@ export class NuxStore {
   _saveNuxState(): void {
     localStorage.setItem(
       NUX_SAVED_STORE,
-      // $FlowIgnore -- Flow thinks the spread operator is incompatible with Maps
       JSON.stringify([...this._nuxMap]),
     );
   }

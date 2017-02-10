@@ -32,9 +32,7 @@ export default class QuickOpenProviderRegistry {
 
   getProviders(): Array<Provider> {
     return [
-      // $FlowIssue: Iterator is spreadable.
       ...this._globalProviders.values(),
-      // $FlowIssue: Iterator is spreadable.
       ...this._directoryProviders.values(),
     ];
   }
