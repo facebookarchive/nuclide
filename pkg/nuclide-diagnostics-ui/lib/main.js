@@ -141,18 +141,19 @@ class Activation {
         .switchMap(updater => (
           updater == null ? Observable.of([]) : updater.allMessageUpdates
         )),
-      this._state.filterByActiveTextEditor,
-      // https://github.com/gajus/eslint-plugin-flowtype/pull/131
-      // eslint-disable-next-line flowtype/space-after-type-colon
-      (featureConfig.observeAsStream('nuclide-diagnostics-ui.showDiagnosticTraces'):
-          Observable<any>),
+      ((featureConfig.observeAsStream('nuclide-diagnostics-ui.showDiagnosticTraces'): any):
+        Observable<boolean>),
+      showTraces => {
+        featureConfig.set('nuclide-diagnostics-ui.showDiagnosticTraces', showTraces);
+      },
       disableLinter,
+      observeLinterPackageEnabled(),
+      this._state.filterByActiveTextEditor,
       filterByActiveTextEditor => {
         if (this._state != null) {
           this._state.filterByActiveTextEditor = filterByActiveTextEditor;
         }
       },
-      observeLinterPackageEnabled(),
     );
   }
 

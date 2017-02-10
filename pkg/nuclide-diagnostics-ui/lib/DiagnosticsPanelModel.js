@@ -30,6 +30,7 @@ type PanelProps = {
   +warnAboutLinter: boolean,
   +showTraces: boolean,
   +disableLinter: () => void,
+  +onShowTracesChange: (isChecked: boolean) => void,
 };
 
 type SerializedDiagnosticsPanelModel = {
@@ -46,11 +47,12 @@ export class DiagnosticsPanelModel {
 
   constructor(
     diagnostics: Observable<Array<DiagnosticMessage>>,
-    initialfilterByActiveTextEditor: boolean,
-    showTraces: Observable<boolean>,
+    showTracesStream: Observable<boolean>,
+    onShowTracesChange: (showTraces: boolean) => void,
     disableLinter: () => void,
-    onFilterByActiveTextEditorChange: (filterByActiveTextEditor: boolean) => void,
     warnAboutLinterStream: Observable<boolean>,
+    initialfilterByActiveTextEditor: boolean,
+    onFilterByActiveTextEditorChange: (filterByActiveTextEditor: boolean) => void,
   ) {
     this._visibility = new BehaviorSubject(true);
 
@@ -65,9 +67,10 @@ export class DiagnosticsPanelModel {
       getPropsStream(
         diagnostics,
         warnAboutLinterStream,
-        showTraces,
-        initialfilterByActiveTextEditor,
+        showTracesStream,
+        onShowTracesChange,
         disableLinter,
+        initialfilterByActiveTextEditor,
         onFilterByActiveTextEditorChange,
       )
         .publishReplay(1)
@@ -120,9 +123,10 @@ export class DiagnosticsPanelModel {
 function getPropsStream(
   diagnosticsStream: Observable<Array<DiagnosticMessage>>,
   warnAboutLinterStream: Observable<boolean>,
-  showTraces: Observable<boolean>,
-  initialfilterByActiveTextEditor: boolean,
+  showTracesStream: Observable<boolean>,
+  onShowTracesChange: (showTraces: boolean) => void,
   disableLinter: () => void,
+  initialfilterByActiveTextEditor: boolean,
   onFilterByActiveTextEditorChange: (filterByActiveTextEditor: boolean) => void,
 ): Observable<PanelProps> {
   const activeTextEditorPaths = observableFromSubscribeFunction(
@@ -152,13 +156,14 @@ function getPropsStream(
     sortedDiagnostics,
     warnAboutLinterStream,
     filterByActiveTextEditorStream,
-    showTraces,
+    showTracesStream,
   )
     .map(([pathToActiveTextEditor, diagnostics, warnAboutLinter, filter, traces]) => ({
       pathToActiveTextEditor,
       diagnostics,
       warnAboutLinter,
       showTraces: traces,
+      onShowTracesChange,
       disableLinter,
       filterByActiveTextEditor: filter,
       onFilterByActiveTextEditorChange: handleFilterByActiveTextEditorChange,
