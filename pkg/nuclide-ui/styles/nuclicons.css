@@ -80,3 +80,6 @@ to `resources/nuclicons` and rerun the script.
 .icon-nuclicon-fb-like::before {
   content: "\f10f";
 }
+.icon-nuclicon-jest-outline::before {
+  content: "\f110";
+}
