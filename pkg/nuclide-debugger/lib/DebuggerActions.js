@@ -84,9 +84,7 @@ export default class DebuggerActions {
       this._store.getSettings().set('SupportThreadsWindow', supportThreadsWindow);
       if (supportThreadsWindow) {
         const customColumns = processInfo.getThreadColumns();
-        if (customColumns != null) {
-          this._store.getSettings().set('CustomThreadColumns', customColumns);
-        }
+        this._store.getSettings().set('CustomThreadColumns', customColumns);
       }
       const singleThreadStepping = processInfo.supportSingleThreadStepping();
       if (singleThreadStepping) {
