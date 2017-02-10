@@ -25,3 +25,5 @@ export const SearchResultType = Object.freeze({
   ABSTRACT_CLASS: 7,
   TRAIT: 8,
 });
+
+export const HACK_WORD_REGEX = /[a-zA-Z0-9_$]+/g;

@@ -15,12 +15,21 @@ import type {ServerConnection} from '../../nuclide-remote-connection';
 import type {
   AtomLanguageServiceConfig,
 } from '../../nuclide-language-service/lib/AtomLanguageService';
+import type {Completion} from '../../nuclide-language-service/lib/LanguageService';
+
+import invariant from 'assert';
 
 import {getServiceByConnection} from '../../nuclide-remote-connection';
 import {getConfig, logger} from './config';
 import {getNotifierByConnection} from '../../nuclide-open-files';
 import {AtomLanguageService} from '../../nuclide-language-service';
 import {HACK_GRAMMARS} from '../../nuclide-hack-common';
+import {
+  sortAndFilterCompletions,
+  getResultPrefix,
+  getReplacementPrefix,
+  findHackPrefix,
+} from '../../nuclide-hack-common/lib/autocomplete';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
 import nuclideUri from '../../commons-node/nuclideUri';
 import passesGK from '../../commons-node/passesGK';
@@ -112,7 +121,10 @@ async function createLanguageService(): Promise<AtomLanguageService<HackLanguage
       disableForSelector: null,
       excludeLowerPriority: false,
       analyticsEventName: 'hack.getAutocompleteSuggestions',
-      autocompleteCacherConfig: null,
+      autocompleteCacherConfig: {
+        updateResults: updateAutocompleteResults,
+        gatekeeper: 'nuclide_hack_fast_autocomplete',
+      },
       onDidInsertSuggestionAnalyticsEventName: 'hack.autocomplete-chosen',
     },
     diagnostics: diagnosticsConfig,
@@ -143,4 +155,36 @@ export async function isFileInHackProject(fileUri: NuclideUri): Promise<boolean>
     nuclideUri.getPath(fileUri),
   );
   return foundDir != null;
+}
+
+function updateAutocompleteResults(
+  request: atom$AutocompleteRequest,
+  firstResult: ?Array<Completion>,
+): ?Array<Completion> {
+  if (firstResult == null) {
+    return null;
+  }
+  const replacementPrefix = findHackPrefix(request.editor.getBuffer(), request.bufferPosition);
+  const updatedCompletions = updateReplacementPrefix(request, firstResult, replacementPrefix);
+  return sortAndFilterCompletions(updatedCompletions, replacementPrefix);
+}
+
+function updateReplacementPrefix(
+  request: atom$AutocompleteRequest,
+  firstResult: Array<Completion>,
+  prefixCandidate: string,
+): Array<Completion> {
+  const {editor, bufferPosition} = request;
+  const contents = editor.getText();
+  const offset = editor.getBuffer().characterIndexForPosition(bufferPosition);
+  return firstResult.map(completion => {
+    const name = completion.displayText;
+    invariant(name != null);
+    const resultPrefix = getResultPrefix(contents, offset, name);
+    const replacementPrefix = getReplacementPrefix(resultPrefix, prefixCandidate);
+    return {
+      ...completion,
+      replacementPrefix,
+    };
+  });
 }

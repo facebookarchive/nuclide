@@ -33,7 +33,8 @@ import {
 import {Cache, DISPOSE_VALUE} from '../../commons-node/cache';
 import {Observable} from 'rxjs';
 import {getBufferAtVersion} from '../../nuclide-open-files-rpc';
-import {hasPrefix, findHackPrefix, convertCompletions} from './Completions';
+import {hasPrefix, convertCompletions} from './Completions';
+import {findHackPrefix} from '../../nuclide-hack-common/lib/autocomplete';
 
 // From https://reviews.facebook.net/diffusion/HHVM/browse/master/hphp/hack/src/utils/exit_status.ml
 const HACK_SERVER_ALREADY_EXISTS_EXIT_CODE = 77;
@@ -134,7 +135,7 @@ class HackProcess extends RpcProcess {
     fileVersion: FileVersion,
     position: atom$Point,
     activatedManually: boolean,
-  ): Promise<Array<Completion>> {
+  ): Promise<?Array<Completion>> {
     const filePath = fileVersion.filePath;
     logger.logTrace(`Attempting Hack Autocomplete: ${filePath}, ${position.toString()}`);
     const buffer = await this.getBufferAtVersion(fileVersion);
@@ -146,7 +147,7 @@ class HackProcess extends RpcProcess {
 
     const replacementPrefix = findHackPrefix(buffer, position);
     if (replacementPrefix === '' && !hasPrefix(buffer, position)) {
-      return [];
+      return null;
     }
 
     const line = position.row + 1;

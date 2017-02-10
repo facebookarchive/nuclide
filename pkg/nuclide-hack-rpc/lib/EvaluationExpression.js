@@ -12,7 +12,7 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
 
 import {wordAtPositionFromBuffer} from '../../commons-node/range';
-import {HACK_WORD_REGEX} from './HackHelpers';
+import {HACK_WORD_REGEX} from '../../nuclide-hack-common';
 
 export function getEvaluationExpression(
   filePath: NuclideUri,

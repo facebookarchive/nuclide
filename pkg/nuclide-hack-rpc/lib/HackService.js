@@ -47,7 +47,6 @@ import invariant from 'assert';
 import {retryLimit} from '../../commons-node/promise';
 import {
   callHHClient,
-  HACK_WORD_REGEX,
 } from './HackHelpers';
 import {
   findHackConfigDir,
@@ -70,7 +69,7 @@ import {
 import {outlineFromHackIdeOutline} from './OutlineView';
 import {convertCoverage} from './TypedRegions';
 import {convertReferences} from './FindReferences';
-import {hasPrefix, findHackPrefix, convertCompletions} from './Completions';
+import {hasPrefix, convertCompletions} from './Completions';
 import {
   hackMessageToDiagnosticMessage,
   convertDiagnostics,
@@ -80,6 +79,8 @@ import {FileCache, ConfigObserver} from '../../nuclide-open-files-rpc';
 import {getEvaluationExpression} from './EvaluationExpression';
 import {ServerLanguageService, ensureInvalidations} from '../../nuclide-language-service-rpc';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import {HACK_WORD_REGEX} from '../../nuclide-hack-common';
+import {findHackPrefix} from '../../nuclide-hack-common/lib/autocomplete';
 
 export type SymbolTypeValue = 0 | 1 | 2 | 3 | 4;
 
@@ -146,7 +147,7 @@ class HackLanguageServiceImpl extends ServerLanguageService {
     if (this._useIdeConnection) {
       const process = await getHackProcess(this._fileCache, fileVersion.filePath);
       if (process == null) {
-        return [];
+        return null;
       } else {
         return process.getAutocompleteSuggestions(fileVersion, position, activatedManually);
       }
@@ -238,7 +239,7 @@ class HackSingleFileLanguageService {
     buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
     activatedManually: boolean,
-  ): Promise<Array<Completion>> {
+  ): Promise<?Array<Completion>> {
     const contents = buffer.getText();
     const offset = buffer.characterIndexForPosition(position);
 
