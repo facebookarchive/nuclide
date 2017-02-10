@@ -37,7 +37,7 @@ export function getAtomProjectRootPath(path: NuclideUri): ?string {
   return projectPath;
 }
 
-export function observeProjectPaths(callback: (projectPath: string) => void): IDisposable {
+export function observeProjectPaths(callback: (projectPath: string) => any): IDisposable {
   getValidProjectPaths().forEach(callback);
   return onDidAddProjectPath(callback);
 }

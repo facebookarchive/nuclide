@@ -1,0 +1,44 @@
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ *
+ * @flow
+ */
+
+import createPackage from '../../commons-atom/createPackage';
+import {observeProjectPaths} from '../../commons-atom/projects';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import fsPromise from '../../commons-node/fsPromise';
+
+class Activation {
+  _disposables: UniversalDisposable;
+
+  constructor(state: ?mixed) {
+    this._disposables = new UniversalDisposable(
+      observeProjectPaths(async projectPath => {
+        const realPath = await fsPromise.realpath(projectPath);
+        if (realPath !== projectPath) {
+          atom.notifications.addWarning(
+            'You have mounted a non-canonical project path. ' +
+            'Nuclide only supports mounting canonical paths.<br />' +
+            '<strong>Some Nuclide features such as Flow might not work properly.</strong>',
+            {
+              dismissable: true,
+              detail: `Mounted path: ${projectPath}\n \n ` +
+              `Try re-mounting the canonical project path instead:\n${realPath}`,
+            },
+          );
+        }
+      }),
+    );
+  }
+
+  dispose(): void {
+    this._disposables.dispose();
+  }
+}
+
+export default createPackage(Activation);
