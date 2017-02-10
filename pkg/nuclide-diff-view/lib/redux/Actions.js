@@ -30,6 +30,7 @@ import type {
   SetCwdApiAction,
   SetShouldPublishOnCommitAction,
   SetIsPrepareModeAction,
+  SetLintExcuseAction,
   SetShouldReabaseOnAmendAction,
   SetVerbatimModeEnabledAction,
   SetViewModeAction,
@@ -402,6 +403,17 @@ export function updateDockConfig(
     type: ActionTypes.UPDATE_DOCK_CONFIG,
     payload: {
       shouldDockPublishView,
+    },
+  };
+}
+
+export function setLintExcuse(
+  lintExcuse: string,
+): SetLintExcuseAction {
+  return {
+    type: ActionTypes.SET_LINT_EXCUSE,
+    payload: {
+      lintExcuse,
     },
   };
 }

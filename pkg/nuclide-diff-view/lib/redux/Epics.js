@@ -618,6 +618,7 @@ export function commit(
     const {
       commit: {mode},
       isPrepareMode,
+      lintExcuse,
       publish,
       shouldPublishOnCommit,
       shouldRebaseOnAmend,
@@ -645,7 +646,7 @@ export function commit(
           repository,
           publishUpdateMessage,
           isPrepareMode,
-          null,
+          lintExcuse,
           publishUpdates,
         ),
       );

@@ -12,6 +12,7 @@ import type {CommitModeStateType, SuggestedReviewersState} from './types';
 import type DiffViewModel from './DiffViewModel';
 
 import addTooltip from '../../nuclide-ui/add-tooltip';
+import {AtomInput} from '../../nuclide-ui/AtomInput';
 import {AtomTextEditor} from '../../nuclide-ui/AtomTextEditor';
 import {Checkbox} from '../../nuclide-ui/Checkbox';
 import classnames from 'classnames';
@@ -37,6 +38,7 @@ type Props = {
   commitModeState: CommitModeStateType,
   diffModel: DiffViewModel,
   isPrepareMode: boolean,
+  lintExcuse: string,
   shouldPublishOnCommit: boolean,
   shouldRebaseOnAmend: boolean,
   suggestedReviewers: SuggestedReviewersState,
@@ -55,6 +57,7 @@ export default class DiffCommitView extends React.Component {
     (this: any)._onClickBack = this._onClickBack.bind(this);
     (this: any)._onTogglePrepare = this._onTogglePrepare.bind(this);
     (this: any)._onToggleVerbatim = this._onToggleVerbatim.bind(this);
+    (this: any)._onLintExcuseChange = this._onLintExcuseChange.bind(this);
   }
 
   componentDidMount(): void {
@@ -142,6 +145,7 @@ export default class DiffCommitView extends React.Component {
 
     let prepareOptionElement;
     let verbatimeOptionElement;
+    let lintExcuseElement;
     if (this.props.shouldPublishOnCommit) {
       prepareOptionElement = (
         <Checkbox
@@ -169,6 +173,22 @@ export default class DiffCommitView extends React.Component {
           )}
         />
       );
+
+      lintExcuseElement = (
+        <AtomInput
+          className="nuclide-diff-view-excuse"
+          size="sm"
+          ref={this._addTooltip(
+            'Leave this box empty to run local lint and unit tests or ' +
+            'enter an excuse to skip them.',
+          )}
+          onDidChange={this._onLintExcuseChange}
+          placeholderText="(Optional) Excuse"
+          disabled={isLoading}
+          value={this.props.lintExcuse}
+          width={200}
+        />
+      );
     }
 
     return (
@@ -188,6 +208,7 @@ export default class DiffCommitView extends React.Component {
           />
           {prepareOptionElement}
           {verbatimeOptionElement}
+          {lintExcuseElement}
         </ToolbarLeft>
         <ToolbarRight>
           <ButtonGroup size={ButtonGroupSizes.SMALL}>
@@ -252,6 +273,10 @@ export default class DiffCommitView extends React.Component {
 
   _onToggleVerbatim(isChecked: boolean): void {
     this.props.diffModel.setVerbatimModeEnabled(isChecked);
+  }
+
+  _onLintExcuseChange(newExcuse: string): void {
+    this.props.diffModel.setLintExcuse(newExcuse);
   }
 
   componentWillUnmount(): void {

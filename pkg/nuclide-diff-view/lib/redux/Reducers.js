@@ -165,6 +165,12 @@ export function rootReducer(
         shouldDockPublishView: action.payload.shouldDockPublishView,
       };
 
+    case ActionTypes.SET_LINT_EXCUSE:
+      return {
+        ...state,
+        lintExcuse: action.payload.lintExcuse,
+      };
+
     case ActionTypes.SET_SHOULD_PUBLISH_ON_COMMIT:
       return {
         ...state,

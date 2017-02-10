@@ -176,6 +176,7 @@ export type AppState = {
   fileDiff: FileDiffState,
   isLoadingFileDiff: boolean,
   isPrepareMode: boolean,
+  lintExcuse: string,
   publish: PublishState,
   repositories: Map<HgRepositoryClient, RepositoryState>,
   shouldDockPublishView: boolean,
@@ -399,6 +400,13 @@ export type UpdateDockConfigAction = {
   type: 'UPDATE_DOCK_CONFIG',
   payload: {
     shouldDockPublishView: boolean,
+  },
+};
+
+export type SetLintExcuseAction = {
+  type: 'SET_LINT_EXCUSE',
+  payload: {
+    lintExcuse: string,
   },
 };
 

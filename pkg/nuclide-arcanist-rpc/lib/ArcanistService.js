@@ -212,8 +212,8 @@ function getArcDiffParams(
     args.push('--prepare');
   }
 
-  if (lintExcuse != null) {
-    args.push('--nolint', '--excuse', lintExcuse);
+  if (lintExcuse != null && lintExcuse !== '') {
+    args.push('--nolint', '--nounit', '--excuse', lintExcuse);
   }
 
   return args;

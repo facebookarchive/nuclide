@@ -72,7 +72,6 @@ export default class DiffViewModel {
   publishDiff(
     publishMessage: string,
     isPrepareMode: boolean,
-    lintExcuse: ?string,
   ): void {
     const activeRepository = this._state.activeRepository;
     invariant(activeRepository != null, 'Cannot publish without an active stack!');
@@ -81,7 +80,7 @@ export default class DiffViewModel {
       activeRepository,
       publishMessage,
       isPrepareMode,
-      lintExcuse,
+      this._state.lintExcuse,
       this._progressUpdates,
     );
   }
@@ -139,6 +138,10 @@ export default class DiffViewModel {
       ...this._state.publish,
       message,
     });
+  }
+
+  setLintExcuse(lintExcuse: string): void {
+    this._actionCreators.setLintExcuse(lintExcuse);
   }
 
   setIsPrepareMode(isPrepareMode: boolean): void {

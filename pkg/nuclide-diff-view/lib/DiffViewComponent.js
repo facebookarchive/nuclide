@@ -68,6 +68,7 @@ function getCommitComponent(shouldUseTextBasedForm: boolean) {
 
 export function renderPublishView(diffModel: DiffViewModel): React.Element<any> {
   const {
+    lintExcuse,
     publish: {message, mode, state},
     activeRepositoryState: {headRevision},
     shouldDockPublishView,
@@ -77,6 +78,7 @@ export function renderPublishView(diffModel: DiffViewModel): React.Element<any> 
   const PublishComponent = getPublishComponent(shouldUseTextBasedForm);
   return (
     <PublishComponent
+      lintExcuse={lintExcuse}
       suggestedReviewers={suggestedReviewers}
       publishModeState={state}
       message={message}
@@ -92,6 +94,7 @@ export function renderCommitView(diffModel: DiffViewModel): React.Element<any> {
   const {
     commit: {message, mode, state},
     isPrepareMode,
+    lintExcuse,
     shouldPublishOnCommit,
     shouldRebaseOnAmend,
     shouldUseTextBasedForm,
@@ -107,6 +110,7 @@ export function renderCommitView(diffModel: DiffViewModel): React.Element<any> {
       commitMode={mode}
       commitModeState={state}
       isPrepareMode={isPrepareMode}
+      lintExcuse={lintExcuse}
       shouldPublishOnCommit={shouldPublishOnCommit}
       shouldRebaseOnAmend={shouldRebaseOnAmend}
       // `diffModel` is acting as the action creator for commit view and needs to be passed so

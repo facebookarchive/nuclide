@@ -15,7 +15,9 @@ import type {
   SuggestedReviewersState,
 } from './types';
 
+import addTooltip from '../../nuclide-ui/add-tooltip';
 import {getPhabricatorRevisionFromCommitMessage} from '../../nuclide-arcanist-rpc/lib/utils';
+import {AtomInput} from '../../nuclide-ui/AtomInput';
 import {AtomTextEditor} from '../../nuclide-ui/AtomTextEditor';
 import {Checkbox} from '../../nuclide-ui/Checkbox';
 import classnames from 'classnames';
@@ -62,6 +64,7 @@ class DiffRevisionView extends React.Component {
 
 type Props = {
   message: ?string,
+  lintExcuse: string,
   publishMode: PublishModeType,
   publishModeState: PublishModeStateType,
   headCommitMessage: ?string,
@@ -83,6 +86,7 @@ export default class DiffPublishView extends React.Component {
     (this: any)._onClickBack = this._onClickBack.bind(this);
     (this: any).__onClickPublish = this.__onClickPublish.bind(this);
     (this: any)._onTogglePrepare = this._onTogglePrepare.bind(this);
+    (this: any)._onLintExcuseChange = this._onLintExcuseChange.bind(this);
     (this: any)._toggleDockPublishConfig = this._toggleDockPublishConfig.bind(this);
     this.state = {
       isPrepareMode: false,
@@ -115,7 +119,6 @@ export default class DiffPublishView extends React.Component {
     this.props.diffModel.publishDiff(
       this.__getPublishMessage() || '',
       isPrepareChecked,
-      null,
     );
   }
 
@@ -145,6 +148,7 @@ export default class DiffPublishView extends React.Component {
   _getToolbar(): React.Element<any> {
     const {
       headCommitMessage,
+      lintExcuse,
       publishMode,
       publishModeState,
       shouldDockPublishView,
@@ -220,12 +224,31 @@ export default class DiffPublishView extends React.Component {
       );
     }
 
+    const lintExcuseElement = (
+      <AtomInput
+        className="nuclide-diff-view-excuse"
+        size="sm"
+        ref={addTooltip({
+          title:
+            'Leave this box empty to run local lint and unit tests or ' +
+            'enter an excuse to skip them.',
+          delay: 200,
+          placement: 'top',
+        })}
+        onDidChange={this._onLintExcuseChange}
+        placeholderText="(Optional) Excuse"
+        value={lintExcuse}
+        width={200}
+      />
+    );
+
     return (
       <div className="publish-toolbar-wrapper">
         <Toolbar location="bottom">
           <ToolbarLeft className="nuclide-diff-view-publish-toolbar-left">
             {revisionView}
             {prepareOptionElement}
+            {lintExcuseElement}
           </ToolbarLeft>
           <ToolbarRight>
             <ButtonGroup size={ButtonGroupSizes.SMALL}>
@@ -255,6 +278,10 @@ export default class DiffPublishView extends React.Component {
     this.props.diffModel.updatePublishMessage(this.__getPublishMessage());
     const shouldDockPublishView = featureConfig.get(SHOULD_DOCK_PUBLISH_VIEW_CONFIG_KEY);
     featureConfig.set(SHOULD_DOCK_PUBLISH_VIEW_CONFIG_KEY, !shouldDockPublishView);
+  }
+
+  _onLintExcuseChange(lintExcuse: string): void {
+    this.props.diffModel.setLintExcuse(lintExcuse);
   }
 
   _onTogglePrepare(isChecked: boolean): void {
