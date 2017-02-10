@@ -164,7 +164,7 @@ export default class DiffCommitView extends React.Component {
           label="Verbatim"
           onChange={this._onToggleVerbatim}
           ref={this._addTooltip(
-            'Whether to override the diff\'s' +
+            'Whether to override the diff\'s ' +
             'commit message on Phabricator with that of your local commit.',
           )}
         />
