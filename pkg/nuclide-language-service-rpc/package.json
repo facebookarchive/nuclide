@@ -1,7 +1,7 @@
 {
   "name": "nuclide-language-service-rpc",
   "repository": "https://github.com/facebook/nuclide",
-  "main": "./lib/ServerLanguageService.js",
+  "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Provides API to implement Nuclide Server side of Language Service",
   "nuclide": {
