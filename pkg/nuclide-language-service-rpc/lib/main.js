@@ -11,3 +11,7 @@
 export type {SingleFileLanguageService} from './ServerLanguageService';
 
 export {ServerLanguageService, ensureInvalidations} from './ServerLanguageService';
+
+export {NullLanguageService} from './NullLanguageService';
+
+export {MultiProjectLanguageService} from './MultiProjectLanguageService';
