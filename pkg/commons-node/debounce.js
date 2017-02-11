@@ -11,20 +11,21 @@
 import invariant from 'assert';
 
 export default function debounce<
-  A, B, C, D, E, F, G,
+  T,
+  TArgs: Array<T>,
   TReturn,
-  TFunc:(a: A, b: B, c: C, d: D, e: E, f: F, g: G) => TReturn,
+  TFunc:(...TArgs) => TReturn,
 >(
   func: TFunc,
   wait: number,
   immediate?: boolean = false,
 ): {
-  (a: A, b: B, c: C, d: D, e: E, f: F, g: G): TReturn | void,
+  (...TArgs): TReturn | void,
   dispose(): void,
 } {
   // Taken from: https://github.com/jashkenas/underscore/blob/b10b2e6d72/underscore.js#L815.
   let timeout: ?number;
-  let args: ?[A, B, C, D, E, F, G];
+  let args: ?TArgs;
   let context: any;
   let timestamp = 0;
   let result: (TReturn | void);
@@ -46,9 +47,9 @@ export default function debounce<
     }
   };
 
-  const debounced = function(): (TReturn | void) {
+  const debounced = function(...args_: TArgs): (TReturn | void) {
     context = this;
-    args = (arguments: [A, B, C, D, E, F, G]);
+    args = args_;
     timestamp = Date.now();
     const callNow = immediate && !timeout;
     if (!timeout) {
