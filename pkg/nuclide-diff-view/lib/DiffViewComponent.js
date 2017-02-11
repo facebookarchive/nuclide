@@ -71,9 +71,11 @@ export function renderPublishView(diffModel: DiffViewModel): React.Element<any> 
     lintExcuse,
     publish: {message, mode, state},
     activeRepositoryState: {headRevision},
+    isPrepareMode,
     shouldDockPublishView,
     shouldUseTextBasedForm,
     suggestedReviewers,
+    verbatimModeEnabled,
   } = diffModel.getState();
   const PublishComponent = getPublishComponent(shouldUseTextBasedForm);
   return (
@@ -86,6 +88,8 @@ export function renderPublishView(diffModel: DiffViewModel): React.Element<any> 
       headCommitMessage={headRevision == null ? '' : headRevision.description}
       diffModel={diffModel}
       shouldDockPublishView={shouldDockPublishView}
+      isPrepareMode={isPrepareMode}
+      verbatimModeEnabled={verbatimModeEnabled}
     />
   );
 }

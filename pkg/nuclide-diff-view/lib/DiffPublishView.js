@@ -63,23 +63,20 @@ class DiffRevisionView extends React.Component {
 }
 
 type Props = {
+  diffModel: DiffViewModel,
+  headCommitMessage: ?string,
+  isPrepareMode: boolean,
   message: ?string,
   lintExcuse: string,
   publishMode: PublishModeType,
   publishModeState: PublishModeStateType,
-  headCommitMessage: ?string,
-  diffModel: DiffViewModel,
   shouldDockPublishView: boolean,
   suggestedReviewers: SuggestedReviewersState,
-};
-
-type State = {
-  isPrepareMode: boolean,
+  verbatimModeEnabled: boolean,
 };
 
 export default class DiffPublishView extends React.Component {
   props: Props;
-  state: State;
 
   constructor(props: Props) {
     super(props);
@@ -88,9 +85,7 @@ export default class DiffPublishView extends React.Component {
     (this: any)._onTogglePrepare = this._onTogglePrepare.bind(this);
     (this: any)._onLintExcuseChange = this._onLintExcuseChange.bind(this);
     (this: any)._toggleDockPublishConfig = this._toggleDockPublishConfig.bind(this);
-    this.state = {
-      isPrepareMode: false,
-    };
+    (this: any)._onToggleVerbatim = this._onToggleVerbatim.bind(this);
   }
 
   componentDidMount(): void {
@@ -114,8 +109,7 @@ export default class DiffPublishView extends React.Component {
   }
 
   __onClickPublish(): void {
-    const isPrepareChecked = this.state.isPrepareMode;
-
+    const isPrepareChecked = this.props.isPrepareMode;
     this.props.diffModel.publishDiff(
       this.__getPublishMessage() || '',
       isPrepareChecked,
@@ -148,10 +142,12 @@ export default class DiffPublishView extends React.Component {
   _getToolbar(): React.Element<any> {
     const {
       headCommitMessage,
+      isPrepareMode,
       lintExcuse,
       publishMode,
       publishModeState,
       shouldDockPublishView,
+      verbatimModeEnabled,
     } = this.props;
     let revisionView;
     if (headCommitMessage != null) {
@@ -215,11 +211,34 @@ export default class DiffPublishView extends React.Component {
     if (publishMode === PublishMode.CREATE) {
       prepareOptionElement = (
         <Checkbox
-          checked={this.state.isPrepareMode}
+          checked={isPrepareMode}
           className="padded"
           label="Prepare"
           tabIndex="-1"
           onChange={this._onTogglePrepare}
+          ref={addTooltip({
+            title: 'Whether to mark the new created revision as unpublished.',
+            delay: 200,
+            placement: 'top',
+          })}
+        />
+      );
+    }
+
+    let verbatimeOptionElement;
+    if (publishMode === PublishMode.UPDATE) {
+      verbatimeOptionElement = (
+        <Checkbox
+          className="padded"
+          checked={verbatimModeEnabled}
+          label="Verbatim"
+          onChange={this._onToggleVerbatim}
+          ref={addTooltip({
+            title: 'Whether to override the diff\'s' +
+              'commit message on Phabricator with that of your local commit.',
+            delay: 200,
+            placement: 'top',
+          })}
         />
       );
     }
@@ -247,6 +266,7 @@ export default class DiffPublishView extends React.Component {
         <Toolbar location="bottom">
           <ToolbarLeft className="nuclide-diff-view-publish-toolbar-left">
             {revisionView}
+            {verbatimeOptionElement}
             {prepareOptionElement}
             {lintExcuseElement}
           </ToolbarLeft>
@@ -285,7 +305,7 @@ export default class DiffPublishView extends React.Component {
   }
 
   _onTogglePrepare(isChecked: boolean): void {
-    this.setState({isPrepareMode: isChecked});
+    this.props.diffModel.setIsPrepareMode(isChecked);
   }
 
   _onClickBack(): void {
@@ -294,5 +314,9 @@ export default class DiffPublishView extends React.Component {
       ? DiffMode.PUBLISH_MODE
       : DiffMode.BROWSE_MODE;
     this.props.diffModel.setViewMode(diffMode);
+  }
+
+  _onToggleVerbatim(isChecked: boolean): void {
+    this.props.diffModel.setVerbatimModeEnabled(isChecked);
   }
 }
