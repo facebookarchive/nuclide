@@ -55,6 +55,10 @@ export type TaskMetadata = {
   icon: IconName,
   disabled?: boolean,
   cancelable?: boolean, // By default, this is true (all tasks are cancelable).
+  // If you define a task as hidden, it won't render its button. It'll still create an atom command
+  // and you're responsible giving the user an alternative way to trigger it. You still get
+  // the benefits of tracking progress etc.
+  hidden?: boolean, // By default, this is false
 };
 
 export type TaskRunner = {

@@ -110,24 +110,25 @@ export class Toolbar extends React.Component {
     const state = this.props.statesForTaskRunners.get(activeTaskRunner);
     if (!state) { return []; }
     invariant(state);
-    return state.tasks.map(task => {
-      const taskAction = () => {
-        if (this.props.taskIsRunning) {
-          this.props.stopRunningTask();
-        }
-        this.props.runTask({...task, taskRunner: activeTaskRunner});
-      };
-      return (
-        <Button
-          className="nuclide-task-button"
-          key={task.type}
-          size={ButtonSizes.SMALL}
-          icon={task.icon}
-          tooltip={tooltip(task.label)}
-          disabled={task.disabled || this.props.runningTaskIsCancelable === false}
-          onClick={taskAction}
-        />);
-    });
+    return state.tasks.filter(task => task.hidden !== true)
+      .map(task => {
+        const taskAction = () => {
+          if (this.props.taskIsRunning) {
+            this.props.stopRunningTask();
+          }
+          this.props.runTask({...task, taskRunner: activeTaskRunner});
+        };
+        return (
+          <Button
+            className="nuclide-task-button"
+            key={task.type}
+            size={ButtonSizes.SMALL}
+            icon={task.icon}
+            tooltip={tooltip(task.label)}
+            disabled={task.disabled || this.props.runningTaskIsCancelable === false}
+            onClick={taskAction}
+          />);
+      });
   }
 }
 
