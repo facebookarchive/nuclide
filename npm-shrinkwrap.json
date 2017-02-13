@@ -1663,11 +1663,6 @@
       "resolved": "https://registry.npmjs.org/optionator/-/optionator-0.8.2.tgz",
       "dev": true
     },
-    "options": {
-      "version": "0.0.6",
-      "from": "options@>=0.0.5",
-      "resolved": "https://registry.npmjs.org/options/-/options-0.0.6.tgz"
-    },
     "os-homedir": {
       "version": "1.0.2",
       "from": "os-homedir@>=1.0.0 <2.0.0",
@@ -1838,9 +1833,9 @@
       "resolved": "https://registry.npmjs.org/react-addons-update/-/react-addons-update-15.3.1.tgz"
     },
     "react-devtools-core": {
-      "version": "1.0.6",
-      "from": "react-devtools-core@>=1.0.6 <2.0.0",
-      "resolved": "https://registry.npmjs.org/react-devtools-core/-/react-devtools-core-1.0.6.tgz"
+      "version": "2.0.8",
+      "from": "react-devtools-core@2.0.8",
+      "resolved": "https://registry.npmjs.org/react-devtools-core/-/react-devtools-core-2.0.8.tgz"
     },
     "react-dom": {
       "version": "15.3.1",
@@ -1965,9 +1960,9 @@
       }
     },
     "sax": {
-      "version": "1.2.1",
+      "version": "1.2.2",
       "from": "sax@>=0.6.0",
-      "resolved": "https://registry.npmjs.org/sax/-/sax-1.2.1.tgz"
+      "resolved": "https://registry.npmjs.org/sax/-/sax-1.2.2.tgz"
     },
     "sb-callsite": {
       "version": "1.1.2",
@@ -2316,9 +2311,9 @@
       }
     },
     "ultron": {
-      "version": "1.0.2",
-      "from": "ultron@>=1.0.0 <1.1.0",
-      "resolved": "https://registry.npmjs.org/ultron/-/ultron-1.0.2.tgz"
+      "version": "1.1.0",
+      "from": "ultron@>=1.1.0 <1.2.0",
+      "resolved": "https://registry.npmjs.org/ultron/-/ultron-1.1.0.tgz"
     },
     "underscore": {
       "version": "1.6.0",
@@ -2450,9 +2445,9 @@
       "dev": true
     },
     "ws": {
-      "version": "1.1.1",
-      "from": "ws@1.1.1",
-      "resolved": "https://registry.npmjs.org/ws/-/ws-1.1.1.tgz"
+      "version": "2.0.3",
+      "from": "ws@2.0.3",
+      "resolved": "https://registry.npmjs.org/ws/-/ws-2.0.3.tgz"
     },
     "xml2js": {
       "version": "0.4.17",

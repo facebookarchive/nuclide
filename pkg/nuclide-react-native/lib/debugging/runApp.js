@@ -26,7 +26,7 @@ export function runApp(executorResults: Observable<ExecutorResult>): Observable<
   return websockets.switchMap(ws => (
     Observable.merge(
       // The messages from the RN app.
-      Observable.fromEvent(ws, 'message').map(JSON.parse),
+      Observable.fromEvent(ws, 'message').map(event => JSON.parse(event.data)),
 
       // Send the executor results to the RN app.
       executorResults

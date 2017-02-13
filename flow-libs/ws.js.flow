@@ -30,11 +30,7 @@ declare module 'ws' {
     send(message: string | Buffer, options: Object, ack: (error: ?Object) => void): void,
     close(): void,
     terminate(): void,
-    ping(
-      data: ?string,
-      options?: {mask?: boolean, binary?: boolean},
-      dontFailWhenClosed?: boolean,
-    ): void,
+    ping(data: ?string, mask?: boolean, failSilently?: boolean): void,
   }
 
   declare var exports: typeof ws$WebSocket;
