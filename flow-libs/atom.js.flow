@@ -1352,6 +1352,7 @@ declare class atom$Project {
   // Event Subscription
   onDidChangePaths(callback: (projectPaths: Array<string>) => mixed): IDisposable,
   onDidAddBuffer(callback: (buffer: atom$TextBuffer) => mixed): IDisposable,
+  observeBuffers(callback: (buffer: atom$TextBuffer) => mixed): IDisposable,
 
   // Accessing the git repository
   getRepositories(): Array<?atom$Repository>,
