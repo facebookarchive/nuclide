@@ -24,7 +24,7 @@ import type {
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
 import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {ConnectableObservable} from 'rxjs';
-import type {Completion} from '../../nuclide-language-service/lib/LanguageService';
+import type {Completion, LanguageService} from '../../nuclide-language-service/lib/LanguageService';
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
 import type {CategoryLogger} from '../../nuclide-logging';
 
@@ -281,6 +281,9 @@ export class ServerLanguageService {
     this._service.dispose();
   }
 }
+
+// Assert that ServerLanguageService satisifes the LanguageService interface:
+(((null: any): ServerLanguageService): LanguageService);
 
 export function ensureInvalidations(
   logger: CategoryLogger,
