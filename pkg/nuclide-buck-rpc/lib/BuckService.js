@@ -108,6 +108,7 @@ export type BuckWebSocketMessage = {
 type BuckConfig = Object;
 export type BaseBuckBuildOptions = {
   install?: boolean,
+  run?: boolean,
   test?: boolean,
   simulator?: ?string,
   runOptions?: ?BuckRunOptions,
@@ -423,6 +424,21 @@ export function installWithOutput(
   }).publish();
 }
 
+export function runWithOutput(
+  rootPath: NuclideUri,
+  buildTargets: Array<string>,
+  extraArguments: Array<string>,
+  simulator: ?string,
+  runOptions: ?BuckRunOptions,
+): ConnectableObservable<ProcessMessage> {
+  return _buildWithOutput(rootPath, buildTargets, {
+    run: true,
+    simulator,
+    runOptions,
+    extraArguments,
+  }).publish();
+}
+
 /**
  * Does a build/install.
  * @return An Observable that returns output from buck, as described by the
@@ -458,16 +474,19 @@ function _translateOptionsToBuckBuildArgs(options: FullBuckBuildOptions): Array<
   } = options;
   const {
     install: doInstall,
+    run,
     simulator,
     test,
     extraArguments,
   } = baseOptions;
   const runOptions = baseOptions.runOptions || {run: false};
 
-  let args = [test ? 'test' : (doInstall ? 'install' : 'build')];
+  let args = [test ? 'test' : (doInstall ? 'install' : (run ? 'run' : 'build'))];
   args = args.concat(buildTargets, CLIENT_ID_ARGS);
 
-  args.push('--keep-going');
+  if (!run) {
+    args.push('--keep-going');
+  }
   if (pathToBuildReport) {
     args = args.concat(['--build-report', pathToBuildReport]);
   }

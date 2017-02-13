@@ -18,7 +18,7 @@ import type {BuckBuildSystem} from '../../nuclide-buck/lib/BuckBuildSystem';
 
 export type TaskType = 'build' | 'run' | 'test' | 'debug';
 
-export type BuckSubcommand = 'build' | 'run' | 'install' | 'test' | 'debug';
+export type BuckSubcommand = 'build' | 'run' | 'install' | 'test';
 
 export type TaskSettings = {
   arguments?: Array<string>,

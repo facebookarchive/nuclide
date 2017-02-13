@@ -578,7 +578,7 @@ function runBuckCommand(
   } else if (subcommand === 'test') {
     return buckService.testWithOutput(buckRoot, [buildTarget], args).refCount();
   } else if (subcommand === 'run') {
-    throw Error('TODO: Implement run');
+    return buckService.runWithOutput(buckRoot, [buildTarget], args).refCount();
   } else {
     throw Error(`Unknown subcommand: ${subcommand}`);
   }
