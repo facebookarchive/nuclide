@@ -141,9 +141,15 @@ export function consumeDiagnosticsProviderV2(provider: ObservableDiagnosticProvi
   const store = getDiagnosticStore();
 
   compositeDisposable.add(
-    provider.updates.subscribe(update => store.updateMessages(provider, update)),
+    provider.updates.subscribe(
+      update => store.updateMessages(provider, update),
+      error => { getLogger().error(`Error: updates.subscribe ${error}`); },
+      () => { getLogger().error('updates.subscribe completed'); },
+    ),
     provider.invalidations.subscribe(
       invalidation => store.invalidateMessages(provider, invalidation),
+      error => { getLogger().error(`Error: invalidations.subscribe ${error}`); },
+      () => { getLogger().error('invalidations.subscribe completed'); },
     ),
     () => {
       store.invalidateMessages(provider, {scope: 'all'});

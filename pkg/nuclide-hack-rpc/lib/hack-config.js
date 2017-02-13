@@ -53,7 +53,7 @@ export function setHackCommand(newHackCommand: string): void {
   if (newHackCommand === '') {
     hackCommand = DEFAULT_HACK_COMMAND;
   } else {
-    logger.logTrace(`Using custom hh_client: ${newHackCommand}`);
+    logger.log(`Using custom hh_client: ${newHackCommand}`);
     hackCommand = Promise.resolve(newHackCommand);
   }
 }

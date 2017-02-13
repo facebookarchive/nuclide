@@ -28,7 +28,7 @@
       "logLevel": {
         "title": "Log Level",
         "type": "string",
-        "default": "ALL",
+        "default": "DEBUG",
         "description": "Specify that level of logging, supported values: ALL | TRACE | DEBUG | INFO | WARN | ERROR | FATAL | OFF.",
         "enum": [
           "ALL",

@@ -292,25 +292,36 @@ export class ObservableDiagnosticProvider<T: LanguageService> {
     this.updates = this._connectionToLanguageService.observeEntries()
       .mergeMap(([connection, languageService]) => {
         const connectionName = ServerConnection.toDebugString(connection);
-        this._logger.logTrace(
+        this._logger.log(
           `Starting observing diagnostics ${connectionName}, ${this._analyticsEventName}`);
-        return Observable.fromPromise(languageService).catch(error => Observable.empty())
+        return Observable.fromPromise(languageService)
+          .catch(error => {
+            this._logger.logError(`Error: languageService, ${this._analyticsEventName} ${error}`);
+            return Observable.empty();
+          })
           .mergeMap((language: LanguageService) => {
-            this._logger.logTrace(
+            this._logger.log(
               `Observing diagnostics ${connectionName}, ${this._analyticsEventName}`);
             return ensureInvalidations(this._logger,
-              language.observeDiagnostics().refCount().catch(error => Observable.empty()));
+              language.observeDiagnostics()
+              .refCount()
+              .catch(error => {
+                this._logger.logError(
+                  `Error: observeDiagnostics, ${this._analyticsEventName} ${error}`,
+                );
+                return Observable.empty();
+              }));
           })
           .map((update: FileDiagnosticUpdate) => {
             const {filePath, messages} = update;
             track(this._analyticsEventName);
             const fileCache = this._connectionToFiles.get(connection);
             if (messages.length === 0) {
-              this._logger.logTrace(
+              this._logger.log(
                 `Observing diagnostics: removing ${filePath}, ${this._analyticsEventName}`);
               fileCache.delete(filePath);
             } else {
-              this._logger.logTrace(
+              this._logger.log(
                 `Observing diagnostics: adding ${filePath}, ${this._analyticsEventName}`);
               fileCache.add(filePath);
             }
@@ -318,12 +329,17 @@ export class ObservableDiagnosticProvider<T: LanguageService> {
               filePathToMessages: new Map([[filePath, messages]]),
             };
           });
+      }).catch(error => {
+        this._logger.logError(
+          `Error: observeEntries, ${this._analyticsEventName} ${error}`,
+        );
+        throw error;
       });
 
     this.invalidations = observableFromSubscribeFunction(
       ServerConnection.onDidCloseServerConnection)
         .map(connection => {
-          this._logger.logTrace(
+          this._logger.log(
             `Diagnostics closing ${connection.getRemoteHostname()}, ${this._analyticsEventName}`);
           const files = Array.from(this._connectionToFiles.get(connection));
           this._connectionToFiles.delete(connection);
@@ -331,6 +347,12 @@ export class ObservableDiagnosticProvider<T: LanguageService> {
             scope: 'file',
             filePaths: files,
           };
+        })
+        .catch(error => {
+          this._logger.logError(
+            `Error: invalidations, ${this._analyticsEventName} ${error}`,
+          );
+          throw error;
         });
   }
 }

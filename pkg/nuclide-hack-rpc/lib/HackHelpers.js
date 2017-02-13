@@ -55,7 +55,7 @@ export async function callHHClient(
 
         let execResult = null;
 
-        logger.logTrace(`Calling Hack: ${hackCommand} with ${allArgs.toString()}`);
+        logger.log(`Calling Hack: ${hackCommand} with ${allArgs.toString()}`);
         execResult = await trackTiming(
           trackingIdOfHackArgs(args),
           () => asyncExecute(hackCommand, allArgs, {stdin: processInput}),
@@ -69,6 +69,8 @@ export async function callHHClient(
         }
 
         const output = errorStream ? stderr : stdout;
+        // keeping this at "Trace" log level, since output for --color contains
+        // entire file contents, which fills the logs too quickly
         logger.logTrace(`Hack output for ${allArgs.toString()}: ${output}`);
         try {
           const result = JSON.parse(output);

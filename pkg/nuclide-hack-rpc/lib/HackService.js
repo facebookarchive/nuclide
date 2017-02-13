@@ -210,11 +210,11 @@ class HackSingleFileLanguageService {
   }
 
   observeDiagnostics(): Observable<FileDiagnosticUpdate> {
-    logger.logTrace('observeDiagnostics');
+    logger.log('observeDiagnostics');
     invariant(this._useIdeConnection);
     return observeConnections(this._fileCache)
       .mergeMap(connection => {
-        logger.logTrace('notifyDiagnostics');
+        logger.log('notifyDiagnostics');
         return ensureInvalidations(
             logger,
             connection.notifyDiagnostics()
@@ -224,13 +224,16 @@ class HackSingleFileLanguageService {
               return Observable.empty();
             })
             .map((hackDiagnostics: HackDiagnosticsMessage) => {
-              logger.logTrace(`Got hack error in ${hackDiagnostics.filename}`);
+              logger.log(`Got hack error in ${hackDiagnostics.filename}`);
               return ({
                 filePath: hackDiagnostics.filename,
                 messages: hackDiagnostics.errors.map(diagnostic =>
                   hackMessageToDiagnosticMessage(diagnostic.message)),
               });
             }));
+      }).catch(error => {
+        logger.logError(`Error: observeDiagnostics ${error}`);
+        throw error;
       });
   }
 

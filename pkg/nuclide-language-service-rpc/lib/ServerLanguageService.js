@@ -295,19 +295,19 @@ export function ensureInvalidations(
     .do((diagnostic: FileDiagnosticUpdate) => {
       const filePath = diagnostic.filePath;
       if (diagnostic.messages.length === 0) {
-        logger.logTrace(`Removing ${filePath} from files with errors`);
+        logger.log(`Removing ${filePath} from files with errors`);
         filesWithErrors.delete(filePath);
       } else {
-        logger.logTrace(`Adding ${filePath} to files with errors`);
+        logger.log(`Adding ${filePath} to files with errors`);
         filesWithErrors.add(filePath);
       }
     });
 
   const fileInvalidations: Observable<FileDiagnosticUpdate> =
     Observable.defer(() => {
-      logger.logTrace('Clearing errors after stream closed');
+      logger.log('Clearing errors after stream closed');
       return Observable.from(Array.from(filesWithErrors).map(file => {
-        logger.logTrace(`Clearing errors for ${file} after connection closed`);
+        logger.log(`Clearing errors for ${file} after connection closed`);
         return {
           filePath: file,
           messages: [],

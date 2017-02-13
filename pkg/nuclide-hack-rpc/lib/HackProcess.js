@@ -54,7 +54,7 @@ function getServiceRegistry(): ServiceRegistry {
 }
 
 function logMessage(direction: string, message: string): void {
-  logger.logInfo(`Hack Connection message ${direction}: '${message}'`);
+  logger.logTrace(`Hack Connection message ${direction}: '${message}'`);
 }
 
 class HackProcess extends RpcProcess {
@@ -137,7 +137,7 @@ class HackProcess extends RpcProcess {
     activatedManually: boolean,
   ): Promise<?Array<Completion>> {
     const filePath = fileVersion.filePath;
-    logger.logTrace(`Attempting Hack Autocomplete: ${filePath}, ${position.toString()}`);
+    logger.log(`Attempting Hack Autocomplete: ${filePath}, ${position.toString()}`);
     const buffer = await this.getBufferAtVersion(fileVersion);
     if (buffer == null) {
       return [];
@@ -154,7 +154,7 @@ class HackProcess extends RpcProcess {
     const column = position.column + 1;
     const service = this.getConnectionService();
 
-    logger.logTrace('Got Hack Service');
+    logger.log('Got Hack Service');
     return convertCompletions(
       contents,
       offset,
@@ -167,7 +167,7 @@ class HackProcess extends RpcProcess {
     if (!this.isDisposed()) {
       // Atempt to send disconnect message before shutting down connection
       try {
-        logger.logTrace('Attempting to disconnect cleanly from HackProcess');
+        logger.log('Attempting to disconnect cleanly from HackProcess');
         this.getConnectionService().disconnect();
       } catch (e) {
         // Failing to send the shutdown is not fatal...
