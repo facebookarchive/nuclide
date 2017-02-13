@@ -1,5 +1,27 @@
 # Nuclide Changelog
 
+## v0.206.0
+
+### Highlights
+
+* Minimally required version of Atom is now 1.14.0
+
+### Debugger
+
+* Fixed a bug that caused the debug session not to end if the debugger proxy is killed
+* Fixed a bug causing exception breakpoint messages to be formatted incorrectly
+
+### PHP
+
+* Faster autocomplete thanks to new caching
+
+### Misc
+
+* Support device groups in platform/device selection dropdown
+* Fixed Diagnostics "Try it" button on Home screen
+* Support skipping local lint and unit tests
+
+
 ## v0.205.0
 
 Hotfix for internal changes.
