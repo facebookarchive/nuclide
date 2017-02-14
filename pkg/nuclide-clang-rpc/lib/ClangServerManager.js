@@ -62,6 +62,10 @@ export default class ClangServerManager {
     );
   }
 
+  getClangFlagsManager(): ClangFlagsManager {
+    return this._flagsManager;
+  }
+
   /**
    * Spawn one Clang server per translation unit (i.e. source file).
    * This allows working on multiple files at once, and simplifies per-file state handling.

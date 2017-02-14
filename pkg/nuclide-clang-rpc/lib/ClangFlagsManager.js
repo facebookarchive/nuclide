@@ -231,12 +231,16 @@ export default class ClangFlagsManager {
       .concat(projectFlags.extraCompilerFlags);
   }
 
-  async __getFlagsForSrcImpl(src: string, compilationDBFile: ?NuclideUri): Promise<?ClangFlags> {
+  async _getDBFlagsAndDirForSrc(src: string, compilationDBFile: ?NuclideUri): Promise<{
+    dbFlags: ?Map<string, ClangFlags>,
+    dbDir: ?string,
+  }> {
     let dbFlags = null;
     let dbDir = null;
     if (compilationDBFile != null) {
       // Look for a compilation database provided by the client.
       dbFlags = await this._loadFlagsFromCompilationDatabase(compilationDBFile);
+      dbDir = nuclideUri.dirname(compilationDBFile);
     } else {
       // Look for a manually provided compilation database.
       dbDir = await fsPromise.findNearestFile(
@@ -248,13 +252,30 @@ export default class ClangFlagsManager {
         dbFlags = await this._loadFlagsFromCompilationDatabase(dbFile);
       }
     }
+    return {dbFlags, dbDir};
+  }
+
+  async _getRelatedSrcFileForHeader(
+    src: string,
+    dbFlags: ?Map<string, ClangFlags>,
+    dbDir: ?string,
+  ): Promise<?string> {
     if (dbFlags != null) {
-      const flags = dbFlags.get(src);
-      if (flags != null) {
-        return flags;
+      const sourceFile = this._findSourceFileForHeaderFromCompilationDatabase(src, dbFlags);
+      if (sourceFile != null) {
+        return sourceFile;
       }
     }
+    // Try finding flags for a related source file.
+    const projectRoot = (await BuckService.getRootForPath(src)) || dbDir;
+    // If we don't have a .buckconfig or a compile_commands.json, we won't find flags regardless.
+    if (projectRoot != null) {
+      return ClangFlagsManager._findSourceFileForHeader(src, projectRoot);
+    }
+    return null;
+  }
 
+  async _getFlagsForSrcImplFromBuck(src: string): Promise<?ClangFlags> {
     const buckFlags = await this._loadFlagsFromBuck(src)
       .catch(err => {
         logger.error('Error getting flags from Buck', err);
@@ -265,24 +286,37 @@ export default class ClangFlagsManager {
       if (buckFlags.size > 0) {
         return buckFlags.values().next().value;
       }
-      // Try finding flags for a related source file.
-      const projectRoot = (await BuckService.getRootForPath(src)) || dbDir;
-      // If we don't have a .buckconfig or a compile_commands.json, we won't find flags regardless.
-      if (projectRoot == null) {
-        return null;
+    }
+    const flags = buckFlags.get(src);
+    if (flags != null) {
+      return flags;
+    }
+  }
+
+  async getRelatedSrcFileForHeader(src: string, compilationDBFile: ?NuclideUri): Promise<?string> {
+    const {dbFlags, dbDir} = await this._getDBFlagsAndDirForSrc(src, compilationDBFile);
+    return this._getRelatedSrcFileForHeader(src, dbFlags, dbDir);
+  }
+
+  async __getFlagsForSrcImpl(src: string, compilationDBFile: ?NuclideUri): Promise<?ClangFlags> {
+    const {dbFlags, dbDir} = await this._getDBFlagsAndDirForSrc(src, compilationDBFile);
+    if (dbFlags != null) {
+      const flags = dbFlags.get(src);
+      if (flags != null) {
+        return flags;
       }
-      let sourceFile = await ClangFlagsManager._findSourceFileForHeader(src, projectRoot);
-      if (sourceFile == null && dbFlags != null) {
-        sourceFile = this._findSourceFileForHeaderFromCompilationDatabase(src, dbFlags);
-      }
+    }
+
+    if (isHeaderFile(src)) {
+      const sourceFile = await this._getRelatedSrcFileForHeader(src, dbFlags, dbDir);
       if (sourceFile != null) {
         return this._getFlagsFromSourceFileForHeader(sourceFile, compilationDBFile);
       }
     }
 
-    const flags = buckFlags.get(src);
-    if (flags != null) {
-      return flags;
+    const flagsFromBuck = await this._getFlagsForSrcImplFromBuck(src);
+    if (flagsFromBuck != null) {
+      return flagsFromBuck;
     }
 
     // Even if we can't get flags, try to watch the build file in case they get added.

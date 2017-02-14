@@ -64,6 +64,13 @@ module.exports = {
     return new Disposable(() => compilationDatabaseProviders.delete(provider));
   },
 
+  getRelatedSourceOrHeader(src: string): Promise<?string> {
+    const service = getClangServiceByNuclideUri(src);
+    return getCompilationDatabaseFile(src).then(
+      compilationDBFile => service.getRelatedSourceOrHeader(src, compilationDBFile),
+    );
+  },
+
   async getDiagnostics(
     editor: atom$TextEditor,
   ): Promise<?ClangCompileResult> {

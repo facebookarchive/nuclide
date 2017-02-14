@@ -188,6 +188,13 @@ export async function getDeclarationInfo(
   }
 }
 
+export async function getRelatedSourceOrHeader(
+  src: NuclideUri,
+  compilationDBFile: ?NuclideUri,
+): Promise<?string> {
+  serverManager.getClangFlagsManager().getRelatedSrcFileForHeader(src, compilationDBFile);
+}
+
 export async function getOutline(
   src: NuclideUri,
   contents: string,
