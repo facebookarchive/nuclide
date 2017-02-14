@@ -43,7 +43,7 @@ while (chunks.length) {
       ...chunk,
     ]
   )
-  .on('exit', code => {
+  .once('exit', code => {
     stdOut += out;
     stdErr += err;
     if (code && exitCode == null) {
@@ -57,7 +57,7 @@ while (chunks.length) {
   ps.stderr.on('data', data => { err += data; });
 }
 
-process.on('beforeExit', code => {
+process.once('beforeExit', code => {
   if (!code && exitCode) { process.exitCode = exitCode; }
   if (stdOut) { console.log(stdOut); }
   if (stdErr) { console.error(stdErr); }
