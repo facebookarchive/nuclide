@@ -1500,6 +1500,23 @@ describe('PHP grammar', () => {
   grammarTest(nuclideUri.join(__dirname, 'fixtures/syntax_test_xhp.php'));
 
   describe('magic method parsing', () => {
+    const CLASS_WITH_MAGIC_METHOD = `<?hh
+    class TestClass {
+      final public function __get(): void {
+      }
+    }`;
+    const CLASS_WITH_TRICKY_MAGIC_METHOD = `<?hh
+    class TestClass {
+      final public function __get
+        (): void {
+      }
+    }`;
+    const CLASS_WITHOUT_MAGIC_METHOD = `<?hh
+    class TestClass {
+      final public function __getSomething(): void {
+      }
+    }`;
+
     it('recognizes magic methods', () => {
       expect(grammar).toBeTruthy();
       grammar = grammar || {};
@@ -1549,20 +1566,3 @@ describe('PHP grammar', () => {
     });
   });
 });
-
-const CLASS_WITH_MAGIC_METHOD = `<?hh
-class TestClass {
-  final public function __get(): void {
-  }
-}`;
-const CLASS_WITH_TRICKY_MAGIC_METHOD = `<?hh
-class TestClass {
-  final public function __get
-    (): void {
-  }
-}`;
-const CLASS_WITHOUT_MAGIC_METHOD = `<?hh
-class TestClass {
-  final public function __getSomething(): void {
-  }
-}`;
