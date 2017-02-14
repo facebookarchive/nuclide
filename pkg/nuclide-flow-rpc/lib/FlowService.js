@@ -91,7 +91,13 @@ class FlowSingleFileLanguageService {
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
   ): Promise<?DiagnosticProviderUpdate> {
-    return flowFindDiagnostics(filePath, null);
+    return getState().getRootContainer().runWithRoot(
+      filePath,
+      root => root.flowFindDiagnostics(
+        filePath,
+        null,
+      ),
+    );
   }
 
   observeDiagnostics(): ConnectableObservable<FileDiagnosticUpdate> {
@@ -105,12 +111,15 @@ class FlowSingleFileLanguageService {
     activatedManually: boolean,
     prefix: string,
   ): Promise<?Array<Completion>> {
-    const results = await flowGetAutocompleteSuggestions(
+    const results = await getState().getRootContainer().runWithRoot(
       filePath,
-      buffer.getText(),
-      position,
-      activatedManually,
-      prefix,
+      root => root.flowGetAutocompleteSuggestions(
+        filePath,
+        buffer.getText(),
+        position,
+        activatedManually,
+        prefix,
+      ),
     );
     return filterResultsByPrefix(prefix, results);
   }
@@ -124,11 +133,14 @@ class FlowSingleFileLanguageService {
     if (match == null) {
       return null;
     }
-    const loc = await flowFindDefinition(
+    const loc = await getState().getRootContainer().runWithRoot(
       filePath,
-      buffer.getText(),
-      position.row + 1,
-      position.column + 1,
+      root => root.flowFindDefinition(
+        filePath,
+        buffer.getText(),
+        position.row + 1,
+        position.column + 1,
+      ),
     );
     if (loc == null) {
       return null;
@@ -161,14 +173,21 @@ class FlowSingleFileLanguageService {
   getCoverage(
     filePath: NuclideUri,
   ): Promise<?CoverageResult> {
-    return flowGetCoverage(filePath);
+    return getState().getRootContainer().runWithRoot(
+      filePath,
+      root => root.flowGetCoverage(filePath),
+    );
   }
 
   getOutline(
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
   ): Promise<?Outline> {
-    return flowGetOutline(filePath, buffer.getText());
+    return getState().getRootContainer().runWithOptionalRoot(
+      filePath,
+      root => FlowSingleProjectLanguageService
+          .flowGetOutline(root, buffer.getText(), getState().getExecInfoContainer()),
+    );
   }
 
   typeHint(
@@ -232,55 +251,6 @@ export function getServerStatusUpdates(): ConnectableObservable<ServerStatusUpda
   return getState().getRootContainer().getServerStatusUpdates().publish();
 }
 
-export function flowFindDefinition(
-  file: NuclideUri,
-  currentContents: string,
-  line: number,
-  column: number,
-): Promise<?Loc> {
-  return getState().getRootContainer().runWithRoot(
-    file,
-    root => root.flowFindDefinition(
-      file,
-      currentContents,
-      line,
-      column,
-    ),
-  );
-}
-
-export function flowFindDiagnostics(
-  file: NuclideUri,
-  currentContents: ?string,
-): Promise<?DiagnosticProviderUpdate> {
-  return getState().getRootContainer().runWithRoot(
-    file,
-    root => root.flowFindDiagnostics(
-      file,
-      currentContents,
-    ),
-  );
-}
-
-export function flowGetAutocompleteSuggestions(
-  file: NuclideUri,
-  currentContents: string,
-  position: atom$Point,
-  activatedManually: ?boolean,
-  prefix: string,
-): Promise<?Array<Completion>> {
-  return getState().getRootContainer().runWithRoot(
-    file,
-    root => root.flowGetAutocompleteSuggestions(
-      file,
-      currentContents,
-      position,
-      activatedManually,
-      prefix,
-    ),
-  );
-}
-
 export async function flowGetType(
   file: NuclideUri,
   currentContents: string,
@@ -295,26 +265,6 @@ export async function flowGetType(
       line,
       column,
     ),
-  );
-}
-
-export async function flowGetCoverage(
-  file: NuclideUri,
-): Promise<?CoverageResult> {
-  return getState().getRootContainer().runWithRoot(
-    file,
-    root => root.flowGetCoverage(file),
-  );
-}
-
-export function flowGetOutline(
-  file: ?NuclideUri,
-  currentContents: string,
-): Promise<?Outline> {
-  return getState().getRootContainer().runWithOptionalRoot(
-    file,
-    root => FlowSingleProjectLanguageService
-        .flowGetOutline(root, currentContents, getState().getExecInfoContainer()),
   );
 }
 
