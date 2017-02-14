@@ -1,88 +1,84 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import type {AppState, DeploymentTarget, PlatformGroup} from '../types';
-import type {Action} from './Actions';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = accumulateState;
 
-import * as Actions from './Actions';
+var _Actions;
 
-export default function accumulateState(state: AppState, action: Action): AppState {
+function _load_Actions() {
+  return _Actions = _interopRequireWildcard(require('./Actions'));
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function accumulateState(state, action) {
   switch (action.type) {
-    case Actions.SET_PROJECT_ROOT:
-      return {
-        ...state,
+    case (_Actions || _load_Actions()).SET_PROJECT_ROOT:
+      return Object.assign({}, state, {
         projectRoot: action.projectRoot,
-        isLoadingBuckProject: true,
-      };
-    case Actions.SET_BUCK_ROOT:
-      return {
-        ...state,
+        isLoadingBuckProject: true
+      });
+    case (_Actions || _load_Actions()).SET_BUCK_ROOT:
+      return Object.assign({}, state, {
         buckRoot: action.buckRoot,
-        isLoadingBuckProject: false,
-      };
-    case Actions.SET_BUILD_TARGET:
-      return {
-        ...state,
+        isLoadingBuckProject: false
+      });
+    case (_Actions || _load_Actions()).SET_BUILD_TARGET:
+      return Object.assign({}, state, {
         buildRuleType: null,
         platformGroups: [],
         selectedDeploymentTarget: null,
         buildTarget: action.buildTarget,
-        isLoadingRule: true,
-      };
-    case Actions.SET_RULE_TYPE:
-      return {
-        ...state,
+        isLoadingRule: true
+      });
+    case (_Actions || _load_Actions()).SET_RULE_TYPE:
+      return Object.assign({}, state, {
         buildRuleType: action.ruleType,
         isLoadingRule: false,
-        isLoadingPlatforms: true,
-      };
-    case Actions.SET_PLATFORM_GROUPS:
-      const {platformGroups} = action;
+        isLoadingPlatforms: true
+      });
+    case (_Actions || _load_Actions()).SET_PLATFORM_GROUPS:
+      const { platformGroups } = action;
       let currentPlatformName;
       let currentDeviceName;
       if (state.selectedDeploymentTarget) {
         currentPlatformName = state.selectedDeploymentTarget.platform.name;
-        currentDeviceName = state.selectedDeploymentTarget.device
-          ? state.selectedDeploymentTarget.device.name : null;
+        currentDeviceName = state.selectedDeploymentTarget.device ? state.selectedDeploymentTarget.device.name : null;
       } else {
         currentPlatformName = state.lastSessionPlatformName;
         currentDeviceName = state.lastSessionDeviceName;
       }
-      const selectedDeploymentTarget
-        = selectValidDeploymentTarget(currentPlatformName, currentDeviceName, platformGroups);
-      return {
-        ...state,
+      const selectedDeploymentTarget = selectValidDeploymentTarget(currentPlatformName, currentDeviceName, platformGroups);
+      return Object.assign({}, state, {
         platformGroups,
         selectedDeploymentTarget,
-        isLoadingPlatforms: false,
-      };
-    case Actions.SET_DEPLOYMENT_TARGET:
-      return {
-        ...state,
+        isLoadingPlatforms: false
+      });
+    case (_Actions || _load_Actions()).SET_DEPLOYMENT_TARGET:
+      return Object.assign({}, state, {
         selectedDeploymentTarget: action.deploymentTarget,
         lastSessionPlatformName: null,
-        lastSessionDeviceName: null,
-      };
-    case Actions.SET_TASK_SETTINGS:
-      return {
-        ...state,
-        taskSettings: action.settings,
-      };
+        lastSessionDeviceName: null
+      });
+    case (_Actions || _load_Actions()).SET_TASK_SETTINGS:
+      return Object.assign({}, state, {
+        taskSettings: action.settings
+      });
   }
   return state;
-}
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   */
 
-function selectValidDeploymentTarget(
-  currentPlatformName: ?string,
-  currentDeviceName: ?string,
-  platformGroups: Array<PlatformGroup>): ?DeploymentTarget {
+function selectValidDeploymentTarget(currentPlatformName, currentDeviceName, platformGroups) {
   if (!platformGroups.length) {
     return null;
   }
@@ -122,10 +118,10 @@ function selectValidDeploymentTarget(
     existingPlatform = platformGroups[0].platforms[0];
   }
 
-  if (!existingDevice && existingPlatform.deviceGroups.length
-       && existingPlatform.deviceGroups[0].devices.length) {
+  if (!existingDevice && existingPlatform.deviceGroups.length && existingPlatform.deviceGroups[0].devices.length) {
     existingDevice = existingPlatform.deviceGroups[0].devices[0];
   }
 
-  return {platform: existingPlatform, device: existingDevice};
+  return { platform: existingPlatform, device: existingDevice };
 }
+module.exports = exports['default'];

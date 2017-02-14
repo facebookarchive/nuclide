@@ -1,45 +1,49 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import type {BuckBuildSystem} from '../../nuclide-buck/lib/BuckBuildSystem';
-import type {Device, PlatformGroup, TaskType} from '../../nuclide-buck/lib/types';
-import type {TaskEvent} from '../../commons-node/tasks';
-import type {PlatformService} from '../../nuclide-buck/lib/PlatformService';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.deactivate = deactivate;
+exports.consumePlatformService = consumePlatformService;
 
-import {Disposable} from 'atom';
-import {Observable} from 'rxjs';
-import * as IosSimulator from '../../nuclide-ios-common';
-import invariant from 'assert';
+var _atom = require('atom');
 
-let disposable: ?Disposable = null;
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
-export function deactivate(): void {
+var _nuclideIosCommon;
+
+function _load_nuclideIosCommon() {
+  return _nuclideIosCommon = _interopRequireWildcard(require('../../nuclide-ios-common'));
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+let disposable = null; /**
+                        * Copyright (c) 2015-present, Facebook, Inc.
+                        * All rights reserved.
+                        *
+                        * This source code is licensed under the license found in the LICENSE file in
+                        * the root directory of this source tree.
+                        *
+                        * 
+                        */
+
+function deactivate() {
   if (disposable != null) {
     disposable.dispose();
     disposable = null;
   }
 }
 
-export function consumePlatformService(service: PlatformService): void {
+function consumePlatformService(service) {
   disposable = service.register(provideIosDevices);
 }
 
-function provideIosDevices(
-  buckRoot: string,
-  ruleType: string,
-  buildTarget: string,
-): Observable<?PlatformGroup> {
+function provideIosDevices(buckRoot, ruleType, buildTarget) {
   if (ruleType !== 'apple_bundle') {
-    return Observable.of(null);
+    return _rxjsBundlesRxMinJs.Observable.of(null);
   }
-  return IosSimulator.getDevices().map(devices => {
+  return (_nuclideIosCommon || _load_nuclideIosCommon()).getDevices().map(devices => {
     if (!devices.length) {
       return null;
     }
@@ -50,30 +54,32 @@ function provideIosDevices(
         name: 'iOS Simulators',
         tasks: new Set(['build', 'run', 'test', 'debug']),
         runTask,
-        deviceGroups: [
-          {
-            name: 'iOS Simulators',
-            devices: devices.map(device => ({
-              name: `${device.name} (${device.os})`,
-              udid: device.udid,
-            })),
-          },
-        ],
-      }],
+        deviceGroups: [{
+          name: 'iOS Simulators',
+          devices: devices.map(device => ({
+            name: `${device.name} (${device.os})`,
+            udid: device.udid
+          }))
+        }]
+      }]
     };
   });
 }
 
-function runTask(
-  builder: BuckBuildSystem,
-  taskType: TaskType,
-  buildTarget: string,
-  device: ?Device,
-): Observable<TaskEvent> {
+function runTask(builder, taskType, buildTarget, device) {
   let subcommand = taskType;
-  invariant(device);
-  invariant(device.udid);
-  invariant(typeof device.udid === 'string');
+
+  if (!device) {
+    throw new Error('Invariant violation: "device"');
+  }
+
+  if (!device.udid) {
+    throw new Error('Invariant violation: "device.udid"');
+  }
+
+  if (!(typeof device.udid === 'string')) {
+    throw new Error('Invariant violation: "typeof device.udid === \'string\'"');
+  }
 
   if (subcommand === 'run' || subcommand === 'debug') {
     subcommand = 'install';

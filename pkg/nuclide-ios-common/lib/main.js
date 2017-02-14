@@ -1,27 +1,30 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import {runCommand} from '../../commons-node/process';
-import memoize from 'lodash.memoize';
-import {Observable} from 'rxjs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getDevices = exports.getFbsimctlDevices = undefined;
+exports.parseDevicesFromFbsimctlOutput = parseDevicesFromFbsimctlOutput;
+exports.parseDevicesFromSimctlOutput = parseDevicesFromSimctlOutput;
+exports.getActiveDeviceIndex = getActiveDeviceIndex;
 
-export type DeviceState = 'CREATING' | 'BOOTING' | 'SHUTTING_DOWN' | 'SHUT_DOWN' | 'BOOTED';
+var _process;
 
-export type Device = {
-  name: string,
-  udid: string,
-  state: ?DeviceState,
-  os: string,
-};
+function _load_process() {
+  return _process = require('../../commons-node/process');
+}
 
-export function parseDevicesFromFbsimctlOutput(output: string): Array<Device> {
+var _lodash;
+
+function _load_lodash() {
+  return _lodash = _interopRequireDefault(require('lodash.memoize'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function parseDevicesFromFbsimctlOutput(output) {
   const devices = [];
 
   output.split('\n').forEach(line => {
@@ -47,14 +50,22 @@ export function parseDevicesFromFbsimctlOutput(output: string): Array<Device> {
       name: simulator.name,
       udid: simulator.udid,
       state: validateState(simulator.state),
-      os: simulator.os,
+      os: simulator.os
     });
   });
 
   return devices;
-}
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   */
 
-export function parseDevicesFromSimctlOutput(output: string): Array<Device> {
+function parseDevicesFromSimctlOutput(output) {
   const devices = [];
   let currentOS = null;
 
@@ -70,15 +81,14 @@ export function parseDevicesFromSimctlOutput(output: string): Array<Device> {
       return;
     }
 
-    const device =
-      line.match(/^[ ]*([^()]+) \(([^()]+)\) \((Creating|Booting|Shutting Down|Shutdown|Booted)\)/);
+    const device = line.match(/^[ ]*([^()]+) \(([^()]+)\) \((Creating|Booting|Shutting Down|Shutdown|Booted)\)/);
     if (device && currentOS) {
       const [, name, udid, state] = device;
       devices.push({
         name,
         udid,
         state: validateState(state),
-        os: currentOS,
+        os: currentOS
       });
     }
   });
@@ -86,39 +96,33 @@ export function parseDevicesFromSimctlOutput(output: string): Array<Device> {
   return devices;
 }
 
-function validateState(rawState: ?string): ?DeviceState {
+function validateState(rawState) {
   switch (rawState) {
-    case 'Creating': return 'CREATING';
-    case 'Booting': return 'BOOTING';
-    case 'Shutting Down': return 'SHUTTING_DOWN';
-    case 'Shutdown': return 'SHUT_DOWN';
-    case 'Booted': return 'BOOTED';
-    default: return null;
+    case 'Creating':
+      return 'CREATING';
+    case 'Booting':
+      return 'BOOTING';
+    case 'Shutting Down':
+      return 'SHUTTING_DOWN';
+    case 'Shutdown':
+      return 'SHUT_DOWN';
+    case 'Booted':
+      return 'BOOTED';
+    default:
+      return null;
   }
 }
 
-export const getFbsimctlDevices: () => Observable<Array<Device>> = memoize(() => (
-  runCommand('fbsimctl', ['--json', '--simulators', 'list'])
-    .map(parseDevicesFromFbsimctlOutput)
-    .catch(error => (
-      // Users may not have fbsimctl installed. If the command failed, just return an empty list.
-      Observable.of([])
-    ))
-    .share()
-));
+const getFbsimctlDevices = exports.getFbsimctlDevices = (0, (_lodash || _load_lodash()).default)(() => (0, (_process || _load_process()).runCommand)('fbsimctl', ['--json', '--simulators', 'list']).map(parseDevicesFromFbsimctlOutput).catch(error =>
+// Users may not have fbsimctl installed. If the command failed, just return an empty list.
+_rxjsBundlesRxMinJs.Observable.of([])).share());
 
-export const getDevices: () => Observable<Array<Device>> = memoize(() => (
-  runCommand('xcrun', ['simctl', 'list', 'devices'])
-    .map(parseDevicesFromSimctlOutput)
-    .catch(error => (
-      // Users may not have xcrun installed, particularly if they are using Buck for non-iOS
-      // projects. If the command failed, just return an empty list.
-      Observable.of([])
-    ))
-    .share()
-));
+const getDevices = exports.getDevices = (0, (_lodash || _load_lodash()).default)(() => (0, (_process || _load_process()).runCommand)('xcrun', ['simctl', 'list', 'devices']).map(parseDevicesFromSimctlOutput).catch(error =>
+// Users may not have xcrun installed, particularly if they are using Buck for non-iOS
+// projects. If the command failed, just return an empty list.
+_rxjsBundlesRxMinJs.Observable.of([])).share());
 
-export function getActiveDeviceIndex(devices: Array<Device>): number {
+function getActiveDeviceIndex(devices) {
   const bootedDeviceIndex = devices.findIndex(device => device.state === 'BOOTED');
   if (bootedDeviceIndex > -1) {
     return bootedDeviceIndex;

@@ -1,348 +1,239 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import type {ConnectableObservable} from 'rxjs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.flowFindRefs = exports.flowGetCoverage = exports.flowGetType = exports.initialize = undefined;
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
-import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
-import type {
-  Definition,
-  DefinitionQueryResult,
-} from '../../nuclide-definition-service/lib/rpc-types';
-import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
-import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
-import type {FindReferencesReturn} from '../../nuclide-find-references/lib/rpc-types';
-import type {
-  DiagnosticProviderUpdate,
-  FileDiagnosticUpdate,
-} from '../../nuclide-diagnostics-common/lib/rpc-types';
-import type {Completion} from '../../nuclide-language-service/lib/LanguageService';
-import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
+let initialize = exports.initialize = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (fileNotifier) {
+    return new (_nuclideLanguageServiceRpc || _load_nuclideLanguageServiceRpc()).ServerLanguageService(fileNotifier, new FlowSingleFileLanguageService(fileNotifier));
+  });
 
-import {ServerLanguageService} from '../../nuclide-language-service-rpc';
-import {wordAtPositionFromBuffer} from '../../commons-node/range';
-import {filterResultsByPrefix, JAVASCRIPT_WORD_REGEX} from '../../nuclide-flow-common';
+  return function initialize(_x) {
+    return _ref.apply(this, arguments);
+  };
+})();
 
-export type Loc = {
-  file: NuclideUri,
-  point: atom$Point,
-};
+let flowGetType = exports.flowGetType = (() => {
+  var _ref2 = (0, _asyncToGenerator.default)(function* (file, currentContents, line, column) {
+    return getState().getRootContainer().runWithRoot(file, function (root) {
+      return root.flowGetType(file, currentContents, line, column);
+    });
+  });
+
+  return function flowGetType(_x2, _x3, _x4, _x5) {
+    return _ref2.apply(this, arguments);
+  };
+})();
+
+let flowGetCoverage = exports.flowGetCoverage = (() => {
+  var _ref3 = (0, _asyncToGenerator.default)(function* (file) {
+    return getState().getRootContainer().runWithRoot(file, function (root) {
+      return root.flowGetCoverage(file);
+    });
+  });
+
+  return function flowGetCoverage(_x6) {
+    return _ref3.apply(this, arguments);
+  };
+})();
+
+let flowFindRefs = exports.flowFindRefs = (() => {
+  var _ref4 = (0, _asyncToGenerator.default)(function* (file, currentContents, position) {
+    return getState().getRootContainer().runWithRoot(file, function (root) {
+      return root.flowFindRefs(file, currentContents, position);
+    });
+  });
+
+  return function flowFindRefs(_x7, _x8, _x9) {
+    return _ref4.apply(this, arguments);
+  };
+})();
+
+exports.dispose = dispose;
+exports.getServerStatusUpdates = getServerStatusUpdates;
+exports.flowFindDefinition = flowFindDefinition;
+exports.flowFindDiagnostics = flowFindDiagnostics;
+exports.flowGetAutocompleteSuggestions = flowGetAutocompleteSuggestions;
+exports.flowGetOutline = flowGetOutline;
+exports.flowGetAst = flowGetAst;
+exports.allowServerRestart = allowServerRestart;
+
+var _nuclideLanguageServiceRpc;
+
+function _load_nuclideLanguageServiceRpc() {
+  return _nuclideLanguageServiceRpc = require('../../nuclide-language-service-rpc');
+}
+
+var _range;
+
+function _load_range() {
+  return _range = require('../../commons-node/range');
+}
+
+var _nuclideFlowCommon;
+
+function _load_nuclideFlowCommon() {
+  return _nuclideFlowCommon = require('../../nuclide-flow-common');
+}
+
+var _FlowRoot;
+
+function _load_FlowRoot() {
+  return _FlowRoot = require('./FlowRoot');
+}
+
+var _FlowServiceState;
+
+function _load_FlowServiceState() {
+  return _FlowServiceState = require('./FlowServiceState');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // If types are added here, make sure to also add them to FlowConstants.js. This needs to be the
 // canonical type definition so that we can use these in the service framework.
-export type ServerStatusType =
-  'failed' |
-  'unknown' |
-  'not running' |
-  'not installed' |
-  'busy' |
-  'init' |
-  'ready';
+let state = null; /**
+                   * Copyright (c) 2015-present, Facebook, Inc.
+                   * All rights reserved.
+                   *
+                   * This source code is licensed under the license found in the LICENSE file in
+                   * the root directory of this source tree.
+                   *
+                   * 
+                   */
 
-export type ServerStatusUpdate = {
-  pathToRoot: NuclideUri,
-  status: ServerStatusType,
-};
-
-import {FlowRoot} from './FlowRoot';
-import {FlowServiceState} from './FlowServiceState';
-
-let state: ?FlowServiceState = null;
-
-function getState(): FlowServiceState {
+function getState() {
   if (state == null) {
-    state = new FlowServiceState();
+    state = new (_FlowServiceState || _load_FlowServiceState()).FlowServiceState();
   }
   return state;
 }
 
-export function dispose(): void {
+function dispose() {
   if (state != null) {
     state.dispose();
     state = null;
   }
 }
 
-export async function initialize(
-  fileNotifier: FileNotifier,
-): Promise<LanguageService> {
-  return new ServerLanguageService(
-    fileNotifier,
-    new FlowSingleFileLanguageService(fileNotifier),
-  );
-}
-
 class FlowSingleFileLanguageService {
-  constructor(fileNotifier: FileNotifier) { }
+  constructor(fileNotifier) {}
 
-  dispose(): void { }
+  dispose() {}
 
-  getDiagnostics(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-  ): Promise<?DiagnosticProviderUpdate> {
+  getDiagnostics(filePath, buffer) {
     return flowFindDiagnostics(filePath, null);
   }
 
-  observeDiagnostics(): ConnectableObservable<FileDiagnosticUpdate> {
+  observeDiagnostics() {
     throw new Error('Not Yet Implemented');
   }
 
-  async getAutocompleteSuggestions(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    position: atom$Point,
-    activatedManually: boolean,
-    prefix: string,
-  ): Promise<?Array<Completion>> {
-    const results = await flowGetAutocompleteSuggestions(
-      filePath,
-      buffer.getText(),
-      position,
-      activatedManually,
-      prefix,
-    );
-    return filterResultsByPrefix(prefix, results);
+  getAutocompleteSuggestions(filePath, buffer, position, activatedManually, prefix) {
+    return (0, _asyncToGenerator.default)(function* () {
+      const results = yield flowGetAutocompleteSuggestions(filePath, buffer.getText(), position, activatedManually, prefix);
+      return (0, (_nuclideFlowCommon || _load_nuclideFlowCommon()).filterResultsByPrefix)(prefix, results);
+    })();
   }
 
-  async getDefinition(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    position: atom$Point,
-  ): Promise<?DefinitionQueryResult> {
-    const match = wordAtPositionFromBuffer(buffer, position, JAVASCRIPT_WORD_REGEX);
-    if (match == null) {
-      return null;
-    }
-    const loc = await flowFindDefinition(
-      filePath,
-      buffer.getText(),
-      position.row + 1,
-      position.column + 1,
-    );
-    if (loc == null) {
-      return null;
-    }
-    return {
-      queryRange: [match.range],
-      definitions: [{
-        path: loc.file,
-        position: loc.point,
-        language: 'Flow',
-      }],
-    };
+  getDefinition(filePath, buffer, position) {
+    return (0, _asyncToGenerator.default)(function* () {
+      const match = (0, (_range || _load_range()).wordAtPositionFromBuffer)(buffer, position, (_nuclideFlowCommon || _load_nuclideFlowCommon()).JAVASCRIPT_WORD_REGEX);
+      if (match == null) {
+        return null;
+      }
+      const loc = yield flowFindDefinition(filePath, buffer.getText(), position.row + 1, position.column + 1);
+      if (loc == null) {
+        return null;
+      }
+      return {
+        queryRange: [match.range],
+        definitions: [{
+          path: loc.file,
+          position: loc.point,
+          language: 'Flow'
+        }]
+      };
+    })();
   }
 
-  getDefinitionById(
-    file: NuclideUri,
-    id: string,
-  ): Promise<?Definition> {
+  getDefinitionById(file, id) {
     throw new Error('Not Yet Implemented');
   }
 
-  findReferences(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    position: atom$Point,
-  ): Promise<?FindReferencesReturn> {
+  findReferences(filePath, buffer, position) {
     throw new Error('Not Yet Implemented');
   }
 
-  getCoverage(
-    filePath: NuclideUri,
-  ): Promise<?CoverageResult> {
+  getCoverage(filePath) {
     return flowGetCoverage(filePath);
   }
 
-  getOutline(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-  ): Promise<?Outline> {
+  getOutline(filePath, buffer) {
     return flowGetOutline(filePath, buffer.getText());
   }
 
-  typeHint(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    position: atom$Point,
-  ): Promise<?TypeHint> {
+  typeHint(filePath, buffer, position) {
     throw new Error('Not Yet Implemented');
   }
 
-  highlight(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    position: atom$Point,
-  ): Promise<?Array<atom$Range>> {
-    return flowFindRefs(
-      filePath,
-      buffer.getText(),
-      position,
-    );
+  highlight(filePath, buffer, position) {
+    return flowFindRefs(filePath, buffer.getText(), position);
   }
 
-  formatSource(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    range: atom$Range,
-  ): Promise<?string> {
+  formatSource(filePath, buffer, range) {
     throw new Error('Not Yet Implemented');
   }
 
-  formatEntireFile(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    range: atom$Range,
-  ): Promise<?{
-    newCursor?: number,
-    formatted: string,
-  }> {
+  formatEntireFile(filePath, buffer, range) {
     throw new Error('Not implemented');
   }
 
-  getEvaluationExpression(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    position: atom$Point,
-  ): Promise<?NuclideEvaluationExpression> {
+  getEvaluationExpression(filePath, buffer, position) {
     throw new Error('Not Yet Implemented');
   }
 
-  async getProjectRoot(fileUri: NuclideUri): Promise<?NuclideUri> {
-    const flowRoot = await getState().getRootContainer().getRootForPath(fileUri);
-    return flowRoot == null ? null : flowRoot.getPathToRoot();
+  getProjectRoot(fileUri) {
+    return (0, _asyncToGenerator.default)(function* () {
+      const flowRoot = yield getState().getRootContainer().getRootForPath(fileUri);
+      return flowRoot == null ? null : flowRoot.getPathToRoot();
+    })();
   }
 
-  isFileInProject(fileUri: NuclideUri): Promise<boolean> {
+  isFileInProject(fileUri) {
     throw new Error('Not Yet Implemented');
   }
 }
 
-export function getServerStatusUpdates(): ConnectableObservable<ServerStatusUpdate> {
+function getServerStatusUpdates() {
   return getState().getRootContainer().getServerStatusUpdates().publish();
 }
 
-export function flowFindDefinition(
-  file: NuclideUri,
-  currentContents: string,
-  line: number,
-  column: number,
-): Promise<?Loc> {
-  return getState().getRootContainer().runWithRoot(
-    file,
-    root => root.flowFindDefinition(
-      file,
-      currentContents,
-      line,
-      column,
-    ),
-  );
+function flowFindDefinition(file, currentContents, line, column) {
+  return getState().getRootContainer().runWithRoot(file, root => root.flowFindDefinition(file, currentContents, line, column));
 }
 
-export function flowFindDiagnostics(
-  file: NuclideUri,
-  currentContents: ?string,
-): Promise<?DiagnosticProviderUpdate> {
-  return getState().getRootContainer().runWithRoot(
-    file,
-    root => root.flowFindDiagnostics(
-      file,
-      currentContents,
-    ),
-  );
+function flowFindDiagnostics(file, currentContents) {
+  return getState().getRootContainer().runWithRoot(file, root => root.flowFindDiagnostics(file, currentContents));
 }
 
-export function flowGetAutocompleteSuggestions(
-  file: NuclideUri,
-  currentContents: string,
-  position: atom$Point,
-  activatedManually: ?boolean,
-  prefix: string,
-): Promise<?Array<Completion>> {
-  return getState().getRootContainer().runWithRoot(
-    file,
-    root => root.flowGetAutocompleteSuggestions(
-      file,
-      currentContents,
-      position,
-      activatedManually,
-      prefix,
-    ),
-  );
+function flowGetAutocompleteSuggestions(file, currentContents, position, activatedManually, prefix) {
+  return getState().getRootContainer().runWithRoot(file, root => root.flowGetAutocompleteSuggestions(file, currentContents, position, activatedManually, prefix));
 }
 
-export async function flowGetType(
-  file: NuclideUri,
-  currentContents: string,
-  line: number,
-  column: number,
-): Promise<?string> {
-  return getState().getRootContainer().runWithRoot(
-    file,
-    root => root.flowGetType(
-      file,
-      currentContents,
-      line,
-      column,
-    ),
-  );
+function flowGetOutline(file, currentContents) {
+  return getState().getRootContainer().runWithOptionalRoot(file, root => (_FlowRoot || _load_FlowRoot()).FlowRoot.flowGetOutline(root, currentContents, getState().getExecInfoContainer()));
 }
 
-export async function flowGetCoverage(
-  file: NuclideUri,
-): Promise<?CoverageResult> {
-  return getState().getRootContainer().runWithRoot(
-    file,
-    root => root.flowGetCoverage(file),
-  );
+function flowGetAst(file, currentContents) {
+  return getState().getRootContainer().runWithOptionalRoot(file, root => (_FlowRoot || _load_FlowRoot()).FlowRoot.flowGetAst(root, currentContents, getState().getExecInfoContainer()));
 }
 
-export function flowGetOutline(
-  file: ?NuclideUri,
-  currentContents: string,
-): Promise<?Outline> {
-  return getState().getRootContainer().runWithOptionalRoot(
-    file,
-    root => FlowRoot.flowGetOutline(root, currentContents, getState().getExecInfoContainer()),
-  );
-}
-
-export function flowGetAst(
-  file: ?NuclideUri,
-  currentContents: string,
-): Promise<any> {
-  return getState().getRootContainer().runWithOptionalRoot(
-    file,
-    root => FlowRoot.flowGetAst(root, currentContents, getState().getExecInfoContainer()),
-  );
-}
-
-export async function flowFindRefs(
-  file: NuclideUri,
-  currentContents: string,
-  position: atom$Point,
-): Promise<?Array<atom$Range>> {
-  return getState().getRootContainer().runWithRoot(
-    file,
-    root => root.flowFindRefs(
-      file,
-      currentContents,
-      position,
-    ),
-  );
-}
-
-export function allowServerRestart(): void {
+function allowServerRestart() {
   for (const root of getState().getRootContainer().getAllRoots()) {
     root.allowServerRestart();
   }

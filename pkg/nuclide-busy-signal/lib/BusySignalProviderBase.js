@@ -1,3 +1,20 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.BusySignalProviderBase = undefined;
+
+var _atom = require('atom');
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _promise;
+
+function _load_promise() {
+  return _promise = require('../../commons-node/promise');
+}
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,39 +22,21 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
 
-import type {BusySignalMessage} from './types';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {Observable} from 'rxjs';
-
-import {Disposable, CompositeDisposable} from 'atom';
-
-import {Subject} from 'rxjs';
-import invariant from 'assert';
-
-import {isPromise} from '../../commons-node/promise';
-
-export type MessageDisplayOptions = {
-  onlyForFile: NuclideUri,
-};
-
-export class BusySignalProviderBase {
-  _nextId: number;
-  _messages: Subject<BusySignalMessage>;
-  messages: Observable<BusySignalMessage>;
+class BusySignalProviderBase {
 
   constructor() {
     this._nextId = 0;
-    this._messages = new Subject();
+    this._messages = new _rxjsBundlesRxMinJs.Subject();
     this.messages = this._messages;
   }
 
   /**
    * Displays the message until the returned disposable is disposed
    */
-  displayMessage(message: string, optionsArg?: MessageDisplayOptions): IDisposable {
+  displayMessage(message, optionsArg) {
     // Reassign as const so the type refinement holds in the closure below
     const options = optionsArg;
     if (options == null || options.onlyForFile == null) {
@@ -51,43 +50,39 @@ export class BusySignalProviderBase {
         displayedDisposable = null;
       }
     };
-    return new CompositeDisposable(
-      atom.workspace.observeActivePaneItem(item => {
-        if (item != null &&
-            typeof item.getPath === 'function' &&
-            item.getPath() === options.onlyForFile) {
-          if (displayedDisposable == null) {
-            displayedDisposable = this._displayMessage(message);
-          }
-        } else {
-          disposeDisplayed();
+    return new _atom.CompositeDisposable(atom.workspace.observeActivePaneItem(item => {
+      if (item != null && typeof item.getPath === 'function' && item.getPath() === options.onlyForFile) {
+        if (displayedDisposable == null) {
+          displayedDisposable = this._displayMessage(message);
         }
-      }),
-      // We can't add displayedDisposable directly because its value may change.
-      new Disposable(disposeDisplayed),
-    );
+      } else {
+        disposeDisplayed();
+      }
+    }),
+    // We can't add displayedDisposable directly because its value may change.
+    new _atom.Disposable(disposeDisplayed));
   }
 
-  _displayMessage(message: string): IDisposable {
-    const {busy, done} = this._nextMessagePair(message);
+  _displayMessage(message) {
+    const { busy, done } = this._nextMessagePair(message);
     this._messages.next(busy);
-    return new Disposable(() => {
+    return new _atom.Disposable(() => {
       this._messages.next(done);
     });
   }
 
-  _nextMessagePair(message: string): {busy: BusySignalMessage, done: BusySignalMessage} {
+  _nextMessagePair(message) {
     const busy = {
       status: 'busy',
       id: this._nextId,
-      message,
+      message
     };
     const done = {
       status: 'done',
-      id: this._nextId,
+      id: this._nextId
     };
     this._nextId++;
-    return {busy, done};
+    return { busy, done };
   }
 
   /**
@@ -97,12 +92,16 @@ export class BusySignalProviderBase {
    * Used to indicate that some work is ongoing while the given asynchronous
    * function executes.
    */
-  reportBusy<T>(message: string, f: () => Promise<T>, options?: MessageDisplayOptions): Promise<T> {
+  reportBusy(message, f, options) {
     const messageRemover = this.displayMessage(message, options);
     const removeMessage = messageRemover.dispose.bind(messageRemover);
     try {
       const returnValue = f();
-      invariant(isPromise(returnValue));
+
+      if (!(0, (_promise || _load_promise()).isPromise)(returnValue)) {
+        throw new Error('Invariant violation: "isPromise(returnValue)"');
+      }
+
       returnValue.then(removeMessage, removeMessage);
       return returnValue;
     } catch (e) {
@@ -111,3 +110,4 @@ export class BusySignalProviderBase {
     }
   }
 }
+exports.BusySignalProviderBase = BusySignalProviderBase;
