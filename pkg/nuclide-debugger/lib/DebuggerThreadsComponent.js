@@ -15,6 +15,7 @@ import type ThreadStore from './ThreadStore';
 import type {ThreadColumn} from '../../nuclide-debugger-base/lib/types';
 import {Icon} from '../../nuclide-ui/Icon';
 import {Table} from '../../nuclide-ui/Table';
+import type {Row} from '../../nuclide-ui/Table';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 
 type DebuggerThreadsComponentProps = {
@@ -26,6 +27,8 @@ type DebuggerThreadsComponentProps = {
 type DebuggerThreadsComponentState = {
   threadList: Array<ThreadItem>,
   selectedThreadId: number,
+  sortedColumn: ?string,
+  sortDescending: boolean,
 };
 
 const activeThreadIndicatorComponent = (props: {cellData: boolean}) => (
@@ -45,10 +48,14 @@ export class DebuggerThreadsComponent extends React.Component {
   constructor(props: DebuggerThreadsComponentProps) {
     super(props);
     (this: any)._handleSelectThread = this._handleSelectThread.bind(this);
+    (this: any)._handleSort = this._handleSort.bind(this);
+    (this: any)._sortRows = this._sortRows.bind(this);
     this._disposables = new UniversalDisposable();
     this.state = {
       threadList: props.threadStore.getThreadList(),
       selectedThreadId: props.threadStore.getSelectedThreadId(),
+      sortedColumn: null,
+      sortDescending: false,
     };
   }
 
@@ -70,6 +77,36 @@ export class DebuggerThreadsComponent extends React.Component {
 
   _handleSelectThread(data: ThreadItem): void {
     this.props.bridge.selectThread(data.id);
+  }
+
+  _handleSort(sortedColumn: ?string, sortDescending: boolean): void {
+    this.setState({sortedColumn, sortDescending});
+  }
+
+  _sortRows(
+    threads: Array<Row>,
+    sortedColumnName: ?string,
+    sortDescending: boolean,
+  ): Array<Row> {
+    if (sortedColumnName == null) {
+      return threads;
+    }
+
+    // Use a numerical comparison for the ID column, string compare for all the others.
+    const compare: any = (sortedColumnName.toLowerCase() === 'id' ?
+      (a: ?number, b: ?number, isAsc: boolean): number => {
+        const cmp = (a || 0) - (b || 0);
+        return isAsc ? cmp : -cmp;
+      } :
+      (a: string, b: string, isAsc: boolean): number => {
+        const cmp = a.toLowerCase().localeCompare(b.toLowerCase());
+        return isAsc ? cmp : -cmp;
+      });
+
+    const getter = (row => row.data[sortedColumnName]);
+    return [...threads].sort((a, b) => {
+      return compare(getter(a), getter(b), !sortDescending);
+    });
   }
 
   render(): ?React.Element<any> {
@@ -134,10 +171,14 @@ export class DebuggerThreadsComponent extends React.Component {
       <Table
         columns={columns}
         emptyComponent={emptyComponent}
-        rows={rows}
+        rows={this._sortRows(rows, this.state.sortedColumn, this.state.sortDescending)}
         selectable={true}
         resizable={true}
         onSelect={this._handleSelectThread}
+        sortable={true}
+        onSort={this._handleSort}
+        sortedColumn={this.state.sortedColumn}
+        sortDescending={this.state.sortDescending}
       />
     );
   }
