@@ -54,7 +54,7 @@ export type ServerStatusUpdate = {
   status: ServerStatusType,
 };
 
-import {FlowRoot} from './FlowRoot';
+import {FlowSingleProjectLanguageService} from './FlowSingleProjectLanguageService';
 import {FlowServiceState} from './FlowServiceState';
 
 let state: ?FlowServiceState = null;
@@ -313,7 +313,8 @@ export function flowGetOutline(
 ): Promise<?Outline> {
   return getState().getRootContainer().runWithOptionalRoot(
     file,
-    root => FlowRoot.flowGetOutline(root, currentContents, getState().getExecInfoContainer()),
+    root => FlowSingleProjectLanguageService
+        .flowGetOutline(root, currentContents, getState().getExecInfoContainer()),
   );
 }
 
@@ -323,7 +324,8 @@ export function flowGetAst(
 ): Promise<any> {
   return getState().getRootContainer().runWithOptionalRoot(
     file,
-    root => FlowRoot.flowGetAst(root, currentContents, getState().getExecInfoContainer()),
+    root => FlowSingleProjectLanguageService
+        .flowGetAst(root, currentContents, getState().getExecInfoContainer()),
   );
 }
 

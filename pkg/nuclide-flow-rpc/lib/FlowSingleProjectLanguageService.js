@@ -15,6 +15,7 @@ import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
 import type {Completion} from '../../nuclide-language-service/lib/LanguageService';
 import type {DiagnosticProviderUpdate} from '../../nuclide-diagnostics-common/lib/rpc-types';
+import type {SingleFileLanguageService} from '../../nuclide-language-service-rpc';
 
 import type {ServerStatusType} from '..';
 import type {FlowExecInfoContainer} from './FlowExecInfoContainer';
@@ -40,7 +41,7 @@ import {astToOutline} from './astToOutline';
 import {flowStatusOutputToDiagnostics} from './diagnosticsParser';
 
 /** Encapsulates all of the state information we need about a specific Flow root */
-export class FlowRoot {
+export class FlowSingleProjectLanguageService {
   // The path to the directory where the .flowconfig is -- i.e. the root of the Flow project.
   _root: string;
   _process: FlowProcess;
@@ -373,11 +374,15 @@ export class FlowRoot {
   // installation) but if it lives outside of a Flow root, outlining still works using the system
   // Flow.
   static async flowGetOutline(
-    root: ?FlowRoot,
+    root: ?FlowSingleProjectLanguageService,
     currentContents: string,
     execInfoContainer: FlowExecInfoContainer,
   ): Promise<?Outline> {
-    const json = await FlowRoot.flowGetAst(root, currentContents, execInfoContainer);
+    const json = await FlowSingleProjectLanguageService.flowGetAst(
+      root,
+      currentContents,
+      execInfoContainer,
+    );
 
     try {
       return json ? astToOutline(json) : null;
@@ -390,7 +395,7 @@ export class FlowRoot {
   }
 
   static async flowGetAst(
-    root: ?FlowRoot,
+    root: ?FlowSingleProjectLanguageService,
     currentContents: string,
     execInfoContainer: FlowExecInfoContainer,
   ): Promise<any> {
@@ -421,6 +426,10 @@ export class FlowRoot {
     return json;
   }
 }
+
+// FlowSingleProjectLanguageService should satisfy the SingleFileLanguageService interface
+// $FlowFixMe
+(((null: any): FlowSingleProjectLanguageService): SingleFileLanguageService);
 
 function parseJSON(args: Array<any>, value: string): any {
   try {

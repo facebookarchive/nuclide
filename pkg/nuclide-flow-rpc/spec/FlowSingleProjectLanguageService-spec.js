@@ -8,27 +8,32 @@
  * @flow
  */
 
-import type {FlowRoot as FlowRootType} from '../lib/FlowRoot';
+import type {
+  FlowSingleProjectLanguageService as FlowSingleProjectLanguageServiceType,
+} from '../lib/FlowSingleProjectLanguageService';
 
 import {Point} from 'simple-text-buffer';
 import invariant from 'assert';
 
-import {FlowRoot, groupParamNames} from '../lib/FlowRoot';
+import {
+  FlowSingleProjectLanguageService,
+  groupParamNames,
+} from '../lib/FlowSingleProjectLanguageService';
 import {FlowExecInfoContainer} from '../lib/FlowExecInfoContainer';
 
-describe('FlowRoot', () => {
+describe('FlowSingleProjectLanguageService', () => {
   const file = '/path/to/test.js';
   const root = '/path/to';
   const currentContents = '/* @flow */\nvar x = "this_is_a_string"\nvar y;';
   const line = 2;
   const column = 12;
 
-  let flowRoot: FlowRootType = (null: any);
+  let flowRoot: FlowSingleProjectLanguageServiceType = (null: any);
 
   let fakeExecFlow: any;
 
   function newFlowService() {
-    return new FlowRoot(root, new FlowExecInfoContainer());
+    return new FlowSingleProjectLanguageService(root, new FlowExecInfoContainer());
   }
 
   beforeEach(() => {

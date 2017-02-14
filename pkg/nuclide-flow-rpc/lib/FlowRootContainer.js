@@ -15,14 +15,14 @@ import type {FlowExecInfoContainer} from './FlowExecInfoContainer';
 import invariant from 'assert';
 import {Subject} from 'rxjs';
 
-import {FlowRoot} from './FlowRoot';
+import {FlowSingleProjectLanguageService} from './FlowSingleProjectLanguageService';
 
 export class FlowRootContainer {
   // string rather than NuclideUri because this module will always execute at the location of the
   // file, so it will always be a real path and cannot be prefixed with nuclide://
-  _flowRootMap: Map<string, FlowRoot>;
+  _flowRootMap: Map<string, FlowSingleProjectLanguageService>;
 
-  _flowRoot$: Subject<FlowRoot>;
+  _flowRoot$: Subject<FlowSingleProjectLanguageService>;
 
   _disposed: boolean;
   _execInfoContainer: FlowExecInfoContainer;
@@ -40,7 +40,7 @@ export class FlowRootContainer {
     });
   }
 
-  async getRootForPath(path: string): Promise<?FlowRoot> {
+  async getRootForPath(path: string): Promise<?FlowSingleProjectLanguageService> {
     this._checkForDisposal();
     const rootPath = await this._execInfoContainer.findFlowConfigDir(path);
     // During the await above, this may have been disposed. If so, return null to stop the current
@@ -51,7 +51,7 @@ export class FlowRootContainer {
 
     let instance = this._flowRootMap.get(rootPath);
     if (!instance) {
-      instance = new FlowRoot(rootPath, this._execInfoContainer);
+      instance = new FlowSingleProjectLanguageService(rootPath, this._execInfoContainer);
       this._flowRoot$.next(instance);
     }
     return instance;
@@ -59,7 +59,7 @@ export class FlowRootContainer {
 
   async runWithRoot<T>(
     file: string,
-    f: (instance: FlowRoot) => Promise<T>,
+    f: (instance: FlowSingleProjectLanguageService) => Promise<T>,
   ): Promise<?T> {
     this._checkForDisposal();
     const instance = await this.getRootForPath(file);
@@ -72,14 +72,14 @@ export class FlowRootContainer {
 
   async runWithOptionalRoot<T>(
     file: ?string,
-    f: (instance: ?FlowRoot) => Promise<T>,
+    f: (instance: ?FlowSingleProjectLanguageService) => Promise<T>,
   ): Promise<T> {
     this._checkForDisposal();
     const instance = file == null ? null : await this.getRootForPath(file);
     return f(instance);
   }
 
-  getAllRoots(): Iterable<FlowRoot> {
+  getAllRoots(): Iterable<FlowSingleProjectLanguageService> {
     this._checkForDisposal();
     return this._flowRootMap.values();
   }
