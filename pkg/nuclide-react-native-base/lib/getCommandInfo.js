@@ -30,14 +30,11 @@ type PartialCommandInfo = {
 export async function getCommandInfo(projectRootPath: ?string): Promise<?CommandInfo> {
   if (projectRootPath == null || nuclideUri.isRemote(projectRootPath)) { return null; }
 
-  return (
-    await getCommandFromNodePackage(projectRootPath)
-    || await getCommandFromBuck(projectRootPath)
-  );
+  return await getCommandFromNodePackage(projectRootPath) || getCommandFromBuck(projectRootPath);
 }
 
 async function getCommandFromNodePackage(dir: string): Promise<?CommandInfo> {
-  return (await getCommandFromNodeModules(dir)) || (await getCommandFromReactNative(dir));
+  return await getCommandFromNodeModules(dir) || getCommandFromReactNative(dir);
 }
 
 /**

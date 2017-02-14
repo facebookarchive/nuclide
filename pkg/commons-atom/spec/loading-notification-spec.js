@@ -42,7 +42,7 @@ describe('loadingNotification', () => {
   it('displays and closes a loading notification for errors', () => {
     waitsForPromise(async () => {
       const promise = new Promise((resolve, reject) => {
-        setTimeout(() => reject(), 10);
+        setTimeout(() => reject(new Error()), 10);
       });
       try {
         const resultPromise = loadingNotification(

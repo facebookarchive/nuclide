@@ -33,7 +33,7 @@ function lookup(host: string, family: DnsFamily): Promise<string> {
       } else if (address != null) {
         resolve(address);
       } else {
-        reject('One of error or address must be set.');
+        reject(new Error('One of error or address must be set.'));
       }
     });
   });

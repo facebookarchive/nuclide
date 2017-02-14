@@ -78,7 +78,7 @@ export async function locate(
   },
 }> {
   const instance = await getInstance(path);
-  return instance ? await instance.locate(path, line, col, kind) : null;
+  return instance ? instance.locate(path, line, col, kind) : null;
 }
 
 /**
@@ -91,7 +91,7 @@ export async function enclosingType(
   col: number,
 ): Promise<?Array<MerlinType>> {
   const instance = await getInstance(path);
-  return instance ? await instance.enclosingType(path, line, col) : null;
+  return instance ? instance.enclosingType(path, line, col) : null;
 }
 
 export async function complete(

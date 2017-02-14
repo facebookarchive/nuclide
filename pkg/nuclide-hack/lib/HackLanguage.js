@@ -37,7 +37,7 @@ import passesGK from '../../commons-node/passesGK';
 const HACK_SERVICE_NAME = 'HackService';
 
 async function getUseIdeConnection(): Promise<boolean> {
-  return getConfig().useIdeConnection || (await passesGK('nuclide_hack_use_persistent_connection'));
+  return getConfig().useIdeConnection || passesGK('nuclide_hack_use_persistent_connection');
 }
 
 async function connectionToHackService(

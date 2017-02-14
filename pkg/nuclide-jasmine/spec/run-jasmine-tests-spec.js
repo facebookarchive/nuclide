@@ -40,7 +40,7 @@ describe('Jasmine waitsForPromise test suite', () => {
   });
 
   it('test waitsForPromise worked as expected on a rejected promise', () => {
-    waitsForPromise({shouldReject: true}, () => Promise.reject('test'));
+    waitsForPromise({shouldReject: true}, () => Promise.reject(new Error('test')));
   });
 
   it('test waitsForPromise worked as expected on a customized timeout', () => {

@@ -37,7 +37,7 @@ async function expectAsyncFailure(
     verify: (error: Error) => void): Promise<any> {
   try {
     await promise;
-    return Promise.reject('Promise should have failed, but did not.');
+    return Promise.reject(new Error('Promise should have failed, but did not.'));
   } catch (e) {
     verify(e);
   }

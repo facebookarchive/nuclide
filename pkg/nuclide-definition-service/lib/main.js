@@ -46,7 +46,7 @@ export class Service {
 
   async getDefinition(editor: TextEditor, position: atom$Point): Promise<?DefinitionQueryResult> {
     const provider = this._providers.getProviderForEditor(editor);
-    return provider == null ? null : await provider.getDefinition(editor, position);
+    return provider == null ? null : provider.getDefinition(editor, position);
   }
 
   consumeDefinitionProvider(provider: DefinitionProvider): IDisposable {

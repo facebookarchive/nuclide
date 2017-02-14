@@ -140,6 +140,7 @@ module.exports = {
     'no-void': 1,
     'no-warning-comments': 0,
     'no-with': 1,
+    'prefer-promise-reject-errors': 1,
     'radix': 1,
     'require-await': 0,
     // 'require-await': 1,
@@ -161,7 +162,7 @@ module.exports = {
     'no-undef-init': 0,
     'no-undef': 1,
     'no-undefined': 0,
-    'no-unused-vars': [1, {args: 'none'}],
+    'no-unused-vars': [1, {args: 'none', ignoreRestSiblings: true}],
     'no-use-before-define': 0,
 
     // Node.js and CommonJS (http://eslint.org/docs/rules/#nodejs-and-commonjs)
@@ -223,6 +224,7 @@ module.exports = {
     'no-lonely-if': 0,
     'no-mixed-operators': 0,
     'no-mixed-spaces-and-tabs': 1,
+    'no-multi-assign': 0,
     'no-multiple-empty-lines': [1, {max: 2, maxBOF: 0, maxEOF: 1}],
     'no-negated-condition': 0,
     'no-nested-ternary': 0,
@@ -256,6 +258,7 @@ module.exports = {
     'space-infix-ops': 1,
     'space-unary-ops': 1,
     'spaced-comment': [1, 'always', {line: {exceptions: ['-']}, block: {balanced: true}}],
+    'template-tag-spacing': 1,
     'unicode-bom': [1, 'never'],
     'wrap-regex': 0,
 
@@ -280,6 +283,7 @@ module.exports = {
     'object-shorthand': 1,
     'prefer-arrow-callback': [1, {allowNamedFunctions: true}],
     'prefer-const': 1,
+    'prefer-destructuring': 0,
     'prefer-numeric-literals': 0,
     'prefer-rest-params': 0,
     'prefer-spread': 1,

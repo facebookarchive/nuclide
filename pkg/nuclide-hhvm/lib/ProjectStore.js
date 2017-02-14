@@ -73,7 +73,7 @@ export default class ProjectStore {
       return (
         fileUri != null &&
         nuclideUri.isRemote(fileUri) &&
-        await isFileInHackProject(fileUri)
+        isFileInHackProject(fileUri)
       );
     });
   }

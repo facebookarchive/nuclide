@@ -31,7 +31,7 @@ export async function getGraphQLConfig(configDir: Uri): Promise<GraphQLRC> {
             `directory: ${configDir}\nPlease check the config directory ` +
             'path and try again.',
           );
-          reject();
+          reject(new Error());
         }
         resolve(response);
       },

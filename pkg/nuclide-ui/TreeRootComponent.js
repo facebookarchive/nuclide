@@ -467,7 +467,7 @@ export class TreeRootComponent extends React.Component {
         this._rejectDidUpdateListenerPromise = null;
       }
       this._rejectDidUpdateListenerPromise = () => {
-        reject(undefined);
+        reject(new Error());
         didUpdateDisposable.dispose();
       };
     });
@@ -547,7 +547,7 @@ export class TreeRootComponent extends React.Component {
    */
   selectNodeKey(nodeKey: string): Promise<void> {
     if (!this.getNodeForKey(nodeKey)) {
-      return Promise.reject();
+      return Promise.reject(new Error());
     }
 
     // We have to create the listener before setting the state so it can pick

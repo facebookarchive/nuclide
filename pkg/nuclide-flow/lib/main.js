@@ -136,13 +136,11 @@ function getLanguageServiceConfig(): AtomLanguageServiceConfig {
   return {
     name: 'Flow',
     grammars: JS_GRAMMARS,
-    highlight: enableHighlight ?
-      {
-        version: '0.0.0',
-        priority: 1,
-        analyticsEventName: 'flow.codehighlight',
-      } :
-      undefined,
+    highlight: enableHighlight ? {
+      version: '0.0.0',
+      priority: 1,
+      analyticsEventName: 'flow.codehighlight',
+    } : undefined,
     outline: {
       version: '0.0.0',
       priority: 1,

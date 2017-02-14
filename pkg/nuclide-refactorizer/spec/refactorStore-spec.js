@@ -252,7 +252,7 @@ describe('refactorStore', () => {
       // TODO also test the method actually throwing, as well as returning a rejected promise.
       it('tolerates a provider throwing in refactoringsAtPoint', () => {
         waitsForPromise(async () => {
-          refactoringsAtPointReturn = Promise.reject();
+          refactoringsAtPointReturn = Promise.reject(new Error());
           store.dispatch(Actions.open('generic'));
           await waitForPhase('get-refactorings');
           await waitForClose();
@@ -267,7 +267,7 @@ describe('refactorStore', () => {
           refactoringsAtPointReturn = Promise.resolve([
             TEST_FILE_RENAME,
           ]);
-          refactorReturn = Promise.reject();
+          refactorReturn = Promise.reject(new Error());
           store.dispatch(Actions.open('generic'));
           await waitForPhase('pick');
           store.dispatch(Actions.pickedRefactor(TEST_FILE_RENAME));

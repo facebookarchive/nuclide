@@ -37,7 +37,7 @@ describe('BusySignalProviderBase', () => {
   });
 
   it("should send the 'done' message even if the promise rejects", () => {
-    providerBase.reportBusy('foo', () => Promise.reject());
+    providerBase.reportBusy('foo', () => Promise.reject(new Error()));
     expect(messages.length).toBe(1);
     waitsFor(() => messages.length === 2, 'It should publish a second message', 100);
   });

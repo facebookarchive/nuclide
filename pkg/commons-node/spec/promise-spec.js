@@ -8,6 +8,8 @@
  * @flow
  */
 
+/* eslint-disable prefer-promise-reject-errors */
+
 import {
   asyncFind,
   denodeify,

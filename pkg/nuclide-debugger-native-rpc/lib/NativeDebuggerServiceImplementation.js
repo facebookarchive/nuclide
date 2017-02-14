@@ -258,7 +258,7 @@ export class NativeDebuggerService extends DebuggerRpcWebSocketService {
         this.getLogger().logError(`child process(${lldbProcess.pid}) stderr: ${errorMessage}`);
       });
       lldbProcess.on('error', (err: Object) => {
-        reject(`debugger server error: ${JSON.stringify(err)}`);
+        reject(new Error(`debugger server error: ${JSON.stringify(err)}`));
       });
       lldbProcess.on('exit', (code: number, signal: string) => {
         let message = `debugger server exits with code: ${code}`;

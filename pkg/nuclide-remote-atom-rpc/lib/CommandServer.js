@@ -57,7 +57,7 @@ export class CommandServer {
     const server = CommandServer.getCurrentServer();
     return server == null
       ? null
-      : (await (await CommandServer._ensureServer()).getAddress());
+      : (await CommandServer._ensureServer()).getAddress();
   }
 
   _atomCommands: AtomCommands;

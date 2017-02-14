@@ -208,31 +208,27 @@ export class DebuggerSteppingComponent extends React.Component {
           checked={pauseOnException}
           label={pauseOnException ? 'Pause on' : 'Pause on exception'}
         />
-        {pauseOnException
-          ?
-          [
-            <ButtonGroup key="first">
-              <Button
-                size="EXTRA_SMALL"
-                selected={!pauseOnCaughtException}
-                onClick={() => actions.togglePauseOnCaughtException(false)}>
-                uncaught
-              </Button>
-              <Button
-                size="EXTRA_SMALL"
-                selected={pauseOnCaughtException}
-                onClick={() => actions.togglePauseOnCaughtException(true)}>
-                any
-              </Button>
-            </ButtonGroup>,
-            <span
-              key="second"
-              className="nuclide-debugger-exception-fragment">
-              {' exception'}
-            </span>,
-          ]
-          : null
-        }
+        {pauseOnException ? [
+          <ButtonGroup key="first">
+            <Button
+              size="EXTRA_SMALL"
+              selected={!pauseOnCaughtException}
+              onClick={() => actions.togglePauseOnCaughtException(false)}>
+              uncaught
+            </Button>
+            <Button
+              size="EXTRA_SMALL"
+              selected={pauseOnCaughtException}
+              onClick={() => actions.togglePauseOnCaughtException(true)}>
+              any
+            </Button>
+          </ButtonGroup>,
+          <span
+            key="second"
+            className="nuclide-debugger-exception-fragment">
+            {' exception'}
+          </span>,
+        ] : null}
         {allowSingleThreadStepping ?
           <Checkbox
             className="nuclide-debugger-exception-checkbox"
