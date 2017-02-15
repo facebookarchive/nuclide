@@ -122,7 +122,9 @@ class Activation {
           }),
           ([taskRunner, taskMeta]) => ({
             'atom-workspace': {
-              [`nuclide-task-runner:${taskRunner.id}-${taskMeta.type}`]: () => {
+              [`nuclide-task-runner:${
+                taskRunner.name.toLowerCase().replace(' ', '-')
+              }-${taskMeta.type}`]: () => {
                 this._actionCreators.runTask({...taskMeta, taskRunner});
               },
             },

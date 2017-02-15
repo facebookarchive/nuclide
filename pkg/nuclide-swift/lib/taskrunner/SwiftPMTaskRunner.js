@@ -69,7 +69,7 @@ export class SwiftPMTaskRunner {
   _projectRoot: Subject<?string>;
 
   constructor(initialState: ?SwiftPMTaskRunnerStoreState) {
-    this.id = 'swift';
+    this.id = 'swiftpm';
     this.name = 'Swift';
     this._initialState = initialState;
     this._outputMessages = new Subject();
