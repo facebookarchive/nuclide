@@ -16,11 +16,11 @@
 import type {AsyncExecuteReturn} from '../pkg/commons-node/process';
 
 import {asyncExecute} from '../pkg/commons-node/process';
-import nuclideUri from '../pkg/commons-node/nuclideUri';
 
 describe('atom-script', () => {
   describe('echo sample', () => {
-    const echoScript = nuclideUri.join(__dirname, '../pkg/nuclide-atom-script/samples/echo.js');
+    // This module is CommonJS (i.e. `module.exports = function() {}`)
+    const echoScript = require.resolve('./fixtures/atom-script-echo-in-commonjs');
 
     it('with zero arguments', () => {
       waitsForPromise(async () => {
@@ -38,10 +38,9 @@ describe('atom-script', () => {
   });
 
   describe('markdown sample', () => {
-    const markdownScript = nuclideUri.join(
-      __dirname,
-      '../pkg/nuclide-atom-script/samples/markdown.js',
-    );
+    // This is an ES Module (i.e. `export default function() {}`)
+    const markdownScript = require.resolve('../pkg/nuclide-atom-script/samples/markdown');
+    const readme = require.resolve('../pkg/nuclide-atom-script/README.md');
 
     it(
       'verify that all of the output has been written to stdout ' +
@@ -49,7 +48,6 @@ describe('atom-script', () => {
       'is a bit shaky.)',
       () => {
         waitsForPromise(async () => {
-          const readme = nuclideUri.join(__dirname, '../pkg/nuclide-atom-script/README.md');
           const result = await runAtomScript(markdownScript, [readme]);
           expect(result.stdout.endsWith('</body>\n</html>\n')).toBe(true);
         });
@@ -60,6 +58,6 @@ describe('atom-script', () => {
 
 function runAtomScript(script: string, args = []): Promise<AsyncExecuteReturn> {
   return asyncExecute(
-    nuclideUri.join(__dirname, '../pkg/nuclide-atom-script/bin/atom-script'),
+    require.resolve('../pkg/nuclide-atom-script/bin/atom-script'),
     [script].concat(args));
 }

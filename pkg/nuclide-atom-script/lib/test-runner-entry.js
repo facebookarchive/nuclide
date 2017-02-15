@@ -17,4 +17,5 @@ if (__DEV__) {
   require('../../nuclide-node-transpiler');
 }
 
-module.exports = require('./test-runner');
+// Atom requires this file without the require interop.
+module.exports = require('./test-runner').default;

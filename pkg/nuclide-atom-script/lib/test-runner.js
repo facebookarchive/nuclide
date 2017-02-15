@@ -101,7 +101,12 @@ export default async function runTest(
 
     // $FlowIgnore
     const handler = require(scriptPath);
-    exitCode = await handler(scriptArgs);
+    if (handler.__esModule && typeof handler.default === 'function') {
+      // `(0, a.b)` so that `this` is undefined, like babel does.
+      exitCode = await (0, handler.default)(scriptArgs);
+    } else {
+      exitCode = await handler(scriptArgs);
+    }
   } catch (e) {
     outputConsole.error(e);
     exitCode = 1;
@@ -109,3 +114,6 @@ export default async function runTest(
 
   return exitCode;
 }
+
+// Fake export to avoid babel's commonjs compat
+export const __BABEL_CJS_COMPAT__ = {};
