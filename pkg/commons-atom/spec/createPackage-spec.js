@@ -15,7 +15,7 @@ describe('createPackage', () => {
     class Activation {
       activate() {}
     }
-    expect(() => createPackage(Activation))
+    expect(() => createPackage({}, Activation))
       .toThrow(
         'Your activation class contains an "activate" method, but that work should be done in the'
         + ' constructor.',
@@ -26,7 +26,7 @@ describe('createPackage', () => {
     class Activation {
       deactivate() {}
     }
-    expect(() => createPackage(Activation))
+    expect(() => createPackage({}, Activation))
       .toThrow(
         'Your activation class contains an "deactivate" method. Please use "dispose" instead.',
       );
@@ -39,7 +39,8 @@ describe('createPackage', () => {
         called = true;
       }
     }
-    const pkg = createPackage(Activation);
+    const pkg = {};
+    createPackage(pkg, Activation);
     pkg.activate();
     expect(called).toBe(false);
     pkg.deactivate();
@@ -53,7 +54,8 @@ describe('createPackage', () => {
         called = true;
       }
     }
-    const pkg = createPackage(Activation);
+    const pkg = {};
+    createPackage(pkg, Activation);
     pkg.activate();
     pkg.doSomething();
     expect(called).toBe(true);
@@ -66,7 +68,8 @@ describe('createPackage', () => {
         called = true;
       }
     }
-    const pkg = createPackage(Activation);
+    const pkg = {};
+    createPackage(pkg, Activation);
     pkg.activate();
     pkg.deactivate();
     expect(() => { pkg.doSomething(); }).toThrow('Package not activated');
@@ -78,7 +81,8 @@ describe('createPackage', () => {
       inheritedMethod() {}
     }
     class B extends A {}
-    const pkg = createPackage(B);
+    const pkg = {};
+    createPackage(pkg, B);
     expect('inheritedMethod' in pkg).toBe(true);
   });
 });

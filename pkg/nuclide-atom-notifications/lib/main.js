@@ -56,4 +56,4 @@ function getLevel(atomNotificationType: string): Level {
   }
 }
 
-export default createPackage(Activation);
+createPackage(module.exports, Activation);

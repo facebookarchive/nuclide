@@ -68,7 +68,7 @@ class Activation {
   }
 }
 
-export default createPackage(Activation);
+createPackage(module.exports, Activation);
 """ % (COPYRIGHT_BLOCK, USERNAME)
 
 NODE_MAIN_JS = """\

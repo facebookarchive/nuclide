@@ -278,7 +278,7 @@ class Activation {
   }
 }
 
-export default createPackage(Activation);
+createPackage(module.exports, Activation);
 
 function activateInitialPackagesObservable(): Observable<void> {
   if (atom.packages.hasActivatedInitialPackages) { return Observable.of(undefined); }

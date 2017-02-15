@@ -124,4 +124,4 @@ class Activation {
   }
 }
 
-export default createPackage(Activation);
+createPackage(module.exports, Activation);

@@ -139,4 +139,4 @@ function openFile(
   .publish();
 }
 
-export default createPackage(Activation);
+createPackage(module.exports, Activation);

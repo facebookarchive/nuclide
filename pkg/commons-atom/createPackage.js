@@ -18,10 +18,19 @@ import invariant from 'assert';
  * invoking any other package methods while a package is not activated. Therefore, it makes more
  * sense to build packages as instances, constructed when a package is activated and destroyed when
  * the package is deactivated.
+ *
+ * Atom uses a plain `require` to load the module, and not babel's `require` interop. So if
+ * `createPackage` were used as `export default createPackage(..)`, then Atom wouldn't be
+ * able to find any package methods because the ES Module transform would output
+ * `module.exports.default = {..};`. To workaround this, the module's `module.exports` is passed
+ * to `createPackage` so we can attach whatever properties to it.
+ *
+ * It was a conscious decision to use `createPackage(module.exports, Activation)` instead of
+ * `module.exports = createPackage(Activation)`, to avoid code style misunderstandings wrt
+ * CommonJS vs ES Modules.
  */
-export default function createPackage(Activation: Class<any>): Object {
+export default function createPackage(moduleExports: Object, Activation: Class<any>): void {
   let activation = null;
-  const pkg = {};
 
   // Proxy method calls on the package to the activation object.
   for (const property of getPropertyList(Activation.prototype)) {
@@ -43,33 +52,29 @@ export default function createPackage(Activation: Class<any>): Object {
       );
     }
 
-    pkg[property] = function(...args) {
+    moduleExports[property] = function(...args) {
       invariant(activation != null, 'Package not activated');
       return activation[property](...args);
     };
   }
 
-  return {
-    ...pkg,
+  /**
+   * Calling `activate()` creates a new instance.
+   */
+  moduleExports.activate = (initialState: ?Object): void => {
+    invariant(activation == null, 'Package already activated');
+    activation = new Activation(initialState);
+  };
 
-    /**
-     * Calling `activate()` creates a new instance.
-     */
-    activate(initialState: ?Object): void {
-      invariant(activation == null, 'Package already activated');
-      activation = new Activation(initialState);
-    },
-
-    /**
-     * The `deactivate()` method is special-cased to null our activation instance reference.
-     */
-    deactivate(): void {
-      invariant(activation != null, 'Package not activated');
-      if (typeof activation.dispose === 'function') {
-        activation.dispose();
-      }
-      activation = null;
-    },
+  /**
+   * The `deactivate()` method is special-cased to null our activation instance reference.
+   */
+  moduleExports.deactivate = (): void => {
+    invariant(activation != null, 'Package not activated');
+    if (typeof activation.dispose === 'function') {
+      activation.dispose();
+    }
+    activation = null;
   };
 }
 

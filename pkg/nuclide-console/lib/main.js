@@ -187,4 +187,4 @@ function deserializeAppState(rawState: ?Object): AppState {
   };
 }
 
-export default createPackage(Activation);
+createPackage(module.exports, Activation);

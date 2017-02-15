@@ -201,4 +201,4 @@ function formatToolbarJewelLabel(opts: {stats: HealthStats, toolbarJewel: string
   }
 }
 
-export default createPackage(Activation);
+createPackage(module.exports, Activation);

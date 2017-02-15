@@ -427,4 +427,4 @@ function observeLinterPackageEnabled(): Observable<boolean> {
   );
 }
 
-module.exports = createPackage(Activation);
+createPackage(module.exports, Activation);

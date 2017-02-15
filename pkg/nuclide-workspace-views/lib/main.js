@@ -141,4 +141,4 @@ function createPackageStore(rawState: Object): Store {
   return store;
 }
 
-export default createPackage(Activation);
+createPackage(module.exports, Activation);
