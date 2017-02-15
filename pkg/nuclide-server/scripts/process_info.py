@@ -75,7 +75,7 @@ class ProcessInfo(object):
     # Use regex_filter to look for regex pattern in ps output.
     @staticmethod
     def get_processes(user=None, regex_filter=None, columns=COLUMNS):
-        args = ['ps']
+        args = ['ps', '-ww']
         if columns is None:
             # If no column specified, we will get all columns.
             args.append('-f')
