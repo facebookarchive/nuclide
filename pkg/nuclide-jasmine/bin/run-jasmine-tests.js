@@ -42,7 +42,7 @@ process.once('exit', code => {
 });
 
 // Load waitsForPromise into global.
-global.waitsForPromise = require('../lib/waitsForPromise');
+global.waitsForPromise = require('../lib/waitsForPromise').default;
 global.window = global;
 
 require('../lib/focused');

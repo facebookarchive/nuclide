@@ -41,7 +41,7 @@ describe('FindReferencesModel', () => {
       },
     });
     // Have to install the spy before loading this.
-    FindReferencesModel = require('../lib/FindReferencesModel');
+    FindReferencesModel = require('../lib/FindReferencesModel').default;
   });
 
   it('should group references by file', () => {

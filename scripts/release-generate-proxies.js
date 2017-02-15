@@ -35,7 +35,8 @@ const path = require('path');
 
 const basedir = path.join(__dirname, '..');
 
-const loadServicesConfig = require('../pkg/nuclide-rpc/lib/loadServicesConfig');
+const loadServicesConfig =
+  require('../pkg/nuclide-rpc/lib/loadServicesConfig').default;
 const servicesConfigs = glob.sync(path.join(basedir, 'pkg/*'))
   .reduce((acc, dirname) => acc.concat(loadServicesConfig(dirname)), []);
 

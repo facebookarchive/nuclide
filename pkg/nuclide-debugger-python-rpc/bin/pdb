@@ -27,5 +27,5 @@ process.on('uncaughtException', err => {
   console.error(`Uncaught exception: ${err}\n${err.stack}`);
 });
 
-const main = require('../pdb/pdb');
+const main = require('../pdb/pdb').default;
 main(process.argv.slice(2));

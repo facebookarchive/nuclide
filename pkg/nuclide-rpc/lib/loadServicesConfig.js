@@ -31,6 +31,9 @@ export default function loadServicesConfig(dirname: string): Array<ConfigEntry> 
   }, []);
 }
 
+// Fake export to avoid babel's commonjs compat
+export const __BABEL_CJS_COMPAT__ = {};
+
 /**
  * Takes the contents of a service config JSON file, and formats each entry into
  * a ConfigEntry.

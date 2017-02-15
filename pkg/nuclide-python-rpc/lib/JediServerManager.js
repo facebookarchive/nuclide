@@ -23,7 +23,8 @@ async function getServerArgs(src: string) {
     // Override the python path and additional sys paths
     // if override script is present.
     // $FlowFB
-    overrides = await require('./fb/find-jedi-server-args')(src);
+    const findJediServerArgs = require('./fb/find-jedi-server-args').default;
+    overrides = await findJediServerArgs(src);
   } catch (e) {
     // Ignore.
   }

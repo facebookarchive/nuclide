@@ -34,7 +34,7 @@ describe('validateWithCustomRules', () => {
       const customRulesPath = require.resolve(
         config.getCustomValidationRulesModulePath() || '',
       );
-      const customRules = require(customRulesPath)(config);
+      const customRules = require(customRulesPath).default(config);
       const schema = await cache.getSchema(config.getSchemaPath());
 
       const errors = validateWithCustomRules(schema, invalidAST, customRules);

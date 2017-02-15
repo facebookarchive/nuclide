@@ -31,3 +31,6 @@ export default function customRules(
   });
   return [NoAlphabetIDArgumentRule];
 }
+
+// Fake export to avoid babel's commonjs compat
+export const __BABEL_CJS_COMPAT__ = {};

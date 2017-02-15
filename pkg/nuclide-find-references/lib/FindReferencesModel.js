@@ -58,7 +58,7 @@ function addReferenceGroup(
   }
 }
 
-class FindReferencesModel {
+export default class FindReferencesModel {
   _basePath: string;
   _symbolName: string;
   _references: Array<[string, Array<ReferenceGroup>]>;
@@ -214,4 +214,5 @@ class FindReferencesModel {
   }
 }
 
-module.exports = FindReferencesModel;
+// Fake export to avoid babel's commonjs compat
+export const __BABEL_CJS_COMPAT__ = {};

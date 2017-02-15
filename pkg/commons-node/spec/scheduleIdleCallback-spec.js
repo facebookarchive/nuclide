@@ -34,7 +34,7 @@ describe('scheduleIdleCallback using node API', () => {
     };
 
     delete require.cache[require.resolve('../scheduleIdleCallback')];
-    scheduleIdleCallback = require('../scheduleIdleCallback');
+    scheduleIdleCallback = require('../scheduleIdleCallback').default;
   });
 
   afterEach(() => {
@@ -82,7 +82,7 @@ describe('scheduleIdleCallback using browser API', () => {
     };
 
     delete require.cache[require.resolve('../scheduleIdleCallback')];
-    scheduleIdleCallback = require('../scheduleIdleCallback');
+    scheduleIdleCallback = require('../scheduleIdleCallback').default;
   });
 
   afterEach(() => {

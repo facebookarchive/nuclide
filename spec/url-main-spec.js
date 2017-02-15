@@ -15,7 +15,7 @@ import url from 'url';
 // eslint-disable-next-line nuclide-internal/prefer-nuclide-uri
 import path from 'path';
 import temp from 'temp';
-import urlMain from '../lib/url-main';
+import {__test__} from '../lib/url-main';
 import * as pkgJson from '../package.json';
 
 const {
@@ -24,7 +24,7 @@ const {
   getAtomInitializerScript,
   acquireLock,
   releaseLock,
-} = urlMain.__test__;
+} = __test__;
 
 const {remote} = electron;
 invariant(remote != null);

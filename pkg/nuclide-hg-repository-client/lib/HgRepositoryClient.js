@@ -80,7 +80,7 @@ function getRevisionStatusCache(
 ): RevisionStatusCache {
   try {
     // $FlowFB
-    const FbRevisionStatusCache = require('./fb/RevisionStatusCache');
+    const FbRevisionStatusCache = require('./fb/RevisionStatusCache').default;
     return new FbRevisionStatusCache(revisionsCache, workingDirectoryPath);
   } catch (e) {
     return {

@@ -35,6 +35,9 @@ export default function main(args: Array<string>) {
   interact(observable, commander);
 }
 
+// Fake export to avoid babel's commonjs compat
+export const __BABEL_CJS_COMPAT__ = {};
+
 /* eslint-disable no-console */
 function interact(observable: Observable<DebuggerEvent>, commander: DebuggerCommander) {
   const rl = readline.createInterface({

@@ -12,7 +12,7 @@ import nuclideUri from '../../commons-node/nuclideUri';
 
 import {asyncExecute} from '../../commons-node/process';
 
-let fbFindClangServerArgs;
+let fbFindClangServerArgs: ?() => {[string]: ?string};
 
 export type ClangServerArgs = {
   libClangLibraryFile: ?string,
@@ -25,7 +25,7 @@ export default async function findClangServerArgs(src?: string): Promise<ClangSe
     fbFindClangServerArgs = null;
     try {
       // $FlowFB
-      fbFindClangServerArgs = require('./fb/find-clang-server-args');
+      fbFindClangServerArgs = require('./fb/find-clang-server-args').default;
     } catch (e) {
       // Ignore.
     }

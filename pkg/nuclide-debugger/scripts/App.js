@@ -69,7 +69,8 @@ window.InspectorFrontendHost = {
 // where the file is on disk.
 window._initializeNuclideBridge = function() {
   require('./nuclide_bridge/NuclideBridge');
-  window.WebInspector.NuclideAppProvider = require('./nuclide_bridge/NuclideAppProvider');
+  window.WebInspector.NuclideAppProvider =
+    require('./nuclide_bridge/NuclideAppProvider').default;
 };
 
 window.Runtime.startApplication('nuclide_inspector');
