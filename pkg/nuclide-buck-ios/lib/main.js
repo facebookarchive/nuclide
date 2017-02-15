@@ -39,7 +39,7 @@ function provideIosDevices(
   if (ruleType !== 'apple_bundle') {
     return Observable.of(null);
   }
-  return IosSimulator.getDevices().map(devices => {
+  return IosSimulator.getSimulators().map(devices => {
     if (!devices.length) {
       return null;
     }

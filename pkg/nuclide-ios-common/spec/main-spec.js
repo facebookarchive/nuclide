@@ -9,13 +9,13 @@
  */
 
 import {
-  parseDevicesFromSimctlOutput,
+  parseSimulatorsFromSimctlOutput,
   getActiveDeviceIndex,
 } from '..';
 
 describe('IosSimulator', () => {
   it('parses typical output', () => {
-    expect(parseDevicesFromSimctlOutput([
+    expect(parseSimulatorsFromSimctlOutput([
       '== Devices ==',
       '-- iOS 8.1 --',
       '    iPhone 4s (4FE43B33-EF13-49A5-B6A6-658D32F20988) (Booted)',
@@ -45,7 +45,7 @@ describe('IosSimulator', () => {
   });
 
   it('ignores unavailable simulators', () => {
-    expect(parseDevicesFromSimctlOutput([
+    expect(parseSimulatorsFromSimctlOutput([
       '== Devices ==',
       '-- iOS 8.1 --',
       '    iPhone 4s (4FE43B33-EF13-49A5-B6A6-658D32F20988) (Shutdown)',
@@ -62,7 +62,7 @@ describe('IosSimulator', () => {
   });
 
   it('ignores garbage', () => {
-    expect(parseDevicesFromSimctlOutput('Something went terribly wrong (-42)'))
+    expect(parseSimulatorsFromSimctlOutput('Something went terribly wrong (-42)'))
       .toEqual([]);
   });
 
