@@ -75,6 +75,3 @@ export default global.requestIdleCallback ?
       },
     };
   };
-
-// Fake export to avoid babel's commonjs compat
-export const __BABEL_CJS_COMPAT__ = {};

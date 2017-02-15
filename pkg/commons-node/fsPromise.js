@@ -433,6 +433,3 @@ export default {
   symlink,
   unlink,
 };
-
-// Fake export to avoid babel's commonjs compat
-export const __BABEL_CJS_COMPAT__ = {};

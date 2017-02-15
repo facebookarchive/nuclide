@@ -83,6 +83,3 @@ export default class NuclideAppProvider extends WebInspector.AppProvider {
     return new NuclideApp();
   }
 }
-
-// Fake export to avoid babel's commonjs compat
-export const __BABEL_CJS_COMPAT__ = {};

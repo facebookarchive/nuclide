@@ -222,18 +222,6 @@
       "resolved": "https://registry.npmjs.org/babel-messages/-/babel-messages-6.23.0.tgz",
       "dev": true
     },
-    "babel-plugin-add-module-exports": {
-      "version": "0.2.1",
-      "from": "babel-plugin-add-module-exports@0.2.1",
-      "resolved": "https://registry.npmjs.org/babel-plugin-add-module-exports/-/babel-plugin-add-module-exports-0.2.1.tgz",
-      "dev": true
-    },
-    "babel-plugin-check-es2015-constants": {
-      "version": "6.22.0",
-      "from": "babel-plugin-check-es2015-constants@6.22.0",
-      "resolved": "https://registry.npmjs.org/babel-plugin-check-es2015-constants/-/babel-plugin-check-es2015-constants-6.22.0.tgz",
-      "dev": true
-    },
     "babel-plugin-syntax-async-functions": {
       "version": "6.13.0",
       "from": "babel-plugin-syntax-async-functions@>=6.8.0 <7.0.0",
@@ -331,9 +319,9 @@
       "dev": true
     },
     "babel-runtime": {
-      "version": "6.22.0",
+      "version": "6.23.0",
       "from": "babel-runtime@>=6.22.0 <7.0.0",
-      "resolved": "https://registry.npmjs.org/babel-runtime/-/babel-runtime-6.22.0.tgz",
+      "resolved": "https://registry.npmjs.org/babel-runtime/-/babel-runtime-6.23.0.tgz",
       "dev": true
     },
     "babel-template": {

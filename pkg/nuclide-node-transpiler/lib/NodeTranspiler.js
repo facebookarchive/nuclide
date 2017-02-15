@@ -41,18 +41,13 @@ const BABEL_OPTIONS = {
     [require.resolve('./inline-invariant-tr')],
     [require.resolve('./use-minified-libs-tr')],
 
-    // TODO(asuarez): Switch module boundaries to `module.exports` and remove:
-    [require.resolve('babel-plugin-add-module-exports')],
-
-    [require.resolve('babel-plugin-check-es2015-constants')],
-    [require.resolve('babel-plugin-transform-strict-mode')],
-
     [require.resolve('babel-plugin-transform-async-to-module-method'), {
       module: 'async-to-generator',
       method: 'default',
     }],
     [require.resolve('babel-plugin-transform-class-properties')],
     [require.resolve('babel-plugin-transform-object-rest-spread'), {useBuiltIns: true}],
+    [require.resolve('babel-plugin-transform-strict-mode')],
 
     // babel-preset-react:
     [require.resolve('babel-plugin-transform-react-jsx'), {useBuiltIns: true}],

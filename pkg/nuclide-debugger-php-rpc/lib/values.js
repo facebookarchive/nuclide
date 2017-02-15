@@ -183,6 +183,3 @@ function toBool(value: string): mixed {
     default: return 'Unexpected bool value: ' + value;
   }
 }
-
-// Fake export to avoid babel's commonjs compat
-export const __BABEL_CJS_COMPAT__ = {};

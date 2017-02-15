@@ -114,6 +114,3 @@ export default async function runTest(
 
   return exitCode;
 }
-
-// Fake export to avoid babel's commonjs compat
-export const __BABEL_CJS_COMPAT__ = {};
