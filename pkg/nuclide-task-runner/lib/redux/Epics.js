@@ -236,14 +236,14 @@ export function runTaskEpic(
     .switchMap(action => {
       invariant(action.type === Actions.RUN_TASK);
       const state = store.getState();
-      // Don't do anything if a task is already running.
-      if (state.runningTask) { return Observable.empty(); }
+      const stopRunningTask = state.runningTask != null;
 
       const {taskMeta} = action.payload;
       const {activeTaskRunner} = state;
       const newTaskRunner = taskMeta.taskRunner;
 
       return Observable.concat(
+        stopRunningTask ? Observable.of(Actions.stopTask()) : Observable.empty(),
         activeTaskRunner === newTaskRunner
           ? Observable.empty()
           : Observable.of(Actions.selectTaskRunner(newTaskRunner, true)),
