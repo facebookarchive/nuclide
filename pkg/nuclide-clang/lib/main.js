@@ -20,6 +20,7 @@ import type {
   DefinitionQueryResult,
 } from '../../nuclide-definition-service/lib/rpc-types';
 import type {ClangCompilationDatabaseProvider} from './types';
+import type {RelatedFilesProvider} from '../../nuclide-related-files/lib/types';
 
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
@@ -33,7 +34,7 @@ import TypeHintHelpers from './TypeHintHelpers';
 import Refactoring from './Refactoring';
 import ClangLinter from './ClangLinter';
 import {GRAMMARS, GRAMMAR_SET, PACKAGE_NAME} from './constants';
-import {reset, registerCompilationDatabaseProvider} from './libclang';
+import {reset, registerCompilationDatabaseProvider, getRelatedSourceOrHeader} from './libclang';
 
 let busySignalProvider: ?BusySignalProviderBase = null;
 let subscriptions: ?CompositeDisposable = null;
@@ -153,6 +154,16 @@ export function provideRefactoring(): RefactorProvider {
     },
     refactor(request) {
       return Refactoring.refactor(request);
+    },
+  };
+}
+
+export function provideRelatedFiles(): RelatedFilesProvider {
+  return {
+    getRelatedFiles(filePath: NuclideUri): Promise<Array<string>> {
+      return getRelatedSourceOrHeader(filePath).then(
+        related => (related == null ? [] : [related]),
+      );
     },
   };
 }

@@ -60,6 +60,11 @@
     }
   },
   "providedServices": {
+    "nuclide.related-files.provider": {
+      "versions": {
+        "0.0.0": "provideRelatedFiles"
+      }
+    },
     "autocomplete.provider": {
       "versions": {
         "2.0.0": "createAutocompleteProvider"

@@ -8,9 +8,11 @@
  * @flow
  */
 
-import {CompositeDisposable} from 'atom';
+import type {RelatedFilesProvider} from './types';
 
+import {CompositeDisposable} from 'atom';
 import JumpToRelatedFile from './JumpToRelatedFile';
+import RelatedFileFinder from './RelatedFileFinder';
 
 let subscriptions: ?CompositeDisposable = null;
 
@@ -40,7 +42,12 @@ export function activate() {
         {type: 'separator'},
       ],
     }),
+    RelatedFileFinder.getRelatedFilesProvidersDisposable(),
   );
+}
+
+export function consumeRelatedFilesProvider(provider: RelatedFilesProvider): IDisposable {
+  return RelatedFileFinder.registerRelatedFilesProvider(provider);
 }
 
 export function deactivate() {

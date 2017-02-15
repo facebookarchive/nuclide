@@ -192,7 +192,7 @@ export async function getRelatedSourceOrHeader(
   src: NuclideUri,
   compilationDBFile: ?NuclideUri,
 ): Promise<?string> {
-  serverManager.getClangFlagsManager().getRelatedSrcFileForHeader(src, compilationDBFile);
+  return serverManager.getClangFlagsManager().getRelatedSrcFileForHeader(src, compilationDBFile);
 }
 
 export async function getOutline(

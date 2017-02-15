@@ -94,5 +94,20 @@ describe('RelatedFileFinder', () => {
         });
       });
     });
+
+    it('finds related file from a provider', () => {
+      waitsForPromise(async () => {
+        RelatedFileFinder.registerRelatedFilesProvider({
+          getRelatedFiles(path: string): Promise<Array<string>> {
+            return Promise.resolve(['dir/Related.h']);
+          },
+        });
+        mockFiles(['Test.m', 'Related.h', 'Test.h']);
+        expect(await RelatedFileFinder.find('dir/Test.m')).toEqual({
+          relatedFiles: ['dir/Related.h', 'dir/Test.h', 'dir/Test.m'],
+          index: 2,
+        });
+      });
+    });
   });
 });

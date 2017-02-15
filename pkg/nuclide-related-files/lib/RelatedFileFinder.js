@@ -9,9 +9,14 @@
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {RelatedFilesProvider} from './types';
 
+import {Disposable} from 'atom';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
 import nuclideUri from '../../commons-node/nuclideUri';
+import {timeoutPromise} from '../../commons-node/promise';
+
+const relatedFilesProviders: Set<RelatedFilesProvider> = new Set();
 
 /**
  * Finds related files, to be used in `JumpToRelatedFile`.
@@ -23,6 +28,27 @@ import nuclideUri from '../../commons-node/nuclideUri';
  * For now, we only search in the given path's directory for related files.
  */
 export default class RelatedFileFinder {
+  static registerRelatedFilesProvider(provider: RelatedFilesProvider): Disposable {
+    relatedFilesProviders.add(provider);
+    return new Disposable(() => relatedFilesProviders.delete(provider));
+  }
+
+  static getRelatedFilesProvidersDisposable(): Disposable {
+    return new Disposable(() => relatedFilesProviders.clear());
+  }
+
+  static async _findRelatedFilesFromProviders(path: NuclideUri): Promise<Array<string>> {
+    const relatedLists = await Promise.all(Array.from(relatedFilesProviders.values())
+      .map(provider => timeoutPromise(provider.getRelatedFiles(path), 2000)));
+    const relatedFiles = new Set();
+    for (const relatedList of relatedLists) {
+      for (const relatedFile of relatedList) {
+        relatedFiles.add(relatedFile);
+      }
+    }
+    return Array.from(relatedFiles.values());
+  }
+
   /**
    * Returns the related files and the given file's index in that array.
    * The given file must be in the related files array.
@@ -42,6 +68,7 @@ export default class RelatedFileFinder {
     const listing = await service.readdir(nuclideUri.getPath(dirName));
     // Here the filtering logic:
     // first get all files with the same prefix -> filelist,
+    // add the related files from external providers
     // get all the files that matches the whitelist -> wlFilelist;
     // check the wlFilelist: if empty, use filelist
     const filelist = listing
@@ -49,18 +76,19 @@ export default class RelatedFileFinder {
         // $FlowFixMe stats may be null
         return otherFilePath.stats.isFile() && !otherFilePath.file.endsWith('~') &&
           getPrefix(otherFilePath.file) === prefix;
-      });
+      })
+      .map(fileObject => nuclideUri.join(dirName, fileObject.file))
+      .concat(await RelatedFileFinder._findRelatedFilesFromProviders(filePath));
     let wlFilelist = fileTypeWhitelist.size <= 0 ? filelist :
       filelist.filter(otherFilePath => {
-        return fileTypeWhitelist.has(nuclideUri.extname(otherFilePath.file));
+        return fileTypeWhitelist.has(nuclideUri.extname(otherFilePath));
       });
     if (wlFilelist.length <= 0) {
       // no files in white list
       wlFilelist = filelist;
     }
 
-    const relatedFiles = wlFilelist
-      .map(otherFilePath => nuclideUri.join(dirName, otherFilePath.file));
+    const relatedFiles = wlFilelist;
 
     if (relatedFiles.indexOf(filePath) < 0) {
       relatedFiles.push(filePath);
