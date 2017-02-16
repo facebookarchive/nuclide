@@ -297,16 +297,26 @@ export async function writeFile(path: string, data: string,
   try {
     await fsPromise.writeFile(tempFilePath, data, options);
 
+    // Expand the target path in case it contains symlinks.
+    let realPath = path;
+    try {
+      realPath = await resolveRealPath(path);
+    } catch (e) {
+      // Fallback to using the specified path if it cannot be expanded.
+      // Note: this is expected in cases where the remote file does not
+      // actually exist.
+    }
+
     // Ensure file still has original permissions:
     // https://github.com/facebook/nuclide/issues/157
     // We update the mode of the temp file rather than the destination file because
     // if we did the mv() then the chmod(), there would be a brief period between
     // those two operations where the destination file might have the wrong permissions.
-    await copyFilePermissions(path, tempFilePath);
+    await copyFilePermissions(realPath, tempFilePath);
 
     // TODO(mikeo): put renames into a queue so we don't write older save over new save.
     // Use mv as fs.rename doesn't work across partitions.
-    await mvPromise(tempFilePath, path);
+    await mvPromise(tempFilePath, realPath);
     complete = true;
   } finally {
     if (!complete) {
