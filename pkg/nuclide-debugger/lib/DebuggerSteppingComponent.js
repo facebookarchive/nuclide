@@ -71,11 +71,13 @@ function SVGButton(props: {
   onClick: () => void,
   tooltip: atom$TooltipsAddOptions,
   icon: React.Element<any>,
+  disabled: boolean,
 }): React.Element<any> {
   return (
     <Button
       className="nuclide-debugger-stepping-svg-button"
       onClick={props.onClick}
+      disabled={props.disabled}
       tooltip={props.tooltip}>
       <div>
         {props.icon}
@@ -135,11 +137,13 @@ export class DebuggerSteppingComponent extends React.Component {
     } = this.state;
     const {actions} = this.props;
     const isPaused = debuggerMode === DebuggerMode.PAUSED;
+    const isStopped = debuggerMode === DebuggerMode.STOPPED;
     return (
       <div className="nuclide-debugger-stepping-component">
         <ButtonGroup className="nuclide-debugger-stepping-buttongroup">
           <Button
             icon={isPaused ? 'playback-play' : 'playback-pause'}
+            disabled={isStopped}
             tooltip={{
               ...defaultTooltipOptions,
               title: isPaused ? 'Continue' : 'Pause',
@@ -156,6 +160,7 @@ export class DebuggerSteppingComponent extends React.Component {
           />
           <SVGButton
             icon={STEP_OVER_ICON}
+            disabled={!isPaused}
             tooltip={{
               ...defaultTooltipOptions,
               title: 'Step over',
@@ -167,6 +172,7 @@ export class DebuggerSteppingComponent extends React.Component {
           />
           <SVGButton
             icon={STEP_INTO_ICON}
+            disabled={!isPaused}
             tooltip={{
               ...defaultTooltipOptions,
               title: 'Step into',
@@ -178,6 +184,7 @@ export class DebuggerSteppingComponent extends React.Component {
           />
           <SVGButton
             icon={STEP_OUT_ICON}
+            disabled={!isPaused}
             tooltip={{
               ...defaultTooltipOptions,
               title: 'Step out',
@@ -231,6 +238,7 @@ export class DebuggerSteppingComponent extends React.Component {
         ] : null}
         {allowSingleThreadStepping ?
           <Checkbox
+            disabled={isStopped}
             className="nuclide-debugger-exception-checkbox"
             onChange={() => actions.toggleSingleThreadStepping(!enableSingleThreadStepping)}
             checked={enableSingleThreadStepping}

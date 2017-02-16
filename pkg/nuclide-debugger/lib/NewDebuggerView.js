@@ -8,6 +8,7 @@
  * @flow
  */
 
+import classnames from 'classnames';
 import type DebuggerModel from './DebuggerModel';
 import type {
   WatchExpressionListStore,
@@ -18,6 +19,7 @@ import {
   React,
 } from 'react-for-atom';
 import {Section} from '../../nuclide-ui/Section';
+import {Button} from '../../nuclide-ui/Button';
 import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
 import {
   FlexDirections,
@@ -31,6 +33,8 @@ import {DebuggerSteppingComponent} from './DebuggerSteppingComponent';
 import {DebuggerCallstackComponent} from './DebuggerCallstackComponent';
 import {DebuggerThreadsComponent} from './DebuggerThreadsComponent';
 import type {ThreadColumn} from '../../nuclide-debugger-base/lib/types';
+import type {DebuggerModeType} from './types';
+import {DebuggerMode} from './DebuggerStore';
 
 type Props = {
   model: DebuggerModel,
@@ -42,6 +46,7 @@ export class NewDebuggerView extends React.PureComponent {
   state: {
     showThreadsWindow: boolean,
     customThreadColumns: Array<ThreadColumn>,
+    mode: DebuggerModeType,
   };
   _watchExpressionComponentWrapped: ReactClass<any>;
   _scopesComponentWrapped: ReactClass<any>;
@@ -66,6 +71,7 @@ export class NewDebuggerView extends React.PureComponent {
     this.state = {
       showThreadsWindow: Boolean(debuggerStore.getSettings().get('SupportThreadsWindow')),
       customThreadColumns: (debuggerStore.getSettings().get('CustomThreadColumns'): any) || [],
+      mode: debuggerStore.getDebuggerMode(),
     };
   }
 
@@ -76,6 +82,7 @@ export class NewDebuggerView extends React.PureComponent {
         this.setState({
           showThreadsWindow: Boolean(debuggerStore.getSettings().get('SupportThreadsWindow')),
           customThreadColumns: (debuggerStore.getSettings().get('CustomThreadColumns'): any) || [],
+          mode: debuggerStore.getDebuggerMode(),
         });
       }),
     );
@@ -90,12 +97,17 @@ export class NewDebuggerView extends React.PureComponent {
       model,
     } = this.props;
     const actions = model.getActions();
+    const mode = this.state.mode;
     const WatchExpressionComponentWrapped = this._watchExpressionComponentWrapped;
     const ScopesComponentWrapped = this._scopesComponentWrapped;
+    const disabledClass = mode !== DebuggerMode.RUNNING ?
+      ''
+      : ' nuclide-debugger-container-new-disabled';
+
     const threadsSection = this.state.showThreadsWindow
       ? <ResizableFlexItem initialFlexScale={1}>
           <Section headline="Threads"
-            className="nuclide-debugger-section-header">
+            className={classnames('nuclide-debugger-section-header', disabledClass)}>
             <div className="nuclide-debugger-section-content">
               <DebuggerThreadsComponent
                 bridge={this.props.model.getBridge()}
@@ -106,6 +118,82 @@ export class NewDebuggerView extends React.PureComponent {
           </Section>
         </ResizableFlexItem>
       : null;
+
+    const debuggerStoppedNotice = mode !== DebuggerMode.STOPPED ? null :
+      <div className="nuclide-debugger-state-notice">
+        <span>The debugger is not attached.</span>
+        <div className="nuclide-debugger-state-notice">
+          <Button
+            onClick={() => atom.commands.dispatch(
+              atom.views.getView(atom.workspace),
+              'nuclide-debugger:toggle',
+            )}>
+            Start debugging
+          </Button>
+        </div>
+      </div>;
+
+    const debugeeRunningNotice = mode !== DebuggerMode.RUNNING ? null :
+      <div className="nuclide-debugger-state-notice">
+        The debugee is currently running.
+      </div>;
+
+    const debugFlexContainer =
+      <ResizableFlexContainer direction={FlexDirections.VERTICAL}>
+        {threadsSection}
+        <ResizableFlexItem initialFlexScale={1}>
+          <Section headline="Call Stack"
+            key="callStack"
+            className={classnames('nuclide-debugger-section-header', disabledClass)}>
+            <div className="nuclide-debugger-section-content">
+              <DebuggerCallstackComponent
+                actions={actions}
+                bridge={model.getBridge()}
+                callstackStore={model.getCallstackStore()}
+              />
+            </div>
+          </Section>
+        </ResizableFlexItem>
+        <ResizableFlexItem initialFlexScale={1}>
+          <Section headline="Breakpoints"
+            key="breakpoints"
+            className="nuclide-debugger-section-header">
+            <div className="nuclide-debugger-section-content">
+              <BreakpointListComponent
+                actions={actions}
+                breakpointStore={model.getBreakpointStore()}
+              />
+            </div>
+          </Section>
+        </ResizableFlexItem>
+        <ResizableFlexItem initialFlexScale={1}>
+          <Section headline="Scopes"
+            key="scopes"
+            className={classnames('nuclide-debugger-section-header', disabledClass)}>
+            <div className="nuclide-debugger-section-content">
+              <ScopesComponentWrapped
+                watchExpressionStore={model.getWatchExpressionStore()}
+              />
+            </div>
+          </Section>
+        </ResizableFlexItem>
+        <ResizableFlexItem initialFlexScale={1}>
+          <Section headline="Watch Expressions"
+            key="watchExpressions"
+            className="nuclide-debugger-section-header">
+            <div className="nuclide-debugger-section-content">
+              <WatchExpressionComponentWrapped
+                onAddWatchExpression={actions.addWatchExpression.bind(model)}
+                onRemoveWatchExpression={actions.removeWatchExpression.bind(model)}
+                onUpdateWatchExpression={actions.updateWatchExpression.bind(model)}
+                watchExpressionStore={model.getWatchExpressionStore()}
+              />
+            </div>
+          </Section>
+        </ResizableFlexItem>
+      </ResizableFlexContainer>;
+
+    const debuggerContents = debuggerStoppedNotice || debugFlexContainer;
     return (
       <div className="nuclide-debugger-container-new">
         <div className="nuclide-debugger-section-header nuclide-debugger-controls-section">
@@ -116,59 +204,8 @@ export class NewDebuggerView extends React.PureComponent {
             />
           </div>
         </div>
-        <ResizableFlexContainer direction={FlexDirections.VERTICAL}>
-          {threadsSection}
-          <ResizableFlexItem initialFlexScale={1}>
-            <Section headline="Call Stack"
-              key="callStack"
-              className="nuclide-debugger-section-header">
-              <div className="nuclide-debugger-section-content">
-                <DebuggerCallstackComponent
-                  actions={actions}
-                  bridge={model.getBridge()}
-                  callstackStore={model.getCallstackStore()}
-                />
-              </div>
-            </Section>
-          </ResizableFlexItem>
-          <ResizableFlexItem initialFlexScale={1}>
-            <Section headline="Breakpoints"
-              key="breakpoints"
-              className="nuclide-debugger-section-header">
-              <div className="nuclide-debugger-section-content">
-                <BreakpointListComponent
-                  actions={actions}
-                  breakpointStore={model.getBreakpointStore()}
-                />
-              </div>
-            </Section>
-          </ResizableFlexItem>
-          <ResizableFlexItem initialFlexScale={1}>
-            <Section headline="Scopes"
-              key="scopes"
-              className="nuclide-debugger-section-header">
-              <div className="nuclide-debugger-section-content">
-                <ScopesComponentWrapped
-                  watchExpressionStore={model.getWatchExpressionStore()}
-                />
-              </div>
-            </Section>
-          </ResizableFlexItem>
-          <ResizableFlexItem initialFlexScale={1}>
-            <Section headline="Watch Expressions"
-              key="watchExpressions"
-              className="nuclide-debugger-section-header">
-              <div className="nuclide-debugger-section-content">
-                <WatchExpressionComponentWrapped
-                  onAddWatchExpression={actions.addWatchExpression.bind(model)}
-                  onRemoveWatchExpression={actions.removeWatchExpression.bind(model)}
-                  onUpdateWatchExpression={actions.updateWatchExpression.bind(model)}
-                  watchExpressionStore={model.getWatchExpressionStore()}
-                />
-              </div>
-            </Section>
-          </ResizableFlexItem>
-        </ResizableFlexContainer>
+        {debugeeRunningNotice}
+        {debuggerContents}
       </div>
     );
   }
