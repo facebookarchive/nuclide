@@ -53,7 +53,7 @@
         "title": "Enable Type Hints",
         "type": "boolean",
         "default": true,
-        "description": "Display tooltips with Flow types"
+        "description": "Display tooltips with Flow types (requires restart to take effect)"
       },
       "warnOnNotInstalled": {
         "title": "Warn when Flow is not found",
@@ -71,11 +71,6 @@
     "language-javascript:grammar-used"
   ],
   "providedServices": {
-    "nuclide-type-hint.provider": {
-      "versions": {
-        "0.0.0": "createTypeHintProvider"
-      }
-    },
     "nuclide-evaluation-expression.provider": {
       "versions": {
         "0.0.0": "createEvaluationExpressionProvider"

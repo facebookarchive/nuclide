@@ -32,7 +32,6 @@ import {filterResultsByPrefix, shouldFilter} from '../../nuclide-flow-common';
 import {FlowServiceWatcher} from './FlowServiceWatcher';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {DedupedBusySignalProviderBase} from '../../nuclide-busy-signal';
-import {FlowTypeHintProvider} from './FlowTypeHintProvider';
 import {FlowEvaluationExpressionProvider} from './FlowEvaluationExpressionProvider';
 import {getCurrentServiceInstances, getFlowServiceByConnection} from './FlowServiceFactory';
 
@@ -88,17 +87,6 @@ export function provideBusySignal(): BusySignalProviderBaseType {
   return busySignalProvider;
 }
 
-export function createTypeHintProvider(): Object {
-  const flowTypeHintProvider = new FlowTypeHintProvider();
-  const typeHint = flowTypeHintProvider.typeHint.bind(flowTypeHintProvider);
-  return {
-    selector: GRAMMARS_STRING,
-    providerName: PACKAGE_NAME,
-    inclusionPriority: 1,
-    typeHint,
-  };
-}
-
 export function createEvaluationExpressionProvider(): NuclideEvaluationExpressionProvider {
   const evaluationExpressionProvider = new FlowEvaluationExpressionProvider();
   const getEvaluationExpression =
@@ -133,6 +121,7 @@ function getLanguageServiceConfig(): AtomLanguageServiceConfig {
   const enableHighlight = featureConfig.get('nuclide-flow.enableReferencesHighlight');
   const excludeLowerPriority = Boolean(featureConfig.get('nuclide-flow.excludeOtherAutocomplete'));
   const flowResultsFirst = Boolean(featureConfig.get('nuclide-flow.flowAutocompleteResultsFirst'));
+  const enableTypeHints = Boolean(featureConfig.get('nuclide-flow.enableTypeHints'));
   return {
     name: 'Flow',
     grammars: JS_GRAMMARS,
@@ -177,5 +166,11 @@ function getLanguageServiceConfig(): AtomLanguageServiceConfig {
       shouldRunOnTheFly: false,
       analyticsEventName: 'flow.run-diagnostics',
     },
+    typeHint: enableTypeHints ?
+    {
+      version: '0.0.0',
+      priority: 1,
+      analyticsEventName: 'nuclide-flow.typeHint',
+    } : undefined,
   };
 }

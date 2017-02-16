@@ -195,7 +195,7 @@ class FlowSingleFileLanguageService {
     buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
   ): Promise<?TypeHint> {
-    throw new Error('Not Yet Implemented');
+    return flowGetType(filePath, buffer.getText(), position.row, position.column);
   }
 
   highlight(
