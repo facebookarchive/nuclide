@@ -166,7 +166,7 @@ describe('FlowSingleProjectLanguageService', () => {
     });
   });
 
-  describe('flowGetAutocompleteSuggestions', () => {
+  describe('getAutocompleteSuggestions', () => {
     let prefix: string = (null: any);
     let resultNames: Array<string> = (null: any);
     let result: Array<Object>;
@@ -189,9 +189,9 @@ describe('FlowSingleProjectLanguageService', () => {
 
     function run() {
       mockExec(JSON.stringify({result}));
-      return flowRoot.flowGetAutocompleteSuggestions(
+      return flowRoot.getAutocompleteSuggestions(
         file,
-        currentContents,
+        buffer,
         new Point(line, column),
         activatedManually,
         prefix,

@@ -30,7 +30,6 @@ import type {Completion} from '../../nuclide-language-service/lib/LanguageServic
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
 
 import {ServerLanguageService} from '../../nuclide-language-service-rpc';
-import {filterResultsByPrefix} from '../../nuclide-flow-common';
 
 export type Loc = {
   file: NuclideUri,
@@ -103,24 +102,23 @@ class FlowSingleFileLanguageService {
     throw new Error('Not Yet Implemented');
   }
 
-  async getAutocompleteSuggestions(
+  getAutocompleteSuggestions(
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
     activatedManually: boolean,
     prefix: string,
   ): Promise<?Array<Completion>> {
-    const results = await getState().getRootContainer().runWithRoot(
+    return getState().getRootContainer().runWithRoot(
       filePath,
-      root => root.flowGetAutocompleteSuggestions(
+      root => root.getAutocompleteSuggestions(
         filePath,
-        buffer.getText(),
+        buffer,
         position,
         activatedManually,
         prefix,
       ),
     );
-    return filterResultsByPrefix(prefix, results);
   }
 
   getDefinition(

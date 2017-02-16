@@ -39,7 +39,11 @@ import type {
 import invariant from 'assert';
 import {Range, Point} from 'simple-text-buffer';
 
-import {getReplacementPrefix, JAVASCRIPT_WORD_REGEX} from '../../nuclide-flow-common';
+import {
+  filterResultsByPrefix,
+  getReplacementPrefix,
+  JAVASCRIPT_WORD_REGEX,
+} from '../../nuclide-flow-common';
 import {getLogger} from '../../nuclide-logging';
 const logger = getLogger();
 
@@ -252,11 +256,11 @@ export class FlowSingleProjectLanguageService {
   }
 
 
-  async flowGetAutocompleteSuggestions(
-    file: NuclideUri,
-    currentContents: string,
+  async getAutocompleteSuggestions(
+    filePath: NuclideUri,
+    buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
-    activatedManually: ?boolean,
+    activatedManually: boolean,
     prefix: string,
   ): Promise<?Array<Completion>> {
     const replacementPrefix = getReplacementPrefix(prefix);
@@ -280,9 +284,9 @@ export class FlowSingleProjectLanguageService {
     const options = {};
 
     // Note that Atom coordinates are 0-indexed whereas Flow's are 1-indexed, so we must add 1.
-    const args = ['autocomplete', '--json', file, position.row + 1, position.column + 1];
+    const args = ['autocomplete', '--json', filePath, position.row + 1, position.column + 1];
 
-    options.stdin = currentContents;
+    options.stdin = buffer.getText();
     try {
       const result = await this._process.execFlow(args, options);
       if (!result) {
@@ -290,7 +294,9 @@ export class FlowSingleProjectLanguageService {
       }
       const json: FlowAutocompleteOutput = parseJSON(args, result.stdout);
       const resultsArray: Array<FlowAutocompleteItem> = json.result;
-      return resultsArray.map(item => processAutocompleteItem(replacementPrefix, item));
+      const completions =
+        resultsArray.map(item => processAutocompleteItem(replacementPrefix, item));
+      return filterResultsByPrefix(prefix, completions);
     } catch (e) {
       return [];
     }
