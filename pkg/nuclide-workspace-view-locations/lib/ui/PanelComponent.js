@@ -32,7 +32,7 @@ type Props = {
 };
 
 type State = {
-  isResizing: boolean,
+  resizing: boolean,
   size: ?number,
 };
 
@@ -52,7 +52,7 @@ export class PanelComponent extends React.Component {
   constructor(props: Object) {
     super(props);
     this.state = {
-      isResizing: false,
+      resizing: false,
       size: this.props.initialSize,
     };
 
@@ -99,15 +99,6 @@ export class PanelComponent extends React.Component {
   }
 
   render(): React.Element<any> {
-    // We create an overlay to always display the resize cursor while the user
-    // is resizing the panel, even if their mouse leaves the handle.
-    let resizeCursorOverlay = null;
-    if (this.state.isResizing) {
-      const className =
-        `nuclide-workspace-views-panel-resize-cursor-overlay ${this.props.position}`;
-      resizeCursorOverlay = <div className={className} />;
-    }
-
     const size = this.state.size == null ? this._getInitialSize() : this.state.size;
 
     let containerStyle;
@@ -134,7 +125,7 @@ export class PanelComponent extends React.Component {
         <div className="nuclide-workspace-views-panel-content">
           <View ref="child" item={this.props.paneContainer} />
         </div>
-        {resizeCursorOverlay}
+        <ResizeCursorOverlay position={this.props.position} resizing={this.state.resizing} />
       </div>
     );
   }
@@ -151,7 +142,7 @@ export class PanelComponent extends React.Component {
       {dispose: () => { window.removeEventListener('mouseup', this._handleMouseUp); }},
     );
 
-    this.setState({isResizing: true});
+    this.setState({resizing: true});
   }
 
   _handleMouseMove(event: SyntheticMouseEvent): void {
@@ -183,7 +174,7 @@ export class PanelComponent extends React.Component {
     if (this._resizeSubscriptions) {
       this._resizeSubscriptions.dispose();
     }
-    this.setState({isResizing: false});
+    this.setState({resizing: false});
   }
 
   // Whether this is width or height depends on the orientation of this panel.
@@ -224,4 +215,12 @@ function getPreferredInitialSize(item: Object, position: Position): ?number {
     default:
       throw new Error(`Invalid position: ${position}`);
   }
+}
+
+function ResizeCursorOverlay(props: {resizing: boolean, position: Position}): ?React.Element<any> {
+  // We create an overlay to always display the resize cursor while the user is resizing the panel,
+  // even if their mouse leaves the handle.
+  return props.resizing
+    ? <div className={`nuclide-workspace-views-panel-resize-cursor-overlay ${props.position}`} />
+    : null;
 }
