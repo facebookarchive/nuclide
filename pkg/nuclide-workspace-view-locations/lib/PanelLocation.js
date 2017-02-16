@@ -12,21 +12,19 @@ import type {PanelLocationId, SerializedPanelLocation} from './types';
 import type {Viewable} from '../../nuclide-workspace-views/lib/types';
 
 import createPaneContainer from '../../commons-atom/create-pane-container';
-import PanelRenderer from '../../commons-atom/PanelRenderer';
-import {renderReactRoot} from '../../commons-atom/renderReactRoot';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {nextAnimationFrame} from '../../commons-node/observable';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {SimpleModel} from '../../commons-node/SimpleModel';
-import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
 import TabBarView from '../../nuclide-ui/VendorLib/atom-tabs/lib/tab-bar-view';
+import addPanel from './addPanel';
 import {observeAddedPaneItems} from './observeAddedPaneItems';
 import {observePanes} from './observePanes';
 import {syncPaneItemVisibility} from './syncPaneItemVisibility';
 import * as PanelLocationIds from './PanelLocationIds';
 import {PanelComponent} from './ui/PanelComponent';
 import nullthrows from 'nullthrows';
-import {React} from 'react-for-atom';
+import {React, ReactDOM} from 'react-for-atom';
 import {BehaviorSubject, Observable, Scheduler} from 'rxjs';
 
 type State = {
@@ -44,7 +42,6 @@ export class PanelLocation extends SimpleModel<State> {
   _paneContainer: atom$PaneContainer;
   _panes: BehaviorSubject<Set<atom$Pane>>;
   _panel: atom$Panel;
-  _panelRenderer: PanelRenderer;
   _position: 'top' | 'right' | 'bottom' | 'left';
   _size: ?number;
 
@@ -54,11 +51,6 @@ export class PanelLocation extends SimpleModel<State> {
     const serializedData = serializedState.data || {};
     this._paneContainer = deserializePaneContainer(serializedData.paneContainer);
     this._position = nullthrows(locationsToPosition.get(locationId));
-    this._panelRenderer = new PanelRenderer({
-      priority: 101, // Use a value higher than the default (100).
-      location: this._position,
-      createItem: this._createItem.bind(this),
-    });
     this._panes = new BehaviorSubject(new Set());
     this._size = serializedData.size || null;
     this.state = {
@@ -93,8 +85,6 @@ export class PanelLocation extends SimpleModel<State> {
       .share();
 
     this._disposables = new UniversalDisposable(
-      this._panelRenderer,
-
       observePanes(paneContainer).subscribe(this._panes),
 
       syncPaneItemVisibility(
@@ -186,30 +176,61 @@ export class PanelLocation extends SimpleModel<State> {
         // See https://groups.google.com/a/chromium.org/forum/?fromgroups=#!msg/chromium-bugs/YHs3orFC8Dc/ryT25b7J-NwJ
         .observeOn(Scheduler.async)
         .subscribe(showDropAreas => { this.setState({showDropAreas}); }),
+    );
 
-        // $FlowIssue: We need to teach flow about Symbol.observable.
-        Observable.from(this).subscribe(state => {
-          this._panelRenderer.render({
-            visible: state.showDropAreas || state.visible,
-          });
-        }),
-
+    this._disposables.add(
+      // $FlowIssue: We need to teach flow about Symbol.observable.
+      Observable.from(this).subscribe(state => { this._render(state); }),
     );
   }
 
-  _createItem(): Object {
-    // Create an item to display in the panel. Atom will associate this item with a view via the
-    // view registry (and its `getElement` method). That view will be used to display views for this
-    // panel.
-    // $FlowIssue: We need to teach flow about Symbol.observable.
-    const props = Observable.from(this).map(state => ({
-      initialSize: this._size,
-      paneContainer: this._paneContainer,
-      position: this._position,
-      onResize: this._handlePanelResize,
-    }));
-    const Component = bindObservableAsProps(props, PanelComponent);
-    return {getElement: () => renderReactRoot(<Component />)};
+  _render(state: State): void {
+    const shouldBeVisible = this.state.visible || this.state.showDropAreas;
+
+    // Make sure we have a panel if we're supposed to.
+    const panel = this._getPanel(shouldBeVisible);
+
+    // If we don't, there's nothing to do.
+    if (panel == null) { return; }
+
+    if (panel.isVisible() !== shouldBeVisible) {
+      if (shouldBeVisible) {
+        panel.show();
+      } else {
+        panel.hide();
+      }
+    }
+
+    const el = panel.getItem();
+    ReactDOM.render(
+      <PanelComponent
+        initialSize={this._size}
+        paneContainer={this._paneContainer}
+        position={this._position}
+        onResize={this._handlePanelResize}
+      />,
+      el,
+    );
+  }
+
+  _getPanel(createIfNeeded: boolean): ?atom$Panel {
+    if (createIfNeeded && this._panel == null) {
+      const el = document.createElement('div');
+      el.style.display = 'flex';
+      const panel = this._panel = addPanel(
+        this._position,
+        {
+          item: el,
+          priority: 101, // Use a value higher than the default (100).
+        },
+      );
+      this._disposables.add(
+        () => { ReactDOM.unmountComponentAtNode(el); },
+        () => { panel.destroy(); },
+      );
+      this._panel = panel;
+    }
+    return this._panel;
   }
 
   _handlePanelResize(size: number): void {
