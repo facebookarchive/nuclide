@@ -51,7 +51,7 @@ describe('Diagnostics panel integration test', () => {
       clickStatusBarItem();
     });
 
-    waitsFor('diagnostics panel to have style `display: none` in the DOM', 10000, () => {
+    waitsFor('diagnostics panel to be hidden', 10000, () => {
       // Did the diagnostics panel hide?
       return !isDiagnosticsPanelShowing();
     });
@@ -61,7 +61,7 @@ describe('Diagnostics panel integration test', () => {
       dispatchKeyboardEvent('D', document.activeElement, {alt: true, shift: true});
     });
 
-    waitsFor('diagnostics panel to remove style `display: none` in the DOM', 10000, () => {
+    waitsFor('diagnostics panel to be shown', 10000, () => {
       // Did the diagnostics panel appear?
       return isDiagnosticsPanelShowing();
     });
@@ -71,7 +71,7 @@ describe('Diagnostics panel integration test', () => {
       dispatchKeyboardEvent('D', document.activeElement, {alt: true, shift: true});
     });
 
-    waitsFor('diagnostics panel to have style `display: none` in the DOM', 10000, () => {
+    waitsFor('diagnostics panel to be hidden', 10000, () => {
       // Did the diagnostics panel hide?
       return !isDiagnosticsPanelShowing();
     });

@@ -26,7 +26,7 @@ export function syncPaneItemVisibility(
       return Observable.merge(...activeItemChanges)
         .map(() => new Set(arrayCompact(panes.map(pane => pane.getActiveItem()))));
     })
-    .share();
+    .publishReplay(1);
 
   return new UniversalDisposable(
     // Whenever an item becomes active, `setItemVisibility(true)`
@@ -54,6 +54,8 @@ export function syncPaneItemVisibility(
           }
         });
       }),
+
+    activeItemsStream.connect(),
   );
 }
 

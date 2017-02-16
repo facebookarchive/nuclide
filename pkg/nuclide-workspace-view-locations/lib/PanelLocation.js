@@ -194,17 +194,15 @@ export class PanelLocation extends SimpleModel<State> {
     // If we don't, there's nothing to do.
     if (panel == null) { return; }
 
-    if (panel.isVisible() !== shouldBeVisible) {
-      if (shouldBeVisible) {
-        panel.show();
-      } else {
-        panel.hide();
-      }
+    if (shouldBeVisible && !panel.isVisible()) {
+      panel.show();
     }
 
     const el = panel.getItem();
     ReactDOM.render(
       <PanelComponent
+        draggingItem={state.showDropAreas}
+        active={state.active}
         initialSize={this._size}
         paneContainer={this._paneContainer}
         position={this._position}
@@ -217,7 +215,6 @@ export class PanelLocation extends SimpleModel<State> {
   _getPanel(createIfNeeded: boolean): ?atom$Panel {
     if (createIfNeeded && this._panel == null) {
       const el = document.createElement('div');
-      el.style.display = 'flex';
       const panel = this._panel = addPanel(
         this._position,
         {

@@ -10,12 +10,17 @@
 
 /* global getComputedStyle */
 
+import UniversalDisposable from '../../../commons-node/UniversalDisposable';
 import {nextAnimationFrame} from '../../../commons-node/observable';
+import rectContainsPoint from '../../../commons-node/rectContainsPoint';
 import {View} from '../../../nuclide-ui/View';
-import {CompositeDisposable} from 'atom';
+import {PeekTarget} from './PeekTarget';
+import invariant from 'assert';
+import classnames from 'classnames';
 import {React, ReactDOM} from 'react-for-atom';
+import {Observable} from 'rxjs';
 
-const MINIMUM_LENGTH = 100;
+const MINIMUM_SIZE = 100;
 const DEFAULT_INITIAL_SIZE = 300;
 
 type Position = 'top' | 'right' | 'bottom' | 'left';
@@ -25,14 +30,18 @@ type DefaultProps = {
 };
 
 type Props = {
+  draggingItem: boolean, // TODO: Change to the actual item so that we can get the width.
   paneContainer: atom$PaneContainer,
   position: Position,
   initialSize: ?number,
+  active: boolean,
   onResize: (width: number) => mixed,
 };
 
 type State = {
   resizing: boolean,
+  shouldAnimate: boolean,
+  showDropTarget: boolean,
   size: ?number,
 };
 
@@ -40,8 +49,10 @@ type State = {
  * A container for centralizing the logic for making panels resizable.
  */
 export class PanelComponent extends React.Component {
-  _animationFrameRequestSubscription: ?rxjs$Subscription;
-  _resizeSubscriptions: ?CompositeDisposable;
+  _disposables: ?UniversalDisposable;
+  _dropTargetDisposable: ?UniversalDisposable;
+  _peekTargetEl: ?HTMLElement;
+  _resizeDisposable: ?UniversalDisposable;
 
   props: Props;
   state: State;
@@ -54,30 +65,37 @@ export class PanelComponent extends React.Component {
     this.state = {
       resizing: false,
       size: this.props.initialSize,
+      shouldAnimate: props.draggingItem,
+      showDropTarget: false,
     };
 
     // Bind main events to this object. _updateSize is only ever bound within these.
     (this: any)._handleMouseDown = this._handleMouseDown.bind(this);
     (this: any)._handleMouseMove = this._handleMouseMove.bind(this);
     (this: any)._handleMouseUp = this._handleMouseUp.bind(this);
+    (this: any)._handleDragLeave = this._handleDragLeave.bind(this);
+    (this: any)._handlePeekTarget = this._handlePeekTarget.bind(this);
+    (this: any)._revealDropTarget = this._revealDropTarget.bind(this);
   }
 
-  componentDidMount() {
-    // Note: This method is called via `requestAnimationFrame` rather than `process.nextTick` like
-    // Atom's tree-view does because this does not have a guarantee a paint will have already
-    // happened when `componentDidMount` gets called the first time.
-    this._animationFrameRequestSubscription = nextAnimationFrame.subscribe(() => {
-      this._repaint();
-    });
+  componentDidMount(): void {
+    this._disposables = new UniversalDisposable(
+      // Note: This method is called via `requestAnimationFrame` rather than `process.nextTick` like
+      // Atom's tree-view does because this does not have a guarantee a paint will have already
+      // happened when `componentDidMount` gets called the first time.
+      nextAnimationFrame.subscribe(() => { this._repaint(); }),
+    );
   }
 
   componentWillUnmount() {
-    if (this._resizeSubscriptions != null) {
-      this._resizeSubscriptions.dispose();
+    if (this._resizeDisposable != null) {
+      this._resizeDisposable.dispose();
     }
-    if (this._animationFrameRequestSubscription != null) {
-      this._animationFrameRequestSubscription.unsubscribe();
+    if (this._dropTargetDisposable != null) {
+      this._dropTargetDisposable.dispose();
     }
+    invariant(this._disposables != null);
+    this._disposables.dispose();
   }
 
   /**
@@ -98,50 +116,128 @@ export class PanelComponent extends React.Component {
     }
   }
 
-  render(): React.Element<any> {
-    const size = this.state.size == null ? this._getInitialSize() : this.state.size;
-
-    let containerStyle;
-    if (this.props.position === 'left' || this.props.position === 'right') {
-      containerStyle = {
-        width: size,
-        minWidth: MINIMUM_LENGTH,
-      };
-    } else if (this.props.position === 'top' || this.props.position === 'bottom') {
-      containerStyle = {
-        height: size,
-        minHeight: MINIMUM_LENGTH,
-      };
+  componentWillReceiveProps(nextProps: Props): void {
+    // Update the `shouldAnimate` state. This needs to be written to the DOM before updating the
+    // class that changes the animated property. Normally we'd have to defer the class change a
+    // frame to ensure the property is animated (or not) appropriately, however we luck out in this
+    // case because the drag start always happens before the item is dragged into the peek target.
+    if (nextProps.active !== this.props.active) {
+      // Never animate toggling visiblity...
+      this.setState({shouldAnimate: false});
+    } else if (!nextProps.active && nextProps.draggingItem && !this.props.draggingItem) {
+      // ...but do animate if you start dragging while the panel is hidden.
+      this.setState({shouldAnimate: true});
     }
+  }
+
+  render(): React.Element<any> {
+    const size = Math.max(
+      MINIMUM_SIZE,
+      this.state.size == null ? this._getInitialSize() : this.state.size,
+    );
+    const open = this.props.active || this.state.showDropTarget;
+    const widthOrHeight =
+      this.props.position === 'left' || this.props.position === 'right' ? 'width' : 'height';
+
+    const wrapperClassName = classnames(
+      'nuclide-workspace-views-panel-wrapper',
+      this.props.position,
+      {
+        'nuclide-panel-active': this.props.active,
+      },
+    );
+    const className = classnames('nuclide-workspace-views-panel', this.props.position);
+    const maskClassName = classnames(
+      'nuclide-workspace-views-panel-mask',
+      {'nuclide-panel-should-animate': this.state.shouldAnimate},
+    );
+
+    // Obviously we need to render the contents if the panels open. But we also need to render them
+    // if it's not open but animating.
+    // TODO: Track whether animation is in progress and use that instead of `shouldAnimate`.
+    const contents = open || this.state.shouldAnimate
+      ? (
+        // The content needs to maintain a constant size regardless of the mask size.
+        <div className={className} style={{[widthOrHeight]: size}}>
+          <div
+            className={`nuclide-workspace-views-panel-resize-handle ${this.props.position}`}
+            onMouseDown={this._handleMouseDown}
+          />
+          <div className="nuclide-workspace-views-panel-content">
+            <View item={this.props.paneContainer} />
+          </div>
+          <ResizeCursorOverlay position={this.props.position} resizing={this.state.resizing} />
+        </div>
+      )
+      : null;
 
     return (
-      <div
-        className={`nuclide-workspace-views-panel ${this.props.position}`}
-        style={containerStyle}>
-        <div className={`nuclide-workspace-views-panel-resize-handle ${this.props.position}`}
-          ref="handle"
-          onMouseDown={this._handleMouseDown}
-        />
-        <div className="nuclide-workspace-views-panel-content">
-          <View ref="child" item={this.props.paneContainer} />
+      <div className={wrapperClassName}>
+        {/* We need to change the size of the mask. */}
+        <div className={maskClassName} style={{[widthOrHeight]: open ? size : 0}}>
+          {contents}
         </div>
-        <ResizeCursorOverlay position={this.props.position} resizing={this.state.resizing} />
+        {/*
+          The peek target must be rendered outside the mask because (1) it shouldn't be masked and
+          (2) if we made the mask larger to avoid masking it, the mask would block mouse events.
+        */}
+        <PeekTarget
+          ref={this._handlePeekTarget}
+          onDragEnter={this._revealDropTarget}
+          visible={this.props.draggingItem && !open}
+          position={this.props.position}
+        />
       </div>
     );
   }
 
-  _handleMouseDown(event: SyntheticMouseEvent): void {
-    if (this._resizeSubscriptions != null) {
-      this._resizeSubscriptions.dispose();
+  _revealDropTarget(): void {
+    if (this._dropTargetDisposable != null) {
+      this._dropTargetDisposable.dispose();
     }
-
-    window.addEventListener('mousemove', this._handleMouseMove);
-    window.addEventListener('mouseup', this._handleMouseUp);
-    this._resizeSubscriptions = new CompositeDisposable(
-      {dispose: () => { window.removeEventListener('mousemove', this._handleMouseMove); }},
-      {dispose: () => { window.removeEventListener('mouseup', this._handleMouseUp); }},
+    this.setState({showDropTarget: true});
+    this._dropTargetDisposable = new UniversalDisposable(
+      // When we start showing the drop target, listen for when the mouse leaves in order to hide
+      // it. We should be able to use `onDragLeave` but for some reason, that's only being triggered
+      // sporadically with the correct target.
+      Observable.merge(
+        Observable.fromEvent(window, 'drag')
+          .filter(event => {
+            const peekTargetEl = this._peekTargetEl;
+            const el = ReactDOM.findDOMNode(this);
+            if (el == null || peekTargetEl == null) { return false; }
+            const panelArea = el.getBoundingClientRect();
+            const peekTargetArea = peekTargetEl.getBoundingClientRect();
+            const mousePosition = {x: event.pageX, y: event.pageY};
+            return !rectContainsPoint(panelArea, mousePosition)
+              && !rectContainsPoint(peekTargetArea, mousePosition);
+          }),
+        Observable.fromEvent(window, 'dragend'),
+      )
+        .subscribe(this._handleDragLeave),
     );
+  }
 
+  _handlePeekTarget(peekTarget: ?PeekTarget): void {
+    this._peekTargetEl = peekTarget == null ? null : ReactDOM.findDOMNode(peekTarget);
+  }
+
+  _handleDragLeave(): void {
+    if (this._dropTargetDisposable != null) {
+      this._dropTargetDisposable.dispose();
+      this._dropTargetDisposable = null;
+    }
+    this.setState({showDropTarget: false});
+  }
+
+  _handleMouseDown(event: SyntheticMouseEvent): void {
+    if (this._resizeDisposable != null) {
+      this._resizeDisposable.dispose();
+    }
+    this._resizeDisposable = new UniversalDisposable(
+      Observable.fromEvent(window, 'mousemove').subscribe(this._handleMouseMove),
+      Observable.fromEvent(window, 'mouseup').subscribe(this._handleMouseUp),
+    );
     this.setState({resizing: true});
   }
 
@@ -171,8 +267,8 @@ export class PanelComponent extends React.Component {
   }
 
   _handleMouseUp(event: SyntheticMouseEvent): void {
-    if (this._resizeSubscriptions) {
-      this._resizeSubscriptions.dispose();
+    if (this._resizeDisposable) {
+      this._resizeDisposable.dispose();
     }
     this.setState({resizing: false});
   }

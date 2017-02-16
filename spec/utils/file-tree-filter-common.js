@@ -23,33 +23,35 @@ export function runTest(context: TestContext) {
   it('sets a filter and then clears it when the sidebar or file tree toggles', () => {
     const store = FileTreeStore.getInstance();
     let elem;
-
+    const workspaceEl = atom.views.getView(atom.workspace);
     waitsFor('DOM to load', 10000, () => {
       elem = document.querySelector(EVENT_HANDLER_SELECTOR);
       return elem != null;
     });
 
+    const close = () => {
+      atom.commands.dispatch(workspaceEl, 'nuclide-file-tree:toggle', {visible: true});
+    };
+    const open = () => {
+      atom.commands.dispatch(workspaceEl, 'nuclide-file-tree:toggle', {visible: false});
+    };
+
     runs(() => {
       invariant(elem != null);
       // Open file tree
-      atom.commands.dispatch(elem, 'nuclide-file-tree:toggle');
+      open();
       store.clearFilter();
 
       atom.commands.dispatch(elem, 'nuclide-file-tree:go-to-letter-a');
       expect(store.getFilter()).toEqual('a');
 
       // Close and open file tree
-      atom.commands.dispatch(elem, 'nuclide-file-tree:toggle');
-      atom.commands.dispatch(elem, 'nuclide-file-tree:toggle');
+      close();
+      open();
       expect(store.getFilter()).toEqual('');
 
       atom.commands.dispatch(elem, 'nuclide-file-tree:go-to-letter-a');
       expect(store.getFilter()).toEqual('a');
-
-      // Close and open side bar
-      atom.commands.dispatch(elem, 'nuclide-side-bar:toggle');
-      atom.commands.dispatch(elem, 'nuclide-file-tree:toggle');
-      expect(store.getFilter()).toEqual('');
     });
   });
 }

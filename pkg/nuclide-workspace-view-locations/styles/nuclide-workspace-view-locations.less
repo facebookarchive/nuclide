@@ -2,6 +2,8 @@
 @import 'syntax-variables';
 @import 'octicon-mixins';
 
+@nuclide-workspace-views-peek-target-size: 100px;
+
 // From one-light-ui
 .ui-syntax-color() { @syntax-background-color: hsl(220,1%,98%); } .ui-syntax-color(); // fallback color
 @ui-syntax-color: @syntax-background-color;
@@ -104,38 +106,132 @@ atom-pane-axis.vertical > :not(:first-child) {
   }
 }
 
+.nuclide-workspace-views-panel-mask {
+  position: relative;
+  background-color: @tool-panel-background-color;
+  overflow: hidden; // Mask the content.
+
+  // One of these will be overridden by the component with an explicit size.
+  // Which depends on the position of the panel.
+  width: 100%;
+  height: 100%;
+
+  transition: none;
+  &.nuclide-panel-should-animate {
+    transition: width 0.2s ease-out, height 0.2s ease-out;
+  }
+}
+
+.nuclide-workspace-views-panel-wrapper {
+  display: flex;
+
+  // Make sure to center the peek targets
+  &.top, &.bottom { flex-direction: column; }
+  align-items: center;
+
+  // Position the panels flush with their side of the editor.
+  &.top { left: 0; }
+  &.right { right: 0; }
+  &.bottom { bottom: 0; }
+  &.left { left: 0; }
+
+  &:not(.nuclide-panel-active) {
+    // The panel should only take up space when it's active (i.e. it shouldn't
+    // take up space when you're dragging something into it).
+    position: absolute;
+    z-index: 10; // An arbitrary number. Seems high enough. ¯\_(ツ)_/¯
+  }
+
+  // Position the panels flush with their side of the editor.
+  &.top { left: 0; }
+  &.right { right: 0; }
+  &.bottom { bottom: 0; }
+  &.left { left: 0; }
+
+  &.left, &.right { height: 100%; }
+  &.top, &.bottom { width: 100%; }
+}
+
 .nuclide-workspace-views-panel {
+  position: absolute;
   display: flex;
   flex: 1;
+  align-items: stretch;
+  width: 100%;
+  height: 100%;
   cursor: default;
   -webkit-user-select: none;
   white-space: nowrap;
-  align-items: stretch;
 
-  &.left {
-    flex-direction: row-reverse;
-    height: inherit;
-  }
+  // The contents of the panel should be "stuck" to the moving edge of the mask,
+  // so it looks like they're sliding in (instead of being unmasked in place).
+  &.top { bottom: 0; }
+  &.right { left: 0; }
+  &.bottom { top: 0; }
+  &.left { right: 0; }
 
-  &.bottom {
-    flex-direction: column;
-    width: 100%;
-  }
-
-  &.top {
-    flex-direction: column-reverse;
-    width: 100%;
-  }
-  &.right {
-
-    flex-direction: row;
-    height: inherit;
-  }
+  // Use flex-direction to put the resize handle in the correct place.
+  &.left { flex-direction: row-reverse; }
+  &.bottom { flex-direction: column; }
+  &.top { flex-direction: column-reverse; }
+  &.right { flex-direction: row; }
 
   // Adapted from atom/tabs and one-light-ui
   &:hover .nuclide-workspace-views-panel-location-tabs-hide-button {
     transform: scale(1);
     transition-duration: 0.16s;
+  }
+}
+
+.nuclide-workspace-views-peek-target {
+  position: absolute;
+  overflow: hidden; // Mask half of the circle.
+
+  // Position the peek target at the edge of the panel. It's important that this
+  // is absolutely positioned so that it doesn't expand the area of its
+  // container (which would block mouse events).
+  &.top { top: 100%; }
+  &.right { right: 100%; }
+  &.bottom { bottom: 100%; }
+  &.left { left: 100%; }
+
+  .nuclide-workspace-views-peek-target-inner {
+    width: @nuclide-workspace-views-peek-target-size;
+    height: @nuclide-workspace-views-peek-target-size;
+    background-color: @tool-panel-background-color;
+    border-radius: @nuclide-workspace-views-peek-target-size / 2;
+    border: 1px solid @pane-item-border-color;
+    transition: transform 0.3s ease-out;
+  }
+
+  // Only show half the circle
+  &.nuclide-workspace-views-peek-target-visible {
+    &.top .nuclide-workspace-views-peek-target-inner {
+      transform: translateY(-50%);
+    }
+    &.right .nuclide-workspace-views-peek-target-inner {
+      transform: translateX(50%);
+    }
+    &.bottom .nuclide-workspace-views-peek-target-inner {
+      transform: translateY(50%);
+    }
+    &.left .nuclide-workspace-views-peek-target-inner {
+      transform: translateX(-50%);
+    }
+  }
+
+  // Normally mask the circle fully.
+  &.top .nuclide-workspace-views-peek-target-inner {
+    transform: translateY(-100%);
+  }
+  &.right .nuclide-workspace-views-peek-target-inner {
+    transform: translateX(100%);
+  }
+  &.bottom .nuclide-workspace-views-peek-target-inner {
+    transform: translateY(100%);
+  }
+  &.left .nuclide-workspace-views-peek-target-inner {
+    transform: translateX(-100%);
   }
 }
 
