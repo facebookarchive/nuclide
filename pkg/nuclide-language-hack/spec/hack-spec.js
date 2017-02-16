@@ -1565,4 +1565,37 @@ describe('PHP grammar', () => {
       });
     });
   });
+
+  describe('lambda variable capturing', () => {
+    it('parses correctly without a return type', () => {
+      invariant(grammar != null);
+      const tokens = grammar.tokenizeLines('<?hh\nfunction() use ($var) {}');
+      const useToken = tokens[1].find(token => token.value === 'use');
+      expect(useToken).not.toBeUndefined();
+      invariant(useToken != null);
+      expect(useToken.scopes).toContain('keyword.other.function.use.php');
+    });
+
+    it('parses correctly with a return type', () => {
+      invariant(grammar != null);
+      const tokens = grammar.tokenizeLines('<?hh\nfunction(): void use ($var) {}');
+      const useToken = tokens[1].find(token => token.value === 'use');
+      expect(useToken).not.toBeUndefined();
+      invariant(useToken != null);
+      expect(useToken.scopes).toContain('keyword.other.function.use.php');
+    });
+
+    it("doesn't terminate the closure when there's a type annotation", () => {
+      invariant(grammar != null);
+      const tokens = grammar.tokenizeLines('<?hh\nfunction(): void use ($var)\n{}');
+      // Every token should be tagged as being part of the closure.
+      const nonClosureTokens = tokens[1]
+        .filter(token => !token.scopes.includes('meta.function.closure.php'))
+        .map(token => token.value);
+      expect(nonClosureTokens.length).toBe(
+        0,
+        `These tokens are missing the closure tag: ${nonClosureTokens.join(', ')}`,
+      );
+    });
+  });
 });
