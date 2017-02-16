@@ -210,10 +210,13 @@ class FlowSingleFileLanguageService {
     buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
   ): Promise<?Array<atom$Range>> {
-    return flowFindRefs(
+    return getState().getRootContainer().runWithRoot(
       filePath,
-      buffer.getText(),
-      position,
+      root => root.highlight(
+        filePath,
+        buffer,
+        position,
+      ),
     );
   }
 
@@ -266,21 +269,6 @@ export function flowGetAst(
     file,
     root => FlowSingleProjectLanguageService
         .flowGetAst(root, currentContents, getState().getExecInfoContainer()),
-  );
-}
-
-export async function flowFindRefs(
-  file: NuclideUri,
-  currentContents: string,
-  position: atom$Point,
-): Promise<?Array<atom$Range>> {
-  return getState().getRootContainer().runWithRoot(
-    file,
-    root => root.flowFindRefs(
-      file,
-      currentContents,
-      position,
-    ),
   );
 }
 

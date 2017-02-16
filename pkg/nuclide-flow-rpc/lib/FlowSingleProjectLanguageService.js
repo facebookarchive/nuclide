@@ -134,9 +134,9 @@ export class FlowSingleProjectLanguageService {
     throw new Error('Not Yet Implemented');
   }
 
-  async flowFindRefs(
-    file: NuclideUri,
-    currentContents: string,
+  async highlight(
+    filePath: NuclideUri,
+    buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
   ): Promise<?Array<atom$Range>> {
     // `flow find-refs` came out in v0.38.0
@@ -146,9 +146,9 @@ export class FlowSingleProjectLanguageService {
       return null;
     }
 
-    const options = {stdin: currentContents};
+    const options = {stdin: buffer.getText()};
     const args = [
-      'find-refs', '--json', '--path', file, position.row + 1, position.column + 1,
+      'find-refs', '--json', '--path', filePath, position.row + 1, position.column + 1,
     ];
     try {
       const result = await this._process.execFlow(args, options);
