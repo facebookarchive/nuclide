@@ -159,26 +159,15 @@ export class FlowSingleProjectLanguageService {
    * it has been saved, so we can avoid piping the whole contents to the Flow
    * process.
    */
-  async flowFindDiagnostics(
-    file: NuclideUri,
-    currentContents: ?string,
+  async getDiagnostics(
+    filePath: NuclideUri,
+    buffer: simpleTextBuffer$TextBuffer,
   ): Promise<?DiagnosticProviderUpdate> {
-    await this._forceRecheck(file);
+    await this._forceRecheck(filePath);
 
     const options = {};
 
-    let args;
-    if (currentContents) {
-      options.stdin = currentContents;
-
-      // Currently, `flow check-contents` returns all of the errors in the
-      // project. It would be nice if it would use the path for filtering, as
-      // currently the client has to do the filtering.
-      args = ['check-contents', '--json', file];
-    } else {
-      // We can just use `flow status` if the contents are unchanged.
-      args = ['status', '--json', file];
-    }
+    const args = ['status', '--json', filePath];
 
     let result;
 

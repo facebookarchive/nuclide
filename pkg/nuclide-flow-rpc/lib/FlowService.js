@@ -93,9 +93,9 @@ class FlowSingleFileLanguageService {
   ): Promise<?DiagnosticProviderUpdate> {
     return getState().getRootContainer().runWithRoot(
       filePath,
-      root => root.flowFindDiagnostics(
+      root => root.getDiagnostics(
         filePath,
-        null,
+        buffer,
       ),
     );
   }

@@ -66,28 +66,18 @@ describe('FlowSingleProjectLanguageService', () => {
     });
   });
 
-  describe('flowFindDiagnostics', () => {
-    function runWith(errors, filePath, contents) {
+  describe('getDiagnostics', () => {
+    function runWith(errors, filePath) {
       mockExec(JSON.stringify({errors}));
-      return flowRoot.flowFindDiagnostics(filePath, contents);
+      // getDiagnostics doesn't currently use the buffer argument, so we just pass null.
+      return flowRoot.getDiagnostics(filePath, (null: any));
     }
 
-    it('should call flow status when currentContents is null', () => {
+    it('should call flow status', () => {
       waitsForPromise(async () => {
-        await runWith([], file, null);
+        await runWith([], file);
         const flowArgs = flowRoot._process.execFlow.mostRecentCall.args[0];
         expect(flowArgs[0]).toBe('status');
-      });
-    });
-
-    it('should call flow check-contents with currentContents when it is not null', () => {
-      waitsForPromise(async () => {
-        await runWith([], file, currentContents);
-        const execArgs = flowRoot._process.execFlow.mostRecentCall.args;
-        const flowArgs = execArgs[0];
-        const stdin = execArgs[1].stdin;
-        expect(flowArgs[0]).toBe('check-contents');
-        expect(stdin).toBe(currentContents);
       });
     });
   });
