@@ -21,10 +21,15 @@ import type {
 import type {Definition} from '../../nuclide-definition-service/lib/rpc-types';
 import type {SingleFileLanguageService} from '../../nuclide-language-service-rpc';
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
+import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 
 import type {ServerStatusType} from '..';
 import type {FlowExecInfoContainer} from './FlowExecInfoContainer';
-import type {FlowAutocompleteOutput, FlowAutocompleteItem} from './flowOutputTypes';
+import type {
+  FlowAutocompleteOutput,
+  FlowAutocompleteItem,
+  TypeAtPosOutput,
+} from './flowOutputTypes';
 
 import type {
   Loc,
@@ -282,7 +287,7 @@ export class FlowSingleProjectLanguageService {
     currentContents: string,
     line_: number,
     column_: number,
-  ): Promise<?string> {
+  ): Promise<?TypeHint> {
     let line = line_;
     let column = column_;
     const options = {};
@@ -307,20 +312,26 @@ export class FlowSingleProjectLanguageService {
 
     let json;
     try {
-      json = parseJSON(args, output);
+      json = (parseJSON(args, output): TypeAtPosOutput);
     } catch (e) {
       return null;
     }
     const type = json.type;
+    const range = flowCoordsToAtomCoords(json.loc);
     if (!type || type === '(unknown)') {
       return null;
     }
+    let typeString;
     try {
-      return prettyPrintTypes(type);
+      typeString = prettyPrintTypes(type);
     } catch (e) {
       logger.error(`Problem pretty printing type hint: ${e.message}`);
-      return type;
+      typeString = type;
     }
+    return {
+      hint: typeString,
+      range,
+    };
   }
 
   async flowGetCoverage(path: NuclideUri): Promise<?CoverageResult> {

@@ -256,7 +256,7 @@ export async function flowGetType(
   currentContents: string,
   line: number,
   column: number,
-): Promise<?string> {
+): Promise<?TypeHint> {
   return getState().getRootContainer().runWithRoot(
     file,
     root => root.flowGetType(

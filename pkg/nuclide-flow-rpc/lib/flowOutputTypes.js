@@ -70,3 +70,12 @@ export type FlowAutocompleteItem = {
 export type FlowAutocompleteOutput = {
   result: Array<FlowAutocompleteItem>,
 };
+
+/* TYPE-AT-POS */
+
+export type TypeAtPosOutput = {
+  type: string,
+  // If we use this property it's probably worth giving it a more precise type
+  reasons: Array<mixed>,
+  loc: FlowLoc,
+};

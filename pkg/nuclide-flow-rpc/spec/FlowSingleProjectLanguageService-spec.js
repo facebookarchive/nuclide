@@ -12,7 +12,7 @@ import type {
   FlowSingleProjectLanguageService as FlowSingleProjectLanguageServiceType,
 } from '../lib/FlowSingleProjectLanguageService';
 
-import {Point} from 'simple-text-buffer';
+import {Point, Range} from 'simple-text-buffer';
 import invariant from 'assert';
 
 import {
@@ -20,8 +20,13 @@ import {
   groupParamNames,
 } from '../lib/FlowSingleProjectLanguageService';
 import {FlowExecInfoContainer} from '../lib/FlowExecInfoContainer';
+import {addMatchers} from '../../nuclide-test-helpers';
 
 describe('FlowSingleProjectLanguageService', () => {
+  beforeEach(function() {
+    addMatchers(this);
+  });
+
   const file = '/path/to/test.js';
   const root = '/path/to';
   const currentContents = '/* @flow */\nvar x = "this_is_a_string"\nvar y;';
@@ -87,25 +92,46 @@ describe('FlowSingleProjectLanguageService', () => {
       mockExec(outputString);
       return flowRoot.flowGetType(file, currentContents, line, column);
     }
-    function runWith(outputType) {
-      return runWithString(JSON.stringify({type: outputType}));
+    function runWith(
+      outputType: ?string,
+      startLine: number,
+      startCol: number,
+      endLine: number,
+      endCol: number,
+    ) {
+      return runWithString(JSON.stringify({
+        type: outputType,
+        loc: {
+          start: {
+            line: startLine,
+            column: startCol,
+          },
+          end: {
+            line: endLine,
+            column: endCol,
+          },
+        },
+      }));
     }
 
     it('should return the type on success', () => {
       waitsForPromise(async () => {
-        expect(await runWith('thisIsAType')).toEqual('thisIsAType');
+        expect(await runWith('thisIsAType', 1, 1, 1, 4)).diffJson({
+          hint: 'thisIsAType',
+          range: new Range([0, 0], [0, 4]),
+        });
       });
     });
 
     it('should return null if the type is unknown', () => {
       waitsForPromise(async () => {
-        expect(await runWith('(unknown)')).toBe(null);
+        expect(await runWith('(unknown)', 1, 1, 1, 4)).toBe(null);
       });
     });
 
     it('should return null if the type is empty', () => {
       waitsForPromise(async () => {
-        expect(await runWith('')).toBe(null);
+        expect(await runWith('', 1, 1, 1, 4)).toBe(null);
       });
     });
 

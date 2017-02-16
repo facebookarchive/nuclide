@@ -35,13 +35,13 @@ export class FlowTypeHintProvider {
     const flowService = await getFlowServiceByNuclideUri(filePath);
     invariant(flowService);
 
-    const type = await flowService.flowGetType(
+    const hint = await flowService.flowGetType(
       filePath,
       contents,
       position.row,
       position.column,
     );
-    if (type == null) {
+    if (hint == null) {
       return null;
     }
 
@@ -56,7 +56,7 @@ export class FlowTypeHintProvider {
       range = new Range(position, position);
     }
     return {
-      hint: type,
+      hint: hint.hint,
       range,
     };
   }
