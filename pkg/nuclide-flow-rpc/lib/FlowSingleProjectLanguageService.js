@@ -22,6 +22,7 @@ import type {Definition} from '../../nuclide-definition-service/lib/rpc-types';
 import type {SingleFileLanguageService} from '../../nuclide-language-service-rpc';
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
+import type {FindReferencesReturn} from '../../nuclide-find-references/lib/rpc-types';
 
 import type {ServerStatusType} from '..';
 import type {FlowExecInfoContainer} from './FlowExecInfoContainer';
@@ -458,6 +459,15 @@ export class FlowSingleProjectLanguageService {
   }> {
     throw new Error('Not implemented');
   }
+
+  findReferences(
+    filePath: NuclideUri,
+    buffer: simpleTextBuffer$TextBuffer,
+    position: atom$Point,
+  ): Promise<?FindReferencesReturn> {
+    throw new Error('Not Yet Implemented');
+  }
+
 
   getEvaluationExpression(
     filePath: NuclideUri,
