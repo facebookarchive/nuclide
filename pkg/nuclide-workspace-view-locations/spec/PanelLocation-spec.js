@@ -15,11 +15,11 @@ describe('PanelLocation', () => {
   it('serializes the state', () => {
     const location = new PanelLocation('top-panel');
     location._handlePanelResize(720);
-    location.setState({visible: true});
+    location.setState({active: true});
     const serialized = location.serialize();
     invariant(serialized != null);
     expect(serialized.data.size).toBe(720);
-    expect(serialized.data.visible).toBe(true);
+    expect(serialized.data.active).toBe(true);
     expect(serialized.data.paneContainer).toBeDefined();
   });
 
@@ -29,11 +29,24 @@ describe('PanelLocation', () => {
       data: {
         paneContainer: null,
         size: 720,
-        visible: true,
+        active: true,
       },
     };
     const location = new PanelLocation('top-panel', serialized);
     expect(location._size).toBe(720);
-    expect(location.state.visible).toBe(true);
+    expect(location.state.active).toBe(true);
+  });
+
+  it('restores legacy serialized state', () => {
+    const serialized = {
+      deserializer: 'PanelLocation',
+      data: {
+        paneContainer: null,
+        size: 720,
+        visible: true,
+      },
+    };
+    const location = new PanelLocation('top-panel', serialized);
+    expect(location.state.active).toBe(true);
   });
 });

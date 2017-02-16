@@ -13,7 +13,8 @@ export type SerializedPanelLocation = {
   data: {
     paneContainer: ?Object,
     size: ?number,
-    visible: boolean,
+    active: boolean,
+    visible?: boolean, // For legacy compat (<= v0.206)
   },
 };
 

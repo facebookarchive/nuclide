@@ -29,7 +29,7 @@ import {BehaviorSubject, Observable, Scheduler} from 'rxjs';
 
 type State = {
   showDropAreas: boolean,
-  visible: boolean,
+  active: boolean,
 };
 
 const HIDE_BUTTON_WRAPPER_CLASS = 'nuclide-workspace-views-panel-location-tabs-hide-button-wrapper';
@@ -55,7 +55,8 @@ export class PanelLocation extends SimpleModel<State> {
     this._size = serializedData.size || null;
     this.state = {
       showDropAreas: false,
-      visible: serializedData.visible === true,
+      // `visible` check is for legacy compat (<= v0.206)
+      active: serializedData.active === true || serializedData.visible === true,
     };
   }
 
@@ -91,7 +92,7 @@ export class PanelLocation extends SimpleModel<State> {
         this._panes,
         // $FlowFixMe: Teach Flow about Symbol.observable
         Observable.from(this)
-          .map(state => state.visible)
+          .map(state => state.active)
           .distinctUntilChanged(),
       ),
 
@@ -106,7 +107,7 @@ export class PanelLocation extends SimpleModel<State> {
         hideButtonWrapper.className = HIDE_BUTTON_WRAPPER_CLASS;
         const hideButton = document.createElement('div');
         hideButton.className = 'nuclide-workspace-views-panel-location-tabs-hide-button';
-        hideButton.onclick = () => { this.setState({visible: false}); };
+        hideButton.onclick = () => { this.setState({active: false}); };
         hideButtonWrapper.appendChild(hideButton);
         tabBarView.element.appendChild(hideButtonWrapper);
       }),
@@ -142,7 +143,7 @@ export class PanelLocation extends SimpleModel<State> {
             });
         }),
 
-      // If you add an item to a panel (e.g. by drag & drop), make the panel visible.
+      // If you add an item to a panel (e.g. by drag & drop), make the panel active.
       paneItemChanges
         .startWith(null)
         .map(() => this._paneContainer.getPaneItems().length)
@@ -150,10 +151,10 @@ export class PanelLocation extends SimpleModel<State> {
         .subscribe(([prev, next]) => {
           // If the last item is removed, hide the panel.
           if (next === 0) {
-            this.setState({visible: false});
+            this.setState({active: false});
           } else if (next > prev) {
             // If there are more items now than there were before, show the panel.
-            this.setState({visible: true});
+            this.setState({active: true});
           }
         }),
 
@@ -185,7 +186,7 @@ export class PanelLocation extends SimpleModel<State> {
   }
 
   _render(state: State): void {
-    const shouldBeVisible = this.state.visible || this.state.showDropAreas;
+    const shouldBeVisible = this.state.active || this.state.showDropAreas;
 
     // Make sure we have a panel if we're supposed to.
     const panel = this._getPanel(shouldBeVisible);
@@ -239,7 +240,7 @@ export class PanelLocation extends SimpleModel<State> {
   }
 
   itemIsVisible(item: Viewable): boolean {
-    if (!this.state.visible) {
+    if (!this.state.active) {
       return false;
     }
     for (const pane of this._panes.getValue()) {
@@ -274,7 +275,7 @@ export class PanelLocation extends SimpleModel<State> {
   }
 
   activate(): void {
-    this.setState({visible: true});
+    this.setState({active: true});
   }
 
   addItem(item: Viewable): void {
@@ -294,7 +295,7 @@ export class PanelLocation extends SimpleModel<State> {
   }
 
   /**
-   * Hide the specified item. If the user toggles a visible item, we hide the entire pane.
+   * Hide the specified item. If the user toggles a active item, we hide the entire pane.
    */
   hideItem(item: Viewable): void {
     const itemIsVisible = this._paneContainer.getPanes()
@@ -306,15 +307,15 @@ export class PanelLocation extends SimpleModel<State> {
     }
 
     // Otherwise, hide the panel altogether.
-    this.setState({visible: false});
+    this.setState({active: false});
   }
 
   isVisible(): boolean {
-    return this.state.visible;
+    return this.state.active;
   }
 
   toggle(): void {
-    this.setState({visible: !this.state.visible});
+    this.setState({active: !this.state.active});
   }
 
   serialize(): ?SerializedPanelLocation {
@@ -323,7 +324,7 @@ export class PanelLocation extends SimpleModel<State> {
       data: {
         paneContainer: this._paneContainer == null ? null : this._paneContainer.serialize(),
         size: this._size,
-        visible: this.state.visible,
+        active: this.state.active,
       },
     };
   }
