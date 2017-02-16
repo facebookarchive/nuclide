@@ -91,6 +91,13 @@ export class FlowSingleProjectLanguageService {
     return this._root;
   }
 
+  getProjectRoot(fileUri: NuclideUri): Promise<?NuclideUri> {
+    // TODO Consider an invariant to assert that fileUri is inside this root. However, that should
+    // never happen since this will be enclosed by MultiProjectLanguageService which will dispatch
+    // to the correct instance of this class.
+    return Promise.resolve(this._root);
+  }
+
   getServerStatusUpdates(): Observable<ServerStatusType> {
     return this._process.getServerStatusUpdates();
   }
