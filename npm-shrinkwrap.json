@@ -28,6 +28,11 @@
         }
       }
     },
+    "adm-zip": {
+      "version": "0.4.7",
+      "from": "adm-zip@0.4.7",
+      "resolved": "https://registry.npmjs.org/adm-zip/-/adm-zip-0.4.7.tgz"
+    },
     "ajv": {
       "version": "4.11.3",
       "from": "ajv@>=4.7.0 <5.0.0",
@@ -363,6 +368,11 @@
       "resolved": "https://registry.npmjs.org/bcrypt-pbkdf/-/bcrypt-pbkdf-1.0.1.tgz",
       "optional": true
     },
+    "big-integer": {
+      "version": "1.6.17",
+      "from": "big-integer@>=1.6.7 <2.0.0",
+      "resolved": "https://registry.npmjs.org/big-integer/-/big-integer-1.6.17.tgz"
+    },
     "boolbase": {
       "version": "1.0.0",
       "from": "boolbase@>=1.0.0 <1.1.0",
@@ -372,6 +382,11 @@
       "version": "2.10.1",
       "from": "boom@>=2.0.0 <3.0.0",
       "resolved": "https://registry.npmjs.org/boom/-/boom-2.10.1.tgz"
+    },
+    "bplist-parser": {
+      "version": "0.1.1",
+      "from": "bplist-parser@0.1.1",
+      "resolved": "https://registry.npmjs.org/bplist-parser/-/bplist-parser-0.1.1.tgz"
     },
     "brace-expansion": {
       "version": "1.1.6",
