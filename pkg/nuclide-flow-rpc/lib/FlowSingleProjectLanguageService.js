@@ -11,6 +11,7 @@
 import type {Observable, ConnectableObservable} from 'rxjs';
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
+import {wordAtPositionFromBuffer} from '../../commons-node/range';
 import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
 import type {Completion} from '../../nuclide-language-service/lib/LanguageService';
@@ -18,7 +19,10 @@ import type {
   DiagnosticProviderUpdate,
   FileDiagnosticUpdate,
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
-import type {Definition} from '../../nuclide-definition-service/lib/rpc-types';
+import type {
+  Definition,
+  DefinitionQueryResult,
+} from '../../nuclide-definition-service/lib/rpc-types';
 import type {SingleFileLanguageService} from '../../nuclide-language-service-rpc';
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
@@ -32,14 +36,10 @@ import type {
   TypeAtPosOutput,
 } from './flowOutputTypes';
 
-import type {
-  Loc,
-} from '..';
-
 import invariant from 'assert';
 import {Range, Point} from 'simple-text-buffer';
 
-import {getReplacementPrefix} from '../../nuclide-flow-common';
+import {getReplacementPrefix, JAVASCRIPT_WORD_REGEX} from '../../nuclide-flow-common';
 import {getLogger} from '../../nuclide-logging';
 const logger = getLogger();
 
@@ -91,21 +91,26 @@ export class FlowSingleProjectLanguageService {
     return this._process.getServerStatusUpdates();
   }
 
-  async flowFindDefinition(
-    file: NuclideUri,
-    currentContents: string,
-    line: number,
-    column: number,
-  ): Promise<?Loc> {
+  async getDefinition(
+    filePath: NuclideUri,
+    buffer: simpleTextBuffer$TextBuffer,
+    position: atom$Point,
+  ): Promise<?DefinitionQueryResult> {
+    const match = wordAtPositionFromBuffer(buffer, position, JAVASCRIPT_WORD_REGEX);
+    if (match == null) {
+      return null;
+    }
+    const line = position.row + 1;
+    const column = position.column + 1;
     const options = {};
     // We pass the current contents of the buffer to Flow via stdin.
     // This makes it possible for get-def to operate on the unsaved content in
     // the user's editor rather than what is saved on disk. It would be annoying
     // if the user had to save before using the jump-to-definition feature to
     // ensure he or she got accurate results.
-    options.stdin = currentContents;
+    options.stdin = buffer.getText();
 
-    const args = ['get-def', '--json', '--path', file, line, column];
+    const args = ['get-def', '--json', '--path', filePath, line, column];
     try {
       const result = await this._process.execFlow(args, options);
       if (!result) {
@@ -113,12 +118,20 @@ export class FlowSingleProjectLanguageService {
       }
       const json = parseJSON(args, result.stdout);
       if (json.path) {
-        return {
+        const loc = {
           file: json.path,
           point: new Point(
             json.line - 1,
             json.start - 1,
           ),
+        };
+        return {
+          queryRange: [match.range],
+          definitions: [{
+            path: loc.file,
+            position: loc.point,
+            language: 'Flow',
+          }],
         };
       } else {
         return null;

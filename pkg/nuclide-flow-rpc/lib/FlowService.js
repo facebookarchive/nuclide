@@ -30,8 +30,7 @@ import type {Completion} from '../../nuclide-language-service/lib/LanguageServic
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
 
 import {ServerLanguageService} from '../../nuclide-language-service-rpc';
-import {wordAtPositionFromBuffer} from '../../commons-node/range';
-import {filterResultsByPrefix, JAVASCRIPT_WORD_REGEX} from '../../nuclide-flow-common';
+import {filterResultsByPrefix} from '../../nuclide-flow-common';
 
 export type Loc = {
   file: NuclideUri,
@@ -124,35 +123,19 @@ class FlowSingleFileLanguageService {
     return filterResultsByPrefix(prefix, results);
   }
 
-  async getDefinition(
+  getDefinition(
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
   ): Promise<?DefinitionQueryResult> {
-    const match = wordAtPositionFromBuffer(buffer, position, JAVASCRIPT_WORD_REGEX);
-    if (match == null) {
-      return null;
-    }
-    const loc = await getState().getRootContainer().runWithRoot(
+    return getState().getRootContainer().runWithRoot(
       filePath,
-      root => root.flowFindDefinition(
+      root => root.getDefinition(
         filePath,
-        buffer.getText(),
-        position.row + 1,
-        position.column + 1,
+        buffer,
+        position,
       ),
     );
-    if (loc == null) {
-      return null;
-    }
-    return {
-      queryRange: [match.range],
-      definitions: [{
-        path: loc.file,
-        position: loc.point,
-        language: 'Flow',
-      }],
-    };
   }
 
   getDefinitionById(

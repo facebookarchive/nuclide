@@ -12,7 +12,7 @@ import type {
   FlowSingleProjectLanguageService as FlowSingleProjectLanguageServiceType,
 } from '../lib/FlowSingleProjectLanguageService';
 
-import {Point, Range} from 'simple-text-buffer';
+import SimpleTextBuffer, {Point, Range} from 'simple-text-buffer';
 import invariant from 'assert';
 
 import {
@@ -30,9 +30,10 @@ describe('FlowSingleProjectLanguageService', () => {
   const file = '/path/to/test.js';
   const root = '/path/to';
   const currentContents = '/* @flow */\nvar x = "this_is_a_string"\nvar y;';
-  const line = 2;
-  const column = 12;
 
+  let line = (null: any);
+  let column = (null: any);
+  let buffer: simpleTextBuffer$TextBuffer = (null: any);
   let flowRoot: FlowSingleProjectLanguageServiceType = (null: any);
 
   let fakeExecFlow: any;
@@ -42,6 +43,9 @@ describe('FlowSingleProjectLanguageService', () => {
   }
 
   beforeEach(() => {
+    buffer = new SimpleTextBuffer(currentContents);
+    line = 2;
+    column = 12;
     flowRoot = newFlowService();
     spyOn(flowRoot._process, 'execFlow').andCallFake(() => fakeExecFlow());
   });
@@ -50,23 +54,30 @@ describe('FlowSingleProjectLanguageService', () => {
     fakeExecFlow = () => ({stdout: outputString, exitCode: 0});
   }
 
-  describe('flowFindDefinition', () => {
+  describe('getDefinition', () => {
     function runWith(location) {
       mockExec(JSON.stringify(location));
-      return flowRoot.flowFindDefinition(file, currentContents, line, column);
+      return flowRoot.getDefinition(file, buffer, new Point(line, column));
     }
 
     it('should return the location', () => {
       waitsForPromise(async () => {
+        line = 2;
+        column = 5;
         // Flow uses 1-based indexing, Atom uses 0-based.
-        expect(await runWith({path: file, line: 5, start: 8}))
-          .toEqual({file, point: new Point(4, 7)});
+        const result = await runWith({path: file, line: 5, start: 8});
+        invariant(result != null);
+        expect(result.definitions[0])
+          .toEqual({path: file, position: new Point(4, 7), language: 'Flow'});
       });
     });
 
     it('should return null if no location is found', () => {
       waitsForPromise(async () => {
+        line = 2;
+        column = 5;
         expect(await runWith({})).toBe(null);
+        expect(flowRoot._process.execFlow).toHaveBeenCalled();
       });
     });
   });
@@ -74,8 +85,7 @@ describe('FlowSingleProjectLanguageService', () => {
   describe('getDiagnostics', () => {
     function runWith(errors, filePath) {
       mockExec(JSON.stringify({errors}));
-      // getDiagnostics doesn't currently use the buffer argument, so we just pass null.
-      return flowRoot.getDiagnostics(filePath, (null: any));
+      return flowRoot.getDiagnostics(filePath, buffer);
     }
 
     it('should call flow status', () => {
@@ -90,8 +100,7 @@ describe('FlowSingleProjectLanguageService', () => {
   describe('flowGetType', () => {
     function runWithString(outputString) {
       mockExec(outputString);
-      const fakeBuffer: simpleTextBuffer$TextBuffer = ({getText: () => currentContents}: any);
-      return flowRoot.typeHint(file, fakeBuffer, new Point(line, column));
+      return flowRoot.typeHint(file, buffer, new Point(line, column));
     }
     function runWith(
       outputType: ?string,
