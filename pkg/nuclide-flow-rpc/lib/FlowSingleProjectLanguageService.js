@@ -351,8 +351,8 @@ export class FlowSingleProjectLanguageService {
     };
   }
 
-  async flowGetCoverage(path: NuclideUri): Promise<?CoverageResult> {
-    const args = ['coverage', '--json', path];
+  async getCoverage(filePath: NuclideUri): Promise<?CoverageResult> {
+    const args = ['coverage', '--json', filePath];
     let result;
     try {
       result = await this._process.execFlow(args, {});

@@ -156,7 +156,7 @@ class FlowSingleFileLanguageService {
   ): Promise<?CoverageResult> {
     return getState().getRootContainer().runWithRoot(
       filePath,
-      root => root.flowGetCoverage(filePath),
+      root => root.getCoverage(filePath),
     );
   }
 
