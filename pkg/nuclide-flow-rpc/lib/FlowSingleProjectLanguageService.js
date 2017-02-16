@@ -8,14 +8,19 @@
  * @flow
  */
 
-import type {Observable} from 'rxjs';
+import type {Observable, ConnectableObservable} from 'rxjs';
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
 import type {Completion} from '../../nuclide-language-service/lib/LanguageService';
-import type {DiagnosticProviderUpdate} from '../../nuclide-diagnostics-common/lib/rpc-types';
+import type {
+  DiagnosticProviderUpdate,
+  FileDiagnosticUpdate,
+} from '../../nuclide-diagnostics-common/lib/rpc-types';
+import type {Definition} from '../../nuclide-definition-service/lib/rpc-types';
 import type {SingleFileLanguageService} from '../../nuclide-language-service-rpc';
+import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
 
 import type {ServerStatusType} from '..';
 import type {FlowExecInfoContainer} from './FlowExecInfoContainer';
@@ -117,6 +122,13 @@ export class FlowSingleProjectLanguageService {
     }
   }
 
+  getDefinitionById(
+    file: NuclideUri,
+    id: string,
+  ): Promise<?Definition> {
+    throw new Error('Not Yet Implemented');
+  }
+
   async flowFindRefs(
     file: NuclideUri,
     currentContents: string,
@@ -215,6 +227,11 @@ export class FlowSingleProjectLanguageService {
       filePathToMessages,
     };
   }
+
+  observeDiagnostics(): ConnectableObservable<FileDiagnosticUpdate> {
+    throw new Error('Not Yet Implemented');
+  }
+
 
   async flowGetAutocompleteSuggestions(
     file: NuclideUri,
@@ -413,6 +430,37 @@ export class FlowSingleProjectLanguageService {
       return null;
     }
     return json;
+  }
+
+  formatSource(
+    filePath: NuclideUri,
+    buffer: simpleTextBuffer$TextBuffer,
+    range: atom$Range,
+  ): Promise<?string> {
+    throw new Error('Not Yet Implemented');
+  }
+
+  formatEntireFile(
+    filePath: NuclideUri,
+    buffer: simpleTextBuffer$TextBuffer,
+    range: atom$Range,
+  ): Promise<?{
+    newCursor?: number,
+    formatted: string,
+  }> {
+    throw new Error('Not implemented');
+  }
+
+  getEvaluationExpression(
+    filePath: NuclideUri,
+    buffer: simpleTextBuffer$TextBuffer,
+    position: atom$Point,
+  ): Promise<?NuclideEvaluationExpression> {
+    throw new Error('Not Yet Implemented');
+  }
+
+  isFileInProject(fileUri: NuclideUri): Promise<boolean> {
+    throw new Error('Not Yet Implemented');
   }
 }
 
