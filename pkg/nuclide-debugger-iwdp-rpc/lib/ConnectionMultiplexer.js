@@ -12,7 +12,6 @@ import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {logger} from './logger';
 import {DebuggerConnection} from './DebuggerConnection';
 import {PRELUDE_MESSAGES} from './prelude';
-import {FileCache} from './FileCache';
 import invariant from 'assert';
 import {RUNNING, PAUSED, ENDED} from './constants';
 import {BreakpointManager} from './BreakpointManager';
@@ -43,20 +42,15 @@ export class ConnectionMultiplexer {
   _enabledConnection: ?DebuggerConnection;
   _sendMessageToClient: (message: Object) => void;
   _newConnections: Subject<DebuggerConnection>;
-  _fileCache: FileCache;
   _breakpointManager: BreakpointManager;
   _freshConnectionId: number;
 
   constructor(sendMessageToClient: (message: Object) => void) {
     this._connections = new Set();
     this._sendMessageToClient = message => sendMessageToClient(message);
-    this._fileCache = new FileCache();
     this._freshConnectionId = 0;
     this._newConnections = new Subject();
-    this._breakpointManager = new BreakpointManager(
-      this._fileCache,
-      this._sendMessageToClient.bind(this),
-    );
+    this._breakpointManager = new BreakpointManager(this._sendMessageToClient.bind(this));
     this._disposables = new UniversalDisposable(
       this._newConnections.subscribe(this._handleNewConnection.bind(this)),
       this._breakpointManager,
@@ -132,8 +126,7 @@ export class ConnectionMultiplexer {
 
       // Events.  Typically we will just forward these to the client.
       case 'scriptParsed': {
-        const clientMessage = await this._fileCache.scriptParsed(message);
-        this._sendMessageToClient(clientMessage);
+        this._sendMessageToClient(message);
         break;
       }
       case 'paused': {

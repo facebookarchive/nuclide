@@ -13,6 +13,7 @@ import {Observable, BehaviorSubject, Subject} from 'rxjs';
 import {logger} from './logger';
 import {RUNNING, PAUSED, ENDED} from './constants';
 import {Socket} from './Socket';
+import {FileCache} from './FileCache';
 
 import type {DeviceInfo, RuntimeStatus} from './types';
 import type {AnyTeardown} from '../../commons-node/UniversalDisposable';
@@ -38,12 +39,14 @@ export class DebuggerConnection {
   _connectionId: number;
   _deviceInfo: DeviceInfo;
   _socket: Socket;
+  _fileCache: FileCache;
 
   constructor(connectionId: number, deviceInfo: DeviceInfo) {
     this._deviceInfo = deviceInfo;
     this._connectionId = connectionId;
     this._events = new Subject();
     this._status = new BehaviorSubject(RUNNING);
+    this._fileCache = new FileCache(this._getScriptSource.bind(this));
     const {webSocketDebuggerUrl} = deviceInfo;
     this._socket = new Socket(
       webSocketDebuggerUrl,
@@ -55,10 +58,34 @@ export class DebuggerConnection {
   }
 
   sendCommand(message: Object): Promise<Object> {
-    return this._socket.sendCommand(message);
+    switch (message.method) {
+      case 'Debugger.setBreakpointByUrl': {
+        const {params} = message;
+        const translatedMessage = {
+          method: 'Debugger.setBreakpointByUrl',
+          params: {
+            ...params,
+            url: this._fileCache.getUrlFromFilePath(params.url),
+          },
+        };
+        return this._socket.sendCommand(translatedMessage);
+      }
+      default: {
+        return this._socket.sendCommand(message);
+      }
+    }
   }
 
-  _handleChromeEvent(message: Object): void {
+  _getScriptSource(scriptId: string): Promise<{result: {scriptSource: string}}> {
+    return this.sendCommand({
+      method: 'Debugger.getScriptSource',
+      params: {
+        scriptId,
+      },
+    });
+  }
+
+  async _handleChromeEvent(message: Object): Promise<void> {
     switch (message.method) {
       case 'Debugger.paused': {
         this._status.next(PAUSED);
@@ -67,6 +94,11 @@ export class DebuggerConnection {
       case 'Debugger.resumed': {
         this._status.next(RUNNING);
         break;
+      }
+      case 'Debugger.scriptParsed': {
+        const clientMessage = await this._fileCache.scriptParsed(message);
+        this._events.next(clientMessage);
+        return;
       }
     }
     this._events.next(message);

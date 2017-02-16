@@ -18,7 +18,6 @@ import type {
   PauseOnExceptionState,
 } from './types';
 import type {DebuggerConnection} from './DebuggerConnection';
-import type {FileCache} from './FileCache';
 
 const {log} = logger;
 const BREAKPOINT_ID_PREFIX = 'NUCLIDE';
@@ -26,15 +25,13 @@ const BREAKPOINT_ID_PREFIX = 'NUCLIDE';
 export class BreakpointManager {
   _disposables: UniversalDisposable;
   _breakpoints: Map<BreakpointId, Breakpoint>;
-  _fileCache: FileCache;
   _connections: Set<DebuggerConnection>;
   _sendMessageToClient: (message: Object) => void;
   _setPauseOnExceptionsState: PauseOnExceptionState;
   _resolvePendingExceptionBreakpointMessage: ?() => mixed;
 
-  constructor(fileCache: FileCache, sendMessageToClient: (message: Object) => void) {
+  constructor(sendMessageToClient: (message: Object) => void) {
     this._breakpoints = new Map();
-    this._fileCache = fileCache;
     this._connections = new Set();
     this._sendMessageToClient = sendMessageToClient;
     this._disposables = new UniversalDisposable(() => this._connections.clear());
@@ -58,13 +55,9 @@ export class BreakpointManager {
   async _sendLineBreakpointsToTarget(connection: DebuggerConnection): Promise<void> {
     const responsePromises = [];
     for (const breakpoint of this._breakpoints.values()) {
-      const {params} = breakpoint;
       const responsePromise = connection.sendCommand({
         method: 'Debugger.setBreakpointByUrl',
-        params: {
-          ...params,
-          url: this._fileCache.getUrlFromFilePath(params.url),
-        },
+        params: breakpoint.params,
       });
       if (breakpoint.resolved) {
         responsePromises.push(responsePromise);
@@ -169,14 +162,7 @@ export class BreakpointManager {
       resolved: true,
     };
     this._breakpoints.set(nuclideId, breakpoint);
-    const targetMessage = {
-      ...message,
-      params: {
-        ...message.params,
-        url: this._fileCache.getUrlFromFilePath(message.params.url),
-      },
-    };
-    const responses = await this._sendMessageToAllTargets(targetMessage);
+    const responses = await this._sendMessageToAllTargets(message);
     log(`setBreakpointByUrl yielded: ${JSON.stringify(responses)}`);
     for (const response of responses) {
       // We will receive multiple responses, so just send the first non-error one.
