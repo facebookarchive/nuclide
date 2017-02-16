@@ -145,11 +145,11 @@ class HackLanguageServiceImpl extends ServerLanguageService {
     prefix: string,
   ): Promise<?Array<Completion>> {
     if (this._useIdeConnection) {
-      const process = await getHackProcess(this._fileCache, fileVersion.filePath);
-      if (process == null) {
-        return null;
-      } else {
+      try {
+        const process = await getHackProcess(this._fileCache, fileVersion.filePath);
         return process.getAutocompleteSuggestions(fileVersion, position, activatedManually);
+      } catch (e) {
+        return null;
       }
     } else {
       // Babel workaround: w/o the es2015-classes transform, async functions can't call `super`.

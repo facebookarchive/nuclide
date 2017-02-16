@@ -36,8 +36,9 @@ import {getBufferAtVersion} from '../../nuclide-open-files-rpc';
 import {hasPrefix, convertCompletions} from './Completions';
 import {findHackPrefix} from '../../nuclide-hack-common/lib/autocomplete';
 
-// From https://reviews.facebook.net/diffusion/HHVM/browse/master/hphp/hack/src/utils/exit_status.ml
+// From https://phabricator.intern.facebook.com/diffusion/FBS/browse/master/fbcode/hphp/hack/src/utils/exit_status.ml
 const HACK_SERVER_ALREADY_EXISTS_EXIT_CODE = 77;
+const HACK_IDE_NEW_CLIENT_CONNECTED_EXIT_CODE = 207;
 
 import {logger} from './hack-config';
 
@@ -110,7 +111,6 @@ class HackProcess extends RpcProcess {
         }
         this._fileVersionNotifier.onEvent(fileEvent);
       });
-    this.observeExitCode().finally(() => { this.dispose(); });
   }
 
   getRoot(): string {
@@ -187,17 +187,11 @@ class HackProcess extends RpcProcess {
 }
 
 // Maps FileCache => hack config dir => HackProcess
-const processes: Cache<FileCache, Cache<NuclideUri, Promise<?HackProcess>>>
+const processes: Cache<FileCache, Cache<NuclideUri, Promise<HackProcess>>>
   = new Cache(
     fileCache => new Cache(
-      hackRoot => createHackProcess(fileCache, hackRoot),
-      value => {
-        value.then(process => {
-          if (process != null) {
-            process.dispose();
-          }
-        });
-      }),
+      hackRoot => retryCreateHackProcess(fileCache, hackRoot),
+      value => { value.then(DISPOSE_VALUE); }),
     DISPOSE_VALUE);
 
 // TODO: Is there any situation where these can be disposed before the
@@ -218,21 +212,12 @@ processes.observeKeys().subscribe(
 export async function getHackProcess(
   fileCache: FileCache,
   filePath: string,
-): Promise<?HackProcess> {
+): Promise<HackProcess> {
   const configDir = await findHackConfigDir(filePath);
   if (configDir == null) {
-    return null;
+    throw new Error('Failed to find Hack config directory');
   }
-
-  const processCache = processes.get(fileCache);
-  const hackProcess = processCache.get(configDir);
-  hackProcess.then(result => {
-    // If we fail to connect to hack, then retry on next request.
-    if (result == null) {
-      processCache.delete(configDir);
-    }
-  });
-  return hackProcess;
+  return processes.get(fileCache).get(configDir);
 }
 
 // Ensures that the only attached HackProcesses are those for the given configPaths.
@@ -253,13 +238,52 @@ export function closeProcesses(fileCache: FileCache): void {
   }
 }
 
+async function retryCreateHackProcess(
+  fileCache: FileCache,
+  hackRoot: string,
+): Promise<HackProcess> {
+  let hackProcess = null;
+  let waitTimeMs = 500;
+  // Disable no-await-in-loop because we do want these iterations to be serial.
+  /* eslint-disable no-await-in-loop */
+  while (hackProcess == null) {
+    try {
+      hackProcess = await createHackProcess(fileCache, hackRoot);
+    } catch (e) {
+      logger.logError(`Couldn't create HackProcess: ${e.message}`);
+      logger.logError(`Waiting ${waitTimeMs}ms before retrying...`);
+
+      await new Promise(resolve => setTimeout(resolve, waitTimeMs));
+      waitTimeMs *= 2;
+
+      const hackProcessNeeded =
+        processes.has(fileCache) && processes.get(fileCache).has(hackRoot);
+
+      // If the HackProcess is no longer needed, or we would be waiting
+      // longer than a few seconds, just give up.
+      if (!hackProcessNeeded || waitTimeMs > 4000) {
+        logger.logError(`Giving up on creating HackProcess: ${e.message}`);
+        // Remove the (soon-to-be) rejected promise from our processes cache so
+        // that the next time someone attempts to get this connection, we'll try
+        // to create it.
+        if (hackProcessNeeded) {
+          processes.get(fileCache).delete(hackRoot);
+        }
+        throw e;
+      }
+    }
+  }
+  /* eslint-enable no-await-in-loop */
+  return hackProcess;
+}
+
 async function createHackProcess(
   fileCache: FileCache,
   configDir: string,
-): Promise<?HackProcess> {
+): Promise<HackProcess> {
   const command = await getHackCommand();
   if (command === '') {
-    return null;
+    throw new Error("Couldn't find Hack command");
   }
 
   logger.logInfo(`Creating new hack connection for ${configDir}: ${command}`);
@@ -267,12 +291,41 @@ async function createHackProcess(
   const startServerResult = await asyncExecute(command, ['start', configDir]);
   logger.logInfo(
     `Hack connection start server results:\n${JSON.stringify(startServerResult, null, 2)}\n`);
-  if (startServerResult.exitCode !== 0 &&
-      startServerResult.exitCode !== HACK_SERVER_ALREADY_EXISTS_EXIT_CODE) {
-    return null;
+  const {exitCode} = startServerResult;
+  if (exitCode !== 0 && exitCode !== HACK_SERVER_ALREADY_EXISTS_EXIT_CODE) {
+    throw new Error(`Hack server start failed with code: ${String(exitCode)}`);
   }
   const createProcess = () => safeSpawn(command, ['ide', configDir]);
-  return new HackProcess(fileCache, `HackProcess-${configDir}`, createProcess, configDir);
+  const hackProcess = new HackProcess(
+    fileCache, `HackProcess-${configDir}`, createProcess, configDir);
+
+  // If the process exits unexpectedly, create a new one immediately.
+  const startTime = Date.now();
+  hackProcess.observeExitCode().subscribe(message => {
+    if (message.exitCode === HACK_IDE_NEW_CLIENT_CONNECTED_EXIT_CODE) {
+      logger.logInfo('Not reconnecting Hack process--another client connected');
+      return;
+    }
+    // This should always be true because the exit code sequence is terminated
+    // immediately after the HackProcess disposes itself, and it removes itself
+    // from the processes cache during disposal.
+    invariant(
+      !processes.has(fileCache) ||
+      !processes.get(fileCache).has(configDir),
+      'Attempt to reconnect Hack process when connection already exists',
+    );
+    // If the process exited too quickly (possibly due to a crash), don't get
+    // stuck in a loop creating and crashing it.
+    const processUptimeMs = Date.now() - startTime;
+    if (processUptimeMs < 1000) {
+      logger.logError('Hack process exited in <1s; not reconnecting');
+      return;
+    }
+    logger.logInfo(`Reconnecting with new HackProcess for ${configDir}`);
+    processes.get(fileCache).get(configDir);
+  });
+
+  return hackProcess;
 }
 
 function editToHackEdit(editEvent: FileEditEvent): TextEdit {
