@@ -282,22 +282,19 @@ export class FlowSingleProjectLanguageService {
     }
   }
 
-  async flowGetType(
-    file: NuclideUri,
-    currentContents: string,
-    line_: number,
-    column_: number,
+  async typeHint(
+    filePath: NuclideUri,
+    buffer: simpleTextBuffer$TextBuffer,
+    position: atom$Point,
   ): Promise<?TypeHint> {
-    let line = line_;
-    let column = column_;
     const options = {};
 
-    options.stdin = currentContents;
+    options.stdin = buffer.getText();
 
-    line++;
-    column++;
+    const line = position.row + 1;
+    const column = position.column + 1;
     const args =
-      ['type-at-pos', '--json', '--path', file, line, column];
+      ['type-at-pos', '--json', '--path', filePath, line, column];
 
     let result;
     try {

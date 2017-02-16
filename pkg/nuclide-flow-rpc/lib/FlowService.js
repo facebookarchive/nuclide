@@ -197,11 +197,10 @@ class FlowSingleFileLanguageService {
   ): Promise<?TypeHint> {
     return getState().getRootContainer().runWithRoot(
       filePath,
-      root => root.flowGetType(
+      root => root.typeHint(
         filePath,
-        buffer.getText(),
-        position.row,
-        position.column,
+        buffer,
+        position,
       ),
     );
   }

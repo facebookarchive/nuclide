@@ -90,7 +90,8 @@ describe('FlowSingleProjectLanguageService', () => {
   describe('flowGetType', () => {
     function runWithString(outputString) {
       mockExec(outputString);
-      return flowRoot.flowGetType(file, currentContents, line, column);
+      const fakeBuffer: simpleTextBuffer$TextBuffer = ({getText: () => currentContents}: any);
+      return flowRoot.typeHint(file, fakeBuffer, new Point(line, column));
     }
     function runWith(
       outputType: ?string,
@@ -147,7 +148,10 @@ describe('FlowSingleProjectLanguageService', () => {
         // this causes some errors to get logged, but I don't think it's a big
         // deal and I don't know how to mock a module
         expect(
-          await flowRoot.flowGetType(file, currentContents, line, column),
+          await flowRoot.typeHint(
+            file,
+            ({getText: () => currentContents}: any),
+            new Point(line, column)),
         ).toBe(null);
       });
     });
