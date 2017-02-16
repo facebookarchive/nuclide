@@ -103,7 +103,8 @@ export class PanelComponent extends React.Component {
     // is resizing the panel, even if their mouse leaves the handle.
     let resizeCursorOverlay = null;
     if (this.state.isResizing) {
-      const className = `nuclide-ui-panel-component-resize-cursor-overlay ${this.props.position}`;
+      const className =
+        `nuclide-workspace-views-panel-resize-cursor-overlay ${this.props.position}`;
       resizeCursorOverlay = <div className={className} />;
     }
 
@@ -123,19 +124,17 @@ export class PanelComponent extends React.Component {
     }
 
     return (
-      <div className="nuclide-workspace-views-panel">
-        <div
-          className={`nuclide-ui-panel-component ${this.props.position}`}
-          style={containerStyle}>
-          <div className={`nuclide-ui-panel-component-resize-handle ${this.props.position}`}
-            ref="handle"
-            onMouseDown={this._handleMouseDown}
-          />
-          <div className="nuclide-ui-panel-component-content">
-            <View ref="child" item={this.props.paneContainer} />
-          </div>
-          {resizeCursorOverlay}
+      <div
+        className={`nuclide-workspace-views-panel ${this.props.position}`}
+        style={containerStyle}>
+        <div className={`nuclide-workspace-views-panel-resize-handle ${this.props.position}`}
+          ref="handle"
+          onMouseDown={this._handleMouseDown}
+        />
+        <div className="nuclide-workspace-views-panel-content">
+          <View ref="child" item={this.props.paneContainer} />
         </div>
+        {resizeCursorOverlay}
       </div>
     );
   }
