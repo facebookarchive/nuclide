@@ -410,6 +410,15 @@ export class FlowSingleProjectLanguageService {
     }
   }
 
+  // This is unused. We will instead use the static method below, which allows us to provide
+  // outlines for files outside of Flow roots.
+  getOutline(
+    filePath: NuclideUri,
+    buffer: simpleTextBuffer$TextBuffer,
+  ): Promise<?Outline> {
+    throw new Error('Not Implemented');
+  }
+
   // This static function takes an optional FlowRoot instance so that *if* it is part of a Flow
   // root, it can use the appropriate flow-bin installation (which may be the only Flow
   // installation) but if it lives outside of a Flow root, outlining still works using the system
@@ -509,7 +518,6 @@ export class FlowSingleProjectLanguageService {
 }
 
 // FlowSingleProjectLanguageService should satisfy the SingleFileLanguageService interface
-// $FlowFixMe
 (((null: any): FlowSingleProjectLanguageService): SingleFileLanguageService);
 
 function parseJSON(args: Array<any>, value: string): any {
