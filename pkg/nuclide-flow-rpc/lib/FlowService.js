@@ -195,7 +195,15 @@ class FlowSingleFileLanguageService {
     buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
   ): Promise<?TypeHint> {
-    return flowGetType(filePath, buffer.getText(), position.row, position.column);
+    return getState().getRootContainer().runWithRoot(
+      filePath,
+      root => root.flowGetType(
+        filePath,
+        buffer.getText(),
+        position.row,
+        position.column,
+      ),
+    );
   }
 
   highlight(
@@ -249,23 +257,6 @@ class FlowSingleFileLanguageService {
 
 export function getServerStatusUpdates(): ConnectableObservable<ServerStatusUpdate> {
   return getState().getRootContainer().getServerStatusUpdates().publish();
-}
-
-export async function flowGetType(
-  file: NuclideUri,
-  currentContents: string,
-  line: number,
-  column: number,
-): Promise<?TypeHint> {
-  return getState().getRootContainer().runWithRoot(
-    file,
-    root => root.flowGetType(
-      file,
-      currentContents,
-      line,
-      column,
-    ),
-  );
 }
 
 export function flowGetAst(
