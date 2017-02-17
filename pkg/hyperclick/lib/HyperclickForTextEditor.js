@@ -8,18 +8,23 @@
  * @flow
  */
 
+/* global localStorage */
+
 import type {HyperclickSuggestion} from './types';
 import type Hyperclick from './Hyperclick';
 import type {TimingTracker} from '../../nuclide-analytics';
 
 import {CompositeDisposable, Disposable, Point} from 'atom';
 import {getWordTextAndRange} from './hyperclick-utils';
+import showTriggerConflictWarning from './showTriggerConflictWarning';
 import invariant from 'assert';
 
 import {trackTiming, startTracking} from '../../nuclide-analytics';
 import {getLogger} from '../../nuclide-logging';
 
 const logger = getLogger();
+
+const WARN_ABOUT_TRIGGER_CONFLICT_KEY = 'hyperclick.warnAboutTriggerConflict';
 
 /**
  * Construct this object to enable Hyperclick in a text editor.
@@ -182,7 +187,18 @@ export default class HyperclickForTextEditor {
 
   _onMouseDown(event: Event): void {
     const mouseEvent: MouseEvent = (event: any);
-    if (!this._isHyperclickEvent(mouseEvent) || !this._isMouseAtLastSuggestion()) {
+    const isHyperclickEvent = this._isHyperclickEvent(mouseEvent);
+
+    // If hyperclick and multicursor are using the same trigger, prevent multicursor.
+    if (isHyperclickEvent && isMulticursorEvent(mouseEvent)) {
+      mouseEvent.stopPropagation();
+      if (localStorage.getItem(WARN_ABOUT_TRIGGER_CONFLICT_KEY) !== 'false') {
+        localStorage.setItem(WARN_ABOUT_TRIGGER_CONFLICT_KEY, 'false');
+        showTriggerConflictWarning();
+      }
+    }
+
+    if (!isHyperclickEvent || !this._isMouseAtLastSuggestion()) {
       return;
     }
 
@@ -385,4 +401,24 @@ export default class HyperclickForTextEditor {
     this._textEditorView.removeEventListener('contextmenu', this._onContextMenu);
     this._subscriptions.dispose();
   }
+}
+
+/**
+ * Determine whether the specified event will trigger Atom's multiple cursors. This is based on (and
+ * must be the same as!) [Atom's
+ * logic](https://github.com/atom/atom/blob/v1.14.2/src/text-editor-component.coffee#L527).
+ */
+function isMulticursorEvent(event: MouseEvent): boolean {
+  const {platform} = process;
+  const isLeftButton = event.button === 0 || event.button === 1 && platform === 'linux';
+  const {metaKey, ctrlKey} = event;
+
+  if (!isLeftButton) {
+    return false;
+  }
+  if (ctrlKey && platform === 'darwin') {
+    return false;
+  }
+
+  return metaKey || (ctrlKey && platform !== 'darwin');
 }

@@ -14,6 +14,7 @@ import type HyperclickForTextEditor from '../lib/HyperclickForTextEditor';
 import {Point, Range} from 'atom';
 import {provideHyperclickView} from '../lib/main';
 import Hyperclick from '../lib/Hyperclick';
+import showTriggerConflictWarning from '../lib/showTriggerConflictWarning';
 import invariant from 'assert';
 
 describe('Hyperclick', () => {
@@ -860,5 +861,11 @@ describe('Hyperclick', () => {
         });
       });
     });
+  });
+});
+
+describe('showTriggerConflictWarning', () => {
+  it('formats the message without erroring', () => {
+    showTriggerConflictWarning().dismiss();
   });
 });
