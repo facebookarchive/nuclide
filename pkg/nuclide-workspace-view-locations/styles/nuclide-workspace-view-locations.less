@@ -41,71 +41,6 @@
   }
 }
 
-.nuclide-workspace-views-panel-location-tabs-hide-button-wrapper {
-  display: flex;
-  flex: 1;
-  order: 9999;
-  min-width: 45px;
-  justify-content: flex-end;
-  align-items: center;
-
-  // Chosen so as to line up with the buttons in the ToolbarRight component.
-  padding-right: 12.5px;
-}
-
-// Hide the button in all of the tab bars except the top right pane. We add a
-// button to each pane's tab bar so that we don't have to constantly recalculate
-// the top-right one in JS as the user rearranges the panes. An alternative
-// would be to only add a single button to the pane, however that would make it
-// difficult (or impossible) to vertically align the button correctly.
-atom-pane-axis.horizontal > :not(:last-child),
-atom-pane-axis.vertical > :not(:first-child) {
-  .nuclide-workspace-views-panel-location-tabs-hide-button-wrapper {
-    display: none;
-  }
-}
-
-.nuclide-workspace-views-panel-location-tabs-hide-button {
-  .octicon('chevron-down', 12px);
-
-  &::before {
-    atom-panel.top & { content: '\f0a2'; }
-    atom-panel.left & { content: '\f0a4'; }
-    atom-panel.bottom & { content: '\f0a3'; }
-    atom-panel.right & { content: '\f078'; }
-  }
-
-  // Adapted from atom/tabs and one-light-ui
-  cursor: default;
-  font-size: 1em;
-  width: 1.5em;
-  height: 1.5em;
-  line-height: 1.5;
-  border-radius: @component-border-radius;
-  overflow: hidden;
-  transform: scale(0);
-  transition: transform .08s;
-  &:hover {
-    color: @accent-text-color;
-    background-color: @accent-color;
-  }
-  &:active {
-    background-color: fade(@accent-color, 50%);
-  }
-  &::before {
-    position: absolute;
-    width: 1.5em; // same as parent
-    height: 1.5em; // same as parent
-    line-height: 1.5; // same as parent
-    text-align: center;
-    pointer-events: none;
-
-    // Blow it up and scale it down again. This is done to increase the weight.
-    font-size: 4em;
-    transform: translate(-37.5%, -37.5%) scale(0.33);
-  }
-}
-
 .nuclide-workspace-views-panel-mask {
   position: relative;
   background-color: @tool-panel-background-color;
@@ -175,12 +110,6 @@ atom-pane-axis.vertical > :not(:first-child) {
   &.bottom { flex-direction: column; }
   &.top { flex-direction: column-reverse; }
   &.right { flex-direction: row; }
-
-  // Adapted from atom/tabs and one-light-ui
-  &:hover .nuclide-workspace-views-panel-location-tabs-hide-button {
-    transform: scale(1);
-    transition-duration: 0.16s;
-  }
 }
 
 .nuclide-workspace-views-peek-target {
