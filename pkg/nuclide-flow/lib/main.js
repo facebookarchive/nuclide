@@ -8,9 +8,6 @@
  * @flow
  */
 
-import type {
-  BusySignalProviderBase as BusySignalProviderBaseType,
-} from '../../nuclide-busy-signal';
 import type {NuclideEvaluationExpressionProvider} from '../../nuclide-debugger-interfaces/service';
 import typeof * as FlowService from '../../nuclide-flow-rpc';
 import type {ServerConnection} from '../../nuclide-remote-connection';
@@ -30,8 +27,6 @@ import {AtomLanguageService} from '../../nuclide-language-service';
 import {filterResultsByPrefix, shouldFilter} from '../../nuclide-flow-common';
 
 import {FlowServiceWatcher} from './FlowServiceWatcher';
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {DedupedBusySignalProviderBase} from '../../nuclide-busy-signal';
 import {FlowEvaluationExpressionProvider} from './FlowEvaluationExpressionProvider';
 import {getCurrentServiceInstances, getFlowServiceByConnection} from './FlowServiceFactory';
 
@@ -39,8 +34,6 @@ import {JS_GRAMMARS} from './constants';
 const GRAMMARS_STRING = JS_GRAMMARS.join(', ');
 
 const PACKAGE_NAME = 'nuclide-flow';
-
-let busySignalProvider;
 
 let disposables;
 
@@ -78,13 +71,6 @@ async function connectionToFlowService(
   const languageService = await flowService.initialize(fileNotifier);
 
   return languageService;
-}
-
-export function provideBusySignal(): BusySignalProviderBaseType {
-  if (!busySignalProvider) {
-    busySignalProvider = new DedupedBusySignalProviderBase();
-  }
-  return busySignalProvider;
 }
 
 export function createEvaluationExpressionProvider(): NuclideEvaluationExpressionProvider {
