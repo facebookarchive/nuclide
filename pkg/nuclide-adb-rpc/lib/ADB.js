@@ -143,7 +143,12 @@ export function installPackage(
   packagePath: NuclideUri,
 ): Observable<ProcessMessage> {
   invariant(!nuclideUri.isRemote(packagePath));
-  return runLongAdbCommand(adbPath, device, ['install', packagePath]);
+  if (adbPath.endsWith('adb')) {
+    // SDB overwrites existing packages by default, ADB needs the '-r' option
+    return runLongAdbCommand(adbPath, device, ['install', '-r', packagePath]);
+  } else {
+    return runLongAdbCommand(adbPath, device, ['install', packagePath]);
+  }
 }
 
 export function uninstallPackage(
