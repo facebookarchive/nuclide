@@ -19,20 +19,20 @@ type Props = {
   visible: boolean,
 };
 
-export class PeekTarget extends React.Component {
+export class ToggleButton extends React.Component {
   props: Props;
 
   render(): React.Element<any> {
     const className = classnames(
-      'nuclide-workspace-views-peek-target',
+      'nuclide-workspace-views-toggle-button',
       this.props.position,
       {
-        'nuclide-workspace-views-peek-target-visible': this.props.visible,
+        'nuclide-workspace-views-toggle-button-visible': this.props.visible,
       },
     );
     return (
       <div className={className} onDragEnter={this.props.onDragEnter}>
-        <div className="nuclide-workspace-views-peek-target-inner" />
+        <div className="nuclide-workspace-views-toggle-button-inner" />
       </div>
     );
   }

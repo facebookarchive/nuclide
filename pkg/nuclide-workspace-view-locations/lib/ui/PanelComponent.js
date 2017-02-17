@@ -14,7 +14,7 @@ import UniversalDisposable from '../../../commons-node/UniversalDisposable';
 import {nextAnimationFrame} from '../../../commons-node/observable';
 import rectContainsPoint from '../../../commons-node/rectContainsPoint';
 import {View} from '../../../nuclide-ui/View';
-import {PeekTarget} from './PeekTarget';
+import {ToggleButton} from './ToggleButton';
 import invariant from 'assert';
 import classnames from 'classnames';
 import {React, ReactDOM} from 'react-for-atom';
@@ -51,7 +51,7 @@ type State = {
 export class PanelComponent extends React.Component {
   _disposables: ?UniversalDisposable;
   _dropTargetDisposable: ?UniversalDisposable;
-  _peekTargetEl: ?HTMLElement;
+  _toggleButtonEl: ?HTMLElement;
   _resizeDisposable: ?UniversalDisposable;
 
   props: Props;
@@ -74,7 +74,7 @@ export class PanelComponent extends React.Component {
     (this: any)._handleMouseMove = this._handleMouseMove.bind(this);
     (this: any)._handleMouseUp = this._handleMouseUp.bind(this);
     (this: any)._handleDragLeave = this._handleDragLeave.bind(this);
-    (this: any)._handlePeekTarget = this._handlePeekTarget.bind(this);
+    (this: any)._handleToggleButton = this._handleToggleButton.bind(this);
     (this: any)._revealDropTarget = this._revealDropTarget.bind(this);
   }
 
@@ -120,7 +120,7 @@ export class PanelComponent extends React.Component {
     // Update the `shouldAnimate` state. This needs to be written to the DOM before updating the
     // class that changes the animated property. Normally we'd have to defer the class change a
     // frame to ensure the property is animated (or not) appropriately, however we luck out in this
-    // case because the drag start always happens before the item is dragged into the peek target.
+    // case because the drag start always happens before the item is dragged into the toggle button.
     if (nextProps.active !== this.props.active) {
       // Never animate toggling visiblity...
       this.setState({shouldAnimate: false});
@@ -178,11 +178,11 @@ export class PanelComponent extends React.Component {
           {contents}
         </div>
         {/*
-          The peek target must be rendered outside the mask because (1) it shouldn't be masked and
+          The toggle button must be rendered outside the mask because (1) it shouldn't be masked and
           (2) if we made the mask larger to avoid masking it, the mask would block mouse events.
         */}
-        <PeekTarget
-          ref={this._handlePeekTarget}
+        <ToggleButton
+          ref={this._handleToggleButton}
           onDragEnter={this._revealDropTarget}
           visible={this.props.draggingItem && !open}
           position={this.props.position}
@@ -203,14 +203,14 @@ export class PanelComponent extends React.Component {
       Observable.merge(
         Observable.fromEvent(window, 'drag')
           .filter(event => {
-            const peekTargetEl = this._peekTargetEl;
+            const toggleButtonEl = this._toggleButtonEl;
             const el = ReactDOM.findDOMNode(this);
-            if (el == null || peekTargetEl == null) { return false; }
+            if (el == null || toggleButtonEl == null) { return false; }
             const panelArea = el.getBoundingClientRect();
-            const peekTargetArea = peekTargetEl.getBoundingClientRect();
+            const toggleButtonArea = toggleButtonEl.getBoundingClientRect();
             const mousePosition = {x: event.pageX, y: event.pageY};
             return !rectContainsPoint(panelArea, mousePosition)
-              && !rectContainsPoint(peekTargetArea, mousePosition);
+              && !rectContainsPoint(toggleButtonArea, mousePosition);
           }),
         Observable.fromEvent(window, 'dragend'),
       )
@@ -218,8 +218,8 @@ export class PanelComponent extends React.Component {
     );
   }
 
-  _handlePeekTarget(peekTarget: ?PeekTarget): void {
-    this._peekTargetEl = peekTarget == null ? null : ReactDOM.findDOMNode(peekTarget);
+  _handleToggleButton(toggleButton: ?ToggleButton): void {
+    this._toggleButtonEl = toggleButton == null ? null : ReactDOM.findDOMNode(toggleButton);
   }
 
   _handleDragLeave(): void {

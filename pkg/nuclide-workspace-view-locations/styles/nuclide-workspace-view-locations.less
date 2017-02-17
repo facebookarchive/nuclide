@@ -2,7 +2,7 @@
 @import 'syntax-variables';
 @import 'octicon-mixins';
 
-@nuclide-workspace-views-peek-target-size: 100px;
+@nuclide-workspace-views-toggle-button-size: 100px;
 
 // From one-light-ui
 .ui-syntax-color() { @syntax-background-color: hsl(220,1%,98%); } .ui-syntax-color(); // fallback color
@@ -60,7 +60,7 @@
 .nuclide-workspace-views-panel-wrapper {
   display: flex;
 
-  // Make sure to center the peek targets
+  // Make sure to center the toggle buttons
   &.top, &.bottom { flex-direction: column; }
   align-items: center;
 
@@ -112,54 +112,54 @@
   &.right { flex-direction: row; }
 }
 
-.nuclide-workspace-views-peek-target {
+.nuclide-workspace-views-toggle-button {
   position: absolute;
   overflow: hidden; // Mask half of the circle.
 
-  // Position the peek target at the edge of the panel. It's important that this
-  // is absolutely positioned so that it doesn't expand the area of its
+  // Position the toggle button at the edge of the panel. It's important that
+  // this is absolutely positioned so that it doesn't expand the area of its
   // container (which would block mouse events).
   &.top { top: 100%; }
   &.right { right: 100%; }
   &.bottom { bottom: 100%; }
   &.left { left: 100%; }
 
-  .nuclide-workspace-views-peek-target-inner {
-    width: @nuclide-workspace-views-peek-target-size;
-    height: @nuclide-workspace-views-peek-target-size;
+  .nuclide-workspace-views-toggle-button-inner {
+    width: @nuclide-workspace-views-toggle-button-size;
+    height: @nuclide-workspace-views-toggle-button-size;
     background-color: @tool-panel-background-color;
-    border-radius: @nuclide-workspace-views-peek-target-size / 2;
+    border-radius: @nuclide-workspace-views-toggle-button-size / 2;
     border: 1px solid @pane-item-border-color;
     transition: transform 0.3s ease-out;
   }
 
   // Only show half the circle
-  &.nuclide-workspace-views-peek-target-visible {
-    &.top .nuclide-workspace-views-peek-target-inner {
+  &.nuclide-workspace-views-toggle-button-visible {
+    &.top .nuclide-workspace-views-toggle-button-inner {
       transform: translateY(-50%);
     }
-    &.right .nuclide-workspace-views-peek-target-inner {
+    &.right .nuclide-workspace-views-toggle-button-inner {
       transform: translateX(50%);
     }
-    &.bottom .nuclide-workspace-views-peek-target-inner {
+    &.bottom .nuclide-workspace-views-toggle-button-inner {
       transform: translateY(50%);
     }
-    &.left .nuclide-workspace-views-peek-target-inner {
+    &.left .nuclide-workspace-views-toggle-button-inner {
       transform: translateX(-50%);
     }
   }
 
   // Normally mask the circle fully.
-  &.top .nuclide-workspace-views-peek-target-inner {
+  &.top .nuclide-workspace-views-toggle-button-inner {
     transform: translateY(-100%);
   }
-  &.right .nuclide-workspace-views-peek-target-inner {
+  &.right .nuclide-workspace-views-toggle-button-inner {
     transform: translateX(100%);
   }
-  &.bottom .nuclide-workspace-views-peek-target-inner {
+  &.bottom .nuclide-workspace-views-toggle-button-inner {
     transform: translateY(100%);
   }
-  &.left .nuclide-workspace-views-peek-target-inner {
+  &.left .nuclide-workspace-views-toggle-button-inner {
     transform: translateX(-100%);
   }
 }
