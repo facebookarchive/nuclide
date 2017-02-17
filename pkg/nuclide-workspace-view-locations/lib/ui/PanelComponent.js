@@ -22,6 +22,7 @@ import {Observable} from 'rxjs';
 
 const MINIMUM_SIZE = 100;
 const DEFAULT_INITIAL_SIZE = 300;
+const HANDLE_SIZE = 4;
 
 type Position = 'top' | 'right' | 'bottom' | 'left';
 
@@ -35,6 +36,7 @@ type Props = {
   position: Position,
   initialSize: ?number,
   active: boolean,
+  toggle: () => void,
   onResize: (width: number) => mixed,
 };
 
@@ -43,6 +45,7 @@ type State = {
   shouldAnimate: boolean,
   showDropTarget: boolean,
   size: ?number,
+  showToggleButton: boolean,
 };
 
 /**
@@ -67,10 +70,11 @@ export class PanelComponent extends React.Component {
       size: this.props.initialSize,
       shouldAnimate: props.draggingItem,
       showDropTarget: false,
+      showToggleButton: false,
     };
 
     // Bind main events to this object. _updateSize is only ever bound within these.
-    (this: any)._handleMouseDown = this._handleMouseDown.bind(this);
+    (this: any)._handleResizeHandleDragStart = this._handleResizeHandleDragStart.bind(this);
     (this: any)._handleMouseMove = this._handleMouseMove.bind(this);
     (this: any)._handleMouseUp = this._handleMouseUp.bind(this);
     (this: any)._handleDragLeave = this._handleDragLeave.bind(this);
@@ -79,11 +83,52 @@ export class PanelComponent extends React.Component {
   }
 
   componentDidMount(): void {
+    const panelContainerEl = document.querySelector(`atom-panel-container.${this.props.position}`);
     this._disposables = new UniversalDisposable(
       // Note: This method is called via `requestAnimationFrame` rather than `process.nextTick` like
       // Atom's tree-view does because this does not have a guarantee a paint will have already
       // happened when `componentDidMount` gets called the first time.
       nextAnimationFrame.subscribe(() => { this._repaint(); }),
+    );
+
+    // The panel container should always be in the DOM, but in tests it may not be. In those cases
+    // we just don't add the listeners. This is an ugly hack, but we should easily notice if it
+    // breaks.
+    if (panelContainerEl == null) {
+      return;
+    }
+
+    this._disposables.add(
+      // In order to provide as large of a mouse target as possible, we use the entire panel
+      // container. When detecting whether the mouse has left the area, we also include the space
+      // taken up by the toggle button.
+      Observable.fromEvent(panelContainerEl, 'mouseenter').switchMap(enterEvent => (
+        Observable.concat(
+          Observable.of(enterEvent),
+          Observable.fromEvent(panelContainerEl, 'mouseleave')
+            .take(1)
+            // We want to include the toggle button area when determining whether we've left, so
+            // we need to use "move" events. We only start caring about them after the first
+            // leave event, though, so we're doing as little work as possible.
+            .switchMap(event => Observable.fromEvent(window, 'mousemove').startWith(event))
+            .filter(event => {
+              invariant(this._toggleButtonEl != null);
+              const toggleButtonBounds = this._toggleButtonEl.getBoundingClientRect();
+              let inBounds;
+              switch (this.props.position) {
+                case 'top': inBounds = event.pageY < toggleButtonBounds.bottom; break;
+                case 'right': inBounds = event.pageX > toggleButtonBounds.left; break;
+                case 'bottom': inBounds = event.pageY > toggleButtonBounds.top; break;
+                case 'left': inBounds = event.pageX < toggleButtonBounds.right; break;
+              }
+              return !inBounds;
+            })
+            .take(1),
+        )
+      ))
+        .map(event => (event.type === 'mouseenter' ? true : false))
+        .distinctUntilChanged()
+        .subscribe(showToggleButton => { this.setState({showToggleButton}); }),
     );
   }
 
@@ -136,8 +181,7 @@ export class PanelComponent extends React.Component {
       this.state.size == null ? this._getInitialSize() : this.state.size,
     );
     const open = this.props.active || this.state.showDropTarget;
-    const widthOrHeight =
-      this.props.position === 'left' || this.props.position === 'right' ? 'width' : 'height';
+    const widthOrHeight = getWidthOrHeight(this.props.position);
 
     const wrapperClassName = classnames(
       'nuclide-workspace-views-panel-wrapper',
@@ -157,25 +201,31 @@ export class PanelComponent extends React.Component {
     // TODO: Track whether animation is in progress and use that instead of `shouldAnimate`.
     const contents = open || this.state.shouldAnimate
       ? (
-        // The content needs to maintain a constant size regardless of the mask size.
-        <div className={className} style={{[widthOrHeight]: size}}>
-          <div
-            className={`nuclide-workspace-views-panel-resize-handle ${this.props.position}`}
-            onMouseDown={this._handleMouseDown}
-          />
-          <div className="nuclide-workspace-views-panel-content">
-            <View item={this.props.paneContainer} />
-          </div>
-          <ResizeCursorOverlay position={this.props.position} resizing={this.state.resizing} />
+        <div className="nuclide-workspace-views-panel-content">
+          <View item={this.props.paneContainer} />
         </div>
       )
       : null;
 
+    const handle = (
+      <Handle
+        position={this.props.position}
+        mode={open ? 'resize' : 'open'}
+        onResizeStart={this._handleResizeHandleDragStart}
+        toggle={this.props.toggle}
+      />
+    );
+
     return (
       <div className={wrapperClassName}>
-        {/* We need to change the size of the mask. */}
-        <div className={maskClassName} style={{[widthOrHeight]: open ? size : 0}}>
-          {contents}
+        {/* We need to change the size of the mask... */}
+        <div className={maskClassName} style={{[widthOrHeight]: open ? size : HANDLE_SIZE}}>
+          {/* ...but the content needs to maintain a constant size. */}
+          <div className={className} style={{[widthOrHeight]: size}}>
+            {handle}
+            {contents}
+            <ResizeCursorOverlay position={this.props.position} resizing={this.state.resizing} />
+          </div>
         </div>
         {/*
           The toggle button must be rendered outside the mask because (1) it shouldn't be masked and
@@ -184,8 +234,10 @@ export class PanelComponent extends React.Component {
         <ToggleButton
           ref={this._handleToggleButton}
           onDragEnter={this._revealDropTarget}
-          visible={this.props.draggingItem && !open}
+          visible={this.state.showToggleButton || (this.props.draggingItem && !open)}
           position={this.props.position}
+          open={open}
+          toggle={this.props.toggle}
         />
       </div>
     );
@@ -230,7 +282,7 @@ export class PanelComponent extends React.Component {
     this.setState({showDropTarget: false});
   }
 
-  _handleMouseDown(event: SyntheticMouseEvent): void {
+  _handleResizeHandleDragStart(): void {
     if (this._resizeDisposable != null) {
       this._resizeDisposable.dispose();
     }
@@ -319,4 +371,35 @@ function ResizeCursorOverlay(props: {resizing: boolean, position: Position}): ?R
   return props.resizing
     ? <div className={`nuclide-workspace-views-panel-resize-cursor-overlay ${props.position}`} />
     : null;
+}
+
+type HandleProps = {
+  mode: 'resize' | 'open',
+  position: Position,
+  toggle: () => void,
+  onResizeStart: () => void,
+};
+
+function Handle(props: HandleProps): React.Element<any> {
+  const widthOrHeight = getWidthOrHeight(props.position);
+  const className = classnames(
+    'nuclide-workspace-views-panel-handle',
+    props.position,
+    {
+      'nuclide-workspace-views-panel-handle-resize': props.mode === 'resize',
+      'nuclide-workspace-views-panel-handle-open': props.mode === 'open',
+    },
+  );
+  return (
+    <div
+      className={className}
+      style={{[widthOrHeight]: HANDLE_SIZE}}
+      onMouseDown={props.mode === 'resize' ? props.onResizeStart : null}
+      onClick={props.mode === 'open' ? props.toggle : null}
+    />
+  );
+}
+
+function getWidthOrHeight(position: Position): 'width' | 'height' {
+  return position === 'left' || position === 'right' ? 'width' : 'height';
 }

@@ -139,19 +139,17 @@ export class PanelLocation extends SimpleModel<State> {
 
     this._disposables.add(
       // $FlowIssue: We need to teach flow about Symbol.observable.
-      Observable.from(this).subscribe(state => { this._render(state); }),
+      Observable.from(this)
+        .subscribeOn(Scheduler.animationFrame)
+        .subscribe(state => { this._render(state); }),
     );
   }
 
   _render(state: State): void {
     const shouldBeVisible = this.state.active || this.state.showDropAreas;
+    const panel = this._getPanel();
 
-    // Make sure we have a panel if we're supposed to.
-    const panel = this._getPanel(shouldBeVisible);
-
-    // If we don't, there's nothing to do.
-    if (panel == null) { return; }
-
+    // Because we want to show something event when the panel is collapsed, we have to show it.
     if (shouldBeVisible && !panel.isVisible()) {
       panel.show();
     }
@@ -165,13 +163,14 @@ export class PanelLocation extends SimpleModel<State> {
         paneContainer={this._paneContainer}
         position={this._position}
         onResize={this._handlePanelResize}
+        toggle={() => { this.toggle(); }}
       />,
       el,
     );
   }
 
-  _getPanel(createIfNeeded: boolean): ?atom$Panel {
-    if (createIfNeeded && this._panel == null) {
+  _getPanel(): atom$Panel {
+    if (this._panel == null) {
       const el = document.createElement('div');
       const panel = this._panel = addPanel(
         this._position,

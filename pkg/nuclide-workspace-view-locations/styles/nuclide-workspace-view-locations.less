@@ -2,7 +2,7 @@
 @import 'syntax-variables';
 @import 'octicon-mixins';
 
-@nuclide-workspace-views-toggle-button-size: 100px;
+@nuclide-workspace-views-toggle-button-size: 50px;
 
 // From one-light-ui
 .ui-syntax-color() { @syntax-background-color: hsl(220,1%,98%); } .ui-syntax-color(); // fallback color
@@ -23,21 +23,19 @@
   overflow: hidden;
 }
 
-.nuclide-workspace-views-panel-resize-handle {
+.nuclide-workspace-views-panel-handle {
   width: auto;
   height: auto;
   flex: 0 0 auto;
 
-  &.left,
-  &.right {
-    width: 4px;
-    cursor: col-resize;
+  // Use the resize cursor when the handle's in "resize" mode.
+  &.nuclide-workspace-views-panel-handle-resize {
+    &.left, &.right { cursor: col-resize; }
+    &.top, &.bottom { cursor: row-resize; }
   }
 
-  &.top,
-  &.bottom {
-    height: 4px;
-    cursor: row-resize;
+  &.nuclide-workspace-views-panel-handle-open {
+    cursor: pointer;
   }
 }
 
@@ -115,10 +113,12 @@
 .nuclide-workspace-views-toggle-button {
   position: absolute;
   overflow: hidden; // Mask half of the circle.
+  z-index: 1;
+  cursor: pointer;
 
-  // Position the toggle button at the edge of the panel. It's important that
-  // this is absolutely positioned so that it doesn't expand the area of its
-  // container (which would block mouse events).
+  // Position the toggle button target at the edge of the panel. It's important
+  // that this is absolutely positioned so that it doesn't expand the area of
+  // its container (which would block mouse events).
   &.top { top: 100%; }
   &.right { right: 100%; }
   &.bottom { bottom: 100%; }
@@ -127,11 +127,13 @@
   .nuclide-workspace-views-toggle-button-inner {
     width: @nuclide-workspace-views-toggle-button-size;
     height: @nuclide-workspace-views-toggle-button-size;
-    background-color: @tool-panel-background-color;
     border-radius: @nuclide-workspace-views-toggle-button-size / 2;
-    border: 1px solid @pane-item-border-color;
-    transition: transform 0.3s ease-out;
-  }
+
+    display: flex;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+ }
 
   // Only show half the circle
   &.nuclide-workspace-views-toggle-button-visible {
@@ -161,6 +163,52 @@
   }
   &.left .nuclide-workspace-views-toggle-button-inner {
     transform: translateX(-100%);
+  }
+
+  // Center the icon.
+  @offset: 8px;
+  &.top .nuclide-workspace-views-toggle-button-inner .icon {
+    transform: translateY(@offset);
+  }
+  &.right .nuclide-workspace-views-toggle-button-inner .icon {
+    transform: translateX(-@offset);
+  }
+  &.bottom .nuclide-workspace-views-toggle-button-inner .icon {
+    transform: translateY(-@offset);
+  }
+  &.left .nuclide-workspace-views-toggle-button-inner .icon {
+    transform: translateX(@offset);
+  }
+
+  // Animate the icon.
+  .icon {
+    transition: opacity 0.1s ease-in 0.1s; // intro
+    opacity: 1;
+
+    &::before {
+      // Shrink the icon element to the size of the character.
+      width: auto;
+      margin: 0;
+    }
+  }
+  &:not(.nuclide-workspace-views-toggle-button-visible) .icon {
+    opacity: 0;
+    transition: opacity 0.2s ease-out 0s; // outro
+  }
+
+  .nuclide-workspace-views-toggle-button-inner {
+    background-color: @tool-panel-background-color;
+    border: 1px solid @pane-item-border-color;
+    transition: transform 0.2s ease-out 0s; // intro
+  }
+
+  &:not(.nuclide-workspace-views-toggle-button-visible) {
+    // Don't contribute to mouseenter/drag events when not visible.
+    pointer-events: none;
+
+    .nuclide-workspace-views-toggle-button-inner {
+      transition: transform 0.2s ease-out 0.1s; // outro
+    }
   }
 }
 
