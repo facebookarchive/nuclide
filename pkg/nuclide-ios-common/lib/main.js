@@ -19,15 +19,17 @@ export type Simulator = {
   udid: string,
   state: ?SimulatorState,
   os: string,
+  arch: string,
 };
 
 export type Device = {
   name: string,
   udid: string,
+  arch: string,
 };
 
 export function getFbsimctlDevices(): Observable<Array<Device>> {
-  return runCommand('fbsimctl', ['--json', '--devices', 'list'])
+  return runCommand('fbsimctl', ['--json', '--devices', '--name', '--udid', '--arch', 'list'])
     .map(parseDevicesFromFbsimctlOutput)
     .catch(error => (
       // Users may not have fbsimctl installed. If the command failed, just return an empty list.
@@ -37,11 +39,14 @@ export function getFbsimctlDevices(): Observable<Array<Device>> {
 }
 
 export const getFbsimctlSimulators: () => Observable<Array<Simulator>> = memoize(() => (
-  runCommand('fbsimctl', ['--json', '--simulators', 'list'])
+  runCommand(
+    'fbsimctl',
+    ['--json', '--simulators', '--name', '--udid', '--state', '--os', '--arch', 'list'],
+  )
     .map(parseSimulatorsFromFbsimctlOutput)
     .catch(error => (
-      // Users may not have fbsimctl installed. If the command failed, just return an empty list.
-      Observable.of([])
+      // Users may not have fbsimctl installed. Fall back to xcrun simctl in that case.
+      getSimulators()
     ))
     .share()
 ));
@@ -50,8 +55,7 @@ export const getSimulators: () => Observable<Array<Simulator>> = memoize(() => (
   runCommand('xcrun', ['simctl', 'list', 'devices'])
     .map(parseSimulatorsFromSimctlOutput)
     .catch(error => (
-      // Users may not have xcrun installed, particularly if they are using Buck for non-iOS
-      // projects. If the command failed, just return an empty list.
+      // Users may not have xcrun installed. If the command failed, just return an empty list.
       Observable.of([])
     ))
     .share()
@@ -90,7 +94,8 @@ function parseSimulatorsFromFbsimctlOutput(output: string): Array<Simulator> {
       return;
     }
     const simulator = event.subject;
-    if (!simulator.state || !simulator.os || !simulator.name || !simulator.udid) {
+    const {state, os, name, udid, arch} = simulator;
+    if (!state || !os || !name || !udid || !arch) {
       return;
     }
 
@@ -99,10 +104,11 @@ function parseSimulatorsFromFbsimctlOutput(output: string): Array<Simulator> {
     }
 
     simulators.push({
-      name: simulator.name,
-      udid: simulator.udid,
-      state: validateState(simulator.state),
-      os: simulator.os,
+      name,
+      udid,
+      state: validateState(state),
+      os,
+      arch,
     });
   });
 
@@ -123,14 +129,12 @@ function parseDevicesFromFbsimctlOutput(output: string): Array<Device> {
       return;
     }
     const device = event.subject;
-    if (!device.name || !device.udid) {
+    const {name, udid, arch} = device;
+    if (!name || !udid || !arch) {
       return;
     }
 
-    devices.push({
-      name: device.name,
-      udid: device.udid,
-    });
+    devices.push({name, udid, arch});
   });
 
   return devices;
@@ -156,11 +160,13 @@ export function parseSimulatorsFromSimctlOutput(output: string): Array<Simulator
       line.match(/^[ ]*([^()]+) \(([^()]+)\) \((Creating|Booting|Shutting Down|Shutdown|Booted)\)/);
     if (simulator && currentOS) {
       const [, name, udid, state] = simulator;
+      const arch = name.match(/^(iPhone (5$|5C|4)|iPad Retina)/) ? 'i386' : 'x86_64';
       simulators.push({
         name,
         udid,
         state: validateState(state),
         os: currentOS,
+        arch,
       });
     }
   });

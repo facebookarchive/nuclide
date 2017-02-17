@@ -28,18 +28,21 @@ describe('IosSimulator', () => {
         udid: '4FE43B33-EF13-49A5-B6A6-658D32F20988',
         os: '8.1',
         state: 'BOOTED',
+        arch: 'i386',
       },
       {
         name: 'iPhone 4s',
         udid: 'EAB622C7-8ADE-4FAE-A911-94C0CA4709BB',
         os: '8.4',
         state: 'SHUT_DOWN',
+        arch: 'i386',
       },
       {
         name: 'iPhone 5',
         udid: 'AE1CD3D0-A85B-4A73-B320-9CA7BA4FAEB0',
         os: '8.4',
         state: 'SHUT_DOWN',
+        arch: 'i386',
       },
     ]);
   });
@@ -57,6 +60,7 @@ describe('IosSimulator', () => {
         udid: '4FE43B33-EF13-49A5-B6A6-658D32F20988',
         os: '8.1',
         state: 'SHUT_DOWN',
+        arch: 'i386',
       },
     ]);
   });
@@ -73,12 +77,14 @@ describe('IosSimulator', () => {
         udid: '4FE43B33-EF13-49A5-B6A6-658D32F20988',
         os: '8.1',
         state: 'SHUT_DOWN',
+        arch: 'i386',
       },
       {
         name: 'iPhone 4s',
         udid: 'EAB622C7-8ADE-4FAE-A911-94C0CA4709BB',
         os: '8.4',
         state: 'BOOTED',
+        arch: 'i386',
       },
     ])).toBe(1);
   });
@@ -90,18 +96,21 @@ describe('IosSimulator', () => {
         udid: '4FE43B33-EF13-49A5-B6A6-658D32F20988',
         os: '8.1',
         state: 'SHUT_DOWN',
+        arch: 'i386',
       },
       {
         name: 'iPhone 5s',
         udid: 'EAB622C7-8ADE-4FAE-A911-94C0CA4709BB',
         os: '8.2',
         state: 'SHUT_DOWN',
+        arch: 'i386',
       },
       {
         name: 'iPhone 5s',
         udid: 'EAB622C7-8ADE-4FAE-A911-94C0CA4709BB',
         os: '8.4',
         state: 'SHUT_DOWN',
+        arch: 'i386',
       },
     ])).toBe(2);
   });

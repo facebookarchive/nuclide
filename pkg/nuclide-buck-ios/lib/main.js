@@ -39,8 +39,8 @@ function provideIosDevices(
   if (ruleType !== 'apple_bundle') {
     return Observable.of(null);
   }
-  return IosSimulator.getSimulators().map(devices => {
-    if (!devices.length) {
+  return IosSimulator.getFbsimctlSimulators().map(simulators => {
+    if (!simulators.length) {
       return null;
     }
 
@@ -53,9 +53,10 @@ function provideIosDevices(
         deviceGroups: [
           {
             name: 'iOS Simulators',
-            devices: devices.map(device => ({
-              name: `${device.name} (${device.os})`,
-              udid: device.udid,
+            devices: simulators.map(simulator => ({
+              name: `${simulator.name} (${simulator.os})`,
+              udid: simulator.udid,
+              arch: simulator.arch,
             })),
           },
         ],
@@ -72,12 +73,20 @@ function runTask(
 ): Observable<TaskEvent> {
   let subcommand = taskType;
   invariant(device);
+  invariant(device.arch);
   invariant(device.udid);
-  invariant(typeof device.udid === 'string');
+  const udid = device.udid;
+  const arch = device.arch;
+  invariant(typeof arch === 'string');
+  invariant(typeof udid === 'string');
+
+  const flavor = `iphonesimulator-${arch}`;
+  const separator = !buildTarget.includes('#') ? '#' : ',';
+  const flavoredTargetName = buildTarget + separator + flavor;
 
   if (subcommand === 'run' || subcommand === 'debug') {
     subcommand = 'install';
   }
 
-  return builder.runSubcommand(subcommand, buildTarget, {}, taskType === 'debug', device.udid);
+  return builder.runSubcommand(subcommand, flavoredTargetName, {}, taskType === 'debug', udid);
 }
