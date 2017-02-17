@@ -13,12 +13,14 @@ import type {Task, TaskEvent} from '../../commons-node/tasks';
 import type {Directory} from '../../nuclide-remote-connection';
 import type {TaskMetadata} from '../../nuclide-task-runner/lib/types';
 import type {Level, Message} from '../../nuclide-console/lib/types';
+import type {ResolvedBuildTarget} from '../../nuclide-buck-rpc';
 import typeof * as BuckService from '../../nuclide-buck-rpc';
 import type {
   AppState,
   BuckBuilderBuildOptions,
   BuckSubcommand,
   BuildArtifactTask,
+  DeploymentTarget,
   SerializedState,
   Store,
   TaskSettings,
@@ -35,6 +37,7 @@ import type {
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
 
 import invariant from 'assert';
+import nullthrows from 'nullthrows';
 import {applyMiddleware, createStore} from 'redux';
 import {Observable, Subject, TimeoutError} from 'rxjs';
 import {quote} from 'shell-quote';
@@ -248,24 +251,28 @@ export class BuckBuildSystem {
     );
 
     const state = this._getStore().getState();
-    const {buildTarget, selectedDeploymentTarget} = state;
+    const {buckRoot, buildTarget, selectedDeploymentTarget} = state;
+    invariant(buckRoot);
+    const deploymentTargetString = formatDeploymentTarget(selectedDeploymentTarget);
+    this._logOutput(`Resolving command for "${buildTarget}"${deploymentTargetString}`, 'log');
+    const resolvedBuildTarget = getResolvedBuildTarget(buckRoot, buildTarget);
 
-    let resultStream;
-    if (selectedDeploymentTarget) {
-      const {platform, device} = selectedDeploymentTarget;
-      resultStream = platform.runTask(this, taskType, buildTarget, device);
-    } else {
-      const subcommand = taskType === 'debug' ? 'build' : taskType;
-      resultStream = this.runSubcommand(
-        subcommand,
-        buildTarget,
-        {},
-        taskType === 'debug',
-        null,
-      );
-    }
+    const task = taskFromObservable(resolvedBuildTarget.switchMap(resolvedTarget => {
+      if (selectedDeploymentTarget) {
+        const {platform, device} = selectedDeploymentTarget;
+        return platform.runTask(this, taskType, resolvedTarget, device);
+      } else {
+        const subcommand = taskType === 'debug' ? 'build' : taskType;
+        return this.runSubcommand(
+            subcommand,
+            resolvedTarget,
+            {},
+            taskType === 'debug',
+            null,
+          );
+      }
+    }));
 
-    const task = taskFromObservable(resultStream);
     return {
       ...task,
       cancel: () => {
@@ -273,8 +280,8 @@ export class BuckBuildSystem {
         task.cancel();
       },
       getTrackingData: () => ({
-        buckRoot: state.buckRoot,
-        buildTarget: state.buildTarget,
+        buckRoot,
+        buildTarget,
         taskSettings: state.taskSettings,
       }),
     };
@@ -288,6 +295,7 @@ export class BuckBuildSystem {
     const {root, target} = opts;
     let pathToArtifact = null;
     const buckService = getBuckServiceByNuclideUri(root);
+    const targetString = getCommandStringForResolvedBuildTarget(target);
 
     const task = taskFromObservable(
       Observable.concat(
@@ -300,7 +308,7 @@ export class BuckBuildSystem {
         ),
 
         // Don't complete until we've determined the artifact path.
-        Observable.defer(() => buckService.showOutput(root, target))
+        Observable.defer(() => buckService.showOutput(root, targetString))
           .do(output => {
             let outputPath;
             if (
@@ -364,7 +372,7 @@ export class BuckBuildSystem {
 
   runSubcommand(
     subcommand: BuckSubcommand,
-    buildTarget: string,
+    buildTarget: ResolvedBuildTarget,
     additionalSettings: TaskSettings,
     isDebug: boolean,
     udid: ?string,
@@ -383,19 +391,19 @@ export class BuckBuildSystem {
       'nuclide-console:toggle',
       {visible: true},
     );
-
+    const targetString = getCommandStringForResolvedBuildTarget(buildTarget);
     const settings = {...taskSettings, ...additionalSettings};
     let argString = '';
     if (settings.arguments != null && settings.arguments.length > 0) {
       argString = ' ' + quote(settings.arguments);
     }
-    this._logOutput(`Starting "buck ${subcommand} ${buildTarget}${argString}"`, 'log');
+    this._logOutput(`Starting "buck ${subcommand} ${targetString}${argString}"`, 'log');
 
     const buckService = getBuckServiceByNuclideUri(buckRoot);
 
     return Observable.fromPromise(buckService.getHTTPServerPort(buckRoot))
       .catch(err => {
-        getLogger().warn(`Failed to get httpPort for ${buildTarget}`, err);
+        getLogger().warn(`Failed to get httpPort for ${targetString}`, err);
         return Observable.of(-1);
       })
       .switchMap(httpPort => {
@@ -411,7 +419,7 @@ export class BuckBuildSystem {
         const processMessages = runBuckCommand(
           buckService,
           buckRoot,
-          buildTarget,
+          targetString,
           subcommand,
           settings.arguments || [],
           isDebug,
@@ -456,7 +464,7 @@ export class BuckBuildSystem {
                 processMessages,
                 buckService,
                 buckRoot,
-                buildTarget,
+                targetString,
                 settings.runArguments || [],
               ) : Observable.empty(),
             ),
@@ -582,4 +590,29 @@ function runBuckCommand(
   } else {
     throw Error(`Unknown subcommand: ${subcommand}`);
   }
+}
+
+function getResolvedBuildTarget(
+  buckRoot: string,
+  buildTarget: string,
+): Observable<ResolvedBuildTarget> {
+  const service = nullthrows(getBuckServiceByNuclideUri(buckRoot));
+  return Observable.defer(() => service.resolveBuildTargetName(buckRoot, buildTarget));
+}
+
+function getCommandStringForResolvedBuildTarget(target: ResolvedBuildTarget): string {
+  const {qualifiedName, flavors} = target;
+  const separator = flavors.length > 0 ? '#' : '';
+  return `${qualifiedName}${separator}${flavors.join(',')}`;
+}
+
+function formatDeploymentTarget(
+  deploymentTarget: ?DeploymentTarget,
+): string {
+  if (!deploymentTarget) {
+    return '';
+  }
+  const {device, platform} = deploymentTarget;
+  const deviceString = device ? `: ${device.name}` : '';
+  return ` on "${platform.name}${deviceString}"`;
 }

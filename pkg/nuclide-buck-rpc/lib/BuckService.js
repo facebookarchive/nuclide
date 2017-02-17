@@ -132,6 +132,11 @@ export type CommandInfo = {
   args: Array<string>,
 };
 
+export type ResolvedBuildTarget = {
+  qualifiedName: string,
+  flavors: Array<string>,
+};
+
 /**
  * As defined in com.facebook.buck.cli.Command, some of Buck's subcommands are
  * read-only. The read-only commands can be executed in parallel, but the rest
@@ -533,7 +538,7 @@ export async function listFlavors(
  * Currently, if `aliasOrTarget` contains a flavor, this will fail.
  */
 export async function resolveAlias(rootPath: NuclideUri, aliasOrTarget: string): Promise<string> {
-  const args = ['targets', '--resolve-alias', aliasOrTarget];
+  const args = ['query', aliasOrTarget];
   const result = await _runBuckCommandFromProjectRoot(rootPath, args);
   return result.stdout.trim();
 }
@@ -558,18 +563,7 @@ export async function buildRuleTypeFor(
   rootPath: NuclideUri,
   aliasOrTarget: string,
 ): Promise<string> {
-  let canonicalName = aliasOrTarget;
-  // The leading "//" can be omitted for build/test/etc, but not for query.
-  // Don't prepend this for aliases though (aliases will not have colons or .)
-  if ((canonicalName.indexOf(':') !== -1 || canonicalName.indexOf('.') !== -1) &&
-      !canonicalName.startsWith('//')) {
-    canonicalName = '//' + canonicalName;
-  }
-  // Buck query does not support flavors.
-  const flavorIndex = canonicalName.indexOf('#');
-  if (flavorIndex !== -1) {
-    canonicalName = canonicalName.substr(0, flavorIndex);
-  }
+  const canonicalName = _normalizeNameForBuckQuery(aliasOrTarget);
   const args = ['query', canonicalName, '--json', '--output-attributes', 'buck.type'];
   const result = await _runBuckCommandFromProjectRoot(rootPath, args);
   const json: {[target: string]: Object} = JSON.parse(result.stdout);
@@ -584,6 +578,22 @@ export async function buildRuleTypeFor(
     return MULTIPLE_TARGET_RULE_TYPE;
   }
   return json[targets[0]]['buck.type'];
+}
+
+// Buck query doesn't allow omitting // or adding # for flavors, this needs to be fixed in buck.
+function _normalizeNameForBuckQuery(aliasOrTarget: string): string {
+  let canonicalName = aliasOrTarget;
+  // Don't prepend // for aliases (aliases will not have colons or .)
+  if ((canonicalName.indexOf(':') !== -1 || canonicalName.indexOf('.') !== -1) &&
+      !canonicalName.startsWith('//')) {
+    canonicalName = '//' + canonicalName;
+  }
+  // Strip flavor string
+  const flavorIndex = canonicalName.indexOf('#');
+  if (flavorIndex !== -1) {
+    canonicalName = canonicalName.substr(0, flavorIndex);
+  }
+  return canonicalName;
 }
 
 export async function getHTTPServerPort(
@@ -632,6 +642,22 @@ export async function queryWithArgs(
     }
   }
   return json;
+}
+
+export async function resolveBuildTargetName(
+  buckRoot: string,
+  nameOrAlias: string,
+): Promise<ResolvedBuildTarget> {
+  const canonicalName = _normalizeNameForBuckQuery(nameOrAlias);
+  const qualifiedName = await resolveAlias(buckRoot, canonicalName);
+  let flavors;
+  if (nameOrAlias.includes('#')) {
+    const nameComponents = nameOrAlias.split('#');
+    flavors = nameComponents.length === 2 ? nameComponents[1].split(',') : [];
+  } else {
+    flavors = [];
+  }
+  return {qualifiedName, flavors};
 }
 
 // TODO: Nuclide's RPC framework won't allow BuckWebSocketMessage here unless we cover

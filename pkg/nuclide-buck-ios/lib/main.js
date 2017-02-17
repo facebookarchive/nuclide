@@ -12,6 +12,7 @@ import type {BuckBuildSystem} from '../../nuclide-buck/lib/BuckBuildSystem';
 import type {Device, PlatformGroup, TaskType} from '../../nuclide-buck/lib/types';
 import type {TaskEvent} from '../../commons-node/tasks';
 import type {PlatformService} from '../../nuclide-buck/lib/PlatformService';
+import type {ResolvedBuildTarget} from '../../nuclide-buck-rpc/lib/BuckService';
 
 import {Disposable} from 'atom';
 import {Observable} from 'rxjs';
@@ -68,7 +69,7 @@ function provideIosDevices(
 function runTask(
   builder: BuckBuildSystem,
   taskType: TaskType,
-  buildTarget: string,
+  buildTarget: ResolvedBuildTarget,
   device: ?Device,
 ): Observable<TaskEvent> {
   let subcommand = taskType;
@@ -81,12 +82,11 @@ function runTask(
   invariant(typeof udid === 'string');
 
   const flavor = `iphonesimulator-${arch}`;
-  const separator = !buildTarget.includes('#') ? '#' : ',';
-  const flavoredTargetName = buildTarget + separator + flavor;
+  const newTarget = {...buildTarget, flavors: buildTarget.flavors.concat([flavor])};
 
   if (subcommand === 'run' || subcommand === 'debug') {
     subcommand = 'install';
   }
 
-  return builder.runSubcommand(subcommand, flavoredTargetName, {}, taskType === 'debug', udid);
+  return builder.runSubcommand(subcommand, newTarget, {}, taskType === 'debug', udid);
 }

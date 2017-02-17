@@ -15,6 +15,7 @@ import type {PlatformService} from './PlatformService';
 import type {Observable} from 'rxjs';
 import type {TaskEvent} from '../../commons-node/tasks';
 import type {BuckBuildSystem} from '../../nuclide-buck/lib/BuckBuildSystem';
+import type {ResolvedBuildTarget} from '../../nuclide-buck-rpc/lib/BuckService';
 
 export type TaskType = 'build' | 'run' | 'test' | 'debug';
 
@@ -64,7 +65,7 @@ export type BuckBuilder = {
 
 export type BuckBuilderBuildOptions = {
   root: NuclideUri,
-  target: string,
+  target: ResolvedBuildTarget,
 };
 
 export type PlatformGroup = {
@@ -75,8 +76,12 @@ export type PlatformGroup = {
 export type Platform = {
   name: string,
   tasks: Set<TaskType>,
-  runTask: (builder: BuckBuildSystem, type: TaskType, buildTarget: string, device: ?Device)
-    => Observable<TaskEvent>,
+  runTask: (
+    builder: BuckBuildSystem,
+    type: TaskType,
+    buildTarget: ResolvedBuildTarget,
+    device: ?Device,
+  ) => Observable<TaskEvent>,
   deviceGroups: Array<DeviceGroup>,
 };
 
