@@ -107,7 +107,8 @@ export function getDeviceArchitecture(
   // SDB is a tool similar to ADB used with Tizen devices. `getprop` doesn't
   // exist on Tizen, so we have to rely on uname instead.
   if (adbPath.endsWith('sdb')) {
-    return runShortAdbCommand(adbPath, device, ['shell', 'uname', '-m']).toPromise();
+    return runShortAdbCommand(adbPath, device, ['shell', 'uname', '-m'])
+      .map(s => s.trim()).toPromise();
   } else {
     return getAndroidProp(adbPath, device, 'ro.product.cpu.abi').toPromise();
   }
@@ -126,12 +127,20 @@ export function getDeviceModel(
   }
 }
 
-export function getAPIVersion(
+export async function getAPIVersion(
   adbPath: NuclideUri,
   device: string,
 ): Promise<string> {
   if (adbPath.endsWith('sdb')) {
-    return getTizenModelConfigKey(adbPath, device, 'tizen.org/feature/platform.core.api.version');
+    let version;
+    try {
+      version = await
+        getTizenModelConfigKey(adbPath, device, 'tizen.org/feature/platform.core.api.version');
+    } catch (e) {
+      version = await
+        getTizenModelConfigKey(adbPath, device, 'tizen.org/feature/platform.native.api.version');
+    }
+    return version;
   } else {
     return getAndroidProp(adbPath, device, 'ro.build.version.sdk').toPromise();
   }
