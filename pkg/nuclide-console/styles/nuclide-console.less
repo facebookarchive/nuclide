@@ -116,11 +116,15 @@
 
   pre {
     background-color: transparent;
-    color: @nuclide-console-record-text-color-normal;
 
     // Break on words
     word-break: normal;
     white-space: pre-wrap;
+  }
+
+  pre,
+  pre a {
+    color: @nuclide-console-record-text-color-normal;
   }
 
   .icon {
@@ -165,7 +169,7 @@
       border-top-color: @nuclide-console-record-border-color-warning;
     }
 
-    pre, .nuclide-console-lazy-nested-value div, .nuclide-console-lazy-nested-value span {
+    pre, pre a, .nuclide-console-lazy-nested-value div, .nuclide-console-lazy-nested-value span {
       color: @nuclide-console-record-text-color-warning;
     }
 
@@ -184,7 +188,7 @@
       border-top-color: @nuclide-console-record-border-color-success;
     }
 
-    pre, .nuclide-console-lazy-nested-value div, .nuclide-console-lazy-nested-value span {
+    pre, pre a, .nuclide-console-lazy-nested-value div, .nuclide-console-lazy-nested-value span {
       color: @nuclide-console-record-text-color-success;
     }
 
@@ -202,7 +206,7 @@
       border-top-color: @nuclide-console-record-border-color-error;
     }
 
-    pre, .nuclide-console-lazy-nested-value div, .nuclide-console-lazy-nested-value span {
+    pre, pre a, .nuclide-console-lazy-nested-value div, .nuclide-console-lazy-nested-value span {
       color: @nuclide-console-record-text-color-error;
     }
 
@@ -215,49 +219,49 @@
   // Console record colors for `level-color` classes.
   &.level-red {
     background-color: @nuclide-console-record-background-color-red;
-    pre, .nuclide-console-lazy-nested-value div, .nuclide-console-lazy-nested-value span {
+    pre, pre a, .nuclide-console-lazy-nested-value div, .nuclide-console-lazy-nested-value span {
       color: @nuclide-console-record-text-color-red;
     }
   }
 
   &.level-orange {
     background-color: @nuclide-console-record-background-color-orange;
-    pre, .nuclide-console-lazy-nested-value div, .nuclide-console-lazy-nested-value span {
+    pre, pre a, .nuclide-console-lazy-nested-value div, .nuclide-console-lazy-nested-value span {
       color: @nuclide-console-record-text-color-orange;
     }
   }
 
   &.level-yellow {
     background-color: @nuclide-console-record-background-color-yellow;
-    pre, .nuclide-console-lazy-nested-value div, .nuclide-console-lazy-nested-value span {
+    pre, pre a, .nuclide-console-lazy-nested-value div, .nuclide-console-lazy-nested-value span {
       color: @nuclide-console-record-text-color-yellow;
     }
   }
 
   &.level-green {
     background-color: @nuclide-console-record-background-color-green;
-    pre, .nuclide-console-lazy-nested-value div, .nuclide-console-lazy-nested-value span {
+    pre, pre a, .nuclide-console-lazy-nested-value div, .nuclide-console-lazy-nested-value span {
       color: @nuclide-console-record-text-color-green;
     }
   }
 
   &.level-blue {
     background-color: @nuclide-console-record-background-color-blue;
-    pre, .nuclide-console-lazy-nested-value div, .nuclide-console-lazy-nested-value span {
+    pre, pre a, .nuclide-console-lazy-nested-value div, .nuclide-console-lazy-nested-value span {
       color: @nuclide-console-record-text-color-blue;
     }
   }
 
   &.level-purple {
     background-color: @nuclide-console-record-background-color-purple;
-    pre, .nuclide-console-lazy-nested-value div, .nuclide-console-lazy-nested-value span {
+    pre, pre a, .nuclide-console-lazy-nested-value div, .nuclide-console-lazy-nested-value span {
       color: @nuclide-console-record-text-color-purple;
     }
   }
 
   &.level-violet {
     background-color: @nuclide-console-record-background-color-violet;
-    pre, .nuclide-console-lazy-nested-value div, .nuclide-ui-lazy-nested-value span {
+    pre, pre a, .nuclide-console-lazy-nested-value div, .nuclide-ui-lazy-nested-value span {
       color: @nuclide-console-record-text-color-violet;
     }
   }
@@ -274,6 +278,7 @@
       rgba(138, 43, 226, .4) 100%
     );
     pre,
+    pre a,
     .nuclide-console-lazy-nested-value div,
     .nuclide-ui-lazy-nested-value span,
     .list-group li:not(.list-nested-item),
