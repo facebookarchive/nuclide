@@ -102,7 +102,7 @@ If any Source Control features such as File Tree highlighting are working in Nuc
 
 1. Is the directory you opened in Atom part of a source control repository?
 2. If you are working on a remote directory, only [Mercurial](/docs/features/hg/) is supported.  Git will not work.
-3. If the path to the directory you opened in Atom is a symlink, even if it's a Mercurial repository, source control features will not work. As a work-around, use a direct link to the directory to access all the source control features.
+3. As of Atom 1.14, symlinks to directories essentially don't work, even if it's a Mercurial repository. Use a direct link to the directory to access all the source control features.
 
 ### Why is the output of `hg status` wrong?
 
