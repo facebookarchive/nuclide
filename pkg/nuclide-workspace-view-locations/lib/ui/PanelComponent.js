@@ -115,11 +115,12 @@ export class PanelComponent extends React.Component {
               invariant(this._toggleButtonEl != null);
               const toggleButtonBounds = this._toggleButtonEl.getBoundingClientRect();
               let inBounds;
+              const affordance = 20;
               switch (this.props.position) {
-                case 'top': inBounds = event.pageY < toggleButtonBounds.bottom; break;
-                case 'right': inBounds = event.pageX > toggleButtonBounds.left; break;
-                case 'bottom': inBounds = event.pageY > toggleButtonBounds.top; break;
-                case 'left': inBounds = event.pageX < toggleButtonBounds.right; break;
+                case 'top': inBounds = event.pageY < toggleButtonBounds.bottom + affordance; break;
+                case 'right': inBounds = event.pageX > toggleButtonBounds.left - affordance; break;
+                case 'bottom': inBounds = event.pageY > toggleButtonBounds.top - affordance; break;
+                case 'left': inBounds = event.pageX < toggleButtonBounds.right + affordance; break;
               }
               return !inBounds;
             })
