@@ -113,8 +113,7 @@
 .nuclide-workspace-views-toggle-button {
   position: absolute;
   overflow: hidden; // Mask half of the circle.
-  z-index: 1;
-  cursor: pointer;
+  z-index: 3; // Must be > .scrollbar-content
 
   // Position the toggle button target at the edge of the panel. It's important
   // that this is absolutely positioned so that it doesn't expand the area of
@@ -124,60 +123,46 @@
   &.bottom { bottom: 100%; }
   &.left { left: 100%; }
 
+  width: @nuclide-workspace-views-toggle-button-size;
+  height: @nuclide-workspace-views-toggle-button-size;
+  &.top, &.bottom { height: @nuclide-workspace-views-toggle-button-size / 2; }
+  &.left, &.right { width: @nuclide-workspace-views-toggle-button-size / 2; }
+
   .nuclide-workspace-views-toggle-button-inner {
     width: @nuclide-workspace-views-toggle-button-size;
     height: @nuclide-workspace-views-toggle-button-size;
     border-radius: @nuclide-workspace-views-toggle-button-size / 2;
 
+    position: absolute;
     display: flex;
     text-align: center;
     justify-content: center;
     align-items: center;
+    cursor: pointer;
+
+    &.top { bottom: 0; }
+    &.right { left: 0; }
+    &.bottom { top: 0; }
+    &.left { right: 0; }
  }
 
-  // Only show half the circle
-  &.nuclide-workspace-views-toggle-button-visible {
-    &.top .nuclide-workspace-views-toggle-button-inner {
-      transform: translateY(-50%);
+  // Hide the button.
+  &:not(.nuclide-workspace-views-toggle-button-visible) {
+    .nuclide-workspace-views-toggle-button-inner {
+      &.top { transform: translateY(-50%); }
+      &.right { transform: translateX(50%); }
+      &.bottom { transform: translateY(50%); }
+      &.left { transform: translateX(-50%); }
     }
-    &.right .nuclide-workspace-views-toggle-button-inner {
-      transform: translateX(50%);
-    }
-    &.bottom .nuclide-workspace-views-toggle-button-inner {
-      transform: translateY(50%);
-    }
-    &.left .nuclide-workspace-views-toggle-button-inner {
-      transform: translateX(-50%);
-    }
-  }
-
-  // Normally mask the circle fully.
-  &.top .nuclide-workspace-views-toggle-button-inner {
-    transform: translateY(-100%);
-  }
-  &.right .nuclide-workspace-views-toggle-button-inner {
-    transform: translateX(100%);
-  }
-  &.bottom .nuclide-workspace-views-toggle-button-inner {
-    transform: translateY(100%);
-  }
-  &.left .nuclide-workspace-views-toggle-button-inner {
-    transform: translateX(-100%);
   }
 
   // Center the icon.
   @offset: 8px;
-  &.top .nuclide-workspace-views-toggle-button-inner .icon {
-    transform: translateY(@offset);
-  }
-  &.right .nuclide-workspace-views-toggle-button-inner .icon {
-    transform: translateX(-@offset);
-  }
-  &.bottom .nuclide-workspace-views-toggle-button-inner .icon {
-    transform: translateY(-@offset);
-  }
-  &.left .nuclide-workspace-views-toggle-button-inner .icon {
-    transform: translateX(@offset);
+  .nuclide-workspace-views-toggle-button-inner {
+    &.top .icon { transform: translateY(@offset); }
+    &.right .icon { transform: translateX(-@offset); }
+    &.bottom .icon { transform: translateY(-@offset); }
+    &.left .icon { transform: translateX(@offset); }
   }
 
   // Animate the icon.
