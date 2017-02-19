@@ -113,7 +113,10 @@
 .nuclide-workspace-views-toggle-button {
   position: absolute;
   overflow: hidden; // Mask half of the circle.
-  z-index: 3; // Must be > .scrollbar-content
+
+  // Must be > .scrollbar-content and inactive
+  // .nuclide-workspace-views-panel-wrapper
+  z-index: 11;
 
   // Position the toggle button target at the edge of the panel. It's important
   // that this is absolutely positioned so that it doesn't expand the area of

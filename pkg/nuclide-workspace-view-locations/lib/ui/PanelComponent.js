@@ -18,7 +18,7 @@ import {ToggleButton} from './ToggleButton';
 import invariant from 'assert';
 import classnames from 'classnames';
 import {React, ReactDOM} from 'react-for-atom';
-import {Observable} from 'rxjs';
+import {Observable, Subject} from 'rxjs';
 
 const MINIMUM_SIZE = 100;
 const DEFAULT_INITIAL_SIZE = 300;
@@ -52,6 +52,7 @@ type State = {
  * A container for centralizing the logic for making panels resizable.
  */
 export class PanelComponent extends React.Component {
+  _activeChanges: Subject<boolean>;
   _disposables: ?UniversalDisposable;
   _dropTargetDisposable: ?UniversalDisposable;
   _toggleButtonEl: ?HTMLElement;
@@ -80,6 +81,8 @@ export class PanelComponent extends React.Component {
     (this: any)._handleDragLeave = this._handleDragLeave.bind(this);
     (this: any)._handleToggleButton = this._handleToggleButton.bind(this);
     (this: any)._revealDropTarget = this._revealDropTarget.bind(this);
+
+    this._activeChanges = new Subject();
   }
 
   componentDidMount(): void {
@@ -98,6 +101,7 @@ export class PanelComponent extends React.Component {
       return;
     }
 
+    const {position} = this.props;
     this._disposables.add(
       // In order to provide as large of a mouse target as possible, we use the entire panel
       // container. When detecting whether the mouse has left the area, we also include the space
@@ -105,25 +109,23 @@ export class PanelComponent extends React.Component {
       Observable.fromEvent(panelContainerEl, 'mouseenter').switchMap(enterEvent => (
         Observable.concat(
           Observable.of(enterEvent),
-          Observable.fromEvent(panelContainerEl, 'mouseleave')
-            .take(1)
-            // We want to include the toggle button area when determining whether we've left, so
-            // we need to use "move" events. We only start caring about them after the first
-            // leave event, though, so we're doing as little work as possible.
-            .switchMap(event => Observable.fromEvent(window, 'mousemove').startWith(event))
-            .filter(event => {
-              invariant(this._toggleButtonEl != null);
-              const toggleButtonBounds = this._toggleButtonEl.getBoundingClientRect();
-              let inBounds;
-              const affordance = 20;
-              switch (this.props.position) {
-                case 'top': inBounds = event.pageY < toggleButtonBounds.bottom + affordance; break;
-                case 'right': inBounds = event.pageX > toggleButtonBounds.left - affordance; break;
-                case 'bottom': inBounds = event.pageY > toggleButtonBounds.top - affordance; break;
-                case 'left': inBounds = event.pageX < toggleButtonBounds.right + affordance; break;
-              }
-              return !inBounds;
-            })
+          Observable.merge(
+            // We want to include the toggle button area when determining whether we've left, so we
+            // need to use "move" events. We only start caring about them after the first leave
+            // event, though, so we're doing as little work as possible. BUT...
+            Observable.fromEvent(panelContainerEl, 'mouseleave')
+              .take(1)
+              .switchMap(event => Observable.fromEvent(window, 'mousemove').startWith(event))
+              .filter(event => shouldHideToggleButton(event, panelContainerEl, position)),
+            // ...mouseleave won't be triggered if you're dragging, so listen for dragend too...
+            Observable.fromEvent(window, 'dragend')
+              .filter(event => shouldHideToggleButton(event, panelContainerEl, position)),
+            // ...nor is it triggered when the pane is hidden (using a command or by removing the
+            // last item), so we listen to that too.
+            this._activeChanges
+              .distinctUntilChanged()
+              .filter(active => !active),
+          )
             .take(1),
         )
       ))
@@ -173,6 +175,10 @@ export class PanelComponent extends React.Component {
     } else if (!nextProps.active && nextProps.draggingItem && !this.props.draggingItem) {
       // ...but do animate if you start dragging while the panel is hidden.
       this.setState({shouldAnimate: true});
+    }
+
+    if (nextProps.active !== this.props.active) {
+      this._activeChanges.next(nextProps.active);
     }
   }
 
@@ -403,4 +409,38 @@ function Handle(props: HandleProps): React.Element<any> {
 
 function getWidthOrHeight(position: Position): 'width' | 'height' {
   return position === 'left' || position === 'right' ? 'width' : 'height';
+}
+
+function shouldHideToggleButton(
+  event: MouseEvent,
+  panelContainerEl: HTMLElement,
+  position: Position,
+): boolean {
+  const panelContainerBounds = panelContainerEl.getBoundingClientRect();
+  const affordance = 20;
+  const toggleButtonSize = 50 / 2; // This needs to match the value in the CSS.
+  const bounds = {
+    top: panelContainerBounds.top,
+    right: panelContainerBounds.right,
+    bottom: panelContainerBounds.bottom,
+    left: panelContainerBounds.left,
+  };
+  switch (position) {
+    case 'top':
+      bounds.bottom += toggleButtonSize + affordance;
+      bounds.top = 0; // We want to include the header.
+      break;
+    case 'right':
+      bounds.left -= toggleButtonSize + affordance;
+      break;
+    case 'bottom':
+      bounds.top -= toggleButtonSize + affordance;
+      invariant(document.body != null);
+      bounds.bottom = document.body.clientHeight; // We want to include the footer.
+      break;
+    case 'left':
+      bounds.right += toggleButtonSize + affordance;
+      break;
+  }
+  return !rectContainsPoint(bounds, {x: event.pageX, y: event.pageY});
 }
