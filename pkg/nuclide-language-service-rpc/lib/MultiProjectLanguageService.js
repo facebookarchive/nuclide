@@ -38,9 +38,9 @@ import {compact} from '../../commons-node/observable';
 import {ConfigCache} from '../../commons-node/ConfigCache';
 import {ensureInvalidations, NullLanguageService} from '..';
 
-export class MultiProjectLanguageService {
+export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
   // Maps project dir => LanguageService
-  _processes: Cache<NuclideUri, Promise<?LanguageService>>;
+  _processes: Cache<NuclideUri, Promise<?T>>;
   _resources: UniversalDisposable;
   _configCache: ConfigCache;
   _logger: CategoryLogger;
@@ -50,7 +50,7 @@ export class MultiProjectLanguageService {
     fileCache: FileCache,
     projectFileName: string,
     fileExtensions: Array<NuclideUri>,
-    languageServiceFactory: (projectDir: NuclideUri) => Promise<?LanguageService>,
+    languageServiceFactory: (projectDir: NuclideUri) => Promise<?T>,
   ) {
     this._logger = logger;
     this._resources = new UniversalDisposable();
@@ -112,7 +112,7 @@ export class MultiProjectLanguageService {
 
   async getLanguageServiceForFile(
     filePath: string,
-  ): Promise<?LanguageService> {
+  ): Promise<?T> {
     const projectDir = await this.findProjectDir(filePath);
     if (projectDir == null) {
       return null;
@@ -146,7 +146,7 @@ export class MultiProjectLanguageService {
     this._processes.clear();
   }
 
-  observeLanguageServices(): Observable<LanguageService> {
+  observeLanguageServices(): Observable<T> {
     this._logger.logInfo('observing connections');
     return compact(this._processes.observeValues()
       .switchMap(process => Observable.fromPromise(process)));
@@ -275,4 +275,4 @@ export class MultiProjectLanguageService {
 }
 
 // Enforces that an instance of MultiProjectLanguageService satisfies the LanguageService type
-(((null: any): MultiProjectLanguageService): LanguageService);
+(((null: any): MultiProjectLanguageService<>): LanguageService);
