@@ -119,14 +119,18 @@ export type SingleFileLanguageService = {
   dispose(): void,
 };
 
-export class ServerLanguageService {
+export class ServerLanguageService<T: SingleFileLanguageService = SingleFileLanguageService> {
   _fileCache: FileCache;
-  _service: SingleFileLanguageService;
+  _service: T;
 
-  constructor(fileNotifier: FileNotifier, service: SingleFileLanguageService) {
+  constructor(fileNotifier: FileNotifier, service: T) {
     invariant(fileNotifier instanceof FileCache);
     this._fileCache = fileNotifier;
     this._service = service;
+  }
+
+  getSingleFileLanguageService(): T {
+    return this._service;
   }
 
   async getDiagnostics(
@@ -283,7 +287,7 @@ export class ServerLanguageService {
 }
 
 // Assert that ServerLanguageService satisifes the LanguageService interface:
-(((null: any): ServerLanguageService): LanguageService);
+(((null: any): ServerLanguageService<>): LanguageService);
 
 export function ensureInvalidations(
   logger: CategoryLogger,
