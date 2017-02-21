@@ -87,12 +87,18 @@ export class ScopesComponent extends React.Component {
   ): ?React.Element<any> {
     // Non-local scopes should be collapsed by default since users typically care less about them.
     const collapsedByDefault = scope.name !== 'Locals';
+    const noLocals = (scope.name !== 'Locals' || scope.scopeVariables.length > 0) ? null
+      : <div className="nuclide-debugger-expression-value-row">
+          <span className="nuclide-debugger-expression-value-content">(no variables)</span>
+        </div>;
+
     return (
       <Section
         collapsable={true}
         headline={scope.name}
         size="small"
         collapsedByDefault={collapsedByDefault}>
+        {noLocals}
         {scope.scopeVariables.map(this._renderExpression.bind(this, fetchChildren))}
       </Section>
     );
