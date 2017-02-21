@@ -632,6 +632,11 @@
       "from": "diff@3.0.1",
       "resolved": "https://registry.npmjs.org/diff/-/diff-3.0.1.tgz"
     },
+    "diffparser": {
+      "version": "1.1.0",
+      "from": "diffparser@1.1.0",
+      "resolved": "https://registry.npmjs.org/diffparser/-/diffparser-1.1.0.tgz"
+    },
     "doctrine": {
       "version": "1.5.0",
       "from": "doctrine@>=1.2.2 <2.0.0",
@@ -1027,9 +1032,9 @@
       "resolved": "https://registry.npmjs.org/glob/-/glob-7.1.1.tgz"
     },
     "globals": {
-      "version": "9.15.0",
+      "version": "9.16.0",
       "from": "globals@>=9.0.0 <10.0.0",
-      "resolved": "https://registry.npmjs.org/globals/-/globals-9.15.0.tgz",
+      "resolved": "https://registry.npmjs.org/globals/-/globals-9.16.0.tgz",
       "dev": true
     },
     "globby": {
@@ -1776,9 +1781,9 @@
       "dev": true
     },
     "qs": {
-      "version": "6.3.0",
+      "version": "6.3.1",
       "from": "qs@>=6.3.0 <6.4.0",
-      "resolved": "https://registry.npmjs.org/qs/-/qs-6.3.0.tgz"
+      "resolved": "https://registry.npmjs.org/qs/-/qs-6.3.1.tgz"
     },
     "random-seed": {
       "version": "0.2.0",
@@ -1873,9 +1878,9 @@
       "resolved": "https://registry.npmjs.org/redux/-/redux-3.6.0.tgz"
     },
     "regenerator-runtime": {
-      "version": "0.10.1",
+      "version": "0.10.2",
       "from": "regenerator-runtime@>=0.10.0 <0.11.0",
-      "resolved": "https://registry.npmjs.org/regenerator-runtime/-/regenerator-runtime-0.10.1.tgz",
+      "resolved": "https://registry.npmjs.org/regenerator-runtime/-/regenerator-runtime-0.10.2.tgz",
       "dev": true
     },
     "repeating": {
