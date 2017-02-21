@@ -99,12 +99,23 @@ export class MultiProjectLanguageService {
     return this._configCache.getConfigDir(filePath);
   }
 
-  async _getLanguageServiceForProject(
+  async _getLanguageServiceForFile(
     filePath: string,
   ): Promise<LanguageService> {
+    const service = await this.getLanguageServiceForFile(filePath);
+    if (service != null) {
+      return service;
+    } else {
+      return new NullLanguageService();
+    }
+  }
+
+  async getLanguageServiceForFile(
+    filePath: string,
+  ): Promise<?LanguageService> {
     const projectDir = await this.findProjectDir(filePath);
     if (projectDir == null) {
-      return new NullLanguageService();
+      return null;
     }
 
     const process = this._processes.get(projectDir);
@@ -114,12 +125,7 @@ export class MultiProjectLanguageService {
         this._processes.delete(projectDir);
       }
     });
-    const result = await process;
-    if (result == null) {
-      return new NullLanguageService();
-    } else {
-      return result;
-    }
+    return process;
   }
 
   // Ensures that the only attached LanguageServices are those
@@ -140,7 +146,7 @@ export class MultiProjectLanguageService {
     this._processes.clear();
   }
 
-  _observeProcesses(): Observable<LanguageService> {
+  observeLanguageServices(): Observable<LanguageService> {
     this._logger.logInfo('observing connections');
     return compact(this._processes.observeValues()
       .switchMap(process => Observable.fromPromise(process)));
@@ -149,12 +155,12 @@ export class MultiProjectLanguageService {
   async getDiagnostics(
     fileVersion: FileVersion,
   ): Promise<?DiagnosticProviderUpdate> {
-    return (await this._getLanguageServiceForProject(fileVersion.filePath))
+    return (await this._getLanguageServiceForFile(fileVersion.filePath))
       .getDiagnostics(fileVersion);
   }
 
   observeDiagnostics(): ConnectableObservable<FileDiagnosticUpdate> {
-    return this._observeProcesses()
+    return this.observeLanguageServices()
       .mergeMap((process: LanguageService) => {
         this._logger.logTrace('observeDiagnostics');
         return ensureInvalidations(
@@ -174,7 +180,7 @@ export class MultiProjectLanguageService {
     activatedManually: boolean,
     prefix: string,
   ): Promise<?Array<Completion>> {
-    return (await this._getLanguageServiceForProject(fileVersion.filePath))
+    return (await this._getLanguageServiceForFile(fileVersion.filePath))
       .getAutocompleteSuggestions(fileVersion, position, activatedManually, prefix);
   }
 
@@ -182,7 +188,7 @@ export class MultiProjectLanguageService {
     fileVersion: FileVersion,
     position: atom$Point,
   ): Promise<?DefinitionQueryResult> {
-    return (await this._getLanguageServiceForProject(fileVersion.filePath))
+    return (await this._getLanguageServiceForFile(fileVersion.filePath))
       .getDefinition(fileVersion, position);
   }
 
@@ -190,7 +196,7 @@ export class MultiProjectLanguageService {
     file: NuclideUri,
     id: string,
   ): Promise<?Definition> {
-    return (await this._getLanguageServiceForProject(file))
+    return (await this._getLanguageServiceForFile(file))
       .getDefinitionById(file, id);
   }
 
@@ -198,26 +204,26 @@ export class MultiProjectLanguageService {
     fileVersion: FileVersion,
     position: atom$Point,
   ): Promise<?FindReferencesReturn> {
-    return (await this._getLanguageServiceForProject(fileVersion.filePath))
+    return (await this._getLanguageServiceForFile(fileVersion.filePath))
       .findReferences(fileVersion, position);
   }
 
   async getCoverage(
     filePath: NuclideUri,
   ): Promise<?CoverageResult> {
-    return (await this._getLanguageServiceForProject(filePath))
+    return (await this._getLanguageServiceForFile(filePath))
       .getCoverage(filePath);
   }
 
   async getOutline(
     fileVersion: FileVersion,
   ): Promise<?Outline> {
-    return (await this._getLanguageServiceForProject(fileVersion.filePath))
+    return (await this._getLanguageServiceForFile(fileVersion.filePath))
       .getOutline(fileVersion);
   }
 
   async typeHint(fileVersion: FileVersion, position: atom$Point): Promise<?TypeHint> {
-    return (await this._getLanguageServiceForProject(fileVersion.filePath))
+    return (await this._getLanguageServiceForFile(fileVersion.filePath))
       .typeHint(fileVersion, position);
   }
 
@@ -225,7 +231,7 @@ export class MultiProjectLanguageService {
     fileVersion: FileVersion,
     position: atom$Point,
   ): Promise<?Array<atom$Range>> {
-    return (await this._getLanguageServiceForProject(fileVersion.filePath))
+    return (await this._getLanguageServiceForFile(fileVersion.filePath))
       .highlight(fileVersion, position);
   }
 
@@ -233,7 +239,7 @@ export class MultiProjectLanguageService {
     fileVersion: FileVersion,
     range: atom$Range,
   ): Promise<?string> {
-    return (await this._getLanguageServiceForProject(fileVersion.filePath))
+    return (await this._getLanguageServiceForFile(fileVersion.filePath))
       .formatSource(fileVersion, range);
   }
 
@@ -241,7 +247,7 @@ export class MultiProjectLanguageService {
     newCursor?: number,
     formatted: string,
   }> {
-    return (await this._getLanguageServiceForProject(fileVersion.filePath))
+    return (await this._getLanguageServiceForFile(fileVersion.filePath))
       .formatEntireFile(fileVersion, range);
   }
 
@@ -249,17 +255,17 @@ export class MultiProjectLanguageService {
     fileVersion: FileVersion,
     position: atom$Point,
   ): Promise<?NuclideEvaluationExpression> {
-    return (await this._getLanguageServiceForProject(fileVersion.filePath))
+    return (await this._getLanguageServiceForFile(fileVersion.filePath))
       .getEvaluationExpression(fileVersion, position);
   }
 
   async getProjectRoot(filePath: NuclideUri): Promise<?NuclideUri> {
-    return (await this._getLanguageServiceForProject(filePath))
+    return (await this._getLanguageServiceForFile(filePath))
       .getProjectRoot(filePath);
   }
 
   async isFileInProject(filePath: NuclideUri): Promise<boolean> {
-    return (await this._getLanguageServiceForProject(filePath))
+    return (await this._getLanguageServiceForFile(filePath))
       .isFileInProject(filePath);
   }
 
