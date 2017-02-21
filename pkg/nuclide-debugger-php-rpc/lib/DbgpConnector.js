@@ -88,6 +88,8 @@ export class DbgpConnector {
   }
 
   _onSocketConnection(socket: Socket) {
+    // Xdebug encodes XML messages as iso-8859-1, which is the same as 'latin1'.
+    socket.setEncoding('latin1');
     logger.log('Connection on port ' + this._port);
     if (!this._checkListening(socket, 'Connection')) {
       return;

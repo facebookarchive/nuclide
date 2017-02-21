@@ -46,10 +46,12 @@ describe('debugger-php-rpc DbgpConnector', () => {
   let server: ServerType = (null: any);
   let socket;
 
-  function createSocketSpy() {
+  function createSocketSpy(): EventEmitter {
     const result = new EventEmitter();
     spyOn(result, 'on').andCallThrough();
     spyOn(result, 'once').andCallThrough();
+    (result: any).setEncoding = () => {};
+    spyOn(result, 'setEncoding').andReturn();
     return result;
   }
 
