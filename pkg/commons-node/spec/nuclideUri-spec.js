@@ -400,6 +400,12 @@ describe('nuclide-uri', () => {
     expect(__TEST__._pathModuleFor('abcdef')).toEqual(path.posix);
   });
 
+  it('properly converts file URIs to local paths', () => {
+    expect(nuclideUri.uriToNuclideUri('\\abc\\def')).toEqual(null);
+    expect(nuclideUri.uriToNuclideUri('file://somehost/file/path')).toEqual('/file/path');
+    expect(nuclideUri.uriToNuclideUri('file://C:\\some\\file\\path')).toEqual('C:\\some\\file\\path');
+  });
+
   it('properly handles backslash-containing remote URIs', () => {
     expect(nuclideUri.getPath('nuclide://host/aaa\\bbb.txt')).toBe('/aaa\\bbb.txt');
     expect(nuclideUri.getPath('nuclide://host/dir/aaa\\bbb.txt')).toBe('/dir/aaa\\bbb.txt');
