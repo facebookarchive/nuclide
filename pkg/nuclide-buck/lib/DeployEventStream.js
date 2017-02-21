@@ -143,20 +143,20 @@ export function getDeployBuildEvents(
       )
         .map(path => ({
           type: 'log',
-          message: `Launched LLDB debugger with ${path}`,
+          message: `Launched debugger with ${path}`,
           level: 'info',
         }))
         .catch(err => {
-          getLogger().error(`Failed to launch LLDB debugger for ${buildTarget}`, err);
+          getLogger().error(`Failed to launch debugger for ${buildTarget}`, err);
           return Observable.of({
             type: 'log',
-            message: `Failed to launch LLDB debugger: ${err.message}`,
+            message: `Failed to launch debugger: ${err.message}`,
             level: 'error',
           });
         })
         .startWith({
           type: 'log',
-          message: `Launching LLDB debugger for ${buildTarget}...`,
+          message: `Launching debugger for ${buildTarget}...`,
           level: 'log',
         }, {
           type: 'progress',
