@@ -410,27 +410,31 @@ export class FlowSingleProjectLanguageService {
     }
   }
 
-  // This is unused. We will instead use the static method below, which allows us to provide
-  // outlines for files outside of Flow roots.
   getOutline(
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
   ): Promise<?Outline> {
-    throw new Error('Not Implemented');
+    return FlowSingleProjectLanguageService.getOutline(
+      filePath,
+      buffer,
+      this,
+      this._execInfoContainer,
+    );
   }
 
   // This static function takes an optional FlowRoot instance so that *if* it is part of a Flow
   // root, it can use the appropriate flow-bin installation (which may be the only Flow
   // installation) but if it lives outside of a Flow root, outlining still works using the system
   // Flow.
-  static async flowGetOutline(
+  static async getOutline(
+    filePath: NuclideUri,
+    buffer: simpleTextBuffer$TextBuffer,
     root: ?FlowSingleProjectLanguageService,
-    currentContents: string,
     execInfoContainer: FlowExecInfoContainer,
   ): Promise<?Outline> {
     const json = await FlowSingleProjectLanguageService.flowGetAst(
       root,
-      currentContents,
+      buffer.getText(),
       execInfoContainer,
     );
 

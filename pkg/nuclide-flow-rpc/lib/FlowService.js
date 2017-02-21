@@ -167,7 +167,7 @@ class FlowSingleFileLanguageService {
     return getState().getRootContainer().runWithOptionalRoot(
       filePath,
       root => FlowSingleProjectLanguageService
-          .flowGetOutline(root, buffer.getText(), getState().getExecInfoContainer()),
+          .getOutline(filePath, buffer, root, getState().getExecInfoContainer()),
     );
   }
 
