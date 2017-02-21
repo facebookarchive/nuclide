@@ -13,15 +13,12 @@ import type {FileReferences} from '../types';
 import {React, ReactDOM} from 'react-for-atom';
 import FileReferencesView from './FileReferencesView';
 import FindReferencesModel from '../FindReferencesModel';
+import {pluralize} from '../../../commons-node/string';
 
 // Number of files to show on every page.
 const PAGE_SIZE = 10;
 // Start loading more once the user scrolls within this many pixels of the bottom.
 const SCROLL_LOAD_THRESHOLD = 250;
-
-function pluralize(noun: string, count: number) {
-  return count === 1 ? noun : noun + 's';
-}
 
 type Props = {
   model: FindReferencesModel,

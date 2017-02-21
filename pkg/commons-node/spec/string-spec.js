@@ -9,15 +9,16 @@
  */
 
 import {
+  countOccurrences,
   indent,
   maybeToString,
+  pluralize,
   relativeDate,
-  countOccurrences,
+  removeCommonPrefix,
+  removeCommonSuffix,
   shellParse,
   shorten,
   splitOnce,
-  removeCommonPrefix,
-  removeCommonSuffix,
 } from '../string';
 
 describe('relativeDate', () => {
@@ -199,5 +200,14 @@ describe('indent', () => {
 
   it('uses the provided character', () => {
     expect(indent('a\n\nb', 1, '\t')).toBe('\ta\n\n\tb');
+  });
+});
+
+describe('pluralize', () => {
+  it('works', () => {
+    expect(pluralize('test', 0)).toEqual('tests');
+    expect(pluralize('test', 1)).toEqual('test');
+    expect(pluralize('test', 2)).toEqual('tests');
+    expect(pluralize('test', 123)).toEqual('tests');
   });
 });

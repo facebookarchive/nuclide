@@ -167,3 +167,7 @@ export function splitOnce(str: string, separator: string): [string, ?string] {
 export function indent(str: string, level: number = 2, char: string = ' '): string {
   return str.replace(/^([^\n])/gm, char.repeat(level) + '$1');
 }
+
+export function pluralize(noun: string, count: number) {
+  return count === 1 ? noun : noun + 's';
+}
