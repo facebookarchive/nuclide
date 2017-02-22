@@ -90,11 +90,13 @@ export class ConnectionMultiplexer {
       }
       case 'setBreakpointByUrl': {
         const response = await this._breakpointManager.setBreakpointByUrl(message);
+        response.id = message.id;
         this._sendMessageToClient(response);
         break;
       }
       case 'removeBreakpoint': {
         const response = await this._breakpointManager.removeBreakpoint(message);
+        response.id = message.id;
         this._sendMessageToClient(response);
         break;
       }
@@ -120,6 +122,7 @@ export class ConnectionMultiplexer {
       }
       case 'setPauseOnExceptions': {
         const response = await this._breakpointManager.setPauseOnExceptions(message);
+        response.id = message.id;
         this._sendMessageToClient(response);
         break;
       }
@@ -213,6 +216,7 @@ export class ConnectionMultiplexer {
   async _evaluateOnCallFrame(message: Object): Promise<void> {
     if (this._enabledConnection != null) {
       const response = await this._enabledConnection.sendCommand(message);
+      response.id = message.id;
       this._sendMessageToClient(response);
     } else {
       this._replyWithError(message.id, `${message.method} sent to running connection`);
