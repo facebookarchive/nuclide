@@ -541,7 +541,7 @@ function parseJSON(args: Array<any>, value: string): any {
 export function processAutocompleteItem(
   replacementPrefix: string,
   flowItem: FlowAutocompleteItem,
-): atom$AutocompleteSuggestion {
+): Completion {
   // Truncate long types for readability
   const description = flowItem.type.length < 80
     ? flowItem.type

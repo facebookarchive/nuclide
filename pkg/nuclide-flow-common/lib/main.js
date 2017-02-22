@@ -10,6 +10,8 @@
 
 import fuzzaldrinPlus from 'fuzzaldrin-plus';
 
+import type {Completion} from '../../nuclide-language-service/lib/LanguageService';
+
 // A simple heuristic for identifier names in JavaScript.
 export const JAVASCRIPT_IDENTIFIER_REGEX = /[$_a-zA-Z][$_\w]*/g;
 
@@ -54,8 +56,8 @@ export function shouldFilter(
 
 export function filterResultsByPrefix(
   prefix: string,
-  results: ?Array<atom$AutocompleteSuggestion>,
-): ?Array<atom$AutocompleteSuggestion> {
+  results: ?Array<Completion>,
+): ?Array<Completion> {
   if (results == null) {
     return null;
   }

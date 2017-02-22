@@ -10,6 +10,8 @@
 
 import {JAVASCRIPT_WORD_REGEX, filterResultsByPrefix, shouldFilter} from '..';
 
+import type {Completion} from '../../nuclide-language-service/lib/LanguageService';
+
 describe('JAVASCRIPT_WORD_REGEX', () => {
   // For brevity in specs.
   function matches(s) {
@@ -110,7 +112,7 @@ describe('shouldFilter', () => {
 describe('updateResults', () => {
   let prefix: string = (null: any);
 
-  let resultsToUpdate: ?Array<atom$AutocompleteSuggestion> = null;
+  let resultsToUpdate: ?Array<Completion> = null;
 
   beforeEach(() => {
     const resultNames = [

@@ -8,9 +8,11 @@
  * @flow
  */
 
+import type {Completion} from '../../nuclide-language-service/lib/LanguageService';
+
 import {compareHackCompletions} from '../lib/autocomplete';
 
-function createCompletion(text: string, prefix: string = ''): atom$AutocompleteSuggestion {
+function createCompletion(text: string, prefix: string = ''): Completion {
   return {
     snippet: text + '()',
     displayText: text,
@@ -19,13 +21,13 @@ function createCompletion(text: string, prefix: string = ''): atom$AutocompleteS
   };
 }
 
-const c1:atom$AutocompleteSuggestion = createCompletion('GetAaa');
-const c2:atom$AutocompleteSuggestion = createCompletion('getAzzz');
-const c3:atom$AutocompleteSuggestion = createCompletion('aa_getaaa');
-const c4:atom$AutocompleteSuggestion = createCompletion('zz_getAaa');
-const c5:atom$AutocompleteSuggestion = createCompletion('aa_getAaa');
-const c6:atom$AutocompleteSuggestion = createCompletion('_aa_getAaa');
-const c7:atom$AutocompleteSuggestion = createCompletion('zz_getaaaa');
+const c1:Completion = createCompletion('GetAaa');
+const c2:Completion = createCompletion('getAzzz');
+const c3:Completion = createCompletion('aa_getaaa');
+const c4:Completion = createCompletion('zz_getAaa');
+const c5:Completion = createCompletion('aa_getAaa');
+const c6:Completion = createCompletion('_aa_getAaa');
+const c7:Completion = createCompletion('zz_getaaaa');
 
 describe('autocomplete', () => {
   describe('compareHackCompletions()', () => {

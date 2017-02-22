@@ -98,7 +98,7 @@ export class AutocompleteProvider<T: LanguageService> {
 
   getSuggestions(
     request: atom$AutocompleteRequest,
-  ): Promise<?Array<atom$AutocompleteSuggestion>> {
+  ): Promise<?Array<Completion>> {
     return trackTiming(
       this._analyticsEventName,
       () => {
