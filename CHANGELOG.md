@@ -1,5 +1,28 @@
 # Nuclide Changelog
 
+## v0.207.0
+
+### Highlights
+
+* Lots of Workspace View improvements! This greatly improves UX when (re)-arranging the pane layout, e.g. via drag-and-drop.
+
+### Debugger
+
+* The threads window is now sortable.
+
+### Languages
+
+* Hack Grammar: Fix variable capture in lambdas.
+* Hack: Fix errors disappearing after restarting the Hack server.
+* Flow: Highlight typehints according to the exact range returned from Flow.
+
+### Misc bug fixes & improvements
+
+* Fixed a bug that caused Nuclide to overwrite the symlink itself instead of the target file when editing a remote file that is a symlink.
+* Prevent spawning multiple cursors whenever it conflicts with hyperclick.
+* Fixed the styling of links in the console.
+
+
 ## v0.206.0
 
 ### Highlights
