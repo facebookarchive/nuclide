@@ -774,7 +774,7 @@
       "dev": true
     },
     "eslint-plugin-nuclide-internal": {
-      "version": "0.0.35",
+      "version": "0.0.36",
       "from": "resources/eslint-plugin-nuclide-internal",
       "resolved": "file:resources/eslint-plugin-nuclide-internal",
       "dev": true
