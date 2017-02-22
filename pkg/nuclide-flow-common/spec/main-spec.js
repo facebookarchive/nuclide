@@ -67,35 +67,43 @@ describe('shouldFilter', () => {
   }
 
   it('should filter after a dot', () => {
-    expect(shouldFilter(fakeRequest('.'), fakeRequest('f'))).toBe(true);
+    expect(shouldFilter(fakeRequest('.'), fakeRequest('f'), 1)).toBe(true);
   });
 
-  it('should not filter after a dot if the next prefix is more than one character', () => {
-    expect(shouldFilter(fakeRequest('.'), fakeRequest('fo'))).toBe(false);
+  it('should filter after a dot even if the next prefix is more than one character', () => {
+    expect(shouldFilter(fakeRequest('.'), fakeRequest('fo'), 2)).toBe(true);
+  });
+
+  it('should not filter after a dot if number of chars typed exceeds prefix length', () => {
+    expect(shouldFilter(fakeRequest('.'), fakeRequest('fo'), 3)).toBe(false);
   });
 
   it('should filter when the prefix is one character longer and a valid identifier', () => {
-    expect(shouldFilter(fakeRequest('asdf'), fakeRequest('asdfg'))).toBe(true);
-    expect(shouldFilter(fakeRequest('_9asdf'), fakeRequest('_9asdf$'))).toBe(true);
+    expect(shouldFilter(fakeRequest('asdf'), fakeRequest('asdfg'), 1)).toBe(true);
+    expect(shouldFilter(fakeRequest('_9asdf'), fakeRequest('_9asdf$'), 1)).toBe(true);
   });
 
   it("should not filter if the current prefix doesn't start with the last prefix", () => {
-    expect(shouldFilter(fakeRequest('asdf'), fakeRequest('bsdfg'))).toBe(false);
+    expect(shouldFilter(fakeRequest('asdf'), fakeRequest('bsdfg'), 1)).toBe(false);
   });
 
   it('should not filter if the prefix is not a valid identifier', () => {
-    expect(shouldFilter(fakeRequest('a-df'), fakeRequest('a-dfg'))).toBe(false);
-    expect(shouldFilter(fakeRequest('9asdf'), fakeRequest('9asdfg'))).toBe(false);
+    expect(shouldFilter(fakeRequest('a-df'), fakeRequest('a-dfg'), 1)).toBe(false);
+    expect(shouldFilter(fakeRequest('9asdf'), fakeRequest('9asdfg'), 1)).toBe(false);
   });
 
-  it('should not filter if the current prefix is more than one character longer', () => {
-    expect(shouldFilter(fakeRequest('asdf'), fakeRequest('asdfgh'))).toBe(false);
+  it('should filter if the current prefix is more than one character longer', () => {
+    expect(shouldFilter(fakeRequest('asdf'), fakeRequest('asdfgh'), 2)).toBe(true);
+  });
+
+  it('should not filter if number of chars typed does not match prefix length difference', () => {
+    expect(shouldFilter(fakeRequest('asdf'), fakeRequest('asdfgh'), 3)).toBe(false);
   });
 
   // If autocomplete is activated manually (ctrl+space), you can get a blank prefix for the first
   // request. Then, we should filter when the first character is typed.
   it('should filter on the first character typed', () => {
-    expect(shouldFilter(fakeRequest(''), fakeRequest('a'))).toBe(true);
+    expect(shouldFilter(fakeRequest(''), fakeRequest('a'), 1)).toBe(true);
   });
 });
 
