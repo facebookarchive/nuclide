@@ -130,7 +130,7 @@ async function createLanguageService(): Promise<AtomLanguageService<HackLanguage
     diagnostics: diagnosticsConfig,
   };
 
-  return new AtomLanguageService(connectionToHackService, atomConfig, logger);
+  return new AtomLanguageService(connectionToHackService, atomConfig, null, logger);
 }
 
 // This needs to be initialized eagerly for Hack Symbol search and the HHVM Toolbar.

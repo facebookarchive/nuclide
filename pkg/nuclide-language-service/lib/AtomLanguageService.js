@@ -19,7 +19,7 @@ import type {TypeHintConfig} from './TypeHintProvider';
 import type {CodeFormatConfig} from './CodeFormatProvider';
 import type {FindReferencesConfig} from './FindReferencesProvider';
 import type {EvaluationExpressionConfig} from './EvaluationExpressionProvider';
-import type {AutocompleteConfig} from './AutocompleteProvider';
+import type {AutocompleteConfig, OnDidInsertSuggestionCallback} from './AutocompleteProvider';
 import type {DiagnosticsConfig} from './DiagnosticsProvider';
 import type {CategoryLogger} from '../../nuclide-logging';
 
@@ -57,6 +57,7 @@ export type AtomLanguageServiceConfig = {|
 
 export class AtomLanguageService<T: LanguageService> {
   _config: AtomLanguageServiceConfig;
+  _onDidInsertSuggestion: ?OnDidInsertSuggestionCallback;
   _connectionToLanguageService: ConnectionCache<T>;
   _subscriptions: UniversalDisposable;
   _logger: CategoryLogger;
@@ -64,9 +65,11 @@ export class AtomLanguageService<T: LanguageService> {
   constructor(
     languageServiceFactory: (connection: ?ServerConnection) => Promise<T>,
     config: AtomLanguageServiceConfig,
+    onDidInsertSuggestion: ?OnDidInsertSuggestionCallback,
     logger: CategoryLogger = getCategoryLogger('nuclide-language-service'),
   ) {
     this._config = config;
+    this._onDidInsertSuggestion = onDidInsertSuggestion;
     this._logger = logger;
     this._subscriptions = new UniversalDisposable();
     const lazy = true;
@@ -155,6 +158,7 @@ export class AtomLanguageService<T: LanguageService> {
         this._config.name,
         this._config.grammars,
         autocompleteConfig,
+        this._onDidInsertSuggestion,
         this._connectionToLanguageService));
     }
 

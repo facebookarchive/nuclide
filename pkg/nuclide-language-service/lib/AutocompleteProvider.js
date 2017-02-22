@@ -17,6 +17,14 @@ import {trackTiming, track} from '../../nuclide-analytics';
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
 import AutocompleteCacher from '../../commons-atom/AutocompleteCacher';
 
+export type OnDidInsertSuggestionArgument = {
+  editor: atom$TextEditor,
+  triggerPosition: atom$Point,
+  suggestion: Completion,
+};
+
+export type OnDidInsertSuggestionCallback = (arg: OnDidInsertSuggestionArgument) => mixed;
+
 export type AutocompleteConfig = {|
   inclusionPriority: number,
   suggestionPriority: number,
@@ -35,7 +43,8 @@ export class AutocompleteProvider<T: LanguageService> {
   suggestionPriority: number;
   disableForSelector: ?string;
   excludeLowerPriority: boolean;
-  onDidInsertSuggestion: () => mixed;
+  _onDidInsertSuggestion: ?OnDidInsertSuggestionCallback;
+  onDidInsertSuggestion: OnDidInsertSuggestionCallback;
   _analyticsEventName: string;
   _connectionToLanguageService: ConnectionCache<T>;
   _autocompleteCacher: ?AutocompleteCacher<?Array<Completion>>;
@@ -48,6 +57,7 @@ export class AutocompleteProvider<T: LanguageService> {
     disableForSelector: ?string,
     excludeLowerPriority: boolean,
     analyticsEventName: string,
+    onDidInsertSuggestion: ?OnDidInsertSuggestionCallback,
     onDidInsertSuggestionAnalyticsEventName: string,
     autocompleteCacherConfig: ?AutocompleteCacherConfig<?Array<Completion>>,
     connectionToLanguageService: ConnectionCache<T>,
@@ -68,8 +78,13 @@ export class AutocompleteProvider<T: LanguageService> {
       );
     }
 
-    this.onDidInsertSuggestion = () => {
+    this._onDidInsertSuggestion = onDidInsertSuggestion;
+
+    this.onDidInsertSuggestion = arg => {
       track(onDidInsertSuggestionAnalyticsEventName);
+      if (this._onDidInsertSuggestion != null) {
+        this._onDidInsertSuggestion(arg);
+      }
     };
   }
 
@@ -77,6 +92,7 @@ export class AutocompleteProvider<T: LanguageService> {
     name: string,
     grammars: Array<string>,
     config: AutocompleteConfig,
+    onDidInsertSuggestion: ?OnDidInsertSuggestionCallback,
     connectionToLanguageService: ConnectionCache<T>,
   ): IDisposable {
     return atom.packages.serviceHub.provide(
@@ -90,6 +106,7 @@ export class AutocompleteProvider<T: LanguageService> {
         config.disableForSelector,
         config.excludeLowerPriority,
         config.analyticsEventName,
+        onDidInsertSuggestion,
         config.onDidInsertSuggestionAnalyticsEventName,
         config.autocompleteCacherConfig,
         connectionToLanguageService,
