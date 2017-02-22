@@ -20,7 +20,12 @@ export type AutocompleteCacherConfig<T> = {|
  shouldFilter?: (
    lastRequest: atom$AutocompleteRequest,
    currentRequest: atom$AutocompleteRequest,
-   // TODO pass originalResult here if any client requires it
+   // autocomplete-plus does some debouncing so if the user types quickly enough we may not see a
+   // request for every character. This indicates how many columns the cursor has moved since the
+   // last request. Typically, within an autocomplete session this will be 1, but it may be greater
+   // if the user typed quickly. It is also possible that the cursor moved for another reason, so
+   // take care to avoid returning `true` when we are in fact not in the same autocomplete session.
+   charsSinceLastRequest: number,
  ) => boolean,
  gatekeeper?: string,
 |};
@@ -114,9 +119,11 @@ export default class AutocompleteCacher<T> {
     const shouldFilter = this._config.shouldFilter != null ?
       this._config.shouldFilter :
       defaultShouldFilter;
+    const charsSinceLastRequest =
+        currentRequest.bufferPosition.column - lastRequest.bufferPosition.column;
     return lastRequest.bufferPosition.row === currentRequest.bufferPosition.row &&
-        lastRequest.bufferPosition.column + 1 === currentRequest.bufferPosition.column &&
-        shouldFilter(lastRequest, currentRequest);
+        charsSinceLastRequest > 0 &&
+        shouldFilter(lastRequest, currentRequest, charsSinceLastRequest);
   }
 }
 
@@ -132,12 +139,14 @@ async function getNewFirstResult<T>(
   }
 }
 
-const IDENTIFIER_CHAR_REGEX = /[a-zA-Z_]/;
+const IDENTIFIER_REGEX = /^[a-zA-Z_]+$/;
 
 function defaultShouldFilter(
   lastRequest: atom$AutocompleteRequest,
   currentRequest: atom$AutocompleteRequest,
+  charsSinceLastRequest: number,
 ) {
   return currentRequest.prefix.startsWith(lastRequest.prefix) &&
-    IDENTIFIER_CHAR_REGEX.test(currentRequest.prefix.charAt(currentRequest.prefix.length - 1));
+    currentRequest.prefix.length === lastRequest.prefix.length + charsSinceLastRequest &&
+    IDENTIFIER_REGEX.test(currentRequest.prefix);
 }

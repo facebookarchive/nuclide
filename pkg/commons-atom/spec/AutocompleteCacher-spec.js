@@ -218,7 +218,7 @@ describe('AutocompleteCacher', () => {
         await autocompleteCacher.getSuggestions(mockedRequest2);
 
         expect(getSuggestions.callCount).toBe(2);
-        expect(shouldFilter).toHaveBeenCalledWith(mockedRequest, mockedRequest2);
+        expect(shouldFilter).toHaveBeenCalledWith(mockedRequest, mockedRequest2, 1);
 
         expect(updateResults).not.toHaveBeenCalled();
       });
