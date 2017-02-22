@@ -20,7 +20,10 @@ import type {
 import type {RemoteConnection} from '../../nuclide-remote-connection/lib/RemoteConnection';
 
 import AuthenticationPrompt from './AuthenticationPrompt';
-import {Button} from '../../nuclide-ui/Button';
+import {
+  Button,
+  ButtonTypes,
+} from '../../nuclide-ui/Button';
 import {ButtonGroup} from '../../nuclide-ui/ButtonGroup';
 import ConnectionDetailsPrompt from './ConnectionDetailsPrompt';
 import IndeterminateProgressBar from './IndeterminateProgressBar';
@@ -281,16 +284,16 @@ export default class ConnectionDialog extends React.Component {
         <div style={{display: 'flex', justifyContent: 'flex-end'}}>
           {saveButtonGroup}
           <ButtonGroup>
-            <button className="btn" onClick={this.cancel} ref="cancelButton">
+            <Button onClick={this.cancel} ref="cancelButton">
               Cancel
-            </button>
-            <button
-              className="btn btn-primary"
+            </Button>
+            <Button
+              buttonType={ButtonTypes.PRIMARY}
               disabled={isOkDisabled}
               onClick={this.ok}
               ref="okButton">
               {okButtonText}
-            </button>
+            </Button>
           </ButtonGroup>
         </div>
       </div>

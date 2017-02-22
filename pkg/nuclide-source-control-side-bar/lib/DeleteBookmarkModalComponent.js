@@ -11,6 +11,14 @@
 import type {BookmarkInfo} from '../../nuclide-hg-rpc/lib/HgService';
 
 import {React} from 'react-for-atom';
+import {
+  Button,
+  ButtonTypes,
+} from '../../nuclide-ui/Button';
+import {
+  ButtonGroup,
+  ButtonGroupSizes,
+} from '../../nuclide-ui/ButtonGroup';
 
 type Props = {
   bookmark: BookmarkInfo,
@@ -46,14 +54,14 @@ export default class DeleteBookmarkModalComponent extends React.Component {
           be undone.
         </div>
         <div className="text-right">
-          <div className="btn-group btn-group-sm">
-            <button className="btn" onClick={this.props.onCancel} ref="cancelButton">
+          <ButtonGroup size={ButtonGroupSizes.SMALL}>
+            <Button onClick={this.props.onCancel} ref="cancelButton">
               Cancel
-            </button>
-            <button className="btn btn-error" onClick={this._handleDeleteClick}>
+            </Button>
+            <Button buttonType={ButtonTypes.ERROR} onClick={this._handleDeleteClick}>
               Delete
-            </button>
-          </div>
+            </Button>
+          </ButtonGroup>
         </div>
       </div>
     );

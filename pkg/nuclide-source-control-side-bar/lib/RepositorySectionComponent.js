@@ -16,6 +16,10 @@ import type {SelectableItem} from './SideBarComponent';
 import bookmarkIsEqual from './bookmarkIsEqual';
 import classnames from 'classnames';
 import {HR} from '../../nuclide-ui/HR';
+import {
+  Button,
+  ButtonSizes,
+} from '../../nuclide-ui/Button';
 import invariant from 'assert';
 import {MultiRootChangedFilesView} from '../../nuclide-ui/MultiRootChangedFilesView';
 import {React} from 'react-for-atom';
@@ -115,8 +119,9 @@ export default class RepositorySectionComponent extends React.Component {
       if (repository.getType() === 'hg') {
         bookmarksBranchesHeader = 'BOOKMARKS';
         createButton = (
-          <button
-            className="btn btn-sm icon icon-plus"
+          <Button
+            size={ButtonSizes.SMALL}
+            icon="plus"
             onClick={this._handleRepoGearClick}
             style={{marginTop: '6px', position: 'absolute', right: '10px'}}
             title="Create bookmark..."

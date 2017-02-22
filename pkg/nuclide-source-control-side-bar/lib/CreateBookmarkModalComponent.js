@@ -12,6 +12,14 @@ import {CompositeDisposable} from 'atom';
 import {React, ReactDOM} from 'react-for-atom';
 import {Checkbox} from '../../nuclide-ui/Checkbox';
 import featureConfig from '../../commons-atom/featureConfig';
+import {
+  Button,
+  ButtonTypes,
+} from '../../nuclide-ui/Button';
+import {
+  ButtonGroup,
+  ButtonGroupSizes,
+} from '../../nuclide-ui/ButtonGroup';
 import {STACKED_CONFIG_KEY} from './constants';
 
 type Props = {
@@ -59,16 +67,16 @@ export default class CreateBookmarkModal extends React.Component {
           onChange={stacked => featureConfig.set(STACKED_CONFIG_KEY, stacked)}
         />
         <div className="text-right">
-          <div className="btn-group btn-group-sm">
-            <button className="btn" onClick={this.props.onCancel}>
+          <ButtonGroup size={ButtonGroupSizes.SMALL}>
+            <Button onClick={this.props.onCancel}>
               Cancel
-            </button>
-            <button
-              className="btn btn-primary"
+            </Button>
+            <Button
+              buttonType={ButtonTypes.PRIMARY}
               onClick={this._handleCreateClick}>
               Create
-            </button>
-          </div>
+            </Button>
+          </ButtonGroup>
         </div>
       </div>
     );

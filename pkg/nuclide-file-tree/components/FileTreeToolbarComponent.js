@@ -18,6 +18,7 @@ import {WorkingSetNameAndSaveComponent} from './WorkingSetNameAndSaveComponent';
 import {FileTreeStore} from '../lib/FileTreeStore';
 import FileTreeActions from '../lib/FileTreeActions';
 import {WorkingSet} from '../../nuclide-working-sets-common';
+import {Button} from '../../nuclide-ui/Button';
 
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
 
@@ -257,8 +258,8 @@ class SelectWorkingSetButton extends React.Component {
       onFocus,
     } = this.props;
     return (
-      <button
-        className={classnames('btn', {selected: highlight})}
+      <Button
+        selected={highlight}
         ref={addTooltip({
           title: 'Select Working Sets',
           delay: 500,
@@ -268,7 +269,7 @@ class SelectWorkingSetButton extends React.Component {
         onClick={onClick}
         onFocus={onFocus}>
         <span className="icon icon-list-unordered nuclide-file-tree-toolbar-icon" />
-      </button>
+      </Button>
     );
   }
 }
@@ -285,8 +286,8 @@ class DefineWorkingSetButton extends React.Component {
       onClick,
     } = this.props;
     return (
-      <button
-        className={classnames('btn', {selected: isActive})}
+      <Button
+        selected={isActive}
         ref={addTooltip({
           title: isActive ? 'Cancel' : 'Define a Working Set',
           delay: 500,
@@ -301,7 +302,7 @@ class DefineWorkingSetButton extends React.Component {
             'nuclide-file-tree-toolbar-icon': true,
           })}
         />
-      </button>
+      </Button>
     );
   }
 }
