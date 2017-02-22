@@ -30,6 +30,7 @@ type Props = {
   onChange: (isChecked: boolean) => mixed,
   onClick: (event: SyntheticMouseEvent) => mixed,
   tooltip?: atom$TooltipsAddOptions,
+  title?: ?string,
 };
 
 /**
@@ -84,6 +85,7 @@ export class Checkbox extends React.PureComponent {
       label,
       onClick,
       tooltip,
+      title,
     } = this.props;
 
     const ref = tooltip ? addTooltip(tooltip) : null;
@@ -96,7 +98,8 @@ export class Checkbox extends React.PureComponent {
           'nuclide-ui-checkbox-disabled': disabled,
         })}
         ref={ref}
-        onClick={onClick && ignoreTextSelectionEvents(onClick)}>
+        onClick={onClick && ignoreTextSelectionEvents(onClick)}
+        title={title}>
         <input
           checked={checked}
           className="input-checkbox nuclide-ui-checkbox"
