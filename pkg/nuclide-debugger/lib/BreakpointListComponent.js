@@ -21,6 +21,7 @@ import {
   ListViewItem,
 } from '../../nuclide-ui/ListView';
 import type {FileLineBreakpoints, FileLineBreakpoint} from './types';
+import classnames from 'classnames';
 
 type BreakpointListComponentProps = {
   actions: DebuggerActions,
@@ -111,6 +112,7 @@ export class BreakpointListComponent extends React.Component {
               disabled={!resolved}
               onChange={this._handleBreakpointEnabledChange.bind(this, breakpoint)}
               title={resolved ? null : 'Unresolved Breakpoint'}
+              className={classnames(resolved ? '' : 'nuclide-debugger-breakpoint-unresolved')}
             />
           </div>
         );
