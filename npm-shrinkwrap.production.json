@@ -1225,6 +1225,11 @@
       "from": "uuid@3.0.1",
       "resolved": "https://registry.npmjs.org/uuid/-/uuid-3.0.1.tgz"
     },
+    "v8-compile-cache": {
+      "version": "1.0.0",
+      "from": "v8-compile-cache@1.0.0",
+      "resolved": "https://registry.npmjs.org/v8-compile-cache/-/v8-compile-cache-1.0.0.tgz"
+    },
     "verror": {
       "version": "1.3.6",
       "from": "verror@1.3.6",
