@@ -6,6 +6,7 @@
   "description": "Helper methods for interacting with fb-watchman",
   "nuclide": {
     "packageType": "Node",
+    "testsCannotBeRunInParallel": true,
     "testRunner": "npm"
   },
   "scripts": {
