@@ -645,7 +645,7 @@ export async function queryWithArgs(
 }
 
 export async function resolveBuildTargetName(
-  buckRoot: string,
+  buckRoot: NuclideUri,
   nameOrAlias: string,
 ): Promise<ResolvedBuildTarget> {
   const canonicalName = _normalizeNameForBuckQuery(nameOrAlias);
