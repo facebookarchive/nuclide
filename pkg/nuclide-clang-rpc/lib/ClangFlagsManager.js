@@ -38,6 +38,7 @@ const CLANG_FLAGS_THAT_TAKE_PATHS = new Set([
   '-F',
   '-I',
   '-include',
+  '-include-pch',
   '-iquote',
   '-isysroot',
   '-isystem',

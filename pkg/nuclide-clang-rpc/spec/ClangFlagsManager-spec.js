@@ -73,6 +73,8 @@ describe('ClangFlagsManager', () => {
 
       '-include',
       'local/path',
+      '-include-pch',
+      'local/path',
       '-include',
       '/absolute/path',
 
@@ -127,6 +129,8 @@ describe('ClangFlagsManager', () => {
       '-I/absolute/path',
 
       '-include',
+      buckProjectRoot + 'local/path',
+      '-include-pch',
       buckProjectRoot + 'local/path',
       '-include',
       '/absolute/path',

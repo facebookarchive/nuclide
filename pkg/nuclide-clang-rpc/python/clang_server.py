@@ -428,8 +428,12 @@ class Server:
             # Requires PARSE_INCOMPLETE above (or else this will cause type mismatch errors).
             '-DGTEST_ELLIPSIS_NEEDS_POD_',
         ]
+        skip = False
         for arg in self.flags:
-            if arg == self.src:
+            if skip:
+                skip = False
+                pass
+            elif arg == self.src:
                 # Including the input file as an argument causes index.parse() to fail.
                 pass
             elif arg == '-c':
@@ -442,6 +446,10 @@ class Server:
                 pass
             elif arg == '-MMD' or arg == '-MD':
                 # Do not write out dependency files.
+                pass
+            elif arg == '-MF':
+                # Skip the filename parameter as well.
+                skip = True
                 pass
             else:
                 args.append(arg)
