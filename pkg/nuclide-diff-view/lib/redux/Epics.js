@@ -695,14 +695,13 @@ export function commit(
         } else if (processMessage.exitCode !== 0) {
           return Observable.of(resetCommitAction);
         }
-        const resetFromCommitViewActions = Observable.of(
-          Actions.setViewMode(DiffMode.BROWSE_MODE),
-          Actions.updateCommitState(getEmptyCommitState()),
-        );
         if (shouldPublishOnCommit) {
-          return resetFromCommitViewActions.concat(getPublishActions());
+          return getPublishActions();
         } else {
-          return resetFromCommitViewActions;
+          return Observable.of(
+            Actions.setViewMode(DiffMode.BROWSE_MODE),
+            Actions.updateCommitState(getEmptyCommitState()),
+          );
         }
       })
       .catch(error => {
