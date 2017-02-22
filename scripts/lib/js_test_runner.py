@@ -70,15 +70,15 @@ class JsTestRunner(object):
 
         start = datetime.now()
 
-        if len(parallel_test_arg_list):
-            logging.info('Running %s integration tests across %d workers...',
-                         len(parallel_test_arg_list), INTEGRATION_TEST_WORKERS)
-            run_parallel_tests(parallel_test_arg_list, INTEGRATION_TEST_WORKERS)
-
         if len(serial_test_arg_list):
             logging.info('Running %s integration tests serially...', len(serial_test_arg_list))
             for test_args in serial_test_arg_list:
                 run_test(*test_args)
+
+        if len(parallel_test_arg_list):
+            logging.info('Running %s integration tests across %d workers...',
+                         len(parallel_test_arg_list), INTEGRATION_TEST_WORKERS)
+            run_parallel_tests(parallel_test_arg_list, INTEGRATION_TEST_WORKERS)
 
         end = datetime.now()
         logging.info('Finished integration tests (%s seconds)', (end - start).seconds)
