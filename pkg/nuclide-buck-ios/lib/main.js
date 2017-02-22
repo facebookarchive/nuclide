@@ -1,3 +1,23 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.deactivate = deactivate;
+exports.consumePlatformService = consumePlatformService;
+
+var _atom = require('atom');
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _nuclideIosCommon;
+
+function _load_nuclideIosCommon() {
+  return _nuclideIosCommon = _interopRequireWildcard(require('../../nuclide-ios-common'));
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,42 +25,27 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
 
-import type {BuckBuildSystem} from '../../nuclide-buck/lib/BuckBuildSystem';
-import type {Device, PlatformGroup, TaskType} from '../../nuclide-buck/lib/types';
-import type {TaskEvent} from '../../commons-node/tasks';
-import type {PlatformService} from '../../nuclide-buck/lib/PlatformService';
-import type {ResolvedBuildTarget} from '../../nuclide-buck-rpc/lib/BuckService';
+let disposable = null;
 
-import {Disposable} from 'atom';
-import {Observable} from 'rxjs';
-import * as IosSimulator from '../../nuclide-ios-common';
-import invariant from 'assert';
-
-let disposable: ?Disposable = null;
-
-export function deactivate(): void {
+function deactivate() {
   if (disposable != null) {
     disposable.dispose();
     disposable = null;
   }
 }
 
-export function consumePlatformService(service: PlatformService): void {
+function consumePlatformService(service) {
   disposable = service.register(provideIosDevices);
 }
 
-function provideIosDevices(
-  buckRoot: string,
-  ruleType: string,
-  buildTarget: string,
-): Observable<?PlatformGroup> {
+function provideIosDevices(buckRoot, ruleType, buildTarget) {
   if (ruleType !== 'apple_bundle') {
-    return Observable.of(null);
+    return _rxjsBundlesRxMinJs.Observable.of(null);
   }
-  return IosSimulator.getFbsimctlSimulators().map(simulators => {
+  return (_nuclideIosCommon || _load_nuclideIosCommon()).getFbsimctlSimulators().map(simulators => {
     if (!simulators.length) {
       return null;
     }
@@ -51,38 +56,47 @@ function provideIosDevices(
         name: 'iOS Simulators',
         tasks: new Set(['build', 'run', 'test', 'debug']),
         runTask,
-        deviceGroups: [
-          {
-            name: 'iOS Simulators',
-            devices: simulators.map(simulator => ({
-              name: `${simulator.name} (${simulator.os})`,
-              udid: simulator.udid,
-              arch: simulator.arch,
-            })),
-          },
-        ],
-      }],
+        deviceGroups: [{
+          name: 'iOS Simulators',
+          devices: simulators.map(simulator => ({
+            name: `${simulator.name} (${simulator.os})`,
+            udid: simulator.udid,
+            arch: simulator.arch
+          }))
+        }]
+      }]
     };
   });
 }
 
-function runTask(
-  builder: BuckBuildSystem,
-  taskType: TaskType,
-  buildTarget: ResolvedBuildTarget,
-  device: ?Device,
-): Observable<TaskEvent> {
+function runTask(builder, taskType, buildTarget, device) {
   let subcommand = taskType;
-  invariant(device);
-  invariant(device.arch);
-  invariant(device.udid);
+
+  if (!device) {
+    throw new Error('Invariant violation: "device"');
+  }
+
+  if (!device.arch) {
+    throw new Error('Invariant violation: "device.arch"');
+  }
+
+  if (!device.udid) {
+    throw new Error('Invariant violation: "device.udid"');
+  }
+
   const udid = device.udid;
   const arch = device.arch;
-  invariant(typeof arch === 'string');
-  invariant(typeof udid === 'string');
+
+  if (!(typeof arch === 'string')) {
+    throw new Error('Invariant violation: "typeof arch === \'string\'"');
+  }
+
+  if (!(typeof udid === 'string')) {
+    throw new Error('Invariant violation: "typeof udid === \'string\'"');
+  }
 
   const flavor = `iphonesimulator-${arch}`;
-  const newTarget = {...buildTarget, flavors: buildTarget.flavors.concat([flavor])};
+  const newTarget = Object.assign({}, buildTarget, { flavors: buildTarget.flavors.concat([flavor]) });
 
   if (subcommand === 'run' || subcommand === 'debug') {
     subcommand = 'install';

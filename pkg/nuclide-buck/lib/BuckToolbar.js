@@ -1,61 +1,70 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import type {
-  AppState,
-  DeploymentTarget,
-  Platform,
-  PlatformGroup,
-  TaskSettings,
-} from './types';
-import type {Option} from '../../nuclide-ui/Dropdown';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {React} from 'react-for-atom';
-import shallowequal from 'shallowequal';
+var _reactForAtom = require('react-for-atom');
 
-import BuckToolbarSettings from './ui/BuckToolbarSettings';
-import BuckToolbarTargetSelector from './ui/BuckToolbarTargetSelector';
-import {maybeToString} from '../../commons-node/string';
-import {Button, ButtonSizes} from '../../nuclide-ui/Button';
-import {Dropdown} from '../../nuclide-ui/Dropdown';
-import {LoadingSpinner} from '../../nuclide-ui/LoadingSpinner';
-import addTooltip from '../../nuclide-ui/add-tooltip';
-import invariant from 'assert';
+var _shallowequal;
 
-type Props = {
-  appState: AppState,
-  setBuildTarget(buildTarget: string): void,
-  setDeploymentTarget(deploymentTarget: DeploymentTarget): void,
-  setTaskSettings(settings: TaskSettings): void,
-};
+function _load_shallowequal() {
+  return _shallowequal = _interopRequireDefault(require('shallowequal'));
+}
 
-type State = {
-  settingsVisible: boolean,
-};
+var _BuckToolbarSettings;
 
-type DropdownGroup = {
-  header: Option,
-  selectableOptions: Array<Option>,
-};
+function _load_BuckToolbarSettings() {
+  return _BuckToolbarSettings = _interopRequireDefault(require('./ui/BuckToolbarSettings'));
+}
 
-export default class BuckToolbar extends React.Component {
-  props: Props;
-  state: State;
+var _BuckToolbarTargetSelector;
 
-  constructor(props: Props) {
+function _load_BuckToolbarTargetSelector() {
+  return _BuckToolbarTargetSelector = _interopRequireDefault(require('./ui/BuckToolbarTargetSelector'));
+}
+
+var _string;
+
+function _load_string() {
+  return _string = require('../../commons-node/string');
+}
+
+var _Button;
+
+function _load_Button() {
+  return _Button = require('../../nuclide-ui/Button');
+}
+
+var _Dropdown;
+
+function _load_Dropdown() {
+  return _Dropdown = require('../../nuclide-ui/Dropdown');
+}
+
+var _LoadingSpinner;
+
+function _load_LoadingSpinner() {
+  return _LoadingSpinner = require('../../nuclide-ui/LoadingSpinner');
+}
+
+var _addTooltip;
+
+function _load_addTooltip() {
+  return _addTooltip = _interopRequireDefault(require('../../nuclide-ui/add-tooltip'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class BuckToolbar extends _reactForAtom.React.Component {
+
+  constructor(props) {
     super(props);
-    (this: any)._handleDeploymentTargetChange = this._handleDeploymentTargetChange.bind(this);
-    this.state = {settingsVisible: false};
+    this._handleDeploymentTargetChange = this._handleDeploymentTargetChange.bind(this);
+    this.state = { settingsVisible: false };
   }
 
-  render(): React.Element<any> {
+  render() {
     const {
       buildRuleType,
       buildTarget,
@@ -65,20 +74,20 @@ export default class BuckToolbar extends React.Component {
       platformGroups,
       projectRoot,
       selectedDeploymentTarget,
-      taskSettings,
+      taskSettings
     } = this.props.appState;
 
     let status;
     if (isLoadingRule || isLoadingPlatforms) {
-      const title = isLoadingRule
-        ? 'Loading target build rule...' : 'Loading available platforms...';
-      status =
-        <div ref={addTooltip({title, delay: 0})}>
-          <LoadingSpinner
-            className="inline-block buck-spinner"
-            size="EXTRA_SMALL"
-          />
-        </div>;
+      const title = isLoadingRule ? 'Loading target build rule...' : 'Loading available platforms...';
+      status = _reactForAtom.React.createElement(
+        'div',
+        { ref: (0, (_addTooltip || _load_addTooltip()).default)({ title, delay: 0 }) },
+        _reactForAtom.React.createElement((_LoadingSpinner || _load_LoadingSpinner()).LoadingSpinner, {
+          className: 'inline-block buck-spinner',
+          size: 'EXTRA_SMALL'
+        })
+      );
     } else if (buildTarget && buildRuleType == null) {
       let title;
       if (buckRoot == null) {
@@ -88,87 +97,80 @@ export default class BuckToolbar extends React.Component {
           title = 'No Current Working Root.';
         }
       } else {
-        title =
-          `Rule "${buildTarget}" could not be found in ${buckRoot}.<br />` +
-          `Check your Current Working Root: ${maybeToString(projectRoot)}`;
+        title = `Rule "${buildTarget}" could not be found in ${buckRoot}.<br />` + `Check your Current Working Root: ${(0, (_string || _load_string()).maybeToString)(projectRoot)}`;
       }
 
       title += '<br />Click icon to retry';
 
-      status =
-        <span
-          className="icon icon-alert"
-          ref={addTooltip({title, delay: 0})}
-          onClick={() => this.props.setBuildTarget(buildTarget)}
-        />;
+      status = _reactForAtom.React.createElement('span', {
+        className: 'icon icon-alert',
+        ref: (0, (_addTooltip || _load_addTooltip()).default)({ title, delay: 0 }),
+        onClick: () => this.props.setBuildTarget(buildTarget)
+      });
     }
 
     const widgets = [];
     if (status != null) {
-      widgets.push(
-        <div key="status" className="nuclide-buck-status inline-block text-center">
-          {status}
-        </div>,
-      );
+      widgets.push(_reactForAtom.React.createElement(
+        'div',
+        { key: 'status', className: 'nuclide-buck-status inline-block text-center' },
+        status
+      ));
     } else if (platformGroups.length) {
       const options = this._optionsFromPlatformGroups(platformGroups);
 
-      widgets.push(
-        <Dropdown
-          key="simulator-dropdown"
-          className="inline-block"
-          value={selectedDeploymentTarget}
-          options={options}
-          onChange={this._handleDeploymentTargetChange}
-          size="sm"
-          title="Choose a device"
-          selectionComparator={shallowequal}
-        />,
-      );
+      widgets.push(_reactForAtom.React.createElement((_Dropdown || _load_Dropdown()).Dropdown, {
+        key: 'simulator-dropdown',
+        className: 'inline-block',
+        value: selectedDeploymentTarget,
+        options: options,
+        onChange: this._handleDeploymentTargetChange,
+        size: 'sm',
+        title: 'Choose a device',
+        selectionComparator: (_shallowequal || _load_shallowequal()).default
+      }));
     }
 
-    return (
-      <div className="nuclide-buck-toolbar">
-        <BuckToolbarTargetSelector
-          appState={this.props.appState}
-          setBuildTarget={this.props.setBuildTarget}
-        />
-        <Button
-          className="nuclide-buck-settings icon icon-gear"
-          size={ButtonSizes.SMALL}
-          onClick={() => this._showSettings()}
-        />
-        {widgets}
-        {this.state.settingsVisible ?
-          <BuckToolbarSettings
-            currentBuckRoot={buckRoot}
-            settings={taskSettings}
-            onDismiss={() => this._hideSettings()}
-            onSave={settings => this._saveSettings(settings)}
-          /> :
-          null}
-      </div>
+    return _reactForAtom.React.createElement(
+      'div',
+      { className: 'nuclide-buck-toolbar' },
+      _reactForAtom.React.createElement((_BuckToolbarTargetSelector || _load_BuckToolbarTargetSelector()).default, {
+        appState: this.props.appState,
+        setBuildTarget: this.props.setBuildTarget
+      }),
+      _reactForAtom.React.createElement((_Button || _load_Button()).Button, {
+        className: 'nuclide-buck-settings icon icon-gear',
+        size: (_Button || _load_Button()).ButtonSizes.SMALL,
+        onClick: () => this._showSettings()
+      }),
+      widgets,
+      this.state.settingsVisible ? _reactForAtom.React.createElement((_BuckToolbarSettings || _load_BuckToolbarSettings()).default, {
+        currentBuckRoot: buckRoot,
+        settings: taskSettings,
+        onDismiss: () => this._hideSettings(),
+        onSave: settings => this._saveSettings(settings)
+      }) : null
     );
   }
 
-  _handleDeploymentTargetChange(deploymentTarget: DeploymentTarget) {
+  _handleDeploymentTargetChange(deploymentTarget) {
     this.props.setDeploymentTarget(deploymentTarget);
   }
 
   _showSettings() {
-    this.setState({settingsVisible: true});
+    this.setState({ settingsVisible: true });
   }
 
   _hideSettings() {
-    this.setState({settingsVisible: false});
+    this.setState({ settingsVisible: false });
   }
 
-  _saveSettings(settings: TaskSettings) {
+  _saveSettings(settings) {
     this.props.setTaskSettings(settings);
     this._hideSettings();
   }
 
-  _optionsFromPlatformGroups(platformGroups: Array<PlatformGroup>): Array<Option> {
+  _optionsFromPlatformGroups(platformGroups) {
     return platformGroups.reduce((options, platformGroup) => {
       let dropdownGroup = null;
       if (platformGroup.platforms.length === 1) {
@@ -182,29 +184,32 @@ export default class BuckToolbar extends React.Component {
     }, []);
   }
 
-  _turnDevicesIntoSelectableOptions(platform: Platform): DropdownGroup {
+  _turnDevicesIntoSelectableOptions(platform) {
     const header = {
       label: platform.name,
       value: platform.name,
-      disabled: true,
+      disabled: true
     };
 
-    invariant(platform.deviceGroups.length === 1);
+    if (!(platform.deviceGroups.length === 1)) {
+      throw new Error('Invariant violation: "platform.deviceGroups.length === 1"');
+    }
+
     const selectableOptions = platform.deviceGroups[0].devices.map(device => {
       return {
         label: `  ${device.name}`,
         selectedLabel: device.name,
-        value: {platform, device},
+        value: { platform, device }
       };
     });
-    return {header, selectableOptions};
+    return { header, selectableOptions };
   }
 
-  _putDevicesIntoSubmenus(platformGroup: PlatformGroup): DropdownGroup {
+  _putDevicesIntoSubmenus(platformGroup) {
     const header = {
       label: platformGroup.name,
       value: platformGroup.name,
-      disabled: true,
+      disabled: true
     };
 
     const selectableOptions = [];
@@ -218,7 +223,7 @@ export default class BuckToolbar extends React.Component {
             submenu.push({
               label: deviceGroup.name,
               value: deviceGroup.name,
-              disabled: true,
+              disabled: true
             });
           }
 
@@ -226,27 +231,36 @@ export default class BuckToolbar extends React.Component {
             submenu.push({
               label: `  ${device.name}`,
               selectedLabel: `${platform.name}: ${device.name}`,
-              value: {platform, device},
+              value: { platform, device }
             });
           }
 
-          submenu.push({type: 'separator'});
+          submenu.push({ type: 'separator' });
         }
 
         selectableOptions.push({
           type: 'submenu',
           label: `  ${platform.name}`,
-          submenu,
+          submenu
         });
       } else {
         selectableOptions.push({
           label: `  ${platform.name}`,
           selectedLabel: platform.name,
-          value: {platform, device: null},
+          value: { platform, device: null }
         });
       }
     }
 
-    return {header, selectableOptions};
+    return { header, selectableOptions };
   }
 }
+exports.default = BuckToolbar; /**
+                                * Copyright (c) 2015-present, Facebook, Inc.
+                                * All rights reserved.
+                                *
+                                * This source code is licensed under the license found in the LICENSE file in
+                                * the root directory of this source tree.
+                                *
+                                * 
+                                */

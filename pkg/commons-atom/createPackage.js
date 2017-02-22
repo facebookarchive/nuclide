@@ -1,14 +1,10 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import invariant from 'assert';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = createPackage;
+
 
 /**
  * Create an Atom package from an Activation constructor.
@@ -29,7 +25,7 @@ import invariant from 'assert';
  * `module.exports = createPackage(Activation)`, to avoid code style misunderstandings wrt
  * CommonJS vs ES Modules.
  */
-export default function createPackage(moduleExports: Object, Activation: Class<any>): void {
+function createPackage(moduleExports, Activation) {
   let activation = null;
 
   // Proxy method calls on the package to the activation object.
@@ -41,19 +37,17 @@ export default function createPackage(moduleExports: Object, Activation: Class<a
       continue;
     }
     if (property === 'activate') {
-      throw new Error(
-        'Your activation class contains an "activate" method, but that work should be done in the'
-        + ' constructor.',
-      );
+      throw new Error('Your activation class contains an "activate" method, but that work should be done in the' + ' constructor.');
     }
     if (property === 'deactivate') {
-      throw new Error(
-        'Your activation class contains an "deactivate" method. Please use "dispose" instead.',
-      );
+      throw new Error('Your activation class contains an "deactivate" method. Please use "dispose" instead.');
     }
 
-    moduleExports[property] = function(...args) {
-      invariant(activation != null, 'Package not activated');
+    moduleExports[property] = function (...args) {
+      if (!(activation != null)) {
+        throw new Error('Package not activated');
+      }
+
       return activation[property](...args);
     };
   }
@@ -61,24 +55,38 @@ export default function createPackage(moduleExports: Object, Activation: Class<a
   /**
    * Calling `activate()` creates a new instance.
    */
-  moduleExports.activate = (initialState: ?Object): void => {
-    invariant(activation == null, 'Package already activated');
+  moduleExports.activate = initialState => {
+    if (!(activation == null)) {
+      throw new Error('Package already activated');
+    }
+
     activation = new Activation(initialState);
   };
 
   /**
    * The `deactivate()` method is special-cased to null our activation instance reference.
    */
-  moduleExports.deactivate = (): void => {
-    invariant(activation != null, 'Package not activated');
+  moduleExports.deactivate = () => {
+    if (!(activation != null)) {
+      throw new Error('Package not activated');
+    }
+
     if (typeof activation.dispose === 'function') {
       activation.dispose();
     }
     activation = null;
   };
-}
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   */
 
-function getPrototypeChain(prototype: Class<any>): Array<Class<any>> {
+function getPrototypeChain(prototype) {
   let currentPrototype = prototype;
   const prototypes = [];
   while (currentPrototype != null) {
@@ -92,10 +100,10 @@ function getPrototypeChain(prototype: Class<any>): Array<Class<any>> {
  * List the properties (including inherited ones) of the provided prototype, excluding the ones
  * inherited from `Object`.
  */
-function getPropertyList(prototype: Class<any>): Array<string> {
+function getPropertyList(prototype) {
   const properties = [];
   for (const proto of getPrototypeChain(prototype)) {
-    if (proto === (Object: any).prototype) {
+    if (proto === Object.prototype) {
       break;
     }
     for (const property of Object.getOwnPropertyNames(proto)) {

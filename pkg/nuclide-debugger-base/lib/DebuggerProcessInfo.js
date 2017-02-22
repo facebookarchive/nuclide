@@ -1,3 +1,13 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,32 +15,25 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
 
-import type DebuggerInstanceBase from './DebuggerInstance';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {ControlButtonSpecification} from '../../nuclide-debugger/lib/types';
-import type {ThreadColumn} from '../../nuclide-debugger-base/lib/types';
+class DebuggerProcessInfo {
 
-export default class DebuggerProcessInfo {
-  _serviceName: string;
-  _targetUri: NuclideUri;
-
-  constructor(serviceName: string, targetUri: NuclideUri) {
+  constructor(serviceName, targetUri) {
     this._serviceName = serviceName;
     this._targetUri = targetUri;
   }
 
-  getServiceName(): string {
+  getServiceName() {
     return this._serviceName;
   }
 
-  getTargetUri(): NuclideUri {
+  getTargetUri() {
     return this._targetUri;
   }
 
-  getThreadColumns(): ?Array<ThreadColumn> {
+  getThreadColumns() {
     // Use the debugger view's default columns.
     return null;
   }
@@ -38,23 +41,26 @@ export default class DebuggerProcessInfo {
   // Whether or not this ProcessInfo supports threading or not.
   // TODO: move this into chrome protocol after we move threads window
   // to Nuclide UI.
-  supportThreads(): boolean {
+  supportThreads() {
     return false;
   }
 
-  supportSingleThreadStepping(): boolean {
+  supportSingleThreadStepping() {
     return false;
   }
 
-  singleThreadSteppingEnabled(): boolean {
+  singleThreadSteppingEnabled() {
     return false;
   }
 
-  customControlButtons(): Array<ControlButtonSpecification> {
+  customControlButtons() {
     return [];
   }
 
-  async debug(): Promise<DebuggerInstanceBase> {
-    throw new Error('abstract method');
+  debug() {
+    return (0, _asyncToGenerator.default)(function* () {
+      throw new Error('abstract method');
+    })();
   }
 }
+exports.default = DebuggerProcessInfo;

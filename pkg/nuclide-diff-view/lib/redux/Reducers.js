@@ -1,3 +1,36 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.rootReducer = rootReducer;
+
+var _ActionTypes;
+
+function _load_ActionTypes() {
+  return _ActionTypes = _interopRequireWildcard(require('./ActionTypes'));
+}
+
+var _createEmptyAppState;
+
+function _load_createEmptyAppState() {
+  return _createEmptyAppState = require('./createEmptyAppState');
+}
+
+var _diffUtils;
+
+function _load_diffUtils() {
+  return _diffUtils = require('../diff-utils');
+}
+
+var _utils;
+
+function _load_utils() {
+  return _utils = require('../utils');
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,317 +38,254 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
-
-import type {
-  Action,
-  AppState,
-  CommitState,
-  FileDiffState,
-  PublishState,
-  RepositoryAction,
-  RepositoryState,
-  UIProvider,
-  UpdateActiveNavigationSectionAction,
-  UpdateFileDiffAction,
-  UpdateFileUiElementsAction,
-} from '../types';
-import type {HgRepositoryClient} from '../../../nuclide-hg-repository-client';
-
-import * as ActionTypes from './ActionTypes';
-import invariant from 'assert';
-import {
-  createEmptyAppState,
-  getEmptyRepositoryState,
-} from './createEmptyAppState';
-import {
-  computeNavigationSections,
-} from '../diff-utils';
-import {
-  getHeadRevision,
-  formatFileDiffRevisionTitle,
-} from '../utils';
 
 const FILESYSTEM_REVISION_TITLE = 'Filesystem / Editor';
 
-export function rootReducer(
-  state: ?AppState,
-  action: Action,
-): AppState {
+function rootReducer(state, action) {
   if (state == null) {
-    return createEmptyAppState();
+    return (0, (_createEmptyAppState || _load_createEmptyAppState()).createEmptyAppState)();
   }
   switch (action.type) {
-    case ActionTypes.UPDATE_ACTIVE_REPOSITORY: {
-      const {hgRepository} = action.payload;
-      return {
-        ...state,
-        activeRepository: hgRepository,
-        activeRepositoryState: reduceActiveRepositoryState(state.repositories, hgRepository),
-      };
-    }
+    case (_ActionTypes || _load_ActionTypes()).UPDATE_ACTIVE_REPOSITORY:
+      {
+        const { hgRepository } = action.payload;
+        return Object.assign({}, state, {
+          activeRepository: hgRepository,
+          activeRepositoryState: reduceActiveRepositoryState(state.repositories, hgRepository)
+        });
+      }
 
-    case ActionTypes.ADD_REPOSITORY:
-    case ActionTypes.REMOVE_REPOSITORY:
-    case ActionTypes.SET_COMPARE_ID:
-    case ActionTypes.UPDATE_DIRTY_FILES:
-    case ActionTypes.UPDATE_SELECTED_FILES:
-    case ActionTypes.UPDATE_HEAD_TO_FORKBASE_REVISIONS:
-    case ActionTypes.UPDATE_LOADING_SELECTED_FILES: {
-      const repositories = reduceRepositories(state.repositories, action);
+    case (_ActionTypes || _load_ActionTypes()).ADD_REPOSITORY:
+    case (_ActionTypes || _load_ActionTypes()).REMOVE_REPOSITORY:
+    case (_ActionTypes || _load_ActionTypes()).SET_COMPARE_ID:
+    case (_ActionTypes || _load_ActionTypes()).UPDATE_DIRTY_FILES:
+    case (_ActionTypes || _load_ActionTypes()).UPDATE_SELECTED_FILES:
+    case (_ActionTypes || _load_ActionTypes()).UPDATE_HEAD_TO_FORKBASE_REVISIONS:
+    case (_ActionTypes || _load_ActionTypes()).UPDATE_LOADING_SELECTED_FILES:
+      {
+        const repositories = reduceRepositories(state.repositories, action);
 
-      return {
-        ...state,
-        activeRepositoryState: reduceActiveRepositoryState(repositories, state.activeRepository),
-        repositories,
-      };
-    }
+        return Object.assign({}, state, {
+          activeRepositoryState: reduceActiveRepositoryState(repositories, state.activeRepository),
+          repositories
+        });
+      }
 
-    case ActionTypes.UPDATE_SUGGESTED_REVIEWERS: {
-      return {
-        ...state,
-        suggestedReviewers: action.payload.suggestedReviewers,
-      };
-    }
+    case (_ActionTypes || _load_ActionTypes()).UPDATE_SUGGESTED_REVIEWERS:
+      {
+        return Object.assign({}, state, {
+          suggestedReviewers: action.payload.suggestedReviewers
+        });
+      }
 
-    case ActionTypes.UPDATE_COMMIT_STATE:
-    case ActionTypes.SET_COMMIT_MODE: {
-      return {
-        ...state,
-        commit: reduceCommitState(state.commit, action),
-      };
-    }
+    case (_ActionTypes || _load_ActionTypes()).UPDATE_COMMIT_STATE:
+    case (_ActionTypes || _load_ActionTypes()).SET_COMMIT_MODE:
+      {
+        return Object.assign({}, state, {
+          commit: reduceCommitState(state.commit, action)
+        });
+      }
 
-    case ActionTypes.UPDATE_PUBLISH_STATE:
-      return {
-        ...state,
-        publish: reducePublishState(state.publish, action),
-      };
+    case (_ActionTypes || _load_ActionTypes()).UPDATE_PUBLISH_STATE:
+      return Object.assign({}, state, {
+        publish: reducePublishState(state.publish, action)
+      });
 
-    case ActionTypes.UPDATE_FILE_DIFF:
-      return {
-        ...state,
-        fileDiff: reduceFileDiff(state.fileDiff, action),
-      };
-    case ActionTypes.UPDATE_FILE_UI_ELEMENTS:
-      return {
-        ...state,
-        fileDiff: reduceUiElements(state.fileDiff, action),
-      };
+    case (_ActionTypes || _load_ActionTypes()).UPDATE_FILE_DIFF:
+      return Object.assign({}, state, {
+        fileDiff: reduceFileDiff(state.fileDiff, action)
+      });
+    case (_ActionTypes || _load_ActionTypes()).UPDATE_FILE_UI_ELEMENTS:
+      return Object.assign({}, state, {
+        fileDiff: reduceUiElements(state.fileDiff, action)
+      });
 
-    case ActionTypes.UPDATE_ACTIVE_NAVIGATION_SECTION:
-      return {
-        ...state,
-        fileDiff: reduceNavigationSectionIndex(state.fileDiff, action),
-      };
+    case (_ActionTypes || _load_ActionTypes()).UPDATE_ACTIVE_NAVIGATION_SECTION:
+      return Object.assign({}, state, {
+        fileDiff: reduceNavigationSectionIndex(state.fileDiff, action)
+      });
 
+    case (_ActionTypes || _load_ActionTypes()).UPDATE_LOADING_FILE_DIFF:
+      return Object.assign({}, state, {
+        isLoadingFileDiff: action.payload.isLoading
+      });
 
-    case ActionTypes.UPDATE_LOADING_FILE_DIFF:
-      return {
-        ...state,
-        isLoadingFileDiff: action.payload.isLoading,
-      };
+    case (_ActionTypes || _load_ActionTypes()).SET_SHOULD_REBASE_ON_AMEND:
+      return Object.assign({}, state, {
+        shouldRebaseOnAmend: action.payload.shouldRebaseOnAmend
+      });
 
-    case ActionTypes.SET_SHOULD_REBASE_ON_AMEND:
-      return {
-        ...state,
-        shouldRebaseOnAmend: action.payload.shouldRebaseOnAmend,
-      };
+    case (_ActionTypes || _load_ActionTypes()).SET_VIEW_MODE:
+      return Object.assign({}, state, {
+        viewMode: action.payload.viewMode
+      });
 
-    case ActionTypes.SET_VIEW_MODE:
-      return {
-        ...state,
-        viewMode: action.payload.viewMode,
-      };
+    case (_ActionTypes || _load_ActionTypes()).SET_CWD_API:
+      return Object.assign({}, state, {
+        cwdApi: action.payload.cwdApi
+      });
 
-    case ActionTypes.SET_CWD_API:
-      return {
-        ...state,
-        cwdApi: action.payload.cwdApi,
-      };
+    case (_ActionTypes || _load_ActionTypes()).ADD_UI_PROVIDER:
+    case (_ActionTypes || _load_ActionTypes()).REMOVE_UI_PROVIDER:
+      return Object.assign({}, state, {
+        uiProviders: reduceUiProviders(state.uiProviders, action)
+      });
 
-    case ActionTypes.ADD_UI_PROVIDER:
-    case ActionTypes.REMOVE_UI_PROVIDER:
-      return {
-        ...state,
-        uiProviders: reduceUiProviders(state.uiProviders, action),
-      };
+    case (_ActionTypes || _load_ActionTypes()).UPDATE_DIFF_EDITORS_VISIBILITY:
+      return Object.assign({}, state, {
+        diffEditorsVisible: action.payload.visible
+      });
 
-    case ActionTypes.UPDATE_DIFF_EDITORS_VISIBILITY:
-      return {
-        ...state,
-        diffEditorsVisible: action.payload.visible,
-      };
+    case (_ActionTypes || _load_ActionTypes()).UPDATE_DIFF_EDITORS:
+      return Object.assign({}, state, {
+        diffEditors: action.payload
+      });
+    case (_ActionTypes || _load_ActionTypes()).UPDATE_DIFF_NAVIGATOR_VISIBILITY:
+      return Object.assign({}, state, {
+        diffNavigatorVisible: action.payload.visible
+      });
 
-    case ActionTypes.UPDATE_DIFF_EDITORS:
-      return {
-        ...state,
-        diffEditors: action.payload,
-      };
-    case ActionTypes.UPDATE_DIFF_NAVIGATOR_VISIBILITY:
-      return {
-        ...state,
-        diffNavigatorVisible: action.payload.visible,
-      };
+    case (_ActionTypes || _load_ActionTypes()).UPDATE_DOCK_CONFIG:
+      return Object.assign({}, state, {
+        shouldDockPublishView: action.payload.shouldDockPublishView
+      });
 
-    case ActionTypes.UPDATE_DOCK_CONFIG:
-      return {
-        ...state,
-        shouldDockPublishView: action.payload.shouldDockPublishView,
-      };
+    case (_ActionTypes || _load_ActionTypes()).SET_LINT_EXCUSE:
+      return Object.assign({}, state, {
+        lintExcuse: action.payload.lintExcuse
+      });
 
-    case ActionTypes.SET_LINT_EXCUSE:
-      return {
-        ...state,
-        lintExcuse: action.payload.lintExcuse,
-      };
+    case (_ActionTypes || _load_ActionTypes()).SET_SHOULD_PUBLISH_ON_COMMIT:
+      return Object.assign({}, state, {
+        shouldPublishOnCommit: action.payload.shouldPublishOnCommit
+      });
 
-    case ActionTypes.SET_SHOULD_PUBLISH_ON_COMMIT:
-      return {
-        ...state,
-        shouldPublishOnCommit: action.payload.shouldPublishOnCommit,
-      };
+    case (_ActionTypes || _load_ActionTypes()).SET_IS_PREPARE_MODE:
+      return Object.assign({}, state, {
+        isPrepareMode: action.payload.isPrepareMode
+      });
 
-    case ActionTypes.SET_IS_PREPARE_MODE:
-      return {
-        ...state,
-        isPrepareMode: action.payload.isPrepareMode,
-      };
+    case (_ActionTypes || _load_ActionTypes()).SET_TEXT_BASED_FORM:
+      return Object.assign({}, state, {
+        shouldUseTextBasedForm: action.payload.shouldUseTextBasedForm
+      });
 
-    case ActionTypes.SET_TEXT_BASED_FORM:
-      return {
-        ...state,
-        shouldUseTextBasedForm: action.payload.shouldUseTextBasedForm,
-      };
-
-    case ActionTypes.SET_VERBATIM_MODE_ENABLED:
-      return {
-        ...state,
-        verbatimModeEnabled: action.payload.verbatimModeEnabled,
-      };
+    case (_ActionTypes || _load_ActionTypes()).SET_VERBATIM_MODE_ENABLED:
+      return Object.assign({}, state, {
+        verbatimModeEnabled: action.payload.verbatimModeEnabled
+      });
 
     default:
       return state;
   }
 }
 
-function reduceActiveRepositoryState(
-  repositories: Map<HgRepositoryClient, RepositoryState>,
-  activeRepository: ?HgRepositoryClient,
-): RepositoryState {
+function reduceActiveRepositoryState(repositories, activeRepository) {
   if (activeRepository == null || !repositories.has(activeRepository)) {
-    return getEmptyRepositoryState();
+    return (0, (_createEmptyAppState || _load_createEmptyAppState()).getEmptyRepositoryState)();
   }
   const activeRepositoryState = repositories.get(activeRepository);
-  invariant(activeRepositoryState != null);
+
+  if (!(activeRepositoryState != null)) {
+    throw new Error('Invariant violation: "activeRepositoryState != null"');
+  }
+
   return activeRepositoryState;
 }
 
-function reduceRepositories(
-  repositories: Map<HgRepositoryClient, RepositoryState>,
-  action: RepositoryAction,
-): Map<HgRepositoryClient, RepositoryState> {
+function reduceRepositories(repositories, action) {
   const newRepositories = new Map(repositories);
-  const {repository} = action.payload;
+  const { repository } = action.payload;
 
   switch (action.type) {
-    case ActionTypes.SET_COMPARE_ID:
-    case ActionTypes.UPDATE_DIRTY_FILES:
-    case ActionTypes.UPDATE_SELECTED_FILES:
-    case ActionTypes.UPDATE_HEAD_TO_FORKBASE_REVISIONS:
-    case ActionTypes.UPDATE_LOADING_SELECTED_FILES: {
-      const oldRepositoryState = repositories.get(repository);
-      invariant(oldRepositoryState != null);
-      newRepositories.set(repository, reduceRepositoryAction(oldRepositoryState, action));
-      break;
-    }
-    case ActionTypes.ADD_REPOSITORY: {
-      newRepositories.set(repository, getEmptyRepositoryState());
-      break;
-    }
-    case ActionTypes.REMOVE_REPOSITORY: {
-      newRepositories.delete(repository);
-      break;
-    }
+    case (_ActionTypes || _load_ActionTypes()).SET_COMPARE_ID:
+    case (_ActionTypes || _load_ActionTypes()).UPDATE_DIRTY_FILES:
+    case (_ActionTypes || _load_ActionTypes()).UPDATE_SELECTED_FILES:
+    case (_ActionTypes || _load_ActionTypes()).UPDATE_HEAD_TO_FORKBASE_REVISIONS:
+    case (_ActionTypes || _load_ActionTypes()).UPDATE_LOADING_SELECTED_FILES:
+      {
+        const oldRepositoryState = repositories.get(repository);
+
+        if (!(oldRepositoryState != null)) {
+          throw new Error('Invariant violation: "oldRepositoryState != null"');
+        }
+
+        newRepositories.set(repository, reduceRepositoryAction(oldRepositoryState, action));
+        break;
+      }
+    case (_ActionTypes || _load_ActionTypes()).ADD_REPOSITORY:
+      {
+        newRepositories.set(repository, (0, (_createEmptyAppState || _load_createEmptyAppState()).getEmptyRepositoryState)());
+        break;
+      }
+    case (_ActionTypes || _load_ActionTypes()).REMOVE_REPOSITORY:
+      {
+        newRepositories.delete(repository);
+        break;
+      }
   }
   return newRepositories;
 }
 
-function reduceRepositoryAction(
-  repositoryState: RepositoryState,
-  action: RepositoryAction,
-): RepositoryState {
+function reduceRepositoryAction(repositoryState, action) {
   switch (action.type) {
-    case ActionTypes.SET_COMPARE_ID:
-      return {
-        ...repositoryState,
-        compareRevisionId: action.payload.compareId,
-      };
-    case ActionTypes.UPDATE_DIRTY_FILES:
-      return {
-        ...repositoryState,
-        dirtyFiles: action.payload.dirtyFiles,
-      };
-    case ActionTypes.UPDATE_SELECTED_FILES:
-      return {
-        ...repositoryState,
-        selectedFiles: action.payload.selectedFiles,
-      };
-    case ActionTypes.UPDATE_HEAD_TO_FORKBASE_REVISIONS: {
-      const {headToForkBaseRevisions} = action.payload;
-      return {
-        ...repositoryState,
-        headToForkBaseRevisions,
-        headRevision: getHeadRevision(headToForkBaseRevisions),
-        revisionStatuses: action.payload.revisionStatuses,
-      };
-    }
-    case ActionTypes.UPDATE_LOADING_SELECTED_FILES:
-      return {
-        ...repositoryState,
-        isLoadingSelectedFiles: action.payload.isLoading,
-      };
+    case (_ActionTypes || _load_ActionTypes()).SET_COMPARE_ID:
+      return Object.assign({}, repositoryState, {
+        compareRevisionId: action.payload.compareId
+      });
+    case (_ActionTypes || _load_ActionTypes()).UPDATE_DIRTY_FILES:
+      return Object.assign({}, repositoryState, {
+        dirtyFiles: action.payload.dirtyFiles
+      });
+    case (_ActionTypes || _load_ActionTypes()).UPDATE_SELECTED_FILES:
+      return Object.assign({}, repositoryState, {
+        selectedFiles: action.payload.selectedFiles
+      });
+    case (_ActionTypes || _load_ActionTypes()).UPDATE_HEAD_TO_FORKBASE_REVISIONS:
+      {
+        const { headToForkBaseRevisions } = action.payload;
+        return Object.assign({}, repositoryState, {
+          headToForkBaseRevisions,
+          headRevision: (0, (_utils || _load_utils()).getHeadRevision)(headToForkBaseRevisions),
+          revisionStatuses: action.payload.revisionStatuses
+        });
+      }
+    case (_ActionTypes || _load_ActionTypes()).UPDATE_LOADING_SELECTED_FILES:
+      return Object.assign({}, repositoryState, {
+        isLoadingSelectedFiles: action.payload.isLoading
+      });
     default:
       throw new Error('Invalid Repository Action!');
   }
 }
 
-function reduceCommitState(
-  state: CommitState,
-  action: Action,
-): CommitState {
+function reduceCommitState(state, action) {
   switch (action.type) {
-    case ActionTypes.UPDATE_COMMIT_STATE:
+    case (_ActionTypes || _load_ActionTypes()).UPDATE_COMMIT_STATE:
       return action.payload.commit;
-    case ActionTypes.SET_COMMIT_MODE:
-      return {
-        ...state,
-        mode: action.payload.commitMode,
-      };
+    case (_ActionTypes || _load_ActionTypes()).SET_COMMIT_MODE:
+      return Object.assign({}, state, {
+        mode: action.payload.commitMode
+      });
   }
   return state;
 }
 
-function reducePublishState(
-  state: PublishState,
-  action: Action,
-): PublishState {
+function reducePublishState(state, action) {
   switch (action.type) {
-    case ActionTypes.UPDATE_PUBLISH_STATE:
+    case (_ActionTypes || _load_ActionTypes()).UPDATE_PUBLISH_STATE:
       return action.payload.publish;
   }
   return state;
 }
 
-function reduceFileDiff(
-  state: FileDiffState,
-  action: UpdateFileDiffAction,
-): FileDiffState {
-  const {filePath, fromRevision, newContents, oldContents, textDiff} = action.payload;
-  let {inlineElements: newEditorElements} = state.newEditorState;
-  let {inlineElements: oldEditorElements} = state.oldEditorState;
-  let {activeSectionIndex} = state;
+function reduceFileDiff(state, action) {
+  const { filePath, fromRevision, newContents, oldContents, textDiff } = action.payload;
+  let { inlineElements: newEditorElements } = state.newEditorState;
+  let { inlineElements: oldEditorElements } = state.oldEditorState;
+  let { activeSectionIndex } = state;
 
   if (state.filePath !== filePath) {
     // Clear the ui elements and section index.
@@ -328,7 +298,7 @@ function reduceFileDiff(
     addedLines,
     removedLines,
     newToOld,
-    oldToNew,
+    oldToNew
   } = textDiff;
 
   // Deserialize from JSON.
@@ -336,15 +306,15 @@ function reduceFileDiff(
   const newLineOffsets = new Map(textDiff.newLineOffsets);
 
   const oldEditorState = {
-    revisionTitle: fromRevision == null ? '...' : formatFileDiffRevisionTitle(fromRevision),
+    revisionTitle: fromRevision == null ? '...' : (0, (_utils || _load_utils()).formatFileDiffRevisionTitle)(fromRevision),
     text: oldContents,
     offsets: oldLineOffsets,
     highlightedLines: {
       added: [],
-      removed: removedLines,
+      removed: removedLines
     },
     inlineElements: oldEditorElements,
-    inlineOffsetElements: newEditorElements,
+    inlineOffsetElements: newEditorElements
   };
   const newEditorState = {
     revisionTitle: FILESYSTEM_REVISION_TITLE,
@@ -352,82 +322,55 @@ function reduceFileDiff(
     offsets: newLineOffsets,
     highlightedLines: {
       added: addedLines,
-      removed: [],
+      removed: []
     },
     inlineElements: newEditorElements,
-    inlineOffsetElements: oldEditorElements,
+    inlineOffsetElements: oldEditorElements
   };
 
-  const navigationSections = computeNavigationSections(
-    addedLines,
-    removedLines,
-    newEditorElements.keys(),
-    oldEditorElements.keys(),
-    oldLineOffsets,
-    newLineOffsets,
-  );
+  const navigationSections = (0, (_diffUtils || _load_diffUtils()).computeNavigationSections)(addedLines, removedLines, newEditorElements.keys(), oldEditorElements.keys(), oldLineOffsets, newLineOffsets);
 
   return {
     activeSectionIndex,
     filePath,
-    lineMapping: {newToOld, oldToNew},
+    lineMapping: { newToOld, oldToNew },
     newEditorState,
     oldEditorState,
-    navigationSections,
+    navigationSections
   };
 }
 
-function reduceUiElements(
-  state: FileDiffState,
-  action: UpdateFileUiElementsAction,
-): FileDiffState {
-  const {newEditorElements, oldEditorElements} = action.payload;
-  const {newEditorState, oldEditorState} = state;
+function reduceUiElements(state, action) {
+  const { newEditorElements, oldEditorElements } = action.payload;
+  const { newEditorState, oldEditorState } = state;
 
-  const navigationSections = computeNavigationSections(
-    newEditorState.highlightedLines.added,
-    oldEditorState.highlightedLines.removed,
-    newEditorElements.keys(),
-    oldEditorElements.keys(),
-    oldEditorState.offsets,
-    newEditorState.offsets,
-  );
+  const navigationSections = (0, (_diffUtils || _load_diffUtils()).computeNavigationSections)(newEditorState.highlightedLines.added, oldEditorState.highlightedLines.removed, newEditorElements.keys(), oldEditorElements.keys(), oldEditorState.offsets, newEditorState.offsets);
 
-  return {
-    ...state,
-    oldEditorState: {
-      ...oldEditorState,
+  return Object.assign({}, state, {
+    oldEditorState: Object.assign({}, oldEditorState, {
       inlineElements: oldEditorElements,
-      inlineOffsetElements: newEditorElements,
-    },
-    newEditorState: {
-      ...newEditorState,
+      inlineOffsetElements: newEditorElements
+    }),
+    newEditorState: Object.assign({}, newEditorState, {
       inlineElements: newEditorElements,
-      inlineOffsetElements: oldEditorElements,
-    },
-    navigationSections,
-  };
+      inlineOffsetElements: oldEditorElements
+    }),
+    navigationSections
+  });
 }
 
-function reduceNavigationSectionIndex(
-  state: FileDiffState,
-  action: UpdateActiveNavigationSectionAction,
-): FileDiffState {
-  return {
-    ...state,
-    activeSectionIndex: action.payload.sectionIndex,
-  };
+function reduceNavigationSectionIndex(state, action) {
+  return Object.assign({}, state, {
+    activeSectionIndex: action.payload.sectionIndex
+  });
 }
 
-function reduceUiProviders(
-  state: Array<UIProvider>,
-  action: Action,
-): Array<UIProvider> {
+function reduceUiProviders(state, action) {
   switch (action.type) {
-    case ActionTypes.ADD_UI_PROVIDER:
+    case (_ActionTypes || _load_ActionTypes()).ADD_UI_PROVIDER:
       return state.concat(action.payload.uiProvider);
-    case ActionTypes.REMOVE_UI_PROVIDER:
-      const {uiProvider} = action.payload;
+    case (_ActionTypes || _load_ActionTypes()).REMOVE_UI_PROVIDER:
+      const { uiProvider } = action.payload;
       return state.filter(provider => provider !== uiProvider);
   }
   return state || [];
