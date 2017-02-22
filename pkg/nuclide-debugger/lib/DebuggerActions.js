@@ -187,7 +187,6 @@ export default class DebuggerActions {
     endTimerTracking();
 
     invariant(this._store.getDebuggerInstance() == null);
-    atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:hide');
   }
 
   _registerConsole(): void {

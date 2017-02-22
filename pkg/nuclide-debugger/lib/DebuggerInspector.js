@@ -55,9 +55,14 @@ export default class DebuggerInspector extends React.PureComponent {
 
   _handleClickClose() {
     this.props.stopDebugging();
+    hideDebuggerPane();
   }
 
   _handleClickDevTools() {
     this.props.openDevTools();
   }
+}
+
+function hideDebuggerPane(): void {
+  atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:hide');
 }
