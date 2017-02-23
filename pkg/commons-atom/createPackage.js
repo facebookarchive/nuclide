@@ -40,9 +40,9 @@ export default function createPackage(moduleExports: Object, Activation: Class<a
     if (property === 'constructor') {
       continue;
     }
-    if (property === 'activate') {
+    if (property === 'initialize') {
       throw new Error(
-        'Your activation class contains an "activate" method, but that work should be done in the'
+        'Your activation class contains an "initialize" method, but that work should be done in the'
         + ' constructor.',
       );
     }
@@ -53,16 +53,16 @@ export default function createPackage(moduleExports: Object, Activation: Class<a
     }
 
     moduleExports[property] = function(...args) {
-      invariant(activation != null, 'Package not activated');
+      invariant(activation != null, 'Package not initialized');
       return activation[property](...args);
     };
   }
 
   /**
-   * Calling `activate()` creates a new instance.
+   * Calling `initialize()` creates a new instance.
    */
-  moduleExports.activate = (initialState: ?Object): void => {
-    invariant(activation == null, 'Package already activated');
+  moduleExports.initialize = (initialState: ?Object): void => {
+    invariant(activation == null, 'Package already initialized');
     activation = new Activation(initialState);
   };
 
@@ -70,7 +70,7 @@ export default function createPackage(moduleExports: Object, Activation: Class<a
    * The `deactivate()` method is special-cased to null our activation instance reference.
    */
   moduleExports.deactivate = (): void => {
-    invariant(activation != null, 'Package not activated');
+    invariant(activation != null, 'Package not initialized');
     if (typeof activation.dispose === 'function') {
       activation.dispose();
     }

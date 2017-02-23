@@ -11,13 +11,13 @@
 import createPackage from '../createPackage';
 
 describe('createPackage', () => {
-  it('throws when the activation class contains an `activate()`', () => {
+  it('throws when the activation class contains an `initialize()`', () => {
     class Activation {
-      activate() {}
+      initialize() {}
     }
     expect(() => createPackage({}, Activation))
       .toThrow(
-        'Your activation class contains an "activate" method, but that work should be done in the'
+        'Your activation class contains an "initialize" method, but that work should be done in the'
         + ' constructor.',
       );
   });
@@ -41,7 +41,7 @@ describe('createPackage', () => {
     }
     const pkg = {};
     createPackage(pkg, Activation);
-    pkg.activate();
+    pkg.initialize();
     expect(called).toBe(false);
     pkg.deactivate();
     expect(called).toBe(true);
@@ -56,12 +56,26 @@ describe('createPackage', () => {
     }
     const pkg = {};
     createPackage(pkg, Activation);
-    pkg.activate();
+    pkg.initialize();
     pkg.doSomething();
     expect(called).toBe(true);
   });
 
-  it("throws if methods are called when the package isn't activated", () => {
+  it('proxies activate()', () => {
+    let state;
+    class Activation {
+      activate(serializedState) {
+        state = serializedState;
+      }
+    }
+    const pkg = {};
+    createPackage(pkg, Activation);
+    pkg.initialize();
+    pkg.activate(1);
+    expect(state).toBe(1);
+  });
+
+  it("throws if methods are called when the package isn't initialized", () => {
     let called = false;
     class Activation {
       doSomething() {
@@ -70,9 +84,9 @@ describe('createPackage', () => {
     }
     const pkg = {};
     createPackage(pkg, Activation);
-    pkg.activate();
+    pkg.initialize();
     pkg.deactivate();
-    expect(() => { pkg.doSomething(); }).toThrow('Package not activated');
+    expect(() => { pkg.doSomething(); }).toThrow('Package not initialized');
     expect(called).toBe(false);
   });
 
