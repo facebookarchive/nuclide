@@ -15,11 +15,9 @@ import type {
 } from '../../nuclide-language-service/lib/AtomLanguageService';
 import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
 
-import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
 
 import featureConfig from '../../commons-atom/featureConfig';
-import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import registerGrammar from '../../commons-atom/register-grammar';
 import {getNotifierByConnection} from '../../nuclide-open-files';
 import {AtomLanguageService} from '../../nuclide-language-service';
@@ -69,13 +67,7 @@ async function connectionToFlowService(
 }
 
 export function deactivate() {
-  // TODO(mbolin): Find a way to unregister the autocomplete provider from
-  // ServiceHub, or set a boolean in the autocomplete provider to always return
-  // empty results.
-  const service: ?FlowService = getServiceByNuclideUri('FlowService');
-  invariant(service);
-  service.dispose();
-  if (disposables) {
+  if (disposables != null) {
     disposables.dispose();
     disposables = null;
   }
