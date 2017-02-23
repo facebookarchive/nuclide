@@ -18,7 +18,7 @@ import {uncachedRequire} from '../../nuclide-test-helpers';
 
 describe('FlowServiceFactory', () => {
   let FlowServiceFactory: FlowServiceFactoryType = (null: any);
-  let getServiceByNuclideUriSpy: JasmineSpy = (null: any);
+  let getServiceByConnectionSpy: JasmineSpy = (null: any);
   let serverUpdates: Array<ServerStatusUpdate> = (null: any);
   let fakeFlowService: Object = (null: any);
 
@@ -27,27 +27,21 @@ describe('FlowServiceFactory', () => {
     fakeFlowService = {
       getServerStatusUpdates() { return Observable.from(serverUpdates).publish(); },
     };
-    getServiceByNuclideUriSpy =
-      spyOn(NuclideRemoteConnection, 'getServiceByNuclideUri')
+    getServiceByConnectionSpy =
+      spyOn(NuclideRemoteConnection, 'getServiceByConnection')
       .andCallFake(() => fakeFlowService);
     FlowServiceFactory = (uncachedRequire(require, '../lib/FlowServiceFactory'): any);
   });
 
   afterEach(() => {
-    jasmine.unspy(NuclideRemoteConnection, 'getServiceByNuclideUri');
+    jasmine.unspy(NuclideRemoteConnection, 'getServiceByConnection');
   });
 
-  describe('getFlowServiceByNuclideUri', () => {
+  describe('getFlowServiceByConnection', () => {
     it('should call getFlowServiceByNuclideUri with the filename', () => {
-      FlowServiceFactory.getFlowServiceByNuclideUri('fake/path');
-      expect(getServiceByNuclideUriSpy).toHaveBeenCalledWith('FlowService', 'fake/path');
-    });
-  });
-
-  describe('getLocalFlowService', () => {
-    it('should call getFlowServiceByNuclideUri with null', () => {
-      FlowServiceFactory.getLocalFlowService();
-      expect(getServiceByNuclideUriSpy).toHaveBeenCalledWith('FlowService', null);
+      const connectionSentinal: any = {};
+      FlowServiceFactory.getFlowServiceByConnection(connectionSentinal);
+      expect(getServiceByConnectionSpy).toHaveBeenCalledWith('FlowService', connectionSentinal);
     });
   });
 
@@ -72,7 +66,7 @@ describe('FlowServiceFactory', () => {
           .take(2)
           .toArray()
           .toPromise();
-        FlowServiceFactory.getLocalFlowService();
+        FlowServiceFactory.getFlowServiceByConnection(({}: any));
         expect(await updatesPromise).toEqual(serverUpdates);
       });
     });
@@ -82,7 +76,7 @@ describe('FlowServiceFactory', () => {
     it('returns a set with the current service instances', () => {
       expect(FlowServiceFactory.getCurrentServiceInstances().size).toEqual(0);
 
-      FlowServiceFactory.getLocalFlowService();
+      FlowServiceFactory.getFlowServiceByConnection(({}: any));
 
       const instances = FlowServiceFactory.getCurrentServiceInstances();
       expect(instances.size).toEqual(1);
