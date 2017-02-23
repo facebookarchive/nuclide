@@ -92,6 +92,7 @@ function getLanguageServiceConfig(): AtomLanguageServiceConfig {
   const excludeLowerPriority = Boolean(featureConfig.get('nuclide-flow.excludeOtherAutocomplete'));
   const flowResultsFirst = Boolean(featureConfig.get('nuclide-flow.flowAutocompleteResultsFirst'));
   const enableTypeHints = Boolean(featureConfig.get('nuclide-flow.enableTypeHints'));
+  const enablePushDiagnostics = Boolean(featureConfig.get('nuclide-flow.enablePushDiagnostics'));
   return {
     name: 'Flow',
     grammars: JS_GRAMMARS,
@@ -131,7 +132,10 @@ function getLanguageServiceConfig(): AtomLanguageServiceConfig {
       },
       onDidInsertSuggestionAnalyticsEventName: 'nuclide-flow.autocomplete-chosen',
     },
-    diagnostics: {
+    diagnostics: enablePushDiagnostics ? {
+      version: '0.2.0',
+      analyticsEventName: 'flow.receive-push-diagnostics',
+    } : {
       version: '0.1.0',
       shouldRunOnTheFly: false,
       analyticsEventName: 'flow.run-diagnostics',
