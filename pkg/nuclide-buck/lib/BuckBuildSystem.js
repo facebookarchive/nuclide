@@ -40,7 +40,6 @@ import invariant from 'assert';
 import nullthrows from 'nullthrows';
 import {applyMiddleware, createStore} from 'redux';
 import {Observable, Subject, TimeoutError} from 'rxjs';
-import {quote} from 'shell-quote';
 
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import nuclideUri from '../../commons-node/nuclideUri';
@@ -253,8 +252,8 @@ export class BuckBuildSystem {
     const state = this._getStore().getState();
     const {buckRoot, buildTarget, selectedDeploymentTarget} = state;
     invariant(buckRoot);
-    const deploymentTargetString = formatDeploymentTarget(selectedDeploymentTarget);
-    this._logOutput(`Resolving command for "${buildTarget}"${deploymentTargetString}`, 'log');
+    const deploymentString = formatDeploymentTarget(selectedDeploymentTarget);
+    this._logOutput(`Resolving ${taskType} command for "${buildTarget}"${deploymentString}`, 'log');
     const resolvedBuildTarget = getResolvedBuildTarget(buckRoot, buildTarget);
 
     const task = taskFromObservable(resolvedBuildTarget.switchMap(resolvedTarget => {
@@ -393,12 +392,6 @@ export class BuckBuildSystem {
     );
     const targetString = getCommandStringForResolvedBuildTarget(buildTarget);
     const settings = {...taskSettings, ...additionalSettings};
-    let argString = '';
-    if (settings.arguments != null && settings.arguments.length > 0) {
-      argString = ' ' + quote(settings.arguments);
-    }
-    this._logOutput(`Starting "buck ${subcommand} ${targetString}${argString}"`, 'log');
-
     const buckService = getBuckServiceByNuclideUri(buckRoot);
 
     return Observable.fromPromise(buckService.getHTTPServerPort(buckRoot))

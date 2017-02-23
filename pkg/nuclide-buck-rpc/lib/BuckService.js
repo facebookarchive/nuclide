@@ -463,7 +463,16 @@ function _buildWithOutput(
       observeProcess(
         () => safeSpawn(pathToBuck, args, buckCommandOptions),
       )
+      .startWith({
+        kind: 'stdout',
+        data: `Starting "${pathToBuck} ${_getArgsStringSkipClientId(args)}"`,
+      })
     ));
+}
+
+function _getArgsStringSkipClientId(args: Array<string>): string {
+  const skipped = args.findIndex(arg => arg === 'client.id=nuclide');
+  return args.filter((arg, index) => index !== skipped && index !== skipped - 1).join(' ');
 }
 
 /**
