@@ -35,6 +35,7 @@ import {Cache} from '../../commons-node/cache';
 import {Observable} from 'rxjs';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {compact} from '../../commons-node/observable';
+import {arrayCompact} from '../../commons-node/collection';
 import {ConfigCache} from '../../commons-node/ConfigCache';
 import {ensureInvalidations, NullLanguageService} from '..';
 
@@ -150,6 +151,11 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
     this._logger.logInfo('observing connections');
     return compact(this._processes.observeValues()
       .switchMap(process => Observable.fromPromise(process)));
+  }
+
+  async getAllLanguageServices(): Promise<Array<T>> {
+    const lsPromises: Array<Promise<?T>> = [...this._processes.values()];
+    return arrayCompact(await Promise.all(lsPromises));
   }
 
   async getDiagnostics(

@@ -8,19 +8,10 @@
  * @flow
  */
 
-import {FlowRootContainer} from './FlowRootContainer';
 import {FlowExecInfoContainer} from './FlowExecInfoContainer';
 
 export class FlowServiceState {
-  _rootContainer: ?FlowRootContainer;
   _execInfoContainer: ?FlowExecInfoContainer;
-
-  getRootContainer(): FlowRootContainer {
-    if (this._rootContainer == null) {
-      this._rootContainer = new FlowRootContainer(this.getExecInfoContainer());
-    }
-    return this._rootContainer;
-  }
 
   getExecInfoContainer(): FlowExecInfoContainer {
     if (this._execInfoContainer == null) {
@@ -30,10 +21,6 @@ export class FlowServiceState {
   }
 
   dispose() {
-    if (this._rootContainer != null) {
-      this._rootContainer.dispose();
-      this._rootContainer = null;
-    }
     if (this._execInfoContainer != null) {
       this._execInfoContainer.dispose();
       this._execInfoContainer = null;

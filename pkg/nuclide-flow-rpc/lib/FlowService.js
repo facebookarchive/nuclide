@@ -8,28 +8,23 @@
  * @flow
  */
 
-import type {ConnectableObservable} from 'rxjs';
+import type {ConnectableObservable, Observable} from 'rxjs';
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
-import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
-
-import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
-import type {
-  Definition,
-  DefinitionQueryResult,
-} from '../../nuclide-definition-service/lib/rpc-types';
+import type {FileVersion, FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
-import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
-import type {FindReferencesReturn} from '../../nuclide-find-references/lib/rpc-types';
-import type {
-  DiagnosticProviderUpdate,
-  FileDiagnosticUpdate,
-} from '../../nuclide-diagnostics-common/lib/rpc-types';
-import type {Completion} from '../../nuclide-language-service/lib/LanguageService';
-import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
 
-import {ServerLanguageService} from '../../nuclide-language-service-rpc';
+import invariant from 'assert';
+import {Subject} from 'rxjs';
+
+import {
+  ServerLanguageService,
+  MultiProjectLanguageService,
+} from '../../nuclide-language-service-rpc';
+import {FileCache, getBufferAtVersion} from '../../nuclide-open-files-rpc';
+
+import {getCategoryLogger} from '../../nuclide-logging';
 
 export type Loc = {
   file: NuclideUri,
@@ -71,190 +66,107 @@ export function dispose(): void {
   }
 }
 
+const serverStatuses: Subject<Observable<ServerStatusUpdate>> = new Subject();
+let currentLanguageService: ?FlowLanguageService = null;
+
 export async function initialize(
   fileNotifier: FileNotifier,
 ): Promise<LanguageService> {
-  return new ServerLanguageService(
-    fileNotifier,
-    new FlowSingleFileLanguageService(fileNotifier),
-  );
+  invariant(fileNotifier instanceof FileCache);
+  const fileCache: FileCache = fileNotifier;
+  const ls = new FlowLanguageService(fileCache);
+  serverStatuses.next(ls.getServerStatusUpdates().refCount());
+  currentLanguageService = ls;
+  return ls;
 }
 
-class FlowSingleFileLanguageService {
-  constructor(fileNotifier: FileNotifier) { }
-
-  dispose(): void { }
-
-  getDiagnostics(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-  ): Promise<?DiagnosticProviderUpdate> {
-    return getState().getRootContainer().runWithRoot(
-      filePath,
-      root => root.getDiagnostics(
-        filePath,
-        buffer,
-      ),
+class FlowLanguageService
+    extends MultiProjectLanguageService<ServerLanguageService<FlowSingleProjectLanguageService>> {
+  constructor(fileCache: FileCache) {
+    const logger = getCategoryLogger('Flow');
+    super(
+      logger,
+      fileCache,
+      '.flowconfig',
+      ['.js', '.jsx'],
+      projectDir => {
+        const execInfoContainer = getState().getExecInfoContainer();
+        const singleProjectLS = new FlowSingleProjectLanguageService(projectDir, execInfoContainer);
+        const languageService = new ServerLanguageService(fileCache, singleProjectLS);
+        return Promise.resolve(languageService);
+      },
     );
   }
 
-  observeDiagnostics(): ConnectableObservable<FileDiagnosticUpdate> {
-    throw new Error('Not Yet Implemented');
-  }
-
-  getAutocompleteSuggestions(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    position: atom$Point,
-    activatedManually: boolean,
-    prefix: string,
-  ): Promise<?Array<Completion>> {
-    return getState().getRootContainer().runWithRoot(
-      filePath,
-      root => root.getAutocompleteSuggestions(
-        filePath,
-        buffer,
-        position,
-        activatedManually,
-        prefix,
-      ),
-    );
-  }
-
-  getDefinition(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    position: atom$Point,
-  ): Promise<?DefinitionQueryResult> {
-    return getState().getRootContainer().runWithRoot(
-      filePath,
-      root => root.getDefinition(
-        filePath,
-        buffer,
-        position,
-      ),
-    );
-  }
-
-  getDefinitionById(
-    file: NuclideUri,
-    id: string,
-  ): Promise<?Definition> {
-    throw new Error('Not Yet Implemented');
-  }
-
-  findReferences(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    position: atom$Point,
-  ): Promise<?FindReferencesReturn> {
-    throw new Error('Not Yet Implemented');
-  }
-
-  getCoverage(
-    filePath: NuclideUri,
-  ): Promise<?CoverageResult> {
-    return getState().getRootContainer().runWithRoot(
-      filePath,
-      root => root.getCoverage(filePath),
-    );
-  }
-
-  getOutline(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
+  async getOutline(
+    fileVersion: FileVersion,
   ): Promise<?Outline> {
-    return getState().getRootContainer().runWithOptionalRoot(
-      filePath,
-      root => FlowSingleProjectLanguageService
-          .getOutline(filePath, buffer, root, getState().getExecInfoContainer()),
-    );
-  }
-
-  typeHint(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    position: atom$Point,
-  ): Promise<?TypeHint> {
-    return getState().getRootContainer().runWithRoot(
-      filePath,
-      root => root.typeHint(
-        filePath,
+    const ls = await this.getLanguageServiceForFile(fileVersion.filePath);
+    if (ls != null) {
+      return ls.getOutline(fileVersion);
+    } else {
+      const buffer = await getBufferAtVersion(fileVersion);
+      if (buffer == null) {
+        return null;
+      }
+      return FlowSingleProjectLanguageService.getOutline(
+        fileVersion.filePath,
         buffer,
-        position,
-      ),
+        null,
+        getState().getExecInfoContainer(),
+      );
+    }
+  }
+
+  getServerStatusUpdates(): ConnectableObservable<ServerStatusUpdate> {
+    return this.observeLanguageServices().mergeMap(languageService => {
+      const singleProjectLS: FlowSingleProjectLanguageService =
+          languageService.getSingleFileLanguageService();
+      const pathToRoot = singleProjectLS.getPathToRoot();
+      return singleProjectLS
+        .getServerStatusUpdates()
+        .map(status => ({pathToRoot, status}));
+    }).publish();
+  }
+
+  async getAst(filePath: ?NuclideUri, currentContents: string): Promise<?any> {
+    const ls = filePath != null ? await this.getLanguageServiceForFile(filePath) : null;
+    let singleLS: ?FlowSingleProjectLanguageService;
+    if (ls == null) {
+      singleLS = null;
+    } else {
+      singleLS = ls.getSingleFileLanguageService();
+    }
+    return FlowSingleProjectLanguageService.flowGetAst(
+      singleLS,
+      currentContents,
+      getState().getExecInfoContainer(),
     );
   }
 
-  highlight(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    position: atom$Point,
-  ): Promise<?Array<atom$Range>> {
-    return getState().getRootContainer().runWithRoot(
-      filePath,
-      root => root.highlight(
-        filePath,
-        buffer,
-        position,
-      ),
-    );
-  }
-
-  formatSource(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    range: atom$Range,
-  ): Promise<?string> {
-    throw new Error('Not Yet Implemented');
-  }
-
-  formatEntireFile(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    range: atom$Range,
-  ): Promise<?{
-    newCursor?: number,
-    formatted: string,
-  }> {
-    throw new Error('Not implemented');
-  }
-
-  getEvaluationExpression(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    position: atom$Point,
-  ): Promise<?NuclideEvaluationExpression> {
-    throw new Error('Not Yet Implemented');
-  }
-
-  async getProjectRoot(fileUri: NuclideUri): Promise<?NuclideUri> {
-    const flowRoot = await getState().getRootContainer().getRootForPath(fileUri);
-    return flowRoot == null ? null : flowRoot.getPathToRoot();
-  }
-
-  isFileInProject(fileUri: NuclideUri): Promise<boolean> {
-    throw new Error('Not Yet Implemented');
+  async allowServerRestart(): Promise<void> {
+    const languageServices = await this.getAllLanguageServices();
+    const flowLanguageServices = languageServices.map(ls => ls.getSingleFileLanguageService());
+    flowLanguageServices.forEach(ls => ls.allowServerRestart());
   }
 }
 
 export function getServerStatusUpdates(): ConnectableObservable<ServerStatusUpdate> {
-  return getState().getRootContainer().getServerStatusUpdates().publish();
+  return serverStatuses.concatAll().publish();
 }
 
 export function flowGetAst(
   file: ?NuclideUri,
   currentContents: string,
-): Promise<any> {
-  return getState().getRootContainer().runWithOptionalRoot(
-    file,
-    root => FlowSingleProjectLanguageService
-        .flowGetAst(root, currentContents, getState().getExecInfoContainer()),
-  );
+): Promise<?any> {
+  if (currentLanguageService == null) {
+    return Promise.resolve(null);
+  }
+  return currentLanguageService.getAst(file, currentContents);
 }
 
 export function allowServerRestart(): void {
-  for (const root of getState().getRootContainer().getAllRoots()) {
-    root.allowServerRestart();
+  if (currentLanguageService != null) {
+    currentLanguageService.allowServerRestart();
   }
 }
