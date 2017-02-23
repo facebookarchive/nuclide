@@ -28,6 +28,9 @@ export default function accumulateState(state: AppState, action: Action): AppSta
         isLoadingBuckProject: false,
       };
     case Actions.SET_BUILD_TARGET:
+      // We are nulling out the deployment target while platforms are loaded
+      // Let's remember what we had selected in the last session field
+      const preference = getDeploymentTargetPreference(state);
       return {
         ...state,
         buildRuleType: null,
@@ -35,6 +38,8 @@ export default function accumulateState(state: AppState, action: Action): AppSta
         selectedDeploymentTarget: null,
         buildTarget: action.buildTarget,
         isLoadingRule: true,
+        lastSessionPlatformName: preference.platformName,
+        lastSessionDeviceName: preference.deviceName,
       };
     case Actions.SET_RULE_TYPE:
       return {
@@ -45,18 +50,9 @@ export default function accumulateState(state: AppState, action: Action): AppSta
       };
     case Actions.SET_PLATFORM_GROUPS:
       const {platformGroups} = action;
-      let currentPlatformName;
-      let currentDeviceName;
-      if (state.selectedDeploymentTarget) {
-        currentPlatformName = state.selectedDeploymentTarget.platform.name;
-        currentDeviceName = state.selectedDeploymentTarget.device
-          ? state.selectedDeploymentTarget.device.name : null;
-      } else {
-        currentPlatformName = state.lastSessionPlatformName;
-        currentDeviceName = state.lastSessionDeviceName;
-      }
+      const {platformName, deviceName} = getDeploymentTargetPreference(state);
       const selectedDeploymentTarget
-        = selectValidDeploymentTarget(currentPlatformName, currentDeviceName, platformGroups);
+        = selectValidDeploymentTarget(platformName, deviceName, platformGroups);
       return {
         ...state,
         platformGroups,
@@ -79,9 +75,27 @@ export default function accumulateState(state: AppState, action: Action): AppSta
   return state;
 }
 
+function getDeploymentTargetPreference(
+  state: AppState,
+): {platformName: ?string, deviceName: ?string} {
+  // If a deployment target exists, that's our first choice, otherwise look at the last session
+  if (state.selectedDeploymentTarget) {
+    return {
+      platformName: state.selectedDeploymentTarget.platform.name,
+      deviceName: state.selectedDeploymentTarget.device
+        ? state.selectedDeploymentTarget.device.name : null,
+    };
+  } else {
+    return {
+      platformName: state.lastSessionPlatformName,
+      deviceName: state.lastSessionDeviceName,
+    };
+  }
+}
+
 function selectValidDeploymentTarget(
-  currentPlatformName: ?string,
-  currentDeviceName: ?string,
+  preferredPlatformName: ?string,
+  preferredDeviceName: ?string,
   platformGroups: Array<PlatformGroup>): ?DeploymentTarget {
   if (!platformGroups.length) {
     return null;
@@ -89,15 +103,15 @@ function selectValidDeploymentTarget(
 
   let existingDevice = null;
   let existingPlatform = null;
-  if (currentPlatformName) {
+  if (preferredPlatformName) {
     for (const platformGroup of platformGroups) {
       for (const platform of platformGroup.platforms) {
-        if (platform.name === currentPlatformName) {
+        if (platform.name === preferredPlatformName) {
           existingPlatform = platform;
-          if (currentDeviceName) {
+          if (preferredDeviceName) {
             for (const deviceGroup of platform.deviceGroups) {
               for (const device of deviceGroup.devices) {
-                if (device.name === currentDeviceName) {
+                if (device.name === preferredDeviceName) {
                   existingDevice = device;
                   break;
                 }
