@@ -12,6 +12,7 @@ import createPackage from '../../commons-atom/createPackage';
 import {observeProjectPaths} from '../../commons-atom/projects';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import fsPromise from '../../commons-node/fsPromise';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 class Activation {
   _disposables: UniversalDisposable;
@@ -19,11 +20,14 @@ class Activation {
   constructor(state: ?mixed) {
     this._disposables = new UniversalDisposable(
       observeProjectPaths(async projectPath => {
+        if (nuclideUri.isRemote(projectPath)) {
+          return;
+        }
         const realPath = await fsPromise.realpath(projectPath);
         if (realPath !== projectPath) {
           atom.notifications.addWarning(
             'You have mounted a non-canonical project path. ' +
-            'Nuclide only supports mounting canonical paths.<br />' +
+            'Nuclide only supports mounting canonical paths as local projects.<br />' +
             '<strong>Some Nuclide features such as Flow might not work properly.</strong>',
             {
               dismissable: true,
