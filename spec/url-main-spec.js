@@ -11,7 +11,6 @@
 import electron from 'electron';
 import fs from 'fs';
 import invariant from 'invariant';
-import url from 'url';
 // eslint-disable-next-line nuclide-internal/prefer-nuclide-uri
 import path from 'path';
 import temp from 'temp';
@@ -34,21 +33,14 @@ temp.track();
 // Simulates what Atom does when it creates a new BrowserWindow.
 function createAtomWindow(urlToOpen: string) {
   const loadSettings = getLoadSettings();
-  const newWindow = new remote.BrowserWindow({
-    show: false,
-    parent: remote.getCurrentWindow(),
-  });
-  newWindow.loadURL(url.format({
-    protocol: 'file',
-    slashes: true,
-    pathname: path.join(loadSettings.resourcePath, 'static/index.html'),
-    hash: encodeURIComponent(JSON.stringify({
-      ...loadSettings,
-      windowInitializationScript: require.resolve(path.join('..', pkgJson.urlMain)),
-      urlToOpen,
-    })),
-  }));
-  return newWindow;
+  // This has to be done in the main process now - there's no way to set loadSettings
+  // via the proxied BrowserWindow object.
+  const {createBrowserWindow} = remote.require(require.resolve('./utils/create-browser-window'));
+  return createBrowserWindow({
+    ...loadSettings,
+    windowInitializationScript: require.resolve(path.join('..', pkgJson.urlMain)),
+    urlToOpen,
+  }, remote.getCurrentWindow());
 }
 
 describe('url-main', () => {
