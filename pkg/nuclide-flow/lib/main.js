@@ -8,7 +8,6 @@
  * @flow
  */
 
-import type {NuclideEvaluationExpressionProvider} from '../../nuclide-debugger-interfaces/service';
 import typeof * as FlowService from '../../nuclide-flow-rpc';
 import type {ServerConnection} from '../../nuclide-remote-connection';
 import type {
@@ -27,13 +26,9 @@ import {AtomLanguageService} from '../../nuclide-language-service';
 import {filterResultsByPrefix, shouldFilter} from '../../nuclide-flow-common';
 
 import {FlowServiceWatcher} from './FlowServiceWatcher';
-import {FlowEvaluationExpressionProvider} from './FlowEvaluationExpressionProvider';
 import {getCurrentServiceInstances, getFlowServiceByConnection} from './FlowServiceFactory';
 
 import {JS_GRAMMARS} from './constants';
-const GRAMMARS_STRING = JS_GRAMMARS.join(', ');
-
-const PACKAGE_NAME = 'nuclide-flow';
 
 let disposables;
 
@@ -71,17 +66,6 @@ async function connectionToFlowService(
   const languageService = await flowService.initialize(fileNotifier);
 
   return languageService;
-}
-
-export function createEvaluationExpressionProvider(): NuclideEvaluationExpressionProvider {
-  const evaluationExpressionProvider = new FlowEvaluationExpressionProvider();
-  const getEvaluationExpression =
-    evaluationExpressionProvider.getEvaluationExpression.bind(evaluationExpressionProvider);
-  return {
-    selector: GRAMMARS_STRING,
-    name: PACKAGE_NAME,
-    getEvaluationExpression,
-  };
 }
 
 export function deactivate() {
@@ -158,5 +142,9 @@ function getLanguageServiceConfig(): AtomLanguageServiceConfig {
       priority: 1,
       analyticsEventName: 'nuclide-flow.typeHint',
     } : undefined,
+    evaluationExpression: {
+      version: '0.0.0',
+      analyticsEventName: 'flow.evaluationExpression',
+    },
   };
 }
