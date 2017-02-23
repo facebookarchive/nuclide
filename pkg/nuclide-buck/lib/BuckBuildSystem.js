@@ -40,6 +40,7 @@ import invariant from 'assert';
 import nullthrows from 'nullthrows';
 import {applyMiddleware, createStore} from 'redux';
 import {Observable, Subject, TimeoutError} from 'rxjs';
+import {MULTIPLE_TARGET_RULE_TYPE} from '../../nuclide-buck-rpc';
 
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import nuclideUri from '../../commons-node/nuclideUri';
@@ -250,11 +251,20 @@ export class BuckBuildSystem {
     );
 
     const state = this._getStore().getState();
-    const {buckRoot, buildTarget, selectedDeploymentTarget} = state;
+    const {buckRoot, buildRuleType, buildTarget, selectedDeploymentTarget} = state;
     invariant(buckRoot);
+
     const deploymentString = formatDeploymentTarget(selectedDeploymentTarget);
     this._logOutput(`Resolving ${taskType} command for "${buildTarget}"${deploymentString}`, 'log');
-    const resolvedBuildTarget = getResolvedBuildTarget(buckRoot, buildTarget);
+
+    let resolvedBuildTarget;
+    if (buildRuleType !== MULTIPLE_TARGET_RULE_TYPE) {
+      resolvedBuildTarget = getResolvedBuildTarget(buckRoot, buildTarget);
+    } else {
+      // This is not strictly the qualified name, as that'd be a list of names
+      // Passing the input is good enough since the deployment target is guaranteed to be null
+      resolvedBuildTarget = Observable.of({qualifiedName: buildTarget, flavors: []});
+    }
 
     const task = taskFromObservable(resolvedBuildTarget.switchMap(resolvedTarget => {
       if (selectedDeploymentTarget) {
