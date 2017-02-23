@@ -10,6 +10,8 @@
 
 import child_process from 'child_process';
 import split from 'split';
+import {WatchmanClient} from '../../nuclide-watchman-helpers';
+
 
 function getFilesFromCommand(
   command: string,
@@ -137,6 +139,15 @@ function getAllFiles(localDirectory: string): Promise<Array<string>> {
       filePath => filePath.substring(2));
 }
 
+function getAllFilesFromWatchman(localDirectory: string): Promise<Array<string>> {
+  const client = new WatchmanClient();
+  try {
+    return client.listFiles(localDirectory);
+  } finally {
+    client.dispose();
+  }
+}
+
 export function getPaths(localDirectory: string): Promise<Array<string>> {
   // Attempts to get a list of files relative to `localDirectory`, hopefully from
   // a fast source control index.
@@ -144,6 +155,7 @@ export function getPaths(localDirectory: string): Promise<Array<string>> {
   // use those instead to determine VCS.
   return getFilesFromHg(localDirectory)
       .catch(() => getFilesFromGit(localDirectory))
+      .catch(() => getAllFilesFromWatchman(localDirectory))
       .catch(() => getAllFiles(localDirectory))
       .catch(() => { throw new Error(`Failed to populate FileSearch for ${localDirectory}`); });
 }
