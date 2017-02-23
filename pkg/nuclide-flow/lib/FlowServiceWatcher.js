@@ -35,7 +35,7 @@ export class FlowServiceWatcher {
 
     this._subscription.add(serverStatusUpdates
       .filter(({status}) => status === 'not installed')
-      .first()
+      .take(1)
       .subscribe(({pathToRoot}) => {
         handleNotInstalled(pathToRoot);
       }),
