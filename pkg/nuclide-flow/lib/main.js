@@ -30,13 +30,11 @@ import {JS_GRAMMARS} from './constants';
 
 let disposables;
 
-let flowLanguageService: ?AtomLanguageService<LanguageService> = null;
-
 export function activate() {
   if (!disposables) {
     disposables = new CompositeDisposable();
 
-    flowLanguageService = new AtomLanguageService(
+    const flowLanguageService = new AtomLanguageService(
       connectionToFlowService,
       getLanguageServiceConfig(),
     );
