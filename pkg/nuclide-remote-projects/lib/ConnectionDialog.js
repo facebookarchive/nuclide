@@ -29,7 +29,7 @@ import ConnectionDetailsPrompt from './ConnectionDetailsPrompt';
 import IndeterminateProgressBar from './IndeterminateProgressBar';
 import invariant from 'assert';
 import {notifySshHandshakeError} from './notification';
-import {React, ReactDOM} from 'react-for-atom';
+import {React} from 'react-for-atom';
 import electron from 'electron';
 import {
   SshHandshake,
@@ -166,6 +166,7 @@ export default class ConnectionDialog extends React.Component {
       && this.state.indexOfSelectedConnectionProfile === prevState.indexOfSelectedConnectionProfile
       && !this.state.isDirty
       && prevState.isDirty
+      && this.refs.okButton != null
     ) {
       // When editing a profile and clicking "Save", the Save button disappears. Focus the primary
       // button after re-rendering so focus is on a logical element.
@@ -176,7 +177,11 @@ export default class ConnectionDialog extends React.Component {
   _focus(): void {
     const content = this.refs.content;
     if (content == null) {
-      ReactDOM.findDOMNode(this.refs.cancelButton).focus();
+      const {cancelButton} = this.refs;
+      if (cancelButton == null) {
+        return;
+      }
+      cancelButton.focus();
     } else {
       content.focus();
     }
