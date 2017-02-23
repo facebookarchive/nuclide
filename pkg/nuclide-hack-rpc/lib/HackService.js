@@ -223,6 +223,13 @@ class HackSingleFileLanguageService {
               logger.logError(`Error: notifyDiagnostics ${error}`);
               return Observable.empty();
             })
+            .filter((hackDiagnostics: HackDiagnosticsMessage) => {
+              // This is passed over RPC as NuclideUri, which is not allowed
+              // to be an empty string. It's better to silently skip a
+              // (most likely) useless error, than crash the entire connection.
+              // TODO: figure out a better way to display those errors
+              return hackDiagnostics.filename !== '';
+            })
             .map((hackDiagnostics: HackDiagnosticsMessage) => {
               logger.log(`Got hack error in ${hackDiagnostics.filename}`);
               return ({
