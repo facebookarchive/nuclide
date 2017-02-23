@@ -9,22 +9,27 @@
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {FlowLanguageServiceType} from '../../nuclide-flow-rpc';
 
-import {Subscription} from 'rxjs';
+import {Observable, Subscription} from 'rxjs';
 
 import featureConfig from '../../commons-atom/featureConfig';
-
-import {getServerStatusUpdates} from './FlowServiceFactory';
+import {ConnectionCache} from '../../nuclide-remote-connection';
 
 const WARN_NOT_INSTALLED_CONFIG = 'nuclide-flow.warnOnNotInstalled';
 
 export class FlowServiceWatcher {
   _subscription: Subscription;
 
-  constructor() {
+  constructor(connectionCache: ConnectionCache<FlowLanguageServiceType>) {
     this._subscription = new Subscription();
 
-    const serverStatusUpdates = getServerStatusUpdates();
+    const flowLanguageServices: Observable<FlowLanguageServiceType> = connectionCache
+      .observeValues()
+      .mergeMap(p => Observable.fromPromise(p));
+    const serverStatusUpdates = flowLanguageServices.mergeMap(ls => {
+      return ls.getServerStatusUpdates().refCount();
+    }).share();
 
     this._subscription.add(serverStatusUpdates
       .filter(({status}) => status === 'failed')

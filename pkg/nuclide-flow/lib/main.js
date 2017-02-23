@@ -9,39 +9,48 @@
  */
 
 import typeof * as FlowService from '../../nuclide-flow-rpc';
+import type {FlowLanguageServiceType} from '../../nuclide-flow-rpc';
 import type {ServerConnection} from '../../nuclide-remote-connection';
 import type {
   AtomLanguageServiceConfig,
 } from '../../nuclide-language-service/lib/AtomLanguageService';
-import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
 
-import {CompositeDisposable} from 'atom';
+import invariant from 'assert';
 
 import featureConfig from '../../commons-atom/featureConfig';
 import registerGrammar from '../../commons-atom/register-grammar';
 import {getNotifierByConnection} from '../../nuclide-open-files';
 import {AtomLanguageService} from '../../nuclide-language-service';
 import {filterResultsByPrefix, shouldFilter} from '../../nuclide-flow-common';
+import {ConnectionCache, getServiceByConnection} from '../../nuclide-remote-connection';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 
 import {FlowServiceWatcher} from './FlowServiceWatcher';
-import {getCurrentServiceInstances, getFlowServiceByConnection} from './FlowServiceFactory';
 
 import {JS_GRAMMARS} from './constants';
 
 let disposables;
+let connectionCache: ?ConnectionCache<FlowLanguageServiceType> = null;
+
+function getConnectionCache(): ConnectionCache<FlowLanguageServiceType> {
+  invariant(connectionCache != null);
+  return connectionCache;
+}
 
 export function activate() {
   if (!disposables) {
-    disposables = new CompositeDisposable();
+    connectionCache = new ConnectionCache(connectionToFlowService);
 
     const flowLanguageService = new AtomLanguageService(
-      connectionToFlowService,
+      connection => getConnectionCache().get(connection),
       getLanguageServiceConfig(),
     );
     flowLanguageService.activate();
 
-    disposables.add(
-      new FlowServiceWatcher(),
+    disposables = new UniversalDisposable(
+      connectionCache,
+      () => { connectionCache = null; },
+      new FlowServiceWatcher(connectionCache),
       atom.commands.add(
         'atom-workspace',
         'nuclide-flow:restart-flow-server',
@@ -56,8 +65,8 @@ export function activate() {
 
 async function connectionToFlowService(
   connection: ?ServerConnection,
-): Promise<LanguageService> {
-  const flowService: FlowService = getFlowServiceByConnection(connection);
+): Promise<FlowLanguageServiceType> {
+  const flowService: FlowService = getServiceByConnection('FlowService', connection);
   const fileNotifier = await getNotifierByConnection(connection);
   const languageService = await flowService.initialize(fileNotifier);
 
@@ -71,8 +80,9 @@ export function deactivate() {
   }
 }
 
-function allowFlowServerRestart(): void {
-  for (const service of getCurrentServiceInstances()) {
+async function allowFlowServerRestart(): Promise<void> {
+  const services = await Promise.all(getConnectionCache().values());
+  for (const service of services) {
     service.allowServerRestart();
   }
 }

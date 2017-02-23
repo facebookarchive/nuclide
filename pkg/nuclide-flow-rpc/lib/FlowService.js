@@ -8,15 +8,26 @@
  * @flow
  */
 
-import type {ConnectableObservable, Observable} from 'rxjs';
+import type {ConnectableObservable} from 'rxjs';
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
+import type {Completion} from '../../nuclide-language-service/lib/LanguageService';
 import type {FileVersion, FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
+import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
+import type {
+  Definition,
+  DefinitionQueryResult,
+} from '../../nuclide-definition-service/lib/rpc-types';
+import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
+import type {FindReferencesReturn} from '../../nuclide-find-references/lib/rpc-types';
+import type {
+  DiagnosticProviderUpdate,
+  FileDiagnosticUpdate,
+} from '../../nuclide-diagnostics-common/lib/rpc-types';
+import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
 
 import invariant from 'assert';
-import {Subject} from 'rxjs';
 
 import {
   ServerLanguageService,
@@ -66,18 +77,12 @@ export function dispose(): void {
   }
 }
 
-const serverStatuses: Subject<Observable<ServerStatusUpdate>> = new Subject();
-let currentLanguageService: ?FlowLanguageService = null;
-
 export async function initialize(
   fileNotifier: FileNotifier,
-): Promise<LanguageService> {
+): Promise<FlowLanguageServiceType> {
   invariant(fileNotifier instanceof FileCache);
   const fileCache: FileCache = fileNotifier;
-  const ls = new FlowLanguageService(fileCache);
-  serverStatuses.next(ls.getServerStatusUpdates().refCount());
-  currentLanguageService = ls;
-  return ls;
+  return new FlowLanguageService(fileCache);
 }
 
 class FlowLanguageService
@@ -129,21 +134,6 @@ class FlowLanguageService
     }).publish();
   }
 
-  async getAst(filePath: ?NuclideUri, currentContents: string): Promise<?any> {
-    const ls = filePath != null ? await this.getLanguageServiceForFile(filePath) : null;
-    let singleLS: ?FlowSingleProjectLanguageService;
-    if (ls == null) {
-      singleLS = null;
-    } else {
-      singleLS = ls.getSingleFileLanguageService();
-    }
-    return FlowSingleProjectLanguageService.flowGetAst(
-      singleLS,
-      currentContents,
-      getState().getExecInfoContainer(),
-    );
-  }
-
   async allowServerRestart(): Promise<void> {
     const languageServices = await this.getAllLanguageServices();
     const flowLanguageServices = languageServices.map(ls => ls.getSingleFileLanguageService());
@@ -151,22 +141,84 @@ class FlowLanguageService
   }
 }
 
-export function getServerStatusUpdates(): ConnectableObservable<ServerStatusUpdate> {
-  return serverStatuses.concatAll().publish();
+// Unfortunately we have to duplicate a lot of things here to make FlowLanguageService remotable.
+export interface FlowLanguageServiceType {
+  getDiagnostics(
+    fileVersion: FileVersion,
+  ): Promise<?DiagnosticProviderUpdate>,
+
+  observeDiagnostics(): ConnectableObservable<FileDiagnosticUpdate>,
+
+  getAutocompleteSuggestions(
+    fileVersion: FileVersion,
+    position: atom$Point,
+    activatedManually: boolean,
+    prefix: string,
+  ): Promise<?Array<Completion>>,
+
+  getDefinition(
+    fileVersion: FileVersion,
+    position: atom$Point,
+  ): Promise<?DefinitionQueryResult>,
+
+  getDefinitionById(
+    file: NuclideUri,
+    id: string,
+  ): Promise<?Definition>,
+
+  findReferences(
+    fileVersion: FileVersion,
+    position: atom$Point,
+  ): Promise<?FindReferencesReturn>,
+
+  getCoverage(
+    filePath: NuclideUri,
+  ): Promise<?CoverageResult>,
+
+  getOutline(
+    fileVersion: FileVersion,
+  ): Promise<?Outline>,
+
+  typeHint(fileVersion: FileVersion, position: atom$Point): Promise<?TypeHint>,
+
+  highlight(
+    fileVersion: FileVersion,
+    position: atom$Point,
+  ): Promise<?Array<atom$Range>>,
+
+  formatSource(
+    fileVersion: FileVersion,
+    range: atom$Range,
+  ): Promise<?string>,
+
+  formatEntireFile(fileVersion: FileVersion, range: atom$Range): Promise<?{
+    newCursor?: number,
+    formatted: string,
+  }>,
+
+  getEvaluationExpression(
+    fileVersion: FileVersion,
+    position: atom$Point,
+  ): Promise<?NuclideEvaluationExpression>,
+
+  getProjectRoot(fileUri: NuclideUri): Promise<?NuclideUri>,
+
+  isFileInProject(fileUri: NuclideUri): Promise<boolean>,
+
+  getServerStatusUpdates(): ConnectableObservable<ServerStatusUpdate>,
+
+  allowServerRestart(): Promise<void>,
+
+  dispose(): void,
 }
 
 export function flowGetAst(
   file: ?NuclideUri,
   currentContents: string,
 ): Promise<?any> {
-  if (currentLanguageService == null) {
-    return Promise.resolve(null);
-  }
-  return currentLanguageService.getAst(file, currentContents);
-}
-
-export function allowServerRestart(): void {
-  if (currentLanguageService != null) {
-    currentLanguageService.allowServerRestart();
-  }
+  return FlowSingleProjectLanguageService.flowGetAst(
+    null,
+    currentContents,
+    getState().getExecInfoContainer(),
+  );
 }
