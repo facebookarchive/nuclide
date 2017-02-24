@@ -23,7 +23,10 @@ import {
   getPathToLogFile,
   FileAppender,
   getServerLogAppenderConfig,
+  addAdditionalLogFile,
+  getAdditionalLogFiles,
 } from './config';
+import type {AdditionalLogFile} from './config';
 import log4js from 'log4js';
 
 import type {LogLevel} from './rpc-types';
@@ -34,7 +37,10 @@ export {
   getPathToLogFile,
   FileAppender,
   getServerLogAppenderConfig,
+  addAdditionalLogFile,
+  getAdditionalLogFiles,
 };
+export type {AdditionalLogFile};
 
 /* Listed in order of severity. */
 type Level = 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal';
