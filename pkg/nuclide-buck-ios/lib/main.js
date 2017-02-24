@@ -21,6 +21,15 @@ import invariant from 'assert';
 
 let disposable: ?Disposable = null;
 
+const RUNNABLE_RULE_TYPES = new Set([
+  'apple_bundle',
+]);
+
+const SUPPORTED_RULE_TYPES = new Set([
+  ...RUNNABLE_RULE_TYPES,
+  'apple_test',
+]);
+
 export function deactivate(): void {
   if (disposable != null) {
     disposable.dispose();
@@ -37,9 +46,10 @@ function provideIosDevices(
   ruleType: string,
   buildTarget: string,
 ): Observable<?PlatformGroup> {
-  if (ruleType !== 'apple_bundle') {
+  if (!SUPPORTED_RULE_TYPES.has(ruleType)) {
     return Observable.of(null);
   }
+
   return IosSimulator.getFbsimctlSimulators().map(simulators => {
     if (!simulators.length) {
       return null;
@@ -49,8 +59,9 @@ function provideIosDevices(
       name: 'iOS Simulators',
       platforms: [{
         name: 'iOS Simulators',
-        tasks: new Set(['build', 'run', 'test', 'debug']),
-        runTask,
+        tasks: getTasks(ruleType),
+        runTask: (builder, taskType, target, device) =>
+          _runTask(builder, taskType, ruleType, target, device),
         deviceGroups: [
           {
             name: 'iOS Simulators',
@@ -66,13 +77,21 @@ function provideIosDevices(
   });
 }
 
-function runTask(
+function getTasks(ruleType: string): Set<TaskType> {
+  const tasks = new Set(['build', 'test', 'debug']);
+  if (RUNNABLE_RULE_TYPES.has(ruleType)) {
+    tasks.add('run');
+  }
+  return tasks;
+}
+
+function _runTask(
   builder: BuckBuildSystem,
   taskType: TaskType,
+  ruleType: string,
   buildTarget: ResolvedBuildTarget,
   device: ?Device,
 ): Observable<TaskEvent> {
-  let subcommand = taskType;
   invariant(device);
   invariant(device.arch);
   invariant(device.udid);
@@ -81,12 +100,20 @@ function runTask(
   invariant(typeof arch === 'string');
   invariant(typeof udid === 'string');
 
+  const subcommand = _getSubcommand(taskType, ruleType);
   const flavor = `iphonesimulator-${arch}`;
   const newTarget = {...buildTarget, flavors: buildTarget.flavors.concat([flavor])};
 
-  if (subcommand === 'run' || subcommand === 'debug') {
-    subcommand = 'install';
-  }
-
   return builder.runSubcommand(subcommand, newTarget, {}, taskType === 'debug', udid);
+}
+
+function _getSubcommand(taskType: TaskType, ruleType: string) {
+  if (taskType !== 'run' && taskType !== 'debug') {
+    return taskType;
+  }
+  switch (ruleType) {
+    case 'apple_bundle': return 'install';
+    case 'apple_test': return 'test';
+    default: throw new Error('Unsupported rule type');
+  }
 }

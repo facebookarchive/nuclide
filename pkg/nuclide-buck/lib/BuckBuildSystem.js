@@ -65,6 +65,7 @@ import {
 import {
   getDeployBuildEvents,
   getDeployInstallEvents,
+  getDeployTestEvents,
 } from './DeployEventStream';
 import observeBuildCommands from './observeBuildCommands';
 import {React} from 'react-for-atom';
@@ -470,6 +471,10 @@ export class BuckBuildSystem {
                 targetString,
                 settings.runArguments || [],
               ) : Observable.empty(),
+              isDebug && subcommand === 'test' ? getDeployTestEvents(
+                processMessages,
+                buckRoot,
+              ) : Observable.empty(),
             ),
           ),
         );
@@ -580,14 +585,12 @@ function runBuckCommand(
   }
 
   if (subcommand === 'install') {
-    return buckService.installWithOutput(buckRoot, [buildTarget], args, simulator, {
-      run: true,
-      debug,
-    }).refCount();
+    return buckService.installWithOutput(buckRoot, [buildTarget], args, simulator, true, debug)
+      .refCount();
   } else if (subcommand === 'build') {
     return buckService.buildWithOutput(buckRoot, [buildTarget], args).refCount();
   } else if (subcommand === 'test') {
-    return buckService.testWithOutput(buckRoot, [buildTarget], args).refCount();
+    return buckService.testWithOutput(buckRoot, [buildTarget], args, debug).refCount();
   } else if (subcommand === 'run') {
     return buckService.runWithOutput(buckRoot, [buildTarget], args).refCount();
   } else {

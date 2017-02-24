@@ -36,17 +36,6 @@ const CLIENT_ID_ARGS = ['--config', 'client.id=nuclide'];
 
 export const MULTIPLE_TARGET_RULE_TYPE = 'multiple_targets';
 
-export type dontRunOptions = {
-  run: false,
-};
-
-export type doRunOptions = {
-  run: true,
-  debug: boolean,
-};
-
-export type BuckRunOptions = dontRunOptions | doRunOptions;
-
 export type BuckWebSocketMessage = {
   // Not actually from Buck - this is to let the receiver know that the socket is connected.
   type: 'SocketConnected',
@@ -110,8 +99,8 @@ export type BaseBuckBuildOptions = {
   install?: boolean,
   run?: boolean,
   test?: boolean,
+  debug?: boolean,
   simulator?: ?string,
-  runOptions?: ?BuckRunOptions,
   // The service framework doesn't support imported types
   commandOptions?: Object /* AsyncExecuteOptions */,
   extraArguments?: Array<string>,
@@ -318,9 +307,10 @@ export function install(
   rootPath: NuclideUri,
   buildTargets: Array<string>,
   simulator: ?string,
-  runOptions: ?BuckRunOptions,
+  run: boolean,
+  debug: boolean,
 ): Promise<any> {
-  return _build(rootPath, buildTargets, {install: true, simulator, runOptions});
+  return _build(rootPath, buildTargets, {install: true, simulator, run, debug});
 }
 
 async function _build(
@@ -399,8 +389,9 @@ export function testWithOutput(
   rootPath: NuclideUri,
   buildTargets: Array<string>,
   extraArguments: Array<string>,
+  debug: boolean,
 ): ConnectableObservable<ProcessMessage> {
-  return _buildWithOutput(rootPath, buildTargets, {test: true, extraArguments}).publish();
+  return _buildWithOutput(rootPath, buildTargets, {test: true, extraArguments, debug}).publish();
 }
 
 /**
@@ -419,12 +410,14 @@ export function installWithOutput(
   buildTargets: Array<string>,
   extraArguments: Array<string>,
   simulator: ?string,
-  runOptions: ?BuckRunOptions,
+  run: boolean,
+  debug: boolean,
 ): ConnectableObservable<ProcessMessage> {
   return _buildWithOutput(rootPath, buildTargets, {
     install: true,
     simulator,
-    runOptions,
+    run,
+    debug,
     extraArguments,
   }).publish();
 }
@@ -434,12 +427,10 @@ export function runWithOutput(
   buildTargets: Array<string>,
   extraArguments: Array<string>,
   simulator: ?string,
-  runOptions: ?BuckRunOptions,
 ): ConnectableObservable<ProcessMessage> {
   return _buildWithOutput(rootPath, buildTargets, {
     run: true,
     simulator,
-    runOptions,
     extraArguments,
   }).publish();
 }
@@ -491,9 +482,9 @@ function _translateOptionsToBuckBuildArgs(options: FullBuckBuildOptions): Array<
     run,
     simulator,
     test,
+    debug,
     extraArguments,
   } = baseOptions;
-  const runOptions = baseOptions.runOptions || {run: false};
 
   let args = [test ? 'test' : (doInstall ? 'install' : (run ? 'run' : 'build'))];
   args = args.concat(buildTargets, CLIENT_ID_ARGS);
@@ -510,11 +501,15 @@ function _translateOptionsToBuckBuildArgs(options: FullBuckBuildOptions): Array<
       args.push(simulator);
     }
 
-    if (runOptions.run) {
+    if (run) {
       args.push('--run');
-      if (runOptions.debug) {
+      if (debug) {
         args.push('--wait-for-debugger');
       }
+    }
+  } else if (test) {
+    if (debug) {
+      args.push('--debug');
     }
   }
   if (extraArguments != null) {

@@ -221,3 +221,29 @@ export function getDeployInstallEvents(
         });
     });
 }
+
+export function getDeployTestEvents(
+  processStream: Observable<ProcessMessage>,
+  buckRoot: string,
+): Observable<BuckEvent> {
+  return processStream.flatMap(message => {
+    if (message.kind !== 'stderr') {
+      return Observable.empty();
+    }
+    const pidMatch = message.data.match(LLDB_PROCESS_ID_REGEX);
+    if (pidMatch == null) {
+      return Observable.empty();
+    }
+    return Observable.of(pidMatch[1]);
+  })
+    .switchMap(pid => {
+      return Observable.fromPromise(
+        debugPidWithLLDB(parseInt(pid, 10), buckRoot))
+          .ignoreElements()
+          .startWith({
+            type: 'log',
+            message: `Attaching LLDB debugger to pid ${pid}...`,
+            level: 'info',
+          });
+    });
+}
