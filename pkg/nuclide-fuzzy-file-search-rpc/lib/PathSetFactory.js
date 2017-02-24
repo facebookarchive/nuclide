@@ -139,7 +139,9 @@ function getAllFiles(localDirectory: string): Promise<Array<string>> {
       filePath => filePath.substring(2));
 }
 
-function getAllFilesFromWatchman(localDirectory: string): Promise<Array<string>> {
+function getAllFilesFromWatchman(  // eslint-disable-line no-unused-vars
+  localDirectory: string,
+): Promise<Array<string>> {
   const client = new WatchmanClient();
   try {
     return client.listFiles(localDirectory);
@@ -155,7 +157,7 @@ export function getPaths(localDirectory: string): Promise<Array<string>> {
   // use those instead to determine VCS.
   return getFilesFromHg(localDirectory)
       .catch(() => getFilesFromGit(localDirectory))
-      .catch(() => getAllFilesFromWatchman(localDirectory))
+      // .catch(() => getAllFilesFromWatchman(localDirectory))
       .catch(() => getAllFiles(localDirectory))
       .catch(() => { throw new Error(`Failed to populate FileSearch for ${localDirectory}`); });
 }
