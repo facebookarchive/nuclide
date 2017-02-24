@@ -616,14 +616,20 @@ export function commit(
     track('diff-view-commit');
     const {message, repository, publishUpdates, bookmarkName} = action.payload;
     const {
+      activeRepositoryState: {dirtyFiles},
       commit: {mode},
       isPrepareMode,
       lintExcuse,
       publish,
+      shouldCommitInteractively,
       shouldPublishOnCommit,
       shouldRebaseOnAmend,
     } = store.getState();
     let consoleShown = false;
+
+    // Trying to amend a commit interactively with no uncommitted changes
+    // will instantly return and not allow the commit message to update
+    const isInteractive = shouldCommitInteractively && (dirtyFiles.size > 0);
 
     // If the commit/amend and publish option are chosen
     function getPublishActions(): Observable<Action> {
@@ -673,11 +679,11 @@ export function commit(
               bookmarkName != null && bookmarkName.length > 0
                 ? Observable.fromPromise(repository.createBookmark(bookmarkName)).ignoreElements()
                 : Observable.empty(),
-              repository.commit(message),
+              repository.commit(message, isInteractive),
             );
           case CommitMode.AMEND:
             track('diff-view-commit-amend');
-            return repository.amend(message, getAmendMode(shouldRebaseOnAmend));
+            return repository.amend(message, getAmendMode(shouldRebaseOnAmend), isInteractive);
           default:
             return Observable.throw(new Error(`Invalid Commit Mode ${mode}`));
         }

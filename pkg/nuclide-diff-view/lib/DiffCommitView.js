@@ -16,7 +16,7 @@ import {AtomInput} from '../../nuclide-ui/AtomInput';
 import {AtomTextEditor} from '../../nuclide-ui/AtomTextEditor';
 import {Checkbox} from '../../nuclide-ui/Checkbox';
 import classnames from 'classnames';
-import {DiffMode, CommitMode, CommitModeState} from './constants';
+import {DiffMode, CommitMode, CommitModeState, DiffViewFeatures} from './constants';
 import {CompositeDisposable} from 'atom';
 import {React} from 'react-for-atom';
 import {
@@ -37,8 +37,11 @@ type Props = {
   commitMode: string,
   commitModeState: CommitModeStateType,
   diffModel: DiffViewModel,
+  enabledFeatures: Set<string>,
+  hasUncommittedChanges: boolean,
   isPrepareMode: boolean,
   lintExcuse: string,
+  shouldCommitInteractively: boolean,
   shouldPublishOnCommit: boolean,
   shouldRebaseOnAmend: boolean,
   suggestedReviewers: SuggestedReviewersState,
@@ -58,6 +61,7 @@ export default class DiffCommitView extends React.Component {
     (this: any)._onTogglePrepare = this._onTogglePrepare.bind(this);
     (this: any)._onToggleVerbatim = this._onToggleVerbatim.bind(this);
     (this: any)._onLintExcuseChange = this._onLintExcuseChange.bind(this);
+    (this: any)._onToggleInteractiveCommit = this._onToggleInteractiveCommit.bind(this);
   }
 
   componentDidMount(): void {
@@ -143,6 +147,26 @@ export default class DiffCommitView extends React.Component {
       );
     }
 
+    let interactiveOptionElement;
+    if (
+      this.props.hasUncommittedChanges &&
+      this.props.enabledFeatures.has(DiffViewFeatures.INTERACTIVE)
+    ) {
+      interactiveOptionElement = (
+        <Checkbox
+          className="padded"
+          checked={this.props.shouldCommitInteractively}
+          disabled={isLoading}
+          label="Use interactive mode"
+          onChange={this._onToggleInteractiveCommit}
+          tabIndex="-1"
+          ref={this._addTooltip(
+            'Whether to include all uncommitted changes or to select specific ones',
+          )}
+        />
+      );
+    }
+
     let prepareOptionElement;
     let verbatimeOptionElement;
     let lintExcuseElement;
@@ -195,6 +219,7 @@ export default class DiffCommitView extends React.Component {
       <Toolbar location="bottom">
         <ToolbarLeft>
           {rebaseOptionElement}
+          {interactiveOptionElement}
           <Checkbox
             className="padded"
             checked={this.props.shouldPublishOnCommit}
@@ -261,6 +286,10 @@ export default class DiffCommitView extends React.Component {
 
   _onToggleAmendRebase(isChecked: boolean): void {
     this.props.diffModel.setShouldAmendRebase(isChecked);
+  }
+
+  _onToggleInteractiveCommit(isChecked: boolean): void {
+    this.props.diffModel.setShouldCommitInteractively(isChecked);
   }
 
   _onTogglePublish(isChecked: boolean): void {

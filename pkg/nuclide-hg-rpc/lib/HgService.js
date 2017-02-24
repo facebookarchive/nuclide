@@ -758,7 +758,12 @@ export class HgService {
   _commitCode(
     message: ?string,
     args: Array<string>,
+    isInteractive: boolean,
   ): Observable<ProcessMessage> {
+    if (isInteractive) {
+      args.push('--interactive');
+    }
+
     let tempFile = null;
     let editMergeConfigs;
 
@@ -794,8 +799,11 @@ export class HgService {
    * Commit code to version control.
    * @param message Commit message.
    */
-  commit(message: string): ConnectableObservable<ProcessMessage> {
-    return this._commitCode(message, ['commit']).publish();
+  commit(
+    message: string,
+    isInteractive: boolean = false,
+  ): ConnectableObservable<ProcessMessage> {
+    return this._commitCode(message, ['commit'], isInteractive).publish();
   }
 
   /**
@@ -806,7 +814,11 @@ export class HgService {
    *  Rebase to amend and rebase the stacked diffs.
    *  Fixup to fix the stacked commits, rebasing them on top of this commit.
    */
-  amend(message: ?string, amendMode: AmendModeValue): ConnectableObservable<ProcessMessage> {
+  amend(
+    message: ?string,
+    amendMode: AmendModeValue,
+    isInteractive: boolean = false,
+  ): ConnectableObservable<ProcessMessage> {
     const args = ['amend'];
     switch (amendMode) {
       case AmendMode.CLEAN:
@@ -820,7 +832,7 @@ export class HgService {
       default:
         throw new Error('Unexpected AmendMode');
     }
-    return this._commitCode(message, args).publish();
+    return this._commitCode(message, args, isInteractive).publish();
   }
 
   revert(filePaths: Array<NuclideUri>, toRevision: ?string): Promise<void> {

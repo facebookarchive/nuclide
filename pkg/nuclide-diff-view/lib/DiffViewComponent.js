@@ -99,12 +99,15 @@ export function renderCommitView(diffModel: DiffViewModel): React.Element<any> {
     commit: {message, mode, state},
     isPrepareMode,
     lintExcuse,
+    shouldCommitInteractively,
     shouldPublishOnCommit,
     shouldRebaseOnAmend,
     shouldUseTextBasedForm,
     suggestedReviewers,
     verbatimModeEnabled,
+    enabledFeatures,
   } = diffModel.getState();
+  const hasUncomittedChanges = diffModel.getDirtyFileChangesCount() > 0;
 
   const CommitComponent = getCommitComponent(shouldUseTextBasedForm);
   return (
@@ -113,14 +116,17 @@ export function renderCommitView(diffModel: DiffViewModel): React.Element<any> {
       commitMessage={message}
       commitMode={mode}
       commitModeState={state}
+      hasUncommittedChanges={hasUncomittedChanges}
       isPrepareMode={isPrepareMode}
       lintExcuse={lintExcuse}
+      shouldCommitInteractively={shouldCommitInteractively}
       shouldPublishOnCommit={shouldPublishOnCommit}
       shouldRebaseOnAmend={shouldRebaseOnAmend}
       // `diffModel` is acting as the action creator for commit view and needs to be passed so
       // methods can be called on it.
       diffModel={diffModel}
       verbatimModeEnabled={verbatimModeEnabled}
+      enabledFeatures={enabledFeatures}
     />
   );
 }

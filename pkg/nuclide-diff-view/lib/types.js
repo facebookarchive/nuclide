@@ -173,12 +173,14 @@ export type AppState = {
   diffEditors: ?DiffEditorsState,
   diffEditorsVisible: boolean,
   diffNavigatorVisible: boolean,
+  enabledFeatures: Set<string>,
   fileDiff: FileDiffState,
   isLoadingFileDiff: boolean,
   isPrepareMode: boolean,
   lintExcuse: string,
   publish: PublishState,
   repositories: Map<HgRepositoryClient, RepositoryState>,
+  shouldCommitInteractively: boolean,
   shouldDockPublishView: boolean,
   shouldPublishOnCommit: boolean,
   shouldRebaseOnAmend: boolean,
@@ -328,7 +330,14 @@ export type SetCommitModeAction = {
   },
 };
 
-export type SetShouldReabaseOnAmendAction = {
+export type SetShouldCommitInteractivelyAction = {
+  type: 'SET_SHOULD_COMMIT_INTERACTIVELY',
+  payload: {
+    shouldCommitInteractively: boolean,
+  },
+};
+
+export type SetShouldRebaseOnAmendAction = {
   type: 'SET_SHOULD_REBASE_ON_AMEND',
   payload: {
     shouldRebaseOnAmend: boolean,
@@ -438,6 +447,13 @@ export type SetVerbatimModeEnabledAction = {
   },
 };
 
+export type SetEnabledFeaturesAction = {
+  type: 'SET_ENABLED_FEATURES',
+  payload: {
+    enabledFeatures: Set<string>,
+  },
+};
+
 export type Action = AddRepositoryAction
   | AddUiProviderAction
   | CommitAction
@@ -448,8 +464,9 @@ export type Action = AddRepositoryAction
   | SetCommitModeAction
   | SetCompareIdAction
   | SetCwdApiAction
+  | SetEnabledFeaturesAction
   | SetShouldPublishOnCommitAction
-  | SetShouldReabaseOnAmendAction
+  | SetShouldRebaseOnAmendAction
   | SetViewModeAction
   | UpdateActiveNavigationSectionAction
   | UpdateActiveRepositoryAction

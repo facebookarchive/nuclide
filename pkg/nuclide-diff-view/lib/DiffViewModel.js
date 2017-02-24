@@ -129,6 +129,10 @@ export default class DiffViewModel {
     this._actionCreators.setShouldRebaseOnAmend(shouldRebaseOnAmend);
   }
 
+  setShouldCommitInteractively(shouldCommitInteractively: boolean): void {
+    this._actionCreators.setShouldCommitInteractively(shouldCommitInteractively);
+  }
+
   setShouldPublishOnCommit(shoulPublishOnCommit: boolean): void {
     this._actionCreators.setShouldPublishOnCommit(shoulPublishOnCommit);
   }

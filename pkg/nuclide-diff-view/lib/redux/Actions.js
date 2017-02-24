@@ -28,10 +28,12 @@ import type {
   SetCommitModeAction,
   SetCompareIdAction,
   SetCwdApiAction,
+  SetEnabledFeaturesAction,
+  SetShouldCommitInteractivelyAction,
   SetShouldPublishOnCommitAction,
   SetIsPrepareModeAction,
   SetLintExcuseAction,
-  SetShouldReabaseOnAmendAction,
+  SetShouldRebaseOnAmendAction,
   SetVerbatimModeEnabledAction,
   SetViewModeAction,
   SetTextBasedDiffFormAction,
@@ -274,9 +276,20 @@ export function updatePublishState(
   };
 }
 
+export function setShouldCommitInteractively(
+  shouldCommitInteractively: boolean,
+): SetShouldCommitInteractivelyAction {
+  return {
+    type: ActionTypes.SET_SHOULD_COMMIT_INTERACTIVELY,
+    payload: {
+      shouldCommitInteractively,
+    },
+  };
+}
+
 export function setShouldRebaseOnAmend(
   shouldRebaseOnAmend: boolean,
-): SetShouldReabaseOnAmendAction {
+): SetShouldRebaseOnAmendAction {
   return {
     type: ActionTypes.SET_SHOULD_REBASE_ON_AMEND,
     payload: {
@@ -458,6 +471,17 @@ export function updateShouldUseTextBasedForm(
     type: ActionTypes.SET_TEXT_BASED_FORM,
     payload: {
       shouldUseTextBasedForm,
+    },
+  };
+}
+
+export function setEnabledFeatures(
+  enabledFeatures: Set<string>,
+): SetEnabledFeaturesAction {
+  return {
+    type: ActionTypes.SET_ENABLED_FEATURES,
+    payload: {
+      enabledFeatures,
     },
   };
 }

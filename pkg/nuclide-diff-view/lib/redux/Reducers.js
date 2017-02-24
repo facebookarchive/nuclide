@@ -117,9 +117,22 @@ export function rootReducer(
         isLoadingFileDiff: action.payload.isLoading,
       };
 
+    // --interactive and --rebase are mutually exclusive
+    case ActionTypes.SET_SHOULD_COMMIT_INTERACTIVELY:
+      return {
+        ...state,
+        shouldCommitInteractively: action.payload.shouldCommitInteractively,
+        shouldPublishOnCommit:
+          !action.payload.shouldCommitInteractively && state.shouldPublishOnCommit,
+        shouldRebaseOnAmend:
+          !action.payload.shouldCommitInteractively && state.shouldRebaseOnAmend,
+      };
+
     case ActionTypes.SET_SHOULD_REBASE_ON_AMEND:
       return {
         ...state,
+        shouldCommitInteractively:
+          !action.payload.shouldRebaseOnAmend && state.shouldCommitInteractively,
         shouldRebaseOnAmend: action.payload.shouldRebaseOnAmend,
       };
 
@@ -174,6 +187,8 @@ export function rootReducer(
     case ActionTypes.SET_SHOULD_PUBLISH_ON_COMMIT:
       return {
         ...state,
+        shouldCommitInteractively:
+          !action.payload.shouldPublishOnCommit && state.shouldCommitInteractively,
         shouldPublishOnCommit: action.payload.shouldPublishOnCommit,
       };
 
@@ -193,6 +208,12 @@ export function rootReducer(
       return {
         ...state,
         verbatimModeEnabled: action.payload.verbatimModeEnabled,
+      };
+
+    case ActionTypes.SET_ENABLED_FEATURES:
+      return {
+        ...state,
+        enabledFeatures: action.payload.enabledFeatures,
       };
 
     default:

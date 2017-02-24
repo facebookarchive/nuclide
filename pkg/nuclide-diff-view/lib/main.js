@@ -28,6 +28,7 @@ import {getHgRepositoryStream, repositoryForPath} from '../../commons-atom/vcs';
 import {
   CommitMode,
   DiffMode,
+  GatedFeatureList,
   DIFF_VIEW_NAVIGATOR_TOGGLE_COMMAND,
   SHOULD_DOCK_PUBLISH_VIEW_CONFIG_KEY,
   DIFF_VIEW_TEXT_BASED_FORM_CONFIG_KEY,
@@ -42,6 +43,7 @@ import DiffViewNavigatorComponent from './new-ui/DiffViewNavigatorComponent';
 import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
 import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
 import {goToLocation} from '../../commons-atom/go-to-location';
+import passesGK from '../../commons-node/passesGK';
 
 // Redux store
 import type {Store} from './types';
@@ -207,6 +209,17 @@ class Activation {
           return stream;
         })
     );
+
+    Promise.all(GatedFeatureList.map(feature => passesGK(feature)))
+      .then(isFeaturesEnabled => {
+        const enabledFeatures = new Set();
+        for (let i = 0; i < GatedFeatureList.length; i++) {
+          if (isFeaturesEnabled[i]) {
+            enabledFeatures.add(GatedFeatureList[i]);
+          }
+        }
+        this._actionCreators.setEnabledFeatures(enabledFeatures);
+      });
 
     this._store = createStore(
       rootReducer,

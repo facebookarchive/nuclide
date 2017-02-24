@@ -886,20 +886,27 @@ export class HgRepositoryClient {
     return this._service.add(filePaths);
   }
 
-  commit(message: string): Observable<ProcessMessage> {
-    return this._service.commit(message)
+  commit(
+    message: string,
+    isInteractive: boolean = false,
+  ): Observable<ProcessMessage> {
+    return this._service.commit(message, isInteractive)
       .refCount()
-      .do(this._clearOnSuccessExit.bind(this));
+      .do(this._clearOnSuccessExit.bind(this, isInteractive));
   }
 
-  amend(message: ?string, amendMode: AmendModeValue): Observable<ProcessMessage> {
-    return this._service.amend(message, amendMode)
+  amend(
+    message: ?string,
+    amendMode: AmendModeValue,
+    isInteractive: boolean = false,
+  ): Observable<ProcessMessage> {
+    return this._service.amend(message, amendMode, isInteractive)
       .refCount()
-      .do(this._clearOnSuccessExit.bind(this));
+      .do(this._clearOnSuccessExit.bind(this, isInteractive));
   }
 
-  _clearOnSuccessExit(message: ProcessMessage) {
-    if (message.kind === 'exit' && message.exitCode === 0) {
+  _clearOnSuccessExit(isInteractive: boolean, message: ProcessMessage) {
+    if (!isInteractive && message.kind === 'exit' && message.exitCode === 0) {
       this._clearClientCache();
     }
   }
