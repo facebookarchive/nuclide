@@ -564,6 +564,11 @@
       "from": "iterall@1.0.2",
       "resolved": "https://registry.npmjs.org/iterall/-/iterall-1.0.2.tgz"
     },
+    "jest-editor-support": {
+      "version": "19.0.2",
+      "from": "jest-editor-support@19.0.2",
+      "resolved": "https://registry.npmjs.org/jest-editor-support/-/jest-editor-support-19.0.2.tgz"
+    },
     "jodid25519": {
       "version": "1.0.2",
       "from": "jodid25519@>=1.0.0 <2.0.0",
@@ -981,9 +986,9 @@
       "resolved": "https://registry.npmjs.org/react-for-atom/-/react-for-atom-15.3.1-0.tgz"
     },
     "readable-stream": {
-      "version": "2.2.2",
+      "version": "2.2.3",
       "from": "readable-stream@>=2.0.2 <3.0.0",
-      "resolved": "https://registry.npmjs.org/readable-stream/-/readable-stream-2.2.2.tgz"
+      "resolved": "https://registry.npmjs.org/readable-stream/-/readable-stream-2.2.3.tgz"
     },
     "redux": {
       "version": "3.6.0",
