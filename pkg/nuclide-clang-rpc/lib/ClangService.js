@@ -191,7 +191,7 @@ export async function getDeclarationInfo(
 export async function getRelatedSourceOrHeader(
   src: NuclideUri,
   compilationDBFile: ?NuclideUri,
-): Promise<?string> {
+): Promise<?NuclideUri> {
   return serverManager.getClangFlagsManager().getRelatedSrcFileForHeader(src, compilationDBFile);
 }
 

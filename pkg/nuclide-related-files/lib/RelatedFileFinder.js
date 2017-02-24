@@ -79,6 +79,7 @@ export default class RelatedFileFinder {
       })
       .map(fileObject => nuclideUri.join(dirName, fileObject.file))
       .concat(await RelatedFileFinder._findRelatedFilesFromProviders(filePath));
+
     let wlFilelist = fileTypeWhitelist.size <= 0 ? filelist :
       filelist.filter(otherFilePath => {
         return fileTypeWhitelist.has(nuclideUri.extname(otherFilePath));
@@ -88,12 +89,13 @@ export default class RelatedFileFinder {
       wlFilelist = filelist;
     }
 
-    const relatedFiles = wlFilelist;
+    const relatedFiles = Array.from(new Set(wlFilelist));
 
     if (relatedFiles.indexOf(filePath) < 0) {
       relatedFiles.push(filePath);
     }
     relatedFiles.sort();
+
     return {
       relatedFiles,
       index: relatedFiles.indexOf(filePath),
