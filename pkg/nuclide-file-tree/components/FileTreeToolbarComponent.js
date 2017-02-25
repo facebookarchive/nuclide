@@ -12,13 +12,19 @@ import {React, ReactDOM} from 'react-for-atom';
 import classnames from 'classnames';
 import invariant from 'assert';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import addTooltip from '../../nuclide-ui/add-tooltip';
 import {WorkingSetSelectionComponent} from './WorkingSetSelectionComponent';
 import {WorkingSetNameAndSaveComponent} from './WorkingSetNameAndSaveComponent';
 import {FileTreeStore} from '../lib/FileTreeStore';
 import FileTreeActions from '../lib/FileTreeActions';
 import {WorkingSet} from '../../nuclide-working-sets-common';
-import {Button} from '../../nuclide-ui/Button';
+import {
+  Button,
+  ButtonSizes,
+} from '../../nuclide-ui/Button';
+import {
+  ButtonGroup,
+  ButtonGroupSizes,
+} from '../../nuclide-ui/ButtonGroup';
 
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
 
@@ -98,6 +104,11 @@ export class FileTreeToolbarComponent extends React.Component {
   }
 
   render(): React.Element<any> {
+    const workingSetsStore = this._store.getWorkingSetsStore();
+    let shouldShowButtonLabel;
+    if (workingSetsStore != null) {
+      shouldShowButtonLabel = workingSetsStore.getApplicableDefinitions().length === 0;
+    }
     const workingSet = this._store.getWorkingSet();
     const editedWorkingSetIsEmpty = this._store.isEditedWorkingSetEmpty();
     const isEditingWorkingSet = this._store.isEditingWorkingSet();
@@ -106,9 +117,9 @@ export class FileTreeToolbarComponent extends React.Component {
     if (!this.state.definitionsAreEmpty && !isEditingWorkingSet) {
       selectWorkingSetButton = (
         <SelectWorkingSetButton
-          highlight={!workingSet.isEmpty()}
           onClick={this._toggleWorkingSetsSelector}
           onFocus={this._checkIfClosingSelector}
+          isWorkingSetEmpty={workingSet.isEmpty()}
         />
       );
     }
@@ -135,13 +146,15 @@ export class FileTreeToolbarComponent extends React.Component {
             !this.state.selectionIsActive &&
             !this._store.isEditingWorkingSet(),
         })}>
-        <div className="btn-group pull-right">
+        <ButtonGroup className="pull-right" size={ButtonGroupSizes.SMALL}>
           {selectWorkingSetButton}
           <DefineWorkingSetButton
             isActive={isEditingWorkingSet}
+            isWorkingSetEmpty={workingSet.isEmpty()}
+            shouldShowLabel={shouldShowButtonLabel}
             onClick={this._toggleWorkingSetEditMode}
           />
-        </div>
+        </ButtonGroup>
         <div className="clearfix" />
         {workingSetNameAndSave}
       </div>
@@ -246,29 +259,31 @@ export class FileTreeToolbarComponent extends React.Component {
 
 class SelectWorkingSetButton extends React.Component {
   props: {
-    highlight: boolean,
+    isWorkingSetEmpty: boolean,
     onClick: () => void,
     onFocus: () => void,
   };
 
   render(): React.Element<any> {
     const {
-      highlight,
+      isWorkingSetEmpty,
       onClick,
       onFocus,
     } = this.props;
     return (
       <Button
-        selected={highlight}
-        ref={addTooltip({
-          title: 'Select Working Sets',
-          delay: 500,
-          placement: 'bottom',
-          keyBindingCommand: 'working-sets:select-active',
-        })}
+        icon="pencil"
         onClick={onClick}
-        onFocus={onFocus}>
-        <span className="icon icon-list-unordered nuclide-file-tree-toolbar-icon" />
+        onFocus={onFocus}
+        selected={!isWorkingSetEmpty}
+        size={ButtonSizes.SMALL}
+        tooltip={{
+          title: 'Select Working Sets',
+          delay: 300,
+          placement: 'top',
+          keyBindingCommand: 'working-sets:select-active',
+        }}>
+        Working Sets...
       </Button>
     );
   }
@@ -277,31 +292,35 @@ class SelectWorkingSetButton extends React.Component {
 class DefineWorkingSetButton extends React.Component {
   props: {
     isActive: boolean,
+    isWorkingSetEmpty: boolean,
+    shouldShowLabel: boolean,
     onClick: () => void,
   };
 
   render(): React.Element<any> {
     const {
       isActive,
+      isWorkingSetEmpty,
+      shouldShowLabel,
       onClick,
     } = this.props;
     return (
       <Button
-        selected={isActive}
-        ref={addTooltip({
+        icon={isActive ? undefined : 'plus'}
+        size={ButtonSizes.SMALL}
+        tooltip={{
           title: isActive ? 'Cancel' : 'Define a Working Set',
-          delay: 500,
-          placement: 'bottom',
-        })}
+          delay: 300,
+          placement: 'top',
+        }}
         onClick={onClick}>
-        <span
-          className={classnames({
-            'icon': true,
-            'icon-plus': !isActive,
-            'icon-dash': isActive,
-            'nuclide-file-tree-toolbar-icon': true,
-          })}
-        />
+        {
+          isActive
+            ? 'Cancel selection'
+            : isWorkingSetEmpty && shouldShowLabel
+              ? 'Working Set...'
+              : null
+        }
       </Button>
     );
   }

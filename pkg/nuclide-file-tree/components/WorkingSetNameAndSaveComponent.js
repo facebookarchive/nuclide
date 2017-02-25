@@ -8,7 +8,6 @@
  * @flow
  */
 
-import classnames from 'classnames';
 import {React} from 'react-for-atom';
 import {AtomInput} from '../../nuclide-ui/AtomInput';
 import {
@@ -74,14 +73,10 @@ export class WorkingSetNameAndSaveComponent extends React.Component {
         </div>
         <Button
           buttonType={ButtonTypes.SUCCESS}
-          className={classnames({
-            'inline-block-tight': true,
-            'disabled': this.state.name === '',
-            'nuclide-file-tree-toolbar-icon': true,
-          })}
-          onClick={this._saveWorkingSet}>
-          <span className="icon icon-check nuclide-file-tree-toolbar-icon" />
-        </Button>
+          disabled={this.state.name === ''}
+          icon="check"
+          onClick={this._saveWorkingSet}
+        />
         {setNameText}
       </div>
     );
