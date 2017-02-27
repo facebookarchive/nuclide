@@ -23,6 +23,7 @@ export class PerConnectionLanguageService extends MultiProjectLanguageService {
     logger: CategoryLogger,
     fileCache: FileCache,
     command: string,
+    args: Array<string>,
     projectFileName: string,
     fileExtensions: Array<NuclideUri>,
   ) {
@@ -30,7 +31,7 @@ export class PerConnectionLanguageService extends MultiProjectLanguageService {
       return LanguageServerProtocolProcess.create(
         logger,
         fileCache,
-        () => safeSpawn(command), // TODO: current dir, options?
+        () => safeSpawn(command, args), // TODO: current dir?
         projectDir,
         fileExtensions,
       );
