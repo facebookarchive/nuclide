@@ -203,23 +203,19 @@ class Activation {
 
     if (!searchPanel.isVisible()) {
       searchPanel.show();
-      searchComponent.focus();
+      searchComponent.setup();
     }
   }
 
   _closeSearchPanel(): void {
-    if (this._searchComponent != null) {
-      invariant(this._searchPanel != null);
-      ReactDOM.unmountComponentAtNode(this._searchPanel.getItem());
-      this._searchComponent = null;
+    if (this._searchPanel != null && this._searchPanel.isVisible()) {
+      this._searchPanel.hide();
+      invariant(this._searchComponent != null);
+      this._searchComponent.teardown();
       track('quickopen-close-panel', {
         'quickopen-session': this._analyticsSessionId || '',
       });
       this._analyticsSessionId = null;
-    }
-
-    if (this._searchPanel != null && this._searchPanel.isVisible()) {
-      this._searchPanel.hide();
     }
 
     if (this._previousFocus != null) {
@@ -275,6 +271,9 @@ class Activation {
     this._quickSelectionDispatcher.unregister(this._dispatcherToken);
     this._closeSearchPanel();
     if (this._searchPanel != null) {
+      ReactDOM.unmountComponentAtNode(this._searchPanel.getItem());
+      this._searchComponent = null;
+      invariant(this._searchPanel != null);
       this._searchPanel.destroy();
       this._searchPanel = null;
     }

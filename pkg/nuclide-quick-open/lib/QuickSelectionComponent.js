@@ -36,6 +36,7 @@ export type SelectionIndex = {
   selectedItemIndex: number,
 };
 
+import invariant from 'assert';
 import {Observable, Scheduler} from 'rxjs';
 import {AtomInput} from '../../nuclide-ui/AtomInput';
 import {Button} from '../../nuclide-ui/Button';
@@ -97,11 +98,11 @@ export default class QuickSelectionComponent extends React.Component {
   props: Props;
   state: State;
 
-  _subscriptions: UniversalDisposable;
+  _subscriptions: ?UniversalDisposable;
 
   constructor(props: Props) {
     super(props);
-    this._subscriptions = new UniversalDisposable();
+    this._subscriptions = null;
 
     const initialProviderName =
       this.props.searchResultManager.getActiveProviderName();
@@ -144,8 +145,20 @@ export default class QuickSelectionComponent extends React.Component {
   /**
    * Public API
    */
-  focus(): void {
-    this._getInputTextEditor().focus();
+  // "setup" should be called whenever QuickSelectionComponent is made visible,
+  // and "teardown" should be called whenever it's hidden. This component is
+  // never unmounted so we need this setup<->teardown cycle to control listening
+  // to events. We don't unmount so that the AtomInput can retain its undo
+  // history across Quick Open invocations.
+  setup(): void {
+    invariant(this._subscriptions == null);
+    this._setup();
+  }
+
+  teardown(): void {
+    invariant(this._subscriptions != null);
+    this._subscriptions.dispose();
+    this._subscriptions = null;
   }
 
   setInputValue(value: string): void {
@@ -207,9 +220,9 @@ export default class QuickSelectionComponent extends React.Component {
     }
   }
 
-  componentDidMount(): void {
+  _setup(): void {
     const modalNode = ReactDOM.findDOMNode(this);
-    this._subscriptions.add(
+    this._subscriptions = new UniversalDisposable(
       atom.commands.add(modalNode, 'core:move-to-bottom', this._handleMoveToBottom),
       atom.commands.add(modalNode, 'core:move-to-top', this._handleMoveToTop),
       atom.commands.add(modalNode, 'core:move-down', this._handleMoveDown),
@@ -243,10 +256,8 @@ export default class QuickSelectionComponent extends React.Component {
     // TODO: Find a better way to trigger an update.
     this._getTextEditor().setText(this.refs.queryInput.getText());
     this._getTextEditor().selectAll();
-  }
 
-  componentWillUnmount(): void {
-    this._subscriptions.dispose();
+    this._getInputTextEditor().focus();
   }
 
   _handleClickOpenAll(): void {
