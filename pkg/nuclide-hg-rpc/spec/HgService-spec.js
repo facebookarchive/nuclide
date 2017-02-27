@@ -258,7 +258,7 @@ describe('HgService', () => {
       });
       committedToHg = false;
       spyOn(hgService, '_hgObserveExecution').andCallFake((_args, options) => {
-        const args = _args.slice(4);
+        const args = _args.slice(8);
         expect(expectedArgs).not.toBeNull();
         invariant(expectedArgs !== null);
         expect(args.length).toBe(

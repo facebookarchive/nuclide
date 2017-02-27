@@ -835,6 +835,26 @@ export class HgService {
     return this._commitCode(message, args, isInteractive).publish();
   }
 
+  splitRevision(): ConnectableObservable<ProcessMessage> {
+    let editMergeConfigs;
+    return Observable.fromPromise((async () => {
+      editMergeConfigs = await getEditMergeConfigs();
+    })()).switchMap(() => {
+      invariant(editMergeConfigs != null, 'editMergeConfigs cannot be null');
+      const execOptions = {
+        cwd: this._workingDirectory,
+        HGEDITOR: editMergeConfigs.hgEditor,
+      };
+      return this._hgObserveExecution(
+        [
+          ...editMergeConfigs.args,
+          'split',
+        ],
+        execOptions,
+      );
+    }).publish();
+  }
+
   revert(filePaths: Array<NuclideUri>, toRevision: ?string): Promise<void> {
     const args = [...filePaths];
     if (toRevision != null) {

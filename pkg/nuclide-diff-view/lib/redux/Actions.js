@@ -56,6 +56,7 @@ import type {
   UpdatePublishStateAction,
   UpdateSelectedFilesAction,
   SuggestedReviewersState,
+  SplitRevisionAction,
 } from '../types';
 import type {HgRepositoryClient} from '../../../nuclide-hg-repository-client';
 import type {RevisionStatuses} from '../../../nuclide-hg-repository-client/lib/HgRepositoryClient';
@@ -482,6 +483,19 @@ export function setEnabledFeatures(
     type: ActionTypes.SET_ENABLED_FEATURES,
     payload: {
       enabledFeatures,
+    },
+  };
+}
+
+export function splitRevision(
+  publishUpdates: Subject<Message>,
+  repository: HgRepositoryClient,
+): SplitRevisionAction {
+  return {
+    type: ActionTypes.SPLIT_REVISION,
+    payload: {
+      publishUpdates,
+      repository,
     },
   };
 }

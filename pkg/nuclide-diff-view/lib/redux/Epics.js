@@ -19,6 +19,8 @@ import type {CwdApi} from '../../../nuclide-current-working-directory/lib/CwdApi
 import type {HgRepositoryClient} from '../../../nuclide-hg-repository-client';
 import type {RevisionInfo} from '../../../nuclide-hg-rpc/lib/HgService';
 import type {NuclideUri} from '../../../commons-node/nuclideUri';
+import type {Message} from '../../../nuclide-console/lib/types';
+import type {ProcessMessage} from '../../../commons-node/process-rpc-types';
 
 import * as ActionTypes from './ActionTypes';
 import * as Actions from './Actions';
@@ -76,6 +78,29 @@ function trackComplete<T>(eventName: string, operation: Observable<T>): Observab
         complete() { tracker.onSuccess(); },
       });
   });
+}
+
+class ConsoleClient {
+  _consoleShown: boolean;
+  _processName: string;
+  _progressUpdates: Subject<Message>;
+
+  constructor(
+    processName: string,
+    progressUpdates: Subject<Message>,
+  ) {
+    this._processName = processName;
+    this._progressUpdates = progressUpdates;
+    this._consoleShown = false;
+  }
+
+  enableAndPipeProcessMessagesToConsole(processMessage: ProcessMessage) {
+    pipeProcessMessagesToConsole(this._processName, this._progressUpdates, processMessage);
+    if (!this._consoleShown && SHOW_CONSOLE_ON_PROCESS_EVENTS.includes(processMessage.kind)) {
+      dispatchConsoleToggle(true);
+      this._consoleShown = true;
+    }
+  }
 }
 
 function notifyCwdMismatch(
@@ -625,7 +650,7 @@ export function commit(
       shouldPublishOnCommit,
       shouldRebaseOnAmend,
     } = store.getState();
-    let consoleShown = false;
+    const consoleClient = new ConsoleClient(mode, publishUpdates);
 
     // Trying to amend a commit interactively with no uncommitted changes
     // will instantly return and not allow the commit message to update
@@ -688,13 +713,9 @@ export function commit(
             return Observable.throw(new Error(`Invalid Commit Mode ${mode}`));
         }
       }))
-      .do(processMessage => {
-        pipeProcessMessagesToConsole(mode, publishUpdates, processMessage);
-        if (!consoleShown && SHOW_CONSOLE_ON_PROCESS_EVENTS.includes(processMessage.kind)) {
-          dispatchConsoleToggle(true);
-          consoleShown = true;
-        }
-      })
+      .do(processMessage => consoleClient.enableAndPipeProcessMessagesToConsole(
+        processMessage,
+      ))
       .switchMap(processMessage => {
         if (processMessage.kind !== 'exit') {
           return Observable.empty();
@@ -810,6 +831,35 @@ export function publishDiff(
     );
   });
 }
+
+export function splitRevision(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Action> {
+  return actions.ofType(ActionTypes.SPLIT_REVISION).switchMap(action => {
+    invariant(action.type === ActionTypes.SPLIT_REVISION);
+    track('diff-view-split');
+    const {
+      publishUpdates,
+      repository,
+    } = action.payload;
+    const {
+      commit: {mode},
+    } = store.getState();
+    const consoleClient = new ConsoleClient(mode, publishUpdates);
+
+    return trackComplete('diff-view-split', Observable.defer(() => repository.splitRevision()))
+      .do(processMessage => consoleClient.enableAndPipeProcessMessagesToConsole(processMessage))
+      .switchMap(processMessage => Observable.empty())
+      .catch(error => {
+        atom.notifications.addError('Couldn\'t split revision', {
+          detail: error,
+        });
+        return Observable.empty();
+      });
+  });
+}
+
 
 try { // $FlowFB
   Object.assign(module.exports, require('../fb/Epics'));

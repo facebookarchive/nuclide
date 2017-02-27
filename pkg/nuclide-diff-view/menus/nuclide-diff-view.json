@@ -21,6 +21,10 @@
             {
               "label": "Publish to Phabricator",
               "command": "nuclide-diff-view:publish"
+            },
+            {
+              "label": "Split",
+              "command": "nuclide-diff-view:split"
             }
           ]
         }

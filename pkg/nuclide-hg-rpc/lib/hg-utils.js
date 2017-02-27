@@ -150,6 +150,10 @@ export async function getEditMergeConfigs(): Promise<{args: Array<string>, hgEdi
       'merge-tools.editmerge.check=conflicts',
       '--config',
       'ui.merge=editmerge',
+      '--config',
+      'ui.interactive=no',
+      '--config',
+      'ui.interface.chunkselector=editor',
     ],
     hgEditor,
   };

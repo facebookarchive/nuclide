@@ -454,6 +454,14 @@ export type SetEnabledFeaturesAction = {
   },
 };
 
+export type SplitRevisionAction = {
+  type: 'SPLIT_REVISION',
+  payload: {
+    publishUpdates: Subject<Message>,
+    repository: HgRepositoryClient,
+  },
+};
+
 export type Action = AddRepositoryAction
   | AddUiProviderAction
   | CommitAction
@@ -468,6 +476,7 @@ export type Action = AddRepositoryAction
   | SetShouldPublishOnCommitAction
   | SetShouldRebaseOnAmendAction
   | SetViewModeAction
+  | SplitRevisionAction
   | UpdateActiveNavigationSectionAction
   | UpdateActiveRepositoryAction
   | UpdateSuggestedReviewersAction

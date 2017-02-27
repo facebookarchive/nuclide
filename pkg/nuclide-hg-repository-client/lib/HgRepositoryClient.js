@@ -905,6 +905,10 @@ export class HgRepositoryClient {
       .do(this._clearOnSuccessExit.bind(this, isInteractive));
   }
 
+  splitRevision(): Observable<ProcessMessage> {
+    return this._service.splitRevision().refCount();
+  }
+
   _clearOnSuccessExit(isInteractive: boolean, message: ProcessMessage) {
     if (!isInteractive && message.kind === 'exit' && message.exitCode === 0) {
       this._clearClientCache();
