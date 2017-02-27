@@ -27,13 +27,6 @@ export default class SwiftPMTaskRunnerActions {
     });
   }
 
-  updateChdir(chdir: string): void {
-    this._dispatcher.dispatch({
-      actionType: ActionTypes.UPDATE_CHDIR,
-      chdir,
-    });
-  }
-
   updateSettings(
     configuration: string,
     Xcc: string,

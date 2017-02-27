@@ -18,7 +18,6 @@ import {ActionTypes} from './SwiftPMTaskRunnerDispatcher';
 export default class SwiftPMTaskRunnerStore {
   _dispatcher: SwiftPMTaskRunnerDispatcher;
   _emitter: Emitter;
-  _chdir: string;
   _configuration: string;
   _buildPath: string;
   _flag: string;
@@ -33,7 +32,6 @@ export default class SwiftPMTaskRunnerStore {
     this._emitter = new Emitter();
 
     if (initialState) {
-      this._chdir = initialState.chdir ? initialState.chdir : '';
       this._configuration = initialState.configuration ? initialState.configuration : 'debug';
       this._buildPath = initialState.buildPath ? initialState.buildPath : '';
       this._Xcc = initialState.Xcc ? initialState.Xcc : '';
@@ -42,7 +40,6 @@ export default class SwiftPMTaskRunnerStore {
       this._compileCommands = initialState.compileCommands ?
         new Map(objectEntries(initialState.compileCommands)) : new Map();
     } else {
-      this._chdir = '';
       this._configuration = 'debug';
       this._buildPath = '';
       this._Xcc = '';
@@ -55,9 +52,6 @@ export default class SwiftPMTaskRunnerStore {
       switch (action.actionType) {
         case ActionTypes.UPDATE_PROJECT_ROOT:
           this._projectRoot = action.projectRoot;
-          break;
-        case ActionTypes.UPDATE_CHDIR:
-          this._chdir = action.chdir;
           break;
         case ActionTypes.UPDATE_SETTINGS:
           this._configuration = action.configuration;
@@ -80,7 +74,6 @@ export default class SwiftPMTaskRunnerStore {
 
   serialize(): SwiftPMTaskRunnerStoreState {
     return {
-      chdir: this.getChdir(),
       configuration: this.getConfiguration(),
       buildPath: this.getBuildPath(),
       Xcc: this.getXcc(),
@@ -96,10 +89,6 @@ export default class SwiftPMTaskRunnerStore {
 
   emitChange(): void {
     this._emitter.emit('change');
-  }
-
-  getChdir(): string {
-    return this._chdir;
   }
 
   getConfiguration(): string {

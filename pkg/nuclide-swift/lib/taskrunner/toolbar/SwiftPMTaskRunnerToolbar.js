@@ -9,7 +9,6 @@
  */
 
 import {React} from 'react-for-atom';
-import {AtomInput} from '../../../../nuclide-ui/AtomInput';
 import {Button, ButtonSizes} from '../../../../nuclide-ui/Button';
 import SwiftPMSettingsModal from './SwiftPMSettingsModal';
 
@@ -19,20 +18,11 @@ export default class SwiftPMTaskRunnerToolbar extends React.Component {
   constructor(props: mixed) {
     super(props);
     this.state = {settingsVisible: false};
-    (this: any)._onChdirChange = this._onChdirChange.bind(this);
   }
 
   render(): React.Element<any> {
     return (
       <div className="nuclide-swift-task-runner-toolbar">
-        <AtomInput
-          className="inline-block"
-          size="sm"
-          value={this.props.store.getChdir()}
-          onDidChange={chdir => this._onChdirChange(chdir)}
-          placeholderText="Relative path to Swift package"
-          width={400}
-        />
         <Button
           className="nuclide-swift-settings icon icon-gear"
           size={ButtonSizes.SMALL}
@@ -52,10 +42,6 @@ export default class SwiftPMTaskRunnerToolbar extends React.Component {
            : null}
       </div>
     );
-  }
-
-  _onChdirChange(value: string) {
-    this.props.actions.updateChdir(value);
   }
 
   _showSettings() {

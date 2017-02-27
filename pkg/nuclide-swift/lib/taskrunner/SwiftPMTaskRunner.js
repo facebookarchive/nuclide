@@ -33,7 +33,6 @@ import {
 import SwiftPMTaskRunnerToolbar from './toolbar/SwiftPMTaskRunnerToolbar';
 import SwiftPMAutocompletionProvider from './providers/SwiftPMAutocompletionProvider';
 import {Icon} from '../../../nuclide-ui/Icon';
-import shallowequal from 'shallowequal';
 import nullthrows from 'nullthrows';
 import nuclideUri from '../../../commons-node/nuclideUri.js';
 
@@ -76,14 +75,7 @@ export class SwiftPMTaskRunner {
     this._projectRoot = new Subject();
     this._disposables = new UniversalDisposable(
       this._outputMessages,
-      this._projectRoot
-        .do(path => this._getFlux().actions.updateProjectRoot(path))
-        .switchMap(path => this._packageFileExistsAtPath(path, ''))
-        .subscribe(fileExists => {
-          if (fileExists) {
-            this._getFlux().actions.updateChdir('');
-          }
-        }),
+      this._projectRoot.subscribe(path => this._getFlux().actions.updateProjectRoot(path)),
     );
   }
 
@@ -115,7 +107,7 @@ export class SwiftPMTaskRunner {
 
   runTask(taskName: string): Task {
     const store = this._getFlux().store;
-    const chdir = nuclideUri.join(nullthrows(store.getProjectRoot()), store.getChdir());
+    const chdir = nullthrows(store.getProjectRoot());
     const configuration = store.getConfiguration();
     const buildPath = store.getBuildPath();
 
@@ -212,19 +204,17 @@ export class SwiftPMTaskRunner {
 
     const enabledObservable = storeReady
       .map(store => store.getProjectRoot())
-      .map(root => root != null && !nuclideUri.isRemote(root))
+      .distinctUntilChanged()
+      .switchMap(root => {
+        if (!root || nuclideUri.isRemote(root)) {
+          return Observable.of(false);
+        }
+        return this._packageFileExistsAtPath(root);
+      })
       .distinctUntilChanged();
 
     const tasksObservable = storeReady
-      .map(store => [store.getProjectRoot(), store.getChdir()])
-      .distinctUntilChanged(shallowequal)
-      .switchMap(([root, chdir]) => this._packageFileExistsAtPath(root, chdir))
-      .map(enabled => {
-        return SwiftPMTaskRunnerTaskMetadata.map(task => ({
-          ...task,
-          disabled: !enabled,
-        }));
-      });
+      .map(store => SwiftPMTaskRunnerTaskMetadata);
 
     const subscription = Observable.combineLatest(enabledObservable, tasksObservable)
       .subscribe(([enabled, tasks]) => callback(enabled, tasks));
@@ -234,9 +224,8 @@ export class SwiftPMTaskRunner {
     return new UniversalDisposable(subscription);
   }
 
-  async _packageFileExistsAtPath(path: ?string, chdir: string): Promise<boolean> {
-    if (!path) { return false; }
-    return fsPromise.exists(nuclideUri.join(path, chdir, 'Package.swift'));
+  async _packageFileExistsAtPath(path: string): Promise<boolean> {
+    return fsPromise.exists(nuclideUri.join(path, 'Package.swift'));
   }
 
   _logOutput(text: string, level: Level) {

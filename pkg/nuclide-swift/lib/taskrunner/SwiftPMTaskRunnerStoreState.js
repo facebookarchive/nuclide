@@ -9,7 +9,6 @@
  */
 
 export type SwiftPMTaskRunnerStoreState = {
-  chdir: string,
   configuration: string,
   buildPath: string,
   Xcc: string,
