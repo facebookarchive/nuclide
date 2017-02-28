@@ -1,224 +1,140 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import type {ConnectableObservable} from 'rxjs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.initialize = undefined;
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {Completion} from '../../nuclide-language-service/lib/LanguageService';
-import type {FileVersion, FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
-import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
-import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
-import type {
-  Definition,
-  DefinitionQueryResult,
-} from '../../nuclide-definition-service/lib/rpc-types';
-import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
-import type {FindReferencesReturn} from '../../nuclide-find-references/lib/rpc-types';
-import type {
-  DiagnosticProviderUpdate,
-  FileDiagnosticUpdate,
-} from '../../nuclide-diagnostics-common/lib/rpc-types';
-import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-import invariant from 'assert';
+let initialize = exports.initialize = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (fileNotifier) {
+    if (!(fileNotifier instanceof (_nuclideOpenFilesRpc || _load_nuclideOpenFilesRpc()).FileCache)) {
+      throw new Error('Invariant violation: "fileNotifier instanceof FileCache"');
+    }
 
-import {
-  ServerLanguageService,
-  MultiProjectLanguageService,
-} from '../../nuclide-language-service-rpc';
-import {FileCache, getBufferAtVersion} from '../../nuclide-open-files-rpc';
+    const fileCache = fileNotifier;
+    return new FlowLanguageService(fileCache);
+  });
 
-import {getCategoryLogger} from '../../nuclide-logging';
+  return function initialize(_x) {
+    return _ref.apply(this, arguments);
+  };
+})();
 
-export type Loc = {
-  file: NuclideUri,
-  point: atom$Point,
-};
+exports.dispose = dispose;
+exports.flowGetAst = flowGetAst;
+
+var _nuclideLanguageServiceRpc;
+
+function _load_nuclideLanguageServiceRpc() {
+  return _nuclideLanguageServiceRpc = require('../../nuclide-language-service-rpc');
+}
+
+var _nuclideOpenFilesRpc;
+
+function _load_nuclideOpenFilesRpc() {
+  return _nuclideOpenFilesRpc = require('../../nuclide-open-files-rpc');
+}
+
+var _nuclideLogging;
+
+function _load_nuclideLogging() {
+  return _nuclideLogging = require('../../nuclide-logging');
+}
+
+var _FlowSingleProjectLanguageService;
+
+function _load_FlowSingleProjectLanguageService() {
+  return _FlowSingleProjectLanguageService = require('./FlowSingleProjectLanguageService');
+}
+
+var _FlowServiceState;
+
+function _load_FlowServiceState() {
+  return _FlowServiceState = require('./FlowServiceState');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // If types are added here, make sure to also add them to FlowConstants.js. This needs to be the
 // canonical type definition so that we can use these in the service framework.
-export type ServerStatusType =
-  'failed' |
-  'unknown' |
-  'not running' |
-  'not installed' |
-  'busy' |
-  'init' |
-  'ready';
+let state = null; /**
+                   * Copyright (c) 2015-present, Facebook, Inc.
+                   * All rights reserved.
+                   *
+                   * This source code is licensed under the license found in the LICENSE file in
+                   * the root directory of this source tree.
+                   *
+                   * 
+                   */
 
-export type ServerStatusUpdate = {
-  pathToRoot: NuclideUri,
-  status: ServerStatusType,
-};
-
-import {FlowSingleProjectLanguageService} from './FlowSingleProjectLanguageService';
-import {FlowServiceState} from './FlowServiceState';
-
-let state: ?FlowServiceState = null;
-
-function getState(): FlowServiceState {
+function getState() {
   if (state == null) {
-    state = new FlowServiceState();
+    state = new (_FlowServiceState || _load_FlowServiceState()).FlowServiceState();
   }
   return state;
 }
 
-export function dispose(): void {
+function dispose() {
   if (state != null) {
     state.dispose();
     state = null;
   }
 }
 
-export async function initialize(
-  fileNotifier: FileNotifier,
-): Promise<FlowLanguageServiceType> {
-  invariant(fileNotifier instanceof FileCache);
-  const fileCache: FileCache = fileNotifier;
-  return new FlowLanguageService(fileCache);
-}
-
-class FlowLanguageService
-    extends MultiProjectLanguageService<ServerLanguageService<FlowSingleProjectLanguageService>> {
-  constructor(fileCache: FileCache) {
-    const logger = getCategoryLogger('Flow');
-    super(
-      logger,
-      fileCache,
-      '.flowconfig',
-      ['.js', '.jsx'],
-      projectDir => {
-        const execInfoContainer = getState().getExecInfoContainer();
-        const singleProjectLS = new FlowSingleProjectLanguageService(projectDir, execInfoContainer);
-        const languageService = new ServerLanguageService(fileCache, singleProjectLS);
-        return Promise.resolve(languageService);
-      },
-    );
+class FlowLanguageService extends (_nuclideLanguageServiceRpc || _load_nuclideLanguageServiceRpc()).MultiProjectLanguageService {
+  constructor(fileCache) {
+    const logger = (0, (_nuclideLogging || _load_nuclideLogging()).getCategoryLogger)('Flow');
+    super(logger, fileCache, '.flowconfig', ['.js', '.jsx'], projectDir => {
+      const execInfoContainer = getState().getExecInfoContainer();
+      const singleProjectLS = new (_FlowSingleProjectLanguageService || _load_FlowSingleProjectLanguageService()).FlowSingleProjectLanguageService(projectDir, execInfoContainer);
+      const languageService = new (_nuclideLanguageServiceRpc || _load_nuclideLanguageServiceRpc()).ServerLanguageService(fileCache, singleProjectLS);
+      return Promise.resolve(languageService);
+    });
   }
 
-  async getOutline(
-    fileVersion: FileVersion,
-  ): Promise<?Outline> {
-    const ls = await this.getLanguageServiceForFile(fileVersion.filePath);
-    if (ls != null) {
-      return ls.getOutline(fileVersion);
-    } else {
-      const buffer = await getBufferAtVersion(fileVersion);
-      if (buffer == null) {
-        return null;
+  getOutline(fileVersion) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const ls = yield _this.getLanguageServiceForFile(fileVersion.filePath);
+      if (ls != null) {
+        return ls.getOutline(fileVersion);
+      } else {
+        const buffer = yield (0, (_nuclideOpenFilesRpc || _load_nuclideOpenFilesRpc()).getBufferAtVersion)(fileVersion);
+        if (buffer == null) {
+          return null;
+        }
+        return (_FlowSingleProjectLanguageService || _load_FlowSingleProjectLanguageService()).FlowSingleProjectLanguageService.getOutline(fileVersion.filePath, buffer, null, getState().getExecInfoContainer());
       }
-      return FlowSingleProjectLanguageService.getOutline(
-        fileVersion.filePath,
-        buffer,
-        null,
-        getState().getExecInfoContainer(),
-      );
-    }
+    })();
   }
 
-  getServerStatusUpdates(): ConnectableObservable<ServerStatusUpdate> {
+  getServerStatusUpdates() {
     return this.observeLanguageServices().mergeMap(languageService => {
-      const singleProjectLS: FlowSingleProjectLanguageService =
-          languageService.getSingleFileLanguageService();
+      const singleProjectLS = languageService.getSingleFileLanguageService();
       const pathToRoot = singleProjectLS.getPathToRoot();
-      return singleProjectLS
-        .getServerStatusUpdates()
-        .map(status => ({pathToRoot, status}));
+      return singleProjectLS.getServerStatusUpdates().map(status => ({ pathToRoot, status }));
     }).publish();
   }
 
-  async allowServerRestart(): Promise<void> {
-    const languageServices = await this.getAllLanguageServices();
-    const flowLanguageServices = languageServices.map(ls => ls.getSingleFileLanguageService());
-    flowLanguageServices.forEach(ls => ls.allowServerRestart());
+  allowServerRestart() {
+    var _this2 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const languageServices = yield _this2.getAllLanguageServices();
+      const flowLanguageServices = languageServices.map(function (ls) {
+        return ls.getSingleFileLanguageService();
+      });
+      flowLanguageServices.forEach(function (ls) {
+        return ls.allowServerRestart();
+      });
+    })();
   }
 }
 
 // Unfortunately we have to duplicate a lot of things here to make FlowLanguageService remotable.
-export interface FlowLanguageServiceType {
-  getDiagnostics(
-    fileVersion: FileVersion,
-  ): Promise<?DiagnosticProviderUpdate>,
-
-  observeDiagnostics(): ConnectableObservable<FileDiagnosticUpdate>,
-
-  getAutocompleteSuggestions(
-    fileVersion: FileVersion,
-    position: atom$Point,
-    activatedManually: boolean,
-    prefix: string,
-  ): Promise<?Array<Completion>>,
-
-  getDefinition(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?DefinitionQueryResult>,
-
-  getDefinitionById(
-    file: NuclideUri,
-    id: string,
-  ): Promise<?Definition>,
-
-  findReferences(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?FindReferencesReturn>,
-
-  getCoverage(
-    filePath: NuclideUri,
-  ): Promise<?CoverageResult>,
-
-  getOutline(
-    fileVersion: FileVersion,
-  ): Promise<?Outline>,
-
-  typeHint(fileVersion: FileVersion, position: atom$Point): Promise<?TypeHint>,
-
-  highlight(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?Array<atom$Range>>,
-
-  formatSource(
-    fileVersion: FileVersion,
-    range: atom$Range,
-  ): Promise<?string>,
-
-  formatEntireFile(fileVersion: FileVersion, range: atom$Range): Promise<?{
-    newCursor?: number,
-    formatted: string,
-  }>,
-
-  getEvaluationExpression(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?NuclideEvaluationExpression>,
-
-  getProjectRoot(fileUri: NuclideUri): Promise<?NuclideUri>,
-
-  isFileInProject(fileUri: NuclideUri): Promise<boolean>,
-
-  getServerStatusUpdates(): ConnectableObservable<ServerStatusUpdate>,
-
-  allowServerRestart(): Promise<void>,
-
-  dispose(): void,
-}
-
-export function flowGetAst(
-  file: ?NuclideUri,
-  currentContents: string,
-): Promise<?any> {
-  return FlowSingleProjectLanguageService.flowGetAst(
-    null,
-    currentContents,
-    getState().getExecInfoContainer(),
-  );
+function flowGetAst(file, currentContents) {
+  return (_FlowSingleProjectLanguageService || _load_FlowSingleProjectLanguageService()).FlowSingleProjectLanguageService.flowGetAst(null, currentContents, getState().getExecInfoContainer());
 }

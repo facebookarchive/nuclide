@@ -1,80 +1,85 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import {React} from 'react-for-atom';
-import classnames from 'classnames';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Toggle = undefined;
 
-import ignoreTextSelectionEvents from './ignoreTextSelectionEvents';
+var _reactForAtom = require('react-for-atom');
 
-type DefaultProps = {
-  disabled: boolean,
-  onClick: (event: SyntheticEvent) => mixed,
-};
+var _classnames;
 
-type Props = {
-  className?: string,
-  toggled: boolean,
-  disabled: boolean,
-  label: ?string,
-  onChange: (isToggled: boolean) => mixed,
-  onClick: (event: SyntheticEvent) => mixed,
-};
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
+
+var _ignoreTextSelectionEvents;
+
+function _load_ignoreTextSelectionEvents() {
+  return _ignoreTextSelectionEvents = _interopRequireDefault(require('./ignoreTextSelectionEvents'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * A toggle component with an input toggle and a label. We restrict the label to a string
  * to ensure this component is pure.
  */
-export class Toggle extends React.Component {
-  props: Props;
+class Toggle extends _reactForAtom.React.Component {
 
-  static defaultProps: DefaultProps = {
-    disabled: false,
-    onClick(event) {},
-  };
-
-  constructor(props: Object) {
+  constructor(props) {
     super(props);
-    (this: any)._onChange = this._onChange.bind(this);
+    this._onChange = this._onChange.bind(this);
   }
 
-  _onChange(event: SyntheticEvent) {
-    const isToggled = ((event.target: any): HTMLInputElement).checked;
+  _onChange(event) {
+    const isToggled = event.target.checked;
     this.props.onChange.call(null, isToggled);
   }
 
-  render(): React.Element<any> {
+  render() {
     const {
       className,
       disabled,
       label,
       onClick,
-      toggled,
+      toggled
     } = this.props;
-    const text = label === ''
-      ? null
-      : <span className="nuclide-ui-toggle-label-text">{' '}{label}</span>;
-    return (
-      <label
-        className={classnames(className, 'nuclide-ui-toggle-label', {
-          'nuclide-ui-toggle-disabled': disabled,
-        })}
-        onClick={onClick && ignoreTextSelectionEvents(onClick)}>
-        <input
-          checked={toggled}
-          className="input-toggle"
-          disabled={disabled}
-          onChange={this._onChange}
-          type="checkbox"
-        />
-        {text}
-      </label>
+    const text = label === '' ? null : _reactForAtom.React.createElement(
+      'span',
+      { className: 'nuclide-ui-toggle-label-text' },
+      ' ',
+      label
+    );
+    return _reactForAtom.React.createElement(
+      'label',
+      {
+        className: (0, (_classnames || _load_classnames()).default)(className, 'nuclide-ui-toggle-label', {
+          'nuclide-ui-toggle-disabled': disabled
+        }),
+        onClick: onClick && (0, (_ignoreTextSelectionEvents || _load_ignoreTextSelectionEvents()).default)(onClick) },
+      _reactForAtom.React.createElement('input', {
+        checked: toggled,
+        className: 'input-toggle',
+        disabled: disabled,
+        onChange: this._onChange,
+        type: 'checkbox'
+      }),
+      text
     );
   }
 }
+exports.Toggle = Toggle; /**
+                          * Copyright (c) 2015-present, Facebook, Inc.
+                          * All rights reserved.
+                          *
+                          * This source code is licensed under the license found in the LICENSE file in
+                          * the root directory of this source tree.
+                          *
+                          * 
+                          */
+
+Toggle.defaultProps = {
+  disabled: false,
+  onClick(event) {}
+};

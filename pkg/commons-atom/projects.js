@@ -1,30 +1,44 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import type {NuclideUri} from '../commons-node/nuclideUri';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getAtomProjectRelativePath = getAtomProjectRelativePath;
+exports.getAtomProjectRootPath = getAtomProjectRootPath;
+exports.observeProjectPaths = observeProjectPaths;
+exports.onDidAddProjectPath = onDidAddProjectPath;
+exports.onDidRemoveProjectPath = onDidRemoveProjectPath;
 
-import {Directory} from 'atom';
-import nuclideUri from '../commons-node/nuclideUri';
+var _atom = require('atom');
 
-function getValidProjectPaths(): Array<string> {
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../commons-node/nuclideUri'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function getValidProjectPaths() {
   return atom.project.getDirectories().filter(directory => {
     // If a remote directory path is a local `Directory` instance, the project path
     // isn't yet ready for consumption.
-    if (nuclideUri.isRemote(directory.getPath()) && directory instanceof Directory) {
+    if ((_nuclideUri || _load_nuclideUri()).default.isRemote(directory.getPath()) && directory instanceof _atom.Directory) {
       return false;
     }
     return true;
   }).map(directory => directory.getPath());
-}
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   */
 
-export function getAtomProjectRelativePath(path: NuclideUri): ?string {
+function getAtomProjectRelativePath(path) {
   const [projectPath, relativePath] = atom.project.relativizePath(path);
   if (!projectPath) {
     return null;
@@ -32,19 +46,19 @@ export function getAtomProjectRelativePath(path: NuclideUri): ?string {
   return relativePath;
 }
 
-export function getAtomProjectRootPath(path: NuclideUri): ?string {
+function getAtomProjectRootPath(path) {
   const [projectPath] = atom.project.relativizePath(path);
   return projectPath;
 }
 
-export function observeProjectPaths(callback: (projectPath: string) => any): IDisposable {
+function observeProjectPaths(callback) {
   getValidProjectPaths().forEach(callback);
   return onDidAddProjectPath(callback);
 }
 
-export function onDidAddProjectPath(callback: (projectPath: string) => void): IDisposable {
-  let projectPaths: Array<string> = getValidProjectPaths();
-  let changing: boolean = false;
+function onDidAddProjectPath(callback) {
+  let projectPaths = getValidProjectPaths();
+  let changing = false;
   return atom.project.onDidChangePaths(() => {
     if (changing) {
       throw new Error('Cannot update projects in the middle of an update');
@@ -61,9 +75,9 @@ export function onDidAddProjectPath(callback: (projectPath: string) => void): ID
   });
 }
 
-export function onDidRemoveProjectPath(callback: (projectPath: string) => void): IDisposable {
-  let projectPaths: Array<string> = getValidProjectPaths();
-  let changing: boolean = false;
+function onDidRemoveProjectPath(callback) {
+  let projectPaths = getValidProjectPaths();
+  let changing = false;
   return atom.project.onDidChangePaths(() => {
     if (changing) {
       throw new Error('Cannot update projects in the middle of an update');

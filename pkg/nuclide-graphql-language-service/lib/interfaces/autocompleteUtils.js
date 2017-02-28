@@ -1,36 +1,29 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import type {
-  GraphQLField,
-  GraphQLSchema,
-  GraphQLType,
-} from 'graphql/type/definition';
-import type {
-  AutocompleteSuggestionType,
-  ContextToken,
-  State,
-  TypeInfo,
-} from '../types/Types';
-import type {Point} from '../utils/Range';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getDefinitionState = getDefinitionState;
+exports.getFieldDef = getFieldDef;
+exports.forEachState = forEachState;
+exports.objectValues = objectValues;
+exports.hintList = hintList;
 
-import {isCompositeType} from 'graphql';
-import {
-  SchemaMetaFieldDef,
-  TypeMetaFieldDef,
-  TypeNameMetaFieldDef,
-} from 'graphql/type/introspection';
+var _graphql;
+
+function _load_graphql() {
+  return _graphql = require('graphql');
+}
+
+var _introspection;
+
+function _load_introspection() {
+  return _introspection = require('graphql/type/introspection');
+}
 
 // Utility for returning the state representing the Definition this token state
 // is within, if any.
-export function getDefinitionState(tokenState: State): ?State {
+function getDefinitionState(tokenState) {
   let definitionState;
 
   forEachState(tokenState, state => {
@@ -49,19 +42,25 @@ export function getDefinitionState(tokenState: State): ?State {
 }
 
 // Gets the field definition given a type and field name
-export function getFieldDef(
-  schema: GraphQLSchema,
-  type: GraphQLType,
-  fieldName: string,
-): ?GraphQLField {
-  if (fieldName === SchemaMetaFieldDef.name && schema.getQueryType() === type) {
-    return SchemaMetaFieldDef;
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ *
+ * 
+ */
+
+function getFieldDef(schema, type, fieldName) {
+  if (fieldName === (_introspection || _load_introspection()).SchemaMetaFieldDef.name && schema.getQueryType() === type) {
+    return (_introspection || _load_introspection()).SchemaMetaFieldDef;
   }
-  if (fieldName === TypeMetaFieldDef.name && schema.getQueryType() === type) {
-    return TypeMetaFieldDef;
+  if (fieldName === (_introspection || _load_introspection()).TypeMetaFieldDef.name && schema.getQueryType() === type) {
+    return (_introspection || _load_introspection()).TypeMetaFieldDef;
   }
-  if (fieldName === TypeNameMetaFieldDef.name && isCompositeType(type)) {
-    return TypeNameMetaFieldDef;
+  if (fieldName === (_introspection || _load_introspection()).TypeNameMetaFieldDef.name && (0, (_graphql || _load_graphql()).isCompositeType)(type)) {
+    return (_introspection || _load_introspection()).TypeNameMetaFieldDef;
   }
   if (type.getFields) {
     return type.getFields()[fieldName];
@@ -71,10 +70,7 @@ export function getFieldDef(
 }
 
 // Utility for iterating through a CodeMirror parse state stack bottom-up.
-export function forEachState(
-  stack: State,
-  fn: (state: State) => ?TypeInfo,
-): void {
+function forEachState(stack, fn) {
   const reverseStateStack = [];
   let state = stack;
   while (state && state.kind) {
@@ -86,7 +82,7 @@ export function forEachState(
   }
 }
 
-export function objectValues(object: Object): Array<any> {
+function objectValues(object) {
   const keys = Object.keys(object);
   const len = keys.length;
   const values = new Array(len);
@@ -97,59 +93,42 @@ export function objectValues(object: Object): Array<any> {
 }
 
 // Create the expected hint response given a possible list and a token
-export function hintList(
-  cursor: Point,
-  token: ContextToken,
-  list: Array<AutocompleteSuggestionType>,
-): Array<AutocompleteSuggestionType> {
+function hintList(cursor, token, list) {
   return filterAndSortList(list, normalizeText(token.string));
 }
 
 // Given a list of hint entries and currently typed text, sort and filter to
 // provide a concise list.
-function filterAndSortList(
-  list: Array<AutocompleteSuggestionType>,
-  text: string,
-): Array<AutocompleteSuggestionType> {
+function filterAndSortList(list, text) {
   if (!text) {
     return filterNonEmpty(list, entry => !entry.isDeprecated);
   }
 
   const byProximity = list.map(entry => ({
     proximity: getProximity(normalizeText(entry.text), text),
-    entry,
+    entry
   }));
 
-  const conciseMatches = filterNonEmpty(
-    filterNonEmpty(byProximity, pair => pair.proximity <= 2),
-    pair => !pair.entry.isDeprecated,
-  );
+  const conciseMatches = filterNonEmpty(filterNonEmpty(byProximity, pair => pair.proximity <= 2), pair => !pair.entry.isDeprecated);
 
-  const sortedMatches = conciseMatches.sort((a, b) =>
-    ((a.entry.isDeprecated ? 1 : 0) - (b.entry.isDeprecated ? 1 : 0)) ||
-    (a.proximity - b.proximity) ||
-    (a.entry.text.length - b.entry.text.length),
-  );
+  const sortedMatches = conciseMatches.sort((a, b) => (a.entry.isDeprecated ? 1 : 0) - (b.entry.isDeprecated ? 1 : 0) || a.proximity - b.proximity || a.entry.text.length - b.entry.text.length);
 
   return sortedMatches.map(pair => pair.entry);
 }
 
 // Filters the array by the predicate, unless it results in an empty array,
 // in which case return the original array.
-function filterNonEmpty(
-  array: Array<Object>,
-  predicate: (entry: Object) => boolean,
-): Array<Object> {
+function filterNonEmpty(array, predicate) {
   const filtered = array.filter(predicate);
   return filtered.length === 0 ? array : filtered;
 }
 
-function normalizeText(text: string): string {
+function normalizeText(text) {
   return text.toLowerCase().replace(/\W/g, '');
 }
 
 // Determine a numeric proximity for a suggestion based on current text.
-function getProximity(suggestion: string, text: string): number {
+function getProximity(suggestion, text) {
   // start with lexical distance
   let proximity = lexicalDistance(text, suggestion);
   if (suggestion.length > text.length) {
@@ -175,7 +154,7 @@ function getProximity(suggestion: string, text: string): number {
  * @param {string} b
  * @return {int} distance in number of edits
  */
-function lexicalDistance(a: string, b: string): number {
+function lexicalDistance(a, b) {
   let i;
   let j;
   const d = [];
@@ -194,17 +173,9 @@ function lexicalDistance(a: string, b: string): number {
     for (j = 1; j <= bLength; j++) {
       const cost = a[i - 1] === b[j - 1] ? 0 : 1;
 
-      d[i][j] = Math.min(
-        d[i - 1][j] + 1,
-        d[i][j - 1] + 1,
-        d[i - 1][j - 1] + cost,
-      );
+      d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + cost);
 
-      if (
-        i > 1 && j > 1 &&
-        a[i - 1] === b[j - 2] &&
-        a[i - 2] === b[j - 1]
-      ) {
+      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
         d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + cost);
       }
     }

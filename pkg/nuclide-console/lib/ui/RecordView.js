@@ -1,40 +1,65 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import type {Level, Record, Executor, OutputProvider} from '../types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import classnames from 'classnames';
-import {React} from 'react-for-atom';
-import {LazyNestedValueComponent} from '../../../nuclide-ui/LazyNestedValueComponent';
-import SimpleValueComponent from '../../../nuclide-ui/SimpleValueComponent';
-import shallowEqual from 'shallowequal';
-import {TextRenderer} from '../../../nuclide-ui/TextRenderer';
+var _classnames;
 
-type Props = {
-  record: Record,
-  showSourceLabel: boolean,
-  getExecutor: (id: string) => ?Executor,
-  getProvider: (id: string) => ?OutputProvider,
-};
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
 
-const URL_REGEX = /(https?:\/\/[\S]+)/i;
+var _reactForAtom = require('react-for-atom');
 
-export default class RecordView extends React.Component {
-  props: Props;
+var _LazyNestedValueComponent;
 
-  _renderContent(record: Record): React.Element<any> {
+function _load_LazyNestedValueComponent() {
+  return _LazyNestedValueComponent = require('../../../nuclide-ui/LazyNestedValueComponent');
+}
+
+var _SimpleValueComponent;
+
+function _load_SimpleValueComponent() {
+  return _SimpleValueComponent = _interopRequireDefault(require('../../../nuclide-ui/SimpleValueComponent'));
+}
+
+var _shallowequal;
+
+function _load_shallowequal() {
+  return _shallowequal = _interopRequireDefault(require('shallowequal'));
+}
+
+var _TextRenderer;
+
+function _load_TextRenderer() {
+  return _TextRenderer = require('../../../nuclide-ui/TextRenderer');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const URL_REGEX = /(https?:\/\/[\S]+)/i; /**
+                                          * Copyright (c) 2015-present, Facebook, Inc.
+                                          * All rights reserved.
+                                          *
+                                          * This source code is licensed under the license found in the LICENSE file in
+                                          * the root directory of this source tree.
+                                          *
+                                          * 
+                                          */
+
+class RecordView extends _reactForAtom.React.Component {
+
+  _renderContent(record) {
     if (record.kind === 'request') {
       // TODO: We really want to use a text editor to render this so that we can get syntax
       // highlighting, but they're just too expensive. Figure out a less-expensive way to get syntax
       // highlighting.
-      return <pre>{record.text || ' '}</pre>;
+      return _reactForAtom.React.createElement(
+        'pre',
+        null,
+        record.text || ' '
+      );
     } else if (record.kind === 'response') {
       const executor = this.props.getExecutor(record.sourceId);
       return this._renderNestedValueComponent(record, executor);
@@ -44,89 +69,92 @@ export default class RecordView extends React.Component {
     } else {
       // If there's not text, use a space to make sure the row doesn't collapse.
       const text = record.text || ' ';
-      return <pre>{parseText(text)}</pre>;
+      return _reactForAtom.React.createElement(
+        'pre',
+        null,
+        parseText(text)
+      );
     }
   }
 
-  shouldComponentUpdate(nextProps: Props): boolean {
-    return !shallowEqual(this.props, nextProps);
+  shouldComponentUpdate(nextProps) {
+    return !(0, (_shallowequal || _load_shallowequal()).default)(this.props, nextProps);
   }
 
-  _renderNestedValueComponent(
-    record: Record,
-    provider: ?OutputProvider | ?Executor,
-  ): React.Element<any> {
+  _renderNestedValueComponent(record, provider) {
     const getProperties = provider == null ? null : provider.getProperties;
     const type = record.data == null ? null : record.data.type;
     const simpleValueComponent = getComponent(type);
-    return (
-      <LazyNestedValueComponent
-        className="nuclide-console-lazy-nested-value"
-        evaluationResult={record.data}
-        fetchChildren={getProperties}
-        simpleValueComponent={simpleValueComponent}
-        shouldCacheChildren={true}
-        expansionStateId={this}
-      />
-    );
+    return _reactForAtom.React.createElement((_LazyNestedValueComponent || _load_LazyNestedValueComponent()).LazyNestedValueComponent, {
+      className: 'nuclide-console-lazy-nested-value',
+      evaluationResult: record.data,
+      fetchChildren: getProperties,
+      simpleValueComponent: simpleValueComponent,
+      shouldCacheChildren: true,
+      expansionStateId: this
+    });
   }
 
-  render(): React.Element<any> {
-    const {record} = this.props;
-    const classNames = classnames(
-      'nuclide-console-record',
-      `level-${record.level || 'log'}`,
-      {
-        request: record.kind === 'request',
-        response: record.kind === 'response',
-      },
-    );
+  render() {
+    const { record } = this.props;
+    const classNames = (0, (_classnames || _load_classnames()).default)('nuclide-console-record', `level-${record.level || 'log'}`, {
+      request: record.kind === 'request',
+      response: record.kind === 'response'
+    });
 
     const iconName = getIconName(record);
-    const icon = iconName ? <span className={`icon icon-${iconName}`} /> : null;
-    const sourceLabel = this.props.showSourceLabel
-      ? (
-        <span
-          className={`nuclide-console-record-source-label ${getHighlightClassName(record.level)}`}>
-          {record.sourceId}
-        </span>
-      )
-      : null;
+    const icon = iconName ? _reactForAtom.React.createElement('span', { className: `icon icon-${iconName}` }) : null;
+    const sourceLabel = this.props.showSourceLabel ? _reactForAtom.React.createElement(
+      'span',
+      {
+        className: `nuclide-console-record-source-label ${getHighlightClassName(record.level)}` },
+      record.sourceId
+    ) : null;
 
-    return (
-      <div className={classNames}>
-        {icon}
-        <div className="nuclide-console-record-content-wrapper">
-          {this._renderContent(record)}
-        </div>
-        {sourceLabel}
-      </div>
+    return _reactForAtom.React.createElement(
+      'div',
+      { className: classNames },
+      icon,
+      _reactForAtom.React.createElement(
+        'div',
+        { className: 'nuclide-console-record-content-wrapper' },
+        this._renderContent(record)
+      ),
+      sourceLabel
     );
   }
 }
 
-function getComponent(type: ?string): ReactClass<any> {
+exports.default = RecordView;
+function getComponent(type) {
   switch (type) {
-    case 'text': return props => TextRenderer(props.evaluationResult);
+    case 'text':
+      return props => (0, (_TextRenderer || _load_TextRenderer()).TextRenderer)(props.evaluationResult);
     case 'boolean':
     case 'string':
     case 'number':
     case 'object':
-    default: return SimpleValueComponent;
+    default:
+      return (_SimpleValueComponent || _load_SimpleValueComponent()).default;
   }
 }
 
-function getHighlightClassName(level: Level): string {
+function getHighlightClassName(level) {
   switch (level) {
-    case 'info': return 'highlight-info';
-    case 'success': return 'highlight-success';
-    case 'warning': return 'highlight-warning';
-    case 'error': return 'highlight-error';
-    default: return 'highlight';
+    case 'info':
+      return 'highlight-info';
+    case 'success':
+      return 'highlight-success';
+    case 'warning':
+      return 'highlight-warning';
+    case 'error':
+      return 'highlight-error';
+    default:
+      return 'highlight';
   }
 }
 
-function getIconName(record: Record): ?string {
+function getIconName(record) {
   switch (record.kind) {
     case 'request':
       return 'chevron-right';
@@ -145,12 +173,14 @@ function getIconName(record: Record): ?string {
   }
 }
 
-function parseText(text: string): Array<string | React.Element<any>> {
+function parseText(text) {
   return text.split(URL_REGEX).map((chunk, i) => {
     // Since we're splitting on the URL regex, every other piece will be a URL.
     const isURL = i % 2 !== 0;
-    return isURL
-      ? <a key={`d${i}`} href={chunk} target="_blank">{chunk}</a>
-      : chunk;
+    return isURL ? _reactForAtom.React.createElement(
+      'a',
+      { key: `d${i}`, href: chunk, target: '_blank' },
+      chunk
+    ) : chunk;
   });
 }
