@@ -351,7 +351,8 @@ function createTaskObservable(
         },
       );
       taskFailedNotification.onDidDismiss(() => { taskFailedNotification = null; });
-      getLogger().error('Error running task:', taskMeta, error);
+      const taskMetaForLogging = {...taskMeta, taskRunner: undefined};
+      getLogger().error('Error running task:', taskMetaForLogging, error);
       return Observable.of({
         type: Actions.TASK_ERRORED,
         payload: {
