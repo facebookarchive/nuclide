@@ -38,6 +38,7 @@ import type {
 
 import invariant from 'assert';
 import {Range, Point} from 'simple-text-buffer';
+import {getConfig} from './config';
 
 import {
   filterResultsByPrefix,
@@ -580,7 +581,7 @@ export function processAutocompleteItem(
     let snippetArgs = `(${getSnippetString(funcDetails.params.map(param => param.name))})`;
     let leftLabel = funcDetails.return_type;
     let rightLabel = `(${rightParamStrings.join(', ')})`;
-    if (!functionSnippetShouldIncludeArguments()) {
+    if (!getConfig('functionSnippetShouldIncludeArguments')) {
       snippetArgs = '';
       leftLabel = undefined;
       rightLabel += ` => ${funcDetails.return_type}`;
@@ -600,16 +601,6 @@ export function processAutocompleteItem(
     };
   }
   return result;
-}
-
-function functionSnippetShouldIncludeArguments(): boolean {
-  if (global.atom) {
-    const shouldInclude: any = global.atom.config.get(
-      'nuclide.nuclide-flow.functionSnippetShouldIncludeArguments',
-    );
-    return shouldInclude;
-  }
-  return true;
 }
 
 function getSnippetString(paramNames: Array<string>): string {

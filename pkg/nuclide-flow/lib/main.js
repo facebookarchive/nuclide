@@ -14,6 +14,7 @@ import type {ServerConnection} from '../../nuclide-remote-connection';
 import type {
   AtomLanguageServiceConfig,
 } from '../../nuclide-language-service/lib/AtomLanguageService';
+import type {FlowSettings} from '../../nuclide-flow-rpc/lib/FlowService';
 
 import invariant from 'assert';
 
@@ -68,7 +69,13 @@ async function connectionToFlowService(
 ): Promise<FlowLanguageServiceType> {
   const flowService: FlowService = getServiceByConnection('FlowService', connection);
   const fileNotifier = await getNotifierByConnection(connection);
-  const languageService = await flowService.initialize(fileNotifier);
+  const config: FlowSettings = {
+    functionSnippetShouldIncludeArguments: Boolean(
+      featureConfig.get('nuclide-flow.functionSnippetShouldIncludeArguments'),
+    ),
+    stopFlowOnExit: Boolean(featureConfig.get('nuclide-flow.stopFlowOnExit')),
+  };
+  const languageService = await flowService.initialize(fileNotifier, config);
 
   return languageService;
 }

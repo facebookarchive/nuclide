@@ -11,14 +11,10 @@
 import type {FlowLocNoSource} from './flowOutputTypes';
 
 import {Range} from 'simple-text-buffer';
+import {getConfig} from './config';
 
 export function getStopFlowOnExit(): boolean {
-  // $UPFixMe: This should use nuclide-features-config
-  // Does not currently do so because this is an npm module that may run on the server.
-  if (global.atom) {
-    return ((global.atom.config.get('nuclide.nuclide-flow.stopFlowOnExit'): any): boolean);
-  }
-  return true;
+  return Boolean(getConfig('stopFlowOnExit'));
 }
 
 export function flowCoordsToAtomCoords(flowCoords: FlowLocNoSource): atom$Range {

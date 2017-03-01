@@ -29,6 +29,7 @@ import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interface
 
 import invariant from 'assert';
 
+import {setConfig} from './config';
 import {
   ServerLanguageService,
   MultiProjectLanguageService,
@@ -58,6 +59,11 @@ export type ServerStatusUpdate = {
   status: ServerStatusType,
 };
 
+export type FlowSettings = {
+  functionSnippetShouldIncludeArguments: boolean,
+  stopFlowOnExit: boolean,
+};
+
 import {FlowSingleProjectLanguageService} from './FlowSingleProjectLanguageService';
 import {FlowServiceState} from './FlowServiceState';
 
@@ -79,15 +85,16 @@ export function dispose(): void {
 
 export async function initialize(
   fileNotifier: FileNotifier,
+  config: FlowSettings,
 ): Promise<FlowLanguageServiceType> {
   invariant(fileNotifier instanceof FileCache);
   const fileCache: FileCache = fileNotifier;
-  return new FlowLanguageService(fileCache);
+  return new FlowLanguageService(fileCache, config);
 }
 
 class FlowLanguageService
     extends MultiProjectLanguageService<ServerLanguageService<FlowSingleProjectLanguageService>> {
-  constructor(fileCache: FileCache) {
+  constructor(fileCache: FileCache, config: FlowSettings) {
     const logger = getCategoryLogger('Flow');
     super(
       logger,
@@ -101,6 +108,9 @@ class FlowLanguageService
         return Promise.resolve(languageService);
       },
     );
+    for (const key of Object.keys(config)) {
+      setConfig(key, config[key]);
+    }
   }
 
   async getOutline(
