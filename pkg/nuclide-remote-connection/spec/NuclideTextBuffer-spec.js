@@ -43,4 +43,16 @@ describe('NuclideTextBuffer', () => {
     invariant(buffer.file);
     expect(buffer.file.getPath()).toBe('nuclide://most.fb.com' + filePath);
   });
+
+  it('should respect shouldDestroyOnFileDelete', () => {
+    // TODO(hansonw): Remove after Atom 1.15 is deployed.
+    if (atom.getVersion() >= '1.15') {
+      invariant(connection);
+      const testBuffer = new NuclideTextBuffer(connection, {
+        shouldDestroyOnFileDelete: () => false,
+      });
+      testBuffer._maybeDestroy();
+      expect(testBuffer.isDestroyed()).toBe(false);
+    }
+  });
 });

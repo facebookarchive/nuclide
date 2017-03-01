@@ -24,7 +24,7 @@ const DIFF_LINE_LIMIT = 10000;
 
 export default class NuclideTextBuffer extends TextBuffer {
   _connection: ServerConnection;
-  fileSubscriptions: CompositeDisposable;
+  fileSubscriptions: ?CompositeDisposable;
   /* $FlowFixMe */
   file: ?RemoteFile;
   conflict: boolean;
@@ -178,9 +178,9 @@ export default class NuclideTextBuffer extends TextBuffer {
     }
     const file = this.file;
     invariant(file, 'Cannot subscribe to no-file');
-    this.fileSubscriptions = new CompositeDisposable();
+    const fileSubscriptions = new CompositeDisposable();
 
-    this.fileSubscriptions.add(file.onDidChange(async () => {
+    fileSubscriptions.add(file.onDidChange(async () => {
       const isModified = this._isModified();
       this.emitModifiedStatusChanged(isModified);
       if (isModified) {
@@ -208,25 +208,42 @@ export default class NuclideTextBuffer extends TextBuffer {
       }
     }));
 
-    this.fileSubscriptions.add(file.onDidDelete(() => {
+    fileSubscriptions.add(file.onDidDelete(() => {
       this._exists = false;
       const modified = this.getText() !== this.cachedDiskContents;
       this.wasModifiedBeforeRemove = modified;
       if (modified) {
         this.updateCachedDiskContents();
       } else {
-        this.destroy();
+        this._maybeDestroy();
       }
     }));
 
     // TODO: Not supported by RemoteFile.
-    // this.fileSubscriptions.add(file.onDidRename(() => {
+    // fileSubscriptions.add(file.onDidRename(() => {
     //   this.emitter.emit('did-change-path', this.getPath());
     // }));
 
-    this.fileSubscriptions.add(file.onWillThrowWatchError(errorObject => {
+    fileSubscriptions.add(file.onWillThrowWatchError(errorObject => {
       this.emitter.emit('will-throw-watch-error', errorObject);
     }));
+
+    this.fileSubscriptions = fileSubscriptions;
+  }
+
+  _maybeDestroy(): void {
+    if (this.shouldDestroyOnFileDelete == null ||
+        this.shouldDestroyOnFileDelete()) {
+      this.destroy();
+    } else {
+      if (this.fileSubscriptions != null) {
+        // Soft delete the file.
+        this.fileSubscriptions.dispose();
+      }
+      this.conflict = false;
+      this.cachedDiskContents = null;
+      this.emitModifiedStatusChanged(!this.isEmpty());
+    }
   }
 
   _isModified(): boolean {
