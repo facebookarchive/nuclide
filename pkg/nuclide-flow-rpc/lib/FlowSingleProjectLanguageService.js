@@ -577,12 +577,19 @@ export function processAutocompleteItem(
     // The parameters in human-readable form for use on the right label.
     const rightParamStrings = funcDetails.params
       .map(param => `${param.name}: ${param.type}`);
-    const snippetString = getSnippetString(funcDetails.params.map(param => param.name));
+    let snippetArgs = `(${getSnippetString(funcDetails.params.map(param => param.name))})`;
+    let leftLabel = funcDetails.return_type;
+    let rightLabel = `(${rightParamStrings.join(', ')})`;
+    if (!functionSnippetShouldIncludeArguments()) {
+      snippetArgs = '';
+      leftLabel = undefined;
+      rightLabel += ` => ${funcDetails.return_type}`;
+    }
     result = {
       ...result,
-      leftLabel: funcDetails.return_type,
-      rightLabel: `(${rightParamStrings.join(', ')})`,
-      snippet: `${flowItem.name}(${snippetString})`,
+      leftLabel,
+      rightLabel,
+      snippet: `${flowItem.name}${snippetArgs}`,
       type: 'function',
     };
   } else {
@@ -593,6 +600,16 @@ export function processAutocompleteItem(
     };
   }
   return result;
+}
+
+function functionSnippetShouldIncludeArguments(): boolean {
+  if (global.atom) {
+    const shouldInclude: any = global.atom.config.get(
+      'nuclide.nuclide-flow.functionSnippetShouldIncludeArguments',
+    );
+    return shouldInclude;
+  }
+  return true;
 }
 
 function getSnippetString(paramNames: Array<string>): string {

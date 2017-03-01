@@ -66,6 +66,12 @@
         "type": "boolean",
         "default": false,
         "description": "EXPERIMENTAL: This feature is in very early development. Restart required for this setting to take effect."
+      },
+      "functionSnippetShouldIncludeArguments": {
+        "title": "Autocompleted function snippets will include calling parens and arguments.",
+        "type": "boolean",
+        "default": true,
+        "description": "If unchecked, functions will autocomplete as only their name, and not include their calling parens and arguments."
       }
     },
     "packageType": "Atom",
