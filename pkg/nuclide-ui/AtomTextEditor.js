@@ -15,7 +15,6 @@ import {
   React,
   ReactDOM,
 } from 'react-for-atom';
-import semver from 'semver';
 import {TextBuffer} from 'atom';
 import {
   enforceReadOnly,
@@ -148,13 +147,6 @@ export class AtomTextEditor extends React.Component {
     // Attach to DOM.
     container.innerHTML = '';
     container.appendChild(textEditorElement);
-
-    // The following is a hack to work around the broken atom-text-editor auto-sizing in Atom 1.9.x
-    // See https://github.com/atom/atom/issues/12441 to follow the proper fix.
-    // TODO @jxg remove once atom-text-editor is fixed.
-    if (semver.lt(atom.getVersion(), '1.9.0')) {
-      return;
-    }
 
     if (this.props.correctContainerWidth) {
       this._editorDisposables.add(textEditorElement.onDidAttach(() => {
