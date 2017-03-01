@@ -28,16 +28,9 @@ import {
 import invariant from 'assert';
 import {makeDiagnosticsDatatipComponent} from './DiagnosticsDatatipComponent';
 import {observeTextEditors} from '../../commons-atom/text-editor';
-import passesGK from '../../commons-node/passesGK';
-
-
-const GK_DIAGNOSTICS_DATATIPS = 'nuclide_diagnostics_datatips';
 
 const DATATIP_PACKAGE_NAME = 'nuclide-diagnostics-datatip';
 export async function datatip(editor: TextEditor, position: atom$Point): Promise<?Datatip> {
-  if (!await passesGK(GK_DIAGNOSTICS_DATATIPS, 0)) {
-    return null;
-  }
   invariant(fileDiagnostics);
   const messagesForFile = fileDiagnostics.get(editor);
   if (messagesForFile == null) {
