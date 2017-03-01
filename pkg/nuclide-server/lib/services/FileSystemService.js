@@ -267,7 +267,7 @@ function mvPromise(sourcePath: string, destinationPath: string): Promise<void> {
 }
 
 async function copyFilePermissions(sourcePath: string, destinationPath: string): Promise<void> {
-  let permissions = null;
+  let permissions;
   try {
     permissions = (await fsPromise.stat(sourcePath)).mode;
   } catch (e) {
@@ -275,10 +275,11 @@ async function copyFilePermissions(sourcePath: string, destinationPath: string):
     if (e.code !== 'ENOENT') {
       throw e;
     }
+    // For new files, use the default process file creation mask.
+    // $FlowIssue: umask argument is optional
+    permissions = 0o666 & ~process.umask(); // eslint-disable-line no-bitwise
   }
-  if (permissions != null) {
-    await fsPromise.chmod(destinationPath, permissions);
-  }
+  await fsPromise.chmod(destinationPath, permissions);
 }
 
 /**

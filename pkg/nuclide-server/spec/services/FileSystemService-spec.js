@@ -67,6 +67,8 @@ describe('FileSystemService', () => {
     waitsForPromise(async () => {
       await service.writeFile(pathToWriteFile, 'I\'m a little teapot.\n');
       expect(fs.readFileSync(pathToWriteFile).toString()).toEqual('I\'m a little teapot.\n');
+      // eslint-disable-next-line no-bitwise
+      expect(fs.statSync(pathToWriteFile).mode & 0o777).toEqual(0o644);
     });
   });
 
