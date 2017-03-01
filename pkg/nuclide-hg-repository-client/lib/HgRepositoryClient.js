@@ -19,7 +19,6 @@ import type {
   RevisionShowInfo,
   MergeConflict,
   RevisionFileChanges,
-  StatusCodeIdValue,
   StatusCodeNumberValue,
   VcsLogResponse,
 } from '../../nuclide-hg-rpc/lib/HgService';
@@ -111,7 +110,7 @@ import type {RemoteDirectory} from '../../nuclide-remote-connection';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import invariant from 'assert';
-import {objectFromMap} from '../../commons-node/collection';
+import {mapTransform} from '../../commons-node/collection';
 
 export class HgRepositoryClient {
   _path: string;
@@ -122,8 +121,8 @@ export class HgRepositoryClient {
   _service: HgService;
   _emitter: Emitter;
   _subscriptions: UniversalDisposable;
-  _hgStatusCache: {[filePath: NuclideUri]: StatusCodeIdValue};
-  _hgDiffCache: {[filePath: NuclideUri]: DiffInfo};
+  _hgStatusCache: Map<NuclideUri, StatusCodeNumberValue>;
+  _hgDiffCache: Map<NuclideUri, DiffInfo>;
   _hgDiffCacheFilesUpdating: Set<NuclideUri>;
   _hgDiffCacheFilesToClear: Set<NuclideUri>;
   _revisionsCache: RevisionsCache;
@@ -157,9 +156,9 @@ export class HgRepositoryClient {
       this._service,
     );
 
-    this._hgStatusCache = {};
+    this._hgStatusCache = new Map();
 
-    this._hgDiffCache = {};
+    this._hgDiffCache = new Map();
     this._hgDiffCacheFilesUpdating = new Set();
     this._hgDiffCacheFilesToClear = new Set();
 
@@ -168,7 +167,7 @@ export class HgRepositoryClient {
       .switchMap((enableDiffStats: boolean) => {
         if (!enableDiffStats) {
           // TODO(most): rewrite fetching structures avoiding side effects
-          this._hgDiffCache = {};
+          this._hgDiffCache = new Map();
           this._emitter.emit('did-change-statuses');
           return Observable.empty();
         }
@@ -221,7 +220,8 @@ export class HgRepositoryClient {
           return Observable.empty();
         }),
     ).subscribe(statuses => {
-      this._hgStatusCache = objectFromMap(statuses);
+      this._hgStatusCache = mapTransform(statuses,
+                                         (v, k) => StatusCodeIdToNumber[v]);
       this._emitter.emit('did-change-statuses');
     });
 
@@ -409,11 +409,11 @@ export class HgRepositoryClient {
     if (!filePath) {
       return false;
     }
-    const cachedPathStatus = this._hgStatusCache[filePath];
+    const cachedPathStatus = this._hgStatusCache.get(filePath);
     if (!cachedPathStatus) {
       return false;
     } else {
-      return this.isStatusModified(StatusCodeIdToNumber[cachedPathStatus]);
+      return this.isStatusModified(cachedPathStatus);
     }
   }
 
@@ -423,11 +423,11 @@ export class HgRepositoryClient {
     if (!filePath) {
       return false;
     }
-    const cachedPathStatus = this._hgStatusCache[filePath];
+    const cachedPathStatus = this._hgStatusCache.get(filePath);
     if (!cachedPathStatus) {
       return false;
     } else {
-      return this.isStatusNew(StatusCodeIdToNumber[cachedPathStatus]);
+      return this.isStatusNew(cachedPathStatus);
     }
   }
 
@@ -435,11 +435,11 @@ export class HgRepositoryClient {
     if (!filePath) {
       return false;
     }
-    const cachedPathStatus = this._hgStatusCache[filePath];
+    const cachedPathStatus = this._hgStatusCache.get(filePath);
     if (!cachedPathStatus) {
       return false;
     } else {
-      return this.isStatusAdded(StatusCodeIdToNumber[cachedPathStatus]);
+      return this.isStatusAdded(cachedPathStatus);
     }
   }
 
@@ -447,11 +447,11 @@ export class HgRepositoryClient {
     if (!filePath) {
       return false;
     }
-    const cachedPathStatus = this._hgStatusCache[filePath];
+    const cachedPathStatus = this._hgStatusCache.get(filePath);
     if (!cachedPathStatus) {
       return false;
     } else {
-      return this.isStatusUntracked(StatusCodeIdToNumber[cachedPathStatus]);
+      return this.isStatusUntracked(cachedPathStatus);
     }
   }
 
@@ -466,11 +466,11 @@ export class HgRepositoryClient {
     // because the repo does not track itself.
     // We want to represent the fact that it's not part of the tracked contents,
     // so we manually add an exception for it via the _isPathWithinHgRepo check.
-    const cachedPathStatus = this._hgStatusCache[filePath];
+    const cachedPathStatus = this._hgStatusCache.get(filePath);
     if (!cachedPathStatus) {
       return this._isPathWithinHgRepo(filePath);
     } else {
-      return this.isStatusIgnored(StatusCodeIdToNumber[cachedPathStatus]);
+      return this.isStatusIgnored(cachedPathStatus);
     }
   }
 
@@ -504,17 +504,17 @@ export class HgRepositoryClient {
     if (!filePath) {
       return StatusCodeNumber.CLEAN;
     }
-    const cachedStatus = this._hgStatusCache[filePath];
+    const cachedStatus = this._hgStatusCache.get(filePath);
     if (cachedStatus) {
-      return StatusCodeIdToNumber[cachedStatus];
+      return cachedStatus;
     }
     return StatusCodeNumber.CLEAN;
   }
 
   getAllPathStatuses(): {[filePath: NuclideUri]: StatusCodeNumberValue} {
     const pathStatuses = Object.create(null);
-    for (const filePath in this._hgStatusCache) {
-      pathStatuses[filePath] = StatusCodeIdToNumber[this._hgStatusCache[filePath]];
+    for (const [filePath, status] of this._hgStatusCache) {
+      pathStatuses[filePath] = status;
     }
     return pathStatuses;
   }
@@ -560,7 +560,7 @@ export class HgRepositoryClient {
     if (!filePath) {
       return cleanStats;
     }
-    const cachedData = this._hgDiffCache[filePath];
+    const cachedData = this._hgDiffCache.get(filePath);
     return cachedData ? {added: cachedData.added, deleted: cachedData.deleted} :
         cleanStats;
   }
@@ -578,7 +578,7 @@ export class HgRepositoryClient {
     if (!filePath) {
       return [];
     }
-    const diffInfo = this._hgDiffCache[filePath];
+    const diffInfo = this._hgDiffCache.get(filePath);
     return diffInfo ? diffInfo.lineDiffs : [];
   }
 
@@ -620,13 +620,13 @@ export class HgRepositoryClient {
     const pathsToDiffInfo = await this._service.fetchDiffInfo(pathsToFetch);
     if (pathsToDiffInfo) {
       for (const [filePath, diffInfo] of pathsToDiffInfo) {
-        this._hgDiffCache[filePath] = diffInfo;
+        this._hgDiffCache.set(filePath, diffInfo);
       }
     }
 
     // Remove files marked for deletion.
     this._hgDiffCacheFilesToClear.forEach(fileToClear => {
-      delete this._hgDiffCache[fileToClear];
+      this._hgDiffCache.delete(fileToClear);
     });
     this._hgDiffCacheFilesToClear.clear();
 
@@ -943,8 +943,8 @@ export class HgRepositoryClient {
   }
 
   _clearClientCache(): void {
-    this._hgDiffCache = {};
-    this._hgStatusCache = {};
+    this._hgDiffCache = new Map();
+    this._hgStatusCache = new Map();
     this._emitter.emit('did-change-statuses');
   }
 }

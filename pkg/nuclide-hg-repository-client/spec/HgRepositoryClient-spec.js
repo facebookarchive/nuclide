@@ -11,14 +11,9 @@
 import type {HgService as HgServiceType} from '../../nuclide-hg-rpc/lib/HgService';
 
 import {Directory} from 'atom';
-import {
-  HgRepositoryClient,
-} from '../lib/HgRepositoryClient';
+import {HgRepositoryClient} from '../lib/HgRepositoryClient';
 import MockHgService from '../../nuclide-hg-rpc/spec/MockHgService';
-import {
-  StatusCodeId,
-  StatusCodeNumber,
-} from '../../nuclide-hg-rpc/lib/hg-constants';
+import {StatusCodeNumber} from '../../nuclide-hg-rpc/lib/hg-constants';
 import nuclideUri from '../../commons-node/nuclideUri';
 import temp from 'temp';
 
@@ -78,9 +73,9 @@ describe('HgRepositoryClient', () => {
   describe('::isPathIgnored', () => {
     it('returns true if the path is marked ignored in the cache.', () => {
       // Force the state of the cache.
-      repo._hgStatusCache = {
-        [PATH_1]: StatusCodeId.IGNORED,
-      };
+      repo._hgStatusCache = new Map([
+        [PATH_1, StatusCodeNumber.IGNORED],
+      ]);
       expect(repo.isPathIgnored(PATH_1)).toBe(true);
     });
 
@@ -99,10 +94,10 @@ describe('HgRepositoryClient', () => {
     it('returns false if the path is null or undefined, but handles files with those'
       + ' names.', () => {
       // Force the state of the cache.
-      repo._hgStatusCache = {
-        [PATH_CALLED_NULL]: StatusCodeId.IGNORED,
-        [PATH_CALLED_UNDEFINED]: StatusCodeId.IGNORED,
-      };
+      repo._hgStatusCache = new Map([
+        [PATH_CALLED_NULL, StatusCodeNumber.IGNORED],
+        [PATH_CALLED_UNDEFINED, StatusCodeNumber.IGNORED],
+      ]);
       expect(repo.isPathIgnored(null)).toBe(false);
       expect(repo.isPathIgnored(undefined)).toBe(false);
       expect(repo.isPathIgnored(PATH_CALLED_NULL)).toBe(true);
@@ -114,10 +109,10 @@ describe('HgRepositoryClient', () => {
     it('returns false if the path is null or undefined, but handles files with those'
       + ' names.', () => {
       // Force the state of the cache.
-      repo._hgStatusCache = {
-        [PATH_CALLED_NULL]: StatusCodeId.ADDED,
-        [PATH_CALLED_UNDEFINED]: StatusCodeId.ADDED,
-      };
+      repo._hgStatusCache = new Map([
+        [PATH_CALLED_NULL, StatusCodeNumber.ADDED],
+        [PATH_CALLED_UNDEFINED, StatusCodeNumber.ADDED],
+      ]);
       expect(repo.isPathNew(null)).toBe(false);
       expect(repo.isPathNew(undefined)).toBe(false);
       expect(repo.isPathNew(PATH_CALLED_NULL)).toBe(true);
@@ -129,10 +124,10 @@ describe('HgRepositoryClient', () => {
     it('returns false if the path is null or undefined, but handles files with those'
       + ' names.', () => {
       // Force the state of the cache.
-      repo._hgStatusCache = {
-        [PATH_CALLED_NULL]: StatusCodeId.MODIFIED,
-        [PATH_CALLED_UNDEFINED]: StatusCodeId.MODIFIED,
-      };
+      repo._hgStatusCache = new Map([
+        [PATH_CALLED_NULL, StatusCodeNumber.MODIFIED],
+        [PATH_CALLED_UNDEFINED, StatusCodeNumber.MODIFIED],
+      ]);
       expect(repo.isPathModified(null)).toBe(false);
       expect(repo.isPathModified(undefined)).toBe(false);
       expect(repo.isPathModified(PATH_CALLED_NULL)).toBe(true);
@@ -144,17 +139,17 @@ describe('HgRepositoryClient', () => {
     it('returns false if the path is null, untracked, modified or deleted'
       + ' names.', () => {
       // Force the state of the cache.
-      repo._hgStatusCache = {
-        [PATH_CALLED_NULL]: StatusCodeId.ADDED,
-        [PATH_CALLED_UNDEFINED]: StatusCodeId.ADDED,
-        [PATH_1]: StatusCodeId.ADDED,
-        [PATH_2]: StatusCodeId.CLEAN,
-        [PATH_3]: StatusCodeId.IGNORED,
-        [PATH_4]: StatusCodeId.MISSING,
-        [PATH_5]: StatusCodeId.MODIFIED,
-        [PATH_6]: StatusCodeId.REMOVED,
-        [PATH_7]: StatusCodeId.UNTRACKED,
-      };
+      repo._hgStatusCache = new Map([
+        [PATH_CALLED_NULL, StatusCodeNumber.ADDED],
+        [PATH_CALLED_UNDEFINED, StatusCodeNumber.ADDED],
+        [PATH_1, StatusCodeNumber.ADDED],
+        [PATH_2, StatusCodeNumber.CLEAN],
+        [PATH_3, StatusCodeNumber.IGNORED],
+        [PATH_4, StatusCodeNumber.MISSING],
+        [PATH_5, StatusCodeNumber.MODIFIED],
+        [PATH_6, StatusCodeNumber.REMOVED],
+        [PATH_7, StatusCodeNumber.UNTRACKED],
+      ]);
       expect(repo.isPathAdded(null)).toBe(false);
       expect(repo.isPathAdded(undefined)).toBe(false);
       expect(repo.isPathAdded(PATH_CALLED_NULL)).toBe(true);
@@ -173,17 +168,17 @@ describe('HgRepositoryClient', () => {
     it('returns false if the path is null, untracked, modified or deleted'
       + ' names.', () => {
       // Force the state of the cache.
-      repo._hgStatusCache = {
-        [PATH_CALLED_NULL]: StatusCodeId.UNTRACKED,
-        [PATH_CALLED_UNDEFINED]: StatusCodeId.UNTRACKED,
-        [PATH_1]: StatusCodeId.UNTRACKED,
-        [PATH_2]: StatusCodeId.CLEAN,
-        [PATH_3]: StatusCodeId.IGNORED,
-        [PATH_4]: StatusCodeId.MISSING,
-        [PATH_5]: StatusCodeId.MODIFIED,
-        [PATH_6]: StatusCodeId.REMOVED,
-        [PATH_7]: StatusCodeId.ADDED,
-      };
+      repo._hgStatusCache = new Map([
+        [PATH_CALLED_NULL, StatusCodeNumber.UNTRACKED],
+        [PATH_CALLED_UNDEFINED, StatusCodeNumber.UNTRACKED],
+        [PATH_1, StatusCodeNumber.UNTRACKED],
+        [PATH_2, StatusCodeNumber.CLEAN],
+        [PATH_3, StatusCodeNumber.IGNORED],
+        [PATH_4, StatusCodeNumber.MISSING],
+        [PATH_5, StatusCodeNumber.MODIFIED],
+        [PATH_6, StatusCodeNumber.REMOVED],
+        [PATH_7, StatusCodeNumber.ADDED],
+      ]);
       expect(repo.isPathUntracked(null)).toBe(false);
       expect(repo.isPathUntracked(undefined)).toBe(false);
       expect(repo.isPathUntracked(PATH_CALLED_NULL)).toBe(true);
@@ -200,10 +195,10 @@ describe('HgRepositoryClient', () => {
 
   describe('::getCachedPathStatus', () => {
     beforeEach(() => {
-      repo._hgStatusCache = {
-        [PATH_1]: StatusCodeId.MODIFIED,
-        [PATH_2]: StatusCodeId.IGNORED,
-      };
+      repo._hgStatusCache = new Map([
+        [PATH_1, StatusCodeNumber.MODIFIED],
+        [PATH_2, StatusCodeNumber.IGNORED],
+      ]);
     });
 
     it('retrieves cached hg status.', () => {
@@ -322,9 +317,9 @@ describe('HgRepositoryClient', () => {
 
     it('updates the cache when the path to update is not already being updated.', () => {
       waitsForPromise(async () => {
-        expect(repo._hgDiffCache[PATH_1]).toBeUndefined();
+        expect(repo._hgDiffCache.get(PATH_1)).toBeUndefined();
         await repo._updateDiffInfo([PATH_1]);
-        expect(repo._hgDiffCache[PATH_1]).toEqual(mockDiffInfo);
+        expect(repo._hgDiffCache.get(PATH_1)).toEqual(mockDiffInfo);
       });
     });
 
@@ -341,14 +336,14 @@ describe('HgRepositoryClient', () => {
       // the other is going to be attempted to be updated. Both should be removed.
       const testPathToRemove1 = PATH_1;
       const testPathToRemove2 = PATH_2;
-      repo._hgDiffCache[testPathToRemove1] = {added: 0, deleted: 0, lineDiffs: []};
+      repo._hgDiffCache.set(testPathToRemove1, {added: 0, deleted: 0, lineDiffs: []});
       repo._hgDiffCacheFilesToClear.add(testPathToRemove1);
       repo._hgDiffCacheFilesToClear.add(testPathToRemove2);
 
       waitsForPromise(async () => {
         await repo._updateDiffInfo([testPathToRemove2]);
-        expect(repo._hgDiffCache[testPathToRemove1]).not.toBeDefined();
-        expect(repo._hgDiffCache[testPathToRemove2]).not.toBeDefined();
+        expect(repo._hgDiffCache.get(testPathToRemove1)).not.toBeDefined();
+        expect(repo._hgDiffCache.get(testPathToRemove2)).not.toBeDefined();
       });
     });
   });
@@ -356,10 +351,10 @@ describe('HgRepositoryClient', () => {
   describe('::getCachedPathStatus/::getPathStatus', () => {
     it('handles a null or undefined input "path" but handles paths with those names.', () => {
       // Force the state of the cache.
-      repo._hgStatusCache = {
-        [PATH_CALLED_NULL]: StatusCodeId.MODIFIED,
-        [PATH_CALLED_UNDEFINED]: StatusCodeId.MODIFIED,
-      };
+      repo._hgStatusCache = new Map([
+        [PATH_CALLED_NULL, StatusCodeNumber.MODIFIED],
+        [PATH_CALLED_UNDEFINED, StatusCodeNumber.MODIFIED],
+      ]);
       expect(repo.getCachedPathStatus(null)).toBe(StatusCodeNumber.CLEAN);
       expect(repo.getCachedPathStatus(undefined)).toBe(StatusCodeNumber.CLEAN);
       expect(repo.getCachedPathStatus(PATH_CALLED_NULL)).toBe(StatusCodeNumber.MODIFIED);
@@ -395,10 +390,10 @@ describe('HgRepositoryClient', () => {
         }],
       };
       // Force the state of the cache.
-      repo._hgDiffCache = {
-        [PATH_CALLED_NULL]: mockDiffInfo,
-        [PATH_CALLED_UNDEFINED]: mockDiffInfo,
-      };
+      repo._hgDiffCache = new Map([
+        [PATH_CALLED_NULL, mockDiffInfo],
+        [PATH_CALLED_UNDEFINED, mockDiffInfo],
+      ]);
       const cleanStats = {added: 0, deleted: 0};
       const expectedChangeStats = {added: 1, deleted: 1};
       expect(repo.getDiffStats(null)).toEqual(cleanStats);
@@ -422,10 +417,10 @@ describe('HgRepositoryClient', () => {
         }],
       };
       // Force the state of the cache.
-      repo._hgDiffCache = {
-        [PATH_CALLED_NULL]: mockDiffInfo,
-        [PATH_CALLED_UNDEFINED]: mockDiffInfo,
-      };
+      repo._hgDiffCache = new Map([
+        [PATH_CALLED_NULL, mockDiffInfo],
+        [PATH_CALLED_UNDEFINED, mockDiffInfo],
+      ]);
       // For now the second argument, 'text', is not used.
       expect(repo.getLineDiffs(null, null)).toEqual([]);
       expect(repo.getLineDiffs(undefined, null)).toEqual([]);

@@ -85,6 +85,17 @@ export function mapFilter<T, X>(
   return selected;
 }
 
+export function mapTransform<T, V1, V2>(
+  src: Map<T, V1>,
+  transform: (value: V1, key: T) => V2,
+): Map<T, V2> {
+  const result = new Map();
+  for (const [key, value] of src) {
+    result.set(key, transform(value, key));
+  }
+  return result;
+}
+
 export function mapEqual<T, X>(
   map1: Map<T, X>,
   map2: Map<T, X>,
