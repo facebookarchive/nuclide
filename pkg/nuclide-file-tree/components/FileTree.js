@@ -178,6 +178,7 @@ export class FileTree extends React.Component {
           {visibleChildren}
         </ul>
         <div style={{height: bottomPlaceholderSize + 'px'}} />
+        <ProjectSelection />
       </div>
     );
   }
