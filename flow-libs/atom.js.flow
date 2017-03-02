@@ -897,6 +897,7 @@ declare class atom$TextEditor extends atom$Model {
   tokenForBufferPosition(position: atom$Point | [?number, ?number]): atom$Token,
   onDidConflict(callback: () => void): IDisposable,
   serialize: () => mixed,
+  foldBufferRowRange(startRow: number, endRow: number): void,
 }
 
 /**
