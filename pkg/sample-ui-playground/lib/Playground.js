@@ -100,6 +100,12 @@ export class Playground extends React.Component {
     return 'pane';
   }
 
+  serialize(): mixed {
+    return {
+      deserializer: 'nuclide.SampleUiPlayground',
+    };
+  }
+
   _collapseAllSections(): void {
     this.setState({
       collapsedSections: new Set(playgroundComponents.map(spec => spec.sectionName)),

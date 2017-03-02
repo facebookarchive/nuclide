@@ -5,6 +5,9 @@
   "version": "0.0.0",
   "description": "Various examples of how to use generic UI components.",
   "atomTestRunner": "../../lib/test-runner-entry.js",
+  "deserializers": {
+    "nuclide.SampleUiPlayground": "deserializeSampleUiPlayground"
+  },
   "nuclide": {
     "packageType": "Atom",
     "testRunner": "apm"

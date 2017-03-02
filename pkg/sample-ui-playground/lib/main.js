@@ -8,7 +8,10 @@
  * @flow
  */
 
-import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
+import type {
+  Viewable,
+  WorkspaceViewsService,
+} from '../../nuclide-workspace-views/lib/types';
 
 import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
@@ -44,4 +47,8 @@ export function consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
     ),
   );
   // Optionally return a disposable to clean up this package's state when gadgets goes away
+}
+
+export function deserializeSampleUiPlayground(): Viewable {
+  return viewableFromReactElement(<Playground />);
 }
