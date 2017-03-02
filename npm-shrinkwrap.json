@@ -584,6 +584,11 @@
         }
       }
     },
+    "date-format": {
+      "version": "0.0.0",
+      "from": "date-format@>=0.0.0 <0.0.1",
+      "resolved": "https://registry.npmjs.org/date-format/-/date-format-0.0.0.tgz"
+    },
     "debug": {
       "version": "2.2.0",
       "from": "debug@>=2.2.0 <2.3.0",
@@ -992,7 +997,7 @@
       "dependencies": {
         "lru-cache": {
           "version": "2.7.3",
-          "from": "lru-cache@>=2.0.0 <3.0.0",
+          "from": "lru-cache@2",
           "resolved": "https://registry.npmjs.org/lru-cache/-/lru-cache-2.7.3.tgz",
           "dev": true
         },
@@ -1184,9 +1189,9 @@
       "resolved": "https://registry.npmjs.org/is-fullwidth-code-point/-/is-fullwidth-code-point-1.0.0.tgz"
     },
     "is-my-json-valid": {
-      "version": "2.15.0",
+      "version": "2.16.0",
       "from": "is-my-json-valid@>=2.12.4 <3.0.0",
-      "resolved": "https://registry.npmjs.org/is-my-json-valid/-/is-my-json-valid-2.15.0.tgz"
+      "resolved": "https://registry.npmjs.org/is-my-json-valid/-/is-my-json-valid-2.16.0.tgz"
     },
     "is-path-cwd": {
       "version": "1.0.0",
@@ -1275,7 +1280,7 @@
       "dependencies": {
         "mkdirp": {
           "version": "0.3.5",
-          "from": "mkdirp@>=0.3.5 <0.4.0",
+          "from": "mkdirp@~0.3.5",
           "resolved": "https://registry.npmjs.org/mkdirp/-/mkdirp-0.3.5.tgz",
           "dev": true
         }
@@ -1481,26 +1486,9 @@
       "resolved": "https://registry.npmjs.org/lodash.uniq/-/lodash.uniq-4.5.0.tgz"
     },
     "log4js": {
-      "version": "0.6.38",
-      "from": "log4js@0.6.38",
-      "resolved": "https://registry.npmjs.org/log4js/-/log4js-0.6.38.tgz",
-      "dependencies": {
-        "isarray": {
-          "version": "0.0.1",
-          "from": "isarray@0.0.1",
-          "resolved": "https://registry.npmjs.org/isarray/-/isarray-0.0.1.tgz"
-        },
-        "readable-stream": {
-          "version": "1.0.34",
-          "from": "readable-stream@>=1.0.2 <1.1.0",
-          "resolved": "https://registry.npmjs.org/readable-stream/-/readable-stream-1.0.34.tgz"
-        },
-        "semver": {
-          "version": "4.3.6",
-          "from": "semver@>=4.3.3 <4.4.0",
-          "resolved": "https://registry.npmjs.org/semver/-/semver-4.3.6.tgz"
-        }
-      }
+      "version": "1.1.1",
+      "from": "log4js@1.1.1",
+      "resolved": "https://registry.npmjs.org/log4js/-/log4js-1.1.1.tgz"
     },
     "loose-envify": {
       "version": "1.3.1",
@@ -1926,9 +1914,9 @@
       "dev": true
     },
     "resolve": {
-      "version": "1.3.1",
+      "version": "1.3.2",
       "from": "resolve@>=1.1.6 <2.0.0",
-      "resolved": "https://registry.npmjs.org/resolve/-/resolve-1.3.1.tgz",
+      "resolved": "https://registry.npmjs.org/resolve/-/resolve-1.3.2.tgz",
       "dev": true
     },
     "resolve-from": {
@@ -2100,9 +2088,9 @@
       "resolved": "https://registry.npmjs.org/ssh2-streams/-/ssh2-streams-0.1.16.tgz"
     },
     "sshpk": {
-      "version": "1.10.2",
+      "version": "1.11.0",
       "from": "sshpk@>=1.7.0 <2.0.0",
-      "resolved": "https://registry.npmjs.org/sshpk/-/sshpk-1.10.2.tgz",
+      "resolved": "https://registry.npmjs.org/sshpk/-/sshpk-1.11.0.tgz",
       "dependencies": {
         "assert-plus": {
           "version": "1.0.0",
@@ -2115,6 +2103,28 @@
       "version": "1.3.1",
       "from": "statuses@>=1.3.0 <1.4.0",
       "resolved": "https://registry.npmjs.org/statuses/-/statuses-1.3.1.tgz"
+    },
+    "streamroller": {
+      "version": "0.4.0",
+      "from": "streamroller@>=0.4.0 <0.5.0",
+      "resolved": "https://registry.npmjs.org/streamroller/-/streamroller-0.4.0.tgz",
+      "dependencies": {
+        "debug": {
+          "version": "0.7.4",
+          "from": "debug@>=0.7.2 <0.8.0",
+          "resolved": "https://registry.npmjs.org/debug/-/debug-0.7.4.tgz"
+        },
+        "isarray": {
+          "version": "0.0.1",
+          "from": "isarray@0.0.1",
+          "resolved": "https://registry.npmjs.org/isarray/-/isarray-0.0.1.tgz"
+        },
+        "readable-stream": {
+          "version": "1.1.14",
+          "from": "readable-stream@>=1.1.7 <2.0.0",
+          "resolved": "https://registry.npmjs.org/readable-stream/-/readable-stream-1.1.14.tgz"
+        }
+      }
     },
     "streamsearch": {
       "version": "0.1.2",

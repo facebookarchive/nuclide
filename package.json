@@ -63,7 +63,7 @@
     "jest-editor-support": "19.0.2",
     "js-yaml": "3.7.0",
     "lodash.memoize": "3.0.4",
-    "log4js": "0.6.38",
+    "log4js": "1.1.1",
     "lru-cache": "4.0.2",
     "marked": "0.3.6",
     "minimatch": "3.0.3",
