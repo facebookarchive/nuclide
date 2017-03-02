@@ -100,6 +100,12 @@ async function getHgExecParams(
   options_: HgExecOptions,
 ): Promise<{command: string, args: Array<string>, options: Object}> {
   let args = args_;
+  // Disabling ssh keyboard input so all commands that prompt for interaction
+  // fail instantly rather than just wait for an input that will never arrive
+  args.push(
+    '--config',
+    'ui.ssh=ssh -oBatchMode=yes -oControlMaster=no',
+  );
   const options = {
     ...options_,
     env: {
