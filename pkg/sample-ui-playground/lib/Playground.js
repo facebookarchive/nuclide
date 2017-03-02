@@ -32,6 +32,7 @@ import {MultiRootChangedFilesViewExample} from '../../nuclide-ui/MultiRootChange
 import {ToggleExamples} from '../../nuclide-ui/Toggle.example';
 import {ResizableFlexContainerExamples} from '../../nuclide-ui/ResizableFlexContainer.example';
 import {ModalExamples} from '../../nuclide-ui/Modal.example';
+import {FileChangesExamples} from '../../nuclide-ui/FileChanges.example';
 
 const playgroundComponents = [
   ButtonExamples,
@@ -53,6 +54,7 @@ const playgroundComponents = [
   TableExamples,
   RelativeDateExamples,
   MultiRootChangedFilesViewExample,
+  FileChangesExamples,
 ];
 
 type ComponentSpec = {
