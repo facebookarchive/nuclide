@@ -13,6 +13,7 @@ import type {
   NuclideEvaluationExpressionProvider,
 } from '../../nuclide-debugger-interfaces/service';
 import type {
+  DebuggerProcessInfo,
   DebuggerInstanceBase,
 } from '../../nuclide-debugger-base';
 import type {
@@ -195,6 +196,10 @@ export type DebuggerAction =
   {
     actionType: 'UPDATE_CUSTOM_CONTROL_BUTTONS',
     data: Array<ControlButtonSpecification>,
+  } |
+  {
+    actionType: 'SET_DEBUG_PROCESS_INFO',
+    data: ?DebuggerProcessInfo,
   };
 
 export const ActionTypes = Object.freeze({
@@ -240,6 +245,7 @@ export const ActionTypes = Object.freeze({
   RECEIVED_EXPRESSION_EVALUATION_RESPONSE: 'RECEIVED_EXPRESSION_EVALUATION_RESPONSE',
   RECEIVED_GET_PROPERTIES_RESPONSE: 'RECEIVED_GET_PROPERTIES_RESPONSE',
   UPDATE_CUSTOM_CONTROL_BUTTONS: 'UPDATE_CUSTOM_CONTROL_BUTTONS',
+  SET_DEBUG_PROCESS_INFO: 'SET_DEBUG_PROCESS_INFO',
 });
 
 // Flow hack: Every DebuggerAction actionType must be in ActionTypes.

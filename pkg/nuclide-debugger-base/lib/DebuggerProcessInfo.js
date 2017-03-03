@@ -57,4 +57,7 @@ export default class DebuggerProcessInfo {
   async debug(): Promise<DebuggerInstanceBase> {
     throw new Error('abstract method');
   }
+
+  dispose(): void {
+  }
 }

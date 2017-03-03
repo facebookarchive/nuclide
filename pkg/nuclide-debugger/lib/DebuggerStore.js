@@ -23,6 +23,7 @@ import {Emitter} from 'atom';
 import {DebuggerSettings} from './DebuggerSettings';
 import invariant from 'assert';
 import {ActionTypes} from './DebuggerDispatcher';
+import type {DebuggerProcessInfo} from '../../nuclide-debugger-base';
 
 export const DebuggerMode: {[key: string]: DebuggerModeType} = Object.freeze({
   STARTING: 'starting',
@@ -58,6 +59,7 @@ export class DebuggerStore {
   _registerExecutor: ?() => IDisposable;
   _consoleDisposable: ?IDisposable;
   _customControlButtons: Array<ControlButtonSpecification>;
+  _debugProcessInfo: ?DebuggerProcessInfo;
   loaderBreakpointResumePromise: Promise<void>;
 
   constructor(dispatcher: DebuggerDispatcher, model: DebuggerModel) {
@@ -78,6 +80,7 @@ export class DebuggerStore {
     this._registerExecutor = null;
     this._consoleDisposable = null;
     this._customControlButtons = [];
+    this._debugProcessInfo = null;
     this.loaderBreakpointResumePromise = new Promise(resolve => {
       this._onLoaderBreakpointResume = resolve;
     });
@@ -92,6 +95,9 @@ export class DebuggerStore {
       // because the dispatcher for this store is now unregistered.
       this._debuggerInstance = null;
       debuggerInstance.dispose();
+    }
+    if (this._debugProcessInfo != null) {
+      this._debugProcessInfo.dispose();
     }
   }
 
@@ -223,6 +229,12 @@ export class DebuggerStore {
         break;
       case ActionTypes.UPDATE_CUSTOM_CONTROL_BUTTONS:
         this._customControlButtons = payload.data;
+        break;
+      case ActionTypes.SET_DEBUG_PROCESS_INFO:
+        if (this._debugProcessInfo != null) {
+          this._debugProcessInfo.dispose();
+        }
+        this._debugProcessInfo = payload.data;
         break;
       default:
         return;

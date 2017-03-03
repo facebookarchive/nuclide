@@ -102,7 +102,7 @@ async function debugAndroidActivity(buckProjectPath: string, androidActivity: st
     /* eslint-disable nuclide-internal/no-cross-atom-imports */
     // $FlowFB
     const procInfo = require('../../fb-debugger-java/lib/AdbProcessInfo');
-    debuggerService.startDebugging(new procInfo.AdbProcessInfo(buckProjectPath,
+    debuggerService.startDebugging(new procInfo.AdbProcessInfo(buckProjectPath, null, null,
       androidActivity));
     /* eslint-enable nuclide-internal/no-cross-atom-imports */
   } catch (e) {

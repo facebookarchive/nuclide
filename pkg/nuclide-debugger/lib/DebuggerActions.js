@@ -74,6 +74,7 @@ export default class DebuggerActions {
     this.setError(null);
     this._handleDebugModeStart();
     this.setDebuggerMode(DebuggerMode.STARTING);
+    this.setDebugProcessInfo(processInfo);
     try {
       atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
       const debuggerInstance = await processInfo.debug();
@@ -181,8 +182,9 @@ export default class DebuggerActions {
     });
 
     this.clearInterface();
-
+    this.updateControlButtons([]);
     this.setDebuggerMode(DebuggerMode.STOPPED);
+    this.setDebugProcessInfo(null);
     track(AnalyticsEvents.DEBUGGER_STOP);
     endTimerTracking();
 
@@ -546,6 +548,13 @@ export default class DebuggerActions {
         id,
         response,
       },
+    });
+  }
+
+  setDebugProcessInfo(processInfo: ?DebuggerProcessInfo): void {
+    this._dispatcher.dispatch({
+      actionType: ActionTypes.SET_DEBUG_PROCESS_INFO,
+      data: processInfo,
     });
   }
 
