@@ -17,6 +17,8 @@ import {Icon} from '../../nuclide-ui/Icon';
 import {Table} from '../../nuclide-ui/Table';
 import type {Row} from '../../nuclide-ui/Table';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import {LoadingSpinner, LoadingSpinnerSizes} from '../../nuclide-ui/LoadingSpinner';
+import debounce from '../../commons-node/debounce';
 
 type DebuggerThreadsComponentProps = {
   bridge: Bridge,
@@ -29,6 +31,7 @@ type DebuggerThreadsComponentState = {
   selectedThreadId: number,
   sortedColumn: ?string,
   sortDescending: boolean,
+  threadsLoading: boolean,
 };
 
 const activeThreadIndicatorComponent = (props: {cellData: boolean}) => (
@@ -50,29 +53,35 @@ export class DebuggerThreadsComponent extends React.Component {
     (this: any)._handleSelectThread = this._handleSelectThread.bind(this);
     (this: any)._handleSort = this._handleSort.bind(this);
     (this: any)._sortRows = this._sortRows.bind(this);
+    (this: any)._handleThreadStoreChanged = debounce(this._handleThreadStoreChanged, 150);
+
     this._disposables = new UniversalDisposable();
     this.state = {
       threadList: props.threadStore.getThreadList(),
       selectedThreadId: props.threadStore.getSelectedThreadId(),
       sortedColumn: null,
       sortDescending: false,
+      threadsLoading: false,
     };
   }
 
   componentDidMount(): void {
     const {threadStore} = this.props;
     this._disposables.add(
-      threadStore.onChange(() => {
-        this.setState({
-          threadList: threadStore.getThreadList(),
-          selectedThreadId: threadStore.getSelectedThreadId(),
-        });
-      }),
+      threadStore.onChange(() => this._handleThreadStoreChanged()),
     );
   }
 
   componentWillUnmount(): void {
     this._disposables.dispose();
+  }
+
+  _handleThreadStoreChanged(): void {
+    this.setState({
+      threadList: this.props.threadStore.getThreadList(),
+      selectedThreadId: this.props.threadStore.getSelectedThreadId(),
+      threadsLoading: this.props.threadStore.getThreadsReloading(),
+    });
   }
 
   _handleSelectThread(data: ThreadItem): void {
@@ -167,6 +176,15 @@ export class DebuggerThreadsComponent extends React.Component {
         }
         return cellData;
       });
+
+    if (this.state.threadsLoading) {
+      return <div
+        className="nuclide-debugger-thread-loading"
+        title="Loading threads...">
+          <LoadingSpinner size={LoadingSpinnerSizes.MEDIUM} />
+        </div>;
+    }
+
     return (
       <Table
         columns={columns}

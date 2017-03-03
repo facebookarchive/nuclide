@@ -11,6 +11,7 @@
 import type {
   ThreadItem,
   NuclideThreadData,
+  DebuggerModeType,
 } from './types';
 import type {
   PinnedDatatip,
@@ -27,6 +28,7 @@ import {Icon} from '../../nuclide-ui/Icon';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {ActionTypes} from './DebuggerDispatcher';
 import passesGK from '../../commons-node/passesGK';
+import {DebuggerMode} from './DebuggerStore';
 
 const GK_THREAD_SWITCH_UI = 'nuclide_debugger_thread_switch_ui';
 const GK_TIMEOUT = 5000;
@@ -40,6 +42,8 @@ export default class ThreadStore {
   _selectedThreadId: number;
   _stopThreadId: number;
   _threadChangeDatatip: ?PinnedDatatip;
+  _threadsReloading: boolean;
+  _debuggerMode: DebuggerModeType;
 
   constructor(dispatcher: DebuggerDispatcher) {
     const dispatcherToken = dispatcher.register(this._handlePayload.bind(this));
@@ -54,6 +58,8 @@ export default class ThreadStore {
     this._owningProcessId = 0;
     this._selectedThreadId = 0;
     this._stopThreadId = 0;
+    this._threadsReloading = false;
+    this._debuggerMode = DebuggerMode.STOPPED;
   }
 
   setDatatipService(service: DatatipService) {
@@ -67,10 +73,12 @@ export default class ThreadStore {
         this._emitter.emit('change');
         break;
       case ActionTypes.UPDATE_THREADS:
+        this._threadsReloading = false;
         this._updateThreads(payload.data.threadData);
         this._emitter.emit('change');
         break;
       case ActionTypes.UPDATE_THREAD:
+        this._threadsReloading = false;
         this._updateThread(payload.data.thread);
         this._emitter.emit('change');
         break;
@@ -82,6 +90,15 @@ export default class ThreadStore {
         this._notifyThreadSwitch(payload.data.sourceURL, payload.data.lineNumber,
           payload.data.message);
         break;
+      case ActionTypes.DEBUGGER_MODE_CHANGE:
+        if (this._debuggerMode === DebuggerMode.RUNNING && payload.data === DebuggerMode.PAUSED) {
+          // If the debugger just transitioned from running to paused, the debug server should
+          // be sending updated thread stacks. This may take a moment.
+          this._threadsReloading = true;
+        }
+        this._debuggerMode = payload.data;
+        this._emitter.emit('change');
+        break;
       default:
         return;
     }
@@ -92,6 +109,7 @@ export default class ThreadStore {
     this._owningProcessId = threadData.owningProcessId;
     this._stopThreadId = threadData.stopThreadId;
     this._selectedThreadId = threadData.stopThreadId;
+    this._threadsReloading = false;
     threadData.threads.forEach(thread =>
       this._threadMap.set(Number(thread.id), thread),
     );
@@ -165,6 +183,10 @@ export default class ThreadStore {
 
   getSelectedThreadId(): number {
     return this._selectedThreadId;
+  }
+
+  getThreadsReloading(): boolean {
+    return this._threadsReloading;
   }
 
   onChange(callback: () => void): IDisposable {
