@@ -18,6 +18,7 @@ import {
 } from 'atom';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {ActionTypes} from './DebuggerDispatcher';
+import debounce from '../../commons-node/debounce';
 
 export default class CallstackStore {
   _disposables: IDisposable;
@@ -37,6 +38,11 @@ export default class CallstackStore {
     this._selectedCallFrameIndex = 0;
     this._selectedCallFrameMarker = null;
     this._emitter = new Emitter();
+
+    // Debounce calls to _openPathInEditor to work around an Atom bug that causes
+    // two editor windows to be opened if multiple calls to atom.workspace.open
+    // are made close together, even if {searchAllPanes: true} is set.
+    (this: any)._openPathInEditor = debounce(this._openPathInEditor, 100, true);
   }
 
   _handlePayload(payload: DebuggerAction) {
@@ -78,11 +84,15 @@ export default class CallstackStore {
     if (path != null && atom.workspace != null) { // only handle real files for now.
       // This should be goToLocation instead but since the searchAllPanes option is correctly
       // provided it's not urgent.
-      // eslint-disable-next-line nuclide-internal/atom-apis
-      atom.workspace.open(path, {searchAllPanes: true}).then(editor => {
+      this._openPathInEditor(path).then(editor => {
         this._nagivateToLocation(editor, lineNumber);
       });
     }
+  }
+
+  _openPathInEditor(path: string): Promise<atom$TextEditor> {
+    // eslint-disable-next-line nuclide-internal/atom-apis
+    return atom.workspace.open(path, {searchAllPanes: true});
   }
 
   _nagivateToLocation(editor: atom$TextEditor, line: number): void {
@@ -103,8 +113,7 @@ export default class CallstackStore {
       if (path != null && atom.workspace != null) { // only handle real files for now
         // This should be goToLocation instead but since the searchAllPanes option is correctly
         // provided it's not urgent.
-        // eslint-disable-next-line nuclide-internal/atom-apis
-        atom.workspace.open(path, {searchAllPanes: true}).then(editor => {
+        this._openPathInEditor(path).then(editor => {
           this._clearSelectedCallFrameMarker();
           this._highlightCallFrameLine(editor, lineNumber);
           this._nagivateToLocation(editor, lineNumber);
