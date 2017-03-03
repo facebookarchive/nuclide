@@ -25,6 +25,7 @@ import {LaunchProcessInfo} from '../../nuclide-debugger-native/lib/LaunchProcess
 import {getLogger} from '../../nuclide-logging';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {track} from '../../nuclide-analytics';
 
 const LLDB_PROCESS_ID_REGEX = /lldb -p ([0-9]+)/;
 const ANDROID_ACTIVITY_REGEX = /Starting activity (.*)\/(.*)\.\.\./;
@@ -99,6 +100,13 @@ async function debugAndroidActivity(buckProjectPath: string, androidActivity: st
 
   const debuggerService = await getDebuggerService();
   try {
+    track('fb-java-debugger-start', {
+      startType: 'buck-toolbar',
+      target: buckProjectPath,
+      targetType: 'android',
+      targetClass: androidActivity,
+    });
+
     /* eslint-disable nuclide-internal/no-cross-atom-imports */
     // $FlowFB
     const procInfo = require('../../fb-debugger-java/lib/AdbProcessInfo');
@@ -106,6 +114,9 @@ async function debugAndroidActivity(buckProjectPath: string, androidActivity: st
       androidActivity));
     /* eslint-enable nuclide-internal/no-cross-atom-imports */
   } catch (e) {
+    track('fb-java-debugger-unavailable', {
+      error: e.toString(),
+    });
     throw new Error('Java debugger service is not available.');
   }
 }
