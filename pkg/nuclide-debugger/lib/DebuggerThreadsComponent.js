@@ -8,7 +8,7 @@
  * @flow
  */
 
-import {React} from 'react-for-atom';
+import {React, ReactDOM} from 'react-for-atom';
 import type {ThreadItem} from './types';
 import type Bridge from './Bridge';
 import type ThreadStore from './ThreadStore';
@@ -74,6 +74,23 @@ export class DebuggerThreadsComponent extends React.Component {
 
   componentWillUnmount(): void {
     this._disposables.dispose();
+  }
+
+  componentDidUpdate() {
+    // Ensure the selected thread is scrolled into view.
+    this._scrollSelectedThreadIntoView();
+  }
+
+  _scrollSelectedThreadIntoView(): void {
+    const listNode = ReactDOM.findDOMNode(this.refs.threadTable);
+    if (listNode) {
+      const selectedRows =
+        listNode.getElementsByClassName('nuclide-debugger-thread-list-item-selected');
+
+      if (selectedRows && selectedRows.length > 0) {
+        selectedRows[0].scrollIntoViewIfNeeded(false);
+      }
+    }
   }
 
   _handleThreadStoreChanged(): void {
@@ -197,6 +214,7 @@ export class DebuggerThreadsComponent extends React.Component {
         onSort={this._handleSort}
         sortedColumn={this.state.sortedColumn}
         sortDescending={this.state.sortDescending}
+        ref="threadTable"
       />
     );
   }
