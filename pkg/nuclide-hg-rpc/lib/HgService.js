@@ -922,6 +922,13 @@ export class HgService {
   }
 
   /**
+   * Undoes the effect of a local commit, specifically the working directory parent.
+   */
+  uncommit(): Promise<void> {
+    return this._runSimpleInWorkingDirectory('uncommit', []);
+  }
+
+  /**
    * @param revision This could be a changeset ID, name of a bookmark, revision number, etc.
    */
   strip(revision: string): Promise<void> {

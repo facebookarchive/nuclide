@@ -694,6 +694,10 @@ export class HgRepositoryClient {
     return this._service.strip(reference);
   }
 
+  uncommit(): Promise<void> {
+    return this._service.uncommit();
+  }
+
   checkoutForkBase(): Promise<void> {
     return this._service.checkoutForkBase();
   }
