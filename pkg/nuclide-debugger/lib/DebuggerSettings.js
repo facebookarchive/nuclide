@@ -14,6 +14,7 @@ export class DebuggerSettings {
   _settings: {
     SupportThreadsWindow: boolean,
     CustomThreadColumns: Array<ThreadColumn>,
+    threadsComponentTitle: string,
   };
 
   constructor() {
@@ -21,6 +22,7 @@ export class DebuggerSettings {
       SupportThreadsWindow: false,
       SingleThreadStepping: false,
       CustomThreadColumns: [],
+      threadsComponentTitle: 'Threads',
     };
   }
 

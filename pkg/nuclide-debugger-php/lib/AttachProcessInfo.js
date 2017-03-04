@@ -60,6 +60,10 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
     return true;
   }
 
+  getThreadsComponentTitle(): string {
+    return 'Requests';
+  }
+
   getThreadColumns(): ?Array<ThreadColumn> {
     return [
       {

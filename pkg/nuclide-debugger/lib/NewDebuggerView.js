@@ -47,6 +47,7 @@ export class NewDebuggerView extends React.PureComponent {
     showThreadsWindow: boolean,
     customThreadColumns: Array<ThreadColumn>,
     mode: DebuggerModeType,
+    threadsComponentTitle: string,
   };
   _watchExpressionComponentWrapped: ReactClass<any>;
   _scopesComponentWrapped: ReactClass<any>;
@@ -72,6 +73,7 @@ export class NewDebuggerView extends React.PureComponent {
       showThreadsWindow: Boolean(debuggerStore.getSettings().get('SupportThreadsWindow')),
       customThreadColumns: (debuggerStore.getSettings().get('CustomThreadColumns'): any) || [],
       mode: debuggerStore.getDebuggerMode(),
+      threadsComponentTitle: String(debuggerStore.getSettings().get('threadsComponentTitle')),
     };
   }
 
@@ -83,6 +85,7 @@ export class NewDebuggerView extends React.PureComponent {
           showThreadsWindow: Boolean(debuggerStore.getSettings().get('SupportThreadsWindow')),
           customThreadColumns: (debuggerStore.getSettings().get('CustomThreadColumns'): any) || [],
           mode: debuggerStore.getDebuggerMode(),
+          threadsComponentTitle: String(debuggerStore.getSettings().get('threadsComponentTitle')),
         });
       }),
     );
@@ -97,27 +100,35 @@ export class NewDebuggerView extends React.PureComponent {
       model,
     } = this.props;
     const actions = model.getActions();
-    const mode = this.state.mode;
+    const {
+      mode,
+      threadsComponentTitle,
+      customThreadColumns,
+    } = this.state;
     const WatchExpressionComponentWrapped = this._watchExpressionComponentWrapped;
     const ScopesComponentWrapped = this._scopesComponentWrapped;
     const disabledClass = mode !== DebuggerMode.RUNNING ?
       ''
       : ' nuclide-debugger-container-new-disabled';
 
-    const threadsSection = this.state.showThreadsWindow
-      ? <ResizableFlexItem initialFlexScale={1}>
-          <Section headline="Threads"
+    let threadsSection = null;
+    if (this.state.showThreadsWindow) {
+      threadsSection = (
+        <ResizableFlexItem initialFlexScale={1}>
+          <Section headline={threadsComponentTitle}
             className={classnames('nuclide-debugger-section-header', disabledClass)}>
             <div className="nuclide-debugger-section-content">
               <DebuggerThreadsComponent
                 bridge={this.props.model.getBridge()}
                 threadStore={model.getThreadStore()}
-                customThreadColumns={this.state.customThreadColumns}
+                customThreadColumns={customThreadColumns}
+                threadName={threadsComponentTitle}
               />
             </div>
           </Section>
         </ResizableFlexItem>
-      : null;
+      );
+    }
 
     const debuggerStoppedNotice = mode !== DebuggerMode.STOPPED ? null :
       <div className="nuclide-debugger-state-notice">

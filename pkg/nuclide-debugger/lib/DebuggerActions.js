@@ -84,8 +84,11 @@ export default class DebuggerActions {
         await this._allowThreadsForPhp(processInfo);
       this._store.getSettings().set('SupportThreadsWindow', supportThreadsWindow);
       if (supportThreadsWindow) {
-        const customColumns = processInfo.getThreadColumns();
-        this._store.getSettings().set('CustomThreadColumns', customColumns);
+        this._store.getSettings().set('CustomThreadColumns', processInfo.getThreadColumns());
+        this._store.getSettings().set(
+          'threadsComponentTitle',
+          processInfo.getThreadsComponentTitle(),
+        );
       }
       const singleThreadStepping = processInfo.supportSingleThreadStepping();
       if (singleThreadStepping) {

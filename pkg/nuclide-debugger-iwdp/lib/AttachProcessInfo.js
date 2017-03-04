@@ -35,6 +35,10 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
     return true;
   }
 
+  getThreadsComponentTitle(): string {
+    return 'Scripts';
+  }
+
   _getRpcService(): IwdpDebuggerService {
     const service = getIwdpDebuggerServiceByNuclideUri(this.getTargetUri());
     return new service.IwdpDebuggerService();

@@ -24,6 +24,7 @@ type DebuggerThreadsComponentProps = {
   bridge: Bridge,
   threadStore: ThreadStore,
   customThreadColumns: Array<ThreadColumn>,
+  threadName: string,
 };
 
 type DebuggerThreadsComponentState = {
@@ -170,9 +171,10 @@ export class DebuggerThreadsComponent extends React.Component {
     const columns = this.props.customThreadColumns.length === 0
       ? defaultColumns
       : [activeThreadCol, ...this.props.customThreadColumns];
+    const threadName = this.props.threadName.toLowerCase();
     const emptyComponent = () =>
       <div className="nuclide-debugger-thread-list-empty">
-        {threadList == null ? '(threads unavailable)' : 'no threads to display'}
+        {threadList == null ? `(${threadName} unavailable)` : `no ${threadName} to display`}
       </div>;
     const rows = threadList == null
       ? []
