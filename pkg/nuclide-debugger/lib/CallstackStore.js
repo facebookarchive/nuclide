@@ -92,7 +92,10 @@ export default class CallstackStore {
 
   _openPathInEditor(path: string): Promise<atom$TextEditor> {
     // eslint-disable-next-line nuclide-internal/atom-apis
-    return atom.workspace.open(path, {searchAllPanes: true});
+    return atom.workspace.open(path, {
+      searchAllPanes: true,
+      pending: true,
+    });
   }
 
   _nagivateToLocation(editor: atom$TextEditor, line: number): void {
