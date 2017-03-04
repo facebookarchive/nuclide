@@ -14,7 +14,13 @@ export type AtomNotification = {
   message: string,
 };
 
+// Copied from nuclide-ui/Table.js because the RPC framework doesn't play well with type imports.
 export type ThreadColumn = {
-  key: string,
   title: string,
+  key: string,
+  // Percentage. The `width`s of all columns must add up to 1.
+  width?: number,
+  // Optional React component for rendering cell contents.
+  // The component receives the cell value via `props.data`.
+  component?: any,
 };

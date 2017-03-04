@@ -167,13 +167,9 @@ export class DebuggerThreadsComponent extends React.Component {
     ];
 
     // Individual debuggers can override the displayed columns.
-    const customColumns = this.props.customThreadColumns.length === 0 ? [] :
-      [activeThreadCol].concat(this.props.customThreadColumns.map(col => ({
-        title: col.title,
-        key: col.key,
-      })));
-
-    const columns = customColumns.length > 0 ? customColumns : defaultColumns;
+    const columns = this.props.customThreadColumns.length === 0
+      ? defaultColumns
+      : [activeThreadCol, ...this.props.customThreadColumns];
     const emptyComponent = () =>
       <div className="nuclide-debugger-thread-list-empty">
         {threadList == null ? '(threads unavailable)' : 'no threads to display'}

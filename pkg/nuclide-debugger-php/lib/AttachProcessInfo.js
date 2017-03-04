@@ -13,6 +13,7 @@ import type {
 } from '../../nuclide-debugger-php-rpc/lib/PhpDebuggerService';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {ControlButtonSpecification} from '../../nuclide-debugger/lib/types';
+import type {ThreadColumn} from '../../nuclide-debugger-base/lib/types';
 
 import {DebuggerProcessInfo} from '../../nuclide-debugger-base';
 import {PhpDebuggerInstance} from './PhpDebuggerInstance';
@@ -57,6 +58,26 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
 
   supportThreads(): boolean {
     return true;
+  }
+
+  getThreadColumns(): ?Array<ThreadColumn> {
+    return [
+      {
+        key: 'id',
+        title: 'ID',
+        width: 0.15,
+      },
+      {
+        key: 'address',
+        title: 'Location',
+        width: 0.55,
+      },
+      {
+        key: 'stopReason',
+        title: 'Stop Reason',
+        width: 0.25,
+      },
+    ];
   }
 
   supportSingleThreadStepping(): boolean {
