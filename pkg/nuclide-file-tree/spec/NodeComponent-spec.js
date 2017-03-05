@@ -72,6 +72,7 @@ describe('Directory FileTreeEntryComponent', () => {
       );
 
       // The onClick is listened not by the <li> element, but by its first child.
+      // $FlowFixMe
       const domNode = ReactDOM.findDOMNode(nodeComponent).children[0];
       TestUtils.Simulate.click(domNode);
       expect(actions.expandNode).toHaveBeenCalled();

@@ -255,7 +255,9 @@ export class FileTreeEntryComponent extends React.Component {
 
     const node = this.props.node;
     return node.isContainer
+      // $FlowFixMe
       && ReactDOM.findDOMNode(this.refs.arrowContainer).contains(event.target)
+      // $FlowFixMe
       && event.clientX < ReactDOM.findDOMNode(this._pathContainer)
           .getBoundingClientRect().left;
   }

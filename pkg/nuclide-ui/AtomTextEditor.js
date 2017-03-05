@@ -145,7 +145,9 @@ export class AtomTextEditor extends React.Component {
     // $FlowFixMe
     atom.views.views.set(textEditor, textEditorElement);
     // Attach to DOM.
+    // $FlowFixMe
     container.innerHTML = '';
+    // $FlowFixMe
     container.appendChild(textEditorElement);
 
     if (this.props.correctContainerWidth) {
@@ -157,6 +159,7 @@ export class AtomTextEditor extends React.Component {
           return;
         }
         const {width} = correctlySizedElement.style;
+        // $FlowFixMe
         container.style.width = width;
       }));
     }

@@ -941,9 +941,9 @@
       "dev": true
     },
     "flow-bin": {
-      "version": "0.40.0",
-      "from": "flow-bin@0.40.0",
-      "resolved": "https://registry.npmjs.org/flow-bin/-/flow-bin-0.40.0.tgz",
+      "version": "0.41.0",
+      "from": "flow-bin@0.41.0",
+      "resolved": "https://registry.npmjs.org/flow-bin/-/flow-bin-0.41.0.tgz",
       "dev": true
     },
     "forever-agent": {

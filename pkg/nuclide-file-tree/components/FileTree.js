@@ -103,6 +103,7 @@ export class FileTree extends React.Component {
     this._initialHeightMeasured = true;
 
     const node = ReactDOM.findDOMNode(measuredComponent);
+    // $FlowFixMe
     const elementHeight = node.clientHeight;
     if (elementHeight !== this.state.elementHeight && elementHeight > 0) {
       this.setState({elementHeight});

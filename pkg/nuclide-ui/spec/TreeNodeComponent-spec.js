@@ -56,8 +56,11 @@ describe('TreeNodeComponent', () => {
     it('uses selectors necessary for the "file-icons" package', () => {
       const domNode = ReactDOM.findDOMNode(treeNodeComponent);
 
+      // $FlowFixMe
       expect(domNode.classList.contains('entry')).toBe(true);
+      // $FlowFixMe
       expect(domNode.classList.contains('file')).toBe(true);
+      // $FlowFixMe
       expect(domNode.classList.contains('list-item')).toBe(true);
 
       const iconComponent = TestUtils.findRenderedDOMComponentWithClass(
@@ -65,6 +68,7 @@ describe('TreeNodeComponent', () => {
         iconClassName,
       );
 
+      // $FlowFixMe
       expect(ReactDOM.findDOMNode(iconComponent).dataset.name).toEqual(label);
     });
   });

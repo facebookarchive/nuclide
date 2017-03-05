@@ -178,6 +178,7 @@ export default class FileTreeSidebarComponent extends React.Component {
     // Delegate focus to the FileTree component if this component gains focus because the FileTree
     // matches the selectors targeted by themes to show the containing panel has focus.
     if (event.target === ReactDOM.findDOMNode(this)) {
+      // $FlowFixMe
       ReactDOM.findDOMNode(this.refs.fileTree).focus();
     }
   }
@@ -354,6 +355,7 @@ export default class FileTreeSidebarComponent extends React.Component {
     if (el == null) {
       return;
     }
+    // $FlowFixMe
     this.setState({scrollerHeight: el.clientHeight});
   }
 
@@ -363,6 +365,7 @@ export default class FileTreeSidebarComponent extends React.Component {
     }
     this._scrollWasTriggeredProgrammatically = false;
     const node = ReactDOM.findDOMNode(this.refs.scroller);
+    // $FlowFixMe
     const {scrollTop} = node;
     if (scrollTop !== this.state.scrollerScrollTop) {
       this.setState({scrollerScrollTop: scrollTop});
@@ -384,6 +387,7 @@ export default class FileTreeSidebarComponent extends React.Component {
     setImmediate(() => {
       try {  // For the rather unlikely chance that the node is already gone from the DOM
         this._scrollWasTriggeredProgrammatically = true;
+        // $FlowFixMe
         node.scrollTop = newTop;
         this.setState({scrollerScrollTop: newTop});
       } catch (e) {}
@@ -403,6 +407,7 @@ export default class FileTreeSidebarComponent extends React.Component {
     if (el == null) {
       return;
     }
+    // $FlowFixMe
     el.focus();
   }
 

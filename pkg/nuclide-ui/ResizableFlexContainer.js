@@ -67,7 +67,9 @@ export class ResizableFlexContainer extends React.Component {
     const {direction} = props;
     this._paneContainer = createPaneContainer();
     const containerNode = ReactDOM.findDOMNode(this.refs.flexContainer);
+    // $FlowFixMe
     containerNode.innerHTML = '';
+    // $FlowFixMe
     containerNode.appendChild(atom.views.getView(this._paneContainer));
     const startingPane: atom$Pane = this._paneContainer.getActivePane();
     let lastPane = startingPane;

@@ -132,6 +132,7 @@ export default class ConnectionDetailsForm extends React.Component {
       () => {
         // when setting this immediately, Atom will unset the focus...
         setTimeout(() => {
+          // $FlowFixMe
           ReactDOM.findDOMNode(this.refs.pathToPrivateKey).focus();
         }, 0);
       },
@@ -145,6 +146,7 @@ export default class ConnectionDetailsForm extends React.Component {
         selectedAuthMethodIndex: passwordAuthMethodIndex,
       },
       () => {
+        // $FlowFixMe
         ReactDOM.findDOMNode(this.refs.password).focus();
       },
     );
@@ -323,6 +325,7 @@ export default class ConnectionDetailsForm extends React.Component {
 
     // Hitting enter when this panel has focus should confirm the dialog.
     disposables.add(atom.commands.add(
+      // $FlowFixMe
       root,
       'core:confirm',
       event => this.props.onConfirm(),
@@ -417,6 +420,7 @@ export default class ConnectionDetailsForm extends React.Component {
   }
 
   _getPassword(): string {
+    // $FlowFixMe
     return (this.refs.password && ReactDOM.findDOMNode(this.refs.password).value) || '';
   }
 

@@ -110,9 +110,13 @@ export class Combobox extends React.Component {
   componentDidMount() {
     const node = ReactDOM.findDOMNode(this);
     this._subscriptions.add(
+      // $FlowFixMe
       atom.commands.add(node, 'core:move-up', this._handleMoveUp),
+      // $FlowFixMe
       atom.commands.add(node, 'core:move-down', this._handleMoveDown),
+      // $FlowFixMe
       atom.commands.add(node, 'core:cancel', this._handleCancel),
+      // $FlowFixMe
       atom.commands.add(node, 'core:confirm', this._handleConfirm),
       this.refs.freeformInput.onDidChange(this._handleTextInputChange),
     );
@@ -251,6 +255,7 @@ export class Combobox extends React.Component {
 
   _handleInputFocus(): void {
     this.requestUpdate(this.state.textInput);
+    // $FlowFixMe
     const boundingRect = ReactDOM.findDOMNode(this).getBoundingClientRect();
     this.setState({
       optionsVisible: true,
@@ -287,6 +292,7 @@ export class Combobox extends React.Component {
       // <select> behavior by keeping focus in the form being edited.
       const input = ReactDOM.findDOMNode(this.refs.freeformInput);
       if (input) {
+        // $FlowFixMe
         input.focus();
         // Focusing usually shows the options, so hide them immediately.
         setImmediate(() => this.setState({optionsVisible: false}));
@@ -333,6 +339,7 @@ export class Combobox extends React.Component {
   _scrollSelectedOptionIntoViewIfNeeded(): void {
     const selectedOption = ReactDOM.findDOMNode(this.refs.selectedOption);
     if (selectedOption) {
+      // $FlowFixMe
       selectedOption.scrollIntoViewIfNeeded();
     }
   }

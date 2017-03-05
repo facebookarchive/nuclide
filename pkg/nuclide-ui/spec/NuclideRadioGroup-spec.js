@@ -29,7 +29,9 @@ describe('RadioGroup', () => {
       'input',
     );
 
+    // $FlowFixMe
     expect(ReactDOM.findDOMNode(radioInputs[0]).checked).toBe(false);
+    // $FlowFixMe
     expect(ReactDOM.findDOMNode(radioInputs[1]).checked).toBe(true);
   });
 
@@ -44,7 +46,9 @@ describe('RadioGroup', () => {
       'input',
     );
     // Global uid is `1` as this point, since this is the second RadioGroup component to be created.
+    // $FlowFixMe
     expect(ReactDOM.findDOMNode(radioInputs[0]).getAttribute('name')).toEqual('radiogroup-1');
+    // $FlowFixMe
     expect(ReactDOM.findDOMNode(radioInputs[1]).getAttribute('name')).toEqual('radiogroup-1');
     const component2 = renderIntoDocument(
       <RadioGroup {...props} />,
@@ -53,7 +57,9 @@ describe('RadioGroup', () => {
       component2,
       'input',
     );
+    // $FlowFixMe
     expect(ReactDOM.findDOMNode(radioInputs2[0]).getAttribute('name')).toEqual('radiogroup-2');
+    // $FlowFixMe
     expect(ReactDOM.findDOMNode(radioInputs2[1]).getAttribute('name')).toEqual('radiogroup-2');
   });
 

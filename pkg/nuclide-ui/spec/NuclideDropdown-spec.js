@@ -30,6 +30,7 @@ describe('Dropdown', () => {
     );
 
     const button = scryRenderedDOMComponentsWithTag(component, 'button');
+    // $FlowFixMe
     expect(ReactDOM.findDOMNode(button[0]).innerText).toBe('bar');
   });
 });

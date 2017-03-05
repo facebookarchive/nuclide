@@ -47,7 +47,9 @@ export default function addTooltip(
       // in the DOM and has the proper keybinding.
       immediate = setImmediate(() => {
         prevRefDisposable = atom.tooltips.add(
+          // $FlowFixMe
           node,
+          // $FlowFixMe
           {
             keyBindingTarget: node,
             ...options,

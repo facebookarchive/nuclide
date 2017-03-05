@@ -21,6 +21,7 @@ function createWithProps(props: any): any {
 describe('AtomInput', () => {
   afterEach(() => {
     if (reactElement) {
+      // $FlowFixMe
       ReactDOM.unmountComponentAtNode(ReactDOM.findDOMNode(reactElement).parentNode);
     }
     reactElement = null;
@@ -80,6 +81,7 @@ describe('AtomInput', () => {
     textEditor.setText('the new text');
     expect(onDidChange.calls.length).toBe(1);
 
+    // $FlowFixMe
     ReactDOM.unmountComponentAtNode(ReactDOM.findDOMNode(reactElement).parentNode);
     reactElement = null;
 

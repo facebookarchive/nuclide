@@ -222,6 +222,7 @@ export class AtomInput extends React.Component {
   }
 
   getTextEditorElement(): atom$TextEditorElement {
+    // $FlowFixMe
     return ReactDOM.findDOMNode(this);
   }
 

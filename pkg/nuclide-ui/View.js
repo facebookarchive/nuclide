@@ -40,13 +40,16 @@ export class View extends React.Component {
 
     // Remove the current children.
     const container = ReactDOM.findDOMNode(this);
+    // $FlowFixMe
     while (container.lastChild != null) {
+      // $FlowFixMe
       container.removeChild(container.lastChild);
     }
 
     this._renderedItem = item;
     if (item == null) { return; }
     const el = atom.views.getView(item);
+    // $FlowFixMe
     container.appendChild(el);
   }
 

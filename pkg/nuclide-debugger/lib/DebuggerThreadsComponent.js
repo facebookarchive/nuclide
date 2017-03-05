@@ -86,9 +86,11 @@ export class DebuggerThreadsComponent extends React.Component {
     const listNode = ReactDOM.findDOMNode(this.refs.threadTable);
     if (listNode) {
       const selectedRows =
+        // $FlowFixMe
         listNode.getElementsByClassName('nuclide-debugger-thread-list-item-selected');
 
       if (selectedRows && selectedRows.length > 0) {
+        // $FlowFixMe
         selectedRows[0].scrollIntoViewIfNeeded(false);
       }
     }

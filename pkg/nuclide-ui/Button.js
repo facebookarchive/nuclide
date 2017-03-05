@@ -77,6 +77,7 @@ export class Button extends React.Component {
     if (node == null) {
       return;
     }
+    // $FlowFixMe
     node.focus();
   }
 

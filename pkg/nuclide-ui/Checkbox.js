@@ -72,6 +72,7 @@ export class Checkbox extends React.PureComponent {
    * @see https://www.w3.org/TR/html5/forms.html#the-input-element
    */
   _setIndeterminate(): void {
+    // $FlowFixMe
     ReactDOM.findDOMNode(this.refs.input).indeterminate = this.props.indeterminate;
   }
 

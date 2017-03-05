@@ -107,6 +107,7 @@ export class TreeNodeComponent extends React.PureComponent {
   }
 
   _onClick(event: SyntheticMouseEvent): void {
+    // $FlowFixMe
     if (ReactDOM.findDOMNode(this.refs.arrow).contains(event.target)) {
       this.props.onClickArrow(event, this.props.node);
     } else {

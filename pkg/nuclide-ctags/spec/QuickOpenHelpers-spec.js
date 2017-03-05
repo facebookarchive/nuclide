@@ -108,7 +108,9 @@ describe('QuickOpenHelpers', () => {
       const renderedComponent = TestUtils.renderIntoDocument(reactElement);
       const renderedNode = ReactDOM.findDOMNode(renderedComponent);
 
+    // $FlowFixMe
       expect(renderedNode.querySelectorAll('.omnisearch-symbol-result-filename').length).toBe(1);
+    // $FlowFixMe
       expect(renderedNode.querySelectorAll('.icon-code').length).toBe(1);
     });
   });

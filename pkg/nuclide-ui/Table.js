@@ -182,6 +182,7 @@ export class Table extends React.Component {
     document.addEventListener('mousemove', this._handleResizerGlobalMouseMove);
     document.addEventListener('mouseup', this._handleResizerGlobalMouseUp);
     this._resizeStartX = event.pageX;
+    // $FlowFixMe
     this._tableWidth = ReactDOM.findDOMNode(this.refs.table).getBoundingClientRect().width;
     this._columnBeingResized = key;
     this._globalEventsDisposable = new Disposable(() => {

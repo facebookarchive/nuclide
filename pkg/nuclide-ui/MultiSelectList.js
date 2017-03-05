@@ -73,6 +73,7 @@ export class MultiSelectList extends React.Component {
     const el = this.props.commandScope || ReactDOM.findDOMNode(this);
     this._commandsDisposables = new CompositeDisposable(
       atom.commands.add(
+        // $FlowFixMe
         el,
         {
           'core:move-up': () => { this._moveSelectionIndex(-1); },

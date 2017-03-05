@@ -132,8 +132,11 @@ class NavigatonBarJumpTarget extends React.Component {
   componentDidMount() {
     const {navigationSection: {status, lineNumber, lineCount}} = this.props;
     const domElement = ReactDOM.findDOMNode(this);
+    // $FlowFixMe
     domElement.setAttribute('nav-status', status);
+    // $FlowFixMe
     domElement.setAttribute('nav-line-count', lineCount);
+    // $FlowFixMe
     domElement.setAttribute('nav-line-number', lineNumber);
   }
 

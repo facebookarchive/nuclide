@@ -67,10 +67,13 @@ export default class FindReferencesView extends React.Component {
 
   _onScroll(evt: Event) {
     const root = ReactDOM.findDOMNode(this.refs.root);
+    // $FlowFixMe
     if (this.state.loading || root.clientHeight >= root.scrollHeight) {
       return;
     }
+    // $FlowFixMe
     const scrollBottom = root.scrollTop + root.clientHeight;
+    // $FlowFixMe
     if (root.scrollHeight - scrollBottom <= SCROLL_LOAD_THRESHOLD) {
       this.setState({loading: true});
       this._fetchMore(PAGE_SIZE);

@@ -154,12 +154,16 @@ export class PanelComponent extends React.Component {
    */
   _repaint() {
     const element = ReactDOM.findDOMNode(this);
+    // $FlowFixMe
     const isVisible = getComputedStyle(element).getPropertyValue('visibility');
 
     if (isVisible) {
       // Force a redraw so the scrollbars are styled correctly based on the theme
+      // $FlowFixMe
       element.style.display = 'none';
+      // $FlowFixMe
       element.offsetWidth;
+      // $FlowFixMe
       element.style.display = '';
     }
   }
@@ -265,6 +269,7 @@ export class PanelComponent extends React.Component {
             const toggleButtonEl = this._toggleButtonEl;
             const el = ReactDOM.findDOMNode(this);
             if (el == null || toggleButtonEl == null) { return false; }
+            // $FlowFixMe
             const panelArea = el.getBoundingClientRect();
             const toggleButtonArea = toggleButtonEl.getBoundingClientRect();
             const mousePosition = {x: event.pageX, y: event.pageY};
@@ -278,6 +283,7 @@ export class PanelComponent extends React.Component {
   }
 
   _handleToggleButton(toggleButton: ?ToggleButton): void {
+    // $FlowFixMe
     this._toggleButtonEl = toggleButton == null ? null : ReactDOM.findDOMNode(toggleButton);
   }
 
@@ -310,15 +316,19 @@ export class PanelComponent extends React.Component {
     let size = 0;
     switch (this.props.position) {
       case 'left':
+        // $FlowFixMe
         size = event.pageX - containerEl.getBoundingClientRect().left;
         break;
       case 'top':
+        // $FlowFixMe
         size = event.pageY - containerEl.getBoundingClientRect().top;
         break;
       case 'bottom':
+        // $FlowFixMe
         size = containerEl.getBoundingClientRect().bottom - event.pageY;
         break;
       case 'right':
+        // $FlowFixMe
         size = containerEl.getBoundingClientRect().right - event.pageX;
         break;
     }

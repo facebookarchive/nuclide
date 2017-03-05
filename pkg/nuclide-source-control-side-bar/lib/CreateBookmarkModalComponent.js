@@ -41,6 +41,7 @@ export default class CreateBookmarkModal extends React.Component {
 
   componentDidMount(): void {
     this.disposables.add(
+      // $FlowFixMe
       atom.commands.add(ReactDOM.findDOMNode(this), 'core:confirm', this._handleCreateClick),
       featureConfig.observe(STACKED_CONFIG_KEY, () => this.forceUpdate()),
     );

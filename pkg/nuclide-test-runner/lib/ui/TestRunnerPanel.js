@@ -93,6 +93,7 @@ export default class TestRunnerPanel extends React.Component {
     this.renderTree();
     this.renderConsole();
 
+    // $FlowFixMe
     ReactDOM.findDOMNode(this.refs.paneContainer).appendChild(
       atom.views.getView(this._paneContainer),
     );

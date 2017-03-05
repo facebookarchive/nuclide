@@ -210,12 +210,19 @@ export default class QuickSelectionComponent extends React.Component {
   componentDidMount(): void {
     const modalNode = ReactDOM.findDOMNode(this);
     this._subscriptions.add(
+      // $FlowFixMe
       atom.commands.add(modalNode, 'core:move-to-bottom', this._handleMoveToBottom),
+      // $FlowFixMe
       atom.commands.add(modalNode, 'core:move-to-top', this._handleMoveToTop),
+      // $FlowFixMe
       atom.commands.add(modalNode, 'core:move-down', this._handleMoveDown),
+      // $FlowFixMe
       atom.commands.add(modalNode, 'core:move-up', this._handleMoveUp),
+      // $FlowFixMe
       atom.commands.add(modalNode, 'core:confirm', this._select),
+      // $FlowFixMe
       atom.commands.add(modalNode, 'pane:show-previous-item', this._handleMovePreviousTab),
+      // $FlowFixMe
       atom.commands.add(modalNode, 'pane:show-next-item', this._handleMoveNextTab),
       atom.commands.add('body', 'core:cancel', () => { this.props.onCancellation(); }),
       Observable.fromEvent(document, 'mousedown')
@@ -498,11 +505,13 @@ export default class QuickSelectionComponent extends React.Component {
       return;
     }
     const listNode = ReactDOM.findDOMNode(this.refs.selectionList);
+    // $FlowFixMe
     const selectedNode = listNode.getElementsByClassName('selected')[0];
     // false is passed for @centerIfNeeded parameter, which defaults to true.
     // Passing false causes the minimum necessary scroll to occur, so the selection sticks to the
     // top/bottom.
     if (selectedNode) {
+      // $FlowFixMe
       selectedNode.scrollIntoViewIfNeeded(false);
     }
   }
@@ -584,6 +593,7 @@ export default class QuickSelectionComponent extends React.Component {
   }
 
   _getInputTextEditor(): atom$TextEditorElement {
+    // $FlowFixMe
     return ReactDOM.findDOMNode(this.refs.queryInput);
   }
 

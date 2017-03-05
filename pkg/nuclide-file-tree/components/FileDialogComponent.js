@@ -78,6 +78,7 @@ export default class FileDialogComponent extends React.Component {
   componentDidMount(): void {
     const input = this.refs.input;
     this._disposables.add(atom.commands.add(
+      // $FlowFixMe
       ReactDOM.findDOMNode(input),
       {
         'core:confirm': this._confirm,
