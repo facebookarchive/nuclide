@@ -1,5 +1,5 @@
 'name': 'Mercurial Diff'
-'scopeName': 'source.mercurial.diff',
+'scopeName': 'source.mercurial.diff'
 'patterns': [
   {
     'begin': '^diff.*'
@@ -21,5 +21,9 @@
     'name': 'markup.deleted.mercurial.diff'
     'end': '$'
   }
+  {
+    'begin': '^#.*'
+    'name': 'comment.line.mercurial.diff'
+    'end': '$'
+  }
 ]
-'scopeName': 'source.mercurial.diff'

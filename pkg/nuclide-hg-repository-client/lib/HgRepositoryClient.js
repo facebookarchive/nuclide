@@ -203,7 +203,7 @@ export class HgRepositoryClient {
     const fileChanges = this._service.observeFilesDidChange().refCount();
     const repoStateChanges = this._service.observeHgRepoStateDidChange().refCount();
     const activeBookmarkChanges = this._service.observeActiveBookmarkDidChange().refCount();
-    const allBookmarChanges = this._service.observeBookmarksDidChange().refCount();
+    const allBookmarkChanges = this._service.observeBookmarksDidChange().refCount();
     const conflictStateChanges = this._service.observeHgConflictStateDidChange().refCount();
     const commitChanges = this._service.observeHgCommitsDidChange().refCount();
 
@@ -227,7 +227,7 @@ export class HgRepositoryClient {
 
     const shouldRevisionsUpdate = Observable.merge(
       activeBookmarkChanges,
-      allBookmarChanges,
+      allBookmarkChanges,
       commitChanges,
       repoStateChanges,
     ).debounceTime(REVISION_DEBOUNCE_DELAY);
@@ -235,7 +235,7 @@ export class HgRepositoryClient {
     this._subscriptions.add(
       statusChangesSubscription,
       activeBookmarkChanges.subscribe(this.fetchActiveBookmark.bind(this)),
-      allBookmarChanges.subscribe(() => { this._emitter.emit('did-change-bookmarks'); }),
+      allBookmarkChanges.subscribe(() => { this._emitter.emit('did-change-bookmarks'); }),
       conflictStateChanges.subscribe(this._conflictStateChanged.bind(this)),
       shouldRevisionsUpdate.subscribe(() => this._revisionsCache.refreshRevisions()),
     );
@@ -291,6 +291,10 @@ export class HgRepositoryClient {
 
   onDidChangeConflictState(callback: () => mixed): IDisposable {
     return this._emitter.on(DID_CHANGE_CONFLICT_STATE, callback);
+  }
+
+  onDidChangeInteractiveMode(callback: boolean => mixed): IDisposable {
+    return this._emitter.on('did-change-interactive-mode', callback);
   }
 
   /**
@@ -642,6 +646,10 @@ export class HgRepositoryClient {
     return pathsToDiffInfo;
   }
 
+  _updateInteractiveMode(isInteractiveMode: boolean) {
+    this._emitter.emit('did-change-interactive-mode', isInteractiveMode);
+  }
+
   /**
   *
   * Section: Retrieving Bookmark (async methods)
@@ -894,9 +902,13 @@ export class HgRepositoryClient {
     message: string,
     isInteractive: boolean = false,
   ): Observable<ProcessMessage> {
+    if (isInteractive) {
+      this._updateInteractiveMode(true);
+    }
     return this._service.commit(message, isInteractive)
       .refCount()
-      .do(this._clearOnSuccessExit.bind(this, isInteractive));
+      .do(this._clearOnSuccessExit.bind(this, isInteractive))
+      .finally(this._updateInteractiveMode.bind(this, false));
   }
 
   amend(
@@ -904,13 +916,19 @@ export class HgRepositoryClient {
     amendMode: AmendModeValue,
     isInteractive: boolean = false,
   ): Observable<ProcessMessage> {
+    if (isInteractive) {
+      this._updateInteractiveMode(true);
+    }
     return this._service.amend(message, amendMode, isInteractive)
       .refCount()
-      .do(this._clearOnSuccessExit.bind(this, isInteractive));
+      .do(this._clearOnSuccessExit.bind(this, isInteractive))
+      .finally(this._updateInteractiveMode.bind(this, false));
   }
 
   splitRevision(): Observable<ProcessMessage> {
-    return this._service.splitRevision().refCount();
+    this._updateInteractiveMode(true);
+    return this._service.splitRevision().refCount()
+      .finally(this._updateInteractiveMode.bind(this, false));
   }
 
   _clearOnSuccessExit(isInteractive: boolean, message: ProcessMessage) {
