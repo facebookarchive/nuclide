@@ -1,5 +1,20 @@
 # Nuclide Changelog
 
+## v0.209.0
+
+### Debugger
+
+* Switched to using an Atom preview window when opening source due to clicking on call stack frames during debugging rather than opening a new text editor tab for every frame clicked.
+* Breakpoints section of debugger now remains visible in the debugger, even when no target is attached so breakpoints can still be added and removed while not debugging.
+* UX improvements to breakpoint section.
+* UX improvements to indicate when new thread stacks are being loaded from the debugger backend.
+
+### Misc
+
+* Diagnostic Datatips are now available to everyone.
+* Remote files will now stay open when deleted in Atom 1.15+.
+* Fixed rare server crash when log directory gets deleted.
+
 ## v0.208.0
 
 ### Highlights
