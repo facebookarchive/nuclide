@@ -12,11 +12,13 @@ import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 
 import createPackage from '../../commons-atom/createPackage';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
-import {Observable} from 'rxjs';
+import InteractiveFileChanges from './ui/InteractiveFileChanges';
 import {isValidTextEditor} from '../../commons-atom/text-editor';
+import {Observable} from 'rxjs';
+import {observableFromSubscribeFunction} from '../../commons-node/event';
+import {React, ReactDOM} from 'react-for-atom';
 import {repositoryForPath} from '../../commons-atom/vcs';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 
 class Activation {
   _subscriptions: UniversalDisposable;
@@ -63,15 +65,37 @@ class Activation {
               });
           }).takeUntil(observableFromSubscribeFunction(pane.onDidDestroy.bind(pane)));
       });
-    }).subscribe(editor => {
-      editor.setGrammar(atom.grammars.grammarForScopeName('source.mercurial.diff'));
-    });
+    }).subscribe(renderOverEditor);
 
     this._subscriptions.add(subscription);
     return new UniversalDisposable(() => {
       this._subscriptions.remove(subscription);
     });
   }
+}
+
+function renderOverEditor(editor: atom$TextEditor): void {
+  const element = <InteractiveFileChanges diffContent={editor.getText()} />;
+
+  // Clear the editor so that closing the tab without changing anything won't
+  // cause the commit to go through by default
+  editor.setText('');
+  editor.save();
+  editor.getGutters().forEach(gutter => gutter.hide());
+  atom.views.getView(editor).style.visibility = 'hidden';
+
+  const item = document.createElement('div');
+  ReactDOM.render(element, item);
+  item.style.visibility = 'visible';
+
+  const marker = editor.markScreenPosition([0, 0]);
+  marker.onDidDestroy(() => {
+    ReactDOM.unmountComponentAtNode(item);
+  });
+  editor.decorateMarker(marker, {
+    type: 'block',
+    item,
+  });
 }
 
 createPackage(module.exports, Activation);

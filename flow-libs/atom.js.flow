@@ -764,6 +764,7 @@ declare class atom$TextEditor extends atom$Model {
   markBufferPosition(position: atom$PointLike, options?: MarkerOptions): atom$Marker,
   markBufferRange(range: atom$RangeLike, options?: MarkerOptions): atom$Marker,
   markScreenRange(range: atom$RangeLike, options?: MarkerOptions): atom$Marker,
+  markScreenPosition(position: atom$PointLike, options?: MarkerOptions): atom$Marker,
 
   // Cursors
   getCursors(): Array<atom$Cursor>,
@@ -860,6 +861,7 @@ declare class atom$TextEditor extends atom$Model {
     visible?: boolean,
   }): atom$Gutter,
   observeGutters(callback: (gutter: atom$Gutter) => void): IDisposable,
+  getGutters(): Array<atom$Gutter>,
   gutterWithName(name: string): ?atom$Gutter,
 
   // Scrolling the TextEditor
