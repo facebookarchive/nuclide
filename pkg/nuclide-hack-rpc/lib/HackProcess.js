@@ -36,7 +36,7 @@ import {getBufferAtVersion} from '../../nuclide-open-files-rpc';
 import {hasPrefix, convertCompletions} from './Completions';
 import {findHackPrefix} from '../../nuclide-hack-common/lib/autocomplete';
 
-// From https://phabricator.intern.facebook.com/diffusion/FBS/browse/master/fbcode/hphp/hack/src/utils/exit_status.ml
+// From hphp/hack/src/utils/exit_status.ml
 const HACK_SERVER_ALREADY_EXISTS_EXIT_CODE = 77;
 const HACK_IDE_NEW_CLIENT_CONNECTED_EXIT_CODE = 207;
 
