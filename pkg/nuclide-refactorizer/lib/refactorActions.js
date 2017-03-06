@@ -15,12 +15,13 @@ import type {
 } from '..';
 
 import type {
-  OpenAction,
-  GotRefactoringsAction,
-  GotRefactoringsErrorAction,
   CloseAction,
-  PickedRefactorAction,
+  ErrorAction,
+  ErrorSource,
   ExecuteAction,
+  GotRefactoringsAction,
+  OpenAction,
+  PickedRefactorAction,
   RefactorUI,
 } from './types';
 
@@ -48,10 +49,13 @@ export function gotRefactorings(
   };
 }
 
-export function gotRefactoringsError(): GotRefactoringsErrorAction {
+export function error(source: ErrorSource, err: Error): ErrorAction {
   return {
-    type: 'got-refactorings',
-    error: true,
+    type: 'error',
+    payload: {
+      source,
+      error: err,
+    },
   };
 }
 

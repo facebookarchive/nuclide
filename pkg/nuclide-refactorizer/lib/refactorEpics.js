@@ -21,6 +21,7 @@ import invariant from 'assert';
 import {Observable} from 'rxjs';
 
 import {track} from '../../nuclide-analytics';
+import {getLogger} from '../../nuclide-logging';
 import applyTextEdits from '../../nuclide-textedit';
 
 import * as Actions from './refactorActions';
@@ -55,11 +56,17 @@ export function getEpics(
       actions: ActionsObservable<RefactorAction>,
     ): Observable<RefactorAction> {
       return actions
-        // This is weird but Flow won't accept `action.error` or even `Boolean(action.error)`
-        .filter(action => (action.error ? true : false))
-        // TODO provide some feedback to the user that an error has occurred
+        .ofType('error')
         .map(action => {
-          invariant(action.error);
+          invariant(action.type === 'error');
+          const {source, error} = action.payload;
+          const sourceName = source === 'got-refactorings' ?
+            'getting refactors' : 'executing refactor';
+          getLogger().error(`Error ${sourceName}:`, error);
+          atom.notifications.addError(
+            `Error ${sourceName}`,
+            {detail: error.stack, dismissable: true},
+          );
           return Actions.close();
         });
     },
@@ -71,16 +78,13 @@ async function getRefactorings(
 ): Promise<RefactorAction> {
   track('nuclide-refactorizer:get-refactorings');
   const editor = atom.workspace.getActiveTextEditor();
-  if (editor == null) {
-    return Actions.gotRefactoringsError();
-  }
-  if (editor.getPath() == null) {
-    return Actions.gotRefactoringsError();
+  if (editor == null || editor.getPath() == null) {
+    return Actions.error('get-refactorings', Error('Must be run from a saved file.'));
   }
   const cursor = editor.getLastCursor();
   const provider = providers.getProviderForEditor(editor);
   if (provider == null) {
-    return Actions.gotRefactoringsError();
+    return Actions.error('get-refactorings', Error('No providers found.'));
   }
   try {
     const cursorPosition = cursor.getBufferPosition();
@@ -88,7 +92,7 @@ async function getRefactorings(
       await provider.refactoringsAtPoint(editor, cursorPosition);
     return Actions.gotRefactorings(editor, cursorPosition, provider, availableRefactorings);
   } catch (e) {
-    return Actions.gotRefactoringsError();
+    return Actions.error('get-refactorings', e);
   }
 }
 
@@ -100,8 +104,7 @@ async function executeRefactoring(
   try {
     response = await provider.refactor(refactoring);
   } catch (e) {
-    // TODO use an error action here
-    return Actions.close();
+    return Actions.error('execute', e);
   }
   if (response == null) {
     // TODO use an error action here

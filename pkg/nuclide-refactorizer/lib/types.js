@@ -106,10 +106,14 @@ export type GotRefactoringsAction = {|
   },
 |};
 
-export type GotRefactoringsErrorAction = {|
-  type: 'got-refactorings',
-  error: true,
-  // TODO add some payload indicating the nature of the error
+export type ErrorSource = 'get-refactorings' | 'execute';
+
+export type ErrorAction = {|
+  type: 'error',
+  payload: {
+    source: ErrorSource,
+    error: Error,
+  },
 |};
 
 export type CloseAction = {|
@@ -136,5 +140,5 @@ export type RefactorAction =
   CloseAction |
   PickedRefactorAction |
   GotRefactoringsAction |
-  GotRefactoringsErrorAction |
+  ErrorAction |
   ExecuteAction;
