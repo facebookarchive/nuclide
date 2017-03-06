@@ -130,19 +130,39 @@ export class NewDebuggerView extends React.PureComponent {
       );
     }
 
+    const breakpointItem = (
+      <ResizableFlexItem initialFlexScale={1}>
+        <Section headline="Breakpoints"
+          key="breakpoints"
+          className="nuclide-debugger-section-header">
+          <div className="nuclide-debugger-section-content">
+            <BreakpointListComponent
+              actions={actions}
+              breakpointStore={model.getBreakpointStore()}
+            />
+          </div>
+        </Section>
+      </ResizableFlexItem>
+    );
+
     const debuggerStoppedNotice = mode !== DebuggerMode.STOPPED ? null :
-      <div className="nuclide-debugger-state-notice">
-        <span>The debugger is not attached.</span>
-        <div className="nuclide-debugger-state-notice">
-          <Button
-            onClick={() => atom.commands.dispatch(
-              atom.views.getView(atom.workspace),
-              'nuclide-debugger:toggle',
-            )}>
-            Start debugging
-          </Button>
-        </div>
-      </div>;
+      <ResizableFlexContainer direction={FlexDirections.VERTICAL}>
+        <ResizableFlexItem initialFlexScale={1}>
+          <div className="nuclide-debugger-state-notice">
+            <span>The debugger is not attached.</span>
+            <div className="nuclide-debugger-state-notice">
+              <Button
+                onClick={() => atom.commands.dispatch(
+                  atom.views.getView(atom.workspace),
+                  'nuclide-debugger:toggle',
+                )}>
+                Start debugging
+              </Button>
+            </div>
+          </div>
+        </ResizableFlexItem>
+        {breakpointItem}
+      </ResizableFlexContainer>;
 
     const debugeeRunningNotice = mode !== DebuggerMode.RUNNING ? null :
       <div className="nuclide-debugger-state-notice">
@@ -165,18 +185,7 @@ export class NewDebuggerView extends React.PureComponent {
             </div>
           </Section>
         </ResizableFlexItem>
-        <ResizableFlexItem initialFlexScale={1}>
-          <Section headline="Breakpoints"
-            key="breakpoints"
-            className="nuclide-debugger-section-header">
-            <div className="nuclide-debugger-section-content">
-              <BreakpointListComponent
-                actions={actions}
-                breakpointStore={model.getBreakpointStore()}
-              />
-            </div>
-          </Section>
-        </ResizableFlexItem>
+        {breakpointItem}
         <ResizableFlexItem initialFlexScale={1}>
           <Section headline="Scopes"
             key="scopes"
