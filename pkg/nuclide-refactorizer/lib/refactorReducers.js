@@ -8,13 +8,17 @@
  * @flow
  */
 
+import type {AvailableRefactoring} from '..';
+
 import type {
-  RefactorState,
-  RefactorAction,
+  ExecuteAction,
+  GotRefactoringsAction,
   OpenAction,
   PickedRefactorAction,
-  GotRefactoringsAction,
-  ExecuteAction,
+  PickPhase,
+  RefactorAction,
+  RefactoringPhase,
+  RefactorState,
 } from './types';
 
 import invariant from 'assert';
@@ -92,19 +96,37 @@ function pickedRefactor(state: RefactorState, action: PickedRefactorAction): Ref
   invariant(state.type === 'open');
   invariant(state.phase.type === 'pick');
 
-  const refactoring = action.payload.refactoring;
-  const {editor, originalPoint} = state.phase;
   return {
     type: 'open',
     ui: state.ui,
-    phase: {
-      type: 'rename',
-      provider: state.phase.provider,
-      originalPoint,
-      symbolAtPoint: refactoring.symbolAtPoint,
-      editor,
-    },
+    phase: getRefactoringPhase(action.payload.refactoring, state.phase),
   };
+}
+
+function getRefactoringPhase(
+  refactoring: AvailableRefactoring,
+  {provider, editor, originalPoint}: PickPhase,
+): RefactoringPhase {
+  switch (refactoring.kind) {
+    case 'rename':
+      return {
+        type: 'rename',
+        provider,
+        editor,
+        originalPoint,
+        symbolAtPoint: refactoring.symbolAtPoint,
+      };
+    case 'freeform':
+      return {
+        type: 'freeform',
+        provider,
+        editor,
+        originalPoint,
+        refactoring,
+      };
+    default:
+      invariant(false, `Unexpected refactoring kind ${refactoring.kind}`);
+  }
 }
 
 function executeRefactor(state: RefactorState, action: ExecuteAction): RefactorState {

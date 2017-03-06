@@ -15,6 +15,7 @@
 
 import type {
   AvailableRefactoring,
+  FreeformRefactoring,
   RefactorRequest,
   RefactorProvider,
 } from '..';
@@ -67,6 +68,14 @@ export type RenamePhase = {|
   },
 |};
 
+export type FreeformPhase = {|
+  type: 'freeform',
+  provider: RefactorProvider,
+  editor: atom$TextEditor,
+  originalPoint: atom$Point,
+  refactoring: FreeformRefactoring,
+|};
+
 export type ExecutePhase = {|
   type: 'execute',
 |};
@@ -75,7 +84,10 @@ export type Phase =
   GetRefactoringsPhase |
   PickPhase |
   RenamePhase |
+  FreeformPhase |
   ExecutePhase;
+
+export type RefactoringPhase = RenamePhase | FreeformPhase;
 
 // Actions
 

@@ -9,8 +9,9 @@
  */
 
 import type {
-  RefactorProvider,
   AvailableRefactoring,
+  FreeformRefactorRequest,
+  RefactorProvider,
   RefactorRequest,
   RefactorResponse,
   RenameRefactoring,
@@ -23,6 +24,7 @@ import type {
 
 import {Observable, BehaviorSubject} from 'rxjs';
 import {Range, Point} from 'atom';
+import invariant from 'assert';
 
 import ProviderRegistry from '../../commons-atom/ProviderRegistry';
 import nuclideUri from '../../commons-node/nuclideUri';
@@ -348,6 +350,76 @@ describe('refactorStore', () => {
 
           await nextTick();
           expectNoUncaughtErrors();
+        });
+      });
+    });
+
+    describe('with a freeform provider', () => {
+      const refactoring: AvailableRefactoring = {
+        kind: 'freeform',
+        id: 'asyncify',
+        name: 'Asyncify',
+        description: 'Convert this method to async',
+        range: new Range([0, 0], [0, 0]),
+        args: new Map([
+          [
+            'new_name',
+            {
+              description: 'New name for method',
+              type: 'string',
+              default: 'genKittensAndRainbows',
+            },
+          ],
+        ]),
+      };
+
+      beforeEach(() => {
+        provider = {
+          priority: 1,
+          grammarScopes: ['text.plain', 'text.plain.null-grammar'],
+          async refactoringsAtPoint() {
+            return [refactoring];
+          },
+          async refactor(request: RefactorRequest) {
+            invariant(request.kind === 'freeform');
+            const edits = [
+              {
+                oldRange: new Range([0, 0], [0, 3]),
+                oldText: 'foo',
+                newText: String(request.args.get('new_name')),
+              },
+            ];
+            return {
+              edits: new Map([[TEST_FILE, edits]]),
+            };
+          },
+        };
+        providers.addProvider(provider);
+      });
+
+      it('runs the refactor', () => {
+        waitsForPromise(async () => {
+          store.dispatch(Actions.open('generic'));
+          await waitForPhase('pick');
+          store.dispatch(Actions.pickedRefactor(refactoring));
+
+          await waitForPhase('freeform');
+          const state = store.getState();
+          invariant(state.type === 'open');
+          invariant(state.phase.type === 'freeform');
+          expect(state.phase.refactoring).toEqual(refactoring);
+
+          const asyncify: FreeformRefactorRequest = {
+            kind: 'freeform',
+            originalPoint: TEST_FILE_POINT,
+            editor: openEditor,
+            id: 'asyncify',
+            range: new Range([0, 0], [0, 0]),
+            args: new Map([['new_name', 'test']]),
+          };
+          store.dispatch(Actions.execute(provider, asyncify));
+          await waitForClose();
+          expect(openEditor.getText()).toEqual('test\nbar\nfoo\n');
         });
       });
     });
