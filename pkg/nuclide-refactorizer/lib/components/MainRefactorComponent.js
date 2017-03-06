@@ -18,6 +18,7 @@ import invariant from 'assert';
 
 import {Button} from '../../../nuclide-ui/Button';
 
+import {FreeformRefactorComponent} from './FreeformRefactorComponent';
 import {PickRefactorComponent} from './PickRefactorComponent';
 import {RenameComponent} from './RenameComponent';
 import * as Actions from '../refactorActions';
@@ -69,6 +70,8 @@ export class MainRefactorComponent extends React.Component {
         return <PickRefactorComponent pickPhase={phase} store={this.props.store} />;
       case 'rename':
         return <RenameComponent phase={phase} store={this.props.store} />;
+      case 'freeform':
+        return <FreeformRefactorComponent phase={phase} store={this.props.store} />;
       case 'execute':
         return <div>Executing refactoring...</div>;
       default:
