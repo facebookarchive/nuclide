@@ -281,7 +281,11 @@ export function execArcPatch(
   cwd: NuclideUri,
   differentialRevision: string,
 ): ConnectableObservable<ProcessMessage> {
-  const args = ['patch', differentialRevision];
+  const args = ['patch'];
+  if (differentialRevision.match(/^[0-9]+$/)) {
+    args.push('--diff');
+  }
+  args.push(differentialRevision);
   return Observable.fromPromise(getArcExecOptions(cwd))
     .switchMap(opts => observeProcess(() => safeSpawn('arc', args, opts)))
     .publish();
