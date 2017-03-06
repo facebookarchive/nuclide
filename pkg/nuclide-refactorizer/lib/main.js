@@ -12,13 +12,17 @@
  * WARNING: This package is still experimental and in early development. Use it at your own risk.
  */
 
-import type {TextEdit} from '../../nuclide-textedit/lib/rpc-types';
+import type {
+  AvailableRefactoring,
+  FreeformRefactoring,
+  FreeformRefactoringArgument,
+  RefactorResponse,
+  RenameRefactoring,
+} from './rpc-types';
 
 import type {
   Store,
 } from './types';
-
-import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import {Disposable} from 'atom';
 import invariant from 'assert';
@@ -33,64 +37,18 @@ import * as Actions from './refactorActions';
 import {getStore} from './refactorStore';
 import {initRefactorUIs} from './refactorUIs';
 
+export type {
+  AvailableRefactoring,
+  FreeformRefactoring,
+  FreeformRefactoringArgument,
+  RefactorResponse,
+  RenameRefactoring,
+};
+
 export type RenameRefactorKind = 'rename';
 export type FreeformRefactorKind = 'freeform';
 
 export type RefactorKind = RenameRefactorKind | FreeformRefactorKind;
-
-export type RenameRefactoring = {
-  kind: RenameRefactorKind,
-  symbolAtPoint: {
-    text: string,
-    range: atom$Range,
-  },
-};
-
-export type FreeformEnumValue = {
-  value: string,
-  description: string,
-};
-
-// Factoring out `description` confuses Flow when filtering on the type.
-export type FreeformRefactoringArgument =
-  | {
-      type: 'string',
-      description: string,
-      default?: string,
-    }
-  | {
-      type: 'boolean',
-      description: string,
-      default?: boolean,
-    }
-  | {
-      type: 'enum',
-      description: string,
-      values: Array<FreeformEnumValue>,
-      default?: string,
-    };
-
-// A freeform refactoring type.
-// This allows providers to define completely new refactoring commands,
-// as well as ask for arbitrary arguments to the refactoring command.
-export type FreeformRefactoring = {
-  kind: FreeformRefactorKind,
-  // Unique identifier which will be used in the request.
-  id: string,
-  // Display name of the refactoring.
-  name: string,
-  // User-friendly description of what the refactoring does.
-  description: string,
-  // Full affected range of the refactoring.
-  range: atom$Range,
-  // Additional arguments to be requested from the user.
-  // The keys should be unique identifiers, which will be used in the request.
-  args: Map<string, FreeformRefactoringArgument>,
-  // Providers can return disabled refactorings to improve discoverability.
-  disabled?: boolean,
-};
-
-export type AvailableRefactoring = RenameRefactoring | FreeformRefactoring;
 
 export type RenameRequest = {
   kind: RenameRefactorKind,
@@ -116,10 +74,6 @@ export type FreeformRefactorRequest = {
 };
 
 export type RefactorRequest = RenameRequest | FreeformRefactorRequest;
-
-export type RefactorResponse = {
-  edits: Map<NuclideUri, Array<TextEdit>>,
-};
 
 export type RefactorProvider = {
   priority: number,
