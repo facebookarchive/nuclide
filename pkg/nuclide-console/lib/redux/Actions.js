@@ -74,6 +74,8 @@ export function registerOutputProvider(
         kind: 'message',
         sourceId: outputProvider.id,
         scopeName: null,
+        // Eventually, we'll want to allow providers to specify custom timestamps for records.
+        timestamp: new Date(),
       })),
   });
 }

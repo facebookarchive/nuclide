@@ -112,6 +112,7 @@ describe('createStateStream', () => {
         level: 'info',
         text: 'test',
         scopeName: null,
+        timestamp: new Date('2017-01-01T12:34:56.789Z'),
       }];
       const initialState = {
         ...emptyAppState,

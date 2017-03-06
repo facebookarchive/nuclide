@@ -34,6 +34,8 @@ export function registerExecutorEpic(
         kind: 'response',
         sourceId: executor.id,
         scopeName: null, // The output won't be in the language's grammar.
+        // Eventually, we'll want to allow providers to specify custom timestamps for records.
+        timestamp: new Date(),
       })),
     });
   });
@@ -59,6 +61,8 @@ export function executeEpic(
     //       that register output sources?
     return Observable.of(
       Actions.recordReceived({
+        // Eventually, we'll want to allow providers to specify custom timestamps for records.
+        timestamp: new Date(),
         sourceId: currentExecutorId,
         kind: 'request',
         level: 'log',

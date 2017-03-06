@@ -31,6 +31,7 @@ export type Record = Message & {
   sourceId: string,
   scopeName: ?string,
   data: ?EvaluationResult,
+  timestamp: Date,
 };
 
 export type AppState = {

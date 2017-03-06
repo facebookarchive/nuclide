@@ -25,7 +25,7 @@ type Props = {
 };
 
 const URL_REGEX = /(https?:\/\/[\S]+)/i;
-
+const ONE_DAY = 1000 * 60 * 60 * 24;
 export default class RecordView extends React.Component {
   props: Props;
 
@@ -73,12 +73,18 @@ export default class RecordView extends React.Component {
 
   render(): React.Element<any> {
     const {record} = this.props;
+    const {
+      level,
+      kind,
+      timestamp,
+      sourceId,
+    } = record;
     const classNames = classnames(
       'nuclide-console-record',
-      `level-${record.level || 'log'}`,
+      `level-${level || 'log'}`,
       {
-        request: record.kind === 'request',
-        response: record.kind === 'response',
+        request: kind === 'request',
+        response: kind === 'response',
       },
     );
 
@@ -87,12 +93,22 @@ export default class RecordView extends React.Component {
     const sourceLabel = this.props.showSourceLabel
       ? (
         <span
-          className={`nuclide-console-record-source-label ${getHighlightClassName(record.level)}`}>
-          {record.sourceId}
+          className={`nuclide-console-record-source-label ${getHighlightClassName(level)}`}>
+          {sourceId}
         </span>
       )
       : null;
-
+    let renderedTimestamp;
+    if (timestamp != null) {
+      const timestampLabel = (Date.now() - timestamp) > ONE_DAY
+        ? timestamp.toLocaleString()
+        : timestamp.toLocaleTimeString();
+      renderedTimestamp = (
+        <div className="nuclide-console-record-timestamp">
+          {timestampLabel}
+        </div>
+      );
+    }
     return (
       <div className={classNames}>
         {icon}
@@ -100,6 +116,7 @@ export default class RecordView extends React.Component {
           {this._renderContent(record)}
         </div>
         {sourceLabel}
+        {renderedTimestamp}
       </div>
     );
   }
