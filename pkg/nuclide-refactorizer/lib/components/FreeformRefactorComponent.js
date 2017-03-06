@@ -40,7 +40,7 @@ function getDefault(arg: FreeformRefactoringArgument): string | boolean {
     case 'boolean':
       return false;
     case 'enum':
-      return arg.values[0].value;
+      return arg.options[0].value;
   }
 
   throw new Error('unreachable');
@@ -53,8 +53,8 @@ export class FreeformRefactorComponent extends React.Component {
   constructor(props: Props) {
     super(props);
     const defaultArgs = new Map(
-      Array.from(props.phase.refactoring.args)
-        .map(([name, arg]) => [name, getDefault(arg)]),
+      props.phase.refactoring.arguments
+        .map(arg => [arg.name, getDefault(arg)]),
     );
     this.state = {
       args: defaultArgs,
@@ -78,8 +78,8 @@ export class FreeformRefactorComponent extends React.Component {
   }
 
   _getControls() {
-    return Array.from(this.props.phase.refactoring.args)
-      .map(([name, arg], index) => {
+    return this.props.phase.refactoring.arguments
+      .map((arg, index) => {
         switch (arg.type) {
           case 'string':
             return [
@@ -91,8 +91,8 @@ export class FreeformRefactorComponent extends React.Component {
                 autofocus={index === 0}
                 startSelected={index === 0}
                 className="nuclide-refactorizer-freeform-editor"
-                value={String(this.state.args.get(name))}
-                onDidChange={text => this._updateArg(name, text)}
+                value={String(this.state.args.get(arg.name))}
+                onDidChange={text => this._updateArg(arg.name, text)}
                 onConfirm={this._execute}
               />,
             ];
@@ -100,8 +100,8 @@ export class FreeformRefactorComponent extends React.Component {
             return (
               <Checkbox
                 label={arg.description}
-                checked={Boolean(this.state.args.get(name))}
-                onChange={checked => this._updateArg(name, checked)}
+                checked={Boolean(this.state.args.get(arg.name))}
+                onChange={checked => this._updateArg(arg.name, checked)}
               />
             );
           case 'enum':
@@ -111,12 +111,12 @@ export class FreeformRefactorComponent extends React.Component {
               </div>,
               <Dropdown
                 key="dropdown"
-                value={this.state.args.get(name) || arg.values[0]}
-                options={arg.values.map(val => ({
+                value={this.state.args.get(arg.name) || arg.options[0]}
+                options={arg.options.map(val => ({
                   value: val.value,
                   label: val.description,
                 }))}
-                onChange={value => this._updateArg(name, value)}
+                onChange={value => this._updateArg(arg.name, value)}
               />,
             ];
         }
@@ -145,7 +145,7 @@ export class FreeformRefactorComponent extends React.Component {
         originalPoint,
         id: refactoring.id,
         range: refactoring.range,
-        args: this.state.args,
+        arguments: this.state.args,
       }),
     );
   };

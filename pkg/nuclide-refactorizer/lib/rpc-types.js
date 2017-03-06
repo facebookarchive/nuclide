@@ -28,18 +28,21 @@ export type FreeformEnumValue = {
 export type FreeformRefactoringArgument =
   | {
       type: 'string',
+      name: string,
       description: string,
       default?: string,
     }
   | {
       type: 'boolean',
+      name: string,
       description: string,
       default?: boolean,
     }
   | {
       type: 'enum',
+      name: string,
       description: string,
-      values: Array<FreeformEnumValue>,
+      options: Array<FreeformEnumValue>,
       default?: string,
     };
 
@@ -57,8 +60,8 @@ export type FreeformRefactoring = {
   // Full affected range of the refactoring.
   range: atom$Range,
   // Additional arguments to be requested from the user.
-  // The keys should be unique identifiers, which will be used in the request.
-  args: Map<string, FreeformRefactoringArgument>,
+  // The `name`s should be unique identifiers, which will be used in the request.
+  arguments: Array<FreeformRefactoringArgument>,
   // Providers can return disabled refactorings to improve discoverability.
   disabled?: boolean,
 };

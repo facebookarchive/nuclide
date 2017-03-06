@@ -70,7 +70,7 @@ export type FreeformRefactorRequest = {
   // Echoes FreeformRefactoring.range.
   range: atom$Range,
   // Arguments provided by the user.
-  args: Map<string, mixed>,
+  arguments: Map<string, mixed>,
 };
 
 export type RefactorRequest = RenameRequest | FreeformRefactorRequest;

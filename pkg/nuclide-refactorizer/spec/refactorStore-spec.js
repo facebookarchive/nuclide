@@ -361,16 +361,14 @@ describe('refactorStore', () => {
         name: 'Asyncify',
         description: 'Convert this method to async',
         range: new Range([0, 0], [0, 0]),
-        args: new Map([
-          [
-            'new_name',
-            {
-              description: 'New name for method',
-              type: 'string',
-              default: 'genKittensAndRainbows',
-            },
-          ],
-        ]),
+        arguments: [
+          {
+            description: 'New name for method',
+            name: 'new_name',
+            type: 'string',
+            default: 'genKittensAndRainbows',
+          },
+        ],
       };
 
       beforeEach(() => {
@@ -386,7 +384,7 @@ describe('refactorStore', () => {
               {
                 oldRange: new Range([0, 0], [0, 3]),
                 oldText: 'foo',
-                newText: String(request.args.get('new_name')),
+                newText: String(request.arguments.get('new_name')),
               },
             ];
             return {
@@ -415,7 +413,7 @@ describe('refactorStore', () => {
             editor: openEditor,
             id: 'asyncify',
             range: new Range([0, 0], [0, 0]),
-            args: new Map([['new_name', 'test']]),
+            arguments: new Map([['new_name', 'test']]),
           };
           store.dispatch(Actions.execute(provider, asyncify));
           await waitForClose();
