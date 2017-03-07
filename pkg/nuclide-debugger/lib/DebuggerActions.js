@@ -47,7 +47,6 @@ const AnalyticsEvents = Object.freeze({
 });
 
 const GK_DEBUGGER_REQUEST_WINDOW = 'nuclide_debugger_php_request_window';
-const GK_DEBUGGER_THREADS_WINDOW = 'nuclide_debugger_threads_window';
 const GK_DEBUGGER_REQUEST_SENDER = 'nuclide_debugger_request_sender';
 
 /**
@@ -80,8 +79,7 @@ export default class DebuggerActions {
       const debuggerInstance = await processInfo.debug();
       this._registerConsole();
       const supportThreadsWindow = processInfo.supportThreads()
-        && await passesGK(GK_DEBUGGER_THREADS_WINDOW) &&
-        await this._allowThreadsForPhp(processInfo);
+        && await this._allowThreadsForPhp(processInfo);
       this._store.getSettings().set('SupportThreadsWindow', supportThreadsWindow);
       if (supportThreadsWindow) {
         this._store.getSettings().set('CustomThreadColumns', processInfo.getThreadColumns());
