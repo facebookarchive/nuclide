@@ -48,7 +48,7 @@ export const FLOW_RETURN_CODES = {
   unexpectedArgument: 64,
 };
 
-const SERVER_READY_TIMEOUT_MS = 10 * 1000;
+const SERVER_READY_TIMEOUT_MS = 60 * 1000;
 
 const EXEC_FLOW_RETRIES = 5;
 
@@ -279,7 +279,7 @@ export class FlowProcess {
   }
 
   /** Ping the server until it leaves the current state */
-  async _pingServer(tries?: number = 5): Promise<void> {
+  async _pingServer(tries: number = 30): Promise<void> {
     const fromState = this._serverStatus.getValue();
     let stateChanged = false;
     this._serverStatus.filter(newState => newState !== fromState).take(1).subscribe(() => {
