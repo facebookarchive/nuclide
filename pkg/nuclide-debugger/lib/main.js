@@ -213,6 +213,9 @@ class Activation {
         'nuclide-debugger:remove-all-breakpoints': this._deleteAllBreakpoints.bind(this),
       }),
       atom.commands.add('atom-workspace', {
+        'nuclide-debugger:remove-breakpoint': this._deleteBreakpoint.bind(this),
+      }),
+      atom.commands.add('atom-workspace', {
         'nuclide-debugger:add-to-watch': this._addToWatch.bind(this),
       }),
       atom.commands.add('atom-workspace', {
@@ -226,6 +229,10 @@ class Activation {
       // Context Menu Items.
       atom.contextMenu.add({
         '.nuclide-debugger-breakpoint': [
+          {
+            label: 'Remove Breakpoint',
+            command: 'nuclide-debugger:remove-breakpoint',
+          },
           {
             label: 'Remove All Breakpoints',
             command: 'nuclide-debugger:remove-all-breakpoints',
@@ -357,6 +364,17 @@ class Activation {
         fn(filePath, line);
       }
     }
+  }
+
+  _deleteBreakpoint(event: any): void {
+    const actions = this._model.getActions();
+    const target = (event.target: HTMLElement);
+    const path = target.dataset.path;
+    const line = parseInt(target.dataset.line, 10);
+    if (path == null) {
+      return;
+    }
+    actions.deleteBreakpoint(path, line);
   }
 
   _deleteAllBreakpoints(): void {

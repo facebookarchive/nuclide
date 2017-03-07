@@ -101,6 +101,7 @@ export class BreakpointListComponent extends React.Component {
           line,
           enabled,
           resolved,
+          path,
         } = breakpoint;
         const label = `${basename}:${line + 1}`;
         const title = resolved ? null : 'Unresolved Breakpoint';
@@ -116,7 +117,9 @@ export class BreakpointListComponent extends React.Component {
             />
             <span
               className="nuclide-debugger-breakpoint"
-              title={title}>
+              title={title}
+              data-path={path}
+              data-line={line}>
               {label}
             </span>
           </div>

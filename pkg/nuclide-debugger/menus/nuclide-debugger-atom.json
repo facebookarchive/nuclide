@@ -39,6 +39,10 @@
               "command": "nuclide-debugger:toggle-breakpoint"
             },
             {
+              "label": "Remove Breakpoint",
+              "command": "nuclide-debugger:remove-breakpoint"
+            },
+            {
               "label": "Remove All Breakpoints",
               "command": "nuclide-debugger:remove-all-breakpoints"
             },
