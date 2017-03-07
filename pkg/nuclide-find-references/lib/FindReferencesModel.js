@@ -21,10 +21,9 @@ type FindReferencesOptions = {
   previewContext?: number,
 };
 
+import {getFileForPath} from '../../commons-atom/projects';
 import {arrayCompact} from '../../commons-node/collection';
 import {getLogger} from '../../nuclide-logging';
-import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
-import nuclideUri from '../../commons-node/nuclideUri';
 
 const FRAGMENT_GRAMMARS = {
   'text.html.hack': 'source.hackfragment',
@@ -36,15 +35,15 @@ function compareReference(x: Reference, y: Reference): number {
 }
 
 async function readFileContents(uri: string): Promise<?string> {
-  const localPath = nuclideUri.getPath(uri);
-  let contents;
   try {
-    contents = (await getFileSystemServiceByNuclideUri(uri).readFile(localPath)).toString('utf8');
+    const file = getFileForPath(uri);
+    if (file != null) {
+      return await file.read();
+    }
   } catch (e) {
     getLogger().error(`find-references: could not load file ${uri}`, e);
-    return null;
   }
-  return contents;
+  return null;
 }
 
 function addReferenceGroup(
