@@ -96,6 +96,7 @@ export default class BreakpointStore {
           payload.data.line,
           payload.data.condition,
           payload.data.enabled,
+          payload.data.resolved,
         );
         break;
       case ActionTypes.DEBUGGER_MODE_CHANGE:
@@ -217,12 +218,18 @@ export default class BreakpointStore {
     }
   }
 
-  _bindBreakpoint(path: string, line: number, condition: string, enabled: boolean): void {
+  _bindBreakpoint(
+    path: string,
+    line: number,
+    condition: string,
+    enabled: boolean,
+    resolved: boolean,
+  ): void {
     this._addBreakpoint(
       path,
       line,
       condition,
-      true,   // resolved
+      resolved,
       false,  // userAction
       enabled,
     );

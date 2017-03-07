@@ -77,6 +77,7 @@ export type IPCBreakpoint = {
   lineNumber: number,
   condition: string,
   enabled: boolean,
+  resolved: boolean,
 };
 
 export type BreakpointUserChangeArgType = {

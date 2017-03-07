@@ -213,13 +213,16 @@ describe('Bridge', () => {
     const line = 15;
     const condition = 'Condtion expression';
     const enabled = true;
+    const resolved = true;
     sendIpcNotification('BreakpointAdded', {
       sourceURL: 'file://' + path,
       lineNumber: line,
       condition,
       enabled,
+      resolved,
     });
-    expect(breakpointStore._bindBreakpoint).toHaveBeenCalledWith(path, line, condition, enabled);
+    expect(breakpointStore._bindBreakpoint)
+      .toHaveBeenCalledWith(path, line, condition, enabled, resolved);
 
     sendIpcNotification('BreakpointRemoved', {
       sourceURL: 'file://' + path,

@@ -447,7 +447,13 @@ export default class DebuggerActions {
     });
   }
 
-  bindBreakpointIPC(path: string, line: number, condition: string, enabled: boolean): void {
+  bindBreakpointIPC(
+    path: string,
+    line: number,
+    condition: string,
+    enabled: boolean,
+    resolved: boolean,
+  ): void {
     this._dispatcher.dispatch({
       actionType: ActionTypes.BIND_BREAKPOINT_IPC,
       data: {
@@ -455,6 +461,7 @@ export default class DebuggerActions {
         line,
         condition,
         enabled,
+        resolved,
       },
     });
   }

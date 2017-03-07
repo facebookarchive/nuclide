@@ -405,7 +405,7 @@ WebInspector.BreakpointManager.prototype = {
             lineBreakpoints.set(String(uiLocation.columnNumber), columnBreakpoints);
         }
         columnBreakpoints.push(breakpoint);
-        this.dispatchEventToListeners(WebInspector.BreakpointManager.Events.BreakpointAdded, {breakpoint: breakpoint, uiLocation: uiLocation});
+        this.dispatchEventToListeners(WebInspector.BreakpointManager.Events.BreakpointAdded, {breakpoint: breakpoint, uiLocation: uiLocation, resolved: false});
     },
 
     /**
@@ -786,6 +786,14 @@ WebInspector.BreakpointManager.TargetBreakpoint.prototype = {
         if (this._hasPendingUpdate) {
             this._hasPendingUpdate = false;
             this._scheduleUpdateInDebugger();
+        }
+
+        if (this._liveLocations.length !== 0) {
+          // Breakpoint was resolved.
+          var uiLocations = Object.values(this._uiLocations);
+          for (var i = 0; i < uiLocations.length; ++i) {
+            this._breakpoint._breakpointManager.dispatchEventToListeners(WebInspector.BreakpointManager.Events.BreakpointAdded, {breakpoint: this._breakpoint, uiLocation: uiLocations[i], resolved: true});
+          }
         }
     },
 

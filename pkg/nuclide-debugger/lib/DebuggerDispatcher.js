@@ -151,7 +151,7 @@ export type DebuggerAction =
   } |
   {
     actionType: 'BIND_BREAKPOINT_IPC',
-    data: {path: string, line: number, condition: string, enabled: boolean},
+    data: {path: string, line: number, condition: string, enabled: boolean, resolved: boolean},
   } |
   {
     actionType: 'UPDATE_SCOPES',
