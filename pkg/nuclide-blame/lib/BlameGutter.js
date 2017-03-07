@@ -20,7 +20,8 @@ import {CompositeDisposable} from 'atom';
 import {shell} from 'electron';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {shortNameForAuthor} from '../../nuclide-vcs-log';
-import {React, ReactDOM} from 'react-for-atom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 import classnames from 'classnames';
 
 const BLAME_DECORATION_CLASS = 'blame-decoration';

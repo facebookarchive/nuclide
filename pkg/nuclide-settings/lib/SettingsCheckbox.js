@@ -11,7 +11,7 @@
 import type {SettingsPropsDefault} from './types';
 
 import {normalizeIdentifier} from './settings-utils';
-import {React} from 'react-for-atom';
+import React from 'react';
 
 type Props = SettingsPropsDefault & {
   value: boolean,

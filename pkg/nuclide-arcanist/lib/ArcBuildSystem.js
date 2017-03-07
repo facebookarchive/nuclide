@@ -18,7 +18,7 @@ import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {taskFromObservable} from '../../commons-node/tasks';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {createExtraUiComponent} from './ui/createExtraUiComponent';
-import {React} from 'react-for-atom';
+import React from 'react';
 import {Observable, Subject} from 'rxjs';
 
 export default class ArcBuildSystem {

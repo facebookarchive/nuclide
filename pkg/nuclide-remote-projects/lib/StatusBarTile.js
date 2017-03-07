@@ -14,7 +14,7 @@ import {
   notifyConnectedRemoteFile,
   notifyDisconnectedRemoteFile,
 } from './notification';
-import {React} from 'react-for-atom';
+import React from 'react';
 
 type Props = {
   connectionState: number,

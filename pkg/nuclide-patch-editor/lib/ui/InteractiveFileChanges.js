@@ -10,7 +10,7 @@
 
 import FileChanges from '../../../nuclide-ui/FileChanges';
 import parse from 'diffparser';
-import {React} from 'react-for-atom';
+import React from 'react';
 
 type Props = {
   diffContent: string,

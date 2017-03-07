@@ -10,7 +10,8 @@
 
 import invariant from 'assert';
 import {ServerConnection} from '../../nuclide-remote-connection';
-import {React, ReactDOM} from 'react-for-atom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 import {CompositeDisposable, Disposable} from 'atom';
 import StatusBarTile from './StatusBarTile';
 import {isValidTextEditor} from '../../commons-atom/text-editor';

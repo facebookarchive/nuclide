@@ -8,7 +8,7 @@
  * @flow
  */
 
-import {React} from 'react-for-atom';
+import React from 'react';
 
 /* eslint-disable max-len */
 const LOGO = (

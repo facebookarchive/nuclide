@@ -18,7 +18,8 @@ import {CompositeDisposable} from 'atom';
 import electron from 'electron';
 import CreateBookmarkModalComponent from './CreateBookmarkModalComponent';
 import DeleteBookmarkModalComponent from './DeleteBookmarkModalComponent';
-import {React, ReactDOM} from 'react-for-atom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 import RenameBookmarkModalComponent from './RenameBookmarkModalComponent';
 import RepositorySectionComponent from './RepositorySectionComponent';
 

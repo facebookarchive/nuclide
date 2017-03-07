@@ -11,7 +11,7 @@
 import type {ArcToolbarModel} from '../ArcToolbarModel';
 
 import ArcToolbarSection from '../ArcToolbarSection';
-import {React} from 'react-for-atom';
+import React from 'react';
 
 /**
  * Create a component for the extra UI in the toolbar. We use a component

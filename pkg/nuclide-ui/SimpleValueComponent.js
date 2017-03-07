@@ -13,7 +13,7 @@ import type {
   EvaluationResult,
 } from '../nuclide-debugger/lib/types';
 
-import {React} from 'react-for-atom';
+import React from 'react';
 import {ValueComponentClassNames} from './ValueComponentClassNames';
 import {TextRenderer} from './TextRenderer';
 

@@ -10,7 +10,7 @@
 
 import type {DOMMeasurements} from '../commons-atom/observe-element-dimensions';
 
-import {React} from 'react-for-atom';
+import React from 'react';
 import {MeasuredComponent} from './MeasuredComponent';
 import {Button} from './Button';
 

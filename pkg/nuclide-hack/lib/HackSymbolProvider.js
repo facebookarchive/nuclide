@@ -19,7 +19,7 @@ import type {
 
 import {isFileInHackProject, getHackLanguageForUri} from './HackLanguage';
 import nuclideUri from '../../commons-node/nuclideUri';
-import {React} from 'react-for-atom';
+import React from 'react';
 
 const ICONS = {
   'interface': 'icon-puzzle',

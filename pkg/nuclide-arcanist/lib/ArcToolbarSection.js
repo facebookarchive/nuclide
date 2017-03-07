@@ -10,7 +10,7 @@
 
 import type {Option} from '../../nuclide-ui/Dropdown';
 
-import {React} from 'react-for-atom';
+import React from 'react';
 import {ArcToolbarModel} from './ArcToolbarModel';
 import {Button, ButtonSizes} from '../../nuclide-ui/Button';
 import {ButtonGroup} from '../../nuclide-ui/ButtonGroup';

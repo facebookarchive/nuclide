@@ -13,7 +13,7 @@ import type {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
 import type DebuggerActions from './DebuggerActions';
 
 import {Dropdown} from '../../nuclide-ui/Dropdown';
-import {React} from 'react-for-atom';
+import React from 'react';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {asyncFilter} from '../../commons-node/promise';
 

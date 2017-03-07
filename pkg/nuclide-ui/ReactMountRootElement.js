@@ -10,7 +10,8 @@
 
 /* global HTMLElement */
 
-import {React, ReactDOM} from 'react-for-atom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 
 /**
  * A custom HTMLElement we render React elements into.

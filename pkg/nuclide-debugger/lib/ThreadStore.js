@@ -23,7 +23,7 @@ import {
   CompositeDisposable,
   Emitter,
 } from 'atom';
-import {React} from 'react-for-atom';
+import React from 'react';
 import {Icon} from '../../nuclide-ui/Icon';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {ActionTypes} from './DebuggerDispatcher';

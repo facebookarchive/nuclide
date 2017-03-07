@@ -11,7 +11,7 @@
 import type {IconName} from './types';
 
 import classnames from 'classnames';
-import {React} from 'react-for-atom';
+import React from 'react';
 
 import {maybeToString} from '../commons-node/string';
 

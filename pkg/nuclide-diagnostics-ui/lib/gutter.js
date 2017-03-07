@@ -19,10 +19,8 @@ import classnames from 'classnames';
 
 import {Range} from 'atom';
 import invariant from 'assert';
-import {
-  React,
-  ReactDOM,
-} from 'react-for-atom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 import {
   goToLocation as atomGoToLocation,
 } from '../../commons-atom/go-to-location';

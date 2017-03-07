@@ -15,7 +15,8 @@ import type {
 } from './types';
 
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {React, ReactDOM} from 'react-for-atom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 import invariant from 'assert';
 
 import {MainRefactorComponent} from './components/MainRefactorComponent';

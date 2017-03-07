@@ -9,7 +9,8 @@
  */
 
 import {CompositeDisposable} from 'atom';
-import {React, ReactDOM} from 'react-for-atom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 import {Checkbox} from '../../nuclide-ui/Checkbox';
 import featureConfig from '../../commons-atom/featureConfig';
 import {

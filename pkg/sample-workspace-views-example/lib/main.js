@@ -15,7 +15,7 @@ import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {ExampleGadgetA, WORKSPACE_VIEW_URI_A} from './ExampleGadgetA';
 import {ExampleGadgetB, WORKSPACE_VIEW_URI_B} from './ExampleGadgetB';
 import invariant from 'assert';
-import {React} from 'react-for-atom';
+import React from 'react';
 
 let disposables: ?UniversalDisposable = null;
 

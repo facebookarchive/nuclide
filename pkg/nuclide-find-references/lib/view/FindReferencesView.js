@@ -10,7 +10,8 @@
 
 import type {FileReferences} from '../types';
 
-import {React, ReactDOM} from 'react-for-atom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 import FileReferencesView from './FileReferencesView';
 import FindReferencesModel from '../FindReferencesModel';
 import {pluralize} from '../../../commons-node/string';

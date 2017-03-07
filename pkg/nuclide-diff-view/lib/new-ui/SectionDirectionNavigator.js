@@ -13,7 +13,7 @@ import type {NuclideUri} from '../../../commons-node/nuclideUri';
 
 import {Button} from '../../../nuclide-ui/Button';
 import {CompositeDisposable} from 'atom';
-import {React} from 'react-for-atom';
+import React from 'react';
 
 type Props = {
   commandTarget: string | HTMLElement,

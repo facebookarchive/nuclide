@@ -11,7 +11,8 @@
 import classNames from 'classnames';
 
 import {CompositeDisposable} from 'atom';
-import {React, ReactDOM} from 'react-for-atom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 
 import {maybeToString} from '../commons-node/string';
 

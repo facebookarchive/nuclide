@@ -10,7 +10,7 @@
 
 import type {BookmarkInfo} from '../../nuclide-hg-rpc/lib/HgService';
 
-import {React} from 'react-for-atom';
+import React from 'react';
 import {
   Button,
   ButtonTypes,

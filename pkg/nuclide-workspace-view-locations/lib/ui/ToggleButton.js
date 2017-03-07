@@ -12,7 +12,7 @@ import type {IconName} from '../../../nuclide-ui/types';
 
 import {Icon} from '../../../nuclide-ui/Icon';
 import classnames from 'classnames';
-import {React} from 'react-for-atom';
+import React from 'react';
 
 type Position = 'top' | 'right' | 'bottom' | 'left';
 

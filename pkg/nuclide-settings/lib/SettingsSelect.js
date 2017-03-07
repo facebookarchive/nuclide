@@ -10,7 +10,7 @@
 
 import featureConfig from '../../commons-atom/featureConfig';
 import {normalizeIdentifier} from './settings-utils';
-import {React} from 'react-for-atom';
+import React from 'react';
 import type {SettingsPropsDefault} from './types';
 
 type Props = SettingsPropsDefault & {

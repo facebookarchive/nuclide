@@ -26,7 +26,7 @@ import getCurrentExecutorId from '../getCurrentExecutorId';
 import * as Actions from '../redux/Actions';
 import Console from './Console';
 import escapeStringRegexp from 'escape-string-regexp';
-import {React} from 'react-for-atom';
+import React from 'react';
 import {Observable, Subject} from 'rxjs';
 
 type Props = {

@@ -17,7 +17,7 @@ import type {
 } from './types';
 import type {Option} from '../../nuclide-ui/Dropdown';
 
-import {React} from 'react-for-atom';
+import React from 'react';
 import shallowequal from 'shallowequal';
 
 import BuckToolbarSettings from './ui/BuckToolbarSettings';

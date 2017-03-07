@@ -15,7 +15,7 @@ import {getIPsForHosts} from './connection-profile-utils';
 import {getUniqueHostsForProfiles} from './connection-profile-utils';
 import {HR} from '../../nuclide-ui/HR';
 import {MutableListSelector} from '../../nuclide-ui/MutableListSelector';
-import {React} from 'react-for-atom';
+import React from 'react';
 
 import type {
   NuclideRemoteConnectionParams,

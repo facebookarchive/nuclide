@@ -17,7 +17,7 @@ import type {
 import {CompositeDisposable} from 'atom';
 import {getHeadRevision} from './utils';
 import {hgConstants} from '../../nuclide-hg-rpc';
-import {React} from 'react-for-atom';
+import React from 'react';
 import RevisionTimelineNode from './RevisionTimelineNode';
 import UncommittedChangesTimelineNode from './UncommittedChangesTimelineNode';
 import {DiffMode} from './constants';

@@ -33,7 +33,7 @@ import {BehaviorSubject, Subject} from 'rxjs';
 import SideBarComponent from './SideBarComponent';
 import {track} from '../../nuclide-analytics';
 import {getDirtyFileChanges} from '../../commons-atom/vcs';
-import {React} from 'react-for-atom';
+import React from 'react';
 
 export type AppState = {
   uncommittedChanges: Map<NuclideUri, Map<NuclideUri, FileChangeStatusValue>>,

@@ -15,10 +15,8 @@ import {
   RecentFilesProvider,
   setRecentFilesService,
 } from '../lib/RecentFilesProvider';
-import {
-  React,
-  TestUtils,
-} from 'react-for-atom';
+import React from 'react';
+import TestUtils from 'react-addons-test-utils';
 
 let provider: Provider = (null: any);
 

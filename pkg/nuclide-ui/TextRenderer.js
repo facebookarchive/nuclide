@@ -8,7 +8,7 @@
  * @flow
  */
 
-import {React} from 'react-for-atom';
+import React from 'react';
 
 import type {EvaluationResult} from '../nuclide-debugger/lib/types';
 

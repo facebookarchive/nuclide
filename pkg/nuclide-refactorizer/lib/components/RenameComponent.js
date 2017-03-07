@@ -13,7 +13,7 @@ import type {
   RenamePhase,
 } from '../types';
 
-import {React} from 'react-for-atom';
+import React from 'react';
 
 import {AtomInput} from '../../../nuclide-ui/AtomInput';
 import {Button} from '../../../nuclide-ui/Button';

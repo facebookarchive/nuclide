@@ -8,7 +8,7 @@
  * @flow
  */
 
-import {React} from 'react-for-atom';
+import React from 'react';
 
 type DatatipComponentProps = {
   word: string,

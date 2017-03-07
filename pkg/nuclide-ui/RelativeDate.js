@@ -8,7 +8,7 @@
  * @flow
  */
 
-import {React} from 'react-for-atom';
+import React from 'react';
 import {relativeDate} from '../commons-node/string';
 import addTooltip from './add-tooltip';
 

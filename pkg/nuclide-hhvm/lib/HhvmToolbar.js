@@ -16,7 +16,7 @@ import {HACK_GRAMMARS} from '../../nuclide-hack-common/lib/constants.js';
 import {AtomInput} from '../../nuclide-ui/AtomInput';
 import {Dropdown} from '../../nuclide-ui/Dropdown';
 import {Button} from '../../nuclide-ui/Button';
-import {React} from 'react-for-atom';
+import React from 'react';
 
 const WEB_SERVER_OPTION = {label: 'Attach to WebServer', value: 'webserver'};
 const SCRIPT_OPTION = {label: 'Launch Script', value: 'script'};

@@ -9,7 +9,9 @@
  */
 
 import {Dropdown} from '../Dropdown';
-import {React, ReactDOM, TestUtils} from 'react-for-atom';
+import React from 'react';
+import ReactDOM from 'react-dom';
+import TestUtils from 'react-addons-test-utils';
 
 const {
   renderIntoDocument,

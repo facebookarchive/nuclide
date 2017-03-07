@@ -13,7 +13,7 @@ import type {
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
 
 import {goToLocation} from '../../commons-atom/go-to-location';
-import {React} from 'react-for-atom';
+import React from 'react';
 import {DiagnosticsMessage} from '../../nuclide-ui/DiagnosticsMessage';
 
 type DiagnosticsDatatipComponentProps = {

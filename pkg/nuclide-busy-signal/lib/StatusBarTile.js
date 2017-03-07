@@ -14,10 +14,8 @@ import type {Observable} from 'rxjs';
 
 import type {BusySignalMessageBusy} from './types';
 
-import {
-  React,
-  ReactDOM,
-} from 'react-for-atom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 import {StatusBarTileComponent} from './StatusBarTileComponent';
 
 // We want to be the furthest left on the right side of the status bar so as not to leave a

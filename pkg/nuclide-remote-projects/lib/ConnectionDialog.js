@@ -29,7 +29,7 @@ import ConnectionDetailsPrompt from './ConnectionDetailsPrompt';
 import IndeterminateProgressBar from './IndeterminateProgressBar';
 import invariant from 'assert';
 import {notifySshHandshakeError} from './notification';
-import {React} from 'react-for-atom';
+import React from 'react';
 import electron from 'electron';
 import {
   SshHandshake,

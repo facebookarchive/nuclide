@@ -9,7 +9,7 @@
  */
 
 import type {FileChangeStatusValue} from '../../commons-atom/vcs';
-import type React from 'react-for-atom';
+import type React from 'react';
 
 import FileTreeDispatcher, {ActionTypes} from './FileTreeDispatcher';
 import FileTreeHelpers from './FileTreeHelpers';

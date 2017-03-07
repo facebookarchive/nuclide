@@ -13,7 +13,7 @@ import type {DefinitionService} from '../../nuclide-definition-service';
 
 import {CompositeDisposable} from 'atom';
 import {ContextViewManager} from '../lib/ContextViewManager';
-import {React} from 'react-for-atom';
+import React from 'react';
 import featureConfig from '../../commons-atom/featureConfig';
 import invariant from 'assert';
 

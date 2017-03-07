@@ -11,7 +11,7 @@
 import type {Record, Executor, OutputProvider, Source} from '../types';
 
 import debounce from '../../../commons-node/debounce';
-import {React} from 'react-for-atom';
+import React from 'react';
 import OutputTable from './OutputTable';
 import ConsoleHeader from './ConsoleHeader';
 import InputArea from './InputArea';

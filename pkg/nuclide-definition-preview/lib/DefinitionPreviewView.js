@@ -13,7 +13,7 @@ import type {Definition} from '../../nuclide-definition-service/lib/rpc-types';
 
 import {Button, ButtonSizes} from '../../nuclide-ui/Button';
 import {Block} from '../../nuclide-ui/Block';
-import {React} from 'react-for-atom';
+import React from 'react';
 import {goToLocation} from '../../commons-atom/go-to-location';
 import {bufferForUri} from '../../commons-atom/text-buffer';
 import {AtomTextEditor} from '../../nuclide-ui/AtomTextEditor';

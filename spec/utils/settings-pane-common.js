@@ -17,7 +17,7 @@ import {
   valueToString,
 } from '../../pkg/nuclide-settings/lib/settings-utils';
 
-import {TestUtils} from 'react-for-atom';
+import TestUtils from 'react-addons-test-utils';
 
 type elementGetValue = (element: any) => any;
 type elementSetValue = (element: any, newValue: any) => void;

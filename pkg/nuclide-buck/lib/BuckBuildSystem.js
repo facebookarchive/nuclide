@@ -68,7 +68,7 @@ import {
   getDeployTestEvents,
 } from './DeployEventStream';
 import observeBuildCommands from './observeBuildCommands';
-import {React} from 'react-for-atom';
+import React from 'react';
 
 const SOCKET_TIMEOUT = 30000;
 

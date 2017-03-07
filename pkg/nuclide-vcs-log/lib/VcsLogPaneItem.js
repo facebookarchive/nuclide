@@ -11,7 +11,7 @@
 import type {CustomPaneItemOptions} from '../../nuclide-ui/types';
 import type {VcsLogEntry} from '../../nuclide-hg-rpc/lib/HgService';
 
-import {React} from 'react-for-atom';
+import React from 'react';
 import {CustomPaneItem} from '../../nuclide-ui/CustomPaneItem';
 import VcsLog from './VcsLog';
 

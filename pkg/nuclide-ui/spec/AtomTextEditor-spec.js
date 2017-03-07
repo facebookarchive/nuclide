@@ -9,7 +9,8 @@
  */
 
 import {AtomTextEditor} from '../AtomTextEditor';
-import {React, TestUtils} from 'react-for-atom';
+import React from 'react';
+import TestUtils from 'react-addons-test-utils';
 import invariant from 'assert';
 
 describe('nuclide-ui-atom-text-editor', () => {

@@ -12,7 +12,8 @@ import type {Store, BoundActionCreators, PartialAppState} from './types';
 
 import {Disposable, CompositeDisposable} from 'atom';
 import createPackage from '../../commons-atom/createPackage';
-import {React, ReactDOM} from 'react-for-atom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 import {RequestEditDialog} from './RequestEditDialog';
 import {applyMiddleware, bindActionCreators, createStore} from 'redux';
 import * as Actions from './Actions';

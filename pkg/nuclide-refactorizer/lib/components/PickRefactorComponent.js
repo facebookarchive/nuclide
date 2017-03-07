@@ -15,7 +15,7 @@ import type {
 
 import type {AvailableRefactoring} from '../..';
 
-import {React} from 'react-for-atom';
+import React from 'react';
 
 import {Button} from '../../../nuclide-ui/Button';
 

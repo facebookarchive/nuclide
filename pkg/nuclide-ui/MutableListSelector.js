@@ -10,7 +10,7 @@
 
 import {Button} from './Button';
 import {ButtonGroup} from './ButtonGroup';
-import {React} from 'react-for-atom';
+import React from 'react';
 
 type NuclideListSelectorItem = {
   deletable?: boolean,

@@ -8,7 +8,7 @@
  * @flow
  */
 
-import {React} from 'react-for-atom';
+import React from 'react';
 import {AttachProcessInfo} from './AttachProcessInfo';
 import {Button, ButtonTypes} from '../../nuclide-ui/Button';
 import {Dropdown} from '../../nuclide-ui/Dropdown';

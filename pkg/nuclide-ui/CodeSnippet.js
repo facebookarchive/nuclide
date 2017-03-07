@@ -9,7 +9,7 @@
  */
 
 import {AtomInput} from './AtomInput';
-import {React} from 'react-for-atom';
+import React from 'react';
 
 type Props = {
   text: string,

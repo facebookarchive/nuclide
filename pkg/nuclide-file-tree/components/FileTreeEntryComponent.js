@@ -11,7 +11,8 @@
 import type {FileTreeNode} from '../lib/FileTreeNode';
 
 import FileTreeActions from '../lib/FileTreeActions';
-import {React, ReactDOM} from 'react-for-atom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 import classnames from 'classnames';
 import fileTypeClass from '../../commons-atom/file-type-class';
 import {nextAnimationFrame} from '../../commons-node/observable';

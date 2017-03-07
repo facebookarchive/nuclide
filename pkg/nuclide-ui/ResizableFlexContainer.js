@@ -11,7 +11,8 @@
 import {arrayCompact, arrayEqual} from '../commons-node/collection';
 import classnames from 'classnames';
 import createPaneContainer from '../commons-atom/create-pane-container';
-import {React, ReactDOM} from 'react-for-atom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 
 type Props = {
   children?: ?React.Element<any>,

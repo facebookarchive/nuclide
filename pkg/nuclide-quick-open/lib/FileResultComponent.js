@@ -10,7 +10,7 @@
 
 import type {FileResult} from './types';
 
-import {React} from 'react-for-atom';
+import React from 'react';
 import fileTypeClass from '../../commons-atom/file-type-class';
 import nuclideUri from '../../commons-node/nuclideUri';
 

@@ -9,7 +9,7 @@
  */
 
 import {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
-import {React} from 'react-for-atom';
+import React from 'react';
 import {LaunchUiComponent} from './LaunchUiComponent';
 import {AttachUiComponent} from './AttachUiComponent';
 import invariant from 'assert';

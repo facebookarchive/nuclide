@@ -8,7 +8,7 @@
  * @flow
  */
 
-import {React} from 'react-for-atom';
+import React from 'react';
 import {Block} from './Block';
 import {ProgressBar} from './ProgressBar';
 import {LoadingSpinner} from './LoadingSpinner';

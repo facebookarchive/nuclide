@@ -11,7 +11,7 @@
 import type {ReferenceGroup} from '../types';
 import type {Reference} from '../rpc-types';
 
-import {React} from 'react-for-atom';
+import React from 'react';
 import classnames from 'classnames';
 import nuclideUri from '../../../commons-node/nuclideUri';
 import {goToLocation} from '../../../commons-atom/go-to-location';

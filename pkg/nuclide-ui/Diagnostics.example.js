@@ -15,7 +15,7 @@ import type {
 import {
   Range,
 } from 'atom';
-import {React} from 'react-for-atom';
+import React from 'react';
 import {Block} from './Block';
 import {DiagnosticsMessage} from './DiagnosticsMessage';
 

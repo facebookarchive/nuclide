@@ -11,7 +11,8 @@
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {nextAnimationFrame} from '../../commons-node/observable';
 import {FileTreeStore} from '../lib/FileTreeStore';
-import {React, ReactDOM} from 'react-for-atom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 import {FileTreeEntryComponent} from './FileTreeEntryComponent';
 import {ProjectSelection} from './ProjectSelection';
 import classnames from 'classnames';

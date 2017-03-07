@@ -16,7 +16,7 @@ import type {
 import classnames from 'classnames';
 import {getPhabricatorRevisionFromCommitMessage} from '../../nuclide-arcanist-rpc/lib/utils';
 import {getCommitAuthorFromAuthorEmail} from '../../nuclide-arcanist-rpc/lib/utils';
-import {React} from 'react-for-atom';
+import React from 'react';
 import {track} from '../../nuclide-analytics';
 
 type RevisionTimelineNodeProps = {

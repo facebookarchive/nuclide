@@ -11,7 +11,7 @@
 import type {ButtonSize} from '../../../nuclide-ui/Button';
 
 import {Button} from '../../../nuclide-ui/Button';
-import {React} from 'react-for-atom';
+import React from 'react';
 
 type Props = {
   selected?: boolean,

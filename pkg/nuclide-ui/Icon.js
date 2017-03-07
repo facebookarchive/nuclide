@@ -11,7 +11,7 @@
 import type {IconName} from './types';
 
 import classnames from 'classnames';
-import {React} from 'react-for-atom';
+import React from 'react';
 
 type Props = {
   /** Icon name, without the `icon-` prefix. E.g. `'arrow-up'` */

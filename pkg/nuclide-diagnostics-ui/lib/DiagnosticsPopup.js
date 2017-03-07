@@ -13,7 +13,7 @@ import type {
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
-import {React} from 'react-for-atom';
+import React from 'react';
 import classnames from 'classnames';
 import {DiagnosticsMessage} from '../../nuclide-ui/DiagnosticsMessage';
 

@@ -25,7 +25,8 @@ import {
   ButtonTypes,
 } from '../../../nuclide-ui/Button';
 import createPaneContainer from '../../../commons-atom/create-pane-container';
-import {React, ReactDOM} from 'react-for-atom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 import TestClassTree from './TestClassTree';
 
 type Props = {

@@ -61,7 +61,6 @@ const BABEL_OPTIONS = {
         'async-to-generator',
         'atom',
         'electron',
-        'react-for-atom',
         'rxjs/bundles/Rx.min.js',
       ],
       excludeNodeBuiltins: true,

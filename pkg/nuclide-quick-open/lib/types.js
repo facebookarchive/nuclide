@@ -10,7 +10,7 @@
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
-import {React} from 'react-for-atom';
+import React from 'react';
 
 export type FileResult = {
   path: NuclideUri,

@@ -12,9 +12,7 @@ import type DebuggerActions from './DebuggerActions';
 import type {ControlButtonSpecification, DebuggerModeType} from './types';
 import type {DebuggerStore} from './DebuggerStore';
 
-import {
-  React,
-} from 'react-for-atom';
+import React from 'react';
 import {Button} from '../../nuclide-ui/Button';
 import {ButtonGroup} from '../../nuclide-ui/ButtonGroup';
 import {Checkbox} from '../../nuclide-ui/Checkbox';

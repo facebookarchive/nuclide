@@ -8,7 +8,7 @@
  * @flow
  */
 
-import type React from 'react-for-atom';
+import type React from 'react';
 import type {Definition} from '../../nuclide-definition-service/lib/rpc-types';
 import typeof ContextViewMessage from './ContextViewMessage';
 

@@ -9,7 +9,7 @@
  */
 
 import invariant from 'assert';
-import {React} from 'react-for-atom';
+import React from 'react';
 import {shell} from 'electron';
 
 type DiagnosticsMessageTextProps = {

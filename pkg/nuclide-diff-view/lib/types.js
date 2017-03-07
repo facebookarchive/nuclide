@@ -18,7 +18,7 @@ import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {Observable, Subject} from 'rxjs';
 import type DiffViewEditor from './DiffViewEditor';
 
-import {React} from 'react-for-atom';
+import React from 'react';
 
 export type DiffModeType = '1. Browse' | '2. Commit' | '3. Publish';
 

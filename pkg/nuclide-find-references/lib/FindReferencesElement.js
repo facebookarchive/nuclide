@@ -12,7 +12,8 @@
 
 import type FindReferencesModel from './FindReferencesModel';
 
-import {React, ReactDOM} from 'react-for-atom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 import FindReferencesView from './view/FindReferencesView';
 
 class FindReferencesElement extends HTMLElement {

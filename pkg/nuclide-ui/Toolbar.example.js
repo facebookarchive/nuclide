@@ -8,7 +8,7 @@
  * @flow
  */
 
-import {React} from 'react-for-atom';
+import React from 'react';
 import {Block} from './Block';
 import {Toolbar} from './Toolbar';
 import {ToolbarCenter} from './ToolbarCenter';

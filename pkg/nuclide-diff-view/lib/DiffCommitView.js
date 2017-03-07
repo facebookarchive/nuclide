@@ -18,7 +18,7 @@ import {Checkbox} from '../../nuclide-ui/Checkbox';
 import classnames from 'classnames';
 import {DiffMode, CommitMode, CommitModeState, DiffViewFeatures} from './constants';
 import {CompositeDisposable} from 'atom';
-import {React} from 'react-for-atom';
+import React from 'react';
 import {
   Button,
   ButtonSizes,

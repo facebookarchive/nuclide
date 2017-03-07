@@ -104,7 +104,7 @@ const ExampleProvider: Provider = {
    * getComponentForItem Optional function that returns a React Element.
    * Useful for overriding the default view of a quick-open result.
    */
-  // import {React} from 'react-for-atom';
+  // import React from 'react';
   // getComponentForItem(item: FileResult): React.Element {
   //   var {
   //     matchIndexes,

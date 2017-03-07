@@ -8,7 +8,8 @@
  * @flow
  */
 
-import {React, ReactDOM} from 'react-for-atom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 import type {ThreadItem} from './types';
 import type Bridge from './Bridge';
 import type ThreadStore from './ThreadStore';

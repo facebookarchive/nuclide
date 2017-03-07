@@ -14,7 +14,7 @@ import type {LaunchAttachStore} from './LaunchAttachStore';
 import type {LaunchAttachActions} from './LaunchAttachActions';
 
 import {DebuggerLaunchAttachEventTypes} from '../../nuclide-debugger-base';
-import {React} from 'react-for-atom';
+import React from 'react';
 import {AtomInput} from '../../nuclide-ui/AtomInput';
 import {
   Button,

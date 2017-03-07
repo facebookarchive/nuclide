@@ -14,7 +14,7 @@ import type {
 } from '../nuclide-diagnostics-common/lib/rpc-types';
 
 import invariant from 'assert';
-import {React} from 'react-for-atom';
+import React from 'react';
 import {Button, ButtonTypes} from './Button';
 import {ButtonGroup} from './ButtonGroup';
 import {DiagnosticsMessageText} from './DiagnosticsMessageText';

@@ -11,7 +11,7 @@
 import type {TextBuffer} from 'atom';
 
 import {AtomTextEditor} from '../../../nuclide-ui/AtomTextEditor';
-import {React} from 'react-for-atom';
+import React from 'react';
 
 type Props = {
   textBuffer: TextBuffer,

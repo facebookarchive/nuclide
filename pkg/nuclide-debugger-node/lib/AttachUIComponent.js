@@ -15,7 +15,7 @@ import type {
 } from '../../nuclide-debugger-node-rpc/lib/NodeDebuggerService';
 import type {Column} from '../../nuclide-ui/Table';
 
-import {React} from 'react-for-atom';
+import React from 'react';
 import {AtomInput} from '../../nuclide-ui/AtomInput';
 import {DebuggerLaunchAttachEventTypes} from '../../nuclide-debugger-base';
 import {Table} from '../../nuclide-ui/Table';

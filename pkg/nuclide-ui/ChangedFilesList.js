@@ -19,7 +19,7 @@ import {
  repositoryForPath,
 } from '../commons-atom/vcs';
 import nuclideUri from '../commons-node/nuclideUri';
-import {React} from 'react-for-atom';
+import React from 'react';
 import {Icon} from './Icon';
 
 const FILE_CHANGES_INITIAL_PAGE_SIZE = 100;

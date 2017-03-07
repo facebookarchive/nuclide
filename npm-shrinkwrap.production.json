@@ -899,9 +899,9 @@
       "resolved": "https://registry.npmjs.org/punycode/-/punycode-1.4.1.tgz"
     },
     "qs": {
-      "version": "6.3.1",
+      "version": "6.3.2",
       "from": "qs@>=6.3.0 <6.4.0",
-      "resolved": "https://registry.npmjs.org/qs/-/qs-6.3.1.tgz"
+      "resolved": "https://registry.npmjs.org/qs/-/qs-6.3.2.tgz"
     },
     "random-seed": {
       "version": "0.2.0",
@@ -913,51 +913,6 @@
       "from": "react@15.3.1",
       "resolved": "https://registry.npmjs.org/react/-/react-15.3.1.tgz"
     },
-    "react-addons-create-fragment": {
-      "version": "15.3.1",
-      "from": "react-addons-create-fragment@15.3.1",
-      "resolved": "https://registry.npmjs.org/react-addons-create-fragment/-/react-addons-create-fragment-15.3.1.tgz"
-    },
-    "react-addons-css-transition-group": {
-      "version": "15.3.1",
-      "from": "react-addons-css-transition-group@15.3.1",
-      "resolved": "https://registry.npmjs.org/react-addons-css-transition-group/-/react-addons-css-transition-group-15.3.1.tgz"
-    },
-    "react-addons-linked-state-mixin": {
-      "version": "15.3.1",
-      "from": "react-addons-linked-state-mixin@15.3.1",
-      "resolved": "https://registry.npmjs.org/react-addons-linked-state-mixin/-/react-addons-linked-state-mixin-15.3.1.tgz"
-    },
-    "react-addons-perf": {
-      "version": "15.3.1",
-      "from": "react-addons-perf@15.3.1",
-      "resolved": "https://registry.npmjs.org/react-addons-perf/-/react-addons-perf-15.3.1.tgz"
-    },
-    "react-addons-pure-render-mixin": {
-      "version": "15.3.1",
-      "from": "react-addons-pure-render-mixin@15.3.1",
-      "resolved": "https://registry.npmjs.org/react-addons-pure-render-mixin/-/react-addons-pure-render-mixin-15.3.1.tgz"
-    },
-    "react-addons-shallow-compare": {
-      "version": "15.3.1",
-      "from": "react-addons-shallow-compare@15.3.1",
-      "resolved": "https://registry.npmjs.org/react-addons-shallow-compare/-/react-addons-shallow-compare-15.3.1.tgz"
-    },
-    "react-addons-test-utils": {
-      "version": "15.3.1",
-      "from": "react-addons-test-utils@15.3.1",
-      "resolved": "https://registry.npmjs.org/react-addons-test-utils/-/react-addons-test-utils-15.3.1.tgz"
-    },
-    "react-addons-transition-group": {
-      "version": "15.3.1",
-      "from": "react-addons-transition-group@15.3.1",
-      "resolved": "https://registry.npmjs.org/react-addons-transition-group/-/react-addons-transition-group-15.3.1.tgz"
-    },
-    "react-addons-update": {
-      "version": "15.3.1",
-      "from": "react-addons-update@15.3.1",
-      "resolved": "https://registry.npmjs.org/react-addons-update/-/react-addons-update-15.3.1.tgz"
-    },
     "react-devtools-core": {
       "version": "2.0.8",
       "from": "react-devtools-core@2.0.8",
@@ -967,11 +922,6 @@
       "version": "15.3.1",
       "from": "react-dom@15.3.1",
       "resolved": "https://registry.npmjs.org/react-dom/-/react-dom-15.3.1.tgz"
-    },
-    "react-for-atom": {
-      "version": "15.3.1-0",
-      "from": "react-for-atom@15.3.1-0",
-      "resolved": "https://registry.npmjs.org/react-for-atom/-/react-for-atom-15.3.1-0.tgz"
     },
     "readable-stream": {
       "version": "2.2.3",
@@ -1256,9 +1206,9 @@
       "resolved": "https://registry.npmjs.org/vscode-jsonrpc/-/vscode-jsonrpc-3.0.3.tgz"
     },
     "whatwg-fetch": {
-      "version": "2.0.2",
+      "version": "2.0.3",
       "from": "whatwg-fetch@>=0.10.0",
-      "resolved": "https://registry.npmjs.org/whatwg-fetch/-/whatwg-fetch-2.0.2.tgz"
+      "resolved": "https://registry.npmjs.org/whatwg-fetch/-/whatwg-fetch-2.0.3.tgz"
     },
     "window-size": {
       "version": "0.1.4",

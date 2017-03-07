@@ -13,7 +13,7 @@ import type EventEmitter from 'events';
 
 import {asyncFilter} from '../../commons-node/promise';
 import {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
-import {React} from 'react-for-atom';
+import React from 'react';
 import {LaunchAttachStore} from './LaunchAttachStore';
 import LaunchAttachDispatcher from './LaunchAttachDispatcher';
 import {LaunchAttachActions} from './LaunchAttachActions';

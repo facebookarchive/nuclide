@@ -14,7 +14,7 @@ import type {
 } from '../../nuclide-context-view/lib/types';
 
 import {DefinitionPreviewView} from './DefinitionPreviewView';
-import {React} from 'react-for-atom';
+import React from 'react';
 import invariant from 'assert';
 
 // Unique ID of this context provider

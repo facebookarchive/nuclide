@@ -14,7 +14,8 @@ import type {
 } from '../../nuclide-working-sets/lib/types';
 
 import classnames from 'classnames';
-import {React, ReactDOM} from 'react-for-atom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {Button} from '../../nuclide-ui/Button';
 import {ButtonGroup} from '../../nuclide-ui/ButtonGroup';

@@ -8,7 +8,7 @@
  * @flow
  */
 
-import {React} from 'react-for-atom';
+import React from 'react';
 
 /**
  * Component to entertain the user while he is waiting to hear back from the server.

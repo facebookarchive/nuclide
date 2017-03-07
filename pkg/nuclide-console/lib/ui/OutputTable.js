@@ -11,7 +11,7 @@
 import type {Record, Executor, OutputProvider} from '../types';
 
 import Hasher from '../../../commons-node/Hasher';
-import {React} from 'react-for-atom';
+import React from 'react';
 import RecordView from './RecordView';
 
 type Props = {

@@ -17,10 +17,8 @@ import FileDialogComponent from '../components/FileDialogComponent';
 import FileTreeHelpers from './FileTreeHelpers';
 import FileTreeHgHelpers from './FileTreeHgHelpers';
 import {FileTreeStore} from './FileTreeStore';
-import {
-  React,
-  ReactDOM,
-} from 'react-for-atom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {File} from 'atom';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';

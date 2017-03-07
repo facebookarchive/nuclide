@@ -31,7 +31,7 @@ type ResultRenderer =
 import invariant from 'assert';
 import {track} from '../../nuclide-analytics';
 import {getLogger} from '../../nuclide-logging';
-import {React} from 'react-for-atom';
+import React from 'react';
 import {
   CompositeDisposable,
   Emitter,

@@ -17,7 +17,7 @@ import {Toolbar} from '../../nuclide-ui/Toolbar';
 import {ToolbarCenter} from '../../nuclide-ui/ToolbarCenter';
 import {ToolbarLeft} from '../../nuclide-ui/ToolbarLeft';
 import {ToolbarRight} from '../../nuclide-ui/ToolbarRight';
-import {React} from 'react-for-atom';
+import React from 'react';
 import {
   Button,
   ButtonSizes,

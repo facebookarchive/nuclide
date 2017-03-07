@@ -8,7 +8,7 @@
  * @flow
  */
 
-import {React} from 'react-for-atom';
+import React from 'react';
 
 export type HomeFragments = {
   // A string that a package can publish to the main part of the home panel. This allows for

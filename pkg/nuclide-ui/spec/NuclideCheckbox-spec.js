@@ -9,11 +9,9 @@
  */
 
 import {Checkbox} from '../Checkbox';
-import {
-  React,
-  ReactDOM,
-  TestUtils,
-} from 'react-for-atom';
+import React from 'react';
+import ReactDOM from 'react-dom';
+import TestUtils from 'react-addons-test-utils';
 
 let hostEl;
 

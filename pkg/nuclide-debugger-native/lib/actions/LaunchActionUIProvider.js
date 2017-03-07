@@ -8,7 +8,7 @@
  * @flow
  */
 
-import {React} from 'react-for-atom';
+import React from 'react';
 import {LaunchUIComponent} from '../LaunchUIComponent';
 import {LaunchAttachActions} from '../LaunchAttachActions';
 import {LaunchAttachStore} from '../LaunchAttachStore';

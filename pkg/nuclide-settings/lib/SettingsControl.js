@@ -12,7 +12,7 @@ import SettingsCheckbox from './SettingsCheckbox';
 import SettingsInput from './SettingsInput';
 import SettingsSelect from './SettingsSelect';
 import invariant from 'assert';
-import {React} from 'react-for-atom';
+import React from 'react';
 
 type Props = {
   keyPath: string,

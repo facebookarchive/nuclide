@@ -11,7 +11,7 @@
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {RemoteProjectsService} from '../../nuclide-remote-projects';
 import type {ExportStoreData} from './FileTreeStore';
-import type React from 'react-for-atom';
+import type React from 'react';
 
 import {EVENT_HANDLER_SELECTOR} from './FileTreeConstants';
 import FileSystemActions from './FileSystemActions';

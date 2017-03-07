@@ -12,7 +12,7 @@ import type {PaneItemState} from './types';
 import type {Observable} from 'rxjs';
 
 import HealthPaneItemComponent from './ui/HealthPaneItemComponent';
-import {React} from 'react-for-atom';
+import React from 'react';
 
 type Props = {
   stateStream: Observable<?PaneItemState>,

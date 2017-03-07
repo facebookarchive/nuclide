@@ -15,10 +15,8 @@ import type {
   DatatipProvider,
 } from './types';
 
-import {
-  React,
-  ReactDOM,
-} from 'react-for-atom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 
 import debounce from '../../commons-node/debounce';
 import invariant from 'assert';

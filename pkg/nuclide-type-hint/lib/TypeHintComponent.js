@@ -11,7 +11,7 @@
 import type {HintTree} from './rpc-types';
 
 import {TextBuffer} from 'atom';
-import {React} from 'react-for-atom';
+import React from 'react';
 import {AtomTextEditor} from '../../nuclide-ui/AtomTextEditor';
 
 // Complex types can end up being super long. Truncate them.

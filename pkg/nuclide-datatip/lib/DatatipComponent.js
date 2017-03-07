@@ -8,7 +8,7 @@
  * @flow
  */
 
-import {React} from 'react-for-atom';
+import React from 'react';
 import {maybeToString} from '../../commons-node/string';
 
 export const DATATIP_ACTIONS = Object.freeze({

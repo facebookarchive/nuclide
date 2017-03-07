@@ -16,7 +16,8 @@ import InteractiveFileChanges from './ui/InteractiveFileChanges';
 import {isValidTextEditor} from '../../commons-atom/text-editor';
 import {Observable} from 'rxjs';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
-import {React, ReactDOM} from 'react-for-atom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 import {repositoryForPath} from '../../commons-atom/vcs';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 

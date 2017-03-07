@@ -11,7 +11,7 @@
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {VcsLogEntry} from '../../nuclide-hg-rpc/lib/HgService';
 
-import {React} from 'react-for-atom';
+import React from 'react';
 import {getAtomProjectRelativePath} from '../../commons-atom/projects';
 import {shell} from 'electron';
 import {shortNameForAuthor} from './util';

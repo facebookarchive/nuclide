@@ -11,7 +11,7 @@
 import type {Level, Record, Executor, OutputProvider} from '../types';
 
 import classnames from 'classnames';
-import {React} from 'react-for-atom';
+import React from 'react';
 import {LazyNestedValueComponent} from '../../../nuclide-ui/LazyNestedValueComponent';
 import SimpleValueComponent from '../../../nuclide-ui/SimpleValueComponent';
 import shallowEqual from 'shallowequal';

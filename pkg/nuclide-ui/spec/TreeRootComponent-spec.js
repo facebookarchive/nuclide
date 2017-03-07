@@ -11,7 +11,9 @@
 import type {LazyTreeNode} from '../LazyTreeNode';
 
 import {LazyTestTreeNode} from './LazyTestTreeNode';
-import {React, ReactDOM, TestUtils} from 'react-for-atom';
+import React from 'react';
+import ReactDOM from 'react-dom';
+import TestUtils from 'react-addons-test-utils';
 import {TreeNodeComponent} from '../TreeNodeComponent';
 import {TreeRootComponent} from '../TreeRootComponent';
 import invariant from 'assert';

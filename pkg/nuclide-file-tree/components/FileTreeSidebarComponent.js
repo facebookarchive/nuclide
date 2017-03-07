@@ -11,10 +11,8 @@
 import type {FileChangeStatusValue} from '../../commons-atom/vcs';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
-import {
-  React,
-  ReactDOM,
-} from 'react-for-atom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 import {Observable} from 'rxjs';
 
 import {REVEAL_FILE_ON_SWITCH_SETTING, WORKSPACE_VIEW_URI} from '../lib/Constants';

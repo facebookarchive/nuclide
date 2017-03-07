@@ -10,7 +10,7 @@
 
 import type {HandlesByType} from '../../types';
 
-import {React} from 'react-for-atom';
+import React from 'react';
 
 type Props = {
   toolbarJewel: string,

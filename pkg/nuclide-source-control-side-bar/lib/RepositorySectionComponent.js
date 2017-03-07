@@ -22,7 +22,7 @@ import {
 } from '../../nuclide-ui/Button';
 import invariant from 'assert';
 import {MultiRootChangedFilesView} from '../../nuclide-ui/MultiRootChangedFilesView';
-import {React} from 'react-for-atom';
+import React from 'react';
 import {Section} from '../../nuclide-ui/Section';
 import url from 'url';
 import {Observable} from 'rxjs';

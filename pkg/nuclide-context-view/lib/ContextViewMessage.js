@@ -12,7 +12,7 @@
  * A message view to be shown in Context View.
  */
 
-import {React} from 'react-for-atom';
+import React from 'react';
 
 export default class ContextViewMessage extends React.Component {
   static NO_DEFINITION = 'No definition selected.';

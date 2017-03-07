@@ -14,7 +14,8 @@ import {AtomInput} from '../../nuclide-ui/AtomInput';
 import {Button} from '../../nuclide-ui/Button';
 import {ButtonGroup} from '../../nuclide-ui/ButtonGroup';
 import {CompositeDisposable} from 'atom';
-import {React, ReactDOM} from 'react-for-atom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 
 type Props = {
   bookmark: BookmarkInfo,

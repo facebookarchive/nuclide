@@ -10,7 +10,7 @@
 
 import type {OutlineForUi, SerializedOutlineViewPanelState} from '..';
 
-import {React} from 'react-for-atom';
+import React from 'react';
 
 import {renderReactRoot} from '../../commons-atom/renderReactRoot';
 import {OutlineView} from './OutlineView';

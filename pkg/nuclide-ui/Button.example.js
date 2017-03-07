@@ -10,7 +10,7 @@
 
 /* global alert */
 
-import {React} from 'react-for-atom';
+import React from 'react';
 import {Button} from './Button';
 import {ButtonGroup} from './ButtonGroup';
 import {ButtonToolbar} from './ButtonToolbar';

@@ -10,7 +10,7 @@
 
 import type {Observable} from 'rxjs';
 
-import {React} from 'react-for-atom';
+import React from 'react';
 import invariant from 'assert';
 
 // State is set to null indicates that the observable has not

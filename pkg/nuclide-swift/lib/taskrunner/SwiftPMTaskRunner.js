@@ -15,7 +15,7 @@ import type {Directory} from '../../../nuclide-remote-connection';
 import type {SwiftPMTaskRunnerStoreState} from './SwiftPMTaskRunnerStoreState';
 
 import {Observable, Subject} from 'rxjs';
-import {React} from 'react-for-atom';
+import React from 'react';
 import UniversalDisposable from '../../../commons-node/UniversalDisposable';
 import fsPromise from '../../../commons-node/fsPromise';
 import {observeProcess, safeSpawn, exitEventToMessage} from '../../../commons-node/process';

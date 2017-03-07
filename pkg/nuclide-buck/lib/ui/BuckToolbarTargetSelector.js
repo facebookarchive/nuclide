@@ -10,7 +10,7 @@
 
 import type {AppState} from '../types';
 
-import {React} from 'react-for-atom';
+import React from 'react';
 import {Observable} from 'rxjs';
 
 import {Combobox} from '../../../nuclide-ui/Combobox';

@@ -12,7 +12,7 @@ import type {DiagnosticMessage} from '../../nuclide-diagnostics-common';
 import type {IconName} from '../../nuclide-ui/types';
 
 import {compareMessagesByFile} from './paneUtils';
-import {React} from 'react-for-atom';
+import React from 'react';
 import DiagnosticsPanel from './DiagnosticsPanel';
 import {renderReactRoot} from '../../commons-atom/renderReactRoot';
 import {isValidTextEditor} from '../../commons-atom/text-editor';

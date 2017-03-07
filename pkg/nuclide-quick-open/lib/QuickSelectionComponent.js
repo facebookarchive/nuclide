@@ -43,7 +43,8 @@ import Tabs from '../../nuclide-ui/Tabs';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import humanizeKeystroke from '../../commons-node/humanizeKeystroke';
-import {React, ReactDOM} from 'react-for-atom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 import classnames from 'classnames';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {

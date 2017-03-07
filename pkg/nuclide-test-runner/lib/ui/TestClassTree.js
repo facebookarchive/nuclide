@@ -11,7 +11,7 @@
 import type {LazyTreeNode} from '../../../nuclide-ui/LazyTreeNode';
 import type TestSuiteModel from '../TestSuiteModel';
 
-import {React} from 'react-for-atom';
+import React from 'react';
 import {PanelComponentScroller} from '../../../nuclide-ui/PanelComponentScroller';
 import TestClassTreeNode from './TestClassTreeNode';
 import {TreeRootComponent} from '../../../nuclide-ui/TreeRootComponent';

@@ -13,7 +13,8 @@ import {CompositeDisposable, Emitter} from 'atom';
 import {LazyTreeNode} from './LazyTreeNode';
 import {TreeNodeComponent} from './TreeNodeComponent';
 import {forEachCachedNode} from './tree-node-traversals';
-import {React, ReactDOM} from 'react-for-atom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 
 type TreeMenuItemDefinition = {
   label: string,

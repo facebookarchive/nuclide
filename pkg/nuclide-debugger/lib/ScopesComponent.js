@@ -16,9 +16,7 @@ import type {
 import {WatchExpressionStore} from './WatchExpressionStore';
 import type {Observable} from 'rxjs';
 
-import {
-  React,
-} from 'react-for-atom';
+import React from 'react';
 import {LazyNestedValueComponent} from '../../nuclide-ui/LazyNestedValueComponent';
 import SimpleValueComponent from '../../nuclide-ui/SimpleValueComponent';
 import {Section} from '../../nuclide-ui/Section';

@@ -10,7 +10,7 @@
 
 import type {NuclideUri} from '../../../commons-node/nuclideUri';
 
-import {React} from 'react-for-atom';
+import React from 'react';
 import {Button, ButtonTypes} from '../../../nuclide-ui/Button';
 import {ButtonGroup} from '../../../nuclide-ui/ButtonGroup';
 import {Checkbox} from '../../../nuclide-ui/Checkbox';

@@ -11,10 +11,8 @@
 import type {IconName} from './types';
 
 import classnames from 'classnames';
-import {
-  React,
-  ReactDOM,
-} from 'react-for-atom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 import {maybeToString} from '../commons-node/string';
 import addTooltip from './add-tooltip';
 

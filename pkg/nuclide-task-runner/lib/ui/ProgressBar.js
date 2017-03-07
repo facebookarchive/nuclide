@@ -10,7 +10,7 @@
 
 import invariant from 'assert';
 import classnames from 'classnames';
-import {React} from 'react-for-atom';
+import React from 'react';
 
 type Props = {
   progress: ?number,

@@ -14,10 +14,8 @@ import type {
 } from '../../nuclide-diagnostics-common';
 
 import classnames from 'classnames';
-import {
-  React,
-  ReactDOM,
-} from 'react-for-atom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {track} from '../../nuclide-analytics';

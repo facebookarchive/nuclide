@@ -17,7 +17,8 @@ import {View} from '../../../nuclide-ui/View';
 import {ToggleButton} from './ToggleButton';
 import invariant from 'assert';
 import classnames from 'classnames';
-import {React, ReactDOM} from 'react-for-atom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 import {Observable, Subject} from 'rxjs';
 
 const MINIMUM_SIZE = 100;

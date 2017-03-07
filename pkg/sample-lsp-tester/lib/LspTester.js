@@ -20,7 +20,7 @@ import {SimpleModel} from '../../commons-node/SimpleModel';
 import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
 import {PanelView} from './PanelView';
 import child_process from 'child_process';
-import {React} from 'react-for-atom';
+import React from 'react';
 import * as rpc from 'vscode-jsonrpc';
 import invariant from 'assert';
 import {Observable, ReplaySubject, Scheduler} from 'rxjs';

@@ -19,7 +19,8 @@ import UniversalDisposable from '../commons-node/UniversalDisposable';
 import {Observable} from 'rxjs';
 import {AtomInput} from './AtomInput';
 import {Portal} from './Portal';
-import {React, ReactDOM} from 'react-for-atom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 
 type DefaultProps = {
   className: string,

@@ -9,7 +9,7 @@
  */
 
 import classnames from 'classnames';
-import {React} from 'react-for-atom';
+import React from 'react';
 
 export type HighlightColor = 'default' | 'info' | 'success' | 'warning' | 'error';
 

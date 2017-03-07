@@ -11,7 +11,7 @@
 import {DebuggerLaunchAttachProvider} from '../../../nuclide-debugger-base';
 import {DebugUiComponent} from './DebugUiComponent';
 import invariant from 'assert';
-import {React} from 'react-for-atom';
+import React from 'react';
 
 import type EmitterEvent from 'events';
 

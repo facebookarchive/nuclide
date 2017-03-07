@@ -15,7 +15,8 @@ import type {
 
 import classnames from 'classnames';
 import {NavigationSectionStatus} from './constants';
-import {React, ReactDOM} from 'react-for-atom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 
 type DiffNavigationBarProps = {
   navigationSections: Array<NavigationSection>,

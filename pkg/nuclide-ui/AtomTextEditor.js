@@ -11,10 +11,8 @@
 
 import invariant from 'assert';
 import classnames from 'classnames';
-import {
-  React,
-  ReactDOM,
-} from 'react-for-atom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 import {TextBuffer} from 'atom';
 import {
   enforceReadOnly,

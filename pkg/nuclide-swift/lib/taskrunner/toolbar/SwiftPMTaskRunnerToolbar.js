@@ -8,7 +8,7 @@
  * @flow
  */
 
-import {React} from 'react-for-atom';
+import React from 'react';
 import {Button, ButtonSizes} from '../../../../nuclide-ui/Button';
 import SwiftPMSettingsModal from './SwiftPMSettingsModal';
 

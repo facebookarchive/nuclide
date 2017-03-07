@@ -32,7 +32,7 @@ import {
   pixelRangeForNavigationSection,
   navigationSectionStatusToEditorElement,
 } from '../DiffViewComponent';
-import {React} from 'react-for-atom';
+import React from 'react';
 import {
   clickEventToScrollLineNumber,
   DiffNavigationBar,

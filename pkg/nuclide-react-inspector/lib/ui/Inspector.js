@@ -8,7 +8,7 @@
  * @flow
  */
 
-import {React} from 'react-for-atom';
+import React from 'react';
 import {Webview} from '../../../nuclide-ui/Webview';
 
 export const WORKSPACE_VIEW_URI = 'atom://nuclide/react-inspector';

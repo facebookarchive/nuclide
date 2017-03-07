@@ -12,7 +12,7 @@ import type {Observable} from 'rxjs';
 import type {OutlineForUi, OutlineTreeForUi} from './main';
 import type {TextToken} from '../../commons-node/tokenizedText-rpc-types';
 
-import {React} from 'react-for-atom';
+import React from 'react';
 import invariant from 'assert';
 import classnames from 'classnames';
 

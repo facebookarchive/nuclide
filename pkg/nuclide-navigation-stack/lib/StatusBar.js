@@ -11,7 +11,7 @@
 import type {NavigationStackController} from './NavigationStackController';
 import type {Observable} from 'rxjs';
 
-import {React} from 'react-for-atom';
+import React from 'react';
 import {Disposable} from 'atom';
 import {renderReactRoot} from '../../commons-atom/renderReactRoot';
 import {Button} from '../../nuclide-ui/Button';

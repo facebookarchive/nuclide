@@ -14,11 +14,9 @@ import {FileTreeEntryComponent} from '../components/FileTreeEntryComponent';
 import {WorkingSet} from '../../nuclide-working-sets-common';
 import Immutable from 'immutable';
 
-import {
-  React,
-  ReactDOM,
-  TestUtils,
-} from 'react-for-atom';
+import React from 'react';
+import ReactDOM from 'react-dom';
+import TestUtils from 'react-addons-test-utils';
 
 function renderEntryComponentIntoDocument(
   componentKlass: Object,

@@ -8,7 +8,7 @@
  * @flow
  */
 
-import {React} from 'react-for-atom';
+import React from 'react';
 import {Section} from '../../nuclide-ui/Section';
 import {track} from '../../nuclide-analytics';
 

@@ -17,7 +17,7 @@ import {ProgressBar} from './ProgressBar';
 import {TaskRunnerButton} from './TaskRunnerButton';
 import {Dropdown} from '../../../nuclide-ui/Dropdown';
 import classnames from 'classnames';
-import {React} from 'react-for-atom';
+import React from 'react';
 import invariant from 'assert';
 
 type Props = {

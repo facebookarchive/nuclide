@@ -16,7 +16,7 @@ import {AtomTextEditor} from '../../nuclide-ui/AtomTextEditor';
 import {Button} from '../../nuclide-ui/Button';
 import {ButtonGroup} from '../../nuclide-ui/ButtonGroup';
 import invariant from 'assert';
-import {React} from 'react-for-atom';
+import React from 'react';
 import {Observable} from 'rxjs';
 
 export type Message = {|

@@ -25,9 +25,7 @@ import {
   DiffMode,
   DIFF_EDITOR_MARKER_CLASS,
 } from '../constants';
-import {
-  React,
-} from 'react-for-atom';
+import React from 'react';
 import {
   centerScrollToBufferLine,
   navigationSectionStatusToEditorElement,

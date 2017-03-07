@@ -12,7 +12,7 @@ import type {HomeFragments} from './types';
 import type {Observable, BehaviorSubject} from 'rxjs';
 
 import Immutable from 'immutable';
-import {React} from 'react-for-atom';
+import React from 'react';
 import HomeFeatureComponent from './HomeFeatureComponent';
 import NuclideLogo from './NuclideLogo';
 import createUtmUrl from './createUtmUrl';

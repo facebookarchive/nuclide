@@ -21,7 +21,7 @@ import {
 import {goToLocation} from '../commons-atom/go-to-location';
 import invariant from 'assert';
 import nuclideUri from '../commons-node/nuclideUri';
-import {React} from 'react-for-atom';
+import React from 'react';
 import UniversalDisposable from '../commons-node/UniversalDisposable';
 import ChangedFilesList from './ChangedFilesList';
 

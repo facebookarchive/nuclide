@@ -22,7 +22,7 @@ import {Icon} from '../../nuclide-ui/Icon';
 import {debug} from './HhvmDebug';
 import HhvmToolbar from './HhvmToolbar';
 import ProjectStore from './ProjectStore';
-import {React} from 'react-for-atom';
+import React from 'react';
 
 export default class HhvmBuildSystem {
   id: string;

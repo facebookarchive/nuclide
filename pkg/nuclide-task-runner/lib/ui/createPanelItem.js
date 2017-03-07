@@ -15,7 +15,7 @@ import {viewableFromReactElement} from '../../../commons-atom/viewableFromReactE
 import {nextAnimationFrame, throttle} from '../../../commons-node/observable';
 import * as Actions from '../redux/Actions';
 import {Toolbar} from './Toolbar';
-import {React} from 'react-for-atom';
+import React from 'react';
 import {Observable} from 'rxjs';
 import shallowequal from 'shallowequal';
 

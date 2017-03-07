@@ -9,10 +9,8 @@
  */
 
 import classnames from 'classnames';
-import {
-  React,
-  ReactDOM,
-} from 'react-for-atom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 import {Disposable} from 'atom';
 import {Icon} from './Icon';
 

@@ -10,7 +10,7 @@
 
 import type {IconName} from '../../nuclide-ui/types';
 
-import {React} from 'react-for-atom';
+import React from 'react';
 
 export const WORKSPACE_VIEW_URI_B = 'atom://nuclide/sample-workspace-views-example-b';
 

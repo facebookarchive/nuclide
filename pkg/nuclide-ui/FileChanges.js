@@ -12,7 +12,7 @@ import {
   Range,
   TextBuffer,
 } from 'atom';
-import {React} from 'react-for-atom';
+import React from 'react';
 import {pluralize} from '../commons-node/string';
 import UniversalDisposable from '../commons-node/UniversalDisposable';
 import {AtomTextEditor} from './AtomTextEditor';

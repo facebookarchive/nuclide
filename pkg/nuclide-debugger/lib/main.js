@@ -43,7 +43,7 @@ import {
 import RemoteControlService from './RemoteControlService';
 import DebuggerModel, {WORKSPACE_VIEW_URI} from './DebuggerModel';
 import {debuggerDatatip} from './DebuggerDatatip';
-import {React} from 'react-for-atom';
+import React from 'react';
 import {DebuggerLaunchAttachUI} from './DebuggerLaunchAttachUI';
 import {renderReactRoot} from '../../commons-atom/renderReactRoot';
 import nuclideUri from '../../commons-node/nuclideUri';

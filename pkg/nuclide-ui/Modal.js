@@ -10,7 +10,7 @@
 
 import UniversalDisposable from '../commons-node/UniversalDisposable';
 import {Portal} from './Portal';
-import {React} from 'react-for-atom';
+import React from 'react';
 import {Observable} from 'rxjs';
 
 type Props = {

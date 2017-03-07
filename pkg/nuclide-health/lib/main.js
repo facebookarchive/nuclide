@@ -15,7 +15,7 @@ import type {HealthStats, PaneItemState} from './types';
 // Imports from non-Nuclide modules.
 import invariant from 'assert';
 import {Disposable} from 'atom';
-import {React} from 'react-for-atom';
+import React from 'react';
 import {Observable} from 'rxjs';
 
 // Imports from other Nuclide packages.

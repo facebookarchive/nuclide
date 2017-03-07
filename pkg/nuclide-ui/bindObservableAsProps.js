@@ -10,7 +10,7 @@
 
 import type {Observable} from 'rxjs';
 
-import {React} from 'react-for-atom';
+import React from 'react';
 
 /**
  * Injects any key/value pairs from the given Observable value into the component as named props.

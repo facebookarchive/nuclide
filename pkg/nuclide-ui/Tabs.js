@@ -11,7 +11,7 @@
 import type {IconName} from './types';
 
 import {Icon} from './Icon';
-import {React} from 'react-for-atom';
+import React from 'react';
 import classnames from 'classnames';
 import nullthrows from 'nullthrows';
 

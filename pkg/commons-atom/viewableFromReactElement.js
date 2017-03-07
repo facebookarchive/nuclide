@@ -8,7 +8,8 @@
  * @flow
  */
 
-import {React, ReactDOM} from 'react-for-atom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 import ReactMountRootElement from '../nuclide-ui/ReactMountRootElement';
 
 /**

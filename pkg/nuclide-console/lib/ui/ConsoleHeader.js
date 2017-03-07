@@ -11,7 +11,7 @@
 import type {Source} from '../types';
 
 import classnames from 'classnames';
-import {React} from 'react-for-atom';
+import React from 'react';
 import {AtomInput} from '../../../nuclide-ui/AtomInput';
 import {ButtonGroup} from '../../../nuclide-ui/ButtonGroup';
 import {FunnelIcon} from './FunnelIcon';

@@ -8,7 +8,7 @@
  * @flow
  */
 
-import {React} from 'react-for-atom';
+import React from 'react';
 import {Button} from '../../nuclide-ui/Button';
 import {FileTreeStore} from '../lib/FileTreeStore';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';

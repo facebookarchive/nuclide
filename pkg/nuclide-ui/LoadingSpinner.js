@@ -10,7 +10,7 @@
 
 import addTooltip from './add-tooltip';
 import classnames from 'classnames';
-import {React} from 'react-for-atom';
+import React from 'react';
 
 type LoadingSpinnerSize = 'EXTRA_SMALL' | 'SMALL' | 'MEDIUM' | 'LARGE';
 type Props = {

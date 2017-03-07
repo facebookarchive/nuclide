@@ -8,7 +8,7 @@
  * @flow
  */
 
-import {React} from 'react-for-atom';
+import React from 'react';
 
 // Globally unique ID used as the "name" attribute to group radio inputs.
 let uid = 0;

@@ -16,9 +16,7 @@ import type {
 import {WatchExpressionStore} from './WatchExpressionStore';
 import type {Observable} from 'rxjs';
 
-import {
-  React,
-} from 'react-for-atom';
+import React from 'react';
 import classnames from 'classnames';
 import {AtomInput} from '../../nuclide-ui/AtomInput';
 import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';

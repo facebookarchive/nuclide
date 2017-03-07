@@ -9,9 +9,7 @@
  */
 
 import classnames from 'classnames';
-import {
-  React,
-} from 'react-for-atom';
+import React from 'react';
 import type {
   Callstack,
   CallstackItem,

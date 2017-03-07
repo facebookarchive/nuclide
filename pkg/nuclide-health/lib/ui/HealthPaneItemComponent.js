@@ -10,7 +10,7 @@
 
 import type {HandlesByType, ChildProcessInfo} from '../types';
 
-import {React} from 'react-for-atom';
+import React from 'react';
 import BasicStatsSectionComponent from './sections/BasicStatsSectionComponent';
 import ActiveHandlesSectionComponent from './sections/ActiveHandlesSectionComponent';
 import ChildProcessTreeComponent from './sections/ChildProcessTreeComponent';

@@ -10,7 +10,7 @@
 
 import {loggedCalls} from '../../../../commons-node/process';
 
-import {React} from 'react-for-atom';
+import React from 'react';
 
 export default class CommandsSectionComponent extends React.Component {
   _lastRenderCount: number;

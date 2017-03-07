@@ -13,7 +13,7 @@ import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 
 import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {React} from 'react-for-atom';
+import React from 'react';
 import SettingsPaneItem, {WORKSPACE_VIEW_URI} from './SettingsPaneItem';
 
 let subscriptions: UniversalDisposable = (null: any);

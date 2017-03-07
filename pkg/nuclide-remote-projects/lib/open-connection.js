@@ -24,7 +24,8 @@ import CreateConnectionProfileForm from './CreateConnectionProfileForm';
 import {getLogger} from '../../nuclide-logging';
 import {getUniqueHostsForProfiles} from './connection-profile-utils';
 import {PromiseQueue} from '../../commons-node/promise-executors';
-import {React, ReactDOM} from 'react-for-atom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 
 const logger = getLogger();
 let dialogPromiseQueue: ?PromiseQueue = null;

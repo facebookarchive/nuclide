@@ -9,7 +9,7 @@
  */
 
 import nuclideUri from '../../commons-node/nuclideUri';
-import {React} from 'react-for-atom';
+import React from 'react';
 
 import type {
   FileResult,

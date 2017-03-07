@@ -23,7 +23,8 @@ import {syncPaneItemVisibility} from './syncPaneItemVisibility';
 import * as PanelLocationIds from './PanelLocationIds';
 import {PanelComponent} from './ui/PanelComponent';
 import nullthrows from 'nullthrows';
-import {React, ReactDOM} from 'react-for-atom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 import {BehaviorSubject, Observable, Scheduler} from 'rxjs';
 
 type State = {

@@ -22,7 +22,7 @@ import {AtomTextEditor} from '../../nuclide-ui/AtomTextEditor';
 import {Checkbox} from '../../nuclide-ui/Checkbox';
 import classnames from 'classnames';
 import {DiffMode, PublishMode, PublishModeState} from './constants';
-import {React} from 'react-for-atom';
+import React from 'react';
 import {
   Button,
   ButtonSizes,

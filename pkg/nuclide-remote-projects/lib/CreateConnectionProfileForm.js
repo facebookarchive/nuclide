@@ -16,10 +16,8 @@ import type {
 } from './connection-types';
 
 import {AtomInput} from '../../nuclide-ui/AtomInput';
-import {
-  React,
-  ReactDOM,
-} from 'react-for-atom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
 import ConnectionDetailsForm from './ConnectionDetailsForm';

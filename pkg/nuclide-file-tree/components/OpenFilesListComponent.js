@@ -10,7 +10,7 @@
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
-import {React} from 'react-for-atom';
+import React from 'react';
 import classnames from 'classnames';
 import {PanelComponentScroller} from '../../nuclide-ui/PanelComponentScroller';
 import FileTreeHelpers from '../lib/FileTreeHelpers';

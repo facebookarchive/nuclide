@@ -15,7 +15,7 @@ import type {
 import type DiffViewModel from './DiffViewModel';
 
 import {MultiRootChangedFilesView} from '../../nuclide-ui/MultiRootChangedFilesView';
-import {React} from 'react-for-atom';
+import React from 'react';
 import DiffTimelineView from './DiffTimelineView';
 import DiffCommitView from './DiffCommitView';
 import DiffPublishView from './DiffPublishView';

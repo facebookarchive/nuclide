@@ -16,7 +16,7 @@ import type {CoverageProvider} from './types';
 import type {CoverageResult} from './rpc-types';
 
 import invariant from 'assert';
-import {React} from 'react-for-atom';
+import React from 'react';
 import {Subscription} from 'rxjs';
 
 import {StatusBarTileComponent} from './StatusBarTileComponent';

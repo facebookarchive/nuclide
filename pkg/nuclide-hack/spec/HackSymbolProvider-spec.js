@@ -12,10 +12,8 @@ import type {HackSearchPosition} from '../../nuclide-hack-rpc/lib/HackService-ty
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import {HackSymbolProvider} from '../lib/HackSymbolProvider';
-import {
-  ReactDOM,
-  TestUtils,
-} from 'react-for-atom';
+import ReactDOM from 'react-dom';
+import TestUtils from 'react-addons-test-utils';
 import {clearRequireCache, uncachedRequire} from '../../nuclide-test-helpers';
 import invariant from 'assert';
 

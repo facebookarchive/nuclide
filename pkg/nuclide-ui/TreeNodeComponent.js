@@ -10,7 +10,8 @@
 
 import type {LazyTreeNode} from './LazyTreeNode';
 
-import {React, ReactDOM} from 'react-for-atom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 import classnames from 'classnames';
 
 const INDENT_IN_PX = 10;

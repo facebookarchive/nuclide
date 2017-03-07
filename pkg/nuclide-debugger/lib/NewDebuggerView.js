@@ -15,9 +15,7 @@ import type {
 } from './WatchExpressionListStore';
 
 import {CompositeDisposable} from 'atom';
-import {
-  React,
-} from 'react-for-atom';
+import React from 'react';
 import {Section} from '../../nuclide-ui/Section';
 import {Button} from '../../nuclide-ui/Button';
 import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';

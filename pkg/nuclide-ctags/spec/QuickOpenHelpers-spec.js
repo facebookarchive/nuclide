@@ -11,10 +11,8 @@
 import type {CtagsResult} from '../../nuclide-ctags-rpc';
 
 import invariant from 'assert';
-import {
-  ReactDOM,
-  TestUtils,
-} from 'react-for-atom';
+import ReactDOM from 'react-dom';
+import TestUtils from 'react-addons-test-utils';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import * as hackService from '../../nuclide-hack/lib/HackLanguage';
 import QuickOpenHelpers from '../lib/QuickOpenHelpers';

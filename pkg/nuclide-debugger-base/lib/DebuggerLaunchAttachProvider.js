@@ -8,7 +8,7 @@
  * @flow
  */
 
-import type React from 'react-for-atom';
+import type React from 'react';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import type EventEmitter from 'events';

@@ -15,7 +15,7 @@ import {Icon} from './Icon';
 import classnames from 'classnames';
 import invariant from 'assert';
 import electron from 'electron';
-import {React} from 'react-for-atom';
+import React from 'react';
 
 const {remote} = electron;
 invariant(remote != null);

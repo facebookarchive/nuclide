@@ -12,7 +12,8 @@ import type {CoverageProvider} from './types';
 import type {CoverageResult} from './rpc-types';
 import type {ObservableDiagnosticProvider} from '../../nuclide-diagnostics-common';
 
-import {React, ReactDOM} from 'react-for-atom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 
 import {Disposable} from 'atom';
 

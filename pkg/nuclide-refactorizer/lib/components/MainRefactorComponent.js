@@ -13,7 +13,7 @@ import type {
   RefactorState,
 } from '../types';
 
-import {React} from 'react-for-atom';
+import React from 'react';
 import invariant from 'assert';
 
 import {Button} from '../../../nuclide-ui/Button';

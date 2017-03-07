@@ -9,7 +9,7 @@
  */
 
 import {CompositeDisposable} from 'atom';
-import {React} from 'react-for-atom';
+import React from 'react';
 
 type Props = {
   instructions: string,

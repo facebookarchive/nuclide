@@ -10,7 +10,7 @@
 
 import typeof * as BoundActionCreators from '../redux/Actions';
 
-import {React} from 'react-for-atom';
+import React from 'react';
 import {track} from '../../../nuclide-analytics';
 
 type Props = {

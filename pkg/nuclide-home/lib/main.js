@@ -18,7 +18,7 @@ import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
 import HomePaneItem, {WORKSPACE_VIEW_URI} from './HomePaneItem';
 import Immutable from 'immutable';
-import {React} from 'react-for-atom';
+import React from 'react';
 import {BehaviorSubject} from 'rxjs';
 import {shell} from 'electron';
 

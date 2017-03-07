@@ -8,7 +8,7 @@
  * @flow
  */
 
-import {React} from 'react-for-atom';
+import React from 'react';
 import BreakpointStore from './BreakpointStore.js';
 import DebuggerInspector from './DebuggerInspector';
 import {DebuggerStore} from './DebuggerStore';

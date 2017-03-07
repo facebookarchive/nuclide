@@ -10,7 +10,7 @@
 
 import type {TaskSettings} from '../types';
 
-import {React} from 'react-for-atom';
+import React from 'react';
 import {quote} from 'shell-quote';
 
 import {shellParse} from '../../../commons-node/string';

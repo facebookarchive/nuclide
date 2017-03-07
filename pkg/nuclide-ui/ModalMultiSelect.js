@@ -16,7 +16,7 @@ import {ButtonGroup} from './ButtonGroup';
 import {Modal} from './Modal';
 import {MultiSelectList} from './MultiSelectList';
 import classnames from 'classnames';
-import {React} from 'react-for-atom';
+import React from 'react';
 
 type Option = {
   label: React.Children,

@@ -11,7 +11,8 @@
 import type {EditorElementsMap, LineMapper, OffsetMap} from './types';
 
 import {Range} from 'atom';
-import {React, ReactDOM} from 'react-for-atom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 import {concatIterators} from '../../commons-node/collection';
 import {syncBlockDecorations} from '../../commons-atom/block-decorations';
 

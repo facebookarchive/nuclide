@@ -9,7 +9,7 @@
  */
 
 import {TextBuffer} from 'atom';
-import {React} from 'react-for-atom';
+import React from 'react';
 import {Block} from './Block';
 import {AtomInput} from './AtomInput';
 import {AtomTextEditor} from './AtomTextEditor';

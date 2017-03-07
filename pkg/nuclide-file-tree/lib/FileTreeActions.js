@@ -19,7 +19,7 @@ import {hgConstants} from '../../nuclide-hg-rpc';
 import {getLogger} from '../../nuclide-logging';
 import nuclideUri from '../../commons-node/nuclideUri';
 
-import type React from 'react-for-atom';
+import type React from 'react';
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import type {StatusCodeNumberValue} from '../../nuclide-hg-rpc/lib/HgService';
 import type {WorkingSet} from '../../nuclide-working-sets-common';

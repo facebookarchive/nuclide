@@ -12,7 +12,7 @@ import type {DiagnosticMessage} from '../../nuclide-diagnostics-common';
 import type {Column} from '../../nuclide-ui/Table';
 
 import classnames from 'classnames';
-import {React} from 'react-for-atom';
+import React from 'react';
 import {goToLocation} from '../../commons-atom/go-to-location';
 import {track} from '../../nuclide-analytics';
 import {Table} from '../../nuclide-ui/Table';

@@ -15,7 +15,7 @@ import type {
 } from '../nuclide-debugger/lib/types';
 import type {Observable} from 'rxjs';
 
-import {React} from 'react-for-atom';
+import React from 'react';
 import invariant from 'assert';
 import {bindObservableAsProps} from './bindObservableAsProps';
 import {highlightOnUpdate} from './highlightOnUpdate';

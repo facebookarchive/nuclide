@@ -10,7 +10,7 @@
 
 import type {ChildProcessInfo} from '../../types';
 
-import {React} from 'react-for-atom';
+import React from 'react';
 import HandlesTableComponent from './HandlesTableComponent';
 
 type Props = {

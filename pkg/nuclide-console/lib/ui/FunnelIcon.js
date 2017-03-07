@@ -8,7 +8,7 @@
  * @flow
  */
 
-import {React} from 'react-for-atom';
+import React from 'react';
 
 export function FunnelIcon(): React.Element<any> {
   /* eslint-disable max-len */

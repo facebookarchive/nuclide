@@ -12,7 +12,7 @@ import type {
   Trace,
 } from '../nuclide-diagnostics-common/lib/rpc-types';
 
-import {React} from 'react-for-atom';
+import React from 'react';
 import {DiagnosticsMessageText} from './DiagnosticsMessageText';
 
 type DiagnosticsTraceItemProps = {

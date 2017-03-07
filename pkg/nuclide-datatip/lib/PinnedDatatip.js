@@ -16,10 +16,8 @@ type Position = {
 };
 
 import {CompositeDisposable, Disposable} from 'atom';
-import {
-  React,
-  ReactDOM,
-} from 'react-for-atom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 import {Observable} from 'rxjs';
 import invariant from 'assert';
 
