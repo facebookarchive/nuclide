@@ -10,7 +10,7 @@
 
 import type {NuclideUri} from '../commons-node/nuclideUri';
 
-import {Directory} from 'atom';
+import {File, Directory} from 'atom';
 import nuclideUri from '../commons-node/nuclideUri';
 
 function getValidProjectPaths(): Array<string> {
@@ -35,6 +35,41 @@ export function getAtomProjectRelativePath(path: NuclideUri): ?string {
 export function getAtomProjectRootPath(path: NuclideUri): ?string {
   const [projectPath] = atom.project.relativizePath(path);
   return projectPath;
+}
+
+/**
+ * Like `atom.project.relativizePath`, except it returns the `Directory` rather than the path.
+ * It also works for non-children, i.e. this can return `../../x`.
+ *
+ * This is intended to be used as a way to get a File object for any path
+ * without worrying about remote vs. local paths.
+ */
+export function relativizePathWithDirectory(path: NuclideUri): [?Directory, NuclideUri] {
+  for (const directory of atom.project.getDirectories()) {
+    try {
+      const relativePath = nuclideUri.relative(directory.getPath(), path);
+      return [directory, relativePath];
+    } catch (e) {
+      // We have a remote-local mismatch or hostname mismatch.
+    }
+  }
+  return [null, path];
+}
+
+export function getDirectoryForPath(path: NuclideUri): ?Directory {
+  const [directory, relativePath] = relativizePathWithDirectory(path);
+  if (directory == null) {
+    return null;
+  }
+  return directory.getSubdirectory(relativePath);
+}
+
+export function getFileForPath(path: NuclideUri): ?File {
+  const [directory, relativePath] = relativizePathWithDirectory(path);
+  if (directory == null) {
+    return null;
+  }
+  return directory.getFile(relativePath);
 }
 
 export function observeProjectPaths(callback: (projectPath: string) => any): IDisposable {

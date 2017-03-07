@@ -8,8 +8,11 @@
  * @flow
  */
 
+import invariant from 'assert';
 import temp from 'temp';
+import nuclideUri from '../../commons-node/nuclideUri';
 import {
+  getFileForPath,
   observeProjectPaths,
   onDidAddProjectPath,
   onDidRemoveProjectPath,
@@ -24,6 +27,21 @@ describe('projects', () => {
     // `atom.project.addPath` only works for paths that actually exist.
     firstProjectPath = temp.mkdirSync('firstProjectPath');
     otherProjectPath = temp.mkdirSync('otherProjectPath');
+  });
+
+  describe('getFileForPath', () => {
+    it('works for paths both above and below the project path', () => {
+      atom.project.setPaths([firstProjectPath]);
+      const path1 = nuclideUri.join(firstProjectPath, '../test');
+      const file1 = getFileForPath(path1);
+      invariant(file1 != null);
+      expect(file1.getPath()).toBe(path1);
+
+      const path2 = nuclideUri.join(firstProjectPath, 'child/path');
+      const file2 = getFileForPath(path2);
+      invariant(file2 != null);
+      expect(file2.getPath()).toBe(path2);
+    });
   });
 
   describe('observeProjectPaths()', () => {
