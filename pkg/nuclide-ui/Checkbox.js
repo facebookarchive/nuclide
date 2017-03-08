@@ -20,6 +20,7 @@ type DefaultProps = {
   indeterminate: boolean,
   label: string,
   onClick: (event: SyntheticMouseEvent) => mixed,
+  onMouseDown: (event: SyntheticMouseEvent) => mixed,
 };
 
 type Props = {
@@ -32,6 +33,7 @@ type Props = {
   onClick: (event: SyntheticMouseEvent) => mixed,
   tooltip?: atom$TooltipsAddOptions,
   title?: ?string,
+  onMouseDown: (event: SyntheticMouseEvent) => mixed,
 };
 
 /**
@@ -46,6 +48,7 @@ export class Checkbox extends React.PureComponent {
     indeterminate: false,
     label: '',
     onClick(event) {},
+    onMouseDown(event) {},
   };
 
   constructor(props: Object) {
@@ -88,6 +91,7 @@ export class Checkbox extends React.PureComponent {
       onClick,
       tooltip,
       title,
+      onMouseDown,
     } = this.props;
 
     const ref = tooltip ? addTooltip(tooltip) : null;
@@ -107,6 +111,7 @@ export class Checkbox extends React.PureComponent {
           className="input-checkbox nuclide-ui-checkbox"
           disabled={disabled}
           onChange={this._onChange}
+          onMouseDown={onMouseDown}
           ref="input"
           type="checkbox"
         />

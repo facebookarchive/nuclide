@@ -69,6 +69,7 @@ export class FileTreeEntryComponent extends React.Component {
 
     (this: any)._checkboxOnChange = this._checkboxOnChange.bind(this);
     (this: any)._checkboxOnClick = this._checkboxOnClick.bind(this);
+    (this: any)._checkboxOnMouseDown = this._checkboxOnMouseDown.bind(this);
 
     this.state = {
       isLoading: false,
@@ -229,6 +230,7 @@ export class FileTreeEntryComponent extends React.Component {
         indeterminate={this.props.node.checkedStatus === 'partial'}
         onChange={this._checkboxOnChange}
         onClick={this._checkboxOnClick}
+        onMouseDown={this._checkboxOnMouseDown}
       />
     );
   }
@@ -431,6 +433,12 @@ export class FileTreeEntryComponent extends React.Component {
 
   _checkboxOnClick(event: SyntheticEvent): void {
     event.stopPropagation();
+  }
+
+  _checkboxOnMouseDown(event: SyntheticMouseEvent): void {
+    // Chrome messes with scrolling if a focused input is being scrolled out of view
+    // so we'll just prevent the checkbox from receiving the focus
+    event.preventDefault();
   }
 }
 
