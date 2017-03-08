@@ -15,7 +15,7 @@ import type {ServerStatusType} from '..';
 import type {FlowExecInfoContainer} from './FlowExecInfoContainer';
 
 import os from 'os';
-
+import invariant from 'assert';
 import {BehaviorSubject, Observable} from 'rxjs';
 
 import {getLogger} from '../../nuclide-logging';
@@ -25,6 +25,7 @@ import {track} from '../../nuclide-analytics';
 
 import {
   asyncExecute,
+  safeSpawn,
 } from '../../commons-node/process';
 
 import {niceSafeSpawn} from '../../commons-node/nice';
@@ -34,6 +35,8 @@ import {
 } from './FlowHelpers';
 
 import {ServerStatus} from './FlowConstants';
+import {FlowIDEConnection} from './FlowIDEConnection';
+import {FlowIDEConnectionWatcher} from './FlowIDEConnectionWatcher';
 
 // Names modeled after https://github.com/facebook/flow/blob/master/src/common/flowExitStatus.ml
 export const FLOW_RETURN_CODES = {
@@ -61,10 +64,14 @@ export class FlowProcess {
   _root: string;
   _execInfoContainer: FlowExecInfoContainer;
 
+  _ideConnections: Observable<FlowIDEConnection>;
+
   constructor(root: string, execInfoContainer: FlowExecInfoContainer) {
     this._execInfoContainer = execInfoContainer;
     this._serverStatus = new BehaviorSubject(ServerStatus.UNKNOWN);
     this._root = root;
+
+    this._ideConnections = this._createIDEConnectionStream();
 
     this._serverStatus.subscribe(status => {
       logger.info(`[${status}]: Flow server in ${this._root}`);
@@ -108,6 +115,42 @@ export class FlowProcess {
 
   getServerStatusUpdates(): Observable<ServerStatusType> {
     return this._serverStatus.asObservable();
+  }
+
+  // It is possible for an IDE connection to die. If there are subscribers, it will be automatically
+  // restarted and returned.
+  getIDEConnections(): Observable<FlowIDEConnection> {
+    return this._ideConnections;
+  }
+
+  _createIDEConnectionStream(): Observable<FlowIDEConnection> {
+    let connectionWatcher: ?FlowIDEConnectionWatcher = null;
+    return Observable.fromEventPattern(
+      // Called when the observable is subscribed to
+      handler => {
+        invariant(connectionWatcher == null);
+        connectionWatcher = new FlowIDEConnectionWatcher(
+          () => this._tryCreateIDEProcess(),
+          handler,
+        );
+      },
+      // Called when the observable is unsubscribed from
+      () => {
+        invariant(connectionWatcher != null);
+        connectionWatcher.dispose();
+        connectionWatcher = null;
+      },
+    // multicast and store the current connection and immediately deliver it to new subscribers
+    ).publishReplay(1).refCount();
+  }
+
+  async _tryCreateIDEProcess(): Promise<?child_process$ChildProcess> {
+    await this._serverIsReady();
+    const allExecInfo = await getAllExecInfo(['ide'], this._root, this._execInfoContainer);
+    if (allExecInfo == null) {
+      return null;
+    }
+    return safeSpawn(allExecInfo.pathToFlow, allExecInfo.args, allExecInfo.options);
   }
 
   /**
@@ -330,30 +373,49 @@ export class FlowProcess {
    * execFlow.
    */
   static async execFlowClient(
-    args_: Array<any>,
+    args: Array<any>,
     root: string | null,
     execInfoContainer: FlowExecInfoContainer,
-    options_?: Object = {},
+    options: Object = {},
   ): Promise<?AsyncExecuteReturn> {
-    let args = args_;
-    let options = options_;
-    args = [
-      ...args,
-      '--from', 'nuclide',
-    ];
-    const execInfo = await execInfoContainer.getFlowExecInfo(root);
-    if (execInfo == null) {
+    const allExecInfo = await getAllExecInfo(args, root, execInfoContainer, options);
+    if (allExecInfo == null) {
       return null;
     }
-    options = {
-      ...execInfo.execOptions,
-      ...options,
-    };
-    const ret = await asyncExecute(execInfo.pathToFlow, args, options);
+    const ret = await asyncExecute(allExecInfo.pathToFlow, allExecInfo.args, allExecInfo.options);
     if (ret.exitCode !== 0) {
       // TODO: bubble up the exit code via return value instead
       throw ret;
     }
     return ret;
   }
+}
+
+type AllExecInfo = {
+  args: Array<any>,
+  options: Object,
+  pathToFlow: string,
+};
+
+async function getAllExecInfo(
+  args: Array<any>,
+  root: string | null,
+  execInfoContainer: FlowExecInfoContainer,
+  options: Object = {},
+): Promise<?AllExecInfo> {
+  const execInfo = await execInfoContainer.getFlowExecInfo(root);
+  if (execInfo == null) {
+    return null;
+  }
+  return {
+    args: [
+      ...args,
+      '--from', 'nuclide',
+    ],
+    options: {
+      ...execInfo.execOptions,
+      ...options,
+    },
+    pathToFlow: execInfo.pathToFlow,
+  };
 }

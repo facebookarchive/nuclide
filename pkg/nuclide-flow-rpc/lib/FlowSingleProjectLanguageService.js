@@ -8,8 +8,6 @@
  * @flow
  */
 
-import type {Observable, ConnectableObservable} from 'rxjs';
-
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import {wordAtPositionFromBuffer} from '../../commons-node/range';
 import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
@@ -39,6 +37,7 @@ import type {
 import invariant from 'assert';
 import {Range, Point} from 'simple-text-buffer';
 import {getConfig} from './config';
+import {Observable} from 'rxjs';
 
 import {
   filterResultsByPrefix,
@@ -260,8 +259,41 @@ export class FlowSingleProjectLanguageService {
     };
   }
 
-  observeDiagnostics(): ConnectableObservable<FileDiagnosticUpdate> {
-    throw new Error('Not Yet Implemented');
+  observeDiagnostics(): Observable<FileDiagnosticUpdate> {
+    const ideConnections = this._process.getIDEConnections();
+    return ideConnections
+      .switchMap(ideConnection => ideConnection.observeDiagnostics())
+      .map(diagnosticsJson => {
+        const diagnostics = flowStatusOutputToDiagnostics(diagnosticsJson);
+        const filePathToMessages = new Map();
+
+        for (const diagnostic of diagnostics) {
+          const path = diagnostic.filePath;
+          let diagnosticArray = filePathToMessages.get(path);
+          if (!diagnosticArray) {
+            diagnosticArray = [];
+            filePathToMessages.set(path, diagnosticArray);
+          }
+          diagnosticArray.push(diagnostic);
+        }
+        return filePathToMessages;
+      })
+      .scan(
+        (oldDiagnostics, newDiagnostics) => {
+          for (const [filePath, diagnostics] of oldDiagnostics) {
+            if (diagnostics.length > 0 && !newDiagnostics.has(filePath)) {
+              newDiagnostics.set(filePath, []);
+            }
+          }
+          return newDiagnostics;
+        },
+        new Map(),
+      )
+      .concatMap(filePathToMessages => {
+        const fileDiagnosticUpdates: Array<FileDiagnosticUpdate> = [...filePathToMessages.entries()]
+          .map(([filePath, messages]) => ({filePath, messages}));
+        return Observable.from(fileDiagnosticUpdates);
+      });
   }
 
 
