@@ -89,11 +89,10 @@ export default class DebuggerActions {
         );
       }
       const singleThreadStepping = processInfo.supportSingleThreadStepping();
-      if (singleThreadStepping) {
-        this._store.getSettings().set('SingleThreadStepping', singleThreadStepping);
-        const singleThreadSteppingEnabled = processInfo.singleThreadSteppingEnabled();
-        this.toggleSingleThreadStepping(singleThreadSteppingEnabled);
-      }
+      this._store.getSettings().set('SingleThreadStepping', singleThreadStepping);
+      this.toggleSingleThreadStepping(
+          singleThreadStepping &&
+          processInfo.singleThreadSteppingEnabled());
       if (processInfo.getServiceName() !== 'hhvm' || await passesGK(GK_DEBUGGER_REQUEST_SENDER)) {
         const customControlButtons = processInfo.customControlButtons();
         if (customControlButtons.length > 0) {
