@@ -299,6 +299,12 @@ export class FlowProcess {
    * returned Promise.
    */
   _serverIsReady(): Promise<boolean> {
+    // If the server state is unknown, nobody has tried to do anything flow-related yet. However,
+    // the call to _serverIsReady() implies that somebody wants to. So, kick off a Flow server ping
+    // which will learn the state of the Flow server and start it up if needed.
+    if (this._serverStatus.getValue() === ('unknown': ServerStatusType)) {
+      this._pingServer();
+    }
     return this._serverStatus
       .filter(x => x === ServerStatus.READY)
       .map(() => true)
