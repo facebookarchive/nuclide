@@ -1,142 +1,140 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import typeof * as RemoteCommandServiceType
-  from '../../nuclide-remote-atom-rpc/lib/RemoteCommandService';
-import type {AtomCommands, AtomFileEvent} from '../../nuclide-remote-atom-rpc/lib/rpc-types';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {ConnectableObservable} from 'rxjs';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-import {
-  getServiceByConnection,
-  ConnectionCache,
-} from '../../nuclide-remote-connection';
-import {goToLocation} from '../../commons-atom/go-to-location';
-import createPackage from '../../commons-atom/createPackage';
-import featureConfig from '../../commons-atom/featureConfig';
-import {observeEditorDestroy} from '../../commons-atom/text-editor';
-import {Observable} from 'rxjs';
-import {RemoteConnection, ServerConnection} from '../../nuclide-remote-connection';
-import nuclideUri from '../../commons-node/nuclideUri';
-import {getNotifierByConnection} from '../../nuclide-open-files';
+var _nuclideRemoteConnection;
 
-const REMOTE_COMMAND_SERVICE = 'RemoteCommandService';
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+var _goToLocation;
+
+function _load_goToLocation() {
+  return _goToLocation = require('../../commons-atom/go-to-location');
+}
+
+var _createPackage;
+
+function _load_createPackage() {
+  return _createPackage = _interopRequireDefault(require('../../commons-atom/createPackage'));
+}
+
+var _featureConfig;
+
+function _load_featureConfig() {
+  return _featureConfig = _interopRequireDefault(require('../../commons-atom/featureConfig'));
+}
+
+var _textEditor;
+
+function _load_textEditor() {
+  return _textEditor = require('../../commons-atom/text-editor');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var _nuclideOpenFiles;
+
+function _load_nuclideOpenFiles() {
+  return _nuclideOpenFiles = require('../../nuclide-open-files');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const REMOTE_COMMAND_SERVICE = 'RemoteCommandService'; /**
+                                                        * Copyright (c) 2015-present, Facebook, Inc.
+                                                        * All rights reserved.
+                                                        *
+                                                        * This source code is licensed under the license found in the LICENSE file in
+                                                        * the root directory of this source tree.
+                                                        *
+                                                        * 
+                                                        */
 
 class Activation {
-  _disposables: IDisposable;
-  _commands: AtomCommands;
 
   constructor() {
+    var _this = this;
+
     this._commands = {
-      openFile(
-        uri: NuclideUri,
-        line: number,
-        column: number,
-        isWaiting: boolean,
-      ): ConnectableObservable<AtomFileEvent> {
+      openFile(uri, line, column, isWaiting) {
         return openFile(uri, line, column, isWaiting);
       },
-      openRemoteFile(
-        uri: NuclideUri,
-        line: number,
-        column: number,
-        isWaiting: boolean,
-      ): ConnectableObservable<AtomFileEvent> {
-        if (ServerConnection.getForUri(uri) == null) {
-          return Observable.throw(new Error(`Atom is not connected to host for ${uri}`))
-            .publish();
+      openRemoteFile(uri, line, column, isWaiting) {
+        if ((_nuclideRemoteConnection || _load_nuclideRemoteConnection()).ServerConnection.getForUri(uri) == null) {
+          return _rxjsBundlesRxMinJs.Observable.throw(new Error(`Atom is not connected to host for ${uri}`)).publish();
         }
         return openFile(uri, line, column, isWaiting);
       },
-      async addProject(projectPath: NuclideUri): Promise<void> {
-        if (nuclideUri.isLocal(projectPath)) {
-          atom.project.addPath(projectPath);
-        } else {
-          // As of Atom 1.12 atom.project.addPath won't work for remote dirs.
-          const serverConnection = ServerConnection.getForUri(projectPath);
-          if (serverConnection != null) {
-            // Creating the RemoteConnection should add it to the FileTree
-            await RemoteConnection.findOrCreateFromConnection(
-              serverConnection, nuclideUri.getPath(projectPath), '');
+      addProject(projectPath) {
+        return (0, _asyncToGenerator.default)(function* () {
+          if ((_nuclideUri || _load_nuclideUri()).default.isLocal(projectPath)) {
+            atom.project.addPath(projectPath);
+          } else {
+            // As of Atom 1.12 atom.project.addPath won't work for remote dirs.
+            const serverConnection = (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).ServerConnection.getForUri(projectPath);
+            if (serverConnection != null) {
+              // Creating the RemoteConnection should add it to the FileTree
+              yield (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).RemoteConnection.findOrCreateFromConnection(serverConnection, (_nuclideUri || _load_nuclideUri()).default.getPath(projectPath), '');
+            }
           }
-        }
+        })();
       },
-      dispose(): void {
-      },
+      dispose() {}
     };
 
-    this._disposables = new ConnectionCache(
-        async connection => {
-          const service: RemoteCommandServiceType =
-            getServiceByConnection(REMOTE_COMMAND_SERVICE, connection);
-          const fileNotifier = await getNotifierByConnection(connection);
-          return service.RemoteCommandService.registerAtomCommands(
-            fileNotifier, this._commands);
-        });
+    this._disposables = new (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).ConnectionCache((() => {
+      var _ref = (0, _asyncToGenerator.default)(function* (connection) {
+        const service = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getServiceByConnection)(REMOTE_COMMAND_SERVICE, connection);
+        const fileNotifier = yield (0, (_nuclideOpenFiles || _load_nuclideOpenFiles()).getNotifierByConnection)(connection);
+        return service.RemoteCommandService.registerAtomCommands(fileNotifier, _this._commands);
+      });
+
+      return function (_x) {
+        return _ref.apply(this, arguments);
+      };
+    })());
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
   }
 }
 
-function openFile(
-  uri: NuclideUri,
-  line: number,
-  column: number,
-  isWaiting: boolean,
-): ConnectableObservable<AtomFileEvent> {
-  return Observable.fromPromise(
-    goToLocation(uri, line, column)
-      .then(editor => {
-        atom.applicationDelegate.focusWindow();
+function openFile(uri, line, column, isWaiting) {
+  return _rxjsBundlesRxMinJs.Observable.fromPromise((0, (_goToLocation || _load_goToLocation()).goToLocation)(uri, line, column).then(editor => {
+    atom.applicationDelegate.focusWindow();
 
-        if (
-          isWaiting &&
-          featureConfig.get('nuclide-remote-atom.shouldNotifyWhenCommandLineIsWaitingOnFile')
-        ) {
-          const notification = atom.notifications.addInfo(
-            `The command line has opened \`${nuclideUri.getPath(uri)}\``
-             + ' and is waiting for it to be closed.',
-            {
-              dismissable: true,
-              buttons: [{
-                onDidClick: () => {
-                  featureConfig.set(
-                    'nuclide-remote-atom.shouldNotifyWhenCommandLineIsWaitingOnFile',
-                    false,
-                  );
-                  notification.dismiss();
-                },
-                text: 'Don\'t show again',
-              }, {
-                onDidClick: () => {
-                  editor.destroy();
-                },
-                text: 'Close file',
-              }],
-            },
-          );
-          editor.onDidDestroy(() => {
+    if (isWaiting && (_featureConfig || _load_featureConfig()).default.get('nuclide-remote-atom.shouldNotifyWhenCommandLineIsWaitingOnFile')) {
+      const notification = atom.notifications.addInfo(`The command line has opened \`${(_nuclideUri || _load_nuclideUri()).default.getPath(uri)}\`` + ' and is waiting for it to be closed.', {
+        dismissable: true,
+        buttons: [{
+          onDidClick: () => {
+            (_featureConfig || _load_featureConfig()).default.set('nuclide-remote-atom.shouldNotifyWhenCommandLineIsWaitingOnFile', false);
             notification.dismiss();
-          });
-        }
+          },
+          text: 'Don\'t show again'
+        }, {
+          onDidClick: () => {
+            editor.destroy();
+          },
+          text: 'Close file'
+        }]
+      });
+      editor.onDidDestroy(() => {
+        notification.dismiss();
+      });
+    }
 
-        return editor;
-      }),
-  )
-  .switchMap(editor =>
-    Observable.merge(
-      Observable.of('open'),
-      observeEditorDestroy(editor).map(value => 'close')))
-  .publish();
+    return editor;
+  })).switchMap(editor => _rxjsBundlesRxMinJs.Observable.merge(_rxjsBundlesRxMinJs.Observable.of('open'), (0, (_textEditor || _load_textEditor()).observeEditorDestroy)(editor).map(value => 'close'))).publish();
 }
 
-createPackage(module.exports, Activation);
+(0, (_createPackage || _load_createPackage()).default)(module.exports, Activation);

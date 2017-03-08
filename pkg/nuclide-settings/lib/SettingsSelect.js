@@ -1,65 +1,92 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import featureConfig from '../../commons-atom/featureConfig';
-import {normalizeIdentifier} from './settings-utils';
-import {React} from 'react-for-atom';
-import type {SettingsPropsDefault} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-type Props = SettingsPropsDefault & {
-  value: number,
-};
+var _featureConfig;
 
-export default class SettingsSelect extends React.Component {
-  props: Props;
+function _load_featureConfig() {
+  return _featureConfig = _interopRequireDefault(require('../../commons-atom/featureConfig'));
+}
 
-  constructor(props: Object) {
+var _settingsUtils;
+
+function _load_settingsUtils() {
+  return _settingsUtils = require('./settings-utils');
+}
+
+var _reactForAtom = require('react-for-atom');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class SettingsSelect extends _reactForAtom.React.Component {
+
+  constructor(props) {
     super(props);
-    (this: any)._handleChange = this._handleChange.bind(this);
+    this._handleChange = this._handleChange.bind(this);
   }
 
-  _handleChange(event: SyntheticEvent) {
-    const value = ((event.target: any): HTMLInputElement).value;
+  _handleChange(event) {
+    const value = event.target.value;
     this.props.onChange(value);
   }
 
-  render(): React.Element<any> {
+  render() {
     const keyPath = this.props.keyPath;
-    const id = normalizeIdentifier(keyPath);
+    const id = (0, (_settingsUtils || _load_settingsUtils()).normalizeIdentifier)(keyPath);
     const title = this.props.title;
     const description = this.props.description;
     const value = this.props.value;
 
-    const options = featureConfig.getSchema(keyPath);
+    const options = (_featureConfig || _load_featureConfig()).default.getSchema(keyPath);
 
     const optionElements = [];
     if (options.enum) {
       options.enum.forEach((option, i) => {
-        optionElements.push(<option value={option} key={i}>{option}</option>);
+        optionElements.push(_reactForAtom.React.createElement(
+          'option',
+          { value: option, key: i },
+          option
+        ));
       });
     }
 
-    return (
-      <div>
-        <label className="control-label">
-          <div className="setting-title">{title}</div>
-          <div className="setting-description">{description}</div>
-        </label>
-        <select
-          className="form-control"
-          id={id}
-          onChange={this._handleChange}
-          value={value}>
-          {optionElements}
-        </select>
-      </div>
+    return _reactForAtom.React.createElement(
+      'div',
+      null,
+      _reactForAtom.React.createElement(
+        'label',
+        { className: 'control-label' },
+        _reactForAtom.React.createElement(
+          'div',
+          { className: 'setting-title' },
+          title
+        ),
+        _reactForAtom.React.createElement(
+          'div',
+          { className: 'setting-description' },
+          description
+        )
+      ),
+      _reactForAtom.React.createElement(
+        'select',
+        {
+          className: 'form-control',
+          id: id,
+          onChange: this._handleChange,
+          value: value },
+        optionElements
+      )
     );
   }
 }
+exports.default = SettingsSelect; /**
+                                   * Copyright (c) 2015-present, Facebook, Inc.
+                                   * All rights reserved.
+                                   *
+                                   * This source code is licensed under the license found in the LICENSE file in
+                                   * the root directory of this source tree.
+                                   *
+                                   * 
+                                   */

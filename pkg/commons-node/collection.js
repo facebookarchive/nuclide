@@ -1,3 +1,33 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.arrayRemove = arrayRemove;
+exports.arrayEqual = arrayEqual;
+exports.arrayCompact = arrayCompact;
+exports.arrayFindLastIndex = arrayFindLastIndex;
+exports.mapUnion = mapUnion;
+exports.mapFilter = mapFilter;
+exports.mapTransform = mapTransform;
+exports.mapEqual = mapEqual;
+exports.areSetsEqual = areSetsEqual;
+exports.every = every;
+exports.setIntersect = setIntersect;
+exports.setDifference = setDifference;
+exports.isEmpty = isEmpty;
+exports.keyMirror = keyMirror;
+exports.collect = collect;
+exports.objectEntries = objectEntries;
+exports.objectFromMap = objectFromMap;
+exports.concatIterators = concatIterators;
+exports.someOfIterable = someOfIterable;
+exports.findInIterable = findInIterable;
+exports.filterIterable = filterIterable;
+exports.mapIterable = mapIterable;
+exports.firstOfIterable = firstOfIterable;
+exports.iterableIsEmpty = iterableIsEmpty;
+exports.iterableContains = iterableContains;
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,25 +35,21 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
 
-export function arrayRemove<T>(array: Array<T>, element: T): void {
+function arrayRemove(array, element) {
   const index = array.indexOf(element);
   if (index >= 0) {
     array.splice(index, 1);
   }
 }
 
-export function arrayEqual<T>(
-  array1: Array<T>,
-  array2: Array<T>,
-  equalComparator?: (a: T, b: T) => boolean,
-): boolean {
+function arrayEqual(array1, array2, equalComparator) {
   if (array1.length !== array2.length) {
     return false;
   }
-  const equalFunction = equalComparator || ((a: T, b: T) => a === b);
+  const equalFunction = equalComparator || ((a, b) => a === b);
   return array1.every((item1, i) => equalFunction(item1, array2[i]));
 }
 
@@ -31,7 +57,7 @@ export function arrayEqual<T>(
  * Returns a copy of the input Array with all `null` and `undefined` values filtered out.
  * Allows Flow to typecheck the common `filter(x => x != null)` pattern.
  */
-export function arrayCompact<T>(array: Array<?T>): Array<T> {
+function arrayCompact(array) {
   const result = [];
   for (const elem of array) {
     if (elem != null) {
@@ -45,11 +71,7 @@ export function arrayCompact<T>(array: Array<?T>): Array<T> {
  * Returns the last index in the input array that matches the predicate.
  * Returns -1 if no match is found.
  */
-export function arrayFindLastIndex<T>(
-  array: Array<T>,
-  predicate: (elem: T, index: number, array: Array<T>) => boolean,
-  thisArg?: any,
-): number {
+function arrayFindLastIndex(array, predicate, thisArg) {
   for (let i = array.length - 1; i >= 0; i--) {
     if (predicate.call(thisArg, array[i], i, array)) {
       return i;
@@ -62,7 +84,7 @@ export function arrayFindLastIndex<T>(
  * Merges a given arguments of maps into one Map, with the latest maps
  * overriding the values of the prior maps.
  */
-export function mapUnion<T, X>(...maps: Array<Map<T, X>>): Map<T, X> {
+function mapUnion(...maps) {
   const unionMap = new Map();
   for (const map of maps) {
     for (const [key, value] of map) {
@@ -72,10 +94,7 @@ export function mapUnion<T, X>(...maps: Array<Map<T, X>>): Map<T, X> {
   return unionMap;
 }
 
-export function mapFilter<T, X>(
-  map: Map<T, X>,
-  selector: (key: T, value: X) => boolean,
-): Map<T, X> {
+function mapFilter(map, selector) {
   const selected = new Map();
   for (const [key, value] of map) {
     if (selector(key, value)) {
@@ -85,10 +104,7 @@ export function mapFilter<T, X>(
   return selected;
 }
 
-export function mapTransform<T, V1, V2>(
-  src: Map<T, V1>,
-  transform: (value: V1, key: T) => V2,
-): Map<T, V2> {
+function mapTransform(src, transform) {
   const result = new Map();
   for (const [key, value] of src) {
     result.set(key, transform(value, key));
@@ -96,29 +112,25 @@ export function mapTransform<T, V1, V2>(
   return result;
 }
 
-export function mapEqual<T, X>(
-  map1: Map<T, X>,
-  map2: Map<T, X>,
-  equalComparator?: (val1: X, val2: X, key1?: T, key2?: T) => boolean,
-) {
+function mapEqual(map1, map2, equalComparator) {
   if (map1.size !== map2.size) {
     return false;
   }
-  const equalFunction = equalComparator || ((a: X, b: X) => a === b);
+  const equalFunction = equalComparator || ((a, b) => a === b);
   for (const [key1, value1] of map1) {
-    if (!map2.has(key1) || !equalFunction(value1, (map2.get(key1): any))) {
+    if (!map2.has(key1) || !equalFunction(value1, map2.get(key1))) {
       return false;
     }
   }
   return true;
 }
 
-export function areSetsEqual<T>(a: Set<T>, b: Set<T>): boolean {
+function areSetsEqual(a, b) {
   return a.size === b.size && every(a, element => b.has(element));
 }
 
 // Array.every but for any iterable.
-export function every<T>(values: Iterable<T>, predicate: (element: T) => boolean): boolean {
+function every(values, predicate) {
   for (const element of values) {
     if (!predicate(element)) {
       return false;
@@ -127,11 +139,11 @@ export function every<T>(values: Iterable<T>, predicate: (element: T) => boolean
   return true;
 }
 
-export function setIntersect<T>(a: Set<T>, b: Set<T>): Set<T> {
+function setIntersect(a, b) {
   return new Set(Array.from(a).filter(e => b.has(e)));
 }
 
-export function setDifference<T>(a: Set<T>, b: Set<T>, hash_?: (v: T) => any): Set<T> {
+function setDifference(a, b, hash_) {
   if (a.size === 0) {
     return new Set();
   } else if (b.size === 0) {
@@ -151,7 +163,7 @@ export function setDifference<T>(a: Set<T>, b: Set<T>, hash_?: (v: T) => any): S
 /**
  * O(1)-check if a given object is empty (has no properties, inherited or not)
  */
-export function isEmpty(obj: Object): boolean {
+function isEmpty(obj) {
   for (const key in obj) {
     return false;
   }
@@ -164,7 +176,7 @@ export function isEmpty(obj: Object): boolean {
  *
  * Based off the equivalent function in www.
  */
-export function keyMirror<T: Object>(obj: T): {[key: $Enum<T>]: $Enum<T>} {
+function keyMirror(obj) {
   const ret = {};
   Object.keys(obj).forEach(key => {
     ret[key] = key;
@@ -176,7 +188,7 @@ export function keyMirror<T: Object>(obj: T): {[key: $Enum<T>]: $Enum<T>} {
  * Given an array of [key, value] pairs, construct a map where the values for
  * each key are collected into an array of values, in order.
  */
-export function collect<K, V>(pairs: Array<[K, V]>): Map<K, Array<V>> {
+function collect(pairs) {
   const result = new Map();
   for (const pair of pairs) {
     const [k, v] = pair;
@@ -190,17 +202,8 @@ export function collect<K, V>(pairs: Array<[K, V]>): Map<K, Array<V>> {
   return result;
 }
 
-export class MultiMap<K, V> {
+class MultiMap {
   // Invariant: no empty sets. They should be removed instead.
-  _map: Map<K, Set<V>>;
-
-  // TODO may be worth defining a getter but no setter, to mimic Map. But please just behave and
-  // don't mutate this from outside this class.
-  //
-  // Invariant: equal to the sum of the sizes of all the sets contained in this._map
-  /* The total number of key-value bindings contained */
-  size: number;
-
   constructor() {
     this._map = new Map();
     this.size = 0;
@@ -210,7 +213,14 @@ export class MultiMap<K, V> {
    * Returns the set of values associated with the given key. Do not mutate the given set. Copy it
    * if you need to store it past the next operation on this MultiMap.
    */
-  get(key: K): Set<V> {
+
+
+  // TODO may be worth defining a getter but no setter, to mimic Map. But please just behave and
+  // don't mutate this from outside this class.
+  //
+  // Invariant: equal to the sum of the sizes of all the sets contained in this._map
+  /* The total number of key-value bindings contained */
+  get(key) {
     const set = this._map.get(key);
     if (set == null) {
       return new Set();
@@ -222,7 +232,7 @@ export class MultiMap<K, V> {
    * Mimics the Map.prototype.set interface. Deliberately did not choose "set" as the name since the
    * implication is that it removes the previous binding.
    */
-  add(key: K, value: V): MultiMap<K, V> {
+  add(key, value) {
     let set = this._map.get(key);
     if (set == null) {
       set = new Set();
@@ -238,7 +248,7 @@ export class MultiMap<K, V> {
   /*
    * Mimics the Map.prototype.set interface. Replaces the previous binding with new values.
    */
-  set(key: K, values: Iterable<V>): void {
+  set(key, values) {
     this.deleteAll(key);
     const newSet = new Set(values);
     if (newSet.size !== 0) {
@@ -250,7 +260,7 @@ export class MultiMap<K, V> {
   /*
    * Deletes a single binding. Returns true iff the binding existed.
    */
-  delete(key: K, value: V): boolean {
+  delete(key, value) {
     const set = this.get(key);
     const didRemove = set.delete(value);
     if (set.size === 0) {
@@ -265,38 +275,41 @@ export class MultiMap<K, V> {
   /*
    * Deletes all bindings associated with the given key. Returns true iff any bindings were deleted.
    */
-  deleteAll(key: K): boolean {
+  deleteAll(key) {
     const set = this.get(key);
     this.size -= set.size;
     return this._map.delete(key);
   }
 
-  clear(): void {
+  clear() {
     this._map.clear();
     this.size = 0;
   }
 
-  has(key: K, value: V): boolean {
+  has(key, value) {
     return this.get(key).has(value);
   }
 
-  hasAny(key: K): boolean {
+  hasAny(key) {
     return this._map.has(key);
   }
 
-  *values(): Iterable<V> {
+  *values() {
     for (const set of this._map.values()) {
       yield* set;
     }
   }
 
-  forEach(callback: (value: V, key: K, obj: MultiMap<K, V>) => void): void {
+  forEach(callback) {
     this._map.forEach((values, key) => values.forEach(value => callback(value, key, this)));
   }
 }
 
-export function objectEntries<T>(obj: {[key: string]: T}): Array<[string, T]> {
-  if (obj == null) { throw new TypeError(); }
+exports.MultiMap = MultiMap;
+function objectEntries(obj) {
+  if (obj == null) {
+    throw new TypeError();
+  }
   const entries = [];
   for (const key in obj) {
     if (obj.hasOwnProperty(key) && Object.prototype.propertyIsEnumerable.call(obj, key)) {
@@ -306,13 +319,15 @@ export function objectEntries<T>(obj: {[key: string]: T}): Array<[string, T]> {
   return entries;
 }
 
-export function objectFromMap<T>(map: Map<string, T>): {[key: string]: T} {
+function objectFromMap(map) {
   const obj = {};
-  map.forEach((v, k) => { obj[k] = v; });
+  map.forEach((v, k) => {
+    obj[k] = v;
+  });
   return obj;
 }
 
-export function *concatIterators<T>(...iterators: Array<Iterable<T>>): Iterator<T> {
+function* concatIterators(...iterators) {
   for (const iterator of iterators) {
     for (const element of iterator) {
       yield element;
@@ -320,10 +335,7 @@ export function *concatIterators<T>(...iterators: Array<Iterable<T>>): Iterator<
   }
 }
 
-export function someOfIterable<T>(
-  iterable: Iterable<T>,
-  predicate: (element: T) => boolean,
-): boolean {
+function someOfIterable(iterable, predicate) {
   for (const element of iterable) {
     if (predicate(element)) {
       return true;
@@ -332,10 +344,7 @@ export function someOfIterable<T>(
   return false;
 }
 
-export function findInIterable<T>(
-  iterable: Iterable<T>,
-  predicate: (element: T) => boolean,
-): ?T {
+function findInIterable(iterable, predicate) {
   for (const element of iterable) {
     if (predicate(element)) {
       return element;
@@ -344,10 +353,7 @@ export function findInIterable<T>(
   return null;
 }
 
-export function *filterIterable<T>(
-  iterable: Iterable<T>,
-  predicate: (element: T) => boolean,
-): Iterable<T> {
+function* filterIterable(iterable, predicate) {
   for (const element of iterable) {
     if (predicate(element)) {
       yield element;
@@ -355,20 +361,17 @@ export function *filterIterable<T>(
   }
 }
 
-export function *mapIterable<T, M>(
-  iterable: Iterable<T>,
-  projectorFn: (element: T) => M,
-): Iterable<M> {
+function* mapIterable(iterable, projectorFn) {
   for (const element of iterable) {
     yield projectorFn(element);
   }
 }
 
-export function firstOfIterable<T>(iterable: Iterable<T>): ?T {
+function firstOfIterable(iterable) {
   return findInIterable(iterable, () => true);
 }
 
-export function iterableIsEmpty<T>(iterable: Iterable<T>): boolean {
+function iterableIsEmpty(iterable) {
   // eslint-disable-next-line no-unused-vars
   for (const element of iterable) {
     return false;
@@ -376,6 +379,6 @@ export function iterableIsEmpty<T>(iterable: Iterable<T>): boolean {
   return true;
 }
 
-export function iterableContains<T>(iterable: Iterable<T>, value: T): boolean {
+function iterableContains(iterable, value) {
   return !iterableIsEmpty(filterIterable(iterable, element => element === value));
 }

@@ -1,166 +1,222 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import type {Source} from '../types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import classnames from 'classnames';
-import {React} from 'react-for-atom';
-import {AtomInput} from '../../../nuclide-ui/AtomInput';
-import {ButtonGroup} from '../../../nuclide-ui/ButtonGroup';
-import {FunnelIcon} from './FunnelIcon';
-import {ModalMultiSelect} from '../../../nuclide-ui/ModalMultiSelect';
-import {Toolbar} from '../../../nuclide-ui/Toolbar';
-import {ToolbarLeft} from '../../../nuclide-ui/ToolbarLeft';
-import {ToolbarRight} from '../../../nuclide-ui/ToolbarRight';
-import {
-  Button,
-  ButtonSizes,
-} from '../../../nuclide-ui/Button';
-import invariant from 'assert';
+var _classnames;
 
-type Props = {
-  clear: () => void,
-  invalidFilterInput: boolean,
-  enableRegExpFilter: boolean,
-  selectedSourceIds: Array<string>,
-  sources: Array<Source>,
-  onFilterTextChange: (filterText: string) => void,
-  toggleRegExpFilter: () => void,
-  onSelectedSourcesChange: (sourceIds: Array<string>) => void,
-};
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
 
-export default class ConsoleHeader extends React.Component {
-  props: Props;
+var _reactForAtom = require('react-for-atom');
 
-  constructor(props: Props) {
+var _AtomInput;
+
+function _load_AtomInput() {
+  return _AtomInput = require('../../../nuclide-ui/AtomInput');
+}
+
+var _ButtonGroup;
+
+function _load_ButtonGroup() {
+  return _ButtonGroup = require('../../../nuclide-ui/ButtonGroup');
+}
+
+var _FunnelIcon;
+
+function _load_FunnelIcon() {
+  return _FunnelIcon = require('./FunnelIcon');
+}
+
+var _ModalMultiSelect;
+
+function _load_ModalMultiSelect() {
+  return _ModalMultiSelect = require('../../../nuclide-ui/ModalMultiSelect');
+}
+
+var _Toolbar;
+
+function _load_Toolbar() {
+  return _Toolbar = require('../../../nuclide-ui/Toolbar');
+}
+
+var _ToolbarLeft;
+
+function _load_ToolbarLeft() {
+  return _ToolbarLeft = require('../../../nuclide-ui/ToolbarLeft');
+}
+
+var _ToolbarRight;
+
+function _load_ToolbarRight() {
+  return _ToolbarRight = require('../../../nuclide-ui/ToolbarRight');
+}
+
+var _Button;
+
+function _load_Button() {
+  return _Button = require('../../../nuclide-ui/Button');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class ConsoleHeader extends _reactForAtom.React.Component {
+
+  constructor(props) {
     super(props);
-    (this: any)._handleClearButtonClick = this._handleClearButtonClick.bind(this);
-    (this: any)._handleReToggleButtonClick = this._handleReToggleButtonClick.bind(this);
-    (this: any)._renderOption = this._renderOption.bind(this);
+    this._handleClearButtonClick = this._handleClearButtonClick.bind(this);
+    this._handleReToggleButtonClick = this._handleReToggleButtonClick.bind(this);
+    this._renderOption = this._renderOption.bind(this);
   }
 
-  _handleClearButtonClick(event: SyntheticMouseEvent): void {
+  _handleClearButtonClick(event) {
     this.props.clear();
   }
 
-  _handleReToggleButtonClick(): void {
+  _handleReToggleButtonClick() {
     this.props.toggleRegExpFilter();
   }
 
-  _renderProcessControlButton(source: Source): ?React.Element<any> {
+  _renderProcessControlButton(source) {
     let action;
     let label;
     let icon;
     switch (source.status) {
       case 'starting':
-      case 'running': {
-        action = source.stop;
-        label = 'Stop Process';
-        icon = 'primitive-square';
-        break;
-      }
-      case 'stopped': {
-        action = source.start;
-        label = 'Start Process';
-        icon = 'triangle-right';
-        break;
-      }
+      case 'running':
+        {
+          action = source.stop;
+          label = 'Stop Process';
+          icon = 'primitive-square';
+          break;
+        }
+      case 'stopped':
+        {
+          action = source.start;
+          label = 'Start Process';
+          icon = 'triangle-right';
+          break;
+        }
     }
-    if (action == null) { return; }
+    if (action == null) {
+      return;
+    }
     const clickHandler = event => {
       event.stopPropagation();
-      invariant(action != null);
+
+      if (!(action != null)) {
+        throw new Error('Invariant violation: "action != null"');
+      }
+
       action();
     };
-    return (
-      <Button
-        className="pull-right"
-        icon={icon}
-        onClick={clickHandler}>
-        {label}
-      </Button>
+    return _reactForAtom.React.createElement(
+      (_Button || _load_Button()).Button,
+      {
+        className: 'pull-right',
+        icon: icon,
+        onClick: clickHandler },
+      label
     );
   }
 
-  _renderOption(optionProps: {option: {label: string, value: string}}): React.Element<any> {
-    const {option} = optionProps;
+  _renderOption(optionProps) {
+    const { option } = optionProps;
     const source = this.props.sources.find(s => s.id === option.value);
-    invariant(source != null);
-    return (
-      <span>
-        {option.label}
-        {this._renderProcessControlButton(source)}
-      </span>
+
+    if (!(source != null)) {
+      throw new Error('Invariant violation: "source != null"');
+    }
+
+    return _reactForAtom.React.createElement(
+      'span',
+      null,
+      option.label,
+      this._renderProcessControlButton(source)
     );
   }
 
-  render(): ?React.Element<any> {
-    const options = this.props.sources
-      .slice()
-      .sort((a, b) => sortAlpha(a.name, b.name))
-      .map(source => ({
-        label: source.id,
-        value: source.name,
-      }));
+  render() {
+    const options = this.props.sources.slice().sort((a, b) => sortAlpha(a.name, b.name)).map(source => ({
+      label: source.id,
+      value: source.name
+    }));
 
-    const filterInputClassName = classnames('nuclide-console-filter-field', {
-      invalid: this.props.invalidFilterInput,
+    const filterInputClassName = (0, (_classnames || _load_classnames()).default)('nuclide-console-filter-field', {
+      invalid: this.props.invalidFilterInput
     });
 
     const MultiSelectOption = this._renderOption;
 
-    return (
-      <Toolbar location="top">
-        <ToolbarLeft>
-          <span className="nuclide-console-header-filter-icon inline-block">
-            <FunnelIcon />
-          </span>
-          <ModalMultiSelect
-            labelComponent={MultiSelectLabel}
-            optionComponent={MultiSelectOption}
-            size={ButtonSizes.SMALL}
-            options={options}
-            value={this.props.selectedSourceIds}
-            onChange={this.props.onSelectedSourcesChange}
-            className="inline-block"
-          />
-          <ButtonGroup className="inline-block">
-            <AtomInput
-              className={filterInputClassName}
-              size="sm"
-              width={200}
-              placeholderText="Filter"
-              onDidChange={this.props.onFilterTextChange}
-            />
-            <Button
-              className="nuclide-console-filter-regexp-button"
-              size={ButtonSizes.SMALL}
-              selected={this.props.enableRegExpFilter}
-              onClick={this._handleReToggleButtonClick}>
-              .*
-            </Button>
-          </ButtonGroup>
-        </ToolbarLeft>
-        <ToolbarRight>
-          <Button
-            size={ButtonSizes.SMALL}
-            onClick={this._handleClearButtonClick}>
-            Clear
-          </Button>
-        </ToolbarRight>
-      </Toolbar>
+    return _reactForAtom.React.createElement(
+      (_Toolbar || _load_Toolbar()).Toolbar,
+      { location: 'top' },
+      _reactForAtom.React.createElement(
+        (_ToolbarLeft || _load_ToolbarLeft()).ToolbarLeft,
+        null,
+        _reactForAtom.React.createElement(
+          'span',
+          { className: 'nuclide-console-header-filter-icon inline-block' },
+          _reactForAtom.React.createElement((_FunnelIcon || _load_FunnelIcon()).FunnelIcon, null)
+        ),
+        _reactForAtom.React.createElement((_ModalMultiSelect || _load_ModalMultiSelect()).ModalMultiSelect, {
+          labelComponent: MultiSelectLabel,
+          optionComponent: MultiSelectOption,
+          size: (_Button || _load_Button()).ButtonSizes.SMALL,
+          options: options,
+          value: this.props.selectedSourceIds,
+          onChange: this.props.onSelectedSourcesChange,
+          className: 'inline-block'
+        }),
+        _reactForAtom.React.createElement(
+          (_ButtonGroup || _load_ButtonGroup()).ButtonGroup,
+          { className: 'inline-block' },
+          _reactForAtom.React.createElement((_AtomInput || _load_AtomInput()).AtomInput, {
+            className: filterInputClassName,
+            size: 'sm',
+            width: 200,
+            placeholderText: 'Filter',
+            onDidChange: this.props.onFilterTextChange
+          }),
+          _reactForAtom.React.createElement(
+            (_Button || _load_Button()).Button,
+            {
+              className: 'nuclide-console-filter-regexp-button',
+              size: (_Button || _load_Button()).ButtonSizes.SMALL,
+              selected: this.props.enableRegExpFilter,
+              onClick: this._handleReToggleButtonClick },
+            '.*'
+          )
+        )
+      ),
+      _reactForAtom.React.createElement(
+        (_ToolbarRight || _load_ToolbarRight()).ToolbarRight,
+        null,
+        _reactForAtom.React.createElement(
+          (_Button || _load_Button()).Button,
+          {
+            size: (_Button || _load_Button()).ButtonSizes.SMALL,
+            onClick: this._handleClearButtonClick },
+          'Clear'
+        )
+      )
     );
   }
 }
 
-function sortAlpha(a: string, b: string): number {
+exports.default = ConsoleHeader; /**
+                                  * Copyright (c) 2015-present, Facebook, Inc.
+                                  * All rights reserved.
+                                  *
+                                  * This source code is licensed under the license found in the LICENSE file in
+                                  * the root directory of this source tree.
+                                  *
+                                  * 
+                                  */
+
+function sortAlpha(a, b) {
   const aLower = a.toLowerCase();
   const bLower = b.toLowerCase();
   if (aLower < bLower) {
@@ -171,14 +227,13 @@ function sortAlpha(a: string, b: string): number {
   return 0;
 }
 
-type LabelProps = {
-  selectedOptions: Array<{value: string, label: string}>,
-};
-
-function MultiSelectLabel(props: LabelProps): React.Element<any> {
-  const {selectedOptions} = props;
-  const label = selectedOptions.length === 1
-    ? selectedOptions[0].label
-    : `${selectedOptions.length} Sources`;
-  return <span>Showing: {label}</span>;
+function MultiSelectLabel(props) {
+  const { selectedOptions } = props;
+  const label = selectedOptions.length === 1 ? selectedOptions[0].label : `${selectedOptions.length} Sources`;
+  return _reactForAtom.React.createElement(
+    'span',
+    null,
+    'Showing: ',
+    label
+  );
 }
