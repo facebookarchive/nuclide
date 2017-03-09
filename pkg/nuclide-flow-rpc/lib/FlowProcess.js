@@ -146,7 +146,11 @@ export class FlowProcess {
 
   async _tryCreateIDEProcess(): Promise<?child_process$ChildProcess> {
     await this._serverIsReady();
-    const allExecInfo = await getAllExecInfo(['ide'], this._root, this._execInfoContainer);
+    const allExecInfo = await getAllExecInfo(
+      ['ide', '--protocol', 'very-unstable'],
+      this._root,
+      this._execInfoContainer,
+    );
     if (allExecInfo == null) {
       return null;
     }
