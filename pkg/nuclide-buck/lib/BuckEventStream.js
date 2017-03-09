@@ -10,7 +10,9 @@
 
 import type {BuckWebSocketMessage} from '../../nuclide-buck-rpc';
 import type {Level} from '../../nuclide-console/lib/types';
-import type {FileDiagnosticMessage} from '../../nuclide-diagnostics-common/lib/rpc-types';
+import type {
+  FileDiagnosticMessage,
+} from '../../nuclide-diagnostics-common/lib/rpc-types';
 import type {ProcessMessage} from '../../commons-node/process-rpc-types';
 import type {BuckSubcommand} from './types';
 
@@ -23,22 +25,27 @@ import {exitEventToMessage} from '../../commons-node/process';
 const PROGRESS_OUTPUT_INTERVAL = 5 * 1000;
 const BUILD_FAILED_MESSAGE = 'BUILD FAILED:';
 
-export type BuckEvent = {
-  type: 'progress',
-  progress: ?number,
-} | {
-  type: 'log',
-  message: string,
-  level: Level,
-} | {
-  type: 'error',
-  message: string,
-} | {
-  type: 'diagnostics',
-  diagnostics: Array<FileDiagnosticMessage>,
-} | {
-  type: 'socket-connected',
-};
+export type BuckEvent =
+  | {
+      type: 'progress',
+      progress: ?number,
+    }
+  | {
+      type: 'log',
+      message: string,
+      level: Level,
+    }
+  | {
+      type: 'error',
+      message: string,
+    }
+  | {
+      type: 'diagnostics',
+      diagnostics: Array<FileDiagnosticMessage>,
+    }
+  | {
+      type: 'socket-connected',
+    };
 
 function convertJavaLevel(level: string): Level {
   switch (level) {
@@ -98,14 +105,17 @@ export function getEventsFromSocket(
     .share();
 
   // Periodically emit log events for progress updates.
-  const progressEvents = eventStream
-    .switchMap(event => {
-      if (event.type === 'progress' && event.progress != null &&
-          event.progress > 0 && event.progress < 1) {
-        return log(`Building... [${Math.round(event.progress * 100)}%]`);
-      }
-      return Observable.empty();
-    });
+  const progressEvents = eventStream.switchMap(event => {
+    if (
+      event.type === 'progress' &&
+      event.progress != null &&
+      event.progress > 0 &&
+      event.progress < 1
+    ) {
+      return log(`Building... [${Math.round(event.progress * 100)}%]`);
+    }
+    return Observable.empty();
+  });
 
   return eventStream.merge(
     progressEvents
@@ -117,41 +127,42 @@ export function getEventsFromSocket(
 export function getEventsFromProcess(
   processStream: Observable<ProcessMessage>,
 ): Observable<BuckEvent> {
-  return processStream
-    .map(message => {
-      switch (message.kind) {
-        case 'error':
-          return {
-            type: 'error',
-            message: `Buck failed: ${message.error.message}`,
-          };
-        case 'exit':
-          const logMessage = `Buck exited with ${exitEventToMessage(message)}.`;
-          if (message.exitCode === 0) {
-            return {
-              type: 'log',
-              message: logMessage,
-              level: 'success',
-            };
-          }
-          return {
-            type: 'error',
-            message: logMessage,
-          };
-        case 'stderr':
-        case 'stdout':
+  return processStream.map(message => {
+    switch (message.kind) {
+      case 'error':
+        return {
+          type: 'error',
+          message: `Buck failed: ${message.error.message}`,
+        };
+      case 'exit':
+        const logMessage = `Buck exited with ${exitEventToMessage(message)}.`;
+        if (message.exitCode === 0) {
           return {
             type: 'log',
-            // Some Buck steps output ansi escape codes regardless of terminal setting.
-            message: stripAnsi(message.data),
-            // Build failure messages typically do not show up in the web socket.
-            // TODO(hansonw): fix this on the Buck side
-            level: message.data.indexOf(BUILD_FAILED_MESSAGE) === -1 ? 'log' : 'error',
+            message: logMessage,
+            level: 'success',
           };
-        default:
-          throw new Error('impossible');
-      }
-    });
+        }
+        return {
+          type: 'error',
+          message: logMessage,
+        };
+      case 'stderr':
+      case 'stdout':
+        return {
+          type: 'log',
+          // Some Buck steps output ansi escape codes regardless of terminal setting.
+          message: stripAnsi(message.data),
+          // Build failure messages typically do not show up in the web socket.
+          // TODO(hansonw): fix this on the Buck side
+          level: message.data.indexOf(BUILD_FAILED_MESSAGE) === -1
+            ? 'log'
+            : 'error',
+        };
+      default:
+        throw new Error('impossible');
+    }
+  });
 }
 
 export function combineEventStreams(
@@ -177,25 +188,19 @@ export function combineEventStreams(
     .share();
   let mergedEvents = Observable.merge(
     finiteSocketEvents,
-
     // Take all process output until the first socket message.
     // There's a slight risk of output duplication if the socket message is late,
     // but this is pretty rare.
-    processEvents
-      .takeUntil(finiteSocketEvents)
-      .takeWhile(isRegularLogMessage),
-
+    processEvents.takeUntil(finiteSocketEvents).takeWhile(isRegularLogMessage),
     // Error/info logs from the process represent exit/error conditions, so always take them.
     // We ensure that error/info logs will not duplicate messages from the websocket.
-    processEvents
-      .skipWhile(isRegularLogMessage),
+    processEvents.skipWhile(isRegularLogMessage),
   );
   if (subcommand === 'test') {
     // The websocket does not reliably provide test output.
     // After the build finishes, fall back to the Buck output stream.
     mergedEvents = Observable.concat(
-      mergedEvents
-        .takeUntil(finiteSocketEvents.filter(isBuildFinishEvent)),
+      mergedEvents.takeUntil(finiteSocketEvents.filter(isBuildFinishEvent)),
       // Return to indeterminate progress.
       Observable.of({type: 'progress', progress: null}),
       processEvents,
@@ -205,21 +210,19 @@ export function combineEventStreams(
     // The websocket does not naturally provide any indication.
     mergedEvents = Observable.merge(
       mergedEvents,
-      finiteSocketEvents
-        .filter(isBuildFinishEvent)
-        .switchMapTo(
-          Observable.of(
-            {
-              type: 'progress',
-              progress: null,
-            },
-            {
-              type: 'log',
-              message: 'Installing...',
-              level: 'info',
-            },
-          ),
+      finiteSocketEvents.filter(isBuildFinishEvent).switchMapTo(
+        Observable.of(
+          {
+            type: 'progress',
+            progress: null,
+          },
+          {
+            type: 'log',
+            message: 'Installing...',
+            level: 'info',
+          },
         ),
+      ),
     );
   }
   return mergedEvents;
@@ -230,14 +233,13 @@ export function getDiagnosticEvents(
   buckRoot: string,
 ): Observable<BuckEvent> {
   const diagnosticsParser = new DiagnosticsParser();
-  return events
-    .flatMap(event => {
-      // For log messages, try to detect compile errors and emit diagnostics.
-      if (event.type === 'log') {
-        return Observable.fromPromise(
-          diagnosticsParser.getDiagnostics(event.message, event.level, buckRoot))
-          .map(diagnostics => ({type: 'diagnostics', diagnostics}));
-      }
-      return Observable.empty();
-    });
+  return events.flatMap(event => {
+    // For log messages, try to detect compile errors and emit diagnostics.
+    if (event.type === 'log') {
+      return Observable.fromPromise(
+        diagnosticsParser.getDiagnostics(event.message, event.level, buckRoot),
+      ).map(diagnostics => ({type: 'diagnostics', diagnostics}));
+    }
+    return Observable.empty();
+  });
 }

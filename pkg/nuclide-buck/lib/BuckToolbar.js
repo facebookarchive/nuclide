@@ -51,7 +51,9 @@ export default class BuckToolbar extends React.Component {
 
   constructor(props: Props) {
     super(props);
-    (this: any)._handleDeploymentTargetChange = this._handleDeploymentTargetChange.bind(this);
+    (this: any)._handleDeploymentTargetChange = this._handleDeploymentTargetChange.bind(
+      this,
+    );
     this.state = {settingsVisible: false};
   }
 
@@ -71,14 +73,16 @@ export default class BuckToolbar extends React.Component {
     let status;
     if (isLoadingRule || isLoadingPlatforms) {
       const title = isLoadingRule
-        ? 'Loading target build rule...' : 'Loading available platforms...';
-      status =
+        ? 'Loading target build rule...'
+        : 'Loading available platforms...';
+      status = (
         <div ref={addTooltip({title, delay: 0})}>
           <LoadingSpinner
             className="inline-block buck-spinner"
             size="EXTRA_SMALL"
           />
-        </div>;
+        </div>
+      );
     } else if (buildTarget && buildRuleType == null) {
       let title;
       if (buckRoot == null) {
@@ -88,25 +92,27 @@ export default class BuckToolbar extends React.Component {
           title = 'No Current Working Root.';
         }
       } else {
-        title =
-          `Rule "${buildTarget}" could not be found in ${buckRoot}.<br />` +
+        title = `Rule "${buildTarget}" could not be found in ${buckRoot}.<br />` +
           `Check your Current Working Root: ${maybeToString(projectRoot)}`;
       }
 
       title += '<br />Click icon to retry';
 
-      status =
+      status = (
         <span
           className="icon icon-alert"
           ref={addTooltip({title, delay: 0})}
           onClick={() => this.props.setBuildTarget(buildTarget)}
-        />;
+        />
+      );
     }
 
     const widgets = [];
     if (status != null) {
       widgets.push(
-        <div key="status" className="nuclide-buck-status inline-block text-center">
+        <div
+          key="status"
+          className="nuclide-buck-status inline-block text-center">
           {status}
         </div>,
       );
@@ -139,14 +145,14 @@ export default class BuckToolbar extends React.Component {
           onClick={() => this._showSettings()}
         />
         {widgets}
-        {this.state.settingsVisible ?
-          <BuckToolbarSettings
-            currentBuckRoot={buckRoot}
-            settings={taskSettings}
-            onDismiss={() => this._hideSettings()}
-            onSave={settings => this._saveSettings(settings)}
-          /> :
-          null}
+        {this.state.settingsVisible
+          ? <BuckToolbarSettings
+              currentBuckRoot={buckRoot}
+              settings={taskSettings}
+              onDismiss={() => this._hideSettings()}
+              onSave={settings => this._saveSettings(settings)}
+            />
+          : null}
       </div>
     );
   }
@@ -168,18 +174,25 @@ export default class BuckToolbar extends React.Component {
     this._hideSettings();
   }
 
-  _optionsFromPlatformGroups(platformGroups: Array<PlatformGroup>): Array<Option> {
-    return platformGroups.reduce((options, platformGroup) => {
-      let dropdownGroup = null;
-      if (platformGroup.platforms.length === 1) {
-        dropdownGroup = this._turnDevicesIntoSelectableOptions(platformGroup.platforms[0]);
-      } else {
-        dropdownGroup = this._putDevicesIntoSubmenus(platformGroup);
-      }
+  _optionsFromPlatformGroups(
+    platformGroups: Array<PlatformGroup>,
+  ): Array<Option> {
+    return platformGroups.reduce(
+      (options, platformGroup) => {
+        let dropdownGroup = null;
+        if (platformGroup.platforms.length === 1) {
+          dropdownGroup = this._turnDevicesIntoSelectableOptions(
+            platformGroup.platforms[0],
+          );
+        } else {
+          dropdownGroup = this._putDevicesIntoSubmenus(platformGroup);
+        }
 
-      options.push(dropdownGroup.header);
-      return options.concat(dropdownGroup.selectableOptions);
-    }, []);
+        options.push(dropdownGroup.header);
+        return options.concat(dropdownGroup.selectableOptions);
+      },
+      [],
+    );
   }
 
   _turnDevicesIntoSelectableOptions(platform: Platform): DropdownGroup {

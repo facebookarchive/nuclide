@@ -38,19 +38,18 @@ export class PlatformService {
     ruleType: string,
     buildTarget: string,
   ): Observable<Array<PlatformGroup>> {
-    return this._providersChanged
-      .startWith(undefined)
-      .switchMap(() => {
-        const observables = this._registeredProviders
-          .map(provider => provider(buckRoot, ruleType, buildTarget));
-        return Observable.from(observables)
-          // $FlowFixMe: type combineAll
-          .combineAll()
-          .map(platformGroups => {
-            return platformGroups
-              .filter(p => p != null)
-              .sort((a, b) => a.name.toUpperCase().localeCompare(b.name.toUpperCase()));
-          });
-      });
+    return this._providersChanged.startWith(undefined).switchMap(() => {
+      const observables = this._registeredProviders.map(provider =>
+        provider(buckRoot, ruleType, buildTarget));
+      return Observable.from(observables)
+        // $FlowFixMe: type combineAll
+        .combineAll()
+        .map(platformGroups => {
+          return platformGroups
+            .filter(p => p != null)
+            .sort((a, b) =>
+              a.name.toUpperCase().localeCompare(b.name.toUpperCase()));
+        });
+    });
   }
 }

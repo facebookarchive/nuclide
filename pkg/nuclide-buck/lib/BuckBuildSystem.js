@@ -44,7 +44,10 @@ import {MULTIPLE_TARGET_RULE_TYPE} from '../../nuclide-buck-rpc';
 
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import nuclideUri from '../../commons-node/nuclideUri';
-import {combineEpics, createEpicMiddleware} from '../../commons-node/redux-observable';
+import {
+  combineEpics,
+  createEpicMiddleware,
+} from '../../commons-node/redux-observable';
 import {compact} from '../../commons-node/observable';
 import {taskFromObservable} from '../../commons-node/tasks';
 import {getBuckServiceByNuclideUri} from '../../nuclide-remote-connection';
@@ -79,8 +82,7 @@ const DEBUGGABLE_RULES = new Set([
   'rust_test',
 ]);
 
-const RUNNABLE_RULES = new Set([
-]);
+const RUNNABLE_RULES = new Set([]);
 
 function shouldEnableTask(taskType: TaskType, ruleType: string): boolean {
   switch (taskType) {
@@ -130,8 +132,7 @@ export class BuckBuildSystem {
       };
       this._extraUi = bindObservableAsProps(
         // $FlowFixMe: type symbol-observable
-        Observable.from(store)
-          .map(appState => ({appState, ...boundActions})),
+        Observable.from(store).map(appState => ({appState, ...boundActions})),
         BuckToolbar,
       );
     }
@@ -139,7 +140,9 @@ export class BuckBuildSystem {
   }
 
   getIcon(): ReactClass<any> {
-    return () => <Icon icon="nuclicon-buck" className="nuclide-buck-task-runner-icon" />;
+    return () => (
+      <Icon icon="nuclicon-buck" className="nuclide-buck-task-runner-icon" />
+    );
   }
 
   getOutputMessages(): Observable<Message> {
@@ -166,35 +169,40 @@ export class BuckBuildSystem {
     // $FlowFixMe: type symbol-observable
     const storeReady: Observable<AppState> = Observable.from(this._getStore())
       .distinctUntilChanged()
-      .filter((state: AppState) => !state.isLoadingBuckProject && state.projectRoot === path)
+      .filter(
+        (state: AppState) =>
+          !state.isLoadingBuckProject && state.projectRoot === path,
+      )
       .share();
 
     const enabledObservable = storeReady
       .map(state => state.buckRoot != null)
       .distinctUntilChanged();
 
-    const tasksObservable = storeReady
-      .map(state => {
-        const {buildRuleType, selectedDeploymentTarget} = state;
-        const tasksFromPlatform = selectedDeploymentTarget ?
-          selectedDeploymentTarget.platform.tasks : null;
-        return TASKS.map(task => {
-          let disabled = state.isLoadingPlatforms || buildRuleType == null;
-          if (!disabled) {
-            if (tasksFromPlatform) {
-              disabled = !tasksFromPlatform.has(task.type);
-            } else {
-              invariant(buildRuleType);
-              // No platform provider selected, fall back to default logic
-              disabled = !shouldEnableTask(task.type, buildRuleType);
-            }
+    const tasksObservable = storeReady.map(state => {
+      const {buildRuleType, selectedDeploymentTarget} = state;
+      const tasksFromPlatform = selectedDeploymentTarget
+        ? selectedDeploymentTarget.platform.tasks
+        : null;
+      return TASKS.map(task => {
+        let disabled = state.isLoadingPlatforms || buildRuleType == null;
+        if (!disabled) {
+          if (tasksFromPlatform) {
+            disabled = !tasksFromPlatform.has(task.type);
+          } else {
+            invariant(buildRuleType);
+            // No platform provider selected, fall back to default logic
+            disabled = !shouldEnableTask(task.type, buildRuleType);
           }
-          return {...task, disabled};
-        });
+        }
+        return {...task, disabled};
       });
+    });
 
-    const subscription = Observable.combineLatest(enabledObservable, tasksObservable)
-      .subscribe(([enabled, tasks]) => callback(enabled, tasks));
+    const subscription = Observable.combineLatest(
+      enabledObservable,
+      tasksObservable,
+    ).subscribe(([enabled, tasks]) => callback(enabled, tasks));
 
     this._getStore().dispatch(Actions.setProjectRoot(path));
 
@@ -226,14 +234,15 @@ export class BuckBuildSystem {
       const epics = Object.keys(Epics)
         .map(k => Epics[k])
         .filter(epic => typeof epic === 'function');
-      const rootEpic = (actions, store) => (
-        combineEpics(...epics)(actions, store)
-          // Log errors and continue.
-          .catch((err, stream) => {
-            getLogger().error(err);
-            return stream;
-          })
-      );
+      const rootEpic = (actions, store) => combineEpics(...epics)(
+        actions,
+        store,
+      )
+        // Log errors and continue.
+        .catch((err, stream) => {
+          getLogger().error(err);
+          return stream;
+        });
       this._store = createStore(
         Reducers,
         initialState,
@@ -246,17 +255,27 @@ export class BuckBuildSystem {
 
   runTask(taskType: string): Task {
     invariant(
-      taskType === 'build' || taskType === 'test' ||
-      taskType === 'run' || taskType === 'debug',
+      taskType === 'build' ||
+        taskType === 'test' ||
+        taskType === 'run' ||
+        taskType === 'debug',
       'Invalid task type',
     );
 
     const state = this._getStore().getState();
-    const {buckRoot, buildRuleType, buildTarget, selectedDeploymentTarget} = state;
+    const {
+      buckRoot,
+      buildRuleType,
+      buildTarget,
+      selectedDeploymentTarget,
+    } = state;
     invariant(buckRoot);
 
     const deploymentString = formatDeploymentTarget(selectedDeploymentTarget);
-    this._logOutput(`Resolving ${taskType} command for "${buildTarget}"${deploymentString}`, 'log');
+    this._logOutput(
+      `Resolving ${taskType} command for "${buildTarget}"${deploymentString}`,
+      'log',
+    );
 
     let resolvedBuildTarget;
     if (buildRuleType !== MULTIPLE_TARGET_RULE_TYPE) {
@@ -264,24 +283,29 @@ export class BuckBuildSystem {
     } else {
       // This is not strictly the qualified name, as that'd be a list of names
       // Passing the input is good enough since the deployment target is guaranteed to be null
-      resolvedBuildTarget = Observable.of({qualifiedName: buildTarget, flavors: []});
+      resolvedBuildTarget = Observable.of({
+        qualifiedName: buildTarget,
+        flavors: [],
+      });
     }
 
-    const task = taskFromObservable(resolvedBuildTarget.switchMap(resolvedTarget => {
-      if (selectedDeploymentTarget) {
-        const {platform, device} = selectedDeploymentTarget;
-        return platform.runTask(this, taskType, resolvedTarget, device);
-      } else {
-        const subcommand = taskType === 'debug' ? 'build' : taskType;
-        return this.runSubcommand(
+    const task = taskFromObservable(
+      resolvedBuildTarget.switchMap(resolvedTarget => {
+        if (selectedDeploymentTarget) {
+          const {platform, device} = selectedDeploymentTarget;
+          return platform.runTask(this, taskType, resolvedTarget, device);
+        } else {
+          const subcommand = taskType === 'debug' ? 'build' : taskType;
+          return this.runSubcommand(
             subcommand,
             resolvedTarget,
             {},
             taskType === 'debug',
             null,
           );
-      }
-    }));
+        }
+      }),
+    );
 
     return {
       ...task,
@@ -309,25 +333,20 @@ export class BuckBuildSystem {
 
     const task = taskFromObservable(
       Observable.concat(
-        this.runSubcommand(
-          'build',
-          target,
-          {},
-          false,
-          null,
-        ),
-
+        this.runSubcommand('build', target, {}, false, null),
         // Don't complete until we've determined the artifact path.
         Observable.defer(() => buckService.showOutput(root, targetString))
           .do(output => {
             let outputPath;
             if (
-              output == null
-              || output[0] == null
-              || output[0]['buck.outputPath'] == null
-              || (outputPath = output[0]['buck.outputPath'].trim()) === ''
+              output == null ||
+              output[0] == null ||
+              output[0]['buck.outputPath'] == null ||
+              (outputPath = output[0]['buck.outputPath'].trim()) === ''
             ) {
-              throw new Error("Couldn't determine binary path from Buck output!");
+              throw new Error(
+                "Couldn't determine binary path from Buck output!",
+              );
             }
             invariant(outputPath != null);
             pathToArtifact = nuclideUri.join(root, outputPath);
@@ -366,7 +385,8 @@ export class BuckBuildSystem {
     if (selectedDeploymentTarget) {
       selectedPlatformName = selectedDeploymentTarget.platform.name;
       selectedDeviceName = selectedDeploymentTarget.device
-        ? selectedDeploymentTarget.device.name : null;
+        ? selectedDeploymentTarget.device.name
+        : null;
     } else {
       // In case the user quits before the session is restored, forward the session restoration.
       selectedPlatformName = state.lastSessionPlatformName;
@@ -377,7 +397,8 @@ export class BuckBuildSystem {
       buildTarget,
       taskSettings,
       selectedPlatformName,
-      selectedDeviceName};
+      selectedDeviceName,
+    };
   }
 
   runSubcommand(
@@ -417,7 +438,10 @@ export class BuckBuildSystem {
             buckService.getWebSocketStream(buckRoot, httpPort).refCount(),
           ).share();
         } else {
-          this._logOutput('Enable httpserver in your .buckconfig for better output.', 'warning');
+          this._logOutput(
+            'Enable httpserver in your .buckconfig for better output.',
+            'warning',
+          );
         }
 
         const processMessages = runBuckCommand(
@@ -436,45 +460,49 @@ export class BuckBuildSystem {
           // Without a websocket, just pipe the Buck output directly.
           mergedEvents = processEvents;
         } else {
-          mergedEvents = combineEventStreams(subcommand, socketEvents, processEvents)
-            .share();
+          mergedEvents = combineEventStreams(
+            subcommand,
+            socketEvents,
+            processEvents,
+          ).share();
         }
 
         return Observable.concat(
           // Wait until the socket starts up before triggering the Buck process.
-          socketEvents == null ? Observable.empty() :
-            socketEvents
-              .filter(event => event.type === 'socket-connected')
-              .take(1)
-              .timeout(SOCKET_TIMEOUT)
-              .catch(err => {
-                if (err instanceof TimeoutError) {
-                  throw Error('Timed out connecting to Buck server.');
-                }
-                throw err;
-              })
-              .ignoreElements(),
-
+          socketEvents == null
+            ? Observable.empty()
+            : socketEvents
+                .filter(event => event.type === 'socket-connected')
+                .take(1)
+                .timeout(SOCKET_TIMEOUT)
+                .catch(err => {
+                  if (err instanceof TimeoutError) {
+                    throw Error('Timed out connecting to Buck server.');
+                  }
+                  throw err;
+                })
+                .ignoreElements(),
           this._consumeEventStream(
             Observable.merge(
               mergedEvents,
-              featureConfig.get('nuclide-buck.compileErrorDiagnostics') ?
-                getDiagnosticEvents(mergedEvents, buckRoot) : Observable.empty(),
-              isDebug && subcommand === 'install' ? getDeployInstallEvents(
-                processMessages,
-                buckRoot,
-              ) : Observable.empty(),
-              isDebug && subcommand === 'build' ? getDeployBuildEvents(
-                processMessages,
-                buckService,
-                buckRoot,
-                targetString,
-                settings.runArguments || [],
-              ) : Observable.empty(),
-              isDebug && subcommand === 'test' ? getDeployTestEvents(
-                processMessages,
-                buckRoot,
-              ) : Observable.empty(),
+              featureConfig.get('nuclide-buck.compileErrorDiagnostics')
+                ? getDiagnosticEvents(mergedEvents, buckRoot)
+                : Observable.empty(),
+              isDebug && subcommand === 'install'
+                ? getDeployInstallEvents(processMessages, buckRoot)
+                : Observable.empty(),
+              isDebug && subcommand === 'build'
+                ? getDeployBuildEvents(
+                    processMessages,
+                    buckService,
+                    buckRoot,
+                    targetString,
+                    settings.runArguments || [],
+                  )
+                : Observable.empty(),
+              isDebug && subcommand === 'test'
+                ? getDeployTestEvents(processMessages, buckRoot)
+                : Observable.empty(),
             ),
           ),
         );
@@ -527,7 +555,9 @@ export class BuckBuildSystem {
           },
         })
         // Let progress events flow through to the task runner.
-        .map(event => (event.type === 'progress' ? event : null))
+        .map(event => {
+          return event.type === 'progress' ? event : null;
+        })
         .finally(() => {
           if (fileDiagnostics.size > 0) {
             this._logOutput(
@@ -581,16 +611,22 @@ function runBuckCommand(
     // app that's being overwritten is being debugged.
     atom.commands.dispatch(
       atom.views.getView(atom.workspace),
-      'nuclide-debugger:stop-debugging');
+      'nuclide-debugger:stop-debugging',
+    );
   }
 
   if (subcommand === 'install') {
-    return buckService.installWithOutput(buckRoot, [buildTarget], args, simulator, true, debug)
+    return buckService
+      .installWithOutput(buckRoot, [buildTarget], args, simulator, true, debug)
       .refCount();
   } else if (subcommand === 'build') {
-    return buckService.buildWithOutput(buckRoot, [buildTarget], args).refCount();
+    return buckService
+      .buildWithOutput(buckRoot, [buildTarget], args)
+      .refCount();
   } else if (subcommand === 'test') {
-    return buckService.testWithOutput(buckRoot, [buildTarget], args, debug).refCount();
+    return buckService
+      .testWithOutput(buckRoot, [buildTarget], args, debug)
+      .refCount();
   } else if (subcommand === 'run') {
     return buckService.runWithOutput(buckRoot, [buildTarget], args).refCount();
   } else {
@@ -603,18 +639,19 @@ function getResolvedBuildTarget(
   buildTarget: string,
 ): Observable<ResolvedBuildTarget> {
   const service = nullthrows(getBuckServiceByNuclideUri(buckRoot));
-  return Observable.defer(() => service.resolveBuildTargetName(buckRoot, buildTarget));
+  return Observable.defer(() =>
+    service.resolveBuildTargetName(buckRoot, buildTarget));
 }
 
-function getCommandStringForResolvedBuildTarget(target: ResolvedBuildTarget): string {
+function getCommandStringForResolvedBuildTarget(
+  target: ResolvedBuildTarget,
+): string {
   const {qualifiedName, flavors} = target;
   const separator = flavors.length > 0 ? '#' : '';
   return `${qualifiedName}${separator}${flavors.join(',')}`;
 }
 
-function formatDeploymentTarget(
-  deploymentTarget: ?DeploymentTarget,
-): string {
+function formatDeploymentTarget(deploymentTarget: ?DeploymentTarget): string {
   if (!deploymentTarget) {
     return '';
   }

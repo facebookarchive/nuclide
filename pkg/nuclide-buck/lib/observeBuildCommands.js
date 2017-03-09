@@ -20,9 +20,7 @@ import * as Actions from './redux/Actions';
 const CHECK_INTERVAL = 30000;
 const CONFIG_KEY = 'nuclide-buck.suggestTaskRunner';
 
-export default function observeBuildCommands(
-  store: Store,
-): IDisposable {
+export default function observeBuildCommands(store: Store): IDisposable {
   return new UniversalDisposable(
     // $FlowFixMe: type symbol-observable
     Observable.from(store)
@@ -35,30 +33,34 @@ export default function observeBuildCommands(
         // Buck command invocations.
         // We can't use Watchman because these logs are typically ignored.
         const buckService = getBuckServiceByNuclideUri(buckRoot);
-        return Observable.interval(CHECK_INTERVAL)
-          .switchMap(() => {
-            return Observable.fromPromise(buckService.getLastCommandInfo(buckRoot))
-              // Ignore errors.
-              .catch(() => Observable.of(null))
-              .switchMap(commandInfo => {
-                if (commandInfo == null) {
-                  return Observable.empty();
-                }
-                const {timestamp, command, args} = commandInfo;
-                // Only report simple single-target build commands for now.
-                if (Date.now() - timestamp > CHECK_INTERVAL || command !== 'build' ||
-                    args.length !== 1 || args[0].startsWith('-')) {
-                  return Observable.empty();
-                }
-                return Observable.of(commandInfo);
-              });
-          });
+        return Observable.interval(CHECK_INTERVAL).switchMap(() => {
+          return Observable.fromPromise(
+            buckService.getLastCommandInfo(buckRoot),
+          )
+            // Ignore errors.
+            .catch(() => Observable.of(null))
+            .switchMap(commandInfo => {
+              if (commandInfo == null) {
+                return Observable.empty();
+              }
+              const {timestamp, command, args} = commandInfo;
+              // Only report simple single-target build commands for now.
+              if (
+                Date.now() - timestamp > CHECK_INTERVAL ||
+                command !== 'build' ||
+                args.length !== 1 ||
+                args[0].startsWith('-')
+              ) {
+                return Observable.empty();
+              }
+              return Observable.of(commandInfo);
+            });
+        });
       })
       // Only show this once per session.
       .take(1)
       .takeUntil(
-        featureConfig.observeAsStream(CONFIG_KEY)
-          .filter(x => x === false),
+        featureConfig.observeAsStream(CONFIG_KEY).filter(x => x === false),
       )
       .subscribe(({args}) => {
         function dismiss() {
@@ -68,7 +70,7 @@ export default function observeBuildCommands(
         track('buck-prompt.shown', {buildTarget: args[0]});
         const notification = atom.notifications.addInfo(
           `You recently ran \`buck build ${args.join(' ')}\` from the command line.<br />` +
-          'Would you like to try building from the Task Runner?',
+            'Would you like to try building from the Task Runner?',
           {
             dismissable: true,
             icon: 'nuclicon-buck',

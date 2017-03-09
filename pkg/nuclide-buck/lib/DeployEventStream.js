@@ -10,7 +10,8 @@
 
 import type {ProcessMessage} from '../../commons-node/process-rpc-types';
 import typeof * as BuckService from '../../nuclide-buck-rpc';
-import type RemoteControlService from '../../nuclide-debugger/lib/RemoteControlService';
+import type RemoteControlService
+  from '../../nuclide-debugger/lib/RemoteControlService';
 import type {BuckEvent} from './BuckEventStream';
 
 import invariant from 'assert';
@@ -19,9 +20,13 @@ import {Observable} from 'rxjs';
 import {compact} from '../../commons-node/observable';
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {AttachProcessInfo} from '../../nuclide-debugger-native/lib/AttachProcessInfo';
+import {
+  AttachProcessInfo,
+} from '../../nuclide-debugger-native/lib/AttachProcessInfo';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {LaunchProcessInfo} from '../../nuclide-debugger-native/lib/LaunchProcessInfo';
+import {
+  LaunchProcessInfo,
+} from '../../nuclide-debugger-native/lib/LaunchProcessInfo';
 import {getLogger} from '../../nuclide-logging';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
@@ -33,7 +38,10 @@ const LLDB_TARGET_TYPE = 'LLDB';
 const ANDROID_TARGET_TYPE = 'android';
 
 async function getDebuggerService(): Promise<RemoteControlService> {
-  atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
+  atom.commands.dispatch(
+    atom.views.getView(atom.workspace),
+    'nuclide-debugger:show',
+  );
   return consumeFirstProvider('nuclide-debugger.remote');
 }
 
@@ -45,21 +53,29 @@ async function debugBuckTarget(
 ): Promise<string> {
   const output = await buckService.showOutput(buckRoot, buildTarget);
   if (output.length === 0) {
-    throw new Error(`Could not find build output path for target ${buildTarget}`);
+    throw new Error(
+      `Could not find build output path for target ${buildTarget}`,
+    );
   }
   if (output.length > 1) {
-    throw new Error(`Target ${buildTarget} is ambiguous. Please specify a single test.`);
+    throw new Error(
+      `Target ${buildTarget} is ambiguous. Please specify a single test.`,
+    );
   }
 
   const targetOutput = output[0];
   const relativeOutputPath = targetOutput['buck.outputPath'];
   if (relativeOutputPath == null) {
-    throw new Error(`Target ${buildTarget} does not have executable build output.`);
+    throw new Error(
+      `Target ${buildTarget} does not have executable build output.`,
+    );
   }
 
   // LaunchProcessInfo's arguments should be local to the remote directory.
   const remoteBuckRoot = nuclideUri.getPath(buckRoot);
-  const remoteOutputPath = nuclideUri.getPath(nuclideUri.join(buckRoot, relativeOutputPath));
+  const remoteOutputPath = nuclideUri.getPath(
+    nuclideUri.join(buckRoot, relativeOutputPath),
+  );
 
   const env = [];
   if (targetOutput.env) {
@@ -91,8 +107,14 @@ async function debugPidWithLLDB(pid: number, buckRoot: string) {
   debuggerService.startDebugging(attachInfo);
 }
 
-async function debugAndroidActivity(buckProjectPath: string, androidActivity: string) {
-  const service = getServiceByNuclideUri('JavaDebuggerService', buckProjectPath);
+async function debugAndroidActivity(
+  buckProjectPath: string,
+  androidActivity: string,
+) {
+  const service = getServiceByNuclideUri(
+    'JavaDebuggerService',
+    buckProjectPath,
+  );
   if (service == null) {
     throw new Error('Java debugger service is not available.');
   }
@@ -109,8 +131,9 @@ async function debugAndroidActivity(buckProjectPath: string, androidActivity: st
     /* eslint-disable nuclide-internal/no-cross-atom-imports */
     // $FlowFB
     const procInfo = require('../../fb-debugger-java/lib/AdbProcessInfo');
-    debuggerService.startDebugging(new procInfo.AdbProcessInfo(buckProjectPath, null, null,
-      androidActivity));
+    debuggerService.startDebugging(
+      new procInfo.AdbProcessInfo(buckProjectPath, null, null, androidActivity),
+    );
     /* eslint-enable nuclide-internal/no-cross-atom-imports */
   } catch (e) {
     track('fb-java-debugger-unavailable', {
@@ -124,7 +147,10 @@ async function _getAttachProcessInfoFromPid(
   pid: number,
   buckProjectPath: string,
 ): Promise<?AttachProcessInfo> {
-  const rpcService = getServiceByNuclideUri('NativeDebuggerService', buckProjectPath);
+  const rpcService = getServiceByNuclideUri(
+    'NativeDebuggerService',
+    buckProjectPath,
+  );
   invariant(rpcService);
   const attachTargetList = await rpcService.getAttachTargetInfoList(pid);
   if (attachTargetList.length === 0) {
@@ -132,10 +158,7 @@ async function _getAttachProcessInfoFromPid(
   }
   const attachTargetInfo = attachTargetList[0];
   attachTargetInfo.basepath = nuclideUri.getPath(buckProjectPath);
-  return new AttachProcessInfo(
-    buckProjectPath,
-    attachTargetInfo,
-  );
+  return new AttachProcessInfo(buckProjectPath, attachTargetInfo);
 }
 
 export function getDeployBuildEvents(
@@ -157,21 +180,27 @@ export function getDeployBuildEvents(
           level: 'info',
         }))
         .catch(err => {
-          getLogger().error(`Failed to launch debugger for ${buildTarget}`, err);
+          getLogger().error(
+            `Failed to launch debugger for ${buildTarget}`,
+            err,
+          );
           return Observable.of({
             type: 'log',
             message: `Failed to launch debugger: ${err.message}`,
             level: 'error',
           });
         })
-        .startWith({
+        .startWith(
+        {
           type: 'log',
           message: `Launching debugger for ${buildTarget}...`,
           level: 'log',
-        }, {
+        },
+        {
           type: 'progress',
           progress: null,
-        });
+        },
+        );
     });
 }
 
@@ -203,7 +232,8 @@ export function getDeployInstallEvents(
         .switchMap(() => {
           if (targetInfo.targetType === LLDB_TARGET_TYPE) {
             return Observable.fromPromise(
-              debugPidWithLLDB(parseInt(targetInfo.targetApp, 10), buckRoot))
+              debugPidWithLLDB(parseInt(targetInfo.targetApp, 10), buckRoot),
+            )
               .ignoreElements()
               .startWith({
                 type: 'log',
@@ -212,7 +242,8 @@ export function getDeployInstallEvents(
               });
           } else if (targetInfo.targetType === ANDROID_TARGET_TYPE) {
             return Observable.fromPromise(
-              debugAndroidActivity(buckRoot, targetInfo.targetApp))
+              debugAndroidActivity(buckRoot, targetInfo.targetApp),
+            )
               .ignoreElements()
               .startWith({
                 type: 'log',
@@ -230,24 +261,26 @@ export function getDeployTestEvents(
   processStream: Observable<ProcessMessage>,
   buckRoot: string,
 ): Observable<BuckEvent> {
-  return processStream.flatMap(message => {
-    if (message.kind !== 'stderr') {
-      return Observable.empty();
-    }
-    const pidMatch = message.data.match(LLDB_PROCESS_ID_REGEX);
-    if (pidMatch == null) {
-      return Observable.empty();
-    }
-    return Observable.of(pidMatch[1]);
-  })
+  return processStream
+    .flatMap(message => {
+      if (message.kind !== 'stderr') {
+        return Observable.empty();
+      }
+      const pidMatch = message.data.match(LLDB_PROCESS_ID_REGEX);
+      if (pidMatch == null) {
+        return Observable.empty();
+      }
+      return Observable.of(pidMatch[1]);
+    })
     .switchMap(pid => {
       return Observable.fromPromise(
-        debugPidWithLLDB(parseInt(pid, 10), buckRoot))
-          .ignoreElements()
-          .startWith({
-            type: 'log',
-            message: `Attaching LLDB debugger to pid ${pid}...`,
-            level: 'info',
-          });
+        debugPidWithLLDB(parseInt(pid, 10), buckRoot),
+      )
+        .ignoreElements()
+        .startWith({
+          type: 'log',
+          message: `Attaching LLDB debugger to pid ${pid}...`,
+          level: 'info',
+        });
     });
 }
