@@ -370,6 +370,21 @@ function isDescribe(functionName: string): boolean {
     case 'xdescribe':
     case 'describe.only':
     case 'describe.skip':
+    case 'test.cb':
+    case 'test.serial':
+    case 'test.todo':
+    case 'test.failing':
+    case 'test':
+    case 'test.concurrent':
+    case 'test.only':
+    case 'test.skip':
+    case 'suite':
+    case 'suite.only':
+    case 'suite.skip':
+    case 'xtest':
+    case 'xtest.concurrent':
+    case 'xtest.only':
+    case 'xtest.skip':
       return true;
     default:
       return false;
