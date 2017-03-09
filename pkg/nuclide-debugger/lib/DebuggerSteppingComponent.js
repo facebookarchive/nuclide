@@ -11,6 +11,7 @@
 import type DebuggerActions from './DebuggerActions';
 import type {ControlButtonSpecification, DebuggerModeType} from './types';
 import type {DebuggerStore} from './DebuggerStore';
+import {LoadingSpinner, LoadingSpinnerSizes} from '../../nuclide-ui/LoadingSpinner';
 
 import React from 'react';
 import {Button} from '../../nuclide-ui/Button';
@@ -32,6 +33,7 @@ type DebuggerSteppingComponentState = {
   pauseOnCaughtException: boolean,
   enableSingleThreadStepping: boolean,
   customControlButtons: Array<ControlButtonSpecification>,
+  waitingForPause: boolean,
 };
 
 const defaultTooltipOptions = {
@@ -91,6 +93,9 @@ export class DebuggerSteppingComponent extends React.Component {
 
   constructor(props: DebuggerSteppingComponentProps) {
     super(props);
+    (this: any)._setWaitingForPause = this._setWaitingForPause.bind(this);
+    (this: any)._togglePauseState = this._togglePauseState.bind(this);
+
     this._disposables = new UniversalDisposable();
     const {debuggerStore} = props;
     this.state = {
@@ -100,6 +105,7 @@ export class DebuggerSteppingComponent extends React.Component {
       pauseOnCaughtException: debuggerStore.getTogglePauseOnCaughtException(),
       enableSingleThreadStepping: debuggerStore.getEnableSingleThreadStepping(),
       customControlButtons: debuggerStore.getCustomControlButtons(),
+      waitingForPause: false,
     };
   }
 
@@ -116,12 +122,32 @@ export class DebuggerSteppingComponent extends React.Component {
           enableSingleThreadStepping: debuggerStore.getEnableSingleThreadStepping(),
           customControlButtons: debuggerStore.getCustomControlButtons(),
         });
+
+        if (this.state.waitingForPause &&
+          debuggerStore.getDebuggerMode() !== DebuggerMode.RUNNING) {
+          this._setWaitingForPause(false);
+        }
       }),
     );
   }
 
   componentWillUnmount(): void {
     this._disposables.dispose();
+  }
+
+  _setWaitingForPause(waiting: boolean): void {
+    this.setState({
+      waitingForPause: waiting,
+    });
+  }
+
+  _togglePauseState() {
+    if (this.state.debuggerMode === DebuggerMode.RUNNING) {
+      this._setWaitingForPause(true);
+    }
+
+    // ChromeActionRegistryActions.PAUSE actually toggles paused state.
+    this.props.actions.triggerDebuggerAction(ChromeActionRegistryActions.PAUSE);
   }
 
   render(): ?React.Element<any> {
@@ -132,30 +158,40 @@ export class DebuggerSteppingComponent extends React.Component {
       allowSingleThreadStepping,
       enableSingleThreadStepping,
       customControlButtons,
+      waitingForPause,
     } = this.state;
     const {actions} = this.props;
     const isPaused = debuggerMode === DebuggerMode.PAUSED;
     const isStopped = debuggerMode === DebuggerMode.STOPPED;
+    const isPausing = debuggerMode === DebuggerMode.RUNNING && waitingForPause;
+    const playPauseIcon = isPausing ? null :
+      <span className={(isPaused ? 'icon-playback-play' : 'icon-playback-pause')} />;
+
+    const loadingIndicator =
+      !isPausing ? null :
+        <LoadingSpinner
+          className="nuclide-debugger-stepping-playpause-button-loading"
+          size={LoadingSpinnerSizes.EXTRA_SMALL}
+        />;
+
     return (
       <div className="nuclide-debugger-stepping-component">
         <ButtonGroup className="nuclide-debugger-stepping-buttongroup">
           <Button
-            icon={isPaused ? 'playback-play' : 'playback-pause'}
-            disabled={isStopped}
+            disabled={isStopped || isPausing}
             tooltip={{
               ...defaultTooltipOptions,
-              title: isPaused ? 'Continue' : 'Pause',
+              title: isPausing ? 'Waiting for pause...' : (isPaused ? 'Continue' : 'Pause'),
               keyBindingCommand: isPaused ?
                 'nuclide-debugger:continue-debugging' :
                 undefined,
             }}
-            onClick={
-              actions.triggerDebuggerAction.bind(
-                actions,
-                ChromeActionRegistryActions.PAUSE, // Toggles paused state
-              )
-            }
-          />
+            onClick={this._togglePauseState.bind(this)}>
+            <div className="nuclide-debugger-stepping-playpause-button">
+              {playPauseIcon}
+              {loadingIndicator}
+            </div>
+          </Button>
           <SVGButton
             icon={STEP_OVER_ICON}
             disabled={!isPaused}
