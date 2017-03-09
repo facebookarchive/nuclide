@@ -208,17 +208,6 @@ export class PanelComponent extends React.Component {
       {'nuclide-panel-should-animate': this.state.shouldAnimate},
     );
 
-    // Obviously we need to render the contents if the panels open. But we also need to render them
-    // if it's not open but animating.
-    // TODO: Track whether animation is in progress and use that instead of `shouldAnimate`.
-    const contents = open || this.state.shouldAnimate
-      ? (
-        <div className="nuclide-workspace-views-panel-content">
-          <View item={this.props.paneContainer} />
-        </div>
-      )
-      : null;
-
     const handle = (
       <Handle
         position={this.props.position}
@@ -235,7 +224,9 @@ export class PanelComponent extends React.Component {
           {/* ...but the content needs to maintain a constant size. */}
           <div className={className} style={{[widthOrHeight]: size}}>
             {handle}
-            {contents}
+            <div className="nuclide-workspace-views-panel-content">
+              <View item={this.props.paneContainer} />
+            </div>
             <ResizeCursorOverlay position={this.props.position} resizing={this.state.resizing} />
           </div>
         </div>

@@ -39,7 +39,7 @@ export function isDiagnosticsPanelShowing(): boolean {
     return false;
   }
   while (node != null) {
-    if (node.style.getPropertyValue('display') === 'none') {
+    if (node.clientHeight === 0 || node.clientWidth === 0) {
       return false;
     }
     node = ((node.parentElement: any): HTMLElement);

@@ -8,8 +8,6 @@
  * @flow
  */
 
-/* global getComputedStyle */
-
 import {
   activateAllPackages,
   jasmineIntegrationTestSetup,
@@ -45,8 +43,7 @@ function isOutlineViewVisible(): boolean {
   let el = document.querySelector('.nuclide-outline-view');
   if (el == null) { return false; }
   while (el != null) {
-    const style = getComputedStyle(el);
-    if (style.display === 'none' || style.visibility === 'hidden') { return false; }
+    if (el.clientHeight === 0 || el.clientWidth === 0) { return false; }
     el = el.parentElement;
   }
   return true;
