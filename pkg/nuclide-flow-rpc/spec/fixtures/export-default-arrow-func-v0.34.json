@@ -1,0 +1,42 @@
+{
+  "errors":[],
+  "tokens":[],
+  "type":"Program",
+  "loc":{"source":null,"start":{"line":11,"column":0},"end":{"line":11,"column":24}},
+  "range":[216,240],
+  "body":[
+    {
+      "type":"ExportDefaultDeclaration",
+      "loc":{"source":null,"start":{"line":11,"column":0},"end":{"line":11,"column":24}},
+      "range":[216,240],
+      "declaration":{
+        "type":"ArrowFunctionExpression",
+        "loc":{"source":null,"start":{"line":11,"column":15},"end":{"line":11,"column":23}},
+        "range":[231,239],
+        "id":null,
+        "params":[],
+        "body":{
+          "type":"BlockStatement",
+          "loc":{"source":null,"start":{"line":11,"column":21},"end":{"line":11,"column":23}},
+          "range":[237,239],
+          "body":[]
+        },
+        "async":false,
+        "generator":false,
+        "predicate":null,
+        "expression":false,
+        "returnType":null,
+        "typeParameters":null
+      },
+      "exportKind":"value"
+    }
+  ],
+  "comments":[
+    {
+      "type":"Block",
+      "loc":{"source":null,"start":{"line":1,"column":0},"end":{"line":9,"column":3}},
+      "range":[0,214],
+      "value":"*\n * Copyright (c) 2015-present, Facebook, Inc.\n * All rights reserved.\n *\n * This source code is licensed under the license found in the LICENSE file in\n * the root directory of this source tree.\n *\n * @flow\n "
+    }
+  ]
+}

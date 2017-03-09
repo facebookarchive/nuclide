@@ -50,7 +50,12 @@ function itemToTree(item: any): ?OutlineTree {
   const extent = getExtent(item);
   switch (item.type) {
     case 'FunctionDeclaration':
-      return functionOutline(item.id.name, item.params, extent);
+    case 'ArrowFunctionExpression':
+      return functionOutline(
+        item.id != null ? item.id.name : '',
+        item.params,
+        extent,
+      );
     case 'ClassDeclaration':
     case 'ClassExpression':
       const tokenizedText = [keyword('class')];

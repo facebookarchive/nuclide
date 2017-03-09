@@ -24,6 +24,8 @@ import toplevelASTOld from './fixtures/toplevel-ast-old.json';
 import toplevelAST34 from './fixtures/toplevel-ast-v0.34.json';
 import exportsASTOld from './fixtures/exports-ast-old.json';
 import exportsAST34 from './fixtures/exports-ast-v0.34.json';
+import exportDefaultArrowFuncAST34 from './fixtures/export-default-arrow-func-v0.34.json';
+import exportDefaultAnonymousFuncAST34 from './fixtures/export-default-anonymous-func-v0.34.json';
 import typesASTOld from './fixtures/types-ast-old.json';
 import typesAST34 from './fixtures/types-ast-v0.34.json';
 
@@ -420,6 +422,46 @@ const expectedTypesOutline: Array<OutlineTree> = [
   },
 ];
 
+const expectedExportDefaultArrowFuncOutline: Array<OutlineTree> = [
+  {
+    children: [],
+    endPosition: new Point(10, 24),
+    representativeName: '',
+    startPosition: new Point(10, 0),
+    tokenizedText: [
+      {kind: 'keyword', value: 'export'},
+      {kind: 'whitespace', value: ' '},
+      {kind: 'keyword', value: 'default'},
+      {kind: 'whitespace', value: ' '},
+      {kind: 'keyword', value: 'function'},
+      {kind: 'whitespace', value: ' '},
+      {kind: 'method', value: ''},
+      {kind: 'plain', value: '('},
+      {kind: 'plain', value: ')'},
+    ],
+  },
+];
+
+const expectedExportDefaultAnonymousFuncOutline: Array<OutlineTree> = [
+  {
+    children: [],
+    endPosition: new Point(10, 28),
+    representativeName: '',
+    startPosition: new Point(10, 0),
+    tokenizedText: [
+      {kind: 'keyword', value: 'export'},
+      {kind: 'whitespace', value: ' '},
+      {kind: 'keyword', value: 'default'},
+      {kind: 'whitespace', value: ' '},
+      {kind: 'keyword', value: 'function'},
+      {kind: 'whitespace', value: ' '},
+      {kind: 'method', value: ''},
+      {kind: 'plain', value: '('},
+      {kind: 'plain', value: ')'},
+    ],
+  },
+];
+
 describe('astToOutline', () => {
   beforeEach(function() {
     addMatchers(this);
@@ -451,5 +493,15 @@ describe('astToOutline', () => {
   it('should provide an outline for type declarations', () => {
     expect(astToOutline(typesASTOld).outlineTrees).diffJson(expectedTypesOutline);
     expect(astToOutline(typesAST34).outlineTrees).diffJson(expectedTypesOutline);
+  });
+
+  it('should provide an outline for export default () => {}', () => {
+    expect(astToOutline(exportDefaultArrowFuncAST34).outlineTrees)
+      .diffJson(expectedExportDefaultArrowFuncOutline);
+  });
+
+  it('should provide an outline for export default function() {}', () => {
+    expect(astToOutline(exportDefaultAnonymousFuncAST34).outlineTrees)
+      .diffJson(expectedExportDefaultAnonymousFuncOutline);
   });
 });
