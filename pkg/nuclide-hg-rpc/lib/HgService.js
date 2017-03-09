@@ -768,8 +768,12 @@ export class HgService {
   ): Observable<ProcessMessage> {
     if (isInteractive) {
       args.push('--interactive');
+    } else {
+      // Currently if amend leads to a  merge conflict that requires user input
+      // nuclide just freezes doing nothing. This flag will prevent that behavior
+      // and will break out leaving the files unresolved.
+      args.push('--noninteractive');
     }
-
     let tempFile = null;
     let editMergeConfigs;
 
@@ -1144,23 +1148,19 @@ export class HgService {
     destination: string,
     source?: string,
   ): ConnectableObservable<ProcessMessage> {
-    return Observable.fromPromise(getEditMergeConfigs())
-      .switchMap(editMergeConfigs => {
-        const args = [...editMergeConfigs.args, 'rebase', '-d', destination];
-        if (source != null) {
-          args.push('-s', source);
-        }
-        const execOptions = {
-          cwd: this._workingDirectory,
-          HGEDITOR: editMergeConfigs.hgEditor,
-        };
-
-        return this._hgObserveExecution(
-          args,
-          execOptions,
-        );
-      })
-      .publish();
+    const args = ['rebase', '-d', destination];
+    if (source != null) {
+      args.push('-s', source);
+    }
+    args.push('--noninteractive');
+    const execOptions = {
+      cwd: this._workingDirectory,
+    };
+    return this._hgObserveExecution(
+      args,
+      execOptions,
+    )
+    .publish();
   }
 
   pull(options: Array<string>): ConnectableObservable<ProcessMessage> {
