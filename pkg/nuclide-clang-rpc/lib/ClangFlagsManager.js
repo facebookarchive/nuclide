@@ -441,7 +441,18 @@ export default class ClangFlagsManager {
     const maxLoad = os.cpus().length / 2;
     const buildReport = await BuckService.build(
       buckProjectRoot,
-      [buildTarget, '-L', String(maxLoad)],
+      [
+        // Small builds, like those used for a compilation database, can degrade overall
+        // `buck build` performance by unnecessarily invalidating the Action Graph cache.
+        // See https://buckbuild.com/concept/buckconfig.html#client.skip-action-graph-cache
+        // for details on the importance of using skip-action-graph-cache=true.
+        '--config',
+        'client.skip-action-graph-cache=true',
+
+        buildTarget,
+        '-L',
+        String(maxLoad),
+      ],
       {commandOptions: {timeout: BUCK_TIMEOUT}},
     );
     if (!buildReport.success) {
