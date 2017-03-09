@@ -293,6 +293,10 @@ export class FlowSingleProjectLanguageService {
         const fileDiagnosticUpdates: Array<FileDiagnosticUpdate> = [...filePathToMessages.entries()]
           .map(([filePath, messages]) => ({filePath, messages}));
         return Observable.from(fileDiagnosticUpdates);
+      })
+      .catch(err => {
+        logger.error(err);
+        throw err;
       });
   }
 
