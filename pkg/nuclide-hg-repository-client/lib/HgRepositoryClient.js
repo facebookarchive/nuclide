@@ -663,8 +663,12 @@ export class HgRepositoryClient {
     return this._getShortHeadAsync();
   }
 
-  fetchMergeConflicts(): Promise<Array<MergeConflict>> {
-    return this._service.fetchMergeConflicts();
+  /*
+   * Setting fetchResolved will return all resolved and unresolved conflicts,
+   * the default would only fetch the current unresolved conflicts.
+   */
+  fetchMergeConflicts(fetchResolved?: boolean): Promise<Array<MergeConflict>> {
+    return this._service.fetchMergeConflicts(fetchResolved);
   }
 
   resolveConflictedFile(filePath: NuclideUri): Promise<void> {

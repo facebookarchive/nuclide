@@ -19,8 +19,8 @@ import fs from 'fs';
 
 import {
   AmendMode,
+  MergeConflictFileStatus,
   MergeConflictStatus,
-  StatusCodeId,
 } from './hg-constants';
 import {Subject} from 'rxjs';
 import {parseMultiFileHgDiffUnifiedOutput} from './hg-diff-output-parser';
@@ -84,7 +84,13 @@ const IGNORABLE_ERROR_SUFFIXES = [
  */
 export type StatusCodeIdValue = 'A' | 'C' | 'I' | 'M' | '!' | 'R' | '?' | 'U';
 
-export type MergeConflictStatusValue = 'both changed' | 'deleted in theirs' | 'deleted in ours';
+export type MergeConflictStatusValue =
+  'both changed' |
+  'deleted in theirs' |
+  'deleted in ours' |
+  'resolved';
+
+export type MergeConflictStatusCodeId = 'R' | 'U';
 
 /**
  * Internally, the HgRepository uses the string StatusCodeId to do bookkeeping.
@@ -1065,13 +1071,25 @@ export class HgService {
     return {entries};
   }
 
-  async fetchMergeConflicts(): Promise<Array<MergeConflict>> {
+  /*
+   * Setting fetchResolved will return all resolved and unresolved conflicts,
+   * the default would only fetch the current unresolved conflicts.
+   */
+  async fetchMergeConflicts(fetchResolved: ?boolean): Promise<Array<MergeConflict>> {
     const {stdout} = await this._hgAsyncExecute(['resolve', '--list', '-Tjson'], {
       cwd: this._workingDirectory,
     });
     const fileListStatuses = JSON.parse(stdout);
+    const resolvedFiles = fetchResolved
+      ? fileListStatuses
+          .filter(fileStatus => fileStatus.status === MergeConflictFileStatus.RESOLVED)
+          .map(fileStatus => ({
+            path: fileStatus.path,
+            message: MergeConflictStatus.RESOLVED,
+          }))
+      : [];
     const conflictedFiles = fileListStatuses.filter(fileStatus => {
-      return fileStatus.status === StatusCodeId.UNRESOLVED;
+      return fileStatus.status === MergeConflictFileStatus.UNRESOLVED;
     });
     const origBackupPath = await this._getOrigBackupPath();
     const conflicts = await Promise.all(conflictedFiles.map(async conflictedFile => {
@@ -1087,7 +1105,7 @@ export class HgService {
         message,
       };
     }));
-    return conflicts;
+    return [...conflicts, ...resolvedFiles];
   }
 
   async _getOrigBackupPath(): Promise<string> {
