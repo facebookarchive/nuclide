@@ -12,11 +12,14 @@ import {FlowIDEConnection} from './FlowIDEConnection';
 
 import {getLogger} from '../../nuclide-logging';
 
+const defaultIDEConnectionFactory = proc => new FlowIDEConnection(proc);
+
 // For the lifetime of this class instance, keep a FlowIDEConnection alive, assuming we do not have
 // too many failures in a row.
 export class FlowIDEConnectionWatcher {
   _processFactory: () => Promise<?child_process$ChildProcess>;
   _ideConnectionCallback: FlowIDEConnection => mixed;
+  _ideConnectionFactory: child_process$ChildProcess => FlowIDEConnection;
 
   _currentIDEConnection: ?FlowIDEConnection;
   _currentIDEConnectionSubscription: ?IDisposable;
@@ -26,8 +29,12 @@ export class FlowIDEConnectionWatcher {
   constructor(
     processFactory: () => Promise<?child_process$ChildProcess>,
     ideConnectionCallback: FlowIDEConnection => mixed,
+    // Can be injected for testing purposes
+    ideConnectionFactory: child_process$ChildProcess => FlowIDEConnection =
+        defaultIDEConnectionFactory,
   ) {
     this._processFactory = processFactory;
+    this._ideConnectionFactory = ideConnectionFactory;
     this._currentIDEConnection = null;
     this._ideConnectionCallback = ideConnectionCallback;
     this._isDisposed = false;
@@ -46,7 +53,7 @@ export class FlowIDEConnectionWatcher {
       proc.kill();
       return;
     }
-    const ideConnection = new FlowIDEConnection(proc);
+    const ideConnection = this._ideConnectionFactory(proc);
     this._ideConnectionCallback(ideConnection);
     this._currentIDEConnectionSubscription = ideConnection.onWillDispose(
       () => this._makeIDEConnection(),
