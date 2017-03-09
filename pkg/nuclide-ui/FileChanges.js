@@ -17,36 +17,12 @@ import {pluralize} from '../commons-node/string';
 import UniversalDisposable from '../commons-node/UniversalDisposable';
 import {AtomTextEditor} from './AtomTextEditor';
 
-// Format returned by `diffparser`:
-type Hunk = {
-  content: string, // e.g. "@@ -1,2 +1,2 @@"
-  changes: Array<{
-    type: 'add' | 'del' | 'normal',
-    del: boolean,
-    ln: number,
-    position: number,
-    content: string,
-  }>,
-  oldStart: number,
-  oldLines: number,
-  newStart: number,
-  newLines: number,
-};
-type FileName = string;
-type FileDiff = {
-  from: FileName,
-  to: FileName,
-  chunks: Array<Hunk>,
-  deletions: number,
-  additions: number,
-  index?: Array<string>,
-};
 type Props = {
-  diff: FileDiff,
+  diff: diffparser$FileDiff,
 };
 
 type HunkProps = {
-  hunk: Hunk,
+  hunk: diffparser$Hunk,
   grammar: atom$Grammar,
 };
 

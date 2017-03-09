@@ -1,0 +1,40 @@
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ *
+ * @flow
+ */
+
+type diffparser$FileName = string;
+
+type diffparser$FileDiff = {
+  from: diffparser$FileName,
+  to: diffparser$FileName,
+  chunks: Array<diffparser$Hunk>,
+  deletions: number,
+  additions: number,
+  index?: Array<string>,
+};
+
+type diffparser$Hunk = {
+  content: string,
+  changes: Array<diffparser$Change>,
+  oldStart: number,
+  oldLines: number,
+  newStart: number,
+  newLines: number,
+};
+
+type diffparser$Change = {
+  type: 'del' | 'add' | 'normal',
+  content: string,
+  ln: number,
+  position: number,
+};
+
+declare module 'diffparser' {
+  declare export default function parse(diff: string): Array<diffparser$FileDiff>;
+}
