@@ -31,7 +31,10 @@ export class PerConnectionLanguageService extends MultiProjectLanguageService {
       return LanguageServerProtocolProcess.create(
         logger,
         fileCache,
-        () => safeSpawn(command, args), // TODO: current dir?
+        () => {
+          logger.logInfo(`PerConnectionLanguageService launch: ${command} ${args.join(' ')}`);
+          return safeSpawn(command, args); // TODO: current dir?
+        },
         projectDir,
         fileExtensions,
       );
