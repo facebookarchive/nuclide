@@ -390,7 +390,18 @@ class LspProcess {
       writer = new rpc.StreamMessageWriter(process.stdin);
     }
 
-    const connection: JsonRpcConnection = rpc.createMessageConnection(reader, writer);
+    const rpc_logger = {
+      error(message) { logger.logError('JsonRpc ' + message); },
+      warn(message) { logger.logInfo('JsonRpc ' + message); },
+      info(message) { logger.logInfo('JsonRpc ' + message); },
+      log(message) { logger.logInfo('JsonRpc ' + message); },
+    };
+
+    const connection: JsonRpcConnection = rpc.createMessageConnection(
+      reader,
+      writer,
+      rpc_logger);
+
     connection.listen();
     // TODO: connection.onNotification(this._onNotification.bind(this));
 
