@@ -20,7 +20,7 @@ const MAKE_IDE_CONNECTION_TRIES = 3;
 // too many failures in a row.
 export class FlowIDEConnectionWatcher {
   _processFactory: () => Promise<?child_process$ChildProcess>;
-  _ideConnectionCallback: FlowIDEConnection => mixed;
+  _ideConnectionCallback: ?FlowIDEConnection => mixed;
   _ideConnectionFactory: child_process$ChildProcess => FlowIDEConnection;
 
   _currentIDEConnection: ?FlowIDEConnection;
@@ -31,7 +31,7 @@ export class FlowIDEConnectionWatcher {
 
   constructor(
     processFactory: () => Promise<?child_process$ChildProcess>,
-    ideConnectionCallback: FlowIDEConnection => mixed,
+    ideConnectionCallback: ?FlowIDEConnection => mixed,
     // Can be injected for testing purposes
     ideConnectionFactory: child_process$ChildProcess => FlowIDEConnection =
         defaultIDEConnectionFactory,
@@ -77,7 +77,10 @@ export class FlowIDEConnectionWatcher {
     const ideConnection = this._ideConnectionFactory(proc);
     this._ideConnectionCallback(ideConnection);
     this._currentIDEConnectionSubscription = ideConnection.onWillDispose(
-      () => this._makeIDEConnection(),
+      () => {
+        this._ideConnectionCallback(null);
+        this._makeIDEConnection();
+      },
     );
 
     this._currentIDEConnection = ideConnection;

@@ -64,7 +64,7 @@ export class FlowProcess {
   _root: string;
   _execInfoContainer: FlowExecInfoContainer;
 
-  _ideConnections: Observable<FlowIDEConnection>;
+  _ideConnections: Observable<?FlowIDEConnection>;
 
   constructor(root: string, execInfoContainer: FlowExecInfoContainer) {
     this._execInfoContainer = execInfoContainer;
@@ -117,13 +117,15 @@ export class FlowProcess {
     return this._serverStatus.asObservable();
   }
 
-  // It is possible for an IDE connection to die. If there are subscribers, it will be automatically
-  // restarted and returned.
-  getIDEConnections(): Observable<FlowIDEConnection> {
+  // It is possible for an IDE connection to die. If there are subscribers to this Observable, it
+  // will be automatically restarted and the new one will be sent.
+  //
+  // If the connection dies, `null` will be sent while the next one is being established.
+  getIDEConnections(): Observable<?FlowIDEConnection> {
     return this._ideConnections;
   }
 
-  _createIDEConnectionStream(): Observable<FlowIDEConnection> {
+  _createIDEConnectionStream(): Observable<?FlowIDEConnection> {
     let connectionWatcher: ?FlowIDEConnectionWatcher = null;
     return Observable.fromEventPattern(
       // Called when the observable is subscribed to

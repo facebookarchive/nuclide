@@ -262,21 +262,29 @@ export class FlowSingleProjectLanguageService {
   observeDiagnostics(): Observable<FileDiagnosticUpdate> {
     const ideConnections = this._process.getIDEConnections();
     return ideConnections
-      .switchMap(ideConnection => ideConnection.observeDiagnostics())
-      .map(diagnosticsJson => {
-        const diagnostics = flowStatusOutputToDiagnostics(diagnosticsJson);
-        const filePathToMessages = new Map();
+      .switchMap(ideConnection => {
+        if (ideConnection != null) {
+          return ideConnection.observeDiagnostics()
+            .map(diagnosticsJson => {
+              const diagnostics = flowStatusOutputToDiagnostics(diagnosticsJson);
+              const filePathToMessages = new Map();
 
-        for (const diagnostic of diagnostics) {
-          const path = diagnostic.filePath;
-          let diagnosticArray = filePathToMessages.get(path);
-          if (!diagnosticArray) {
-            diagnosticArray = [];
-            filePathToMessages.set(path, diagnosticArray);
-          }
-          diagnosticArray.push(diagnostic);
+              for (const diagnostic of diagnostics) {
+                const path = diagnostic.filePath;
+                let diagnosticArray = filePathToMessages.get(path);
+                if (!diagnosticArray) {
+                  diagnosticArray = [];
+                  filePathToMessages.set(path, diagnosticArray);
+                }
+                diagnosticArray.push(diagnostic);
+              }
+              return filePathToMessages;
+            });
+        } else {
+          // if ideConnection is null, it means there is currently no connection. So, invalidate the
+          // current diagnostics so we don't display stale data.
+          return Observable.of(new Map());
         }
-        return filePathToMessages;
       })
       .scan(
         (oldDiagnostics, newDiagnostics) => {

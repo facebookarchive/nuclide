@@ -58,7 +58,7 @@ describe('FlowIDEConnectionWatcher', () => {
     });
     waitsFor(() => currentFakeIDEConnection != null);
     runs(() => {
-      expect(ideConnectionCallback).toHaveBeenCalledWith(currentFakeIDEConnection);
+      expect(ideConnectionCallback.calls[0].args).toEqual([currentFakeIDEConnection]);
       expect(ideConnectionCallback.callCount).toBe(1);
       invariant(currentFakeIDEConnection != null);
       expect(currentFakeIDEConnection.onWillDispose).toHaveBeenCalled();
@@ -67,9 +67,10 @@ describe('FlowIDEConnectionWatcher', () => {
       const onWillDisposeHandler: any = currentFakeIDEConnection.onWillDispose.calls[0].args[0];
       onWillDisposeHandler();
     });
-    waitsFor(() => ideConnectionCallback.callCount === 2);
+    waitsFor(() => ideConnectionCallback.callCount === 3);
     runs(() => {
-      expect(ideConnectionCallback).toHaveBeenCalledWith(currentFakeIDEConnection);
+      expect(ideConnectionCallback.calls[1].args).toEqual([null]);
+      expect(ideConnectionCallback.calls[2].args).toEqual([currentFakeIDEConnection]);
       invariant(currentFakeIDEConnection != null);
       watcher.dispose();
       expect(currentFakeIDEConnection.dispose).toHaveBeenCalled();
