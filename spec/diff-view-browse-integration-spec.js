@@ -95,7 +95,7 @@ describe('Diff view preview integration test', () => {
     let diffFiles = [];
     waitsFor('file changes to load', () => {
       invariant(treeElement != null);
-      diffFiles = treeElement.querySelectorAll('.nuclide-file-changes-file-entry');
+      diffFiles = treeElement.querySelectorAll('.nuclide-file-changes-list-item');
       return diffFiles.length > 2;
     });
 

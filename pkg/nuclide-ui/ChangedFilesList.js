@@ -52,17 +52,20 @@ export default class ChangedFilesList extends React.Component {
   }
 
   _getFileClassname(file: NuclideUri, fileChangeValue: FileChangeStatusValue): string {
-    const {selectedFile} = this.props;
+    const {commandPrefix, rootPath, selectedFile} = this.props;
+    const repository = repositoryForPath(rootPath);
     return classnames(
+      'nuclide-file-changes-list-item',
       'list-item', {
         selected: file === selectedFile,
+        [`${commandPrefix}-file-entry`]: repository != null && repository.getType() === 'hg',
       },
       FileChangeStatusToTextColor[fileChangeValue],
     );
   }
 
   render(): ?React.Element<any> {
-    const {fileChanges, commandPrefix} = this.props;
+    const {fileChanges} = this.props;
     if (fileChanges.size === 0 && this.props.hideEmptyFolders) {
       return null;
     }
@@ -74,13 +77,10 @@ export default class ChangedFilesList extends React.Component {
       collapsed: this.state.isCollapsed,
     });
 
-    const repository = repositoryForPath(this.props.rootPath);
     const fileClassName = classnames(
       'icon',
       'icon-file-text',
-      'nuclide-file-changes-file-entry', {
-        [`${commandPrefix}-file-entry`]: repository != null && repository.getType() === 'hg',
-      },
+      'nuclide-file-changes-file-entry',
     );
 
     const showMoreFilesElement = fileChanges.size > filesToShow
@@ -117,16 +117,14 @@ export default class ChangedFilesList extends React.Component {
                 const baseName = nuclideUri.basename(filePath);
                 return (
                   <li
+                    data-name={baseName}
                     data-path={filePath}
+                    data-root={this.props.rootPath}
                     className={this._getFileClassname(filePath, fileChangeValue)}
                     key={filePath}
                     onClick={() => this.props.onFileChosen(filePath)}>
                     <Icon icon={FileChangeStatusToIcon[fileChangeValue]} />
-                    <span
-                      className={fileClassName}
-                      data-name={baseName}
-                      data-path={filePath}
-                      data-root={this.props.rootPath}>
+                    <span className={fileClassName}>
                       {baseName}
                     </span>
                   </li>

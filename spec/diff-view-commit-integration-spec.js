@@ -110,7 +110,7 @@ describe('Diff View Commit Integration Test', () => {
 
     waitsFor('repo diff status to update', 20000, () => {
       invariant(treeElement != null);
-      diffFiles = treeElement.querySelectorAll('.nuclide-file-changes-file-entry');
+      diffFiles = treeElement.querySelectorAll('.nuclide-file-changes-list-item');
       return diffFiles.length > 0;
     });
 
