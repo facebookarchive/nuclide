@@ -11,7 +11,9 @@
 import child_process from 'child_process';
 import split from 'split';
 import {WatchmanClient} from '../../nuclide-watchman-helpers';
-
+import fsPromise from '../../commons-node/fsPromise';
+import nuclideUri from '../../commons-node/nuclideUri';
+import {checkOutput} from '../../commons-node/process';
 
 function getFilesFromCommand(
   command: string,
@@ -130,6 +132,21 @@ function getFilesFromGit(localDirectory: string): Promise<Array<string>> {
   );
 }
 
+async function getFilesFromRepo(localDirectory: string): Promise<Array<string>> {
+  if (!await fsPromise.exists(nuclideUri.join(localDirectory, '.repo'))) {
+    throw new Error(`${localDirectory} is not a repo root`);
+  }
+  const subRoots = (await checkOutput('repo', ['list', '-p'], {cwd: localDirectory}))
+    .stdout.split(/\n/).filter(s => s.length > 0);
+
+  const fileLists = await Promise.all(subRoots.map(subRoot => {
+    return getFilesFromGit(nuclideUri.join(localDirectory, subRoot))
+      .then(files => files.map(file => nuclideUri.join(subRoot, file)));
+  }));
+
+  return [].concat(...fileLists);
+}
+
 function getAllFiles(localDirectory: string): Promise<Array<string>> {
   return getFilesFromCommand(
       'find',
@@ -158,6 +175,7 @@ export function getPaths(localDirectory: string): Promise<Array<string>> {
   return getFilesFromHg(localDirectory)
       .catch(() => getFilesFromGit(localDirectory))
       // .catch(() => getAllFilesFromWatchman(localDirectory))
+      .catch(() => getFilesFromRepo(localDirectory))
       .catch(() => getAllFiles(localDirectory))
       .catch(() => { throw new Error(`Failed to populate FileSearch for ${localDirectory}`); });
 }
