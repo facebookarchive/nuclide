@@ -24,6 +24,7 @@ export class FlowIDEConnectionWatcher {
   _currentIDEConnection: ?FlowIDEConnection;
   _currentIDEConnectionSubscription: ?IDisposable;
 
+  _isStarted: boolean;
   _isDisposed: boolean;
 
   constructor(
@@ -38,7 +39,17 @@ export class FlowIDEConnectionWatcher {
     this._currentIDEConnection = null;
     this._ideConnectionCallback = ideConnectionCallback;
     this._isDisposed = false;
-    this._makeIDEConnection();
+    this._isStarted = false;
+  }
+
+  // Returns a promise which resolves when the first connection has been established, or we give up.
+  start(): Promise<void> {
+    if (!this._isStarted) {
+      this._isStarted = true;
+      return this._makeIDEConnection();
+    } else {
+      return Promise.resolve();
+    }
   }
 
   async _makeIDEConnection(): Promise<void> {

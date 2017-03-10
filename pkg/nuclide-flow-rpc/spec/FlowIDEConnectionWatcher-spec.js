@@ -54,6 +54,7 @@ describe('FlowIDEConnectionWatcher', () => {
         ideConnectionCallback,
         ideConnectionFactory,
       );
+      watcher.start();
     });
     waitsFor(() => currentFakeIDEConnection != null);
     runs(() => {

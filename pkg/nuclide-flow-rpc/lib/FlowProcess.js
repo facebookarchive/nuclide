@@ -133,6 +133,7 @@ export class FlowProcess {
           () => this._tryCreateIDEProcess(),
           handler,
         );
+        connectionWatcher.start();
       },
       // Called when the observable is unsubscribed from
       () => {
