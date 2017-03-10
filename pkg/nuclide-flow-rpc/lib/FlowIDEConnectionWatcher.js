@@ -14,6 +14,8 @@ import {getLogger} from '../../nuclide-logging';
 
 const defaultIDEConnectionFactory = proc => new FlowIDEConnection(proc);
 
+const MAKE_IDE_CONNECTION_TRIES = 3;
+
 // For the lifetime of this class instance, keep a FlowIDEConnection alive, assuming we do not have
 // too many failures in a row.
 export class FlowIDEConnectionWatcher {
@@ -53,10 +55,18 @@ export class FlowIDEConnectionWatcher {
   }
 
   async _makeIDEConnection(): Promise<void> {
-    const proc = await this._processFactory();
+    let proc = null;
+    for (let i = 1; ; i++) {
+      // eslint-disable-next-line no-await-in-loop
+      proc = await this._processFactory();
+      if (proc != null || i >= MAKE_IDE_CONNECTION_TRIES) {
+        break;
+      } else {
+        getLogger().info('Failed to start Flow IDE connection... retrying');
+      }
+    }
     if (proc == null) {
-      // TODO retry
-      getLogger().error('Failed to start IDE connection');
+      getLogger().error('Failed to start Flow IDE connection too many times... giving up');
       return;
     }
     // dispose() could have been called while we were waiting for the above promise to resolve.

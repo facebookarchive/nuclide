@@ -75,4 +75,60 @@ describe('FlowIDEConnectionWatcher', () => {
       expect(currentFakeIDEConnection.dispose).toHaveBeenCalled();
     });
   });
+
+  it('should retry when the IDE process fails to start', () => {
+    let watcher;
+    // Obviously, this will have to be updated if the number of retries is changed
+    const processFactoryReturns = [null, null, {}];
+    runs(() => {
+      let currentCall = 0;
+      processFactory = jasmine.createSpy('processFactory').andCallFake(() => {
+        invariant(currentCall < processFactoryReturns.length);
+        const result = processFactoryReturns[currentCall];
+        currentCall++;
+        return result;
+      });
+      watcher = new FlowIDEConnectionWatcher(
+        processFactory,
+        ideConnectionCallback,
+        ideConnectionFactory,
+      );
+    });
+    waitsForPromise(() => watcher.start());
+    runs(() => {
+      expect(ideConnectionCallback.callCount).toBe(1);
+      expect(ideConnectionFactory.callCount).toBe(1);
+      expect(ideConnectionFactory.calls[0].args[0]).toBe(processFactoryReturns[2]);
+      expect(processFactory.callCount).toBe(3);
+      watcher.dispose();
+    });
+  });
+
+  it('should give up when the IDE process fails to start too many times', () => {
+    let watcher;
+    // Obviously, this will have to be updated if the number of retries is changed
+    const processFactoryReturns = [null, null, null, {}];
+    runs(() => {
+      let currentCall = 0;
+      processFactory = jasmine.createSpy('processFactory').andCallFake(() => {
+        invariant(currentCall < processFactoryReturns.length);
+        const result = processFactoryReturns[currentCall];
+        currentCall++;
+        return result;
+      });
+      watcher = new FlowIDEConnectionWatcher(
+        processFactory,
+        ideConnectionCallback,
+        ideConnectionFactory,
+      );
+      watcher.start();
+    });
+    waitsForPromise(() => watcher.start());
+    runs(() => {
+      expect(processFactory.callCount).toBe(3);
+      expect(ideConnectionCallback.callCount).toBe(0);
+      expect(ideConnectionFactory.callCount).toBe(0);
+      watcher.dispose();
+    });
+  });
 });
