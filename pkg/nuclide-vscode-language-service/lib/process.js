@@ -255,9 +255,32 @@ export class LanguageServerProtocolProcess {
     return Promise.resolve(null);
   }
 
-  typeHint(fileVersion: FileVersion, position: atom$Point): Promise<?TypeHint> {
-    this._logger.logError('NYI');
-    return Promise.resolve(null);
+  async typeHint(
+    fileVersion: FileVersion,
+    position: atom$Point,
+  ): Promise<?TypeHint> {
+    const request =
+      await this.createTextDocumentPositionParams(fileVersion, position);
+    const response = await this._process._connection.hover(request);
+
+    let hint = response.contents;
+    if (Array.isArray(hint)) {
+      hint = (hint.length > 0 ? hint[0] : '');
+      // TODO: render multiple hints at once with a thin divider between them
+    }
+    if (typeof hint === 'string') {
+      // TODO: convert markdown to text
+    } else {
+      hint = hint.value;
+      // TODO: colorize code if possible. (is hard without knowing its context)
+    }
+
+    let range = new atom$Range(position, position);
+    if (response.range) {
+      range = rangeToAtomRange(response.range);
+    }
+
+    return (hint) ? {hint, range} : null;
   }
 
   highlight(
