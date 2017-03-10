@@ -58,25 +58,17 @@ describe('Buck building via toolbar', () => {
       );
     });
 
-    waitsFor(
-      'the toolbar to be shown',
-      500,
-      () => {
-        buildToolbar = document.querySelector('.nuclide-task-runner-toolbar');
-        return Boolean(buildToolbar);
-      },
-    );
+    waitsFor('the toolbar to be shown', 500, () => {
+      buildToolbar = document.querySelector('.nuclide-task-runner-toolbar');
+      return Boolean(buildToolbar);
+    });
 
     let combobox: ?HTMLElement;
-    waitsFor(
-      'the target combobox to appear',
-      200,
-      () => {
-        invariant(buildToolbar != null);
-        combobox = buildToolbar.querySelector('.nuclide-buck-target-combobox');
-        return combobox;
-      },
-    );
+    waitsFor('the target combobox to appear', 200, () => {
+      invariant(buildToolbar != null);
+      combobox = buildToolbar.querySelector('.nuclide-buck-target-combobox');
+      return combobox;
+    });
 
     // Focus on the build toolbar target combobox field.
     let targetField: ?HTMLElement;
@@ -91,41 +83,40 @@ describe('Buck building via toolbar', () => {
 
     // Wait for the results.
     let listGroup: ?HTMLElement;
-    waitsFor(
-      'results to appear',
-      30000,
-      () => {
-        invariant(document.body != null);
-        listGroup = document.body.querySelector('.nuclide-combobox-list-group');
-        const hasListItems = listGroup && listGroup.querySelectorAll('li').length > 0;
-        const isLoading = listGroup && listGroup.querySelector('.loading-message') != null;
-        return hasListItems && !isLoading;
-      },
-    );
+    waitsFor('results to appear', 30000, () => {
+      invariant(document.body != null);
+      listGroup = document.body.querySelector('.nuclide-combobox-list-group');
+      const hasListItems = listGroup &&
+        listGroup.querySelectorAll('li').length > 0;
+      const isLoading = listGroup &&
+        listGroup.querySelector('.loading-message') != null;
+      return hasListItems && !isLoading;
+    });
 
-    waitsFor(
-      'platforms to load',
-      120000,
-      () => {
-        // It shouldn't have errored.
-        invariant(listGroup != null);
-        const errorMessageEl = listGroup.querySelector('.text-error');
-        const errorText = errorMessageEl == null ? null : errorMessageEl.innerText;
-        expect(errorMessageEl).toBeNull(`Buck failed with the following error: ${errorText || ''}`);
+    waitsFor('platforms to load', 120000, () => {
+      // It shouldn't have errored.
+      invariant(listGroup != null);
+      const errorMessageEl = listGroup.querySelector('.text-error');
+      const errorText = errorMessageEl == null
+        ? null
+        : errorMessageEl.innerText;
+      expect(errorMessageEl).toBeNull(
+        `Buck failed with the following error: ${errorText || ''}`,
+      );
 
-        const listElements = listGroup.querySelectorAll('li');
-        const targets = Array.from(listElements).map(el => el.textContent);
-        expect(targets).toEqual(['test_app_alias']);
+      const listElements = listGroup.querySelectorAll('li');
+      const targets = Array.from(listElements).map(el => el.textContent);
+      expect(targets).toEqual(['test_app_alias']);
 
-        // Set the target.
-        listElements[0].click();
+      // Set the target.
+      listElements[0].click();
 
-        invariant(buildToolbar != null);
+      invariant(buildToolbar != null);
 
-        // The Build task should be selected.
-        const spinner = buildToolbar.querySelector('.buck-spinner');
-        return spinner == null;
-      });
+      // The Build task should be selected.
+      const spinner = buildToolbar.querySelector('.buck-spinner');
+      return spinner == null;
+    });
 
     waitsForPromise({timeout: 25000}, async () => {
       invariant(buildToolbar != null);
@@ -148,19 +139,17 @@ describe('Buck building via toolbar', () => {
       () => workspaceView.querySelectorAll('.nuclide-console').length > 0,
     );
 
-    waitsFor(
-      'the build to finish',
-      60000,
-      () => {
-        const consoleOutput = workspaceView.querySelectorAll('.nuclide-console-record pre');
-        if (consoleOutput.length > 0) {
-          const lastOutput = consoleOutput[consoleOutput.length - 1];
-          const innerText = lastOutput.innerText;
-          invariant(innerText != null);
-          return innerText.indexOf('Buck exited') !== -1;
-        }
-        return true;
-      },
-    );
+    waitsFor('the build to finish', 60000, () => {
+      const consoleOutput = workspaceView.querySelectorAll(
+        '.nuclide-console-record pre',
+      );
+      if (consoleOutput.length > 0) {
+        const lastOutput = consoleOutput[consoleOutput.length - 1];
+        const innerText = lastOutput.innerText;
+        invariant(innerText != null);
+        return innerText.indexOf('Build succeeded.') !== -1;
+      }
+      return true;
+    });
   });
 });

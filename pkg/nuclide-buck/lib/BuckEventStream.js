@@ -140,7 +140,7 @@ export function getEventsFromProcess(
           return {
             type: 'log',
             message: logMessage,
-            level: 'success',
+            level: 'info',
           };
         }
         return {

@@ -288,29 +288,36 @@ export class BuckBuildSystem {
         flavors: [],
       });
     }
-
+    const capitalizedTaskType = taskType.slice(0, 1).toUpperCase() +
+      taskType.slice(1);
     const task = taskFromObservable(
-      resolvedBuildTarget.switchMap(resolvedTarget => {
-        if (selectedDeploymentTarget) {
-          const {platform, device} = selectedDeploymentTarget;
-          return platform.runTask(this, taskType, resolvedTarget, device);
-        } else {
-          const subcommand = taskType === 'debug' ? 'build' : taskType;
-          return this.runSubcommand(
-            subcommand,
-            resolvedTarget,
-            {},
-            taskType === 'debug',
-            null,
-          );
-        }
-      }),
+      Observable.concat(
+        resolvedBuildTarget.switchMap(resolvedTarget => {
+          if (selectedDeploymentTarget) {
+            const {platform, device} = selectedDeploymentTarget;
+            return platform.runTask(this, taskType, resolvedTarget, device);
+          } else {
+            const subcommand = taskType === 'debug' ? 'build' : taskType;
+            return this.runSubcommand(
+              subcommand,
+              resolvedTarget,
+              {},
+              taskType === 'debug',
+              null,
+            );
+          }
+        }),
+        Observable.defer(() => {
+          this._logOutput(`${capitalizedTaskType} succeeded.`, 'success');
+          return Observable.empty();
+        }),
+      ),
     );
 
     return {
       ...task,
       cancel: () => {
-        this._logOutput('Build cancelled.', 'warning');
+        this._logOutput(`${capitalizedTaskType} stopped.`, 'warning');
         task.cancel();
       },
       getTrackingData: () => ({
@@ -356,10 +363,6 @@ export class BuckBuildSystem {
     );
     return {
       ...task,
-      cancel: () => {
-        this._logOutput('Build cancelled.', 'warning');
-        task.cancel();
-      },
       getPathToBuildArtifact(): string {
         if (pathToArtifact == null) {
           throw new Error('No build artifact!');
