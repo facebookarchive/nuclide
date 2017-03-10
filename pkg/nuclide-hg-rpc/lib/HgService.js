@@ -42,6 +42,7 @@ import {
   hgAsyncExecute,
   hgObserveExecution,
   hgRunCommand,
+  processExitCodeAndThrow,
 } from './hg-utils';
 import fsPromise from '../../commons-node/fsPromise';
 import debounce from '../../commons-node/debounce';
@@ -1132,12 +1133,24 @@ export class HgService {
     return fsPromise.exists(origFilePath);
   }
 
-  resolveConflictedFile(filePath: NuclideUri): Promise<void> {
-    return this._runSimpleInWorkingDirectory('resolve', ['-m', filePath]);
+  resolveConflictedFile(filePath: NuclideUri): ConnectableObservable<ProcessMessage> {
+    const args = ['resolve', '-m', filePath];
+    const execOptions = {
+      cwd: this._workingDirectory,
+    };
+    return this._hgObserveExecution(args, execOptions)
+      .switchMap(processExitCodeAndThrow)
+      .publish();
   }
 
-  continueRebase(): Promise<void> {
-    return this._runSimpleInWorkingDirectory('rebase', ['--continue']);
+  continueRebase(): ConnectableObservable<ProcessMessage> {
+    const args = ['rebase', '--continue', '--noninteractive'];
+    const execOptions = {
+      cwd: this._workingDirectory,
+    };
+    return this._hgObserveExecution(args, execOptions)
+      .switchMap(processExitCodeAndThrow)
+      .publish();
   }
 
   abortRebase(): Promise<void> {

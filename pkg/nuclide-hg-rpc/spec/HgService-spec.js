@@ -379,13 +379,15 @@ describe('HgService', () => {
 
   describe('::resolveConflictedFile()', () => {
     beforeEach(() => {
-      spyOn(hgService, '_hgAsyncExecute');
+      spyOn(hgService, '_hgObserveExecution').andCallFake(path => {
+        return Observable.empty();
+      });
     });
 
     it('calls hg resolve', () => {
       waitsForPromise(async () => {
-        await hgService.resolveConflictedFile(PATH_1);
-        expect(hgService._hgAsyncExecute).toHaveBeenCalledWith(
+        await hgService.resolveConflictedFile(PATH_1).refCount().toArray().toPromise();
+        expect(hgService._hgObserveExecution).toHaveBeenCalledWith(
           ['resolve', '-m', PATH_1],
           {cwd: TEST_WORKING_DIRECTORY},
         );

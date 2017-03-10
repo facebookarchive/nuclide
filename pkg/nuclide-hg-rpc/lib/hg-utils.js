@@ -177,3 +177,12 @@ function getAtomRpcScriptPath(): string {
   }
   return atomRpcEditorPath;
 }
+
+export function processExitCodeAndThrow(
+  processMessage: ProcessMessage,
+): Observable<ProcessMessage> {
+  if (processMessage.kind === 'exit' && processMessage.exitCode !== 0) {
+    return Observable.throw(new Error('HG failed with non zero exit code'));
+  }
+  return Observable.of(processMessage);
+}

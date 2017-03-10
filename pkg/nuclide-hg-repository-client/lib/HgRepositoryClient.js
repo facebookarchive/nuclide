@@ -671,8 +671,8 @@ export class HgRepositoryClient {
     return this._service.fetchMergeConflicts(fetchResolved);
   }
 
-  resolveConflictedFile(filePath: NuclideUri): Promise<void> {
-    return this._service.resolveConflictedFile(filePath);
+  resolveConflictedFile(filePath: NuclideUri): Observable<ProcessMessage> {
+    return this._service.resolveConflictedFile(filePath).refCount();
   }
 
   /**
@@ -952,8 +952,8 @@ export class HgRepositoryClient {
     return this._service.log(filePaths, limit);
   }
 
-  continueRebase(): Promise<void> {
-    return this._service.continueRebase();
+  continueRebase(): Observable<ProcessMessage> {
+    return this._service.continueRebase().refCount();
   }
 
   abortRebase(): Promise<void> {
