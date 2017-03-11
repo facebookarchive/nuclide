@@ -10,11 +10,7 @@
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
-import type {
-  HackRange,
-  HackCompletionsResult,
-  HackDiagnosticsResult,
-} from './rpc-types';
+import type {HackRange} from './rpc-types';
 import type {
   HackLanguageService,
   HackSearchPosition,
@@ -44,7 +40,6 @@ import type {HackDiagnosticsMessage} from './HackConnectionService';
 import {Observable} from 'rxjs';
 import {wordAtPositionFromBuffer} from '../../commons-node/range';
 import invariant from 'assert';
-import {retryLimit} from '../../commons-node/promise';
 import {
   callHHClient,
 } from './HackHelpers';
@@ -69,18 +64,13 @@ import {
 import {outlineFromHackIdeOutline} from './OutlineView';
 import {convertCoverage} from './TypedRegions';
 import {convertReferences} from './FindReferences';
-import {hasPrefix, convertCompletions} from './Completions';
-import {
-  hackMessageToDiagnosticMessage,
-  convertDiagnostics,
-} from './Diagnostics';
+import {hackMessageToDiagnosticMessage} from './Diagnostics';
 import {executeQuery} from './SymbolSearch';
 import {FileCache, ConfigObserver} from '../../nuclide-open-files-rpc';
 import {getEvaluationExpression} from './EvaluationExpression';
 import {ServerLanguageService, ensureInvalidations} from '../../nuclide-language-service-rpc';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {HACK_WORD_REGEX} from '../../nuclide-hack-common';
-import {findHackPrefix} from '../../nuclide-hack-common/lib/autocomplete';
 
 export type SymbolTypeValue = 0 | 1 | 2 | 3 | 4;
 
@@ -97,45 +87,37 @@ export type HackFormatSourceResult = {
   internal_error: boolean,
 };
 
-const HH_DIAGNOSTICS_DELAY_MS = 600;
-const HH_CLIENT_MAX_TRIES = 10;
-
 export async function initialize(
   hackCommand: string,
-  useIdeConnection: boolean,
   logLevel: LogLevel,
   fileNotifier: FileNotifier,
 ): Promise<HackLanguageService> {
   setHackCommand(hackCommand);
   logger.setLogLevel(logLevel);
   await getHackCommand();
-  return new HackLanguageServiceImpl(useIdeConnection, fileNotifier);
+  return new HackLanguageServiceImpl(fileNotifier);
 }
 
 class HackLanguageServiceImpl extends ServerLanguageService {
-  _useIdeConnection: boolean;
   _resources: UniversalDisposable;
 
-  constructor(useIdeConnection: boolean, fileNotifier: FileNotifier) {
-    super(fileNotifier, new HackSingleFileLanguageService(useIdeConnection, fileNotifier));
-    this._useIdeConnection = useIdeConnection;
+  constructor(fileNotifier: FileNotifier) {
+    invariant(fileNotifier instanceof FileCache);
+    super(fileNotifier, new HackSingleFileLanguageService(fileNotifier));
     this._resources = new UniversalDisposable();
-    if (useIdeConnection) {
-      invariant(fileNotifier instanceof FileCache);
-      const configObserver = new ConfigObserver(
-        fileNotifier,
-        HACK_FILE_EXTENSIONS,
-        findHackConfigDir,
-      );
-      this._resources.add(
-        configObserver,
-        configObserver.observeConfigs().subscribe(configs => {
-          ensureProcesses(fileNotifier, configs);
-        }));
-      this._resources.add(() => {
-        closeProcesses(fileNotifier);
-      });
-    }
+    const configObserver = new ConfigObserver(
+      fileNotifier,
+      HACK_FILE_EXTENSIONS,
+      findHackConfigDir,
+    );
+    this._resources.add(
+      configObserver,
+      configObserver.observeConfigs().subscribe(configs => {
+        ensureProcesses(fileNotifier, configs);
+      }));
+    this._resources.add(() => {
+      closeProcesses(fileNotifier);
+    });
   }
 
   async getAutocompleteSuggestions(
@@ -144,18 +126,11 @@ class HackLanguageServiceImpl extends ServerLanguageService {
     activatedManually: boolean,
     prefix: string,
   ): Promise<?Array<Completion>> {
-    if (this._useIdeConnection) {
-      try {
-        const process = await getHackProcess(this._fileCache, fileVersion.filePath);
-        return process.getAutocompleteSuggestions(fileVersion, position, activatedManually);
-      } catch (e) {
-        return null;
-      }
-    } else {
-      // Babel workaround: w/o the es2015-classes transform, async functions can't call `super`.
-      // https://github.com/babel/babel/issues/3930
-      return ServerLanguageService.prototype.getAutocompleteSuggestions
-        .call(this, fileVersion, position, activatedManually, prefix);
+    try {
+      const process = await getHackProcess(this._fileCache, fileVersion.filePath);
+      return process.getAutocompleteSuggestions(fileVersion, position, activatedManually);
+    } catch (e) {
+      return null;
     }
   }
 
@@ -178,11 +153,9 @@ class HackLanguageServiceImpl extends ServerLanguageService {
 }
 
 class HackSingleFileLanguageService {
-  _useIdeConnection: boolean;
   _fileCache: FileCache;
 
-  constructor(useIdeConnection: boolean, fileNotifier: FileNotifier) {
-    this._useIdeConnection = useIdeConnection;
+  constructor(fileNotifier: FileNotifier) {
     invariant(fileNotifier instanceof FileCache);
     this._fileCache = fileNotifier;
   }
@@ -191,27 +164,11 @@ class HackSingleFileLanguageService {
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
   ): Promise<?DiagnosticProviderUpdate> {
-    const hhResult: ?HackDiagnosticsResult = (await retryLimit(
-      () => callHHClient(
-        /* args */ [],
-        /* errorStream */ true,
-        /* processInput */ null,
-        /* file */ filePath,
-      ),
-      result => result != null,
-      HH_CLIENT_MAX_TRIES,
-      HH_DIAGNOSTICS_DELAY_MS,
-    ): any);
-    if (!hhResult) {
-      return null;
-    }
-
-    return convertDiagnostics(hhResult);
+    throw new Error('replaced by observeDiagnstics');
   }
 
   observeDiagnostics(): Observable<FileDiagnosticUpdate> {
     logger.log('observeDiagnostics');
-    invariant(this._useIdeConnection);
     return observeConnections(this._fileCache)
       .mergeMap(connection => {
         logger.log('notifyDiagnostics');
@@ -250,22 +207,7 @@ class HackSingleFileLanguageService {
     position: atom$Point,
     activatedManually: boolean,
   ): Promise<?Array<Completion>> {
-    const contents = buffer.getText();
-    const offset = buffer.characterIndexForPosition(position);
-
-    const replacementPrefix = findHackPrefix(buffer, position);
-    if (replacementPrefix === '' && !hasPrefix(buffer, position)) {
-      return [];
-    }
-
-    const markedContents = markFileForCompletion(contents, offset);
-    const result: ?HackCompletionsResult = (await callHHClient(
-      /* args */ ['--auto-complete'],
-      /* errorStream */ false,
-      /* processInput */ markedContents,
-      /* file */ filePath,
-    ): any);
-    return convertCompletions(contents, offset, replacementPrefix, result);
+    throw new Error('replaced by persistent connection');
   }
 
   async getDefinition(
@@ -498,13 +440,6 @@ function formatAtomLineColumn(position: atom$Point): string {
 
 function formatLineColumn(line: number, column: number): string {
   return `${line}:${column}`;
-}
-
-// Calculate the offset of the cursor from the beginning of the file.
-// Then insert AUTO332 in at this offset. (Hack uses this as a marker.)
-function markFileForCompletion(contents: string, offset: number): string {
-  return contents.substring(0, offset) +
-      'AUTO332' + contents.substring(offset, contents.length);
 }
 
 function getIdentifierAndRange(

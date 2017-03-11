@@ -29,7 +29,6 @@ describe('QuickOpenHelpers', () => {
     spyOn(require('../../nuclide-hack/lib/config'), 'getConfig')
       .andReturn({
         hhClientPath: 'hh_client',
-        useIdeConnection: false,
         logLevel: 'OFF',
       });
     spyOn(require('../../nuclide-remote-connection'), 'getServiceByNuclideUri')

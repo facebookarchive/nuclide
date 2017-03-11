@@ -19,12 +19,6 @@
         "default": "",
         "description": "Primarily for testing new versions of hh_client."
       },
-      "useIdeConnection": {
-        "title": "Use persistent IDE connection to hh_client",
-        "type": "boolean",
-        "default": false,
-        "description": "In Development: For use by Hack/Nuclide team only."
-      },
       "logLevel": {
         "title": "Log Level",
         "type": "string",

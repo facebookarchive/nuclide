@@ -15,7 +15,6 @@ import {getCategoryLogger} from '../../nuclide-logging';
 
 type HackConfig = {
   hhClientPath: string,
-  useIdeConnection: boolean,
   logLevel: LogLevel,
 };
 
@@ -27,7 +26,6 @@ export function getConfig(): HackConfig {
     HACK_CONFIG_PATH,
     {
       hhClientPath: '',
-      useIdeConnection: false,
       logLevel: 'INFO',
     });
 }

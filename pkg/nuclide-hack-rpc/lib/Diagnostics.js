@@ -8,19 +8,14 @@
  * @flow
  */
 
-import type {
-  FileDiagnosticMessage,
-  DiagnosticProviderUpdate,
-} from '../../nuclide-diagnostics-common/lib/rpc-types';
+import type {FileDiagnosticMessage} from '../../nuclide-diagnostics-common/lib/rpc-types';
 import type {
   SingleHackMessage,
   HackDiagnostic,
-  HackDiagnosticsResult,
 } from './rpc-types';
 
 import {Range} from 'simple-text-buffer';
 import invariant from 'assert';
-import {logger} from './hack-config';
 
 /**
  * Currently, a diagnostic from Hack is an object with a "message" property.
@@ -87,33 +82,4 @@ export function hackMessageToDiagnosticMessage(
   }
 
   return diagnosticMessage;
-}
-
-const DIAGNOSTICS_LIMIT = 10000;
-
-export function convertDiagnostics(
-  result: HackDiagnosticsResult,
-): DiagnosticProviderUpdate {
-  // Prevent too many diagnostics from killing the Atom process.
-  const diagnostics = result.errors.slice(0, DIAGNOSTICS_LIMIT);
-  if (diagnostics.length !== result.errors.length) {
-    logger.logError(`Too many Hack Errors. Found ${result.errors.length}. Truncating.`);
-  }
-
-  // Convert array messages to Error Objects with Traces.
-  const fileDiagnostics = diagnostics.map(
-    diagnostic => hackMessageToDiagnosticMessage(diagnostic.message));
-
-  const filePathToMessages = new Map();
-  for (const diagnostic of fileDiagnostics) {
-    const path = diagnostic.filePath;
-    let diagnosticArray = filePathToMessages.get(path);
-    if (!diagnosticArray) {
-      diagnosticArray = [];
-      filePathToMessages.set(path, diagnosticArray);
-    }
-    diagnosticArray.push(diagnostic);
-  }
-
-  return {filePathToMessages};
 }

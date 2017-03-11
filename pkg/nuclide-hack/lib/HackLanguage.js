@@ -32,24 +32,17 @@ import {
 } from '../../nuclide-hack-common/lib/autocomplete';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
 import nuclideUri from '../../commons-node/nuclideUri';
-import passesGK from '../../commons-node/passesGK';
 
 const HACK_SERVICE_NAME = 'HackService';
-
-async function getUseIdeConnection(): Promise<boolean> {
-  return getConfig().useIdeConnection || passesGK('nuclide_hack_use_persistent_connection');
-}
 
 async function connectionToHackService(
   connection: ?ServerConnection,
 ): Promise<HackLanguageService> {
   const hackService: HackService = getServiceByConnection(HACK_SERVICE_NAME, connection);
   const config = getConfig();
-  const useIdeConnection = await getUseIdeConnection();
   const fileNotifier = await getNotifierByConnection(connection);
   const languageService = await hackService.initialize(
     config.hhClientPath,
-    useIdeConnection,
     config.logLevel,
     fileNotifier);
 
@@ -57,19 +50,6 @@ async function connectionToHackService(
 }
 
 async function createLanguageService(): Promise<AtomLanguageService<HackLanguageService>> {
-  const useIdeConnection = await getUseIdeConnection();
-
-  const diagnosticsConfig = useIdeConnection
-    ? {
-      version: '0.2.0',
-      analyticsEventName: 'hack.observe-diagnostics',
-    }
-    : {
-      version: '0.1.0',
-      shouldRunOnTheFly: false,
-      analyticsEventName: 'hack.run-diagnostics',
-    };
-
   const atomConfig: AtomLanguageServiceConfig = {
     name: 'Hack',
     grammars: HACK_GRAMMARS,
@@ -127,7 +107,10 @@ async function createLanguageService(): Promise<AtomLanguageService<HackLanguage
       },
       onDidInsertSuggestionAnalyticsEventName: 'hack.autocomplete-chosen',
     },
-    diagnostics: diagnosticsConfig,
+    diagnostics: {
+      version: '0.2.0',
+      analyticsEventName: 'hack.observe-diagnostics',
+    },
   };
 
   return new AtomLanguageService(connectionToHackService, atomConfig, null, logger);

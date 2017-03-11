@@ -8,27 +8,22 @@
  * @flow
  */
 
-import {convertDiagnostics} from '../lib/Diagnostics';
+import {hackMessageToDiagnosticMessage} from '../lib/Diagnostics';
 import {Range} from 'simple-text-buffer';
-import invariant from 'assert';
 
 const testPath = 'myPath';
 
 describe('Diagnostics', () => {
-  describe('convertDiagnostics', () => {
+  describe('hackMessageToDiagnosticMessage', () => {
     it('should propertly transform a simple diagnostic', () => {
-      const diagnostics = [
+      const hackMessage = [
         {
-          message: [
-            {
-              path: testPath,
-              descr: 'message',
-              line: 1,
-              start: 3,
-              end: 4,
-              code: 1234,
-            },
-          ],
+          path: testPath,
+          descr: 'message',
+          line: 1,
+          start: 3,
+          end: 4,
+          code: 1234,
         },
       ];
 
@@ -41,59 +36,27 @@ describe('Diagnostics', () => {
         range: new Range([0, 2], [0, 4]),
       };
 
-      const messageMap = convertDiagnostics({errors: diagnostics})
-        .filePathToMessages;
-      invariant(messageMap != null);
-      const messages = messageMap.get(testPath);
-      invariant(messages != null);
-      const message = messages[0];
-      expect(message).toEqual(expectedOutput);
-    });
-
-    it('should not filter diagnostics not in the target file', () => {
-      const diagnostics = [
-        {
-          message: [
-            {
-              path: 'notMyPath',
-              descr: 'message',
-              line: 1,
-              start: 3,
-              end: 4,
-              code: 1234,
-            },
-          ],
-        },
-      ];
-
-      const allMessages = convertDiagnostics({errors: diagnostics})
-        .filePathToMessages;
-      invariant(allMessages != null);
-      expect(allMessages.size).toBe(1);
-      expect(allMessages.has('notMyPath')).toBe(true);
+      const output = hackMessageToDiagnosticMessage(hackMessage);
+      expect(output).toEqual(expectedOutput);
     });
 
     it('should create traces for diagnostics on multiple messages and combine the text', () => {
-      const diagnostics = [
+      const hackMessage = [
         {
-          message: [
-            {
-              path: testPath,
-              descr: 'message',
-              line: 1,
-              start: 3,
-              end: 4,
-              code: 1234,
-            },
-            {
-              path: 'otherPath',
-              descr: 'more message',
-              line: 5,
-              start: 7,
-              end: 8,
-              code: 4321,
-            },
-          ],
+          path: testPath,
+          descr: 'message',
+          line: 1,
+          start: 3,
+          end: 4,
+          code: 1234,
+        },
+        {
+          path: 'otherPath',
+          descr: 'more message',
+          line: 5,
+          start: 7,
+          end: 8,
+          code: 4321,
         },
       ];
 
@@ -112,13 +75,8 @@ describe('Diagnostics', () => {
         }],
       };
 
-      const pathToMessages = convertDiagnostics({errors: diagnostics})
-        .filePathToMessages;
-      invariant(pathToMessages != null);
-      const messages = pathToMessages.get(testPath);
-      invariant(messages != null);
-      const message = messages[0];
-      expect(message).toEqual(expectedOutput);
+      const output = hackMessageToDiagnosticMessage(hackMessage);
+      expect(output).toEqual(expectedOutput);
     });
   });
 });
