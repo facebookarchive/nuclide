@@ -12,15 +12,17 @@ import type {HomeFragments} from '../../nuclide-home/lib/types';
 import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 import type {Result} from '../../commons-atom/ActiveEditorRegistry';
 import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
-import type {Observable} from 'rxjs';
 
 import ActiveEditorRegistry from '../../commons-atom/ActiveEditorRegistry';
+import {observeActivePaneItemDebounced} from '../../commons-atom/debounced';
+import {isValidTextEditor} from '../../commons-atom/text-editor';
 import createPackage from '../../commons-atom/createPackage';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {track} from '../../nuclide-analytics';
 
 import {OutlineViewPanelState, WORKSPACE_VIEW_URI} from './OutlineViewPanel';
 import {createOutlines} from './createOutlines';
+import {Observable} from 'rxjs';
 
 import type {TokenizedText} from '../../commons-node/tokenizedText-rpc-types';
 import type {Outline} from './rpc-types';
@@ -151,6 +153,8 @@ class Activation {
         track('nuclide-outline-view-getoutline');
         return provider.getOutline(editor);
       },
+      {},
+      getActiveEditorRegistryEventSources(),
     );
   }
 
@@ -234,3 +238,21 @@ class Activation {
 }
 
 createPackage(module.exports, Activation);
+
+function getActiveEditorRegistryEventSources() {
+  return {
+    activeEditors: observeActivePaneItemDebounced()
+      .switchMap(item => {
+        if (isValidTextEditor(item)) {
+          // Flow cannot understand the type refinement provided by the isValidTextEditor function,
+          // so we have to cast.
+          return Observable.of(((item: any): atom$TextEditor));
+        } else if (item instanceof OutlineViewPanelState) {
+          // Ignore switching to the outline view.
+          return Observable.empty();
+        }
+        return Observable.of(null);
+      })
+      .distinctUntilChanged(),
+  };
+}

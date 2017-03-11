@@ -67,6 +67,12 @@ export type Result<T, V> = {
 
 export type ResultFunction<T, V> = (provider: T, editor: atom$TextEditor) => Promise<V>;
 
+type PartialEventSources = {
+  +activeEditors?: Observable<?atom$TextEditor>,
+  +changesForEditor?: (editor: atom$TextEditor) => Observable<void>,
+  +savesForEditor?: (editor: atom$TextEditor) => Observable<void>,
+};
+
 export type EventSources = {
   activeEditors: Observable<?atom$TextEditor>,
   changesForEditor: (editor: atom$TextEditor) => Observable<void>,
@@ -106,13 +112,20 @@ export default class ActiveEditorRegistry<T: Provider, V> {
   constructor(
     resultFunction: ResultFunction<T, V>,
     config: Config = {},
-    eventSources: EventSources = getDefaultEventSources(),
+    eventSources: PartialEventSources = {},
   ) {
     this._config = getConcreteConfig(config);
     this._resultFunction = resultFunction;
     this._providerRegistry = new ProviderRegistry();
     this._newProviderEvents = new Subject();
-    this._resultsStream = this._createResultsStream(eventSources);
+    this._resultsStream = this._createResultsStream({
+      activeEditors: eventSources.activeEditors || observeActiveEditorsDebounced(),
+      changesForEditor: eventSources.changesForEditor || (editor => editorChangesDebounced(editor)),
+      savesForEditor: eventSources.savesForEditor || (editor => {
+        return observableFromSubscribeFunction(callback => editor.onDidSave(callback))
+          .mapTo(undefined);
+      }),
+    });
   }
 
   consumeProvider(provider: T): IDisposable {
@@ -215,15 +228,4 @@ export default class ActiveEditorRegistry<T: Provider, V> {
       };
     }
   }
-}
-
-function getDefaultEventSources(): EventSources {
-  return {
-    activeEditors: observeActiveEditorsDebounced(),
-    changesForEditor: editor => editorChangesDebounced(editor),
-    savesForEditor: editor => {
-      return observableFromSubscribeFunction(callback => editor.onDidSave(callback))
-        .mapTo(undefined);
-    },
-  };
 }

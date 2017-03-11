@@ -62,10 +62,7 @@ export class OutlineView extends React.Component {
   componentDidMount(): void {
     invariant(this.subscription == null);
     this.subscription = this.props.outlines.subscribe(outline => {
-      // If the outline view has focus, we don't want to re-render anything.
-      if (this !== atom.workspace.getActivePaneItem()) {
-        this.setState({outline});
-      }
+      this.setState({outline});
     });
   }
 
