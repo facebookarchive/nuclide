@@ -35,9 +35,7 @@ export default async function runCommand(args: Array<string>): Promise<ExitCode>
   await new Promise(resolve => setTimeout(resolve, 1000));
 
   const testWindow = remote.BrowserWindow.getAllWindows().find(browserWindow => {
-    return !initialWindows.includes(browserWindow) &&
-      // $FlowFixMe: Missing def
-      browserWindow.getURL().includes('initialize-test-window.js');
+    return !initialWindows.includes(browserWindow);
   });
 
   if (testWindow == null) {
