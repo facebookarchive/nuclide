@@ -14,6 +14,8 @@ import {Disposable} from 'event-kit';
 import {Observable, Subject} from 'rxjs';
 import * as rpc from 'vscode-jsonrpc';
 
+import {getLogger} from '../../nuclide-logging';
+
 // TODO put these in flow-typed when they are fleshed out better
 
 type MessageHandler = (...args: any) => mixed;
@@ -44,6 +46,9 @@ export class FlowIDEConnection {
     this._isDisposed = false;
     this._onWillDisposeCallbacks = new Set();
     this._ideProcess = process;
+    this._ideProcess.stderr.on('data', msg => {
+      getLogger().info('Flow IDE process stderr: ', msg.toString());
+    });
     this._connection = rpc.createMessageConnection(
       new rpc.StreamMessageReader(this._ideProcess.stdout),
       new rpc.StreamMessageWriter(this._ideProcess.stdin),
