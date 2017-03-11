@@ -22,6 +22,7 @@ import {
   runCommand,
 } from '../../commons-node/process';
 import {getConnectionDetails} from '../../nuclide-remote-atom-rpc';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 // Mercurial (as of v3.7.2) [strips lines][1] matching the following prefix when a commit message is
 // created by an editor invoked by Mercurial. Because Nuclide is not invoked by Mercurial, Nuclide
@@ -100,11 +101,16 @@ async function getHgExecParams(
   options_: HgExecOptions,
 ): Promise<{command: string, args: Array<string>, options: Object}> {
   let args = args_;
-  // Disabling ssh keyboard input so all commands that prompt for interaction
-  // fail instantly rather than just wait for an input that will never arrive
+  const pathToSSHConfig = nuclideUri.expandHomeDir('~/.atom/scm_ssh.sh');
+  const doesSSHConfigExist = await fsPromise.exists(pathToSSHConfig);
+  const sshCommand = doesSSHConfigExist
+    ? pathToSSHConfig
+    // Disabling ssh keyboard input so all commands that prompt for interaction
+    // fail instantly rather than just wait for an input that will never arrive
+    : 'ssh -oBatchMode=yes -oControlMaster=no';
   args.push(
     '--config',
-    'ui.ssh=ssh -oBatchMode=yes -oControlMaster=no',
+    `ui.ssh=${sshCommand}`,
   );
   const options = {
     ...options_,
