@@ -21,3 +21,6 @@ BUCK
 !buck/
 
 /pkg/fb-java-rpc/**/*.java
+/pkg/fb-java-rpc/.idea
+/pkg/fb-java-rpc/*.iml
+/pkg/fb-debugger-java-rpc/**/*.java
