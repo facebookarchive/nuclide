@@ -9,7 +9,7 @@
  */
 
 import {AtomTextEditor} from './AtomTextEditor';
-import invariant from 'assert';
+import {Checkbox} from './Checkbox';
 import {pluralize} from '../commons-node/string';
 import {
   Range,
@@ -21,13 +21,13 @@ import UniversalDisposable from '../commons-node/UniversalDisposable';
 
 type Props = {
   diff: diffparser$FileDiff,
-  checkboxFactory?: (file: string, hunk?: string, line?: number) => React.Element<any>,
+  showCheckboxes?: boolean,
 };
 
 type HunkProps = {
-  checkboxFactory: ?(hunk: string, line?: number) => React.Element<any>,
   grammar: atom$Grammar,
   hunk: diffparser$Hunk,
+  showCheckboxes: boolean,
 };
 
 function getHighlightClass(type: string): ?string {
@@ -69,7 +69,7 @@ class HunkDiff extends React.Component {
    */
   _createLineMarkers(editor: atom$TextEditor): void {
     let gutter;
-    if (this.props.checkboxFactory != null) {
+    if (this.props.showCheckboxes) {
       gutter = editor.addGutter({name: 'checkboxes'});
       this._disposables.add(() => {
         if (gutter) {
@@ -96,9 +96,14 @@ class HunkDiff extends React.Component {
       });
 
       if (gutter) {
-        invariant(this.props.checkboxFactory != null);
-        const checkbox = this.props.checkboxFactory(this.props.hunk.content, lineNumber);
         const item = document.createElement('div');
+        const checkbox = (
+          <Checkbox
+            className="nuclide-ui-checkbox-margin"
+            checked={true}
+            onChange={() => {}}
+          />
+        );
         ReactDOM.render(checkbox, item);
         const gutterDecoration = gutter.decorateMarker(marker, {
           type: 'gutter',
@@ -131,8 +136,16 @@ class HunkDiff extends React.Component {
     textBuffer.setText(text);
 
     let checkbox;
-    if (this.props.checkboxFactory != null) {
-      checkbox = this.props.checkboxFactory(content);
+    if (this.props.showCheckboxes) {
+      checkbox = (
+        <Checkbox
+          className="nuclide-ui-checkbox-margin"
+          checked={true}
+          onChange={() => {
+            // TODO: fill out this function
+          }}
+        />
+      );
     }
     return (
       <div key={content}>
@@ -171,14 +184,18 @@ export default class FileChanges extends React.Component {
         key={chunk.content}
         grammar={grammar}
         hunk={chunk}
-        checkboxFactory={
-          this.props.checkboxFactory && this.props.checkboxFactory.bind(null, fileName)
-        }
+        showCheckboxes={this.props.showCheckboxes}
       />,
     );
     let checkbox;
-    if (this.props.checkboxFactory != null) {
-      checkbox = this.props.checkboxFactory(fileName);
+    if (this.props.showCheckboxes) {
+      checkbox = (
+        <Checkbox
+          className="nuclide-ui-checkbox-margin"
+          checked={true}
+          onChange={() => {}}
+        />
+      );
     }
     return (
       <div className="nuclide-ui-file-changes">

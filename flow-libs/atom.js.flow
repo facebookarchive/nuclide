@@ -258,7 +258,7 @@ declare class atom$Marker {
   }) => void): IDisposable,
   isValid(): boolean,
   isDestroyed(): boolean,
-  onDidDestroy(callback: () => mixed): IDisposable,
+  onDidDestroy(callback: () => void): IDisposable,
   setBufferRange(
     range: atom$RangeLike,
     properties?: {reversed: boolean},
