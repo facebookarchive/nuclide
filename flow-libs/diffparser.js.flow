@@ -11,7 +11,6 @@
 type diffparser$FileName = string;
 
 type diffparser$FileDiff = {
-  annotation?: string, // Added for convenience; no annotations returned by diffparser.parse
   from: diffparser$FileName,
   to: diffparser$FileName,
   chunks: Array<diffparser$Hunk>,

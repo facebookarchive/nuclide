@@ -12,10 +12,9 @@ import React from 'react';
 import FileChanges from '../../../nuclide-ui/FileChanges';
 import {Button} from '../../../nuclide-ui/Button';
 import {Checkbox} from '../../../nuclide-ui/Checkbox';
-import {patchToString} from '../utils';
 
 type Props = {
-  onConfirm: string => mixed,
+  onConfirm: () => mixed,
   onManualEdit: () => mixed,
   onQuit: () => mixed,
   patch: Array<diffparser$FileDiff>,
@@ -50,7 +49,7 @@ export default class InteractiveFileChanges extends React.Component {
   }
 
   _onClickConfirm(): void {
-    this.props.onConfirm(patchToString(this.props.patch));
+    this.props.onConfirm();
   }
 
   // The "Direct Edit" button removes the patch editor UI and allows the user

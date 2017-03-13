@@ -19,7 +19,7 @@ import invariant from 'assert';
 import {isValidTextEditor} from '../../commons-atom/text-editor';
 import {Observable} from 'rxjs';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
-import {parseWithAnnotations} from './utils';
+import parse from 'diffparser';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {repositoryForPath} from '../../commons-atom/vcs';
@@ -81,7 +81,7 @@ class Activation {
 
 function renderOverEditor(editor: atom$TextEditor): void {
   const diffContent = editor.getText();
-  const patch = parseWithAnnotations(diffContent);
+  const patch = parse(diffContent);
   if (patch.length > 0) {
     // Clear the editor so that closing the tab without hitting 'Confirm' won't
     // cause the commit to go through by default
@@ -98,7 +98,7 @@ function renderOverEditor(editor: atom$TextEditor): void {
 
     const element = (
       <InteractiveFileChanges
-        onConfirm={content => onConfirm(editor, content)}
+        onConfirm={() => onConfirm(editor, diffContent)}
         onManualEdit={() => onManualEdit(editor, diffContent, marker, editorView)}
         onQuit={() => atom.workspace.getActivePane().destroyItem(editor)}
         patch={patch}
