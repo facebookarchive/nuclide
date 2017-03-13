@@ -15,7 +15,6 @@ import type {
 
 import {createEmptyAppState} from './createEmptyAppState';
 import * as ActionTypes from './ActionTypes';
-import {createPatchData} from '../utils';
 
 export function rootReducer(
   state?: AppState,
@@ -27,7 +26,7 @@ export function rootReducer(
   switch (action.type) {
     case ActionTypes.REGISTER_PATCH_EDITOR: {
       const patchEditors = new Map(state.patchEditors);
-      patchEditors.set(action.payload.editorPath, createPatchData(action.payload.patchData));
+      patchEditors.set(action.payload.editorPath, {});
       return {
         ...state,
         patchEditors,
@@ -40,13 +39,6 @@ export function rootReducer(
       return {
         ...state,
         patchEditors,
-      };
-    }
-
-    case ActionTypes.CLICK_CHECKBOX_ACTION: {
-      // Coming soon
-      return {
-        ...state,
       };
     }
   }

@@ -10,44 +10,25 @@
 
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
-import type {AppState, Store} from './types';
-import typeof * as BoundActionCreators from './redux/Actions';
 
-import * as Actions from './redux/Actions';
-import {bindActionCreators, createStore} from 'redux';
-import {createEmptyAppState} from './redux/createEmptyAppState';
+import * as Action from './redux/Actions';
 import createPackage from '../../commons-atom/createPackage';
 import {Disposable} from 'atom';
 import InteractiveFileChanges from './ui/InteractiveFileChanges';
 import invariant from 'assert';
 import {isValidTextEditor} from '../../commons-atom/text-editor';
-import {Observable, BehaviorSubject} from 'rxjs';
+import {Observable} from 'rxjs';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {parseWithAnnotations} from './utils';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {repositoryForPath} from '../../commons-atom/vcs';
-import {rootReducer} from './redux/Reducers';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 
 class Activation {
-  _store: Store;
   _subscriptions: UniversalDisposable;
-  _actionCreators: BoundActionCreators;
-  _states: BehaviorSubject<AppState>;
-
   constructor(rawState: ?Object) {
     this._subscriptions = new UniversalDisposable();
-
-    const initialState = createEmptyAppState();
-    this._states = new BehaviorSubject(initialState);
-
-    this._store = createStore(
-      rootReducer,
-      initialState,
-    );
-
-    this._actionCreators = bindActionCreators(Actions, this._store.dispatch);
   }
 
   consumeCwdApi(cwdApi: CwdApi): IDisposable {
@@ -89,53 +70,53 @@ class Activation {
               });
           }).takeUntil(observableFromSubscribeFunction(pane.onDidDestroy.bind(pane)));
       });
-    }).subscribe(this._renderOverEditor.bind(this));
+    }).subscribe(renderOverEditor);
 
     this._subscriptions.add(subscription);
     return new Disposable(() => {
       this._subscriptions.remove(subscription);
     });
   }
+}
 
-  _renderOverEditor(editor: atom$TextEditor): void {
-    const diffContent = editor.getText();
-    const patch = parseWithAnnotations(diffContent);
-    if (patch.length > 0) {
-      // Clear the editor so that closing the tab without hitting 'Confirm' won't
-      // cause the commit to go through by default
-      editor.setText('');
-      editor.save();
-      editor.getGutters().forEach(gutter => gutter.hide());
-      const editorView = atom.views.getView(editor);
-      editorView.style.visibility = 'hidden';
-      const item = document.createElement('div');
+function renderOverEditor(editor: atom$TextEditor): void {
+  const diffContent = editor.getText();
+  const patch = parseWithAnnotations(diffContent);
+  if (patch.length > 0) {
+    // Clear the editor so that closing the tab without hitting 'Confirm' won't
+    // cause the commit to go through by default
+    editor.setText('');
+    editor.save();
+    editor.getGutters().forEach(gutter => gutter.hide());
+    const editorView = atom.views.getView(editor);
+    editorView.style.visibility = 'hidden';
+    const item = document.createElement('div');
 
-      const editorPath = editor.getPath();
-      invariant(editorPath != null);
-      this._actionCreators.registerPatchEditor(editorPath, patch);
+    const editorPath = editor.getPath();
+    invariant(editorPath != null);
+    Action.registerPatchEditor(editorPath, patch);
 
-      const element = (
-        <InteractiveFileChanges
-          onConfirm={content => onConfirm(editor, content)}
-          onManualEdit={() => onManualEdit(editor, diffContent, marker, editorView)}
-          onQuit={() => atom.workspace.getActivePane().destroyItem(editor)}
-          patch={patch}
-        />
-      );
-      ReactDOM.render(element, item);
-      item.style.visibility = 'visible';
+    const element = (
+      <InteractiveFileChanges
+        onConfirm={content => onConfirm(editor, content)}
+        onManualEdit={() => onManualEdit(editor, diffContent, marker, editorView)}
+        onQuit={() => atom.workspace.getActivePane().destroyItem(editor)}
+        patch={patch}
+      />
+    );
+    ReactDOM.render(element, item);
+    item.style.visibility = 'visible';
 
-      const marker = editor.markScreenPosition([0, 0]);
-      editor.decorateMarker(marker, {
-        type: 'block',
-        item,
-      });
+    const marker = editor.markScreenPosition([0, 0]);
+    editor.decorateMarker(marker, {
+      type: 'block',
+      item,
+    });
 
-      marker.onDidDestroy(() => {
-        ReactDOM.unmountComponentAtNode(item);
-        this._actionCreators.deregisterPatchEditor(editorPath);
-      });
-    }
+    marker.onDidDestroy(() => {
+      ReactDOM.unmountComponentAtNode(item);
+      Action.deregisterPatchEditor(editorPath);
+    });
   }
 }
 

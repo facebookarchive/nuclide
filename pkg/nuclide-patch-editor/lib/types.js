@@ -9,34 +9,10 @@
  */
 
 export type AppState = {
-  // Mapped by editorPath
   patchEditors: Map<string, PatchData>,
 };
 
-export type PatchData = {
-  // Mapped by changed fileName
-  files: Map<string, FileData>,
-};
-
-export type FileData = {
-  // Map from Hunk's oldStart line number to hunk
-  chunks: ?Map<number, HunkData>,
-  collapsed: boolean,
-  countEnabledChunks: number,
-  fileDiff: diffparser$FileDiff,
-  selected: SelectedState,
-};
-
-export type HunkData = {
-  collapsed: boolean,
-  countAllChanges: number,
-  countEnabledChanges: number,
-  // All changes within a hunk are contiguous
-  lines: Array<boolean>,
-  selected: SelectedState,
-};
-
-export type SelectedState = 'all' | 'some' | 'none';
+export type PatchData = {};
 
 export type Store = {
   getState(): AppState,
@@ -58,17 +34,6 @@ export type DeregisterPatchEditorAction = {
   },
 };
 
-export type ClickCheckboxAction = {
-  type: 'CLICK_CHECKBOX_ACTION',
-  payload: {
-    editorPath: string,
-    fileName: string,
-    hunkOldStartLine: ?number,
-    line: ?number,
-  },
-};
-
 export type Action = RegisterPatchEditorAction
 | DeregisterPatchEditorAction
-| ClickCheckboxAction
 ;

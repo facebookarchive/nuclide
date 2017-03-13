@@ -8,8 +8,6 @@
  * @flow
  */
 
-import type {HunkData, PatchData} from './types';
-
 import parse from 'diffparser';
 
 // Export an Array of diffparser$FileDiff objects to a string utilizable by the
@@ -57,29 +55,4 @@ export function parseWithAnnotations(diffContent: string): Array<diffparser$File
     }
   });
   return patch;
-}
-
-export function createPatchData(patch: Array<diffparser$FileDiff>): PatchData {
-  return {
-    files: new Map(patch.map(fileDiff => [fileDiff.to, {
-      chunks: isSpecialChange(fileDiff)
-        ? null
-        : new Map(fileDiff.chunks.map(chunk => [chunk.oldStart, createHunkData(chunk)])),
-      collapsed: false,
-      countEnabledChunks: fileDiff.chunks.length,
-      fileDiff,
-      selected: 'all',
-    }])),
-  };
-}
-
-export function createHunkData(hunk: diffparser$Hunk): HunkData {
-  const lines = hunk.changes.map(change => change.type !== 'normal').filter(isChange => isChange);
-  return {
-    collapsed: false,
-    countAllChanges: lines.length,
-    countEnabledChanges: lines.length,
-    lines,
-    selected: 'all',
-  };
 }

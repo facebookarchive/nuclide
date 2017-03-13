@@ -11,7 +11,6 @@
 import type {
  RegisterPatchEditorAction,
  DeregisterPatchEditorAction,
- ClickCheckboxAction,
 } from '../types';
 
 import * as ActionTypes from './ActionTypes';
@@ -34,23 +33,6 @@ export function deregisterPatchEditor(editorPath: string): DeregisterPatchEditor
     type: ActionTypes.DEREGISTER_PATCH_EDITOR,
     payload: {
       editorPath,
-    },
-  };
-}
-
-export function clickCheckbox(
-  editorPath: string,
-  fileName: string,
-  hunkOldStartLine?: number,
-  line?: number,
-): ClickCheckboxAction {
-  return {
-    type: ActionTypes.CLICK_CHECKBOX_ACTION,
-    payload: {
-      editorPath,
-      fileName,
-      hunkOldStartLine,
-      line,
     },
   };
 }
