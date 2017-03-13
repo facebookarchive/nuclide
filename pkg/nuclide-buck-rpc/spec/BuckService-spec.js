@@ -60,13 +60,17 @@ describe('BuckService (test-project-with-failing-targets)', () => {
         };
         expect(report).toEqual(expectedReport);
         // Sometimes this ends in "\nstderr: " - No idea why.
-        expect(report.failures['//:bad_rule'])
-          .toMatch(/^\/\/:bad_rule failed with exit code 1:\ngenrule/);
+        expect(report.failures['//:bad_rule']).toMatch(
+          /^\/\/:bad_rule failed with exit code 1:\ngenrule/,
+        );
 
         const lastCommand = await BuckService.getLastCommandInfo(buckRoot);
         invariant(lastCommand);
         expect(lastCommand.command).toBe('build');
-        expect(lastCommand.args.slice(0, 2)).toEqual(['//:good_rule', '//:bad_rule']);
+        expect(lastCommand.args.slice(0, 2)).toEqual([
+          '//:good_rule',
+          '//:bad_rule',
+        ]);
       });
     });
 
@@ -75,7 +79,9 @@ describe('BuckService (test-project-with-failing-targets)', () => {
       jasmine.useRealClock();
       waitsForPromise(async () => {
         try {
-          await BuckService.build(buckRoot, ['//:good_rule'], {commandOptions: {timeout: 1}});
+          await BuckService.build(buckRoot, ['//:good_rule'], {
+            commandOptions: {timeout: 1},
+          });
         } catch (e) {
           expect(e.message).toMatch('Command failed');
           return;
@@ -87,7 +93,9 @@ describe('BuckService (test-project-with-failing-targets)', () => {
     it('respects extra arguments', () => {
       waitsForPromise(async () => {
         try {
-          await BuckService.build(buckRoot, ['//:good_rule'], {extraArguments: ['--help']});
+          await BuckService.build(buckRoot, ['//:good_rule'], {
+            extraArguments: ['--help'],
+          });
         } catch (e) {
           // The help option, naturally, lists itself.
           expect(e.message).toContain('--help');
@@ -112,7 +120,9 @@ describe('BuckService (test-project-with-failing-targets)', () => {
       waitsForPromise(async () => {
         const output = await BuckService.showOutput(buckRoot, 'good');
         expect(output.length).toBe(1);
-        expect(output[0]['buck.outputPath']).toBe('buck-out/gen/good_rule/good.txt');
+        expect(output[0]['buck.outputPath']).toBe(
+          'buck-out/gen/good_rule/good.txt',
+        );
       });
     });
   });
@@ -127,7 +137,10 @@ describe('BuckService (test-project-with-failing-targets)', () => {
 
     it('returns the type of a build rule by full path', () => {
       waitsForPromise(async () => {
-        const type = await BuckService.buildRuleTypeFor(buckRoot, '//:good_rule');
+        const type = await BuckService.buildRuleTypeFor(
+          buckRoot,
+          '//:good_rule',
+        );
         expect(type).toBe('genrule');
       });
 
@@ -139,7 +152,10 @@ describe('BuckService (test-project-with-failing-targets)', () => {
 
       waitsForPromise(async () => {
         // Strip out flavors.
-        const type = await BuckService.buildRuleTypeFor(buckRoot, '//:good_rule#');
+        const type = await BuckService.buildRuleTypeFor(
+          buckRoot,
+          '//:good_rule#',
+        );
         expect(type).toBe('genrule');
       });
 
@@ -179,9 +195,16 @@ describe('BuckService (buck-query-project)', () => {
       // First expensive buck operation gets a large timeout.
       waitsForPromise({timeout: 15000}, async () => {
         let owners = await BuckService.getOwners(buckRoot, 'examples/one.java');
-        expect(owners.sort()).toEqual(['//examples:one', '//examples:two-tests']);
+        expect(owners.sort()).toEqual([
+          '//examples:one',
+          '//examples:two-tests',
+        ]);
 
-        owners = await BuckService.getOwners(buckRoot, 'examples/one.java', '.*_library');
+        owners = await BuckService.getOwners(
+          buckRoot,
+          'examples/one.java',
+          '.*_library',
+        );
         expect(owners).toEqual(['//examples:one']);
       });
     });
@@ -201,7 +224,9 @@ describe('BuckService (buck-query-project)', () => {
         const file = await BuckService.getBuildFile(buckRoot, '//nonexistent:');
         expect(file).toBe(null);
         // eslint-disable-next-line no-console
-        expect(console.log.argsForCall[0]).toMatch(/No build file for target "\/\/nonexistent:"/);
+        expect(console.log.argsForCall[0]).toMatch(
+          /No build file for target "\/\/nonexistent:"/,
+        );
       });
     });
   });
@@ -229,14 +254,22 @@ describe('BuckService (buckconfig-project)', () => {
 
     it('returns null if property is not set', () => {
       waitsForPromise(async () => {
-        const value = await BuckService.getBuckConfig(buckRoot, 'cache', 'http_timeout');
+        const value = await BuckService.getBuckConfig(
+          buckRoot,
+          'cache',
+          'http_timeout',
+        );
         expect(value).toBe(null);
       });
     });
 
     it('returns null if section is not present', () => {
       waitsForPromise(async () => {
-        const value = await BuckService.getBuckConfig(buckRoot, 'android', 'target');
+        const value = await BuckService.getBuckConfig(
+          buckRoot,
+          'android',
+          'target',
+        );
         expect(value).toBe(null);
       });
     });

@@ -234,15 +234,13 @@ export class BuckBuildSystem {
       const epics = Object.keys(Epics)
         .map(k => Epics[k])
         .filter(epic => typeof epic === 'function');
-      const rootEpic = (actions, store) => combineEpics(...epics)(
-        actions,
-        store,
-      )
-        // Log errors and continue.
-        .catch((err, stream) => {
-          getLogger().error(err);
-          return stream;
-        });
+      const rootEpic = (actions, store) =>
+        combineEpics(...epics)(actions, store)
+          // Log errors and continue.
+          .catch((err, stream) => {
+            getLogger().error(err);
+            return stream;
+          });
       this._store = createStore(
         Reducers,
         initialState,

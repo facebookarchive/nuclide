@@ -36,63 +36,83 @@ const CLIENT_ID_ARGS = ['--config', 'client.id=nuclide'];
 
 export const MULTIPLE_TARGET_RULE_TYPE = 'multiple_targets';
 
-export type BuckWebSocketMessage = {
-  // Not actually from Buck - this is to let the receiver know that the socket is connected.
-  type: 'SocketConnected',
-} | {
-  type: 'BuildProgressUpdated',
-  progressValue: number,
-} | {
-  type: 'BuildFinished',
-  exitCode: number,
-} | {
-  type: 'BuildStarted',
-} | {
-  type: 'ConsoleEvent',
-  message: string,
-  level: {
-    name: 'OFF' | 'SEVERE' | 'WARNING' | 'INFO' | 'CONFIG' | 'FINE' | 'FINER' | 'FINEST' | 'ALL',
-  },
-} | {
-  type: 'ParseStarted',
-} | {
-  type: 'ParseFinished',
-} | {
-  type: 'InstallFinished',
-  success: boolean,
-  pid?: number,
-} | {
-  type: 'RunStarted',
-} | {
-  type: 'RunComplete',
-} | {
-  type: 'ResultsAvailable',
-  results: {
-    buildTarget: {
-      shortName: string,
-      baseName: string,
-    },
-    success: boolean,
-    failureCount: number,
-    totalNumberOfTests: number,
-    testCases: Array<{
+export type BuckWebSocketMessage =
+  | {
+      // Not actually from Buck - this is to let the receiver know that the socket is connected.
+      type: 'SocketConnected',
+    }
+  | {
+      type: 'BuildProgressUpdated',
+      progressValue: number,
+    }
+  | {
+      type: 'BuildFinished',
+      exitCode: number,
+    }
+  | {
+      type: 'BuildStarted',
+    }
+  | {
+      type: 'ConsoleEvent',
+      message: string,
+      level: {
+        name:
+          | 'OFF'
+          | 'SEVERE'
+          | 'WARNING'
+          | 'INFO'
+          | 'CONFIG'
+          | 'FINE'
+          | 'FINER'
+          | 'FINEST'
+          | 'ALL',
+      },
+    }
+  | {
+      type: 'ParseStarted',
+    }
+  | {
+      type: 'ParseFinished',
+    }
+  | {
+      type: 'InstallFinished',
       success: boolean,
-      failureCount: number,
-      skippedCount: number,
-      testCaseName: string,
-      testResults: Array<{
-        testCaseName: string,
-        testName: string,
-        type: string,
-        time: number,
-        message: string,
-        stacktrace: ?string,
-        stdOut: string,
-        stdErr: string,
-      }>,
-    }>,
-  },
-};
+      pid?: number,
+    }
+  | {
+      type: 'RunStarted',
+    }
+  | {
+      type: 'RunComplete',
+    }
+  | {
+      type: 'ResultsAvailable',
+      results: {
+        buildTarget: {
+          shortName: string,
+          baseName: string,
+        },
+        success: boolean,
+        failureCount: number,
+        totalNumberOfTests: number,
+        testCases: Array<{
+          success: boolean,
+          failureCount: number,
+          skippedCount: number,
+          testCaseName: string,
+          testResults: Array<{
+            testCaseName: string,
+            testName: string,
+            type: string,
+            time: number,
+            message: string,
+            stacktrace: ?string,
+            stdOut: string,
+            stdErr: string,
+          }>,
+        }>,
+      },
+    };
 
 type BuckConfig = Object;
 export type BaseBuckBuildOptions = {
@@ -161,7 +181,10 @@ export function getRootForPath(file: NuclideUri): Promise<?NuclideUri> {
 /**
  * Gets the build file for the specified target.
  */
-export async function getBuildFile(rootPath: NuclideUri, targetName: string): Promise<?string> {
+export async function getBuildFile(
+  rootPath: NuclideUri,
+  targetName: string,
+): Promise<?string> {
   try {
     const result = await query(rootPath, `buildfile(${targetName})`);
     if (result.length === 0) {
@@ -185,14 +208,15 @@ async function _runBuckCommandFromProjectRoot(
   addClientId?: boolean = true,
   readOnly?: boolean = true,
 ): Promise<{stdout: string, stderr: string, exitCode?: number}> {
-  const {pathToBuck, buckCommandOptions: options} =
-    await _getBuckCommandAndOptions(rootPath, commandOptions);
+  const {
+    pathToBuck,
+    buckCommandOptions: options,
+  } = await _getBuckCommandAndOptions(rootPath, commandOptions);
 
   const newArgs = addClientId ? args.concat(CLIENT_ID_ARGS) : args;
   logger.debug('Buck command:', pathToBuck, newArgs, options);
-  return getPool(rootPath, readOnly).submit(
-    () => checkOutput(pathToBuck, newArgs, options),
-  );
+  return getPool(rootPath, readOnly).submit(() =>
+    checkOutput(pathToBuck, newArgs, options));
 }
 
 /**
@@ -203,8 +227,9 @@ async function _getBuckCommandAndOptions(
   commandOptions?: AsyncExecuteOptions = {},
 ): Promise<BuckCommandAndOptions> {
   // $UPFixMe: This should use nuclide-features-config
-  const pathToBuck =
-    global.atom && global.atom.config.get('nuclide.nuclide-buck.pathToBuck') || 'buck';
+  const pathToBuck = (global.atom &&
+    global.atom.config.get('nuclide.nuclide-buck.pathToBuck')) ||
+    'buck';
   const buckCommandOptions = {
     cwd: rootPath,
     // Buck restarts itself if the environment changes, so try to preserve
@@ -330,8 +355,8 @@ async function _build(
       rootPath,
       args,
       options.commandOptions,
-      false,  // Do not add the client ID, since we already do it in the build args.
-      true,   // Build commands are blocking.
+      false, // Do not add the client ID, since we already do it in the build args.
+      true, // Build commands are blocking.
     );
   } catch (e) {
     // The build failed. However, because --keep-going was specified, the
@@ -391,7 +416,11 @@ export function testWithOutput(
   extraArguments: Array<string>,
   debug: boolean,
 ): ConnectableObservable<ProcessMessage> {
-  return _buildWithOutput(rootPath, buildTargets, {test: true, extraArguments, debug}).publish();
+  return _buildWithOutput(rootPath, buildTargets, {
+    test: true,
+    extraArguments,
+    debug,
+  }).publish();
 }
 
 /**
@@ -449,21 +478,21 @@ function _buildWithOutput(
     baseOptions: {...options},
     buildTargets,
   });
-  return Observable.fromPromise(_getBuckCommandAndOptions(rootPath))
-    .switchMap(({pathToBuck, buckCommandOptions}) => (
-      observeProcess(
-        () => safeSpawn(pathToBuck, args, buckCommandOptions),
-      )
-      .startWith({
+  return Observable.fromPromise(
+    _getBuckCommandAndOptions(rootPath),
+  ).switchMap(({pathToBuck, buckCommandOptions}) =>
+    observeProcess(() =>
+      safeSpawn(pathToBuck, args, buckCommandOptions)).startWith({
         kind: 'stdout',
         data: `Starting "${pathToBuck} ${_getArgsStringSkipClientId(args)}"`,
-      })
-    ));
+      }));
 }
 
 function _getArgsStringSkipClientId(args: Array<string>): string {
   const skipped = args.findIndex(arg => arg === 'client.id=nuclide');
-  return args.filter((arg, index) => index !== skipped && index !== skipped - 1).join(' ');
+  return args
+    .filter((arg, index) => index !== skipped && index !== skipped - 1)
+    .join(' ');
 }
 
 /**
@@ -471,7 +500,9 @@ function _getArgsStringSkipClientId(args: Array<string>): string {
  * @return An array of strings that can be passed as `args` to spawn a
  *   process to run the `buck` command.
  */
-function _translateOptionsToBuckBuildArgs(options: FullBuckBuildOptions): Array<string> {
+function _translateOptionsToBuckBuildArgs(
+  options: FullBuckBuildOptions,
+): Array<string> {
   const {
     baseOptions,
     pathToBuildReport,
@@ -486,7 +517,7 @@ function _translateOptionsToBuckBuildArgs(options: FullBuckBuildOptions): Array<
     extraArguments,
   } = baseOptions;
 
-  let args = [test ? 'test' : (doInstall ? 'install' : (run ? 'run' : 'build'))];
+  let args = [test ? 'test' : doInstall ? 'install' : run ? 'run' : 'build'];
   args = args.concat(buildTargets, CLIENT_ID_ARGS);
 
   if (!run) {
@@ -518,7 +549,9 @@ function _translateOptionsToBuckBuildArgs(options: FullBuckBuildOptions): Array<
   return args;
 }
 
-export async function listAliases(rootPath: NuclideUri): Promise<Array<string>> {
+export async function listAliases(
+  rootPath: NuclideUri,
+): Promise<Array<string>> {
   const args = ['audit', 'alias', '--list'];
   const result = await _runBuckCommandFromProjectRoot(rootPath, args);
   const stdout = result.stdout.trim();
@@ -541,7 +574,10 @@ export async function listFlavors(
 /**
  * Currently, if `aliasOrTarget` contains a flavor, this will fail.
  */
-export async function resolveAlias(rootPath: NuclideUri, aliasOrTarget: string): Promise<string> {
+export async function resolveAlias(
+  rootPath: NuclideUri,
+  aliasOrTarget: string,
+): Promise<string> {
   const args = ['query', aliasOrTarget];
   const result = await _runBuckCommandFromProjectRoot(rootPath, args);
   return result.stdout.trim();
@@ -571,7 +607,13 @@ export async function buildRuleTypeFor(
   aliasOrTarget: string,
 ): Promise<string> {
   const canonicalName = _normalizeNameForBuckQuery(aliasOrTarget);
-  const args = ['query', canonicalName, '--json', '--output-attributes', 'buck.type'];
+  const args = [
+    'query',
+    canonicalName,
+    '--json',
+    '--output-attributes',
+    'buck.type',
+  ];
   const result = await _runBuckCommandFromProjectRoot(rootPath, args);
   const json: {[target: string]: Object} = JSON.parse(result.stdout);
   // If aliasOrTarget is an alias, targets[0] will be the fully qualified build target.
@@ -591,8 +633,10 @@ export async function buildRuleTypeFor(
 function _normalizeNameForBuckQuery(aliasOrTarget: string): string {
   let canonicalName = aliasOrTarget;
   // Don't prepend // for aliases (aliases will not have colons or .)
-  if ((canonicalName.indexOf(':') !== -1 || canonicalName.indexOf('.') !== -1) &&
-      !canonicalName.startsWith('//')) {
+  if (
+    (canonicalName.indexOf(':') !== -1 || canonicalName.indexOf('.') !== -1) &&
+    !canonicalName.startsWith('//')
+  ) {
     canonicalName = '//' + canonicalName;
   }
   // Strip flavor string
@@ -603,9 +647,7 @@ function _normalizeNameForBuckQuery(aliasOrTarget: string): string {
   return canonicalName;
 }
 
-export async function getHTTPServerPort(
-  rootPath: NuclideUri,
-): Promise<number> {
+export async function getHTTPServerPort(rootPath: NuclideUri): Promise<number> {
   const args = ['server', 'status', '--json', '--http-port'];
   const result = await _runBuckCommandFromProjectRoot(rootPath, args);
   const json: Object = JSON.parse(result.stdout);
@@ -639,7 +681,9 @@ export async function queryWithArgs(
 ): Promise<{[aliasOrTarget: string]: Array<string>}> {
   const completeArgs = ['query', '--json', queryString].concat(args);
   const result = await _runBuckCommandFromProjectRoot(rootPath, completeArgs);
-  const json: {[aliasOrTarget: string]: Array<string>} = JSON.parse(result.stdout);
+  const json: {[aliasOrTarget: string]: Array<string>} = JSON.parse(
+    result.stdout,
+  );
 
   // `buck query` does not include entries in the JSON for params that did not match anything. We
   // massage the output to ensure that every argument has an entry in the output.
@@ -683,7 +727,9 @@ function stripBrackets(str: string): string {
   return str.substring(1, str.length - 1);
 }
 
-export async function getLastCommandInfo(rootPath: NuclideUri): Promise<?CommandInfo> {
+export async function getLastCommandInfo(
+  rootPath: NuclideUri,
+): Promise<?CommandInfo> {
   const logFile = nuclideUri.join(rootPath, LOG_PATH);
   if (await fsPromise.exists(logFile)) {
     const result = await asyncExecute('head', ['-n', '1', logFile]);
