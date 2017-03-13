@@ -8,22 +8,26 @@
  * @flow
  */
 
+import {AtomTextEditor} from './AtomTextEditor';
+import {Checkbox} from './Checkbox';
+import {pluralize} from '../commons-node/string';
 import {
   Range,
   TextBuffer,
 } from 'atom';
 import React from 'react';
-import {pluralize} from '../commons-node/string';
+import ReactDOM from 'react-dom';
 import UniversalDisposable from '../commons-node/UniversalDisposable';
-import {AtomTextEditor} from './AtomTextEditor';
 
 type Props = {
   diff: diffparser$FileDiff,
+  showCheckboxes?: boolean,
 };
 
 type HunkProps = {
-  hunk: diffparser$Hunk,
   grammar: atom$Grammar,
+  hunk: diffparser$Hunk,
+  showCheckboxes: boolean,
 };
 
 function getHighlightClass(type: string): ?string {
@@ -64,6 +68,15 @@ class HunkDiff extends React.Component {
    *             Could be a value of: ['insert', 'delete'].
    */
   _createLineMarkers(editor: atom$TextEditor): void {
+    let gutter;
+    if (this.props.showCheckboxes) {
+      gutter = editor.addGutter({name: 'checkboxes'});
+      this._disposables.add(() => {
+        if (gutter) {
+          gutter.destroy();
+        }
+      });
+    }
     let hunkIndex = 0;
     for (const hunkChanges of this.props.hunk.changes) {
       const lineNumber = hunkIndex++;
@@ -81,6 +94,27 @@ class HunkDiff extends React.Component {
         type: 'highlight',
         class: className,
       });
+
+      if (gutter) {
+        const item = document.createElement('div');
+        const checkbox = (
+          <Checkbox
+            className="nuclide-ui-checkbox-margin"
+            checked={true}
+            onChange={() => {}}
+          />
+        );
+        ReactDOM.render(checkbox, item);
+        const gutterDecoration = gutter.decorateMarker(marker, {
+          type: 'gutter',
+          item,
+        });
+        gutterDecoration.onDidDestroy(() => ReactDOM.unmountComponentAtNode(item));
+        this._disposables.add(() => {
+          gutterDecoration.destroy();
+        });
+      }
+
       this._disposables.add(() => {
         decoration.destroy();
       });
@@ -100,8 +134,22 @@ class HunkDiff extends React.Component {
     const text = changes.map(change => change.content.slice(1)).join('\n');
     const textBuffer = new TextBuffer();
     textBuffer.setText(text);
+
+    let checkbox;
+    if (this.props.showCheckboxes) {
+      checkbox = (
+        <Checkbox
+          className="nuclide-ui-checkbox-margin"
+          checked={true}
+          onChange={() => {
+            // TODO: fill out this function
+          }}
+        />
+      );
+    }
     return (
       <div key={content}>
+        {checkbox}
         {content}
          <AtomTextEditor
            autoGrow={true}
@@ -125,22 +173,36 @@ export default class FileChanges extends React.Component {
   render(): ?React.Element<any> {
     const {diff} = this.props;
     const {
-      to,
+      to: fileName,
       chunks,
       deletions,
       additions,
     } = diff;
-    const grammar = atom.grammars.selectGrammar(to, '');
+    const grammar = atom.grammars.selectGrammar(fileName, '');
     const hunks = chunks.map(chunk =>
       <HunkDiff
         key={chunk.content}
         grammar={grammar}
         hunk={chunk}
+        showCheckboxes={this.props.showCheckboxes}
       />,
     );
+    let checkbox;
+    if (this.props.showCheckboxes) {
+      checkbox = (
+        <Checkbox
+          className="nuclide-ui-checkbox-margin"
+          checked={true}
+          onChange={() => {}}
+        />
+      );
+    }
     return (
       <div className="nuclide-ui-file-changes">
-        <h3>{to}</h3>
+        <h3>
+          {checkbox}
+          {fileName}
+        </h3>
         <div>
           {additions} {pluralize('addition', additions)},{' '}
           {deletions} {pluralize('deletion', deletions)}

@@ -203,6 +203,7 @@ declare class atom$Decoration {
   onDidChangeProperties(
     callback: (event: {oldProperties: Object, newProperties: Object}) => mixed
     ): IDisposable,
+  onDidDestroy(callback: () => mixed): IDisposable,
   getMarker(): atom$Marker,
   getProperties(): Object,
   setProperties(properties: mixed): void,
@@ -230,7 +231,8 @@ declare class atom$Gutter {
   destroy(): void,
   decorateMarker(
     marker: atom$Marker,
-    options?: {'class'?: string, item?: Object | HTMLElement}): void,
+    options?: {'class'?: string, item?: Object | HTMLElement},
+  ): atom$Decoration,
   show(): void,
   hide(): void,
   onDidDestroy(callback: () => void): IDisposable,

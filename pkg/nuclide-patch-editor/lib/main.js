@@ -21,6 +21,7 @@ import {Disposable} from 'atom';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import InteractiveFileChanges from './ui/InteractiveFileChanges';
+import parse from 'diffparser';
 
 class Activation {
   _subscriptions: UniversalDisposable;
@@ -77,35 +78,38 @@ class Activation {
 }
 
 function renderOverEditor(editor: atom$TextEditor): void {
-  // Clear the editor so that closing the tab without changing anything won't
-  // cause the commit to go through by default
   const diffContent = editor.getText();
-  editor.setText('');
-  editor.save();
-  editor.getGutters().forEach(gutter => gutter.hide());
-  const editorView = atom.views.getView(editor);
-  editorView.style.visibility = 'hidden';
-  const item = document.createElement('div');
+  const patch = parse(diffContent);
+  if (patch.length > 0) {
+    // Clear the editor so that closing the tab without changing anything won't
+    // cause the commit to go through by default
+    editor.setText('');
+    editor.save();
+    editor.getGutters().forEach(gutter => gutter.hide());
+    const editorView = atom.views.getView(editor);
+    editorView.style.visibility = 'hidden';
+    const item = document.createElement('div');
 
-  const element = (
-    <InteractiveFileChanges
-      diffContent={diffContent}
-      onConfirm={content => onConfirm(editor, content)}
-      onManualEdit={originalContent => onManualEdit(editor, originalContent, marker, editorView)}
-      onQuit={() => atom.workspace.getActivePane().destroyItem(editor)}
-    />
-  );
-  ReactDOM.render(element, item);
-  item.style.visibility = 'visible';
+    const element = (
+      <InteractiveFileChanges
+        onConfirm={() => onConfirm(editor, diffContent)}
+        onManualEdit={() => onManualEdit(editor, diffContent, marker, editorView)}
+        onQuit={() => atom.workspace.getActivePane().destroyItem(editor)}
+        patch={patch}
+      />
+    );
+    ReactDOM.render(element, item);
+    item.style.visibility = 'visible';
 
-  const marker = editor.markScreenPosition([0, 0]);
-  marker.onDidDestroy(() => {
-    ReactDOM.unmountComponentAtNode(item);
-  });
-  editor.decorateMarker(marker, {
-    type: 'block',
-    item,
-  });
+    const marker = editor.markScreenPosition([0, 0]);
+    marker.onDidDestroy(() => {
+      ReactDOM.unmountComponentAtNode(item);
+    });
+    editor.decorateMarker(marker, {
+      type: 'block',
+      item,
+    });
+  }
 }
 
 function onConfirm(editor: atom$TextEditor, content: string): void {
@@ -116,11 +120,11 @@ function onConfirm(editor: atom$TextEditor, content: string): void {
 
 function onManualEdit(
   editor: atom$TextEditor,
-  originalContent: string,
+  content: string,
   marker: atom$Marker,
   editorView: atom$TextEditorElement,
 ): void {
-  editor.setText(originalContent);
+  editor.setText(content);
   editor.save();
   editor.setGrammar(atom.grammars.grammarForScopeName('source.mercurial.diff'));
   marker.destroy();

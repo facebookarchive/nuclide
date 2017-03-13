@@ -10,14 +10,13 @@
 
 import React from 'react';
 import FileChanges from '../../../nuclide-ui/FileChanges';
-import parse from 'diffparser';
 import {Button} from '../../../nuclide-ui/Button';
 
 type Props = {
-  diffContent: string,
-  onConfirm: string => any,
-  onManualEdit: string => any,
-  onQuit: () => any,
+  onConfirm: () => mixed,
+  onManualEdit: () => mixed,
+  onQuit: () => mixed,
+  patch: Array<diffparser$FileDiff>,
 };
 
 export default class InteractiveFileChanges extends React.Component {
@@ -27,31 +26,35 @@ export default class InteractiveFileChanges extends React.Component {
     super(props);
 
     (this: any)._onClickConfirm = this._onClickConfirm.bind(this);
-    (this: any)._onClickManual = this._onClickManual.bind(this);
+    (this: any)._onClickDirectEdit = this._onClickDirectEdit.bind(this);
     (this: any)._onClickQuit = this._onClickQuit.bind(this);
   }
 
   render(): React.Element<any> {
-    const parsedDiffFiles = parse(this.props.diffContent);
-
     return (
       <div>
         <Button onClick={this._onClickConfirm}>Confirm</Button>
         <Button onClick={this._onClickQuit}>Quit</Button>
-        <Button onClick={this._onClickManual}>Manual Edit</Button>
-        {parsedDiffFiles.map(file =>
-          <FileChanges diff={file} key={`${file.from}:${file.to}`} />,
+        <Button onClick={this._onClickDirectEdit}>Direct Edit</Button>
+        {this.props.patch.map(file =>
+          <FileChanges
+            diff={file}
+            key={`${file.from}:${file.to}`}
+            showCheckboxes={true}
+          />,
         )}
       </div>
     );
   }
 
   _onClickConfirm(): void {
-    this.props.onConfirm(this.props.diffContent);
+    this.props.onConfirm();
   }
 
-  _onClickManual(): void {
-    this.props.onManualEdit(this.props.diffContent);
+  // The "Direct Edit" button removes the patch editor UI and allows the user
+  // to edit the text representation of the patch directly
+  _onClickDirectEdit(): void {
+    this.props.onManualEdit();
   }
 
   _onClickQuit(): void {
