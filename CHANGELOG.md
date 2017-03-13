@@ -1,5 +1,45 @@
 # Nuclide Changelog
 
+## v0.210.0
+
+### Highlights
+
+* Minimally required version of Atom is now 1.15.0.
+
+### C++
+
+* Update clang version since PCH was broken in older versions.
+* Optimize how Nuclide invokes Buck to build compilation database.
+
+### Console
+
+* Improved the way console records are highlighted to make them more readable.
+
+### Debugger
+
+* Support right clicking and deleting a single breakpoint.
+* Show loading spinner while waiting for debugger async break.
+* Speed up fetching thread stacks on debugger pause.
+* Show 'Unresolved breakpoint' tooltip when hovering over unresolved breakpoint label.
+* Fixes unresolvable breakpoints always show as resolved if set after debugger is attached.
+* 'Single thread stepping' checkbox doesn't disappear when switching to debugger that doesn't support it.
+
+### Flow
+
+* Add outline support for export default arrow & anonymous functions.
+
+### Source Control
+
+* Fixes context menu not showing on uncommitted changes list.
+
+### Bug Fixes + Misc
+
+* File Tree: Fixed scrolling during a Working Set definition.
+* File Tree: Fixed contents occasionally not being rendered on visibility toggle.
+* Outline View: Fixes flashing and hiding of outline view.
+* Removed react-for-atom, replacing it with react instead.
+
+
 ## v0.209.0
 
 ### Debugger

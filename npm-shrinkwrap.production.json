@@ -1,6 +1,6 @@
 {
   "name": "nuclide",
-  "version": "0.209.0",
+  "version": "0.210.0",
   "dependencies": {
     "adm-zip": {
       "version": "0.4.7",
