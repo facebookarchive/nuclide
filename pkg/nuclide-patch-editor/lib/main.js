@@ -11,17 +11,19 @@
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 
+import * as Action from './redux/Actions';
 import createPackage from '../../commons-atom/createPackage';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
-import {Observable} from 'rxjs';
-import {isValidTextEditor} from '../../commons-atom/text-editor';
-import {repositoryForPath} from '../../commons-atom/vcs';
 import {Disposable} from 'atom';
+import InteractiveFileChanges from './ui/InteractiveFileChanges';
+import invariant from 'assert';
+import {isValidTextEditor} from '../../commons-atom/text-editor';
+import {Observable} from 'rxjs';
+import {observableFromSubscribeFunction} from '../../commons-node/event';
+import parse from 'diffparser';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import InteractiveFileChanges from './ui/InteractiveFileChanges';
-import parse from 'diffparser';
+import {repositoryForPath} from '../../commons-atom/vcs';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 
 class Activation {
   _subscriptions: UniversalDisposable;
@@ -81,7 +83,7 @@ function renderOverEditor(editor: atom$TextEditor): void {
   const diffContent = editor.getText();
   const patch = parse(diffContent);
   if (patch.length > 0) {
-    // Clear the editor so that closing the tab without changing anything won't
+    // Clear the editor so that closing the tab without hitting 'Confirm' won't
     // cause the commit to go through by default
     editor.setText('');
     editor.save();
@@ -89,6 +91,10 @@ function renderOverEditor(editor: atom$TextEditor): void {
     const editorView = atom.views.getView(editor);
     editorView.style.visibility = 'hidden';
     const item = document.createElement('div');
+
+    const editorPath = editor.getPath();
+    invariant(editorPath != null);
+    Action.registerPatchEditor(editorPath, patch);
 
     const element = (
       <InteractiveFileChanges
@@ -102,12 +108,14 @@ function renderOverEditor(editor: atom$TextEditor): void {
     item.style.visibility = 'visible';
 
     const marker = editor.markScreenPosition([0, 0]);
-    marker.onDidDestroy(() => {
-      ReactDOM.unmountComponentAtNode(item);
-    });
     editor.decorateMarker(marker, {
       type: 'block',
       item,
+    });
+
+    marker.onDidDestroy(() => {
+      ReactDOM.unmountComponentAtNode(item);
+      Action.deregisterPatchEditor(editorPath);
     });
   }
 }

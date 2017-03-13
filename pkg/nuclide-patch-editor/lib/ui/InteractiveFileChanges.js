@@ -11,6 +11,7 @@
 import React from 'react';
 import FileChanges from '../../../nuclide-ui/FileChanges';
 import {Button} from '../../../nuclide-ui/Button';
+import {Checkbox} from '../../../nuclide-ui/Checkbox';
 
 type Props = {
   onConfirm: () => mixed,
@@ -40,7 +41,7 @@ export default class InteractiveFileChanges extends React.Component {
           <FileChanges
             diff={file}
             key={`${file.from}:${file.to}`}
-            showCheckboxes={true}
+            checkboxFactory={this._createCheckboxFactory()}
           />,
         )}
       </div>
@@ -59,5 +60,17 @@ export default class InteractiveFileChanges extends React.Component {
 
   _onClickQuit(): void {
     this.props.onQuit();
+  }
+
+  _createCheckboxFactory(): (file: string, hunk?: string, line?: number) => React.Element<any> {
+    return (file: string, hunk?: string, line?: number) => {
+      return (
+        <Checkbox
+          className="nuclide-ui-checkbox-margin"
+          checked={true}
+          onChange={() => {}}
+        />
+      );
+    };
   }
 }
