@@ -333,16 +333,16 @@ export class BuckBuildSystem {
    * TaskRunner API.
    */
   buildArtifact(opts: BuckBuilderBuildOptions): BuildArtifactTask {
-    const {root, target} = opts;
+    const {root, target, args} = opts;
     let pathToArtifact = null;
     const buckService = getBuckServiceByNuclideUri(root);
     const targetString = getCommandStringForResolvedBuildTarget(target);
 
     const task = taskFromObservable(
       Observable.concat(
-        this.runSubcommand('build', target, {}, false, null),
+        this.runSubcommand('build', target, {arguments: args}, false, null),
         // Don't complete until we've determined the artifact path.
-        Observable.defer(() => buckService.showOutput(root, targetString))
+        Observable.defer(() => buckService.showOutput(root, targetString, args))
           .do(output => {
             let outputPath;
             if (

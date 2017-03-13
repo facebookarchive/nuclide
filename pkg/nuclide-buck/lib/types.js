@@ -66,6 +66,7 @@ export type BuckBuilder = {
 export type BuckBuilderBuildOptions = {
   root: NuclideUri,
   target: ResolvedBuildTarget,
+  args?: Array<string>,
 };
 
 export type PlatformGroup = {

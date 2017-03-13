@@ -557,8 +557,11 @@ export async function resolveAlias(rootPath: NuclideUri, aliasOrTarget: string):
 export async function showOutput(
   rootPath: NuclideUri,
   aliasOrTarget: string,
+  extraArguments: Array<string> = [],
 ): Promise<Array<Object>> {
-  const args = ['targets', '--json', '--show-output', aliasOrTarget];
+  const args = ['targets', '--json', '--show-output', aliasOrTarget].concat(
+    extraArguments,
+  );
   const result = await _runBuckCommandFromProjectRoot(rootPath, args);
   return JSON.parse(result.stdout.trim());
 }
