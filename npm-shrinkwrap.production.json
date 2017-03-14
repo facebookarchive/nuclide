@@ -1126,7 +1126,7 @@
     },
     "through": {
       "version": "2.3.8",
-      "from": "through@>=2.0.0 <3.0.0",
+      "from": "through@2.3.8",
       "resolved": "https://registry.npmjs.org/through/-/through-2.3.8.tgz"
     },
     "tough-cookie": {
