@@ -13,6 +13,7 @@ import type {FlowStatusOutput} from './flowOutputTypes';
 import {Disposable} from 'event-kit';
 import {Observable, Subject} from 'rxjs';
 import * as rpc from 'vscode-jsonrpc';
+import through from 'through';
 
 import {getLogger} from '../../nuclide-logging';
 
@@ -46,9 +47,11 @@ export class FlowIDEConnection {
     this._isDisposed = false;
     this._onWillDisposeCallbacks = new Set();
     this._ideProcess = process;
-    this._ideProcess.stderr.on('data', msg => {
-      getLogger().info('Flow IDE process stderr: ', msg.toString());
-    });
+    this._ideProcess.stderr.pipe(through(
+      msg => {
+        getLogger().info('Flow IDE process stderr: ', msg.toString());
+      },
+    ));
     this._connection = rpc.createMessageConnection(
       new rpc.StreamMessageReader(this._ideProcess.stdout),
       new rpc.StreamMessageWriter(this._ideProcess.stdin),
