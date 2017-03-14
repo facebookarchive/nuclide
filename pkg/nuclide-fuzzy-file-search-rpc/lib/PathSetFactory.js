@@ -14,6 +14,7 @@ import {WatchmanClient} from '../../nuclide-watchman-helpers';
 import fsPromise from '../../commons-node/fsPromise';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {checkOutput} from '../../commons-node/process';
+import {asyncLimit} from '../../commons-node/promise';
 
 function getFilesFromCommand(
   command: string,
@@ -139,10 +140,10 @@ async function getFilesFromRepo(localDirectory: string): Promise<Array<string>> 
   const subRoots = (await checkOutput('repo', ['list', '-p'], {cwd: localDirectory}))
     .stdout.split(/\n/).filter(s => s.length > 0);
 
-  const fileLists = await Promise.all(subRoots.map(subRoot => {
+  const fileLists = await asyncLimit(subRoots, 20, subRoot => {
     return getFilesFromGit(nuclideUri.join(localDirectory, subRoot))
       .then(files => files.map(file => nuclideUri.join(subRoot, file)));
-  }));
+  });
 
   return [].concat(...fileLists);
 }
