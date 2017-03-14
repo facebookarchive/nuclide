@@ -28,6 +28,7 @@ const logger = getLogger();
 type SerializableServerConnectionConfiguration = {
   host: string,
   port: number,
+  family?: 4 | 6,
   certificateAuthorityCertificate?: string,
   clientCertificate?: string,
   clientKey?: string,
@@ -111,6 +112,7 @@ function encryptConfig(
   return {
     host: remoteProjectConfig.host,
     port: remoteProjectConfig.port,
+    family: remoteProjectConfig.family,
     certificateAuthorityCertificate: certificateAuthorityCertificate.toString(),
     clientCertificate: clientCertificate.toString(),
     clientKey: clientKeyWithSalt,
@@ -155,6 +157,7 @@ function decryptConfig(
   return {
     host: remoteProjectConfig.host,
     port: remoteProjectConfig.port,
+    family: remoteProjectConfig.family,
     certificateAuthorityCertificate: new Buffer(certificateAuthorityCertificate),
     clientCertificate: new Buffer(clientCertificate),
     clientKey: new Buffer(restoredClientKey),

@@ -30,7 +30,7 @@ describe('SshHandshake', () => {
     dns = uncachedRequire(require, 'dns');
     spyOn(((dns: any): Object), 'lookup').andCallFake((host, family, callback) => {
       process.nextTick(() => {
-        callback(/* error */ null, /* address */ 'example.com');
+        callback(/* error */ null, /* address */ 'example.com', /* family */ 4);
       });
     });
     handshakeDelegate = jasmine.createSpyObj(

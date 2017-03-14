@@ -36,6 +36,7 @@ import lookupPreferIpv6 from './lookup-prefer-ip-v6';
 export type ServerConnectionConfiguration = {
   host: string, // host nuclide server is running on.
   port: number, // port to connect to.
+  family?: 4 | 6, // ipv4 or ipv6?
   certificateAuthorityCertificate?: Buffer, // certificate of certificate authority.
   clientCertificate?: Buffer, // client certificate for https connection.
   clientKey?: Buffer, // key for https connection.
@@ -211,7 +212,7 @@ export class ServerConnection {
     this._monitorConnectionHeartbeat();
 
     ServerConnection._connections.set(this.getRemoteHostname(), this);
-    setConnectionConfig(this._config, ip);
+    setConnectionConfig(this._config, ip.address);
     ServerConnection._emitter.emit('did-add', this);
   }
 
@@ -253,10 +254,11 @@ export class ServerConnection {
         ca: this._config.certificateAuthorityCertificate,
         cert: this._config.clientCertificate,
         key: this._config.clientKey,
+        family: this._config.family,
       };
       uri = `https://${this.getRemoteHostname()}:${this.getPort()}`;
     } else {
-      options = null;
+      options = {family: this._config.family};
       uri = `http://${this.getRemoteHostname()}:${this.getPort()}`;
     }
 

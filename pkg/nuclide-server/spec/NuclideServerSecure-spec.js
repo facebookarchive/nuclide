@@ -15,9 +15,12 @@ import NuclideServer from '../lib/NuclideServer';
 import {RpcConnection} from '../../nuclide-rpc';
 import servicesConfig from '../lib/servicesConfig';
 import {NuclideSocket} from '../lib/NuclideSocket';
+import {WebSocketTransport} from '../lib/WebSocketTransport';
 import {getRemoteNuclideUriMarshalers} from '../../nuclide-marshalers-common';
+import {getVersion} from '../../nuclide-version';
 import invariant from 'assert';
 import child_process from 'child_process';
+import nullthrows from 'nullthrows';
 
 let server;
 let socket;
@@ -57,12 +60,24 @@ describe('Nuclide Secure Server test suite', () => {
         ca: fs.readFileSync(ca_cert_path),
         cert: fs.readFileSync(client_cert_path),
         key: fs.readFileSync(client_key_path),
+        family: 6,
       });
       const client = RpcConnection.createRemote(
         socket,
         [getRemoteNuclideUriMarshalers('localhost')],
         servicesConfig);
       invariant(client);
+
+      const version = await client.getService('InfoService').getServerVersion();
+      expect(version).toBe(getVersion());
+
+      // Ensure that we resolved the IPv6 address.
+      const rpcTransport = client._transport;
+      const queuedTransport = nullthrows(rpcTransport)._transport;
+      const webSocketTransport = nullthrows(queuedTransport)._transport;
+      invariant(webSocketTransport instanceof WebSocketTransport);
+      const webSocket = nullthrows(webSocketTransport._socket);
+      expect(webSocket._socket.remoteAddress).toBe('::1');
 
       socket.close();
       server.close();

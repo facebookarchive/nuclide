@@ -33,6 +33,7 @@ const PASSWORD_RETRIES = 3;
 export type SshConnectionConfiguration = {
   host: string, // host nuclide server is running on
   sshPort: number, // ssh port of host nuclide server is running on
+  family?: 4 | 6, // ipv4 or ipv6?
   username: string, // username to authenticate as
   pathToPrivateKey: string, // The path to private key
   remoteServerCommand: string, // Command to use to start server
@@ -194,9 +195,9 @@ export class SshHandshake {
       return;
     }
 
-    let address;
+    let lookup;
     try {
-      address = await lookupPreferIpv6(config.host);
+      lookup = await lookupPreferIpv6(config.host);
     } catch (e) {
       return this._error(
         'Failed to resolve DNS.',
@@ -204,6 +205,9 @@ export class SshHandshake {
         e,
       );
     }
+
+    const {address, family} = lookup;
+    this._config.family = family;
 
     const connection =
       await RemoteConnection.createConnectionBySavedConfig(
@@ -494,6 +498,7 @@ export class SshHandshake {
       connect({
         host: this._remoteHost,
         port: this._remotePort,
+        family: this._config.family,
         cwd: this._config.cwd,
         certificateAuthorityCertificate: this._certificateAuthorityCertificate,
         clientCertificate: this._clientCertificate,
@@ -510,6 +515,7 @@ export class SshHandshake {
         connect({
           host: 'localhost',
           port: localPort,
+          family: this._config.family,
           cwd: this._config.cwd,
           displayTitle: this._config.displayTitle,
         });

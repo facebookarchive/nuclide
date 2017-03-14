@@ -33,6 +33,7 @@ const FILE_SYSTEM_SERVICE = 'FileSystemService';
 export type RemoteConnectionConfiguration = {
   host: string, // host nuclide server is running on.
   port: number, // port to connect to.
+  family?: 4 | 6, // ipv4 or ipv6?
   cwd: string, // Path to remote directory user should start in upon connection.
   displayTitle: string, // Name of the saved connection profile.
   certificateAuthorityCertificate?: Buffer, // certificate of certificate authority.

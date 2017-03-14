@@ -20,9 +20,10 @@ const DEFAULT_PORT = 9090;
 const logger = getLogger();
 
 export type AgentOptions = {
-  ca: Buffer,
-  key: Buffer,
-  cert: Buffer,
+  ca?: Buffer,
+  key?: Buffer,
+  cert?: Buffer,
+  family?: 4 | 6,
 };
 
 async function main(args) {
