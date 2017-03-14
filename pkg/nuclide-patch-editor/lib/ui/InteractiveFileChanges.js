@@ -8,26 +8,37 @@
  * @flow
  */
 
+import type {PatchData} from '../types';
+
 import React from 'react';
 import FileChanges from '../../../nuclide-ui/FileChanges';
 import {Button} from '../../../nuclide-ui/Button';
+import {Checkbox} from '../../../nuclide-ui/Checkbox';
+import {patchToString} from '../utils';
 
 type Props = {
-  onConfirm: () => mixed,
+  onConfirm: string => mixed,
   onManualEdit: () => mixed,
   onQuit: () => mixed,
-  patch: Array<diffparser$FileDiff>,
+  patchData: PatchData,
 };
 
 export default class InteractiveFileChanges extends React.Component {
   props: Props;
+  _patch: Array<diffparser$FileDiff>;
 
   constructor(props: Props) {
     super(props);
 
+    this._patch = Array.from(props.patchData.files.values()).map(file => file.fileDiff);
+
     (this: any)._onClickConfirm = this._onClickConfirm.bind(this);
     (this: any)._onClickDirectEdit = this._onClickDirectEdit.bind(this);
     (this: any)._onClickQuit = this._onClickQuit.bind(this);
+  }
+
+  shouldComponentUpdate(nextProps: Props): boolean {
+    return nextProps.patchData !== this.props.patchData;
   }
 
   render(): React.Element<any> {
@@ -36,11 +47,11 @@ export default class InteractiveFileChanges extends React.Component {
         <Button onClick={this._onClickConfirm}>Confirm</Button>
         <Button onClick={this._onClickQuit}>Quit</Button>
         <Button onClick={this._onClickDirectEdit}>Direct Edit</Button>
-        {this.props.patch.map(file =>
+        {this._patch.map(file =>
           <FileChanges
             diff={file}
             key={`${file.from}:${file.to}`}
-            showCheckboxes={true}
+            checkboxFactory={this._createCheckboxFactory()}
           />,
         )}
       </div>
@@ -48,7 +59,7 @@ export default class InteractiveFileChanges extends React.Component {
   }
 
   _onClickConfirm(): void {
-    this.props.onConfirm();
+    this.props.onConfirm(patchToString(this._patch));
   }
 
   // The "Direct Edit" button removes the patch editor UI and allows the user
@@ -59,5 +70,17 @@ export default class InteractiveFileChanges extends React.Component {
 
   _onClickQuit(): void {
     this.props.onQuit();
+  }
+
+  _createCheckboxFactory(): (file: string, hunk?: string, line?: number) => React.Element<any> {
+    return (file: string, hunk?: string, line?: number) => {
+      return (
+        <Checkbox
+          className="nuclide-ui-checkbox-margin"
+          checked={true}
+          onChange={() => {}}
+        />
+      );
+    };
   }
 }
