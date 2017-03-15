@@ -850,7 +850,6 @@ export class HgRepositoryClient {
   }
 
   getTemplateCommitMessage(): Promise<?string> {
-    // TODO(t12228275) This is a stopgap hack, fix it.
     return this._service.getTemplateCommitMessage();
   }
 
