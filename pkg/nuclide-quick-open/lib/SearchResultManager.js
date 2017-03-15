@@ -375,19 +375,17 @@ export default class SearchResultManager {
       priority: providerSpec.priority,
       title: providerSpec.title,
       results: providerPaths.reduce((results, path) => {
-        let cachedPaths;
-        let cachedQueries;
-        let cachedResult;
-        if (!(
-          (cachedPaths = this._resultCache.getAllCachedResults()[providerName]) &&
-          (cachedQueries = cachedPaths[path]) &&
-          (
-            (cachedResult = cachedQueries[query]) ||
-            // If the current query hasn't returned anything yet, try the last cached result.
-            lastCachedQuery != null && (cachedResult = cachedQueries[lastCachedQuery])
-          )
-        )) {
-          cachedResult = {};
+        let cachedResult = {};
+        const cachedPaths = this._resultCache.getAllCachedResults()[providerName];
+        if (cachedPaths) {
+          const cachedQueries = cachedPaths[path];
+          if (cachedQueries) {
+            if (cachedQueries[query]) {
+              cachedResult = cachedQueries[query];
+            } else if (lastCachedQuery != null && cachedQueries[lastCachedQuery]) {
+              cachedResult = cachedQueries[lastCachedQuery];
+            }
+          }
         }
         const defaultResult: ProviderResult = {
           error: null,
