@@ -104,7 +104,6 @@ export interface HackLanguageService extends LanguageService {
   isFileInProject(fileUri: NuclideUri): Promise<boolean>,
 
   executeQuery(
-    rootDirectory: NuclideUri,
     queryString: string,
   ): Promise<Array<HackSearchPosition>>,
 

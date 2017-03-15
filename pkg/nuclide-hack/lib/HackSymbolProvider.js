@@ -10,14 +10,15 @@
 
 import type {
   FileResult,
-  Provider,
+  GlobalProviderType,
 } from '../../nuclide-quick-open/lib/types';
 import type {
-  HackSearchPosition,
   HackLanguageService,
+  HackSearchPosition,
 } from '../../nuclide-hack-rpc/lib/HackService-types';
 
-import {isFileInHackProject, getHackLanguageForUri} from './HackLanguage';
+import {getHackLanguageForUri} from './HackLanguage';
+import {arrayUnique, arrayCompact, arrayFlatten} from '../../commons-node/collection';
 import nuclideUri from '../../commons-node/nuclideUri';
 import React from 'react';
 
@@ -52,8 +53,17 @@ function bestIconForItem(item: HackSearchPosition): string {
   return ICONS.unknown;
 }
 
-export const HackSymbolProvider: Provider = {
-  providerType: 'DIRECTORY',
+async function getHackServices(
+  directories: Array<atom$Directory>, // top-level project directories
+): Promise<Array<HackLanguageService>> {
+  const allServices = await Promise.all(directories
+    .map(directory => getHackLanguageForUri(directory.getPath())),
+  );
+  return arrayUnique(arrayCompact(allServices)); // remove dupes and nulls
+}
+
+export const HackSymbolProvider: GlobalProviderType = {
+  providerType: 'GLOBAL',
   name: 'HackSymbolProvider',
   display: {
     title: 'Hack Symbols',
@@ -61,26 +71,24 @@ export const HackSymbolProvider: Provider = {
     action: 'nuclide-hack-symbol-provider:toggle-provider',
   },
 
-  isEligibleForDirectory(directory: atom$Directory): Promise<boolean> {
-    return isFileInHackProject(directory.getPath());
-  },
-
   async executeQuery(
     query: string,
-    directory: atom$Directory,
   ): Promise<Array<FileResult>> {
     if (query.length === 0) {
       return [];
     }
 
-    const service: ?HackLanguageService = await getHackLanguageForUri(directory.getPath());
-    if (service == null) {
-      return [];
-    }
+    const services = await getHackServices(atom.project.getDirectories());
+    const results = await Promise.all(services.map(service => service.executeQuery(query)));
+    const flattenedResults: Array<HackSearchPosition> = arrayFlatten(results);
 
-    const directoryPath = directory.getPath();
-    const results: Array<HackSearchPosition> = await service.executeQuery(directoryPath, query);
-    return ((results: any): Array<FileResult>);
+    return ((flattenedResults: any): Array<FileResult>);
+    // Why the weird cast? Because services are expected to return their own
+    // custom type with symbol-provider-specific additional detail. We upcast it
+    // now to FileResult which only has the things that Quick-Open cares about
+    // like line, column, ... Later on, Quick-Open invokes getComponentForItem
+    // (below) to render each result: it does a downcast so it can render
+    // whatever additional details.
   },
 
   getComponentForItem(uncastedItem: FileResult): React.Element<any> {

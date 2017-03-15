@@ -39,6 +39,7 @@ import type {HackDiagnosticsMessage} from './HackConnectionService';
 
 import {Observable} from 'rxjs';
 import {wordAtPositionFromBuffer} from '../../commons-node/range';
+import {arrayFlatten} from '../../commons-node/collection';
 import invariant from 'assert';
 import {
   callHHClient,
@@ -52,6 +53,7 @@ import {
 } from './hack-config';
 import {
   getHackProcess,
+  getHackProcesses,
   observeConnections,
   ensureProcesses,
   closeProcesses,
@@ -135,13 +137,16 @@ class HackLanguageServiceImpl extends ServerLanguageService {
   }
 
   /**
-   * Performs a Hack symbol search in the specified directory.
+   * Performs a Hack symbol search over all hack processes we manage
    */
-  executeQuery(
-    rootDirectory: NuclideUri,
+  async executeQuery(
     queryString: string,
   ): Promise<Array<HackSearchPosition>> {
-    return executeQuery(rootDirectory, queryString);
+    const processes = await getHackProcesses(this._fileCache);
+    const results = await Promise.all(processes.map(process =>
+      executeQuery(process.getRoot(), queryString)),
+    );
+    return arrayFlatten(results);
   }
 
   dispose(): void {

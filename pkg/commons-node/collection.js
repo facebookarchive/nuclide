@@ -42,6 +42,26 @@ export function arrayCompact<T>(array: Array<?T>): Array<T> {
 }
 
 /**
+ * Flattens an Array<Array<T>> into just an Array<T>
+ */
+export function arrayFlatten<T>(array: Array<Array<T>>): Array<T> {
+  const result = [];
+  for (const subArray of array) {
+    result.push(...subArray);
+  }
+  return result;
+}
+
+/**
+ * Removes duplicates from Array<T>.
+ * Uses SameValueZero for equality purposes, which is like '===' except it deems
+ * two NaNs equal. http://www.ecma-international.org/ecma-262/6.0/#sec-samevaluezero
+ */
+export function arrayUnique<T>(array: Array<T>): Array<T> {
+  return Array.from(new Set(array));
+}
+
+/**
  * Returns the last index in the input array that matches the predicate.
  * Returns -1 if no match is found.
  */
