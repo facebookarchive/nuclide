@@ -16,8 +16,8 @@ import {
   TextBuffer,
 } from 'atom';
 import React from 'react';
-import ReactDOM from 'react-dom';
 import UniversalDisposable from '../commons-node/UniversalDisposable';
+import {viewableFromReactElement} from '../commons-atom/viewableFromReactElement';
 
 type Props = {
   diff: diffparser$FileDiff,
@@ -30,7 +30,7 @@ type HunkProps = {
   hunk: diffparser$Hunk,
 };
 
-function getHighlightClass(type: string): ?string {
+function getHighlightClass(type: diffparser$ChangeType): ?string {
   if (type === 'add') {
     return 'nuclide-ui-hunk-diff-insert';
   }
@@ -50,6 +50,9 @@ class HunkDiff extends React.Component {
   }
 
   componentDidMount(): void {
+    if (this.props.checkboxFactory != null) {
+      this._createCheckboxGutter(this.refs.editor.getModel());
+    }
     this._createLineMarkers(this.refs.editor.getModel());
   }
 
@@ -62,21 +65,44 @@ class HunkDiff extends React.Component {
     this._disposables.dispose();
   }
 
+  _createCheckboxGutter(editor: atom$TextEditor): void {
+    const {checkboxFactory} = this.props;
+    invariant(checkboxFactory != null);
+    const gutter = editor.addGutter({name: 'checkboxes'});
+    let hunkIndex = 0;
+
+    for (const line of this.props.hunk.changes) {
+      const lineNumber = hunkIndex++;
+      if (line.type === 'normal') {
+        continue;
+      }
+      const range = new Range(
+        [lineNumber, 0],
+        [lineNumber + 1, 0],
+      );
+      const item = viewableFromReactElement(checkboxFactory(this.props.hunk.content, lineNumber));
+
+      const marker = editor.markBufferRange(range, {invalidate: 'never'});
+      const gutterDecoration = gutter.decorateMarker(marker, {
+        type: 'gutter',
+        item,
+      });
+
+      this._disposables.add(() => {
+        item.destroy();
+        gutterDecoration.destroy();
+      });
+    }
+
+    this._disposables.add(() => gutter.destroy());
+  }
+
   /**
    * @param lineNumber A buffer line number to be highlighted.
    * @param type The type of highlight to be applied to the line.
    *             Could be a value of: ['insert', 'delete'].
    */
   _createLineMarkers(editor: atom$TextEditor): void {
-    let gutter;
-    if (this.props.checkboxFactory != null) {
-      gutter = editor.addGutter({name: 'checkboxes'});
-      this._disposables.add(() => {
-        if (gutter) {
-          gutter.destroy();
-        }
-      });
-    }
     let hunkIndex = 0;
     for (const hunkChanges of this.props.hunk.changes) {
       const lineNumber = hunkIndex++;
@@ -94,21 +120,6 @@ class HunkDiff extends React.Component {
         type: 'highlight',
         class: className,
       });
-
-      if (gutter) {
-        invariant(this.props.checkboxFactory != null);
-        const checkbox = this.props.checkboxFactory(this.props.hunk.content, lineNumber);
-        const item = document.createElement('div');
-        ReactDOM.render(checkbox, item);
-        const gutterDecoration = gutter.decorateMarker(marker, {
-          type: 'gutter',
-          item,
-        });
-        gutterDecoration.onDidDestroy(() => ReactDOM.unmountComponentAtNode(item));
-        this._disposables.add(() => {
-          gutterDecoration.destroy();
-        });
-      }
 
       this._disposables.add(() => {
         decoration.destroy();

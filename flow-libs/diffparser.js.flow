@@ -30,11 +30,13 @@ type diffparser$Hunk = {
 };
 
 type diffparser$Change = {
-  type: 'del' | 'add' | 'normal',
+  type: diffparser$ChangeType,
   content: string,
   ln: number,
   position: number,
 };
+
+type diffparser$ChangeType = 'del' | 'add' | 'normal';
 
 declare module 'diffparser' {
   declare export default function parse(diff: string): Array<diffparser$FileDiff>;
