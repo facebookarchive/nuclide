@@ -21,11 +21,14 @@ import {viewableFromReactElement} from '../commons-atom/viewableFromReactElement
 
 type Props = {
   diff: diffparser$FileDiff,
-  checkboxFactory?: (file: string, hunk?: string, line?: number) => React.Element<any>,
+  checkboxFactory?:
+    (fileName: string, hunkOldStartLine?: number, line?: number) => React.Element<any>,
 };
 
 type HunkProps = {
-  checkboxFactory: ?(hunk: string, line?: number) => React.Element<any>,
+  fileName: string,
+  checkboxFactory: ?(fileName: string, hunkOldStartLine: number, line?: number)
+    => React.Element<any>,
   grammar: atom$Grammar,
   hunk: diffparser$Hunk,
 };
@@ -69,18 +72,25 @@ class HunkDiff extends React.Component {
     const {checkboxFactory} = this.props;
     invariant(checkboxFactory != null);
     const gutter = editor.addGutter({name: 'checkboxes'});
+    let firstChangedLineNumber = 0;
     let hunkIndex = 0;
 
     for (const line of this.props.hunk.changes) {
       const lineNumber = hunkIndex++;
       if (line.type === 'normal') {
         continue;
+      } else if (firstChangedLineNumber === 0) {
+        firstChangedLineNumber = lineNumber;
       }
       const range = new Range(
         [lineNumber, 0],
         [lineNumber + 1, 0],
       );
-      const item = viewableFromReactElement(checkboxFactory(this.props.hunk.content, lineNumber));
+      const item = viewableFromReactElement(checkboxFactory(
+        this.props.fileName,
+        this.props.hunk.oldStart,
+        lineNumber - firstChangedLineNumber,
+      ));
 
       const marker = editor.markBufferRange(range, {invalidate: 'never'});
       const gutterDecoration = gutter.decorateMarker(marker, {
@@ -135,6 +145,7 @@ class HunkDiff extends React.Component {
     const {
       content,
       changes,
+      oldStart,
     } = hunk;
     // Remove the first character in each line (/[+- ]/) which indicates addition / deletion
     const text = changes.map(change => change.content.slice(1)).join('\n');
@@ -143,7 +154,7 @@ class HunkDiff extends React.Component {
 
     let checkbox;
     if (this.props.checkboxFactory != null) {
-      checkbox = this.props.checkboxFactory(content);
+      checkbox = this.props.checkboxFactory(this.props.fileName, oldStart);
     }
     return (
       <div key={content}>
@@ -177,20 +188,19 @@ export default class FileChanges extends React.Component {
       additions,
     } = diff;
     const grammar = atom.grammars.selectGrammar(fileName, '');
-    const hunks = chunks.map(chunk =>
-      <HunkDiff
-        key={chunk.content}
-        grammar={grammar}
-        hunk={chunk}
-        checkboxFactory={
-          this.props.checkboxFactory && this.props.checkboxFactory.bind(null, fileName)
-        }
-      />,
-    );
     let checkbox;
     if (this.props.checkboxFactory != null) {
       checkbox = this.props.checkboxFactory(fileName);
     }
+    const hunks = chunks.map(chunk =>
+      <HunkDiff
+        checkboxFactory={this.props.checkboxFactory}
+        fileName={fileName}
+        key={chunk.content}
+        grammar={grammar}
+        hunk={chunk}
+      />,
+    );
     return (
       <div className="nuclide-ui-file-changes">
         <h3>

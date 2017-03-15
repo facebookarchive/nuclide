@@ -16,6 +16,7 @@ import typeof * as BoundActionCreators from './redux/Actions';
 import * as Actions from './redux/Actions';
 import {bindActionCreators, createStore} from 'redux';
 import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
+import {Checkbox} from '../../nuclide-ui/Checkbox';
 import {createEmptyAppState} from './redux/createEmptyAppState';
 import createPackage from '../../commons-atom/createPackage';
 import {Disposable} from 'atom';
@@ -120,6 +121,7 @@ class Activation {
       const BoundInteractiveFileChanges = bindObservableAsProps(
         this._states.map((state: AppState) => {
           return {
+            checkboxFactory: this._createCheckboxFactory(editorPath),
             onConfirm: content => onConfirm(editor, content),
             onManualEdit: () => onManualEdit(editor, diffContent, marker, editorView),
             onQuit: () => atom.workspace.getActivePane().destroyItem(editor),
@@ -141,6 +143,24 @@ class Activation {
         this._actionCreators.deregisterPatchEditor(editorPath);
       });
     }
+  }
+
+  _createCheckboxFactory(editorPath: string): (
+    fileName: string,
+    hunkOldStartLine?: number,
+    line?: number
+  ) => React.Element<any> {
+    return (fileName: string, hunkOldStartLine?: number, line?: number) => {
+      return (
+        <Checkbox
+          className="nuclide-patch-editor-checkbox-margin"
+          checked={true}
+          onChange={
+            () => this._actionCreators.clickCheckbox(editorPath, fileName, hunkOldStartLine, line)
+          }
+        />
+      );
+    };
   }
 }
 

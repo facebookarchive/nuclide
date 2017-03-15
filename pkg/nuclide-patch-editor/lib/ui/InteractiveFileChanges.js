@@ -13,10 +13,10 @@ import type {PatchData} from '../types';
 import React from 'react';
 import FileChanges from '../../../nuclide-ui/FileChanges';
 import {Button} from '../../../nuclide-ui/Button';
-import {Checkbox} from '../../../nuclide-ui/Checkbox';
 import {patchToString} from '../utils';
 
 type Props = {
+  checkboxFactory: (file: string, hunkOldStartLine?: number, line?: number) => React.Element<any>,
   onConfirm: string => mixed,
   onManualEdit: () => mixed,
   onQuit: () => mixed,
@@ -43,7 +43,7 @@ export default class InteractiveFileChanges extends React.Component {
 
   render(): React.Element<any> {
     return (
-      <div>
+      <div className="nuclide-patch-editor">
         <Button onClick={this._onClickConfirm}>Confirm</Button>
         <Button onClick={this._onClickQuit}>Quit</Button>
         <Button onClick={this._onClickDirectEdit}>Direct Edit</Button>
@@ -51,7 +51,7 @@ export default class InteractiveFileChanges extends React.Component {
           <FileChanges
             diff={file}
             key={`${file.from}:${file.to}`}
-            checkboxFactory={this._createCheckboxFactory()}
+            checkboxFactory={this.props.checkboxFactory}
           />,
         )}
       </div>
@@ -70,17 +70,5 @@ export default class InteractiveFileChanges extends React.Component {
 
   _onClickQuit(): void {
     this.props.onQuit();
-  }
-
-  _createCheckboxFactory(): (file: string, hunk?: string, line?: number) => React.Element<any> {
-    return (file: string, hunk?: string, line?: number) => {
-      return (
-        <Checkbox
-          className="nuclide-ui-checkbox-margin"
-          checked={true}
-          onChange={() => {}}
-        />
-      );
-    };
   }
 }
