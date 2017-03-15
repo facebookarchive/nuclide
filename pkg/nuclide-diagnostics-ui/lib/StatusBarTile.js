@@ -13,6 +13,7 @@ import type {
   DiagnosticMessage,
 } from '../../nuclide-diagnostics-common';
 
+import addTooltip from '../../nuclide-ui/add-tooltip';
 import classnames from 'classnames';
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -145,25 +146,37 @@ class StatusBarTileComponent extends React.Component {
   }
 
   render() {
+    const errorCount = this.props.errorCount;
+    const warningCount = this.props.warningCount;
+    const hasErrors = errorCount > 0;
+    const hasWarnings = warningCount > 0;
     const errorClassName = classnames('nuclide-diagnostics-status-bar-highlight', {
-      'highlight': this.props.errorCount === 0,
-      'highlight-error': this.props.errorCount > 0,
+      'highlight': !hasErrors,
+      'highlight-error': hasErrors,
     });
     const warningClassName = classnames('nuclide-diagnostics-status-bar-highlight', {
-      'highlight': this.props.warningCount === 0,
-      'highlight-warning': this.props.warningCount > 0,
+      'highlight': !hasWarnings,
+      'highlight-warning': hasWarnings,
+    });
+    const errorLabel = hasErrors ? errorCount : 'No';
+    const errorSuffix = errorCount !== 1 ? 's' : '';
+    const warningLabel = hasWarnings ? warningCount : 'No';
+    const warningSuffix = warningCount !== 1 ? 's' : '';
+    const tooltip = addTooltip({
+      title: `${errorLabel} error${errorSuffix} | ${warningLabel} warning${warningSuffix}`,
+      placement: 'top',
     });
 
     return (
       <span
         className="nuclide-diagnostics-highlight-group"
         onClick={this._onClick}
-        title="Errors | Warnings">
+        ref={tooltip}>
         <span className={errorClassName}>
-          {this.props.errorCount}
+          {errorCount}
         </span>
         <span className={warningClassName}>
-          {this.props.warningCount}
+          {warningCount}
         </span>
       </span>
     );
