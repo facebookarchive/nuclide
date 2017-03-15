@@ -26,6 +26,7 @@ function ensureArray(x: string | Array<string>): Array<string> {
 export async function openArcDeepLink(
   params: DeepLinkParams,
   remoteProjectsService: ?RemoteProjectsService,
+  cwd: ?string = null,
 ): Promise<void> {
   const {project, path, line, column} = params;
   try {
@@ -67,7 +68,13 @@ export async function openArcDeepLink(
         const fsService = getFileSystemServiceByNuclideUri(directory);
         return fsService.exists(nuclideUri.join(nuclideUri.getPath(directory), paths[0]));
       });
-      match = existing[0] || match;
+      if (cwd != null && existing.includes(cwd)) {
+        match = cwd;
+      } else if (existing[0]) {
+        match = existing[0];
+      } else if (cwd != null && matches.includes(cwd)) {
+        match = cwd;
+      }
     }
 
     for (let i = 0; i < paths.length; i++) {

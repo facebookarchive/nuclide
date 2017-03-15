@@ -10,6 +10,7 @@
 
 import type {BusySignalProvider} from '../../nuclide-busy-signal/lib/types';
 import type {BusySignalProviderBase} from '../../nuclide-busy-signal';
+import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {TaskRunnerServiceApi} from '../../nuclide-task-runner/lib/types';
 import type {OutputService} from '../../nuclide-console/lib/types';
 import type {DeepLinkService} from '../../nuclide-deep-link/lib/types';
@@ -28,6 +29,7 @@ class Activation {
   _disposables: CompositeDisposable;
   _busySignalProvider: BusySignalProviderBase;
   _buildSystem: ?ArcBuildSystem;
+  _cwdApi: ?CwdApi;
   _remoteProjectsService: ?RemoteProjectsService;
 
   constructor(state: ?Object) {
@@ -48,6 +50,13 @@ class Activation {
     const provider = new ArcanistDiagnosticsProvider(this._busySignalProvider);
     this._disposables.add(provider);
     return provider;
+  }
+
+  consumeCwdApi(api: CwdApi): IDisposable {
+    this._cwdApi = api;
+    return new Disposable(() => {
+      this._cwdApi = null;
+    });
   }
 
   consumeTaskRunnerServiceApi(api: TaskRunnerServiceApi): void {
@@ -71,7 +80,9 @@ class Activation {
   consumeDeepLinkService(deepLink: DeepLinkService): void {
     this._disposables.add(
       deepLink.subscribeToPath('open-arc', params => {
-        openArcDeepLink(params, this._remoteProjectsService);
+        const maybeCwd = this._cwdApi ? this._cwdApi.getCwd() : null;
+        const maybeCwdPath = maybeCwd ? maybeCwd.getPath() : null;
+        openArcDeepLink(params, this._remoteProjectsService, maybeCwdPath);
       }),
     );
   }
