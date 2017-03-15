@@ -237,6 +237,10 @@ describe('HgService', () => {
   describe('::commit|amend', () => {
     const messageFile = 'fakePathForTesting';
     const commitMessage = 'foo\n\nbar\nbaz';
+    const processMessage = {
+      kind: 'stdout',
+      data: 'Fake message for testing',
+    };
     let tempFileCreated = false;
     let tempFileRemoved = false;
     let committedToHg = false;
@@ -274,7 +278,7 @@ describe('HgService', () => {
           expect(args.pop()).toBe(expectedArg);
         }
         committedToHg = true;
-        return Observable.of(null);
+        return Observable.of(processMessage);
       });
       CommandServer._server = ({
         getAddress: () => ({family: 'f', port: 12345}),

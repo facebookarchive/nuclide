@@ -445,6 +445,7 @@ export function createPhabricatorRevision(
 
       return processArcanistOutput(stream)
         .startWith({level: 'info', text: 'Creating new revision...\n'})
+        .switchMap(processErrorMessageAndThrow)
         .do(message => publishUpdates.next(message));
     }),
 
@@ -495,6 +496,7 @@ export function updatePhabricatorRevision(
 
   return processArcanistOutput(stream)
     .startWith({level: 'info', text: `Updating revision \`${phabricatorRevision.name}\`...\n`})
+    .switchMap(processErrorMessageAndThrow)
     .do({
       next: message => publishUpdates.next(message),
       complete: () => notifyRevisionStatus(phabricatorRevision, 'updated'),
@@ -534,4 +536,12 @@ export function formatDiffViewUrl(diffEntityOptions_?: ?DiffEntityOptions): stri
     slashes: true,
     query: diffEntityOptions,
   });
+}
+
+function processErrorMessageAndThrow(message: Message): Observable<Message> {
+  if (message.level === 'error') {
+    return Observable.throw(new Error(message.text));
+  }
+
+  return Observable.of(message);
 }

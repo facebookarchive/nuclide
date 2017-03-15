@@ -798,7 +798,7 @@ export class HgService {
           ...argumentsWithCommitFile,
         ],
         execOptions,
-      );
+      ).switchMap(processExitCodeAndThrow);
     }).finally(() => {
       if (tempFile != null) {
         fsPromise.unlink(tempFile);
