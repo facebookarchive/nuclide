@@ -107,7 +107,7 @@ export default class QuickSelectionComponent extends React.Component {
     const initialProviderName =
       this.props.searchResultManager.getActiveProviderName();
     const initialActiveTab =
-      this.props.searchResultManager.getProviderByName(initialProviderName);
+      this.props.searchResultManager.getProviderSpecByName(initialProviderName);
     const initialQuery =
       this.props.searchResultManager.getLastQuery() || '';
     const initialResults =
@@ -169,15 +169,17 @@ export default class QuickSelectionComponent extends React.Component {
         this.props.quickSelectionActions.query(query);
       });
     } else {
-      const activeProvider = this.props.searchResultManager.getProviderByName(nextProviderName);
+      const activeProviderSpec = this.props.searchResultManager.getProviderSpecByName(
+        nextProviderName,
+      );
       const lastResults = this.props.searchResultManager.getResults(
         this.refs.queryInput.getText(),
         nextProviderName,
       );
-      this._getTextEditor().setPlaceholderText(activeProvider.prompt);
+      this._getTextEditor().setPlaceholderText(activeProviderSpec.prompt);
       this.setState(
         {
-          activeTab: activeProvider,
+          activeTab: activeProviderSpec,
           resultsByService: lastResults,
         },
         () => {

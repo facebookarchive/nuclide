@@ -360,24 +360,20 @@ export default class SearchResultManager {
   }
 
   _getProviderByName(providerName: string): Provider {
-    const dirProvider =
-      this._quickOpenProviderRegistry.getProviderByName(providerName);
-    invariant(
-      dirProvider != null,
-      `Provider ${providerName} is not registered with quick-open.`,
-    );
-    return dirProvider;
+    const provider = this._quickOpenProviderRegistry.getProviderByName(providerName);
+    invariant(provider != null, `Provider ${providerName} is not registered with quick-open.`);
+    return provider;
   }
 
   _getResultsForProvider(query: string, providerName: string): GroupedResult {
     const providerPaths = this._quickOpenProviderRegistry.isProviderGlobal(providerName)
       ? [GLOBAL_KEY]
       : this._sortDirectories().map(d => d.getPath());
-    const provider = this.getProviderByName(providerName);
+    const providerSpec = this.getProviderSpecByName(providerName);
     const lastCachedQuery = this._resultCache.getLastCachedQuery(providerName);
     return {
-      priority: provider.priority,
-      title: provider.title,
+      priority: providerSpec.priority,
+      title: providerSpec.title,
       results: providerPaths.reduce((results, path) => {
         let cachedPaths;
         let cachedQueries;
@@ -438,7 +434,7 @@ export default class SearchResultManager {
     }
   }
 
-  getProviderByName(providerName: string): ProviderSpec {
+  getProviderSpecByName(providerName: string): ProviderSpec {
     if (providerName === OMNISEARCH_PROVIDER.name) {
       return {...OMNISEARCH_PROVIDER};
     }
