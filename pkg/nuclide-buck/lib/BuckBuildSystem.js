@@ -82,7 +82,9 @@ const DEBUGGABLE_RULES = new Set([
   'rust_test',
 ]);
 
-const RUNNABLE_RULES = new Set([]);
+const RUNNABLE_RULES = new Set([
+  'java_binary',
+]);
 
 function shouldEnableTask(taskType: TaskType, ruleType: string): boolean {
   switch (taskType) {
