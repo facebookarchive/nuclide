@@ -23,6 +23,8 @@ describe('FlowIDEConnectionWatcher', () => {
   let ideConnectionFactory: JasmineSpy = (null: any);
   let currentFakeIDEConnection: ?{[string]: JasmineSpy} = null;
 
+  let watcher: FlowIDEConnectionWatcher = (null: any);
+
   function createFakeIDEConnection(): FlowIDEConnection {
     return (jasmine.createSpyObj('FlowIDEconnection', [
       'onWillDispose',
@@ -44,16 +46,27 @@ describe('FlowIDEConnectionWatcher', () => {
         return currentFakeIDEConnection;
       });
     currentFakeIDEConnection = null;
+
+    watcher = new FlowIDEConnectionWatcher(
+      // Additional indirection so the callbacks can be reassigned in tests after the creation of
+      // this object
+      (...args) => processFactory(...args),
+      (...args) => ideConnectionCallback(...args),
+      (...args) => ideConnectionFactory(...args),
+    );
+
+    let getTimeMSCallCount = 0;
+    const initialTimeMS = 42;
+    const eachCallIncrement = 7 * 60 * 1000;
+    spyOn(watcher, '_getTimeMS').andCallFake(() => {
+      const result = initialTimeMS + getTimeMSCallCount * eachCallIncrement;
+      getTimeMSCallCount++;
+      return result;
+    });
   });
 
   it('should correctly start and keep alive an IDE connection', () => {
-    let watcher;
     runs(() => {
-      watcher = new FlowIDEConnectionWatcher(
-        processFactory,
-        ideConnectionCallback,
-        ideConnectionFactory,
-      );
       watcher.start();
     });
     waitsFor(() => currentFakeIDEConnection != null);
@@ -78,7 +91,6 @@ describe('FlowIDEConnectionWatcher', () => {
   });
 
   it('should retry when the IDE process fails to start', () => {
-    let watcher;
     // Obviously, this will have to be updated if the number of retries is changed
     const processFactoryReturns = [null, null, {}];
     runs(() => {
@@ -89,11 +101,6 @@ describe('FlowIDEConnectionWatcher', () => {
         currentCall++;
         return result;
       });
-      watcher = new FlowIDEConnectionWatcher(
-        processFactory,
-        ideConnectionCallback,
-        ideConnectionFactory,
-      );
     });
     waitsForPromise(() => watcher.start());
     runs(() => {
@@ -106,7 +113,6 @@ describe('FlowIDEConnectionWatcher', () => {
   });
 
   it('should give up when the IDE process fails to start too many times', () => {
-    let watcher;
     // Obviously, this will have to be updated if the number of retries is changed
     const processFactoryReturns = [null, null, null, {}];
     runs(() => {
@@ -117,12 +123,6 @@ describe('FlowIDEConnectionWatcher', () => {
         currentCall++;
         return result;
       });
-      watcher = new FlowIDEConnectionWatcher(
-        processFactory,
-        ideConnectionCallback,
-        ideConnectionFactory,
-      );
-      watcher.start();
     });
     waitsForPromise(() => watcher.start());
     runs(() => {

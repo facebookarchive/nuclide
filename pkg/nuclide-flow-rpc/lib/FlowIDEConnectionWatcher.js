@@ -14,7 +14,10 @@ import {getLogger} from '../../nuclide-logging';
 
 const defaultIDEConnectionFactory = proc => new FlowIDEConnection(proc);
 
-const MAKE_IDE_CONNECTION_TRIES = 3;
+// ESLint thinks the comment at the end is whitespace and warns. Worse, the autofix removes the
+// entire comment as well as the whitespace.
+// eslint-disable-next-line semi-spacing
+const IDE_CONNECTION_MAX_WAIT_MS = 20 /* min */ * 60 /* s/min */ * 1000 /* ms/s */;
 
 // For the lifetime of this class instance, keep a FlowIDEConnection alive, assuming we do not have
 // too many failures in a row.
@@ -56,10 +59,11 @@ export class FlowIDEConnectionWatcher {
 
   async _makeIDEConnection(): Promise<void> {
     let proc = null;
-    for (let i = 1; ; i++) {
+    const endTimeMS = this._getTimeMS() + IDE_CONNECTION_MAX_WAIT_MS;
+    while (true) {
       // eslint-disable-next-line no-await-in-loop
       proc = await this._processFactory();
-      if (proc != null || i >= MAKE_IDE_CONNECTION_TRIES) {
+      if (proc != null || this._getTimeMS() > endTimeMS) {
         break;
       } else {
         getLogger().info('Failed to start Flow IDE connection... retrying');
@@ -84,6 +88,11 @@ export class FlowIDEConnectionWatcher {
     );
 
     this._currentIDEConnection = ideConnection;
+  }
+
+  // Split this out just so it's easy to mock
+  _getTimeMS(): number {
+    return Date.now();
   }
 
   dispose(): void {
