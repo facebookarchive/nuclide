@@ -1,77 +1,104 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import React from 'react';
-import FileChanges from '../../../nuclide-ui/FileChanges';
-import {Button} from '../../../nuclide-ui/Button';
-import {Checkbox} from '../../../nuclide-ui/Checkbox';
-import {patchToString} from '../utils';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-type Props = {
-  onConfirm: string => mixed,
-  onManualEdit: () => mixed,
-  onQuit: () => mixed,
-  patch: Array<diffparser$FileDiff>,
-};
+var _react = _interopRequireDefault(require('react'));
 
-export default class InteractiveFileChanges extends React.Component {
-  props: Props;
+var _FileChanges;
 
-  constructor(props: Props) {
+function _load_FileChanges() {
+  return _FileChanges = _interopRequireDefault(require('../../../nuclide-ui/FileChanges'));
+}
+
+var _Button;
+
+function _load_Button() {
+  return _Button = require('../../../nuclide-ui/Button');
+}
+
+var _Checkbox;
+
+function _load_Checkbox() {
+  return _Checkbox = require('../../../nuclide-ui/Checkbox');
+}
+
+var _utils;
+
+function _load_utils() {
+  return _utils = require('../utils');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class InteractiveFileChanges extends _react.default.Component {
+
+  constructor(props) {
     super(props);
 
-    (this: any)._onClickConfirm = this._onClickConfirm.bind(this);
-    (this: any)._onClickDirectEdit = this._onClickDirectEdit.bind(this);
-    (this: any)._onClickQuit = this._onClickQuit.bind(this);
+    this._onClickConfirm = this._onClickConfirm.bind(this);
+    this._onClickDirectEdit = this._onClickDirectEdit.bind(this);
+    this._onClickQuit = this._onClickQuit.bind(this);
   }
 
-  render(): React.Element<any> {
-    return (
-      <div>
-        <Button onClick={this._onClickConfirm}>Confirm</Button>
-        <Button onClick={this._onClickQuit}>Quit</Button>
-        <Button onClick={this._onClickDirectEdit}>Direct Edit</Button>
-        {this.props.patch.map(file =>
-          <FileChanges
-            diff={file}
-            key={`${file.from}:${file.to}`}
-            checkboxFactory={this._createCheckboxFactory()}
-          />,
-        )}
-      </div>
+  render() {
+    return _react.default.createElement(
+      'div',
+      null,
+      _react.default.createElement(
+        (_Button || _load_Button()).Button,
+        { onClick: this._onClickConfirm },
+        'Confirm'
+      ),
+      _react.default.createElement(
+        (_Button || _load_Button()).Button,
+        { onClick: this._onClickQuit },
+        'Quit'
+      ),
+      _react.default.createElement(
+        (_Button || _load_Button()).Button,
+        { onClick: this._onClickDirectEdit },
+        'Direct Edit'
+      ),
+      this.props.patch.map(file => _react.default.createElement((_FileChanges || _load_FileChanges()).default, {
+        diff: file,
+        key: `${file.from}:${file.to}`,
+        checkboxFactory: this._createCheckboxFactory()
+      }))
     );
   }
 
-  _onClickConfirm(): void {
-    this.props.onConfirm(patchToString(this.props.patch));
+  _onClickConfirm() {
+    this.props.onConfirm((0, (_utils || _load_utils()).patchToString)(this.props.patch));
   }
 
   // The "Direct Edit" button removes the patch editor UI and allows the user
   // to edit the text representation of the patch directly
-  _onClickDirectEdit(): void {
+  _onClickDirectEdit() {
     this.props.onManualEdit();
   }
 
-  _onClickQuit(): void {
+  _onClickQuit() {
     this.props.onQuit();
   }
 
-  _createCheckboxFactory(): (file: string, hunk?: string, line?: number) => React.Element<any> {
-    return (file: string, hunk?: string, line?: number) => {
-      return (
-        <Checkbox
-          className="nuclide-ui-checkbox-margin"
-          checked={true}
-          onChange={() => {}}
-        />
-      );
+  _createCheckboxFactory() {
+    return (file, hunk, line) => {
+      return _react.default.createElement((_Checkbox || _load_Checkbox()).Checkbox, {
+        className: 'nuclide-ui-checkbox-margin',
+        checked: true,
+        onChange: () => {}
+      });
     };
   }
 }
+exports.default = InteractiveFileChanges; /**
+                                           * Copyright (c) 2015-present, Facebook, Inc.
+                                           * All rights reserved.
+                                           *
+                                           * This source code is licensed under the license found in the LICENSE file in
+                                           * the root directory of this source tree.
+                                           *
+                                           * 
+                                           */

@@ -1,41 +1,56 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
-import React from 'react';
-import {AttachUiComponent} from './AttachUiComponent';
-import invariant from 'assert';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.IwdpLaunchAttachProvider = undefined;
 
-import type EventEmitter from 'events';
+var _nuclideDebuggerBase;
 
-export class IwdpLaunchAttachProvider extends DebuggerLaunchAttachProvider {
-  constructor(debuggingTypeName: string, targetUri: string) {
+function _load_nuclideDebuggerBase() {
+  return _nuclideDebuggerBase = require('../../nuclide-debugger-base');
+}
+
+var _react = _interopRequireDefault(require('react'));
+
+var _AttachUiComponent;
+
+function _load_AttachUiComponent() {
+  return _AttachUiComponent = require('./AttachUiComponent');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class IwdpLaunchAttachProvider extends (_nuclideDebuggerBase || _load_nuclideDebuggerBase()).DebuggerLaunchAttachProvider {
+  constructor(debuggingTypeName, targetUri) {
     super(debuggingTypeName, targetUri);
   }
 
-  getActions(): Promise<Array<string>> {
+  getActions() {
     return Promise.resolve(['Attach']);
   }
 
-  getComponent(action: string, parentEventEmitter: EventEmitter): ?React.Element<any> {
+  getComponent(action, parentEventEmitter) {
     if (action === 'Attach') {
-      return (
-        <AttachUiComponent
-          targetUri={this.getTargetUri()}
-          parentEmitter={parentEventEmitter}
-        />
-      );
+      return _react.default.createElement((_AttachUiComponent || _load_AttachUiComponent()).AttachUiComponent, {
+        targetUri: this.getTargetUri(),
+        parentEmitter: parentEventEmitter
+      });
     } else {
-      invariant(false, 'Unrecognized action for component.');
+      if (!false) {
+        throw new Error('Unrecognized action for component.');
+      }
     }
   }
 
-  dispose(): void {}
+  dispose() {}
 }
+exports.IwdpLaunchAttachProvider = IwdpLaunchAttachProvider; /**
+                                                              * Copyright (c) 2015-present, Facebook, Inc.
+                                                              * All rights reserved.
+                                                              *
+                                                              * This source code is licensed under the license found in the LICENSE file in
+                                                              * the root directory of this source tree.
+                                                              *
+                                                              * 
+                                                              */

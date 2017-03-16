@@ -1,3 +1,34 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.createDebuggerProvider = createDebuggerProvider;
+exports.consumeOutputService = consumeOutputService;
+exports.consumeCwdApi = consumeCwdApi;
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var _ReactNativeLaunchAttachProvider;
+
+function _load_ReactNativeLaunchAttachProvider() {
+  return _ReactNativeLaunchAttachProvider = require('./debugging/ReactNativeLaunchAttachProvider');
+}
+
+var _Activation;
+
+function _load_Activation() {
+  return _Activation = _interopRequireDefault(require('./Activation'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,53 +36,52 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
 
-import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
-import type {OutputService} from '../../nuclide-console/lib/types';
-import type {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
-import type {
-  NuclideDebuggerProvider,
-} from '../../nuclide-debugger-interfaces/service';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+let activation = null;
 
-import nuclideUri from '../../commons-node/nuclideUri';
-import {ReactNativeLaunchAttachProvider} from './debugging/ReactNativeLaunchAttachProvider';
-import invariant from 'assert';
-import Activation from './Activation';
+function activate(state) {
+  if (!(activation == null)) {
+    throw new Error('Invariant violation: "activation == null"');
+  }
 
-let activation: ?Activation = null;
-
-export function activate(state: ?Object): void {
-  invariant(activation == null);
-  activation = new Activation(state);
+  activation = new (_Activation || _load_Activation()).default(state);
 }
 
-export function deactivate(): void {
-  invariant(activation != null);
+function deactivate() {
+  if (!(activation != null)) {
+    throw new Error('Invariant violation: "activation != null"');
+  }
+
   activation.dispose();
   activation = null;
 }
 
-export function createDebuggerProvider(): NuclideDebuggerProvider {
+function createDebuggerProvider() {
   return {
     name: 'react-native',
-    getLaunchAttachProvider(connection: NuclideUri): ?DebuggerLaunchAttachProvider {
-      if (nuclideUri.isLocal(connection)) {
-        return new ReactNativeLaunchAttachProvider('React Native', connection);
+    getLaunchAttachProvider(connection) {
+      if ((_nuclideUri || _load_nuclideUri()).default.isLocal(connection)) {
+        return new (_ReactNativeLaunchAttachProvider || _load_ReactNativeLaunchAttachProvider()).ReactNativeLaunchAttachProvider('React Native', connection);
       }
       return null;
-    },
+    }
   };
 }
 
-export function consumeOutputService(api: OutputService): void {
-  invariant(activation != null);
+function consumeOutputService(api) {
+  if (!(activation != null)) {
+    throw new Error('Invariant violation: "activation != null"');
+  }
+
   return activation.consumeOutputService(api);
 }
 
-export function consumeCwdApi(api: CwdApi): void {
-  invariant(activation != null);
+function consumeCwdApi(api) {
+  if (!(activation != null)) {
+    throw new Error('Invariant violation: "activation != null"');
+  }
+
   return activation.consumeCwdApi(api);
 }

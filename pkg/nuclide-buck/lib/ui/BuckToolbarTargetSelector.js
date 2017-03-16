@@ -1,3 +1,45 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _react = _interopRequireDefault(require('react'));
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _Combobox;
+
+function _load_Combobox() {
+  return _Combobox = require('../../../nuclide-ui/Combobox');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../../commons-node/nuclideUri'));
+}
+
+var _observable;
+
+function _load_observable() {
+  return _observable = require('../../../commons-node/observable');
+}
+
+var _nuclideBuckBase;
+
+function _load_nuclideBuckBase() {
+  return _nuclideBuckBase = require('../../../nuclide-buck-base');
+}
+
+var _nuclideLogging;
+
+function _load_nuclideLogging() {
+  return _nuclideLogging = require('../../../nuclide-logging');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,97 +47,66 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
-
-import type {AppState} from '../types';
-
-import React from 'react';
-import {Observable} from 'rxjs';
-
-import {Combobox} from '../../../nuclide-ui/Combobox';
-
-import nuclideUri from '../../../commons-node/nuclideUri';
-import {concatLatest} from '../../../commons-node/observable';
-import {getBuckService} from '../../../nuclide-buck-base';
-import {getLogger} from '../../../nuclide-logging';
 
 const NO_ACTIVE_PROJECT_ERROR = 'No active Buck project. Check your Current Working Root.';
 
-type Props = {
-  appState: AppState,
-  setBuildTarget(buildTarget: string): void,
-};
+class BuckToolbarTargetSelector extends _react.default.Component {
 
-export default class BuckToolbarTargetSelector extends React.Component {
-  props: Props;
-
-  // Querying Buck can be slow, so cache aliases by project.
-  // Putting the cache here allows the user to refresh it by toggling the UI.
-  _projectAliasesCache: Map<string, Promise<Array<string>>>;
-
-  _cachedOwners: ?Promise<Array<string>>;
-  _cachedOwnersPath: ?string;
-
-  constructor(props: Props) {
+  constructor(props) {
     super(props);
-    (this: any)._requestOptions = this._requestOptions.bind(this);
-    (this: any)._handleBuildTargetChange = this._handleBuildTargetChange.bind(this);
+    this._requestOptions = this._requestOptions.bind(this);
+    this._handleBuildTargetChange = this._handleBuildTargetChange.bind(this);
     this._projectAliasesCache = new Map();
   }
 
-  _requestOptions(inputText: string): Observable<Array<string>> {
-    const {buckRoot} = this.props.appState;
+  // Querying Buck can be slow, so cache aliases by project.
+  // Putting the cache here allows the user to refresh it by toggling the UI.
+
+
+  _requestOptions(inputText) {
+    const { buckRoot } = this.props.appState;
     if (buckRoot == null) {
-      return Observable.throw(Error(NO_ACTIVE_PROJECT_ERROR));
+      return _rxjsBundlesRxMinJs.Observable.throw(Error(NO_ACTIVE_PROJECT_ERROR));
     }
-    return concatLatest(
-      Observable.of(inputText.trim() === '' ? [] : [inputText]),
-      Observable.fromPromise(this._getActiveOwners(buckRoot)),
-      Observable.fromPromise(this._getAliases(buckRoot)),
-    )
-      .map(list => Array.from(new Set(list)));
+    return (0, (_observable || _load_observable()).concatLatest)(_rxjsBundlesRxMinJs.Observable.of(inputText.trim() === '' ? [] : [inputText]), _rxjsBundlesRxMinJs.Observable.fromPromise(this._getActiveOwners(buckRoot)), _rxjsBundlesRxMinJs.Observable.fromPromise(this._getAliases(buckRoot))).map(list => Array.from(new Set(list)));
   }
 
-  _getAliases(buckRoot: string): Promise<Array<string>> {
+  _getAliases(buckRoot) {
     let cachedAliases = this._projectAliasesCache.get(buckRoot);
     if (cachedAliases == null) {
-      const buckService = getBuckService(buckRoot);
-      cachedAliases = buckService == null ? Promise.resolve([]) :
-        buckService.listAliases(buckRoot);
+      const buckService = (0, (_nuclideBuckBase || _load_nuclideBuckBase()).getBuckService)(buckRoot);
+      cachedAliases = buckService == null ? Promise.resolve([]) : buckService.listAliases(buckRoot);
       this._projectAliasesCache.set(buckRoot, cachedAliases);
     }
     return cachedAliases;
   }
 
-  _getActiveOwners(buckRoot: string): Promise<Array<string>> {
+  _getActiveOwners(buckRoot) {
     const editor = atom.workspace.getActiveTextEditor();
     if (editor == null) {
       return Promise.resolve([]);
     }
     const path = editor.getPath();
-    if (path == null || !nuclideUri.contains(buckRoot, path)) {
+    if (path == null || !(_nuclideUri || _load_nuclideUri()).default.contains(buckRoot, path)) {
       return Promise.resolve([]);
     }
     if (path === this._cachedOwnersPath && this._cachedOwners != null) {
       return this._cachedOwners;
     }
-    const buckService = getBuckService(buckRoot);
-    this._cachedOwners = buckService == null ? Promise.resolve([]) :
-      buckService.getOwners(buckRoot, path)
-        .then(
-          // Strip off the optional leading "//" to match typical user input.
-          owners => owners.map(owner => (owner.startsWith('//') ? owner.substring(2) : owner)),
-        )
-        .catch(err => {
-          getLogger().error(`Error getting Buck owners for ${path}`, err);
-          return [];
-        });
+    const buckService = (0, (_nuclideBuckBase || _load_nuclideBuckBase()).getBuckService)(buckRoot);
+    this._cachedOwners = buckService == null ? Promise.resolve([]) : buckService.getOwners(buckRoot, path).then(
+    // Strip off the optional leading "//" to match typical user input.
+    owners => owners.map(owner => owner.startsWith('//') ? owner.substring(2) : owner)).catch(err => {
+      (0, (_nuclideLogging || _load_nuclideLogging()).getLogger)().error(`Error getting Buck owners for ${path}`, err);
+      return [];
+    });
     this._cachedOwnersPath = path;
     return this._cachedOwners;
   }
 
-  _handleBuildTargetChange(value: string) {
+  _handleBuildTargetChange(value) {
     const trimmed = value.trim();
     if (this.props.appState.buildTarget === trimmed) {
       return;
@@ -103,23 +114,22 @@ export default class BuckToolbarTargetSelector extends React.Component {
     this.props.setBuildTarget(trimmed);
   }
 
-  render(): React.Element<any> {
-    return (
-      <Combobox
-        // Hack to forcibly refresh the combobox when the target changes.
-        // TODO(#11581583): Remove this when Combobox is fully controllable.
-        key={this.props.appState.buildTarget}
-        className="inline-block nuclide-buck-target-combobox"
-        formatRequestOptionsErrorMessage={err => err.message}
-        requestOptions={this._requestOptions}
-        size="sm"
-        loadingMessage="Updating target names..."
-        initialTextInput={this.props.appState.buildTarget}
-        onSelect={this._handleBuildTargetChange}
-        onBlur={this._handleBuildTargetChange}
-        placeholderText="Buck build target"
-        width={null}
-      />
-    );
+  render() {
+    return _react.default.createElement((_Combobox || _load_Combobox()).Combobox
+    // Hack to forcibly refresh the combobox when the target changes.
+    // TODO(#11581583): Remove this when Combobox is fully controllable.
+    , { key: this.props.appState.buildTarget,
+      className: 'inline-block nuclide-buck-target-combobox',
+      formatRequestOptionsErrorMessage: err => err.message,
+      requestOptions: this._requestOptions,
+      size: 'sm',
+      loadingMessage: 'Updating target names...',
+      initialTextInput: this.props.appState.buildTarget,
+      onSelect: this._handleBuildTargetChange,
+      onBlur: this._handleBuildTargetChange,
+      placeholderText: 'Buck build target',
+      width: null
+    });
   }
 }
+exports.default = BuckToolbarTargetSelector;
