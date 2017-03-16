@@ -61,6 +61,13 @@ const NO_RETRY_ARGS = [
   '--no-auto-start',
 ];
 
+const TEMP_SERVER_STATES: Array<ServerStatusType> = [
+  ServerStatus.NOT_RUNNING,
+  ServerStatus.BUSY,
+  ServerStatus.INIT,
+];
+
+
 export class FlowProcess {
   // If we had to start a Flow server, store the process here so we can kill it when we shut down.
   _startedServer: ?child_process$ChildProcess;
@@ -85,14 +92,26 @@ export class FlowProcess {
 
     this._serverStatus.filter(x => x === ServerStatus.NOT_RUNNING).subscribe(() => {
       this._startFlowServer();
-      this._pingServer();
     });
-    function isBusyOrInit(status: ServerStatusType): boolean {
-      return status === ServerStatus.BUSY || status === ServerStatus.INIT;
-    }
-    this._serverStatus.filter(isBusyOrInit).subscribe(() => {
-      this._pingServer();
-    });
+
+    this._serverStatus
+      .scan(
+        ({previousState}, nextState) => {
+          // We should start pinging if we move into a temp state
+          const shouldStartPinging =
+              !TEMP_SERVER_STATES.includes(previousState) &&
+              TEMP_SERVER_STATES.includes(nextState);
+          return {
+            shouldStartPinging,
+            previousState: nextState,
+          };
+        },
+        {shouldStartPinging: false, previousState: ServerStatus.UNKNOWN},
+      )
+      .filter(({shouldStartPinging}) => shouldStartPinging)
+      .subscribe(() => {
+        this._pingServer();
+      });
 
     this._serverStatus.filter(status => status === ServerStatus.FAILED).subscribe(() => {
       track('flow-server-failed');
@@ -346,20 +365,26 @@ export class FlowProcess {
     }
   }
 
-  /** Ping the server until it leaves the current state */
-  async _pingServer(tries: number = 30): Promise<void> {
-    const fromState = this._serverStatus.getValue();
-    let stateChanged = false;
-    this._serverStatus.filter(newState => newState !== fromState).take(1).subscribe(() => {
-      stateChanged = true;
-    });
-    for (let i = 0; !stateChanged && i < tries; i++) {
+  /** Ping the server until it reaches a steady state */
+  async _pingServer(): Promise<void> {
+    let hasReachedSteadyState = false;
+    this._serverStatus
+      .filter(state => !TEMP_SERVER_STATES.includes(state))
+      .take(1)
+      .subscribe(() => {
+        hasReachedSteadyState = true;
+      });
+    while (!hasReachedSteadyState) {
       // eslint-disable-next-line no-await-in-loop
-      await this._rawExecFlow(['status']).catch(() => null);
+      await this._pingServerOnce();
       // Wait 1 second
       // eslint-disable-next-line no-await-in-loop
       await sleep(1000);
     }
+  }
+
+  _pingServerOnce(): Promise<void> {
+    return this._rawExecFlow(['status']).catch(() => null);
   }
 
   /**
@@ -370,8 +395,8 @@ export class FlowProcess {
     // If the server state is unknown, nobody has tried to do anything flow-related yet. However,
     // the call to _serverIsReady() implies that somebody wants to. So, kick off a Flow server ping
     // which will learn the state of the Flow server and start it up if needed.
-    if (this._serverStatus.getValue() === ('unknown': ServerStatusType)) {
-      this._pingServer();
+    if (this._serverStatus.getValue() === ServerStatus.UNKNOWN) {
+      this._pingServerOnce();
     }
     return this._serverStatus
       .filter(x => x === ServerStatus.READY)
