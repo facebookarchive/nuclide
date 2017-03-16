@@ -28,9 +28,12 @@ export type FileData = {
 };
 
 export type HunkData = {
+  // All changes within a hunk are contiguous, so we can use an array
+  allChanges: Array<boolean>,
   countEnabledChanges: number,
-  // All changes within a hunk are contiguous
-  lines: Array<boolean>,
+  // Index into the hunk at which the first '+' or '-' line appears
+  firstChangedLineIndex: number,
+  hunk: diffparser$Hunk,
   selected: SelectedState,
 };
 

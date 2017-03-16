@@ -164,17 +164,17 @@ function updateFileData(fileData: FileData, hunkOldStartLine: ?number, line: ?nu
 function updateHunkData(hunkData: HunkData, line: ?number): HunkData {
   let countEnabledChanges;
   let selected;
-  const lines = hunkData.lines.slice();
+  const allChanges = hunkData.allChanges.slice();
 
   if (line != null) {
     // toggling a single line in a chunk
-    lines[line] = !lines[line];
-    if (lines[line]) {
+    allChanges[line] = !allChanges[line];
+    if (allChanges[line]) {
       countEnabledChanges = hunkData.countEnabledChanges + 1;
     } else {
       countEnabledChanges = hunkData.countEnabledChanges - 1;
     }
-    if (countEnabledChanges === lines.length) {
+    if (countEnabledChanges === allChanges.length) {
       selected = SelectedState.ALL;
     } else if (countEnabledChanges === 0) {
       selected = SelectedState.NONE;
@@ -185,19 +185,19 @@ function updateHunkData(hunkData: HunkData, line: ?number): HunkData {
     // toggling the entire chunk
     if (hunkData.selected === SelectedState.NONE) {
       selected = SelectedState.ALL;
-      lines.fill(true);
-      countEnabledChanges = lines.length;
+      allChanges.fill(true);
+      countEnabledChanges = allChanges.length;
     } else {
       selected = SelectedState.NONE;
-      lines.fill(false);
+      allChanges.fill(false);
       countEnabledChanges = 0;
     }
   }
 
   return {
     ...hunkData,
+    allChanges,
     countEnabledChanges,
-    lines,
     selected,
   };
 }
@@ -211,8 +211,8 @@ function selectWholeHunk(hunkData: HunkData, isEnabling: boolean): HunkData {
   }
   return {
     ...hunkData,
-    countEnabledChanges: isEnabling ? hunkData.lines.length : 0,
-    lines: hunkData.lines.slice().fill(isEnabling),
+    countEnabledChanges: isEnabling ? hunkData.allChanges.length : 0,
+    allChanges: hunkData.allChanges.slice().fill(isEnabling),
     selected: isEnabling ? SelectedState.ALL : SelectedState.NONE,
   };
 }

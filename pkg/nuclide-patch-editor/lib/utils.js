@@ -10,26 +10,47 @@
 
 import type {HunkData, PatchData} from './types';
 
+import nullthrows from 'nullthrows';
 import parse from 'diffparser';
 import {SelectedState} from './constants';
 
 // Export an Array of diffparser$FileDiff objects to a string utilizable by the
 // Mercurial edrecord extension
-export function patchToString(patch: Array<diffparser$FileDiff>): string {
+export function patchToString(patchData: PatchData): string {
   const lines: Array<string> = [];
 
-  patch.forEach(fileDiff => {
+  patchData.files.forEach(fileData => {
+    if (fileData.selected === SelectedState.NONE) {
+      return;
+    }
+    const fileDiff = fileData.fileDiff;
     lines.push(`diff --git a/${fileDiff.from} b/${fileDiff.to}`);
     if (!isSpecialChange(fileDiff)) {
       lines.push(`--- a/${fileDiff.from}\n+++ b/${fileDiff.to}`);
       fileDiff.chunks.forEach(hunk => {
+        const hunkData = nullthrows(nullthrows(fileData.chunks).get(hunk.oldStart));
+        if (hunkData.selected === SelectedState.NONE) {
+          return;
+        }
         lines.push(hunk.content);
-        hunk.changes.forEach(change => lines.push(change.content));
+        hunk.changes.forEach((change, index) => {
+          if (change.type !== 'normal') {
+            if (hunkData.allChanges[index - hunkData.firstChangedLineIndex]) {
+              lines.push(change.content);
+            } else if (change.type === 'del') {
+              // disabling a 'del' line replaces the '-' prefix with ' '
+              lines.push(' ' + change.content.substr(1));
+            }
+            // Don't push disabled 'add' lines
+          } else {
+            lines.push(change.content);
+          }
+        });
       });
     }
   });
 
-  return lines.join('\n') + '\n';
+  return lines.join('\n') + '\n'; // end file with a newline
 }
 
 // Special changes only require the first line of the header be printed
@@ -75,10 +96,14 @@ export function createPatchData(patch: Array<diffparser$FileDiff>): PatchData {
 }
 
 export function createHunkData(hunk: diffparser$Hunk): HunkData {
-  const lines = hunk.changes.map(change => change.type !== 'normal').filter(isChange => isChange);
+  const allChanges = hunk.changes.map(change => change.type !== 'normal')
+    .filter(isChange => isChange);
+  const firstChangedLineIndex = hunk.changes.findIndex(change => change.type !== 'normal');
   return {
-    countEnabledChanges: lines.length,
-    lines,
+    allChanges,
+    countEnabledChanges: allChanges.length,
+    firstChangedLineIndex,
+    hunk,
     selected: SelectedState.ALL,
   };
 }

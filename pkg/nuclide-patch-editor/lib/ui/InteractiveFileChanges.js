@@ -59,7 +59,7 @@ export default class InteractiveFileChanges extends React.Component {
   }
 
   _onClickConfirm(): void {
-    this.props.onConfirm(patchToString(this._patch));
+    this.props.onConfirm(patchToString(this.props.patchData));
   }
 
   // The "Direct Edit" button removes the patch editor UI and allows the user

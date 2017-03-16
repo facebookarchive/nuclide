@@ -162,7 +162,7 @@ class Activation {
         const hunkData = nullthrows(nullthrows(fileData.chunks).get(hunkOldStartLine));
 
         if (line != null) {
-          checked = hunkData.lines[line];
+          checked = hunkData.allChanges[line];
         } else {
           checked = hunkData.selected === SelectedState.ALL;
           indeterminate = hunkData.selected === SelectedState.SOME;
