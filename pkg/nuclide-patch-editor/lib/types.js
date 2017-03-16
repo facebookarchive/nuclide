@@ -21,15 +21,13 @@ export type PatchData = {
 export type FileData = {
   // Map from Hunk's oldStart line number to hunk
   chunks: ?Map<number, HunkData>,
-  collapsed: boolean,
   countEnabledChunks: number,
+  countPartialChunks: number,
   fileDiff: diffparser$FileDiff,
   selected: SelectedState,
 };
 
 export type HunkData = {
-  collapsed: boolean,
-  countAllChanges: number,
   countEnabledChanges: number,
   // All changes within a hunk are contiguous
   lines: Array<boolean>,

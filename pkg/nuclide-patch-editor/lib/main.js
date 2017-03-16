@@ -21,14 +21,15 @@ import {createEmptyAppState} from './redux/createEmptyAppState';
 import createPackage from '../../commons-atom/createPackage';
 import {Disposable} from 'atom';
 import InteractiveFileChanges from './ui/InteractiveFileChanges';
-import invariant from 'assert';
 import {isValidTextEditor} from '../../commons-atom/text-editor';
+import nullthrows from 'nullthrows';
 import {Observable, BehaviorSubject} from 'rxjs';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {parseWithAnnotations} from './utils';
 import React from 'react';
 import {repositoryForPath} from '../../commons-atom/vcs';
 import {rootReducer} from './redux/Reducers';
+import {SelectedState} from './constants';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
 
@@ -114,8 +115,7 @@ class Activation {
       const editorView = atom.views.getView(editor);
       editorView.style.visibility = 'hidden';
 
-      const editorPath = editor.getPath();
-      invariant(editorPath != null);
+      const editorPath = nullthrows(editor.getPath());
       this._actionCreators.registerPatchEditor(editorPath, patch);
 
       const BoundInteractiveFileChanges = bindObservableAsProps(
@@ -150,11 +150,33 @@ class Activation {
     hunkOldStartLine?: number,
     line?: number
   ) => React.Element<any> {
+    const {patchEditors} = this._store.getState();
+    const patchData = nullthrows(patchEditors.get(editorPath));
+
     return (fileName: string, hunkOldStartLine?: number, line?: number) => {
+      let checked;
+      let indeterminate = false;
+      const fileData = nullthrows(patchData.files.get(fileName));
+
+      if (hunkOldStartLine != null) {
+        const hunkData = nullthrows(nullthrows(fileData.chunks).get(hunkOldStartLine));
+
+        if (line != null) {
+          checked = hunkData.lines[line];
+        } else {
+          checked = hunkData.selected === SelectedState.ALL;
+          indeterminate = hunkData.selected === SelectedState.SOME;
+        }
+      } else {
+        checked = fileData.selected === SelectedState.ALL;
+        indeterminate = fileData.selected === SelectedState.SOME;
+      }
+
       return (
         <Checkbox
           className="nuclide-patch-editor-checkbox-margin"
-          checked={true}
+          checked={checked}
+          indeterminate={indeterminate}
           onChange={
             () => this._actionCreators.clickCheckbox(editorPath, fileName, hunkOldStartLine, line)
           }

@@ -9,7 +9,6 @@
  */
 
 import {AtomTextEditor} from './AtomTextEditor';
-import invariant from 'assert';
 import {pluralize} from '../commons-node/string';
 import {
   Range,
@@ -46,6 +45,7 @@ function getHighlightClass(type: diffparser$ChangeType): ?string {
 class HunkDiff extends React.Component {
   props: HunkProps;
   _disposables: UniversalDisposable;
+  _checkboxGutter: ?atom$Gutter;
 
   constructor(props: HunkProps) {
     super(props);
@@ -53,24 +53,35 @@ class HunkDiff extends React.Component {
   }
 
   componentDidMount(): void {
-    if (this.props.checkboxFactory != null) {
-      this._createCheckboxGutter(this.refs.editor.getModel());
-    }
     this._createLineMarkers(this.refs.editor.getModel());
+    this._updateCheckboxGutter(this.refs.editor.getModel());
   }
 
-  // This is a read-only component– no need to update the underlying TextEditor.
+  componentDidUpdate(): void {
+    this._updateCheckboxGutter(this.refs.editor.getModel());
+  }
+
   shouldComponentUpdate(nextProps: HunkProps): boolean {
-    return false;
+    return this.props.checkboxFactory !== nextProps.checkboxFactory;
   }
 
   componentWillUnmount(): void {
     this._disposables.dispose();
+    if (this._checkboxGutter != null) {
+      this._checkboxGutter.destroy();
+    }
   }
 
-  _createCheckboxGutter(editor: atom$TextEditor): void {
+  _updateCheckboxGutter(editor: atom$TextEditor): void {
+    if (this._checkboxGutter != null) {
+      this._checkboxGutter.destroy();
+      this._checkboxGutter = null;
+    }
     const {checkboxFactory} = this.props;
-    invariant(checkboxFactory != null);
+    if (checkboxFactory == null) {
+      return;
+    }
+
     const gutter = editor.addGutter({name: 'checkboxes'});
     let firstChangedLineNumber = 0;
     let hunkIndex = 0;
@@ -98,13 +109,13 @@ class HunkDiff extends React.Component {
         item,
       });
 
-      this._disposables.add(() => {
+      gutter.onDidDestroy(() => {
         item.destroy();
         gutterDecoration.destroy();
       });
     }
 
-    this._disposables.add(() => gutter.destroy());
+    this._checkboxGutter = gutter;
   }
 
   /**

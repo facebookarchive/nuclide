@@ -11,6 +11,7 @@
 import type {HunkData, PatchData} from './types';
 
 import parse from 'diffparser';
+import {SelectedState} from './constants';
 
 // Export an Array of diffparser$FileDiff objects to a string utilizable by the
 // Mercurial edrecord extension
@@ -65,10 +66,10 @@ export function createPatchData(patch: Array<diffparser$FileDiff>): PatchData {
       chunks: isSpecialChange(fileDiff)
         ? null
         : new Map(fileDiff.chunks.map(chunk => [chunk.oldStart, createHunkData(chunk)])),
-      collapsed: false,
       countEnabledChunks: fileDiff.chunks.length,
+      countPartialChunks: 0,
       fileDiff,
-      selected: 'all',
+      selected: SelectedState.ALL,
     }])),
   };
 }
@@ -76,10 +77,8 @@ export function createPatchData(patch: Array<diffparser$FileDiff>): PatchData {
 export function createHunkData(hunk: diffparser$Hunk): HunkData {
   const lines = hunk.changes.map(change => change.type !== 'normal').filter(isChange => isChange);
   return {
-    collapsed: false,
-    countAllChanges: lines.length,
     countEnabledChanges: lines.length,
     lines,
-    selected: 'all',
+    selected: SelectedState.ALL,
   };
 }
