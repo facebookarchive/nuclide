@@ -55,6 +55,12 @@ const SERVER_READY_TIMEOUT_MS = 60 * 1000;
 
 const EXEC_FLOW_RETRIES = 5;
 
+const NO_RETRY_ARGS = [
+  '--retry-if-init', 'false',
+  '--retries', '0',
+  '--no-auto-start',
+];
+
 export class FlowProcess {
   // If we had to start a Flow server, store the process here so we can kill it when we shut down.
   _startedServer: ?child_process$ChildProcess;
@@ -152,7 +158,11 @@ export class FlowProcess {
       return null;
     }
     const allExecInfo = await getAllExecInfo(
-      ['ide', '--protocol', 'very-unstable'],
+      [
+        'ide',
+        '--protocol', 'very-unstable',
+        ...NO_RETRY_ARGS,
+      ],
       this._root,
       this._execInfoContainer,
     );
@@ -256,9 +266,7 @@ export class FlowProcess {
     let args = args_;
     args = [
       ...args,
-      '--retry-if-init', 'false',
-      '--retries', '0',
-      '--no-auto-start',
+      ...NO_RETRY_ARGS,
     ];
     try {
       const result = await FlowProcess.execFlowClient(
