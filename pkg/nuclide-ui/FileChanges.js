@@ -9,6 +9,7 @@
  */
 
 import {AtomTextEditor} from './AtomTextEditor';
+import nullthrows from 'nullthrows';
 import {pluralize} from '../commons-node/string';
 import {
   Range,
@@ -83,14 +84,14 @@ class HunkDiff extends React.Component {
     }
 
     const gutter = editor.addGutter({name: 'checkboxes'});
-    let firstChangedLineNumber = 0;
+    let firstChangedLineNumber;
     let hunkIndex = 0;
 
     for (const line of this.props.hunk.changes) {
       const lineNumber = hunkIndex++;
       if (line.type === 'normal') {
         continue;
-      } else if (firstChangedLineNumber === 0) {
+      } else if (firstChangedLineNumber == null) {
         firstChangedLineNumber = lineNumber;
       }
       const range = new Range(
@@ -100,7 +101,7 @@ class HunkDiff extends React.Component {
       const item = viewableFromReactElement(checkboxFactory(
         this.props.fileName,
         this.props.hunk.oldStart,
-        lineNumber - firstChangedLineNumber,
+        lineNumber - nullthrows(firstChangedLineNumber),
       ));
 
       const marker = editor.markBufferRange(range, {invalidate: 'never'});
