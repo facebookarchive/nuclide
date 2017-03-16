@@ -27,7 +27,7 @@ import {
   asyncExecute,
   safeSpawn,
 } from '../../commons-node/process';
-
+import {sleep} from '../../commons-node/promise';
 import {niceSafeSpawn} from '../../commons-node/nice';
 
 import {
@@ -358,7 +358,7 @@ export class FlowProcess {
       await this._rawExecFlow(['status']).catch(() => null);
       // Wait 1 second
       // eslint-disable-next-line no-await-in-loop
-      await Observable.of(null).delay(1000).toPromise();
+      await sleep(1000);
     }
   }
 
