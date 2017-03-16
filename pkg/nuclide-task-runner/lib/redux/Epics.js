@@ -174,14 +174,31 @@ export function updatePreferredVisibilityEpic(
       const {visible, updateUserPreferences} = action.payload;
       const {projectRoot, activeTaskRunner} = store.getState();
 
-      if (updateUserPreferences && projectRoot) {
-        // The user explicitly changed the visibility, remember this state
-        const {preferencesForWorkingRoots} = options;
-        const taskRunnerId = activeTaskRunner ? activeTaskRunner.id : null;
-        preferencesForWorkingRoots.setItem(projectRoot.getPath(), {
-          taskRunnerId,
-          visible,
-        });
+      // Only act if responding to an explicit user action
+      if (updateUserPreferences) {
+        if (!projectRoot && visible) {
+          atom.notifications.addError(
+            'Add a project to use the task runner toolbar',
+            {
+              dismissable: true,
+            },
+          );
+        } else if (!activeTaskRunner && visible) {
+          atom.notifications.addError(
+            'No task runner available for the current working root selected in file tree',
+            {
+              dismissable: true,
+            },
+          );
+        } else if (projectRoot) {
+          // The user explicitly changed the visibility, remember this state
+          const {preferencesForWorkingRoots} = options;
+          const taskRunnerId = activeTaskRunner ? activeTaskRunner.id : null;
+          preferencesForWorkingRoots.setItem(projectRoot.getPath(), {
+            taskRunnerId,
+            visible,
+          });
+        }
       }
     })
     .ignoreElements();

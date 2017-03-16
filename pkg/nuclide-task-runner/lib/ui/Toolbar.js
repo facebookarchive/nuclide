@@ -51,31 +51,19 @@ export class Toolbar extends React.Component {
       dropdownVisibility = {display: 'none'};
       taskRunnerSpecificContent = <NoTaskRunnersMessage />;
     } else if (activeTaskRunner) {
-      const taskRunnerState = this.props.statesForTaskRunners.get(
-        activeTaskRunner,
-      );
+      const taskRunnerState = this.props.statesForTaskRunners.get(activeTaskRunner);
       if (taskRunnerState) {
-        taskRunnerOptions = getTaskRunnerOptions(
-          taskRunners,
-          this.props.statesForTaskRunners,
-        );
+        taskRunnerOptions = getTaskRunnerOptions(taskRunners, this.props.statesForTaskRunners);
         const ExtraUi = this.props.extraUiComponent;
         const extraUi = ExtraUi ? <ExtraUi key="extraui" /> : null;
         const taskButtons = this._renderTaskButtons();
         taskRunnerSpecificContent = [taskButtons, extraUi];
         dropdownVisibility = {};
       }
-    } else {
-      dropdownVisibility = {display: 'none'};
-      taskRunnerSpecificContent = <AllTaskRunnersDisabledMessage />;
     }
 
-    const ButtonComponent = buttonProps => (
-      <TaskRunnerButton
-        {...buttonProps}
-        iconComponent={this.props.iconComponent}
-      />
-    );
+    const ButtonComponent = buttonProps =>
+      <TaskRunnerButton {...buttonProps} iconComponent={this.props.iconComponent} />;
 
     return (
       <div className={`${className} padded`}>
@@ -85,18 +73,13 @@ export class Toolbar extends React.Component {
               buttonComponent={ButtonComponent}
               value={activeTaskRunner}
               options={taskRunnerOptions}
-              onChange={value => {
-                this.props.selectTaskRunner(value);
-              }}
+              onChange={value => { this.props.selectTaskRunner(value); }}
               size="sm"
             />
           </span>
           {taskRunnerSpecificContent}
         </div>
-        <ProgressBar
-          progress={this.props.progress}
-          visible={this.props.taskIsRunning}
-        />
+        <ProgressBar progress={this.props.progress} visible={this.props.taskIsRunning} />
       </div>
     );
   }
@@ -125,26 +108,21 @@ export class Toolbar extends React.Component {
     const {activeTaskRunner} = this.props;
     invariant(activeTaskRunner);
     const state = this.props.statesForTaskRunners.get(activeTaskRunner);
-    if (!state) {
-      return [];
-    }
+    if (!state) { return []; }
     invariant(state);
-    return state.tasks.filter(task => task.hidden !== true).map(task => {
-      return (
-        <Button
-          className="nuclide-task-button"
-          key={task.type}
-          size={ButtonSizes.SMALL}
-          icon={task.icon}
-          tooltip={tooltip(task.label)}
-          disabled={
-            task.disabled || this.props.runningTaskIsCancelable === false
-          }
-          onClick={() =>
-            this.props.runTask({...task, taskRunner: activeTaskRunner})}
-        />
-      );
-    });
+    return state.tasks.filter(task => task.hidden !== true)
+      .map(task => {
+        return (
+          <Button
+            className="nuclide-task-button"
+            key={task.type}
+            size={ButtonSizes.SMALL}
+            icon={task.icon}
+            tooltip={tooltip(task.label)}
+            disabled={task.disabled || this.props.runningTaskIsCancelable === false}
+            onClick={() => this.props.runTask({...task, taskRunner: activeTaskRunner})}
+          />);
+      });
   }
 }
 
@@ -171,19 +149,7 @@ function NoTaskRunnersMessage(): ?React.Element<any> {
   const featureLink = 'https://nuclide.io/docs/features/task-runner/';
   return (
     <span style={{'white-space': 'nowrap'}}>
-      Install and enable a
-      {' '}
-      <a href={featureLink}>task runner</a>
-      {' '}
-      to use this toolbar
-    </span>
-  );
-}
-
-function AllTaskRunnersDisabledMessage(): ?React.Element<any> {
-  return (
-    <span style={{'white-space': 'nowrap'}}>
-      No tasks available for the Current Working Root selected in File Tree
+      Install and enable a <a href={featureLink}>task runner</a> to use this toolbar
     </span>
   );
 }
