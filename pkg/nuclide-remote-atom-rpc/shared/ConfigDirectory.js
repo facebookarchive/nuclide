@@ -120,17 +120,15 @@ function findPathToConfigDirectory(clearDirectory: boolean): Promise<?string> {
   // because nuclide-server is local, so it should only write out its state to
   // a local directory.
 
-  const {homedir, username} = os.userInfo();
+  const {homedir} = os.userInfo();
 
   const candidateDirectories: Array<?string> = [
-    // Start with the tmpdir
+    // Try the ~/local directory (if it exists) to avoid directly polluting homedirs.
+    nuclideUri.resolve(nuclideUri.join(homedir, 'local')),
+    // Then try the OS temporary directory...
     os.tmpdir(),
-    // The user's home directory is probably the most common place to store
-    // this information, but it may also be on NFS.
+    // And fall back to the home directory as a last resort.
     homedir,
-
-    // If the user's home directory is on NFS, we try /data/users/$USER as a backup.
-    `/data/users/${username}`,
   ];
 
   return asyncFind(
