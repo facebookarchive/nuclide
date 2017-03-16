@@ -20,7 +20,7 @@ function fileOfDiagnosticMessage(diagnostic: DiagnosticMessage): string {
 }
 
 export function getProjectRelativePathOfDiagnostic(diagnostic: DiagnosticMessage): string {
-  if (diagnostic.filePath != null) {
+  if (typeof diagnostic.filePath === 'string') {
     const [, relativePath] = atom.project.relativizePath(diagnostic.filePath);
     return relativePath;
   } else {

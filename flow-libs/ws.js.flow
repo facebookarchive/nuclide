@@ -20,6 +20,15 @@ declare module 'ws' {
   }
 
   declare class ws$WebSocket extends events$EventEmitter {
+    constructor(
+      address: string | Array<string>,
+      options?: ?Object,
+    ): ws$WebSocket,
+    constructor(
+      address: string,
+      protocols: string | Array<string>,
+      options: Object,
+    ): ws$WebSocket,
     static Server: typeof ws$Server,
 
     onopen?: () => mixed,

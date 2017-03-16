@@ -9,7 +9,7 @@
  */
 
 declare module 'event-kit' {
-  declare class Emitter extends atom$Emitter {}
-  declare class Disposable extends atom$Disposable {}
-  declare class CompositeDisposable extends atom$CompositeDisposable {}
+  declare var Emitter: typeof atom$Emitter;
+  declare var Disposable: typeof atom$Disposable;
+  declare var CompositeDisposable: typeof atom$CompositeDisposable;
 }

@@ -84,7 +84,7 @@ declare class WebviewElement extends HTMLElement {
   // Not sure when this was introduced
   stop?: () => void,
   insertCSS(code: string): void,
-  send(): void,
+  send(channel: string, ...args: Array<any>): void,
   openDevTools(): void,
 }
 

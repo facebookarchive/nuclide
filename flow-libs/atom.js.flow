@@ -84,16 +84,16 @@ declare class atom$CommandRegistry {
     commandNameOrCommands: string | {[commandName: string]: atom$CommandCallback},
     callback?: atom$CommandCallback
   ): IDisposable,
-  dispatch(target: HTMLElement, commandName: string): void,
+  dispatch(target: HTMLElement, commandName: string, detail?: Object): void,
   onDidDispatch(callback: (event: Event) => mixed): IDisposable,
   onWillDispatch(callback: (event: Event) => mixed): IDisposable,
 }
 
 declare class atom$CompositeDisposable {
-  constructor(...disposables: IDisposable[]): void,
+  constructor(...disposables: Array<IDisposable>): void,
   dispose(): void,
 
-  add(disposable: IDisposable): void,
+  add(...disposables: Array<IDisposable>): void,
   remove(disposable: IDisposable): void,
   clear(): void,
 }
@@ -218,7 +218,7 @@ declare class atom$DisplayMarkerLayer {
 }
 
 declare class atom$Disposable {
-  constructor(disposalAction?: (...args: any[]) => any): void,
+  constructor(disposalAction?: (...args: Array<any>) => any): void,
   dispose(): void,
 }
 
@@ -330,7 +330,7 @@ declare class atom$PackageManager {
   // (Undocumented.)
   activate(): Promise<any>,
   deactivatePackages(): void,
-  deactivatePackage(name: string): void,
+  deactivatePackage(name: string, suppressSerialization?: boolean): void,
   loadPackage(name: string): void,
   loadPackages(): void,
   serializePackage(pkg: atom$Package): void,
@@ -445,6 +445,12 @@ declare class atom$PaneAxis {
 
 // Undocumented class
 declare class atom$PaneContainer {
+  constructor({
+    config: atom$Config,
+    applicationDelegate: atom$applicationDelegate,
+    notificationManager: atom$NotificationManager,
+    deserializerManager: atom$DeserializerManager,
+  }): atom$PaneContainer,
   destroy(): void,
   getActivePane(): atom$Pane,
   getActivePaneItem(): ?Object,
@@ -1004,7 +1010,7 @@ declare class atom$ViewRegistry {
   // Methods
   addViewProvider(
     modelConstructor: any,
-    createView?: (...args: any[]) => ?HTMLElement
+    createView?: (...args: Array<any>) => ?HTMLElement
   ): IDisposable,
   getView(textEditor: atom$TextEditor): atom$TextEditorElement,
   getView(notification: atom$Notification): HTMLElement,
@@ -1198,6 +1204,8 @@ declare class atom$GetEntriesError extends Error {
 }
 
 declare class atom$Directory {
+  constructor(dirname?: string): atom$Directory,
+
   symlink: boolean,
 
   // Construction
@@ -1233,6 +1241,8 @@ declare class atom$Directory {
 }
 
 declare class atom$File {
+  constructor(filePath?: string, symlink?: boolean): atom$File,
+
   symlink: boolean,
 
   // Construction
@@ -1382,7 +1392,7 @@ declare class atom$Project {
   setPaths(paths: Array<string>): void,
   removePath(projectPath: string): void,
   getDirectories(): Array<atom$Directory>,
-  relativizePath(): Array<string>, // [projectPath: ?string, relativePath: string]
+  relativizePath(relativizePath?: string): Array<string>, // [projectPath: ?string, relativePath: string]
   relativize(filePath: string): string,
 
   // Private API
@@ -1414,6 +1424,12 @@ type atom$TextEditEvent = {
 };
 
 declare class atom$TextBuffer {
+  constructor(text?: string): atom$TextBuffer,
+  constructor(params?: {
+    filePath?: string,
+    text?: string,
+  }): atom$TextBuffer,
+
   file: ?atom$File,
 
   // Mixin

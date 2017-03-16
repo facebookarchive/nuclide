@@ -22,10 +22,10 @@ const getGatekeeper = once(() => {
     Gatekeeper = require('./fb-gatekeeper').Gatekeeper;
   } catch (e) {
     Gatekeeper = class {
-      isGkEnabled(): ?boolean {
+      isGkEnabled(name: string): ?boolean {
         return null;
       }
-      asyncIsGkEnabled(): Promise<?boolean> {
+      asyncIsGkEnabled(name: string, timeout?: number): Promise<?boolean> {
         return Promise.resolve();
       }
       onceGkInitialized(callback: () => mixed): IDisposable {

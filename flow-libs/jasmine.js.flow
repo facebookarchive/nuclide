@@ -13,31 +13,31 @@
 
 type JasmineMatcher = {
   not: JasmineMatcher,
-  toBe(expected: mixed): boolean,
-  toContain(item: mixed): boolean,
-  toBeCloseTo(expected: number, precision: number): boolean,
-  toBeDefined(): boolean,
-  toBeFalsy(): boolean,
-  toBeTruthy(): boolean,
-  toBeGreaterThan(expected: number): boolean,
-  toBeLessThan(expected: number): boolean,
-  toBeNull(): boolean,
-  toBeUndefined(): boolean,
-  toEqual(expected: mixed): boolean,
-  toExist(): boolean,
-  toHaveBeenCalled(): boolean,
+  toBe(expected: mixed, msg?: string): boolean,
+  toContain(item: mixed, msg?: string): boolean,
+  toBeCloseTo(expected: number, precision: number, msg?: string): boolean,
+  toBeDefined(msg?: string): boolean,
+  toBeFalsy(msg?: string): boolean,
+  toBeTruthy(msg?: string): boolean,
+  toBeGreaterThan(expected: number, msg?: string): boolean,
+  toBeLessThan(expected: number, msg?: string): boolean,
+  toBeNull(msg?: string): boolean,
+  toBeUndefined(msg?: string): boolean,
+  toEqual(expected: mixed, msg?: string): boolean,
+  toExist(msg?: string): boolean,
+  toHaveBeenCalled(msg?: string): boolean,
   toHaveBeenCalledWith(...args: Array<mixed>): boolean,
-  toMatch(expected: mixed): boolean,
-  toMatchSelector(expected: string): boolean,
-  toThrow(): boolean,
+  toMatch(expected: mixed, msg?: string): boolean,
+  toMatchSelector(expected: string, msg?: string): boolean,
+  toThrow(expected?: string | Error, msg?: string): boolean,
 
   // Custom Matchers from nuclide-test-helpers
-  diffJson(expected: mixed): boolean,
-  diffLines(expected: string): boolean,
+  diffJson(expected: mixed, msg?: string): boolean,
+  diffLines(expected: string, msg?: string): boolean,
 
   // Custom Matchers from nuclide-atom-test-helpers
-  toEqualAtomRange(): boolean,
-  toEqualAtomRanges(): boolean,
+  toEqualAtomRange(expected: ?atom$Range, msg?: string): boolean,
+  toEqualAtomRanges(expected: ?Array<atom$Range>, msg?: string): boolean,
 };
 
 // Declaring, describing, and grouping tests
