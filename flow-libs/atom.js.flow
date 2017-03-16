@@ -209,6 +209,14 @@ declare class atom$Decoration {
   setProperties(properties: mixed): void,
 }
 
+declare class atom$DisplayMarkerLayer {
+  destroy(): void,
+  clear(): void,
+  isDestroyed(): boolean,
+  markBufferRange(range: atom$Range | atom$RangeLike, options: MarkerOptions): atom$Marker,
+  getMarkers(): Array<atom$Marker>,
+}
+
 declare class atom$Disposable {
   constructor(disposalAction?: (...args: any[]) => any): void,
   dispose(): void,
@@ -263,6 +271,7 @@ declare class atom$Marker {
     range: atom$RangeLike,
     properties?: {reversed: boolean},
   ): void,
+  id: number,
 }
 
 declare class atom$ServiceHub {
@@ -722,7 +731,7 @@ declare class atom$TextEditor extends atom$Model {
   // Mutating Text
   setText(text: string, options?: InsertTextOptions): void,
   setTextInBufferRange(
-    range: atom$Range,
+    range: atom$Range | Array<atom$Point>,
     text: string,
     options?: {
       normalizeLineEndings?: boolean,
@@ -735,6 +744,9 @@ declare class atom$TextEditor extends atom$Model {
   duplicateLines: () => void,
 
   // History
+  transact(fn: () => mixed, _: void): void,
+  transact(groupingInterval: number, fn: () => mixed): void,
+
   // TextEditor Coordinates
   screenPositionForBufferPosition(
     bufferPosition: atom$PointLike,
@@ -763,6 +775,7 @@ declare class atom$TextEditor extends atom$Model {
   getDecorations(options?: {class?: string, type?: string}): Array<atom$Decoration>,
 
   // Markers
+  getDefaultMarkerLayer(): atom$DisplayMarkerLayer,
   markBufferPosition(position: atom$PointLike, options?: MarkerOptions): atom$Marker,
   markBufferRange(range: atom$RangeLike, options?: MarkerOptions): atom$Marker,
   markScreenRange(range: atom$RangeLike, options?: MarkerOptions): atom$Marker,
@@ -1478,6 +1491,7 @@ declare class atom$TextBuffer {
   getChangesSinceCheckpoint(checkpoint: atom$TextBufferCheckpoint): Array<mixed>,
 
   // Search And Replace
+  scan(regex: RegExp, iterator: TextBufferScanIterator): void,
   scanInRange(regex: RegExp, range: atom$Range, iterator: TextBufferScanIterator): void,
   backwardsScanInRange(regex: RegExp, range: atom$Range, iterator: TextBufferScanIterator): void,
 
