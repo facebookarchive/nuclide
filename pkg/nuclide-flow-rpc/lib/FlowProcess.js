@@ -169,7 +169,15 @@ export class FlowProcess {
     if (allExecInfo == null) {
       return null;
     }
-    return safeSpawn(allExecInfo.pathToFlow, allExecInfo.args, allExecInfo.options);
+    const proc = safeSpawn(allExecInfo.pathToFlow, allExecInfo.args, allExecInfo.options);
+    proc.once('exit', (code: ?number, signal: ?string) => {
+      // If it crashes we will get `null` or `undefined`, but that doesn't actually mean that Flow
+      // is not installed.
+      if (code != null) {
+        this._updateServerStatus(code);
+      }
+    });
+    return proc;
   }
 
   /**
@@ -275,10 +283,10 @@ export class FlowProcess {
         this._execInfoContainer,
         options,
       );
-      this._updateServerStatus(result);
+      this._updateServerStatus(result != null ? result.exitCode : null);
       return result;
     } catch (e) {
-      this._updateServerStatus(e);
+      this._updateServerStatus(e != null ? e.exitCode : null);
       if (e.exitCode === FLOW_RETURN_CODES.typeError) {
         return e;
       } else {
@@ -287,12 +295,12 @@ export class FlowProcess {
     }
   }
 
-  _updateServerStatus(result: ?AsyncExecuteReturn): void {
+  _updateServerStatus(exitCode: ?number): void {
     let status;
-    if (result == null) {
+    if (exitCode == null) {
       status = ServerStatus.NOT_INSTALLED;
     } else {
-      switch (result.exitCode) {
+      switch (exitCode) {
         case FLOW_RETURN_CODES.ok:
           // falls through
         case FLOW_RETURN_CODES.typeError:
@@ -318,7 +326,7 @@ export class FlowProcess {
           // server. So, don't update.
           return;
         default:
-          logger.error(`Unknown return code from Flow: ${String(result.exitCode)}`);
+          logger.error(`Unknown return code from Flow: ${String(exitCode)}`);
           status = ServerStatus.UNKNOWN;
       }
     }
