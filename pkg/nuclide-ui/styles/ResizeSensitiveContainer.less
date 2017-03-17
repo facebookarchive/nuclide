@@ -1,0 +1,53 @@
+.nuclide-resize-sensitive-container-wrapper {
+  display: flex;
+  flex: 1;
+}
+
+.nuclide-resize-sensitive-container {
+  position: relative;
+}
+
+.nuclide-resize-sensitive-container-sensor,
+.nuclide-resize-sensitive-container-expand,
+.nuclide-resize-sensitive-container-shrink {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  z-index: -1;
+  visibility: hidden;
+}
+
+.nuclide-resize-sensitive-container-expand-inner,
+.nuclide-resize-sensitive-container-shrink-inner {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transition: 0s;
+}
+
+.nuclide-resize-sensitive-container-shrink-inner {
+  height: 150%;
+  width: 150%;
+}
+
+.nuclide-resize-sensitive-container-sensor {
+  animation-duration: 0.1s;
+  animation-name: nuclide-resize-sensitive-sensor;
+}
+
+@keyframes nuclide-resize-sensitive-sensor {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
