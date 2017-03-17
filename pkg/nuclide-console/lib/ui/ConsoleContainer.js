@@ -11,6 +11,7 @@
 import type {Viewable} from '../../../nuclide-workspace-views/lib/types';
 import type {
   AppState,
+  DisplayableRecord,
   Executor,
   OutputProvider,
   OutputProviderStatus,
@@ -66,6 +67,8 @@ type BoundActionCreators = {
 };
 
 export const WORKSPACE_VIEW_URI = 'atom://nuclide/console';
+
+const INITIAL_RECORD_HEIGHT = 21;
 
 // NOTE: We're not accounting for the "store" prop being changed.
 export class ConsoleContainer extends React.Component {
@@ -321,4 +324,66 @@ function filterRecords(
     const sourceMatches = selectedSourceIds.indexOf(record.sourceId) !== -1;
     return sourceMatches && (filterPattern == null || filterPattern.test(record.text));
   });
+}
+
+/**
+ * Transforms the Records from the store into DisplayableRecords while preserving
+ * the recorded heights and expansion state keys of still existing records.
+ *
+ * NOTE: This method works under the assumption that the Record array is only
+ *       transformed by adding/removing items from the head and/or tail of the array.
+ */
+function toDisplayableRecords(
+  currentDisplayables: Array<DisplayableRecord>,
+  newRecords: Array<Record>,
+): Array<DisplayableRecord> {
+  if (newRecords.length === 0) {
+    return [];
+  }
+
+  let currentIndex = 0;
+  let newRecordIndex = 0;
+  const results = [];
+
+  // Iterate through currentDisplayables until we find an existing displayable
+  // whose record matches the head of the newRecords array
+  while (
+    currentIndex < currentDisplayables.length &&
+    currentDisplayables[currentIndex].record !== newRecords[newRecordIndex]
+  ) {
+    currentIndex += 1;
+  }
+
+  // Since we assume additions/removals occur only to the head/tail of the array
+  // all common records must be found in a contiguous section in the arrays, so
+  // we copy the record heights and expansion state keys so they are kept intact
+  while (
+    currentIndex < currentDisplayables.length &&
+    newRecordIndex < newRecords.length &&
+    currentDisplayables[currentIndex].record === newRecords[newRecordIndex]
+  ) {
+    const {height, expansionStateId} = currentDisplayables[currentIndex];
+    results.push({
+      id: newRecordIndex,
+      record: newRecords[newRecordIndex],
+      height,
+      expansionStateId,
+    });
+    currentIndex += 1;
+    newRecordIndex += 1;
+  }
+
+  // Any remaining records in newRecords were not matched to an existing displayable
+  // so they must be new. Create new DisplayableRecord instances for them here.
+  while (newRecordIndex < newRecords.length) {
+    results.push({
+      id: newRecordIndex,
+      record: newRecords[newRecordIndex],
+      height: INITIAL_RECORD_HEIGHT,
+      expansionStateId: {},
+    });
+    newRecordIndex += 1;
+  }
+
+  return results;
 }
