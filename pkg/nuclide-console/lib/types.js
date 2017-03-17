@@ -56,6 +56,9 @@ export type DisplayableRecord = {
   expansionStateId: Object,
 };
 
+export type RecordHeightChangeHandler =
+  (recordId: number, newHeight: number, callback: () => void) => void;
+
 export type OutputProviderStatus = 'starting' | 'running' | 'stopped';
 
 type BasicOutputProvider = {

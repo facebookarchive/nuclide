@@ -88,17 +88,12 @@
   }
 }
 
-.nuclide-console-scroll-pane {
-  overflow-y: auto;
-  overflow-x: hidden;
-  background-color: @syntax-background-color;
-
-  // Hack: This ensures that the scrollbar appears on top of all of the records.
-  //       Without it, the atom-text-editors appear above the scrollbar.
-  transform: translate3d(0, 0, 0);
-}
-
 .nuclide-console-table-wrapper {
+  display: flex;
+  flex: 1;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  background-color: @syntax-background-color;
   // Make sure that record text is selectable.
   -webkit-user-select: text;
 }

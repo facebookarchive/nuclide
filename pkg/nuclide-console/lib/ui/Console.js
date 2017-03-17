@@ -8,7 +8,13 @@
  * @flow
  */
 
-import type {Record, Executor, OutputProvider, Source} from '../types';
+import type {
+  DisplayableRecord,
+  Executor,
+  OutputProvider,
+  RecordHeightChangeHandler,
+  Source,
+} from '../types';
 
 import debounce from '../../../commons-node/debounce';
 import React from 'react';
@@ -21,7 +27,7 @@ import invariant from 'assert';
 import shallowEqual from 'shallowequal';
 
 type Props = {
-  records: Array<Record>,
+  displayableRecords: Array<DisplayableRecord>,
   history: Array<string>,
   clearRecords: () => void,
   execute: (code: string) => void,
@@ -36,6 +42,7 @@ type Props = {
   toggleRegExpFilter: () => void,
   updateFilterText: (filterText: string) => void,
   getProvider: (id: string) => ?OutputProvider,
+  onDisplayableRecordHeightChange: RecordHeightChangeHandler,
 };
 
 type State = {
@@ -96,7 +103,7 @@ export default class Console extends React.Component {
   }
 
   componentWillReceiveProps(nextProps: Props): void {
-    if (nextProps.records !== this.props.records) {
+    if (nextProps.displayableRecords !== this.props.displayableRecords) {
       const isScrolledToBottom = this._isScrolledToBottom();
 
       this._shouldScrollToBottom = isScrolledToBottom;
@@ -140,17 +147,13 @@ export default class Console extends React.Component {
         */}
         <div className="nuclide-console-body">
           <div className="nuclide-console-scroll-pane-wrapper">
-            <div
-              ref={this._handleScrollPane}
-              className="nuclide-console-scroll-pane"
-              onScroll={this._handleScroll}>
-              <OutputTable
-                records={this.props.records}
-                showSourceLabels={this.props.selectedSourceIds.length > 1}
-                getExecutor={this._getExecutor}
-                getProvider={this._getProvider}
-              />
-            </div>
+            <OutputTable
+              displayableRecords={this.props.displayableRecords}
+              showSourceLabels={this.props.selectedSourceIds.length > 1}
+              getExecutor={this._getExecutor}
+              getProvider={this._getProvider}
+              onDisplayableRecordHeightChange={this.props.onDisplayableRecordHeightChange}
+            />
             <UnseenMessagesNotification
               visible={this.state.unseenMessages}
               onClick={this._scrollToBottom}

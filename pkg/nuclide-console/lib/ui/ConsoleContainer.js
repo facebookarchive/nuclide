@@ -46,7 +46,6 @@ type State = {
   providers: Map<string, OutputProvider>,
   providerStatuses: Map<string, OutputProviderStatus>,
   ready: boolean,
-  records: Array<Record>,
   history: Array<string>,
   sources: Array<Source>,
   executors: Map<string, Executor>,
@@ -55,6 +54,7 @@ type State = {
   // State unique to this particular Console instance
   //
 
+  displayableRecords: Array<DisplayableRecord>,
   filterText: string,
   enableRegExpFilter: boolean,
   unselectedSourceIds: Array<string>,
@@ -82,6 +82,8 @@ export class ConsoleContainer extends React.Component {
 
   constructor(props: Props) {
     super(props);
+    (this: any)._handleDisplayableRecordHeightChange =
+      this._handleDisplayableRecordHeightChange.bind(this);
     (this: any)._selectSources = this._selectSources.bind(this);
     (this: any)._toggleRegExpFilter = this._toggleRegExpFilter.bind(this);
     (this: any)._updateFilterText = this._updateFilterText.bind(this);
@@ -92,7 +94,7 @@ export class ConsoleContainer extends React.Component {
       providers: new Map(),
       providerStatuses: new Map(),
       executors: new Map(),
-      records: [],
+      displayableRecords: [],
       history: [],
       sources: [],
       filterText: initialFilterText == null ? '' : initialFilterText,
@@ -153,7 +155,10 @@ export class ConsoleContainer extends React.Component {
           executors: state.executors,
           providers: state.providers,
           providerStatuses: state.providerStatuses,
-          records: state.records,
+          displayableRecords: toDisplayableRecords(
+            this.state.displayableRecords,
+            state.records,
+          ),
           history: state.history,
           sources: getSources(state),
         });
@@ -199,8 +204,8 @@ export class ConsoleContainer extends React.Component {
       .map(source => source.id)
       .filter(sourceId => this.state.unselectedSourceIds.indexOf(sourceId) === -1);
 
-    const records = filterRecords(
-      this.state.records,
+    const displayableRecords = filterRecords(
+      this.state.displayableRecords,
       selectedSourceIds,
       pattern,
       this.state.sources.length !== selectedSourceIds.length,
@@ -217,7 +222,7 @@ export class ConsoleContainer extends React.Component {
         unselectedSourceIds={this.state.unselectedSourceIds}
         filterText={this.state.filterText}
         enableRegExpFilter={this.state.enableRegExpFilter}
-        records={records}
+        displayableRecords={displayableRecords}
         history={this.state.history}
         sources={this.state.sources}
         selectedSourceIds={selectedSourceIds}
@@ -226,6 +231,7 @@ export class ConsoleContainer extends React.Component {
         getProvider={id => this.state.providers.get(id)}
         toggleRegExpFilter={this._toggleRegExpFilter}
         updateFilterText={this._updateFilterText}
+        onDisplayableRecordHeightChange={this._handleDisplayableRecordHeightChange}
       />
     );
   }
@@ -268,6 +274,21 @@ export class ConsoleContainer extends React.Component {
       };
     }
   }
+
+  _handleDisplayableRecordHeightChange(
+    recordId: number,
+    newHeight: number,
+    callback: () => void,
+  ): void {
+    this.setState({
+      displayableRecords: this.state.displayableRecords.map(existing => {
+        return existing.id !== recordId ? existing : {
+          ...existing,
+          height: newHeight,
+        };
+      }),
+    }, callback);
+  }
 }
 
 function getSources(state: AppState): Array<Source> {
@@ -308,16 +329,15 @@ function getSources(state: AppState): Array<Source> {
   return Array.from(mapOfSources.values());
 }
 
-
 function filterRecords(
-  records: Array<Record>,
+  displayableRecords: Array<DisplayableRecord>,
   selectedSourceIds: Array<string>,
   filterPattern: ?RegExp,
   filterSources: boolean,
-): Array<Record> {
-  if (!filterSources && filterPattern == null) { return records; }
+): Array<DisplayableRecord> {
+  if (!filterSources && filterPattern == null) { return displayableRecords; }
 
-  return records.filter(record => {
+  return displayableRecords.filter(({record}) => {
     // Only filter regular messages
     if (record.kind !== 'message') { return true; }
 
