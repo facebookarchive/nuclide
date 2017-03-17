@@ -25,7 +25,7 @@
             },
             {
               "label": "Reveal Active File in File Tree",
-              "command": "nuclide-file-tree:reveal-active-file"
+              "command": "nuclide-file-tree:reveal-in-file-tree"
             },
             {
               "label": "Collapse File Tree",
@@ -41,15 +41,9 @@
     }
   ],
   "context-menu": {
-    "atom-pane atom-text-editor": [
+    "atom-pane atom-text-editor, [data-path]:not(.nuclide-file-tree-path)": [
       {
-        "command": "nuclide-file-tree:reveal-text-editor",
-        "label": "Reveal in File Tree"
-      }
-    ],
-    "[is=\"tabs-tab\"]": [
-      {
-        "command": "nuclide-file-tree:reveal-tab-file",
+        "command": "nuclide-file-tree:reveal-in-file-tree",
         "label": "Reveal in File Tree"
       },
       {

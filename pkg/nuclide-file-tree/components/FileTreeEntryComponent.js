@@ -199,7 +199,7 @@ export class FileTreeEntryComponent extends React.Component {
           className={listItemClassName}
           ref="arrowContainer">
           <span
-            className={`icon name ${iconName}`}
+            className={`nuclide-file-tree-path icon name ${iconName}`}
             ref={elem => {
               this._pathContainer = elem;
               tooltip && tooltip(elem);
@@ -208,6 +208,7 @@ export class FileTreeEntryComponent extends React.Component {
             data-path={node.uri}>
             {this._renderCheckbox()}
             <span
+              className="nuclide-file-tree-path"
               data-name={node.name}
               data-path={node.uri}>
               {filterName(node.name, node.highlightedText, node.isSelected)}

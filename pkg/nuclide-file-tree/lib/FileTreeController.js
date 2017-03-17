@@ -23,7 +23,7 @@ import Immutable from 'immutable';
 import {track} from '../../nuclide-analytics';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {goToLocation} from '../../commons-atom/go-to-location';
-import {isValidTextEditor} from '../../commons-atom/text-editor';
+import getElementFilePath from '../../commons-atom/getElementFilePath';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 
 import {Disposable} from 'atom';
@@ -88,13 +88,8 @@ export default class FileTreeController {
     // Subsequent root directories updated on change
     this._disposables.add(
       atom.project.onDidChangePaths(() => this._updateRootDirectories()),
-      atom.commands.add('atom-text-editor', {
-        // eslint-disable-next-line nuclide-internal/atom-commands
-        'nuclide-file-tree:reveal-text-editor': this._revealTextEditor.bind(this),
-      }),
       atom.commands.add('atom-workspace', {
-        // Pass undefined so the default parameter gets used.
-        'nuclide-file-tree:reveal-active-file': this.revealActiveFile.bind(this, undefined),
+        'nuclide-file-tree:reveal-in-file-tree': this._revealFile.bind(this),
         'nuclide-file-tree:recursive-collapse-all': this._collapseAll.bind(this),
         'nuclide-file-tree:add-file-relative': () => {
           FileSystemActions.openAddFileDialogRelative(
@@ -157,9 +152,6 @@ export default class FileTreeController {
         'nuclide-file-tree:show-in-file-manager': this._showInFileManager.bind(this),
         'nuclide-file-tree:set-current-working-root': this._setCwdToSelection.bind(this),
         ...letterKeyBindings,
-      }),
-      atom.commands.add('[is="tabs-tab"]', {
-        'nuclide-file-tree:reveal-tab-file': this._revealTabFileOnClick.bind(this),
       }),
     );
     if (state != null) {
@@ -245,18 +237,13 @@ export default class FileTreeController {
     this._actions.updateRepositories(rootDirectories);
   }
 
-  _revealTextEditor(event: Event): void {
-    const editorElement = ((event.currentTarget: any): atom$TextEditorElement);
-    if (
-      editorElement == null ||
-      typeof editorElement.getModel !== 'function' ||
-      !isValidTextEditor(editorElement.getModel())
-    ) {
-      return;
+  _revealFile(event: Event): void {
+    const path = getElementFilePath(((event.target: any): HTMLElement));
+    if (path == null) {
+      this.revealActiveFile();
+    } else {
+      this._revealFilePath(path);
     }
-
-    const filePath = editorElement.getModel().getPath();
-    this._revealFilePath(filePath);
   }
 
   /**
@@ -284,27 +271,6 @@ export default class FileTreeController {
       return;
     }
 
-    this.revealNodeKey(filePath);
-  }
-
-  /**
-   * Reveal the file of a given tab based on the path stored on the DOM.
-   * This method is meant to be triggered by the context-menu click.
-   */
-  _revealTabFileOnClick(event: Event): void {
-    const tab = ((event.currentTarget: any): Element);
-    const title = tab.querySelector('.title[data-path]');
-    if (!title) {
-      // can only reveal it if we find the file path
-      return;
-    }
-
-    const filePath = title.dataset.path;
-    atom.commands.dispatch(
-      atom.views.getView(atom.workspace),
-      'nuclide-file-tree:toggle',
-      {visible: true},
-    );
     this.revealNodeKey(filePath);
   }
 
