@@ -42,6 +42,7 @@ const getGatekeeper = once(() => {
  */
 export default async function passesGK(
   name: string,
+  // timeout in ms
   timeout?: number,
 ): Promise<boolean> {
   try {
