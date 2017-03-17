@@ -838,7 +838,6 @@ export function splitRevision(
 ): Observable<Action> {
   return actions.ofType(ActionTypes.SPLIT_REVISION).switchMap(action => {
     invariant(action.type === ActionTypes.SPLIT_REVISION);
-    track('diff-view-split');
     const {
       publishUpdates,
       repository,
@@ -848,8 +847,10 @@ export function splitRevision(
     } = store.getState();
     const consoleClient = new ConsoleClient(mode, publishUpdates);
 
-    return trackComplete('diff-view-split', Observable.defer(() => repository.splitRevision()))
-      .do(processMessage => consoleClient.enableAndPipeProcessMessagesToConsole(processMessage))
+    return trackComplete(
+      'diff-view-split-commit',
+      Observable.defer(() => repository.splitRevision()),
+    ).do(processMessage => consoleClient.enableAndPipeProcessMessagesToConsole(processMessage))
       .switchMap(processMessage => Observable.empty())
       .catch(error => {
         atom.notifications.addError('Couldn\'t split revision', {

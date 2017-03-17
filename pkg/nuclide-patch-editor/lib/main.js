@@ -30,6 +30,7 @@ import React from 'react';
 import {repositoryForPath} from '../../commons-atom/vcs';
 import {rootReducer} from './redux/Reducers';
 import {SelectedState} from './constants';
+import {track} from '../../nuclide-analytics';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
 
@@ -106,6 +107,7 @@ class Activation {
     const diffContent = editor.getText();
     const patch = parseWithAnnotations(diffContent);
     if (patch.length > 0) {
+      track('patch-editor-created');
       // Clear the editor so that closing the tab without hitting 'Confirm' won't
       // cause the commit to go through by default
       editor.setText('');
@@ -124,7 +126,7 @@ class Activation {
             checkboxFactory: this._createCheckboxFactory(editorPath),
             onConfirm: content => onConfirm(editor, content),
             onManualEdit: () => onManualEdit(editor, diffContent, marker, editorView),
-            onQuit: () => atom.workspace.getActivePane().destroyItem(editor),
+            onQuit: () => onQuit(editor),
             patchData: state.patchEditors.get(editorPath),
           };
         }),
@@ -186,7 +188,13 @@ class Activation {
   }
 }
 
+function onQuit(editor: atom$TextEditor): void {
+  track('patch-editor-quit');
+  atom.workspace.getActivePane().destroyItem(editor);
+}
+
 function onConfirm(editor: atom$TextEditor, content: string): void {
+  track('patch-editor-confirm');
   editor.setText(content);
   editor.save();
   atom.workspace.getActivePane().destroyItem(editor);
@@ -198,6 +206,7 @@ function onManualEdit(
   marker: atom$Marker,
   editorView: atom$TextEditorElement,
 ): void {
+  track('patch-editor-manual');
   editor.setText(content);
   editor.save();
   editor.setGrammar(atom.grammars.grammarForScopeName('source.mercurial.diff'));
