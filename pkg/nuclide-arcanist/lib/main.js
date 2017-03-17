@@ -18,7 +18,6 @@ import type {RemoteProjectsService} from '../../nuclide-remote-projects';
 
 import {CompositeDisposable, Disposable} from 'atom';
 import createPackage from '../../commons-atom/createPackage';
-import registerGrammar from '../../commons-atom/register-grammar';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {DedupedBusySignalProviderBase} from '../../nuclide-busy-signal';
 import {ArcanistDiagnosticsProvider} from './ArcanistDiagnosticsProvider';
@@ -35,7 +34,6 @@ class Activation {
   constructor(state: ?Object) {
     this._disposables = new CompositeDisposable();
     this._busySignalProvider = new DedupedBusySignalProviderBase();
-    registerGrammar('source.json', ['.arcconfig']);
   }
 
   dispose(): void {
