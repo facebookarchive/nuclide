@@ -1,0 +1,9 @@
+// Make sure that the :after pseudoelement doesn't get the click instead of the
+// element with the [data-path] attribute.
+// TODO: Get this added to the theme.
+.theme-one-light-ui,
+.theme-one-dark-ui {
+  .tab-bar .tab:after {
+    pointer-events: none;
+  }
+}
