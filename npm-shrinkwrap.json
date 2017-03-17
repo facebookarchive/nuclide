@@ -325,9 +325,8 @@
     },
     "babel-runtime": {
       "version": "6.23.0",
-      "from": "babel-runtime@>=6.22.0 <7.0.0",
-      "resolved": "https://registry.npmjs.org/babel-runtime/-/babel-runtime-6.23.0.tgz",
-      "dev": true
+      "from": "babel-runtime@>=6.11.6 <7.0.0",
+      "resolved": "https://registry.npmjs.org/babel-runtime/-/babel-runtime-6.23.0.tgz"
     },
     "babel-template": {
       "version": "6.23.0",
@@ -647,6 +646,11 @@
       "from": "doctrine@>=1.2.2 <2.0.0",
       "resolved": "https://registry.npmjs.org/doctrine/-/doctrine-1.5.0.tgz",
       "dev": true
+    },
+    "dom-helpers": {
+      "version": "3.2.1",
+      "from": "dom-helpers@>=2.4.0 <3.0.0||>=3.0.0 <4.0.0",
+      "resolved": "https://registry.npmjs.org/dom-helpers/-/dom-helpers-3.2.1.tgz"
     },
     "dom-serializer": {
       "version": "0.1.0",
@@ -1810,6 +1814,11 @@
       "from": "react-dom@15.3.1",
       "resolved": "https://registry.npmjs.org/react-dom/-/react-dom-15.3.1.tgz"
     },
+    "react-virtualized": {
+      "version": "9.1.0",
+      "from": "react-virtualized@9.1.0",
+      "resolved": "https://registry.npmjs.org/react-virtualized/-/react-virtualized-9.1.0.tgz"
+    },
     "readable-stream": {
       "version": "2.2.3",
       "from": "readable-stream@>=2.0.2 <3.0.0",
@@ -1835,8 +1844,7 @@
     "regenerator-runtime": {
       "version": "0.10.3",
       "from": "regenerator-runtime@>=0.10.0 <0.11.0",
-      "resolved": "https://registry.npmjs.org/regenerator-runtime/-/regenerator-runtime-0.10.3.tgz",
-      "dev": true
+      "resolved": "https://registry.npmjs.org/regenerator-runtime/-/regenerator-runtime-0.10.3.tgz"
     },
     "repeating": {
       "version": "2.0.1",
