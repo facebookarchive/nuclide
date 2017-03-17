@@ -157,77 +157,64 @@ class ValueComponent extends React.Component {
   }
 
   componentDidMount(): void {
-    const {
-      path,
-      expandedValuePaths,
-      fetchChildren,
-      evaluationResult,
-    } = this.props;
-    const nodeData = expandedValuePaths.get(path);
-    if (
-      !this.state.isExpanded &&
-      nodeData != null &&
-      nodeData.isExpanded &&
-      this._shouldFetch() &&
-      evaluationResult != null &&
-      evaluationResult.objectId != null &&
-      fetchChildren != null
-    ) {
-      invariant(evaluationResult.objectId != null);
-      this.setState({
-        children: fetchChildren(evaluationResult.objectId),
-        isExpanded: true,
-      });
-    }
+    this.setState(this._getNextState(this.props));
   }
 
   componentWillReceiveProps(nextProps: LazyNestedValueComponentProps): void {
-    if (
-      this._shouldFetch() &&
-      this.state.isExpanded &&
-      nextProps.evaluationResult != null &&
-      nextProps.fetchChildren != null
-    ) {
-      const {objectId} = nextProps.evaluationResult;
-      if (objectId == null) {
-        return;
-      }
-      this.setState({
-        children: nextProps.fetchChildren(objectId),
-      });
-    }
-  }
-
-  _shouldFetch(): boolean {
-    const {shouldCacheChildren, getCachedChildren, path} = this.props;
-    const children = getCachedChildren(path);
-    return !shouldCacheChildren || children == null;
+    this.setState(this._getNextState(nextProps));
   }
 
   _toggleExpand(event: SyntheticMouseEvent): void {
-    const {
-      fetchChildren,
-      evaluationResult,
-      onExpandedStateChange,
-      path,
-    } = this.props;
-    const newState: LazyNestedValueComponentState = {
-      children: null,
-      isExpanded: !this.state.isExpanded,
-    };
-    if (!this.state.isExpanded) {
-      if (
-        this._shouldFetch() &&
-        typeof fetchChildren === 'function' &&
-        evaluationResult != null &&
-        evaluationResult.objectId != null
-      ) {
-        newState.children = fetchChildren(evaluationResult.objectId);
-      }
-    }
+    const {onExpandedStateChange, path} = this.props;
+    const newState = this._getNextState(this.props, true /* toggleExpansion */);
     onExpandedStateChange(path, newState.isExpanded);
     this.setState(newState);
     event.stopPropagation();
+  }
+
+  /**
+   * Constructs the corresponding state object based on the provided props.
+   *
+   * NOTE: This should be used to set the state when the props change or when
+   *       the expansion state of the object is being toggled by the user.
+   *
+   * The expansion state (isExpanded) of this component is cached so it can
+   * be saved across re-renders. Because of this isExpanded is set to the
+   * cached value, with a default of false. If the expansion state is being
+   * toggled, it is instead set to the opposite of its current state value.
+   *
+   * This component is also responsible for loading its children, if they
+   * exist, by calling props.fetchChildren() and storing the result in the
+   * state. This needs to happen when the component is expanded and the
+   * children exist and have not already been loaded and cached. So based on
+   * the new value of isExpanded, children is set appropriately
+   * (see shouldFetchChildren()).
+   */
+  _getNextState(
+    props: LazyNestedValueComponentProps,
+    toggleExpansion?: boolean,
+  ): LazyNestedValueComponentState {
+    let isExpanded = false;
+    let children = null;
+    // The value of isExpanded is taken from its cached value in nodeData
+    // unless it is being toggled. In that case, we toggle the current value.
+    if (!toggleExpansion) {
+      const {path, expandedValuePaths} = props;
+      const nodeData = expandedValuePaths.get(path);
+      isExpanded = nodeData != null && nodeData.isExpanded;
+    } else {
+      isExpanded = !this.state.isExpanded;
+    }
+    // Children are loaded if the component will be expanded
+    // and other conditions (see shouldFetchChildren()) are true
+    if (isExpanded && shouldFetchChildren(props)) {
+      invariant(props.fetchChildren != null);
+      invariant(props.evaluationResult != null);
+      invariant(props.evaluationResult.objectId != null);
+      children = props.fetchChildren(props.evaluationResult.objectId);
+    }
+
+    return {isExpanded, children};
   }
 
   render(): ?React.Element<any> {
@@ -312,6 +299,20 @@ class ValueComponent extends React.Component {
       </TreeList>
     );
   }
+}
+
+function shouldFetchChildren(props: LazyNestedValueComponentProps): boolean {
+  const {fetchChildren, evaluationResult} = props;
+  return shouldFetchBecauseNothingIsCached(props) &&
+    typeof fetchChildren === 'function' &&
+    evaluationResult != null &&
+    evaluationResult.objectId != null;
+}
+
+function shouldFetchBecauseNothingIsCached(props: LazyNestedValueComponentProps): boolean {
+  const {shouldCacheChildren, getCachedChildren, path} = props;
+  const children = getCachedChildren(path);
+  return !shouldCacheChildren || children == null;
 }
 
 type TopLevelValueComponentProps = {
