@@ -12,6 +12,7 @@ import type {FileTreeNode} from './FileTreeNode';
 import type Immutable from 'immutable';
 
 import ContextMenu from '../../commons-atom/ContextMenu';
+import getElementFilePath from '../../commons-atom/getElementFilePath';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {EVENT_HANDLER_SELECTOR} from './FileTreeConstants';
 import {FileTreeStore} from './FileTreeStore';
@@ -285,29 +286,24 @@ export default class FileTreeContextMenu {
     ],
     SPLIT_MENU_PRIORITY);
 
-    this._addContextMenuItemGroup([
+    // Add the "Show in X" menu group. There's a bit of hackery going on here: we want these items
+    // to be applied to anyhing that matches our CSS selector, but we also want them to occur in a
+    // specific order in the file tree context menu. Since `atom.contextMenu` doesn't support
+    // priority, we add them twice. Ideally, these menu items wouldn't be in the file tree package
+    // at all, but for historical reasons they are. Someday maybe we can pull them out.
+    const showInXItems = [
       {
         label: 'Copy Full Path',
-        command: 'nuclide-file-tree:copy-full-path',
-        shouldDisplay: () => {
-          const node = this.getSingleSelectedNode();
-          return node != null;
+        command: 'file:copy-full-path',
+        shouldDisplay: event => getElementFilePath(((event.target: any): HTMLElement)) != null,
+      },
+      {
+        label: `Show in ${getFileManagerName()}`,
+        command: 'file:show-in-file-manager',
+        shouldDisplay: event => {
+          const path = getElementFilePath(((event.target: any): HTMLElement));
+          return path != null && !nuclideUri.isRemote(path);
         },
-      },
-      {
-        label: 'Show in Finder', // Mac OS X
-        command: 'nuclide-file-tree:show-in-file-manager',
-        shouldDisplay: this._shouldDisplayShowInFileManager.bind(this, 'darwin'),
-      },
-      {
-        label: 'Show in Explorer', // Windows
-        command: 'nuclide-file-tree:show-in-file-manager',
-        shouldDisplay: this._shouldDisplayShowInFileManager.bind(this, 'win32'),
-      },
-      {
-        label: 'Show in File Manager', // Linux
-        command: 'nuclide-file-tree:show-in-file-manager',
-        shouldDisplay: this._shouldDisplayShowInFileManager.bind(this, 'linux'),
       },
       {
         label: 'Search in Directory',
@@ -317,8 +313,15 @@ export default class FileTreeContextMenu {
           return nodes.size > 0 && nodes.every(node => node.isContainer);
         },
       },
-    ],
-    SHOW_IN_MENU_PRIORITY);
+      {type: 'separator'},
+    ];
+
+    this._disposables.add(
+      atom.contextMenu.add({
+        'atom-text-editor, [data-path]:not(.nuclide-file-tree-path)': showInXItems,
+      }),
+    );
+    this._addContextMenuItemGroup(showInXItems, SHOW_IN_MENU_PRIORITY);
   }
 
   /**
@@ -393,11 +396,11 @@ export default class FileTreeContextMenu {
    * @return A {boolean} whether the "Show in File Manager" context menu item should be displayed
    * for the current selection and the given `platform`.
    */
-  _shouldDisplayShowInFileManager(platform: string): boolean {
-    const node = this.getSingleSelectedNode();
+  _shouldDisplayShowInFileManager(event: Event, platform: string): boolean {
+    const path = getElementFilePath(((event.target: any): HTMLElement));
     return (
-      node != null &&
-      nuclideUri.isAbsolute(node.uri) &&
+      path != null &&
+      nuclideUri.isAbsolute(path) &&
       process.platform === platform
     );
   }
@@ -422,4 +425,12 @@ let nextInternalCommandId = 0;
 function generateNextInternalCommand(itemLabel: string): string {
   const cmdName = itemLabel.toLowerCase().replace(/[^\w]+/g, '-') + '-' + nextInternalCommandId++;
   return `nuclide-file-tree:${cmdName}`;
+}
+
+function getFileManagerName(): string {
+  switch (process.platform) {
+    case 'darwin': return 'Finder';
+    case 'win32': return 'Explorer';
+    default: return 'File Manager';
+  }
 }

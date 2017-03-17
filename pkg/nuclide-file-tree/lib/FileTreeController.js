@@ -129,7 +129,6 @@ export default class FileTreeController {
           this._collapseSelection.bind(this, /* deep */ false),
         'nuclide-file-tree:recursive-collapse-directory':
           this._collapseSelection.bind(this, true),
-        'nuclide-file-tree:copy-full-path': this._copyFullPath.bind(this),
         'nuclide-file-tree:expand-directory': this._expandSelection.bind(this, /* deep */ false),
         'nuclide-file-tree:recursive-expand-directory': this._expandSelection.bind(this, true),
         'nuclide-file-tree:open-selected-entry': this._openSelectedEntry.bind(this),
@@ -149,9 +148,14 @@ export default class FileTreeController {
           FileSystemActions.openDuplicateDialog(this._openAndRevealFilePath.bind(this));
         },
         'nuclide-file-tree:search-in-directory': this._searchInDirectory.bind(this),
-        'nuclide-file-tree:show-in-file-manager': this._showInFileManager.bind(this),
         'nuclide-file-tree:set-current-working-root': this._setCwdToSelection.bind(this),
         ...letterKeyBindings,
+      }),
+      atom.commands.add('atom-workspace', {
+        // eslint-disable-next-line nuclide-internal/atom-apis
+        'file:copy-full-path': this._copyFullPath.bind(this),
+        // eslint-disable-next-line nuclide-internal/atom-apis
+        'file:show-in-file-manager': this._showInFileManager.bind(this),
       }),
     );
     if (state != null) {
@@ -594,20 +598,21 @@ export default class FileTreeController {
     }
   }
 
-  _showInFileManager(): void {
-    const node = this._store.getSingleSelectedNode();
-    if (node == null) {
-      // Only allow revealing a single directory/file at a time. Return otherwise.
+  _showInFileManager(event: Event): void {
+    const path = getElementFilePath(((event.target: any): HTMLElement), true);
+    if (path == null || nuclideUri.isRemote(path)) {
       return;
     }
-    shell.showItemInFolder(node.uri);
+    shell.showItemInFolder(path);
   }
 
-  _copyFullPath(): void {
-    const singleSelectedNode = this._store.getSingleSelectedNode();
-    if (singleSelectedNode != null) {
-      atom.clipboard.write(singleSelectedNode.localPath);
+  _copyFullPath(event: Event): void {
+    const path = getElementFilePath(((event.target: any): HTMLElement), true);
+    if (path == null) {
+      return;
     }
+    const parsed = nuclideUri.parse(path);
+    atom.clipboard.write(parsed.path);
   }
 
   destroy(): void {
