@@ -17,11 +17,14 @@ import type {
 import type {FlowSettings} from '../../nuclide-flow-rpc/lib/FlowService';
 
 import invariant from 'assert';
+import {Observable} from 'rxjs';
 
 import featureConfig from '../../commons-atom/featureConfig';
 import registerGrammar from '../../commons-atom/register-grammar';
+import passesGK from '../../commons-node/passesGK';
 import {getNotifierByConnection} from '../../nuclide-open-files';
 import {AtomLanguageService} from '../../nuclide-language-service';
+import {getLogger} from '../../nuclide-logging';
 import {filterResultsByPrefix, shouldFilter} from '../../nuclide-flow-common';
 import {ConnectionCache, getServiceByConnection} from '../../nuclide-remote-connection';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
@@ -38,15 +41,10 @@ function getConnectionCache(): ConnectionCache<FlowLanguageServiceType> {
   return connectionCache;
 }
 
-export function activate() {
+export async function activate() {
   if (!disposables) {
     connectionCache = new ConnectionCache(connectionToFlowService);
 
-    const flowLanguageService = new AtomLanguageService(
-      connection => getConnectionCache().get(connection),
-      getLanguageServiceConfig(),
-    );
-    flowLanguageService.activate();
 
     disposables = new UniversalDisposable(
       connectionCache,
@@ -57,7 +55,19 @@ export function activate() {
         'nuclide-flow:restart-flow-server',
         allowFlowServerRestart,
       ),
-      flowLanguageService,
+      Observable
+        .fromPromise(getLanguageServiceConfig())
+        .subscribe(lsConfig => {
+          const flowLanguageService = new AtomLanguageService(
+            connection => getConnectionCache().get(connection),
+            lsConfig,
+          );
+          flowLanguageService.activate();
+          // `disposables` is always disposed before it is set to null. If it has been disposed,
+          // this subscription will have been disposed as well and we will not enter this callback.
+          invariant(disposables != null);
+          disposables.add(flowLanguageService);
+        }),
     );
 
     registerGrammar('source.ini', ['.flowconfig']);
@@ -94,12 +104,11 @@ async function allowFlowServerRestart(): Promise<void> {
   }
 }
 
-function getLanguageServiceConfig(): AtomLanguageServiceConfig {
+async function getLanguageServiceConfig(): Promise<AtomLanguageServiceConfig> {
   const enableHighlight = featureConfig.get('nuclide-flow.enableReferencesHighlight');
   const excludeLowerPriority = Boolean(featureConfig.get('nuclide-flow.excludeOtherAutocomplete'));
   const flowResultsFirst = Boolean(featureConfig.get('nuclide-flow.flowAutocompleteResultsFirst'));
   const enableTypeHints = Boolean(featureConfig.get('nuclide-flow.enableTypeHints'));
-  const enablePushDiagnostics = Boolean(featureConfig.get('nuclide-flow.enablePushDiagnostics'));
   return {
     name: 'Flow',
     grammars: JS_GRAMMARS,
@@ -139,7 +148,7 @@ function getLanguageServiceConfig(): AtomLanguageServiceConfig {
       },
       onDidInsertSuggestionAnalyticsEventName: 'nuclide-flow.autocomplete-chosen',
     },
-    diagnostics: enablePushDiagnostics ? {
+    diagnostics: await shouldUsePushDiagnostics() ? {
       version: '0.2.0',
       analyticsEventName: 'flow.receive-push-diagnostics',
     } : {
@@ -158,4 +167,17 @@ function getLanguageServiceConfig(): AtomLanguageServiceConfig {
       analyticsEventName: 'flow.evaluationExpression',
     },
   };
+}
+
+async function shouldUsePushDiagnostics(): Promise<boolean> {
+  const settingEnabled = Boolean(featureConfig.get('nuclide-flow.enablePushDiagnostics'));
+
+  getLogger().info('Checking the Flow persistent connection gk...');
+
+  // Wait 15 seconds for the gk check
+  const doesPassGK = await passesGK('nuclide_flow_persistent_connection', 15 * 1000);
+  getLogger().info(`Got Flow persistent connection gk: ${String(doesPassGK)}`);
+  const result = settingEnabled || doesPassGK;
+  getLogger().info(`Enabling Flow persistent connection: ${String(result)}`);
+  return result;
 }
