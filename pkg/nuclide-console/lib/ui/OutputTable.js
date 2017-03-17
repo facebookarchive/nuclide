@@ -27,6 +27,7 @@ type Props = {
   showSourceLabels: boolean,
   getExecutor: (id: string) => ?Executor,
   getProvider: (id: string) => ?OutputProvider,
+  onScroll: (offsetHeight: number, scrollHeight: number, scrollTop: number) => void,
   onDisplayableRecordHeightChange: RecordHeightChangeHandler,
 };
 
@@ -46,6 +47,11 @@ type RowHeightParams = {
   index: number,
 };
 
+type OnScrollParams = {
+  clientHeight: number,
+  scrollHeight: number,
+  scrollTop: number,
+};
 
 // The number of extra rows to render beyond what is visible
 const OVERSCAN_COUNT = 5;
@@ -71,6 +77,7 @@ export default class OutputTable extends React.Component {
     (this: any)._handleTableWrapper = this._handleTableWrapper.bind(this);
     (this: any)._handleRecordHeightChange = this._handleRecordHeightChange.bind(this);
     (this: any)._handleResize = this._handleResize.bind(this);
+    (this: any)._onScroll = this._onScroll.bind(this);
     (this: any)._renderRow = this._renderRow.bind(this);
     this.state = {
       width: 0,
@@ -100,10 +107,18 @@ export default class OutputTable extends React.Component {
             rowHeight={this._getRowHeight}
             rowRenderer={this._renderRow}
             overscanRowCount={OVERSCAN_COUNT}
+            onScroll={this._onScroll}
           />
         ) : null}
       </ResizeSensitiveContainer>
     );
+  }
+
+  scrollToBottom(): void {
+    if (this._list != null) {
+      // $FlowIgnore Untyped react-virtualized List method
+      this._list.scrollToRow(this.props.displayableRecords.length - 1);
+    }
   }
 
   _getExecutor(id: string): ?Executor {
@@ -182,5 +197,9 @@ export default class OutputTable extends React.Component {
         this._list.recomputeRowHeights();
       }
     });
+  }
+
+  _onScroll({clientHeight, scrollHeight, scrollTop}: OnScrollParams): void {
+    this.props.onScroll(clientHeight, scrollHeight, scrollTop);
   }
 }

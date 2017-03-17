@@ -53,18 +53,18 @@ export default class Console extends React.Component {
   props: Props;
   state: State;
 
-  _shouldScrollToBottom: boolean;
-  _scrollPane: ?HTMLElement;
+  _isScrolledNearBottom: boolean;
+  _outputTable: ?OutputTable;
 
   constructor(props: Props) {
     super(props);
     this.state = {
       unseenMessages: false,
     };
-    this._shouldScrollToBottom = false;
+    this._isScrolledNearBottom = false;
     (this: any)._getExecutor = this._getExecutor.bind(this);
     (this: any)._getProvider = this._getProvider.bind(this);
-    (this: any)._handleScrollPane = this._handleScrollPane.bind(this);
+    (this: any)._handleOutputTable = this._handleOutputTable.bind(this);
     (this: any)._handleScroll = this._handleScroll.bind(this);
     (this: any)._handleScrollEnd = debounce(this._handleScrollEnd, 100);
     (this: any)._scrollToBottom = this._scrollToBottom.bind(this);
@@ -73,7 +73,8 @@ export default class Console extends React.Component {
   componentDidUpdate(prevProps: Props): void {
     // If records are added while we're scrolled to the bottom (or very very close, at least),
     // automatically scroll.
-    if (this._shouldScrollToBottom) {
+    if (this._isScrolledNearBottom &&
+      this.props.displayableRecords.length > prevProps.displayableRecords.length) {
       this._scrollToBottom();
     }
   }
@@ -96,21 +97,15 @@ export default class Console extends React.Component {
     );
   }
 
-  _isScrolledToBottom(): boolean {
-    if (this._scrollPane == null) { return true; }
-    const {scrollTop, scrollHeight, offsetHeight} = this._scrollPane;
+  _isScrolledToBottom(offsetHeight: number, scrollHeight: number, scrollTop: number): boolean {
     return scrollHeight - (offsetHeight + scrollTop) < 5;
   }
 
   componentWillReceiveProps(nextProps: Props): void {
-    if (nextProps.displayableRecords !== this.props.displayableRecords) {
-      const isScrolledToBottom = this._isScrolledToBottom();
-
-      this._shouldScrollToBottom = isScrolledToBottom;
-
+    if (nextProps.displayableRecords.length > this.props.displayableRecords.length) {
       // If we receive new messages after we've scrolled away from the bottom, show the
       // "new messages" notification.
-      if (!isScrolledToBottom) {
+      if (!this._isScrolledNearBottom) {
         this.setState({unseenMessages: true});
       }
     }
@@ -148,10 +143,12 @@ export default class Console extends React.Component {
         <div className="nuclide-console-body">
           <div className="nuclide-console-scroll-pane-wrapper">
             <OutputTable
+              ref={this._handleOutputTable}
               displayableRecords={this.props.displayableRecords}
               showSourceLabels={this.props.selectedSourceIds.length > 1}
               getExecutor={this._getExecutor}
               getProvider={this._getProvider}
+              onScroll={this._handleScroll}
               onDisplayableRecordHeightChange={this.props.onDisplayableRecordHeightChange}
             />
             <UnseenMessagesNotification
@@ -182,29 +179,24 @@ export default class Console extends React.Component {
     );
   }
 
-  _handleScroll(event: SyntheticMouseEvent): void {
-    this._handleScrollEnd();
+  _handleScroll(offsetHeight: number, scrollHeight: number, scrollTop: number): void {
+    this._handleScrollEnd(offsetHeight, scrollHeight, scrollTop);
   }
 
-  _handleScrollEnd(): void {
-    if (!this._scrollPane) {
-      return;
-    }
-
-    const isScrolledToBottom = this._isScrolledToBottom();
-    this.setState({unseenMessages: this.state.unseenMessages && !isScrolledToBottom});
+  _handleScrollEnd(offsetHeight: number, scrollHeight: number, scrollTop: number): void {
+    this._isScrolledNearBottom = this._isScrolledToBottom(offsetHeight, scrollHeight, scrollTop);
+    this.setState({unseenMessages: this.state.unseenMessages && !this._isScrolledNearBottom});
   }
 
-  _handleScrollPane(el: HTMLElement): void {
-    this._scrollPane = el;
+  _handleOutputTable(ref: OutputTable): void {
+    this._outputTable = ref;
   }
 
   _scrollToBottom(): void {
-    if (!this._scrollPane) {
+    if (!this._outputTable) {
       return;
     }
-    // TODO: Animate?
-    this._scrollPane.scrollTop = this._scrollPane.scrollHeight;
+    this._outputTable.scrollToBottom();
     this.setState({unseenMessages: false});
   }
 }
