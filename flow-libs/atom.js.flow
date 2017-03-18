@@ -541,6 +541,7 @@ declare class atom$Range {
   containsRange(other: atom$Range, exclusive?: boolean): boolean,
   union(other: atom$Range): atom$Range,
   serialize(): Array<Array<number>>,
+  translate(startDelta: atom$PointLike, endDelta?: atom$PointLike): atom$Range,
 }
 
 type RawStatusBarTile = {
