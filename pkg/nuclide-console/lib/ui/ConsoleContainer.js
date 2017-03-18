@@ -87,6 +87,7 @@ export class ConsoleContainer extends React.Component {
     (this: any)._selectSources = this._selectSources.bind(this);
     (this: any)._toggleRegExpFilter = this._toggleRegExpFilter.bind(this);
     (this: any)._updateFilterText = this._updateFilterText.bind(this);
+    (this: any)._resetAllFilters = this._resetAllFilters.bind(this);
     const {initialFilterText, initialEnableRegExpFilter, initialUnselectedSourceIds} = props;
     this.state = {
       ready: false,
@@ -192,6 +193,11 @@ export class ConsoleContainer extends React.Component {
     return this._actionCreators;
   }
 
+  _resetAllFilters(): void {
+    this._selectSources(this.state.sources.map(s => s.id));
+    this._updateFilterText('');
+  }
+
   render(): ?React.Element<any> {
     if (!this.state.ready) { return <span />; }
 
@@ -211,6 +217,11 @@ export class ConsoleContainer extends React.Component {
       this.state.sources.length !== selectedSourceIds.length,
     );
 
+    const filteredRecordCount = (
+      this.state.displayableRecords.length -
+      displayableRecords.length
+    );
+
     // TODO(matthewwithanm): serialize and restore `initialSelectedSourceId`
     return (
       <Console
@@ -223,6 +234,7 @@ export class ConsoleContainer extends React.Component {
         filterText={this.state.filterText}
         enableRegExpFilter={this.state.enableRegExpFilter}
         displayableRecords={displayableRecords}
+        filteredRecordCount={filteredRecordCount}
         history={this.state.history}
         sources={this.state.sources}
         selectedSourceIds={selectedSourceIds}
@@ -232,6 +244,7 @@ export class ConsoleContainer extends React.Component {
         toggleRegExpFilter={this._toggleRegExpFilter}
         updateFilterText={this._updateFilterText}
         onDisplayableRecordHeightChange={this._handleDisplayableRecordHeightChange}
+        resetAllFilters={this._resetAllFilters}
       />
     );
   }

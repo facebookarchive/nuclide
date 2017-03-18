@@ -34,6 +34,7 @@ type Props = {
   onFilterTextChange: (filterText: string) => void,
   toggleRegExpFilter: () => void,
   onSelectedSourcesChange: (sourceIds: Array<string>) => void,
+  filterText: string,
 };
 
 export default class ConsoleHeader extends React.Component {
@@ -138,6 +139,7 @@ export default class ConsoleHeader extends React.Component {
               width={200}
               placeholderText="Filter"
               onDidChange={this.props.onFilterTextChange}
+              value={this.props.filterText}
             />
             <Button
               className="nuclide-console-filter-regexp-button"

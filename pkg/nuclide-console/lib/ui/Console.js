@@ -18,6 +18,7 @@ import type {
 
 import debounce from '../../../commons-node/debounce';
 import React from 'react';
+import FilteredMessagesReminder from './FilteredMessagesReminder';
 import OutputTable from './OutputTable';
 import ConsoleHeader from './ConsoleHeader';
 import InputArea from './InputArea';
@@ -43,6 +44,9 @@ type Props = {
   updateFilterText: (filterText: string) => void,
   getProvider: (id: string) => ?OutputProvider,
   onDisplayableRecordHeightChange: RecordHeightChangeHandler,
+  filteredRecordCount: number,
+  filterText: string,
+  resetAllFilters: () => void,
 };
 
 type State = {
@@ -130,6 +134,7 @@ export default class Console extends React.Component {
           clear={this.props.clearRecords}
           invalidFilterInput={this.props.invalidFilterInput}
           enableRegExpFilter={this.props.enableRegExpFilter}
+          filterText={this.props.filterText}
           selectedSourceIds={this.props.selectedSourceIds}
           sources={this.props.sources}
           toggleRegExpFilter={this.props.toggleRegExpFilter}
@@ -142,6 +147,10 @@ export default class Console extends React.Component {
         */}
         <div className="nuclide-console-body">
           <div className="nuclide-console-scroll-pane-wrapper">
+            <FilteredMessagesReminder
+              filteredRecordCount={this.props.filteredRecordCount}
+              onReset={this.props.resetAllFilters}
+            />
             <OutputTable
               ref={this._handleOutputTable}
               displayableRecords={this.props.displayableRecords}
