@@ -152,26 +152,17 @@ class Activation {
     });
     this._disposables.add(currentSubscription);
 
-
-    let updateOpenFilesWorkingSet = this._fileTreeController.updateOpenFilesWorkingSet.bind(
-      this._fileTreeController,
-    );
-
-    this._disposables.add(() => {
-      updateOpenFilesWorkingSet = () => {};
-    });
-
     const rebuildOpenFilesWorkingSet = debounce(
       () => {
         const openUris = atom.workspace.getTextEditors()
           .filter(te => te.getPath() != null && te.getPath() !== '')
           .map(te => (te.getPath(): any));
         const openFilesWorkingSet = new WorkingSet(openUris);
-        updateOpenFilesWorkingSet(openFilesWorkingSet);
+        this._fileTreeController.updateOpenFilesWorkingSet(openFilesWorkingSet);
       },
       OPEN_FILES_UPDATE_DEBOUNCE_INTERVAL_MS,
     );
-
+    this._disposables.add(rebuildOpenFilesWorkingSet);
     rebuildOpenFilesWorkingSet();
 
     const paneObservingDisposable = new UniversalDisposable();
