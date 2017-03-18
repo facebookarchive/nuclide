@@ -9,6 +9,7 @@
  */
 
 import typeof * as FileSystemService from '../../lib/services/FileSystemService';
+import type {NuclideUri} from '../../../commons-node/nuclideUri';
 
 import ServiceTestHelper from './ServiceTestHelper';
 import invariant from 'assert';
@@ -450,6 +451,88 @@ describe('FileSystemService', () => {
         // chmod 0777
         await service.chmod(testFilePath, 511);
         expect(fs.statSync(testFilePath).mode % 512).toBe(511);
+      });
+    });
+  });
+
+  describe('findFilesInDirectories()', () => {
+    let dirPath: string = (null: any);
+    let fileName: string = (null: any);
+    let filePaths: Array<string> = (null: any);
+
+    function toLocalPaths(fileUris: Array<NuclideUri>): Array<string> {
+      return fileUris.map(fileUri => nuclideUri.getPath(fileUri));
+    }
+
+    beforeEach(() => {
+      dirPath = nuclideUri.join(__dirname, 'find_in_dir');
+      fileName = 'file.txt';
+
+      fs.mkdirSync(dirPath);
+      fs.mkdirSync(nuclideUri.join(dirPath, 'foo'));
+      fs.mkdirSync(nuclideUri.join(dirPath, 'foo', 'bar'));
+      fs.mkdirSync(nuclideUri.join(dirPath, 'baz'));
+      // A directory with the same file name won't be matched.
+      fs.mkdirSync(nuclideUri.join(dirPath, 'foo', fileName));
+
+      filePaths = [
+        nuclideUri.join(dirPath, fileName),
+        nuclideUri.join(dirPath, 'baz', fileName),
+        nuclideUri.join(dirPath, 'baz', 'other_file1'),
+        nuclideUri.join(dirPath, 'foo', 'other_file2'),
+        nuclideUri.join(dirPath, 'foo', 'bar', 'other_file3'),
+        nuclideUri.join(dirPath, 'foo', 'bar', fileName),
+      ];
+      filePaths.forEach(filePath => fs.writeFileSync(filePath, 'any contents'));
+    });
+
+    afterEach(() => {
+      rimraf.sync(dirPath);
+    });
+
+    it('errors when no search directories are provided', () => {
+      waitsForPromise(async () => {
+        let error;
+        try {
+          await service.findFilesInDirectories([], fileName).refCount().toPromise();
+        } catch (e) {
+          error = e;
+        }
+        expect(error != null).toBeTruthy();
+      });
+    });
+
+    it('return empty list when no files are matching', () => {
+      waitsForPromise(async () => {
+        const foundFiles = await service
+          .findFilesInDirectories([dirPath], 'not_existing')
+          .refCount().toPromise();
+        expect(foundFiles.length).toBe(0);
+      });
+    });
+
+    it('return matching file names in a directory (& nested directories)', () => {
+      waitsForPromise(async () => {
+        const foundFiles = await service
+          .findFilesInDirectories([dirPath], fileName)
+          .refCount().toPromise();
+        expect(foundFiles.length).toBe(3);
+        expect(toLocalPaths(foundFiles).sort())
+          .toEqual([filePaths[0], filePaths[1], filePaths[5]].sort());
+      });
+    });
+
+    it('return matching file names in specific search directories', () => {
+      waitsForPromise(async () => {
+        const foundFiles = await service
+          .findFilesInDirectories([
+            nuclideUri.join(dirPath, 'baz'),
+            nuclideUri.join(dirPath, 'foo'),
+          ], fileName)
+          .refCount().toPromise();
+        expect(foundFiles.length).toBe(2);
+        expect(toLocalPaths(foundFiles).sort())
+          .toEqual([filePaths[1], filePaths[5]].sort());
       });
     });
   });

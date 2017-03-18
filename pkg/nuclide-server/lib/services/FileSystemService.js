@@ -14,11 +14,16 @@
  * readFile, writeFile, etc.
  */
 
+import type {ConnectableObservable} from 'rxjs';
+import type {NuclideUri} from '../../../commons-node/nuclideUri';
+
 import mv from 'mv';
 import fs from 'fs';
 import {arrayCompact} from '../../../commons-node/collection';
 import nuclideUri from '../../../commons-node/nuclideUri';
 import fsPromise from '../../../commons-node/fsPromise';
+import {runCommand} from '../../../commons-node/process';
+import {Observable} from 'rxjs';
 
 export type FileWithStats = {
   file: string,
@@ -43,6 +48,19 @@ export function exists(path: string): Promise<boolean> {
 
 export function findNearestFile(fileName: string, pathToDirectory: string): Promise<?string> {
   return fsPromise.findNearestFile(fileName, pathToDirectory);
+}
+
+export function findFilesInDirectories(
+  searchPaths: Array<NuclideUri>,
+  fileName: string,
+): ConnectableObservable<Array<NuclideUri>> {
+  if (searchPaths.length === 0) {
+    return Observable.throw(new Error('No directories to search in!')).publish();
+  }
+  const findArgs = [...searchPaths, '-type', 'f', '-name', fileName];
+  return runCommand('find', findArgs)
+    .map(stdout => stdout.split('\n').filter(filePath => filePath !== ''))
+    .publish();
 }
 
 /**
