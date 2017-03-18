@@ -106,4 +106,5 @@ export type Action =
   | SetProjectDirectoriesAction
   | SetRepositoryBookmarks
   | UnsetBookmarkIsLoading
-  | UpdateToBookmarkAction;
+  | UpdateToBookmarkAction
+  | UpdateUncommittedChanges;
