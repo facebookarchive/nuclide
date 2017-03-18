@@ -86,7 +86,10 @@ export default class OutputTable extends React.Component {
   }
 
   componentDidUpdate(prevProps: Props, prevState: State): void {
-    if (prevProps.displayableRecords.length !== this.props.displayableRecords.length) {
+    if (
+      this._list != null &&
+      prevProps.displayableRecords.length !== this.props.displayableRecords.length
+    ) {
       // $FlowIgnore Untyped react-virtualized List method
       this._list.recomputeRowHeights();
     }
