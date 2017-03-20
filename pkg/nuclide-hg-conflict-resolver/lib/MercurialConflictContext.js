@@ -89,7 +89,7 @@ export class MercurialConflictContext {
     if (this._conflictingRepository == null) {
       throw new Error('Mercurial merge conflict resolver doesn\'t have a conflicting repository');
     }
-    await this._conflictingRepository.resolveConflictedFile(filePath);
+    await this._conflictingRepository.resolveConflictedFile(filePath).toPromise();
     this._cachedMergeConflicts = this._cachedMergeConflicts.filter(mergeConflict => {
       return mergeConflict.path !== filePath;
     });
@@ -122,7 +122,7 @@ export class MercurialConflictContext {
             notification.dismiss();
             this.clearConflictState();
             try {
-              await repository.continueRebase();
+              await repository.continueRebase().toPromise();
               atom.notifications.addInfo('Rebase continued');
             } catch (error) {
               atom.notifications.addError(
