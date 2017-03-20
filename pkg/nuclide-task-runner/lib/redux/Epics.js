@@ -108,8 +108,8 @@ export function setActiveTaskRunnerEpic(
     }
 
     return Observable.concat(
-      visibilityAction,
       Observable.of(Actions.selectTaskRunner(taskRunner, false)),
+      visibilityAction,
     );
   });
 }
@@ -371,8 +371,8 @@ export function toggleToolbarVisibilityEpic(
         taskRunner !== activeTaskRunner
       ) {
         return Observable.of(
-          Actions.setToolbarVisibility(true, true),
           Actions.selectTaskRunner(taskRunner, true),
+          Actions.setToolbarVisibility(true, true),
         );
       }
     }

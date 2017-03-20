@@ -118,29 +118,29 @@ describe('Epics', () => {
     });
 
     describe('if this working root doesnt have a preference', () => {
-      it('shows the toolbar since it might be useful', () => {
-        waitsForPromise(async () => {
-          const output = await runActions([Actions.setStatesForTaskRunners(newStates)], state)
-            .toArray()
-            .toPromise();
-          expect(output.length).toEqual(2);
-          const action = output[0];
-          invariant(action.type === Actions.SET_TOOLBAR_VISIBILITY);
-          expect(action.payload.updateUserPreferences).toEqual(true);
-          expect(action.payload.visible).toEqual(true);
-        });
-      });
-
       it('selects an enabled runner with the highest priority', () => {
         waitsForPromise(async () => {
           const output = await runActions([Actions.setStatesForTaskRunners(newStates)], state)
             .toArray()
             .toPromise();
           expect(output.length).toEqual(2);
-          const action = output[1];
+          const action = output[0];
           invariant(action.type === Actions.SELECT_TASK_RUNNER);
           invariant(action.payload.taskRunner);
           expect(action.payload.taskRunner.id).toEqual('c');
+        });
+      });
+
+      it('shows the toolbar since it might be useful', () => {
+        waitsForPromise(async () => {
+          const output = await runActions([Actions.setStatesForTaskRunners(newStates)], state)
+            .toArray()
+            .toPromise();
+          expect(output.length).toEqual(2);
+          const action = output[1];
+          invariant(action.type === Actions.SET_TOOLBAR_VISIBILITY);
+          expect(action.payload.updateUserPreferences).toEqual(true);
+          expect(action.payload.visible).toEqual(true);
         });
       });
     });
@@ -161,14 +161,14 @@ describe('Epics', () => {
             .toArray()
             .toPromise();
           expect(output.length).toEqual(2);
-          const visibilityAction = output[0];
-          const taskRunnerAction = output[1];
-          invariant(visibilityAction.type === Actions.SET_TOOLBAR_VISIBILITY);
+          const taskRunnerAction = output[0];
+          const visibilityAction = output[1];
           invariant(taskRunnerAction.type === Actions.SELECT_TASK_RUNNER);
-          expect(visibilityAction.payload.visible).toEqual(true);
-          expect(visibilityAction.payload.updateUserPreferences).toEqual(false);
+          invariant(visibilityAction.type === Actions.SET_TOOLBAR_VISIBILITY);
           invariant(taskRunnerAction.payload.taskRunner);
           expect(taskRunnerAction.payload.taskRunner.id).toEqual('b');
+          expect(visibilityAction.payload.visible).toEqual(true);
+          expect(visibilityAction.payload.updateUserPreferences).toEqual(false);
         });
       });
     });
