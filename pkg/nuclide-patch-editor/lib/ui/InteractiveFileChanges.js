@@ -49,9 +49,10 @@ export default class InteractiveFileChanges extends React.Component {
         <Button onClick={this._onClickDirectEdit}>Direct Edit</Button>
         {this._patch.map(file =>
           <FileChanges
+            checkboxFactory={this.props.checkboxFactory}
+            collapsable={true}
             diff={file}
             key={`${file.from}:${file.to}`}
-            checkboxFactory={this.props.checkboxFactory}
           />,
         )}
       </div>

@@ -176,7 +176,6 @@ class Activation {
 
       return (
         <Checkbox
-          className="nuclide-patch-editor-checkbox-margin"
           checked={checked}
           indeterminate={indeterminate}
           onChange={

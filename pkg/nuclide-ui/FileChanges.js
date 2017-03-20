@@ -16,19 +16,22 @@ import {
   TextBuffer,
 } from 'atom';
 import React from 'react';
+import {Section} from './Section';
 import UniversalDisposable from '../commons-node/UniversalDisposable';
 import {viewableFromReactElement} from '../commons-atom/viewableFromReactElement';
 
 type Props = {
-  diff: diffparser$FileDiff,
   checkboxFactory?:
     (fileName: string, hunkOldStartLine?: number, line?: number) => React.Element<any>,
+  collapsable?: boolean,
+  diff: diffparser$FileDiff,
 };
 
 type HunkProps = {
-  fileName: string,
   checkboxFactory: ?(fileName: string, hunkOldStartLine: number, line?: number)
     => React.Element<any>,
+  collapsable: boolean,
+  fileName: string,
   grammar: atom$Grammar,
   hunk: diffparser$Hunk,
 };
@@ -168,20 +171,26 @@ class HunkDiff extends React.Component {
     if (this.props.checkboxFactory != null) {
       checkbox = this.props.checkboxFactory(this.props.fileName, oldStart);
     }
+
     return (
-      <div key={content}>
+      <div className="nuclide-ui-hunk-diff" key={content}>
         {checkbox}
-        {content}
-         <AtomTextEditor
-           autoGrow={true}
-           className="nuclide-ui-hunk-diff-text-editor"
-           correctContainerWidth={false}
-           grammar={grammar}
-           gutterHidden={true}
-           readOnly={true}
-           ref="editor"
-           textBuffer={textBuffer}
-         />
+        <Section
+          className="nuclide-ui-hunk-diff-content"
+          collapsable={this.props.collapsable}
+          headline={content}
+          size="medium">
+          <AtomTextEditor
+            autoGrow={true}
+            className="nuclide-ui-hunk-diff-text-editor"
+            correctContainerWidth={false}
+            grammar={grammar}
+            gutterHidden={true}
+            readOnly={true}
+            ref="editor"
+            textBuffer={textBuffer}
+          />
+        </Section>
       </div>
     );
   }
@@ -190,6 +199,10 @@ class HunkDiff extends React.Component {
 /* Renders changes to a single file. */
 export default class FileChanges extends React.Component {
   props: Props;
+
+  static defaultProps = {
+    collapsable: false,
+  };
 
   render(): ?React.Element<any> {
     const {diff} = this.props;
@@ -209,37 +222,42 @@ export default class FileChanges extends React.Component {
     let annotationComponent;
     if (annotation != null) {
       annotationComponent = (
-        <div>
-          {annotation.split('\n').map((line, index) => <div key={index}>{line}</div>)}
-        </div>
+        <span>
+          {annotation.split('\n').map((line, index) => <span key={index}>{line}<br /></span>)}
+        </span>
       );
     }
 
     const diffDetails = (
-      <div>
-        {annotationComponent}
+      <span>
+        {annotationComponent}<br />
         {additions} {pluralize('addition', additions)},{' '}
         {deletions} {pluralize('deletion', deletions)}
-      </div>
+      </span>
     );
 
     const hunks = chunks.map(chunk =>
       <HunkDiff
         checkboxFactory={this.props.checkboxFactory}
+        collapsable={this.props.collapsable}
         fileName={fileName}
         key={chunk.content}
         grammar={grammar}
         hunk={chunk}
       />,
     );
+
+    const headline = <span>{fileName}<br />{diffDetails}</span>;
+
     return (
       <div className="nuclide-ui-file-changes">
-        <h3>
-          {checkbox}
-          {fileName}
-        </h3>
-        {diffDetails}
-        <div>{hunks}</div>
+        {checkbox}
+        <Section
+          className="nuclide-ui-file-changes-content"
+          collapsable={this.props.collapsable}
+          headline={headline}>
+          {hunks}
+        </Section>
       </div>
     );
   }
