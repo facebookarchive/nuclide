@@ -42,21 +42,23 @@ import {
   decodeError,
 } from './messages';
 import {builtinLocation, voidType} from './builtin-types';
-import {trackTiming} from '../../nuclide-analytics';
+import {track, trackTiming} from '../../nuclide-analytics';
 import {SERVICE_FRAMEWORK3_PROTOCOL} from './config';
+import {shorten} from '../../commons-node/string';
 import {getLogger} from '../../nuclide-logging';
 
 const logger = getLogger();
 
 const SERVICE_FRAMEWORK_RPC_TIMEOUT_MS = 60 * 1000;
+const LARGE_RESPONSE_SIZE = 50000;
 
 type RpcConnectionKind = 'server' | 'client';
 
 class Subscription {
-  _message: Object;
+  _message: RequestMessage;
   _observer: rxjs$Observer<any>;
 
-  constructor(message: Object, observer: rxjs$Observer<any>) {
+  constructor(message: RequestMessage, observer: rxjs$Observer<any>) {
     this._message = message;
     this._observer = observer;
   }
@@ -592,7 +594,18 @@ export class RpcConnection<TransportType: Transport> {
       case 'next':
       case 'complete':
       case 'error':
-        this._handleResponseMessage(message);
+        const requestMessage = this._handleResponseMessage(message);
+        if (value.length > LARGE_RESPONSE_SIZE && requestMessage != null) {
+          const eventName = trackingIdOfMessage(this._objectRegistry, requestMessage);
+          const args = requestMessage.args != null ?
+            shorten(JSON.stringify(requestMessage.args), 100, '...') : '';
+          logger.warn(`${eventName}: Large response of size ${value.length}. Args:`, args);
+          track('large-rpc-response', {
+            eventName,
+            size: value.length,
+            args,
+          });
+        }
         break;
       case 'call':
       case 'call-object':
@@ -606,7 +619,8 @@ export class RpcConnection<TransportType: Transport> {
     }
   }
 
-  _handleResponseMessage(message: ResponseMessage): void {
+  // Handles the response and returns the originating request message (if possible).
+  _handleResponseMessage(message: ResponseMessage): ?RequestMessage {
     const id = message.id;
     switch (message.type) {
       case 'response': {
@@ -614,6 +628,7 @@ export class RpcConnection<TransportType: Transport> {
         if (call != null) {
           const {result} = message;
           call.resolve(result);
+          return call._message;
         }
         break;
       }
@@ -622,6 +637,7 @@ export class RpcConnection<TransportType: Transport> {
         if (call != null) {
           const {error} = message;
           call.reject(error);
+          return call._message;
         }
         break;
       }
@@ -630,6 +646,7 @@ export class RpcConnection<TransportType: Transport> {
         if (subscription != null) {
           const {value} = message;
           subscription.next(value);
+          return subscription._message;
         }
         break;
       }
@@ -638,6 +655,7 @@ export class RpcConnection<TransportType: Transport> {
         if (subscription != null) {
           subscription.complete();
           this._subscriptions.delete(id);
+          return subscription._message;
         }
         break;
       }
@@ -647,6 +665,7 @@ export class RpcConnection<TransportType: Transport> {
           const {error} = message;
           subscription.error(error);
           this._subscriptions.delete(id);
+          return subscription._message;
         }
         break;
       }
