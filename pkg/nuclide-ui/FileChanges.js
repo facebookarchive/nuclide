@@ -194,16 +194,35 @@ export default class FileChanges extends React.Component {
   render(): ?React.Element<any> {
     const {diff} = this.props;
     const {
-      to: fileName,
+      additions,
+      annotation,
       chunks,
       deletions,
-      additions,
+      to: fileName,
     } = diff;
     const grammar = atom.grammars.selectGrammar(fileName, '');
     let checkbox;
     if (this.props.checkboxFactory != null) {
       checkbox = this.props.checkboxFactory(fileName);
     }
+
+    let annotationComponent;
+    if (annotation != null) {
+      annotationComponent = (
+        <div>
+          {annotation.split('\n').map((line, index) => <div key={index}>{line}</div>)}
+        </div>
+      );
+    }
+
+    const diffDetails = (
+      <div>
+        {annotationComponent}
+        {additions} {pluralize('addition', additions)},{' '}
+        {deletions} {pluralize('deletion', deletions)}
+      </div>
+    );
+
     const hunks = chunks.map(chunk =>
       <HunkDiff
         checkboxFactory={this.props.checkboxFactory}
@@ -219,10 +238,7 @@ export default class FileChanges extends React.Component {
           {checkbox}
           {fileName}
         </h3>
-        <div>
-          {additions} {pluralize('addition', additions)},{' '}
-          {deletions} {pluralize('deletion', deletions)}
-        </div>
+        {diffDetails}
         <div>{hunks}</div>
       </div>
     );
