@@ -22,7 +22,6 @@ import type {
   ClassDefinition,
   FunctionImplementation,
 } from './ServiceRegistry';
-import type {TimingTracker} from '../../nuclide-analytics';
 import type {PredefinedTransformer} from './index';
 
 import invariant from 'assert';
@@ -43,7 +42,7 @@ import {
   decodeError,
 } from './messages';
 import {builtinLocation, voidType} from './builtin-types';
-import {startTracking, trackTiming} from '../../nuclide-analytics';
+import {trackTiming} from '../../nuclide-analytics';
 import {SERVICE_FRAMEWORK3_PROTOCOL} from './config';
 import {getLogger} from '../../nuclide-logging';
 
@@ -414,7 +413,6 @@ export class RpcConnection<TransportType: Transport> {
 
   _returnPromise(
     id: number,
-    timingTracker: TimingTracker,
     candidate: any,
     type: Type,
   ): void {
@@ -433,11 +431,9 @@ export class RpcConnection<TransportType: Transport> {
     // Send the result of the promise across the socket.
     returnVal.then(result => {
       this._transport.send(JSON.stringify(createPromiseMessage(this._getProtocol(), id, result)));
-      timingTracker.onSuccess();
     }, error => {
       this._transport.send(JSON.stringify(
         createErrorResponseMessage(this._getProtocol(), id, error)));
-      timingTracker.onError(error == null ? new Error() : error);
     });
   }
 
@@ -471,27 +467,25 @@ export class RpcConnection<TransportType: Transport> {
   }
 
   // Returns true if a promise was returned.
-  _returnValue(id: number, timingTracker: TimingTracker, value: any, type: Type): boolean {
+  _returnValue(id: number, value: any, type: Type): void {
     switch (type.kind) {
       case 'void':
         break; // No need to send anything back to the user.
       case 'promise':
-        this._returnPromise(id, timingTracker, value, type.type);
-        return true;
+        this._returnPromise(id, value, type.type);
+        break;
       case 'observable':
         this._returnObservable(id, value, type.type);
         break;
       default:
         throw new Error(`Unknown return type ${type.kind}.`);
     }
-    return false;
   }
 
   async _callFunction(
     id: number,
-    timingTracker: TimingTracker,
     call: CallMessage,
-  ): Promise<boolean> {
+  ): Promise<void> {
     const {
       localImplementation,
       type,
@@ -499,18 +493,16 @@ export class RpcConnection<TransportType: Transport> {
     const marshalledArgs = await this._getTypeRegistry().unmarshalArguments(
       this._objectRegistry, call.args, type.argumentTypes);
 
-    return this._returnValue(
+    this._returnValue(
       id,
-      timingTracker,
       localImplementation.apply(this, marshalledArgs),
       type.returnType);
   }
 
   async _callMethod(
     id: number,
-    timingTracker: TimingTracker,
     call: CallObjectMessage,
-  ): Promise<boolean> {
+  ): Promise<void> {
     const object = this._objectRegistry.unmarshal(call.objectId);
     invariant(object != null);
 
@@ -524,16 +516,14 @@ export class RpcConnection<TransportType: Transport> {
     const marshalledArgs = await this._getTypeRegistry().unmarshalArguments(
       this._objectRegistry, call.args, type.argumentTypes);
 
-    return this._returnValue(
+    this._returnValue(
       id,
-      timingTracker,
       object[call.method](...marshalledArgs),
       type.returnType);
   }
 
   async _callConstructor(
     id: number,
-    timingTracker: TimingTracker,
     constructorMessage: NewObjectMessage,
   ): Promise<void> {
     const classDefinition = this._getClassDefinition(constructorMessage.interface);
@@ -555,7 +545,6 @@ export class RpcConnection<TransportType: Transport> {
     // marshalling system.
     this._returnPromise(
       id,
-      timingTracker,
       Promise.resolve(newObject),
       {
         kind: 'named',
@@ -669,31 +658,21 @@ export class RpcConnection<TransportType: Transport> {
   async _handleRequestMessage(message: RequestMessage): Promise<void> {
     const id = message.id;
 
-    // Track timings of all function calls, method calls, and object creations.
-    // Note: for Observables we only track how long it takes to create the initial Observable.
-    // while for Promises we track the length of time it takes to resolve or reject.
-    // For returning void, we track the time for the call to complete.
-    const timingTracker: TimingTracker
-      = startTracking(trackingIdOfMessage(this._objectRegistry, message));
-
     // Here's the main message handler ...
     try {
-      let returnedPromise = false;
       switch (message.type) {
         case 'call':
-          returnedPromise = await this._callFunction(id, timingTracker, message);
+          await this._callFunction(id, message);
           break;
         case 'call-object':
-          returnedPromise = await this._callMethod(id, timingTracker, message);
+          await this._callMethod(id, message);
           break;
         case 'new':
-          await this._callConstructor(id, timingTracker, message);
-          returnedPromise = true;
+          await this._callConstructor(id, message);
           break;
         case 'dispose':
           await this._objectRegistry.disposeObject(message.objectId);
-          this._returnPromise(id, timingTracker, Promise.resolve(), voidType);
-          returnedPromise = true;
+          this._returnPromise(id, Promise.resolve(), voidType);
           break;
         case 'unsubscribe':
           this._objectRegistry.disposeSubscription(id);
@@ -701,12 +680,8 @@ export class RpcConnection<TransportType: Transport> {
         default:
           throw new Error(`Unknown message type ${message.type}`);
       }
-      if (!returnedPromise) {
-        timingTracker.onSuccess();
-      }
     } catch (e) {
       logger.error(`Error handling RPC ${message.type} message`, e);
-      timingTracker.onError(e == null ? new Error() : e);
       this._transport.send(JSON.stringify(createErrorResponseMessage(this._getProtocol(), id, e)));
     }
   }
