@@ -53,6 +53,7 @@ export class RemoteConnection {
   _hgRepositoryDescription: ?HgRepositoryDescription;
   _connection: ServerConnection;
   _displayTitle: string;
+  _alwaysShutdownIfLast: boolean;
 
   static _emitter = new Emitter();
 
@@ -78,6 +79,7 @@ export class RemoteConnection {
     this._hgRepositoryDescription = null;
     this._connection = connection;
     this._displayTitle = displayTitle;
+    this._alwaysShutdownIfLast = false;
   }
 
   static _createInsecureConnectionForTesting(
@@ -310,5 +312,13 @@ export class RemoteConnection {
 
   isOnlyConnection(): boolean {
     return this._connection.getConnections().length === 1;
+  }
+
+  setAlwaysShutdownIfLast(alwaysShutdownIfLast: boolean): void {
+    this._alwaysShutdownIfLast = alwaysShutdownIfLast;
+  }
+
+  alwaysShutdownIfLast(): boolean {
+    return this._alwaysShutdownIfLast;
   }
 }

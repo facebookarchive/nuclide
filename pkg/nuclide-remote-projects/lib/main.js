@@ -139,6 +139,11 @@ function addRemoteFolderToProject(connection: RemoteConnection): IDisposable {
       return;
     }
 
+    if (connection.alwaysShutdownIfLast()) {
+      closeConnection(true);
+      return;
+    }
+
     const confirmServerActionOnLastProject =
       featureConfig.get('nuclide-remote-projects.confirmServerActionOnLastProject');
     invariant(typeof confirmServerActionOnLastProject === 'boolean');
