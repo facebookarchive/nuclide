@@ -130,7 +130,7 @@ export default class DiagnosticsPane extends React.Component {
     sortedColumn: ?string,
   };
 
-  constructor(props: mixed) {
+  constructor(props: DiagnosticsPaneProps) {
     super(props);
     (this: any)._handleSort = this._handleSort.bind(this);
     (this: any)._handleSelectTableRow = this._handleSelectTableRow.bind(this);

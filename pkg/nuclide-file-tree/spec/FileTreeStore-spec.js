@@ -278,14 +278,14 @@ describe('FileTreeStore', () => {
     }
 
     function doubleFilter() {
-      updateFilter(node);
+      updateFilter();
       store.addFilterLetter(node.name);
       expect(store.getFilter()).toEqual(node.name + node.name);
       checkNode('', false);
     }
 
     function clearFilter() {
-      updateFilter(node);
+      updateFilter();
       store.addFilterLetter('t');
       checkNode('', false);
       store.clearFilter();
@@ -293,22 +293,22 @@ describe('FileTreeStore', () => {
     }
 
     it('should update when a letter is added', () => {
-      updateFilter(node);
+      updateFilter();
       store.clearFilter();
     });
 
     it('should not match when filter does not equal name', () => {
-      doubleFilter(node);
+      doubleFilter();
       store.clearFilter();
     });
 
     it('should clear the filter, and return matching to normal', () => {
       node = getNode(dir1, dir1);
-      clearFilter(node);
+      clearFilter();
     });
 
     it('should remove filter letter', () => {
-      updateFilter(node);
+      updateFilter();
       store.removeFilterLetter();
       checkNode(node.name.substr(0, node.name.length - 1), true);
       store.clearFilter();

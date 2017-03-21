@@ -23,7 +23,7 @@ describe('Diff View Utils', () => {
     expectedOutput: Array<{level: string, text: string}>,
   ): Promise<void> {
     const stream = Observable.from(input);
-    const result = await processArcanistOutput(stream, 'success')
+    const result = await processArcanistOutput(stream)
       .toArray().toPromise();
     while (result.length > 0) {
       expect(result.pop()).toEqual(expectedOutput.pop());

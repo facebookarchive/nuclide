@@ -1698,6 +1698,8 @@ type RepositoryLineDiff = {
 //
 // [1]: https://github.com/atom/atom/blob/v1.7.3/src/git-repository.coffee
 declare class atom$Repository {
+  constructor(path: string, options?: {refreshOnWindowFocus?: boolean}): void,
+
   // Event Subscription
   onDidChangeStatus: (callback: RepositoryDidChangeStatusCallback) => IDisposable,
   onDidChangeStatuses: (callback: () => mixed) => IDisposable,

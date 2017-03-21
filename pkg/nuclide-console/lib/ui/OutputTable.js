@@ -146,7 +146,7 @@ export default class OutputTable extends React.Component {
               if (view != null) {
                 this._renderedRecords.set(record, view);
               } else {
-                this._renderedRecords.delete(record, view);
+                this._renderedRecords.delete(record);
               }
             }}
             getExecutor={this._getExecutor}

@@ -20,7 +20,6 @@ import type {
   NodeDebuggerService,
 } from '../../nuclide-debugger-node-rpc/lib/NodeDebuggerService';
 import {getNodeDebuggerServiceByNuclideUri} from '../../nuclide-remote-connection';
-import {getConfig} from './utils';
 
 export class NodeAttachProcessInfo extends DebuggerProcessInfo {
   _targetInfo: NodeAttachTargetInfo;
@@ -37,10 +36,7 @@ export class NodeAttachProcessInfo extends DebuggerProcessInfo {
   }
 
   _getRpcService(): NodeDebuggerService {
-    const debuggerConfig = {
-      logLevel: getConfig().serverLogLevel,
-    };
     const service = getNodeDebuggerServiceByNuclideUri(this.getTargetUri());
-    return new service.NodeDebuggerService(debuggerConfig);
+    return new service.NodeDebuggerService();
   }
 }

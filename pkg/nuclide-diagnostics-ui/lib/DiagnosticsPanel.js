@@ -41,7 +41,7 @@ type Props = {
 export default class DiagnosticsPanel extends React.Component {
   props: Props;
 
-  constructor(props: mixed) {
+  constructor(props: Props) {
     super(props);
     (this: any)._onShowTracesChange =
       this._onShowTracesChange.bind(this);

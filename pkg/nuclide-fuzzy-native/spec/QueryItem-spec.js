@@ -52,7 +52,7 @@ describe('QueryItem', () => {
   });
 
   describe('Path Separator', () => {
-    const item = new QueryItem('He/y/Hello', '/');
+    const item = new QueryItem('He/y/Hello');
 
     // TODO match indices not yet implemented. These are not provided by the FBIDE algorithm.
     // eslint-disable-next-line jasmine/no-disabled-tests

@@ -13,9 +13,13 @@ import {Webview} from '../../../nuclide-ui/Webview';
 
 export const WORKSPACE_VIEW_URI = 'atom://nuclide/react-inspector';
 
+type Props = {||};
+
 export default class Inspector extends React.Component {
-  constructor() {
-    super();
+  props: Props;
+
+  constructor(props: Props) {
+    super(props);
     (this: any)._handleDidFinishLoad = this._handleDidFinishLoad.bind(this);
   }
 

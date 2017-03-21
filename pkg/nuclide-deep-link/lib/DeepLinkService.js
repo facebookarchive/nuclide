@@ -30,7 +30,7 @@ export default class DeepLinkService {
     this._observables = new SharedObservableCache(path => {
       return Observable.create(observer => {
         this._observers.set(path, observer);
-        return () => this._observers.delete(path, observer);
+        return () => this._observers.delete(path);
       }).share();
     });
 

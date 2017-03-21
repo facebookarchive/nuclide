@@ -16,7 +16,7 @@ type Props<T> = {
   keyed: Function,
   columns: Array<{
     title: string,
-    value: (handle: T) => ?string | ?number,
+    value: (handle: T, index: number) => ?string | ?number,
     widthPercentage: number,
   }>,
 };

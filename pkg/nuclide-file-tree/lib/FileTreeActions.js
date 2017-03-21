@@ -302,7 +302,7 @@ export default class FileTreeActions {
     //       the only one doing side-effects.
 
     // Unsubscribe from removedRepos.
-    removedRepos.forEach(repo => this._repositoryRemoved(repo, rootKeysForRepository));
+    removedRepos.forEach(repo => this._repositoryRemoved(repo));
 
     // Create subscriptions for addedRepos.
     addedRepos.forEach(repo => this._repositoryAdded(repo, rootKeysForRepository));

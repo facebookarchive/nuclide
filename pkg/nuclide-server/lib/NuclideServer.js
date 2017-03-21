@@ -205,7 +205,7 @@ export default class NuclideServer {
       method: string,
       isTextResponse: boolean) {
     if (this._xhrServiceRegistry[serviceName]) {
-      throw new Error('A service with this name is already registered:', serviceName);
+      throw new Error('A service with this name is already registered: ' + serviceName);
     }
     this._xhrServiceRegistry[serviceName] = serviceFunction;
     this._registerHttpService(serviceName, method, isTextResponse);

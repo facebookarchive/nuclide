@@ -58,12 +58,12 @@ export class MultiSelectList extends React.Component {
   }
 
   componentDidMount(): void {
-    this._updateCommands(this.props.commandScope);
+    this._updateCommands();
   }
 
   componentDidUpdate(prevProps: Props): void {
     if (prevProps.commandScope !== this.props.commandScope) {
-      this._updateCommands(this.props.commandScope);
+      this._updateCommands();
     }
   }
 

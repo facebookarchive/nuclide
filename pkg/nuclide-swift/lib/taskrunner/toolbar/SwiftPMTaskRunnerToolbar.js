@@ -8,14 +8,25 @@
  * @flow
  */
 
+import type SwiftPMTaskRunnerStore from '../SwiftPMTaskRunnerStore';
+import type SwiftPMTaskRunnerActions from '../SwiftPMTaskRunnerActions';
+
 import React from 'react';
 import {Button, ButtonSizes} from '../../../../nuclide-ui/Button';
 import SwiftPMSettingsModal from './SwiftPMSettingsModal';
 
-export default class SwiftPMTaskRunnerToolbar extends React.Component {
-  state: {settingsVisible: boolean};
+type Props = {
+  store: SwiftPMTaskRunnerStore,
+  actions: SwiftPMTaskRunnerActions,
+};
 
-  constructor(props: mixed) {
+type State = {settingsVisible: boolean};
+
+export default class SwiftPMTaskRunnerToolbar extends React.Component {
+  props: Props;
+  state: State;
+
+  constructor(props: Props) {
     super(props);
     this.state = {settingsVisible: false};
   }

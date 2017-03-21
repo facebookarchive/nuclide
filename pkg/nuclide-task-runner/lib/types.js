@@ -94,7 +94,7 @@ export type BoundActionCreators = {
   setProjectRoot(dir: ?Directory): void,
   setToolbarVisibility(visible: boolean): void,
   stopTask(): void,
-  toggleToolbarVisibility(): void,
+  toggleToolbarVisibility(taskRunner?: TaskRunner): void,
   unregisterTaskRunner(taskRunner: TaskRunner): void,
 };
 

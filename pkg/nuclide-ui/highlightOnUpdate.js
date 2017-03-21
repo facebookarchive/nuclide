@@ -40,7 +40,7 @@ export function highlightOnUpdate<T : ReactClass<any>, P: {+[key: string]: mixed
     showFlash: boolean;
     timeout: ?number;
 
-    constructor(props: mixed) {
+    constructor(props: P) {
       super(props);
       this.showFlash = false;
     }

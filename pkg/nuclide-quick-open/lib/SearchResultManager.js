@@ -11,7 +11,7 @@
 /* global performance */
 
 import type {Directory} from '../../nuclide-remote-connection';
-import type {FileResult, Provider} from './types';
+import type {FileResult, Provider, DirectoryProviderType} from './types';
 import type {GroupedResult, GroupedResults, ProviderResult} from './searchResultHelpers';
 import type QuickOpenProviderRegistry from './QuickOpenProviderRegistry';
 
@@ -63,7 +63,7 @@ const GLOBAL_KEY = 'global';
  */
 export default class SearchResultManager {
   _quickOpenProviderRegistry: QuickOpenProviderRegistry;
-  _providersByDirectory: Map<atom$Directory, Set<Provider>>;
+  _providersByDirectory: Map<atom$Directory, Set<DirectoryProviderType>>;
   _providerSubscriptions: Map<Provider, IDisposable>;
   _directories: Array<atom$Directory>;
   _resultCache: ResultCache;
@@ -258,9 +258,11 @@ export default class SearchResultManager {
     subscriptions.dispose();
     this._providerSubscriptions.delete(service);
 
-    this._providersByDirectory.forEach(providers => {
-      providers.delete(service);
-    });
+    if (service.providerType === 'DIRECTORY') {
+      this._providersByDirectory.forEach(providers => {
+        providers.delete(service);
+      });
+    }
 
     if (service.name === this._activeProviderName) {
       this._activeProviderName = OMNISEARCH_PROVIDER.name;

@@ -17,4 +17,14 @@ describe('once', () => {
     expect(onceFn(2)).toEqual(3);
     expect(onceFn(2)).toEqual(3);
   });
+
+  it('does not swallow flow types', () => {
+    const func = (a: string): number => 1;
+    const onceFn = once(func);
+    const ret = onceFn('bar');
+
+    (ret: number);
+    // $FlowIgnore: func's first param should be a string.
+    onceFn(1);
+  });
 });

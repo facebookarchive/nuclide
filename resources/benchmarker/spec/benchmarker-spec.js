@@ -123,7 +123,7 @@ describe('Nuclide performance', () => {
 
       // Detect if we have reached the end of an individual benchmark or of the whole run (& exit).
       if (nextTestState.iteration === 0) {
-        const processedResultFile = processResultFile(resultFile, benchmark);
+        const processedResultFile = processResultFile(resultFile);
         console.log(`Results for ${String(benchmark.name)} are in ${green(processedResultFile)}`);
       }
       if (nextTestState.benchmarkIndex === 0) {

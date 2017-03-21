@@ -12,7 +12,7 @@ function aggregateTable(
   columns: Array<string>,
   records: Array<Object>,
   keyColumn: string,
-  aggregator: (values: Array<string>) => string = avg,
+  aggregator: (values: Array<string>, decimalPlaces: number) => string = avg,
   decimalPlaces: number = 2,
 ): Array<Object> {
   // Map data set into arrays of values keyed by distinct keyColumn values and columns.

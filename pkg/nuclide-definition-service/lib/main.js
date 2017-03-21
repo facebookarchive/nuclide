@@ -57,9 +57,9 @@ export class Service {
 
 let activation: ?Service = null;
 
-export function activate(state: Object | void) {
+export function activate() {
   if (activation == null) {
-    activation = new Service(state);
+    activation = new Service();
   }
 }
 

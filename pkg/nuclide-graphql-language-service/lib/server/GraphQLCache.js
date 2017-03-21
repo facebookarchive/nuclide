@@ -336,7 +336,7 @@ export class GraphQLCache {
     const schemaDSL = await new Promise(resolve =>
       fs.readFile(schemaPath, 'utf8', (error, content) => {
         if (error) {
-          throw new Error(error);
+          throw new Error(String(error));
         }
         resolve(content);
       }),

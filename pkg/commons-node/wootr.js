@@ -77,7 +77,6 @@ export class WString {
           startDegree: 1,
           length,
         },
-        length,
       );
     }
   }

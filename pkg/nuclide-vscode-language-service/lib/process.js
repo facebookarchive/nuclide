@@ -158,7 +158,7 @@ export class LanguageServerProtocolProcess {
         this._logger, this._createProcess(), this._projectRoot);
       this._subscribeToFileEvents();
     } catch (e) {
-      this._logger.logError('LanguageServerProtocolProcess - error spawning child process: ', e);
+      this._logger.logError('LanguageServerProtocolProcess - error spawning child process: ' + e);
       throw e;
     }
   }
@@ -397,10 +397,10 @@ class LspProcess {
     this._projectRoot = projectRoot;
 
     this._logger.logInfo(
-      'LanguageServerProtocolProcess - created child process with PID: ', process.pid);
+      'LanguageServerProtocolProcess - created child process with PID: ' + process.pid);
 
     process.stdin.on('error', error => {
-      this._logger.logError('LanguageServerProtocolProcess - error writing data: ', error);
+      this._logger.logError('LanguageServerProtocolProcess - error writing data: ' + error);
     });
 
     let reader;

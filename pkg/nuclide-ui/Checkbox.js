@@ -51,7 +51,7 @@ export class Checkbox extends React.PureComponent {
     onMouseDown(event) {},
   };
 
-  constructor(props: Object) {
+  constructor(props: Props) {
     super(props);
     (this: any)._onChange = this._onChange.bind(this);
   }

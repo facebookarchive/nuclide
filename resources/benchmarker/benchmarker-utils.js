@@ -53,7 +53,7 @@ function makeSizedFixture(location: string, size: number): void {
 }
 
 function sleep(milliseconds: number): Promise<void> {
-  return new Promise(resolve => { setTimeout(resolve, milliseconds); }, () => {});
+  return new Promise(resolve => { setTimeout(resolve, milliseconds); });
 }
 
 async function sleepUntilNoRequests(pollMilliseconds: number = 1): Promise<any> {

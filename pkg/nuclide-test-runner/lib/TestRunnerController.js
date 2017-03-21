@@ -197,7 +197,7 @@ export class TestRunnerController {
     this._setExecutionState(TestRunnerPanel.ExecutionState.STOPPED);
   }
 
-  showPanel(didRender?: () => mixed): void {
+  showPanel(didRender?: () => void): void {
     track('testrunner-show-panel');
     this._panelVisible = true;
     this._renderPanel(didRender);
@@ -311,7 +311,7 @@ export class TestRunnerController {
     this._renderPanel();
   }
 
-  _renderPanel(didRender?: () => mixed) {
+  _renderPanel(didRender?: () => void) {
     // Initialize and render the contents of the panel only if the hosting container is visible by
     // the user's choice.
     if (!this._panelVisible) {

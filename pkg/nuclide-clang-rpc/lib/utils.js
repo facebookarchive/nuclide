@@ -102,7 +102,7 @@ export function findIncludingSourceFile(
           const file = processGrepResult(message.data, headerFile, regex);
           return file == null ? Observable.empty() : Observable.of(file);
         case 'error':
-          throw new Error(message.error);
+          throw new Error(String(message.error));
         case 'exit':
           return Observable.of(null);
         default:

@@ -10,7 +10,6 @@
 
 import type {Socket} from 'net';
 
-import EventEmitter from 'events';
 import {makeMessage} from '../lib/helpers';
 import {
   DbgpSocket,
@@ -46,7 +45,7 @@ describe('debugger-php-rpc DbgpSocket', () => {
       }
     };
     spyOn(socket, 'on').andCallThrough();
-    dbgpSocket = new DbgpSocket(socket, new EventEmitter());
+    dbgpSocket = new DbgpSocket(socket);
     dbgpSocket.onStatus(onStatus);
   });
 

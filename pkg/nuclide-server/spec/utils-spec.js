@@ -53,7 +53,7 @@ describe('NuclideServer utils test', () => {
       // $FlowFixMe(asuarez): Use Flow builtin defs for IncomingMessage.
       utils.parseRequestBody(req).then(bodyHandler).then(() => res.end());
     };
-    utils.asyncRequest({uri: 'http://127.0.0.1:36845/abc', method: 'POST', body: 'string_abc'}, () => {});
+    utils.asyncRequest({uri: 'http://127.0.0.1:36845/abc', method: 'POST', body: 'string_abc'});
     waitsFor(() => bodyHandler.callCount > 0);
     runs(() => expect(bodyHandler.argsForCall[0][0]).toBe('string_abc'));
   });

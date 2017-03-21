@@ -64,17 +64,15 @@ describe('Hyperclick', () => {
     eventClass: typeof KeyboardEvent | typeof MouseEvent,
     type: string,
     position: atom$Point,
-    properties_?: {clientX?: number, clientY?: number, metaKey?: boolean},
+    properties?: {clientX?: number, clientY?: number, metaKey?: boolean},
   ): void {
-    let properties = properties_;
     const {clientX, clientY} = clientCoordinatesForScreenPosition(position);
-    if (properties != null) {
-      properties.clientX = clientX;
-      properties.clientY = clientY;
-    } else {
-      properties = {clientX, clientY};
-    }
-    const event = new eventClass(type, properties);
+    const mouseEventInit = {
+      clientX,
+      clientY,
+      metaKey: properties != null ? properties.metaKey : undefined,
+    };
+    const event = new eventClass(type, mouseEventInit);
     let domNode = null;
     if (eventClass === MouseEvent) {
       const {component} = textEditorView;

@@ -12,7 +12,7 @@ import nuclideUri from '../../commons-node/nuclideUri';
 
 import {asyncExecute} from '../../commons-node/process';
 
-let fbFindClangServerArgs: ?() => {[string]: ?string};
+let fbFindClangServerArgs: ?(src: ?string) => {[string]: ?string};
 
 export type ClangServerArgs = {
   libClangLibraryFile: ?string,

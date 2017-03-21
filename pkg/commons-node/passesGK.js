@@ -56,15 +56,10 @@ export default async function passesGK(
  * Synchronous GK check. There is no guarantee that GKs have loaded. This
  * should be used inside a `onceGkInitialized`.
  */
-export function isGkEnabled(
-  name: string,
-): ?boolean {
+export function isGkEnabled(name: string): ?boolean {
   return getGatekeeper().isGkEnabled(name);
 }
 
-export function onceGkInitialized(
-  callback: () => mixed,
-  timeout?: number,
-): IDisposable {
-  return getGatekeeper().onceGkInitialized(callback, timeout);
+export function onceGkInitialized(callback: () => mixed): IDisposable {
+  return getGatekeeper().onceGkInitialized(callback);
 }
