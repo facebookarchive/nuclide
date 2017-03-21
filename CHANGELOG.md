@@ -1,5 +1,13 @@
 # Nuclide Changelog
 
+## v0.211.0
+
+# Hotfix
+
+* Fix 'resolve' button not working from Merge Conflicts pane.
+* Fix right clicking on uncommitted changes throwing 'invalid rootpath error'.
+* Properly respect Atom's 'Close Deleted File Tabs' option for remote files.
+
 ## v0.210.0
 
 ### Highlights
