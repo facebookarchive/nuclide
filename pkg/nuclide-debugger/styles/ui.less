@@ -118,7 +118,8 @@ Use flexbox cross-axis stretch to fill the vertical space.
 /* General debugger UI */
 .nuclide-debugger-section-content {
   max-height: 20em;
-  overflow-y: auto;
+  overflow-y: visible;
+  overflow-x: visible;
   margin-bottom: 5px;
 }
 
@@ -143,13 +144,14 @@ Use flexbox cross-axis stretch to fill the vertical space.
   font-family: Menlo, Monaco, Consolas, monospace;
   justify-content: space-between;
   min-height: 23px; // Match height of AtomInput to prevent list items from jumping around.
-  overflow: auto;
+  overflow: visible;
 }
 
 .nuclide-debugger-expression-value-content {
   display: flex;
   flex-direction: row;
   flex-grow: 1;
+  overflow-x: visible;
 }
 
 .nuclide-debugger-watch-expression-value-content {
@@ -198,9 +200,14 @@ Use flexbox cross-axis stretch to fill the vertical space.
 }
 
 .nuclide-debugger-callstack-item-selected {
-  background-color: @background-color-info;
   color: @text-color-highlight;
   font-weight: bold;
+}
+
+.nuclide-debugger-callstack-list-empty {
+  font-style: italic;
+  padding: 1em;
+  text-align: center;
 }
 
 .nuclide-debugger-callstack-name {

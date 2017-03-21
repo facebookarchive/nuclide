@@ -8,7 +8,6 @@
  * @flow
  */
 
-import classnames from 'classnames';
 import React from 'react';
 import type {
   Callstack,
@@ -19,11 +18,8 @@ import type CallstackStore from './CallstackStore';
 
 import nuclideUri from '../../commons-node/nuclideUri';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {
-  ListView,
-  ListViewItem,
-} from '../../nuclide-ui/ListView';
 import Bridge from './Bridge';
+import {Table} from '../../nuclide-ui/Table';
 
 type DebuggerCallstackComponentProps = {
   actions: DebuggerActions,
@@ -68,8 +64,8 @@ export class DebuggerCallstackComponent extends React.Component {
   }
 
   _handleCallframeClick(
-    callFrameIndex: number,
     clickedCallframe: ?CallstackItem,
+    callFrameIndex: number,
   ): void {
     this.props.bridge.setSelectedCallFrameIndex(callFrameIndex);
     this.props.actions.setSelectedCallFrameIndex(callFrameIndex);
@@ -77,47 +73,66 @@ export class DebuggerCallstackComponent extends React.Component {
 
   render(): ?React.Element<any> {
     const {callstack} = this.state;
-    const items = callstack == null
+    const rows = callstack == null
       ? []
       : callstack.map((callstackItem, i) => {
         const {
-          name,
           location,
         } = callstackItem;
         // Callstack paths may have a format like file://foo/bar, or
         // lldb://asm/0x1234. These are not valid paths that can be used to
         // construct a nuclideUri so we need to skip the protocol prefix.
         const path = nuclideUri.basename(location.path.replace(/^[a-zA-Z]+:\/\//, ''));
-        const content = (
-          <div className="nuclide-debugger-callstack-item" key={i}>
-            <span className="nuclide-debugger-callstack-name">
-              {name}
-            </span>
-            <span>
-              {path}:{location.line + 1}
-            </span>
-          </div>
-        );
-        const itemClassNames = classnames(
-          {
-            'nuclide-debugger-callstack-item-selected':
-              this.state.selectedCallFrameIndex === i,
+        const isSelected = this.state.selectedCallFrameIndex === i;
+        const cellData = {
+          data: {
+            frame: i,
+            address: callstackItem.name,
+            location: `${path}:${callstackItem.location.line}`,
+            isSelected,
           },
-        );
-        return <ListViewItem
-                  key={i}
-                  className={itemClassNames}
-                  value={callstackItem}>
-                  {content}
-                </ListViewItem>;
+        };
+
+        if (isSelected) {
+          // $FlowIssue className is an optional property of a table row
+          cellData.className = 'nuclide-debugger-callstack-item-selected';
+        }
+
+        return cellData;
       });
-    return callstack == null
-      ? <span>(callstack unavailable)</span>
-      : <ListView
-          alternateBackground={true}
-          selectable={true}
-          onSelect={this._handleCallframeClick}>
-          {items}
-        </ListView>;
+
+    const columns = [
+      {
+        title: '',
+        key: 'frame',
+        width: 0.05,
+      },
+      {
+        title: 'Address',
+        key: 'address',
+      },
+      {
+        title: 'File Location',
+        key: 'location',
+      },
+    ];
+
+    const emptyComponent = () =>
+      <div className="nuclide-debugger-callstack-list-empty">
+        callstack unavailable
+      </div>;
+
+    return (
+      <Table
+        columns={columns}
+        emptyComponent={emptyComponent}
+        rows={rows}
+        selectable={true}
+        resizable={true}
+        onSelect={this._handleCallframeClick}
+        sortable={false}
+        ref="callstackTable"
+      />
+    );
   }
 }
