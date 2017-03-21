@@ -23,6 +23,7 @@ import {arrayCompact} from '../../../commons-node/collection';
 import nuclideUri from '../../../commons-node/nuclideUri';
 import fsPromise from '../../../commons-node/fsPromise';
 import {runCommand} from '../../../commons-node/process';
+import {observeRawStream} from '../../../commons-node/stream';
 import {Observable} from 'rxjs';
 
 export type FileWithStats = {
@@ -262,6 +263,13 @@ export async function readFile(
     throw new Error(`File is too large (${stats.size} bytes)`);
   }
   return fsPromise.readFile(path, options);
+}
+
+export function createReadStream(
+  path: string,
+  options?: {flag?: string},
+): ConnectableObservable<Buffer> {
+  return observeRawStream(fs.createReadStream(path, options)).publish();
 }
 
 /**
