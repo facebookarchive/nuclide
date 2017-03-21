@@ -38,7 +38,7 @@ import invariant from 'assert';
 import pathModule from 'path';
 
 import url from 'url';
-
+import os from 'os';
 import {maybeToString} from './string';
 
 const REMOTE_PATH_URI_PREFIX = 'nuclide://';
@@ -434,18 +434,22 @@ function resolve(uri: NuclideUri, ...paths: Array<string>): NuclideUri {
 
 function expandHomeDir(uri: NuclideUri): NuclideUri {
   _testForAtomUri(uri);
-  // This function is POSIX only functionality, so using the posix path directly
 
   // Do not expand non home relative uris
   if (!uri.startsWith('~')) {
     return uri;
   }
 
-  const {HOME} = process.env;
-  invariant(HOME != null);
+  // "home" on Windows is %UserProfile%. Note that Windows environment variables
+  // are NOT case sensitive, but process.env is a magic object that wraps GetEnvironmentVariableW
+  // on Windows, so asking for any case is expected to work.
+  const {HOME, UserProfile} = process.env;
+
+  const homePath = (os.platform() === 'win32') ? UserProfile : HOME;
+  invariant(homePath != null);
 
   if (uri === '~') {
-    return HOME;
+    return homePath;
   }
 
   // Uris like ~abc should not be expanded
@@ -453,7 +457,7 @@ function expandHomeDir(uri: NuclideUri): NuclideUri {
     return uri;
   }
 
-  return pathModule.posix.resolve(HOME, uri.replace('~', '.'));
+  return pathModule.resolve(homePath, uri.replace('~', '.'));
 }
 
 /**
