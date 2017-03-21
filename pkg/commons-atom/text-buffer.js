@@ -88,14 +88,18 @@ export function bufferForUri(uri: NuclideUri): atom$TextBuffer {
 
 function createBufferForUri(uri: NuclideUri): atom$TextBuffer {
   let buffer;
+  const params = {
+    filePath: uri,
+    shouldDestroyOnFileDelete: () => atom.config.get('core.closeDeletedFileTabs'),
+  };
   if (nuclideUri.isLocal(uri)) {
-    buffer = new TextBuffer({filePath: uri});
+    buffer = new TextBuffer(params);
   } else {
     const connection = ServerConnection.getForUri(uri);
     if (connection == null) {
       throw new Error(`ServerConnection cannot be found for uri: ${uri}`);
     }
-    buffer = new NuclideTextBuffer(connection, {filePath: uri});
+    buffer = new NuclideTextBuffer(connection, params);
   }
   atom.project.addBuffer(buffer);
   invariant(buffer);
