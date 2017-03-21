@@ -123,7 +123,10 @@ export default class ChangedFilesList extends React.Component {
                     className={this._getFileClassname(filePath, fileChangeValue)}
                     key={filePath}
                     onClick={() => this.props.onFileChosen(filePath)}>
-                    <Icon icon={FileChangeStatusToIcon[fileChangeValue]} />
+                    <Icon
+                      className="nuclide-file-changes-file-entry-icon"
+                      icon={FileChangeStatusToIcon[fileChangeValue]}
+                    />
                     <span className={fileClassName}>
                       {baseName}
                     </span>
