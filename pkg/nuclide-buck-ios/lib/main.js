@@ -115,6 +115,7 @@ function _runTask(
   if (nuclideUri.isRemote(buckRoot)) {
     let runRemoteTask;
     try {
+      // $FlowFB
       const remoteWorkflow = require('./fb-RemoteWorkflow');
       runRemoteTask = () => {
         return remoteWorkflow.runRemoteTask(
