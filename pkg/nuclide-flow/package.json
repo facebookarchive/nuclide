@@ -81,5 +81,12 @@
     "language-babel:grammar-used",
     "language-javascript-jsx:grammar-used",
     "language-javascript:grammar-used"
-  ]
+  ],
+  "providedServices": {
+    "nuclide-busy-signal": {
+      "versions": {
+        "0.1.0": "provideBusySignal"
+      }
+    }
+  }
 }

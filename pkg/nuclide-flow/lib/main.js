@@ -9,12 +9,17 @@
  */
 
 import typeof * as FlowService from '../../nuclide-flow-rpc';
-import type {FlowLanguageServiceType} from '../../nuclide-flow-rpc';
+import type {
+  FlowLanguageServiceType,
+  ServerStatusType,
+  ServerStatusUpdate,
+  FlowSettings,
+} from '../../nuclide-flow-rpc';
 import type {ServerConnection} from '../../nuclide-remote-connection';
 import type {
   AtomLanguageServiceConfig,
 } from '../../nuclide-language-service/lib/AtomLanguageService';
-import type {FlowSettings} from '../../nuclide-flow-rpc/lib/FlowService';
+import type {BusySignalProvider, BusySignalMessage} from '../../nuclide-busy-signal/lib/types';
 
 import invariant from 'assert';
 import {Observable} from 'rxjs';
@@ -28,6 +33,7 @@ import {getLogger} from '../../nuclide-logging';
 import {filterResultsByPrefix, shouldFilter} from '../../nuclide-flow-common';
 import {ConnectionCache, getServiceByConnection} from '../../nuclide-remote-connection';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 import {FlowServiceWatcher} from './FlowServiceWatcher';
 
@@ -88,6 +94,62 @@ async function connectionToFlowService(
   const languageService = await flowService.initialize(fileNotifier, config);
 
   return languageService;
+}
+
+// Exported only for testing
+export function serverStatusUpdatesToBusyMessages(
+  statusUpdates: Observable<ServerStatusUpdate>,
+): Observable<BusySignalMessage> {
+  let nextMessageId = 0;
+  const getMessageId = () => {
+    const id = nextMessageId;
+    nextMessageId++;
+    return id;
+  };
+  return statusUpdates
+      .groupBy(({pathToRoot}) => pathToRoot)
+      .mergeMap(messagesForRoot => {
+        return messagesForRoot
+          .scan(({lastBusyMessage}, nextStatus) => {
+            const messages = [];
+            // Invalidate the previous busy message, if there is one
+            if (lastBusyMessage != null) {
+              messages.push({status: 'done', id: lastBusyMessage.id});
+            }
+            let currentBusyMessage = null;
+            // I would use constants here but the constant is in the flow-rpc package which we can't
+            // load directly from this package. Casting to the appropriate type is just as safe.
+            if (nextStatus.status === ('init': ServerStatusType) ||
+                nextStatus.status === ('busy': ServerStatusType)) {
+              const readablePath = nuclideUri.nuclideUriToDisplayString(nextStatus.pathToRoot);
+              const readableStatus = nextStatus.status === ('init': ServerStatusType) ?
+                  'initializing' :
+                  'busy';
+              currentBusyMessage = {
+                status: 'busy',
+                id: getMessageId(),
+                message: `Flow server is ${readableStatus} (${readablePath})`,
+              };
+              messages.push(currentBusyMessage);
+            }
+            return {lastBusyMessage: currentBusyMessage, messages};
+          }, {lastBusyMessage: null, messages: []})
+          .concatMap(({messages}) => Observable.from(messages));
+      });
+}
+
+export function provideBusySignal(): BusySignalProvider {
+  const serverStatusUpdates = getConnectionCache()
+      .observeValues()
+      // mergeAll loses type info
+      .mergeMap(x => x)
+      .mergeMap(ls => {
+        return ls.getServerStatusUpdates().refCount();
+      });
+
+  return {
+    messages: serverStatusUpdatesToBusyMessages(serverStatusUpdates),
+  };
 }
 
 export function deactivate() {
