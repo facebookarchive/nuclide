@@ -124,6 +124,7 @@ export class DebuggerCallstackComponent extends React.Component {
 
     return (
       <Table
+        className="nuclide-debugger-callstack-table"
         columns={columns}
         emptyComponent={emptyComponent}
         rows={rows}

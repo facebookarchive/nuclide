@@ -53,6 +53,7 @@ import {NewDebuggerView} from './NewDebuggerView';
 import DebuggerControllerView from './DebuggerControllerView';
 import {wordAtPosition, trimRange} from '../../commons-atom/range';
 import {DebuggerLaunchAttachEventTypes} from '../../nuclide-debugger-base';
+import os from 'os';
 
 export type SerializedState = {
   breakpoints: ?Array<SerializedBreakpoint>,
@@ -225,6 +226,10 @@ class Activation {
         'nuclide-debugger:copy-debugger-expression-value':
             this._copyDebuggerExpressionValue.bind(this),
       }),
+      atom.commands.add('.nuclide-debugger-root', {
+        'nuclide-debugger:copy-debugger-callstack':
+            this._copyDebuggerCallstack.bind(this),
+      }),
 
       // Context Menu Items.
       atom.contextMenu.add({
@@ -236,6 +241,12 @@ class Activation {
           {
             label: 'Remove All Breakpoints',
             command: 'nuclide-debugger:remove-all-breakpoints',
+          },
+        ],
+        '.nuclide-debugger-callstack-table': [
+          {
+            label: 'Copy Callstack',
+            command: 'nuclide-debugger:copy-debugger-callstack',
           },
         ],
         '.nuclide-debugger-expression-value-list .list-item': [
@@ -473,6 +484,20 @@ class Activation {
   _copyDebuggerExpressionValue(event: Event) {
     const clickedElement: HTMLElement = (event.target: any);
     atom.clipboard.write(clickedElement.textContent);
+  }
+
+  _copyDebuggerCallstack(event: Event) {
+    const callstackStore = this._model.getCallstackStore();
+    const callstack = callstackStore.getCallstack();
+    if (callstack) {
+      let callstackText = '';
+      callstack.forEach((item, i) => {
+        const path = nuclideUri.basename(item.location.path.replace(/^[a-zA-Z]+:\/\//, ''));
+        callstackText += `${i}\t${item.name}\t${path}:${item.location.line}${os.EOL}`;
+      });
+
+      atom.clipboard.write(callstackText.trim());
+    }
   }
 }
 
