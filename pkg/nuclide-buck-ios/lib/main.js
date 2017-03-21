@@ -8,12 +8,18 @@
  * @flow
  */
 
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {BuckBuildSystem} from '../../nuclide-buck/lib/BuckBuildSystem';
-import type {Device, PlatformGroup, TaskType} from '../../nuclide-buck/lib/types';
+import type {
+  Device,
+  PlatformGroup,
+  TaskType,
+} from '../../nuclide-buck/lib/types';
 import type {TaskEvent} from '../../commons-node/tasks';
 import type {PlatformService} from '../../nuclide-buck/lib/PlatformService';
 import type {ResolvedBuildTarget} from '../../nuclide-buck-rpc/lib/BuckService';
 
+import nuclideUri from '../../commons-node/nuclideUri';
 import {Disposable} from 'atom';
 import {Observable} from 'rxjs';
 import * as IosSimulator from '../../nuclide-ios-common';
@@ -21,14 +27,9 @@ import invariant from 'assert';
 
 let disposable: ?Disposable = null;
 
-const RUNNABLE_RULE_TYPES = new Set([
-  'apple_bundle',
-]);
+const RUNNABLE_RULE_TYPES = new Set(['apple_bundle']);
 
-const SUPPORTED_RULE_TYPES = new Set([
-  ...RUNNABLE_RULE_TYPES,
-  'apple_test',
-]);
+const SUPPORTED_RULE_TYPES = new Set([...RUNNABLE_RULE_TYPES, 'apple_test']);
 
 export function deactivate(): void {
   if (disposable != null) {
@@ -42,7 +43,7 @@ export function consumePlatformService(service: PlatformService): void {
 }
 
 function provideIosDevices(
-  buckRoot: string,
+  buckRoot: NuclideUri,
   ruleType: string,
   buildTarget: string,
 ): Observable<?PlatformGroup> {
@@ -57,28 +58,32 @@ function provideIosDevices(
 
     return {
       name: 'iOS Simulators',
-      platforms: [{
-        name: 'iOS Simulators',
-        tasks: getTasks(ruleType),
-        runTask: (builder, taskType, target, device) =>
-          _runTask(builder, taskType, ruleType, target, device),
-        deviceGroups: [
-          {
-            name: 'iOS Simulators',
-            devices: simulators.map(simulator => ({
-              name: `${simulator.name} (${simulator.os})`,
-              udid: simulator.udid,
-              arch: simulator.arch,
-            })),
-          },
-        ],
-      }],
+      platforms: [
+        {
+          name: 'iOS Simulators',
+          tasks: getTasks(buckRoot, ruleType),
+          runTask: (builder, taskType, target, device) =>
+            _runTask(buckRoot, builder, taskType, ruleType, target, device),
+          deviceGroups: [
+            {
+              name: 'iOS Simulators',
+              devices: simulators.map(simulator => ({
+                name: `${simulator.name} (${simulator.os})`,
+                udid: simulator.udid,
+                arch: simulator.arch,
+              })),
+            },
+          ],
+        },
+      ],
     };
   });
 }
 
-function getTasks(ruleType: string): Set<TaskType> {
-  const tasks = new Set(['build', 'test', 'debug']);
+function getTasks(buckRoot: NuclideUri, ruleType: string): Set<TaskType> {
+  const tasks = new Set(
+    nuclideUri.isRemote(buckRoot) ? ['build'] : ['build', 'test', 'debug'],
+  );
   if (RUNNABLE_RULE_TYPES.has(ruleType)) {
     tasks.add('run');
   }
@@ -86,6 +91,7 @@ function getTasks(ruleType: string): Set<TaskType> {
 }
 
 function _runTask(
+  buckRoot: NuclideUri,
   builder: BuckBuildSystem,
   taskType: TaskType,
   ruleType: string,
@@ -100,20 +106,57 @@ function _runTask(
   invariant(typeof arch === 'string');
   invariant(typeof udid === 'string');
 
-  const subcommand = _getSubcommand(taskType, ruleType);
   const flavor = `iphonesimulator-${arch}`;
-  const newTarget = {...buildTarget, flavors: buildTarget.flavors.concat([flavor])};
+  const newTarget = {
+    ...buildTarget,
+    flavors: buildTarget.flavors.concat([flavor]),
+  };
 
-  return builder.runSubcommand(subcommand, newTarget, {}, taskType === 'debug', udid);
+  if (nuclideUri.isRemote(buckRoot)) {
+    let runRemoteTask;
+    try {
+      const remoteWorkflow = require('./fb-RemoteWorkflow');
+      runRemoteTask = () => {
+        return remoteWorkflow.runRemoteTask(
+          buckRoot,
+          builder,
+          taskType,
+          ruleType,
+          buildTarget,
+          udid,
+          flavor,
+        );
+      };
+    } catch (_) {
+      runRemoteTask = () => {
+        throw new Error(
+          'Remote workflow currently unsupported for this target.',
+        );
+      };
+    }
+
+    return runRemoteTask();
+  } else {
+    return builder.runSubcommand(
+      _getLocalSubcommand(taskType, ruleType),
+      newTarget,
+      {},
+      taskType === 'debug',
+      udid,
+    );
+  }
 }
 
-function _getSubcommand(taskType: TaskType, ruleType: string) {
+function _getLocalSubcommand(taskType: TaskType, ruleType: string) {
   if (taskType !== 'run' && taskType !== 'debug') {
     return taskType;
   }
   switch (ruleType) {
-    case 'apple_bundle': return 'install';
-    case 'apple_test': return 'test';
-    default: throw new Error('Unsupported rule type');
+    case 'apple_bundle':
+      return 'install';
+    case 'apple_test':
+      return 'test';
+    default:
+      throw new Error('Unsupported rule type');
   }
 }
