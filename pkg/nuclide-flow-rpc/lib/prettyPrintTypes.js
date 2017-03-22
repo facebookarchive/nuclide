@@ -1,3 +1,9 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = prettyPrintTypes;
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,7 +11,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
 
 /**
@@ -46,32 +52,17 @@ function last(arr) {
   return arr[arr.length - 1];
 }
 
-type Element = {
-  start: number,
-  end: number,
-  groups: Array<Group>,
-};
-
-type Group = {
-  elements: Array<Element>,
-  openChar: string,
-  closeChar: string,
-  start: number,
-  end: number,
-  parentGroup: ?Group,
-};
-
 function parseGroups(str) {
-  const rootGroup: Group = {
-    elements: [{start: 0, end: -1, groups: []}],
+  const rootGroup = {
+    elements: [{ start: 0, end: -1, groups: [] }],
     openChar: '',
     closeChar: '',
     start: 0,
     end: str.length - 1,
-    parentGroup: null,
+    parentGroup: null
   };
 
-  let currentGroup: Group = rootGroup;
+  let currentGroup = rootGroup;
   let i = 0;
 
   function pushGroup() {
@@ -80,8 +71,8 @@ function parseGroups(str) {
       end: -1,
       openChar: str[i],
       closeChar: closeGroup[openGroup.indexOf(str[i])],
-      elements: [{start: i + 1, end: -1, groups: []}],
-      parentGroup: currentGroup,
+      elements: [{ start: i + 1, end: -1, groups: [] }],
+      parentGroup: currentGroup
     };
     const currentElement = last(currentGroup.elements);
     currentElement.groups.push(group);
@@ -102,7 +93,7 @@ function parseGroups(str) {
   function pushElement() {
     const currentElement = last(currentGroup.elements);
     currentElement.end = i + 1;
-    currentGroup.elements.push({start: i + 1, end: -1, groups: []});
+    currentGroup.elements.push({ start: i + 1, end: -1, groups: [] });
   }
 
   for (; i < str.length; ++i) {
@@ -110,8 +101,7 @@ function parseGroups(str) {
       pushGroup();
     }
 
-    if (closeGroup.indexOf(str[i]) !== -1 &&
-        currentGroup.closeChar === str[i]) {
+    if (closeGroup.indexOf(str[i]) !== -1 && currentGroup.closeChar === str[i]) {
       popGroup();
     }
 
@@ -136,7 +126,7 @@ function printGroups(str, rootGroup, max) {
   function printMultiLineGroup(group, indent) {
     let output = group.openChar + '\n';
     group.elements.forEach(element => {
-      output += printElement(element, indent + 1, /* singleLine */ false);
+      output += printElement(element, indent + 1, /* singleLine */false);
     });
     output += getIndent(indent) + group.closeChar;
     return output;
@@ -145,16 +135,15 @@ function printGroups(str, rootGroup, max) {
   function printSingleLineGroupWithoutEnforcingChildren(group, indent) {
     let output = group.openChar;
     group.elements.forEach(childGroup => {
-      output += printElement(childGroup, indent, /* singleLine */ false).trim();
+      output += printElement(childGroup, indent, /* singleLine */false).trim();
     });
     return output + group.closeChar;
   }
 
-
   function printSingleLineGroup(group, indent) {
     let output = group.openChar;
     group.elements.forEach(childGroup => {
-      output += printElement(childGroup, indent, /* singleLine */ true);
+      output += printElement(childGroup, indent, /* singleLine */true);
     });
     return output + group.closeChar;
   }
@@ -185,8 +174,7 @@ function printGroups(str, rootGroup, max) {
     return getIndent(indent) + output.trimLeft() + '\n';
   }
 
-  return printMultiLineGroup(rootGroup, -1)
-    .slice('\n'.length, -'\n'.length);
+  return printMultiLineGroup(rootGroup, -1).slice('\n'.length, -'\n'.length);
 }
 
 function isGroupValid(group) {
@@ -208,7 +196,7 @@ function isGroupValid(group) {
   return true;
 }
 
-export default function prettyPrintTypes(str: string, max: number = 40): string {
+function prettyPrintTypes(str, max = 40) {
   const rootGroup = parseGroups(str);
   if (!isGroupValid(rootGroup)) {
     return str;

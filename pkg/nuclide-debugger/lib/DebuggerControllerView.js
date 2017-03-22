@@ -1,3 +1,43 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _react = _interopRequireDefault(require('react'));
+
+var _BreakpointStore;
+
+function _load_BreakpointStore() {
+  return _BreakpointStore = _interopRequireDefault(require('./BreakpointStore.js'));
+}
+
+var _DebuggerInspector;
+
+function _load_DebuggerInspector() {
+  return _DebuggerInspector = _interopRequireDefault(require('./DebuggerInspector'));
+}
+
+var _DebuggerStore;
+
+function _load_DebuggerStore() {
+  return _DebuggerStore = require('./DebuggerStore');
+}
+
+var _Bridge;
+
+function _load_Bridge() {
+  return _Bridge = _interopRequireDefault(require('./Bridge'));
+}
+
+var _Button;
+
+function _load_Button() {
+  return _Button = require('../../nuclide-ui/Button');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,50 +45,28 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
 
-import React from 'react';
-import BreakpointStore from './BreakpointStore.js';
-import DebuggerInspector from './DebuggerInspector';
-import {DebuggerStore} from './DebuggerStore';
-import Bridge from './Bridge';
-import {Button} from '../../nuclide-ui/Button';
-
-type Props = {
-  breakpointStore: BreakpointStore,
-  store: DebuggerStore,
-  bridge: Bridge,
-  openDevTools: () => void,
-  stopDebugging: () => void,
-};
-
-type State = {
-  processSocket: ?string,
-  debuggerStoreChangeListener?: IDisposable,
-};
-
-function getStateFromStore(store: DebuggerStore): State {
+function getStateFromStore(store) {
   return {
-    processSocket: store.getProcessSocket(),
+    processSocket: store.getProcessSocket()
   };
 }
 
-export default class DebuggerControllerView extends React.Component {
-  props: Props;
-  state: State;
+class DebuggerControllerView extends _react.default.Component {
 
-  constructor(props: Props) {
+  constructor(props) {
     super(props);
     this.state = getStateFromStore(props.store);
 
-    (this: any)._handleClickClose = this._handleClickClose.bind(this);
-    (this: any)._updateStateFromStore = this._updateStateFromStore.bind(this);
+    this._handleClickClose = this._handleClickClose.bind(this);
+    this._updateStateFromStore = this._updateStateFromStore.bind(this);
   }
 
   componentWillMount() {
     this.setState({
-      debuggerStoreChangeListener: this.props.store.onChange(this._updateStateFromStore),
+      debuggerStoreChangeListener: this.props.store.onChange(this._updateStateFromStore)
     });
     this._updateStateFromStore();
   }
@@ -60,39 +78,41 @@ export default class DebuggerControllerView extends React.Component {
     }
   }
 
-  componentWillReceiveProps(nextProps: Props) {
+  componentWillReceiveProps(nextProps) {
     const listener = this.state.debuggerStoreChangeListener;
     if (listener != null) {
       listener.dispose();
     }
     this.setState({
-      debuggerStoreChangeListener: nextProps.store.onChange(this._updateStateFromStore),
+      debuggerStoreChangeListener: nextProps.store.onChange(this._updateStateFromStore)
     });
     this._updateStateFromStore(nextProps.store);
   }
 
-  render(): ?React.Element<any> {
+  render() {
     if (this.state.processSocket) {
-      return (
-        <DebuggerInspector
-          breakpointStore={this.props.breakpointStore}
-          openDevTools={this.props.openDevTools}
-          stopDebugging={this.props.stopDebugging}
-        />
-      );
+      return _react.default.createElement((_DebuggerInspector || _load_DebuggerInspector()).default, {
+        breakpointStore: this.props.breakpointStore,
+        openDevTools: this.props.openDevTools,
+        stopDebugging: this.props.stopDebugging
+      });
     }
     if (this.props.store.getDebuggerMode() === 'starting') {
-      return (
-        <div className="padded">
-          <Button
-            title="Close"
-            icon="x"
-            className="nuclide-debugger-root-close-button"
-            onClick={this._handleClickClose}
-          />
-          <p>Starting Debugger</p>
-          <progress className="starting" />
-        </div>
+      return _react.default.createElement(
+        'div',
+        { className: 'padded' },
+        _react.default.createElement((_Button || _load_Button()).Button, {
+          title: 'Close',
+          icon: 'x',
+          className: 'nuclide-debugger-root-close-button',
+          onClick: this._handleClickClose
+        }),
+        _react.default.createElement(
+          'p',
+          null,
+          'Starting Debugger'
+        ),
+        _react.default.createElement('progress', { className: 'starting' })
       );
     }
     return null;
@@ -102,7 +122,7 @@ export default class DebuggerControllerView extends React.Component {
     this.props.stopDebugging();
   }
 
-  _updateStateFromStore(store?: DebuggerStore) {
+  _updateStateFromStore(store) {
     if (store != null) {
       this.setState(getStateFromStore(store));
     } else {
@@ -110,3 +130,4 @@ export default class DebuggerControllerView extends React.Component {
     }
   }
 }
+exports.default = DebuggerControllerView;

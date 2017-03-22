@@ -1,69 +1,72 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import type {Record, Executor, OutputProvider, Source} from '../types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import debounce from '../../../commons-node/debounce';
-import React from 'react';
-import OutputTable from './OutputTable';
-import ConsoleHeader from './ConsoleHeader';
-import InputArea from './InputArea';
-import PromptButton from './PromptButton';
-import UnseenMessagesNotification from './UnseenMessagesNotification';
-import invariant from 'assert';
-import shallowEqual from 'shallowequal';
+var _debounce;
 
-type Props = {
-  records: Array<Record>,
-  history: Array<string>,
-  clearRecords: () => void,
-  execute: (code: string) => void,
-  currentExecutor: ?Executor,
-  executors: Map<string, Executor>,
-  invalidFilterInput: boolean,
-  enableRegExpFilter: boolean,
-  selectedSourceIds: Array<string>,
-  selectExecutor: (executorId: string) => void,
-  selectSources: (sourceIds: Array<string>) => void,
-  sources: Array<Source>,
-  toggleRegExpFilter: () => void,
-  updateFilterText: (filterText: string) => void,
-  getProvider: (id: string) => ?OutputProvider,
-};
+function _load_debounce() {
+  return _debounce = _interopRequireDefault(require('../../../commons-node/debounce'));
+}
 
-type State = {
-  unseenMessages: boolean,
-};
+var _react = _interopRequireDefault(require('react'));
 
-export default class Console extends React.Component {
-  props: Props;
-  state: State;
+var _OutputTable;
 
-  _shouldScrollToBottom: boolean;
-  _scrollPane: ?HTMLElement;
+function _load_OutputTable() {
+  return _OutputTable = _interopRequireDefault(require('./OutputTable'));
+}
 
-  constructor(props: Props) {
+var _ConsoleHeader;
+
+function _load_ConsoleHeader() {
+  return _ConsoleHeader = _interopRequireDefault(require('./ConsoleHeader'));
+}
+
+var _InputArea;
+
+function _load_InputArea() {
+  return _InputArea = _interopRequireDefault(require('./InputArea'));
+}
+
+var _PromptButton;
+
+function _load_PromptButton() {
+  return _PromptButton = _interopRequireDefault(require('./PromptButton'));
+}
+
+var _UnseenMessagesNotification;
+
+function _load_UnseenMessagesNotification() {
+  return _UnseenMessagesNotification = _interopRequireDefault(require('./UnseenMessagesNotification'));
+}
+
+var _shallowequal;
+
+function _load_shallowequal() {
+  return _shallowequal = _interopRequireDefault(require('shallowequal'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class Console extends _react.default.Component {
+
+  constructor(props) {
     super(props);
     this.state = {
-      unseenMessages: false,
+      unseenMessages: false
     };
     this._shouldScrollToBottom = false;
-    (this: any)._getExecutor = this._getExecutor.bind(this);
-    (this: any)._getProvider = this._getProvider.bind(this);
-    (this: any)._handleScrollPane = this._handleScrollPane.bind(this);
-    (this: any)._handleScroll = this._handleScroll.bind(this);
-    (this: any)._handleScrollEnd = debounce(this._handleScrollEnd, 100);
-    (this: any)._scrollToBottom = this._scrollToBottom.bind(this);
+    this._getExecutor = this._getExecutor.bind(this);
+    this._getProvider = this._getProvider.bind(this);
+    this._handleScrollPane = this._handleScrollPane.bind(this);
+    this._handleScroll = this._handleScroll.bind(this);
+    this._handleScrollEnd = (0, (_debounce || _load_debounce()).default)(this._handleScrollEnd, 100);
+    this._scrollToBottom = this._scrollToBottom.bind(this);
   }
 
-  componentDidUpdate(prevProps: Props): void {
+  componentDidUpdate(prevProps) {
     // If records are added while we're scrolled to the bottom (or very very close, at least),
     // automatically scroll.
     if (this._shouldScrollToBottom) {
@@ -71,31 +74,33 @@ export default class Console extends React.Component {
     }
   }
 
-  _renderPromptButton(): React.Element<any> {
-    invariant(this.props.currentExecutor != null);
-    const {currentExecutor} = this.props;
-    const options = Array.from(this.props.executors.values())
-      .map(executor => ({
-        id: executor.id,
-        label: executor.name,
-      }));
-    return (
-      <PromptButton
-        value={currentExecutor.id}
-        onChange={this.props.selectExecutor}
-        options={options}
-        children={currentExecutor.name}
-      />
-    );
+  _renderPromptButton() {
+    if (!(this.props.currentExecutor != null)) {
+      throw new Error('Invariant violation: "this.props.currentExecutor != null"');
+    }
+
+    const { currentExecutor } = this.props;
+    const options = Array.from(this.props.executors.values()).map(executor => ({
+      id: executor.id,
+      label: executor.name
+    }));
+    return _react.default.createElement((_PromptButton || _load_PromptButton()).default, {
+      value: currentExecutor.id,
+      onChange: this.props.selectExecutor,
+      options: options,
+      children: currentExecutor.name
+    });
   }
 
-  _isScrolledToBottom(): boolean {
-    if (this._scrollPane == null) { return true; }
-    const {scrollTop, scrollHeight, offsetHeight} = this._scrollPane;
+  _isScrolledToBottom() {
+    if (this._scrollPane == null) {
+      return true;
+    }
+    const { scrollTop, scrollHeight, offsetHeight } = this._scrollPane;
     return scrollHeight - (offsetHeight + scrollTop) < 5;
   }
 
-  componentWillReceiveProps(nextProps: Props): void {
+  componentWillReceiveProps(nextProps) {
     if (nextProps.records !== this.props.records) {
       const isScrolledToBottom = this._isScrolledToBottom();
 
@@ -104,104 +109,115 @@ export default class Console extends React.Component {
       // If we receive new messages after we've scrolled away from the bottom, show the
       // "new messages" notification.
       if (!isScrolledToBottom) {
-        this.setState({unseenMessages: true});
+        this.setState({ unseenMessages: true });
       }
     }
   }
 
-  shouldComponentUpdate(nextProps: Props, nextState: State): boolean {
-    return !shallowEqual(this.props, nextProps) || !shallowEqual(this.state, nextState);
+  shouldComponentUpdate(nextProps, nextState) {
+    return !(0, (_shallowequal || _load_shallowequal()).default)(this.props, nextProps) || !(0, (_shallowequal || _load_shallowequal()).default)(this.state, nextState);
   }
 
-  _getExecutor(id: string): ?Executor {
+  _getExecutor(id) {
     return this.props.executors.get(id);
   }
 
-  _getProvider(id: string): ?OutputProvider {
+  _getProvider(id) {
     return this.props.getProvider(id);
   }
 
-  render(): ?React.Element<any> {
-    return (
-      <div className="nuclide-console">
-        <ConsoleHeader
-          clear={this.props.clearRecords}
-          invalidFilterInput={this.props.invalidFilterInput}
-          enableRegExpFilter={this.props.enableRegExpFilter}
-          selectedSourceIds={this.props.selectedSourceIds}
-          sources={this.props.sources}
-          toggleRegExpFilter={this.props.toggleRegExpFilter}
-          onFilterTextChange={this.props.updateFilterText}
-          onSelectedSourcesChange={this.props.selectSources}
-        />
-        {/*
-          We need an extra wrapper element here in order to have the new messages notification stick
-          to the bottom of the scrollable area (and not scroll with it).
-        */}
-        <div className="nuclide-console-body">
-          <div className="nuclide-console-scroll-pane-wrapper">
-            <div
-              ref={this._handleScrollPane}
-              className="nuclide-console-scroll-pane"
-              onScroll={this._handleScroll}>
-              <OutputTable
-                records={this.props.records}
-                showSourceLabels={this.props.selectedSourceIds.length > 1}
-                getExecutor={this._getExecutor}
-                getProvider={this._getProvider}
-              />
-            </div>
-            <UnseenMessagesNotification
-              visible={this.state.unseenMessages}
-              onClick={this._scrollToBottom}
-            />
-          </div>
-          {this._renderPrompt()}
-        </div>
-      </div>
+  render() {
+    return _react.default.createElement(
+      'div',
+      { className: 'nuclide-console' },
+      _react.default.createElement((_ConsoleHeader || _load_ConsoleHeader()).default, {
+        clear: this.props.clearRecords,
+        invalidFilterInput: this.props.invalidFilterInput,
+        enableRegExpFilter: this.props.enableRegExpFilter,
+        selectedSourceIds: this.props.selectedSourceIds,
+        sources: this.props.sources,
+        toggleRegExpFilter: this.props.toggleRegExpFilter,
+        onFilterTextChange: this.props.updateFilterText,
+        onSelectedSourcesChange: this.props.selectSources
+      }),
+      _react.default.createElement(
+        'div',
+        { className: 'nuclide-console-body' },
+        _react.default.createElement(
+          'div',
+          { className: 'nuclide-console-scroll-pane-wrapper' },
+          _react.default.createElement(
+            'div',
+            {
+              ref: this._handleScrollPane,
+              className: 'nuclide-console-scroll-pane',
+              onScroll: this._handleScroll },
+            _react.default.createElement((_OutputTable || _load_OutputTable()).default, {
+              records: this.props.records,
+              showSourceLabels: this.props.selectedSourceIds.length > 1,
+              getExecutor: this._getExecutor,
+              getProvider: this._getProvider
+            })
+          ),
+          _react.default.createElement((_UnseenMessagesNotification || _load_UnseenMessagesNotification()).default, {
+            visible: this.state.unseenMessages,
+            onClick: this._scrollToBottom
+          })
+        ),
+        this._renderPrompt()
+      )
     );
   }
 
-  _renderPrompt(): ?React.Element<any> {
-    const {currentExecutor} = this.props;
+  _renderPrompt() {
+    const { currentExecutor } = this.props;
     if (currentExecutor == null) {
       return;
     }
-    return (
-      <div className="nuclide-console-prompt">
-        {this._renderPromptButton()}
-        <InputArea
-          scopeName={currentExecutor.scopeName}
-          onSubmit={this.props.execute}
-          history={this.props.history}
-        />
-      </div>
+    return _react.default.createElement(
+      'div',
+      { className: 'nuclide-console-prompt' },
+      this._renderPromptButton(),
+      _react.default.createElement((_InputArea || _load_InputArea()).default, {
+        scopeName: currentExecutor.scopeName,
+        onSubmit: this.props.execute,
+        history: this.props.history
+      })
     );
   }
 
-  _handleScroll(event: SyntheticMouseEvent): void {
+  _handleScroll(event) {
     this._handleScrollEnd();
   }
 
-  _handleScrollEnd(): void {
+  _handleScrollEnd() {
     if (!this._scrollPane) {
       return;
     }
 
     const isScrolledToBottom = this._isScrolledToBottom();
-    this.setState({unseenMessages: this.state.unseenMessages && !isScrolledToBottom});
+    this.setState({ unseenMessages: this.state.unseenMessages && !isScrolledToBottom });
   }
 
-  _handleScrollPane(el: HTMLElement): void {
+  _handleScrollPane(el) {
     this._scrollPane = el;
   }
 
-  _scrollToBottom(): void {
+  _scrollToBottom() {
     if (!this._scrollPane) {
       return;
     }
     // TODO: Animate?
     this._scrollPane.scrollTop = this._scrollPane.scrollHeight;
-    this.setState({unseenMessages: false});
+    this.setState({ unseenMessages: false });
   }
 }
+exports.default = Console; /**
+                            * Copyright (c) 2015-present, Facebook, Inc.
+                            * All rights reserved.
+                            *
+                            * This source code is licensed under the license found in the LICENSE file in
+                            * the root directory of this source tree.
+                            *
+                            * 
+                            */

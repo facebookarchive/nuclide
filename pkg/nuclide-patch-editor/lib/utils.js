@@ -1,3 +1,24 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.patchToString = patchToString;
+exports.isSpecialChange = isSpecialChange;
+exports.parseWithAnnotations = parseWithAnnotations;
+exports.createPatchData = createPatchData;
+exports.createHunkData = createHunkData;
+
+var _diffparser;
+
+function _load_diffparser() {
+  return _diffparser = _interopRequireDefault(require('diffparser'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// Export an Array of diffparser$FileDiff objects to a string utilizable by the
+// Mercurial edrecord extension
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,17 +26,11 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
 
-import type {HunkData, PatchData} from './types';
-
-import parse from 'diffparser';
-
-// Export an Array of diffparser$FileDiff objects to a string utilizable by the
-// Mercurial edrecord extension
-export function patchToString(patch: Array<diffparser$FileDiff>): string {
-  const lines: Array<string> = [];
+function patchToString(patch) {
+  const lines = [];
 
   patch.forEach(fileDiff => {
     lines.push(`diff --git a/${fileDiff.from} b/${fileDiff.to}`);
@@ -33,13 +48,13 @@ export function patchToString(patch: Array<diffparser$FileDiff>): string {
 
 // Special changes only require the first line of the header be printed
 // Examples of special changes: binary files, renaming files, deleting files, adding empty files
-export function isSpecialChange(fileDiff: diffparser$FileDiff): boolean {
+function isSpecialChange(fileDiff) {
   return fileDiff.chunks.length === 0;
 }
 
 // Special changes come with annotations that will be useful to display on the FileChanges UI
-export function parseWithAnnotations(diffContent: string): Array<diffparser$FileDiff> {
-  const patch = parse(diffContent);
+function parseWithAnnotations(diffContent) {
+  const patch = (0, (_diffparser || _load_diffparser()).default)(diffContent);
 
   const patchLines = diffContent.split('\n');
   let currentLine = 0;
@@ -59,27 +74,25 @@ export function parseWithAnnotations(diffContent: string): Array<diffparser$File
   return patch;
 }
 
-export function createPatchData(patch: Array<diffparser$FileDiff>): PatchData {
+function createPatchData(patch) {
   return {
     files: new Map(patch.map(fileDiff => [fileDiff.to, {
-      chunks: isSpecialChange(fileDiff)
-        ? null
-        : new Map(fileDiff.chunks.map(chunk => [chunk.oldStart, createHunkData(chunk)])),
+      chunks: isSpecialChange(fileDiff) ? null : new Map(fileDiff.chunks.map(chunk => [chunk.oldStart, createHunkData(chunk)])),
       collapsed: false,
       countEnabledChunks: fileDiff.chunks.length,
       fileDiff,
-      selected: 'all',
-    }])),
+      selected: 'all'
+    }]))
   };
 }
 
-export function createHunkData(hunk: diffparser$Hunk): HunkData {
+function createHunkData(hunk) {
   const lines = hunk.changes.map(change => change.type !== 'normal').filter(isChange => isChange);
   return {
     collapsed: false,
     countAllChanges: lines.length,
     countEnabledChanges: lines.length,
     lines,
-    selected: 'all',
+    selected: 'all'
   };
 }

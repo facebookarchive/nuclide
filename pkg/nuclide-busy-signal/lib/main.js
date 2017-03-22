@@ -1,47 +1,66 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import type {BusySignalProvider} from './types';
-import type {StatusBarTile as StatusBarTileType} from './StatusBarTile';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DedupedBusySignalProviderBase = exports.BusySignalProviderBase = undefined;
+exports.activate = activate;
+exports.consumeStatusBar = consumeStatusBar;
+exports.consumeBusySignalProvider = consumeBusySignalProvider;
+exports.deactivate = deactivate;
 
-import {Disposable, CompositeDisposable} from 'atom';
-import invariant from 'assert';
-import {MessageStore} from './MessageStore';
+var _atom = require('atom');
 
-import {BusySignalProviderBase} from './BusySignalProviderBase';
-import {DedupedBusySignalProviderBase} from './DedupedBusySignalProviderBase';
-import {StatusBarTile} from './StatusBarTile';
+var _MessageStore;
 
-export {
-  BusySignalProviderBase,
-  DedupedBusySignalProviderBase,
-};
+function _load_MessageStore() {
+  return _MessageStore = require('./MessageStore');
+}
+
+var _BusySignalProviderBase;
+
+function _load_BusySignalProviderBase() {
+  return _BusySignalProviderBase = require('./BusySignalProviderBase');
+}
+
+var _DedupedBusySignalProviderBase;
+
+function _load_DedupedBusySignalProviderBase() {
+  return _DedupedBusySignalProviderBase = require('./DedupedBusySignalProviderBase');
+}
+
+var _StatusBarTile;
+
+function _load_StatusBarTile() {
+  return _StatusBarTile = require('./StatusBarTile');
+}
+
+exports.BusySignalProviderBase = (_BusySignalProviderBase || _load_BusySignalProviderBase()).BusySignalProviderBase;
+exports.DedupedBusySignalProviderBase = (_DedupedBusySignalProviderBase || _load_DedupedBusySignalProviderBase()).DedupedBusySignalProviderBase; /**
+                                                                                                                                                  * Copyright (c) 2015-present, Facebook, Inc.
+                                                                                                                                                  * All rights reserved.
+                                                                                                                                                  *
+                                                                                                                                                  * This source code is licensed under the license found in the LICENSE file in
+                                                                                                                                                  * the root directory of this source tree.
+                                                                                                                                                  *
+                                                                                                                                                  * 
+                                                                                                                                                  */
 
 class Activation {
-  _statusBarTile: ?StatusBarTileType;
-  _disposables: CompositeDisposable;
-  _messageStore: MessageStore;
 
   constructor() {
-    this._disposables = new CompositeDisposable();
-    this._messageStore = new MessageStore();
+    this._disposables = new _atom.CompositeDisposable();
+    this._messageStore = new (_MessageStore || _load_MessageStore()).MessageStore();
   }
 
   dispose() {
     this._disposables.dispose();
   }
 
-  consumeStatusBar(statusBar: atom$StatusBar): IDisposable {
-    const statusBarTile = this._statusBarTile = new StatusBarTile();
+  consumeStatusBar(statusBar) {
+    const statusBarTile = this._statusBarTile = new (_StatusBarTile || _load_StatusBarTile()).StatusBarTile();
     statusBarTile.consumeMessageStream(this._messageStore.getMessageStream());
-    const disposable = new Disposable(() => {
+    const disposable = new _atom.Disposable(() => {
       if (this._statusBarTile) {
         this._statusBarTile.dispose();
         this._statusBarTile = null;
@@ -52,31 +71,37 @@ class Activation {
     return disposable;
   }
 
-  consumeBusySignalProvider(provider: BusySignalProvider): IDisposable {
+  consumeBusySignalProvider(provider) {
     const disposable = this._messageStore.consumeProvider(provider);
     this._disposables.add(disposable);
     return disposable;
   }
 }
 
-let activation: ?Activation = null;
+let activation = null;
 
-export function activate(state: ?Object): void {
+function activate(state) {
   deactivate();
   activation = new Activation();
 }
 
-export function consumeStatusBar(statusBar: atom$StatusBar): IDisposable {
-  invariant(activation);
+function consumeStatusBar(statusBar) {
+  if (!activation) {
+    throw new Error('Invariant violation: "activation"');
+  }
+
   return activation.consumeStatusBar(statusBar);
 }
 
-export function consumeBusySignalProvider(provider: BusySignalProvider): IDisposable {
-  invariant(activation);
+function consumeBusySignalProvider(provider) {
+  if (!activation) {
+    throw new Error('Invariant violation: "activation"');
+  }
+
   return activation.consumeBusySignalProvider(provider);
 }
 
-export function deactivate(): void {
+function deactivate() {
   if (activation) {
     activation.dispose();
     activation = null;

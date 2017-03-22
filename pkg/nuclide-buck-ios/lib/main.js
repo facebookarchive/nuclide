@@ -1,3 +1,23 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.deactivate = deactivate;
+exports.consumePlatformService = consumePlatformService;
+
+var _atom = require('atom');
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _nuclideIosCommon;
+
+function _load_nuclideIosCommon() {
+  return _nuclideIosCommon = _interopRequireWildcard(require('../../nuclide-ios-common'));
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,52 +25,32 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
 
-import type {BuckBuildSystem} from '../../nuclide-buck/lib/BuckBuildSystem';
-import type {Device, PlatformGroup, TaskType} from '../../nuclide-buck/lib/types';
-import type {TaskEvent} from '../../commons-node/tasks';
-import type {PlatformService} from '../../nuclide-buck/lib/PlatformService';
-import type {ResolvedBuildTarget} from '../../nuclide-buck-rpc/lib/BuckService';
+let disposable = null;
 
-import {Disposable} from 'atom';
-import {Observable} from 'rxjs';
-import * as IosSimulator from '../../nuclide-ios-common';
-import invariant from 'assert';
+const RUNNABLE_RULE_TYPES = new Set(['apple_bundle']);
 
-let disposable: ?Disposable = null;
+const SUPPORTED_RULE_TYPES = new Set([...RUNNABLE_RULE_TYPES, 'apple_test']);
 
-const RUNNABLE_RULE_TYPES = new Set([
-  'apple_bundle',
-]);
-
-const SUPPORTED_RULE_TYPES = new Set([
-  ...RUNNABLE_RULE_TYPES,
-  'apple_test',
-]);
-
-export function deactivate(): void {
+function deactivate() {
   if (disposable != null) {
     disposable.dispose();
     disposable = null;
   }
 }
 
-export function consumePlatformService(service: PlatformService): void {
+function consumePlatformService(service) {
   disposable = service.register(provideIosDevices);
 }
 
-function provideIosDevices(
-  buckRoot: string,
-  ruleType: string,
-  buildTarget: string,
-): Observable<?PlatformGroup> {
+function provideIosDevices(buckRoot, ruleType, buildTarget) {
   if (!SUPPORTED_RULE_TYPES.has(ruleType)) {
-    return Observable.of(null);
+    return _rxjsBundlesRxMinJs.Observable.of(null);
   }
 
-  return IosSimulator.getFbsimctlSimulators().map(simulators => {
+  return (_nuclideIosCommon || _load_nuclideIosCommon()).getFbsimctlSimulators().map(simulators => {
     if (!simulators.length) {
       return null;
     }
@@ -60,24 +60,21 @@ function provideIosDevices(
       platforms: [{
         name: 'iOS Simulators',
         tasks: getTasks(ruleType),
-        runTask: (builder, taskType, target, device) =>
-          _runTask(builder, taskType, ruleType, target, device),
-        deviceGroups: [
-          {
-            name: 'iOS Simulators',
-            devices: simulators.map(simulator => ({
-              name: `${simulator.name} (${simulator.os})`,
-              udid: simulator.udid,
-              arch: simulator.arch,
-            })),
-          },
-        ],
-      }],
+        runTask: (builder, taskType, target, device) => _runTask(builder, taskType, ruleType, target, device),
+        deviceGroups: [{
+          name: 'iOS Simulators',
+          devices: simulators.map(simulator => ({
+            name: `${simulator.name} (${simulator.os})`,
+            udid: simulator.udid,
+            arch: simulator.arch
+          }))
+        }]
+      }]
     };
   });
 }
 
-function getTasks(ruleType: string): Set<TaskType> {
+function getTasks(ruleType) {
   const tasks = new Set(['build', 'test', 'debug']);
   if (RUNNABLE_RULE_TYPES.has(ruleType)) {
     tasks.add('run');
@@ -85,35 +82,47 @@ function getTasks(ruleType: string): Set<TaskType> {
   return tasks;
 }
 
-function _runTask(
-  builder: BuckBuildSystem,
-  taskType: TaskType,
-  ruleType: string,
-  buildTarget: ResolvedBuildTarget,
-  device: ?Device,
-): Observable<TaskEvent> {
-  invariant(device);
-  invariant(device.arch);
-  invariant(device.udid);
+function _runTask(builder, taskType, ruleType, buildTarget, device) {
+  if (!device) {
+    throw new Error('Invariant violation: "device"');
+  }
+
+  if (!device.arch) {
+    throw new Error('Invariant violation: "device.arch"');
+  }
+
+  if (!device.udid) {
+    throw new Error('Invariant violation: "device.udid"');
+  }
+
   const udid = device.udid;
   const arch = device.arch;
-  invariant(typeof arch === 'string');
-  invariant(typeof udid === 'string');
+
+  if (!(typeof arch === 'string')) {
+    throw new Error('Invariant violation: "typeof arch === \'string\'"');
+  }
+
+  if (!(typeof udid === 'string')) {
+    throw new Error('Invariant violation: "typeof udid === \'string\'"');
+  }
 
   const subcommand = _getSubcommand(taskType, ruleType);
   const flavor = `iphonesimulator-${arch}`;
-  const newTarget = {...buildTarget, flavors: buildTarget.flavors.concat([flavor])};
+  const newTarget = Object.assign({}, buildTarget, { flavors: buildTarget.flavors.concat([flavor]) });
 
   return builder.runSubcommand(subcommand, newTarget, {}, taskType === 'debug', udid);
 }
 
-function _getSubcommand(taskType: TaskType, ruleType: string) {
+function _getSubcommand(taskType, ruleType) {
   if (taskType !== 'run' && taskType !== 'debug') {
     return taskType;
   }
   switch (ruleType) {
-    case 'apple_bundle': return 'install';
-    case 'apple_test': return 'test';
-    default: throw new Error('Unsupported rule type');
+    case 'apple_bundle':
+      return 'install';
+    case 'apple_test':
+      return 'test';
+    default:
+      throw new Error('Unsupported rule type');
   }
 }

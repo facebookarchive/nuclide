@@ -1,42 +1,41 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import type DiffViewModel from './DiffViewModel';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import classnames from 'classnames';
-import React from 'react';
-import {
-  Button,
-  ButtonSizes,
-} from '../../nuclide-ui/Button';
-import {DiffMode, CommitMode} from './constants';
+var _classnames;
 
-type Props = {
-  dirtyFileCount: number,
-  diffModel: DiffViewModel,
-  onSelectionChange: () => any,
-  selectedIndex: number,
-  revisionsCount: number,
-};
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
 
-export default class UncommittedChangesTimelineNode extends React.Component {
-  props: Props;
+var _react = _interopRequireDefault(require('react'));
 
-  constructor(props: Props) {
+var _Button;
+
+function _load_Button() {
+  return _Button = require('../../nuclide-ui/Button');
+}
+
+var _constants;
+
+function _load_constants() {
+  return _constants = require('./constants');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class UncommittedChangesTimelineNode extends _react.default.Component {
+
+  constructor(props) {
     super(props);
-    (this: any)._handleClickCommit = this._handleClickCommit.bind(this);
-    (this: any)._handleClickAmend = this._handleClickAmend.bind(this);
+    this._handleClickCommit = this._handleClickCommit.bind(this);
+    this._handleClickAmend = this._handleClickAmend.bind(this);
   }
 
-  render(): React.Element<any> {
-    const {dirtyFileCount, selectedIndex, revisionsCount} = this.props;
+  render() {
+    const { dirtyFileCount, selectedIndex, revisionsCount } = this.props;
     const hasChanges = dirtyFileCount > 0;
     let filesMessage;
     if (hasChanges) {
@@ -45,48 +44,69 @@ export default class UncommittedChangesTimelineNode extends React.Component {
       filesMessage = 'No Uncommitted Changes';
     }
 
-    const revisionClassName = classnames('revision selected-revision-start', {
+    const revisionClassName = (0, (_classnames || _load_classnames()).default)('revision selected-revision-start', {
       'selected-revision-inrange': selectedIndex !== 0,
-      'selected-revision-last': revisionsCount === 1,
+      'selected-revision-last': revisionsCount === 1
     });
 
-    return (
-      <div
-        className={revisionClassName}
-        onClick={() => { this.props.onSelectionChange(); }}>
-        <div className="revision-bubble revision-bubble--uncommitted" />
-        <div className="revision-label">
-          <span className="revision-title text-monospace">{filesMessage}</span>
-          <Button
-            className="nuclide-diff-rev-side-button"
-            size={ButtonSizes.SMALL}
-            disabled={!hasChanges}
-            onClick={this._handleClickCommit}>
-            Commit
-          </Button>
-          <Button
-            className="nuclide-diff-rev-side-button"
-            size={ButtonSizes.SMALL}
-            disabled={revisionsCount === 1}
-            onClick={this._handleClickAmend}>
-            Amend
-          </Button>
-        </div>
-      </div>
+    return _react.default.createElement(
+      'div',
+      {
+        className: revisionClassName,
+        onClick: () => {
+          this.props.onSelectionChange();
+        } },
+      _react.default.createElement('div', { className: 'revision-bubble revision-bubble--uncommitted' }),
+      _react.default.createElement(
+        'div',
+        { className: 'revision-label' },
+        _react.default.createElement(
+          'span',
+          { className: 'revision-title text-monospace' },
+          filesMessage
+        ),
+        _react.default.createElement(
+          (_Button || _load_Button()).Button,
+          {
+            className: 'nuclide-diff-rev-side-button',
+            size: (_Button || _load_Button()).ButtonSizes.SMALL,
+            disabled: !hasChanges,
+            onClick: this._handleClickCommit },
+          'Commit'
+        ),
+        _react.default.createElement(
+          (_Button || _load_Button()).Button,
+          {
+            className: 'nuclide-diff-rev-side-button',
+            size: (_Button || _load_Button()).ButtonSizes.SMALL,
+            disabled: revisionsCount === 1,
+            onClick: this._handleClickAmend },
+          'Amend'
+        )
+      )
     );
   }
 
-  _handleClickCommit(event: SyntheticMouseEvent): void {
-    const {diffModel} = this.props;
-    diffModel.setCommitMode(CommitMode.COMMIT);
-    diffModel.setViewMode(DiffMode.COMMIT_MODE);
+  _handleClickCommit(event) {
+    const { diffModel } = this.props;
+    diffModel.setCommitMode((_constants || _load_constants()).CommitMode.COMMIT);
+    diffModel.setViewMode((_constants || _load_constants()).DiffMode.COMMIT_MODE);
     event.stopPropagation();
   }
 
-  _handleClickAmend(event: SyntheticMouseEvent): void {
-    const {diffModel} = this.props;
-    diffModel.setCommitMode(CommitMode.AMEND);
-    diffModel.setViewMode(DiffMode.COMMIT_MODE);
+  _handleClickAmend(event) {
+    const { diffModel } = this.props;
+    diffModel.setCommitMode((_constants || _load_constants()).CommitMode.AMEND);
+    diffModel.setViewMode((_constants || _load_constants()).DiffMode.COMMIT_MODE);
     event.stopPropagation();
   }
 }
+exports.default = UncommittedChangesTimelineNode; /**
+                                                   * Copyright (c) 2015-present, Facebook, Inc.
+                                                   * All rights reserved.
+                                                   *
+                                                   * This source code is licensed under the license found in the LICENSE file in
+                                                   * the root directory of this source tree.
+                                                   *
+                                                   * 
+                                                   */

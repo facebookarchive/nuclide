@@ -1,105 +1,138 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
-import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
-import type {AppState, Store} from './types';
-import typeof * as BoundActionCreators from './redux/Actions';
+var _Actions;
 
-import * as Actions from './redux/Actions';
-import {bindActionCreators, createStore} from 'redux';
-import {createEmptyAppState} from './redux/createEmptyAppState';
-import createPackage from '../../commons-atom/createPackage';
-import {Disposable} from 'atom';
-import InteractiveFileChanges from './ui/InteractiveFileChanges';
-import invariant from 'assert';
-import {isValidTextEditor} from '../../commons-atom/text-editor';
-import {Observable, BehaviorSubject} from 'rxjs';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
-import {parseWithAnnotations} from './utils';
-import React from 'react';
-import ReactDOM from 'react-dom';
-import {repositoryForPath} from '../../commons-atom/vcs';
-import {rootReducer} from './redux/Reducers';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+function _load_Actions() {
+  return _Actions = _interopRequireWildcard(require('./redux/Actions'));
+}
+
+var _redux;
+
+function _load_redux() {
+  return _redux = require('redux');
+}
+
+var _createEmptyAppState;
+
+function _load_createEmptyAppState() {
+  return _createEmptyAppState = require('./redux/createEmptyAppState');
+}
+
+var _createPackage;
+
+function _load_createPackage() {
+  return _createPackage = _interopRequireDefault(require('../../commons-atom/createPackage'));
+}
+
+var _atom = require('atom');
+
+var _InteractiveFileChanges;
+
+function _load_InteractiveFileChanges() {
+  return _InteractiveFileChanges = _interopRequireDefault(require('./ui/InteractiveFileChanges'));
+}
+
+var _textEditor;
+
+function _load_textEditor() {
+  return _textEditor = require('../../commons-atom/text-editor');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _event;
+
+function _load_event() {
+  return _event = require('../../commons-node/event');
+}
+
+var _utils;
+
+function _load_utils() {
+  return _utils = require('./utils');
+}
+
+var _react = _interopRequireDefault(require('react'));
+
+var _reactDom = _interopRequireDefault(require('react-dom'));
+
+var _vcs;
+
+function _load_vcs() {
+  return _vcs = require('../../commons-atom/vcs');
+}
+
+var _Reducers;
+
+function _load_Reducers() {
+  return _Reducers = require('./redux/Reducers');
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../commons-node/UniversalDisposable'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 class Activation {
-  _store: Store;
-  _subscriptions: UniversalDisposable;
-  _actionCreators: BoundActionCreators;
-  _states: BehaviorSubject<AppState>;
 
-  constructor(rawState: ?Object) {
-    this._subscriptions = new UniversalDisposable();
+  constructor(rawState) {
+    this._subscriptions = new (_UniversalDisposable || _load_UniversalDisposable()).default();
 
-    const initialState = createEmptyAppState();
-    this._states = new BehaviorSubject(initialState);
+    const initialState = (0, (_createEmptyAppState || _load_createEmptyAppState()).createEmptyAppState)();
+    this._states = new _rxjsBundlesRxMinJs.BehaviorSubject(initialState);
 
-    this._store = createStore(
-      rootReducer,
-      initialState,
-    );
+    this._store = (0, (_redux || _load_redux()).createStore)((_Reducers || _load_Reducers()).rootReducer, initialState);
 
-    this._actionCreators = bindActionCreators(Actions, this._store.dispatch);
+    this._actionCreators = (0, (_redux || _load_redux()).bindActionCreators)(_Actions || _load_Actions(), this._store.dispatch);
   }
 
-  consumeCwdApi(cwdApi: CwdApi): IDisposable {
-    const subscription = observableFromSubscribeFunction(cwdApi.observeCwd.bind(cwdApi))
-    .switchMap(directory => {
-      const repository = directory ? repositoryForPath(directory.getPath()) : null;
+  consumeCwdApi(cwdApi) {
+    const subscription = (0, (_event || _load_event()).observableFromSubscribeFunction)(cwdApi.observeCwd.bind(cwdApi)).switchMap(directory => {
+      const repository = directory ? (0, (_vcs || _load_vcs()).repositoryForPath)(directory.getPath()) : null;
       if (repository == null || repository.getType() !== 'hg') {
-        return Observable.of(false);
+        return _rxjsBundlesRxMinJs.Observable.of(false);
       }
 
-      const hgRepository: HgRepositoryClient = (repository: any);
+      const hgRepository = repository;
 
-      return observableFromSubscribeFunction(
-        hgRepository.onDidChangeInteractiveMode.bind(hgRepository),
-      );
+      return (0, (_event || _load_event()).observableFromSubscribeFunction)(hgRepository.onDidChangeInteractiveMode.bind(hgRepository));
     }).switchMap(isInteractiveMode => {
       if (!isInteractiveMode) {
-        return Observable.empty();
+        return _rxjsBundlesRxMinJs.Observable.empty();
       }
-      return observableFromSubscribeFunction(
-        atom.workspace.observePanes.bind(atom.workspace),
-      ).flatMap(pane => {
-        return observableFromSubscribeFunction(pane.observeActiveItem.bind(pane))
-          .switchMap(paneItem => {
-            if (!isValidTextEditor(paneItem)) {
-              return Observable.empty();
+      return (0, (_event || _load_event()).observableFromSubscribeFunction)(atom.workspace.observePanes.bind(atom.workspace)).flatMap(pane => {
+        return (0, (_event || _load_event()).observableFromSubscribeFunction)(pane.observeActiveItem.bind(pane)).switchMap(paneItem => {
+          if (!(0, (_textEditor || _load_textEditor()).isValidTextEditor)(paneItem)) {
+            return _rxjsBundlesRxMinJs.Observable.empty();
+          }
+
+          const editor = paneItem;
+
+          return (0, (_event || _load_event()).observableFromSubscribeFunction)(editor.onDidChangePath.bind(editor)).startWith(editor.getPath()).switchMap(editorPath => {
+            if (editorPath == null || !editorPath.endsWith('.diff')) {
+              return _rxjsBundlesRxMinJs.Observable.empty();
             }
 
-            const editor: atom$TextEditor = (paneItem: any);
-
-            return observableFromSubscribeFunction(editor.onDidChangePath.bind(editor))
-              .startWith(editor.getPath())
-              .switchMap(editorPath => {
-                if (editorPath == null || !editorPath.endsWith('.diff')) {
-                  return Observable.empty();
-                }
-
-                return Observable.of(editor);
-              });
-          }).takeUntil(observableFromSubscribeFunction(pane.onDidDestroy.bind(pane)));
+            return _rxjsBundlesRxMinJs.Observable.of(editor);
+          });
+        }).takeUntil((0, (_event || _load_event()).observableFromSubscribeFunction)(pane.onDidDestroy.bind(pane)));
       });
     }).subscribe(this._renderOverEditor.bind(this));
 
     this._subscriptions.add(subscription);
-    return new Disposable(() => {
+    return new _atom.Disposable(() => {
       this._subscriptions.remove(subscription);
     });
   }
 
-  _renderOverEditor(editor: atom$TextEditor): void {
+  _renderOverEditor(editor) {
     const diffContent = editor.getText();
-    const patch = parseWithAnnotations(diffContent);
+    const patch = (0, (_utils || _load_utils()).parseWithAnnotations)(diffContent);
     if (patch.length > 0) {
       // Clear the editor so that closing the tab without hitting 'Confirm' won't
       // cause the commit to go through by default
@@ -111,46 +144,51 @@ class Activation {
       const item = document.createElement('div');
 
       const editorPath = editor.getPath();
-      invariant(editorPath != null);
+
+      if (!(editorPath != null)) {
+        throw new Error('Invariant violation: "editorPath != null"');
+      }
+
       this._actionCreators.registerPatchEditor(editorPath, patch);
 
-      const element = (
-        <InteractiveFileChanges
-          onConfirm={content => onConfirm(editor, content)}
-          onManualEdit={() => onManualEdit(editor, diffContent, marker, editorView)}
-          onQuit={() => atom.workspace.getActivePane().destroyItem(editor)}
-          patch={patch}
-        />
-      );
-      ReactDOM.render(element, item);
+      const element = _react.default.createElement((_InteractiveFileChanges || _load_InteractiveFileChanges()).default, {
+        onConfirm: content => onConfirm(editor, content),
+        onManualEdit: () => onManualEdit(editor, diffContent, marker, editorView),
+        onQuit: () => atom.workspace.getActivePane().destroyItem(editor),
+        patch: patch
+      });
+      _reactDom.default.render(element, item);
       item.style.visibility = 'visible';
 
       const marker = editor.markScreenPosition([0, 0]);
       editor.decorateMarker(marker, {
         type: 'block',
-        item,
+        item
       });
 
       marker.onDidDestroy(() => {
-        ReactDOM.unmountComponentAtNode(item);
+        _reactDom.default.unmountComponentAtNode(item);
         this._actionCreators.deregisterPatchEditor(editorPath);
       });
     }
   }
-}
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   */
 
-function onConfirm(editor: atom$TextEditor, content: string): void {
+function onConfirm(editor, content) {
   editor.setText(content);
   editor.save();
   atom.workspace.getActivePane().destroyItem(editor);
 }
 
-function onManualEdit(
-  editor: atom$TextEditor,
-  content: string,
-  marker: atom$Marker,
-  editorView: atom$TextEditorElement,
-): void {
+function onManualEdit(editor, content, marker, editorView) {
   editor.setText(content);
   editor.save();
   editor.setGrammar(atom.grammars.grammarForScopeName('source.mercurial.diff'));
@@ -159,4 +197,4 @@ function onManualEdit(
   editor.getGutters().forEach(gutter => gutter.show());
 }
 
-createPackage(module.exports, Activation);
+(0, (_createPackage || _load_createPackage()).default)(module.exports, Activation);
