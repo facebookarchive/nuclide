@@ -25,10 +25,7 @@ You will also need to re-run the Nuclide setup script since this will remove
 ### Releasing
 
 As part of your commit which changes these lint rules, you should bump the version in the
-`package.json` in this directory and in the `npm-shrinkwrap.json` file in the root `Nuclide`.
-That way, `apm install` in Nuclide will re-install these files. If you don't bump the version,
-other developers will be running the previous version until they remove and re-install their
-`node_modules` directory.
+`package.json` in this directory.
 
 ### Pro-tips
 
