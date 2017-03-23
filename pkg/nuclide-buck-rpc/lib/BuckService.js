@@ -112,6 +112,12 @@ export type BuckWebSocketMessage =
           }>,
         }>,
       },
+    }
+  | {
+      type: 'CompilerErrorEvent',
+      error: string,
+      suggestions: Array<mixed>,  // TODO: use this?
+      compilerType: string,
     };
 
 type BuckConfig = Object;

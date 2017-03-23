@@ -91,6 +91,9 @@ export function getEventsFromSocket(
             type: 'progress',
             progress: message.progressValue,
           });
+        case 'CompilerErrorEvent':
+          // TODO: forward suggestions to diagnostics as autofixes
+          return log(message.error, 'error');
       }
       return Observable.empty();
     })
