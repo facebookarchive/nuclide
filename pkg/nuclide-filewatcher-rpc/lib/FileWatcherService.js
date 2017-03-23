@@ -19,6 +19,7 @@ import {Observable} from 'rxjs';
 import fsPromise from '../../commons-node/fsPromise';
 import {getLogger} from '../../nuclide-logging';
 import {WatchmanClient} from '../../nuclide-watchman-helpers';
+import debounceDeletes from './debounceDeletes';
 
 export type WatchResult = {
   path: NuclideUri,
@@ -58,7 +59,7 @@ function watchEntity(
   return Observable.fromPromise(
     getRealPath(entityPath, isFile),
   ).switchMap(
-    realPath => entityWatches.get(realPath),
+    realPath => debounceDeletes(entityWatches.get(realPath)),
   );
 }
 
@@ -127,7 +128,6 @@ function onWatcherChange(subscription: WatchmanSubscription, entries: Array<File
       // TODO(most): handle `rename`, if needed.
       if (!entry.exists) {
         observer.next('delete');
-        observer.complete();
       } else {
         observer.next('change');
       }

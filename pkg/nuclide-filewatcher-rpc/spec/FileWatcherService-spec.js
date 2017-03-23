@@ -121,6 +121,9 @@ describe('FileWatcherService', () => {
           mode: 0,
         },
       ]);
+
+      // Deletions are debounced..
+      advanceClock(2000);
     });
 
     // Watch should complete after a delete.
@@ -156,9 +159,72 @@ describe('FileWatcherService', () => {
           mode: 0,
         },
       ]);
+
+      advanceClock(2000);
     });
 
     waitsFor(() => completeMock2.wasCalled);
+  });
+
+  it('debounces file deletions', () => {
+    const changes = [];
+    let completed = false;
+    waitsForPromise(async () => {
+      const watch = watchDirectoryRecursive(TEST_DIR).refCount();
+      watch.subscribe();
+      await watch.take(1).toPromise();
+
+      watchFile(TEST_FILE).refCount()
+        .subscribe({
+          next: change => changes.push(change),
+          complete: () => { completed = true; },
+        });
+    });
+
+    waitsFor(() => realpathMock.callCount === 1);
+
+    runs(() => {
+      // A file gets deleted and then created.
+      emitter.emit('change', [
+        {
+          name: 'file',
+          new: false,
+          exists: false,
+          mode: 0,
+        },
+      ]);
+      emitter.emit('change', [
+        {
+          name: 'file',
+          new: true,
+          exists: true,
+          mode: 0,
+        },
+      ]);
+
+      // The deletion should be cancelled out.
+      expect(changes).toEqual([{path: TEST_FILE, type: 'change'}]);
+
+      emitter.emit('change', [
+        {
+          name: 'file',
+          new: false,
+          exists: false,
+          mode: 0,
+        },
+      ]);
+
+      advanceClock(2000);
+    });
+
+    waitsFor(() => completed);
+
+    runs(() => {
+      expect(changes).toEqual([
+        {path: TEST_FILE, type: 'change'},
+        {path: TEST_FILE, type: 'delete'},
+      ]);
+    });
   });
 
   it('errors for missing files', () => {
