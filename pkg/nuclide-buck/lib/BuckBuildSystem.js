@@ -72,6 +72,8 @@ import {
 } from './DeployEventStream';
 import observeBuildCommands from './observeBuildCommands';
 import React from 'react';
+import {arrayEqual} from '../../commons-node/collection';
+import shallowequal from 'shallowequal';
 
 const SOCKET_TIMEOUT = 30000;
 
@@ -82,9 +84,7 @@ const DEBUGGABLE_RULES = new Set([
   'rust_test',
 ]);
 
-const RUNNABLE_RULES = new Set([
-  'java_binary',
-]);
+const RUNNABLE_RULES = new Set(['java_binary']);
 
 function shouldEnableTask(taskType: TaskType, ruleType: string): boolean {
   switch (taskType) {
@@ -181,25 +181,27 @@ export class BuckBuildSystem {
       .map(state => state.buckRoot != null)
       .distinctUntilChanged();
 
-    const tasksObservable = storeReady.map(state => {
-      const {buildRuleType, selectedDeploymentTarget} = state;
-      const tasksFromPlatform = selectedDeploymentTarget
-        ? selectedDeploymentTarget.platform.tasks
-        : null;
-      return TASKS.map(task => {
-        let disabled = state.isLoadingPlatforms || buildRuleType == null;
-        if (!disabled) {
-          if (tasksFromPlatform) {
-            disabled = !tasksFromPlatform.has(task.type);
-          } else {
-            invariant(buildRuleType);
-            // No platform provider selected, fall back to default logic
-            disabled = !shouldEnableTask(task.type, buildRuleType);
+    const tasksObservable = storeReady
+      .map(state => {
+        const {buildRuleType, selectedDeploymentTarget} = state;
+        const tasksFromPlatform = selectedDeploymentTarget
+          ? selectedDeploymentTarget.platform.tasks
+          : null;
+        return TASKS.map(task => {
+          let disabled = state.isLoadingPlatforms || buildRuleType == null;
+          if (!disabled) {
+            if (tasksFromPlatform) {
+              disabled = !tasksFromPlatform.has(task.type);
+            } else {
+              invariant(buildRuleType);
+              // No platform provider selected, fall back to default logic
+              disabled = !shouldEnableTask(task.type, buildRuleType);
+            }
           }
-        }
-        return {...task, disabled};
-      });
-    });
+          return {...task, disabled};
+        });
+      })
+      .distinctUntilChanged((a, b) => arrayEqual(a, b, shallowequal));
 
     const subscription = Observable.combineLatest(
       enabledObservable,
