@@ -27,6 +27,11 @@ const DIAGNOSTIC_REGEX = /^([^\s:]+):([0-9]+):([0-9]+): (.*)$/gm;
 const TEST_FAILURE_START_REGEX = /^FAILURE.*: (.*):([0-9]+): (.*)$/gm;
 const TEST_FAILURE_CONTINUED_REGEX = /^([^:]+):([0-9]+): (.*)$/gm;
 
+// It's expensive to get the real length of the lines (we'd have to read each file).
+// Instead, just use a very large number ("infinity"). The diagnostics UI handles this
+// and won't underline any characters past the end of the line.
+export const INDEFINITE_END_COLUMN = 1e9;
+
 // An intermediate step towards creating real diagnostics.
 type ParsedDiagnostic = {
   level: string,
@@ -58,7 +63,7 @@ function pushParsedDiagnostic(
   column: number,
 ) {
   if (fileSystemService != null) {
-    const filePath = nuclideUri.join(root, file);
+    const filePath = nuclideUri.resolve(root, file);
     const localPath = nuclideUri.getPath(filePath);
     promises.push(fileSystemService.exists(localPath).then(
       exists => (!exists ? null : {
@@ -100,7 +105,7 @@ function makeDiagnostic(result: ParsedDiagnostic): FileDiagnosticMessage {
     type: result.level === 'error' ? 'Error' : 'Warning',
     filePath: result.filePath,
     text: result.text,
-    range: new Range([result.line - 1, 0], [result.line, 0]),
+    range: new Range([result.line - 1, 0], [result.line - 1, INDEFINITE_END_COLUMN]),
   };
 }
 

@@ -10,7 +10,10 @@
 
 import {Range} from 'atom';
 import * as nuclideRemoteConnection from '../../nuclide-remote-connection';
-import DiagnosticsParser from '../lib/DiagnosticsParser';
+import {
+  INDEFINITE_END_COLUMN,
+  default as DiagnosticsParser,
+} from '../lib/DiagnosticsParser';
 
 describe('DiagnosticsProvider', () => {
   let diagnosticsParser;
@@ -42,7 +45,7 @@ describe('DiagnosticsProvider', () => {
           type: 'Error',
           filePath: '/good_file.cpp',
           text: 'test error',
-          range: new Range([0, 0], [1, 0]),
+          range: new Range([0, 0], [0, INDEFINITE_END_COLUMN]),
           trace: [
             {
               type: 'Trace',
@@ -64,7 +67,7 @@ describe('DiagnosticsProvider', () => {
           type: 'Error',
           filePath: '/good_file2.cpp',
           text: 'test error2',
-          range: new Range([1, 0], [2, 0]),
+          range: new Range([1, 0], [1, INDEFINITE_END_COLUMN]),
           trace: [
             {
               type: 'Trace',
@@ -73,6 +76,22 @@ describe('DiagnosticsProvider', () => {
               range: new Range([1, 3], [1, 3]),
             },
           ],
+        },
+      ]);
+    });
+  });
+
+  it('resolves absolute paths', () => {
+    waitsForPromise(async () => {
+      const message = '/a/good_file.cpp:1:2: test error';
+      expect(await diagnosticsParser.getDiagnostics(message, 'error', '/root')).toEqual([
+        {
+          scope: 'file',
+          providerName: 'Buck',
+          type: 'Error',
+          filePath: '/a/good_file.cpp',
+          text: 'test error',
+          range: new Range([0, 0], [0, INDEFINITE_END_COLUMN]),
         },
       ]);
     });
@@ -124,8 +143,8 @@ describe('DiagnosticsProvider', () => {
               column: 0,
             },
             end: {
-              row: 42,
-              column: 0,
+              row: 41,
+              column: INDEFINITE_END_COLUMN,
             },
           },
         }],
@@ -134,7 +153,7 @@ describe('DiagnosticsProvider', () => {
     });
   });
 
-  it('matches mutiple test failures from the same test', () => {
+  it('matches multiple test failures from the same test', () => {
     waitsForPromise(async () => {
       const diagnostics = Promise.all([
         diagnosticsParser.getDiagnostics(
@@ -184,8 +203,8 @@ describe('DiagnosticsProvider', () => {
               column: 0,
             },
             end: {
-              row: 91,
-              column: 0,
+              row: 90,
+              column: INDEFINITE_END_COLUMN,
             },
           },
         }],
@@ -201,8 +220,8 @@ describe('DiagnosticsProvider', () => {
               column: 0,
             },
             end: {
-              row: 92,
-              column: 0,
+              row: 91,
+              column: INDEFINITE_END_COLUMN,
             },
           },
         }],
@@ -218,8 +237,8 @@ describe('DiagnosticsProvider', () => {
               column: 0,
             },
             end: {
-              row: 98,
-              column: 0,
+              row: 97,
+              column: INDEFINITE_END_COLUMN,
             },
           },
         }],
@@ -228,7 +247,7 @@ describe('DiagnosticsProvider', () => {
     });
   });
 
-  it('matches mutiple test failures', () => {
+  it('matches multiple test failures', () => {
     waitsForPromise(async () => {
       const diagnostics = Promise.all([
         diagnosticsParser.getDiagnostics(
@@ -283,8 +302,8 @@ describe('DiagnosticsProvider', () => {
               column: 0,
             },
             end: {
-              row: 91,
-              column: 0,
+              row: 90,
+              column: INDEFINITE_END_COLUMN,
             },
           },
         }],
@@ -302,8 +321,8 @@ describe('DiagnosticsProvider', () => {
               column: 0,
             },
             end: {
-              row: 3,
-              column: 0,
+              row: 2,
+              column: INDEFINITE_END_COLUMN,
             },
           },
         }],
@@ -319,8 +338,8 @@ describe('DiagnosticsProvider', () => {
               column: 0,
             },
             end: {
-              row: 25,
-              column: 0,
+              row: 24,
+              column: INDEFINITE_END_COLUMN,
             },
           },
         }],
@@ -328,7 +347,7 @@ describe('DiagnosticsProvider', () => {
     });
   });
 
-  it('matches mutiple test failures, even when they appear in an order not found in Buck', () => {
+  it('matches multiple test failures, even when they appear in an order not found in Buck', () => {
     waitsForPromise(async () => {
       const diagnostics = Promise.all([
         diagnosticsParser.getDiagnostics(
@@ -358,8 +377,8 @@ describe('DiagnosticsProvider', () => {
               column: 0,
             },
             end: {
-              row: 1,
-              column: 0,
+              row: 0,
+              column: INDEFINITE_END_COLUMN,
             },
           },
         }],
@@ -375,8 +394,8 @@ describe('DiagnosticsProvider', () => {
               column: 0,
             },
             end: {
-              row: 2,
-              column: 0,
+              row: 1,
+              column: INDEFINITE_END_COLUMN,
             },
           },
         }],
