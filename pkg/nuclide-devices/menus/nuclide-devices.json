@@ -1,0 +1,18 @@
+{
+  "menu": [
+    {
+      "label": "Nuclide",
+      "submenu": [
+        {
+          "label": "Devices",
+          "submenu": [
+            {
+              "label": "Toggle",
+              "command": "nuclide-devices:toggle"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
