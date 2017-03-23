@@ -1,7 +1,7 @@
 {
   "menu": [
     {
-      "label": "Nuclide",
+      "label": "View",
       "submenu": [
         {
           "label": "Toggle Distraction Free Mode",

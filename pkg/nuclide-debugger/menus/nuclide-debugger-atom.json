@@ -1,6 +1,15 @@
 {
   "menu": [
     {
+      "label": "View",
+      "submenu": [
+        {
+          "label": "Toggle Debugger",
+          "command": "nuclide-debugger:toggle"
+        }
+      ]
+    },
+    {
       "label": "Nuclide",
       "submenu": [
         {
@@ -13,10 +22,6 @@
             {
               "label": "Hide",
               "command": "nuclide-debugger:hide"
-            },
-            {
-              "label": "Toggle",
-              "command": "nuclide-debugger:toggle"
             },
             {
               "label": "Launch/Attach...",

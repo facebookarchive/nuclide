@@ -1,15 +1,20 @@
 {
   "menu": [
     {
+      "label": "View",
+      "submenu": [
+        {
+          "label": "Toggle Diff View",
+          "command": "nuclide-diff-view:toggle"
+        }        
+      ]
+    },
+    {
       "label": "Nuclide",
       "submenu": [
         {
           "label": "Source Control",
           "submenu": [
-            {
-              "label": "Toggle Diff View",
-              "command": "nuclide-diff-view:toggle"
-            },
             {
               "label": "Commit",
               "command": "nuclide-diff-view:commit"

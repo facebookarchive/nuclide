@@ -1,16 +1,11 @@
 {
   "menu": [
     {
-      "label": "Nuclide",
+      "label": "View",
       "submenu": [
         {
-          "label": "React",
-          "submenu": [
-            {
-              "label": "Toggle Inspector",
-              "command": "nuclide-react-inspector:toggle"
-            }
-          ]
+          "label": "Toggle React Inspector",
+          "command": "nuclide-react-inspector:toggle"
         }
       ]
     }

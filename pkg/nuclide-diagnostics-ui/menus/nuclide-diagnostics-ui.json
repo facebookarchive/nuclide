@@ -1,15 +1,20 @@
 {
   "menu": [
     {
+      "label": "View",
+      "submenu": [
+        {
+          "label": "Toggle Diagnostics",
+          "command": "nuclide-diagnostics-ui:toggle-table"
+        }
+      ]
+    },
+    {
       "label": "Nuclide",
       "submenu": [
         {
           "label": "Diagnostics",
           "submenu": [
-            {
-              "label": "Toggle Table",
-              "command": "nuclide-diagnostics-ui:toggle-table"
-            },
             {
               "label": "Show Table",
               "command": "nuclide-diagnostics-ui:show-table"

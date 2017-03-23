@@ -1,10 +1,10 @@
 {
   "menu": [
     {
-      "label": "Nuclide",
+      "label": "View",
       "submenu": [
         {
-          "label": "Health",
+          "label": "Toggle Health",
           "command": "nuclide-health:toggle"
         }
       ]

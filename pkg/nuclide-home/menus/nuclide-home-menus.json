@@ -14,10 +14,10 @@
       ]
     },
     {
-      "label": "Nuclide",
+      "label": "View",
       "submenu": [
         {
-          "label": "Home",
+          "label": "Toggle Nuclide Home",
           "command": "nuclide-home:toggle"
         }
       ]

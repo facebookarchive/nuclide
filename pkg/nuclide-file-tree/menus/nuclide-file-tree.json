@@ -5,7 +5,7 @@
       "submenu": [
         {
           "command": "nuclide-file-tree:toggle",
-          "label": "Toggle Tree View"
+          "label": "Toggle File Tree"
         }
       ]
     },
@@ -15,10 +15,6 @@
         {
           "label": "File Tree",
           "submenu": [
-            {
-              "label": "Toggle",
-              "command": "nuclide-file-tree:toggle"
-            },
             {
               "label": "Toggle Focus",
               "command": "nuclide-file-tree:toggle-focus"

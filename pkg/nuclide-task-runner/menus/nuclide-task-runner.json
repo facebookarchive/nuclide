@@ -1,16 +1,11 @@
 {
   "menu": [
     {
-      "label": "Nuclide",
+      "label": "View",
       "submenu": [
         {
-          "label": "Task Runner",
-          "submenu": [
-            {
-              "label": "Toggle Toolbar Visibility",
-              "command": "nuclide-task-runner:toggle-toolbar-visibility"
-            }
-          ]
+          "label": "Toggle Task Runner",
+          "command": "nuclide-task-runner:toggle-toolbar-visibility"
         }
       ]
     }

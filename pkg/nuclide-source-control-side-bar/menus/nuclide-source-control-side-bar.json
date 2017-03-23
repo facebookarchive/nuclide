@@ -1,16 +1,11 @@
 {
   "menu": [
     {
-      "label": "Nuclide",
+      "label": "View",
       "submenu": [
         {
-          "label": "Source Control",
-          "submenu": [
-            {
-              "label": "Toggle SideBar",
-              "command": "nuclide-source-control-side-bar:toggle"
-            }
-          ]
+          "label": "Toggle Source Control Sidebar",
+          "command": "nuclide-source-control-side-bar:toggle"
         }
       ]
     }
