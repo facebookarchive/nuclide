@@ -34,7 +34,10 @@ export class CwdApi {
       )
       .map(() => this.getCwd())
       .map(directory => (isValidDirectory(directory) ? directory : null))
-      .distinctUntilChanged();
+      .distinctUntilChanged(
+        (a, b) =>
+          (a != null ? a.getPath() : null) === (b != null ? b.getPath() : null),
+      );
 
     this._disposables = new UniversalDisposable();
   }
