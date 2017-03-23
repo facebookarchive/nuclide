@@ -168,6 +168,9 @@ export function getDeployBuildEvents(
   buildTarget: string,
   runArguments: Array<string>,
 ): Observable<BuckEvent> {
+  const argString = runArguments.length === 0
+    ? ''
+    : ` with arguments "${runArguments.join(' ')}"`;
   return processStream
     .filter(message => message.kind === 'exit' && message.exitCode === 0)
     .switchMap(() => {
@@ -193,7 +196,7 @@ export function getDeployBuildEvents(
         .startWith(
         {
           type: 'log',
-          message: `Launching debugger for ${buildTarget}...`,
+          message: `Launching debugger for ${buildTarget}${argString}...`,
           level: 'log',
         },
         {

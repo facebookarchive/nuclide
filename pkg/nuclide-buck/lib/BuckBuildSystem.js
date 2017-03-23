@@ -431,6 +431,9 @@ export class BuckBuildSystem {
     const settings = {...taskSettings, ...additionalSettings};
     const buckService = getBuckServiceByNuclideUri(buckRoot);
 
+    const buildArguments = settings.arguments || [];
+    const runArguments = settings.runArguments || [];
+
     return Observable.fromPromise(buckService.getHTTPServerPort(buckRoot))
       .catch(err => {
         getLogger().warn(`Failed to get httpPort for ${targetString}`, err);
@@ -449,12 +452,16 @@ export class BuckBuildSystem {
           );
         }
 
+        const args = subcommand === 'run'
+          ? buildArguments.concat(runArguments)
+          : buildArguments;
+
         const processMessages = runBuckCommand(
           buckService,
           buckRoot,
           targetString,
           subcommand,
-          settings.arguments || [],
+          args,
           isDebug,
           udid,
         ).share();
@@ -502,7 +509,9 @@ export class BuckBuildSystem {
                     buckService,
                     buckRoot,
                     targetString,
-                    settings.runArguments || [],
+                    // Buck uses '--' to separate arguments for the launched process
+                    // We are launching the process directly here though.
+                    runArguments.filter(arg => arg !== '--'),
                   )
                 : Observable.empty(),
               isDebug && subcommand === 'test'
