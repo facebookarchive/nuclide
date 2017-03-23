@@ -101,13 +101,21 @@ async function getHgExecParams(
   options_: HgExecOptions,
 ): Promise<{command: string, args: Array<string>, options: Object}> {
   let args = args_;
-  const pathToSSHConfig = nuclideUri.expandHomeDir('~/.atom/scm_ssh.sh');
-  const doesSSHConfigExist = await fsPromise.exists(pathToSSHConfig);
-  const sshCommand = doesSSHConfigExist
-    ? pathToSSHConfig
+  let sshCommand;
+  // expandHomeDir is not supported on windows
+  if (process.platform !== 'win32') {
+    const pathToSSHConfig = nuclideUri.expandHomeDir('~/.atom/scm_ssh.sh');
+    const doesSSHConfigExist = await fsPromise.exists(pathToSSHConfig);
+    if (doesSSHConfigExist) {
+      sshCommand = pathToSSHConfig;
+    }
+  }
+
+  if (sshCommand == null) {
     // Disabling ssh keyboard input so all commands that prompt for interaction
     // fail instantly rather than just wait for an input that will never arrive
-    : 'ssh -oBatchMode=yes -oControlMaster=no';
+    sshCommand = 'ssh -oBatchMode=yes -oControlMaster=no';
+  }
   args.push(
     '--config',
     `ui.ssh=${sshCommand}`,
