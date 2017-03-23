@@ -1,7 +1,7 @@
 {
   "menu": [
     {
-      "label": "Nuclide",
+      "label": "View",
       "submenu": [
         {
           "label": "test",
@@ -11,15 +11,6 @@
               "command": "good_command"
             }
           ]
-        }
-      ]
-    },
-    {
-      "label": "View",
-      "submenu": [
-        {
-          "label": "test",
-          "command": "bad_command"
         }
       ]
     }

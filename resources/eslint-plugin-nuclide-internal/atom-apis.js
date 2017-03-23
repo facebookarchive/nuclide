@@ -15,7 +15,7 @@ const fs = require('fs');
 const path = require('path');
 
 const MISSING_MENU_ITEM_ERROR = 'All workspace-level Atom commands ' +
-  'should have a corresponding "Nuclide" sub-menu item in the same package.';
+  'should have a corresponding menu item in the same package.';
 
 const COMMAND_LITERAL_ERROR = 'Please use literals for Atom commands. ' +
   'This improves readability and makes command names easily greppable.';
@@ -115,7 +115,7 @@ function menuContainsCommand(config, command) {
     return false;
   }
   return config.menu.some(item => {
-    return item.label === 'Nuclide' && menuItemContainsCommand(item, command);
+    return menuItemContainsCommand(item, command);
   });
 }
 
