@@ -126,6 +126,7 @@ export default class TestRunnerPanel extends React.Component {
       case TestRunnerPanel.ExecutionState.RUNNING:
         runStopButton = (
           <Button
+            size={ButtonSizes.SMALL}
             className="inline-block"
             icon="primitive-square"
             buttonType={ButtonTypes.ERROR}
@@ -138,6 +139,7 @@ export default class TestRunnerPanel extends React.Component {
         const initialTest = this.props.path === undefined;
         runStopButton = (
           <Button
+            size={ButtonSizes.SMALL}
             className="inline-block"
             icon={initialTest ? 'playback-play' : 'sync'}
             buttonType={ButtonTypes.PRIMARY}
