@@ -14,6 +14,7 @@ import DebuggerInspector from './DebuggerInspector';
 import {DebuggerStore} from './DebuggerStore';
 import Bridge from './Bridge';
 import {Button} from '../../nuclide-ui/Button';
+import {LoadingSpinner} from '../../nuclide-ui/LoadingSpinner';
 
 type Props = {
   breakpointStore: BreakpointStore,
@@ -83,15 +84,16 @@ export default class DebuggerControllerView extends React.Component {
     }
     if (this.props.store.getDebuggerMode() === 'starting') {
       return (
-        <div className="padded">
+        <div className="nuclide-debugger-starting-message">
+          <div>
+            <span className="inline-block">Starting Debugger...</span>
+            <LoadingSpinner className="inline-block" size="EXTRA_SMALL" />
+          </div>
           <Button
-            title="Close"
             icon="x"
-            className="nuclide-debugger-root-close-button"
             onClick={this._handleClickClose}
+            title="Close"
           />
-          <p>Starting Debugger</p>
-          <progress className="starting" />
         </div>
       );
     }

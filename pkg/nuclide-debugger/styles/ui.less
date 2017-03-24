@@ -23,16 +23,6 @@
   flex-direction: row-reverse;
 }
 
-.nuclide-debugger-root-close-button {
-  background: transparent;
-  border: none;
-  padding: 0;
-  position: absolute;
-  top: 2.5em;
-  right: 0.5em;
-  z-index: 1;
-}
-
 .nuclide-debugger-root .inspector {
   display: flex;
   flex-direction: column;
@@ -116,6 +106,13 @@ Use flexbox cross-axis stretch to fill the vertical space.
 }
 
 /* General debugger UI */
+.nuclide-debugger-starting-message {
+  align-items: baseline;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: @component-padding;
+}
+
 .nuclide-debugger-section-content {
   max-height: 20em;
   overflow-y: visible;
