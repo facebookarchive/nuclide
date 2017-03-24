@@ -126,6 +126,7 @@ export default class TestRunnerPanel extends React.Component {
       case TestRunnerPanel.ExecutionState.RUNNING:
         runStopButton = (
           <Button
+            className="inline-block"
             icon="primitive-square"
             buttonType={ButtonTypes.ERROR}
             onClick={this.props.onClickStop}>
@@ -137,6 +138,7 @@ export default class TestRunnerPanel extends React.Component {
         const initialTest = this.props.path === undefined;
         runStopButton = (
           <Button
+            className="inline-block"
             icon={initialTest ? 'playback-play' : 'sync'}
             buttonType={ButtonTypes.PRIMARY}
             disabled={this.isDisabled()}
@@ -201,6 +203,7 @@ export default class TestRunnerPanel extends React.Component {
     if (this.props.attachDebuggerBeforeRunning != null) {
       attachDebuggerCheckbox = (
         <Checkbox
+          className="inline-block"
           checked={this.props.attachDebuggerBeforeRunning}
           label="Enable Debugger"
           onChange={this.props.onDebuggerCheckboxChanged}
