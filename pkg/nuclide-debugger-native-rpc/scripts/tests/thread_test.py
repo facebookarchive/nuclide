@@ -52,7 +52,8 @@ class ThreadTestCase(unittest.TestCase):
         self.lldb_debugger.SetAsync(False)
         self.lldb_debugger.GetTargetAtIndex(0).BreakpointCreateByName('main')
         self.lldb_debugger.GetSelectedTarget().LaunchSimple(None, None, os.getcwd())
-        self.thread_manager.update(self.lldb_debugger.GetSelectedTarget().process)
+        self._debugger_store.thread_manager.update_thread_switch_message(process)
+        self._debugger_store.thread_manager.send_threads_updated(process)
         for notification in self.chrome_channel.sent_notifications:
             if notification['method'] == 'Debugger.threadsUpdated':
                 self.assertEquals(len(notification['params']['threads']), 1)

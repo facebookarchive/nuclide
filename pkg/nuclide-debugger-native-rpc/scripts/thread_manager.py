@@ -24,14 +24,23 @@ class ThreadManager(object):
         self._previousStopThreadId = None
         self._threadSwitchMessage = None
 
-    def update(self, process):
+    def update_thread_switch_message(self, process):
+        stopThreadId = process.GetSelectedThread().GetThreadID()
+        if self._previousStopThreadId is not None and self._previousStopThreadId != stopThreadId:
+            self._threadSwitchMessage = "Active thread switched from thread {0} to thread {1}" \
+                .format(self._previousStopThreadId, stopThreadId)
+        else:
+            self._threadSwitchMessage = None
+        self._previousStopThreadId = stopThreadId
+
+    def send_threads_updated(self, process):
         """Update threads status for input process."""
         threads_array = []
         lldb = get_lldb()
+        stopThreadId = process.GetSelectedThread().GetThreadID()
         for thread in process.threads:
             description_stream = lldb.SBStream()
             thread.GetDescription(description_stream)
-
             frame = thread.GetSelectedFrame()
             location = self._debugger_store.location_serializer \
                 .get_frame_location(frame)
@@ -44,13 +53,6 @@ class ThreadManager(object):
                 'stopReason': self.get_thread_stop_description(thread),
                 'description': description_stream.GetData(),
             })
-        stopThreadId = process.GetSelectedThread().GetThreadID()
-        if self._previousStopThreadId is not None and self._previousStopThreadId != stopThreadId:
-            self._threadSwitchMessage = "Active thread switched from thread {0} to thread {1}" \
-                .format(self._previousStopThreadId, stopThreadId)
-        else:
-            self._threadSwitchMessage = None
-        self._previousStopThreadId = stopThreadId
         params = {
             'owningProcessId': process.id,
             'stopThreadId': stopThreadId,
