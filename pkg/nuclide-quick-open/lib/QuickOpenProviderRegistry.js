@@ -38,16 +38,24 @@ export default class QuickOpenProviderRegistry {
   }
 
   getGlobalProviders(): Array<GlobalProviderType> {
-    return Array.from(this._globalProviders.values());
+    return [...this._globalProviders.values()];
   }
 
   getDirectoryProviders(): Array<DirectoryProviderType> {
-    return Array.from(this._directoryProviders.values());
+    return [...this._directoryProviders.values()];
   }
 
   getProviderByName(serviceName: string): ?Provider {
     return this._globalProviders.get(serviceName)
         || this._directoryProviders.get(serviceName);
+  }
+
+  getGlobalProviderByName(serviceName: string): ?GlobalProviderType {
+    return this._globalProviders.get(serviceName);
+  }
+
+  getDirectoryProviderByName(serviceName: string): ?DirectoryProviderType {
+    return this._directoryProviders.get(serviceName);
   }
 
   isProviderGlobal(serviceName: string): boolean {

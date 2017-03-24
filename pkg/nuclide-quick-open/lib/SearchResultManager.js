@@ -11,7 +11,7 @@
 /* global performance */
 
 import type {Directory} from '../../nuclide-remote-connection';
-import type {FileResult, Provider, DirectoryProviderType} from './types';
+import type {FileResult, Provider, GlobalProviderType, DirectoryProviderType} from './types';
 import type {GroupedResult, GroupedResults, ProviderResult} from './searchResultHelpers';
 import type QuickOpenProviderRegistry from './QuickOpenProviderRegistry';
 
@@ -41,7 +41,7 @@ import {triggerAfterWait} from '../../commons-node/promise';
 import debounce from '../../commons-node/debounce';
 import FileResultComponent from './FileResultComponent';
 import ResultCache from './ResultCache';
-import {arrayEqual, mapEqual} from '../../commons-node/collection';
+import {arrayEqual, mapEqual, areSetsEqual} from '../../commons-node/collection';
 
 const MAX_OMNI_RESULTS_PER_SERVICE = 5;
 const DEFAULT_QUERY_DEBOUNCE_DELAY = 200;
@@ -63,7 +63,8 @@ const GLOBAL_KEY = 'global';
  */
 export default class SearchResultManager {
   _quickOpenProviderRegistry: QuickOpenProviderRegistry;
-  _providersByDirectory: Map<atom$Directory, Set<DirectoryProviderType>>;
+  _directoryEligibleProviders: Map<atom$Directory, Set<DirectoryProviderType>>;
+  _globalEligibleProviders: Set<GlobalProviderType>;
   _providerSubscriptions: Map<Provider, IDisposable>;
   _directories: Array<atom$Directory>;
   _resultCache: ResultCache;
@@ -79,7 +80,8 @@ export default class SearchResultManager {
   ) {
     this._activeProviderName = OMNISEARCH_PROVIDER.name;
     this._lastRawQuery = null;
-    this._providersByDirectory = new Map();
+    this._directoryEligibleProviders = new Map();
+    this._globalEligibleProviders = new Set();
     this._providerSubscriptions = new Map();
     this._directories = [];
     this._currentWorkingRoot = null;
@@ -161,12 +163,13 @@ export default class SearchResultManager {
    */
   async _updateDirectories(): Promise<void> {
     const directories = atom.project.getDirectories();
-    const providersByDirectories = new Map();
+    const directoryEligibleProviders = new Map();
+    const globalEligibleProviders = new Set();
     const eligibilities = [];
 
     directories.forEach(directory => {
       const providersForDirectory = new Set();
-      providersByDirectories.set(directory, providersForDirectory);
+      directoryEligibleProviders.set(directory, providersForDirectory);
       for (const provider of this._quickOpenProviderRegistry.getDirectoryProviders()) {
         eligibilities.push(
           provider.isEligibleForDirectory(directory)
@@ -186,14 +189,20 @@ export default class SearchResultManager {
       }
     });
 
+    for (const provider of this._quickOpenProviderRegistry.getGlobalProviders()) {
+      globalEligibleProviders.add(provider);
+    }
+
     await Promise.all(eligibilities);
 
     if (!(
       arrayEqual(this._directories, directories) &&
-      mapEqual(this._providersByDirectory, providersByDirectories)
+      mapEqual(this._directoryEligibleProviders, directoryEligibleProviders) &&
+      areSetsEqual(this._globalEligibleProviders, globalEligibleProviders)
     )) {
       this._directories = directories;
-      this._providersByDirectory = providersByDirectories;
+      this._directoryEligibleProviders = directoryEligibleProviders;
+      this._globalEligibleProviders = globalEligibleProviders;
       this._emitter.emit('providers-changed');
     }
   }
@@ -244,9 +253,7 @@ export default class SearchResultManager {
     const subscriptions = new UniversalDisposable();
     this._providerSubscriptions.set(service, subscriptions);
 
-    if (service.providerType === 'DIRECTORY') {
-      this._debouncedUpdateDirectories();
-    }
+    this._debouncedUpdateDirectories();
   }
 
   _deregisterProvider(service: Provider): void {
@@ -258,8 +265,10 @@ export default class SearchResultManager {
     subscriptions.dispose();
     this._providerSubscriptions.delete(service);
 
-    if (service.providerType === 'DIRECTORY') {
-      this._providersByDirectory.forEach(providers => {
+    if (service.providerType === 'GLOBAL') {
+      this._globalEligibleProviders.delete(service);
+    } else if (service.providerType === 'DIRECTORY') {
+      this._directoryEligibleProviders.forEach(providers => {
         providers.delete(service);
       });
     }
@@ -310,7 +319,7 @@ export default class SearchResultManager {
   _executeQuery(rawQuery: string): void {
     this._lastRawQuery = rawQuery;
     const query = this._sanitizeQuery(rawQuery);
-    for (const globalProvider of this._quickOpenProviderRegistry.getGlobalProviders()) {
+    for (const globalProvider of this._globalEligibleProviders) {
       const startTime = performance.now();
       const loadingFn = () => {
         this._setLoading(query, GLOBAL_KEY, globalProvider);
@@ -329,12 +338,12 @@ export default class SearchResultManager {
         this._processResult(query, result, GLOBAL_KEY, globalProvider);
       });
     }
-    if (this._providersByDirectory.size === 0) {
+    if (this._directoryEligibleProviders.size === 0) {
       return;
     }
     this._directories.forEach(directory => {
       const path = directory.getPath();
-      const providers = this._providersByDirectory.get(directory);
+      const providers = this._directoryEligibleProviders.get(directory);
       if (!providers) {
         // Special directories like "atom://about"
         return;
@@ -368,9 +377,12 @@ export default class SearchResultManager {
   }
 
   _getResultsForProvider(query: string, providerName: string): GroupedResult {
-    const providerPaths = this._quickOpenProviderRegistry.isProviderGlobal(providerName)
-      ? [GLOBAL_KEY]
-      : this._sortDirectories().map(d => d.getPath());
+    let providerPaths;
+    if (this._quickOpenProviderRegistry.isProviderGlobal(providerName)) {
+      providerPaths = [GLOBAL_KEY];
+    } else {
+      providerPaths = this._sortDirectories().map(d => d.getPath());
+    }
     const providerSpec = this.getProviderSpecByName(providerName);
     const lastCachedQuery = this._resultCache.getLastCachedQuery(providerName);
     return {
@@ -474,15 +486,15 @@ export default class SearchResultManager {
     // Only render tabs for providers that are eligible for at least one directory.
     const eligibleDirectoryProviders =
       this._quickOpenProviderRegistry.getDirectoryProviders()
-        .filter(eligibleProvider => {
-          for (const [, directoryProviders] of this._providersByDirectory) {
-            if (directoryProviders.has(eligibleProvider)) {
+        .filter(directoryProvider => {
+          for (const [, directoryEligibleProviders] of this._directoryEligibleProviders) {
+            if (directoryEligibleProviders.has(directoryProvider)) {
               return true;
             }
           }
           return false;
         });
-    const tabs = this._quickOpenProviderRegistry.getGlobalProviders()
+    const tabs = Array.from(this._globalEligibleProviders)
       .concat(eligibleDirectoryProviders)
       .filter(provider => (provider.display != null))
       .map(provider => this._bakeProvider(provider))
@@ -496,4 +508,5 @@ export const __test__ = {
   _getOmniSearchProviderSpec(): ProviderSpec {
     return OMNISEARCH_PROVIDER;
   },
+  UPDATE_DIRECTORIES_DEBOUNCE_DELAY,
 };

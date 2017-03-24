@@ -18,7 +18,7 @@ import SearchResultManager from '../lib/SearchResultManager';
 import QuickOpenProviderRegistry from '../lib/QuickOpenProviderRegistry';
 
 import {__test__} from '../lib/SearchResultManager';
-const {_getOmniSearchProviderSpec} = __test__;
+const {_getOmniSearchProviderSpec, UPDATE_DIRECTORIES_DEBOUNCE_DELAY} = __test__;
 
 const PROJECT_ROOT1 = nuclideUri.join(__dirname, 'fixtures/root1');
 const PROJECT_ROOT2 = nuclideUri.join(__dirname, 'fixtures/root2');
@@ -142,18 +142,32 @@ describe('SearchResultManager', () => {
   describe('provider/directory cache', () => {
     it('updates the cache when providers become (un)available', () => {
       waitsForPromise(async () => {
-        const fakeProviderDisposable = quickOpenProviderRegistry.addProvider(FakeProvider);
+        spyOn(Date, 'now').andCallFake(() => global.now); // needed to mock debounce
         let providersChangedCallCount = 0;
-        searchResultManager.onProvidersChanged(() => {
-          providersChangedCallCount++;
+        const providersChanged = new Promise(resolve => {
+          searchResultManager.onProvidersChanged(() => {
+            providersChangedCallCount++;
+            resolve();
+          });
         });
-        await searchResultManager._updateDirectories();
+
+        const fakeProviderDisposable = quickOpenProviderRegistry.addProvider(FakeProvider);
+
+        // The 'addProvider' call above will debounce and then call the async
+        // method updateDirectories. We need to advanceClock to satisfy debounce.
+        advanceClock(UPDATE_DIRECTORIES_DEBOUNCE_DELAY);
+        // We want to await until updateDirectories has finished, but we don't
+        // have access to its returned Promise. So instead we'll await until
+        // it finally emits 'providers-changed'.
+        await providersChanged;
+
         let renderableProviders = searchResultManager.getRenderableProviders();
         expect(renderableProviders.length).toEqual(2);
         expect(renderableProviders[1]).toEqual(FakeProviderSpec);
         expect(providersChangedCallCount).toEqual(1);
 
         // Simulate deactivation of FakeProvider
+        // The dispose method has immediate effect: no debouncing, no need to await.
         fakeProviderDisposable.dispose();
         renderableProviders = searchResultManager.getRenderableProviders();
         expect(renderableProviders.length).toEqual(1);
@@ -166,6 +180,7 @@ describe('SearchResultManager', () => {
     it('queries providers asynchronously, emits change events and returns filtered results', () => {
       waitsForPromise(async () => {
         quickOpenProviderRegistry.addProvider(ExactStringMatchProvider);
+        await searchResultManager._updateDirectories();
         expect(await querySingleProvider(searchResultManager, 'yolo', 'ExactStringMatchProvider'))
           .toEqual(constructSingleProviderResult(ExactStringMatchProvider, {
             results: [
@@ -184,6 +199,7 @@ describe('SearchResultManager', () => {
     it('ignores trailing whitespace in querystring.', () => {
       waitsForPromise(async () => {
         quickOpenProviderRegistry.addProvider(ExactStringMatchProvider);
+        await searchResultManager._updateDirectories();
         await Promise.all([
           '   yolo',
           'yolo   ',
@@ -248,6 +264,7 @@ describe('SearchResultManager', () => {
       quickOpenProviderRegistry.addProvider(ThirdProvider);
       quickOpenProviderRegistry.addProvider(SecondProvider);
       waitsForPromise(async () => {
+        await searchResultManager._updateDirectories();
         expect(
           await queryOmniSearchProvider(quickOpenProviderRegistry, searchResultManager, ''),
         ).toEqual(
@@ -261,6 +278,7 @@ describe('SearchResultManager', () => {
       quickOpenProviderRegistry.addProvider(SecondProvider);
       quickOpenProviderRegistry.addProvider(FirstProvider);
       waitsForPromise(async () => {
+        await searchResultManager._updateDirectories();
         expect(
           await queryOmniSearchProvider(quickOpenProviderRegistry, searchResultManager, ''),
         ).toEqual(
