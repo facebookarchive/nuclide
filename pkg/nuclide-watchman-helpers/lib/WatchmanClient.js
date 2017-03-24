@@ -62,6 +62,7 @@ export default class WatchmanClient {
 
     const client = await this._clientPromise;
     client.on('end', () => {
+      logger.info('Watchman client ended');
       client.removeAllListeners();
       this._serializedReconnect();
     });
@@ -90,6 +91,7 @@ export default class WatchmanClient {
   async _reconnectClient(): Promise<void> {
     logger.error('Watchman client disconnected, reconnecting a new client!');
     await this._initWatchmanClient();
+    logger.info('Watchman client re-initialized, restoring subscriptions');
     await this._restoreSubscriptions();
   }
 

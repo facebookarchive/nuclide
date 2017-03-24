@@ -48,9 +48,13 @@ describe('WatchmanClient test suite', () => {
 
   describe('restore subscriptions', () => {
     function testRestoreSubscriptions(onRestoreChange: (watchmanClient: watchman.Client) => void) {
-      waitsForPromise(async () => {
+      // First watchman init can be slow and flaky.
+      waitsForPromise({timeout: 15000}, async () => {
         const filePath = nuclideUri.join(dirPath, 'test.txt');
-        const watcher = await client.watchDirectoryRecursive(dirPath);
+        const watcher = await client.watchDirectoryRecursive(dirPath)
+          // Give it two retries.
+          .catch(() => client.watchDirectoryRecursive(dirPath))
+          .catch(() => client.watchDirectoryRecursive(dirPath));
         const changeHandler = jasmine.createSpy();
         watcher.on('change', changeHandler);
         waits(1010);
