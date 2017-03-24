@@ -33,8 +33,10 @@ import {ToggleExamples} from '../../nuclide-ui/Toggle.example';
 import {ResizableFlexContainerExamples} from '../../nuclide-ui/ResizableFlexContainer.example';
 import {ModalExamples} from '../../nuclide-ui/Modal.example';
 import {FileChangesExamples} from '../../nuclide-ui/FileChanges.example';
+import {MessageExamples} from '../../nuclide-ui/Message.example';
 
 const playgroundComponents = [
+  MessageExamples,
   ButtonExamples,
   ModalExamples,
   ProgressIndicatorExamples,
