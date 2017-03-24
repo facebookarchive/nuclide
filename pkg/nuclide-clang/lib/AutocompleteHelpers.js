@@ -11,6 +11,8 @@
 import type {ClangCompletion} from '../../nuclide-clang-rpc/lib/rpc-types';
 
 import {Point} from 'atom';
+import fuzzaldrinPlus from 'fuzzaldrin-plus';
+import AutocompleteCacher from '../../commons-atom/AutocompleteCacher';
 import {arrayFindLastIndex} from '../../commons-node/collection';
 import {track, trackTiming} from '../../nuclide-analytics';
 import {ClangCursorToDeclarationTypes} from '../../nuclide-clang-rpc';
@@ -203,19 +205,46 @@ function getCompletionPrefix(editor: atom$TextEditor): string {
   return editor.getTextInBufferRange(range).trim();
 }
 
+type ClangAutocompleteSuggestion = atom$AutocompleteSuggestion & {
+  filterText: string,
+};
+
 export default class AutocompleteHelpers {
+  static _cacher = new AutocompleteCacher(
+    AutocompleteHelpers._getAutocompleteSuggestions,
+    {
+      updateResults(request, results) {
+        const {editor} = request;
+        const prefix = getCompletionPrefix(editor);
+        // We hit the results limit, so there may be unlisted results.
+        // Needs to match the value in clang_server.py.
+        if (results.length === 200) {
+          return null;
+        }
+        return fuzzaldrinPlus.filter(results, prefix, {key: 'filterText'})
+          .map(result => ({...result, replacementPrefix: prefix}));
+      },
+    },
+  );
+
   static getAutocompleteSuggestions(
     request: atom$AutocompleteRequest,
   ): Promise<Array<atom$AutocompleteSuggestion>> {
     return trackTiming(
       'nuclide-clang-atom.autocomplete',
-      () => AutocompleteHelpers._getAutocompleteSuggestions(request),
+      async () => {
+        const results = await AutocompleteHelpers._cacher.getSuggestions(request);
+        if (results != null) {
+          return [...results];
+        }
+        return [];
+      },
     );
   }
 
   static async _getAutocompleteSuggestions(
     request: atom$AutocompleteRequest,
-  ): Promise<Array<atom$AutocompleteSuggestion>> {
+  ): Promise<?Array<ClangAutocompleteSuggestion>> {
     const {editor, bufferPosition: {row, column}, activatedManually} = request;
     const prefix = getCompletionPrefix(editor);
     // Only autocomplete empty strings when it's a method (a.?, a->?) or qualifier (a::?),
@@ -223,14 +252,14 @@ export default class AutocompleteHelpers {
     if (!activatedManually && prefix === '') {
       const wordPrefix = editor.getLastCursor().getCurrentWordPrefix();
       if (!VALID_EMPTY_SUFFIX.test(wordPrefix)) {
-        return [];
+        return null;
       }
     }
 
     const indentation = editor.indentationForBufferRow(row);
     const data = await getCompletions(editor, prefix);
     if (data == null) {
-      return [];
+      return null;
     }
 
     track('clang.autocompleteResults', {
@@ -272,6 +301,7 @@ export default class AutocompleteHelpers {
         leftLabel: completion.result_type,
         rightLabel,
         description: completion.brief_comment || completion.result_type,
+        filterText: completion.typed_name,
       };
     });
   }

@@ -68,6 +68,9 @@ export type ClangCompletion = {
   spelling: string,
   cursor_kind: string,
   brief_comment: ?string,
+  // String that Clang intends for us to use for filtering.
+  // We do a case-insensitive prefix match against this string.
+  typed_name: string,
 };
 
 export type ClangDeclaration = {

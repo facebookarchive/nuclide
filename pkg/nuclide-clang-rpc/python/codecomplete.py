@@ -146,6 +146,7 @@ class CompletionResult:
             'result_type': result_type,
             'cursor_kind': self.kind,
             'brief_comment': briefComment and briefComment.spelling,
+            'typed_name': self.typed_name,
         }
 
 

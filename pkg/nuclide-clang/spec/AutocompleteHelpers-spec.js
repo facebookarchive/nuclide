@@ -57,6 +57,7 @@ describe('AutocompleteHelpers', () => {
         spelling: '',
         cursor_kind: '',
         brief_comment: null,
+        typed_name: '',
       };
 
       const body = getCompletionBodyMultiLine(
@@ -123,6 +124,7 @@ describe('AutocompleteHelpers', () => {
         spelling: '',
         cursor_kind: '',
         brief_comment: null,
+        typed_name: '',
       };
 
       const body = getCompletionBodyMultiLine(
@@ -162,6 +164,7 @@ describe('AutocompleteHelpers', () => {
         spelling: '',
         cursor_kind: '',
         brief_comment: null,
+        typed_name: '',
       };
 
       const body = getCompletionBodyMultiLine(
@@ -200,6 +203,7 @@ describe('AutocompleteHelpers', () => {
         spelling: '',
         cursor_kind: '',
         brief_comment: null,
+        typed_name: '',
       };
 
       const body = getCompletionBodyMultiLine(
@@ -238,6 +242,7 @@ describe('AutocompleteHelpers', () => {
         spelling: '',
         cursor_kind: '',
         brief_comment: null,
+        typed_name: '',
       };
 
       const body = getCompletionBodyMultiLine(
@@ -278,6 +283,7 @@ describe('AutocompleteHelpers', () => {
         spelling: '',
         cursor_kind: '',
         brief_comment: null,
+        typed_name: '',
       };
 
       const body = getCompletionBodyInline(completion);
@@ -296,6 +302,7 @@ describe('AutocompleteHelpers', () => {
         spelling: '',
         cursor_kind: '',
         brief_comment: null,
+        typed_name: '',
       };
 
       const body = getCompletionBodyInline(completion);
@@ -340,6 +347,7 @@ describe('AutocompleteHelpers', () => {
         spelling: '',
         cursor_kind: '',
         brief_comment: null,
+        typed_name: '',
       };
 
       let body = getCompletionBodyInline(completion);
@@ -363,6 +371,7 @@ describe('AutocompleteHelpers', () => {
         spelling: '',
         cursor_kind: '',
         brief_comment: null,
+        typed_name: '',
       });
       expect(body).toBe('f(${1:[int x]})');
     });

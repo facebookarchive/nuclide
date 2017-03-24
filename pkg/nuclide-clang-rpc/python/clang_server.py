@@ -38,7 +38,7 @@ FD_FOR_READING = 3
 
 # Unfortunately Clang has no way of limiting autocompletion results, but set a reasonable limit
 # to avoid overloading the Atom UI.
-COMPLETIONS_LIMIT = 100
+COMPLETIONS_LIMIT = 200
 
 
 # Clang warns when you use #pragma once in the main compilation unit.
