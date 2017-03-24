@@ -11,7 +11,7 @@
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
 import type {HackRange} from './rpc-types';
-import type {HackLanguageService} from './HackService-types';
+import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
 import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 import type {
@@ -41,6 +41,7 @@ import {Observable} from 'rxjs';
 import {wordAtPositionFromBuffer} from '../../commons-node/range';
 import {arrayFlatten, arrayCompact} from '../../commons-node/collection';
 import invariant from 'assert';
+import {PerConnectionLanguageService} from '../../nuclide-vscode-language-service';
 import {
   callHHClient,
 } from './HackHelpers';
@@ -88,11 +89,32 @@ export type HackFormatSourceResult = {
   internal_error: boolean,
 };
 
+export async function initializeLsp(
+  command: string,
+  args: Array<string>,
+  projectFileName: string,
+  fileExtensions: Array<NuclideUri>,
+  logLevel: LogLevel,
+  fileNotifier: FileNotifier,
+): Promise<LanguageService> {
+  invariant(fileNotifier instanceof FileCache);
+  logger.setLogLevel(logLevel);
+  const cmd = command === '' ? await getHackCommand() : command;
+  return new PerConnectionLanguageService(
+    logger,
+    fileNotifier,
+    cmd,
+    args,
+    projectFileName,
+    fileExtensions,
+  );
+}
+
 export async function initialize(
   hackCommand: string,
   logLevel: LogLevel,
   fileNotifier: FileNotifier,
-): Promise<HackLanguageService> {
+): Promise<LanguageService> {
   setHackCommand(hackCommand);
   logger.setLogLevel(logLevel);
   await getHackCommand();

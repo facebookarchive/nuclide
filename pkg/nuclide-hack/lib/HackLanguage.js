@@ -10,7 +10,7 @@
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import typeof * as HackService from '../../nuclide-hack-rpc/lib/HackService';
-import type {HackLanguageService} from '../../nuclide-hack-rpc/lib/HackService-types';
+import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
 import type {ServerConnection} from '../../nuclide-remote-connection';
 import type {
   AtomLanguageServiceConfig,
@@ -32,24 +32,39 @@ import {
 } from '../../nuclide-hack-common/lib/autocomplete';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
 import nuclideUri from '../../commons-node/nuclideUri';
+import passesGK from '../../commons-node/passesGK';
 
 const HACK_SERVICE_NAME = 'HackService';
 
+async function getUseLspConnection(): Promise<boolean> {
+  return passesGK('nuclide_hack_use_lsp_connection');
+}
+
 async function connectionToHackService(
   connection: ?ServerConnection,
-): Promise<HackLanguageService> {
+): Promise<LanguageService> {
   const hackService: HackService = getServiceByConnection(HACK_SERVICE_NAME, connection);
   const config = getConfig();
   const fileNotifier = await getNotifierByConnection(connection);
-  const languageService = await hackService.initialize(
-    config.hhClientPath,
-    config.logLevel,
-    fileNotifier);
 
-  return languageService;
+  if (await getUseLspConnection()) {
+    return hackService.initializeLsp(
+      config.hhClientPath, // command
+      ['lsp'], // arguments
+      '.hhconfig', // project file
+      ['.php'], // which file-notifications should be sent to LSP
+      config.logLevel,
+      fileNotifier,
+    );
+  } else {
+    return hackService.initialize(
+      config.hhClientPath,
+      config.logLevel,
+      fileNotifier);
+  }
 }
 
-async function createLanguageService(): Promise<AtomLanguageService<HackLanguageService>> {
+async function createLanguageService(): Promise<AtomLanguageService<LanguageService>> {
   const atomConfig: AtomLanguageServiceConfig = {
     name: 'Hack',
     grammars: HACK_GRAMMARS,
@@ -117,7 +132,7 @@ async function createLanguageService(): Promise<AtomLanguageService<HackLanguage
 }
 
 // This needs to be initialized eagerly for Hack Symbol search and the HHVM Toolbar.
-export let hackLanguageService: Promise<AtomLanguageService<HackLanguageService>>
+export let hackLanguageService: Promise<AtomLanguageService<LanguageService>>
   = createLanguageService();
 
 export function resetHackLanguageService(): void {
@@ -127,7 +142,7 @@ export function resetHackLanguageService(): void {
   hackLanguageService = createLanguageService();
 }
 
-export async function getHackLanguageForUri(uri: ?NuclideUri): Promise<?HackLanguageService> {
+export async function getHackLanguageForUri(uri: ?NuclideUri): Promise<?LanguageService> {
   return (await hackLanguageService).getLanguageServiceForUri(uri);
 }
 

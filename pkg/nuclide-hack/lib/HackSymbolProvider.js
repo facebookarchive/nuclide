@@ -14,10 +14,8 @@ import type {
   GlobalProviderType,
 } from '../../nuclide-quick-open/lib/types';
 import type {
-  HackLanguageService,
-} from '../../nuclide-hack-rpc/lib/HackService-types';
-import type {
   SymbolResult,
+  LanguageService,
 } from '../../nuclide-language-service/lib/LanguageService';
 
 import {getHackLanguageForUri} from './HackLanguage';
@@ -32,16 +30,16 @@ import React from 'react';
 
 async function getHackDirectoriesByService(
   directories: Array<atom$Directory>, // top-level project directories
-): Promise<Array<[HackLanguageService, Array<NuclideUri>]>> {
-  const promises: Array<Promise<?[HackLanguageService, NuclideUri]>> =
+): Promise<Array<[LanguageService, Array<NuclideUri>]>> {
+  const promises: Array<Promise<?[LanguageService, NuclideUri]>> =
     directories.map(async directory => {
       const service = await getHackLanguageForUri(directory.getPath());
       return service ? [service, directory.getPath()] : null;
     });
-  const serviceDirectories: Array<?[HackLanguageService, NuclideUri]> =
+  const serviceDirectories: Array<?[LanguageService, NuclideUri]> =
     await Promise.all(promises);
 
-  const results: Map<HackLanguageService, Array<NuclideUri>> =
+  const results: Map<LanguageService, Array<NuclideUri>> =
     collect(arrayCompact(serviceDirectories));
 
   return Array.from(results.entries());
