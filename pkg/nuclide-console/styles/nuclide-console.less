@@ -4,7 +4,9 @@
 @nuclide-console-border-size: 1px;
 @nuclide-console-record-background-color-normal: @syntax-background-color;
 @nuclide-console-record-text-color-normal: @syntax-text-color;
-@nuclide-console-record-border-color-normal: fade(@base-border-color, 50%);
+// Don't use @base-border-color because that's a UI color, and makes light/dark
+// combinations look bad.
+@nuclide-console-record-border-color-normal: darken(@syntax-background-color, 5%);
 @nuclide-console-record-text-color-error: @text-color-error;
 @nuclide-console-record-border-color-error: @background-color-error;
 @nuclide-console-record-text-color-warning: @text-color-warning;
