@@ -286,7 +286,10 @@ WebInspector.RemoteObjectImpl = function(target, objectId, type, subtype, value,
         this._hasChildren = false;
         // Handle special numbers: NaN, Infinity, -Infinity, -0.
         if (type === "number" && typeof value !== "number")
-            this.value = Number(value);
+            // FB: Edit from Chrome source, leave this value as a string
+            // so that the Nuclide frontend can display numbers that overflow
+            // JS Number data type.
+            this.value = value;
         else
             this.value = value;
     }
