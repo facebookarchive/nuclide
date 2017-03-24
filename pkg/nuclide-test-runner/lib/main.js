@@ -44,24 +44,6 @@ class Activation {
   constructor() {
     this._testRunners = new Set();
     this._disposables = new CompositeDisposable();
-    this._disposables.add(
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-test-runner:toggle-panel',
-        () => {
-          this.getController().togglePanel();
-        },
-      ),
-    );
-    this._disposables.add(
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-test-runner:run-tests',
-        () => {
-          this.getController().runTests();
-        },
-      ),
-    );
     // Listen for run events on files in the file tree
     this._disposables.add(
       atom.commands.add(

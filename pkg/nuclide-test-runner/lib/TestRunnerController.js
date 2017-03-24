@@ -42,20 +42,17 @@ export class TestRunnerController {
   _root: HTMLElement;
   _run: ?TestRunModel;
   _runningTest: boolean;
-  _panelVisible: boolean;
   _testRunners: Set<TestRunner>;
-  _testRunnerPanel: ?TestRunnerPanel;
+  _testRunnerPanel: TestRunnerPanel;
   _testSuiteModel: ?TestSuiteModel;
 
   constructor(testRunners: Set<TestRunner>) {
     this._root = document.createElement('div');
-
-    this._panelVisible = false;
+    this._root.style.display = 'flex';
 
     // Bind Functions for use as callbacks;
     // TODO: Replace with property initializers when supported by Flow;
     (this: any).clearOutput = this.clearOutput.bind(this);
-    (this: any).hidePanel = this.hidePanel.bind(this);
     (this: any).stopTests = this.stopTests.bind(this);
     (this: any)._handleClickRun = this._handleClickRun.bind(this);
     (this: any)._onDebuggerCheckboxChanged = this._onDebuggerCheckboxChanged.bind(this);
@@ -90,29 +87,16 @@ export class TestRunnerController {
     this._renderPanel();
   }
 
-  hidePanel() {
-    track('testrunner-hide-panel');
-    this.stopTests();
-    this._panelVisible = false;
-  }
-
   /**
    * @return A Promise that resolves when testing has succesfully started.
    */
   async runTests(path?: string): Promise<void> {
     this._runningTest = true;
-
-    // If the test runner panel is not rendered yet, ensure it is rendered before continuing.
-    if (this._testRunnerPanel == null || !this._panelVisible) {
-      await new Promise((resolve, reject) => {
-        this.showPanel(resolve);
-      });
-    }
-
-    if (this._testRunnerPanel == null) {
-      logger.error('Test runner panel did not render as expected. Aborting testing.');
-      return;
-    }
+    atom.commands.dispatch(
+      atom.views.getView(atom.workspace),
+      'nuclide-test-runner:toggle-panel',
+      {visible: true},
+    );
 
     // Get selected test runner when Flow knows `this._testRunnerPanel` is defined.
     const selectedTestRunner = this._testRunnerPanel.getSelectedTestRunner();
@@ -195,24 +179,6 @@ export class TestRunnerController {
     this._stopListening();
     // Respond in the UI immediately and assume the process is properly killed.
     this._setExecutionState(TestRunnerPanel.ExecutionState.STOPPED);
-  }
-
-  showPanel(didRender?: () => void): void {
-    track('testrunner-show-panel');
-    this._panelVisible = true;
-    this._renderPanel(didRender);
-  }
-
-  togglePanel(): void {
-    if (this._panelVisible) {
-      this.hidePanel();
-    } else {
-      this.showPanel();
-    }
-  }
-
-  isVisible(): boolean {
-    return this._panelVisible;
   }
 
   /**
@@ -311,13 +277,7 @@ export class TestRunnerController {
     this._renderPanel();
   }
 
-  _renderPanel(didRender?: () => void) {
-    // Initialize and render the contents of the panel only if the hosting container is visible by
-    // the user's choice.
-    if (!this._panelVisible) {
-      return;
-    }
-
+  _renderPanel() {
     let progressValue;
     if (this._testSuiteModel && this._executionState === TestRunnerPanel.ExecutionState.RUNNING) {
       progressValue = this._testSuiteModel.progressPercent();
@@ -326,14 +286,12 @@ export class TestRunnerController {
       // track.
       progressValue = 100;
     }
-    this._root.style.display = 'flex';
     const component = ReactDOM.render(
       <TestRunnerPanel
         attachDebuggerBeforeRunning={this._attachDebuggerBeforeRunning}
         buffer={this._buffer}
         executionState={this._executionState}
         onClickClear={this.clearOutput}
-        onClickClose={this.hidePanel}
         onClickRun={this._handleClickRun}
         onClickStop={this.stopTests}
         onDebuggerCheckboxChanged={this._onDebuggerCheckboxChanged}
@@ -347,7 +305,6 @@ export class TestRunnerController {
         testSuiteModel={this._testSuiteModel}
       />,
       this._root,
-      didRender,
     );
     invariant(component instanceof TestRunnerPanel);
     this._testRunnerPanel = component;
@@ -388,14 +345,6 @@ export class TestRunnerController {
 
   getDefaultLocation(): string {
     return 'bottom-panel';
-  }
-
-  didChangeVisibility(visible: boolean): void {
-    if (visible) {
-      this.showPanel();
-    } else {
-      this.hidePanel();
-    }
   }
 
   getElement(): HTMLElement {

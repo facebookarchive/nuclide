@@ -34,7 +34,6 @@ type Props = {
   buffer: Object,
   executionState: number,
   onClickClear: (event: SyntheticMouseEvent) => mixed,
-  onClickClose: (event: SyntheticMouseEvent) => mixed,
   onClickRun: (event: SyntheticMouseEvent) => mixed,
   onClickStop: (event: SyntheticMouseEvent) => mixed,
   onDebuggerCheckboxChanged: (isChecked: boolean) => mixed,
@@ -230,13 +229,6 @@ export default class TestRunnerPanel extends React.Component {
           <ToolbarRight>
             {runMsg}
             <progress className="inline-block" max="100" {...progressAttrs} />
-            <Button
-              onClick={this.props.onClickClose}
-              className="inline-block"
-              icon="x"
-              size={ButtonSizes.SMALL}
-              title="Close Panel"
-            />
           </ToolbarRight>
         </Toolbar>
         <div className="nuclide-test-runner-console" ref="paneContainer" />
