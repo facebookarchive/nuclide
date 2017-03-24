@@ -264,6 +264,12 @@ export class BuckBuildSystem {
       'Invalid task type',
     );
 
+    atom.commands.dispatch(
+      atom.views.getView(atom.workspace),
+      'nuclide-console:toggle',
+      {visible: true},
+    );
+
     const state = this._getStore().getState();
     const {
       buckRoot,
@@ -422,11 +428,6 @@ export class BuckBuildSystem {
       return Observable.empty();
     }
 
-    atom.commands.dispatch(
-      atom.views.getView(atom.workspace),
-      'nuclide-console:toggle',
-      {visible: true},
-    );
     const targetString = getCommandStringForResolvedBuildTarget(buildTarget);
     const settings = {...taskSettings, ...additionalSettings};
     const buckService = getBuckServiceByNuclideUri(buckRoot);
@@ -447,8 +448,8 @@ export class BuckBuildSystem {
           ).share();
         } else {
           this._logOutput(
-            'Enable httpserver in your .buckconfig for better output.',
-            'warning',
+            'For better logs, set httpserver.port in your Buck config and restart Nuclide.',
+            'info',
           );
         }
 

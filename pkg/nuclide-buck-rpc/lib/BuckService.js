@@ -653,11 +653,33 @@ function _normalizeNameForBuckQuery(aliasOrTarget: string): string {
   return canonicalName;
 }
 
+const _cachedPorts = new Map();
+
 export async function getHTTPServerPort(rootPath: NuclideUri): Promise<number> {
+  let port = _cachedPorts.get(rootPath);
+  if (port != null) {
+    if (port === -1) {
+      return port;
+    }
+    // If there are other builds on the promise queue, wait them out.
+    // This ensures that we don't return the port for another build.
+    await getPool(rootPath, false).submit(() => Promise.resolve());
+    const msg = await getWebSocketStream(rootPath, port)
+      .refCount()
+      .take(1)
+      .toPromise()
+      .catch(() => null);
+    if (msg != null && msg.type === 'SocketConnected') {
+      return port;
+    }
+  }
+
   const args = ['server', 'status', '--json', '--http-port'];
   const result = await _runBuckCommandFromProjectRoot(rootPath, args);
   const json: Object = JSON.parse(result.stdout);
-  return json['http.port'];
+  port = json['http.port'];
+  _cachedPorts.set(rootPath, port);
+  return port;
 }
 
 /** Runs `buck query --json` with the specified query. */
