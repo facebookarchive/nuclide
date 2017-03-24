@@ -224,11 +224,11 @@ export default class DiffCommitView extends React.Component {
             className="padded"
             checked={this.props.shouldPublishOnCommit}
             disabled={isLoading}
-            label="Publish"
+            label="Submit for review"
             onChange={this._onTogglePublish}
             ref={this._addTooltip(
-              'Whether to automatically publish the revision ' +
-              'to Phabricator after committing or amending it.',
+              'Whether to automatically submit your changes to Phabricator ' +
+              'for review after committing or amending it.',
             )}
           />
           {prepareOptionElement}

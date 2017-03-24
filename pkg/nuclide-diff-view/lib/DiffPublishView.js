@@ -159,9 +159,9 @@ export default class DiffPublishView extends React.Component {
       case PublishModeState.READY:
         isBusy = false;
         if (publishMode === PublishMode.CREATE) {
-          publishMessage = 'Publish Phabricator Revision';
+          publishMessage = 'Submit';
         } else {
-          publishMessage = 'Update Phabricator Revision';
+          publishMessage = 'Update';
         }
         break;
       case PublishModeState.LOADING_PUBLISH_MESSAGE:

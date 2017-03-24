@@ -29,7 +29,7 @@ export function createDiffViewNux(): NuxTourModel {
   };
 
   const diffViewPhabricatorNux = {
-    content: 'Publish your changes to Phabricator without leaving Nuclide!',
+    content: 'Send your changes to Phabricator for review without leaving Nuclide!',
     selector: '.nuclide-diff-timeline .revision-timeline-wrap .btn',
     position: 'bottom',
   };

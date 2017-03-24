@@ -119,7 +119,7 @@ function RevisionsTimelineComponent(props: RevisionsComponentProps): React.Eleme
   const publishTooltip = {
     delay: 100,
     placement: 'top',
-    title: 'Publish your last commit to a Phabricator differential revision.',
+    title: 'Send your last commit changes to Phabricator for review.',
   };
 
   return (
@@ -130,7 +130,7 @@ function RevisionsTimelineComponent(props: RevisionsComponentProps): React.Eleme
         size={ButtonSizes.SMALL}
         tooltip={publishTooltip}
         onClick={props.onClickPublish}>
-        Publish to Phabricator
+        Submit for review
       </Button>
       <h5 style={{marginTop: 0}}>Compare Revisions</h5>
       <div className="revision-selector">

@@ -265,7 +265,7 @@ class Activation {
         viewMode: DiffMode.COMMIT_MODE,
         commitMode: CommitMode.AMEND,
       }),
-      addActivePathCommands('nuclide-diff-view:publish', {
+      addActivePathCommands('nuclide-diff-view:submit-for-review', {
         viewMode: DiffMode.PUBLISH_MODE,
       }),
 
@@ -322,8 +322,8 @@ class Activation {
                 command: 'nuclide-diff-view:amend',
               },
               {
-                label: 'Publish to Phabricator',
-                command: 'nuclide-diff-view:publish',
+                label: 'Submit for review',
+                command: 'nuclide-diff-view:submit-for-review',
               },
             ],
             shouldDisplay() {
@@ -343,7 +343,7 @@ class Activation {
         viewMode: DiffMode.COMMIT_MODE,
         commitMode: CommitMode.AMEND,
       }),
-      addFileTreeCommands('nuclide-diff-view:publish-context', {
+      addFileTreeCommands('nuclide-diff-view:submit-for-review-context', {
         viewMode: DiffMode.PUBLISH_MODE,
       }),
 
@@ -599,8 +599,8 @@ class Activation {
       ),
       contextMenu.addItemToSourceControlMenu(
         {
-          label: 'Publish to Phabricator',
-          command: 'nuclide-diff-view:publish-context',
+          label: 'Submit for review',
+          command: 'nuclide-diff-view:submit-for-review-context',
           shouldDisplay() {
             return shouldDisplayDiffTreeItem(contextMenu);
           },
