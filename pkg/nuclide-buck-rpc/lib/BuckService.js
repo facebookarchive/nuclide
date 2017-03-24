@@ -152,6 +152,11 @@ export type ResolvedBuildTarget = {
   flavors: Array<string>,
 };
 
+export type ResolvedRuleType = {
+  type: string,
+  buildTarget: ResolvedBuildTarget,
+};
+
 /**
  * As defined in com.facebook.buck.cli.Command, some of Buck's subcommands are
  * read-only. The read-only commands can be executed in parallel, but the rest
@@ -611,7 +616,15 @@ export async function showOutput(
 export async function buildRuleTypeFor(
   rootPath: NuclideUri,
   aliasOrTarget: string,
-): Promise<string> {
+): Promise<ResolvedRuleType> {
+  let flavors;
+  if (aliasOrTarget.includes('#')) {
+    const nameComponents = aliasOrTarget.split('#');
+    flavors = nameComponents.length === 2 ? nameComponents[1].split(',') : [];
+  } else {
+    flavors = [];
+  }
+
   const canonicalName = _normalizeNameForBuckQuery(aliasOrTarget);
   const args = [
     'query',
@@ -627,12 +640,24 @@ export async function buildRuleTypeFor(
   if (targets.length === 0) {
     throw new Error(`Error determining rule type of '${aliasOrTarget}'.`);
   }
+  let qualifiedName;
+  let type;
   // target: and target/... build a set of targets.
   // These don't have a single rule type so let's just return something.
   if (targets.length > 1) {
-    return MULTIPLE_TARGET_RULE_TYPE;
+    qualifiedName = canonicalName;
+    type = MULTIPLE_TARGET_RULE_TYPE;
+  } else {
+    qualifiedName = targets[0];
+    type = json[qualifiedName]['buck.type'];
   }
-  return json[targets[0]]['buck.type'];
+  return {
+    buildTarget: {
+      qualifiedName,
+      flavors,
+    },
+    type,
+  };
 }
 
 // Buck query doesn't allow omitting // or adding # for flavors, this needs to be fixed in buck.
@@ -721,22 +746,6 @@ export async function queryWithArgs(
     }
   }
   return json;
-}
-
-export async function resolveBuildTargetName(
-  buckRoot: NuclideUri,
-  nameOrAlias: string,
-): Promise<ResolvedBuildTarget> {
-  const canonicalName = _normalizeNameForBuckQuery(nameOrAlias);
-  const qualifiedName = await resolveAlias(buckRoot, canonicalName);
-  let flavors;
-  if (nameOrAlias.includes('#')) {
-    const nameComponents = nameOrAlias.split('#');
-    flavors = nameComponents.length === 2 ? nameComponents[1].split(',') : [];
-  } else {
-    flavors = [];
-  }
-  return {qualifiedName, flavors};
 }
 
 // TODO: Nuclide's RPC framework won't allow BuckWebSocketMessage here unless we cover

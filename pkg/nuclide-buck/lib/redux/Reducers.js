@@ -13,7 +13,10 @@ import type {Action} from './Actions';
 
 import * as Actions from './Actions';
 
-export default function accumulateState(state: AppState, action: Action): AppState {
+export default function accumulateState(
+  state: AppState,
+  action: Action,
+): AppState {
   switch (action.type) {
     case Actions.SET_PROJECT_ROOT:
       return {

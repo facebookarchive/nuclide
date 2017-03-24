@@ -15,7 +15,10 @@ import type {PlatformService} from './PlatformService';
 import type {Observable} from 'rxjs';
 import type {TaskEvent} from '../../commons-node/tasks';
 import type {BuckBuildSystem} from '../../nuclide-buck/lib/BuckBuildSystem';
-import type {ResolvedBuildTarget} from '../../nuclide-buck-rpc/lib/BuckService';
+import type {
+  ResolvedBuildTarget,
+  ResolvedRuleType,
+} from '../../nuclide-buck-rpc/lib/BuckService';
 
 export type TaskType = 'build' | 'run' | 'test' | 'debug';
 
@@ -35,7 +38,7 @@ export type AppState = {
   isLoadingRule: boolean,
   isLoadingPlatforms: boolean,
   buildTarget: string,
-  buildRuleType: ?string,
+  buildRuleType: ?ResolvedRuleType,
   selectedDeploymentTarget: ?DeploymentTarget,
   taskSettings: TaskSettings,
 

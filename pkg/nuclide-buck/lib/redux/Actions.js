@@ -8,38 +8,39 @@
  * @flow
  */
 
+import type {ResolvedRuleType} from '../../../nuclide-buck-rpc';
 import type {DeploymentTarget, PlatformGroup, TaskSettings} from '../types';
 
 export type Action =
-  {|
-    type: 'SET_PROJECT_ROOT',
-    projectRoot: ?string,
-  |} |
-  {|
-    type: 'SET_BUILD_TARGET',
-    buildTarget: string,
-  |} |
-  {|
-    type: 'SET_DEPLOYMENT_TARGET',
-    deploymentTarget: DeploymentTarget,
-  |} |
-  {|
-    type: 'SET_TASK_SETTINGS',
-    settings: TaskSettings,
-  |} |
+  | {|
+      type: 'SET_PROJECT_ROOT',
+      projectRoot: ?string,
+    |}
+  | {|
+      type: 'SET_BUILD_TARGET',
+      buildTarget: string,
+    |}
+  | {|
+      type: 'SET_DEPLOYMENT_TARGET',
+      deploymentTarget: DeploymentTarget,
+    |}
+  | {|
+      type: 'SET_TASK_SETTINGS',
+      settings: TaskSettings,
+    |}
   // The actions below are meant to be used in Epics only.
-  {|
-    type: 'SET_BUCK_ROOT',
-    buckRoot: ?string,
-  |} |
-  {|
-    type: 'SET_RULE_TYPE',
-    ruleType: ?string,
-  |} |
-  {|
-    type: 'SET_PLATFORM_GROUPS',
-    platformGroups: Array<PlatformGroup>,
-  |};
+  | {|
+      type: 'SET_BUCK_ROOT',
+      buckRoot: ?string,
+    |}
+  | {|
+      type: 'SET_RULE_TYPE',
+      ruleType: ?ResolvedRuleType,
+    |}
+  | {|
+      type: 'SET_PLATFORM_GROUPS',
+      platformGroups: Array<PlatformGroup>,
+    |};
 
 export const SET_PROJECT_ROOT = 'SET_PROJECT_ROOT';
 export const SET_BUILD_TARGET = 'SET_BUILD_TARGET';

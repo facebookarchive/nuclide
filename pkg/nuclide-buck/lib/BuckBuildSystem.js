@@ -37,10 +37,8 @@ import type {
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
 
 import invariant from 'assert';
-import nullthrows from 'nullthrows';
 import {applyMiddleware, createStore} from 'redux';
 import {Observable, Subject, TimeoutError} from 'rxjs';
-import {MULTIPLE_TARGET_RULE_TYPE} from '../../nuclide-buck-rpc';
 
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import nuclideUri from '../../commons-node/nuclideUri';
@@ -195,7 +193,7 @@ export class BuckBuildSystem {
             } else {
               invariant(buildRuleType);
               // No platform provider selected, fall back to default logic
-              disabled = !shouldEnableTask(task.type, buildRuleType);
+              disabled = !shouldEnableTask(task.type, buildRuleType.type);
             }
           }
           return {...task, disabled};
@@ -278,6 +276,7 @@ export class BuckBuildSystem {
       selectedDeploymentTarget,
     } = state;
     invariant(buckRoot);
+    invariant(buildRuleType);
 
     const deploymentString = formatDeploymentTarget(selectedDeploymentTarget);
     this._logOutput(
@@ -285,30 +284,24 @@ export class BuckBuildSystem {
       'log',
     );
 
-    let resolvedBuildTarget;
-    if (buildRuleType !== MULTIPLE_TARGET_RULE_TYPE) {
-      resolvedBuildTarget = getResolvedBuildTarget(buckRoot, buildTarget);
-    } else {
-      // This is not strictly the qualified name, as that'd be a list of names
-      // Passing the input is good enough since the deployment target is guaranteed to be null
-      resolvedBuildTarget = Observable.of({
-        qualifiedName: buildTarget,
-        flavors: [],
-      });
-    }
     const capitalizedTaskType = taskType.slice(0, 1).toUpperCase() +
       taskType.slice(1);
     const task = taskFromObservable(
       Observable.concat(
-        resolvedBuildTarget.switchMap(resolvedTarget => {
+        Observable.defer(() => {
           if (selectedDeploymentTarget) {
             const {platform, device} = selectedDeploymentTarget;
-            return platform.runTask(this, taskType, resolvedTarget, device);
+            return platform.runTask(
+              this,
+              taskType,
+              buildRuleType.buildTarget,
+              device,
+            );
           } else {
             const subcommand = taskType === 'debug' ? 'build' : taskType;
             return this.runSubcommand(
               subcommand,
-              resolvedTarget,
+              buildRuleType.buildTarget,
               {},
               taskType === 'debug',
               null,
@@ -647,15 +640,6 @@ function runBuckCommand(
   } else {
     throw Error(`Unknown subcommand: ${subcommand}`);
   }
-}
-
-function getResolvedBuildTarget(
-  buckRoot: string,
-  buildTarget: string,
-): Observable<ResolvedBuildTarget> {
-  const service = nullthrows(getBuckServiceByNuclideUri(buckRoot));
-  return Observable.defer(() =>
-    service.resolveBuildTargetName(buckRoot, buildTarget));
 }
 
 function getCommandStringForResolvedBuildTarget(

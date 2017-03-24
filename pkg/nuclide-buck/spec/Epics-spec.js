@@ -69,24 +69,23 @@ describe('setProjectRootEpic', () => {
 });
 
 describe('setBuildTargetEpic', () => {
-  it('sets a null rule type with an empty build target', () => {
+  it('sets a null rule type and resolved build target with an empty build target', () => {
     waitsForPromise(async () => {
       const stream = await setBuildTargetEpic(
         new ActionsObservable(Observable.of(Actions.setBuildTarget(''))),
         mockStore,
       ).toArray().toPromise();
 
-      expect(stream).toEqual([
-        {type: Actions.SET_RULE_TYPE, ruleType: null},
-      ]);
+      expect(stream).toEqual([{type: Actions.SET_RULE_TYPE, ruleType: null}]);
     });
   });
 
-  it('sets the rule type to what buck service resolves', () => {
+  it('sets the rule type and resolved build target to what buck service resolves', () => {
     waitsForPromise(async () => {
+      const fakeResolvedRule = {};
       spyOn(BuckBase, 'getBuckService').andReturn({
         buildRuleTypeFor() {
-          return Promise.resolve('some_rule_type');
+          return Promise.resolve(fakeResolvedRule);
         },
       });
 
@@ -96,7 +95,10 @@ describe('setBuildTargetEpic', () => {
       ).toArray().toPromise();
 
       expect(stream).toEqual([
-        {type: Actions.SET_RULE_TYPE, ruleType: 'some_rule_type'},
+        {
+          type: Actions.SET_RULE_TYPE,
+          ruleType: fakeResolvedRule,
+        },
       ]);
     });
   });

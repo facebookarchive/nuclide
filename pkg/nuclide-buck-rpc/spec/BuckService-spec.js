@@ -130,44 +130,70 @@ describe('BuckService (test-project-with-failing-targets)', () => {
   describe('.buildRuleTypeFor(aliasOrTarget)', () => {
     it('returns the type of a build rule specified by alias', () => {
       waitsForPromise(async () => {
-        const type = await BuckService.buildRuleTypeFor(buckRoot, 'good');
-        expect(type).toBe('genrule');
+        const resolved = await BuckService.buildRuleTypeFor(buckRoot, 'good');
+        expect(resolved.type).toBe('genrule');
+        expect(resolved.buildTarget.qualifiedName).toBe('//:good_rule');
+        expect(resolved.buildTarget.flavors.length).toBe(0);
       });
     });
 
     it('returns the type of a build rule by full path', () => {
       waitsForPromise(async () => {
-        const type = await BuckService.buildRuleTypeFor(
+        const resolved = await BuckService.buildRuleTypeFor(
           buckRoot,
           '//:good_rule',
         );
-        expect(type).toBe('genrule');
+        expect(resolved.type).toBe('genrule');
+        expect(resolved.buildTarget.qualifiedName).toBe('//:good_rule');
+        expect(resolved.buildTarget.flavors.length).toBe(0);
       });
 
       waitsForPromise(async () => {
         // Omitting the // is fine too.
-        const type = await BuckService.buildRuleTypeFor(buckRoot, ':good_rule');
-        expect(type).toBe('genrule');
+        const resolved = await BuckService.buildRuleTypeFor(
+          buckRoot,
+          ':good_rule',
+        );
+        expect(resolved.type).toBe('genrule');
+        expect(resolved.buildTarget.qualifiedName).toBe('//:good_rule');
+        expect(resolved.buildTarget.flavors.length).toBe(0);
       });
 
       waitsForPromise(async () => {
         // Strip out flavors.
-        const type = await BuckService.buildRuleTypeFor(
+        const resolved = await BuckService.buildRuleTypeFor(
           buckRoot,
           '//:good_rule#',
         );
-        expect(type).toBe('genrule');
+        expect(resolved.type).toBe('genrule');
+        expect(resolved.buildTarget.qualifiedName).toBe('//:good_rule');
+        expect(resolved.buildTarget.flavors[0]).toBe('');
+      });
+
+      waitsForPromise(async () => {
+        // Strip out flavors.
+        const resolved = await BuckService.buildRuleTypeFor(
+          buckRoot,
+          '//:good_rule#foo',
+        );
+        expect(resolved.type).toBe('genrule');
+        expect(resolved.buildTarget.qualifiedName).toBe('//:good_rule');
+        expect(resolved.buildTarget.flavors[0]).toBe('foo');
       });
 
       // Multi-target rules.
       waitsForPromise(async () => {
-        const type = await BuckService.buildRuleTypeFor(buckRoot, '//:');
-        expect(type).toBe(BuckService.MULTIPLE_TARGET_RULE_TYPE);
+        const resolved = await BuckService.buildRuleTypeFor(buckRoot, '//:');
+        expect(resolved.type).toBe(BuckService.MULTIPLE_TARGET_RULE_TYPE);
+        expect(resolved.buildTarget.qualifiedName).toBe('//:');
+        expect(resolved.buildTarget.flavors.length).toBe(0);
       });
 
       waitsForPromise(async () => {
-        const type = await BuckService.buildRuleTypeFor(buckRoot, '//...');
-        expect(type).toBe(BuckService.MULTIPLE_TARGET_RULE_TYPE);
+        const resolved = await BuckService.buildRuleTypeFor(buckRoot, '//...');
+        expect(resolved.type).toBe(BuckService.MULTIPLE_TARGET_RULE_TYPE);
+        expect(resolved.buildTarget.qualifiedName).toBe('//...');
+        expect(resolved.buildTarget.flavors.length).toBe(0);
       });
     });
 
