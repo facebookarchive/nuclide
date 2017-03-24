@@ -294,7 +294,12 @@
 
   // Aid visual tracking while hovering over a record (esp. when the console window is very wide).
   &:hover {
-    background-color: lighten(@syntax-background-color, 2%);
+    & when (lightness(@syntax-background-color) <= 50%) {
+      background-color: lighten(@syntax-background-color, 2%);
+    }
+    & when (lightness(@syntax-background-color) > 50%) {
+      background-color: darken(@syntax-background-color, 3%);
+    }
   }
 
 }
