@@ -1,9 +1,9 @@
 {
   ".platform-darwin atom-workspace": {
-    "alt-cmd-shift-d": "nuclide-diff-view:open"
+    "alt-cmd-shift-d": "nuclide-diff-view:toggle"
   },
   ".platform-win32 atom-workspace, .platform-linux atom-workspace": {
-    "alt-ctrl-shift-d": "nuclide-diff-view:open"
+    "alt-ctrl-shift-d": "nuclide-diff-view:toggle"
   },
   ".platform-darwin .commit-form-wrapper": {
     "cmd-ctrl-enter": "nuclide-diff-view:commit-message"
