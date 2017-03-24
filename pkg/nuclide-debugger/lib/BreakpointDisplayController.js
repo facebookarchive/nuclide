@@ -39,6 +39,7 @@ export default class BreakpointDisplayController {
   _gutter: ?atom$Gutter;
   _markers: Array<atom$Marker>;
   _lastShadowBreakpointMarker: ?atom$Marker;
+  _boundGlobalMouseMoveHandler: (event: MouseEvent) => void;
 
   constructor(
     delegate: BreakpointDisplayControllerDelegate,
@@ -53,6 +54,7 @@ export default class BreakpointDisplayController {
     this._editor = editor;
     this._markers = [];
     this._lastShadowBreakpointMarker = null;
+    this._boundGlobalMouseMoveHandler = this._handleGlobalMouseLeave.bind(this);
 
     // Configure the gutter.
     const gutter = editor.addGutter({
@@ -78,15 +80,19 @@ export default class BreakpointDisplayController {
     }
     const boundClickHandler = this._handleGutterClick.bind(this);
     const boundMouseMoveHandler = this._handleGutterMouseMove.bind(this);
+    const boundMouseEnterHandler = this._handleGutterMouseEnter.bind(this);
     const boundMouseLeaveHandler = this._handleGutterMouseLeave.bind(this);
     // Add mouse listeners gutter for setting breakpoints.
     gutterView.addEventListener('click', boundClickHandler);
     gutterView.addEventListener('mousemove', boundMouseMoveHandler);
+    gutterView.addEventListener('mouseenter', boundMouseEnterHandler);
     gutterView.addEventListener('mouseleave', boundMouseLeaveHandler);
     this._disposables.add(
       () => gutterView.removeEventListener('click', boundClickHandler),
       () => gutterView.removeEventListener('mousemove', boundMouseMoveHandler),
+      () => gutterView.removeEventListener('mouseenter', boundMouseEnterHandler),
       () => gutterView.removeEventListener('mouseleave', boundMouseLeaveHandler),
+      () => window.removeEventListener('mousemove', this._boundGlobalMouseMoveHandler),
     );
   }
 
@@ -213,6 +219,31 @@ export default class BreakpointDisplayController {
     // and create a new one.
     this._removeLastShadowBreakpoint();
     this._createShadowBreakpointAtLine(this._editor, curLine);
+  }
+
+  _handleGutterMouseEnter(event: Event): void {
+    window.addEventListener('mousemove', this._boundGlobalMouseMoveHandler);
+  }
+
+  // This is a giant hack to make sure that the breakpoint actually disappears.
+  // The issue is that mouseleave event is sometimes not triggered on the gutter
+  // I(vjeux) and matthewithanm spent multiple entire days trying to figure out
+  // why without success, so this is going to have to do :(
+  _handleGlobalMouseLeave(event: MouseEvent): void {
+    if (!this._editor) {
+      return;
+    }
+    const view = atom.views.getView(this._editor);
+    const rect = view.getBoundingClientRect();
+    if (
+      event.clientX < rect.left ||
+      event.clientX > rect.right ||
+      event.clientY < rect.top ||
+      event.clientY > rect.bottom
+    ) {
+      this._removeLastShadowBreakpoint();
+      window.removeEventListener('mousemove', this._boundGlobalMouseMoveHandler);
+    }
   }
 
   _handleGutterMouseLeave(event: Event): void {
