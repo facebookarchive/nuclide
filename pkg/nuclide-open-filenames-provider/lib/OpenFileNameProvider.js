@@ -40,7 +40,11 @@ const OpenFileListProvider: Provider = {
     action: 'nuclide-open-filenames-provider:toggle-provider',
   },
 
-  executeQuery(query: string): Promise<Array<FileResult>> {
+  isEligibleForDirectories(directories: Array<atom$Directory>): Promise<boolean> {
+    return Promise.resolve(true);
+  },
+
+  executeQuery(query: string, directories: Array<atom$Directory>): Promise<Array<FileResult>> {
     return Promise.resolve(getOpenTabsMatching(query));
   },
 };

@@ -68,10 +68,10 @@ describe('RecentFilesProvider', () => {
       waitsForPromise(async () => {
         fakeGetProjectPathsImpl = () => [PROJECT_PATH];
         invariant(provider.providerType === 'GLOBAL');
-        expect(await provider.executeQuery('')).toEqual(FAKE_RECENT_FILES);
+        expect(await provider.executeQuery('', [])).toEqual(FAKE_RECENT_FILES);
         invariant(provider.providerType === 'GLOBAL');
         fakeGetProjectPathsImpl = () => [PROJECT_PATH, PROJECT_PATH2];
-        expect(await provider.executeQuery('')).toEqual(FAKE_RECENT_FILES);
+        expect(await provider.executeQuery('', [])).toEqual(FAKE_RECENT_FILES);
       });
     });
 
@@ -79,11 +79,11 @@ describe('RecentFilesProvider', () => {
       waitsForPromise(async () => {
         fakeGetProjectPathsImpl = () => [PROJECT_PATH2];
         invariant(provider.providerType === 'GLOBAL');
-        expect(await provider.executeQuery('')).toEqual([]);
+        expect(await provider.executeQuery('', [])).toEqual([]);
 
         fakeGetProjectPathsImpl = () => [];
         invariant(provider.providerType === 'GLOBAL');
-        expect(await provider.executeQuery('')).toEqual([]);
+        expect(await provider.executeQuery('', [])).toEqual([]);
       });
     });
 
@@ -92,13 +92,13 @@ describe('RecentFilesProvider', () => {
         fakeGetProjectPathsImpl = () => [PROJECT_PATH];
         const textEditor = await atom.workspace.open(FILE_PATHS[0]);
         invariant(provider.providerType === 'GLOBAL');
-        expect(await provider.executeQuery('')).toEqual([
+        expect(await provider.executeQuery('', [])).toEqual([
           FAKE_RECENT_FILES[1],
           FAKE_RECENT_FILES[2],
         ]);
         textEditor.destroy();
         invariant(provider.providerType === 'GLOBAL');
-        expect(await provider.executeQuery('')).toEqual(FAKE_RECENT_FILES);
+        expect(await provider.executeQuery('', [])).toEqual(FAKE_RECENT_FILES);
       });
     });
 
@@ -107,7 +107,7 @@ describe('RecentFilesProvider', () => {
         fakeGetProjectPathsImpl = () => [PROJECT_PATH];
         // 'foo/bla/foo.js' does not match 'bba', but `bar.js` and `baz.js` do.
         invariant(provider.providerType === 'GLOBAL');
-        const results = await provider.executeQuery('bba');
+        const results = await provider.executeQuery('bba', []);
         // Do not cement exact scores or match indices in this test, since they are determined by
         // Fuzzy-native. Jasmine 1.3 does not support `jasmine.objectContaining`,
         // so we need to check the results manually:

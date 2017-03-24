@@ -23,14 +23,12 @@ describe('HackSymbolProvider', () => {
   // behavior.
   let getHackLanguageForUri: ?((directory: NuclideUri) => Promise<mixed>);
   let isFileInProject: ?((directory: NuclideUri) => Promise<boolean>);
-  let getDirectories: ?(() => Array<atom$Directory>);
   const mockDirectory: atom$Directory = ({getPath: () => 'uri1'}: any);
   const mockDirectory2: atom$Directory = ({getPath: () => 'uri2'}: any);
 
   beforeEach(() => {
     getHackLanguageForUri = null;
     isFileInProject = null;
-    getDirectories = null;
     spyOn(require('../lib/HackLanguage'), 'getHackLanguageForUri')
       .andCallFake((directory: NuclideUri) => {
         invariant(getHackLanguageForUri);
@@ -41,16 +39,10 @@ describe('HackSymbolProvider', () => {
         invariant(isFileInProject);
         return isFileInProject(directory);
       });
-    spyOn(atom.project, 'getDirectories')
-      .andCallFake(() => {
-        invariant(getDirectories);
-        return getDirectories();
-      });
     uncachedRequire(require, '../lib/HackSymbolProvider');
   });
 
   afterEach(() => {
-    jasmine.unspy(atom.project, 'getDirectories');
     jasmine.unspy(require('../lib/HackLanguage'), 'isFileInHackProject');
     jasmine.unspy(require('../lib/HackLanguage'), 'getHackLanguageForUri');
     clearRequireCache(require, '../lib/HackSymbolProvider');
@@ -59,7 +51,7 @@ describe('HackSymbolProvider', () => {
   describe('executeQuery()', () => {
     it('returns an empty array for an empty query', () => {
       waitsForPromise(async () => {
-        const results = await HackSymbolProvider.executeQuery('');
+        const results = await HackSymbolProvider.executeQuery('', []);
         expect(results).toEqual([]);
       });
     });
@@ -72,12 +64,11 @@ describe('HackSymbolProvider', () => {
         ];
         const hackService = createDummyHackService();
         const queryMethod = spyOn(hackService, 'executeQuery').andReturn(cannedResults);
-        getDirectories = jasmine.createSpy('getDirectories').andReturn([mockDirectory]);
         getHackLanguageForUri = jasmine.createSpy('getHackLanguageForUri').andReturn(
           hackService);
 
         const query = 'asdf';
-        const results = await HackSymbolProvider.executeQuery(query);
+        const results = await HackSymbolProvider.executeQuery(query, [mockDirectory]);
 
         // Verify the expected results were returned by delegating to the HackService.
         expect(results).toEqual(cannedResults);
@@ -99,12 +90,11 @@ describe('HackSymbolProvider', () => {
         ];
         const hackService = createDummyHackService();
         const queryMethod = spyOn(hackService, 'executeQuery').andReturn(cannedResults);
-        getDirectories = jasmine.createSpy('getDirectories').andReturn([mockDirectory]);
         getHackLanguageForUri = jasmine.createSpy('getHackLanguageForUri').andReturn(
           hackService);
 
         const query = 'asdf';
-        const results = await HackSymbolProvider.executeQuery(query);
+        const results = await HackSymbolProvider.executeQuery(query, [mockDirectory]);
 
         // Verify the expected results were returned by delegating to the HackService,
         // and that local file paths are converted to NuclideUris.
@@ -127,16 +117,15 @@ describe('HackSymbolProvider', () => {
         ];
         const hackService = createDummyHackService();
         const queryMethod = spyOn(hackService, 'executeQuery').andReturn(cannedResults);
-        getDirectories = jasmine.createSpy('getDirectories').andReturn([
-          mockDirectory,
-          mockDirectory2,
-        ]);
         getHackLanguageForUri = jasmine.createSpy('getHackLanguageForUri').andReturn(
           hackService);
         // both directories return the same service
 
         const query = 'asdf';
-        const results = await HackSymbolProvider.executeQuery(query);
+        const results = await HackSymbolProvider.executeQuery(
+          query,
+          [mockDirectory, mockDirectory2],
+        );
 
         // Verify the expected results were returned by delegating to the HackService,
         // and that local file paths are converted to NuclideUris.
@@ -169,16 +158,15 @@ describe('HackSymbolProvider', () => {
         const hackService2 = createDummyHackService();
         const queryMethod1 = spyOn(hackService1, 'executeQuery').andReturn(cannedResults1);
         const queryMethod2 = spyOn(hackService2, 'executeQuery').andReturn(cannedResults2);
-        getDirectories = jasmine.createSpy('getDirectories').andReturn([
-          mockDirectory,
-          mockDirectory2,
-        ]);
         getHackLanguageForUri = jasmine.createSpy('getHackLanguageForUri').andCallFake(uri => {
           return (uri === mockDirectory.getPath()) ? hackService1 : hackService2;
         });
 
         const query = 'asdf';
-        const results = await HackSymbolProvider.executeQuery(query);
+        const results = await HackSymbolProvider.executeQuery(
+          query,
+          [mockDirectory, mockDirectory2],
+        );
 
         // Verify the expected results were returned by delegating to the HackService,
         // and that local file paths are converted to NuclideUris.

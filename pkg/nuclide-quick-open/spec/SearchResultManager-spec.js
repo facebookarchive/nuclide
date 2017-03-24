@@ -32,7 +32,8 @@ const FakeProvider: Provider = {
     prompt: 'Search FakeProvider',
     canOpenAll: false,
   },
-  executeQuery: query => Promise.resolve([]),
+  isEligibleForDirectories: directories => Promise.resolve(true),
+  executeQuery: (query, directories) => Promise.resolve([]),
 };
 
 const FakeProviderSpec: ProviderSpec = Object.freeze({
@@ -53,7 +54,8 @@ const ExactStringMatchProvider: Provider = Object.freeze({
     title: 'ExactString',
     prompt: 'Nothing to see here',
   },
-  executeQuery: query => Promise.resolve(
+  isEligibleForDirectories: directories => Promise.resolve(true),
+  executeQuery: (query, directories) => Promise.resolve(
     TEST_STRINGS.filter(s => s === query).map(s => ({path: s})),
   ),
 });
@@ -227,19 +229,22 @@ describe('SearchResultManager', () => {
       providerType: 'GLOBAL',
       name: 'FirstProvider',
       priority: 1,
-      executeQuery: query => Promise.resolve([]),
+      isEligibleForDirectories: directories => Promise.resolve(true),
+      executeQuery: (query, directories) => Promise.resolve([]),
     };
     const SecondProvider: Provider = {
       providerType: 'GLOBAL',
       name: 'SecondProvider',
       priority: 2,
-      executeQuery: query => Promise.resolve([]),
+      isEligibleForDirectories: directories => Promise.resolve(true),
+      executeQuery: (query, directories) => Promise.resolve([]),
     };
     const ThirdProvider: Provider = {
       providerType: 'GLOBAL',
       name: 'ThirdProvider',
       priority: 3,
-      executeQuery: query => Promise.resolve([]),
+      isEligibleForDirectories: directories => Promise.resolve(true),
+      executeQuery: (query, directories) => Promise.resolve([]),
     };
     const allResults: GroupedResults = {
       FirstProvider: {

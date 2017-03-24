@@ -102,7 +102,11 @@ export const RecentFilesProvider: Provider = {
     action: 'nuclide-recent-files-provider:toggle-provider',
   },
 
-  executeQuery(query: string): Promise<Array<FileResult>> {
+  async isEligibleForDirectories(directories: Array<atom$Directory>): Promise<boolean> {
+    return true;
+  },
+
+  executeQuery(query: string, directories: Array<atom$Directory>): Promise<Array<FileResult>> {
     return Promise.resolve(getRecentFilesMatching(query));
   },
 

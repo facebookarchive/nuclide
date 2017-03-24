@@ -71,14 +71,21 @@ export const HackSymbolProvider: GlobalProviderType = {
     action: 'nuclide-hack-symbol-provider:toggle-provider',
   },
 
+  async isEligibleForDirectories(
+    directories: Array<atom$Directory>,
+  ): Promise<boolean> {
+    return true;
+  },
+
   async executeQuery(
     query: string,
+    directories: Array<atom$Directory>,
   ): Promise<Array<FileResult>> {
     if (query.length === 0) {
       return [];
     }
 
-    const services = await getHackServices(atom.project.getDirectories());
+    const services = await getHackServices(directories);
     const results = await Promise.all(services.map(service => service.executeQuery(query)));
     const flattenedResults: Array<HackSearchPosition> = arrayFlatten(results);
 

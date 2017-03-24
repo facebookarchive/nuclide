@@ -83,8 +83,16 @@ const ExampleProvider: Provider = {
   },
 
   /**
+   * Only required if providerType === 'GLOBAL'.
+   */
+  isEligibleForDirectories(directories: Array<atom$Directory>): Promise<boolean> {
+    return Promise.resolve(true);
+  },
+
+  /**
    * Return the actual search results.
-   * Only providerType === 'DIRECTORY' has `directory`.
+   * For providerType === 'DIRECTORY' the second parameter is `directory`.
+   * For providerType === 'GLOBAL' it is `directories: Array<atom$Directory>`
    */
   executeQuery(query: string, directory: atom$Directory): Promise<Array<FileResult>> {
     if (!query.length) {

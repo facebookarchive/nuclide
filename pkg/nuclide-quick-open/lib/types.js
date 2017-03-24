@@ -52,7 +52,8 @@ export type GlobalProviderType = {
     canOpenAll?: boolean,
   },
   priority?: number,
-  executeQuery(query: string): Promise<Array<FileResult>>,
+  isEligibleForDirectories(directories: Array<atom$Directory>): Promise<boolean>,
+  executeQuery(query: string, directories: Array<atom$Directory>): Promise<Array<FileResult>>,
   getComponentForItem?: (item: FileResult) => React.Element<any>,
 };
 

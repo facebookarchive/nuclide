@@ -190,7 +190,18 @@ export default class SearchResultManager {
     });
 
     for (const provider of this._quickOpenProviderRegistry.getGlobalProviders()) {
-      globalEligibleProviders.add(provider);
+      eligibilities.push(
+        provider.isEligibleForDirectories(directories)
+        .catch(err => {
+          getLogger().warn(`isEligibleForDirectories failed for ${provider.name}`, err);
+          return false;
+        })
+        .then(isEligible => {
+          if (isEligible) {
+            globalEligibleProviders.add(provider);
+          }
+        }),
+      );
     }
 
     await Promise.all(eligibilities);
@@ -326,7 +337,7 @@ export default class SearchResultManager {
         this._emitter.emit('results-changed');
       };
       triggerAfterWait(
-        globalProvider.executeQuery(query),
+        globalProvider.executeQuery(query, this._directories),
         LOADING_EVENT_DELAY,
         loadingFn,
       ).then(result => {
@@ -379,7 +390,8 @@ export default class SearchResultManager {
   _getResultsForProvider(query: string, providerName: string): GroupedResult {
     let providerPaths;
     if (this._quickOpenProviderRegistry.isProviderGlobal(providerName)) {
-      providerPaths = [GLOBAL_KEY];
+      const provider = this._quickOpenProviderRegistry.getGlobalProviderByName(providerName);
+      providerPaths = provider && this._globalEligibleProviders.has(provider) ? [GLOBAL_KEY] : [];
     } else {
       providerPaths = this._sortDirectories().map(d => d.getPath());
     }
