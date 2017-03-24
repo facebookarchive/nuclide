@@ -22,7 +22,11 @@ import type {
   DiagnosticProviderUpdate,
   FileDiagnosticUpdate,
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
-import type {Completion, LanguageService} from '../../nuclide-language-service/lib/LanguageService';
+import type {
+  Completion,
+  SymbolResult,
+  LanguageService,
+} from '../../nuclide-language-service/lib/LanguageService';
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
 import type {ConnectableObservable} from 'rxjs';
 import type {CategoryLogger} from '../../nuclide-logging';
@@ -35,7 +39,11 @@ import {Cache} from '../../commons-node/cache';
 import {Observable} from 'rxjs';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {compact} from '../../commons-node/observable';
-import {arrayCompact} from '../../commons-node/collection';
+import {
+  arrayCompact,
+  arrayFlatten,
+  collect,
+} from '../../commons-node/collection';
 import {ConfigCache} from '../../commons-node/ConfigCache';
 import {ensureInvalidations, NullLanguageService} from '..';
 
@@ -109,6 +117,24 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
     } else {
       return new NullLanguageService();
     }
+  }
+
+  async _getLanguageServicesForFiles(
+    filePaths: Array<string>,
+  ): Promise<Array<[LanguageService, Array<string>]>> {
+    const promises: Array<Promise<?[LanguageService, string]>> =
+      filePaths.map(async filePath => {
+        const service = await this._getLanguageServiceForFile(filePath);
+        return service ? [service, filePath] : null;
+      });
+
+    const fileServices: Array<?[LanguageService, string]> =
+      await Promise.all(promises);
+
+    const results: Map<LanguageService, Array<string>> =
+      collect(arrayCompact(fileServices));
+
+    return Array.from(results);
   }
 
   async getLanguageServiceForFile(
@@ -263,6 +289,30 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
   ): Promise<?NuclideEvaluationExpression> {
     return (await this._getLanguageServiceForFile(fileVersion.filePath))
       .getEvaluationExpression(fileVersion, position);
+  }
+
+  async supportsSymbolSearch(
+    directories: Array<NuclideUri>,
+  ): Promise<boolean> {
+    const serviceDirectories = await this._getLanguageServicesForFiles(directories);
+    const eligibilities = await Promise.all(serviceDirectories.map(
+      ([service, dirs]) => service.supportsSymbolSearch(dirs),
+    ));
+    return eligibilities.some(e => e);
+  }
+
+  async symbolSearch(
+    query: string,
+    directories: Array<NuclideUri>,
+  ): Promise<?Array<SymbolResult>> {
+    if (query.length === 0) {
+      return [];
+    }
+    const serviceDirectories = await this._getLanguageServicesForFiles(directories);
+    const results = await Promise.all(serviceDirectories.map(
+      ([service, dirs]) => service.symbolSearch(query, dirs),
+    ));
+    return arrayFlatten(arrayCompact(results));
   }
 
   async getProjectRoot(filePath: NuclideUri): Promise<?NuclideUri> {

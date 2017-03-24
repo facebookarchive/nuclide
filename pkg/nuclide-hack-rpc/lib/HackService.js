@@ -11,10 +11,7 @@
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
 import type {HackRange} from './rpc-types';
-import type {
-  HackLanguageService,
-  HackSearchPosition,
-} from './HackService-types';
+import type {HackLanguageService} from './HackService-types';
 import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 import type {
@@ -33,7 +30,10 @@ import type {
   FileDiagnosticUpdate,
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
 import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
-import type {Completion} from '../../nuclide-language-service/lib/LanguageService';
+import type {
+  Completion,
+  SymbolResult,
+} from '../../nuclide-language-service/lib/LanguageService';
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
 import type {HackDiagnosticsMessage} from './HackConnectionService';
 
@@ -136,7 +136,7 @@ class HackLanguageServiceImpl extends ServerLanguageService {
   }
 
   /**
-   * Does this service request the symbol-search tab to appear in quick-open?
+   * Does this service want the symbol-search tab to appear in quick-open?
    */
   async supportsSymbolSearch(
     directories: Array<NuclideUri>,
@@ -147,12 +147,12 @@ class HackLanguageServiceImpl extends ServerLanguageService {
   }
 
   /**
-   * Performs a Hack symbol search over all hack processes we manage
+   * Performs a Hack symbol search over all hack projects we manage
    */
   async symbolSearch(
     queryString: string,
     directories: Array<NuclideUri>,
-  ): Promise<Array<HackSearchPosition>> {
+  ): Promise<Array<SymbolResult>> {
     const promises = directories.map(directory => executeQuery(directory, queryString));
     const results = await Promise.all(promises);
     return arrayFlatten(results);

@@ -8,9 +8,6 @@
  * @flow
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {HackSearchPosition} from './HackService-types';
-
 export type HHSearchPosition = {
   filename: string,
   line: number,
@@ -19,9 +16,4 @@ export type HHSearchPosition = {
   scope: string,
   name: string,
   desc: string,
-};
-
-export type HackSearchResult = {
-  hackRoot: NuclideUri,
-  result: Array<HackSearchPosition>,
 };

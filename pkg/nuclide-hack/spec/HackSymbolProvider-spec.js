@@ -8,7 +8,7 @@
  * @flow
  */
 
-import type {HackSearchPosition} from '../../nuclide-hack-rpc/lib/HackService-types';
+import type {SymbolResult} from '../../nuclide-language-service/lib/LanguageService';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import {HackSymbolProvider} from '../lib/HackSymbolProvider';
@@ -63,14 +63,21 @@ describe('HackSymbolProvider', () => {
           {path: '/some/local/path/asdf.txt', line: 1, column: 42, context: 'aha'},
         ];
         const hackService = createDummyHackService();
+        const supportsMethod = spyOn(hackService, 'supportsSymbolSearch').andReturn(true);
         const searchMethod = spyOn(hackService, 'symbolSearch').andReturn(cannedResults);
-        getHackLanguageForUri = jasmine.createSpy('getHackLanguageForUri').andReturn(
-          hackService);
+        getHackLanguageForUri = jasmine.createSpy('getHackLanguageForUri').andReturn(hackService);
 
+        // test that SymbolProvider.isEligibleForDirectories
+        // calls into HackService.supportsSymbolSearch correctly
+        const supports = await HackSymbolProvider.isEligibleForDirectories([mockDirectory]);
+        expect(supports).toEqual(true);
+        expect(supportsMethod.callCount).toBe(1);
+        expect(supportsMethod.argsForCall[0]).toEqual([[mockDirectory.getPath()]]);
+
+        // test that SymbolProvider.executeQuery
+        // calls into HackService.symbolSearch correctly
         const query = 'asdf';
         const results = await HackSymbolProvider.executeQuery(query, [mockDirectory]);
-
-        // Verify the expected results were returned by delegating to the HackService.
         expect(results).toEqual(cannedResults);
         expect(searchMethod.callCount).toBe(1);
         expect(searchMethod.argsForCall[0]).toEqual([query, [mockDirectory.getPath()]]);
@@ -90,8 +97,7 @@ describe('HackSymbolProvider', () => {
         ];
         const hackService = createDummyHackService();
         const searchMethod = spyOn(hackService, 'symbolSearch').andReturn(cannedResults);
-        getHackLanguageForUri = jasmine.createSpy('getHackLanguageForUri').andReturn(
-          hackService);
+        getHackLanguageForUri = jasmine.createSpy('getHackLanguageForUri').andReturn(hackService);
 
         const query = 'asdf';
         const results = await HackSymbolProvider.executeQuery(query, [mockDirectory]);
@@ -117,8 +123,7 @@ describe('HackSymbolProvider', () => {
         ];
         const hackService = createDummyHackService();
         const searchMethod = spyOn(hackService, 'symbolSearch').andReturn(cannedResults);
-        getHackLanguageForUri = jasmine.createSpy('getHackLanguageForUri').andReturn(
-          hackService);
+        getHackLanguageForUri = jasmine.createSpy('getHackLanguageForUri').andReturn(hackService);
         // both directories return the same service
 
         const query = 'asdf';
@@ -186,11 +191,11 @@ describe('HackSymbolProvider', () => {
       const mockResult = {
         path: '/some/arbitrary/path',
         name: 'IExampleSymbolInterface',
-        additionalInfo: 'interface',
+        icon: 'puzzle',
+        hoverText: 'interface',
         column: 1,
-        length: 2,
         line: 3,
-        scope: 'scope',
+        containerName: 'scope',
       };
       invariant(HackSymbolProvider.getComponentForItem != null);
       const reactElement = HackSymbolProvider.getComponentForItem(mockResult);
@@ -213,11 +218,10 @@ function createDummyHackService(): any {
     ): Promise<boolean> {
       throw new Error('replace supportsSymbolSearch with implementation for testing');
     },
-
     symbolSearch(
       queryString: string,
       directories: Array<NuclideUri>,
-    ): Promise<Array<HackSearchPosition>> {
+    ): Promise<Array<SymbolResult>> {
       throw new Error('replace symbolSearch with implementation for testing');
     },
   };

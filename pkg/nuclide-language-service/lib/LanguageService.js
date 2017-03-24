@@ -49,6 +49,16 @@ export type Completion = {
 // are getting errors here, you have probably just updated one without updating the other.
 ((({}: any): Completion): atom$AutocompleteSuggestion);
 
+export type SymbolResult = {
+  path: NuclideUri,
+  line: number,
+  column: number,
+  name: string,
+  containerName: ?string,
+  icon: ?string, // from https://github.com/atom/atom/blob/master/static/octicons.less
+  hoverText: ?string, // sometimes used to explain the icon in words
+};
+
 export interface LanguageService {
 
   getDiagnostics(
@@ -108,6 +118,15 @@ export interface LanguageService {
     fileVersion: FileVersion,
     position: atom$Point,
   ): Promise<?NuclideEvaluationExpression>,
+
+  supportsSymbolSearch(
+    directories: Array<NuclideUri>,
+  ): Promise<boolean>,
+
+  symbolSearch(
+    query: string,
+    directories: Array<NuclideUri>,
+  ): Promise<?Array<SymbolResult>>,
 
   getProjectRoot(fileUri: NuclideUri): Promise<?NuclideUri>,
 

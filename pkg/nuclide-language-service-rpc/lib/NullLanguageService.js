@@ -25,7 +25,10 @@ import type {
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
 import type {ConnectableObservable} from 'rxjs';
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
-import type {Completion} from '../../nuclide-language-service/lib/LanguageService';
+import type {
+  Completion,
+  SymbolResult,
+} from '../../nuclide-language-service/lib/LanguageService';
 
 import {Observable} from 'rxjs';
 
@@ -113,6 +116,19 @@ export class NullLanguageService {
     fileVersion: FileVersion,
     position: atom$Point,
   ): Promise<?NuclideEvaluationExpression> {
+    return Promise.resolve(null);
+  }
+
+  supportsSymbolSearch(
+    directories: Array<NuclideUri>,
+  ): Promise<boolean> {
+    return Promise.resolve(false);
+  }
+
+  symbolSearch(
+    query: string,
+    directories: Array<NuclideUri>,
+  ): Promise<?Array<SymbolResult>> {
     return Promise.resolve(null);
   }
 

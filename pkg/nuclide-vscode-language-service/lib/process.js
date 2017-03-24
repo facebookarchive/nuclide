@@ -24,7 +24,10 @@ import type {
   FileDiagnosticUpdate,
   MessageType,
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
-import type {Completion} from '../../nuclide-language-service/lib/LanguageService';
+import type {
+  Completion,
+  SymbolResult,
+} from '../../nuclide-language-service/lib/LanguageService';
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
 import type {ConnectableObservable} from 'rxjs';
 import type {
@@ -311,6 +314,21 @@ export class LanguageServerProtocolProcess {
     fileVersion: FileVersion,
     position: atom$Point,
   ): Promise<?NuclideEvaluationExpression> {
+    this._logger.logError('NYI');
+    return Promise.resolve(null);
+  }
+
+  supportsSymbolSearch(
+    directories: Array<NuclideUri>,
+  ): Promise<boolean> {
+    this._logger.logError('NYI');
+    return Promise.resolve(false);
+  }
+
+  symbolSearch(
+    query: string,
+    directories: Array<NuclideUri>,
+  ): Promise<?Array<SymbolResult>> {
     this._logger.logError('NYI');
     return Promise.resolve(null);
   }

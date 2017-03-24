@@ -9,7 +9,7 @@
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {HackSearchPosition} from './HackService-types';
+import type {SymbolResult} from '../../nuclide-language-service/lib/LanguageService';
 import type {HHSearchPosition} from './types';
 
 import {findHackConfigDir} from './hack-config';
@@ -52,7 +52,7 @@ export function parseQueryString(
 export async function executeQuery(
   filePath: NuclideUri,
   queryString_: string,
-): Promise<Array<HackSearchPosition>> {
+): Promise<Array<SymbolResult>> {
   const hackRoot = await findHackConfigDir(filePath);
   if (hackRoot == null) {
     return [];
@@ -90,13 +90,13 @@ export async function executeQuery(
 export function convertSearchResults(
   hackRoot: NuclideUri,
   searchResponse: ?Array<HHSearchPosition>,
-): Array<HackSearchPosition> {
+): Array<SymbolResult> {
   if (searchResponse == null) {
     return [];
   }
 
   const searchResult = searchResponse;
-  const result: Array<HackSearchPosition> = [];
+  const result: Array<SymbolResult> = [];
   for (const entry of searchResult) {
     const resultFile = entry.filename;
     if (!resultFile.startsWith(hackRoot)) {
@@ -108,11 +108,42 @@ export function convertSearchResults(
       column: entry.char_start - 1,
       name: entry.name,
       path: resultFile,
-      length: entry.char_end - entry.char_start + 1,
-      scope: entry.scope,
-      additionalInfo: entry.desc,
+      containerName: entry.scope,
+      icon: bestIconForDesc(entry.desc),
+      hoverText: entry.desc,
     });
   }
 
   return result;
+}
+
+const ICONS = {
+  'interface': 'puzzle',
+  'function': 'zap',
+  'method': 'zap',
+  'typedef': 'tag',
+  'class': 'code',
+  'abstract class': 'code',
+  'constant': 'quote',
+  'trait': 'checklist',
+  'enum': 'file-binary',
+  'default': null,
+  'unknown': 'squirrel',
+};
+
+function bestIconForDesc(desc: ?string): ?string {
+  if (!desc) {
+    return ICONS.default;
+  }
+  // Look for exact match.
+  if (ICONS[desc]) {
+    return ICONS[desc];
+  }
+  // Look for presence match, e.g. in 'static method in FooBarClass'.
+  for (const keyword in ICONS) {
+    if (desc.indexOf(keyword) !== -1) {
+      return ICONS[keyword];
+    }
+  }
+  return ICONS.unknown;
 }

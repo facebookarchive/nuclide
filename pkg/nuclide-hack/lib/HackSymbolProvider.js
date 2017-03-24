@@ -15,8 +15,10 @@ import type {
 } from '../../nuclide-quick-open/lib/types';
 import type {
   HackLanguageService,
-  HackSearchPosition,
 } from '../../nuclide-hack-rpc/lib/HackService-types';
+import type {
+  SymbolResult,
+} from '../../nuclide-language-service/lib/LanguageService';
 
 import {getHackLanguageForUri} from './HackLanguage';
 import {
@@ -27,36 +29,6 @@ import {
 import nuclideUri from '../../commons-node/nuclideUri';
 import React from 'react';
 
-const ICONS = {
-  'interface': 'icon-puzzle',
-  'function': 'icon-zap',
-  'method': 'icon-zap',
-  'typedef': 'icon-tag',
-  'class': 'icon-code',
-  'abstract class': 'icon-code',
-  'constant': 'icon-quote',
-  'trait': 'icon-checklist',
-  'enum': 'icon-file-binary',
-  'default': 'no-icon',
-  'unknown': 'icon-squirrel',
-};
-
-function bestIconForItem(item: HackSearchPosition): string {
-  if (!item.additionalInfo) {
-    return ICONS.default;
-  }
-  // Look for exact match.
-  if (ICONS[item.additionalInfo]) {
-    return ICONS[item.additionalInfo];
-  }
-  // Look for presence match, e.g. in 'static method in FooBarClass'.
-  for (const keyword in ICONS) {
-    if (item.additionalInfo.indexOf(keyword) !== -1) {
-      return ICONS[keyword];
-    }
-  }
-  return ICONS.unknown;
-}
 
 async function getHackDirectoriesByService(
   directories: Array<atom$Directory>, // top-level project directories
@@ -105,7 +77,7 @@ export const HackSymbolProvider: GlobalProviderType = {
     const serviceDirectories = await getHackDirectoriesByService(directories);
     const results = await Promise.all(serviceDirectories.map(
       ([service, dirs]) => service.symbolSearch(query, dirs)));
-    const flattenedResults: Array<HackSearchPosition> = arrayFlatten(results);
+    const flattenedResults: Array<SymbolResult> = arrayFlatten(arrayCompact(results));
 
     return ((flattenedResults: any): Array<FileResult>);
     // Why the weird cast? Because services are expected to return their own
@@ -117,15 +89,14 @@ export const HackSymbolProvider: GlobalProviderType = {
   },
 
   getComponentForItem(uncastedItem: FileResult): React.Element<any> {
-    const item = ((uncastedItem: any): HackSearchPosition);
+    const item = ((uncastedItem: any): SymbolResult);
     const filePath = item.path;
     const filename = nuclideUri.basename(filePath);
     const name = item.name || '';
 
-    const icon = bestIconForItem(item);
-    const symbolClasses = `file icon ${icon}`;
+    const symbolClasses = item.icon ? `file icon icon-${item.icon}` : 'file icon no-icon';
     return (
-      <div title={item.additionalInfo || ''}>
+      <div title={item.hoverText || ''}>
         <span className={symbolClasses}><code>{name}</code></span>
         <span className="omnisearch-symbol-result-filename">{filename}</span>
       </div>

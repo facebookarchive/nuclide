@@ -11,7 +11,7 @@
 import type {ConnectableObservable} from 'rxjs';
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {Completion} from '../../nuclide-language-service/lib/LanguageService';
+import type {Completion, SymbolResult} from '../../nuclide-language-service/lib/LanguageService';
 import type {FileVersion, FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
@@ -210,6 +210,15 @@ export interface FlowLanguageServiceType {
     fileVersion: FileVersion,
     position: atom$Point,
   ): Promise<?NuclideEvaluationExpression>,
+
+  supportsSymbolSearch(
+    directories: Array<NuclideUri>,
+  ): Promise<boolean>,
+
+  symbolSearch(
+    query: string,
+    directories: Array<NuclideUri>,
+  ): Promise<?Array<SymbolResult>>,
 
   getProjectRoot(fileUri: NuclideUri): Promise<?NuclideUri>,
 

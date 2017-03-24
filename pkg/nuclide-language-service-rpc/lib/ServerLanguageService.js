@@ -22,9 +22,13 @@ import type {
   DiagnosticProviderUpdate,
   FileDiagnosticUpdate,
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
+import type {
+  Completion,
+  SymbolResult,
+  LanguageService,
+} from '../../nuclide-language-service/lib/LanguageService';
 import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {ConnectableObservable} from 'rxjs';
-import type {Completion, LanguageService} from '../../nuclide-language-service/lib/LanguageService';
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
 import type {CategoryLogger} from '../../nuclide-logging';
 
@@ -271,6 +275,22 @@ export class ServerLanguageService<T: SingleFileLanguageService = SingleFileLang
       return null;
     }
     return this._service.getEvaluationExpression(filePath, buffer, position);
+  }
+
+  supportsSymbolSearch(
+    directories: Array<NuclideUri>,
+  ): Promise<boolean> {
+    return Promise.resolve(false);
+    // A single-file language service by definition cannot offer
+    // "project-wide symbol search". If you want your language to offer
+    // symbols, you'll have to implement LanguageService directly.
+  }
+
+  symbolSearch(
+    query: string,
+    directories: Array<NuclideUri>,
+  ): Promise<?Array<SymbolResult>> {
+    return Promise.resolve(null);
   }
 
   getProjectRoot(fileUri: NuclideUri): Promise<?NuclideUri> {

@@ -24,19 +24,12 @@ import type {
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
 import type {ConnectableObservable} from 'rxjs';
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
-import type {Completion, LanguageService} from '../../nuclide-language-service/lib/LanguageService';
+import type {
+  Completion,
+  SymbolResult,
+  LanguageService,
+} from '../../nuclide-language-service/lib/LanguageService';
 
-
-// These should be embeded in HackService, but cannot because @babel can't handle export interface
-export type HackSearchPosition = {
-  path: NuclideUri,
-  line: number,
-  column: number,
-  name: string,
-  length: number,
-  scope: string,
-  additionalInfo: string,
-};
 
 // TODO: Remove this once interface inheritance/subtyping is implemented in nuclide-rpc.
 export interface HackLanguageService extends LanguageService {
@@ -108,9 +101,9 @@ export interface HackLanguageService extends LanguageService {
   ): Promise<boolean>,
 
   symbolSearch(
-    queryString: string,
+    query: string,
     directories: Array<NuclideUri>,
-  ): Promise<Array<HackSearchPosition>>,
+  ): Promise<?Array<SymbolResult>>,
 
   dispose(): void,
 }
