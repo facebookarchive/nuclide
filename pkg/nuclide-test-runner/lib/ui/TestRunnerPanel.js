@@ -220,20 +220,19 @@ export default class TestRunnerPanel extends React.Component {
             {dropdown}
             {runStopButton}
             {attachDebuggerCheckbox}
-            <Button
-              size={ButtonSizes.SMALL}
-              icon="trashcan"
-              className="trashcan inline-block"
-              disabled={this.isDisabled() ||
-                this.props.executionState === TestRunnerPanel.ExecutionState.RUNNING}
-              onClick={this.props.onClickClear}
-              title="Clear Output"
-            />
             {pathMsg}
           </ToolbarLeft>
           <ToolbarRight>
             {runMsg}
             <progress className="inline-block" max="100" {...progressAttrs} />
+            <Button
+              size={ButtonSizes.SMALL}
+              className="inline-block"
+              disabled={this.isDisabled() ||
+                this.props.executionState === TestRunnerPanel.ExecutionState.RUNNING}
+              onClick={this.props.onClickClear}>
+              Clear
+            </Button>
           </ToolbarRight>
         </Toolbar>
         <div className="nuclide-test-runner-console" ref="paneContainer" />
