@@ -101,6 +101,17 @@
 .nuclide-console-record {
   display: flex;
   padding: @nuclide-console-record-vertical-padding @nuclide-console-record-horizontal-padding;
+  padding-left: 2 * @nuclide-console-record-horizontal-padding;
+
+  &::before {
+    width: @nuclide-console-record-horizontal-padding;
+    position: absolute;
+    left: 0;
+    bottom: @nuclide-console-border-size;
+    top: 0;
+    content: '';
+  }
+
   background-color: @nuclide-console-record-background-color-normal;
   border-radius: 0;
   border-top: @nuclide-console-border-size solid @nuclide-console-record-border-color-normal;
@@ -153,7 +164,9 @@
   }
 
   &.level-warning {
-    border-left-color: @nuclide-console-record-border-color-warning;
+    &::before {
+      background-color: @nuclide-console-record-border-color-warning;
+    }
 
     pre, pre a, .nuclide-console-lazy-nested-value div, .nuclide-console-lazy-nested-value span {
       color: @nuclide-console-record-text-color-warning;
@@ -165,7 +178,9 @@
   }
 
   &.level-success {
-    border-left-color: @nuclide-console-record-border-color-success;
+    &::before {
+      background-color: @nuclide-console-record-border-color-success;
+    }
 
     pre, pre a, .nuclide-console-lazy-nested-value div, .nuclide-console-lazy-nested-value span {
       color: @nuclide-console-record-text-color-success;
@@ -177,7 +192,9 @@
   }
 
   &.level-error {
-    border-left-color: @nuclide-console-record-border-color-error;
+    &::before {
+      background-color: @nuclide-console-record-border-color-error;
+    }
 
     pre, pre a, .nuclide-console-lazy-nested-value div, .nuclide-console-lazy-nested-value span {
       color: @nuclide-console-record-text-color-error;
