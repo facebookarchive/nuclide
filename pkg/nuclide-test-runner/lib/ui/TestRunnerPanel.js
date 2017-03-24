@@ -213,6 +213,17 @@ export default class TestRunnerPanel extends React.Component {
       );
     }
 
+    const running = this.props.executionState === TestRunnerPanel.ExecutionState.RUNNING;
+
+    const progressBar = running
+      ? <progress
+          className="inline-block"
+          max="100"
+          title="Test progress"
+          {...progressAttrs}
+        />
+      : null;
+
     return (
       <div className="nuclide-test-runner-panel">
         <Toolbar location="top">
@@ -224,12 +235,11 @@ export default class TestRunnerPanel extends React.Component {
           </ToolbarLeft>
           <ToolbarRight>
             {runMsg}
-            <progress className="inline-block" max="100" {...progressAttrs} />
+            {progressBar}
             <Button
               size={ButtonSizes.SMALL}
               className="inline-block"
-              disabled={this.isDisabled() ||
-                this.props.executionState === TestRunnerPanel.ExecutionState.RUNNING}
+              disabled={this.isDisabled() || running}
               onClick={this.props.onClickClear}>
               Clear
             </Button>
