@@ -112,7 +112,7 @@ describe('shouldFilter', () => {
 describe('updateResults', () => {
   let prefix: string = (null: any);
 
-  let resultsToUpdate: ?Array<Completion> = null;
+  let resultsToUpdate: Array<Completion>;
 
   beforeEach(() => {
     const resultNames = [

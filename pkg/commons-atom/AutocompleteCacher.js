@@ -31,12 +31,12 @@ export type AutocompleteCacherConfig<T> = {|
 |};
 
 type AutocompleteSession<T> = {
-  firstResult: Promise<T>,
+  firstResult: Promise<?T>,
   lastRequest: atom$AutocompleteRequest,
 };
 
 export default class AutocompleteCacher<T> {
-  _getSuggestions: (request: atom$AutocompleteRequest) => Promise<T>;
+  _getSuggestions: (request: atom$AutocompleteRequest) => Promise<?T>;
   _config: AutocompleteCacherConfig<T>;
 
   _enabled: boolean;
@@ -46,7 +46,7 @@ export default class AutocompleteCacher<T> {
     // If getSuggestions returns null or undefined, it means that we should not filter that result
     // to serve later queries, even if shouldFilter returns true. If there are truly no results, it
     // is recommended that getSuggestions return an empty Array.
-    getSuggestions: (request: atom$AutocompleteRequest) => Promise<T>,
+    getSuggestions: (request: atom$AutocompleteRequest) => Promise<?T>,
     config: AutocompleteCacherConfig<T>,
   ) {
     this._getSuggestions = getSuggestions;
@@ -64,7 +64,7 @@ export default class AutocompleteCacher<T> {
     }
   }
 
-  getSuggestions(request: atom$AutocompleteRequest): Promise<T> {
+  getSuggestions(request: atom$AutocompleteRequest): Promise<?T> {
     if (!this._enabled) {
       return this._getSuggestions(request);
     }
@@ -98,9 +98,9 @@ export default class AutocompleteCacher<T> {
 
   async _filterSuggestionsIfPossible(
     request: atom$AutocompleteRequest,
-    firstResultPromise: Promise<T>,
-    resultFromLanguageService: Promise<T>,
-  ): Promise<T> {
+    firstResultPromise: Promise<?T>,
+    resultFromLanguageService: Promise<?T>,
+  ): Promise<?T> {
     const firstResult = await firstResultPromise;
     if (firstResult != null) {
       return this._config.updateResults(request, firstResult);
@@ -128,9 +128,9 @@ export default class AutocompleteCacher<T> {
 }
 
 async function getNewFirstResult<T>(
-  firstResultPromise: Promise<T>,
-  resultFromLanguageService: Promise<T>,
-): Promise<T> {
+  firstResultPromise: Promise<?T>,
+  resultFromLanguageService: Promise<?T>,
+): Promise<?T> {
   const firstResult = await firstResultPromise;
   if (firstResult != null) {
     return firstResult;

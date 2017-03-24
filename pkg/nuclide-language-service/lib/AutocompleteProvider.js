@@ -33,7 +33,7 @@ export type AutocompleteConfig = {|
   version: '2.0.0',
   analyticsEventName: string,
   onDidInsertSuggestionAnalyticsEventName: string,
-  autocompleteCacherConfig: ?AutocompleteCacherConfig<?Array<Completion>>,
+  autocompleteCacherConfig: ?AutocompleteCacherConfig<Array<Completion>>,
 |};
 
 export class AutocompleteProvider<T: LanguageService> {
@@ -47,7 +47,7 @@ export class AutocompleteProvider<T: LanguageService> {
   onDidInsertSuggestion: OnDidInsertSuggestionCallback;
   _analyticsEventName: string;
   _connectionToLanguageService: ConnectionCache<T>;
-  _autocompleteCacher: ?AutocompleteCacher<?Array<Completion>>;
+  _autocompleteCacher: ?AutocompleteCacher<Array<Completion>>;
 
   constructor(
     name: string,
@@ -59,7 +59,7 @@ export class AutocompleteProvider<T: LanguageService> {
     analyticsEventName: string,
     onDidInsertSuggestion: ?OnDidInsertSuggestionCallback,
     onDidInsertSuggestionAnalyticsEventName: string,
-    autocompleteCacherConfig: ?AutocompleteCacherConfig<?Array<Completion>>,
+    autocompleteCacherConfig: ?AutocompleteCacherConfig<Array<Completion>>,
     connectionToLanguageService: ConnectionCache<T>,
   ) {
     this.name = name;

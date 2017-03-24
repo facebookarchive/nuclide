@@ -56,11 +56,8 @@ export function shouldFilter(
 
 export function filterResultsByPrefix(
   prefix: string,
-  results: ?Array<Completion>,
-): ?Array<Completion> {
-  if (results == null) {
-    return null;
-  }
+  results: Array<Completion>,
+): Array<Completion> {
   const replacementPrefix = getReplacementPrefix(prefix);
   const resultsWithCurrentPrefix = results.map(result => {
     return {
