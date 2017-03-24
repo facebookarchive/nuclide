@@ -4,7 +4,6 @@
   background: @app-background-color;
   box-shadow: 0px 1px 4px 0px rgba(0,0,0,1);
   color: @text-color-subtle;
-  cursor: -webkit-grab;
   font-family: Menlo, Monaco, Consolas, monospace;
   font-size: @font-size;
   margin-top: -2px; // Compensate for shadow
@@ -14,6 +13,10 @@
 
 .nuclide-datatip-dragging {
   cursor: -webkit-grabbing;
+}
+
+.nuclide-datatip-pinned {
+  cursor: -webkit-grab;
 }
 
 .nuclide-datatip-container {

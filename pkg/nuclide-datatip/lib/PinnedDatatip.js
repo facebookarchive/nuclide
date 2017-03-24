@@ -20,6 +20,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {Observable} from 'rxjs';
 import invariant from 'assert';
+import classnames from 'classnames';
 
 import {DatatipComponent, DATATIP_ACTIONS} from './DatatipComponent';
 
@@ -191,7 +192,10 @@ export class PinnedDatatip {
       <DatatipComponent
         action={DATATIP_ACTIONS.CLOSE}
         actionTitle="Close this datatip"
-        className={_isDragging ? 'nuclide-datatip-dragging' : ''}
+        className={classnames(
+          _isDragging ? 'nuclide-datatip-dragging' : '',
+          'nuclide-datatip-pinned',
+        )}
         onActionClick={this._boundDispose}
         onMouseDown={this._boundHandleMouseDown}
         onClickCapture={this._boundHandleCapturedClick}>
