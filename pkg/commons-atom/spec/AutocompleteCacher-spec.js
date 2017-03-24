@@ -19,7 +19,7 @@ describe('AutocompleteCacher', () => {
   let updateResults: JasmineSpy = (null: any);
   let shouldFilter: JasmineSpy | void = undefined;
   let mockedSuggestions: Promise<?Array<string>> = (null: any);
-  let mockedUpdateResults: Array<string> = (null: any);
+  let mockedUpdateResults: ?Array<string> = null;
   // returned from the second call
   let secondMockedUpdateResults: Array<string> = (null: any);
 
@@ -181,6 +181,16 @@ describe('AutocompleteCacher', () => {
 
       expect(updateResults).not.toHaveBeenCalled();
 
+      expect(secondResults).toBe(await mockedSuggestions);
+    });
+  });
+
+  it('should pass a new request through if updateResults is null', () => {
+    waitsForPromise(async () => {
+      await autocompleteCacher.getSuggestions(mockedRequest);
+      mockedUpdateResults = null;
+      mockedSuggestions = Promise.resolve(['new']);
+      const secondResults = await autocompleteCacher.getSuggestions(mockedRequest2);
       expect(secondResults).toBe(await mockedSuggestions);
     });
   });

@@ -11,10 +11,11 @@
 import passesGK from '../commons-node/passesGK';
 
 export type AutocompleteCacherConfig<T> = {|
+ // Return null here to indicate that we should fall back to `getSuggestions`.
  updateResults: (
    request: atom$AutocompleteRequest,
    firstResult: T,
- ) => T,
+ ) => ?T,
  // If this is provided, we will ask it whether we can filter on the given request after first
  // verifying that the cursor has only moved by one column since the last request.
  shouldFilter?: (
@@ -103,10 +104,12 @@ export default class AutocompleteCacher<T> {
   ): Promise<?T> {
     const firstResult = await firstResultPromise;
     if (firstResult != null) {
-      return this._config.updateResults(request, firstResult);
-    } else {
-      return resultFromLanguageService;
+      const updated = this._config.updateResults(request, firstResult);
+      if (updated != null) {
+        return updated;
+      }
     }
+    return resultFromLanguageService;
   }
 
   // This doesn't guarantee we can filter results -- if the previous result turns out to be null, we
