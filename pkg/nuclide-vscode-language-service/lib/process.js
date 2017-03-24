@@ -188,7 +188,7 @@ export class LanguageServerProtocolProcess {
   getDiagnostics(
     fileVersion: FileVersion,
   ): Promise<?DiagnosticProviderUpdate> {
-    this._logger.logError('NYI');
+    this._logger.logError('NYI: getDiagnostics');
     return Promise.resolve(null);
   }
 
@@ -232,7 +232,7 @@ export class LanguageServerProtocolProcess {
     file: NuclideUri,
     id: string,
   ): Promise<?Definition> {
-    this._logger.logError('NYI');
+    this._logger.logError('NYI: getDefinitionById');
     return Promise.resolve(null);
   }
 
@@ -240,21 +240,21 @@ export class LanguageServerProtocolProcess {
     fileVersion: FileVersion,
     position: atom$Point,
   ): Promise<?FindReferencesReturn> {
-    this._logger.logError('NYI');
+    this._logger.logError('NYI: findReferences');
     return Promise.resolve(null);
   }
 
   getCoverage(
     filePath: NuclideUri,
   ): Promise<?CoverageResult> {
-    this._logger.logError('NYI');
+    this._logger.logError('NYI: getCoverage');
     return Promise.resolve(null);
   }
 
   getOutline(
     fileVersion: FileVersion,
   ): Promise<?Outline> {
-    this._logger.logError('NYI');
+    this._logger.logError('NYI: getOutline');
     return Promise.resolve(null);
   }
 
@@ -290,7 +290,7 @@ export class LanguageServerProtocolProcess {
     fileVersion: FileVersion,
     position: atom$Point,
   ): Promise<?Array<atom$Range>> {
-    this._logger.logError('NYI');
+    this._logger.logError('NYI: highlight');
     return Promise.resolve(null);
   }
 
@@ -298,7 +298,7 @@ export class LanguageServerProtocolProcess {
     fileVersion: FileVersion,
     range: atom$Range,
   ): Promise<?string> {
-    this._logger.logError('NYI');
+    this._logger.logError('NYI: formatSource');
     return Promise.resolve(null);
   }
 
@@ -306,7 +306,7 @@ export class LanguageServerProtocolProcess {
     newCursor?: number,
     formatted: string,
   }> {
-    this._logger.logError('NYI');
+    this._logger.logError('NYI: formatEntireFile');
     return Promise.resolve(null);
   }
 
@@ -314,14 +314,14 @@ export class LanguageServerProtocolProcess {
     fileVersion: FileVersion,
     position: atom$Point,
   ): Promise<?NuclideEvaluationExpression> {
-    this._logger.logError('NYI');
+    this._logger.logError('NYI: getEvaluationExpression');
     return Promise.resolve(null);
   }
 
   supportsSymbolSearch(
     directories: Array<NuclideUri>,
   ): Promise<boolean> {
-    this._logger.logError('NYI');
+    this._logger.logError('NYI: supportsSymbolSearch');
     return Promise.resolve(false);
   }
 
@@ -329,17 +329,17 @@ export class LanguageServerProtocolProcess {
     query: string,
     directories: Array<NuclideUri>,
   ): Promise<?Array<SymbolResult>> {
-    this._logger.logError('NYI');
+    this._logger.logError('NYI: symbolSearch');
     return Promise.resolve(null);
   }
 
   getProjectRoot(fileUri: NuclideUri): Promise<?NuclideUri> {
-    this._logger.logError('NYI');
+    this._logger.logError('NYI: getProjectRoot');
     return Promise.resolve(null);
   }
 
   isFileInProject(fileUri: NuclideUri): Promise<boolean> {
-    this._logger.logError('NYI');
+    this._logger.logError('NYI: isFileInProject');
     return Promise.resolve(false);
   }
 
