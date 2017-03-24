@@ -151,10 +151,17 @@ function buildHashKey(nodeKey: string): string {
 function updatePathInOpenedEditors(oldPath: NuclideUri, newPath: NuclideUri): void {
   atom.workspace.getTextEditors().forEach(editor => {
     const buffer = editor.getBuffer();
-    if (buffer.getPath() === oldPath) {
+    const bufferPath = buffer.getPath();
+    if (bufferPath == null) {
+      return;
+    }
+
+    if (nuclideUri.contains(oldPath, bufferPath)) {
+      const relativeToOld = nuclideUri.relative(oldPath, bufferPath);
+      const newBufferPath = nuclideUri.join(newPath, relativeToOld);
       // setPath will append the hostname when given the local path, so we
       // strip off the hostname here to avoid including it twice in the path.
-      buffer.setPath(nuclideUri.getPath(newPath));
+      buffer.setPath(nuclideUri.getPath(newBufferPath));
     }
   });
 }
