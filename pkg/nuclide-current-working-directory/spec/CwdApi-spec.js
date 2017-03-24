@@ -109,35 +109,4 @@ describe('CwdApi event handling', () => {
     expect(arg).not.toBeNull();
     expect((arg: any).getPath()).toBe('/a/b/c');
   });
-
-  it('doesnt dispatch an update when the cwd path doesnt change', () => {
-    let projects = [];
-    spyOn(atom.project, 'getDirectories').andCallFake(() => projects);
-
-    let callback;
-    const onDidChangePaths = cb => { callback = cb; };
-    spyOn(atom.project, 'onDidChangePaths').andCallFake(onDidChangePaths);
-
-    const api = new CwdApi('/a/b/c');
-
-    const spy = jasmine.createSpy('cwdChanged');
-    api.observeCwd(spy);
-    expect(spy).toHaveBeenCalledWith(null);
-
-    projects = [new Directory('/a/b/c'), new Directory('/d/e/f')];
-
-    expect(callback).toBeDefined();
-    invariant(callback);
-    callback();
-
-    projects = [new Directory('/a/b/c')];
-    expect(callback).toBeDefined();
-    invariant(callback);
-    callback();
-
-    expect(spy.callCount).toBe(2);
-    const arg = spy.calls[1].args[0];
-    expect(arg).not.toBeNull();
-    expect((arg: any).getPath()).toBe('/a/b/c');
-  });
 });
