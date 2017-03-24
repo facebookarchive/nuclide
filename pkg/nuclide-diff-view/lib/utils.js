@@ -60,7 +60,9 @@ export function processArcanistOutput(
         if (out != null) {
           out = out.replace(/\n$/, '');
           for (const line of out.split('\n')) {
-            lines.push({[fd]: line});
+            if (line.trim().length > 0) {
+              lines.push({[fd]: line});
+            }
           }
         }
       }
