@@ -39,7 +39,7 @@ import type {HackDiagnosticsMessage} from './HackConnectionService';
 
 import {Observable} from 'rxjs';
 import {wordAtPositionFromBuffer} from '../../commons-node/range';
-import {arrayFlatten} from '../../commons-node/collection';
+import {arrayFlatten, arrayCompact} from '../../commons-node/collection';
 import invariant from 'assert';
 import {
   callHHClient,
@@ -53,7 +53,6 @@ import {
 } from './hack-config';
 import {
   getHackProcess,
-  getHackProcesses,
   observeConnections,
   ensureProcesses,
   closeProcesses,
@@ -137,15 +136,25 @@ class HackLanguageServiceImpl extends ServerLanguageService {
   }
 
   /**
+   * Does this service request the symbol-search tab to appear in quick-open?
+   */
+  async supportsSymbolSearch(
+    directories: Array<NuclideUri>,
+  ): Promise<boolean> {
+    const promises = directories.map(directory => findHackConfigDir(directory));
+    const hackRoots = await Promise.all(promises);
+    return arrayCompact(hackRoots).length > 0;
+  }
+
+  /**
    * Performs a Hack symbol search over all hack processes we manage
    */
-  async executeQuery(
+  async symbolSearch(
     queryString: string,
+    directories: Array<NuclideUri>,
   ): Promise<Array<HackSearchPosition>> {
-    const processes = await getHackProcesses(this._fileCache);
-    const results = await Promise.all(processes.map(process =>
-      executeQuery(process.getRoot(), queryString)),
-    );
+    const promises = directories.map(directory => executeQuery(directory, queryString));
+    const results = await Promise.all(promises);
     return arrayFlatten(results);
   }
 

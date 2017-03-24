@@ -220,12 +220,6 @@ export async function getHackProcess(
   return processes.get(fileCache).get(configDir);
 }
 
-export function getHackProcesses(
-  fileCache: FileCache,
-): Promise<Array<HackProcess>> {
-  return Promise.all(processes.get(fileCache).values());
-}
-
 // Ensures that the only attached HackProcesses are those for the given configPaths.
 // Closes all HackProcesses not in configPaths, and starts new HackProcesses for any
 // paths in configPaths.

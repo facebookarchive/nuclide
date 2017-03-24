@@ -8,6 +8,7 @@
  * @flow
  */
 
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {
   FileResult,
   GlobalProviderType,
@@ -18,7 +19,11 @@ import type {
 } from '../../nuclide-hack-rpc/lib/HackService-types';
 
 import {getHackLanguageForUri} from './HackLanguage';
-import {arrayUnique, arrayCompact, arrayFlatten} from '../../commons-node/collection';
+import {
+  collect,
+  arrayCompact,
+  arrayFlatten,
+} from '../../commons-node/collection';
 import nuclideUri from '../../commons-node/nuclideUri';
 import React from 'react';
 
@@ -53,13 +58,21 @@ function bestIconForItem(item: HackSearchPosition): string {
   return ICONS.unknown;
 }
 
-async function getHackServices(
+async function getHackDirectoriesByService(
   directories: Array<atom$Directory>, // top-level project directories
-): Promise<Array<HackLanguageService>> {
-  const allServices = await Promise.all(directories
-    .map(directory => getHackLanguageForUri(directory.getPath())),
-  );
-  return arrayUnique(arrayCompact(allServices)); // remove dupes and nulls
+): Promise<Array<[HackLanguageService, Array<NuclideUri>]>> {
+  const promises: Array<Promise<?[HackLanguageService, NuclideUri]>> =
+    directories.map(async directory => {
+      const service = await getHackLanguageForUri(directory.getPath());
+      return service ? [service, directory.getPath()] : null;
+    });
+  const serviceDirectories: Array<?[HackLanguageService, NuclideUri]> =
+    await Promise.all(promises);
+
+  const results: Map<HackLanguageService, Array<NuclideUri>> =
+    collect(arrayCompact(serviceDirectories));
+
+  return Array.from(results.entries());
 }
 
 export const HackSymbolProvider: GlobalProviderType = {
@@ -74,7 +87,11 @@ export const HackSymbolProvider: GlobalProviderType = {
   async isEligibleForDirectories(
     directories: Array<atom$Directory>,
   ): Promise<boolean> {
-    return true;
+    const serviceDirectories = await getHackDirectoriesByService(directories);
+    const eligibilities = await Promise.all(serviceDirectories.map(
+      ([service, dirs]) => service.supportsSymbolSearch(dirs),
+    ));
+    return eligibilities.some(e => e);
   },
 
   async executeQuery(
@@ -85,8 +102,9 @@ export const HackSymbolProvider: GlobalProviderType = {
       return [];
     }
 
-    const services = await getHackServices(directories);
-    const results = await Promise.all(services.map(service => service.executeQuery(query)));
+    const serviceDirectories = await getHackDirectoriesByService(directories);
+    const results = await Promise.all(serviceDirectories.map(
+      ([service, dirs]) => service.symbolSearch(query, dirs)));
     const flattenedResults: Array<HackSearchPosition> = arrayFlatten(results);
 
     return ((flattenedResults: any): Array<FileResult>);

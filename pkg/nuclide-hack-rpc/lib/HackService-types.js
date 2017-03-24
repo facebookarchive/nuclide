@@ -103,8 +103,13 @@ export interface HackLanguageService extends LanguageService {
 
   isFileInProject(fileUri: NuclideUri): Promise<boolean>,
 
-  executeQuery(
+  supportsSymbolSearch(
+    directories: Array<NuclideUri>,
+  ): Promise<boolean>,
+
+  symbolSearch(
     queryString: string,
+    directories: Array<NuclideUri>,
   ): Promise<Array<HackSearchPosition>>,
 
   dispose(): void,
