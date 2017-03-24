@@ -16,6 +16,7 @@ import {
   TextBuffer,
 } from 'atom';
 import React from 'react';
+import ReactDOM from 'react-dom';
 import {Section} from './Section';
 import UniversalDisposable from '../commons-node/UniversalDisposable';
 import {viewableFromReactElement} from '../commons-atom/viewableFromReactElement';
@@ -46,6 +47,27 @@ function getHighlightClass(type: diffparser$ChangeType): ?string {
   return null;
 }
 
+const NBSP = '\xa0';
+const GutterElement = (props: {
+  lineNumber: number,
+  gutterWidth: number,
+}): React.Element<any> => {
+  const {
+    lineNumber,
+    gutterWidth,
+  } = props;
+  const fillWidth = gutterWidth - String(lineNumber).length;
+  // Paralleling the original line-number implementation,
+  // pad the line number with leading spaces.
+  const filler = fillWidth > 0
+    ? new Array(fillWidth).fill(NBSP).join('')
+    : '';
+  // Attempt to reuse the existing line-number styles.
+  return (
+    <div className="line-number">{filler}{lineNumber}</div>
+  );
+};
+
 class HunkDiff extends React.Component {
   props: HunkProps;
   _disposables: UniversalDisposable;
@@ -57,8 +79,10 @@ class HunkDiff extends React.Component {
   }
 
   componentDidMount(): void {
-    this._createLineMarkers(this.refs.editor.getModel());
-    this._updateCheckboxGutter(this.refs.editor.getModel());
+    const model = this.refs.editor.getModel();
+    this._createLineMarkers(model);
+    this._createLineNumbers(model);
+    this._updateCheckboxGutter(model);
   }
 
   componentDidUpdate(): void {
@@ -120,6 +144,55 @@ class HunkDiff extends React.Component {
     }
 
     this._checkboxGutter = gutter;
+  }
+
+  // Line numbers are contiguous, but have a random starting point, so we can't use the
+  // default line-number gutter.
+  _createLineNumbers(editor: atom$TextEditor): void {
+    const changeCount = this.props.hunk.changes.length;
+    const initialOffset = this.props.hunk.newStart;
+    const maxDisplayLineNumber = initialOffset + changeCount - 1;
+    // The maximum required gutter width for this hunk, in characters:
+    const gutterWidth = String(maxDisplayLineNumber).length;
+    const suffix = gutterWidth > 0 && gutterWidth < 5
+      ? `-w${gutterWidth}`
+      : '';
+    const gutter = editor.addGutter({
+      name: `nuclide-ui-file-changes-line-number-gutter${suffix}`,
+    });
+    let deletedLinesInSection = 0;
+    let deletedLines = 0;
+    for (let line = 0; line < changeCount; line++) {
+      if (this.props.hunk.changes[line].type === 'del') {
+        deletedLinesInSection++;
+      } else {
+        deletedLines += deletedLinesInSection;
+        deletedLinesInSection = 0;
+      }
+      const displayLine = line + initialOffset - deletedLines;
+      const item = this._createGutterItem(displayLine, gutterWidth);
+      const marker = editor.markBufferPosition([line, 0], {invalidate: 'touch'});
+      gutter.decorateMarker(marker, {
+        type: 'gutter',
+        item,
+      });
+      this._disposables.add(() => {
+        ReactDOM.unmountComponentAtNode(item);
+        marker.destroy();
+      });
+    }
+    this._disposables.add(() => {
+      gutter.destroy();
+    });
+  }
+
+  _createGutterItem(lineNumber: number, gutterWidthInCharacters: number): Object {
+    const item = document.createElement('div');
+    ReactDOM.render(
+      <GutterElement lineNumber={lineNumber} gutterWidth={gutterWidthInCharacters} />,
+      item,
+    );
+    return item;
   }
 
   /**
@@ -214,6 +287,29 @@ export default class FileChanges extends React.Component {
       to: fileName,
     } = diff;
     const grammar = atom.grammars.selectGrammar(fileName, '');
+    const hunks = [];
+    let i = 0;
+    for (const chunk of chunks) {
+      if (i > 0) {
+        hunks.push(
+          <div
+            className="nuclide-ui-hunk-diff-spacer"
+            key={`spacer-${i}`}
+          />,
+        );
+      }
+      hunks.push(
+        <HunkDiff
+          checkboxFactory={this.props.checkboxFactory}
+          collapsable={this.props.collapsable}
+          fileName={fileName}
+          key={chunk.content}
+          grammar={grammar}
+          hunk={chunk}
+        />,
+      );
+      i++;
+    }
     let checkbox;
     if (this.props.checkboxFactory != null) {
       checkbox = this.props.checkboxFactory(fileName);
@@ -234,17 +330,6 @@ export default class FileChanges extends React.Component {
         {additions} {pluralize('addition', additions)},{' '}
         {deletions} {pluralize('deletion', deletions)}
       </span>
-    );
-
-    const hunks = chunks.map(chunk =>
-      <HunkDiff
-        checkboxFactory={this.props.checkboxFactory}
-        collapsable={this.props.collapsable}
-        fileName={fileName}
-        key={chunk.content}
-        grammar={grammar}
-        hunk={chunk}
-      />,
     );
 
     const headline = <span>{fileName}<br />{diffDetails}</span>;
