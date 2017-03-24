@@ -2,6 +2,11 @@ machine:
   node:
     version: 6.5.0
 
+dependencies:
+  pre:
+    # Force a reinstall of the lint rules.
+    - rm -rf node_modules/eslint-plugin-nuclide-internal
+
 test:
   override:
     # Do not run tests for releases.
