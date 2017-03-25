@@ -84,6 +84,8 @@ export default class DiffCommitView extends React.Component {
 
   __populateCommitMessage(): void {
     this.refs.message.getTextBuffer().setText(this.props.commitMessage || '');
+    this.refs.message.getModel().setCursorBufferPosition([0, 0]);
+    this.refs.message.getElement().focus();
   }
 
   _isLoading(): boolean {

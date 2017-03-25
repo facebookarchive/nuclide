@@ -105,6 +105,8 @@ export default class DiffPublishView extends React.Component {
     const messageEditor = this.refs.message;
     if (messageEditor != null) {
       messageEditor.getTextBuffer().setText(this.props.message || '');
+      messageEditor.getModel().setCursorBufferPosition([0, 0]);
+      messageEditor.getElement().focus();
     }
   }
 
