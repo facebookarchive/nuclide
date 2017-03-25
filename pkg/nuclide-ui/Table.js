@@ -297,7 +297,7 @@ export class Table extends React.Component {
       const optionalHeaderCellProps = {};
       if (width != null) {
         optionalHeaderCellProps.style = {
-          width: width + '%',
+          width: (width * 100) + '%',
         };
       }
       let sortIndicator;
@@ -313,7 +313,7 @@ export class Table extends React.Component {
         }
       }
       return (
-        <th
+        <div
           className={classnames({
             'nuclide-ui-table-header-cell': true,
             'nuclide-ui-table-header-cell-sortable': sortable,
@@ -324,7 +324,7 @@ export class Table extends React.Component {
           {title}
           {sortIndicator}
           {resizeHandle}
-        </th>
+        </div>
       );
     });
     let body = rows.map((row, i) => {
@@ -344,19 +344,17 @@ export class Table extends React.Component {
           datum = this._renderEmptyCellContent();
         }
         const cellStyle = {};
-        if (i === 0) {
-          const width = this.state.columnWidthRatios[key];
-          if (width != null) {
-            cellStyle.width = width + '%';
-          }
+        const width = this.state.columnWidthRatios[key];
+        if (width != null) {
+          cellStyle.width = (width * 100) + '%';
         }
         return (
-          <td
+          <div
             className="nuclide-ui-table-body-cell"
             key={j}
             style={cellStyle}>
             {datum}
-          </td>
+          </div>
         );
       });
       const rowProps = {};
@@ -365,10 +363,11 @@ export class Table extends React.Component {
       }
       const isSelectedRow = selectedIndex != null && i === selectedIndex;
       return (
-        <tr
+        <div
           className={classnames(
             rowClassName,
             {
+              'nuclide-ui-table-row': true,
               'nuclide-ui-table-row-selectable': selectable,
               'nuclide-ui-table-row-selected': isSelectedRow,
               'nuclide-ui-table-row-alternate': alternateBackground !== false && i % 2 === 1,
@@ -378,12 +377,12 @@ export class Table extends React.Component {
           key={i}
           {...rowProps}>
           {renderedRow}
-        </tr>
+        </div>
       );
     });
     if (rows.length === 0) {
       const EmptyComponent = this.props.emptyComponent || DefaultEmptyComponent;
-      body = <tr><td><EmptyComponent /></td></tr>;
+      body = <EmptyComponent />;
     }
     const scrollableBodyStyle = {};
     if (maxBodyHeight != null) {
@@ -392,17 +391,17 @@ export class Table extends React.Component {
     }
     return (
       <div className={className}>
-        <table
+        <div
           className="nuclide-ui-table"
           ref="table">
-          <thead className="nuclide-ui-table-header"><tr>{header}</tr></thead>
-        </table>
+          <div className="nuclide-ui-table-header">{header}</div>
+        </div>
         <div style={scrollableBodyStyle}>
-          <table
+          <div
             className="nuclide-ui-table nuclide-ui-table-body native-key-bindings"
             tabIndex="-1">
-            <tbody>{body}</tbody>
-          </table>
+            {body}
+          </div>
         </div>
       </div>
     );

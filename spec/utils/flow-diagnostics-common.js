@@ -58,7 +58,9 @@ export function runTest(context: TestContext) {
       const expectedPanelText = 'property `baz` Property not found in Foo';
 
       const [diagnosticRowElement] = getPanelDiagnosticElements();
-      const diagnosticDescriptionElements = diagnosticRowElement.querySelectorAll('td:last-child');
+      const diagnosticDescriptionElements = diagnosticRowElement.querySelectorAll(
+        '.nuclide-ui-table-row:last-child .nuclide-ui-table-body-cell:last-child',
+      );
       expect(diagnosticDescriptionElements.length).toBe(1);
       const diagnosticElement = diagnosticDescriptionElements[0];
       expect(diagnosticElement.innerText).toContain(expectedPanelText);

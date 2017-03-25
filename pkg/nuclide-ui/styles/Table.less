@@ -22,11 +22,16 @@
   border-bottom: 1px solid @base-border-color;
 }
 
+.nuclide-ui-table-header, .nuclide-ui-table-row {
+  display: flex;
+}
+
 .nuclide-ui-table-header-cell,
 .nuclide-ui-table-body-cell {
   border-right: 1px solid @base-border-color;
   overflow: hidden;
   padding: 2px 4px;
+  min-width: 40px;
 }
 
 .nuclide-ui-table-body-cell {

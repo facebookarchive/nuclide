@@ -87,6 +87,7 @@ export function getPanelDiagnosticElements(): Array<HTMLElement> {
   const panelElement = getDiagnosticsPanelElement();
   invariant(panelElement != null);
   return Array.from(panelElement.querySelectorAll(
-    '.nuclide-diagnostics-ui-table-container .nuclide-ui-table-body tr:last-child',
+    '.nuclide-diagnostics-ui-table-container ' +
+    '.nuclide-ui-table-body',
   ));
 }
