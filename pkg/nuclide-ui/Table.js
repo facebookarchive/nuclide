@@ -307,7 +307,9 @@ export class Table extends React.Component {
         titleOverlay += ' – click to sort';
         if (sortedColumn === key) {
           sortIndicator =
-            <span> <Icon icon={sortDescending ? 'triangle-down' : 'triangle-up'} /></span>;
+            <span className="nuclide-ui-table-sort-indicator">
+              <Icon icon={sortDescending ? 'triangle-down' : 'triangle-up'} />
+            </span>;
         }
       }
       return (
