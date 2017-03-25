@@ -54,7 +54,7 @@ export function separateUrls(message: string): Array<UrlOrText> {
   return parts;
 }
 
-function renderTextWithLinks(message: string): React.Element<any> {
+function renderRowWithLinks(message: string, rowIndex: number): React.Element<any> {
   const parts = separateUrls(message).map((part, index) => {
     if (!part.isUrl) {
       return part.text;
@@ -64,7 +64,7 @@ function renderTextWithLinks(message: string): React.Element<any> {
     }
   });
 
-  return <span>{parts}</span>;
+  return <div key={rowIndex}>{parts}</div>;
 }
 
 export const DiagnosticsMessageText = (props: DiagnosticsMessageTextProps) => {
@@ -74,7 +74,7 @@ export const DiagnosticsMessageText = (props: DiagnosticsMessageTextProps) => {
   if (message.html != null) {
     return <span dangerouslySetInnerHTML={{__html: message.html}} />;
   } else if (message.text != null) {
-    return <span>{renderTextWithLinks(message.text)}</span>;
+    return <span>{message.text.split('\n').map(renderRowWithLinks)}</span>;
   } else {
     return <span>Diagnostic lacks message.</span>;
   }
