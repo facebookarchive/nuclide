@@ -63,6 +63,13 @@ export class FlowIDEConnectionWatcher {
     while (true) {
       // eslint-disable-next-line no-await-in-loop
       proc = await this._processFactory();
+      // dispose() could have been called while we were waiting for the above promise to resolve.
+      if (this._isDisposed) {
+        if (proc != null) {
+          proc.kill();
+        }
+        return;
+      }
       if (proc != null || this._getTimeMS() > endTimeMS) {
         break;
       } else {
@@ -71,11 +78,6 @@ export class FlowIDEConnectionWatcher {
     }
     if (proc == null) {
       getLogger().error('Failed to start Flow IDE connection too many times... giving up');
-      return;
-    }
-    // dispose() could have been called while we were waiting for the above promise to resolve.
-    if (this._isDisposed) {
-      proc.kill();
       return;
     }
     const ideConnection = this._ideConnectionFactory(proc);
