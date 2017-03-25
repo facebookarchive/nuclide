@@ -905,12 +905,18 @@ export class HgService {
     revision: string,
     create: boolean,
     options?: CheckoutOptions,
-  ): Promise<void> {
-    const args = [revision];
+  ): ConnectableObservable<ProcessMessage> {
+    const args = ['checkout', revision];
     if (options && options.clean) {
       args.push('--clean');
     }
-    return this._runSimpleInWorkingDirectory('checkout', args);
+    const executionOptions = {
+      cwd: this._workingDirectory,
+    };
+    return hgObserveExecution(args, executionOptions)
+      .timeout(300000)
+      .switchMap(processExitCodeAndThrow)
+      .publish();
   }
 
   show(revision: number): ConnectableObservable<RevisionShowInfo> {

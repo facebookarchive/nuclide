@@ -690,8 +690,12 @@ export class HgRepositoryClient {
     return this._service.revert(filePaths);
   }
 
-  checkoutReference(reference: string, create: boolean, options?: CheckoutOptions): Promise<void> {
-    return this._service.checkout(reference, create, options);
+  checkoutReference(
+    reference: string,
+    create: boolean,
+    options?: CheckoutOptions,
+  ): Observable<ProcessMessage> {
+    return this._service.checkout(reference, create, options).refCount();
   }
 
   show(revision: number): Observable<RevisionShowInfo> {
