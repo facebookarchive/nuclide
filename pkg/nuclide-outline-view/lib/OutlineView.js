@@ -21,6 +21,7 @@ import {goToLocationInEditor} from '../../commons-atom/go-to-location';
 import {getLogger} from '../../nuclide-logging';
 import {LoadingSpinner, LoadingSpinnerSizes} from '../../nuclide-ui/LoadingSpinner';
 import {PanelComponentScroller} from '../../nuclide-ui/PanelComponentScroller';
+import {Message, MessageTypes} from '../../nuclide-ui/Message';
 
 const logger = getLogger();
 
@@ -94,10 +95,15 @@ class OutlineViewComponent extends React.Component {
 
   render(): ?React.Element<any> {
     const outline = this.props.outline;
+    const noOutlineAvailableMessage = (
+      <Message>
+        No outline available.
+      </Message>
+    );
     switch (outline.kind) {
       case 'empty':
       case 'not-text-editor':
-        return null;
+        return noOutlineAvailableMessage;
       case 'loading':
         return (
           <div className="nuclide-outline-view-loading">
@@ -108,27 +114,25 @@ class OutlineViewComponent extends React.Component {
           </div>
         );
       case 'no-provider':
-        return (
-          <span>
-            Outline view does not currently support {outline.grammar}.
-          </span>
-        );
+        return outline.grammar === 'Null Grammar'
+          ? noOutlineAvailableMessage
+          : (
+            <Message type={MessageTypes.warning}>
+              Outline view does not currently support {outline.grammar}.
+            </Message>
+          );
       case 'provider-no-outline':
-        return (
-          <span>
-            No outline available.
-          </span>
-        );
+        return noOutlineAvailableMessage;
       case 'outline':
         return renderTrees(outline.editor, outline.outlineTrees);
       default:
         const errorText = `Encountered unexpected outline kind ${outline.kind}`;
         logger.error(errorText);
         return (
-          <span>
+          <Message type={MessageTypes.error}>
             Internal Error:<br />
             {errorText}
-          </span>
+          </Message>
         );
     }
   }
