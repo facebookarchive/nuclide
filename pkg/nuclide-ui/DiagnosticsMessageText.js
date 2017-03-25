@@ -54,8 +54,14 @@ export function separateUrls(message: string): Array<UrlOrText> {
   return parts;
 }
 
+const LEADING_WHITESPACE_RE = /^\s+/;
+const NBSP = '\xa0';
 function renderRowWithLinks(message: string, rowIndex: number): React.Element<any> {
-  const parts = separateUrls(message).map((part, index) => {
+  const messageWithWhitespace = message.replace(
+    LEADING_WHITESPACE_RE,
+    whitespace => NBSP.repeat(whitespace.length),
+  );
+  const parts = separateUrls(messageWithWhitespace).map((part, index) => {
     if (!part.isUrl) {
       return part.text;
     } else {
