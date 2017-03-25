@@ -79,6 +79,11 @@ export function consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
       'nuclide-home:toggle',
       event => { api.toggle(WORKSPACE_VIEW_URI, (event: any).detail); },
     ),
+    atom.commands.add(
+      'atom-workspace',
+      'nuclide-docs:open',
+      event => { shell.openExternal('https://nuclide.io/'); },
+    ),
   );
   considerDisplayingHome();
 }
