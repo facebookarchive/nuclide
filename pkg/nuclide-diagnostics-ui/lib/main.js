@@ -18,10 +18,8 @@ import type {
   Trace,
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
 import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
-import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 
 import invariant from 'assert';
-import {Disposable} from 'atom';
 
 import {track} from '../../nuclide-analytics';
 
@@ -86,19 +84,6 @@ class Activation {
 
   consumeStatusBar(statusBar: atom$StatusBar): void {
     this._getStatusBarTile().consumeStatusBar(statusBar);
-  }
-
-  consumeToolBar(getToolBar: GetToolBar): IDisposable {
-    const toolBar = getToolBar('nuclide-diagnostics-ui');
-    toolBar.addButton({
-      icon: 'law',
-      callback: 'nuclide-diagnostics-ui:toggle-table',
-      tooltip: 'Toggle Diagnostics Table',
-      priority: 100,
-    });
-    const disposable = new Disposable(() => { toolBar.removeItems(); });
-    this._subscriptions.add(disposable);
-    return disposable;
   }
 
   deserializeDiagnosticsPanelModel(): DiagnosticsPanelModel {
