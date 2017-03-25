@@ -14,6 +14,8 @@ import type {FindReferencesReturn} from './rpc-types';
 
 import crypto from 'crypto';
 import createPackage from '../../commons-atom/createPackage';
+import ContextMenu from '../../commons-atom/ContextMenu';
+import {bufferPositionForMouseEvent} from '../../commons-atom/mouse-to-position';
 import {observeTextEditors} from '../../commons-atom/text-editor';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {track} from '../../nuclide-analytics';
@@ -86,12 +88,16 @@ class Activation {
   _supportedProviders: Map<TextEditor, Array<FindReferencesProvider>> = new Map();
 
   constructor(state: ?any): void {
+    let lastMouseEvent;
+
     this._subscriptions = new UniversalDisposable(
       atom.commands.add(
         'atom-text-editor',
         'nuclide-find-references:activate',
-        async () => {
-          const view = await tryCreateView(await this._getProviderData());
+        async event => {
+          const view = await tryCreateView(await this._getProviderData(
+            ContextMenu.isEventFromContextMenu(event) ? lastMouseEvent : null,
+          ));
           if (view != null) {
             // Generate a unique identifier.
             const id = (crypto.randomBytes(8) || '').toString('hex');
@@ -146,6 +152,17 @@ class Activation {
           }
         },
       ),
+
+      // Add the context menu programmatically so we can capture the mouse event.
+      atom.contextMenu.add({
+        'atom-text-editor:not(.mini).enable-nuclide-find-references': [
+          {
+            label: 'Find References',
+            command: 'nuclide-find-references:activate',
+            created: event => { lastMouseEvent = event; },
+          },
+        ],
+      }),
     );
   }
 
@@ -179,7 +196,7 @@ class Activation {
     });
   }
 
-  async _getProviderData(): Promise<?FindReferencesReturn> {
+  async _getProviderData(event: ?MouseEvent): Promise<?FindReferencesReturn> {
     const editor = atom.workspace.getActiveTextEditor();
     if (!editor) {
       return null;
@@ -188,7 +205,9 @@ class Activation {
     if (!path) {
       return null;
     }
-    const point = editor.getCursorBufferPosition();
+    const point = event != null
+      ? bufferPositionForMouseEvent(event, editor)
+      : editor.getCursorBufferPosition();
     track('find-references:activate', {
       path,
       row: point.row.toString(),

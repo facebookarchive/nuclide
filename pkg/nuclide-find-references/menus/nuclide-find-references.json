@@ -9,13 +9,5 @@
         }
       ]
     }
-  ],
-  "context-menu": {
-    "atom-text-editor:not(.mini).enable-nuclide-find-references": [
-      {
-        "label": "Find References",
-        "command": "nuclide-find-references:activate"
-      }
-    ]
-  }
+  ]
 }

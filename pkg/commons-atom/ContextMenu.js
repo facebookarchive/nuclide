@@ -204,6 +204,12 @@ export default class ContextMenu {
     }
     this._items.length = 0;
   }
+
+  static isEventFromContextMenu(event: Event) {
+    // Context menu commands contain a specific `detail` parameter:
+    // https://github.com/atom/atom/blob/v1.15.0/src/main-process/context-menu.coffee#L17
+    return Array.isArray(event.detail) && event.detail[0] && (event.detail[0]: any).contextCommand;
+  }
 }
 
 /** Comparator used to sort menu items by priority: lower priorities appear earlier. */
