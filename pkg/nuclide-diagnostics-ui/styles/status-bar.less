@@ -1,21 +1,10 @@
 .nuclide-diagnostics-status-bar-highlight {
-  display: inline-block;
-  line-height: 1.3em;
-  min-width: 2em;
-  text-align: center;
-}
+  padding: 3px 4px;
 
-.nuclide-diagnostics-highlight-group {
-  cursor: pointer;
-  display: inline-block;
-
-  .nuclide-diagnostics-status-bar-highlight:first-child {
-    border-bottom-right-radius: 0;
-    border-top-right-radius: 0;
+  .icon {
+    vertical-align: middle;
   }
-
-  .nuclide-diagnostics-status-bar-highlight:last-child {
-    border-bottom-left-radius: 0;
-    border-top-left-radius: 0;
+  .icon::before {
+    transform: scale(0.7);
   }
 }

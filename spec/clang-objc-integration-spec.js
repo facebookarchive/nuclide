@@ -93,7 +93,7 @@ describe('Clang Integration Test (objc)', () => {
 
     waitsFor('error to show up in diagnostics', 10000, () => {
       const errors = atom.views.getView(atom.workspace)
-        .querySelector('.nuclide-diagnostics-highlight-group > :first-child');
+        .querySelector('.nuclide-diagnostics-status-bar-highlight');
       if (errors instanceof HTMLElement) {
         const innerText = errors.innerText;
         invariant(innerText != null);

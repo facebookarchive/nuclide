@@ -80,7 +80,9 @@ function getDiagnosticsPanelElement(): ?HTMLElement {
 }
 
 function getStatusBarElement(): ?HTMLElement {
-  return atom.views.getView(atom.workspace).querySelector('.nuclide-diagnostics-highlight-group');
+  return atom.views.getView(atom.workspace).querySelector(
+    '.nuclide-diagnostics-status-bar-highlight',
+  );
 }
 
 export function getPanelDiagnosticElements(): Array<HTMLElement> {

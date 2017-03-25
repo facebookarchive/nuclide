@@ -14,6 +14,7 @@ import type {
 } from '../../nuclide-diagnostics-common';
 
 import addTooltip from '../../nuclide-ui/add-tooltip';
+import {Icon} from '../../nuclide-ui/Icon';
 import classnames from 'classnames';
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -151,33 +152,38 @@ class StatusBarTileComponent extends React.Component {
     const hasErrors = errorCount > 0;
     const hasWarnings = warningCount > 0;
     const errorClassName = classnames('nuclide-diagnostics-status-bar-highlight', {
-      'highlight': !hasErrors,
-      'highlight-error': hasErrors,
+      'text-error': hasErrors,
     });
     const warningClassName = classnames('nuclide-diagnostics-status-bar-highlight', {
-      'highlight': !hasWarnings,
-      'highlight-warning': hasWarnings,
+      'text-warning': hasWarnings,
     });
     const errorLabel = hasErrors ? errorCount : 'No';
     const errorSuffix = errorCount !== 1 ? 's' : '';
     const warningLabel = hasWarnings ? warningCount : 'No';
     const warningSuffix = warningCount !== 1 ? 's' : '';
-    const tooltip = addTooltip({
-      title: `${errorLabel} error${errorSuffix} | ${warningLabel} warning${warningSuffix}`,
-      placement: 'top',
-    });
 
     return (
-      <span
-        className="nuclide-diagnostics-highlight-group"
-        onClick={this._onClick}
-        ref={tooltip}>
-        <span className={errorClassName}>
+      <span>
+        <a
+          className={errorClassName}
+          onClick={this._onClick}
+          ref={addTooltip({
+            title: `${errorLabel} error${errorSuffix}`,
+            placement: 'top',
+          })}>
+          <Icon icon="stop" />
           {errorCount}
-        </span>
-        <span className={warningClassName}>
+        </a>
+        <a
+          className={warningClassName}
+          onClick={this._onClick}
+          ref={addTooltip({
+            title: `${warningLabel} warning${warningSuffix}`,
+            placement: 'top',
+          })}>
+          <Icon icon="alert" />
           {warningCount}
-        </span>
+        </a>
       </span>
     );
   }
