@@ -360,6 +360,18 @@ export class FlowSingleProjectLanguageService {
     buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
   ): Promise<?TypeHint> {
+    // Do not show typehints for whitespace.
+    const character = buffer.getTextInRange([
+      position,
+      {
+        row: position.row,
+        column: position.column + 1,
+      },
+    ]);
+    if (character.match(/\s/)) {
+      return null;
+    }
+
     const options = {};
 
     options.stdin = buffer.getText();

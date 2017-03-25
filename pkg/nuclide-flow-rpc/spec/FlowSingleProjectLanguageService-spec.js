@@ -159,7 +159,7 @@ describe('FlowSingleProjectLanguageService', () => {
         expect(
           await flowRoot.typeHint(
             file,
-            ({getText: () => currentContents}: any),
+            buffer,
             new Point(line, column)),
         ).toBe(null);
       });
