@@ -15,6 +15,7 @@ import type {
 } from './types';
 
 import addTooltip from '../../nuclide-ui/add-tooltip';
+import hideAllTooltips from '../../nuclide-ui/hide-all-tooltips';
 import {track, trackTiming} from '../../nuclide-analytics';
 import {CompositeDisposable} from 'atom';
 import {shell} from 'electron';
@@ -80,6 +81,10 @@ export default class BlameGutter {
 
     this._subscriptions.add(editor.onDidDestroy(() => {
       this._isEditorDestroyed = true;
+    }));
+    const editorView = atom.views.getView(editor);
+    this._subscriptions.add(editorView.onDidChangeScrollTop(() => {
+      hideAllTooltips();
     }));
     this._fetchAndDisplayBlame();
   }

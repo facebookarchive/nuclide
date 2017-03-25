@@ -629,7 +629,12 @@ type atom$TooltipsAddOptions = {
   placement?: atom$TooltipsPlacementOption | () => atom$TooltipsPlacementOption,
 };
 
+type atom$Tooltip = {
+  hide(): void;
+};
+
 declare class atom$TooltipManager {
+  tooltips: Map<HTMLElement, atom$Tooltip>;
   add(
     target: HTMLElement,
     options: atom$TooltipsAddOptions,
