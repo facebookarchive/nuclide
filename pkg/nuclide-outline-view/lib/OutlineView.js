@@ -77,7 +77,7 @@ export class OutlineView extends React.Component {
     return (
       <div style={{display: 'flex', flexDirection: 'column', width: '100%'}}>
         <PanelComponentScroller>
-          <div className="padded nuclide-outline-view">
+          <div className="nuclide-outline-view">
             <OutlineViewComponent outline={this.state.outline} />
           </div>
         </PanelComponentScroller>
