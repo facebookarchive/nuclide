@@ -55,6 +55,7 @@ export function pipeProcessMessagesToConsole(
             detail: 'Check console for output',
           },
         );
+        dispatchConsoleToggle(true /* console visibility */);
       }
       break;
   }
