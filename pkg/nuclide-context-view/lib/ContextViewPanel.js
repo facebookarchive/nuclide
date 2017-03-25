@@ -21,7 +21,8 @@ export const ContextViewPanel = (props: Props) => {
     <div className="nuclide-context-view-content padded">
       <p>
         {props.locked ? <Icon icon="lock" /> : null}
-        Click on a symbol to see more information about it.
+        Click on a symbol (variable, function, type, etc) in an open
+        file to see more information about it below.
       </p>
       {props.children}
     </div>
