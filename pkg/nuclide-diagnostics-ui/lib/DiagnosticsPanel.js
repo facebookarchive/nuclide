@@ -110,14 +110,14 @@ export default class DiagnosticsPanel extends React.Component {
             <span className="inline-block">
               <Checkbox
                 checked={this.props.showTraces}
-                label="Show full diagnostic traces"
+                label="Full description"
                 onChange={this._onShowTracesChange}
               />
             </span>
             <span className="inline-block">
               <Checkbox
                 checked={this.props.filterByActiveTextEditor}
-                label="Show only diagnostics for current file"
+                label="Current file only"
                 onChange={this._onFilterByActiveTextEditorChange}
               />
             </span>
