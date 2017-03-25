@@ -145,7 +145,8 @@ export default class ConsoleHeader extends React.Component {
               className="nuclide-console-filter-regexp-button"
               size={ButtonSizes.SMALL}
               selected={this.props.enableRegExpFilter}
-              onClick={this._handleReToggleButtonClick}>
+              onClick={this._handleReToggleButtonClick}
+              tooltip={{title: 'Use Regex'}}>
               .*
             </Button>
           </ButtonGroup>
