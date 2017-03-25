@@ -17,6 +17,7 @@ import {BusySignalProviderBase} from '../../nuclide-busy-signal';
 import createPackage from '../../commons-atom/createPackage';
 import scheduleIdleCallback from '../../commons-node/scheduleIdleCallback';
 import {getFuzzyFileSearchServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {RpcTimeoutError} from '../../nuclide-rpc';
 import {getLogger} from '../../nuclide-logging';
 import FuzzyFileNameProvider from './FuzzyFileNameProvider';
 import {getIgnoredNames} from './utils';
@@ -50,8 +51,13 @@ class Activation {
           // Wait a bit before starting the initial search, since it's a heavy op.
           scheduleIdleCallback(() => {
             this._initialSearch(projectPath).catch(err => {
-              logger.error(`Error starting fuzzy filename search for ${projectPath}: ${err}`);
-              this._disposeSearch(projectPath);
+              // RPC timeout errors can often happen here, but don't dispose the search.
+              if (err instanceof RpcTimeoutError) {
+                logger.warn(`Warmup fuzzy filename search for ${projectPath} hit the RPC timeout.`);
+              } else {
+                logger.error(`Error starting fuzzy filename search for ${projectPath}: ${err}`);
+                this._disposeSearch(projectPath);
+              }
             });
           }, {timeout: 5000}),
         );

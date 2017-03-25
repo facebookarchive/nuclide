@@ -15,6 +15,7 @@ import {getLogger} from '../../nuclide-logging';
 import invariant from 'assert';
 import {CompositeDisposable, TextBuffer} from 'atom';
 import {track} from '../../nuclide-analytics';
+import {RpcTimeoutError} from '../../nuclide-rpc';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {countOccurrences} from '../../commons-node/string';
 import loadingNotification from '../../commons-atom/loading-notification';
@@ -118,7 +119,7 @@ export default class NuclideTextBuffer extends TextBuffer {
       // Timeouts occur quite frequently when the network is unstable.
       // Demote these to 'error' level.
       const logger = getLogger();
-      const logFunction = (/timeout/i).test(e.message) ? logger.error : logger.fatal;
+      const logFunction = e instanceof RpcTimeoutError ? logger.error : logger.fatal;
       logFunction('Failed to save remote file.', e);
       let message = e.message;
       // This can happen if the user triggered the save while closing the file.

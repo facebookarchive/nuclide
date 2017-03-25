@@ -12,7 +12,7 @@ import type {Observable} from 'rxjs';
 import type {ObjectRegistry} from './ObjectRegistry';
 
 export {ServiceRegistry} from './ServiceRegistry';
-export {RpcConnection} from './RpcConnection';
+export {RpcConnection, RpcTimeoutError} from './RpcConnection';
 export {LoopbackTransports} from './LoopbackTransports';
 export {StreamTransport} from './StreamTransport';
 export {SocketTransport} from './SocketTransport';

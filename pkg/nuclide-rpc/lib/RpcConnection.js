@@ -88,6 +88,11 @@ class Subscription {
   }
 }
 
+// Special marker error for RPC timeouts.
+export class RpcTimeoutError extends Error {
+  name: string = 'RpcTimeoutError';
+}
+
 class Call {
   _message: RequestMessage;
   _timeoutMessage: string;
@@ -141,7 +146,7 @@ class Call {
   _timeout(): void {
     if (!this._complete) {
       this.cleanup();
-      this._reject(new Error(
+      this._reject(new RpcTimeoutError(
         `Timeout after ${SERVICE_FRAMEWORK_RPC_TIMEOUT_MS} for id: ` +
         `${this._message.id}, ${this._timeoutMessage}.`,
       ));
