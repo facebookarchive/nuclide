@@ -57,7 +57,8 @@ export default class DebuggerModel {
     this._actions = new DebuggerActions(this._dispatcher, this._store);
     this._breakpointStore = new BreakpointStore(
       this._dispatcher,
-      state ? state.breakpoints : null, //serialized breakpoints
+      state ? state.breakpoints : null, // serialized breakpoints
+      this._store,
     );
     this._breakpointManager = new BreakpointManager(
       this._breakpointStore,

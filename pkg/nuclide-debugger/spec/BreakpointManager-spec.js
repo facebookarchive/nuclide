@@ -26,9 +26,9 @@ describe('BreakpointManager', () => {
 
   beforeEach(() => {
     dispatcher = new DebuggerDispatcher();
-    breakpointStore = new BreakpointStore(dispatcher);
     const mockModel = ({}: any);
     store = new DebuggerStore(dispatcher, mockModel);
+    breakpointStore = new BreakpointStore(dispatcher, null, store);
     actions = new DebuggerActions(dispatcher, store);
     breakpointManager = new BreakpointManager(breakpointStore, actions);
   });

@@ -37,7 +37,9 @@ export function getBreakpointDecorationInRow(
     for (let i = 0; i < decorations.length; i++) {
       const {gutterName, item} = decorations[i].getProperties();
       if (gutterName === 'nuclide-breakpoint' &&
-        item.className === 'nuclide-debugger-breakpoint-icon'
+        (item.className === 'nuclide-debugger-breakpoint-icon' ||
+         item.className === 'nuclide-debugger-breakpoint-icon-unresolved' ||
+         item.className === 'nuclide-debugger-breakpoint-icon-disabled')
       ) {
         return decorations[i];
       }

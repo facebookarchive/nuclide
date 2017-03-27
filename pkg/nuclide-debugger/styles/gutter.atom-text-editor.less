@@ -6,6 +6,12 @@
 .nuclide-debugger-shadow-breakpoint-icon {
   // Needs to match .nuclide-diagnostics-gutter-ui-gutter-error
   .octicon(primitive-dot, @size: 130%);
+}
+
+.nuclide-debugger-breakpoint-icon,
+.nuclide-debugger-breakpoint-icon-disabled,
+.nuclide-debugger-breakpoint-icon-unresolved,
+.nuclide-debugger-shadow-breakpoint-icon {
   text-align: center;
   display: block;
   width: 0.8em;
@@ -14,6 +20,21 @@
 
 .nuclide-debugger-breakpoint-icon {
   color: @text-color-info;
+}
+
+.nuclide-debugger-breakpoint-icon-disabled {
+  color: @text-color-info;
+  .octicon(circle-slash, @size: 78%);
+  position: relative;
+  top: -4px;
+  left: 2px;
+}
+
+.nuclide-debugger-breakpoint-icon-unresolved {
+  color: @text-color-info;
+  .octicon(unverified, @size: 80%);
+  position: relative;
+  top: -2px;
 }
 
 .nuclide-debugger-shadow-breakpoint-icon {

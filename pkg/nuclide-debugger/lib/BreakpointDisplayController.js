@@ -10,6 +10,7 @@
 
 import type BreakpointStore from './BreakpointStore';
 import type DebuggerActions from './DebuggerActions';
+import {DebuggerMode} from './DebuggerStore';
 
 import invariant from 'assert';
 import {bufferPositionForMouseEvent} from '../../commons-atom/mouse-to-position';
@@ -40,6 +41,7 @@ export default class BreakpointDisplayController {
   _markers: Array<atom$Marker>;
   _lastShadowBreakpointMarker: ?atom$Marker;
   _boundGlobalMouseMoveHandler: (event: MouseEvent) => void;
+  _debugging: boolean;
 
   constructor(
     delegate: BreakpointDisplayControllerDelegate,
@@ -55,6 +57,14 @@ export default class BreakpointDisplayController {
     this._markers = [];
     this._lastShadowBreakpointMarker = null;
     this._boundGlobalMouseMoveHandler = this._handleGlobalMouseLeave.bind(this);
+
+    const debuggerStore = this._breakpointStore.getDebuggerStore();
+    if (debuggerStore) {
+      const mode = debuggerStore.getDebuggerMode();
+      this._debugging = (mode !== DebuggerMode.STOPPED && mode !== DebuggerMode.STOPPING);
+    } else {
+      this._debugging = false;
+    }
 
     // Configure the gutter.
     const gutter = editor.addGutter({
@@ -130,6 +140,13 @@ export default class BreakpointDisplayController {
       return;
     }
 
+    let debugging = true;
+    const debuggerStore = this._breakpointStore.getDebuggerStore();
+    if (debuggerStore) {
+      const mode = debuggerStore.getDebuggerMode();
+      debugging = mode !== DebuggerMode.STOPPED && mode !== DebuggerMode.STOPPING;
+    }
+
     const path = this._editor.getPath();
     if (path == null) {
       return;
@@ -142,7 +159,7 @@ export default class BreakpointDisplayController {
     // Destroy markers that no longer correspond to breakpoints.
     this._markers.forEach(marker => {
       const line = marker.getStartBufferPosition().row;
-      if (unhandledLines.has(line)) {
+      if (debugging === this._debugging && unhandledLines.has(line)) {
         markersToKeep.push(marker);
         unhandledLines.delete(line);
       } else {
@@ -150,8 +167,10 @@ export default class BreakpointDisplayController {
       }
     });
 
+    this._debugging = debugging;
+
     // Add new markers for breakpoints without corresponding markers.
-    for (const [line] of breakpoints) {
+    for (const [line, breakpoint] of breakpoints) {
       if (!unhandledLines.has(line)) {
         // This line has been handled.
         continue;
@@ -159,6 +178,8 @@ export default class BreakpointDisplayController {
       const marker = this._createBreakpointMarkerAtLine(
         line,
         false, // isShadow
+        breakpoint.enabled,
+        breakpoint.resolved,
       );
       marker.onDidChange(this._handleMarkerChange.bind(this));
       markersToKeep.push(marker);
@@ -264,22 +285,47 @@ export default class BreakpointDisplayController {
   }
 
   _createShadowBreakpointAtLine(editor: TextEditor, line: number): void {
-    this._lastShadowBreakpointMarker = this._createBreakpointMarkerAtLine(
-      line,
-      true, // isShadow
-    );
+    const breakpointsAtLine = this._markers
+      .filter(marker => marker.getStartBufferPosition().row === line);
+
+    // Don't create a shadow breakpoint at a line that already has a breakpoint.
+    if (breakpointsAtLine.length === 0) {
+      this._lastShadowBreakpointMarker = this._createBreakpointMarkerAtLine(
+        line,
+        true, // isShadow
+        true, // enabled
+        false, // resolved
+      );
+    }
   }
 
   _createBreakpointMarkerAtLine(
     line: number,
     isShadow: boolean,
+    enabled: boolean,
+    resolved: boolean,
   ): atom$Marker {
     const marker = this._editor.markBufferPosition([line, 0], {
       invalidate: 'never',
     });
+
+    // If the debugger is not attached, display all breakpoints as resolved.
+    // Once the debugger attaches, it will determine what's actually resolved or not.
+    const unresolved = this._debugging && !resolved;
     const elem: HTMLElement = document.createElement('span');
     elem.className = isShadow ? 'nuclide-debugger-shadow-breakpoint-icon' :
-      'nuclide-debugger-breakpoint-icon';
+      (!enabled) ? 'nuclide-debugger-breakpoint-icon-disabled' :
+      unresolved ? 'nuclide-debugger-breakpoint-icon-unresolved' :
+        'nuclide-debugger-breakpoint-icon';
+
+    if (!isShadow) {
+      if (!enabled) {
+        elem.title = 'Disabled breakpoint';
+      } else if (unresolved) {
+        elem.title = 'Unresolved breakpoint';
+      }
+    }
+
     invariant(this._gutter != null);
     this._gutter.decorateMarker(marker, {item: elem});
     return marker;

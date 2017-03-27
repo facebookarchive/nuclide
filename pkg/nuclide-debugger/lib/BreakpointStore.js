@@ -26,6 +26,7 @@ import {
 import {Emitter} from 'atom';
 import {ActionTypes} from './DebuggerDispatcher';
 import {DebuggerMode} from './DebuggerStore';
+import {DebuggerStore} from './DebuggerStore';
 
 export type LineToBreakpointMap = Map<number, FileLineBreakpoint>;
 
@@ -47,10 +48,12 @@ export default class BreakpointStore {
   _idToBreakpointMap: Map<number, FileLineBreakpoint>;
   _emitter: atom$Emitter;
   _breakpointIdSeed: number;
+  _debuggerStore: ?DebuggerStore;
 
   constructor(
     dispatcher: DebuggerDispatcher,
     initialBreakpoints: ?Array<SerializedBreakpoint>,
+    debuggerStore: ?DebuggerStore,
   ) {
     const dispatcherToken = dispatcher.register(this._handlePayload.bind(this));
     this._disposables = new CompositeDisposable(
@@ -58,6 +61,7 @@ export default class BreakpointStore {
         dispatcher.unregister(dispatcherToken);
       }),
     );
+    this._debuggerStore = debuggerStore;
     this._breakpointIdSeed = 0;
     this._breakpoints = new Map();
     this._idToBreakpointMap = new Map();
@@ -239,6 +243,12 @@ export default class BreakpointStore {
     if (newMode === DebuggerMode.STOPPED) {
       // All breakpoints should be unresolved after stop debugging.
       this._resetBreakpointUnresolved();
+    } else {
+      for (const breakpoint of this.getAllBreakpoints()) {
+        if (!breakpoint.resolved) {
+          this._emitter.emit(BREAKPOINT_NEED_UI_UPDATE, breakpoint.path);
+        }
+      }
     }
   }
 
@@ -292,6 +302,10 @@ export default class BreakpointStore {
       }
     }
     return breakpoints;
+  }
+
+  getDebuggerStore(): ?DebuggerStore {
+    return this._debuggerStore;
   }
 
   _deserializeBreakpoints(breakpoints: Array<SerializedBreakpoint>): void {
