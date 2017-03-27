@@ -313,6 +313,7 @@ export default class BreakpointDisplayController {
     // Once the debugger attaches, it will determine what's actually resolved or not.
     const unresolved = this._debugging && !resolved;
     const elem: HTMLElement = document.createElement('span');
+    elem.dataset.line = line.toString();
     elem.className = isShadow ? 'nuclide-debugger-shadow-breakpoint-icon' :
       (!enabled) ? 'nuclide-debugger-breakpoint-icon-disabled' :
       unresolved ? 'nuclide-debugger-breakpoint-icon-unresolved' :

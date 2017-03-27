@@ -352,10 +352,14 @@ class Activation {
     this._model.getBridge().stepOut();
   }
 
-  _toggleBreakpoint() {
+  _toggleBreakpoint(event: any) {
+    const target = (event.target: HTMLElement);
+    // toggleLine is the line the user clicked in the gutter next to, as opposed
+    // to the line the editor's cursor happens to be in.
+    const toggleLine = parseInt(target.dataset.line, 10);
     return trackTiming('nuclide-debugger-atom:toggleBreakpoint', () => {
       this._executeWithEditorPath((filePath, line) => {
-        this._model.getActions().toggleBreakpoint(filePath, line);
+        this._model.getActions().toggleBreakpoint(filePath, toggleLine);
       });
     });
   }
