@@ -1,5 +1,43 @@
 # Nuclide Changelog
 
+## v0.212.0
+
+### GENERAL
+
+* Remote file deletions are now debounced by 1s, so tools like hg revert should no longer mark tabs as modified.
+* Console is now windowed, improving Nuclide performance when there are a lot of entries
+* Fixed exception thrown on Windows when expanding “~” to the user's home directory path in a file path.
+
+### C++
+
+* Faster autocomplete (thanks to Nat's autocomplete cacher).
+* Additionally, autocompletion results are now fuzzily matched.
+* Buck builds from within Nuclide should be significantly (5-10s) faster than before.
+
+### Debugger
+
+* Replaced callstack window with a table, fixed many rendering issues with call stacks
+* Added ability to copy callstack to clipboard by right-clicking the call stack table
+* Fixed issues with multiple nested scrollbars in Threads, Callstack, and Scopes debugger panes
+* Fixed issue causing Threads pane to have a “loading” spinner forever when breaking into a C++ target
+* Fixed large numbers (anything bigger than JavaScript's max int) being truncated or displayed incorrectly in all debuggers. This fixes outputting FBIDs in the PHP/Hack debugger.
+* Breakpoints in the gutter in the Nuclide editor now indicate if the bp is disabled or unresolved
+* Fixed a regression causing all breakpoints to show as unresolved in PHP/Hack debugger
+
+### Source Control
+
+* Increased timeout for updating bookmarks to 5 minutes
+
+### Quality Jam
+
+* Improve console styling for light/dark them combinations
+* Test runner: fix misc. UI issues
+* “Find References” context menu item now uses the right-clicked symbol rather than the editor cursor.
+* Fixed issue where fuzzy filename search would fail if it took more than 60s to index.
+* Flow type-hint tooltips will no longer appear over whitespace.
+* Removed “Context View” toolbar icon (you can still find it in View > Toggle Context View)
+
+
 ## v0.211.0
 
 # Hotfix
