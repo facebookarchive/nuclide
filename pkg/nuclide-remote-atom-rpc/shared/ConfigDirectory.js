@@ -32,6 +32,10 @@ export type ServerInfo = {
   family: string,
 };
 
+function getConfigDirectory(directory: NuclideUri): NuclideUri {
+  return nuclideUri.join(directory, NUCLIDE_DIR, NUCLIDE_SERVER_INFO_DIR);
+}
+
 /**
  * The local command server stores its state in files in a directory. The structure of the config
  * directory is as follows:
@@ -44,12 +48,28 @@ export type ServerInfo = {
  * command line process on the server.
  */
 async function createConfigDirectory(clearDirectory: boolean): Promise<?NuclideUri> {
-  const configDirPath = await findPathToConfigDirectory(clearDirectory);
-  if (configDirPath != null) {
-    return configDirPath;
-  } else {
-    return null;
-  }
+  // Try some candidate directories. We exclude the directory if it is on NFS
+  // because nuclide-server is local, so it should only write out its state to
+  // a local directory.
+  return asyncFind(
+    getCandidateDirectories(),
+    async directory => {
+      if (await fs.isNonNfsDirectory(directory)) {
+        const configDirPath = getConfigDirectory(directory);
+        if (clearDirectory) {
+          // When starting up a new server, we remove any connection configs leftover
+          // from previous runs.
+          await fs.rmdir(configDirPath);
+          if (await fs.exists(configDirPath)) {
+            throw new Error('createConfigDirectory: Failed to remove' + configDirPath);
+          }
+        }
+        await fs.mkdirp(configDirPath);
+        return configDirPath;
+      } else {
+        return null;
+      }
+    });
 }
 
 export async function createNewEntry(
@@ -81,10 +101,9 @@ export async function createNewEntry(
 }
 
 export async function getServer(): Promise<?ServerInfo> {
-  const clearDirectory = false;
-  const configDirectory = await createConfigDirectory(clearDirectory);
+  const configDirectory = await findPathToConfigDirectory();
   if (configDirectory == null) {
-    throw new Error('Could\'t create config directory');
+    return null;
   }
 
   const serverInfos = await getServerInfos(configDirectory);
@@ -115,14 +134,19 @@ async function getServerInfos(configDirectory: NuclideUri): Promise<Array<Server
   })));
 }
 
-function findPathToConfigDirectory(clearDirectory: boolean): Promise<?string> {
-  // Try some candidate directories. We exclude the directory if it is on NFS
-  // because nuclide-server is local, so it should only write out its state to
-  // a local directory.
+function findPathToConfigDirectory(): Promise<?string> {
+  return asyncFind(
+    getCandidateDirectories(),
+    async directory => {
+      const configDir = getConfigDirectory(directory);
+      return await fs.exists(configDir) ? configDir : null;
+    },
+  );
+}
 
+function getCandidateDirectories(): Array<string> {
   const {homedir} = os.userInfo();
-
-  const candidateDirectories: Array<?string> = [
+  return [
     // Try the ~/local directory (if it exists) to avoid directly polluting homedirs.
     nuclideUri.resolve(nuclideUri.join(homedir, 'local')),
     // Then try the OS temporary directory...
@@ -130,24 +154,4 @@ function findPathToConfigDirectory(clearDirectory: boolean): Promise<?string> {
     // And fall back to the home directory as a last resort.
     homedir,
   ];
-
-  return asyncFind(
-    candidateDirectories,
-    async directory => {
-      if (directory != null && await fs.isNonNfsDirectory(directory)) {
-        const configDirPath = nuclideUri.join(directory, NUCLIDE_DIR, NUCLIDE_SERVER_INFO_DIR);
-        if (clearDirectory) {
-          // When starting up a new server, we remove any connection configs leftover
-          // from previous runs.
-          await fs.rmdir(configDirPath);
-          if (await fs.exists(configDirPath)) {
-            throw new Error('findPathToConfigDirectory: Failed to remove' + configDirPath);
-          }
-        }
-        await fs.mkdirp(configDirPath);
-        return configDirPath;
-      } else {
-        return null;
-      }
-    });
 }
