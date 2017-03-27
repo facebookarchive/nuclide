@@ -596,23 +596,18 @@ class NuclideBridge {
 
   // Synchronizes nuclide BreakpointStore and BreakpointManager
   _syncBreakpoints() {
-    try {
-      this._suppressBreakpointNotification = true;
-      this._parseBreakpointSources();
+    this._parseBreakpointSources();
 
-      // Add the ones that don't.
-      this._unresolvedBreakpoints = new MultiMap();
-      this._allBreakpoints.forEach(breakpoint => {
-        if (!this._addBreakpoint(breakpoint)) {
-          // No API exists for adding breakpoints to source files that are not
-          // yet known, store it locally and try to add them later.
-          this._unresolvedBreakpoints.set(breakpoint.sourceURL, [breakpoint.lineNumber]);
-        }
-      });
-      this._emitter.emit('unresolved-breakpoints-changed', null);
-    } finally {
-      this._suppressBreakpointNotification = false;
-    }
+    // Add the ones that don't.
+    this._unresolvedBreakpoints = new MultiMap();
+    this._allBreakpoints.forEach(breakpoint => {
+      if (!this._addBreakpoint(breakpoint)) {
+        // No API exists for adding breakpoints to source files that are not
+        // yet known, store it locally and try to add them later.
+        this._unresolvedBreakpoints.set(breakpoint.sourceURL, [breakpoint.lineNumber]);
+      }
+    });
+    this._emitter.emit('unresolved-breakpoints-changed', null);
   }
 
   _addBreakpoint(breakpoint: Object): boolean {

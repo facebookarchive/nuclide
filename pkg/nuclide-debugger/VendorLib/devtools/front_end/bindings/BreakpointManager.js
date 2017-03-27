@@ -405,7 +405,7 @@ WebInspector.BreakpointManager.prototype = {
             lineBreakpoints.set(String(uiLocation.columnNumber), columnBreakpoints);
         }
         columnBreakpoints.push(breakpoint);
-        this.dispatchEventToListeners(WebInspector.BreakpointManager.Events.BreakpointAdded, {breakpoint: breakpoint, uiLocation: uiLocation, resolved: false});
+        this.dispatchEventToListeners(WebInspector.BreakpointManager.Events.BreakpointAdded, {breakpoint: breakpoint, uiLocation: uiLocation, resolved: true});
     },
 
     /**
