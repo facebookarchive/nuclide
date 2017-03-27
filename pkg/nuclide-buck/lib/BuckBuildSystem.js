@@ -230,6 +230,7 @@ export class BuckBuildSystem {
         buildRuleType: null,
         selectedDeploymentTarget: null,
         taskSettings: this._serializedState.taskSettings || {},
+        extraPlatformUi: null,
         lastSessionPlatformName: this._serializedState.selectedPlatformName,
         lastSessionDeviceName: this._serializedState.selectedDeviceName,
       };

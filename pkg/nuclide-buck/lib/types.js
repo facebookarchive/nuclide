@@ -20,6 +20,8 @@ import type {
   ResolvedRuleType,
 } from '../../nuclide-buck-rpc/lib/BuckService';
 
+import React from 'react';
+
 export type TaskType = 'build' | 'run' | 'test' | 'debug';
 
 export type BuckSubcommand = 'build' | 'run' | 'install' | 'test';
@@ -41,6 +43,7 @@ export type AppState = {
   buildRuleType: ?ResolvedRuleType,
   selectedDeploymentTarget: ?DeploymentTarget,
   taskSettings: TaskSettings,
+  extraPlatformUi: ?React.Element<any>,
 
   lastSessionPlatformName: ?string,
   lastSessionDeviceName: ?string,
@@ -87,6 +90,7 @@ export type Platform = {
     device: ?Device,
   ) => Observable<TaskEvent>,
   deviceGroups: Array<DeviceGroup>,
+  extraUiWhenSelected?: (device: ?Device) => ?React.Element<any>,
 };
 
 export type DeviceGroup = {

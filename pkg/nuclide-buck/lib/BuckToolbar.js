@@ -62,6 +62,7 @@ export default class BuckToolbar extends React.Component {
       buildRuleType,
       buildTarget,
       buckRoot,
+      extraPlatformUi,
       isLoadingRule,
       isLoadingPlatforms,
       platformGroups,
@@ -131,6 +132,10 @@ export default class BuckToolbar extends React.Component {
           selectionComparator={shallowequal}
         />,
       );
+
+      if (extraPlatformUi) {
+        widgets.push(extraPlatformUi);
+      }
     }
 
     return (

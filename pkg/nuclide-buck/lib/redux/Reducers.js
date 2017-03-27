@@ -10,6 +10,7 @@
 
 import type {AppState, DeploymentTarget, PlatformGroup} from '../types';
 import type {Action} from './Actions';
+import type {Element as ReactElementType} from 'react';
 
 import * as Actions from './Actions';
 
@@ -39,6 +40,7 @@ export default function accumulateState(
         buildRuleType: null,
         platformGroups: [],
         selectedDeploymentTarget: null,
+        extraPlatformUi: null,
         buildTarget: action.buildTarget,
         isLoadingRule: true,
         lastSessionPlatformName: preference.platformName,
@@ -54,18 +56,25 @@ export default function accumulateState(
     case Actions.SET_PLATFORM_GROUPS:
       const {platformGroups} = action;
       const {platformName, deviceName} = getDeploymentTargetPreference(state);
-      const selectedDeploymentTarget
-        = selectValidDeploymentTarget(platformName, deviceName, platformGroups);
+      const selectedDeploymentTarget = selectValidDeploymentTarget(
+        platformName,
+        deviceName,
+        platformGroups,
+      );
       return {
         ...state,
         platformGroups,
         selectedDeploymentTarget,
+        extraPlatformUi: getExtraUiForDeploymentTarget(
+          selectedDeploymentTarget,
+        ),
         isLoadingPlatforms: false,
       };
     case Actions.SET_DEPLOYMENT_TARGET:
       return {
         ...state,
         selectedDeploymentTarget: action.deploymentTarget,
+        extraPlatformUi: getExtraUiForDeploymentTarget(action.deploymentTarget),
         lastSessionPlatformName: null,
         lastSessionDeviceName: null,
       };
@@ -86,7 +95,8 @@ function getDeploymentTargetPreference(
     return {
       platformName: state.selectedDeploymentTarget.platform.name,
       deviceName: state.selectedDeploymentTarget.device
-        ? state.selectedDeploymentTarget.device.name : null,
+        ? state.selectedDeploymentTarget.device.name
+        : null,
     };
   } else {
     return {
@@ -99,7 +109,8 @@ function getDeploymentTargetPreference(
 function selectValidDeploymentTarget(
   preferredPlatformName: ?string,
   preferredDeviceName: ?string,
-  platformGroups: Array<PlatformGroup>): ?DeploymentTarget {
+  platformGroups: Array<PlatformGroup>,
+): ?DeploymentTarget {
   if (!platformGroups.length) {
     return null;
   }
@@ -139,10 +150,25 @@ function selectValidDeploymentTarget(
     existingPlatform = platformGroups[0].platforms[0];
   }
 
-  if (!existingDevice && existingPlatform.deviceGroups.length
-       && existingPlatform.deviceGroups[0].devices.length) {
+  if (
+    !existingDevice &&
+    existingPlatform.deviceGroups.length &&
+    existingPlatform.deviceGroups[0].devices.length
+  ) {
     existingDevice = existingPlatform.deviceGroups[0].devices[0];
   }
 
   return {platform: existingPlatform, device: existingDevice};
+}
+
+function getExtraUiForDeploymentTarget(
+  deploymentTarget: ?DeploymentTarget,
+): ?ReactElementType<any> {
+  if (
+    deploymentTarget == null ||
+    deploymentTarget.platform.extraUiWhenSelected == null
+  ) {
+    return null;
+  }
+  return deploymentTarget.platform.extraUiWhenSelected(deploymentTarget.device);
 }
