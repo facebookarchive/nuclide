@@ -316,7 +316,6 @@ export class HgService {
       ['not', ['dirname', '.hg']],
       // Hg appears to modify temporary files that begin with these
       // prefixes, every time a file is saved.
-      // TODO (t7832809) Remove this when it is unnecessary.
       ['not', ['match', 'hg-checkexec-*', 'wholename']],
       ['not', ['match', 'hg-checklink-*', 'wholename']],
       // This watchman subscription is used to determine when and which
