@@ -19,9 +19,10 @@ import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
 import invariant from 'assert';
 
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import {observableFromSubscribeFunction} from '../../commons-node/event';
 import featureConfig from '../../commons-atom/featureConfig';
 import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
-import debounce from '../../commons-node/debounce';
+import {observeTextEditors} from '../../commons-atom/text-editor';
 import {nextAnimationFrame} from '../../commons-node/observable';
 
 import FileTreeSidebarComponent from '../components/FileTreeSidebarComponent';
@@ -29,6 +30,7 @@ import FileTreeController from './FileTreeController';
 import {WorkingSet} from '../../nuclide-working-sets-common';
 import {REVEAL_FILE_ON_SWITCH_SETTING, WORKSPACE_VIEW_URI} from './Constants';
 import React from 'react';
+import {Observable} from 'rxjs';
 
 type SerializedState = {
   tree: ExportStoreData,
@@ -152,32 +154,31 @@ class Activation {
     });
     this._disposables.add(currentSubscription);
 
-    const rebuildOpenFilesWorkingSet = debounce(
-      () => {
-        const openUris = atom.workspace.getTextEditors()
-          .filter(te => te.getPath() != null && te.getPath() !== '')
-          .map(te => (te.getPath(): any));
-        const openFilesWorkingSet = new WorkingSet(openUris);
-        this._fileTreeController.updateOpenFilesWorkingSet(openFilesWorkingSet);
-      },
-      OPEN_FILES_UPDATE_DEBOUNCE_INTERVAL_MS,
-    );
-    this._disposables.add(rebuildOpenFilesWorkingSet);
-    rebuildOpenFilesWorkingSet();
+    const rebuildSignals = Observable.merge(
+      observableFromSubscribeFunction(atom.workspace.onDidAddPaneItem.bind(atom.workspace)),
+      observableFromSubscribeFunction(atom.workspace.onDidDestroyPaneItem.bind(atom.workspace)),
+      observableFromSubscribeFunction(observeTextEditors)
+        .flatMap(textEditor => {
+          return observableFromSubscribeFunction(textEditor.onDidChangePath.bind(textEditor))
+            .takeUntil(
+              observableFromSubscribeFunction(textEditor.onDidDestroy.bind(textEditor)),
+            );
+        }),
+    )
+    .debounceTime(OPEN_FILES_UPDATE_DEBOUNCE_INTERVAL_MS);
 
-    const paneObservingDisposable = new UniversalDisposable();
-    paneObservingDisposable.add(
-      atom.workspace.onDidAddPaneItem(rebuildOpenFilesWorkingSet),
-      atom.workspace.onDidDestroyPaneItem(rebuildOpenFilesWorkingSet),
-    );
-
-    this._disposables.add(paneObservingDisposable);
+    this._disposables.add(rebuildSignals.subscribe(() => {
+      const openUris = atom.workspace.getTextEditors()
+        .filter(te => te.getPath() != null && te.getPath() !== '')
+        .map(te => (te.getPath(): any));
+      const openFilesWorkingSet = new WorkingSet(openUris);
+      this._fileTreeController.updateOpenFilesWorkingSet(openFilesWorkingSet);
+    }));
 
     return new UniversalDisposable(() => {
       this._fileTreeController.updateWorkingSetsStore(null);
       this._fileTreeController.updateWorkingSet(new WorkingSet());
       this._fileTreeController.updateOpenFilesWorkingSet(new WorkingSet());
-      paneObservingDisposable.dispose();
       this._disposables.remove(currentSubscription);
       currentSubscription.dispose();
     });
