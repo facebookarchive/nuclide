@@ -208,6 +208,9 @@ class Activation {
         'nuclide-debugger:toggle-breakpoint': this._toggleBreakpoint.bind(this),
       }),
       atom.commands.add('atom-workspace', {
+        'nuclide-debugger:toggle-breakpoint-enabled': this._toggleBreakpointEnabled.bind(this),
+      }),
+      atom.commands.add('atom-workspace', {
         'nuclide-debugger:toggle-launch-attach': this._toggleLaunchAttachDialog.bind(this),
       }),
       atom.commands.add('atom-workspace', {
@@ -263,6 +266,10 @@ class Activation {
               {
                 label: 'Toggle Breakpoint',
                 command: 'nuclide-debugger:toggle-breakpoint',
+              },
+              {
+                label: 'Toggle Breakpoint enabled/disabled',
+                command: 'nuclide-debugger:toggle-breakpoint-enabled',
               },
               {
                 label: 'Add to Watch',
@@ -352,14 +359,39 @@ class Activation {
     this._model.getBridge().stepOut();
   }
 
-  _toggleBreakpoint(event: any) {
-    const target = (event.target: HTMLElement);
+  _getLineForEvent(event: any, editorLine: number): number {
+    const target = event ? (event.target: HTMLElement) : null;
     // toggleLine is the line the user clicked in the gutter next to, as opposed
-    // to the line the editor's cursor happens to be in.
-    const toggleLine = parseInt(target.dataset.line, 10);
+    // to the line the editor's cursor happens to be in. If this command was invoked
+    // from the menu, then the cursor position is the target line.
+    const eventLine = target ? parseInt(target.dataset.line, 10) : null;
+    if (eventLine == null || eventLine < 0 || isNaN(Number(eventLine))) {
+      // fall back to the line the cursor is on.
+      return editorLine;
+    }
+
+    return eventLine;
+  }
+
+  _toggleBreakpoint(event: any) {
     return trackTiming('nuclide-debugger-atom:toggleBreakpoint', () => {
       this._executeWithEditorPath((filePath, line) => {
-        this._model.getActions().toggleBreakpoint(filePath, toggleLine);
+        this._model.getActions().toggleBreakpoint(filePath, this._getLineForEvent(event, line));
+      });
+    });
+  }
+
+  _toggleBreakpointEnabled(event: any) {
+    return trackTiming('nuclide-debugger-atom:toggleBreakpointEnabled', () => {
+      this._executeWithEditorPath((filePath, line) => {
+        const bp = this._model
+          .getBreakpointStore()
+          .getBreakpointAtLine(filePath, this._getLineForEvent(event, line));
+
+        if (bp) {
+          const {id, enabled} = bp;
+          this._model.getActions().updateBreakpointEnabled(id, !enabled);
+        }
       });
     });
   }

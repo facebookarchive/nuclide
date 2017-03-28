@@ -8,6 +8,8 @@
  * @flow
  */
 
+import type {FileLineBreakpoint} from './types';
+
 import type BreakpointStore from './BreakpointStore';
 import type DebuggerActions from './DebuggerActions';
 import {DebuggerMode} from './DebuggerStore';
@@ -27,6 +29,11 @@ type BreakpointDisplayControllerDelegate = {
   +handleTextEditorDestroyed: (controller: BreakpointDisplayController) => void,
 };
 
+type BreakpointMarkerProperties = {
+  enabled: boolean,
+  resolved: boolean,
+};
+
 /**
  * Handles displaying breakpoints and processing events for a single text
  * editor.
@@ -39,6 +46,7 @@ export default class BreakpointDisplayController {
   _editor: atom$TextEditor;
   _gutter: ?atom$Gutter;
   _markers: Array<atom$Marker>;
+  _markerInfo: Map<number, BreakpointMarkerProperties>;
   _lastShadowBreakpointMarker: ?atom$Marker;
   _boundGlobalMouseMoveHandler: (event: MouseEvent) => void;
   _debugging: boolean;
@@ -55,6 +63,7 @@ export default class BreakpointDisplayController {
     this._debuggerActions = debuggerActions;
     this._editor = editor;
     this._markers = [];
+    this._markerInfo = new Map();
     this._lastShadowBreakpointMarker = null;
     this._boundGlobalMouseMoveHandler = this._handleGlobalMouseLeave.bind(this);
 
@@ -131,6 +140,25 @@ export default class BreakpointDisplayController {
     this._gutter = null;
   }
 
+  _needsUpdate(line: number, bp: ?FileLineBreakpoint): boolean {
+    // Checks if an existing marker no longer matches the properties of the breakpoint
+    // it corresponds to.
+    if (bp == null) {
+      return true;
+    }
+
+    const info = this._markerInfo.get(line);
+    if (info == null) {
+      return true;
+    }
+
+    if (info.enabled !== bp.enabled || info.resolved !== bp.resolved) {
+      return true;
+    }
+
+    return false;
+  }
+
   /**
    * Update the display with the current set of breakpoints for this editor.
    */
@@ -159,10 +187,14 @@ export default class BreakpointDisplayController {
     // Destroy markers that no longer correspond to breakpoints.
     this._markers.forEach(marker => {
       const line = marker.getStartBufferPosition().row;
-      if (debugging === this._debugging && unhandledLines.has(line)) {
+      const bp = this._breakpointStore.getBreakpointAtLine(path, line);
+      if (debugging === this._debugging &&
+          unhandledLines.has(line) &&
+          !this._needsUpdate(line, bp)) {
         markersToKeep.push(marker);
         unhandledLines.delete(line);
       } else {
+        this._markerInfo.delete(line);
         marker.destroy();
       }
     });
@@ -181,6 +213,13 @@ export default class BreakpointDisplayController {
         breakpoint.enabled,
         breakpoint.resolved,
       );
+
+      // Remember the properties of the marker at this line so it's easy to tell if it
+      // needs to be updated when the breakpoint properties change.
+      this._markerInfo.set(line, {
+        enabled: breakpoint.enabled,
+        resolved: breakpoint.resolved,
+      });
       marker.onDidChange(this._handleMarkerChange.bind(this));
       markersToKeep.push(marker);
     }
