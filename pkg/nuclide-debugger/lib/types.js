@@ -88,6 +88,8 @@ export type BreakpointUserChangeArgType = {
 export type SerializedBreakpoint = {
   line: number,
   sourceURL: string,
+  disabled: ?boolean,
+  condition: ?string,
 };
 
 /* Callstack */

@@ -229,6 +229,11 @@ export default class BreakpointStore {
     enabled: boolean,
     resolved: boolean,
   ): void {
+    // The Chrome devtools always bind a new breakpoint as enabled the first time. If this
+    // breakpoint is known to be disabled in the front-end, sync the enabled state with Chrome.
+    const existingBp = this.getBreakpointAtLine(path, line);
+    const updateEnabled = (existingBp != null) && (existingBp.enabled !== enabled);
+
     this._addBreakpoint(
       path,
       line,
@@ -237,6 +242,14 @@ export default class BreakpointStore {
       false,  // userAction
       enabled,
     );
+
+    if (updateEnabled) {
+      const updatedBp = this.getBreakpointAtLine(path, line);
+      if (updatedBp != null) {
+        updatedBp.enabled = !enabled;
+        this._updateBreakpoint(updatedBp);
+      }
+    }
   }
 
   _handleDebuggerModeChange(newMode: DebuggerModeType): void {
@@ -294,10 +307,16 @@ export default class BreakpointStore {
     const breakpoints = [];
     for (const [path, lineMap] of this._breakpoints) {
       for (const line of lineMap.keys()) {
-        // TODO: serialize condition and enabled states.
+        const breakpoint = lineMap.get(line);
+        if (breakpoint == null) {
+          continue;
+        }
+
         breakpoints.push({
           line,
           sourceURL: path,
+          disabled: !breakpoint.enabled,
+          condition: breakpoint.condition,
         });
       }
     }
@@ -310,8 +329,15 @@ export default class BreakpointStore {
 
   _deserializeBreakpoints(breakpoints: Array<SerializedBreakpoint>): void {
     for (const breakpoint of breakpoints) {
-      const {line, sourceURL} = breakpoint;
-      this._addBreakpoint(sourceURL, line);
+      const {line, sourceURL, disabled, condition} = breakpoint;
+      this._addBreakpoint(
+        sourceURL,
+        line,
+        condition || '',
+        false, // resolved
+        false, // user action
+        !disabled, // enabled
+      );
     }
   }
 
