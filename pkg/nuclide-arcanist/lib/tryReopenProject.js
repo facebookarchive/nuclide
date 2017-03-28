@@ -8,19 +8,16 @@
  * @flow
  */
 
+
 import type {RemoteProjectsService} from '../../nuclide-remote-projects';
 
-import {getLastProjectPath} from '../../commons-atom/arcanist';
 import nuclideUri from '../../commons-node/nuclideUri';
 
 export default async function tryReopenProject(
   projectId: string,
+  lastPath: string,
   remoteProjectsService: ?RemoteProjectsService,
 ): Promise<?string> {
-  const lastPath = getLastProjectPath(projectId);
-  if (lastPath == null) {
-    return null;
-  }
   const response = await new Promise(resolve => {
     const notification = atom.notifications.addInfo(
       `Project \`${projectId}\` not open`,

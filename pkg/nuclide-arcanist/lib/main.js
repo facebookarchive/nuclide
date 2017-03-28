@@ -80,7 +80,7 @@ class Activation {
       deepLink.subscribeToPath('open-arc', params => {
         const maybeCwd = this._cwdApi ? this._cwdApi.getCwd() : null;
         const maybeCwdPath = maybeCwd ? maybeCwd.getPath() : null;
-        openArcDeepLink(params, this._remoteProjectsService, maybeCwdPath);
+        openArcDeepLink(params, this._remoteProjectsService, deepLink, maybeCwdPath);
       }),
     );
   }

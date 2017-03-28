@@ -8,10 +8,12 @@
  * @flow
  */
 
-import type {DeepLinkParams} from '../../nuclide-deep-link/lib/types';
+import type {DeepLinkParams, DeepLinkService} from '../../nuclide-deep-link/lib/types';
 import type {RemoteProjectsService} from '../../nuclide-remote-projects';
 
 import invariant from 'assert';
+import {remote} from 'electron';
+import {getLastProjectPath} from '../../commons-atom/arcanist';
 import {goToLocation} from '../../commons-atom/go-to-location';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {asyncFilter} from '../../commons-node/promise';
@@ -19,13 +21,35 @@ import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection'
 import getMatchingProjects from './getMatchingProjects';
 import tryReopenProject from './tryReopenProject';
 
+invariant(remote != null);
+
 function ensureArray(x: string | Array<string>): Array<string> {
   return typeof x === 'string' ? [x] : x;
+}
+
+// Check if any other open windows have the given path.
+async function searchOtherWindows(path: string): Promise<?electron$BrowserWindow> {
+  const windows = await Promise.all(
+    remote.BrowserWindow.getAllWindows().map(browserWindow => {
+      return new Promise((resolve, reject) => {
+        // In case `atom` hasn't been initialized yet.
+        browserWindow.webContents.executeJavaScript('atom && atom.project.getPaths()', result => {
+          // Guard against null returns (and also help Flow).
+          const containsPath = Array.isArray(result) && result.find(project => (
+            (typeof project === 'string') && nuclideUri.contains(path, project)
+          ));
+          resolve(containsPath ? browserWindow : null);
+        });
+      });
+    }),
+  );
+  return windows.find(Boolean);
 }
 
 export async function openArcDeepLink(
   params: DeepLinkParams,
   remoteProjectsService: ?RemoteProjectsService,
+  deepLinkService: DeepLinkService,
   cwd: ?string = null,
 ): Promise<void> {
   const {project, path, line, column} = params;
@@ -40,10 +64,17 @@ export async function openArcDeepLink(
 
     let matches = await getMatchingProjects(project, atom.project.getPaths());
     if (matches.length === 0) {
-      // See if we had this project open previously, and try re-opening it.
-      const lastPath = await tryReopenProject(project, remoteProjectsService);
+      const lastPath = getLastProjectPath(project);
       if (lastPath != null) {
-        matches = await getMatchingProjects(project, [lastPath]);
+        const otherWindow = await searchOtherWindows(lastPath);
+        if (otherWindow != null) {
+          deepLinkService.sendDeepLink(otherWindow, 'open-arc', params);
+          return;
+        }
+        // See if we had this project open previously, and try re-opening it.
+        if (await tryReopenProject(project, lastPath, remoteProjectsService)) {
+          matches = await getMatchingProjects(project, [lastPath]);
+        }
       }
     }
 
