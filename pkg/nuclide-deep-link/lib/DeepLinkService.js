@@ -20,6 +20,8 @@ import SharedObservableCache from '../../commons-node/SharedObservableCache';
 const {ipcRenderer} = electron;
 invariant(ipcRenderer != null);
 
+const CHANNEL = 'nuclide-url-open';
+
 export default class DeepLinkService {
   _disposable: UniversalDisposable;
   _observers: Map<string, rxjs$Observer<DeepLinkParams>>;
@@ -38,7 +40,7 @@ export default class DeepLinkService {
       // These events will be sent from lib/url-main.js.
       // TODO: Use real Atom URI handler from
       // https://github.com/atom/atom/pull/11399.
-      Observable.fromEvent(ipcRenderer, 'nuclide-url-open', (event, data) => data)
+      Observable.fromEvent(ipcRenderer, CHANNEL, (event, data) => data)
         .subscribe(({message, params}) => {
           const path = message.replace(/\/+$/, '');
           const observer = this._observers.get(path);
@@ -61,5 +63,14 @@ export default class DeepLinkService {
     return new UniversalDisposable(
       this._observables.get(path).subscribe(callback),
     );
+  }
+
+  sendDeepLink(
+    browserWindow: electron$BrowserWindow,
+    path: string,
+    params: DeepLinkParams,
+  ): void {
+    browserWindow.webContents.send(CHANNEL, {message: path, params});
+    browserWindow.focus();
   }
 }

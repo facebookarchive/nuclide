@@ -22,4 +22,13 @@ export type DeepLinkService = {
     callback: (params: DeepLinkParams) => mixed,
   ): IDisposable,
 
+  /**
+   * Manually send a deep link to another Atom window.
+   */
+  sendDeepLink(
+    browserWindow: electron$BrowserWindow,
+    path: string,
+    params: DeepLinkParams,
+  ): void,
+
 };

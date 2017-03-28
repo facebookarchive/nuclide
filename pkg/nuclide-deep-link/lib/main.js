@@ -27,9 +27,8 @@ class Activation {
   provideDeepLinkService(): DeepLinkService {
     // Only expose the public methods of the service.
     return {
-      subscribeToPath: (path, callback) => {
-        return this._service.subscribeToPath(path, callback);
-      },
+      subscribeToPath: this._service.subscribeToPath.bind(this._service),
+      sendDeepLink: this._service.sendDeepLink.bind(this._service),
     };
   }
 }

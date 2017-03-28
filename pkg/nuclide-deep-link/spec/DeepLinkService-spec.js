@@ -13,12 +13,6 @@ import electron from 'electron';
 import nullthrows from 'nullthrows';
 import DeepLinkService from '../lib/DeepLinkService';
 
-function sendMessage(message, params) {
-  nullthrows(electron.remote)
-    .getCurrentWebContents()
-    .send('nuclide-url-open', {message, params});
-}
-
 describe('DeepLinkService', () => {
   it('allows subscriptions to messages', () => {
     const service = new DeepLinkService();
@@ -34,16 +28,17 @@ describe('DeepLinkService', () => {
     );
 
     runs(() => {
-      sendMessage('test1', {a: 1});
-      sendMessage('test2/', {b: 2});
+      const browserWindow = nullthrows(electron.remote).getCurrentWindow();
+      service.sendDeepLink(browserWindow, 'test1', {a: '1'});
+      service.sendDeepLink(browserWindow, 'test2/', {b: '2'});
     });
 
     waitsFor(() => testSpy1.callCount > 0);
 
     runs(() => {
-      expect(testSpy1).toHaveBeenCalledWith({a: 1});
-      expect(testSpy11).toHaveBeenCalledWith({a: 1});
-      expect(testSpy2).toHaveBeenCalledWith({b: 2});
+      expect(testSpy1).toHaveBeenCalledWith({a: '1'});
+      expect(testSpy11).toHaveBeenCalledWith({a: '1'});
+      expect(testSpy2).toHaveBeenCalledWith({b: '2'});
 
       // Make sure observers get cleaned up.
       disposables.dispose();
