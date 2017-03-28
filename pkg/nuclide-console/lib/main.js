@@ -14,6 +14,7 @@ import type {
   AppState,
   OutputProvider,
   OutputService,
+  Record,
   RegisterExecutorFunction,
   Store,
 } from './types';
@@ -175,7 +176,7 @@ function deserializeAppState(rawState: ?Object): AppState {
   return {
     executors: new Map(),
     currentExecutorId: null,
-    records: rawState && rawState.records ? rawState.records : [],
+    records: rawState && rawState.records ? rawState.records.map(deserializeRecord) : [],
     history: [],
     providers: new Map(),
     providerStatuses: new Map(),
@@ -184,6 +185,21 @@ function deserializeAppState(rawState: ?Object): AppState {
     // here to conform to the AppState type defintion.
     maxMessageCount: Number.POSITIVE_INFINITY,
   };
+}
+
+function deserializeRecord(record: Object): Record {
+  return {
+    ...record,
+    timestamp: parseDate(record.timestamp) || new Date(0),
+  };
+}
+
+function parseDate(raw: ?string): ?Date {
+  if (raw == null) {
+    return null;
+  }
+  const date = new Date(raw);
+  return isNaN(date.getTime()) ? null : date;
 }
 
 createPackage(module.exports, Activation);
