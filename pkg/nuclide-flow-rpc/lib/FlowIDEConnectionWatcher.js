@@ -10,6 +10,7 @@
 
 import {FlowIDEConnection} from './FlowIDEConnection';
 
+import {sleep} from '../../commons-node/promise';
 import {getLogger} from '../../nuclide-logging';
 
 const defaultIDEConnectionFactory = proc => new FlowIDEConnection(proc);
@@ -18,6 +19,8 @@ const defaultIDEConnectionFactory = proc => new FlowIDEConnection(proc);
 // entire comment as well as the whitespace.
 // eslint-disable-next-line semi-spacing
 const IDE_CONNECTION_MAX_WAIT_MS = 20 /* min */ * 60 /* s/min */ * 1000 /* ms/s */;
+
+const IDE_CONNECTION_MIN_INTERVAL_MS = 1000;
 
 // For the lifetime of this class instance, keep a FlowIDEConnection alive, assuming we do not have
 // too many failures in a row.
@@ -61,6 +64,7 @@ export class FlowIDEConnectionWatcher {
     let proc = null;
     const endTimeMS = this._getTimeMS() + IDE_CONNECTION_MAX_WAIT_MS;
     while (true) {
+      const attemptStartTime = this._getTimeMS();
       // eslint-disable-next-line no-await-in-loop
       proc = await this._processFactory();
       // dispose() could have been called while we were waiting for the above promise to resolve.
@@ -70,10 +74,18 @@ export class FlowIDEConnectionWatcher {
         }
         return;
       }
-      if (proc != null || this._getTimeMS() > endTimeMS) {
+      const attemptEndTime = this._getTimeMS();
+      if (proc != null || attemptEndTime > endTimeMS) {
         break;
       } else {
         getLogger().info('Failed to start Flow IDE connection... retrying');
+        const attemptWallTime = attemptEndTime - attemptStartTime;
+        const additionalWaitTime = IDE_CONNECTION_MIN_INTERVAL_MS - attemptWallTime;
+        if (additionalWaitTime > 0) {
+          getLogger().info(`Waiting an additional ${additionalWaitTime} ms before retrying`);
+          // eslint-disable-next-line no-await-in-loop
+          await this._sleep(additionalWaitTime);
+        }
       }
     }
     if (proc == null) {
@@ -95,6 +107,11 @@ export class FlowIDEConnectionWatcher {
   // Split this out just so it's easy to mock
   _getTimeMS(): number {
     return Date.now();
+  }
+
+  // Split this out just so it's easy to mock
+  _sleep(ms: number): Promise<void> {
+    return sleep(ms);
   }
 
   dispose(): void {

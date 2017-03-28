@@ -25,6 +25,31 @@ describe('FlowIDEConnectionWatcher', () => {
 
   let watcher: FlowIDEConnectionWatcher = (null: any);
 
+  let currentTime: number = (null: any);
+  let waitingPromises: Set<{dueTime: number, resolve: () => void}> = (null: any);
+
+  // Apparently Jasmine doesn't mock Date.now(), and for whatever reason, using the Jasmine clock
+  // mocks didn't properly call setTimeout (which sleep relies upon), which caused things to hang.
+  // So I rolled my own.
+  const tick: number => void = millis => {
+    currentTime += millis;
+    for (const item of waitingPromises) {
+      if (currentTime >= item.dueTime) {
+        item.resolve();
+        waitingPromises.delete(item);
+      }
+    }
+  };
+
+  const sleep: (millis: number) => Promise<void> = millis => {
+    let resolve = null;
+    const promise = new Promise(r => { resolve = r; });
+    invariant(resolve != null);
+    const dueTime = currentTime + millis;
+    waitingPromises.add({dueTime, resolve});
+    return promise;
+  };
+
   function createFakeIDEConnection(): FlowIDEConnection {
     return (jasmine.createSpyObj('FlowIDEconnection', [
       'onWillDispose',
@@ -55,14 +80,10 @@ describe('FlowIDEConnectionWatcher', () => {
       (...args) => ideConnectionFactory(...args),
     );
 
-    let getTimeMSCallCount = 0;
-    const initialTimeMS = 42;
-    const eachCallIncrement = 7 * 60 * 1000;
-    spyOn(watcher, '_getTimeMS').andCallFake(() => {
-      const result = initialTimeMS + getTimeMSCallCount * eachCallIncrement;
-      getTimeMSCallCount++;
-      return result;
-    });
+    currentTime = 42;
+    waitingPromises = new Set();
+    spyOn(watcher, '_getTimeMS').andCallFake(() => currentTime);
+    spyOn(watcher, '_sleep').andCallFake(sleep);
   });
 
   it('should correctly start and keep alive an IDE connection', () => {
@@ -99,6 +120,7 @@ describe('FlowIDEConnectionWatcher', () => {
         invariant(currentCall < processFactoryReturns.length);
         const result = processFactoryReturns[currentCall];
         currentCall++;
+        tick(7 * 60 * 1000);
         return result;
       });
     });
@@ -121,6 +143,7 @@ describe('FlowIDEConnectionWatcher', () => {
         invariant(currentCall < processFactoryReturns.length);
         const result = processFactoryReturns[currentCall];
         currentCall++;
+        tick(7 * 60 * 1000);
         return result;
       });
     });
@@ -130,6 +153,21 @@ describe('FlowIDEConnectionWatcher', () => {
       expect(ideConnectionCallback.callCount).toBe(0);
       expect(ideConnectionFactory.callCount).toBe(0);
       watcher.dispose();
+    });
+  });
+
+  it('should throttle attempts to start the IDE process', () => {
+    waitsForPromise(async () => {
+      processFactory = jasmine.createSpy('processFactory').andReturn(Promise.resolve(null));
+      watcher.start();
+
+      await new Promise(resolve => setImmediate(resolve));
+      expect(processFactory.callCount).toBe(1);
+
+      tick(1100);
+
+      await new Promise(resolve => setImmediate(resolve));
+      expect(processFactory.callCount).toBe(2);
     });
   });
 });
