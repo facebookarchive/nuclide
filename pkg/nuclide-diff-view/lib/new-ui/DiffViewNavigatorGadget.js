@@ -1,61 +1,66 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import typeof * as BoundActionCreators from '../redux/Actions';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.WORKSPACE_VIEW_URI = undefined;
 
-import React from 'react';
-import {track} from '../../../nuclide-analytics';
+var _react = _interopRequireDefault(require('react'));
 
-type Props = {
-  actionCreators: BoundActionCreators,
-  component: ReactClass<any>,
-};
+var _nuclideAnalytics;
 
-export const WORKSPACE_VIEW_URI = 'atom://nuclide/diff-view-navigator';
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../../nuclide-analytics');
+}
 
-export default class DiffViewNavigatorGadget extends React.Component {
-  props: Props;
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-  getTitle(): string {
+const WORKSPACE_VIEW_URI = exports.WORKSPACE_VIEW_URI = 'atom://nuclide/diff-view-navigator'; /**
+                                                                                               * Copyright (c) 2015-present, Facebook, Inc.
+                                                                                               * All rights reserved.
+                                                                                               *
+                                                                                               * This source code is licensed under the license found in the LICENSE file in
+                                                                                               * the root directory of this source tree.
+                                                                                               *
+                                                                                               * 
+                                                                                               */
+
+class DiffViewNavigatorGadget extends _react.default.Component {
+
+  getTitle() {
     return 'Source Control Navigator';
   }
 
-  getIconName(): string {
+  getIconName() {
     return 'git-branch';
   }
 
-  getPreferredInitialHeight(): number {
+  getPreferredInitialHeight() {
     return 300;
   }
 
-  getURI(): string {
+  getURI() {
     return WORKSPACE_VIEW_URI;
   }
 
-  getDefaultLocation(): string {
+  getDefaultLocation() {
     return 'bottom-panel';
   }
 
-  didChangeVisibility(visible: boolean) {
-    track('diff-view-navigator-toggle', {visible});
+  didChangeVisibility(visible) {
+    (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('diff-view-navigator-toggle', { visible });
     this.props.actionCreators.updateDiffNavigatorVisibility(visible);
   }
 
-  render(): React.Element<any> {
-    const {component: Component} = this.props;
-    return <Component />;
+  render() {
+    const { component: Component } = this.props;
+    return _react.default.createElement(Component, null);
   }
 
-  serialize(): mixed {
+  serialize() {
     return {
-      deserializer: 'nuclide.DiffViewNavigator',
+      deserializer: 'nuclide.DiffViewNavigator'
     };
   }
 }
+exports.default = DiffViewNavigatorGadget;

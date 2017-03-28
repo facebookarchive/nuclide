@@ -1,15 +1,15 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import React from 'react';
-import ReactDOM from 'react-dom';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = addTooltip;
+
+var _react = _interopRequireDefault(require('react'));
+
+var _reactDom = _interopRequireDefault(require('react-dom'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
 * Adds a self-disposing Atom's tooltip to a react element.
@@ -22,9 +22,17 @@ import ReactDOM from 'react-dom';
 *   this._myDiv = c;
 * }} />
 */
-export default function addTooltip(
-  options: atom$TooltipsAddOptions,
-): (elementRef: React.Element<any>) => void {
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ *
+ * 
+ */
+
+function addTooltip(options) {
   let prevRefDisposable;
 
   let immediate = null;
@@ -37,7 +45,7 @@ export default function addTooltip(
 
     if (elementRef != null) {
       // $FlowFixMe -- findDOMNode takes a React.Component or an HTMLElement.
-      const node = ReactDOM.findDOMNode(elementRef);
+      const node = _reactDom.default.findDOMNode(elementRef);
 
       // Sooooo... Atom tooltip does the keybinding lookup at creation time
       // instead of display time. And, it uses a CSS selector to figure out
@@ -48,14 +56,12 @@ export default function addTooltip(
       // in the DOM and has the proper keybinding.
       immediate = setImmediate(() => {
         prevRefDisposable = atom.tooltips.add(
-          // $FlowFixMe
-          node,
-          // $FlowFixMe
-          {
-            keyBindingTarget: node,
-            ...options,
-          },
-        );
+        // $FlowFixMe
+        node,
+        // $FlowFixMe
+        Object.assign({
+          keyBindingTarget: node
+        }, options));
       });
     }
   };
