@@ -46,12 +46,12 @@ function createAtomWindow(urlToOpen: string) {
 describe('url-main', () => {
   it('sends a signal back to this window', () => {
     const spy = jasmine.createSpy('nuclide-url-open');
-    const initialWindowCount = remote.BrowserWindow.getAllWindows().length;
+    let newWindow;
 
     runs(() => {
       invariant(electron.ipcRenderer);
       electron.ipcRenderer.on('nuclide-url-open', spy);
-      createAtomWindow('atom://nuclide/path?param=test');
+      newWindow = createAtomWindow('atom://nuclide/path?param=test');
     });
 
     waitsFor(() => spy.callCount === 1);
@@ -61,10 +61,9 @@ describe('url-main', () => {
         message: 'path',
         params: {param: 'test'},
       });
-      // The URL-opening window should have destroyed itself.
-      expect(remote.BrowserWindow.getAllWindows().length)
-        .toBe(initialWindowCount);
     });
+
+    waitsFor(() => newWindow.isDestroyed(), 'the new window to be destroyed');
   });
 });
 
