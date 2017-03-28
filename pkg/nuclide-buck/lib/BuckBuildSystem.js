@@ -78,11 +78,12 @@ const SOCKET_TIMEOUT = 30000;
 const DEBUGGABLE_RULES = new Set([
   'cxx_binary',
   'cxx_test',
+  'ocaml_binary',
   'rust_binary',
   'rust_test',
 ]);
 
-const RUNNABLE_RULES = new Set(['java_binary']);
+const RUNNABLE_RULES = new Set([...DEBUGGABLE_RULES, 'java_binary']);
 
 function shouldEnableTask(taskType: TaskType, ruleType: string): boolean {
   switch (taskType) {
