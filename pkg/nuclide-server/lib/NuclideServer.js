@@ -11,7 +11,7 @@
 import type {ConfigEntry} from '../../nuclide-rpc';
 
 import blocked from './blocked';
-import {HEARTBEAT_CHANNEL} from './config';
+import {CLIENTINFO_CHANNEL, HEARTBEAT_CHANNEL} from './config';
 import {deserializeArgs, sendJsonResponse, sendTextResponse} from './utils';
 import {getVersion} from '../../nuclide-version';
 import invariant from 'assert';
@@ -124,6 +124,7 @@ export default class NuclideServer {
     // ServiceIntegrationTestHelper.
     this._xhrServiceRegistry = {};
     this._setupHeartbeatHandler();
+    this._setupClientInfoHandler();
 
     // Setup error handler.
     this._app.use((error: ?connect$Error,
@@ -141,6 +142,25 @@ export default class NuclideServer {
   _setupHeartbeatHandler() {
     this._registerService('/' + HEARTBEAT_CHANNEL, async () => this._version,
         'post', true);
+  }
+
+  _setupClientInfoHandler() {
+    this._registerService(
+      '/' + CLIENTINFO_CHANNEL,
+      async () => {
+        const clients = {};
+        for (const [clientId, client] of this._clients) {
+          const transport = client.getTransport();
+          clients[clientId] = {
+            lastStateChangeTime: transport.getLastStateChangeTime(),
+            state: transport.getState(),
+          };
+        }
+        return JSON.stringify({clients});
+      },
+      'post',
+      true,
+    );
   }
 
   static shutdown(): void {
