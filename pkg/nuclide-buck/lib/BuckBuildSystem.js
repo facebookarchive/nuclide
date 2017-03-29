@@ -424,14 +424,10 @@ export class BuckBuildSystem {
     }
 
     const targetString = getCommandStringForResolvedBuildTarget(buildTarget);
-    const settings = {
-      arguments: (taskSettings.arguments || [])
-        .concat(additionalSettings.arguments || []),
-      runArguments: (taskSettings.runArguments || [])
-        .concat(additionalSettings.runArguments || []),
-    };
-    const buildArguments = settings.arguments;
-    const {runArguments} = settings;
+    const buildArguments = (taskSettings.buildArguments || [])
+      .concat(additionalSettings.buildArguments || []);
+    const runArguments = (taskSettings.runArguments || [])
+      .concat(additionalSettings.runArguments || []);
 
     const buckService = getBuckServiceByNuclideUri(buckRoot);
 

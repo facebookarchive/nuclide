@@ -27,7 +27,7 @@ type Props = {
 };
 
 type State = {
-  arguments: string,
+  buildArguments: string,
   runArguments: string,
 };
 
@@ -37,9 +37,9 @@ export default class BuckToolbarSettings extends React.Component {
 
   constructor(props: Props) {
     super(props);
-    const {arguments: args, runArguments} = props.settings;
+    const {buildArguments, runArguments} = props.settings;
     this.state = {
-      arguments: args == null ? '' : quote(args),
+      buildArguments: buildArguments == null ? '' : quote(buildArguments),
       runArguments: runArguments == null ? '' : quote(runArguments),
     };
   }
@@ -55,12 +55,12 @@ export default class BuckToolbarSettings extends React.Component {
                 {this.props.currentBuckRoot || 'No Buck project found.'}
               </code>
             </p>
-            <label>Buck Arguments:</label>
+            <label>Build Arguments:</label>
             <AtomInput
               tabIndex="0"
-              initialValue={this.state.arguments}
-              placeholderText="Extra arguments to Buck (e.g. --num-threads 4)"
-              onDidChange={this._onArgsChange.bind(this)}
+              initialValue={this.state.buildArguments}
+              placeholderText="Extra arguments to Buck itself (e.g. --num-threads 4)"
+              onDidChange={this._onBuildArgsChange.bind(this)}
               onConfirm={this._onSave.bind(this)}
             />
             <div>
@@ -91,8 +91,8 @@ export default class BuckToolbarSettings extends React.Component {
     );
   }
 
-  _onArgsChange(args: string) {
-    this.setState({arguments: args});
+  _onBuildArgsChange(args: string) {
+    this.setState({buildArguments: args});
   }
 
   _onRunArgsChange(args: string) {
@@ -102,14 +102,13 @@ export default class BuckToolbarSettings extends React.Component {
   _onSave() {
     try {
       this.props.onSave({
-        arguments: shellParse(this.state.arguments),
+        buildArguments: shellParse(this.state.buildArguments),
         runArguments: shellParse(this.state.runArguments),
       });
     } catch (err) {
-      atom.notifications.addError(
-        'Could not parse arguments',
-        {detail: err.stack},
-      );
+      atom.notifications.addError('Could not parse arguments', {
+        detail: err.stack,
+      });
     }
   }
 }
