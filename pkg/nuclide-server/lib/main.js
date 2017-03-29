@@ -9,7 +9,12 @@
  */
 
 import fs from 'fs';
-import {getLogger, flushLogsAndAbort, initialUpdateConfig} from '../../nuclide-logging';
+import {
+  flushLogsAndAbort,
+  flushLogsAndExit,
+  getLogger,
+  initialUpdateConfig,
+} from '../../nuclide-logging';
 import {startTracking} from '../../nuclide-analytics';
 import NuclideServer from './NuclideServer';
 import servicesConfig from './servicesConfig';
@@ -31,7 +36,13 @@ async function main(args) {
   process.on('SIGHUP', () => {});
 
   try {
-    const {port} = args;
+    const {port, expiration_days} = args;
+    if (expiration_days) {
+      setTimeout(() => {
+        logger.warn(`NuclideServer exiting - ${expiration_days} day expiration time reached.`);
+        flushLogsAndExit(0);
+      }, expiration_days * 24 * 60 * 60 * 1000);
+    }
     let {key, cert, ca} = args;
     if (key && cert && ca) {
       key = fs.readFileSync(key);

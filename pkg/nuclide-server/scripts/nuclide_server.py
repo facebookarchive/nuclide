@@ -175,7 +175,8 @@ class NuclideServer(object):
 
     def start(self, timeout, cert=None, key=None, ca=None, force=False,
               quiet=False, debug=False, inspect=False,
-              abort_on_uncaught_exception=False):
+              abort_on_uncaught_exception=False,
+              expiration_days=None):
         self.logger.info(
             'NuclideServer start/restarting with the following arguments:\n \
              timeout: {0}\n \
@@ -185,7 +186,10 @@ class NuclideServer(object):
              force:   {4}\n \
              quiet:   {5}\n \
              debug:   {6}\n \
-             inspect: {7}'.format(timeout, cert, key, ca, force, quiet, debug, inspect))
+             inspect: {7}\n \
+             expiration_days: {8}'.format(
+                 timeout, cert, key, ca, force, quiet, debug, inspect,
+                 expiration_days))
         # If one but not all certificate files are given.
         if (cert or key or ca) and not (cert and key and ca):
             self.logger.error('Incomplete certificate files.')
@@ -211,6 +215,8 @@ class NuclideServer(object):
             js_cmd += ' --cert %s --key %s --ca %s' % (cert, key, ca)
         if abort_on_uncaught_exception:
             js_cmd += ' --abort_on_uncaught_exception '
+        if expiration_days:
+            js_cmd += ' --expiration-days %d ' % expiration_days
         if inspect:
             js_cmd = '--debug ' + js_cmd
         if debug:

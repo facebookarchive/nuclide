@@ -278,7 +278,10 @@ class NuclideServerManager(object):
                 quiet=self.options.quiet,
                 debug=self.options.debug,
                 inspect=self.options.inspect,
-                abort_on_uncaught_exception=self.options.dump_core)
+                abort_on_uncaught_exception=self.options.dump_core,
+                # After the server certificate expires, clients won't be able to connect.
+                # Automatically exit to avoid zombie servers.
+                expiration_days=CERTS_EXPIRATION_DAYS + 1)
 
 
 def get_option_parser():
