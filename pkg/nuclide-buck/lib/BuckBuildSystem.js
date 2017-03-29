@@ -424,11 +424,16 @@ export class BuckBuildSystem {
     }
 
     const targetString = getCommandStringForResolvedBuildTarget(buildTarget);
-    const settings = {...taskSettings, ...additionalSettings};
-    const buckService = getBuckServiceByNuclideUri(buckRoot);
+    const settings = {
+      arguments: (taskSettings.arguments || [])
+        .concat(additionalSettings.arguments || []),
+      runArguments: (taskSettings.runArguments || [])
+        .concat(additionalSettings.runArguments || []),
+    };
+    const buildArguments = settings.arguments;
+    const {runArguments} = settings;
 
-    const buildArguments = settings.arguments || [];
-    const runArguments = settings.runArguments || [];
+    const buckService = getBuckServiceByNuclideUri(buckRoot);
 
     return Observable.fromPromise(buckService.getHTTPServerPort(buckRoot))
       .catch(err => {
@@ -448,8 +453,9 @@ export class BuckBuildSystem {
           );
         }
 
-        const args = subcommand === 'run'
-          ? buildArguments.concat(runArguments)
+        const args = runArguments.length > 0 &&
+          (subcommand === 'run' || subcommand === 'install')
+          ? buildArguments.concat(['--']).concat(runArguments)
           : buildArguments;
 
         const processMessages = runBuckCommand(
@@ -505,9 +511,7 @@ export class BuckBuildSystem {
                     buckService,
                     buckRoot,
                     targetString,
-                    // Buck uses '--' to separate arguments for the launched process
-                    // We are launching the process directly here though.
-                    runArguments.filter(arg => arg !== '--'),
+                    runArguments,
                   )
                 : Observable.empty(),
               isDebug && subcommand === 'test'
