@@ -1,3 +1,90 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.FlowProcess = exports.FLOW_RETURN_CODES = undefined;
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+let getAllExecInfo = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (args, root, execInfoContainer, options = {}) {
+    const execInfo = yield execInfoContainer.getFlowExecInfo(root);
+    if (execInfo == null) {
+      return null;
+    }
+    return {
+      args: [...args, '--from', 'nuclide'],
+      options: Object.assign({}, execInfo.execOptions, options),
+      pathToFlow: execInfo.pathToFlow
+    };
+  });
+
+  return function getAllExecInfo(_x, _x2, _x3) {
+    return _ref.apply(this, arguments);
+  };
+})();
+
+var _os = _interopRequireDefault(require('os'));
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _nuclideLogging;
+
+function _load_nuclideLogging() {
+  return _nuclideLogging = require('../../nuclide-logging');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _process;
+
+function _load_process() {
+  return _process = require('../../commons-node/process');
+}
+
+var _promise;
+
+function _load_promise() {
+  return _promise = require('../../commons-node/promise');
+}
+
+var _nice;
+
+function _load_nice() {
+  return _nice = require('../../commons-node/nice');
+}
+
+var _FlowHelpers;
+
+function _load_FlowHelpers() {
+  return _FlowHelpers = require('./FlowHelpers');
+}
+
+var _FlowConstants;
+
+function _load_FlowConstants() {
+  return _FlowConstants = require('./FlowConstants');
+}
+
+var _FlowIDEConnection;
+
+function _load_FlowIDEConnection() {
+  return _FlowIDEConnection = require('./FlowIDEConnection');
+}
+
+var _FlowIDEConnectionWatcher;
+
+function _load_FlowIDEConnectionWatcher() {
+  return _FlowIDEConnectionWatcher = require('./FlowIDEConnectionWatcher');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,41 +92,13 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
 
-import type {AsyncExecuteReturn} from '../../commons-node/process';
-
-import type {ServerStatusType} from '..';
-
-import type {FlowExecInfoContainer} from './FlowExecInfoContainer';
-
-import os from 'os';
-import invariant from 'assert';
-import {BehaviorSubject, Observable} from 'rxjs';
-
-import {getLogger} from '../../nuclide-logging';
-const logger = getLogger();
-
-import {track} from '../../nuclide-analytics';
-
-import {
-  asyncExecute,
-  safeSpawn,
-} from '../../commons-node/process';
-import {sleep} from '../../commons-node/promise';
-import {niceSafeSpawn} from '../../commons-node/nice';
-
-import {
-  getStopFlowOnExit,
-} from './FlowHelpers';
-
-import {ServerStatus} from './FlowConstants';
-import {FlowIDEConnection} from './FlowIDEConnection';
-import {FlowIDEConnectionWatcher} from './FlowIDEConnectionWatcher';
+const logger = (0, (_nuclideLogging || _load_nuclideLogging()).getLogger)();
 
 // Names modeled after https://github.com/facebook/flow/blob/master/src/common/flowExitStatus.ml
-export const FLOW_RETURN_CODES = {
+const FLOW_RETURN_CODES = exports.FLOW_RETURN_CODES = {
   ok: 0,
   serverInitializing: 1,
   typeError: 2,
@@ -48,40 +107,22 @@ export const FLOW_RETURN_CODES = {
   // other work.
   outOfRetries: 7,
   buildIdMismatch: 9,
-  unexpectedArgument: 64,
+  unexpectedArgument: 64
 };
 
 const SERVER_READY_TIMEOUT_MS = 60 * 1000;
 
 const EXEC_FLOW_RETRIES = 5;
 
-const NO_RETRY_ARGS = [
-  '--retry-if-init', 'false',
-  '--retries', '0',
-  '--no-auto-start',
-];
+const NO_RETRY_ARGS = ['--retry-if-init', 'false', '--retries', '0', '--no-auto-start'];
 
-const TEMP_SERVER_STATES: Array<ServerStatusType> = [
-  ServerStatus.NOT_RUNNING,
-  ServerStatus.BUSY,
-  ServerStatus.INIT,
-];
+const TEMP_SERVER_STATES = [(_FlowConstants || _load_FlowConstants()).ServerStatus.NOT_RUNNING, (_FlowConstants || _load_FlowConstants()).ServerStatus.BUSY, (_FlowConstants || _load_FlowConstants()).ServerStatus.INIT];
 
-
-export class FlowProcess {
-  // If we had to start a Flow server, store the process here so we can kill it when we shut down.
-  _startedServer: ?child_process$ChildProcess;
+class FlowProcess {
   // The current state of the Flow server in this directory
-  _serverStatus: BehaviorSubject<ServerStatusType>;
-  // The path to the directory where the .flowconfig is -- i.e. the root of the Flow project.
-  _root: string;
-  _execInfoContainer: FlowExecInfoContainer;
-
-  _ideConnections: Observable<?FlowIDEConnection>;
-
-  constructor(root: string, execInfoContainer: FlowExecInfoContainer) {
+  constructor(root, execInfoContainer) {
     this._execInfoContainer = execInfoContainer;
-    this._serverStatus = new BehaviorSubject(ServerStatus.UNKNOWN);
+    this._serverStatus = new _rxjsBundlesRxMinJs.BehaviorSubject((_FlowConstants || _load_FlowConstants()).ServerStatus.UNKNOWN);
     this._root = root;
 
     this._ideConnections = this._createIDEConnectionStream();
@@ -90,37 +131,33 @@ export class FlowProcess {
       logger.info(`[${status}]: Flow server in ${this._root}`);
     });
 
-    this._serverStatus.filter(x => x === ServerStatus.NOT_RUNNING).subscribe(() => {
+    this._serverStatus.filter(x => x === (_FlowConstants || _load_FlowConstants()).ServerStatus.NOT_RUNNING).subscribe(() => {
       this._startFlowServer();
     });
 
-    this._serverStatus
-      .scan(
-        ({previousState}, nextState) => {
-          // We should start pinging if we move into a temp state
-          const shouldStartPinging =
-              !TEMP_SERVER_STATES.includes(previousState) &&
-              TEMP_SERVER_STATES.includes(nextState);
-          return {
-            shouldStartPinging,
-            previousState: nextState,
-          };
-        },
-        {shouldStartPinging: false, previousState: ServerStatus.UNKNOWN},
-      )
-      .filter(({shouldStartPinging}) => shouldStartPinging)
-      .subscribe(() => {
-        this._pingServer();
-      });
+    this._serverStatus.scan(({ previousState }, nextState) => {
+      // We should start pinging if we move into a temp state
+      const shouldStartPinging = !TEMP_SERVER_STATES.includes(previousState) && TEMP_SERVER_STATES.includes(nextState);
+      return {
+        shouldStartPinging,
+        previousState: nextState
+      };
+    }, { shouldStartPinging: false, previousState: (_FlowConstants || _load_FlowConstants()).ServerStatus.UNKNOWN }).filter(({ shouldStartPinging }) => shouldStartPinging).subscribe(() => {
+      this._pingServer();
+    });
 
-    this._serverStatus.filter(status => status === ServerStatus.FAILED).subscribe(() => {
-      track('flow-server-failed');
+    this._serverStatus.filter(status => status === (_FlowConstants || _load_FlowConstants()).ServerStatus.FAILED).subscribe(() => {
+      (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('flow-server-failed');
     });
   }
+  // The path to the directory where the .flowconfig is -- i.e. the root of the Flow project.
 
-  dispose(): void {
+  // If we had to start a Flow server, store the process here so we can kill it when we shut down.
+
+
+  dispose() {
     this._serverStatus.complete();
-    if (this._startedServer && getStopFlowOnExit()) {
+    if (this._startedServer && (0, (_FlowHelpers || _load_FlowHelpers()).getStopFlowOnExit)()) {
       // The default, SIGTERM, does not reliably kill the flow servers.
       this._startedServer.kill('SIGKILL');
     }
@@ -130,15 +167,15 @@ export class FlowProcess {
    * If the Flow server fails we will not try to restart it again automatically. Calling this
    * method lets us exit that state and retry.
    */
-  allowServerRestart(): void {
-    if (this._serverStatus.getValue() === ServerStatus.FAILED) {
+  allowServerRestart() {
+    if (this._serverStatus.getValue() === (_FlowConstants || _load_FlowConstants()).ServerStatus.FAILED) {
       // We intentionally do not use _setServerStatus because leaving the FAILED state is a
       // special-case that _setServerStatus does not allow.
-      this._serverStatus.next(ServerStatus.UNKNOWN);
+      this._serverStatus.next((_FlowConstants || _load_FlowConstants()).ServerStatus.UNKNOWN);
     }
   }
 
-  getServerStatusUpdates(): Observable<ServerStatusType> {
+  getServerStatusUpdates() {
     return this._serverStatus.asObservable();
   }
 
@@ -146,199 +183,182 @@ export class FlowProcess {
   // will be automatically restarted and the new one will be sent.
   //
   // If the connection dies, `null` will be sent while the next one is being established.
-  getIDEConnections(): Observable<?FlowIDEConnection> {
+  getIDEConnections() {
     return this._ideConnections;
   }
 
-  _createIDEConnectionStream(): Observable<?FlowIDEConnection> {
-    let connectionWatcher: ?FlowIDEConnectionWatcher = null;
-    return Observable.fromEventPattern(
-      // Called when the observable is subscribed to
-      handler => {
-        invariant(connectionWatcher == null);
-        connectionWatcher = new FlowIDEConnectionWatcher(
-          () => this._tryCreateIDEProcess(),
-          handler,
-        );
-        connectionWatcher.start();
-      },
-      // Called when the observable is unsubscribed from
-      () => {
-        invariant(connectionWatcher != null);
-        connectionWatcher.dispose();
-        connectionWatcher = null;
-      },
-    // multicast and store the current connection and immediately deliver it to new subscribers
-    ).publishReplay(1).refCount();
+  _createIDEConnectionStream() {
+    let connectionWatcher = null;
+    return _rxjsBundlesRxMinJs.Observable.fromEventPattern(
+    // Called when the observable is subscribed to
+    handler => {
+      if (!(connectionWatcher == null)) {
+        throw new Error('Invariant violation: "connectionWatcher == null"');
+      }
+
+      connectionWatcher = new (_FlowIDEConnectionWatcher || _load_FlowIDEConnectionWatcher()).FlowIDEConnectionWatcher(() => this._tryCreateIDEProcess(), handler);
+      connectionWatcher.start();
+    },
+    // Called when the observable is unsubscribed from
+    () => {
+      if (!(connectionWatcher != null)) {
+        throw new Error('Invariant violation: "connectionWatcher != null"');
+      }
+
+      connectionWatcher.dispose();
+      connectionWatcher = null;
+    }).publishReplay(1).refCount();
   }
 
-  async _tryCreateIDEProcess(): Promise<?child_process$ChildProcess> {
-    if (!await this._serverIsReady()) {
-      return null;
-    }
-    const allExecInfo = await getAllExecInfo(
-      [
-        'ide',
-        '--protocol', 'very-unstable',
-        ...NO_RETRY_ARGS,
-      ],
-      this._root,
-      this._execInfoContainer,
-    );
-    if (allExecInfo == null) {
-      return null;
-    }
-    const proc = safeSpawn(allExecInfo.pathToFlow, allExecInfo.args, allExecInfo.options);
-    proc.once('exit', (code: ?number, signal: ?string) => {
-      // If it crashes we will get `null` or `undefined`, but that doesn't actually mean that Flow
-      // is not installed.
-      if (code != null) {
-        this._updateServerStatus(code);
+  _tryCreateIDEProcess() {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      if (!(yield _this._serverIsReady())) {
+        return null;
       }
-    });
-    return proc;
+      const allExecInfo = yield getAllExecInfo(['ide', '--protocol', 'very-unstable', ...NO_RETRY_ARGS], _this._root, _this._execInfoContainer);
+      if (allExecInfo == null) {
+        return null;
+      }
+      const proc = (0, (_process || _load_process()).safeSpawn)(allExecInfo.pathToFlow, allExecInfo.args, allExecInfo.options);
+      proc.once('exit', function (code, signal) {
+        // If it crashes we will get `null` or `undefined`, but that doesn't actually mean that Flow
+        // is not installed.
+        if (code != null) {
+          _this._updateServerStatus(code);
+        }
+      });
+      return proc;
+    })();
   }
 
   /**
    * Returns null if Flow cannot be found.
    */
-  async execFlow(
-    args: Array<any>,
-    options: Object,
-    waitForServer?: boolean = false,
-    suppressErrors?: boolean = false,
-  ): Promise<?AsyncExecuteReturn> {
-    const maxRetries = waitForServer ? EXEC_FLOW_RETRIES : 0;
-    if (this._serverStatus.getValue() === ServerStatus.FAILED) {
-      return null;
-    }
-    for (let i = 0; ; i++) {
-      try {
-        // eslint-disable-next-line no-await-in-loop
-        const result = await this._rawExecFlow(
-          args,
-          options,
-        );
-        return result;
-      } catch (e) {
-        const couldRetry = [ServerStatus.NOT_RUNNING, ServerStatus.INIT, ServerStatus.BUSY]
-          .indexOf(this._serverStatus.getValue()) !== -1;
-        if (i < maxRetries && couldRetry) {
-          // eslint-disable-next-line no-await-in-loop
-          await this._serverIsReady();
-          // Then try again.
-        } else {
-          // If it couldn't retry, it means there was a legitimate error. If it could retry, we
-          // don't want to log because it just means the server is busy and we don't want to wait.
-          if (!couldRetry && !suppressErrors) {
-            // not sure what happened, but we'll let the caller deal with it
-            logger.error(`Flow failed: flow ${args.join(' ')}. Error: ${JSON.stringify(e)}`);
-          }
-          throw e;
-        }
-        // try again
+  execFlow(args, options, waitForServer = false, suppressErrors = false) {
+    var _this2 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const maxRetries = waitForServer ? EXEC_FLOW_RETRIES : 0;
+      if (_this2._serverStatus.getValue() === (_FlowConstants || _load_FlowConstants()).ServerStatus.FAILED) {
+        return null;
       }
-    }
+      for (let i = 0;; i++) {
+        try {
+          // eslint-disable-next-line no-await-in-loop
+          const result = yield _this2._rawExecFlow(args, options);
+          return result;
+        } catch (e) {
+          const couldRetry = [(_FlowConstants || _load_FlowConstants()).ServerStatus.NOT_RUNNING, (_FlowConstants || _load_FlowConstants()).ServerStatus.INIT, (_FlowConstants || _load_FlowConstants()).ServerStatus.BUSY].indexOf(_this2._serverStatus.getValue()) !== -1;
+          if (i < maxRetries && couldRetry) {
+            // eslint-disable-next-line no-await-in-loop
+            yield _this2._serverIsReady();
+            // Then try again.
+          } else {
+            // If it couldn't retry, it means there was a legitimate error. If it could retry, we
+            // don't want to log because it just means the server is busy and we don't want to wait.
+            if (!couldRetry && !suppressErrors) {
+              // not sure what happened, but we'll let the caller deal with it
+              logger.error(`Flow failed: flow ${args.join(' ')}. Error: ${JSON.stringify(e)}`);
+            }
+            throw e;
+          }
+          // try again
+        }
+      }
+    })();
   }
 
   /** Starts a Flow server in the current root */
-  async _startFlowServer(): Promise<void> {
-    const flowExecInfo = await this._execInfoContainer.getFlowExecInfo(this._root);
-    if (flowExecInfo == null) {
-      // This should not happen in normal use. If Flow is not installed we should have caught it by
-      // now.
-      logger.error(`Could not find Flow to start server in ${this._root}`);
-      this._setServerStatus(ServerStatus.NOT_INSTALLED);
-      return;
-    }
-    // `flow server` will start a server in the foreground. asyncExecute
-    // will not resolve the promise until the process exits, which in this
-    // case is never. We need to use spawn directly to get access to the
-    // ChildProcess object.
-    // eslint-disable-next-line no-await-in-loop
-    const serverProcess = await niceSafeSpawn(
-      flowExecInfo.pathToFlow,
-      [
-        'server',
-        '--from', 'nuclide',
-        '--max-workers', this._getMaxWorkers().toString(),
-        this._root,
-      ],
-      flowExecInfo.execOptions,
-    );
-    const logIt = data => {
-      const pid = serverProcess.pid;
-      logger.debug(`flow server (${pid}): ${data}`);
-    };
-    serverProcess.stdout.on('data', logIt);
-    serverProcess.stderr.on('data', logIt);
-    serverProcess.on('exit', (code, signal) => {
-      // We only want to blacklist this root if the Flow processes
-      // actually failed, rather than being killed manually. It seems that
-      // if they are killed, the code is null and the signal is 'SIGTERM'.
-      // In the Flow crashes I have observed, the code is 2 and the signal
-      // is null. So, let's blacklist conservatively for now and we can
-      // add cases later if we observe Flow crashes that do not fit this
-      // pattern.
-      if (code === 2 && signal === null) {
-        logger.error('Flow server unexpectedly exited', this._root);
-        this._setServerStatus(ServerStatus.FAILED);
+  _startFlowServer() {
+    var _this3 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const flowExecInfo = yield _this3._execInfoContainer.getFlowExecInfo(_this3._root);
+      if (flowExecInfo == null) {
+        // This should not happen in normal use. If Flow is not installed we should have caught it by
+        // now.
+        logger.error(`Could not find Flow to start server in ${_this3._root}`);
+        _this3._setServerStatus((_FlowConstants || _load_FlowConstants()).ServerStatus.NOT_INSTALLED);
+        return;
       }
-    });
-    this._startedServer = serverProcess;
+      // `flow server` will start a server in the foreground. asyncExecute
+      // will not resolve the promise until the process exits, which in this
+      // case is never. We need to use spawn directly to get access to the
+      // ChildProcess object.
+      // eslint-disable-next-line no-await-in-loop
+      const serverProcess = yield (0, (_nice || _load_nice()).niceSafeSpawn)(flowExecInfo.pathToFlow, ['server', '--from', 'nuclide', '--max-workers', _this3._getMaxWorkers().toString(), _this3._root], flowExecInfo.execOptions);
+      const logIt = function (data) {
+        const pid = serverProcess.pid;
+        logger.debug(`flow server (${pid}): ${data}`);
+      };
+      serverProcess.stdout.on('data', logIt);
+      serverProcess.stderr.on('data', logIt);
+      serverProcess.on('exit', function (code, signal) {
+        // We only want to blacklist this root if the Flow processes
+        // actually failed, rather than being killed manually. It seems that
+        // if they are killed, the code is null and the signal is 'SIGTERM'.
+        // In the Flow crashes I have observed, the code is 2 and the signal
+        // is null. So, let's blacklist conservatively for now and we can
+        // add cases later if we observe Flow crashes that do not fit this
+        // pattern.
+        if (code === 2 && signal === null) {
+          logger.error('Flow server unexpectedly exited', _this3._root);
+          _this3._setServerStatus((_FlowConstants || _load_FlowConstants()).ServerStatus.FAILED);
+        }
+      });
+      _this3._startedServer = serverProcess;
+    })();
   }
 
   /** Execute Flow with the given arguments */
-  async _rawExecFlow(args_: Array<any>, options?: Object = {}): Promise<?AsyncExecuteReturn> {
-    let args = args_;
-    args = [
-      ...args,
-      ...NO_RETRY_ARGS,
-    ];
-    try {
-      const result = await FlowProcess.execFlowClient(
-        args,
-        this._root,
-        this._execInfoContainer,
-        options,
-      );
-      this._updateServerStatus(result != null ? result.exitCode : null);
-      return result;
-    } catch (e) {
-      this._updateServerStatus(e != null ? e.exitCode : null);
-      if (e.exitCode === FLOW_RETURN_CODES.typeError) {
-        return e;
-      } else {
-        throw e;
+  _rawExecFlow(args_, options = {}) {
+    var _this4 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      let args = args_;
+      args = [...args, ...NO_RETRY_ARGS];
+      try {
+        const result = yield FlowProcess.execFlowClient(args, _this4._root, _this4._execInfoContainer, options);
+        _this4._updateServerStatus(result != null ? result.exitCode : null);
+        return result;
+      } catch (e) {
+        _this4._updateServerStatus(e != null ? e.exitCode : null);
+        if (e.exitCode === FLOW_RETURN_CODES.typeError) {
+          return e;
+        } else {
+          throw e;
+        }
       }
-    }
+    })();
   }
 
-  _updateServerStatus(exitCode: ?number): void {
+  _updateServerStatus(exitCode) {
     let status;
     if (exitCode == null) {
-      status = ServerStatus.NOT_INSTALLED;
+      status = (_FlowConstants || _load_FlowConstants()).ServerStatus.NOT_INSTALLED;
     } else {
       switch (exitCode) {
         case FLOW_RETURN_CODES.ok:
-          // falls through
+        // falls through
         case FLOW_RETURN_CODES.typeError:
-          status = ServerStatus.READY;
+          status = (_FlowConstants || _load_FlowConstants()).ServerStatus.READY;
           break;
         case FLOW_RETURN_CODES.serverInitializing:
-          status = ServerStatus.INIT;
+          status = (_FlowConstants || _load_FlowConstants()).ServerStatus.INIT;
           break;
         case FLOW_RETURN_CODES.noServerRunning:
-          status = ServerStatus.NOT_RUNNING;
+          status = (_FlowConstants || _load_FlowConstants()).ServerStatus.NOT_RUNNING;
           break;
         case FLOW_RETURN_CODES.outOfRetries:
-          status = ServerStatus.BUSY;
+          status = (_FlowConstants || _load_FlowConstants()).ServerStatus.BUSY;
           break;
         case FLOW_RETURN_CODES.buildIdMismatch:
           // If the version doesn't match, the server is automatically killed and the client
           // returns 9.
           logger.info('Killed flow server with incorrect version in', this._root);
-          status = ServerStatus.NOT_RUNNING;
+          status = (_FlowConstants || _load_FlowConstants()).ServerStatus.NOT_RUNNING;
           break;
         case FLOW_RETURN_CODES.unexpectedArgument:
           // If we issued an unexpected argument we have learned nothing about the state of the Flow
@@ -346,44 +366,46 @@ export class FlowProcess {
           return;
         default:
           logger.error(`Unknown return code from Flow: ${String(exitCode)}`);
-          status = ServerStatus.UNKNOWN;
+          status = (_FlowConstants || _load_FlowConstants()).ServerStatus.UNKNOWN;
       }
     }
     this._setServerStatus(status);
   }
 
-  _setServerStatus(status: ServerStatusType): void {
+  _setServerStatus(status) {
     const currentStatus = this._serverStatus.getValue();
     if (
-        // Avoid duplicate updates
-        status !== currentStatus &&
-        // Avoid moving the status away from FAILED, to let any existing  work die out when the
-        // server fails.
-        currentStatus !== ServerStatus.FAILED
-      ) {
+    // Avoid duplicate updates
+    status !== currentStatus &&
+    // Avoid moving the status away from FAILED, to let any existing  work die out when the
+    // server fails.
+    currentStatus !== (_FlowConstants || _load_FlowConstants()).ServerStatus.FAILED) {
       this._serverStatus.next(status);
     }
   }
 
   /** Ping the server until it reaches a steady state */
-  async _pingServer(): Promise<void> {
-    let hasReachedSteadyState = false;
-    this._serverStatus
-      .filter(state => !TEMP_SERVER_STATES.includes(state))
-      .take(1)
-      .subscribe(() => {
+  _pingServer() {
+    var _this5 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      let hasReachedSteadyState = false;
+      _this5._serverStatus.filter(function (state) {
+        return !TEMP_SERVER_STATES.includes(state);
+      }).take(1).subscribe(function () {
         hasReachedSteadyState = true;
       });
-    while (!hasReachedSteadyState) {
-      // eslint-disable-next-line no-await-in-loop
-      await this._pingServerOnce();
-      // Wait 1 second
-      // eslint-disable-next-line no-await-in-loop
-      await sleep(1000);
-    }
+      while (!hasReachedSteadyState) {
+        // eslint-disable-next-line no-await-in-loop
+        yield _this5._pingServerOnce();
+        // Wait 1 second
+        // eslint-disable-next-line no-await-in-loop
+        yield (0, (_promise || _load_promise()).sleep)(1000);
+      }
+    })();
   }
 
-  _pingServerOnce(): Promise<void> {
+  _pingServerOnce() {
     return this._rawExecFlow(['status']).catch(() => null);
   }
 
@@ -391,25 +413,21 @@ export class FlowProcess {
    * Resolves when the server is ready or the request times out, as indicated by the result of the
    * returned Promise.
    */
-  _serverIsReady(): Promise<boolean> {
+  _serverIsReady() {
     // If the server state is unknown, nobody has tried to do anything flow-related yet. However,
     // the call to _serverIsReady() implies that somebody wants to. So, kick off a Flow server ping
     // which will learn the state of the Flow server and start it up if needed.
-    if (this._serverStatus.getValue() === ServerStatus.UNKNOWN) {
+    if (this._serverStatus.getValue() === (_FlowConstants || _load_FlowConstants()).ServerStatus.UNKNOWN) {
       this._pingServerOnce();
     }
-    return this._serverStatus
-      .filter(x => x === ServerStatus.READY)
-      .map(() => true)
-      .race(Observable.of(false).delay(SERVER_READY_TIMEOUT_MS))
-      // If the stream is completed timeout will not return its default value and we will see an
-      // EmptyError. So, provide a defaultValue here so the promise resolves.
-      .first(null, null, false)
-      .toPromise();
+    return this._serverStatus.filter(x => x === (_FlowConstants || _load_FlowConstants()).ServerStatus.READY).map(() => true).race(_rxjsBundlesRxMinJs.Observable.of(false).delay(SERVER_READY_TIMEOUT_MS))
+    // If the stream is completed timeout will not return its default value and we will see an
+    // EmptyError. So, provide a defaultValue here so the promise resolves.
+    .first(null, null, false).toPromise();
   }
 
-  _getMaxWorkers(): number {
-    return Math.max(os.cpus().length - 2, 1);
+  _getMaxWorkers() {
+    return Math.max(_os.default.cpus().length - 2, 1);
   }
 
   /**
@@ -422,50 +440,20 @@ export class FlowProcess {
    * any given root. If you need this property, create an instance with the appropriate root and use
    * execFlow.
    */
-  static async execFlowClient(
-    args: Array<any>,
-    root: string | null,
-    execInfoContainer: FlowExecInfoContainer,
-    options: Object = {},
-  ): Promise<?AsyncExecuteReturn> {
-    const allExecInfo = await getAllExecInfo(args, root, execInfoContainer, options);
-    if (allExecInfo == null) {
-      return null;
-    }
-    const ret = await asyncExecute(allExecInfo.pathToFlow, allExecInfo.args, allExecInfo.options);
-    if (ret.exitCode !== 0) {
-      // TODO: bubble up the exit code via return value instead
-      throw ret;
-    }
-    return ret;
+  static execFlowClient(args, root, execInfoContainer, options = {}) {
+    return (0, _asyncToGenerator.default)(function* () {
+      const allExecInfo = yield getAllExecInfo(args, root, execInfoContainer, options);
+      if (allExecInfo == null) {
+        return null;
+      }
+      const ret = yield (0, (_process || _load_process()).asyncExecute)(allExecInfo.pathToFlow, allExecInfo.args, allExecInfo.options);
+      if (ret.exitCode !== 0) {
+        // TODO: bubble up the exit code via return value instead
+        throw ret;
+      }
+      return ret;
+    })();
   }
 }
 
-type AllExecInfo = {
-  args: Array<any>,
-  options: Object,
-  pathToFlow: string,
-};
-
-async function getAllExecInfo(
-  args: Array<any>,
-  root: string | null,
-  execInfoContainer: FlowExecInfoContainer,
-  options: Object = {},
-): Promise<?AllExecInfo> {
-  const execInfo = await execInfoContainer.getFlowExecInfo(root);
-  if (execInfo == null) {
-    return null;
-  }
-  return {
-    args: [
-      ...args,
-      '--from', 'nuclide',
-    ],
-    options: {
-      ...execInfo.execOptions,
-      ...options,
-    },
-    pathToFlow: execInfo.pathToFlow,
-  };
-}
+exports.FlowProcess = FlowProcess;

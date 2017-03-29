@@ -1,3 +1,49 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _react = _interopRequireDefault(require('react'));
+
+var _shellQuote;
+
+function _load_shellQuote() {
+  return _shellQuote = require('shell-quote');
+}
+
+var _string;
+
+function _load_string() {
+  return _string = require('../../../commons-node/string');
+}
+
+var _AtomInput;
+
+function _load_AtomInput() {
+  return _AtomInput = require('../../../nuclide-ui/AtomInput');
+}
+
+var _Button;
+
+function _load_Button() {
+  return _Button = require('../../../nuclide-ui/Button');
+}
+
+var _ButtonGroup;
+
+function _load_ButtonGroup() {
+  return _ButtonGroup = require('../../../nuclide-ui/ButtonGroup');
+}
+
+var _Modal;
+
+function _load_Modal() {
+  return _Modal = require('../../../nuclide-ui/Modal');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,111 +51,114 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
 
-import type {TaskSettings} from '../types';
+class BuckToolbarSettings extends _react.default.Component {
 
-import React from 'react';
-import {quote} from 'shell-quote';
-
-import {shellParse} from '../../../commons-node/string';
-import {AtomInput} from '../../../nuclide-ui/AtomInput';
-import {Button, ButtonTypes} from '../../../nuclide-ui/Button';
-import {ButtonGroup} from '../../../nuclide-ui/ButtonGroup';
-import {Modal} from '../../../nuclide-ui/Modal';
-
-type Props = {
-  currentBuckRoot: ?string,
-  settings: TaskSettings,
-  onDismiss: () => void,
-  onSave: (settings: TaskSettings) => void,
-};
-
-type State = {
-  arguments: string,
-  runArguments: string,
-};
-
-export default class BuckToolbarSettings extends React.Component {
-  props: Props;
-  state: State;
-
-  constructor(props: Props) {
+  constructor(props) {
     super(props);
-    const {arguments: args, runArguments} = props.settings;
+    const { arguments: args, runArguments } = props.settings;
     this.state = {
-      arguments: args == null ? '' : quote(args),
-      runArguments: runArguments == null ? '' : quote(runArguments),
+      arguments: args == null ? '' : (0, (_shellQuote || _load_shellQuote()).quote)(args),
+      runArguments: runArguments == null ? '' : (0, (_shellQuote || _load_shellQuote()).quote)(runArguments)
     };
   }
 
-  render(): React.Element<any> {
-    return (
-      <Modal onDismiss={this.props.onDismiss}>
-        <div className="block">
-          <div className="block">
-            <label>Current Buck root:</label>
-            <p>
-              <code>
-                {this.props.currentBuckRoot || 'No Buck project found.'}
-              </code>
-            </p>
-            <label>Buck Arguments:</label>
-            <AtomInput
-              tabIndex="0"
-              initialValue={this.state.arguments}
-              placeholderText="Extra arguments to Buck (e.g. --num-threads 4)"
-              onDidChange={this._onArgsChange.bind(this)}
-              onConfirm={this._onSave.bind(this)}
-            />
-            <div>
-              <label>Run Arguments:</label>
-              <AtomInput
-                tabIndex="0"
-                initialValue={this.state.runArguments}
-                placeholderText="Custom command-line arguments to pass to the app/binary"
-                onDidChange={this._onRunArgsChange.bind(this)}
-                onConfirm={this._onSave.bind(this)}
-              />
-            </div>
-          </div>
-          <div style={{display: 'flex', justifyContent: 'flex-end'}}>
-            <ButtonGroup>
-              <Button onClick={this.props.onDismiss}>
-                Cancel
-              </Button>
-              <Button
-                buttonType={ButtonTypes.PRIMARY}
-                onClick={this._onSave.bind(this)}>
-                Save
-              </Button>
-            </ButtonGroup>
-          </div>
-        </div>
-      </Modal>
+  render() {
+    return _react.default.createElement(
+      (_Modal || _load_Modal()).Modal,
+      { onDismiss: this.props.onDismiss },
+      _react.default.createElement(
+        'div',
+        { className: 'block' },
+        _react.default.createElement(
+          'div',
+          { className: 'block' },
+          _react.default.createElement(
+            'label',
+            null,
+            'Current Buck root:'
+          ),
+          _react.default.createElement(
+            'p',
+            null,
+            _react.default.createElement(
+              'code',
+              null,
+              this.props.currentBuckRoot || 'No Buck project found.'
+            )
+          ),
+          _react.default.createElement(
+            'label',
+            null,
+            'Buck Arguments:'
+          ),
+          _react.default.createElement((_AtomInput || _load_AtomInput()).AtomInput, {
+            tabIndex: '0',
+            initialValue: this.state.arguments,
+            placeholderText: 'Extra arguments to Buck (e.g. --num-threads 4)',
+            onDidChange: this._onArgsChange.bind(this),
+            onConfirm: this._onSave.bind(this)
+          }),
+          _react.default.createElement(
+            'div',
+            null,
+            _react.default.createElement(
+              'label',
+              null,
+              'Run Arguments:'
+            ),
+            _react.default.createElement((_AtomInput || _load_AtomInput()).AtomInput, {
+              tabIndex: '0',
+              initialValue: this.state.runArguments,
+              placeholderText: 'Custom command-line arguments to pass to the app/binary',
+              onDidChange: this._onRunArgsChange.bind(this),
+              onConfirm: this._onSave.bind(this)
+            })
+          )
+        ),
+        _react.default.createElement(
+          'div',
+          { style: { display: 'flex', justifyContent: 'flex-end' } },
+          _react.default.createElement(
+            (_ButtonGroup || _load_ButtonGroup()).ButtonGroup,
+            null,
+            _react.default.createElement(
+              (_Button || _load_Button()).Button,
+              { onClick: this.props.onDismiss },
+              'Cancel'
+            ),
+            _react.default.createElement(
+              (_Button || _load_Button()).Button,
+              {
+                buttonType: (_Button || _load_Button()).ButtonTypes.PRIMARY,
+                onClick: this._onSave.bind(this) },
+              'Save'
+            )
+          )
+        )
+      )
     );
   }
 
-  _onArgsChange(args: string) {
-    this.setState({arguments: args});
+  _onArgsChange(args) {
+    this.setState({ arguments: args });
   }
 
-  _onRunArgsChange(args: string) {
-    this.setState({runArguments: args});
+  _onRunArgsChange(args) {
+    this.setState({ runArguments: args });
   }
 
   _onSave() {
     try {
       this.props.onSave({
-        arguments: shellParse(this.state.arguments),
-        runArguments: shellParse(this.state.runArguments),
+        arguments: (0, (_string || _load_string()).shellParse)(this.state.arguments),
+        runArguments: (0, (_string || _load_string()).shellParse)(this.state.runArguments)
       });
     } catch (err) {
-      atom.notifications.addError(
-        'Could not parse arguments',
-        {detail: err.stack},
-      );
+      atom.notifications.addError('Could not parse arguments', { detail: err.stack });
     }
   }
 }
+exports.default = BuckToolbarSettings;

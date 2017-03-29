@@ -1,19 +1,20 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import type {BookmarkInfo} from '../../nuclide-hg-rpc/lib/HgService';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = bookmarkIsEqual;
+
 
 // Returns true if the given bookmarks are not void and are deeply equal.
-export default function bookmarkIsEqual(a: ?BookmarkInfo, b: ?BookmarkInfo) {
-  return a != null
-    && b != null
-    && a.rev === b.rev
-    && a.bookmark === b.bookmark;
-}
+function bookmarkIsEqual(a, b) {
+  return a != null && b != null && a.rev === b.rev && a.bookmark === b.bookmark;
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   */
