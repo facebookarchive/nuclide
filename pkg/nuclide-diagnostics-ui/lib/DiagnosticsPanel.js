@@ -95,7 +95,7 @@ export default class DiagnosticsPanel extends React.Component {
     const warningSpanClassName = `inline-block ${warningCount > 0 ? 'text-warning' : ''}`;
 
     return (
-      <div style={{display: 'flex', flex: 1, flexDirection: 'column'}}>
+      <div style={{display: 'flex', flex: 1, flexDirection: 'column', width: '100%'}}>
         {linterWarning}
         <Toolbar location="top">
           <ToolbarLeft>
