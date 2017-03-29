@@ -121,6 +121,8 @@ export const RevertibleStatusCodes = [
   FileChangeStatus.REMOVED,
 ];
 
+export const DIFF_EDITOR_MARKER_CLASS = 'nuclide-diff-editor-marker';
+
 export function getDirtyFileChanges(
   repository: HgRepositoryClient,
 ): Map<NuclideUri, FileChangeStatusValue> {

@@ -46,9 +46,7 @@ import {
   enforceSoftWrap,
 } from '../../../commons-atom/text-editor';
 import {goToLocation} from '../../../commons-atom/go-to-location';
-import {
-  DIFF_EDITOR_MARKER_CLASS,
-} from '../constants';
+import {DIFF_EDITOR_MARKER_CLASS} from '../../../commons-atom/vcs';
 import {
   LoadingSpinner,
   LoadingSpinnerSizes,

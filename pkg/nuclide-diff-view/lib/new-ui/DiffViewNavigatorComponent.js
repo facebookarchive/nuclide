@@ -21,10 +21,8 @@ import {
   ResizableFlexContainer,
   ResizableFlexItem,
 } from '../../../nuclide-ui/ResizableFlexContainer';
-import {
-  DiffMode,
-  DIFF_EDITOR_MARKER_CLASS,
-} from '../constants';
+import {DiffMode} from '../constants';
+import {DIFF_EDITOR_MARKER_CLASS} from '../../../commons-atom/vcs';
 import React from 'react';
 import {
   centerScrollToBufferLine,

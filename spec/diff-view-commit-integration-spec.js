@@ -15,8 +15,7 @@ import {
   jasmineIntegrationTestSetup,
   deactivateAllPackages,
 } from './utils/integration-test-helpers';
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {DIFF_EDITOR_MARKER_CLASS} from '../pkg/nuclide-diff-view/lib/constants';
+import {DIFF_EDITOR_MARKER_CLASS} from '../pkg/commons-atom/vcs';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {NUCLIDE_DIFF_LOADING_INDICATOR_CLASSNAME}
   from '../pkg/nuclide-diff-view/lib/new-ui/SplitDiffView';
