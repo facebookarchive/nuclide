@@ -15,7 +15,7 @@ import type {PackagerEvent} from './types';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {LogTailer} from '../../../nuclide-console/lib/LogTailer';
 import {getCommandInfo} from '../../../nuclide-react-native-base';
-import {observeProcess, safeSpawn, exitEventToMessage} from '../../../commons-node/process';
+import {observeProcess, safeSpawn} from '../../../commons-node/process';
 import {parseMessages} from './parseMessages';
 import {CompositeDisposable, Disposable} from 'atom';
 import invariant from 'assert';
@@ -183,7 +183,15 @@ function getPackagerObservable(projectRootPath: ?string): Observable<PackagerEve
           return Observable.of(event.data);
         case 'exit':
           if (event.exitCode !== 0) {
-            return Observable.throw(new PackagerError(exitEventToMessage(event), stderr));
+            // Completely ignore EADDRINUSE errors since the packager is probably already running.
+            if (!stderr.includes('Error: listen EADDRINUSE :::8081')) {
+              atom.notifications.addWarning(
+                'Packager failed to start - continuing anyway.', {
+                  dismissable: true,
+                  detail: stderr.trim() === '' ? undefined : stderr,
+                },
+              );
+            }
           }
           return Observable.empty();
         case 'stderr':
