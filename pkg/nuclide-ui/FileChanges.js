@@ -68,7 +68,7 @@ const GutterElement = (props: {
   );
 };
 
-class HunkDiff extends React.Component {
+export class HunkDiff extends React.Component {
   props: HunkProps;
   _disposables: UniversalDisposable;
   _checkboxGutter: ?atom$Gutter;
@@ -87,6 +87,31 @@ class HunkDiff extends React.Component {
 
   componentDidUpdate(): void {
     this._updateCheckboxGutter(this.refs.editor.getModel());
+  }
+
+  componentWillReceiveProps(nextProps: HunkProps): void {
+    const {
+      hunk,
+      grammar,
+    } = nextProps;
+    const changes = hunk.changes;
+    const prevHunk = this.props.hunk;
+    const editor = this.refs.editor.getModel();
+
+    const newText = changes.map(change => change.content.slice(1)).join('\n');
+    const oldText =
+      prevHunk.changes.map(change => change.content.slice(1)).join('\n');
+    const oldGrammar = this.props.grammar;
+
+    if (newText !== oldText) {
+      editor.setText(newText);
+    }
+    if (grammar !== oldGrammar) {
+      editor.setGrammar(grammar);
+    }
+    this._disposables.dispose();
+    this._disposables = new UniversalDisposable();
+    this._createLineMarkers(this.refs.editor.getModel());
   }
 
   shouldComponentUpdate(nextProps: HunkProps): boolean {
