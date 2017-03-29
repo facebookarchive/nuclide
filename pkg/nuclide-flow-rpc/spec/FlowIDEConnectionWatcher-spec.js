@@ -22,6 +22,7 @@ describe('FlowIDEConnectionWatcher', () => {
 
   let ideConnectionFactory: JasmineSpy = (null: any);
   let currentFakeIDEConnection: ?{[string]: JasmineSpy} = null;
+  let createFakeIDEConnection: () => FlowIDEConnection = (null: any);
 
   let watcher: FlowIDEConnectionWatcher = (null: any);
 
@@ -50,14 +51,13 @@ describe('FlowIDEConnectionWatcher', () => {
     return promise;
   };
 
-  function createFakeIDEConnection(): FlowIDEConnection {
-    return (jasmine.createSpyObj('FlowIDEconnection', [
-      'onWillDispose',
-      'dispose',
-    ]): any);
-  }
-
   beforeEach(() => {
+    createFakeIDEConnection = () => {
+      return (jasmine.createSpyObj('FlowIDEconnection', [
+        'onWillDispose',
+        'dispose',
+      ]): any);
+    };
     processFactory = jasmine.createSpy('processFactory').andCallFake(() => processFactoryReturn);
     // We can use a stub value here because it's just passed through to the ideConnectionFactory
     processFactoryReturn = Promise.resolve(({}: any));
@@ -168,6 +168,59 @@ describe('FlowIDEConnectionWatcher', () => {
 
       await new Promise(resolve => setImmediate(resolve));
       expect(processFactory.callCount).toBe(2);
+    });
+  });
+
+  it('should give up after too many unhealthy connections', () => {
+    createFakeIDEConnection = () => {
+      const spy = jasmine.createSpyObj('FlowIDEconnection', [
+        'onWillDispose',
+        'dispose',
+      ]);
+      spy.onWillDispose = spy.onWillDispose.andCallFake(cb => { cb(); });
+      return (spy: any);
+    };
+    runs(() => {
+      watcher.start();
+    });
+
+    // After 20 unhealthy connections it should just give up entirely. Each connection leads to two
+    // callbacks, since it calls the callback for the connection itself and then with `null` to
+    // indicate that it has died.
+    waitsFor(() => ideConnectionCallback.callCount === 40);
+    waitsForPromise(async () => {
+      // Check again in a short while to make sure we haven't caught an intermediate state
+      await new Promise(setImmediate);
+      expect(ideConnectionCallback.callCount).toBe(40);
+    });
+  });
+
+  it('should only give up after too many *consecutive* unhealthy connections', () => {
+    let createCount = 0;
+    createFakeIDEConnection = () => {
+      const spy = jasmine.createSpyObj('FlowIDEconnection', [
+        'onWillDispose',
+        'dispose',
+      ]);
+      spy.onWillDispose = spy.onWillDispose.andCallFake(cb => {
+        if (createCount === 5) {
+          // This will cause this one to be marked as healthy, since it survived for long enough.
+          tick(11000);
+        }
+        createCount++;
+        cb();
+      });
+      return (spy: any);
+    };
+    runs(() => {
+      watcher.start();
+    });
+
+    waitsFor(() => ideConnectionCallback.callCount === 52);
+    waitsForPromise(async () => {
+      // Check again in a short while to make sure we haven't caught an intermediate state
+      await new Promise(setImmediate);
+      expect(ideConnectionCallback.callCount).toBe(52);
     });
   });
 });

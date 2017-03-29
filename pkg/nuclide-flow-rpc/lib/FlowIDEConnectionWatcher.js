@@ -22,6 +22,13 @@ const IDE_CONNECTION_MAX_WAIT_MS = 20 /* min */ * 60 /* s/min */ * 1000 /* ms/s 
 
 const IDE_CONNECTION_MIN_INTERVAL_MS = 1000;
 
+// If a connection lives shorter than this, it is considered unhealthy (it probably crashed
+// immediately for whatever reason)
+const IDE_CONNECTION_HEALTHY_THRESHOLD_MS = 10 * 1000;
+
+// If we get this many unhealthy connections in a row, give up.
+const MAX_UNHEALTHY_CONNECTIONS = 20;
+
 // For the lifetime of this class instance, keep a FlowIDEConnection alive, assuming we do not have
 // too many failures in a row.
 export class FlowIDEConnectionWatcher {
@@ -31,6 +38,7 @@ export class FlowIDEConnectionWatcher {
 
   _currentIDEConnection: ?FlowIDEConnection;
   _currentIDEConnectionSubscription: ?IDisposable;
+  _consecutiveUnhealthyConnections: number;
 
   _isStarted: boolean;
   _isDisposed: boolean;
@@ -44,8 +52,12 @@ export class FlowIDEConnectionWatcher {
   ) {
     this._processFactory = processFactory;
     this._ideConnectionFactory = ideConnectionFactory;
-    this._currentIDEConnection = null;
     this._ideConnectionCallback = ideConnectionCallback;
+
+    this._currentIDEConnection = null;
+    this._currentIDEConnectionSubscription = null;
+    this._consecutiveUnhealthyConnections = 0;
+
     this._isDisposed = false;
     this._isStarted = false;
   }
@@ -92,11 +104,22 @@ export class FlowIDEConnectionWatcher {
       getLogger().error('Failed to start Flow IDE connection too many times... giving up');
       return;
     }
+    const connectionStartTime = this._getTimeMS();
     const ideConnection = this._ideConnectionFactory(proc);
     this._ideConnectionCallback(ideConnection);
     this._currentIDEConnectionSubscription = ideConnection.onWillDispose(
       () => {
         this._ideConnectionCallback(null);
+        const connectionAliveTime = this._getTimeMS() - connectionStartTime;
+        if (connectionAliveTime < IDE_CONNECTION_HEALTHY_THRESHOLD_MS) {
+          this._consecutiveUnhealthyConnections++;
+          if (this._consecutiveUnhealthyConnections >= MAX_UNHEALTHY_CONNECTIONS) {
+            getLogger().error('Too many consecutive unhealthy Flow IDE connections... giving up');
+            return;
+          }
+        } else {
+          this._consecutiveUnhealthyConnections = 0;
+        }
         this._makeIDEConnection();
       },
     );
