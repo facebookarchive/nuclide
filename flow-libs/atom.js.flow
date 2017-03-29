@@ -1785,6 +1785,12 @@ type atom$AutocompleteProvider = {
   excludeLowerPriority?: boolean,
 };
 
+type atom$SuggestionInsertedRequest = {
+  editor: atom$TextEditor,
+  triggerPosition: atom$Point,
+  suggestion: atom$AutocompleteSuggestion,
+};
+
 // Undocumented API.
 declare class atom$Token {
   value: string,
