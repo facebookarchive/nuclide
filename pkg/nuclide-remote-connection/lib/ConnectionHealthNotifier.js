@@ -132,8 +132,6 @@ export class ConnectionHealthNotifier {
                 'Please reload Atom to restore your remote project connection.',
                 /* dismissable */ true,
                 /* askToReload */ true);
-            // TODO(most) reconnect ServerConnection, restore the current project state,
-            // and finally change dismissable to false and type to 'WARNING'.
           break;
         case 'PORT_NOT_ACCESSIBLE':
             // Notify never heard a heartbeat from the server.
@@ -148,14 +146,14 @@ export class ConnectionHealthNotifier {
             // Notify the client certificate is not accepted by nuclide server
             // (certificate mismatch).
           addHeartbeatNotification(HEARTBEAT_NOTIFICATION_ERROR, code,
-                '**Connection Reset Error**<br/>' +
-                'This could be caused by the client certificate mismatching the ' +
-                  'server certificate.<br/>' +
+                '**Certificate Expired**<br/>' +
+                // The expiration date should be synced with
+                // nuclide-server/scripts/nuclide_server_manager.py.
+                'The Nuclide server certificate has most likely expired.<br>' +
+                'For your security, certificates automatically expire after 14 days.<br>' +
                 'Please reload Atom to restore your remote project connection.',
                 /* dismissable */ true,
                 /* askToReload */ true);
-            // TODO(most): reconnect ServerConnection, restore the current project state.
-            // and finally change dismissable to false and type to 'WARNING'.
           break;
         default:
           notifyNetworkAway(code);

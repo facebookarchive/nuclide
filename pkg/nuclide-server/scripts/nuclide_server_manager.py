@@ -43,7 +43,7 @@ SEMVERISH_RE = re.compile(r'^(\d+)\.(\d+)\.(\d+)(?:-([a-z0-9.-]+))?$')
 
 # Certificates store is ~/.certs
 CERTS_DIR = os.path.join(HOME_FOLDER, '.certs')
-CERTS_EXPIRATION_DAYS = 7
+CERTS_EXPIRATION_DAYS = 14
 
 # Default core dump location on Linux machines.
 CORE_DUMP_PATH = '/var/tmp/cores'
