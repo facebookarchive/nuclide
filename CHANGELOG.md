@@ -1,5 +1,12 @@
 # Nuclide Changelog
 
+## v0.213.0
+
+### Hotfixes from 0.212.0
+
+* Fixed odd stretching behavior of some panels (Diagnostics, Conflict Resolver)
+* Properly deserialize timestamps in console
+
 ## v0.212.0
 
 ### GENERAL
