@@ -8,6 +8,8 @@
  * @flow
  */
 
+import type {DatatipService} from './types';
+
 import invariant from 'assert';
 
 import {DatatipManager} from './DatatipManager';
@@ -20,7 +22,7 @@ export function activate(state: ?any): void {
   }
 }
 
-export function provideDatatipService(): DatatipManager {
+export function provideDatatipService(): DatatipService {
   invariant(datatipManager);
   return datatipManager;
 }

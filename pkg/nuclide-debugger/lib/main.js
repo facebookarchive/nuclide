@@ -679,8 +679,7 @@ export function provideRemoteControlService(): RemoteControlService {
 
 export function consumeDatatipService(service: DatatipService): IDisposable {
   const provider = createDatatipProvider();
-  service.addProvider(provider);
-  const disposable = new Disposable(() => service.removeProvider(provider));
+  const disposable = service.addProvider(provider);
   invariant(activation);
   activation.getModel().getThreadStore().setDatatipService(service);
   activation._disposables.add(disposable);

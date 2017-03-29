@@ -520,19 +520,17 @@ class DatatipManagerForEditor {
   }
 
   createPinnedDataTip(
-    component: ReactClass<any>,
-    range: atom$Range,
-    pinnable?: boolean,
+    datatip: Datatip,
     editor: TextEditor,
   ): PinnedDatatip {
-    const datatip = new PinnedDatatip(
-      /* datatip */ {component, range, pinnable},
+    const pinnedDatatip = new PinnedDatatip(
+      datatip,
       editor,
       /* onDispose */ () => {
-        this._pinnedDatatips.delete(datatip);
+        this._pinnedDatatips.delete(pinnedDatatip);
       },
     );
-    return datatip;
+    return pinnedDatatip;
   }
 
   _handlePinClicked(editor: TextEditor, datatip: Datatip): void {
@@ -593,18 +591,15 @@ export class DatatipManager {
     }));
   }
 
-  addProvider(provider: DatatipProvider): void {
+  addProvider(provider: DatatipProvider): IDisposable {
     this._datatipProviders.push(provider);
-  }
-
-  removeProvider(provider: DatatipProvider): void {
-    arrayRemove(this._datatipProviders, provider);
+    return new UniversalDisposable(() => {
+      arrayRemove(this._datatipProviders, provider);
+    });
   }
 
   createPinnedDataTip(
-    component: ReactClass<any>,
-    range: atom$Range,
-    pinnable?: boolean,
+    datatip: Datatip,
     editor: TextEditor,
   ): PinnedDatatip {
     const manager = this._editorManagers.get(editor);
@@ -614,7 +609,7 @@ export class DatatipManager {
         'no datatip manager',
       );
     }
-    return manager.createPinnedDataTip(component, range, pinnable, editor);
+    return manager.createPinnedDataTip(datatip, editor);
   }
 
   dispose(): void {

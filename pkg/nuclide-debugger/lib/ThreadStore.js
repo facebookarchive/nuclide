@@ -165,13 +165,12 @@ export default class ThreadStore {
         const buffer = editor.getBuffer();
         const rowRange = buffer.rangeForRow(notificationLineNumber);
         this._threadChangeDatatip = datatipService.createPinnedDataTip(
-          this._createAlertComponentClass(message),
-          rowRange,
-          true, /* pinnable */
-          editor,
-          pinnedDatatip => {
-            datatipService.deletePinnedDatatip(pinnedDatatip);
+          {
+            component: this._createAlertComponentClass(message),
+            range: rowRange,
+            pinnable: true,
           },
+          editor,
         );
       });
     }

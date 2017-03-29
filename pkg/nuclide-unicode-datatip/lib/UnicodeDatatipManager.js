@@ -15,14 +15,12 @@ import type {
 
 import {
   CompositeDisposable,
-  Disposable,
 } from 'atom';
 
 import unescapedUnicodeDatatip from './UnescapedUnicodeDatatip';
 
 export default class UnicodeDatatipManager {
   _disposables: CompositeDisposable;
-  datatipService: ?DatatipService;
 
   constructor() {
     this._disposables = new CompositeDisposable();
@@ -40,12 +38,7 @@ export default class UnicodeDatatipManager {
       inclusionPriority: 1,
     };
 
-    service.addProvider(datatipProvider);
-    this.datatipService = service;
-    const disposable = new Disposable(() => {
-      service.removeProvider(datatipProvider);
-      this.datatipService = null;
-    });
+    const disposable = service.addProvider(datatipProvider);
     this._disposables.add(disposable);
     return disposable;
   }

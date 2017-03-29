@@ -23,7 +23,6 @@ import type {
 
 import {
   CompositeDisposable,
-  Disposable,
 } from 'atom';
 import invariant from 'assert';
 import {makeDiagnosticsDatatipComponent} from './DiagnosticsDatatipComponent';
@@ -65,8 +64,7 @@ function getDatatipProvider(): DatatipProvider {
 export function consumeDatatipService(service: DatatipService): IDisposable {
   const datatipProvider = getDatatipProvider();
   invariant(disposables);
-  service.addProvider(datatipProvider);
-  const disposable = new Disposable(() => service.removeProvider(datatipProvider));
+  const disposable = service.addProvider(datatipProvider);
   disposables.add(disposable);
   return disposable;
 }
