@@ -100,6 +100,15 @@ export class FlowExecInfoContainer {
     // Pull this into a local on the off chance that the setting changes while we are doing the
     // check.
     const systemFlowPath = this._pathToFlow;
+
+    // If on Windows, prefer the .cmd wrapper for flow if it's available.
+    if (process.platform === 'win32') {
+      const cmdPath = systemFlowPath + '.cmd';
+      if (await canFindFlow(systemFlowPath)) {
+        return cmdPath;
+      }
+    }
+
     if (await canFindFlow(systemFlowPath)) {
       return systemFlowPath;
     }
@@ -167,6 +176,16 @@ async function getFlowVersionInformation(
 }
 
 async function canFindFlow(flowPath: string): Promise<boolean> {
+  if (process.platform === 'win32') {
+    // On Windows, if the flow path is configured as a full path rather than just "flow" or
+    // "flow.exe", format the path correctly to pass to `where <flow>`
+    const dirPath = nuclideUri.dirname(flowPath);
+    if (dirPath != null && dirPath !== '' && dirPath !== '.') {
+      const whichPath = `${nuclideUri.dirname(flowPath)}:${nuclideUri.basename(flowPath)}`;
+      return await which(whichPath) != null;
+    }
+  }
+
   return await which(flowPath) != null;
 }
 
