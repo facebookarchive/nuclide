@@ -1,5 +1,11 @@
 # Nuclide Changelog
 
+## v0.214.0
+
+### Hotfix from 0.213.0
+
+* Fix update to bookmark from source control sidebar failing.
+
 ## v0.213.0
 
 ### Hotfixes from 0.212.0
