@@ -23,7 +23,7 @@ import type {
   FileDiagnosticUpdate,
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
 import type {
-  Completion,
+  AutocompleteResult,
   SymbolResult,
   LanguageService,
 } from '../../nuclide-language-service/lib/LanguageService';
@@ -211,7 +211,7 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
     position: atom$Point,
     activatedManually: boolean,
     prefix: string,
-  ): Promise<?Array<Completion>> {
+  ): Promise<?AutocompleteResult> {
     return (await this._getLanguageServiceForFile(fileVersion.filePath))
       .getAutocompleteSuggestions(fileVersion, position, activatedManually, prefix);
   }

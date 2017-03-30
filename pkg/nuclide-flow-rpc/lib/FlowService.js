@@ -11,7 +11,10 @@
 import type {ConnectableObservable} from 'rxjs';
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {Completion, SymbolResult} from '../../nuclide-language-service/lib/LanguageService';
+import type {
+  AutocompleteResult,
+  SymbolResult,
+} from '../../nuclide-language-service/lib/LanguageService';
 import type {FileVersion, FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
@@ -164,7 +167,7 @@ export interface FlowLanguageServiceType {
     position: atom$Point,
     activatedManually: boolean,
     prefix: string,
-  ): Promise<?Array<Completion>>,
+  ): Promise<?AutocompleteResult>,
 
   getDefinition(
     fileVersion: FileVersion,

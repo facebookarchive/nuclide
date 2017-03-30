@@ -31,7 +31,7 @@ import type {
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
 import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {
-  Completion,
+  AutocompleteResult,
   SymbolResult,
 } from '../../nuclide-language-service/lib/LanguageService';
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
@@ -148,10 +148,21 @@ class HackLanguageServiceImpl extends ServerLanguageService {
     position: atom$Point,
     activatedManually: boolean,
     prefix: string,
-  ): Promise<?Array<Completion>> {
+  ): Promise<?AutocompleteResult> {
     try {
       const process = await getHackProcess(this._fileCache, fileVersion.filePath);
-      return process.getAutocompleteSuggestions(fileVersion, position, activatedManually);
+      const items = await process.getAutocompleteSuggestions(
+        fileVersion,
+        position,
+        activatedManually,
+      );
+      if (items == null) {
+        return null;
+      }
+      return {
+        isIncomplete: false,
+        items,
+      };
     } catch (e) {
       return null;
     }
@@ -242,7 +253,7 @@ class HackSingleFileLanguageService {
     buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
     activatedManually: boolean,
-  ): Promise<?Array<Completion>> {
+  ): Promise<?AutocompleteResult> {
     throw new Error('replaced by persistent connection');
   }
 

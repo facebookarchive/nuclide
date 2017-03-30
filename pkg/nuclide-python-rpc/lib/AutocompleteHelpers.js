@@ -10,7 +10,7 @@
 
 import type {PythonCompletion} from './PythonService';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {Completion} from '../../nuclide-language-service/lib/LanguageService';
+import type {AutocompleteResult} from '../../nuclide-language-service/lib/LanguageService';
 import type JediServerManager from './JediServerManager';
 
 import {matchRegexEndingAt} from '../../commons-node/range';
@@ -70,11 +70,11 @@ export async function getAutocompleteSuggestions(
   activatedManually: boolean,
   autocompleteArguments: boolean,
   includeOptionalArguments: boolean,
-): Promise<Array<Completion>> {
+): Promise<AutocompleteResult> {
   const triggerRegex =
     activatedManually ? EXPLICIT_TRIGGER_COMPLETION_REGEX : IMPLICIT_TRIGGER_COMPLETION_REGEX;
   if (matchRegexEndingAt(buffer, position, triggerRegex) == null) {
-    return [];
+    return {isIncomplete: false, items: []};
   }
 
   const results = await getCompletions(
@@ -85,10 +85,10 @@ export async function getAutocompleteSuggestions(
     position.column,
   );
   if (results == null) {
-    return [];
+    return {isIncomplete: false, items: []};
   }
 
-  return results.map(completion => {
+  const items = results.map(completion => {
     // Always display optional arguments in the UI.
     const displayText = getText(completion);
     // Only autocomplete arguments if the include optional arguments setting is on.
@@ -102,6 +102,10 @@ export async function getAutocompleteSuggestions(
       description: completion.description,
     };
   });
+  return {
+    isIncomplete: false,
+    items,
+  };
 }
 
 export async function getCompletions(

@@ -19,7 +19,7 @@ import {trackTiming} from '../../nuclide-analytics';
 
 /* LanguageService related type imports */
 import type {Observable} from 'rxjs';
-import type {Completion} from '../../nuclide-language-service/lib/LanguageService';
+import type {AutocompleteResult} from '../../nuclide-language-service/lib/LanguageService';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 import type {
   Definition,
@@ -99,7 +99,7 @@ class GraphQLLanguageAnalyzer {
     buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
     activatedManually: boolean,
-  ): Promise<Array<Completion>> {
+  ): Promise<AutocompleteResult> {
     return trackTiming(
       'GraphQLLanguageAnalyzer.getAutocompleteSuggestions',
       async () => {
@@ -109,7 +109,7 @@ class GraphQLLanguageAnalyzer {
         );
 
         if (!graphQLProcess) {
-          return [];
+          return {isIncomplete: false, items: []};
         }
 
         const result = await graphQLProcess.getAutocompleteSuggestions(
@@ -118,7 +118,7 @@ class GraphQLLanguageAnalyzer {
           filePath,
         );
 
-        return result.map(completion => ({
+        const items = result.map(completion => ({
           text: completion.text,
           description: completion.description || null,
           iconHTML: '<i class="icon-nuclicon-graphql"></i>',
@@ -126,6 +126,10 @@ class GraphQLLanguageAnalyzer {
             `<span style="color: #E10098;">${completion.typeName}</span>` :
             null,
         }));
+        return {
+          isIncomplete: false,
+          items,
+        };
       },
     );
   }

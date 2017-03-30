@@ -140,7 +140,11 @@ export class AutocompleteProvider<T: LanguageService> {
       return [];
     }
 
-    return (await languageService).getAutocompleteSuggestions(
+    const result = await (await languageService).getAutocompleteSuggestions(
       fileVersion, position, activatedManually == null ? false : activatedManually, prefix);
+    if (result == null) {
+      return null;
+    }
+    return result.items;
   }
 }

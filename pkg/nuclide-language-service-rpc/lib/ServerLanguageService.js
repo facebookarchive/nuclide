@@ -23,7 +23,7 @@ import type {
   FileDiagnosticUpdate,
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
 import type {
-  Completion,
+  AutocompleteResult,
   SymbolResult,
   LanguageService,
 } from '../../nuclide-language-service/lib/LanguageService';
@@ -55,7 +55,7 @@ export type SingleFileLanguageService = {
     position: atom$Point,
     activatedManually: boolean,
     prefix: string,
-  ): Promise<?Array<Completion>>,
+  ): Promise<?AutocompleteResult>,
 
   getDefinition(
     filePath: NuclideUri,
@@ -157,11 +157,11 @@ export class ServerLanguageService<T: SingleFileLanguageService = SingleFileLang
     position: atom$Point,
     activatedManually: boolean,
     prefix: string,
-  ): Promise<?Array<Completion>> {
+  ): Promise<?AutocompleteResult> {
     const filePath = fileVersion.filePath;
     const buffer = await getBufferAtVersion(fileVersion);
     if (buffer == null) {
-      return [];
+      return {isIncomplete: false, items: []};
     }
     return this._service.getAutocompleteSuggestions(
       filePath,

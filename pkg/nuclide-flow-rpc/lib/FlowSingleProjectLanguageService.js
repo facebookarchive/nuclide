@@ -12,7 +12,10 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 import {wordAtPositionFromBuffer} from '../../commons-node/range';
 import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
-import type {Completion} from '../../nuclide-language-service/lib/LanguageService';
+import type {
+  AutocompleteResult,
+  Completion,
+} from '../../nuclide-language-service/lib/LanguageService';
 import type {
   DiagnosticProviderUpdate,
   FileDiagnosticUpdate,
@@ -315,7 +318,7 @@ export class FlowSingleProjectLanguageService {
     position: atom$Point,
     activatedManually: boolean,
     prefix: string,
-  ): Promise<?Array<Completion>> {
+  ): Promise<?AutocompleteResult> {
     const replacementPrefix = getReplacementPrefix(prefix);
     // We may want to make this configurable, but if it is ever higher than one we need to make sure
     // it works properly when the user manually activates it (e.g. with ctrl+space). See
@@ -343,15 +346,16 @@ export class FlowSingleProjectLanguageService {
     try {
       const result = await this._process.execFlow(args, options);
       if (!result) {
-        return [];
+        return {isIncomplete: false, items: []};
       }
       const json: FlowAutocompleteOutput = parseJSON(args, result.stdout);
       const resultsArray: Array<FlowAutocompleteItem> = json.result;
       const completions =
         resultsArray.map(item => processAutocompleteItem(replacementPrefix, item));
-      return filterResultsByPrefix(prefix, completions);
+      const items = filterResultsByPrefix(prefix, completions);
+      return {isIncomplete: false, items};
     } catch (e) {
-      return [];
+      return {isIncomplete: false, items: []};
     }
   }
 

@@ -26,7 +26,7 @@ import type {
 import type {ConnectableObservable} from 'rxjs';
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
 import type {
-  Completion,
+  AutocompleteResult,
   SymbolResult,
 } from '../../nuclide-language-service/lib/LanguageService';
 
@@ -50,7 +50,7 @@ export class NullLanguageService {
     position: atom$Point,
     activatedManually: boolean,
     prefix: string,
-  ): Promise<?Array<Completion>> {
+  ): Promise<?AutocompleteResult> {
     return Promise.resolve(null);
   }
 

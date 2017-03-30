@@ -25,6 +25,7 @@ import type {
   MessageType,
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
 import type {
+  AutocompleteResult,
   Completion,
   SymbolResult,
 } from '../../nuclide-language-service/lib/LanguageService';
@@ -207,12 +208,20 @@ export class LanguageServerProtocolProcess {
     position: atom$Point,
     activatedManually: boolean,
     prefix: string,
-  ): Promise<?Array<Completion>> {
+  ): Promise<?AutocompleteResult> {
     const result = await this._process._connection.completion(
       await this.createTextDocumentPositionParams(fileVersion, position));
-    return Array.isArray(result)
-      ? result.map(convertCompletion)
-      : result.items.map(convertCompletion);
+    if (Array.isArray(result)) {
+      return {
+        isIncomplete: false,
+        items: result.map(convertCompletion),
+      };
+    } else {
+      return {
+        isIncomplete: result.isIncomplete,
+        items: result.items.map(convertCompletion),
+      };
+    }
   }
 
   async getDefinition(

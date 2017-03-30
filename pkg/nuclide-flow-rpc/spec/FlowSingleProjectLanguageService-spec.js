@@ -203,7 +203,7 @@ describe('FlowSingleProjectLanguageService', () => {
       if (suggestions == null) {
         return [];
       }
-      return suggestions.map(item => item.text);
+      return suggestions.items.map(item => item.text);
     }
 
     async function getNameSet(_: void): Promise<Set<?string>> {
@@ -260,7 +260,7 @@ describe('FlowSingleProjectLanguageService', () => {
         ];
         const results = await run();
         invariant(results != null);
-        const fooResult = results[0];
+        const fooResult = results.items[0];
         expect(fooResult.displayText).toEqual('foo');
         expect(fooResult.snippet).toEqual('foo(${1:param1}, ${2:param2})');
         expect(fooResult.type).toEqual('function');

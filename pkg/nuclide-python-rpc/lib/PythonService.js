@@ -24,7 +24,7 @@ import type {
   DiagnosticProviderUpdate,
   FileDiagnosticUpdate,
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
-import type {Completion} from '../../nuclide-language-service/lib/LanguageService';
+import type {AutocompleteResult} from '../../nuclide-language-service/lib/LanguageService';
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
 import type {ConnectableObservable} from 'rxjs';
 
@@ -165,7 +165,7 @@ class PythonSingleFileLanguageService {
     buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
     activatedManually: boolean,
-  ): Promise<Array<Completion>> {
+  ): Promise<AutocompleteResult> {
     return getAutocompleteSuggestions(
       serverManager,
       filePath,

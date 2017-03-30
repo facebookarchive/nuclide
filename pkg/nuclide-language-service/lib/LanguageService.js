@@ -48,6 +48,11 @@ export type Completion = {
 // getting errors here, you have probably just updated one without updating the other.
 ((({}: any): Completion): atom$AutocompleteSuggestion);
 
+export type AutocompleteResult = {
+  isIncomplete: boolean,
+  items: Array<Completion>,
+};
+
 export type SymbolResult = {
   path: NuclideUri,
   line: number,
@@ -71,7 +76,7 @@ export interface LanguageService {
     position: atom$Point,
     activatedManually: boolean,
     prefix: string,
-  ): Promise<?Array<Completion>>,
+  ): Promise<?AutocompleteResult>,
 
   getDefinition(
     fileVersion: FileVersion,
