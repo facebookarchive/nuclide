@@ -542,6 +542,7 @@ declare class atom$Range {
   union(other: atom$Range): atom$Range,
   serialize(): Array<Array<number>>,
   translate(startDelta: atom$PointLike, endDelta?: atom$PointLike): atom$Range,
+  getRowCount(): number,
 }
 
 type RawStatusBarTile = {
