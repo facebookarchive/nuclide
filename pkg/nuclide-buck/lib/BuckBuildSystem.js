@@ -174,7 +174,9 @@ export class BuckBuildSystem {
       .map(state => {
         const {buildRuleType, selectedDeploymentTarget} = state;
         const tasksFromPlatform = selectedDeploymentTarget
-          ? selectedDeploymentTarget.platform.tasks
+          ? selectedDeploymentTarget.platform.tasksForDevice(
+              selectedDeploymentTarget.device,
+            )
           : null;
         return TASKS.map(task => {
           let disabled = state.isLoadingPlatforms || buildRuleType == null;

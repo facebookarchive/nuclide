@@ -82,7 +82,7 @@ export type PlatformGroup = {
 
 export type Platform = {
   name: string,
-  tasks: Set<TaskType>,
+  tasksForDevice: (device: ?Device) => Set<TaskType>,
   runTask: (
     builder: BuckBuildSystem,
     type: TaskType,

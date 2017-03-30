@@ -61,7 +61,7 @@ function provideIosDevices(
       platforms: [
         {
           name: 'iOS Simulators',
-          tasks: getTasks(buckRoot, ruleType),
+          tasksForDevice: device => getTasks(buckRoot, ruleType),
           runTask: (builder, taskType, target, device) =>
             _runTask(buckRoot, builder, taskType, ruleType, target, device),
           deviceGroups: [
@@ -81,11 +81,13 @@ function provideIosDevices(
 }
 
 function getTasks(buckRoot: NuclideUri, ruleType: string): Set<TaskType> {
-  const tasks = new Set(
-    nuclideUri.isRemote(buckRoot) ? ['build'] : ['build', 'test', 'debug'],
-  );
+  const tasks = new Set(['build']);
   if (RUNNABLE_RULE_TYPES.has(ruleType)) {
     tasks.add('run');
+  }
+  if (!nuclideUri.isRemote(buckRoot)) {
+    tasks.add('test');
+    tasks.add('debug');
   }
   return tasks;
 }
