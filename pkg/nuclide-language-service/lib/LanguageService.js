@@ -26,8 +26,7 @@ import type {
 import type {ConnectableObservable} from 'rxjs';
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
 
-// Identical to atom$AutocompleteSuggestion. Repeated here so the RPC framework can serialize using
-// this type.
+// Subtype of atom$AutocompleteSuggestion.
 export type Completion = {
   text?: string,
   snippet?: string,
@@ -45,8 +44,8 @@ export type Completion = {
   extraData?: mixed,
 };
 
-// This assertion ensures that atom$AutocompleteSuggestion is a strict subset of Completion. If you
-// are getting errors here, you have probably just updated one without updating the other.
+// This assertion ensures that Completion is a subtype of atom$AutocompleteSuggestion. If you are
+// getting errors here, you have probably just updated one without updating the other.
 ((({}: any): Completion): atom$AutocompleteSuggestion);
 
 export type SymbolResult = {
