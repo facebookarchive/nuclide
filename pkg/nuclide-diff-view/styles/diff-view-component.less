@@ -12,7 +12,22 @@
 }
 
 .nuclide-diff-view-removable-tag {
-  float: left;
+  padding-top: 2px;
+}
+
+.nuclide-diff-view-tag-container {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+
+  atom-text-editor {
+    margin-top: 2px;
+  }
+}
+
+.nuclide-diff-view-tag-input {
+  flex-grow: 1;
+  min-width: 25%;
 }
 
 .nuclide-diff-view-padded {
