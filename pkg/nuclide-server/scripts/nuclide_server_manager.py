@@ -370,7 +370,7 @@ if __name__ == '__main__':
             _, hard_limit = resource.getrlimit(resource.RLIMIT_CORE)
             resource.setrlimit(resource.RLIMIT_CORE, (resource.RLIM_INFINITY, hard_limit))
         except Exception as e:
-            logger.warn('Failed to enable core dump (%s)' % e)
+            logger.warn('Failed to enable core dump (%s)', e.message)
 
     # Clean up old core dumps. They're pretty large, so don't hog disk space.
     try:
@@ -384,7 +384,7 @@ if __name__ == '__main__':
             for core in cores[:len(cores) - MAX_CORE_DUMPS]:
                 os.remove(core)
     except Exception as e:
-        logger.warn('Failed to clean up old core dumps (%s)' % e)
+        logger.warn('Failed to clean up old core dumps (%s)', e.message)
         pass
 
     if options.command == 'start':
