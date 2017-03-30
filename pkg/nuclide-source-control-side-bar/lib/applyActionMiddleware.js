@@ -148,12 +148,15 @@ export function applyActionMiddleware(
       .switchMap(action => {
         // Action was filtered, invariant check to downcast in Flow.
         invariant(action.type === ActionType.UPDATE_TO_BOOKMARK);
-
         const {bookmark, repository} = action.payload;
-        return Observable
-          .fromPromise(repository.checkoutReference(bookmark.bookmark, false))
-          .ignoreElements()
-          .catch(error => {
+        const checkoutReference = repository.getType() === 'hg'
+          ? ((repository: any): HgRepositoryClient).checkoutReference(bookmark.bookmark, false)
+              .ignoreElements()
+          : Observable.fromPromise(repository.checkoutReference(bookmark.bookmark, false))
+              .ignoreElements();
+
+        return checkoutReference
+          .catch((error: string) => {
             atom.notifications.addWarning('Failed Updating to Bookmark', {
               description: 'Revert or commit uncommitted changes before changing bookmarks.',
               detail: error,
