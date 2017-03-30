@@ -205,8 +205,11 @@ export class DebuggerHandler extends Handler {
       frames.stack.map((frame, frameIndex) => this._convertFrame(frame, frameIndex)));
   }
 
-  async _getTopFrameForConnection(id: number): Promise<Object> {
+  async _getTopFrameForConnection(id: number): Promise<?Object> {
     const frames = await this._connectionMultiplexer.getConnectionStackFrames(id);
+    if (frames == null || frames.stack == null || frames.stack.length === 0) {
+      return null;
+    }
     return this._convertFrame(frames.stack[0], 0);
   }
 
@@ -218,11 +221,19 @@ export class DebuggerHandler extends Handler {
     if (!hasSource) {
       location.scriptId = '';
     }
+
+    let scopeChain = null;
+    try {
+      scopeChain = await this._connectionMultiplexer.getScopesForFrame(frameIndex);
+    } catch (e) {
+      // Couldn't get scopes.
+    }
+
     return {
       callFrameId: idOfFrame(frame),
       functionName: functionOfFrame(frame),
       location,
-      scopeChain: await this._connectionMultiplexer.getScopesForFrame(frameIndex),
+      scopeChain,
     };
   }
 

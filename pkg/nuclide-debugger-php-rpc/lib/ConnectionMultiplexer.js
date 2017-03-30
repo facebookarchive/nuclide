@@ -29,6 +29,7 @@ import {
 } from './DbgpSocket';
 import {
   ASYNC_BREAK,
+  BREAKPOINT,
 } from './Connection';
 import EventEmitter from 'events';
 import invariant from 'assert';
@@ -559,14 +560,44 @@ export class ConnectionMultiplexer {
     }
   }
 
+  _connectionBreakpointExits(connection: Connection): boolean {
+    // Check if the breakpoint at which the specified connection is stopped
+    // still exists in the breakpoint store.
+    invariant(connection.getStopReason() === BREAKPOINT);
+    const stopLocation = connection.getStopBreakpointLocation();
+    if (stopLocation == null) {
+      // If the stop location is unknown, we must behave as if the breakpoint existed
+      // since we cannot confirm it doesn't, and it is unsafe to just randomly resume
+      // connections. This connection could be stopped at an eval, exception or async
+      // break.
+      return true;
+    }
+
+    const exists =
+      this._breakpointStore.breakpointExists(stopLocation.filename, stopLocation.lineNumber);
+
+    if (!exists) {
+      logger.log('Connection hit stale breakpoint. Resuming...');
+    }
+
+    return exists;
+  }
+
   _resumeBackgroundConnections(): void {
     for (const connection of this._connections.values()) {
       if (
         connection !== this._enabledConnection &&
         (connection.getStopReason() === ASYNC_BREAK ||
+        (connection.getStopReason() === BREAKPOINT &&
+         connection.getStatus() === ConnectionStatus.Break &&
+         !this._connectionBreakpointExits(connection)) ||
         connection.getStatus() === ConnectionStatus.Starting)
       ) {
-        connection.sendContinuationCommand(COMMAND_RUN);
+        try {
+          connection.sendContinuationCommand(COMMAND_RUN);
+        } catch (e) {
+          // Connection could have been closed (or resumed by the frontend) before we resumed it.
+        }
       }
     }
   }

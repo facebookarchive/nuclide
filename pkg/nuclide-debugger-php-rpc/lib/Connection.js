@@ -44,6 +44,7 @@ export class Connection {
   _disposables: CompositeDisposable;
   _status: string;
   _stopReason: ?string;
+  _stopBreakpointLocation: ?FileLineBreakpointInfo;
   _isDummyConnection: boolean;
   _isDummyViewable: boolean;
 
@@ -70,6 +71,7 @@ export class Connection {
         onNotificationCallback(this, notifyName, notify)));
     }
     this._stopReason = null;
+    this._stopBreakpointLocation = null;
   }
 
   isDummyConnection(): boolean {
@@ -93,13 +95,26 @@ export class Connection {
     switch (newStatus) {
       case ConnectionStatus.Running:
         this._stopReason = null;
+        this._stopBreakpointLocation = null;
         break;
       case ConnectionStatus.Break:
         if (prevStatus === ConnectionStatus.BreakMessageReceived) {
           this._stopReason = ASYNC_BREAK;
+          this._stopBreakpointLocation = null;
         } else if (prevStatus !== ConnectionStatus.Break) {
           // TODO(dbonafilia): investigate why we sometimes receive two BREAK_MESSAGES
           this._stopReason = BREAKPOINT;
+          if (args != null && args.length >= 2) {
+            const [file, line] = args;
+            this._stopBreakpointLocation = {
+              filename: file,
+              lineNumber: Number(line),
+              conditionExpression: null,
+            };
+          } else {
+            // Unknown stop location.
+            this._stopBreakpointLocation = null;
+          }
         }
         break;
       case ConnectionStatus.DummyIsViewable:
@@ -209,6 +224,12 @@ export class Connection {
 
   getStopReason(): ?string {
     return this._stopReason;
+  }
+
+  // Returns the location this connection is stopped at if it is stopped at a file+line breakpoint.
+  // Otherwise, returns null.
+  getStopBreakpointLocation(): ?FileLineBreakpointInfo {
+    return this._stopBreakpointLocation;
   }
 
   dispose(): void {
