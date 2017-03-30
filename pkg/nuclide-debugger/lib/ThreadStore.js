@@ -95,6 +95,9 @@ export default class ThreadStore {
           // If the debugger just transitioned from running to paused, the debug server should
           // be sending updated thread stacks. This may take a moment.
           this._threadsReloading = true;
+        } else if (payload.data === DebuggerMode.RUNNING) {
+          // The UI is never waiting for threads if it's running.
+          this._threadsReloading = false;
         }
         this._debuggerMode = payload.data;
         this._emitter.emit('change');

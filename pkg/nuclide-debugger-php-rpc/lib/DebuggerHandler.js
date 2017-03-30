@@ -304,6 +304,7 @@ export class DebuggerHandler extends Handler {
         text: requestSwitchMessage,
       });
     }
+    const enabledConnectionId = this._connectionMultiplexer.getEnabledConnectionId();
     this.sendMethod(
       'Debugger.paused',
       {
@@ -311,9 +312,26 @@ export class DebuggerHandler extends Handler {
         reason: 'breakpoint', // TODO: better reason?
         threadSwitchMessage: requestSwitchMessage,
         data: {},
-        stopThreadId: this._connectionMultiplexer.getEnabledConnectionId(),
+        stopThreadId: enabledConnectionId,
       },
     );
+
+    // Send an update for the enabled thread to cause the request window in the
+    // front-end to update.
+    if (enabledConnectionId != null) {
+      const frame = await this._getTopFrameForConnection(enabledConnectionId);
+      this.sendMethod('Debugger.threadUpdated', {
+        thread: {
+          id: String(enabledConnectionId),
+          name: String(enabledConnectionId),
+          address: frame != null ? frame.functionName : 'N/A',
+          location: frame != null ? frame.location : null,
+          hasSource: true,
+          stopReason: 'breakpoint',
+          description: 'N/A',
+        },
+      });
+    }
   }
 
   _sendFakeLoaderBreakpoint(): void {
