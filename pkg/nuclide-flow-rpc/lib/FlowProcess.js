@@ -79,10 +79,13 @@ export class FlowProcess {
 
   _ideConnections: Observable<?FlowIDEConnection>;
 
+  _isDisposed: BehaviorSubject<boolean>;
+
   constructor(root: string, execInfoContainer: FlowExecInfoContainer) {
     this._execInfoContainer = execInfoContainer;
     this._serverStatus = new BehaviorSubject(ServerStatus.UNKNOWN);
     this._root = root;
+    this._isDisposed = new BehaviorSubject(false);
 
     this._ideConnections = this._createIDEConnectionStream();
 
@@ -120,6 +123,7 @@ export class FlowProcess {
 
   dispose(): void {
     this._serverStatus.complete();
+    this._isDisposed.next(true);
     if (this._startedServer && getStopFlowOnExit()) {
       // The default, SIGTERM, does not reliably kill the flow servers.
       this._startedServer.kill('SIGKILL');
@@ -169,7 +173,10 @@ export class FlowProcess {
         connectionWatcher = null;
       },
     // multicast and store the current connection and immediately deliver it to new subscribers
-    ).publishReplay(1).refCount();
+    )
+    .takeUntil(this._isDisposed.filter(x => x))
+    .concat(Observable.of(null))
+    .publishReplay(1).refCount();
   }
 
   async _tryCreateIDEProcess(): Promise<?child_process$ChildProcess> {
