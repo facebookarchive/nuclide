@@ -1,3 +1,23 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.flowStatusOutputToDiagnostics = flowStatusOutputToDiagnostics;
+exports.diagnosticToFix = diagnosticToFix;
+exports.extractRange = extractRange;
+
+var _simpleTextBuffer;
+
+function _load_simpleTextBuffer() {
+  return _simpleTextBuffer = require('simple-text-buffer');
+}
+
+function flowStatusOutputToDiagnostics(statusOutput) {
+  return statusOutput.errors.map(flowMessageToDiagnosticMessage);
+}
+
+// Exported for testing
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,33 +25,10 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
 
-import type {
-  FileDiagnosticMessage,
-  Trace,
-  Fix,
-} from '../../nuclide-diagnostics-common/lib/rpc-types';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-
-import type {
-  FlowStatusOutput,
-  FlowStatusError,
-  FlowStatusErrorMessageComponent,
-} from './flowOutputTypes';
-
-import invariant from 'assert';
-import {Range} from 'simple-text-buffer';
-
-export function flowStatusOutputToDiagnostics(
-  statusOutput: FlowStatusOutput,
-): Array<FileDiagnosticMessage> {
-  return statusOutput.errors.map(flowMessageToDiagnosticMessage);
-}
-
-// Exported for testing
-export function diagnosticToFix(diagnostic: FileDiagnosticMessage): ?Fix {
+function diagnosticToFix(diagnostic) {
   for (const extractionFunction of fixExtractionFunctions) {
     const fix = extractionFunction(diagnostic);
     if (fix != null) {
@@ -42,30 +39,28 @@ export function diagnosticToFix(diagnostic: FileDiagnosticMessage): ?Fix {
   return null;
 }
 
-const fixExtractionFunctions: Array<(diagnostic: FileDiagnosticMessage) => ?Fix> = [
-  unusedSuppressionFix,
-  namedImportTypo,
-];
+const fixExtractionFunctions = [unusedSuppressionFix, namedImportTypo];
 
-function unusedSuppressionFix(diagnostic: FileDiagnosticMessage): ?Fix {
+function unusedSuppressionFix(diagnostic) {
   // Automatically remove unused suppressions:
-  if (diagnostic.trace != null &&
-      diagnostic.trace.length === 1 &&
-      diagnostic.text === 'Error suppressing comment' &&
-      diagnostic.trace[0].text === 'Unused suppression') {
+  if (diagnostic.trace != null && diagnostic.trace.length === 1 && diagnostic.text === 'Error suppressing comment' && diagnostic.trace[0].text === 'Unused suppression') {
     const oldRange = diagnostic.range;
-    invariant(oldRange != null);
+
+    if (!(oldRange != null)) {
+      throw new Error('Invariant violation: "oldRange != null"');
+    }
+
     return {
       newText: '',
       oldRange,
-      speculative: true,
+      speculative: true
     };
   }
 
   return null;
 }
 
-function namedImportTypo(diagnostic: FileDiagnosticMessage): ?Fix {
+function namedImportTypo(diagnostic) {
   const trace = diagnostic.trace;
   const text = diagnostic.text;
   if (trace == null || trace.length !== 1 || text == null) {
@@ -89,13 +84,16 @@ function namedImportTypo(diagnostic: FileDiagnosticMessage): ?Fix {
   const oldText = match[1];
   const newText = match[2];
   const oldRange = diagnostic.range;
-  invariant(oldRange != null);
+
+  if (!(oldRange != null)) {
+    throw new Error('Invariant violation: "oldRange != null"');
+  }
 
   return {
     oldText,
     newText,
     oldRange,
-    speculative: true,
+    speculative: true
   };
 }
 
@@ -116,38 +114,41 @@ function namedImportTypo(diagnostic: FileDiagnosticMessage): ?Fix {
  * files.
  */
 
-function extractPath(message: FlowStatusErrorMessageComponent): NuclideUri | void {
+function extractPath(message) {
   return message.loc == null ? undefined : message.loc.source;
 }
 
 // A trace object is very similar to an error object.
-function flowMessageToTrace(message: FlowStatusErrorMessageComponent): Trace {
+function flowMessageToTrace(message) {
   return {
     type: 'Trace',
     text: message.descr,
     filePath: extractPath(message),
-    range: extractRange(message),
+    range: extractRange(message)
   };
 }
 
-function flowMessageToDiagnosticMessage(flowStatusError: FlowStatusError) {
-  const flowMessageComponents: Array<FlowStatusErrorMessageComponent> = flowStatusError.message;
+function flowMessageToDiagnosticMessage(flowStatusError) {
+  const flowMessageComponents = flowStatusError.message;
 
   const mainMessage = flowMessageComponents[0];
 
   // The Flow type does not capture this, but the first message always has a path, and the
   // diagnostics package requires a FileDiagnosticMessage to have a path.
   const path = extractPath(mainMessage);
-  invariant(path != null, 'Expected path to not be null or undefined');
 
-  const diagnosticMessage: FileDiagnosticMessage = {
+  if (!(path != null)) {
+    throw new Error('Expected path to not be null or undefined');
+  }
+
+  const diagnosticMessage = {
     scope: 'file',
     providerName: 'Flow',
     type: flowStatusError.level === 'error' ? 'Error' : 'Warning',
     text: mainMessage.descr,
     filePath: path,
     range: extractRange(mainMessage),
-    trace: extractTraces(flowStatusError),
+    trace: extractTraces(flowStatusError)
   };
 
   const fix = diagnosticToFix(diagnosticMessage);
@@ -158,10 +159,10 @@ function flowMessageToDiagnosticMessage(flowStatusError: FlowStatusError) {
   return diagnosticMessage;
 }
 
-function extractTraces(flowStatusError: FlowStatusError): Array<Trace> | void {
-  const flowMessageComponents: Array<FlowStatusErrorMessageComponent> = flowStatusError.message;
+function extractTraces(flowStatusError) {
+  const flowMessageComponents = flowStatusError.message;
 
-  const trace: Array<Trace> = [];
+  const trace = [];
   // When the message is an array with multiple elements, the second element
   // onwards comprise the trace for the error.
   if (flowMessageComponents.length > 1) {
@@ -171,13 +172,17 @@ function extractTraces(flowStatusError: FlowStatusError): Array<Trace> | void {
   const operation = flowStatusError.operation;
   if (operation != null) {
     const operationComponent = flowMessageToTrace(operation);
-    invariant(operationComponent.text != null);
+
+    if (!(operationComponent.text != null)) {
+      throw new Error('Invariant violation: "operationComponent.text != null"');
+    }
+
     operationComponent.text = 'See also: ' + operationComponent.text;
     trace.push(operationComponent);
   }
   const extra = flowStatusError.extra;
   if (extra != null) {
-    const flatExtra = [].concat(...extra.map(({message}) => message));
+    const flatExtra = [].concat(...extra.map(({ message }) => message));
     trace.push(...flatExtra.map(flowMessageToTrace));
   }
 
@@ -188,20 +193,16 @@ function extractTraces(flowStatusError: FlowStatusError): Array<Trace> | void {
   }
 }
 
-
 // Use `atom$Range | void` rather than `?atom$Range` to exclude `null`, so that the type is
 // compatible with the `range` property, which is an optional property rather than a nullable
 // property.
-export function extractRange(message: FlowStatusErrorMessageComponent): atom$Range | void {
+function extractRange(message) {
   // It's unclear why the 1-based to 0-based indexing works the way that it
   // does, but this has the desired effect in the UI, in practice.
   const flowRange = message.loc;
   if (flowRange == null) {
     return undefined;
   } else {
-    return new Range(
-      [flowRange.start.line - 1, flowRange.start.column - 1],
-      [flowRange.end.line - 1, flowRange.end.column],
-    );
+    return new (_simpleTextBuffer || _load_simpleTextBuffer()).Range([flowRange.start.line - 1, flowRange.start.column - 1], [flowRange.end.line - 1, flowRange.end.column]);
   }
 }

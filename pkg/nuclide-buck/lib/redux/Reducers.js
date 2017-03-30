@@ -1,3 +1,18 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = accumulateState;
+
+var _Actions;
+
+function _load_Actions() {
+  return _Actions = _interopRequireWildcard(require('./Actions'));
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,38 +20,26 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
 
-import type {AppState, DeploymentTarget, PlatformGroup} from '../types';
-import type {Action} from './Actions';
-import type {Element as ReactElementType} from 'react';
-
-import * as Actions from './Actions';
-
-export default function accumulateState(
-  state: AppState,
-  action: Action,
-): AppState {
+function accumulateState(state, action) {
   switch (action.type) {
-    case Actions.SET_PROJECT_ROOT:
-      return {
-        ...state,
+    case (_Actions || _load_Actions()).SET_PROJECT_ROOT:
+      return Object.assign({}, state, {
         projectRoot: action.projectRoot,
-        isLoadingBuckProject: true,
-      };
-    case Actions.SET_BUCK_ROOT:
-      return {
-        ...state,
+        isLoadingBuckProject: true
+      });
+    case (_Actions || _load_Actions()).SET_BUCK_ROOT:
+      return Object.assign({}, state, {
         buckRoot: action.buckRoot,
-        isLoadingBuckProject: false,
-      };
-    case Actions.SET_BUILD_TARGET:
+        isLoadingBuckProject: false
+      });
+    case (_Actions || _load_Actions()).SET_BUILD_TARGET:
       // We are nulling out the deployment target while platforms are loaded
       // Let's remember what we had selected in the last session field
       const preference = getDeploymentTargetPreference(state);
-      return {
-        ...state,
+      return Object.assign({}, state, {
         buildRuleType: null,
         platformGroups: [],
         selectedDeploymentTarget: null,
@@ -44,73 +47,55 @@ export default function accumulateState(
         buildTarget: action.buildTarget,
         isLoadingRule: true,
         lastSessionPlatformName: preference.platformName,
-        lastSessionDeviceName: preference.deviceName,
-      };
-    case Actions.SET_RULE_TYPE:
-      return {
-        ...state,
+        lastSessionDeviceName: preference.deviceName
+      });
+    case (_Actions || _load_Actions()).SET_RULE_TYPE:
+      return Object.assign({}, state, {
         buildRuleType: action.ruleType,
         isLoadingRule: false,
-        isLoadingPlatforms: true,
-      };
-    case Actions.SET_PLATFORM_GROUPS:
-      const {platformGroups} = action;
-      const {platformName, deviceName} = getDeploymentTargetPreference(state);
-      const selectedDeploymentTarget = selectValidDeploymentTarget(
-        platformName,
-        deviceName,
-        platformGroups,
-      );
-      return {
-        ...state,
+        isLoadingPlatforms: true
+      });
+    case (_Actions || _load_Actions()).SET_PLATFORM_GROUPS:
+      const { platformGroups } = action;
+      const { platformName, deviceName } = getDeploymentTargetPreference(state);
+      const selectedDeploymentTarget = selectValidDeploymentTarget(platformName, deviceName, platformGroups);
+      return Object.assign({}, state, {
         platformGroups,
         selectedDeploymentTarget,
-        extraPlatformUi: getExtraUiForDeploymentTarget(
-          selectedDeploymentTarget,
-        ),
-        isLoadingPlatforms: false,
-      };
-    case Actions.SET_DEPLOYMENT_TARGET:
-      return {
-        ...state,
+        extraPlatformUi: getExtraUiForDeploymentTarget(selectedDeploymentTarget),
+        isLoadingPlatforms: false
+      });
+    case (_Actions || _load_Actions()).SET_DEPLOYMENT_TARGET:
+      return Object.assign({}, state, {
         selectedDeploymentTarget: action.deploymentTarget,
         extraPlatformUi: getExtraUiForDeploymentTarget(action.deploymentTarget),
         lastSessionPlatformName: null,
-        lastSessionDeviceName: null,
-      };
-    case Actions.SET_TASK_SETTINGS:
-      return {
-        ...state,
-        taskSettings: action.settings,
-      };
+        lastSessionDeviceName: null
+      });
+    case (_Actions || _load_Actions()).SET_TASK_SETTINGS:
+      return Object.assign({}, state, {
+        taskSettings: action.settings
+      });
   }
   return state;
 }
 
-function getDeploymentTargetPreference(
-  state: AppState,
-): {platformName: ?string, deviceName: ?string} {
+function getDeploymentTargetPreference(state) {
   // If a deployment target exists, that's our first choice, otherwise look at the last session
   if (state.selectedDeploymentTarget) {
     return {
       platformName: state.selectedDeploymentTarget.platform.name,
-      deviceName: state.selectedDeploymentTarget.device
-        ? state.selectedDeploymentTarget.device.name
-        : null,
+      deviceName: state.selectedDeploymentTarget.device ? state.selectedDeploymentTarget.device.name : null
     };
   } else {
     return {
       platformName: state.lastSessionPlatformName,
-      deviceName: state.lastSessionDeviceName,
+      deviceName: state.lastSessionDeviceName
     };
   }
 }
 
-function selectValidDeploymentTarget(
-  preferredPlatformName: ?string,
-  preferredDeviceName: ?string,
-  platformGroups: Array<PlatformGroup>,
-): ?DeploymentTarget {
+function selectValidDeploymentTarget(preferredPlatformName, preferredDeviceName, platformGroups) {
   if (!platformGroups.length) {
     return null;
   }
@@ -150,24 +135,15 @@ function selectValidDeploymentTarget(
     existingPlatform = platformGroups[0].platforms[0];
   }
 
-  if (
-    !existingDevice &&
-    existingPlatform.deviceGroups.length &&
-    existingPlatform.deviceGroups[0].devices.length
-  ) {
+  if (!existingDevice && existingPlatform.deviceGroups.length && existingPlatform.deviceGroups[0].devices.length) {
     existingDevice = existingPlatform.deviceGroups[0].devices[0];
   }
 
-  return {platform: existingPlatform, device: existingDevice};
+  return { platform: existingPlatform, device: existingDevice };
 }
 
-function getExtraUiForDeploymentTarget(
-  deploymentTarget: ?DeploymentTarget,
-): ?ReactElementType<any> {
-  if (
-    deploymentTarget == null ||
-    deploymentTarget.platform.extraUiWhenSelected == null
-  ) {
+function getExtraUiForDeploymentTarget(deploymentTarget) {
+  if (deploymentTarget == null || deploymentTarget.platform.extraUiWhenSelected == null) {
     return null;
   }
   return deploymentTarget.platform.extraUiWhenSelected(deploymentTarget.device);

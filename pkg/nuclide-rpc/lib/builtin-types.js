@@ -1,92 +1,78 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import type {
-  BuiltinLocation,
-  StringType,
-  NumberType,
-  BooleanType,
-  AnyType,
-  MixedType,
-  NamedType,
-  VoidType,
-} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+const builtinLocation = exports.builtinLocation = {
+  type: 'builtin'
+}; /**
+    * Copyright (c) 2015-present, Facebook, Inc.
+    * All rights reserved.
+    *
+    * This source code is licensed under the license found in the LICENSE file in
+    * the root directory of this source tree.
+    *
+    * 
+    */
 
-export const builtinLocation: BuiltinLocation = {
-  type: 'builtin',
-};
-
-export const voidType: VoidType = {
+const voidType = exports.voidType = {
   location: builtinLocation,
-  kind: 'void',
+  kind: 'void'
 };
 
-export const anyType: AnyType = {
+const anyType = exports.anyType = {
   location: builtinLocation,
-  kind: 'any',
+  kind: 'any'
 };
 
-export const mixedType: MixedType = {
+const mixedType = exports.mixedType = {
   location: builtinLocation,
-  kind: 'mixed',
+  kind: 'mixed'
 };
 
-export const stringType: StringType = {
+const stringType = exports.stringType = {
   location: builtinLocation,
-  kind: 'string',
+  kind: 'string'
 };
 
-export const booleanType: BooleanType = {
+const booleanType = exports.booleanType = {
   location: builtinLocation,
-  kind: 'boolean',
+  kind: 'boolean'
 };
 
-export const numberType: NumberType = {
+const numberType = exports.numberType = {
   location: builtinLocation,
-  kind: 'number',
+  kind: 'number'
 };
 
-export const objectType: NamedType = {
+const objectType = exports.objectType = {
   location: builtinLocation,
   kind: 'named',
-  name: 'Object',
+  name: 'Object'
 };
 
-export const dateType: NamedType = {
+const dateType = exports.dateType = {
   location: builtinLocation,
   kind: 'named',
-  name: 'Date',
+  name: 'Date'
 };
 
-export const regExpType: NamedType = {
+const regExpType = exports.regExpType = {
   location: builtinLocation,
   kind: 'named',
-  name: 'RegExp',
+  name: 'RegExp'
 };
 
-export const bufferType: NamedType = {
+const bufferType = exports.bufferType = {
   location: builtinLocation,
   kind: 'named',
-  name: 'Buffer',
+  name: 'Buffer'
 };
 
-export const fsStatsType: NamedType = {
+const fsStatsType = exports.fsStatsType = {
   location: builtinLocation,
   kind: 'named',
-  name: 'fs.Stats',
+  name: 'fs.Stats'
 };
 
-export const namedBuiltinTypes: Array<string> = [
-  objectType.name,
-  dateType.name,
-  regExpType.name,
-  bufferType.name,
-  fsStatsType.name,
-];
+const namedBuiltinTypes = exports.namedBuiltinTypes = [objectType.name, dateType.name, regExpType.name, bufferType.name, fsStatsType.name];

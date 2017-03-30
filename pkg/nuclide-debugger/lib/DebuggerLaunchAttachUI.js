@@ -1,57 +1,43 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import type {DebuggerProviderStore} from './DebuggerProviderStore';
-import type {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
-import type DebuggerActions from './DebuggerActions';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DebuggerLaunchAttachUI = undefined;
 
-import {Dropdown} from '../../nuclide-ui/Dropdown';
-import React from 'react';
-import nuclideUri from '../../commons-node/nuclideUri';
-import {asyncFilter} from '../../commons-node/promise';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-import type EventEmitter from 'events';
+var _Dropdown;
 
-type PropsType = {
-  store: DebuggerProviderStore,
-  debuggerActions: DebuggerActions,
-  emitter: EventEmitter,
-};
+function _load_Dropdown() {
+  return _Dropdown = require('../../nuclide-ui/Dropdown');
+}
 
-type StateType = {
-  connectionsUpdatedDisposable: IDisposable,
-  // Current available Nuclide connections.
-  connections: Array<string>,
-  // Availble and enabled launch/attach providers for current selected connection.
-  availableProviders: Array<DebuggerLaunchAttachProvider>,
-  // Customized launch/attach actions supported by this (connection + provider) combination.
-  providerActions: Array<string>,
-  connectionsDropdownIndex: number,
-  debuggingTypeDropdownIndex: number,
-  providerActionsDropdownIndex: number,
-  element: ?React.Element<any>,
-};
+var _react = _interopRequireDefault(require('react'));
 
-export class DebuggerLaunchAttachUI extends React.Component<void, PropsType, StateType> {
-  props: PropsType;
-  state: StateType;
+var _nuclideUri;
 
-  constructor(props: PropsType) {
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var _promise;
+
+function _load_promise() {
+  return _promise = require('../../commons-node/promise');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class DebuggerLaunchAttachUI extends _react.default.Component {
+
+  constructor(props) {
     super(props);
 
-    (this: any)._resetConnections = this._resetConnections.bind(this);
-    (this: any)._handleConnectionDropdownChange = this._handleConnectionDropdownChange.bind(this);
-    (this: any)._handleDebuggingTypeDropdownChange =
-      this._handleDebuggingTypeDropdownChange.bind(this);
-    (this: any)._handleProviderActionsDropdownChange =
-      this._handleProviderActionsDropdownChange.bind(this);
+    this._resetConnections = this._resetConnections.bind(this);
+    this._handleConnectionDropdownChange = this._handleConnectionDropdownChange.bind(this);
+    this._handleDebuggingTypeDropdownChange = this._handleDebuggingTypeDropdownChange.bind(this);
+    this._handleProviderActionsDropdownChange = this._handleProviderActionsDropdownChange.bind(this);
 
     this.state = {
       connectionsUpdatedDisposable: this.props.store.onConnectionsUpdated(this._resetConnections),
@@ -61,7 +47,7 @@ export class DebuggerLaunchAttachUI extends React.Component<void, PropsType, Sta
       connectionsDropdownIndex: 0,
       debuggingTypeDropdownIndex: 0,
       providerActionsDropdownIndex: 0,
-      element: null,
+      element: null
     };
   }
 
@@ -73,71 +59,87 @@ export class DebuggerLaunchAttachUI extends React.Component<void, PropsType, Sta
     this.state.connectionsUpdatedDisposable.dispose();
   }
 
-  render(): React.Element<any> {
+  render() {
     const connectionItems = this.state.connections.map((connection, index) => ({
-      label: nuclideUri.isRemote(connection) ? nuclideUri.getHostname(connection) : connection,
-      value: index,
+      label: (_nuclideUri || _load_nuclideUri()).default.isRemote(connection) ? (_nuclideUri || _load_nuclideUri()).default.getHostname(connection) : connection,
+      value: index
     }));
 
     const debuggingTypeItems = this.state.availableProviders.map((provider, index) => ({
       label: provider.getDebuggingTypeName(),
-      value: index,
+      value: index
     }));
 
     const providerActions = this.state.providerActions.map((action, index) => ({
       label: action,
-      value: index,
+      value: index
     }));
 
-    return (
-      <div className="padded nuclide-debugger-launch-attach-container">
-        <div className="nuclide-debugger-launch-attach-header">
-          <label className="inline-block">Connection: </label>
-          <Dropdown
-            className="inline-block"
-            options={connectionItems}
-            onChange={this._handleConnectionDropdownChange}
-            value={this.state.connectionsDropdownIndex}
-            size="sm"
-          />
-          <label className="inline-block">Type: </label>
-          <Dropdown
-            className="inline-block"
-            options={debuggingTypeItems}
-            onChange={this._handleDebuggingTypeDropdownChange}
-            value={this.state.debuggingTypeDropdownIndex}
-            size="sm"
-          />
-          <label className="inline-block">Action: </label>
-          <Dropdown
-            className="inline-block"
-            options={providerActions}
-            onChange={this._handleProviderActionsDropdownChange}
-            value={this.state.providerActionsDropdownIndex}
-            size="sm"
-          />
-        </div>
-        <div>
-          {this.state.element}
-        </div>
-      </div>
+    return _react.default.createElement(
+      'div',
+      { className: 'padded nuclide-debugger-launch-attach-container' },
+      _react.default.createElement(
+        'div',
+        { className: 'nuclide-debugger-launch-attach-header' },
+        _react.default.createElement(
+          'label',
+          { className: 'inline-block' },
+          'Connection: '
+        ),
+        _react.default.createElement((_Dropdown || _load_Dropdown()).Dropdown, {
+          className: 'inline-block',
+          options: connectionItems,
+          onChange: this._handleConnectionDropdownChange,
+          value: this.state.connectionsDropdownIndex,
+          size: 'sm'
+        }),
+        _react.default.createElement(
+          'label',
+          { className: 'inline-block' },
+          'Type: '
+        ),
+        _react.default.createElement((_Dropdown || _load_Dropdown()).Dropdown, {
+          className: 'inline-block',
+          options: debuggingTypeItems,
+          onChange: this._handleDebuggingTypeDropdownChange,
+          value: this.state.debuggingTypeDropdownIndex,
+          size: 'sm'
+        }),
+        _react.default.createElement(
+          'label',
+          { className: 'inline-block' },
+          'Action: '
+        ),
+        _react.default.createElement((_Dropdown || _load_Dropdown()).Dropdown, {
+          className: 'inline-block',
+          options: providerActions,
+          onChange: this._handleProviderActionsDropdownChange,
+          value: this.state.providerActionsDropdownIndex,
+          size: 'sm'
+        })
+      ),
+      _react.default.createElement(
+        'div',
+        null,
+        this.state.element
+      )
     );
   }
 
   // Reset connections dropdown with latest connections.
-  _resetConnections(): void {
+  _resetConnections() {
     const connections = this.props.store.getConnections();
     this.setState({
       connections,
-      connectionsDropdownIndex: 0,
+      connectionsDropdownIndex: 0
     });
     // Continue fill debugging types dropdown for new connection.
     this._resetAvailableDebuggingTypes(connections[0]);
   }
 
-  _handleConnectionDropdownChange(newIndex: number): void {
+  _handleConnectionDropdownChange(newIndex) {
     this.setState({
-      connectionsDropdownIndex: newIndex,
+      connectionsDropdownIndex: newIndex
     });
     const selectedConnection = this.state.connections[newIndex];
     // Fire and forget.
@@ -145,48 +147,51 @@ export class DebuggerLaunchAttachUI extends React.Component<void, PropsType, Sta
   }
 
   // Reset debugging types dropdown for input connection.
-  async _resetAvailableDebuggingTypes(connection: string): Promise<void> {
-    this._clearPreviousProviders();
-    const availableProviders = await asyncFilter(
-      this.props.store.getLaunchAttachProvidersForConnection(connection),
-      provider => provider.isEnabled(),
-    );
+  _resetAvailableDebuggingTypes(connection) {
+    var _this = this;
 
-    this.setState({
-      availableProviders,
-      debuggingTypeDropdownIndex: 0,
-    });
-    // Continue fill actions dropdown for new provider.
-    this._resetProviderActions(availableProviders[0]);
+    return (0, _asyncToGenerator.default)(function* () {
+      _this._clearPreviousProviders();
+      const availableProviders = yield (0, (_promise || _load_promise()).asyncFilter)(_this.props.store.getLaunchAttachProvidersForConnection(connection), function (provider) {
+        return provider.isEnabled();
+      });
+
+      _this.setState({
+        availableProviders,
+        debuggingTypeDropdownIndex: 0
+      });
+      // Continue fill actions dropdown for new provider.
+      _this._resetProviderActions(availableProviders[0]);
+    })();
   }
 
-  _clearPreviousProviders(): void {
+  _clearPreviousProviders() {
     for (const provider of this.state.availableProviders) {
       provider.dispose();
     }
   }
 
-  _handleDebuggingTypeDropdownChange(newIndex: number): void {
+  _handleDebuggingTypeDropdownChange(newIndex) {
     this.setState({
-      debuggingTypeDropdownIndex: newIndex,
+      debuggingTypeDropdownIndex: newIndex
     });
     this._resetProviderActions(this.state.availableProviders[newIndex]);
   }
 
   // Reset actions dropdown for input DebuggerLaunchAttachProvider.
-  _resetProviderActions(provider: DebuggerLaunchAttachProvider): void {
+  _resetProviderActions(provider) {
     provider.getActions().then(providerActions => {
       this.setState({
         providerActions,
-        providerActionsDropdownIndex: 0,
+        providerActionsDropdownIndex: 0
       });
       this._resetElement(provider, providerActions[0]);
     });
   }
 
-  _handleProviderActionsDropdownChange(newIndex: number): void {
+  _handleProviderActionsDropdownChange(newIndex) {
     this.setState({
-      providerActionsDropdownIndex: newIndex,
+      providerActionsDropdownIndex: newIndex
     });
     const selectedProviderIndex = this.state.debuggingTypeDropdownIndex;
     const provider = this.state.availableProviders[selectedProviderIndex];
@@ -196,14 +201,23 @@ export class DebuggerLaunchAttachUI extends React.Component<void, PropsType, Sta
   }
 
   // Display new customized element UI from input provider and action.
-  _resetElement(provider: DebuggerLaunchAttachProvider, action: string): void {
+  _resetElement(provider, action) {
     let element = provider.getComponent(action, this.props.emitter);
     // Assign an unique key to element so that react treats it as a new element.
     if (element != null) {
-      element = React.cloneElement(element, {key: provider.getUniqueKey()});
+      element = _react.default.cloneElement(element, { key: provider.getUniqueKey() });
     }
     this.setState({
-      element,
+      element
     });
   }
 }
+exports.DebuggerLaunchAttachUI = DebuggerLaunchAttachUI; /**
+                                                          * Copyright (c) 2015-present, Facebook, Inc.
+                                                          * All rights reserved.
+                                                          *
+                                                          * This source code is licensed under the license found in the LICENSE file in
+                                                          * the root directory of this source tree.
+                                                          *
+                                                          * 
+                                                          */

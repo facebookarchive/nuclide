@@ -1,21 +1,205 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
 /**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
+ * Searches upward through the filesystem from pathToDirectory to find a file with
+ * fileName.
+ * @param fileName The name of the file to find.
+ * @param pathToDirectory Where to begin the search. Must be a path to a directory,
+ *   not a file.
+ * @return directory that contains the nearest file or null.
+ */
+let findNearestFile = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (fileName, pathToDirectory) {
+    // TODO(5586355): If this becomes a bottleneck, we should consider memoizing
+    // this function. The downside would be that if someone added a closer file
+    // with fileName to pathToFile (or deleted the one that was cached), then we
+    // would have a bug. This would probably be pretty rare, though.
+    let currentPath = (_nuclideUri || _load_nuclideUri()).default.resolve(pathToDirectory);
+    for (;;) {
+      const fileToFind = (_nuclideUri || _load_nuclideUri()).default.join(currentPath, fileName);
+      // eslint-disable-next-line no-await-in-loop
+      const hasFile = yield exists(fileToFind);
+      if (hasFile) {
+        return currentPath;
+      }
+      if ((_nuclideUri || _load_nuclideUri()).default.isRoot(currentPath)) {
+        return null;
+      }
+      currentPath = (_nuclideUri || _load_nuclideUri()).default.dirname(currentPath);
+    }
+  });
+
+  return function findNearestFile(_x, _x2) {
+    return _ref.apply(this, arguments);
+  };
+})();
+
+/**
+ * Searches upward through the filesystem from pathToDirectory to find the furthest
+ * file with fileName.
+ * @param fileName The name of the file to find.
+ * @param pathToDirectory Where to begin the search. Must be a path to a directory,
+ *   not a file.
+ * @param stopOnMissing Stop searching when we reach a directory without fileName.
+ * @return directory that contains the furthest file or null.
  */
 
-import fs from 'fs';
-import fsPlus from 'fs-plus';
-import globLib from 'glob';
-import mkdirpLib from 'mkdirp';
-import nuclideUri from '../commons-node/nuclideUri';
-import rimraf from 'rimraf';
-import temp from 'temp';
-import {asyncExecute} from './process';
+
+let findFurthestFile = (() => {
+  var _ref2 = (0, _asyncToGenerator.default)(function* (fileName, pathToDirectory, stopOnMissing = false) {
+    let currentPath = (_nuclideUri || _load_nuclideUri()).default.resolve(pathToDirectory);
+    let result = null;
+    for (;;) {
+      const fileToFind = (_nuclideUri || _load_nuclideUri()).default.join(currentPath, fileName);
+      // eslint-disable-next-line no-await-in-loop
+      const hasFile = yield exists(fileToFind);
+      if (!hasFile && stopOnMissing || (_nuclideUri || _load_nuclideUri()).default.isRoot(currentPath)) {
+        return result;
+      } else if (hasFile) {
+        result = currentPath;
+      }
+      currentPath = (_nuclideUri || _load_nuclideUri()).default.dirname(currentPath);
+    }
+  });
+
+  return function findFurthestFile(_x3, _x4) {
+    return _ref2.apply(this, arguments);
+  };
+})();
+
+/**
+ * Runs the equivalent of `mkdir -p` with the given path.
+ *
+ * Like most implementations of mkdirp, if it fails, it is possible that
+ * directories were created for some prefix of the given path.
+ * @return true if the path was created; false if it already existed.
+ */
+let mkdirp = (() => {
+  var _ref3 = (0, _asyncToGenerator.default)(function* (filePath) {
+    const isExistingDirectory = yield exists(filePath);
+    if (isExistingDirectory) {
+      return false;
+    } else {
+      return new Promise(function (resolve, reject) {
+        (0, (_mkdirp || _load_mkdirp()).default)(filePath, function (err) {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(true);
+          }
+        });
+      });
+    }
+  });
+
+  return function mkdirp(_x5) {
+    return _ref3.apply(this, arguments);
+  };
+})();
+
+/**
+ * Removes directories even if they are non-empty. Does not fail if the directory doesn't exist.
+ */
+
+
+/** @return true only if we are sure directoryPath is on NFS. */
+let isNfs = (() => {
+  var _ref4 = (0, _asyncToGenerator.default)(function* (entityPath) {
+    if (process.platform === 'linux' || process.platform === 'darwin') {
+      const { stdout, exitCode } = yield (0, (_process || _load_process()).asyncExecute)('stat', ['-f', '-L', '-c', '%T', entityPath]);
+      if (exitCode === 0) {
+        return stdout.trim() === 'nfs';
+      } else {
+        return false;
+      }
+    } else {
+      // TODO Handle other platforms (windows?): t9917576.
+      return false;
+    }
+  });
+
+  return function isNfs(_x6) {
+    return _ref4.apply(this, arguments);
+  };
+})();
+
+let isNonNfsDirectory = (() => {
+  var _ref5 = (0, _asyncToGenerator.default)(function* (directoryPath) {
+    try {
+      const stats = yield stat(directoryPath);
+      if (stats.isDirectory()) {
+        return !(yield isNfs(directoryPath));
+      } else {
+        return false;
+      }
+    } catch (e) {
+      // If the directory cannot be probed for whatever reason, just
+      // indicate that this is not a valid candidate directory.
+      // Typically this is ENOENT for missing directory.
+      return false;
+    }
+  });
+
+  return function isNonNfsDirectory(_x7) {
+    return _ref5.apply(this, arguments);
+  };
+})();
+
+/**
+ * Promisified wrappers around fs-plus functions.
+ */
+
+var _fs = _interopRequireDefault(require('fs'));
+
+var _fsPlus;
+
+function _load_fsPlus() {
+  return _fsPlus = _interopRequireDefault(require('fs-plus'));
+}
+
+var _glob;
+
+function _load_glob() {
+  return _glob = _interopRequireDefault(require('glob'));
+}
+
+var _mkdirp;
+
+function _load_mkdirp() {
+  return _mkdirp = _interopRequireDefault(require('mkdirp'));
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../commons-node/nuclideUri'));
+}
+
+var _rimraf;
+
+function _load_rimraf() {
+  return _rimraf = _interopRequireDefault(require('rimraf'));
+}
+
+var _temp;
+
+function _load_temp() {
+  return _temp = _interopRequireDefault(require('temp'));
+}
+
+var _process;
+
+function _load_process() {
+  return _process = require('./process');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Create a temp directory with given prefix. The caller is responsible for cleaning up the
@@ -23,9 +207,19 @@ import {asyncExecute} from './process';
  * @param prefix optinal prefix for the temp directory name.
  * @return path to a temporary directory.
  */
-function tempdir(prefix: string = ''): Promise<string> {
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ *
+ * 
+ */
+
+function tempdir(prefix = '') {
   return new Promise((resolve, reject) => {
-    temp.mkdir(prefix, (err, result) => {
+    (_temp || _load_temp()).default.mkdir(prefix, (err, result) => {
       if (err == null) {
         resolve(result);
       } else {
@@ -39,13 +233,13 @@ function tempdir(prefix: string = ''): Promise<string> {
  * @return path to a temporary file. The caller is responsible for cleaning up
  *     the file.
  */
-function tempfile(options: any): Promise<string> {
+function tempfile(options) {
   return new Promise((resolve, reject) => {
-    temp.open(options, (err, info) => {
+    (_temp || _load_temp()).default.open(options, (err, info) => {
       if (err) {
         reject(err);
       } else {
-        fs.close(info.fd, closeErr => {
+        _fs.default.close(info.fd, closeErr => {
           if (closeErr) {
             reject(closeErr);
           } else {
@@ -57,108 +251,21 @@ function tempfile(options: any): Promise<string> {
   });
 }
 
-/**
- * Searches upward through the filesystem from pathToDirectory to find a file with
- * fileName.
- * @param fileName The name of the file to find.
- * @param pathToDirectory Where to begin the search. Must be a path to a directory,
- *   not a file.
- * @return directory that contains the nearest file or null.
- */
-async function findNearestFile(fileName: string, pathToDirectory: string): Promise<?string> {
-  // TODO(5586355): If this becomes a bottleneck, we should consider memoizing
-  // this function. The downside would be that if someone added a closer file
-  // with fileName to pathToFile (or deleted the one that was cached), then we
-  // would have a bug. This would probably be pretty rare, though.
-  let currentPath = nuclideUri.resolve(pathToDirectory);
-  for (;;) {
-    const fileToFind = nuclideUri.join(currentPath, fileName);
-    // eslint-disable-next-line no-await-in-loop
-    const hasFile = await exists(fileToFind);
-    if (hasFile) {
-      return currentPath;
-    }
-    if (nuclideUri.isRoot(currentPath)) {
-      return null;
-    }
-    currentPath = nuclideUri.dirname(currentPath);
-  }
-}
-
-/**
- * Searches upward through the filesystem from pathToDirectory to find the furthest
- * file with fileName.
- * @param fileName The name of the file to find.
- * @param pathToDirectory Where to begin the search. Must be a path to a directory,
- *   not a file.
- * @param stopOnMissing Stop searching when we reach a directory without fileName.
- * @return directory that contains the furthest file or null.
- */
-async function findFurthestFile(
-  fileName: string,
-  pathToDirectory: string,
-  stopOnMissing: boolean = false,
-): Promise<?string> {
-  let currentPath = nuclideUri.resolve(pathToDirectory);
-  let result = null;
-  for (;;) {
-    const fileToFind = nuclideUri.join(currentPath, fileName);
-    // eslint-disable-next-line no-await-in-loop
-    const hasFile = await exists(fileToFind);
-    if ((!hasFile && stopOnMissing) || nuclideUri.isRoot(currentPath)) {
-      return result;
-    } else if (hasFile) {
-      result = currentPath;
-    }
-    currentPath = nuclideUri.dirname(currentPath);
-  }
-}
-
-function getCommonAncestorDirectory(filePaths: Array<string>): string {
-  let commonDirectoryPath = nuclideUri.dirname(filePaths[0]);
+function getCommonAncestorDirectory(filePaths) {
+  let commonDirectoryPath = (_nuclideUri || _load_nuclideUri()).default.dirname(filePaths[0]);
   while (filePaths.some(filePath => !filePath.startsWith(commonDirectoryPath))) {
-    commonDirectoryPath = nuclideUri.dirname(commonDirectoryPath);
+    commonDirectoryPath = (_nuclideUri || _load_nuclideUri()).default.dirname(commonDirectoryPath);
   }
   return commonDirectoryPath;
 }
 
-
-function exists(filePath: string): Promise<boolean> {
+function exists(filePath) {
   return new Promise((resolve, reject) => {
-    fs.exists(filePath, resolve);
+    _fs.default.exists(filePath, resolve);
   });
-}
-
-/**
- * Runs the equivalent of `mkdir -p` with the given path.
- *
- * Like most implementations of mkdirp, if it fails, it is possible that
- * directories were created for some prefix of the given path.
- * @return true if the path was created; false if it already existed.
- */
-async function mkdirp(filePath: string): Promise<boolean> {
-  const isExistingDirectory = await exists(filePath);
-  if (isExistingDirectory) {
-    return false;
-  } else {
-    return new Promise((resolve, reject) => {
-      mkdirpLib(filePath, err => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(true);
-        }
-      });
-    });
-  }
-}
-
-/**
- * Removes directories even if they are non-empty. Does not fail if the directory doesn't exist.
- */
-function rmdir(filePath: string): Promise<void> {
+}function rmdir(filePath) {
   return new Promise((resolve, reject) => {
-    rimraf(filePath, (err, result) => {
+    (0, (_rimraf || _load_rimraf()).default)(filePath, (err, result) => {
       if (err == null) {
         resolve(result);
       } else {
@@ -168,24 +275,9 @@ function rmdir(filePath: string): Promise<void> {
   });
 }
 
-/** @return true only if we are sure directoryPath is on NFS. */
-async function isNfs(entityPath: string): Promise<boolean> {
-  if (process.platform === 'linux' || process.platform === 'darwin') {
-    const {stdout, exitCode} = await asyncExecute('stat', ['-f', '-L', '-c', '%T', entityPath]);
-    if (exitCode === 0) {
-      return stdout.trim() === 'nfs';
-    } else {
-      return false;
-    }
-  } else {
-    // TODO Handle other platforms (windows?): t9917576.
-    return false;
-  }
-}
-
-function glob(pattern: string, options?: Object): Promise<Array<string>> {
+function glob(pattern, options) {
   return new Promise((resolve, reject) => {
-    globLib(pattern, options, (err, result) => {
+    (0, (_glob || _load_glob()).default)(pattern, options, (err, result) => {
       if (err == null) {
         resolve(result);
       } else {
@@ -195,29 +287,9 @@ function glob(pattern: string, options?: Object): Promise<Array<string>> {
   });
 }
 
-async function isNonNfsDirectory(directoryPath: string): Promise<boolean> {
-  try {
-    const stats = await stat(directoryPath);
-    if (stats.isDirectory()) {
-      return !(await isNfs(directoryPath));
-    } else {
-      return false;
-    }
-  } catch (e) {
-    // If the directory cannot be probed for whatever reason, just
-    // indicate that this is not a valid candidate directory.
-    // Typically this is ENOENT for missing directory.
-    return false;
-  }
-}
-
-/**
- * Promisified wrappers around fs-plus functions.
- */
-
-function copy(source: string, dest: string): Promise<void> {
+function copy(source, dest) {
   return new Promise((resolve, reject) => {
-    fsPlus.copy(source, dest, (err, result) => {
+    (_fsPlus || _load_fsPlus()).default.copy(source, dest, (err, result) => {
       if (err == null) {
         resolve(result);
       } else {
@@ -227,9 +299,9 @@ function copy(source: string, dest: string): Promise<void> {
   });
 }
 
-function move(source: string, dest: string): Promise<void> {
+function move(source, dest) {
   return new Promise((resolve, reject) => {
-    fsPlus.move(source, dest, (err, result) => {
+    (_fsPlus || _load_fsPlus()).default.move(source, dest, (err, result) => {
       if (err == null) {
         resolve(result);
       } else {
@@ -243,13 +315,9 @@ function move(source: string, dest: string): Promise<void> {
  * TODO: the fs-plus `writeFile` implementation runs `mkdirp` first.
  * We should use `fs.writeFile` and have callsites explicitly opt-in to this behaviour.
  */
-function writeFile(
-  filename: string,
-  data: Buffer | string,
-  options?: Object | string,
-): Promise<void> {
+function writeFile(filename, data, options) {
   return new Promise((resolve, reject) => {
-    fsPlus.writeFile(filename, data, options, (err, result) => {
+    (_fsPlus || _load_fsPlus()).default.writeFile(filename, data, options, (err, result) => {
       if (err == null) {
         resolve(result);
       } else {
@@ -263,9 +331,9 @@ function writeFile(
  * Promisified wrappers around fs functions.
  */
 
-function chmod(path: string, mode: number | string): Promise<void> {
+function chmod(path, mode) {
   return new Promise((resolve, reject) => {
-    fs.chmod(path, mode, (err, result) => {
+    _fs.default.chmod(path, mode, (err, result) => {
       if (err == null) {
         resolve(result);
       } else {
@@ -275,9 +343,9 @@ function chmod(path: string, mode: number | string): Promise<void> {
   });
 }
 
-function lstat(path: string): Promise<fs.Stats> {
+function lstat(path) {
   return new Promise((resolve, reject) => {
-    fs.lstat(path, (err, result) => {
+    _fs.default.lstat(path, (err, result) => {
       if (err == null) {
         resolve(result);
       } else {
@@ -287,9 +355,9 @@ function lstat(path: string): Promise<fs.Stats> {
   });
 }
 
-function mkdir(path: string, mode?: number): Promise<void> {
+function mkdir(path, mode) {
   return new Promise((resolve, reject) => {
-    fs.mkdir(path, mode, (err, result) => {
+    _fs.default.mkdir(path, mode, (err, result) => {
       if (err == null) {
         resolve(result);
       } else {
@@ -301,16 +369,12 @@ function mkdir(path: string, mode?: number): Promise<void> {
 
 // `fs.readFile` returns a Buffer unless an encoding is specified.
 // This workaround is adapted from the Flow declarations.
-type ReadFileType =
-  ((filename: string, encoding: string) => Promise<string>) &
-  ((filename: string, options: { encoding: string, flag?: string }) => Promise<string>) &
-  ((filename: string) => Promise<Buffer>) &
-  ((filename: string, options: { flag?: string }) => Promise<Buffer>);
 
-const readFile: ReadFileType = (function() {
+
+const readFile = function () {
   return new Promise((resolve, reject) => {
     // $FlowIssue: spread operator doesn't preserve any-type
-    fs.readFile(...arguments, (err, result) => {
+    _fs.default.readFile(...arguments, (err, result) => {
       if (err == null) {
         resolve(result);
       } else {
@@ -318,11 +382,11 @@ const readFile: ReadFileType = (function() {
       }
     });
   });
-}: any);
+};
 
-function readdir(path: string): Promise<Array<string>> {
+function readdir(path) {
   return new Promise((resolve, reject) => {
-    fs.readdir(path, (err, result) => {
+    _fs.default.readdir(path, (err, result) => {
       if (err == null) {
         resolve(result);
       } else {
@@ -332,9 +396,9 @@ function readdir(path: string): Promise<Array<string>> {
   });
 }
 
-function readlink(path: string): Promise<string> {
+function readlink(path) {
   return new Promise((resolve, reject) => {
-    fs.readlink(path, (err, result) => {
+    _fs.default.readlink(path, (err, result) => {
       if (err == null) {
         resolve(result);
       } else {
@@ -344,9 +408,9 @@ function readlink(path: string): Promise<string> {
   });
 }
 
-function realpath(path: string, cache?: Object): Promise<string> {
+function realpath(path, cache) {
   return new Promise((resolve, reject) => {
-    fs.realpath(path, cache, (err, result) => {
+    _fs.default.realpath(path, cache, (err, result) => {
       if (err == null) {
         resolve(result);
       } else {
@@ -356,9 +420,9 @@ function realpath(path: string, cache?: Object): Promise<string> {
   });
 }
 
-function rename(oldPath: string, newPath: string): Promise<void> {
+function rename(oldPath, newPath) {
   return new Promise((resolve, reject) => {
-    fs.rename(oldPath, newPath, (err, result) => {
+    _fs.default.rename(oldPath, newPath, (err, result) => {
       if (err == null) {
         resolve(result);
       } else {
@@ -368,9 +432,9 @@ function rename(oldPath: string, newPath: string): Promise<void> {
   });
 }
 
-function stat(path: string): Promise<fs.Stats> {
+function stat(path) {
   return new Promise((resolve, reject) => {
-    fs.stat(path, (err, result) => {
+    _fs.default.stat(path, (err, result) => {
       if (err == null) {
         resolve(result);
       } else {
@@ -380,9 +444,9 @@ function stat(path: string): Promise<fs.Stats> {
   });
 }
 
-function symlink(source: string, dest: string, type?: string): Promise<void> {
+function symlink(source, dest, type) {
   return new Promise((resolve, reject) => {
-    fs.symlink(source, dest, type, (err, result) => {
+    _fs.default.symlink(source, dest, type, (err, result) => {
       if (err == null) {
         resolve(result);
       } else {
@@ -392,9 +456,9 @@ function symlink(source: string, dest: string, type?: string): Promise<void> {
   });
 }
 
-function unlink(path: string): Promise<void> {
+function unlink(path) {
   return new Promise((resolve, reject) => {
-    fs.unlink(path, (err, result) => {
+    _fs.default.unlink(path, (err, result) => {
       if (err == null) {
         resolve(result);
       } else {
@@ -404,7 +468,7 @@ function unlink(path: string): Promise<void> {
   });
 }
 
-export default {
+exports.default = {
   tempdir,
   tempfile,
   findNearestFile,
@@ -431,5 +495,5 @@ export default {
   rename,
   stat,
   symlink,
-  unlink,
+  unlink
 };
