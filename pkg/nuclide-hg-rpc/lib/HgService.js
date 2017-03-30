@@ -1029,8 +1029,7 @@ export class HgService {
   }
 
   async getTemplateCommitMessage(): Promise<?string> {
-    // Once TODO(t14843143) is done the extension would be enabled by default
-    const args = ['--config', 'extensions.debugcommitmessage= ', 'debugcommitmessage'];
+    const args = ['debugcommitmessage'];
     const execOptions = {
       cwd: this._workingDirectory,
     };
