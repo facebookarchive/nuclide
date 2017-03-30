@@ -12,6 +12,7 @@ import type {PlatformGroup} from './types';
 
 import {Disposable} from 'atom';
 import {Observable, Subject} from 'rxjs';
+import {getLogger} from '../../nuclide-logging';
 
 type PlatformProvider = (
   buckRoot: string,
@@ -40,8 +41,10 @@ export class PlatformService {
   ): Observable<Array<PlatformGroup>> {
     return this._providersChanged.startWith(undefined).switchMap(() => {
       const observables = this._registeredProviders.map(provider =>
-        provider(buckRoot, ruleType, buildTarget).catch(error =>
-          Observable.of(null)));
+        provider(buckRoot, ruleType, buildTarget).catch(error => {
+          getLogger().error(`Getting buck platform groups from ${provider.name} failed:`, error);
+          return Observable.of(null);
+        }));
       return (
         Observable.from(observables)
           // $FlowFixMe: type combineAll
