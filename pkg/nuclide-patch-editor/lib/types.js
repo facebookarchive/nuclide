@@ -24,6 +24,7 @@ export type FileData = {
   countEnabledChunks: number,
   countPartialChunks: number,
   fileDiff: diffparser$FileDiff,
+  id: string, // equal to `${this.fileDiff.to}:${this.fileDiff.from}`
   selected: SelectedState,
 };
 

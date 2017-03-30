@@ -9,7 +9,6 @@
  */
 
 import {AtomTextEditor} from './AtomTextEditor';
-import nullthrows from 'nullthrows';
 import {pluralize} from '../commons-node/string';
 import {
   Range,
@@ -19,20 +18,14 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {Section} from './Section';
 import UniversalDisposable from '../commons-node/UniversalDisposable';
-import {viewableFromReactElement} from '../commons-atom/viewableFromReactElement';
 
 type Props = {
-  checkboxFactory?:
-    (fileName: string, hunkOldStartLine?: number, line?: number) => React.Element<any>,
   collapsable?: boolean,
   diff: diffparser$FileDiff,
 };
 
 type HunkProps = {
-  checkboxFactory: ?(fileName: string, hunkOldStartLine: number, line?: number)
-    => React.Element<any>,
   collapsable: boolean,
-  fileName: string,
   grammar: atom$Grammar,
   hunk: diffparser$Hunk,
 };
@@ -71,7 +64,6 @@ const GutterElement = (props: {
 export class HunkDiff extends React.Component {
   props: HunkProps;
   _disposables: UniversalDisposable;
-  _checkboxGutter: ?atom$Gutter;
 
   constructor(props: HunkProps) {
     super(props);
@@ -82,11 +74,6 @@ export class HunkDiff extends React.Component {
     const model = this.refs.editor.getModel();
     this._createLineMarkers(model);
     this._createLineNumbers(model);
-    this._updateCheckboxGutter(model);
-  }
-
-  componentDidUpdate(): void {
-    this._updateCheckboxGutter(this.refs.editor.getModel());
   }
 
   componentWillReceiveProps(nextProps: HunkProps): void {
@@ -115,60 +102,11 @@ export class HunkDiff extends React.Component {
   }
 
   shouldComponentUpdate(nextProps: HunkProps): boolean {
-    return this.props.checkboxFactory !== nextProps.checkboxFactory;
+    return false;
   }
 
   componentWillUnmount(): void {
     this._disposables.dispose();
-    if (this._checkboxGutter != null) {
-      this._checkboxGutter.destroy();
-    }
-  }
-
-  _updateCheckboxGutter(editor: atom$TextEditor): void {
-    if (this._checkboxGutter != null) {
-      this._checkboxGutter.destroy();
-      this._checkboxGutter = null;
-    }
-    const {checkboxFactory} = this.props;
-    if (checkboxFactory == null) {
-      return;
-    }
-
-    const gutter = editor.addGutter({name: 'checkboxes'});
-    let firstChangedLineNumber;
-    let hunkIndex = 0;
-
-    for (const line of this.props.hunk.changes) {
-      const lineNumber = hunkIndex++;
-      if (line.type === 'normal') {
-        continue;
-      } else if (firstChangedLineNumber == null) {
-        firstChangedLineNumber = lineNumber;
-      }
-      const range = new Range(
-        [lineNumber, 0],
-        [lineNumber + 1, 0],
-      );
-      const item = viewableFromReactElement(checkboxFactory(
-        this.props.fileName,
-        this.props.hunk.oldStart,
-        lineNumber - nullthrows(firstChangedLineNumber),
-      ));
-
-      const marker = editor.markBufferRange(range, {invalidate: 'never'});
-      const gutterDecoration = gutter.decorateMarker(marker, {
-        type: 'gutter',
-        item,
-      });
-
-      gutter.onDidDestroy(() => {
-        item.destroy();
-        gutterDecoration.destroy();
-      });
-    }
-
-    this._checkboxGutter = gutter;
   }
 
   // Line numbers are contiguous, but have a random starting point, so we can't use the
@@ -258,38 +196,28 @@ export class HunkDiff extends React.Component {
     const {
       content,
       changes,
-      oldStart,
     } = hunk;
     // Remove the first character in each line (/[+- ]/) which indicates addition / deletion
     const text = changes.map(change => change.content.slice(1)).join('\n');
     const textBuffer = new TextBuffer();
     textBuffer.setText(text);
 
-    let checkbox;
-    if (this.props.checkboxFactory != null) {
-      checkbox = this.props.checkboxFactory(this.props.fileName, oldStart);
-    }
-
     return (
-      <div className="nuclide-ui-hunk-diff" key={content}>
-        {checkbox}
-        <Section
-          className="nuclide-ui-hunk-diff-content"
-          collapsable={this.props.collapsable}
-          headline={content}
-          size="medium">
-          <AtomTextEditor
-            autoGrow={true}
-            className="nuclide-ui-hunk-diff-text-editor"
-            correctContainerWidth={false}
-            grammar={grammar}
-            gutterHidden={true}
-            readOnly={true}
-            ref="editor"
-            textBuffer={textBuffer}
-          />
-        </Section>
-      </div>
+      <Section
+        collapsable={this.props.collapsable}
+        headline={content}
+        size="medium">
+        <AtomTextEditor
+          autoGrow={true}
+          className="nuclide-ui-hunk-diff-text-editor"
+          correctContainerWidth={false}
+          grammar={grammar}
+          gutterHidden={true}
+          readOnly={true}
+          ref="editor"
+          textBuffer={textBuffer}
+        />
+      </Section>
     );
   }
 }
@@ -325,21 +253,15 @@ export default class FileChanges extends React.Component {
       }
       hunks.push(
         <HunkDiff
-          checkboxFactory={this.props.checkboxFactory}
           collapsable={this.props.collapsable}
           fileName={fileName}
-          key={chunk.content}
+          key={chunk.oldStart}
           grammar={grammar}
           hunk={chunk}
         />,
       );
       i++;
     }
-    let checkbox;
-    if (this.props.checkboxFactory != null) {
-      checkbox = this.props.checkboxFactory(fileName);
-    }
-
     let annotationComponent;
     if (annotation != null) {
       annotationComponent = (
@@ -360,15 +282,11 @@ export default class FileChanges extends React.Component {
     const headline = <span>{fileName}<br />{diffDetails}</span>;
 
     return (
-      <div className="nuclide-ui-file-changes">
-        {checkbox}
-        <Section
-          className="nuclide-ui-file-changes-content"
-          collapsable={this.props.collapsable}
-          headline={headline}>
-          {hunks}
-        </Section>
-      </div>
+      <Section
+        collapsable={this.props.collapsable}
+        headline={headline}>
+        {hunks}
+      </Section>
     );
   }
 }

@@ -8,53 +8,55 @@
  * @flow
  */
 
+import typeof * as BoundActionCreators from '../redux/Actions';
 import type {PatchData} from '../types';
 
 import React from 'react';
-import FileChanges from '../../../nuclide-ui/FileChanges';
 import {Button} from '../../../nuclide-ui/Button';
+import {ButtonGroup} from '../../../nuclide-ui/ButtonGroup';
 import {patchToString} from '../utils';
+import {SelectFileChanges} from './SelectFileChanges';
 
 type Props = {
-  checkboxFactory: (file: string, hunkOldStartLine?: number, line?: number) => React.Element<any>,
+  actionCreators: BoundActionCreators,
   onConfirm: string => mixed,
   onManualEdit: () => mixed,
   onQuit: () => mixed,
+  patchId: string,
   patchData: PatchData,
 };
 
-export default class InteractiveFileChanges extends React.Component {
+export default class PatchEditor extends React.Component {
   props: Props;
   _patch: Array<diffparser$FileDiff>;
 
   constructor(props: Props) {
     super(props);
 
-    this._patch = Array.from(props.patchData.files.values()).map(file => file.fileDiff);
-
     (this: any)._onClickConfirm = this._onClickConfirm.bind(this);
     (this: any)._onClickDirectEdit = this._onClickDirectEdit.bind(this);
     (this: any)._onClickQuit = this._onClickQuit.bind(this);
   }
 
-  shouldComponentUpdate(nextProps: Props): boolean {
-    return nextProps.patchData !== this.props.patchData;
-  }
-
   render(): React.Element<any> {
+    const files = Array.from(this.props.patchData.files.values());
     return (
       <div className="nuclide-patch-editor">
-        <Button onClick={this._onClickConfirm}>Confirm</Button>
-        <Button onClick={this._onClickQuit}>Quit</Button>
-        <Button onClick={this._onClickDirectEdit}>Direct Edit</Button>
-        {this._patch.map(file =>
-          <FileChanges
-            checkboxFactory={this.props.checkboxFactory}
-            collapsable={true}
-            diff={file}
-            key={`${file.from}:${file.to}`}
-          />,
-        )}
+        <ButtonGroup>
+          <Button onClick={this._onClickConfirm}>Confirm</Button>
+          <Button onClick={this._onClickQuit}>Quit</Button>
+          <Button onClick={this._onClickDirectEdit}>Direct Edit</Button>
+        </ButtonGroup>
+        {files.map(file => {
+          return (
+            <SelectFileChanges
+              actionCreators={this.props.actionCreators}
+              fileData={file}
+              key={file.id}
+              patchId={this.props.patchId}
+            />
+          );
+        })}
       </div>
     );
   }

@@ -83,15 +83,19 @@ export function parseWithAnnotations(diffContent: string): Array<diffparser$File
 
 export function createPatchData(patch: Array<diffparser$FileDiff>): PatchData {
   return {
-    files: new Map(patch.map(fileDiff => [fileDiff.to, {
-      chunks: isSpecialChange(fileDiff)
-        ? null
-        : new Map(fileDiff.chunks.map(chunk => [chunk.oldStart, createHunkData(chunk)])),
-      countEnabledChunks: fileDiff.chunks.length,
-      countPartialChunks: 0,
-      fileDiff,
-      selected: SelectedState.ALL,
-    }])),
+    files: new Map(patch.map(fileDiff => {
+      const id = `${fileDiff.to}:${fileDiff.from}`;
+      return [id, {
+        chunks: isSpecialChange(fileDiff)
+          ? null
+          : new Map(fileDiff.chunks.map(chunk => [chunk.oldStart, createHunkData(chunk)])),
+        countEnabledChunks: fileDiff.chunks.length,
+        countPartialChunks: 0,
+        fileDiff,
+        id,
+        selected: SelectedState.ALL,
+      }];
+    })),
   };
 }
 

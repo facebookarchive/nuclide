@@ -16,11 +16,10 @@ import typeof * as BoundActionCreators from './redux/Actions';
 import * as Actions from './redux/Actions';
 import {bindActionCreators, createStore} from 'redux';
 import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
-import {Checkbox} from '../../nuclide-ui/Checkbox';
 import {createEmptyAppState} from './redux/createEmptyAppState';
 import createPackage from '../../commons-atom/createPackage';
 import {Disposable} from 'atom';
-import InteractiveFileChanges from './ui/InteractiveFileChanges';
+import PatchEditor from './ui/PatchEditor';
 import {isValidTextEditor} from '../../commons-atom/text-editor';
 import nullthrows from 'nullthrows';
 import {Observable, BehaviorSubject} from 'rxjs';
@@ -29,7 +28,6 @@ import {parseWithAnnotations} from './utils';
 import React from 'react';
 import {repositoryForPath} from '../../commons-atom/vcs';
 import {rootReducer} from './redux/Reducers';
-import {SelectedState} from './constants';
 import {track} from '../../nuclide-analytics';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
@@ -120,19 +118,20 @@ class Activation {
       const editorPath = nullthrows(editor.getPath());
       this._actionCreators.registerPatchEditor(editorPath, patch);
 
-      const BoundInteractiveFileChanges = bindObservableAsProps(
+      const BoundPatchEditor = bindObservableAsProps(
         this._states.map((state: AppState) => {
           return {
-            checkboxFactory: this._createCheckboxFactory(editorPath),
+            actionCreators: this._actionCreators,
             onConfirm: content => onConfirm(editor, content),
             onManualEdit: () => onManualEdit(editor, diffContent, marker, editorView),
             onQuit: () => onQuit(editor),
+            patchId: editorPath,
             patchData: state.patchEditors.get(editorPath),
           };
         }),
-        InteractiveFileChanges,
+        PatchEditor,
       );
-      const item = viewableFromReactElement(<BoundInteractiveFileChanges />);
+      const item = viewableFromReactElement(<BoundPatchEditor />);
       item.element.style.visibility = 'visible';
 
       editor.decorateMarker(marker, {
@@ -145,45 +144,6 @@ class Activation {
         this._actionCreators.deregisterPatchEditor(editorPath);
       });
     }
-  }
-
-  _createCheckboxFactory(editorPath: string): (
-    fileName: string,
-    hunkOldStartLine?: number,
-    line?: number
-  ) => React.Element<any> {
-    const {patchEditors} = this._store.getState();
-    const patchData = nullthrows(patchEditors.get(editorPath));
-
-    return (fileName: string, hunkOldStartLine?: number, line?: number) => {
-      let checked;
-      let indeterminate = false;
-      const fileData = nullthrows(patchData.files.get(fileName));
-
-      if (hunkOldStartLine != null) {
-        const hunkData = nullthrows(nullthrows(fileData.chunks).get(hunkOldStartLine));
-
-        if (line != null) {
-          checked = hunkData.allChanges[line];
-        } else {
-          checked = hunkData.selected === SelectedState.ALL;
-          indeterminate = hunkData.selected === SelectedState.SOME;
-        }
-      } else {
-        checked = fileData.selected === SelectedState.ALL;
-        indeterminate = fileData.selected === SelectedState.SOME;
-      }
-
-      return (
-        <Checkbox
-          checked={checked}
-          indeterminate={indeterminate}
-          onChange={
-            () => this._actionCreators.clickCheckbox(editorPath, fileName, hunkOldStartLine, line)
-          }
-        />
-      );
-    };
   }
 }
 
