@@ -11,6 +11,7 @@
 export default function createPaneContainer(): Object {
   const PaneContainer = atom.workspace.paneContainer.constructor;
   return new PaneContainer({
+    viewRegistry: atom.views,
     config: atom.config,
     applicationDelegate: atom.applicationDelegate,
     notificationManager: atom.notifications,
