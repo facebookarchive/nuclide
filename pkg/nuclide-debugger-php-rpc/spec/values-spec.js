@@ -175,7 +175,7 @@ describe('debugger-php-rpc convertValue', () => {
           type: 'object',
           classname: 'CLS',
           children: false,
-          numchildren: '0',
+          numchildren: 0,
           page: 0,
           pagesize: 32,
         },

@@ -71,7 +71,7 @@ export type DbgpProperty = {
     // array or object
     classname?: string,
     children?: boolean,
-    numChildren?: number,
+    numchildren?: number,
     page?: number,
     pagesize?: number,
     recursive?: number,
