@@ -59,7 +59,7 @@ function filterProvidersByScopeName(
       );
     })
     .sort((providerA: DatatipProvider, providerB: DatatipProvider) => {
-      return providerA.inclusionPriority - providerB.inclusionPriority;
+      return providerB.inclusionPriority - providerA.inclusionPriority;
     });
 }
 
