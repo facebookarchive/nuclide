@@ -210,6 +210,7 @@ export default class FileTreeSidebarComponent extends React.Component {
             selectedFile={this.state.activeUri}
             hideEmptyFolders={true}
             onFileChosen={this._onFileChosen}
+            openInDiffViewOption={true}
           />
         </div>
       );

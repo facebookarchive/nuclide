@@ -19,6 +19,7 @@ import {
  RevertibleStatusCodes,
 } from '../commons-atom/vcs';
 import {goToLocation} from '../commons-atom/go-to-location';
+import {openFileInDiffView} from '../commons-atom/open-in-diff-view';
 import invariant from 'assert';
 import nuclideUri from '../commons-node/nuclideUri';
 import React from 'react';
@@ -32,6 +33,7 @@ type Props = {
   hideEmptyFolders?: boolean,
   onFileChosen: (filePath: NuclideUri) => void,
   getRevertTargetRevision?: () => ?string,
+  openInDiffViewOption?: boolean,
 };
 
 export class MultiRootChangedFilesView extends React.Component {
@@ -40,7 +42,7 @@ export class MultiRootChangedFilesView extends React.Component {
 
   componentDidMount(): void {
     this._subscriptions = new UniversalDisposable();
-    const {commandPrefix, getRevertTargetRevision} = this.props;
+    const {commandPrefix, getRevertTargetRevision, openInDiffViewOption} = this.props;
     this._subscriptions.add(atom.contextMenu.add({
       [`.${commandPrefix}-file-entry`]: [
         {type: 'separator'},
@@ -49,6 +51,13 @@ export class MultiRootChangedFilesView extends React.Component {
           command: `${commandPrefix}:add`,
           shouldDisplay: event => {
             return this._getStatusCodeForFile(event) === FileChangeStatus.UNTRACKED;
+          },
+        },
+        {
+          label: 'Open in Diff View',
+          command: `${commandPrefix}:open-in-diff-view`,
+          shouldDisplay: event => {
+            return openInDiffViewOption;
           },
         },
         {
@@ -140,6 +149,17 @@ export class MultiRootChangedFilesView extends React.Component {
             targetRevision = getRevertTargetRevision();
           }
           confirmAndRevertPath(filePath, targetRevision);
+        }
+      },
+    ));
+
+    this._subscriptions.add(atom.commands.add(
+      `.${commandPrefix}-file-entry`,
+      `${commandPrefix}:open-in-diff-view`,
+      event => {
+        const filePath = this._getFilePathFromEvent(event);
+        if (filePath != null && filePath.length) {
+          openFileInDiffView(filePath);
         }
       },
     ));
