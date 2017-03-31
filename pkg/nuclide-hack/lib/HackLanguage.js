@@ -161,7 +161,10 @@ export async function isFileInHackProject(fileUri: NuclideUri): Promise<boolean>
 function updateAutocompleteResults(
   request: atom$AutocompleteRequest,
   firstResult: AutocompleteResult,
-): AutocompleteResult {
+): ?AutocompleteResult {
+  if (firstResult.isIncomplete) {
+    return null;
+  }
   const replacementPrefix = findHackPrefix(request.editor.getBuffer(), request.bufferPosition);
   const updatedCompletions = updateReplacementPrefix(request, firstResult.items, replacementPrefix);
   return {...firstResult, items: sortAndFilterCompletions(updatedCompletions, replacementPrefix)};

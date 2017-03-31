@@ -151,18 +151,11 @@ class HackLanguageServiceImpl extends ServerLanguageService {
   ): Promise<?AutocompleteResult> {
     try {
       const process = await getHackProcess(this._fileCache, fileVersion.filePath);
-      const items = await process.getAutocompleteSuggestions(
+      return process.getAutocompleteSuggestions(
         fileVersion,
         position,
         activatedManually,
       );
-      if (items == null) {
-        return null;
-      }
-      return {
-        isIncomplete: false,
-        items,
-      };
     } catch (e) {
       return null;
     }

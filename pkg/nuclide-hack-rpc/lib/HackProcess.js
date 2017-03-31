@@ -15,7 +15,7 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {HackCompletionsResult} from './rpc-types';
 import type {ProcessMaker} from '../../nuclide-rpc/lib/RpcProcess';
-import type {Completion} from '../../nuclide-language-service/lib/LanguageService';
+import type {AutocompleteResult} from '../../nuclide-language-service/lib/LanguageService';
 
 import nuclideUri from '../../commons-node/nuclideUri';
 import {asyncExecute, safeSpawn} from '../../commons-node/process';
@@ -39,6 +39,7 @@ import {findHackPrefix} from '../../nuclide-hack-common/lib/autocomplete';
 // From hphp/hack/src/utils/exit_status.ml
 const HACK_SERVER_ALREADY_EXISTS_EXIT_CODE = 77;
 const HACK_IDE_NEW_CLIENT_CONNECTED_EXIT_CODE = 207;
+const MAX_HACK_AUTOCOMPLETE_ITEMS = 100;
 
 import {logger} from './hack-config';
 
@@ -135,12 +136,12 @@ class HackProcess extends RpcProcess {
     fileVersion: FileVersion,
     position: atom$Point,
     activatedManually: boolean,
-  ): Promise<?Array<Completion>> {
+  ): Promise<?AutocompleteResult> {
     const filePath = fileVersion.filePath;
     logger.log(`Attempting Hack Autocomplete: ${filePath}, ${position.toString()}`);
     const buffer = await this.getBufferAtVersion(fileVersion);
     if (buffer == null) {
-      return [];
+      return {isIncomplete: false, items: []};
     }
     const contents = buffer.getText();
     const offset = buffer.characterIndexForPosition(position);
@@ -155,12 +156,22 @@ class HackProcess extends RpcProcess {
     const service = this.getConnectionService();
 
     logger.log('Got Hack Service');
-    return convertCompletions(
+    // TODO: Include version number to ensure agreement on file version.
+    const unfilteredItems: ?HackCompletionsResult =
+        await service.getCompletions(filePath, {line, column});
+    if (unfilteredItems == null) {
+      return null;
+    }
+    const isIncomplete = unfilteredItems.length === MAX_HACK_AUTOCOMPLETE_ITEMS;
+
+    const items = convertCompletions(
       contents,
       offset,
       replacementPrefix,
-      // TODO: Include version number to ensure agreement on file version.
-      (await service.getCompletions(filePath, {line, column}): ?HackCompletionsResult));
+      unfilteredItems,
+    );
+
+    return {isIncomplete, items};
   }
 
   dispose(): void {

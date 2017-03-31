@@ -25,11 +25,8 @@ export function convertCompletions(
   contents: string,
   offset: number,
   prefix: string,
-  hackCompletions: ?Array<HackCompletion>,
-): ?Array<Completion> {
-  if (hackCompletions == null) {
-    return null;
-  }
+  hackCompletions: Array<HackCompletion>,
+): Array<Completion> {
   const completions = processCompletions(hackCompletions, contents, offset, prefix);
   return sortAndFilterCompletions(completions, prefix);
 }
