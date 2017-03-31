@@ -60,17 +60,36 @@ export type DeregisterPatchEditorAction = {
   },
 };
 
-export type ClickCheckboxAction = {
-  type: 'CLICK_CHECKBOX_ACTION',
+export type ToggleFileAction = {
+  type: 'TOGGLE_FILE_ACTION',
   payload: {
-    editorPath: string,
-    fileName: string,
-    hunkOldStartLine: ?number,
-    line: ?number,
+    patchId: string,
+    fileId: string,
+  },
+};
+
+export type ToggleHunkAction = {
+  type: 'TOGGLE_HUNK_ACTION',
+  payload: {
+    patchId: string,
+    fileId: string,
+    hunkOldStart: number,
+  },
+};
+
+export type ToggleLineAction = {
+  type: 'TOGGLE_LINE_ACTION',
+  payload: {
+    patchId: string,
+    fileId: string,
+    hunkOldStart: number,
+    line: number,
   },
 };
 
 export type Action = RegisterPatchEditorAction
 | DeregisterPatchEditorAction
-| ClickCheckboxAction
+| ToggleFileAction
+| ToggleHunkAction
+| ToggleLineAction
 ;

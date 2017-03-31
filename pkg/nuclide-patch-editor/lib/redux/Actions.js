@@ -9,9 +9,11 @@
  */
 
 import type {
- RegisterPatchEditorAction,
- DeregisterPatchEditorAction,
- ClickCheckboxAction,
+  DeregisterPatchEditorAction,
+  RegisterPatchEditorAction,
+  ToggleFileAction,
+  ToggleHunkAction,
+  ToggleLineAction,
 } from '../types';
 
 import * as ActionTypes from './ActionTypes';
@@ -38,18 +40,43 @@ export function deregisterPatchEditor(editorPath: string): DeregisterPatchEditor
   };
 }
 
-export function clickCheckbox(
-  editorPath: string,
-  fileName: string,
-  hunkOldStartLine?: number,
-  line?: number,
-): ClickCheckboxAction {
+export function toggleFile(patchId: string, fileId: string): ToggleFileAction {
   return {
-    type: ActionTypes.CLICK_CHECKBOX_ACTION,
+    type: ActionTypes.TOGGLE_FILE_ACTION,
     payload: {
-      editorPath,
-      fileName,
-      hunkOldStartLine,
+      patchId,
+      fileId,
+    },
+  };
+}
+
+export function toggleHunk(
+  patchId: string,
+  fileId: string,
+  hunkOldStart: number,
+): ToggleHunkAction {
+  return {
+    type: ActionTypes.TOGGLE_HUNK_ACTION,
+    payload: {
+      patchId,
+      fileId,
+      hunkOldStart,
+    },
+  };
+}
+
+export function toggleLine(
+  patchId: string,
+  fileId: string,
+  hunkOldStart: number,
+  line: number,
+): ToggleLineAction {
+  return {
+    type: ActionTypes.TOGGLE_LINE_ACTION,
+    payload: {
+      patchId,
+      fileId,
+      hunkOldStart,
       line,
     },
   };

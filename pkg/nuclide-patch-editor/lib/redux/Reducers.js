@@ -49,19 +49,48 @@ export function rootReducer(
       };
     }
 
-    case ActionTypes.CLICK_CHECKBOX_ACTION: {
+    case ActionTypes.TOGGLE_FILE_ACTION: {
       const {
-        editorPath,
-        fileName,
-        hunkOldStartLine,
-        line,
+        patchId,
+        fileId,
       } = action.payload;
-      // line should always be null if hunk is null
-      invariant(hunkOldStartLine != null || line == null);
 
       const patchEditors = new Map(state.patchEditors);
-      const patchData = nullthrows(patchEditors.get(editorPath));
-      patchEditors.set(editorPath, updatePatchData(patchData, fileName, hunkOldStartLine, line));
+      const patchData = nullthrows(patchEditors.get(patchId));
+      patchEditors.set(patchId, updatePatchData(patchData, fileId));
+      return {
+        ...state,
+        patchEditors,
+      };
+    }
+
+    case ActionTypes.TOGGLE_HUNK_ACTION: {
+      const {
+        patchId,
+        fileId,
+        hunkOldStart,
+      } = action.payload;
+
+      const patchEditors = new Map(state.patchEditors);
+      const patchData = nullthrows(patchEditors.get(patchId));
+      patchEditors.set(patchId, updatePatchData(patchData, fileId, hunkOldStart));
+      return {
+        ...state,
+        patchEditors,
+      };
+    }
+
+    case ActionTypes.TOGGLE_LINE_ACTION: {
+      const {
+        patchId,
+        fileId,
+        hunkOldStart,
+        line,
+      } = action.payload;
+
+      const patchEditors = new Map(state.patchEditors);
+      const patchData = nullthrows(patchEditors.get(patchId));
+      patchEditors.set(patchId, updatePatchData(patchData, fileId, hunkOldStart, line));
       return {
         ...state,
         patchEditors,
@@ -73,13 +102,16 @@ export function rootReducer(
 
 function updatePatchData(
   patchData: PatchData,
-  fileName: string,
-  hunkOldStartLine: ?number,
+  fileId: string,
+  hunkOldStart: ?number,
   line: ?number,
 ): PatchData {
+  // line should never be non-null while hunkOldStart is
+  invariant(line == null || hunkOldStart != null);
+
   const files = new Map(patchData.files);
-  const oldFile = nullthrows(files.get(fileName));
-  files.set(fileName, updateFileData(oldFile, hunkOldStartLine, line));
+  const oldFile = nullthrows(files.get(fileId));
+  files.set(fileId, updateFileData(oldFile, hunkOldStart, line));
 
   return {
     ...patchData,
@@ -87,17 +119,17 @@ function updatePatchData(
   };
 }
 
-function updateFileData(fileData: FileData, hunkOldStartLine: ?number, line: ?number): FileData {
+function updateFileData(fileData: FileData, hunkOldStart: ?number, line: ?number): FileData {
   let {countEnabledChunks, countPartialChunks} = fileData;
   let chunks;
   let selected;
 
-  if (hunkOldStartLine != null) {
+  if (hunkOldStart != null) {
     // Toggling hunk or individual line
     chunks = new Map(nullthrows(fileData.chunks));
-    const oldHunk = nullthrows(chunks.get(hunkOldStartLine));
+    const oldHunk = nullthrows(chunks.get(hunkOldStart));
     const newHunk = updateHunkData(oldHunk, line);
-    chunks.set(hunkOldStartLine, newHunk);
+    chunks.set(hunkOldStart, newHunk);
 
     // Update countEnabledChunks and countPartialChunks based on change in selected state
     invariant(
@@ -143,7 +175,7 @@ function updateFileData(fileData: FileData, hunkOldStartLine: ?number, line: ?nu
       // Set all hunks to all unselected
       chunks = new Map();
       fileData.chunks.forEach(
-        (hunkData, oldStartLine) => chunks.set(oldStartLine, selectWholeHunk(hunkData, isEnabling)),
+        (hunkData, oldStart) => chunks.set(oldStart, selectWholeHunk(hunkData, isEnabling)),
       );
       // TODO: update all children hunks to reflect change
       countEnabledChunks = isEnabling ? chunks.size : 0;
