@@ -119,6 +119,50 @@ class Activation {
   }
 }
 
+// TODO(matthewwithanm): Delete this (along with the services and package) and refactor to workspace
+// API once docks land
+class CompatActivation {
+  provideWorkspaceViewsService(): WorkspaceViewsService {
+    return {
+      registerLocation: () => new Disposable(() => {}),
+      addOpener: opener => atom.workspace.addOpener(opener),
+      destroyWhere(predicate: (item: Viewable) => boolean) {
+        atom.workspace.getPanes().forEach(pane => {
+          pane.getItems().forEach(item => {
+            if (predicate(item)) {
+              pane.destroyItem(item);
+            }
+          });
+        });
+      },
+      open(uri: string, options?: Object): void {
+        // eslint-disable-next-line nuclide-internal/atom-apis
+        atom.workspace.open(uri, options);
+      },
+      toggle(uri: string, options?: ?ToggleOptions): void {
+        const visible = options && options.visible;
+        if (visible === true) {
+          // eslint-disable-next-line nuclide-internal/atom-apis
+          atom.workspace.open(uri, {searchAllPanes: true});
+        } else if (visible === false) {
+          // TODO: Add `atom.workspace.hide()` and use that instead.
+          const hasItem = atom.workspace.getPaneItems()
+            .some(item => typeof item.getURI === 'function' && item.getURI() === uri);
+          if (hasItem) {
+            // TODO(matthewwithanm): Add this to the Flow defs once docks land
+            // $FlowIgnore
+            atom.workspace.toggle(uri);
+          }
+        } else {
+          // TODO(matthewwithanm): Add this to the Flow defs once docks land
+          // $FlowIgnore
+          atom.workspace.toggle(uri);
+        }
+      },
+    };
+  }
+}
+
 function createPackageStore(rawState: Object): Store {
   const initialState = AppSerialization.deserialize(rawState);
   const epics = Object.keys(Epics)
@@ -141,4 +185,8 @@ function createPackageStore(rawState: Object): Store {
   return store;
 }
 
-createPackage(module.exports, Activation);
+if (atom.workspace.docks != null && typeof atom.workspace.toggle === 'function') {
+  createPackage(module.exports, CompatActivation);
+} else {
+  createPackage(module.exports, Activation);
+}

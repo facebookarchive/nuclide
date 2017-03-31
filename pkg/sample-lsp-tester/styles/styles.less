@@ -6,7 +6,8 @@
   width: 100%;
   background-color: @pane-item-background-color;
 
-  atom-panel & {
+  atom-dock &,
+  atom-panel & { // TODO(matthewwithanm): Remove this selector when killing workspace views
     background-color: @tool-panel-background-color;
   }
 }
