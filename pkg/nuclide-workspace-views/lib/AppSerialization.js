@@ -32,7 +32,35 @@ export function deserialize(rawState: SerializedAppState): AppState {
   return {
     // Viewables and locations will re-register using the service.
     locations: new Map(),
-    serializedLocationStates: new Map(objectEntries(rawState.serializedLocationStates || {})),
+    serializedLocationStates: new Map(
+      // Translate the old location ids ("left-panel", "pane", etc.) into the new, Atom-compatible
+      // ones ("left", "center", etc.)
+      objectEntries(rawState.serializedLocationStates || {})
+        .map(([key, value]) => [getNewLocation(key), value]),
+    ),
     openers: new Set(),
   };
+}
+
+/**
+ * When we upstreamed this functionality into Atom, we picked better location names. This translates
+ * from our old ones to the new ones.
+ */
+function getNewLocation(location: string): string {
+  switch (location) {
+    case 'left-panel':
+      return 'left';
+    case 'right-panel':
+      return 'right';
+    case 'bottom-panel':
+      return 'bottom';
+    case 'pane':
+      return 'center';
+    case 'left':
+    case 'right':
+    case 'bottom':
+    case 'center':
+    default:
+      return location;
+  }
 }
