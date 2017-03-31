@@ -96,7 +96,7 @@ export class DiagnosticsPanelModel {
   }
 
   getDefaultLocation(): string {
-    return 'bottom-panel';
+    return 'bottom';
   }
 
   serialize(): SerializedDiagnosticsPanelModel {

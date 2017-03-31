@@ -344,7 +344,7 @@ export class TestRunnerController {
   }
 
   getDefaultLocation(): string {
-    return 'bottom-panel';
+    return 'bottom';
   }
 
   getElement(): HTMLElement {

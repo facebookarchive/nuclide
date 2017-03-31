@@ -13,7 +13,7 @@ import invariant from 'assert';
 
 describe('PanelLocation', () => {
   it('serializes the state', () => {
-    const location = new PanelLocation('top-panel');
+    const location = new PanelLocation('top');
     location._handlePanelResize(720);
     location.setState({active: true});
     const serialized = location.serialize();
@@ -32,7 +32,7 @@ describe('PanelLocation', () => {
         active: true,
       },
     };
-    const location = new PanelLocation('top-panel', serialized);
+    const location = new PanelLocation('top', serialized);
     expect(location._size).toBe(720);
     expect(location.state.active).toBe(true);
   });
@@ -46,7 +46,7 @@ describe('PanelLocation', () => {
         visible: true,
       },
     };
-    const location = new PanelLocation('top-panel', serialized);
+    const location = new PanelLocation('top', serialized);
     expect(location.state.active).toBe(true);
   });
 });

@@ -19,7 +19,7 @@ export type SerializedPanelLocation = {
 };
 
 export type PanelLocationId =
-  'top-panel'
-  | 'right-panel'
-  | 'bottom-panel'
-  | 'left-panel';
+  'top'
+  | 'right'
+  | 'bottom'
+  | 'left';

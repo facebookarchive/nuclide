@@ -414,7 +414,7 @@ export default class FileTreeSidebarComponent extends React.Component {
   }
 
   getDefaultLocation(): string {
-    return 'left-panel';
+    return 'left';
   }
 
   getPreferredInitialWidth(): number {

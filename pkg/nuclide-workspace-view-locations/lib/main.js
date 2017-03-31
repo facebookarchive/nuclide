@@ -56,7 +56,7 @@ class Activation {
     layout.activate();
     this._disposables.add(
       () => { layout.deactivate(); },
-      api.registerLocation({id: 'pane', create: () => new PaneLocation()}),
+      api.registerLocation({id: 'center', create: () => new PaneLocation()}),
       ...PanelLocationIds.map(id => api.registerLocation({
         id,
         create: serializedState_ => {

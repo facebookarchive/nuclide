@@ -28,7 +28,7 @@ export default class Inspector extends React.Component {
   }
 
   getDefaultLocation(): string {
-    return 'pane';
+    return 'center';
   }
 
   getURI(): string {

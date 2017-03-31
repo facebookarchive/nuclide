@@ -25,7 +25,7 @@ export class ExampleGadgetA {
   }
 
   getDefaultLocation(): string {
-    return 'right-panel';
+    return 'right';
   }
 
   getURI(): string {

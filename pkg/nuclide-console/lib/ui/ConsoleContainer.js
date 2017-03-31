@@ -131,7 +131,7 @@ export class ConsoleContainer extends React.Component {
   }
 
   getDefaultLocation(): string {
-    return 'bottom-panel';
+    return 'bottom';
   }
 
   getURI(): string {

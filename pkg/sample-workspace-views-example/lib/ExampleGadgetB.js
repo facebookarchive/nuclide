@@ -24,7 +24,7 @@ export class ExampleGadgetB extends React.Component {
   }
 
   getDefaultLocation(): string {
-    return 'right-panel';
+    return 'right';
   }
 
   getURI(): string {

@@ -99,7 +99,7 @@ export class Playground extends React.Component {
   }
 
   getDefaultLocation(): string {
-    return 'pane';
+    return 'center';
   }
 
   serialize(): mixed {

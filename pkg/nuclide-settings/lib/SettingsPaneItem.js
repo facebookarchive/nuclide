@@ -199,7 +199,7 @@ export default class NuclideSettingsPaneItem extends React.Component {
   }
 
   getDefaultLocation(): string {
-    return 'pane';
+    return 'center';
   }
 
   getURI(): string {

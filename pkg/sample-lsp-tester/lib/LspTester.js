@@ -78,7 +78,7 @@ export class LspTester extends SimpleModel {
   }
 
   getDefaultLocation(): string {
-    return 'right-panel';
+    return 'right';
   }
 
   getElement(): HTMLElement {

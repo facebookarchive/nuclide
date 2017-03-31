@@ -44,7 +44,7 @@ export class OutlineViewPanelState {
   }
 
   getDefaultLocation(): string {
-    return 'right-panel';
+    return 'right';
   }
 
   didChangeVisibility(visible: boolean): void {

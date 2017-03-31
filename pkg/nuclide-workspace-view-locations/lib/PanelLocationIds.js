@@ -8,10 +8,10 @@
  * @flow
  */
 
-export const TOP_PANEL = 'top-panel';
-export const RIGHT_PANEL = 'right-panel';
-export const BOTTOM_PANEL = 'bottom-panel';
-export const LEFT_PANEL = 'left-panel';
+export const TOP_PANEL = 'top';
+export const RIGHT_PANEL = 'right';
+export const BOTTOM_PANEL = 'bottom';
+export const LEFT_PANEL = 'left';
 
 // For now, we just show the left, bottom and right panels.
 export default [LEFT_PANEL, RIGHT_PANEL, BOTTOM_PANEL];

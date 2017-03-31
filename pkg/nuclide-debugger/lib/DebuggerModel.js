@@ -151,7 +151,7 @@ export default class DebuggerModel {
   }
 
   getDefaultLocation(): string {
-    return 'right-panel';
+    return 'right';
   }
 
   getURI(): string {

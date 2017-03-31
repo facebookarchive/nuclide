@@ -40,7 +40,7 @@ export default class DiffViewNavigatorGadget extends React.Component {
   }
 
   getDefaultLocation(): string {
-    return 'bottom-panel';
+    return 'bottom';
   }
 
   didChangeVisibility(visible: boolean) {

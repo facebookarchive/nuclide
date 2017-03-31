@@ -117,7 +117,7 @@ class SourceControlSideBar {
   }
 
   getDefaultLocation(): string {
-    return 'left-panel';
+    return 'left';
   }
 
   getTitle(): string {
