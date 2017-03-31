@@ -42,6 +42,7 @@ import type {
   Diagnostic,
   CompletionItem,
   TextDocumentPositionParams,
+  SymbolInformation,
 } from './protocol-v2';
 import type {CategoryLogger} from '../../nuclide-logging';
 import type {JsonRpcConnection} from './jsonrpc';
@@ -59,6 +60,7 @@ import {Point, Range as atom$Range} from 'simple-text-buffer';
 import {LanguageServerV2} from './languageserver-v2';
 import {
   DiagnosticSeverity,
+  SymbolKind,
 } from './protocol-v2';
 
 // Marshals messages from Nuclide's LanguageService
@@ -330,16 +332,15 @@ export class LanguageServerProtocolProcess {
   supportsSymbolSearch(
     directories: Array<NuclideUri>,
   ): Promise<boolean> {
-    this._logger.logError('NYI: supportsSymbolSearch');
-    return Promise.resolve(false);
+    return Promise.resolve(Boolean(this._process._capabilities.workspaceSymbolProvider));
   }
 
-  symbolSearch(
+  async symbolSearch(
     query: string,
     directories: Array<NuclideUri>,
   ): Promise<?Array<SymbolResult>> {
-    this._logger.logError('NYI: symbolSearch');
-    return Promise.resolve(null);
+    const result = await this._process._connection.workspaceSymbol({query});
+    return result.map(convertSearchResult);
   }
 
   getProjectRoot(fileUri: NuclideUri): Promise<?NuclideUri> {
@@ -579,5 +580,52 @@ export function convertCompletion(item: CompletionItem): Completion {
     displayText: item.label,
     type: item.detail,
     description: item.documentation,
+  };
+}
+
+// Converts an LSP SymbolInformation.kind number into an Atom icon
+// from https://github.com/atom/atom/blob/master/static/octicons.less -
+// you can see the pictures at https://octicons.github.com/
+function symbolKindToAtomIcon(kind: number): string {
+  // for reference, vscode: https://github.com/Microsoft/vscode/blob/be08f9f3a1010354ae2d8b84af017ed1043570e7/src/vs/editor/contrib/suggest/browser/media/suggest.css#L135
+  // for reference, hack: https://github.com/facebook/nuclide/blob/20cf17dca439e02a64f4365f3a52b0f26cf53726/pkg/nuclide-hack-rpc/lib/SymbolSearch.js#L120
+  switch (kind) {
+    case SymbolKind.File: return 'file';
+    case SymbolKind.Module: return 'file-submodule';
+    case SymbolKind.Namespace: return 'file-submodule';
+    case SymbolKind.Package: return 'package';
+    case SymbolKind.Class: return 'code';
+    case SymbolKind.Method: return 'zap';
+    case SymbolKind.Property: return 'key';
+    case SymbolKind.Field: return 'key';
+    case SymbolKind.Constructor: return 'zap';
+    case SymbolKind.Enum: return 'file-binary';
+    case SymbolKind.Interface: return 'puzzle';
+    case SymbolKind.Function: return 'zap';
+    case SymbolKind.Variable: return 'pencil';
+    case SymbolKind.Constant: return 'quote';
+    case SymbolKind.String: return 'quote';
+    case SymbolKind.Number: return 'quote';
+    case SymbolKind.Boolean: return 'quote';
+    case SymbolKind.Array: return 'list-ordered';
+    default: return 'question';
+  }
+}
+
+export function convertSearchResult(info: SymbolInformation): SymbolResult {
+  let hoverText = 'unknown';
+  for (const key in SymbolKind) {
+    if (info.kind === SymbolKind[key]) {
+      hoverText = key;
+    }
+  }
+  return {
+    path: info.location.uri,
+    line: info.location.range.start.line,
+    column: info.location.range.start.character,
+    name: info.name,
+    containerName: info.containerName,
+    icon: symbolKindToAtomIcon(info.kind),
+    hoverText,
   };
 }
