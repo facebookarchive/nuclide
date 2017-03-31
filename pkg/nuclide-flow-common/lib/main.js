@@ -10,7 +10,7 @@
 
 import fuzzaldrinPlus from 'fuzzaldrin-plus';
 
-import type {Completion} from '../../nuclide-language-service/lib/LanguageService';
+import type {AutocompleteResult} from '../../nuclide-language-service/lib/LanguageService';
 
 // A simple heuristic for identifier names in JavaScript.
 export const JAVASCRIPT_IDENTIFIER_REGEX = /[$_a-zA-Z][$_\w]*/g;
@@ -56,18 +56,25 @@ export function shouldFilter(
 
 export function filterResultsByPrefix(
   prefix: string,
-  results: Array<Completion>,
-): Array<Completion> {
+  results: AutocompleteResult,
+): AutocompleteResult {
   const replacementPrefix = getReplacementPrefix(prefix);
-  const resultsWithCurrentPrefix = results.map(result => {
+  const resultsWithCurrentPrefix = results.items.map(result => {
     return {
       ...result,
       replacementPrefix,
     };
   });
+  let items;
   // fuzzaldrin-plus filters everything when the query is empty.
   if (replacementPrefix === '') {
-    return resultsWithCurrentPrefix;
+    items = resultsWithCurrentPrefix;
+  } else {
+    items = fuzzaldrinPlus.filter(
+      resultsWithCurrentPrefix,
+      replacementPrefix,
+      {key: 'displayText'},
+    );
   }
-  return fuzzaldrinPlus.filter(resultsWithCurrentPrefix, replacementPrefix, {key: 'displayText'});
+  return {...results, items};
 }

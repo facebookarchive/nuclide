@@ -10,7 +10,7 @@
 
 import type {AutocompleteCacherConfig} from '../../commons-atom/AutocompleteCacher';
 
-import type {Completion, LanguageService} from './LanguageService';
+import type {AutocompleteResult, Completion, LanguageService} from './LanguageService';
 
 import {ConnectionCache} from '../../nuclide-remote-connection';
 import {trackTiming, track} from '../../nuclide-analytics';
@@ -33,7 +33,7 @@ export type AutocompleteConfig = {|
   version: '2.0.0',
   analyticsEventName: string,
   onDidInsertSuggestionAnalyticsEventName: string,
-  autocompleteCacherConfig: ?AutocompleteCacherConfig<Array<Completion>>,
+  autocompleteCacherConfig: ?AutocompleteCacherConfig<AutocompleteResult>,
 |};
 
 export class AutocompleteProvider<T: LanguageService> {
@@ -47,7 +47,7 @@ export class AutocompleteProvider<T: LanguageService> {
   onDidInsertSuggestion: OnDidInsertSuggestionCallback;
   _analyticsEventName: string;
   _connectionToLanguageService: ConnectionCache<T>;
-  _autocompleteCacher: ?AutocompleteCacher<Array<Completion>>;
+  _autocompleteCacher: ?AutocompleteCacher<AutocompleteResult>;
 
   constructor(
     name: string,
@@ -59,7 +59,7 @@ export class AutocompleteProvider<T: LanguageService> {
     analyticsEventName: string,
     onDidInsertSuggestion: ?OnDidInsertSuggestionCallback,
     onDidInsertSuggestionAnalyticsEventName: string,
-    autocompleteCacherConfig: ?AutocompleteCacherConfig<Array<Completion>>,
+    autocompleteCacherConfig: ?AutocompleteCacherConfig<AutocompleteResult>,
     connectionToLanguageService: ConnectionCache<T>,
   ) {
     this.name = name;
@@ -118,18 +118,20 @@ export class AutocompleteProvider<T: LanguageService> {
   ): Promise<?Array<Completion>> {
     return trackTiming(
       this._analyticsEventName,
-      () => {
+      async () => {
+        let result;
         if (this._autocompleteCacher != null) {
-          return this._autocompleteCacher.getSuggestions(request);
+          result = await this._autocompleteCacher.getSuggestions(request);
         } else {
-          return this._getSuggestionsFromLanguageService(request);
+          result = await this._getSuggestionsFromLanguageService(request);
         }
+        return result != null ? result.items : null;
       });
   }
 
   async _getSuggestionsFromLanguageService(
     request: atom$AutocompleteRequest,
-  ): Promise<?Array<Completion>> {
+  ): Promise<?AutocompleteResult> {
     const {editor, activatedManually, prefix} = request;
     const position = editor.getLastCursor().getBufferPosition();
     const path = editor.getPath();
@@ -137,14 +139,10 @@ export class AutocompleteProvider<T: LanguageService> {
 
     const languageService = this._connectionToLanguageService.getForUri(path);
     if (languageService == null || fileVersion == null) {
-      return [];
+      return {isIncomplete: false, items: []};
     }
 
-    const result = await (await languageService).getAutocompleteSuggestions(
+    return (await languageService).getAutocompleteSuggestions(
       fileVersion, position, activatedManually == null ? false : activatedManually, prefix);
-    if (result == null) {
-      return null;
-    }
-    return result.items;
   }
 }

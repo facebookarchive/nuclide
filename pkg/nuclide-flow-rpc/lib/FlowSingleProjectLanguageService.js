@@ -352,8 +352,7 @@ export class FlowSingleProjectLanguageService {
       const resultsArray: Array<FlowAutocompleteItem> = json.result;
       const completions =
         resultsArray.map(item => processAutocompleteItem(replacementPrefix, item));
-      const items = filterResultsByPrefix(prefix, completions);
-      return {isIncomplete: false, items};
+      return filterResultsByPrefix(prefix, {isIncomplete: false, items: completions});
     } catch (e) {
       return {isIncomplete: false, items: []};
     }

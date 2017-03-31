@@ -15,7 +15,10 @@ import type {ServerConnection} from '../../nuclide-remote-connection';
 import type {
   AtomLanguageServiceConfig,
 } from '../../nuclide-language-service/lib/AtomLanguageService';
-import type {Completion} from '../../nuclide-language-service/lib/LanguageService';
+import type {
+  AutocompleteResult,
+  Completion,
+} from '../../nuclide-language-service/lib/LanguageService';
 
 import invariant from 'assert';
 
@@ -157,11 +160,11 @@ export async function isFileInHackProject(fileUri: NuclideUri): Promise<boolean>
 
 function updateAutocompleteResults(
   request: atom$AutocompleteRequest,
-  firstResult: Array<Completion>,
-): Array<Completion> {
+  firstResult: AutocompleteResult,
+): AutocompleteResult {
   const replacementPrefix = findHackPrefix(request.editor.getBuffer(), request.bufferPosition);
-  const updatedCompletions = updateReplacementPrefix(request, firstResult, replacementPrefix);
-  return sortAndFilterCompletions(updatedCompletions, replacementPrefix);
+  const updatedCompletions = updateReplacementPrefix(request, firstResult.items, replacementPrefix);
+  return {...firstResult, items: sortAndFilterCompletions(updatedCompletions, replacementPrefix)};
 }
 
 function updateReplacementPrefix(

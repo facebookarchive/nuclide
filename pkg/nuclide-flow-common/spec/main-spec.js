@@ -126,12 +126,12 @@ describe('updateResults', () => {
   });
 
   function run() {
-    return filterResultsByPrefix(prefix, resultsToUpdate);
+    return filterResultsByPrefix(prefix, {isIncomplete: false, items: resultsToUpdate});
   }
 
   function getNames() {
     const results = run();
-    return results == null ? null : results.map(result => result.displayText);
+    return results == null ? null : results.items.map(result => result.displayText);
   }
 
   it('should not filter suggestions if the prefix is a .', () => {
