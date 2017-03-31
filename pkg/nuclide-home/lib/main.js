@@ -8,12 +8,16 @@
  * @flow
  */
 
+/* global localStorage */
 
 import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
 import type {HomeFragments} from './types';
 
 import createUtmUrl from './createUtmUrl';
 import featureConfig from '../../commons-atom/featureConfig';
+import nuclideUri from '../../commons-node/nuclideUri';
+import {getRuntimeInformation} from '../../commons-node/runtime-info';
+import {getAtomNuclideDir} from '../../commons-node/system-info';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
 import HomePaneItem, {WORKSPACE_VIEW_URI} from './HomePaneItem';
@@ -30,6 +34,19 @@ const allHomeFragmentsStream: BehaviorSubject<Immutable.Set<HomeFragments>> =
 
 export function activate(state: ?Object): void {
   considerDisplayingHome();
+  const runtimeInfo = getRuntimeInformation();
+  if (!runtimeInfo.isDevelopment && featureConfig.get('nuclide-home.showChangelogs')) {
+    const key = `nuclide-home.changelog-shown-${runtimeInfo.nuclideVersion}`;
+    // Only display the changelog if this is the first time loading this version.
+    // Note that displaying the Home page blocks the changelog for the version:
+    // the intention here is to avoid showing the changelog for new users.
+    if (!localStorage.getItem(key)) {
+      localStorage.setItem(key, 'true');
+      if (!featureConfig.get('nuclide-home.showHome')) {
+        displayChangelog();
+      }
+    }
+  }
   subscriptions = new UniversalDisposable();
   subscriptions.add(
     // eslint-disable-next-line nuclide-internal/atom-apis
@@ -55,6 +72,16 @@ function considerDisplayingHome() {
       'nuclide-home:toggle',
       {visible: true},
     );
+  }
+}
+
+async function displayChangelog() {
+  const markdownPreviewPkg = atom.packages.getLoadedPackage('markdown-preview');
+  if (markdownPreviewPkg != null) {
+    await atom.packages.activatePackage('markdown-preview');
+    const changelogPath = nuclideUri.join(getAtomNuclideDir(), 'CHANGELOG.md');
+    // eslint-disable-next-line nuclide-internal/atom-apis
+    await atom.workspace.open(encodeURI(`markdown-preview://${changelogPath}`));
   }
 }
 
