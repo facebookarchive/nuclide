@@ -174,6 +174,8 @@ export async function getEditMergeConfigs(): Promise<{args: Array<string>, hgEdi
       'ui.interactive=no',
       '--config',
       'ui.interface.chunkselector=editor',
+      '--config',
+      'extensions.edrecord=',
     ],
     hgEditor,
   };
