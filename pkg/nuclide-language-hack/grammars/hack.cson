@@ -2270,6 +2270,7 @@
     "comment": "Avoid < operator expressions as best we can using Zertosh's regex",
     "patterns": [
       {
+        "contentName": "source.xhp",
         "begin": "(?<=\\(|\\{|\\[|,|&&|\\|\\||\\?|:|=|=>|\\Wreturn|^return|^)\\s*(?=<[_\\p{L}])",
         "end": "(?=.)",
         "applyEndPatternLast": 1,
