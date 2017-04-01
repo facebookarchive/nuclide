@@ -11,7 +11,6 @@
 import type {TypeHintProvider} from './types';
 import type {Datatip} from '../../nuclide-datatip/lib/types';
 
-import invariant from 'assert';
 import {arrayRemove} from '../../commons-node/collection';
 import {track, trackTiming} from '../../nuclide-analytics';
 import {makeTypeHintComponent} from './TypeHintComponent';
@@ -53,16 +52,14 @@ export default class TypeHintManager {
     if (!typeHint || this._marker) {
       return;
     }
-    const {hint, hintTree, range} = typeHint;
-    // For now, actual hint text is required.
-    invariant(hint != null);
+    const {hint, range} = typeHint;
     // We track the timing above, but we still want to know the number of popups that are shown.
     track('type-hint-popup', {
       scope: scopeName,
       message: hint,
     });
     return {
-      component: makeTypeHintComponent(hintTree || hint, grammar),
+      component: makeTypeHintComponent(hint, grammar),
       range,
     };
   }
