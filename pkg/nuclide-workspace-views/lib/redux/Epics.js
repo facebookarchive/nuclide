@@ -15,6 +15,7 @@ import {LocalStorageJsonTable} from '../../../commons-atom/LocalStorageJsonTable
 import {observableFromSubscribeFunction} from '../../../commons-node/event';
 import {trackEvent} from '../../../nuclide-analytics';
 import * as Actions from './Actions';
+import getNewLocation from '../getNewLocation';
 import invariant from 'assert';
 import {Observable} from 'rxjs';
 
@@ -140,7 +141,7 @@ export function openEpic(
         // Find a location for this viewable.
         const preferredLocationId = preferredLocationStorage.getItem(uri);
         if (preferredLocationId != null) {
-          location = locations.get(preferredLocationId);
+          location = locations.get(getNewLocation(preferredLocationId));
         }
         if (location == null) {
           const defaultLocationId = item.getDefaultLocation != null
