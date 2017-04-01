@@ -122,7 +122,7 @@ class Activation {
         this._states.map((state: AppState) => {
           return {
             actionCreators: this._actionCreators,
-            onConfirm: content => onConfirm(editor, content),
+            onConfirm: content => onConfirm(editor, content, marker),
             onManualEdit: () => onManualEdit(editor, diffContent, marker, editorView),
             onQuit: () => onQuit(editor),
             patchId: editorPath,
@@ -152,11 +152,12 @@ function onQuit(editor: atom$TextEditor): void {
   atom.workspace.getActivePane().destroyItem(editor);
 }
 
-function onConfirm(editor: atom$TextEditor, content: string): void {
+function onConfirm(editor: atom$TextEditor, content: string, marker: atom$Marker): void {
   track('patch-editor-confirm');
+  marker.destroy();
   editor.setText(content);
+  editor.onDidSave(() => atom.workspace.getActivePane().destroyItem(editor));
   editor.save();
-  atom.workspace.getActivePane().destroyItem(editor);
 }
 
 function onManualEdit(
