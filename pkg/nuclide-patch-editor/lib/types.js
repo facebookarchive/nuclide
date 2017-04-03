@@ -8,6 +8,8 @@
  * @flow
  */
 
+import typeof * as BoundActionCreators from './redux/Actions';
+
 export type AppState = {
   // Mapped by editorPath
   patchEditors: Map<string, PatchData>,
@@ -39,6 +41,13 @@ export type HunkData = {
 };
 
 export type SelectedState = 'all' | 'some' | 'none';
+
+export type ExtraFileChangesData = {
+  actionCreators: BoundActionCreators,
+  fileData: FileData,
+  patchId: string,
+};
+
 
 export type Store = {
   getState(): AppState,

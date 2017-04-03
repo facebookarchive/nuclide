@@ -9,6 +9,7 @@
  */
 
 import {AtomTextEditor} from './AtomTextEditor';
+import nullthrows from 'nullthrows';
 import {pluralize} from '../commons-node/string';
 import {
   Range,
@@ -22,10 +23,17 @@ import UniversalDisposable from '../commons-node/UniversalDisposable';
 type Props = {
   collapsable?: boolean,
   diff: diffparser$FileDiff,
+  extraData?: mixed,
+  hunkComponentClass?: ReactClass<HunkProps>,
 };
 
-type HunkProps = {
-  collapsable: boolean,
+type DefaultProps = {
+  hunkComponentClass: ReactClass<HunkProps>,
+};
+
+export type HunkProps = {
+  collapsable?: boolean,
+  extraData?: mixed,
   grammar: atom$Grammar,
   hunk: diffparser$Hunk,
 };
@@ -62,6 +70,7 @@ const GutterElement = (props: {
 };
 
 export class HunkDiff extends React.Component {
+  editor: atom$TextEditor;
   props: HunkProps;
   _disposables: UniversalDisposable;
 
@@ -71,9 +80,9 @@ export class HunkDiff extends React.Component {
   }
 
   componentDidMount(): void {
-    const model = this.refs.editor.getModel();
-    this._createLineMarkers(model);
-    this._createLineNumbers(model);
+    const editor = nullthrows(this.editor);
+    this._createLineMarkers(editor);
+    this._createLineNumbers(editor);
   }
 
   componentWillReceiveProps(nextProps: HunkProps): void {
@@ -83,7 +92,7 @@ export class HunkDiff extends React.Component {
     } = nextProps;
     const changes = hunk.changes;
     const prevHunk = this.props.hunk;
-    const editor = this.refs.editor.getModel();
+    const editor = nullthrows(this.editor);
 
     const newText = changes.map(change => change.content.slice(1)).join('\n');
     const oldText =
@@ -98,7 +107,7 @@ export class HunkDiff extends React.Component {
     }
     this._disposables.dispose();
     this._disposables = new UniversalDisposable();
-    this._createLineMarkers(this.refs.editor.getModel());
+    this._createLineMarkers(editor);
   }
 
   shouldComponentUpdate(nextProps: HunkProps): boolean {
@@ -214,7 +223,7 @@ export class HunkDiff extends React.Component {
           grammar={grammar}
           gutterHidden={true}
           readOnly={true}
-          ref="editor"
+          ref={editorRef => { this.editor = editorRef && editorRef.getModel(); }}
           textBuffer={textBuffer}
         />
       </Section>
@@ -226,8 +235,8 @@ export class HunkDiff extends React.Component {
 export default class FileChanges extends React.Component {
   props: Props;
 
-  static defaultProps = {
-    collapsable: false,
+  static defaultProps: DefaultProps = {
+    hunkComponentClass: HunkDiff,
   };
 
   render(): ?React.Element<any> {
@@ -252,9 +261,9 @@ export default class FileChanges extends React.Component {
         );
       }
       hunks.push(
-        <HunkDiff
+        <this.props.hunkComponentClass
           collapsable={this.props.collapsable}
-          fileName={fileName}
+          extraData={this.props.extraData}
           key={chunk.oldStart}
           grammar={grammar}
           hunk={chunk}
