@@ -296,7 +296,7 @@ export class BuckBuildSystem {
             return this.runSubcommand(
               subcommand,
               buildRuleType.buildTarget,
-              {},
+              {buildArguments: []},
               taskType === 'debug',
               null,
             );
@@ -335,7 +335,13 @@ export class BuckBuildSystem {
 
     const task = taskFromObservable(
       Observable.concat(
-        this.runSubcommand('build', target, {arguments: args}, false, null),
+        this.runSubcommand(
+          'build',
+          target,
+          {buildArguments: args},
+          false,
+          null,
+        ),
         // Don't complete until we've determined the artifact path.
         Observable.defer(() => buckService.showOutput(root, targetString, args))
           .do(output => {

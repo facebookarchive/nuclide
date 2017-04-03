@@ -26,10 +26,10 @@ export type TaskType = 'build' | 'run' | 'test' | 'debug';
 
 export type BuckSubcommand = 'build' | 'run' | 'install' | 'test';
 
-export type TaskSettings = {
+export type TaskSettings = {|
   buildArguments?: Array<string>,
   runArguments?: Array<string>,
-};
+|};
 
 export type AppState = {
   platformGroups: Array<PlatformGroup>,

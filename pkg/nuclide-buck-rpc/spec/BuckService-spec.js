@@ -204,7 +204,7 @@ describe('BuckService (test-project-with-failing-targets)', () => {
     });
 
     it('returns the type of a build rule specified by two aliases', () => {
-      waitsForPromise(async () => {
+      waitsForPromise({timeout: 30000}, async () => {
         const resolved = await BuckService.buildRuleTypeFor(
           buckRoot,
           'good good2',
