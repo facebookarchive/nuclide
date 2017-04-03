@@ -11,7 +11,7 @@
 import type {
   MatcherOptions,
   MatchResult,
-} from '../VendorLib/fuzzy-native/lib/main';
+} from 'nuclide-prebuilt-libs/fuzzy-native';
 
 import QueryItem from './QueryItem';
 import TopScores from './TopScores';

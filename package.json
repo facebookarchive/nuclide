@@ -71,6 +71,7 @@
     "mkdirp": "0.5.1",
     "mv": "2.1.1",
     "node-fetch": "1.6.3",
+    "nuclide-prebuilt-libs": "0.0.5",
     "nullthrows": "1.0.0",
     "plist": "2.0.1",
     "react": "15.3.1",

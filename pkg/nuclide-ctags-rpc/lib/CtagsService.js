@@ -45,7 +45,7 @@ export class CtagsService {
   ): Promise<Array<CtagsResult>> {
     let ctags;
     try {
-      ctags = require('../VendorLib/ctags-prebuilt/lib/ctags');
+      ctags = require('nuclide-prebuilt-libs/ctags');
     } catch (e) {
       getLogger().error('Could not load the ctags package:', e);
       return Promise.resolve([]);
