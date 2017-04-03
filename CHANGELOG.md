@@ -1,5 +1,30 @@
 # Nuclide Changelog
 
+## v0.215.0
+
+General
+
+* Fixed issue causing flow not to be found when running Nuclide on Windows with the flow-bin npm package installed.
+* This changelog will automatically open when Nuclide updates.
+* Nuclide server certificates now expire after 14 days.
+* .python2 / .python3 files are now respected by the Python linter.
+
+Hack
+
+* You can now use Cmd-/ to toggle <!-- comments --> in XHP.
+
+Debugger
+
+* Added ability to show if breakpoints are unresolved or disabled in the gutter to the left of a source line.
+* Remember if breakpoints are disabled across Nuclide sessions.
+* Added ability to enable/disable breakpoints by right clicking them in the gutter.
+
+PHP / Hack Debugger
+
+* UX: added display of Vector/Map/Set counts.
+* Fixed issue where breakpoints appear to keep hitting after you have removed or disabled them.
+* Fixed issue where “loading” spinner on the Requests debugger pane sometimes spins forever.
+
 ## v0.214.0
 
 ### Hotfix from 0.213.0
