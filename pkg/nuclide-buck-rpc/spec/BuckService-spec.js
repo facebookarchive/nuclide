@@ -127,7 +127,7 @@ describe('BuckService (test-project-with-failing-targets)', () => {
     });
   });
 
-  describe('.buildRuleTypeFor(aliasOrTarget)', () => {
+  describe('.buildRuleTypeFor(aliasesOrTargets)', () => {
     it('returns the type of a build rule specified by alias', () => {
       waitsForPromise(async () => {
         const resolved = await BuckService.buildRuleTypeFor(buckRoot, 'good');
@@ -200,6 +200,18 @@ describe('BuckService (test-project-with-failing-targets)', () => {
     it('fails when passed an invalid target', () => {
       waitsForPromise({shouldReject: true}, async () => {
         await BuckService.buildRuleTypeFor(buckRoot, '//not:athing');
+      });
+    });
+
+    it('returns the type of a build rule specified by two aliases', () => {
+      waitsForPromise(async () => {
+        const resolved = await BuckService.buildRuleTypeFor(
+          buckRoot,
+          'good good2',
+        );
+        expect(resolved.type).toBe(BuckService.MULTIPLE_TARGET_RULE_TYPE);
+        expect(resolved.buildTarget.qualifiedName).toBe('good good2');
+        expect(resolved.buildTarget.flavors.length).toBe(0);
       });
     });
   });

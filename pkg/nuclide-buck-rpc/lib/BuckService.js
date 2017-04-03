@@ -116,7 +116,7 @@ export type BuckWebSocketMessage =
   | {
       type: 'CompilerErrorEvent',
       error: string,
-      suggestions: Array<mixed>,  // TODO: use this?
+      suggestions: Array<mixed>, // TODO: use this?
       compilerType: string,
     };
 
@@ -614,6 +614,30 @@ export async function showOutput(
 }
 
 export async function buildRuleTypeFor(
+  rootPath: NuclideUri,
+  aliasesOrTargets: string,
+): Promise<ResolvedRuleType> {
+  const resolvedRuleTypes = await Promise.all(
+    aliasesOrTargets
+      .trim()
+      .split(/\s+/)
+      .map(target => _buildRuleTypeFor(rootPath, target)),
+  );
+
+  if (resolvedRuleTypes.length === 1) {
+    return resolvedRuleTypes[0];
+  } else {
+    return {
+      buildTarget: {
+        qualifiedName: aliasesOrTargets,
+        flavors: [],
+      },
+      type: MULTIPLE_TARGET_RULE_TYPE,
+    };
+  }
+}
+
+export async function _buildRuleTypeFor(
   rootPath: NuclideUri,
   aliasOrTarget: string,
 ): Promise<ResolvedRuleType> {

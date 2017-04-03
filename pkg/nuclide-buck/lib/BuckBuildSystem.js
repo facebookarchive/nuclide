@@ -619,18 +619,27 @@ function runBuckCommand(
 
   if (subcommand === 'install') {
     return buckService
-      .installWithOutput(buckRoot, [buildTarget], args, simulator, true, debug)
+      .installWithOutput(
+        buckRoot,
+        splitTargets(buildTarget),
+        args,
+        simulator,
+        true,
+        debug,
+      )
       .refCount();
   } else if (subcommand === 'build') {
     return buckService
-      .buildWithOutput(buckRoot, [buildTarget], args)
+      .buildWithOutput(buckRoot, splitTargets(buildTarget), args)
       .refCount();
   } else if (subcommand === 'test') {
     return buckService
-      .testWithOutput(buckRoot, [buildTarget], args, debug)
+      .testWithOutput(buckRoot, splitTargets(buildTarget), args, debug)
       .refCount();
   } else if (subcommand === 'run') {
-    return buckService.runWithOutput(buckRoot, [buildTarget], args).refCount();
+    return buckService
+      .runWithOutput(buckRoot, splitTargets(buildTarget), args)
+      .refCount();
   } else {
     throw Error(`Unknown subcommand: ${subcommand}`);
   }
@@ -651,4 +660,8 @@ function formatDeploymentTarget(deploymentTarget: ?DeploymentTarget): string {
   const {device, platform} = deploymentTarget;
   const deviceString = device ? `: ${device.name}` : '';
   return ` on "${platform.name}${deviceString}"`;
+}
+
+function splitTargets(buildTarget: string): Array<string> {
+  return buildTarget.trim().split(/\s+/);
 }
