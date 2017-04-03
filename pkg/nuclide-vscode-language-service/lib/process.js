@@ -15,7 +15,10 @@ import type {
   Definition,
   DefinitionQueryResult,
 } from '../../nuclide-definition-service/lib/rpc-types';
-import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
+import type {
+  Outline,
+  OutlineTree,
+} from '../../nuclide-outline-view/lib/rpc-types';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
 import type {FindReferencesReturn} from '../../nuclide-find-references/lib/rpc-types';
 import type {
@@ -47,7 +50,9 @@ import type {
 import type {CategoryLogger} from '../../nuclide-logging';
 import type {JsonRpcConnection} from './jsonrpc';
 
+import invariant from 'assert';
 import nuclideUri from '../../commons-node/nuclideUri';
+import {collect} from '../../commons-node/collection';
 import {
   FileCache,
   FileVersionNotifier,
@@ -262,11 +267,71 @@ export class LanguageServerProtocolProcess {
     return Promise.resolve(null);
   }
 
-  getOutline(
+  async getOutline(
     fileVersion: FileVersion,
   ): Promise<?Outline> {
-    this._logger.logError('NYI: getOutline');
-    return Promise.resolve(null);
+    await this.getBufferAtVersion(fileVersion); // push out any pending edits
+    const params = {textDocument: toTextDocumentIdentifier(fileVersion.filePath)};
+    const response = await this._process._connection.documentSymbol(params);
+
+    // The response is a flat list of SymbolInformation, which has location+name+containerName.
+    // We're going to reconstruct a tree out of them. This can't be done with 100% accuracy in
+    // all cases, but it can be done accurately in *almost* all cases.
+
+    // For each symbolInfo in the list, we have exactly one corresponding tree node.
+    // We'll also sort the nodes in lexical order of occurrence in the source
+    // document. This is useful because containers always come lexically before their
+    // children. (This isn't a LSP guarantee; just a heuristic.)
+    const list: Array<[SymbolInformation, OutlineTree]> = response.map(symbol => [symbol, {
+      plainText: symbol.name,
+      startPosition: positionToPoint(symbol.location.range.start),
+      children: [],
+    }]);
+    list.sort(([, aNode], [, bNode]) => aNode.startPosition.compare(bNode.startPosition));
+
+    // We'll need to look up for parents by name, so construct a map from names to nodes
+    // of that name. Note: an undefined SymbolInformation.containerName means root,
+    // but it's easier for us to represent with ''.
+    const mapElements = list.map(([symbol, node]) => [symbol.name, node]);
+    const map: Map<string, Array<OutlineTree>> = collect(mapElements);
+    if (map.has('')) {
+      this._logger.logError('Outline textDocument/documentSymbol returned an empty symbol name');
+    }
+
+    // The algorithm for reconstructing the tree out of list items rests on identifying
+    // an item's parent based on the item's containerName. It's easy if there's only one
+    // parent of that name. But if there are multiple parent candidates, we'll try to pick
+    // the one that comes immediately lexically before the item. (If there are no parent
+    // candidates, we've been given a malformed item, so we'll just ignore it.)
+    const root: OutlineTree = {plainText: '', startPosition: new Point(0, 0), children: []};
+    map.set('', [root]);
+    for (const [symbol, node] of list) {
+      const parentName = symbol.containerName || '';
+      const parentCandidates = map.get(parentName);
+      if (parentCandidates == null) {
+        this._logger.logError(
+          `Outline textDocument/documentSymbol ${symbol.name} is missing container ${parentName}`);
+      } else {
+        invariant(parentCandidates.length > 0);
+        // Find the first candidate that's lexically *after* our symbol.
+        const symbolPos = positionToPoint(symbol.location.range.start);
+        const iAfter = parentCandidates.findIndex(p => p.startPosition.compare(symbolPos) > 0);
+        if (iAfter === -1) {
+          // No candidates after item? Then item's parent is the last candidate.
+          parentCandidates[parentCandidates.length - 1].children.push(node);
+        } else if (iAfter === 0) {
+          // All candidates after item? That's an error! We'll arbitrarily pick first one.
+          parentCandidates[0].children.push(node);
+          this._logger.logError(
+            `Outline textDocument/documentSymbol ${symbol.name} comes after its container`);
+        } else {
+          // Some candidates before+after? Then item's parent is the last candidate before.
+          parentCandidates[iAfter - 1].children.push(node);
+        }
+      }
+    }
+
+    return {outlineTrees: root.children};
   }
 
   async typeHint(
