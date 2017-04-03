@@ -33,7 +33,6 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
     try {
       // $FlowFB
       const services = require('./fb/services');
-      await services.warnIfNotBuilt(this.getTargetUri());
       services.startSlog();
     } catch (_) {}
   }
