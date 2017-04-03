@@ -70,9 +70,12 @@ let restored;
 
 const WORKSPACE_VIEW_URI = 'atom://nuclide/source-control';
 
-export function activate(rawState: Object): void {
+const DESERIALIZER_VERSION = atom.workspace.getLeftDock == null ? 1 : 2;
+
+export function initialize(rawState: Object): void {
   activated = true;
-  restored = rawState != null && rawState.restored === true;
+  const serializedVersionMatches = (rawState && rawState.version || 1) === DESERIALIZER_VERSION;
+  restored = rawState != null && serializedVersionMatches && rawState.restored === true;
   const initialState = getInitialState();
   const actions = new Subject();
   states = createStateStream(
@@ -331,5 +334,9 @@ export function deactivate(): void {
 export function serialize(): Object {
   return {
     restored: true,
+    // Scrap our serialization when docks become available.
+    // TODO(matthewwithanm): After docks have been in Atom stable for a while, we can just change
+    //   this to "2"
+    version: atom.workspace.getLeftDock == null ? 1 : 2,
   };
 }

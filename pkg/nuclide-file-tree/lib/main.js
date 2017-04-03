@@ -43,6 +43,8 @@ type SerializedState = {
  */
 const OPEN_FILES_UPDATE_DEBOUNCE_INTERVAL_MS = 150;
 
+const DESERIALIZER_VERSION = atom.workspace.getLeftDock == null ? 1 : 2;
+
 class Activation {
   _cwdApiSubscription: ?IDisposable;
   _fileTreeController: FileTreeController;
@@ -51,11 +53,17 @@ class Activation {
   _disposables: UniversalDisposable;
   _paneItemSubscription: ?IDisposable;
 
-  constructor(state: ?SerializedState) {
+  constructor(rawState: ?SerializedState) {
+    let state = rawState || {};
+    const serializedVersionMatches = (state.version || 1) === DESERIALIZER_VERSION;
+    if (!serializedVersionMatches) {
+      state = {};
+    }
+
     this._disposables = new UniversalDisposable();
 
     this._fileTreeController = new FileTreeController(state == null ? null : state.tree);
-    this._restored = state != null && state.restored === true;
+    this._restored = state.restored === true;
 
     const excludeVcsIgnoredPathsSetting = 'core.excludeVcsIgnoredPaths';
     const hideIgnoredNamesSetting = 'nuclide-file-tree.hideIgnoredNames';
@@ -142,6 +150,11 @@ class Activation {
     return {
       tree: this._fileTreeController.serialize(),
       restored: true,
+      // Scrap our serialization when docks become available. Technically, we only need to scrap
+      // the "restored" value, but this is simpler.
+      // TODO(matthewwithanm): After docks have been in Atom stable for a while, we can just change
+      //   this to "2"
+      version: atom.workspace.getLeftDock == null ? 1 : 2,
     };
   }
 
