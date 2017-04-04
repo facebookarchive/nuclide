@@ -265,6 +265,7 @@ declare class WebInspector$DebuggerModel {
 declare class WebInspector$ThreadStore {
   getData(): ThreadData,
   getActiveThreadStack(callback: (callFrames: Array<Object>) => void): void,
+  getRefreshedThreadStack(callback: (callFrames: Array<Object>) => void): void,
 }
 
 declare class WebInspector$BreakpointManager {
