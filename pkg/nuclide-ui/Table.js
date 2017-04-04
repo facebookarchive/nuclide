@@ -352,7 +352,8 @@ export class Table extends React.Component {
           <div
             className="nuclide-ui-table-body-cell"
             key={j}
-            style={cellStyle}>
+            style={cellStyle}
+            title={datum != null ? String(datum) : null}>
             {datum}
           </div>
         );
