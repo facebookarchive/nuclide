@@ -108,9 +108,14 @@ export default class CodeFormatManager {
     } else {
       // Format selections should start at the begining of the line,
       // and include the last selected line end.
+      // (If the user has already selected complete rows, then depending on how they
+      // did it, their caret might be either (1) at the end of their last selected line
+      // or (2) at the first column of the line AFTER their selection. In both cases
+      // we snap the formatRange to end at the first column of the line after their
+      // selection.)
       formatRange = new Range(
-          [selectionStart.row, 0],
-          [selectionEnd.row + 1, 0],
+        [selectionStart.row, 0],
+        selectionEnd.column === 0 ? selectionEnd : [selectionEnd.row + 1, 0],
       );
     }
     const contents = editor.getText();
