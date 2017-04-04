@@ -30,7 +30,11 @@ import passesGK from '../../commons-node/passesGK';
 import {getNotifierByConnection} from '../../nuclide-open-files';
 import {AtomLanguageService} from '../../nuclide-language-service';
 import {getLogger} from '../../nuclide-logging';
-import {filterResultsByPrefix, shouldFilter} from '../../nuclide-flow-common';
+import {
+  filterResultsByPrefix,
+  shouldFilter,
+  JAVASCRIPT_IDENTIFIER_REGEX,
+} from '../../nuclide-flow-common';
 import {ConnectionCache, getServiceByConnection} from '../../nuclide-remote-connection';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import nuclideUri from '../../commons-node/nuclideUri';
@@ -227,6 +231,7 @@ async function getLanguageServiceConfig(): Promise<AtomLanguageServiceConfig> {
     evaluationExpression: {
       version: '0.0.0',
       analyticsEventName: 'flow.evaluationExpression',
+      regexp: JAVASCRIPT_IDENTIFIER_REGEX,
     },
   };
 }

@@ -26,7 +26,10 @@ import {getServiceByConnection} from '../../nuclide-remote-connection';
 import {getConfig, logger} from './config';
 import {getNotifierByConnection} from '../../nuclide-open-files';
 import {AtomLanguageService} from '../../nuclide-language-service';
-import {HACK_GRAMMARS} from '../../nuclide-hack-common';
+import {
+  HACK_GRAMMARS,
+  HACK_WORD_REGEX,
+} from '../../nuclide-hack-common';
 import {
   sortAndFilterCompletions,
   getResultPrefix,
@@ -110,6 +113,7 @@ async function createLanguageService(): Promise<AtomLanguageService<LanguageServ
     evaluationExpression: {
       version: '0.0.0',
       analyticsEventName: 'hack.evaluationExpression',
+      regexp: HACK_WORD_REGEX,
     },
     autocomplete: {
       version: '2.0.0',

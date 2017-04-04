@@ -69,7 +69,6 @@ import {convertReferences} from './FindReferences';
 import {hackMessageToDiagnosticMessage} from './Diagnostics';
 import {executeQuery} from './SymbolSearch';
 import {FileCache, ConfigObserver} from '../../nuclide-open-files-rpc';
-import {getEvaluationExpression} from './EvaluationExpression';
 import {ServerLanguageService, ensureInvalidations} from '../../nuclide-language-service-rpc';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {HACK_WORD_REGEX} from '../../nuclide-hack-common';
@@ -454,7 +453,7 @@ class HackSingleFileLanguageService {
     buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
   ): Promise<?NuclideEvaluationExpression> {
-    return getEvaluationExpression(filePath, buffer, position);
+    throw new Error('Not implemented');
   }
 
   getProjectRoot(fileUri: NuclideUri): Promise<?NuclideUri> {

@@ -46,7 +46,6 @@ import {
   filterResultsByPrefix,
   getReplacementPrefix,
   JAVASCRIPT_WORD_REGEX,
-  JAVASCRIPT_IDENTIFIER_REGEX,
 } from '../../nuclide-flow-common';
 import {getLogger} from '../../nuclide-logging';
 const logger = getLogger();
@@ -574,27 +573,7 @@ export class FlowSingleProjectLanguageService {
     buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
   ): Promise<?NuclideEvaluationExpression> {
-    // TODO: Replace RegExp with AST-based, more accurate approach.
-    const extractedIdentifier = wordAtPositionFromBuffer(
-      buffer,
-      position,
-      JAVASCRIPT_IDENTIFIER_REGEX,
-    );
-    if (extractedIdentifier == null) {
-      return Promise.resolve(null);
-    }
-    const {
-      range,
-      wordMatch,
-    } = extractedIdentifier;
-    const [expression] = wordMatch;
-    if (expression == null) {
-      return Promise.resolve(null);
-    }
-    return Promise.resolve({
-      expression,
-      range,
-    });
+    throw new Error('Not implemented');
   }
 
   isFileInProject(fileUri: NuclideUri): Promise<boolean> {
