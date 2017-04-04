@@ -412,12 +412,14 @@ export class LanguageServerProtocolProcess {
     return (hint) ? {hint, range} : null;
   }
 
-  highlight(
+  async highlight(
     fileVersion: FileVersion,
     position: atom$Point,
   ): Promise<?Array<atom$Range>> {
-    this._logger.logError('NYI: highlight');
-    return Promise.resolve(null);
+    const params = await this.createTextDocumentPositionParams(fileVersion, position);
+    const response = await this._process._connection.documentHighlight(params);
+    const convertHighlight = highlight => rangeToAtomRange(highlight.range);
+    return response.map(convertHighlight);
   }
 
   formatSource(

@@ -138,7 +138,7 @@ export class LanguageServerV2 {
     return this._sendRequest('textDocument/references', params);
   }
 
-  documentHighlight(params: p.TextDocumentPositionParams): Promise<p.DocumentHighlight> {
+  documentHighlight(params: p.TextDocumentPositionParams): Promise<Array<p.DocumentHighlight>> {
     return this._sendRequest('textDocument/documentHighlight', params);
   }
 
