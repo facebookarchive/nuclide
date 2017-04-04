@@ -19,7 +19,7 @@ import type {
 } from '../types';
 import type {ActionsObservable} from '../../../commons-node/redux-observable';
 
-import {save} from '../../../commons-atom/text-buffer';
+import {saveBuffer} from '../../../nuclide-remote-connection';
 import {observableFromTask} from '../../../commons-node/tasks';
 import UniversalDisposable from '../../../commons-node/UniversalDisposable';
 import {getLogger} from '../../../nuclide-logging';
@@ -267,7 +267,7 @@ export function verifySavedBeforeRunningTaskEpic(
             return Promise.all(
               unsavedEditors
                 .filter(editor => stillUnsaved.indexOf(editor) !== -1)
-                .map(editor => save(editor.getBuffer())),
+                .map(editor => saveBuffer(editor.getBuffer())),
             );
           });
           return Observable.concat(

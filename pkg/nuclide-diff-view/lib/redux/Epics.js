@@ -48,7 +48,7 @@ import {
   promptToCleanDirtyChanges,
 } from '../utils';
 import {repositoryForPath} from '../../../commons-atom/vcs';
-import {bufferForUri, loadBufferForUri} from '../../../commons-atom/text-buffer';
+import {bufferForUri, loadBufferForUri} from '../../../nuclide-remote-connection';
 import {
   getEmptyCommitState,
   getEmptyPublishState,

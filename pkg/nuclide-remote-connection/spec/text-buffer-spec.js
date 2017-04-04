@@ -11,7 +11,7 @@
 import {
   existingBufferForUri,
   bufferForUri,
-} from '../text-buffer';
+} from '../lib/remote-text-buffer';
 
 describe('existingBufferForUri', () => {
   const file1 = '/tmp/file1.txt';

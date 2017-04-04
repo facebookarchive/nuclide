@@ -49,6 +49,13 @@ export {
   getlocalService,
 };
 
+export {
+  bufferForUri,
+  existingBufferForUri,
+  loadBufferForUri,
+  saveBuffer,
+} from './remote-text-buffer';
+
 import typeof * as AdbService from '../../nuclide-adb-rpc';
 import typeof * as ArcanistService from '../../nuclide-arcanist-rpc';
 import typeof * as BuckService from '../../nuclide-buck-rpc';
