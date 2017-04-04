@@ -50,6 +50,7 @@ import type {
   CompletionItem,
   TextDocumentPositionParams,
   SymbolInformation,
+  UncoveredRange,
 } from './protocol-v2';
 import type {CategoryLogger} from '../../nuclide-logging';
 import type {JsonRpcConnection} from './jsonrpc';
@@ -309,11 +310,20 @@ export class LanguageServerProtocolProcess {
     };
   }
 
-  getCoverage(
+  async getCoverage(
     filePath: NuclideUri,
   ): Promise<?CoverageResult> {
-    this._logger.logError('NYI: getCoverage');
-    return Promise.resolve(null);
+    const params = {textDocument: toTextDocumentIdentifier(filePath)};
+    const response = await this._process._connection.typeCoverage(params);
+
+    const convertUncovered = (uncovered: UncoveredRange) => ({
+      range: rangeToAtomRange(uncovered.range),
+      message: uncovered.message,
+    });
+    return {
+      percentage: response.coveredPercent,
+      uncoveredRegions: response.uncoveredRanges.map(convertUncovered),
+    };
   }
 
   async getOutline(

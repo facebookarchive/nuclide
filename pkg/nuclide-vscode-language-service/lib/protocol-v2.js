@@ -214,6 +214,8 @@ export type ServerCapabilities = {
   documentOnTypeFormattingProvider?: DocumentOnTypeFormattingOptions,
   // The server provides rename support.
   renameProvider?: boolean,
+  // The server provides type coverage support.
+  typeCoverageProvider?: boolean,
 };
 
 // Document
@@ -535,6 +537,22 @@ export type RenameParams = {
    */
   newName: string,
 };
+
+// TypeCoverageParams: a nuclide-specific way to show type coverage for a file
+export type TypeCoverageParams = {
+  textDocument: TextDocumentIdentifier, // The text document.
+};
+
+export type TypeCoverageResult = {
+  coveredPercent: number, // what percent of the file is covered?
+  uncoveredRanges: UncoveredRange[],
+};
+
+export type UncoveredRange = {
+  range: Range,
+  message: string,  // human-readable explanation, maybe with suggested fix
+};
+
 
 // Window
 

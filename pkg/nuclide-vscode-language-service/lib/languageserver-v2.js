@@ -146,6 +146,10 @@ export class LanguageServerV2 {
     return this._sendRequest('textDocument/documentSymbol', params);
   }
 
+  typeCoverage(params: p.TypeCoverageParams): Promise<p.TypeCoverageResult> {
+    return this._sendRequest('textDocument/typeCoverage', params);
+  }
+
   workspaceSymbol(params: p.WorkspaceSymbolParams): Promise<Array<p.SymbolInformation>> {
     return this._sendRequest('workspace/symbol', params);
   }
