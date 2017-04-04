@@ -433,19 +433,53 @@ export class LanguageServerProtocolProcess {
     return response.map(convertHighlight);
   }
 
-  formatSource(
+  async formatSource(
     fileVersion: FileVersion,
-    range: atom$Range,
+    atomRange: atom$Range,
   ): Promise<?Array<TextEdit>> {
-    this._logger.logError('NYI: formatSource');
-    return Promise.resolve(null);
+    const buffer = await this.getBufferAtVersion(fileVersion);
+    if (buffer == null) {
+      this._logger.logError('LSP.formatSource - null buffer');
+      return null;
+    }
+    const options = {tabSize: 2, insertSpaces: true};
+    // TODO: from where should we pick up these options? Can we omit them?
+    const params = {textDocument: toTextDocumentIdentifier(fileVersion.filePath), options};
+    let edits;
+
+    // The user might have requested to format either some or all of the buffer.
+    // And the LSP server might have the capability to format some or all.
+    // We'll match up the request+capability as best we can...
+    const canAll = Boolean(this._process._capabilities.documentFormattingProvider);
+    const canRange = Boolean(this._process._capabilities.documentRangeFormattingProvider);
+    const wantAll = (buffer.getRange().compare(atomRange) === 0);
+    if (canAll && (wantAll || !canRange)) {
+      edits = await this._process._connection.documentFormatting(params);
+    } else if (canRange) {
+      // Range is exclusive, and Nuclide snaps it to entire rows. So range.start
+      // is character 0 of the start line, and range.end is character 0 of the
+      // first line AFTER the selection.
+      const range = atomRangeToRange(atomRange);
+      edits = await this._process._connection.documentRangeFormattting({...params, range});
+    } else {
+      this._logger.logError('LSP.formatSource - not supported by server');
+      return null;
+    }
+
+    const convertRange = lspTextEdit => ({
+      oldRange: rangeToAtomRange(lspTextEdit.range),
+      newText: lspTextEdit.newText,
+    });
+    return edits.map(convertRange);
   }
 
   formatEntireFile(fileVersion: FileVersion, range: atom$Range): Promise<?{
     newCursor?: number,
     formatted: string,
   }> {
-    this._logger.logError('NYI: formatEntireFile');
+    // A language service implements either formatSource or formatEntireFile,
+    // and we should pick formatSource in our AtomLanguageServiceConfig.
+    this._logger.logError('LSP CodeFormat providers should use formatEntireFile: false');
     return Promise.resolve(null);
   }
 
@@ -659,6 +693,13 @@ export function positionToPoint(position: Position): atom$Point {
 export function rangeToAtomRange(range: Range): atom$Range {
   return new atom$Range(
     positionToPoint(range.start), positionToPoint(range.end));
+}
+
+export function atomRangeToRange(range: atom$Range): Range {
+  return {
+    start: pointToPosition(range.start),
+    end: pointToPosition(range.end),
+  };
 }
 
 export function convertDiagnostics(
