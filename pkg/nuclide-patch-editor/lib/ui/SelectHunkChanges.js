@@ -92,6 +92,7 @@ export class SelectHunkChanges extends React.Component {
       <div className="nuclide-patch-editor-select-hunk-changes">
         <Checkbox
           checked={this.state.hunkData.selected === SelectedState.ALL}
+          className="nuclide-patch-editor-hunk-checkbox"
           indeterminate={this.state.hunkData.selected === SelectedState.SOME}
           onChange={this._onToggleHunk}
         />

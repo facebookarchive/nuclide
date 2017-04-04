@@ -50,6 +50,7 @@ export class SelectFileChanges extends React.Component {
       <div className="nuclide-patch-editor-select-file-changes">
         <Checkbox
           checked={selected === SelectedState.ALL}
+          className="nuclide-patch-editor-file-checkbox"
           indeterminate={selected === SelectedState.SOME}
           onChange={this._onToggleFile}
         />
