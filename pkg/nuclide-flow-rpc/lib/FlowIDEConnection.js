@@ -33,6 +33,9 @@ const SUBSCRIBE_METHOD_NAME = 'subscribeToDiagnostics';
 
 const NOTIFICATION_METHOD_NAME = 'diagnosticsNotification';
 
+const SUBSCRIBE_RETRY_INTERVAL = 5000;
+const SUBSCRIBE_RETRIES = 10;
+
 // Manages the connection to a single `flow ide` process. The lifecycle of an instance of this class
 // is tied to the lifecycle of a the `flow ide` process.
 export class FlowIDEConnection {
@@ -85,14 +88,31 @@ export class FlowIDEConnection {
 
   observeDiagnostics(): Observable<FlowStatusOutput> {
     const s = new Subject();
+    const subscribe = () => {
+      this._connection.sendNotification(SUBSCRIBE_METHOD_NAME);
+      // This is a temporary hack used to simplify the temporary vscode-jsonrpc implementation in
+      // Flow: D4659335
+      // TODO remove this hack sometime after Flow v0.44 is released (D4798007)
+      this._ideProcess.stdin.write('\r\n');
+    };
+
+    const retrySubscription = Observable.interval(SUBSCRIBE_RETRY_INTERVAL)
+      .take(SUBSCRIBE_RETRIES)
+      .takeUntil(s)
+      .subscribe(() => {
+        getLogger().error(
+          'Did not receive diagnostics after subscribe request -- retrying...',
+        );
+        subscribe();
+      });
+
     this._connection.onNotification(NOTIFICATION_METHOD_NAME, (arg: FlowStatusOutput) => {
       s.next(arg);
     });
-    this._connection.sendNotification(SUBSCRIBE_METHOD_NAME);
-    // This is a temporary hack used to simplify the temporary vscode-jsonrpc implementation in
-    // Flow: D4659335
-    // TODO remove this hack sometime after Flow v0.44 is released (D4798007)
-    this._ideProcess.stdin.write('\r\n');
-    return s.publishReplay(1).refCount();
+    subscribe();
+    return Observable.using(
+      () => retrySubscription,
+      () => s.publishReplay(1).refCount(),
+    );
   }
 }
