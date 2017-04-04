@@ -155,6 +155,25 @@ export class FlowProcess {
   }
 
   _createIDEConnectionStream(): Observable<?FlowIDEConnection> {
+    const isFailed: Observable<boolean> = this._serverStatus
+      .map(x => x === ServerStatus.FAILED)
+      .distinctUntilChanged();
+    // When we move from failed to non-failed that means we have been explicitly asked to retry
+    // after a Flow server crash. Odds are good that the IDE connection has timed out or is
+    // otherwise unhealthy. So, when we transition from failed to non-failed we should also start
+    // all IDE connection logic anew.
+    const shouldStart: Observable<void> = isFailed
+      .filter(failed => !failed)
+      .mapTo(undefined);
+    return shouldStart
+      .switchMap(() => this._createSingleIDEConnectionStream())
+      .takeUntil(this._isDisposed.filter(x => x))
+      .concat(Observable.of(null))
+      // multicast and store the current connection and immediately deliver it to new subscribers
+      .publishReplay(1).refCount();
+  }
+
+  _createSingleIDEConnectionStream(): Observable<?FlowIDEConnection> {
     let connectionWatcher: ?FlowIDEConnectionWatcher = null;
     return Observable.fromEventPattern(
       // Called when the observable is subscribed to
@@ -172,11 +191,7 @@ export class FlowProcess {
         connectionWatcher.dispose();
         connectionWatcher = null;
       },
-    // multicast and store the current connection and immediately deliver it to new subscribers
-    )
-    .takeUntil(this._isDisposed.filter(x => x))
-    .concat(Observable.of(null))
-    .publishReplay(1).refCount();
+    );
   }
 
   async _tryCreateIDEProcess(): Promise<?child_process$ChildProcess> {
