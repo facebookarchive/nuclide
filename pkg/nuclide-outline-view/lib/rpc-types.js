@@ -11,6 +11,8 @@
 import type {TokenizedText} from '../../commons-node/tokenizedText-rpc-types';
 
 export type OutlineTree = {
+  icon?: string, // from atom$Octicon (that type's not allowed over rpc so we use string)
+
   // Must be one or the other. If both are present, tokenizedText is preferred.
   plainText?: string,
   tokenizedText?: TokenizedText,

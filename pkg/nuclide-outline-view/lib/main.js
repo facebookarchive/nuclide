@@ -35,6 +35,7 @@ const NUX_OUTLINE_VIEW_ID = 4342;
 const GK_NUX_OUTLINE_VIEW = 'mp_nuclide_outline_view_nux';
 
 export type OutlineTreeForUi = {
+  icon?: string,  // from atom$Octicon, but we use string for convenience of remoting
   plainText?: string,
   tokenizedText?: TokenizedText,
 

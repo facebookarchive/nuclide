@@ -19,6 +19,7 @@ import type {
   Outline,
   OutlineTree,
 } from '../../nuclide-outline-view/lib/rpc-types';
+import type {TokenizedText} from '../../commons-node/tokenizedText-rpc-types';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
 import type {FindReferencesReturn} from '../../nuclide-find-references/lib/rpc-types';
 import type {
@@ -67,6 +68,13 @@ import {
   DiagnosticSeverity,
   SymbolKind,
 } from './protocol-v2';
+import {
+  className,
+  method,
+  constructor,
+  string,
+  plain,
+} from '../../commons-node/tokenizedText';
 
 // Marshals messages from Nuclide's LanguageService
 // to VS Code's Language Server Protocol
@@ -283,7 +291,8 @@ export class LanguageServerProtocolProcess {
     // document. This is useful because containers always come lexically before their
     // children. (This isn't a LSP guarantee; just a heuristic.)
     const list: Array<[SymbolInformation, OutlineTree]> = response.map(symbol => [symbol, {
-      plainText: symbol.name,
+      icon: symbolKindToAtomIcon(symbol.kind),
+      tokenizedText: symbolToTokenizedText(symbol),
       startPosition: positionToPoint(symbol.location.range.start),
       children: [],
     }]);
@@ -676,6 +685,50 @@ function symbolKindToAtomIcon(kind: number): string {
     default: return 'question';
   }
 }
+
+// Converts an LSP SymbolInformation into TokenizedText
+function symbolToTokenizedText(symbol: SymbolInformation): TokenizedText {
+  const tokens = [];
+
+  // The TokenizedText ontology is deliberately small, much smaller than
+  // SymbolInformation.kind, because it's used for colorization and you don't
+  // want your colorized text looking like a fruit salad.
+  switch (symbol.kind) {
+    case SymbolKind.File:
+    case SymbolKind.Module:
+    case SymbolKind.Package:
+    case SymbolKind.Namespace:
+      tokens.push(plain(symbol.name));
+      break;
+    case SymbolKind.Class:
+    case SymbolKind.Interface:
+      tokens.push(className(symbol.name));
+      break;
+    case SymbolKind.Constructor:
+      tokens.push(constructor(symbol.name));
+      break;
+    case SymbolKind.Method:
+    case SymbolKind.Property:
+    case SymbolKind.Field:
+    case SymbolKind.Enum:
+    case SymbolKind.Function:
+    case SymbolKind.Constant:
+    case SymbolKind.Variable:
+    case SymbolKind.Array:
+      tokens.push(method(symbol.name));
+      break;
+    case SymbolKind.String:
+    case SymbolKind.Number:
+    case SymbolKind.Boolean:
+      tokens.push(string(symbol.name));
+      break;
+    default:
+      tokens.push(plain(symbol.name));
+  }
+
+  return tokens;
+}
+
 
 export function convertSearchResult(info: SymbolInformation): SymbolResult {
   let hoverText = 'unknown';

@@ -80,6 +80,7 @@ function highlightedOutlines(outline: Outline, editor: atom$TextEditor): Observa
 function treeToUiTree(outlineTree: OutlineTree, nameOnly: boolean): OutlineTreeForUi {
   const shortName = nameOnly && outlineTree.representativeName != null;
   return {
+    icon: nameOnly ? undefined : outlineTree.icon,
     plainText: shortName ? outlineTree.representativeName : outlineTree.plainText,
     tokenizedText: shortName ? undefined : outlineTree.tokenizedText,
     startPosition: outlineTree.startPosition,
