@@ -21,7 +21,10 @@ import type {
 } from '../../nuclide-outline-view/lib/rpc-types';
 import type {TokenizedText} from '../../commons-node/tokenizedText-rpc-types';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
-import type {FindReferencesReturn} from '../../nuclide-find-references/lib/rpc-types';
+import type {
+  FindReferencesReturn,
+  Reference,
+} from '../../nuclide-find-references/lib/rpc-types';
 import type {
   DiagnosticProviderUpdate,
   FileDiagnosticMessage,
@@ -54,6 +57,7 @@ import type {JsonRpcConnection} from './jsonrpc';
 import invariant from 'assert';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {collect} from '../../commons-node/collection';
+import {wordAtPositionFromBuffer} from '../../commons-node/range';
 import {
   FileCache,
   FileVersionNotifier,
@@ -260,12 +264,49 @@ export class LanguageServerProtocolProcess {
     return Promise.resolve(null);
   }
 
-  findReferences(
+  async findReferences(
     fileVersion: FileVersion,
     position: atom$Point,
   ): Promise<?FindReferencesReturn> {
-    this._logger.logError('NYI: findReferences');
-    return Promise.resolve(null);
+    const buffer = await this.getBufferAtVersion(fileVersion);
+    const positionParams = createTextDocumentPositionParams(fileVersion, position);
+    const params = {...positionParams, context: {includeDeclaration: true}};
+    // ReferenceParams is like TextDocumentPositionParams but with one extra field.
+    const response = await this._process._connection.findReferences(params);
+    const references = response.map(this.locationToFindReference);
+
+    // We want to know the name of the symbol. The best we can do is reconstruct
+    // this from the range of one (any) of the references we got back. We're only
+    // willing to do this for references in files already in the filecache, but
+    // thanks to includeDeclaration:true then the file where the user clicked will
+    // assuredly be in the cache!
+    let referencedSymbolName = null;
+    for (const ref of references) {
+      const refBuffer = this._fileCache.getBuffer(ref.uri);
+      if (refBuffer != null) {
+        referencedSymbolName = refBuffer.getTextInRange(ref.range);
+        break;
+      }
+    }
+    // Failing that we'll try using a regexp on the buffer. (belt and braces!)
+    if (referencedSymbolName == null && buffer != null) {
+      const WORD_REGEX = /\w+/gi;
+      const match = wordAtPositionFromBuffer(buffer, position, WORD_REGEX);
+      if (match != null && match.wordMatch.length > 0) {
+        referencedSymbolName = match.wordMatch[0];
+      }
+    }
+    // Failing that ...
+    if (referencedSymbolName == null) {
+      referencedSymbolName = 'symbol';
+    }
+
+    return {
+      type: 'data',
+      baseUri: this._process._projectRoot,
+      referencedSymbolName,
+      references,
+    };
   }
 
   getCoverage(
@@ -452,6 +493,14 @@ export class LanguageServerProtocolProcess {
         `LanguageServerProtocolProcess attempt to shut down already disposed ${this.getRoot()}.`);
     }
     */
+  }
+
+  locationToFindReference(location: Location): Reference {
+    return {
+      uri: location.uri,
+      name: null,
+      range: rangeToAtomRange(location.range),
+    };
   }
 
   locationToDefinition(location: Location): Definition {
