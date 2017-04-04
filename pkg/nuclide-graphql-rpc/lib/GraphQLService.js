@@ -20,6 +20,7 @@ import {trackTiming} from '../../nuclide-analytics';
 /* LanguageService related type imports */
 import type {Observable} from 'rxjs';
 import type {AutocompleteResult} from '../../nuclide-language-service/lib/LanguageService';
+import type {TextEdit} from '../../nuclide-textedit/lib/rpc-types';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 import type {
   Definition,
@@ -215,7 +216,7 @@ class GraphQLLanguageAnalyzer {
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
     range: atom$Range,
-  ): Promise<?string> {
+  ): Promise<?Array<TextEdit>> {
     throw new Error('Not implemented');
   }
 

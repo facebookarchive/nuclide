@@ -13,6 +13,7 @@ import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
 import type {HackRange} from './rpc-types';
 import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
 import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
+import type {TextEdit} from '../../nuclide-textedit/lib/rpc-types';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 import type {
   Definition,
@@ -415,7 +416,7 @@ class HackSingleFileLanguageService {
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
     range: atom$Range,
-  ): Promise<?string> {
+  ): Promise<?Array<TextEdit>> {
     const contents = buffer.getText();
     const startOffset = buffer.characterIndexForPosition(range.start) + 1;
     const endOffset = buffer.characterIndexForPosition(range.end) + 1;
@@ -434,7 +435,10 @@ class HackSingleFileLanguageService {
     } else if (response.error_message !== '') {
       throw new Error(`Error formatting hack source: ${response.error_message}`);
     }
-    return response.result;
+    return [{
+      oldRange: range,
+      newText: response.result,
+    }];
   }
 
   formatEntireFile(

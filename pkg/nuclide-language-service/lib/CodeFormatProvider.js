@@ -10,6 +10,10 @@
 
 import type {LanguageService} from './LanguageService';
 import type {BusySignalProviderBase} from '../../nuclide-busy-signal';
+import type {
+  CodeFormatProvider as CodeFormatProviderType,
+} from '../../nuclide-code-format/lib/types';
+import type {TextEdit} from '../../nuclide-textedit/lib/rpc-types';
 
 import {ConnectionCache} from '../../nuclide-remote-connection';
 import {trackTiming} from '../../nuclide-analytics';
@@ -75,7 +79,8 @@ export class CodeFormatProvider<T: LanguageService> {
   }
 }
 
-class RangeFormatProvider<T: LanguageService> extends CodeFormatProvider<T> {
+class RangeFormatProvider<T: LanguageService> extends CodeFormatProvider<T>
+    implements CodeFormatProviderType {
   constructor(
     name: string,
     selector: string,
@@ -94,7 +99,7 @@ class RangeFormatProvider<T: LanguageService> extends CodeFormatProvider<T> {
     );
   }
 
-  formatCode(editor: atom$TextEditor, range: atom$Range): Promise<string> {
+  formatCode(editor: atom$TextEditor, range: atom$Range): Promise<Array<TextEdit>> {
     return trackTiming(this._analyticsEventName, async () => {
       const fileVersion = await getFileVersionOfEditor(editor);
       const languageService = this._connectionToLanguageService.getForUri(editor.getPath());
@@ -109,12 +114,13 @@ class RangeFormatProvider<T: LanguageService> extends CodeFormatProvider<T> {
         }
       }
 
-      return editor.getTextInBufferRange(range);
+      return [];
     });
   }
 }
 
-class FileFormatProvider<T: LanguageService> extends CodeFormatProvider<T> {
+class FileFormatProvider<T: LanguageService> extends CodeFormatProvider<T>
+    implements CodeFormatProviderType {
   constructor(
     name: string,
     selector: string,

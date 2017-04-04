@@ -10,6 +10,7 @@
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
+import type {TextEdit} from '../../nuclide-textedit/lib/rpc-types';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 import type {
   Definition,
@@ -435,7 +436,7 @@ export class LanguageServerProtocolProcess {
   formatSource(
     fileVersion: FileVersion,
     range: atom$Range,
-  ): Promise<?string> {
+  ): Promise<?Array<TextEdit>> {
     this._logger.logError('NYI: formatSource');
     return Promise.resolve(null);
   }

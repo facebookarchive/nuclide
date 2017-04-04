@@ -12,6 +12,7 @@ import type {CodeFormatProvider} from './types';
 
 import {CompositeDisposable, Range} from 'atom';
 import {observeTextEditors} from '../../commons-atom/text-editor';
+import {applyTextEditsToBuffer} from '../../nuclide-textedit';
 import {getFormatOnSave} from './config';
 
 export default class CodeFormatManager {
@@ -124,16 +125,14 @@ export default class CodeFormatManager {
       const provider = matchingProviders[0];
       if (provider.formatCode != null &&
         (!selectionRangeEmpty || provider.formatEntireFile == null)) {
-        const formatted = await provider.formatCode(editor, formatRange);
+        const edits = await provider.formatCode(editor, formatRange);
         // Throws if contents have changed since the time of triggering format code.
         this._checkContentsAreSame(contents, editor.getText());
-
-        if (selectionRangeEmpty) {
-          buffer.setTextViaDiff(formatted);
-        } else {
-          editor.setTextInBufferRange(formatRange, formatted);
+        // Ensure that edits are in reverse-sorted order.
+        edits.sort((a, b) => b.oldRange.compare(a.oldRange));
+        if (!applyTextEditsToBuffer(editor.getBuffer(), edits)) {
+          throw new Error('Could not apply edits to text buffer.');
         }
-        return true;
       } else if (provider.formatEntireFile != null) {
         const {newCursor, formatted} = await provider.formatEntireFile(editor, formatRange);
         // Throws if contents have changed since the time of triggering format code.
@@ -148,10 +147,10 @@ export default class CodeFormatManager {
         // We call setCursorBufferPosition even when there is no newCursor,
         // because it unselects the text selection.
         editor.setCursorBufferPosition(newPosition);
-        return true;
       } else {
         throw new Error('code-format providers must implement formatCode or formatEntireFile');
       }
+      return true;
     } catch (e) {
       if (displayErrors) {
         atom.notifications.addError('Failed to format code: ' + e.message);

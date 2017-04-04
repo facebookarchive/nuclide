@@ -17,6 +17,7 @@ import type {
 } from '../../nuclide-language-service/lib/LanguageService';
 import type {FileVersion, FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
+import type {TextEdit} from '../../nuclide-textedit/lib/rpc-types';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 import type {
   Definition,
@@ -202,7 +203,7 @@ export interface FlowLanguageServiceType {
   formatSource(
     fileVersion: FileVersion,
     range: atom$Range,
-  ): Promise<?string>,
+  ): Promise<?Array<TextEdit>>,
 
   formatEntireFile(fileVersion: FileVersion, range: atom$Range): Promise<?{
     newCursor?: number,

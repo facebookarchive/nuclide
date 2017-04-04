@@ -10,6 +10,7 @@
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
+import type {TextEdit} from '../../nuclide-textedit/lib/rpc-types';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 import type {
   Definition,
@@ -99,7 +100,7 @@ export type SingleFileLanguageService = {
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
     range: atom$Range,
-  ): Promise<?string>,
+  ): Promise<?Array<TextEdit>>,
 
   formatEntireFile(
     filePath: NuclideUri,
@@ -244,7 +245,7 @@ export class ServerLanguageService<T: SingleFileLanguageService = SingleFileLang
   async formatSource(
     fileVersion: FileVersion,
     range: atom$Range,
-  ): Promise<?string> {
+  ): Promise<?Array<TextEdit>> {
     const filePath = fileVersion.filePath;
     const buffer = await getBufferAtVersion(fileVersion);
     if (buffer == null) {

@@ -26,6 +26,7 @@ import type {
 } from '../../nuclide-definition-service/lib/rpc-types';
 import type {SingleFileLanguageService} from '../../nuclide-language-service-rpc';
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
+import type {TextEdit} from '../../nuclide-textedit/lib/rpc-types';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 import type {FindReferencesReturn} from '../../nuclide-find-references/lib/rpc-types';
 
@@ -544,7 +545,7 @@ export class FlowSingleProjectLanguageService {
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
     range: atom$Range,
-  ): Promise<?string> {
+  ): Promise<?Array<TextEdit>> {
     throw new Error('Not Yet Implemented');
   }
 

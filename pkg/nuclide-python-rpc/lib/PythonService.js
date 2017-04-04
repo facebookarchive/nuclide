@@ -12,6 +12,7 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {MessageType} from '../../nuclide-diagnostics-common/lib/rpc-types';
 import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
 import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
+import type {TextEdit} from '../../nuclide-textedit/lib/rpc-types';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 import type {
   Definition,
@@ -278,7 +279,7 @@ class PythonSingleFileLanguageService {
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
     range: atom$Range,
-  ): Promise<?string> {
+  ): Promise<?Array<TextEdit>> {
     throw new Error('Not Yet Implemented');
   }
 
