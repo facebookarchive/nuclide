@@ -659,7 +659,8 @@ type DecorateMarkerParams = {
   onlyNonEmpty?: boolean,
 } | {
   type: 'gutter',
-  class: string,
+  item?: HTMLElement,
+  class?: string,
   onlyHead?: boolean,
   onlyEmpty?: boolean,
   onlyNonEmpty?: boolean,

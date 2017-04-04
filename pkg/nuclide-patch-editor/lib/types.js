@@ -36,7 +36,6 @@ export type HunkData = {
   countEnabledChanges: number,
   // Index into the hunk at which the first '+' or '-' line appears
   firstChangedLineIndex: number,
-  hunk: diffparser$Hunk,
   selected: SelectedState,
 };
 

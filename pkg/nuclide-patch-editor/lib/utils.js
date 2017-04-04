@@ -107,7 +107,6 @@ export function createHunkData(hunk: diffparser$Hunk): HunkData {
     allChanges,
     countEnabledChanges: allChanges.length,
     firstChangedLineIndex,
-    hunk,
     selected: SelectedState.ALL,
   };
 }
