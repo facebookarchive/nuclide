@@ -27,11 +27,13 @@ import {existingEditorForUri} from '../../commons-atom/text-editor';
  * Returns true if the application was successful, otherwise false (e.g. if the oldText did not
  * match).
  */
-export default function applyTextEdits(path: NuclideUri, ...edits: Array<TextEdit>): boolean {
+export function applyTextEdits(path: NuclideUri, ...edits: Array<TextEdit>): boolean {
   const editor = existingEditorForUri(path);
   invariant(editor != null);
+  return applyTextEditsToBuffer(editor.getBuffer(), edits);
+}
 
-  const buffer = editor.getBuffer();
+export function applyTextEditsToBuffer(buffer: atom$TextBuffer, edits: Array<TextEdit>): boolean {
   const checkpoint = buffer.createCheckpoint();
 
   // Iterate through in reverse order. Edits earlier in the file can move around text later in the

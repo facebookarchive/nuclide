@@ -22,7 +22,7 @@ import {Observable} from 'rxjs';
 
 import {track} from '../../nuclide-analytics';
 import {getLogger} from '../../nuclide-logging';
-import applyTextEdits from '../../nuclide-textedit';
+import {applyTextEdits} from '../../nuclide-textedit';
 
 import * as Actions from './refactorActions';
 

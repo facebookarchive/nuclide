@@ -23,7 +23,7 @@ import type {
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {TextEdit} from '../../nuclide-textedit/lib/rpc-types';
 
-import applyTextEdits from '../../nuclide-textedit';
+import {applyTextEdits} from '../../nuclide-textedit';
 import {arrayRemove, MultiMap} from '../../commons-node/collection';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {MarkerTracker} from './MarkerTracker';
