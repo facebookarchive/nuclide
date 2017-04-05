@@ -32,6 +32,8 @@ import invariant from 'assert';
 import React from 'react';
 import {applyMiddleware, createStore} from 'redux';
 
+const MAX_SERIALIZED_RECORDS = 1000;
+
 class Activation {
   _disposables: UniversalDisposable;
   _rawState: ?Object;
@@ -167,7 +169,7 @@ class Activation {
       return {};
     }
     return {
-      records: this._store.getState().records,
+      records: this._store.getState().records.slice(-MAX_SERIALIZED_RECORDS),
     };
   }
 }
