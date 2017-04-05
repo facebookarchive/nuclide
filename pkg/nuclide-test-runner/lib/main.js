@@ -15,6 +15,7 @@ import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/type
 
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
+import createPackage from '../../commons-atom/createPackage';
 import {TestRunnerController, WORKSPACE_VIEW_URI} from './TestRunnerController';
 import {getLogger} from '../../nuclide-logging';
 
@@ -102,7 +103,7 @@ class Activation {
     return new Disposable(() => this._disposables.remove(menuItemSubscriptions));
   }
 
-  addTestRunner(testRunner: TestRunner): ?Disposable {
+  consumeTestRunner(testRunner: TestRunner): ?Disposable {
     if (this._testRunners.has(testRunner)) {
       logger.info(`Attempted to add test runner "${testRunner.label}" that was already added`);
       return;
@@ -128,7 +129,7 @@ class Activation {
     });
   }
 
-  addToolBar(getToolBar: GetToolBar): IDisposable {
+  consumeToolBar(getToolBar: GetToolBar): IDisposable {
     const toolBar = getToolBar('nuclide-test-runner');
     toolBar.addButton({
       icon: 'checklist',
@@ -231,48 +232,10 @@ class Activation {
       ),
     );
   }
-}
 
-let activation: ?Activation;
-
-export function activate(): void {
-  if (!activation) {
-    activation = new Activation();
+  deserializeTestRunnerPanelState(): TestRunnerController {
+    return this.getController();
   }
 }
 
-export function deactivate(): void {
-  if (activation) {
-    activation.dispose();
-    activation = null;
-  }
-}
-
-export function consumeTestRunner(testRunner: TestRunner): ?Disposable {
-  if (activation) {
-    return activation.addTestRunner(testRunner);
-  }
-}
-
-export function addItemsToFileTreeContextMenu(contextMenu: FileTreeContextMenu): IDisposable {
-  invariant(activation);
-  return activation.addItemsToFileTreeContextMenu(contextMenu);
-}
-
-export function consumeToolBar(getToolBar: GetToolBar): IDisposable {
-  invariant(activation);
-  return activation.addToolBar(getToolBar);
-}
-
-export function deserializeTestRunnerPanelState(): TestRunnerController {
-  // Workaround until the bug where deserialize is ran before activation
-  activate();
-
-  invariant(activation);
-  return activation.getController();
-}
-
-export function consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
-  invariant(activation);
-  return activation.consumeWorkspaceViewsService(api);
-}
+createPackage(module.exports, Activation);
