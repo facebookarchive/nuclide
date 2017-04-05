@@ -65,7 +65,6 @@ function getInitialState() {
 let commands: Commands;
 let disposables: UniversalDisposable;
 let states: BehaviorSubject<AppState>;
-let activated = false;
 let restored;
 
 const WORKSPACE_VIEW_URI = 'atom://nuclide/source-control';
@@ -73,7 +72,6 @@ const WORKSPACE_VIEW_URI = 'atom://nuclide/source-control';
 const DESERIALIZER_VERSION = atom.workspace.getLeftDock == null ? 1 : 2;
 
 export function initialize(rawState: Object): void {
-  activated = true;
   const serializedVersionMatches = (rawState && rawState.version || 1) === DESERIALIZER_VERSION;
   restored = rawState != null && serializedVersionMatches && rawState.restored === true;
   const initialState = getInitialState();
@@ -87,7 +85,6 @@ export function initialize(rawState: Object): void {
   commands = new Commands(dispatch, () => states.getValue());
 
   disposables = new UniversalDisposable(
-    () => { activated = false; },
     observableFromSubscribeFunction(
       atom.project.onDidChangePaths.bind(atom.project),
     )
@@ -139,13 +136,6 @@ class SourceControlSideBar {
 }
 
 export function deserializeSourceControlSideBar(state: mixed): ?SourceControlSideBar {
-  // It's possible for this method to be called before the package has been activated (if this was
-  // serialized as part of the workspace instead of nuclide-workspace-views).
-  // TODO: Once atom/atom#13358 makes it into stable, we can switch from using 'activate()' to
-  // `initialize()` and avoid that.
-  if (!activated) {
-    return;
-  }
   return new SourceControlSideBar();
 }
 
