@@ -8,6 +8,8 @@
  * @flow
  */
 
+import type {Datatip} from './types';
+
 import React from 'react';
 import {maybeToString} from '../../commons-node/string';
 
@@ -24,8 +26,8 @@ const IconsForAction = {
 type DatatipComponentProps = {
   action: string,
   actionTitle: string,
-  children?: any,
   className?: string,
+  datatip: Datatip,
   onActionClick: Function,
 };
 
@@ -44,9 +46,9 @@ export class DatatipComponent extends React.Component {
   render(): React.Element<any> {
     const {
       className,
-      children,
       action,
       actionTitle,
+      datatip,
       ...props
     } = this.props;
     delete props.onActionClick;
@@ -61,12 +63,14 @@ export class DatatipComponent extends React.Component {
         />
       );
     }
+    const ProvidedComponent = datatip.component;
+    const content = <ProvidedComponent />;
     return (
       <div
         className={`${maybeToString(className)} nuclide-datatip-container`}
         {...props}>
         <div className="nuclide-datatip-content">
-          {children}
+          {content}
         </div>
         {actionButton}
       </div>

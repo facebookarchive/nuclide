@@ -160,14 +160,11 @@ function renderProvider(
   providerName: string,
   onPinClick: (editor: atom$TextEditor, datatip: Datatip) => void,
 ): React.Element<any> {
-  const {pinnable, component} = datatip;
-  const ProvidedComponent = component;
-
   let action;
   let actionTitle;
   // Datatips are pinnable by default, unless explicitly specified
   // otherwise.
-  if (pinnable !== false) {
+  if (datatip.pinnable !== false) {
     action = DATATIP_ACTIONS.PIN;
     actionTitle = 'Pin this Datatip';
   }
@@ -176,10 +173,10 @@ function renderProvider(
     <DatatipComponent
       action={action}
       actionTitle={actionTitle}
+      datatip={datatip}
       onActionClick={() => onPinClick(editor, datatip)}
-      key={providerName}>
-      <ProvidedComponent />
-    </DatatipComponent>
+      key={providerName}
+    />
   );
 }
 

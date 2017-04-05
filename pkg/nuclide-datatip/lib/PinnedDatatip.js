@@ -54,8 +54,7 @@ export class PinnedDatatip {
   _rangeDecoration: ?atom$Decoration;
   _mouseSubscription: ?rxjs$ISubscription;
   _subscriptions: atom$CompositeDisposable;
-  _range: atom$Range;
-  _component: ReactClass<any>;
+  _datatip: Datatip;
   _editor: TextEditor;
   _hostElement: HTMLElement;
   _boundDispose: Function;
@@ -68,14 +67,9 @@ export class PinnedDatatip {
     datatip: Datatip,
     editor: TextEditor,
     onDispose: (pinnedDatatip: PinnedDatatip) => void) {
-    const {
-      component,
-      range,
-    } = datatip;
     this._subscriptions = new CompositeDisposable();
     this._subscriptions.add(new Disposable(() => onDispose(this)));
-    this._range = range;
-    this._component = component;
+    this._datatip = datatip;
     this._editor = editor;
     this._marker = null;
     this._rangeDecoration = null;
@@ -166,23 +160,23 @@ export class PinnedDatatip {
   _updateHostElementPosition(): void {
     const {
       _editor,
-      _range,
+      _datatip,
       _hostElement,
       _offset,
     } = this;
+    const {range} = _datatip;
     const charWidth = _editor.getDefaultCharWidth();
-    const lineLength = _editor.getBuffer().getLines()[_range.start.row].length;
+    const lineLength = _editor.getBuffer().getLines()[range.start.row].length;
     _hostElement.style.display = 'block';
     _hostElement.style.top = -_editor.getLineHeightInPixels() + _offset.y + 'px';
     _hostElement.style.left =
-      (lineLength - _range.end.column) * charWidth + LINE_END_MARGIN + _offset.x + 'px';
+      (lineLength - range.end.column) * charWidth + LINE_END_MARGIN + _offset.x + 'px';
   }
 
   render(): void {
     const {
       _editor,
-      _range,
-      _component: ProvidedComponent,
+      _datatip,
       _hostElement,
       _isDragging,
       _isHovering,
@@ -196,11 +190,11 @@ export class PinnedDatatip {
           _isDragging ? 'nuclide-datatip-dragging' : '',
           'nuclide-datatip-pinned',
         )}
+        datatip={_datatip}
         onActionClick={this._boundDispose}
         onMouseDown={this._boundHandleMouseDown}
-        onClickCapture={this._boundHandleCapturedClick}>
-        <ProvidedComponent />
-      </DatatipComponent>,
+        onClickCapture={this._boundHandleCapturedClick}
+      />,
       _hostElement,
     );
 
@@ -210,7 +204,7 @@ export class PinnedDatatip {
     }
 
     if (this._marker == null) {
-      const marker: atom$Marker = _editor.markBufferRange(_range, {invalidate: 'never'});
+      const marker: atom$Marker = _editor.markBufferRange(_datatip.range, {invalidate: 'never'});
       this._marker = marker;
       _editor.decorateMarker(
         marker,
