@@ -1,67 +1,52 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import {runCommand} from '../../commons-node/process';
-import memoize from 'lodash.memoize';
-import {Observable} from 'rxjs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getSimulators = exports.getFbsimctlSimulators = undefined;
+exports.getFbsimctlDevices = getFbsimctlDevices;
+exports.getActiveDeviceIndex = getActiveDeviceIndex;
+exports.parseSimulatorsFromSimctlOutput = parseSimulatorsFromSimctlOutput;
 
-export type SimulatorState = 'CREATING' | 'BOOTING' | 'SHUTTING_DOWN' | 'SHUT_DOWN' | 'BOOTED';
+var _process;
 
-export type Simulator = {
-  name: string,
-  udid: string,
-  state: ?SimulatorState,
-  os: string,
-  arch: string,
-};
-
-export type Device = {
-  name: string,
-  udid: string,
-  arch: string,
-};
-
-export function getFbsimctlDevices(): Observable<Array<Device>> {
-  return runCommand('fbsimctl', ['--json', '--devices', '--name', '--udid', '--arch', 'list'])
-    .map(parseDevicesFromFbsimctlOutput)
-    .catch(error => (
-      // Users may not have fbsimctl installed. If the command failed, just return an empty list.
-      Observable.of([])
-    ))
-    .share();
+function _load_process() {
+  return _process = require('../../commons-node/process');
 }
 
-export const getFbsimctlSimulators: () => Observable<Array<Simulator>> = memoize(() => (
-  runCommand(
-    'fbsimctl',
-    ['--json', '--simulators', '--name', '--udid', '--state', '--os', '--arch', 'list'],
-  )
-    .map(parseSimulatorsFromFbsimctlOutput)
-    .catch(error => (
-      // Users may not have fbsimctl installed. Fall back to xcrun simctl in that case.
-      getSimulators()
-    ))
-    .share()
-));
+var _lodash;
 
-export const getSimulators: () => Observable<Array<Simulator>> = memoize(() => (
-  runCommand('xcrun', ['simctl', 'list', 'devices'])
-    .map(parseSimulatorsFromSimctlOutput)
-    .catch(error => (
-      // Users may not have xcrun installed. If the command failed, just return an empty list.
-      Observable.of([])
-    ))
-    .share()
-));
+function _load_lodash() {
+  return _lodash = _interopRequireDefault(require('lodash.memoize'));
+}
 
-export function getActiveDeviceIndex(devices: Array<Simulator>): number {
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function getFbsimctlDevices() {
+  return (0, (_process || _load_process()).runCommand)('fbsimctl', ['--json', '--devices', '--name', '--udid', '--arch', 'list']).map(parseDevicesFromFbsimctlOutput).catch(error =>
+  // Users may not have fbsimctl installed. If the command failed, just return an empty list.
+  _rxjsBundlesRxMinJs.Observable.of([])).share();
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   */
+
+const getFbsimctlSimulators = exports.getFbsimctlSimulators = (0, (_lodash || _load_lodash()).default)(() => (0, (_process || _load_process()).runCommand)('fbsimctl', ['--json', '--simulators', '--name', '--udid', '--state', '--os', '--arch', 'list']).map(parseSimulatorsFromFbsimctlOutput).catch(error =>
+// Users may not have fbsimctl installed. Fall back to xcrun simctl in that case.
+getSimulators()).share());
+
+const getSimulators = exports.getSimulators = (0, (_lodash || _load_lodash()).default)(() => (0, (_process || _load_process()).runCommand)('xcrun', ['simctl', 'list', 'devices']).map(parseSimulatorsFromSimctlOutput).catch(error =>
+// Users may not have xcrun installed. If the command failed, just return an empty list.
+_rxjsBundlesRxMinJs.Observable.of([])).share());
+
+function getActiveDeviceIndex(devices) {
   const bootedDeviceIndex = devices.findIndex(device => device.state === 'BOOTED');
   if (bootedDeviceIndex > -1) {
     return bootedDeviceIndex;
@@ -80,7 +65,7 @@ export function getActiveDeviceIndex(devices: Array<Simulator>): number {
   return defaultDeviceIndex;
 }
 
-function parseSimulatorsFromFbsimctlOutput(output: string): Array<Simulator> {
+function parseSimulatorsFromFbsimctlOutput(output) {
   const simulators = [];
 
   output.split('\n').forEach(line => {
@@ -94,7 +79,7 @@ function parseSimulatorsFromFbsimctlOutput(output: string): Array<Simulator> {
       return;
     }
     const simulator = event.subject;
-    const {state, os, name, udid, arch} = simulator;
+    const { state, os, name, udid, arch } = simulator;
     if (!state || !os || !name || !udid || !arch) {
       return;
     }
@@ -108,14 +93,14 @@ function parseSimulatorsFromFbsimctlOutput(output: string): Array<Simulator> {
       udid,
       state: validateState(state),
       os,
-      arch,
+      arch
     });
   });
 
   return simulators;
 }
 
-function parseDevicesFromFbsimctlOutput(output: string): Array<Device> {
+function parseDevicesFromFbsimctlOutput(output) {
   const devices = [];
 
   output.split('\n').forEach(line => {
@@ -129,18 +114,18 @@ function parseDevicesFromFbsimctlOutput(output: string): Array<Device> {
       return;
     }
     const device = event.subject;
-    const {name, udid, arch} = device;
+    const { name, udid, arch } = device;
     if (!name || !udid || !arch) {
       return;
     }
 
-    devices.push({name, udid, arch});
+    devices.push({ name, udid, arch });
   });
 
   return devices;
 }
 
-export function parseSimulatorsFromSimctlOutput(output: string): Array<Simulator> {
+function parseSimulatorsFromSimctlOutput(output) {
   const simulators = [];
   let currentOS = null;
 
@@ -156,8 +141,7 @@ export function parseSimulatorsFromSimctlOutput(output: string): Array<Simulator
       return;
     }
 
-    const simulator =
-      line.match(/^[ ]*([^()]+) \(([^()]+)\) \((Creating|Booting|Shutting Down|Shutdown|Booted)\)/);
+    const simulator = line.match(/^[ ]*([^()]+) \(([^()]+)\) \((Creating|Booting|Shutting Down|Shutdown|Booted)\)/);
     if (simulator && currentOS) {
       const [, name, udid, state] = simulator;
       const arch = name.match(/^(iPhone (5$|5C|4)|iPad Retina)/) ? 'i386' : 'x86_64';
@@ -166,7 +150,7 @@ export function parseSimulatorsFromSimctlOutput(output: string): Array<Simulator
         udid,
         state: validateState(state),
         os: currentOS,
-        arch,
+        arch
       });
     }
   });
@@ -174,13 +158,19 @@ export function parseSimulatorsFromSimctlOutput(output: string): Array<Simulator
   return simulators;
 }
 
-function validateState(rawState: ?string): ?SimulatorState {
+function validateState(rawState) {
   switch (rawState) {
-    case 'Creating': return 'CREATING';
-    case 'Booting': return 'BOOTING';
-    case 'Shutting Down': return 'SHUTTING_DOWN';
-    case 'Shutdown': return 'SHUT_DOWN';
-    case 'Booted': return 'BOOTED';
-    default: return null;
+    case 'Creating':
+      return 'CREATING';
+    case 'Booting':
+      return 'BOOTING';
+    case 'Shutting Down':
+      return 'SHUTTING_DOWN';
+    case 'Shutdown':
+      return 'SHUT_DOWN';
+    case 'Booted':
+      return 'BOOTED';
+    default:
+      return null;
   }
 }

@@ -1,90 +1,64 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-/**
- * CharacterStream implements a stream of character tokens given a source text.
- * The API design follows that of CodeMirror.StringStream.
- *
- * Required:
- *
- *      sourceText: (string), A raw GraphQL source text. Works best if a line
- *        is supplied.
- *
- */
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+class CharacterStream {
 
-type TokenPattern =
-  string |
-  ((char: string) => boolean) |
-  RegExp;
-
-export default class CharacterStream {
-  _start: number;
-  _pos: number;
-  _sourceText: string;
-
-  constructor(sourceText: string): void {
+  constructor(sourceText) {
     this._start = 0;
     this._pos = 0;
     this._sourceText = sourceText;
   }
 
-  getStartOfToken(): number {
+  getStartOfToken() {
     return this._start;
   }
 
-  getCurrentPosition(): number {
+  getCurrentPosition() {
     return this._pos;
   }
 
-  _testNextCharacter(pattern: TokenPattern) {
+  _testNextCharacter(pattern) {
     const character = this._sourceText.charAt(this._pos);
     let isMatched = false;
     if (typeof pattern === 'string') {
       isMatched = character === pattern;
     } else {
-      isMatched = pattern instanceof RegExp ?
-        pattern.test(character) : pattern(character);
+      isMatched = pattern instanceof RegExp ? pattern.test(character) : pattern(character);
     }
     return isMatched;
   }
 
-  eol(): boolean {
+  eol() {
     return this._sourceText.length === this._pos;
   }
 
-  sol(): boolean {
+  sol() {
     return this._pos === 0;
   }
 
-  peek(): string | null {
-    return this._sourceText.charAt(this._pos) ?
-      this._sourceText.charAt(this._pos) : null;
+  peek() {
+    return this._sourceText.charAt(this._pos) ? this._sourceText.charAt(this._pos) : null;
   }
 
-  next(): string {
+  next() {
     const char = this._sourceText.charAt(this._pos);
-    this._pos ++;
+    this._pos++;
     return char;
   }
 
-  eat(pattern: TokenPattern): string | void {
+  eat(pattern) {
     const isMatched = this._testNextCharacter(pattern);
     if (isMatched) {
       this._start = this._pos;
-      this._pos ++;
+      this._pos++;
       return this._sourceText.charAt(this._pos - 1);
     }
     return undefined;
   }
 
-  eatWhile(match: TokenPattern): boolean {
+  eatWhile(match) {
     let isMatched = this._testNextCharacter(match);
     let didEat = false;
 
@@ -95,7 +69,7 @@ export default class CharacterStream {
     }
 
     while (isMatched) {
-      this._pos ++;
+      this._pos++;
       isMatched = this._testNextCharacter(match);
       didEat = true;
     }
@@ -103,28 +77,24 @@ export default class CharacterStream {
     return didEat;
   }
 
-  eatSpace(): boolean {
+  eatSpace() {
     return this.eatWhile(/[\s\u00a0]/);
   }
 
-  skipToEnd(): void {
+  skipToEnd() {
     this._pos = this._sourceText.length;
   }
 
-  skipTo(position: number): void {
+  skipTo(position) {
     this._pos = position;
   }
 
-  match(
-    pattern: TokenPattern,
-    consume: ?boolean = true,
-    caseFold: ?boolean = false,
-  ): Array<string> | boolean {
+  match(pattern, consume = true, caseFold = false) {
     let token = null;
     let match = null;
 
     if (typeof pattern === 'string') {
-      const regex = new RegExp(pattern, (caseFold ? 'i' : 'g'));
+      const regex = new RegExp(pattern, caseFold ? 'i' : 'g');
       match = regex.test(this._sourceText.substr(this._pos, pattern.length));
       token = pattern;
     } else if (pattern instanceof RegExp) {
@@ -133,14 +103,11 @@ export default class CharacterStream {
     }
 
     if (match != null) {
-      if (
-        typeof pattern === 'string' ||
-        match instanceof Array &&
-        // String.match returns 'index' property, which flow fails to detect
-        // for some reason. The below is a workaround, but an easier solution
-        // is just checking if `match.index === 0`
-        this._sourceText.startsWith(match[0], this._pos)
-      ) {
+      if (typeof pattern === 'string' || match instanceof Array &&
+      // String.match returns 'index' property, which flow fails to detect
+      // for some reason. The below is a workaround, but an easier solution
+      // is just checking if `match.index === 0`
+      this._sourceText.startsWith(match[0], this._pos)) {
         if (consume) {
           this._start = this._pos;
           if (token && token.length) {
@@ -155,15 +122,15 @@ export default class CharacterStream {
     return false;
   }
 
-  backUp(num: number): void {
+  backUp(num) {
     this._pos -= num;
   }
 
-  column(): number {
+  column() {
     return this._pos;
   }
 
-  indentation(): number {
+  indentation() {
     const match = this._sourceText.match(/\s*/);
     let indent = 0;
     if (match && match.length === 0) {
@@ -182,7 +149,27 @@ export default class CharacterStream {
     return indent;
   }
 
-  current(): string {
+  current() {
     return this._sourceText.slice(this._start, this._pos);
   }
 }
+exports.default = CharacterStream; /**
+                                    * Copyright (c) 2015-present, Facebook, Inc.
+                                    * All rights reserved.
+                                    *
+                                    * This source code is licensed under the license found in the LICENSE file in
+                                    * the root directory of this source tree.
+                                    *
+                                    * 
+                                    */
+
+/**
+ * CharacterStream implements a stream of character tokens given a source text.
+ * The API design follows that of CodeMirror.StringStream.
+ *
+ * Required:
+ *
+ *      sourceText: (string), A raw GraphQL source text. Works best if a line
+ *        is supplied.
+ *
+ */

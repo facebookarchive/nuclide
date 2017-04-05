@@ -1,41 +1,35 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import type {
-  DatatipProvider,
-  DatatipService,
-} from '../../nuclide-datatip/lib/types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {
-  CompositeDisposable,
-} from 'atom';
+var _atom = require('atom');
 
-import unescapedUnicodeDatatip from './UnescapedUnicodeDatatip';
+var _UnescapedUnicodeDatatip;
 
-export default class UnicodeDatatipManager {
-  _disposables: CompositeDisposable;
+function _load_UnescapedUnicodeDatatip() {
+  return _UnescapedUnicodeDatatip = _interopRequireDefault(require('./UnescapedUnicodeDatatip'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class UnicodeDatatipManager {
 
   constructor() {
-    this._disposables = new CompositeDisposable();
+    this._disposables = new _atom.CompositeDisposable();
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
   }
 
-  consumeDatatipService(service: DatatipService): IDisposable {
-    const datatipProvider: DatatipProvider = {
-      datatip: (editor, position) => unescapedUnicodeDatatip(editor, position),
-      validForScope: (scope: string) => true,
+  consumeDatatipService(service) {
+    const datatipProvider = {
+      datatip: (editor, position) => (0, (_UnescapedUnicodeDatatip || _load_UnescapedUnicodeDatatip()).default)(editor, position),
+      validForScope: scope => true,
       providerName: 'nuclide-unicode-escapes',
-      inclusionPriority: 1,
+      inclusionPriority: 1
     };
 
     const disposable = service.addProvider(datatipProvider);
@@ -43,3 +37,12 @@ export default class UnicodeDatatipManager {
     return disposable;
   }
 }
+exports.default = UnicodeDatatipManager; /**
+                                          * Copyright (c) 2015-present, Facebook, Inc.
+                                          * All rights reserved.
+                                          *
+                                          * This source code is licensed under the license found in the LICENSE file in
+                                          * the root directory of this source tree.
+                                          *
+                                          * 
+                                          */

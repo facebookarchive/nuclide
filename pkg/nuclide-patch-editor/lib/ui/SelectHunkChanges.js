@@ -1,49 +1,67 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import type {ExtraFileChangesData, HunkData} from '../types';
-import type {HunkProps} from '../../../nuclide-ui/FileChanges';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.SelectHunkChanges = undefined;
 
-import {Checkbox} from '../../../nuclide-ui/Checkbox';
-import {HunkDiff} from '../../../nuclide-ui/FileChanges';
-import nullthrows from 'nullthrows';
-import React from 'react';
-import {SelectedState} from '../constants';
+var _Checkbox;
 
-type Props = HunkProps;
-
-function getExtraData(props: Props): ExtraFileChangesData {
-  return (nullthrows(props.extraData): any);
+function _load_Checkbox() {
+  return _Checkbox = require('../../../nuclide-ui/Checkbox');
 }
 
-function getHunkData(props: Props): HunkData {
-  const hunks = nullthrows(getExtraData(props).fileData.chunks);
-  return nullthrows(hunks.get(props.hunk.oldStart));
+var _FileChanges;
+
+function _load_FileChanges() {
+  return _FileChanges = require('../../../nuclide-ui/FileChanges');
 }
 
-export class SelectHunkChanges extends React.Component {
-  props: Props;
-  _editor: ?atom$TextEditor;
-  _hunkData: HunkData;
-  _onToggleHunk: () => mixed;
+var _nullthrows;
 
-  constructor(props: Props) {
+function _load_nullthrows() {
+  return _nullthrows = _interopRequireDefault(require('nullthrows'));
+}
+
+var _react = _interopRequireDefault(require('react'));
+
+var _constants;
+
+function _load_constants() {
+  return _constants = require('../constants');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function getExtraData(props) {
+  return (0, (_nullthrows || _load_nullthrows()).default)(props.extraData);
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   */
+
+function getHunkData(props) {
+  const hunks = (0, (_nullthrows || _load_nullthrows()).default)(getExtraData(props).fileData.chunks);
+  return (0, (_nullthrows || _load_nullthrows()).default)(hunks.get(props.hunk.oldStart));
+}
+
+class SelectHunkChanges extends _react.default.Component {
+
+  constructor(props) {
     super(props);
 
-    const {actionCreators, fileData: {id: fileId}, patchId} = getExtraData(props);
+    const { actionCreators, fileData: { id: fileId }, patchId } = getExtraData(props);
     this._onToggleHunk = () => actionCreators.toggleHunk(patchId, fileId, props.hunk.oldStart);
 
     this._hunkData = getHunkData(props);
   }
 
-  shouldComponentUpdate(nextProps: Props): boolean {
+  shouldComponentUpdate(nextProps) {
     const newHunkData = getHunkData(nextProps);
     if (newHunkData !== this._hunkData) {
       this._hunkData = newHunkData;
@@ -52,18 +70,23 @@ export class SelectHunkChanges extends React.Component {
     return false;
   }
 
-  render(): React.Element<any> {
-    return (
-      <div className="nuclide-patch-editor-select-hunk-changes">
-        <Checkbox
-          checked={this._hunkData.selected === SelectedState.ALL}
-          indeterminate={this._hunkData.selected === SelectedState.SOME}
-          onChange={this._onToggleHunk}
-        />
-        <div className="nuclide-patch-editor-hunk-changes">
-          <HunkDiff {...this.props} ref={hunk => { this._editor = hunk && hunk.editor; }} />
-        </div>
-      </div>
+  render() {
+    return _react.default.createElement(
+      'div',
+      { className: 'nuclide-patch-editor-select-hunk-changes' },
+      _react.default.createElement((_Checkbox || _load_Checkbox()).Checkbox, {
+        checked: this._hunkData.selected === (_constants || _load_constants()).SelectedState.ALL,
+        indeterminate: this._hunkData.selected === (_constants || _load_constants()).SelectedState.SOME,
+        onChange: this._onToggleHunk
+      }),
+      _react.default.createElement(
+        'div',
+        { className: 'nuclide-patch-editor-hunk-changes' },
+        _react.default.createElement((_FileChanges || _load_FileChanges()).HunkDiff, Object.assign({}, this.props, { ref: hunk => {
+            this._editor = hunk && hunk.editor;
+          } }))
+      )
     );
   }
 }
+exports.SelectHunkChanges = SelectHunkChanges;

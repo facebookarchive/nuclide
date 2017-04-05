@@ -1,3 +1,67 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.LanguageServerProtocolProcess = undefined;
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+exports.toTextDocumentIdentifier = toTextDocumentIdentifier;
+exports.pointToPosition = pointToPosition;
+exports.positionToPoint = positionToPoint;
+exports.rangeToAtomRange = rangeToAtomRange;
+exports.convertDiagnostics = convertDiagnostics;
+exports.convertDiagnostic = convertDiagnostic;
+exports.convertSeverity = convertSeverity;
+exports.createTextDocumentPositionParams = createTextDocumentPositionParams;
+exports.convertCompletion = convertCompletion;
+exports.convertSearchResult = convertSearchResult;
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var _nuclideOpenFilesRpc;
+
+function _load_nuclideOpenFilesRpc() {
+  return _nuclideOpenFilesRpc = require('../../nuclide-open-files-rpc');
+}
+
+var _vscodeJsonrpc;
+
+function _load_vscodeJsonrpc() {
+  return _vscodeJsonrpc = _interopRequireWildcard(require('vscode-jsonrpc'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _simpleTextBuffer;
+
+function _load_simpleTextBuffer() {
+  return _simpleTextBuffer = require('simple-text-buffer');
+}
+
+var _languageserverV;
+
+function _load_languageserverV() {
+  return _languageserverV = require('./languageserver-v2');
+}
+
+var _protocolV;
+
+function _load_protocolV() {
+  return _protocolV = require('./protocol-v2');
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// Marshals messages from Nuclide's LanguageService
+// to VS Code's Language Server Protocol
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,355 +69,251 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
-import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
-import type {
-  Definition,
-  DefinitionQueryResult,
-} from '../../nuclide-definition-service/lib/rpc-types';
-import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
-import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
-import type {FindReferencesReturn} from '../../nuclide-find-references/lib/rpc-types';
-import type {
-  DiagnosticProviderUpdate,
-  FileDiagnosticMessage,
-  FileDiagnosticUpdate,
-  MessageType,
-} from '../../nuclide-diagnostics-common/lib/rpc-types';
-import type {
-  AutocompleteResult,
-  Completion,
-  SymbolResult,
-} from '../../nuclide-language-service/lib/LanguageService';
-import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
-import type {ConnectableObservable} from 'rxjs';
-import type {
-  InitializeParams,
-  ServerCapabilities,
-  TextDocumentIdentifier,
-  Position,
-  Range,
-  Location,
-  PublishDiagnosticsParams,
-  Diagnostic,
-  CompletionItem,
-  TextDocumentPositionParams,
-  SymbolInformation,
-} from './protocol-v2';
-import type {CategoryLogger} from '../../nuclide-logging';
-import type {JsonRpcConnection} from './jsonrpc';
+class LanguageServerProtocolProcess {
 
-import nuclideUri from '../../commons-node/nuclideUri';
-import {
-  FileCache,
-  FileVersionNotifier,
-  FileEventKind,
-} from '../../nuclide-open-files-rpc';
-import {getBufferAtVersion} from '../../nuclide-open-files-rpc';
-import * as rpc from 'vscode-jsonrpc';
-import {Observable} from 'rxjs';
-import {Point, Range as atom$Range} from 'simple-text-buffer';
-import {LanguageServerV2} from './languageserver-v2';
-import {
-  DiagnosticSeverity,
-  SymbolKind,
-} from './protocol-v2';
-
-// Marshals messages from Nuclide's LanguageService
-// to VS Code's Language Server Protocol
-export class LanguageServerProtocolProcess {
-  _projectRoot: string;
-  _fileCache: FileCache;
-  _fileSubscription: rxjs$ISubscription;
-  _fileVersionNotifier: FileVersionNotifier;
-  _createProcess: () => child_process$ChildProcess;
-  _process: LspProcess;
-  _fileExtensions: Array<string>;
-  _logger: CategoryLogger;
-
-  constructor(
-    logger: CategoryLogger,
-    fileCache: FileCache,
-    createProcess: () => child_process$ChildProcess,
-    projectRoot: string,
-    fileExtensions: Array<string>,
-  ) {
+  constructor(logger, fileCache, createProcess, projectRoot, fileExtensions) {
     this._logger = logger;
     this._fileCache = fileCache;
-    this._fileVersionNotifier = new FileVersionNotifier();
+    this._fileVersionNotifier = new (_nuclideOpenFilesRpc || _load_nuclideOpenFilesRpc()).FileVersionNotifier();
     this._projectRoot = projectRoot;
     this._createProcess = createProcess;
     this._fileExtensions = fileExtensions;
   }
 
-  static async create(
-    logger: CategoryLogger,
-    fileCache: FileCache,
-    createProcess: () => child_process$ChildProcess,
-    projectRoot: string,
-    fileExtensions: Array<string>,
-  ): Promise<LanguageServerProtocolProcess> {
-    const result = new LanguageServerProtocolProcess(
-      logger, fileCache, createProcess, projectRoot, fileExtensions);
-    await result._ensureProcess();
-    return result;
+  static create(logger, fileCache, createProcess, projectRoot, fileExtensions) {
+    return (0, _asyncToGenerator.default)(function* () {
+      const result = new LanguageServerProtocolProcess(logger, fileCache, createProcess, projectRoot, fileExtensions);
+      yield result._ensureProcess();
+      return result;
+    })();
   }
 
-  _subscribeToFileEvents(): void {
+  _subscribeToFileEvents() {
     this._fileSubscription = this._fileCache.observeFileEvents()
-      // TODO: Filter on projectRoot
-      .filter(fileEvent => {
-        const fileExtension = nuclideUri.extname(fileEvent.fileVersion.filePath);
-        return this._fileExtensions.indexOf(fileExtension) !== -1;
-      })
-      .subscribe(fileEvent => {
-        const filePath = fileEvent.fileVersion.filePath;
-        const version = fileEvent.fileVersion.version;
-        switch (fileEvent.kind) {
-          case FileEventKind.OPEN:
-            this._process._connection.didOpenTextDocument({
+    // TODO: Filter on projectRoot
+    .filter(fileEvent => {
+      const fileExtension = (_nuclideUri || _load_nuclideUri()).default.extname(fileEvent.fileVersion.filePath);
+      return this._fileExtensions.indexOf(fileExtension) !== -1;
+    }).subscribe(fileEvent => {
+      const filePath = fileEvent.fileVersion.filePath;
+      const version = fileEvent.fileVersion.version;
+      switch (fileEvent.kind) {
+        case (_nuclideOpenFilesRpc || _load_nuclideOpenFilesRpc()).FileEventKind.OPEN:
+          this._process._connection.didOpenTextDocument({
+            textDocument: {
+              uri: filePath,
+              languageId: 'python', // TODO
+              version,
+              text: fileEvent.contents
+            }
+          });
+          break;
+        case (_nuclideOpenFilesRpc || _load_nuclideOpenFilesRpc()).FileEventKind.CLOSE:
+          this._process._connection.didCloseTextDocument({
+            textDocument: toTextDocumentIdentifier(filePath)
+          });
+          break;
+        case (_nuclideOpenFilesRpc || _load_nuclideOpenFilesRpc()).FileEventKind.EDIT:
+          this._fileCache.getBufferAtVersion(fileEvent.fileVersion).then(buffer => {
+            if (buffer == null) {
+              // TODO: stale ... send full contents from current buffer version
+              return;
+            }
+            this._process._connection.didChangeTextDocument({
               textDocument: {
                 uri: filePath,
-                languageId: 'python', // TODO
-                version,
-                text: fileEvent.contents,
+                version
               },
+              // Send full contents
+              // TODO: If the provider handles incremental diffs
+              // Then send them instead
+              contentChanges: [{
+                text: buffer.getText()
+              }]
             });
-            break;
-          case FileEventKind.CLOSE:
-            this._process._connection.didCloseTextDocument({
-              textDocument: toTextDocumentIdentifier(filePath),
-            });
-            break;
-          case FileEventKind.EDIT:
-            this._fileCache.getBufferAtVersion(fileEvent.fileVersion)
-              .then(buffer => {
-                if (buffer == null) {
-                  // TODO: stale ... send full contents from current buffer version
-                  return;
-                }
-                this._process._connection.didChangeTextDocument({
-                  textDocument: {
-                    uri: filePath,
-                    version,
-                  },
-                  // Send full contents
-                  // TODO: If the provider handles incremental diffs
-                  // Then send them instead
-                  contentChanges: [{
-                    text: buffer.getText(),
-                  }],
-                });
-              });
-            break;
-          default:
-            throw new Error(`Unexpected FileEvent kind: ${JSON.stringify(fileEvent)}`);
-        }
-        this._fileVersionNotifier.onEvent(fileEvent);
-      });
+          });
+          break;
+        default:
+          throw new Error(`Unexpected FileEvent kind: ${JSON.stringify(fileEvent)}`);
+      }
+      this._fileVersionNotifier.onEvent(fileEvent);
+    });
   }
 
   // TODO: Handle the process termination/restart.
-  async _ensureProcess(): Promise<void> {
-    try {
-      this._process = await LspProcess.create(
-        this._logger, this._createProcess(), this._projectRoot);
-      this._subscribeToFileEvents();
-    } catch (e) {
-      this._logger.logError('LanguageServerProtocolProcess - error spawning child process: ' + e);
-      throw e;
-    }
+  _ensureProcess() {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      try {
+        _this._process = yield LspProcess.create(_this._logger, _this._createProcess(), _this._projectRoot);
+        _this._subscribeToFileEvents();
+      } catch (e) {
+        _this._logger.logError('LanguageServerProtocolProcess - error spawning child process: ' + e);
+        throw e;
+      }
+    })();
   }
 
-  _onNotification(message: Object): void {
-    this._logger.logError(
-      `LanguageServerProtocolProcess - onNotification: ${JSON.stringify(message)}`);
+  _onNotification(message) {
+    this._logger.logError(`LanguageServerProtocolProcess - onNotification: ${JSON.stringify(message)}`);
     // TODO: Handle incoming messages
   }
 
-  getRoot(): string {
+  getRoot() {
     return this._projectRoot;
   }
 
-  async getBufferAtVersion(fileVersion: FileVersion): Promise<?simpleTextBuffer$TextBuffer> {
-    const buffer = await getBufferAtVersion(fileVersion);
-    // Must also wait for edits to be sent to the LSP process
-    if (!(await this._fileVersionNotifier.waitForBufferAtVersion(fileVersion))) {
-      return null;
-    }
-    return buffer != null && buffer.changeCount === fileVersion.version ? buffer : null;
+  getBufferAtVersion(fileVersion) {
+    var _this2 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const buffer = yield (0, (_nuclideOpenFilesRpc || _load_nuclideOpenFilesRpc()).getBufferAtVersion)(fileVersion);
+      // Must also wait for edits to be sent to the LSP process
+      if (!(yield _this2._fileVersionNotifier.waitForBufferAtVersion(fileVersion))) {
+        return null;
+      }
+      return buffer != null && buffer.changeCount === fileVersion.version ? buffer : null;
+    })();
   }
 
-  getDiagnostics(
-    fileVersion: FileVersion,
-  ): Promise<?DiagnosticProviderUpdate> {
+  getDiagnostics(fileVersion) {
     this._logger.logError('NYI: getDiagnostics');
     return Promise.resolve(null);
   }
 
-  observeDiagnostics(): ConnectableObservable<FileDiagnosticUpdate> {
+  observeDiagnostics() {
     const con = this._process._connection;
-    return (Observable.fromEventPattern(
-        con.onDiagnosticsNotification.bind(con),
-        () => undefined,
-      ): Observable<PublishDiagnosticsParams>)
-      .map(convertDiagnostics)
-      .publish();
+    return _rxjsBundlesRxMinJs.Observable.fromEventPattern(con.onDiagnosticsNotification.bind(con), () => undefined).map(convertDiagnostics).publish();
   }
 
-  async getAutocompleteSuggestions(
-    fileVersion: FileVersion,
-    position: atom$Point,
-    activatedManually: boolean,
-    prefix: string,
-  ): Promise<?AutocompleteResult> {
-    const result = await this._process._connection.completion(
-      await this.createTextDocumentPositionParams(fileVersion, position));
-    if (Array.isArray(result)) {
+  getAutocompleteSuggestions(fileVersion, position, activatedManually, prefix) {
+    var _this3 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const result = yield _this3._process._connection.completion((yield _this3.createTextDocumentPositionParams(fileVersion, position)));
+      if (Array.isArray(result)) {
+        return {
+          isIncomplete: false,
+          items: result.map(convertCompletion)
+        };
+      } else {
+        return {
+          isIncomplete: result.isIncomplete,
+          items: result.items.map(convertCompletion)
+        };
+      }
+    })();
+  }
+
+  getDefinition(fileVersion, position) {
+    var _this4 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const result = yield _this4._process._connection.gotoDefinition((yield _this4.createTextDocumentPositionParams(fileVersion, position)));
       return {
-        isIncomplete: false,
-        items: result.map(convertCompletion),
+        // TODO: use wordAtPos to determine queryrange
+        queryRange: [new (_simpleTextBuffer || _load_simpleTextBuffer()).Range(position, position)],
+        definitions: _this4.locationsDefinitions(result)
       };
-    } else {
-      return {
-        isIncomplete: result.isIncomplete,
-        items: result.items.map(convertCompletion),
-      };
-    }
+    })();
   }
 
-  async getDefinition(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?DefinitionQueryResult> {
-    const result = await this._process._connection.gotoDefinition(
-        await this.createTextDocumentPositionParams(fileVersion, position));
-    return {
-      // TODO: use wordAtPos to determine queryrange
-      queryRange: [new atom$Range(position, position)],
-      definitions: this.locationsDefinitions(result),
-    };
-  }
-
-  getDefinitionById(
-    file: NuclideUri,
-    id: string,
-  ): Promise<?Definition> {
+  getDefinitionById(file, id) {
     this._logger.logError('NYI: getDefinitionById');
     return Promise.resolve(null);
   }
 
-  findReferences(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?FindReferencesReturn> {
+  findReferences(fileVersion, position) {
     this._logger.logError('NYI: findReferences');
     return Promise.resolve(null);
   }
 
-  getCoverage(
-    filePath: NuclideUri,
-  ): Promise<?CoverageResult> {
+  getCoverage(filePath) {
     this._logger.logError('NYI: getCoverage');
     return Promise.resolve(null);
   }
 
-  getOutline(
-    fileVersion: FileVersion,
-  ): Promise<?Outline> {
+  getOutline(fileVersion) {
     this._logger.logError('NYI: getOutline');
     return Promise.resolve(null);
   }
 
-  async typeHint(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?TypeHint> {
-    const request =
-      await this.createTextDocumentPositionParams(fileVersion, position);
-    const response = await this._process._connection.hover(request);
+  typeHint(fileVersion, position) {
+    var _this5 = this;
 
-    let hint = response.contents;
-    if (Array.isArray(hint)) {
-      hint = (hint.length > 0 ? hint[0] : '');
-      // TODO: render multiple hints at once with a thin divider between them
-    }
-    if (typeof hint === 'string') {
-      // TODO: convert markdown to text
-    } else {
-      hint = hint.value;
-      // TODO: colorize code if possible. (is hard without knowing its context)
-    }
+    return (0, _asyncToGenerator.default)(function* () {
+      const request = yield _this5.createTextDocumentPositionParams(fileVersion, position);
+      const response = yield _this5._process._connection.hover(request);
 
-    let range = new atom$Range(position, position);
-    if (response.range) {
-      range = rangeToAtomRange(response.range);
-    }
+      let hint = response.contents;
+      if (Array.isArray(hint)) {
+        hint = hint.length > 0 ? hint[0] : '';
+        // TODO: render multiple hints at once with a thin divider between them
+      }
+      if (typeof hint === 'string') {
+        // TODO: convert markdown to text
+      } else {
+        hint = hint.value;
+        // TODO: colorize code if possible. (is hard without knowing its context)
+      }
 
-    return (hint) ? {hint, range} : null;
+      let range = new (_simpleTextBuffer || _load_simpleTextBuffer()).Range(position, position);
+      if (response.range) {
+        range = rangeToAtomRange(response.range);
+      }
+
+      return hint ? { hint, range } : null;
+    })();
   }
 
-  highlight(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?Array<atom$Range>> {
+  highlight(fileVersion, position) {
     this._logger.logError('NYI: highlight');
     return Promise.resolve(null);
   }
 
-  formatSource(
-    fileVersion: FileVersion,
-    range: atom$Range,
-  ): Promise<?string> {
+  formatSource(fileVersion, range) {
     this._logger.logError('NYI: formatSource');
     return Promise.resolve(null);
   }
 
-  formatEntireFile(fileVersion: FileVersion, range: atom$Range): Promise<?{
-    newCursor?: number,
-    formatted: string,
-  }> {
+  formatEntireFile(fileVersion, range) {
     this._logger.logError('NYI: formatEntireFile');
     return Promise.resolve(null);
   }
 
-  getEvaluationExpression(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?NuclideEvaluationExpression> {
+  getEvaluationExpression(fileVersion, position) {
     this._logger.logError('NYI: getEvaluationExpression');
     return Promise.resolve(null);
   }
 
-  supportsSymbolSearch(
-    directories: Array<NuclideUri>,
-  ): Promise<boolean> {
+  supportsSymbolSearch(directories) {
     return Promise.resolve(Boolean(this._process._capabilities.workspaceSymbolProvider));
   }
 
-  async symbolSearch(
-    query: string,
-    directories: Array<NuclideUri>,
-  ): Promise<?Array<SymbolResult>> {
-    const result = await this._process._connection.workspaceSymbol({query});
-    return result.map(convertSearchResult);
+  symbolSearch(query, directories) {
+    var _this6 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const result = yield _this6._process._connection.workspaceSymbol({ query });
+      return result.map(convertSearchResult);
+    })();
   }
 
-  getProjectRoot(fileUri: NuclideUri): Promise<?NuclideUri> {
+  getProjectRoot(fileUri) {
     this._logger.logError('NYI: getProjectRoot');
     return Promise.resolve(null);
   }
 
-  isFileInProject(fileUri: NuclideUri): Promise<boolean> {
+  isFileInProject(fileUri) {
     this._logger.logError('NYI: isFileInProject');
     return Promise.resolve(false);
   }
 
-  dispose(): void {
+  dispose() {
     this._process.dispose();
     /* TODO
     if (!this.isDisposed()) {
@@ -380,16 +340,16 @@ export class LanguageServerProtocolProcess {
     */
   }
 
-  locationToDefinition(location: Location): Definition {
+  locationToDefinition(location) {
     return {
       path: location.uri,
       position: positionToPoint(location.range.start),
       language: 'Python', // TODO
-      projectRoot: this._projectRoot,
+      projectRoot: this._projectRoot
     };
   }
 
-  locationsDefinitions(locations: Location | Location[]): Array<Definition> {
+  locationsDefinitions(locations) {
     if (Array.isArray(locations)) {
       return locations.map(this.locationToDefinition.bind(this));
     } else {
@@ -397,35 +357,26 @@ export class LanguageServerProtocolProcess {
     }
   }
 
-  async createTextDocumentPositionParams(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<TextDocumentPositionParams> {
-    await this.getBufferAtVersion(fileVersion);
-    return createTextDocumentPositionParams(fileVersion, position);
+  createTextDocumentPositionParams(fileVersion, position) {
+    var _this7 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      yield _this7.getBufferAtVersion(fileVersion);
+      return createTextDocumentPositionParams(fileVersion, position);
+    })();
   }
 }
 
-// Encapsulates an LSP process
-class LspProcess {
-  _logger: CategoryLogger;
-  _process: child_process$ChildProcess;
-  _connection: LanguageServerV2;
-  _capabilities: ServerCapabilities;
-  _projectRoot: NuclideUri;
+exports.LanguageServerProtocolProcess = LanguageServerProtocolProcess; // Encapsulates an LSP process
 
-  constructor(
-    logger: CategoryLogger,
-    process: child_process$ChildProcess,
-    projectRoot: NuclideUri,
-    isIpc: boolean,
-  ) {
+class LspProcess {
+
+  constructor(logger, process, projectRoot, isIpc) {
     this._logger = logger;
     this._process = process;
     this._projectRoot = projectRoot;
 
-    this._logger.logInfo(
-      'LanguageServerProtocolProcess - created child process with PID: ' + process.pid);
+    this._logger.logInfo('LanguageServerProtocolProcess - created child process with PID: ' + process.pid);
 
     process.stdin.on('error', error => {
       this._logger.logError('LanguageServerProtocolProcess - error writing data: ' + error);
@@ -434,111 +385,93 @@ class LspProcess {
     let reader;
     let writer;
     if (isIpc) {
-      reader = new rpc.IPCMessageReader(process);
-      writer = new rpc.IPCMessageWriter(process);
+      reader = new (_vscodeJsonrpc || _load_vscodeJsonrpc()).IPCMessageReader(process);
+      writer = new (_vscodeJsonrpc || _load_vscodeJsonrpc()).IPCMessageWriter(process);
     } else {
-      reader = new rpc.StreamMessageReader(process.stdout);
-      writer = new rpc.StreamMessageWriter(process.stdin);
+      reader = new (_vscodeJsonrpc || _load_vscodeJsonrpc()).StreamMessageReader(process.stdout);
+      writer = new (_vscodeJsonrpc || _load_vscodeJsonrpc()).StreamMessageWriter(process.stdin);
     }
 
     const rpc_logger = {
-      error(message) { logger.logError('JsonRpc ' + message); },
-      warn(message) { logger.logInfo('JsonRpc ' + message); },
-      info(message) { logger.logInfo('JsonRpc ' + message); },
-      log(message) { logger.logInfo('JsonRpc ' + message); },
+      error(message) {
+        logger.logError('JsonRpc ' + message);
+      },
+      warn(message) {
+        logger.logInfo('JsonRpc ' + message);
+      },
+      info(message) {
+        logger.logInfo('JsonRpc ' + message);
+      },
+      log(message) {
+        logger.logInfo('JsonRpc ' + message);
+      }
     };
 
-    const connection: JsonRpcConnection = rpc.createMessageConnection(
-      reader,
-      writer,
-      rpc_logger);
+    const connection = (_vscodeJsonrpc || _load_vscodeJsonrpc()).createMessageConnection(reader, writer, rpc_logger);
 
     connection.listen();
     // TODO: connection.onNotification(this._onNotification.bind(this));
 
-    this._connection = new LanguageServerV2(this._logger, connection);
+    this._connection = new (_languageserverV || _load_languageserverV()).LanguageServerV2(this._logger, connection);
   }
 
   // Creates the connection and initializes capabilities
-  static async create(
-    logger: CategoryLogger,
-    process: child_process$ChildProcess,
-    projectRoot: NuclideUri,
-  ): Promise<LspProcess> {
-    const result = new LspProcess(logger, process, projectRoot, false);
+  static create(logger, process, projectRoot) {
+    return (0, _asyncToGenerator.default)(function* () {
+      const result = new LspProcess(logger, process, projectRoot, false);
 
-    const init: InitializeParams = {
-      // TODO:
-      initializationOptions: {},
-      processId: process.pid,
-      rootPath: projectRoot,
-      capabilities: {},
-      // TODO: capabilities
-      /*
-      capabilities: {
-        workspace: {},
-        textDocument: {
-          definition: {
-            dynamicRegistration: true,
-          },
-        },
-        experimental: {},
-      },
-      */
-    };
-    result._capabilities = (await
-      result._connection.initialize(init)).capabilities;
+      const init = {
+        // TODO:
+        initializationOptions: {},
+        processId: process.pid,
+        rootPath: projectRoot,
+        capabilities: {}
+      };
+      result._capabilities = (yield result._connection.initialize(init)).capabilities;
 
-    return result;
+      return result;
+    })();
   }
 
-  _onNotification(message: Object): void {
-    this._logger.logError(
-      `LanguageServerProtocolProcess - onNotification: ${JSON.stringify(message)}`);
+  _onNotification(message) {
+    this._logger.logError(`LanguageServerProtocolProcess - onNotification: ${JSON.stringify(message)}`);
     // TODO: Handle incoming messages
   }
 
-  dispose(): void {
+  dispose() {
     // TODO
   }
 }
 
-export function toTextDocumentIdentifier(filePath: NuclideUri): TextDocumentIdentifier {
+function toTextDocumentIdentifier(filePath) {
   return {
-    uri: filePath,
+    uri: filePath
   };
 }
 
-export function pointToPosition(position: atom$Point): Position {
+function pointToPosition(position) {
   return {
     line: position.row,
-    character: position.column,
+    character: position.column
   };
 }
 
-export function positionToPoint(position: Position): atom$Point {
-  return new Point(position.line, position.character);
+function positionToPoint(position) {
+  return new (_simpleTextBuffer || _load_simpleTextBuffer()).Point(position.line, position.character);
 }
 
-export function rangeToAtomRange(range: Range): atom$Range {
-  return new atom$Range(
-    positionToPoint(range.start), positionToPoint(range.end));
+function rangeToAtomRange(range) {
+  return new (_simpleTextBuffer || _load_simpleTextBuffer()).Range(positionToPoint(range.start), positionToPoint(range.end));
 }
 
-export function convertDiagnostics(
-  params: PublishDiagnosticsParams,
-): FileDiagnosticUpdate {
+function convertDiagnostics(params) {
   return {
     filePath: params.uri,
-    messages: params.diagnostics.map(
-      diagnostic => convertDiagnostic(params.uri, diagnostic)),
+    messages: params.diagnostics.map(diagnostic => convertDiagnostic(params.uri, diagnostic))
   };
 }
 
-export function convertDiagnostic(
-  filePath: NuclideUri,
-  diagnostic: Diagnostic,
-): FileDiagnosticMessage {
+function convertDiagnostic(filePath, diagnostic) {
   return {
     // TODO: diagnostic.code
     scope: 'file',
@@ -546,76 +479,92 @@ export function convertDiagnostic(
     type: convertSeverity(diagnostic.severity),
     filePath,
     text: diagnostic.message,
-    range: rangeToAtomRange(diagnostic.range),
+    range: rangeToAtomRange(diagnostic.range)
   };
 }
 
-export function convertSeverity(severity?: number): MessageType {
+function convertSeverity(severity) {
   switch (severity) {
     case null:
     case undefined:
-    case DiagnosticSeverity.Error:
+    case (_protocolV || _load_protocolV()).DiagnosticSeverity.Error:
     default:
       return 'Error';
-    case DiagnosticSeverity.Warning:
-    case DiagnosticSeverity.Information:
-    case DiagnosticSeverity.Hint:
+    case (_protocolV || _load_protocolV()).DiagnosticSeverity.Warning:
+    case (_protocolV || _load_protocolV()).DiagnosticSeverity.Information:
+    case (_protocolV || _load_protocolV()).DiagnosticSeverity.Hint:
       return 'Warning';
   }
 }
 
-export function createTextDocumentPositionParams(
-  fileVersion: FileVersion,
-  position: atom$Point,
-): TextDocumentPositionParams {
+function createTextDocumentPositionParams(fileVersion, position) {
   return {
     textDocument: toTextDocumentIdentifier(fileVersion.filePath),
-    position: pointToPosition(position),
+    position: pointToPosition(position)
   };
 }
 
-export function convertCompletion(item: CompletionItem): Completion {
+function convertCompletion(item) {
   return {
     text: item.insertText || item.label,
     displayText: item.label,
     type: item.detail,
-    description: item.documentation,
+    description: item.documentation
   };
 }
 
 // Converts an LSP SymbolInformation.kind number into an Atom icon
 // from https://github.com/atom/atom/blob/master/static/octicons.less -
 // you can see the pictures at https://octicons.github.com/
-function symbolKindToAtomIcon(kind: number): string {
+function symbolKindToAtomIcon(kind) {
   // for reference, vscode: https://github.com/Microsoft/vscode/blob/be08f9f3a1010354ae2d8b84af017ed1043570e7/src/vs/editor/contrib/suggest/browser/media/suggest.css#L135
   // for reference, hack: https://github.com/facebook/nuclide/blob/20cf17dca439e02a64f4365f3a52b0f26cf53726/pkg/nuclide-hack-rpc/lib/SymbolSearch.js#L120
   switch (kind) {
-    case SymbolKind.File: return 'file';
-    case SymbolKind.Module: return 'file-submodule';
-    case SymbolKind.Namespace: return 'file-submodule';
-    case SymbolKind.Package: return 'package';
-    case SymbolKind.Class: return 'code';
-    case SymbolKind.Method: return 'zap';
-    case SymbolKind.Property: return 'key';
-    case SymbolKind.Field: return 'key';
-    case SymbolKind.Constructor: return 'zap';
-    case SymbolKind.Enum: return 'file-binary';
-    case SymbolKind.Interface: return 'puzzle';
-    case SymbolKind.Function: return 'zap';
-    case SymbolKind.Variable: return 'pencil';
-    case SymbolKind.Constant: return 'quote';
-    case SymbolKind.String: return 'quote';
-    case SymbolKind.Number: return 'quote';
-    case SymbolKind.Boolean: return 'quote';
-    case SymbolKind.Array: return 'list-ordered';
-    default: return 'question';
+    case (_protocolV || _load_protocolV()).SymbolKind.File:
+      return 'file';
+    case (_protocolV || _load_protocolV()).SymbolKind.Module:
+      return 'file-submodule';
+    case (_protocolV || _load_protocolV()).SymbolKind.Namespace:
+      return 'file-submodule';
+    case (_protocolV || _load_protocolV()).SymbolKind.Package:
+      return 'package';
+    case (_protocolV || _load_protocolV()).SymbolKind.Class:
+      return 'code';
+    case (_protocolV || _load_protocolV()).SymbolKind.Method:
+      return 'zap';
+    case (_protocolV || _load_protocolV()).SymbolKind.Property:
+      return 'key';
+    case (_protocolV || _load_protocolV()).SymbolKind.Field:
+      return 'key';
+    case (_protocolV || _load_protocolV()).SymbolKind.Constructor:
+      return 'zap';
+    case (_protocolV || _load_protocolV()).SymbolKind.Enum:
+      return 'file-binary';
+    case (_protocolV || _load_protocolV()).SymbolKind.Interface:
+      return 'puzzle';
+    case (_protocolV || _load_protocolV()).SymbolKind.Function:
+      return 'zap';
+    case (_protocolV || _load_protocolV()).SymbolKind.Variable:
+      return 'pencil';
+    case (_protocolV || _load_protocolV()).SymbolKind.Constant:
+      return 'quote';
+    case (_protocolV || _load_protocolV()).SymbolKind.String:
+      return 'quote';
+    case (_protocolV || _load_protocolV()).SymbolKind.Number:
+      return 'quote';
+    case (_protocolV || _load_protocolV()).SymbolKind.Boolean:
+      return 'quote';
+    case (_protocolV || _load_protocolV()).SymbolKind.Array:
+      return 'list-ordered';
+    default:
+      return 'question';
   }
 }
 
-export function convertSearchResult(info: SymbolInformation): SymbolResult {
+function convertSearchResult(info) {
   let hoverText = 'unknown';
-  for (const key in SymbolKind) {
-    if (info.kind === SymbolKind[key]) {
+  for (const key in (_protocolV || _load_protocolV()).SymbolKind) {
+    if (info.kind === (_protocolV || _load_protocolV()).SymbolKind[key]) {
       hoverText = key;
     }
   }
@@ -626,6 +575,6 @@ export function convertSearchResult(info: SymbolInformation): SymbolResult {
     name: info.name,
     containerName: info.containerName,
     icon: symbolKindToAtomIcon(info.kind),
-    hoverText,
+    hoverText
   };
 }
