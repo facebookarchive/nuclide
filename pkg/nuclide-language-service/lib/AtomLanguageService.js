@@ -186,6 +186,10 @@ export class AtomLanguageService<T: LanguageService> {
     return (await languageService).isFileInProject(fileUri);
   }
 
+  getCachedLanguageServices(): Iterator<Promise<?T>> {
+    return this._connectionToLanguageService.values();
+  }
+
   observeLanguageServices(): Observable<T> {
     return this._connectionToLanguageService.observeValues()
       .switchMap(languageService => {
