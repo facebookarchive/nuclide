@@ -350,7 +350,7 @@ export class DebuggerHandler extends Handler {
       'Debugger.paused',
       {
         callFrames: [],
-        reason: 'breakpoint', // TODO: better reason?
+        reason: 'initial break',
         data: {},
       });
   }

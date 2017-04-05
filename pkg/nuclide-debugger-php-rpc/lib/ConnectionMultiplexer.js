@@ -311,7 +311,10 @@ export class ConnectionMultiplexer {
         }
         break;
       case ConnectionStatus.Error:
-        let message = 'The debugger encountered a problem and the connection had to be shut down.';
+        let message = 'The debugger encountered a problem with one of the HHVM request connections '
+          + 'and the connection had to be shut down. The debugger is still attached to any '
+          + 'remaining HHVM requests.';
+
         if (args[0] != null) {
           message = `${message}  Error message: ${args[0]}`;
         }

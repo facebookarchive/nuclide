@@ -83,7 +83,7 @@ describe('debugger-php-rpc DebuggerHandler', () => {
         'Debugger.paused',
         {
           callFrames: [],
-          reason: 'breakpoint',
+          reason: 'initial break',
           data: {},
         });
     });
