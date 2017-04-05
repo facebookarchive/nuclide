@@ -484,8 +484,7 @@ export function observeProcessRaw(
 
 let FB_INCLUDE_PATHS;
 try {
-  // purposeful breakage
-  // $ F l o w F B
+  // $FlowFB
   FB_INCLUDE_PATHS = require('./fb-config').FB_INCLUDE_PATHS;
 } catch (error) {
   FB_INCLUDE_PATHS = [];
