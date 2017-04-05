@@ -19,6 +19,7 @@ import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
 import invariant from 'assert';
 
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import createPackage from '../../commons-atom/createPackage';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import featureConfig from '../../commons-atom/featureConfig';
 import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
@@ -46,6 +47,7 @@ const OPEN_FILES_UPDATE_DEBOUNCE_INTERVAL_MS = 150;
 const DESERIALIZER_VERSION = atom.workspace.getLeftDock == null ? 1 : 2;
 
 class Activation {
+  _didActivateDisposable: IDisposable;
   _cwdApiSubscription: ?IDisposable;
   _fileTreeController: FileTreeController;
   _fileTreeComponent: ?FileTreeSidebarComponent;
@@ -60,7 +62,26 @@ class Activation {
       state = {};
     }
 
-    this._disposables = new UniversalDisposable();
+    // Disable Atom's bundled 'tree-view' package. If this activation is happening during the
+    // normal startup activation, the `onDidActivateInitialPackages` handler below must unload the
+    // 'tree-view' because it will have been loaded during startup.
+    disableTreeViewPackage();
+
+    // Disabling and unloading Atom's bundled 'tree-view' must happen after activation because this
+    // package's `activate` is called during an traversal of all initial packages to activate.
+    // Disabling a package during the traversal has no effect if this is a startup load because
+    // `PackageManager` does not re-load the list of packages to activate after each iteration.
+    this._didActivateDisposable = atom.packages.onDidActivateInitialPackages(() => {
+      disableTreeViewPackage();
+      this._didActivateDisposable.dispose();
+    });
+
+    this._disposables = new UniversalDisposable(
+      this._didActivateDisposable,
+      () => {
+        this._fileTreeController.destroy();
+      },
+    );
 
     this._fileTreeController = new FileTreeController(state == null ? null : state.tree);
     this._restored = state.restored === true;
@@ -142,7 +163,13 @@ class Activation {
   }
 
   dispose() {
-    this._deactivate();
+    // Re-enable Atom's bundled 'tree-view' when this package is disabled to leave the user's
+    // environment the way this package found it.
+    if (featureConfig.isFeatureDisabled('nuclide-file-tree')
+      && atom.packages.isPackageDisabled('tree-view')) {
+      atom.packages.enablePackage('tree-view');
+    }
+
     this._disposables.dispose();
   }
 
@@ -256,19 +283,14 @@ class Activation {
     this._fileTreeController.setUsePreviewTabs(usePreviewTabs);
   }
 
-  getContextMenu(): FileTreeContextMenu {
+  getContextMenuForFileTree(): FileTreeContextMenu {
     invariant(this._fileTreeController);
     return this._fileTreeController.getContextMenu();
   }
 
-  getProjectSelectionManager(): FileTreeProjectSelectionManager {
+  getProjectSelectionManagerForFileTree(): FileTreeProjectSelectionManager {
     invariant(this._fileTreeController);
     return this._fileTreeController.getProjectSelectionManager();
-  }
-
-  _deactivate() {
-    // Guard against deactivate being called twice
-    this._fileTreeController.destroy();
   }
 
   _createView(): FileTreeSidebarComponent {
@@ -301,10 +323,6 @@ class Activation {
   }
 }
 
-let activation: ?Activation;
-let deserializedState: ?SerializedState;
-let onDidActivateDisposable: IDisposable;
-
 function disableTreeViewPackage() {
   if (!atom.packages.isPackageDisabled('tree-view')) {
     // Calling `disablePackage` on a package first *loads* the package. This step must come
@@ -323,82 +341,4 @@ function disableTreeViewPackage() {
   }
 }
 
-export function activate(state: ?SerializedState): void {
-  invariant(activation == null);
-  // Disable Atom's bundled 'tree-view' package. If this activation is happening during the
-  // normal startup activation, the `onDidActivateInitialPackages` handler below must unload the
-  // 'tree-view' because it will have been loaded during startup.
-  disableTreeViewPackage();
-
-  // Disabling and unloading Atom's bundled 'tree-view' must happen after activation because this
-  // package's `activate` is called during an traversal of all initial packages to activate.
-  // Disabling a package during the traversal has no effect if this is a startup load because
-  // `PackageManager` does not re-load the list of packages to activate after each iteration.
-  onDidActivateDisposable = atom.packages.onDidActivateInitialPackages(() => {
-    disableTreeViewPackage();
-    onDidActivateDisposable.dispose();
-  });
-
-  deserializedState = state;
-  activation = new Activation(deserializedState);
-}
-
-export function deactivate() {
-  // Re-enable Atom's bundled 'tree-view' when this package is disabled to leave the user's
-  // environment the way this package found it.
-  if (featureConfig.isFeatureDisabled('nuclide-file-tree')
-    && atom.packages.isPackageDisabled('tree-view')) {
-    atom.packages.enablePackage('tree-view');
-  }
-
-  if (!onDidActivateDisposable.disposed) {
-    onDidActivateDisposable.dispose();
-  }
-
-  if (activation) {
-    activation.dispose();
-    activation = null;
-  }
-}
-
-export function serialize(): ?SerializedState {
-  if (activation) {
-    return activation.serialize();
-  }
-}
-
-export function getContextMenuForFileTree(): FileTreeContextMenu {
-  invariant(activation);
-  return activation.getContextMenu();
-}
-
-export function consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
-  invariant(activation);
-  activation.consumeWorkspaceViewsService(api);
-}
-
-export function getProjectSelectionManagerForFileTree(): FileTreeProjectSelectionManager {
-  invariant(activation);
-  return activation.getProjectSelectionManager();
-}
-
-export function deserializeFileTreeSidebarComponent(): FileTreeSidebarComponent {
-  invariant(activation);
-  return activation.deserializeFileTreeSidebarComponent();
-}
-
-export function consumeWorkingSetsStore(workingSetsStore: WorkingSetsStore): ?IDisposable {
-  invariant(activation);
-
-  return activation.consumeWorkingSetsStore(workingSetsStore);
-}
-
-export function consumeCwdApi(cwdApi: CwdApi): IDisposable {
-  invariant(activation);
-  return activation.consumeCwdApi(cwdApi);
-}
-
-export function consumeRemoteProjectsService(service: RemoteProjectsService): IDisposable {
-  invariant(activation);
-  return activation.consumeRemoteProjectsService(service);
-}
+createPackage(module.exports, Activation);
