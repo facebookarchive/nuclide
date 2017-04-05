@@ -92,6 +92,7 @@ function getCompareFunction(
 export class AttachUIComponent extends React.Component<void, PropsType, StateType> {
   props: PropsType;
   state: StateType;
+  _targetListUpdating: boolean;
 
   constructor(props: PropsType) {
     super(props);
@@ -104,6 +105,7 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
     (this: any)._updateAttachTargetList = this._updateAttachTargetList.bind(this);
     (this: any)._updateList = this._updateList.bind(this);
     (this: any)._handleSort = this._handleSort.bind(this);
+    this._targetListUpdating = false;
     this.state = {
       targetListChangeDisposable: this.props.store.onAttachTargetListChanged(this._updateList),
       attachTargetInfos: [],
@@ -141,6 +143,7 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
     const newSelectedTarget = this.state.selectedAttachTarget == null
       ? null
       : this._getAttachTargetOfPid(this.state.selectedAttachTarget.pid);
+    this._targetListUpdating = false;
     this.setState({
       attachTargetInfos: this.props.store.getAttachTargetInfos(),
       selectedAttachTarget: newSelectedTarget,
@@ -260,7 +263,10 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
 
   _updateAttachTargetList(): void {
     // Fire and forget.
-    this.props.actions.updateAttachTargetList();
+    if (!this._targetListUpdating) {
+      this._targetListUpdating = true;
+      this.props.actions.updateAttachTargetList();
+    }
   }
 
   _attachToProcess(): void {
