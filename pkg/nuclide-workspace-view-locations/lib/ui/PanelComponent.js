@@ -350,24 +350,24 @@ export class PanelComponent extends React.Component {
       const activePaneItem =
         this.props.paneContainer.getActivePaneItem() || this.props.paneContainer.getPaneItems()[0];
       if (activePaneItem != null) {
-        initialSize = getPreferredInitialSize(activePaneItem, this.props.position);
+        initialSize = getPreferredSize(activePaneItem, this.props.position);
       }
     }
     return initialSize == null ? DEFAULT_INITIAL_SIZE : initialSize;
   }
 }
 
-function getPreferredInitialSize(item: Object, position: Position): ?number {
+function getPreferredSize(item: Object, position: Position): ?number {
   switch (position) {
     case 'top':
     case 'bottom':
-      return typeof item.getPreferredInitialHeight === 'function'
-        ? item.getPreferredInitialHeight()
+      return typeof item.getPreferredHeight === 'function'
+        ? item.getPreferredHeight()
         : null;
     case 'left':
     case 'right':
-      return typeof item.getPreferredInitialWidth === 'function'
-        ? item.getPreferredInitialWidth()
+      return typeof item.getPreferredWidth === 'function'
+        ? item.getPreferredWidth()
         : null;
     default:
       throw new Error(`Invalid position: ${position}`);

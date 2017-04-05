@@ -418,7 +418,7 @@ export default class FileTreeSidebarComponent extends React.Component {
     return 'left';
   }
 
-  getPreferredInitialWidth(): number {
+  getPreferredWidth(): number {
     return 300;
   }
 

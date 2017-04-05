@@ -31,7 +31,7 @@ export default class DiffViewNavigatorGadget extends React.Component {
     return 'git-branch';
   }
 
-  getPreferredInitialHeight(): number {
+  getPreferredHeight(): number {
     return 300;
   }
 

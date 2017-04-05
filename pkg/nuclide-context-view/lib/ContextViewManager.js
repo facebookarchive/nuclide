@@ -305,7 +305,7 @@ export class ContextViewManager {
     return 'info';
   }
 
-  getPreferredInitialWidth(): number {
+  getPreferredWidth(): number {
     return 300;
   }
 

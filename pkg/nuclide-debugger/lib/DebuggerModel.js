@@ -158,7 +158,7 @@ export default class DebuggerModel {
     return WORKSPACE_VIEW_URI;
   }
 
-  getPreferredInitialWidth(): number {
+  getPreferredWidth(): number {
     return 500;
   }
 }

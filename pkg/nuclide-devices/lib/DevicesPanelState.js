@@ -24,7 +24,7 @@ export class DevicesPanelState {
     return 'device-mobile';
   }
 
-  getPreferredInitialWidth(): number {
+  getPreferredWidth(): number {
     return 300;
   }
 

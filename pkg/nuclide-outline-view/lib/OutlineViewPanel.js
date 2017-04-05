@@ -35,7 +35,7 @@ export class OutlineViewPanelState {
     return 'list-unordered';
   }
 
-  getPreferredInitialWidth(): number {
+  getPreferredWidth(): number {
     return 300;
   }
 

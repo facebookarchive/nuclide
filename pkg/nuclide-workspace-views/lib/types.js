@@ -24,8 +24,8 @@ import type {TrackingEvent} from '../../nuclide-analytics';
  */
 export type Viewable = atom$PaneItem & {
   // Used by PanelLocation to get an initial size for the panel.
-  +getPreferredInitialHeight?: () => number,
-  +getPreferredInitialWidth?: () => number,
+  +getPreferredHeight?: () => number,
+  +getPreferredWidth?: () => number,
   +didChangeVisibility?: (visible: boolean) => void,
   +getDefaultLocation?: () => string,
 };
