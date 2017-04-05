@@ -13,7 +13,6 @@ import type {Datatip} from '../../nuclide-datatip/lib/types';
 
 import {arrayRemove} from '../../commons-node/collection';
 import {track, trackTiming} from '../../nuclide-analytics';
-import {makeTypeHintComponent} from './TypeHintComponent';
 import {getLogger} from '../../nuclide-logging';
 
 const logger = getLogger();
@@ -59,7 +58,7 @@ export default class TypeHintManager {
       message: hint,
     });
     return {
-      component: makeTypeHintComponent(hint, grammar),
+      markedStrings: [{type: 'snippet', value: hint, grammar}],
       range,
     };
   }

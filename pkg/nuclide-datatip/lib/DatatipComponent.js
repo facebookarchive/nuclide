@@ -12,6 +12,7 @@ import type {Datatip} from './types';
 
 import React from 'react';
 import {maybeToString} from '../../commons-node/string';
+import MarkedStringDatatip from './MarkedStringDatatip';
 
 export const DATATIP_ACTIONS = Object.freeze({
   PIN: 'PIN',
@@ -63,8 +64,12 @@ export class DatatipComponent extends React.Component {
         />
       );
     }
-    const ProvidedComponent = datatip.component;
-    const content = <ProvidedComponent />;
+    let content;
+    if (datatip.component != null) {
+      content = <datatip.component />;
+    } else if (datatip.markedStrings != null) {
+      content = <MarkedStringDatatip markedStrings={datatip.markedStrings} />;
+    }
     return (
       <div
         className={`${maybeToString(className)} nuclide-datatip-container`}

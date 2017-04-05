@@ -8,11 +8,29 @@
  * @flow
  */
 
-export type Datatip = {
-  component: ReactClass<any>,
-  range: atom$Range,
-  pinnable?: boolean,
-};
+// Borrowed from the LSP API.
+export type MarkedString =
+  | {
+      type: 'markdown',
+      value: string,
+    }
+  | {
+      type: 'snippet',
+      grammar: atom$Grammar,
+      value: string,
+    };
+
+export type Datatip =
+  | {|
+      component: ReactClass<any>,
+      range: atom$Range,
+      pinnable?: boolean,
+    |}
+  | {|
+      markedStrings: Array<MarkedString>,
+      range: atom$Range,
+      pinnable?: boolean,
+    |};
 
 export type PinnedDatatip = {
   dispose(): void,
