@@ -13,6 +13,8 @@ import type {ConnectableObservable} from 'rxjs';
 import type {ProcessMessage} from '../../commons-node/process-rpc-types';
 import * as ADB from './ADB';
 
+export type DebugBridgeType = 'adb' | 'sdb';
+
 export type DeviceDescription = {
   name: string,
   architecture: string,
@@ -26,67 +28,65 @@ export type AndroidJavaProcess = {
   name: string,
 };
 
-export function getDeviceList(
-  adbPath: NuclideUri,
-): Promise<Array<DeviceDescription>> {
-  return ADB.getDeviceList(adbPath);
+export function getDeviceList(db: DebugBridgeType): Promise<Array<DeviceDescription>> {
+  return ADB.getDeviceList(ADB.pathForDebugBridge(db));
 }
 
 export function installPackage(
-  adbPath: NuclideUri,
+  db: DebugBridgeType,
   device: string,
   packagePath: NuclideUri,
 ): ConnectableObservable<ProcessMessage> {
-  return ADB.installPackage(adbPath, device, packagePath).publish();
+  return ADB.installPackage(ADB.pathForDebugBridge(db), device, packagePath).publish();
 }
 
 export function uninstallPackage(
-  adbPath: NuclideUri,
+  db: DebugBridgeType,
   device: string,
   packageName: string,
 ): ConnectableObservable<ProcessMessage> {
-  return ADB.uninstallPackage(adbPath, device, packageName).publish();
+  return ADB.uninstallPackage(ADB.pathForDebugBridge(db), device, packageName).publish();
 }
 
 export function getPidFromPackageName(
-  adbPath: NuclideUri,
+  db: DebugBridgeType,
   device: string,
   packageName: string,
 ): Promise<number> {
-  return ADB.getPidFromPackageName(adbPath, device, packageName);
+  return ADB.getPidFromPackageName(ADB.pathForDebugBridge(db), device, packageName);
 }
 
 export function forwardJdwpPortToPid(
-  adbPath: NuclideUri,
+  db: DebugBridgeType,
   device: string,
   tcpPort: number,
   pid: number,
 ): Promise<string> {
-  return ADB.forwardJdwpPortToPid(adbPath, device, tcpPort, pid);
+  return ADB.forwardJdwpPortToPid(ADB.pathForDebugBridge(db), device, tcpPort, pid);
 }
 
 export function launchActivity(
-  adbPath: NuclideUri,
+  db: DebugBridgeType,
   device: string,
   packageName: string,
   activity: string,
   action: string,
 ): Promise<string> {
-  return ADB.launchActivity(adbPath, device, packageName, activity, action);
+  return ADB.launchActivity(ADB.pathForDebugBridge(db), device, packageName, activity, action);
 }
 
 export function activityExists(
-  adbPath: NuclideUri,
+  db: DebugBridgeType,
   device: string,
   packageName: string,
   activity: string,
 ): Promise<boolean> {
-  return ADB.activityExists(adbPath, device, packageName, activity);
+  return ADB.activityExists(ADB.pathForDebugBridge(db), device, packageName, activity);
 }
 
 export async function getJavaProcesses(
-  adbPath: NuclideUri,
+  db: DebugBridgeType,
   device: string,
 ): Promise<Array<AndroidJavaProcess>> {
-  return ADB.getJavaProcesses(adbPath, device);
+  return ADB.getJavaProcesses(ADB.pathForDebugBridge(db), device);
 }

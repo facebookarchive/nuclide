@@ -9,7 +9,7 @@
  */
 
 import type {Observable} from 'rxjs';
-import type {DeviceDescription, AndroidJavaProcess} from './AdbService';
+import type {DeviceDescription, AndroidJavaProcess, DebugBridgeType} from './AdbService';
 import type {ProcessMessage} from '../../commons-node/process-rpc-types';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
@@ -24,8 +24,13 @@ import {
 } from '../../commons-node/process';
 import * as os from 'os';
 
+export function pathForDebugBridge(db: DebugBridgeType): string {
+  // TODO(wallace): add process detection (next diff)
+  return db;
+}
+
 function runShortAdbCommand(
-  adbPath: NuclideUri,
+  adbPath: string,
   device: string,
   command: Array<string>,
 ): Observable<string> {
@@ -34,7 +39,7 @@ function runShortAdbCommand(
 }
 
 function runLongAdbCommand(
-  adbPath: NuclideUri,
+  adbPath: string,
   device: string,
   command: string[],
 ): Observable<ProcessMessage> {
@@ -43,7 +48,7 @@ function runLongAdbCommand(
 }
 
 function getAndroidProp(
-  adbPath: NuclideUri,
+  adbPath: string,
   device: string,
   key: string,
 ): Observable<string> {
@@ -52,7 +57,7 @@ function getAndroidProp(
 }
 
 function getTizenModelConfigKey(
-  adbPath: NuclideUri,
+  adbPath: string,
   device: string,
   key: string,
 ): Promise<string> {
@@ -68,9 +73,7 @@ function getTizenModelConfigKey(
     .toPromise();
 }
 
-export async function getDeviceList(
-  adbPath: NuclideUri,
-): Promise<Array<DeviceDescription>> {
+export async function getDeviceList(adbPath: string): Promise<Array<DeviceDescription>> {
   const devices = await runCommand(adbPath, ['devices'])
     .map(stdout => stdout.split(/\n+/g)
                      .slice(1)
@@ -94,10 +97,7 @@ export async function getDeviceList(
   return arrayCompact(deviceTable);
 }
 
-function getDeviceArchitecture(
-  adbPath: NuclideUri,
-  device: string,
-): Promise<string> {
+function getDeviceArchitecture(adbPath: string, device: string): Promise<string> {
   // SDB is a tool similar to ADB used with Tizen devices. `getprop` doesn't
   // exist on Tizen, so we have to rely on uname instead.
   if (adbPath.endsWith('sdb')) {
@@ -108,10 +108,7 @@ function getDeviceArchitecture(
   }
 }
 
-function getDeviceModel(
-  adbPath: NuclideUri,
-  device: string,
-): Promise<string> {
+function getDeviceModel(adbPath: string, device: string): Promise<string> {
   if (adbPath.endsWith('sdb')) {
     return getTizenModelConfigKey(adbPath, device, 'tizen.org/system/model_name');
   } else {
@@ -121,10 +118,7 @@ function getDeviceModel(
   }
 }
 
-async function getAPIVersion(
-  adbPath: NuclideUri,
-  device: string,
-): Promise<string> {
+async function getAPIVersion(adbPath: string, device: string): Promise<string> {
   if (adbPath.endsWith('sdb')) {
     let version;
     try {
@@ -141,7 +135,7 @@ async function getAPIVersion(
 }
 
 export function installPackage(
-  adbPath: NuclideUri,
+  adbPath: string,
   device: string,
   packagePath: NuclideUri,
 ): Observable<ProcessMessage> {
@@ -155,7 +149,7 @@ export function installPackage(
 }
 
 export function uninstallPackage(
-  adbPath: NuclideUri,
+  adbPath: string,
   device: string,
   packageName: string,
 ): Observable<ProcessMessage> {
@@ -163,7 +157,7 @@ export function uninstallPackage(
 }
 
 export async function getPidFromPackageName(
-  adbPath: NuclideUri,
+  adbPath: string,
   device: string,
   packageName: string,
 ): Promise<number> {
@@ -180,7 +174,7 @@ export async function getPidFromPackageName(
 }
 
 export function forwardJdwpPortToPid(
-  adbPath: NuclideUri,
+  adbPath: string,
   device: string,
   tcpPort: number,
   pid: number,
@@ -193,7 +187,7 @@ export function forwardJdwpPortToPid(
 }
 
 export function launchActivity(
-  adbPath: NuclideUri,
+  adbPath: string,
   device: string,
   packageName: string,
   activity: string,
@@ -207,7 +201,7 @@ export function launchActivity(
 }
 
 export function activityExists(
-  adbPath: NuclideUri,
+  adbPath: string,
   device: string,
   packageName: string,
   activity: string,
@@ -263,7 +257,7 @@ export function parsePsTableOutput(
 }
 
 export async function getJavaProcesses(
-  adbPath: NuclideUri,
+  adbPath: string,
   device: string,
 ): Promise<Array<AndroidJavaProcess>> {
   const allProcesses = await runShortAdbCommand(adbPath, device, ['shell', 'ps'])
