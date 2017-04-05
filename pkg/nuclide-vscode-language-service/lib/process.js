@@ -230,6 +230,9 @@ export class LanguageServerProtocolProcess {
     activatedManually: boolean,
     prefix: string,
   ): Promise<?AutocompleteResult> {
+    if (this._process._capabilities.completionProvider == null) {
+      return null;
+    }
     const result = await this._process._connection.completion(
       await this.createTextDocumentPositionParams(fileVersion, position));
     if (Array.isArray(result)) {
@@ -249,6 +252,9 @@ export class LanguageServerProtocolProcess {
     fileVersion: FileVersion,
     position: atom$Point,
   ): Promise<?DefinitionQueryResult> {
+    if (!this._process._capabilities.definitionProvider) {
+      return null;
+    }
     const result = await this._process._connection.gotoDefinition(
         await this.createTextDocumentPositionParams(fileVersion, position));
     return {
@@ -270,6 +276,9 @@ export class LanguageServerProtocolProcess {
     fileVersion: FileVersion,
     position: atom$Point,
   ): Promise<?FindReferencesReturn> {
+    if (!this._process._capabilities.referencesProvider) {
+      return null;
+    }
     const buffer = await this.getBufferAtVersion(fileVersion);
     const positionParams = createTextDocumentPositionParams(fileVersion, position);
     const params = {...positionParams, context: {includeDeclaration: true}};
@@ -314,6 +323,9 @@ export class LanguageServerProtocolProcess {
   async getCoverage(
     filePath: NuclideUri,
   ): Promise<?CoverageResult> {
+    if (!this._process._capabilities.typeCoverageProvider) {
+      return null;
+    }
     const params = {textDocument: toTextDocumentIdentifier(filePath)};
     const response = await this._process._connection.typeCoverage(params);
 
@@ -330,6 +342,9 @@ export class LanguageServerProtocolProcess {
   async getOutline(
     fileVersion: FileVersion,
   ): Promise<?Outline> {
+    if (!this._process._capabilities.documentSymbolProvider) {
+      return null;
+    }
     await this.getBufferAtVersion(fileVersion); // push out any pending edits
     const params = {textDocument: toTextDocumentIdentifier(fileVersion.filePath)};
     const response = await this._process._connection.documentSymbol(params);
@@ -399,6 +414,9 @@ export class LanguageServerProtocolProcess {
     fileVersion: FileVersion,
     position: atom$Point,
   ): Promise<?TypeHint> {
+    if (!this._process._capabilities.hoverProvider) {
+      return null;
+    }
     const request =
       await this.createTextDocumentPositionParams(fileVersion, position);
     const response = await this._process._connection.hover(request);
@@ -427,6 +445,9 @@ export class LanguageServerProtocolProcess {
     fileVersion: FileVersion,
     position: atom$Point,
   ): Promise<?Array<atom$Range>> {
+    if (!this._process._capabilities.documentHighlightProvider) {
+      return null;
+    }
     const params = await this.createTextDocumentPositionParams(fileVersion, position);
     const response = await this._process._connection.documentHighlight(params);
     const convertHighlight = highlight => rangeToAtomRange(highlight.range);
@@ -501,6 +522,9 @@ export class LanguageServerProtocolProcess {
     query: string,
     directories: Array<NuclideUri>,
   ): Promise<?Array<SymbolResult>> {
+    if (!this._process._capabilities.workspaceSymbolProvider) {
+      return null;
+    }
     const result = await this._process._connection.workspaceSymbol({query});
     return result.map(convertSearchResult);
   }
