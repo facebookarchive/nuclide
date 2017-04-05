@@ -62,14 +62,20 @@ export default class BuckToolbar extends React.Component {
       buildRuleType,
       buildTarget,
       buckRoot,
-      extraPlatformUi,
       isLoadingRule,
       isLoadingPlatforms,
       platformGroups,
+      platformProviderUi,
       projectRoot,
       selectedDeploymentTarget,
       taskSettings,
     } = this.props.appState;
+    const extraToolbarUi = platformProviderUi != null
+      ? platformProviderUi.toolbar
+      : null;
+    const extraSettings = platformProviderUi != null
+      ? platformProviderUi.settings
+      : null;
 
     let status;
     if (isLoadingRule || isLoadingPlatforms) {
@@ -133,8 +139,8 @@ export default class BuckToolbar extends React.Component {
         />,
       );
 
-      if (extraPlatformUi) {
-        widgets.push(extraPlatformUi);
+      if (extraToolbarUi) {
+        widgets.push(extraToolbarUi);
       }
     }
 
@@ -154,6 +160,7 @@ export default class BuckToolbar extends React.Component {
           ? <BuckToolbarSettings
               currentBuckRoot={buckRoot}
               settings={taskSettings}
+              platformProviderSettings={extraSettings}
               onDismiss={() => this._hideSettings()}
               onSave={settings => this._saveSettings(settings)}
             />

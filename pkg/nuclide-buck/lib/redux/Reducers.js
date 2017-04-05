@@ -8,9 +8,13 @@
  * @flow
  */
 
-import type {AppState, DeploymentTarget, PlatformGroup} from '../types';
+import type {
+  AppState,
+  DeploymentTarget,
+  PlatformGroup,
+  PlatformProviderUi,
+} from '../types';
 import type {Action} from './Actions';
-import type {Element as ReactElementType} from 'react';
 
 import * as Actions from './Actions';
 
@@ -40,7 +44,7 @@ export default function accumulateState(
         buildRuleType: null,
         platformGroups: [],
         selectedDeploymentTarget: null,
-        extraPlatformUi: null,
+        platformProviderUi: null,
         buildTarget: action.buildTarget,
         isLoadingRule: true,
         lastSessionPlatformName: preference.platformName,
@@ -65,7 +69,7 @@ export default function accumulateState(
         ...state,
         platformGroups,
         selectedDeploymentTarget,
-        extraPlatformUi: getExtraUiForDeploymentTarget(
+        platformProviderUi: getPlatformProviderUiForDeploymentTarget(
           selectedDeploymentTarget,
         ),
         isLoadingPlatforms: false,
@@ -74,7 +78,9 @@ export default function accumulateState(
       return {
         ...state,
         selectedDeploymentTarget: action.deploymentTarget,
-        extraPlatformUi: getExtraUiForDeploymentTarget(action.deploymentTarget),
+        platformProviderUi: getPlatformProviderUiForDeploymentTarget(
+          action.deploymentTarget,
+        ),
         lastSessionPlatformName: null,
         lastSessionDeviceName: null,
       };
@@ -161,9 +167,9 @@ function selectValidDeploymentTarget(
   return {platform: existingPlatform, device: existingDevice};
 }
 
-function getExtraUiForDeploymentTarget(
+function getPlatformProviderUiForDeploymentTarget(
   deploymentTarget: ?DeploymentTarget,
-): ?ReactElementType<any> {
+): ?PlatformProviderUi {
   if (
     deploymentTarget == null ||
     deploymentTarget.platform.extraUiWhenSelected == null

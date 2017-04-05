@@ -8,7 +8,7 @@
  * @flow
  */
 
-import type {TaskSettings} from '../types';
+import type {PlatformProviderSettings, TaskSettings} from '../types';
 
 import React from 'react';
 import {quote} from 'shell-quote';
@@ -22,6 +22,7 @@ import {Modal} from '../../../nuclide-ui/Modal';
 type Props = {
   currentBuckRoot: ?string,
   settings: TaskSettings,
+  platformProviderSettings: ?PlatformProviderSettings,
   onDismiss: () => void,
   onSave: (settings: TaskSettings) => void,
 };
@@ -45,6 +46,9 @@ export default class BuckToolbarSettings extends React.Component {
   }
 
   render(): React.Element<any> {
+    const extraSettingsUi = this.props.platformProviderSettings != null
+      ? this.props.platformProviderSettings.ui
+      : null;
     return (
       <Modal onDismiss={this.props.onDismiss}>
         <div className="block">
@@ -73,6 +77,7 @@ export default class BuckToolbarSettings extends React.Component {
                 onConfirm={this._onSave.bind(this)}
               />
             </div>
+            {extraSettingsUi}
           </div>
           <div style={{display: 'flex', justifyContent: 'flex-end'}}>
             <ButtonGroup>
@@ -107,6 +112,15 @@ export default class BuckToolbarSettings extends React.Component {
       });
     } catch (err) {
       atom.notifications.addError('Could not parse arguments', {
+        detail: err.stack,
+      });
+    }
+    try {
+      if (this.props.platformProviderSettings != null) {
+        this.props.platformProviderSettings.saveEvents.next(undefined);
+      }
+    } catch (err) {
+      atom.notifications.addError('Could not save platform-specific settings', {
         detail: err.stack,
       });
     }

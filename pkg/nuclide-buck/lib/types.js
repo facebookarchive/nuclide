@@ -12,7 +12,7 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {Task} from '../../commons-node/tasks';
 import type {Action} from './redux/Actions';
 import type {PlatformService} from './PlatformService';
-import type {Observable} from 'rxjs';
+import type {Observable, Subject} from 'rxjs';
 import type {TaskEvent} from '../../commons-node/tasks';
 import type {BuckBuildSystem} from '../../nuclide-buck/lib/BuckBuildSystem';
 import type {
@@ -43,7 +43,7 @@ export type AppState = {
   buildRuleType: ?ResolvedRuleType,
   selectedDeploymentTarget: ?DeploymentTarget,
   taskSettings: TaskSettings,
-  extraPlatformUi: ?React.Element<any>,
+  platformProviderUi: ?PlatformProviderUi,
 
   lastSessionPlatformName: ?string,
   lastSessionDeviceName: ?string,
@@ -90,7 +90,7 @@ export type Platform = {
     device: ?Device,
   ) => Observable<TaskEvent>,
   deviceGroups: Array<DeviceGroup>,
-  extraUiWhenSelected?: (device: ?Device) => ?React.Element<any>,
+  extraUiWhenSelected?: (device: ?Device) => ?PlatformProviderUi,
 };
 
 export type DeviceGroup = {
@@ -105,4 +105,14 @@ export type Device = {
 export type DeploymentTarget = {
   platform: Platform,
   device: ?Device,
+};
+
+export type PlatformProviderSettings = {
+  saveEvents: Subject<void>,
+  ui: React.Element<any>,
+};
+
+export type PlatformProviderUi = {
+  settings: ?PlatformProviderSettings,
+  toolbar: ?React.Element<any>,
 };
