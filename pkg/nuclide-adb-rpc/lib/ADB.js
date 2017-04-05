@@ -8,7 +8,7 @@
  * @flow
  */
 
-import type {Observable, ConnectableObservable} from 'rxjs';
+import type {Observable} from 'rxjs';
 import type {DeviceDescription, AndroidJavaProcess} from './AdbService';
 import type {ProcessMessage} from '../../commons-node/process-rpc-types';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
@@ -68,12 +68,6 @@ function getTizenModelConfigKey(
     .toPromise();
 }
 
-export function startServer(
-  adbPath: NuclideUri,
-): ConnectableObservable<string> {
-  return runCommand(adbPath, ['start-server']).publish();
-}
-
 export async function getDeviceList(
   adbPath: NuclideUri,
 ): Promise<Array<DeviceDescription>> {
@@ -100,7 +94,7 @@ export async function getDeviceList(
   return arrayCompact(deviceTable);
 }
 
-export function getDeviceArchitecture(
+function getDeviceArchitecture(
   adbPath: NuclideUri,
   device: string,
 ): Promise<string> {
@@ -114,7 +108,7 @@ export function getDeviceArchitecture(
   }
 }
 
-export function getDeviceModel(
+function getDeviceModel(
   adbPath: NuclideUri,
   device: string,
 ): Promise<string> {
@@ -127,7 +121,7 @@ export function getDeviceModel(
   }
 }
 
-export async function getAPIVersion(
+async function getAPIVersion(
   adbPath: NuclideUri,
   device: string,
 ): Promise<string> {

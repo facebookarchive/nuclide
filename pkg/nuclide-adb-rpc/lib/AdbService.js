@@ -26,37 +26,10 @@ export type AndroidJavaProcess = {
   name: string,
 };
 
-export function startServer(
-  adbPath: NuclideUri,
-): ConnectableObservable<string> {
-  return ADB.startServer(adbPath);
-}
-
 export function getDeviceList(
   adbPath: NuclideUri,
 ): Promise<Array<DeviceDescription>> {
   return ADB.getDeviceList(adbPath);
-}
-
-export function getDeviceArchitecture(
-  adbPath: NuclideUri,
-  device: string,
-): Promise<string> {
-  return ADB.getDeviceArchitecture(adbPath, device);
-}
-
-export function getDeviceModel(
-  adbPath: NuclideUri,
-  device: string,
-): Promise<string> {
-  return ADB.getDeviceModel(adbPath, device);
-}
-
-export function getAPIVersion(
-  adbPath: NuclideUri,
-  device: string,
-): Promise<string> {
-  return ADB.getAPIVersion(adbPath, device);
 }
 
 export function installPackage(
