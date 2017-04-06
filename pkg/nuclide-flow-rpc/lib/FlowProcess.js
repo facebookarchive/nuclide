@@ -399,7 +399,7 @@ export class FlowProcess {
       .subscribe(() => {
         hasReachedSteadyState = true;
       });
-    while (!hasReachedSteadyState) {
+    while (!hasReachedSteadyState && !this._isDisposed.getValue()) {
       // eslint-disable-next-line no-await-in-loop
       await this._pingServerOnce();
       // Wait 1 second
