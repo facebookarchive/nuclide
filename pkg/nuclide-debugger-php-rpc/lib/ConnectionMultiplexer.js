@@ -163,10 +163,11 @@ export class ConnectionMultiplexer {
 
     if (launchScriptPath != null) {
       this._launchedScriptProcessPromise = new Promise(resolve => {
-        this._launchedScriptProcess = launchPhpScriptWithXDebugEnabled(launchScriptPath, text => {
-          this._clientCallback.sendUserMessage('outputWindow', {level: 'info', text});
-          resolve();
-        });
+        this._launchedScriptProcess = launchPhpScriptWithXDebugEnabled(launchScriptPath,
+          (text, level) => {
+            this._clientCallback.sendUserMessage('outputWindow', {level, text});
+            resolve();
+          });
       });
     }
   }

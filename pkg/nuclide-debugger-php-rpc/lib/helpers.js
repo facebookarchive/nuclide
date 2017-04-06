@@ -104,11 +104,11 @@ export function launchScriptForDummyConnection(scriptPath: string): child_proces
  */
 export function launchScriptToDebug(
   scriptPath: string,
-  sendToOutputWindow: (text: string) => void,
+  sendToOutputWindow: (text: string, level: string) => void,
 ): Promise<void> {
   return new Promise(resolve => {
-    launchPhpScriptWithXDebugEnabled(scriptPath, text => {
-      sendToOutputWindow(text);
+    launchPhpScriptWithXDebugEnabled(scriptPath, (text, level) => {
+      sendToOutputWindow(text, level);
       resolve();
     });
   });
@@ -116,7 +116,7 @@ export function launchScriptToDebug(
 
 export function launchPhpScriptWithXDebugEnabled(
   scriptPath: string,
-  sendToOutputWindowAndResolve?: (text: string) => void,
+  sendToOutputWindowAndResolve?: (text: string, level: string) => void,
 ): child_process$ChildProcess {
   const {phpRuntimePath, phpRuntimeArgs} = getConfig();
   const runtimeArgs = shellParse(phpRuntimeArgs);
@@ -140,13 +140,16 @@ export function launchPhpScriptWithXDebugEnabled(
     if (sendToOutputWindowAndResolve != null) {
       sendToOutputWindowAndResolve(
         `The process running script: ${scriptPath} encountered an error: ${err}`,
+        'error',
       );
     }
   });
   proc.on('exit', code => {
     logger.log(`child_process(${proc.pid}) exit: ${code}`);
     if (code != null && sendToOutputWindowAndResolve != null) {
-      sendToOutputWindowAndResolve(`Script: ${scriptPath} exited with code: ${code}`);
+      sendToOutputWindowAndResolve(`Script: ${scriptPath} exited with code: ${code}`,
+        code === 0 ? 'info' : 'error',
+      );
     }
   });
   return proc;
