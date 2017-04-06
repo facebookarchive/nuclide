@@ -14,7 +14,6 @@ import {
   observeProcess,
   runCommand,
 } from '../../commons-node/process';
-import {findRunningDbPath} from './RunningDbFinder';
 import os from 'os';
 
 import type {Observable} from 'rxjs';
@@ -23,7 +22,7 @@ import type {ProcessMessage} from '../../commons-node/process-rpc-types';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 export async function pathForDebugBridge(db: DebugBridgeType): Promise<string> {
-  return (await findRunningDbPath(db)) || db;
+  return db;
 }
 
 export class DebugBridge {
