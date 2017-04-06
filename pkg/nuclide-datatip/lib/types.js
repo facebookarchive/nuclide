@@ -37,7 +37,13 @@ export type PinnedDatatip = {
 };
 
 export type DatatipProvider = {
-  datatip(editor: atom$TextEditor, bufferPosition: atom$Point): Promise<?Datatip>,
+  datatip(
+    editor: atom$TextEditor,
+    bufferPosition: atom$Point,
+    // The mouse event that triggered the datatip.
+    // This is null for manually toggled datatips.
+    mouseEvent: ?MouseEvent,
+  ): Promise<?Datatip>,
   inclusionPriority: number,
   validForScope(scopeName: string): boolean,
   // A unique name for the provider to be used for analytics.

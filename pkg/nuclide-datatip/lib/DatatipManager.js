@@ -95,7 +95,7 @@ function getBufferPosition(
   return editor.bufferPositionForScreenPosition(screenPosition);
 }
 
-async function fetchDatatip(editor, position, allProviders, onPinClick) {
+async function fetchDatatip(editor, position, mouseEvent, allProviders, onPinClick) {
   const {scopeName} = editor.getGrammar();
   const providers = filterProvidersByScopeName(allProviders, scopeName);
   if (providers.length === 0) {
@@ -110,7 +110,7 @@ async function fetchDatatip(editor, position, allProviders, onPinClick) {
         const name = getProviderName(provider);
         const datatip = await trackTiming(
           name + '.datatip',
-          () => provider.datatip(editor, position),
+          () => provider.datatip(editor, position, mouseEvent),
         );
 
         if (!datatip) {
@@ -369,7 +369,7 @@ class DatatipManagerForEditor {
           this._editor,
           this._editorView,
           this._lastMoveEvent,
-        ));
+        ), this._lastMoveEvent);
       },
       ensurePositiveNumber(
         (featureConfig.get('nuclide-datatip.datatipDebounceDelay'): any),
@@ -411,7 +411,7 @@ class DatatipManagerForEditor {
     }
   }
 
-  async _startFetching(getPosition: () => ?atom$Point): Promise<void> {
+  async _startFetching(getPosition: () => ?atom$Point, lastMoveEvent: ?MouseEvent): Promise<void> {
     if (this._datatipState !== DatatipState.HIDDEN) {
       return;
     }
@@ -424,6 +424,7 @@ class DatatipManagerForEditor {
     const data = await fetchDatatip(
       this._editor,
       position,
+      lastMoveEvent,
       this._datatipProviders,
       this._handlePinClicked.bind(this),
     );
@@ -557,7 +558,7 @@ class DatatipManagerForEditor {
         // it up right away. We assume that a keypress is done within 100ms
         // and don't show it again if it was hidden so soon.
         performance.now() - this._lastHiddenTime > 100) {
-      this._startFetching(() => this._editor.getCursorScreenPosition());
+      this._startFetching(() => this._editor.getCursorScreenPosition(), null);
       return;
     }
   }
