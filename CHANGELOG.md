@@ -1,5 +1,11 @@
 # Nuclide Changelog
 
+## v0.216.0
+
+### Hotfix from 0.215.0
+
+* Limit the number of console records serialized to avoid UI freezes.
+
 ## v0.215.0
 
 General
