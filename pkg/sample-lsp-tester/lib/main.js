@@ -41,16 +41,15 @@ class Activation {
       ),
     );
   }
-}
 
-// This can't be a method until we get the initialize() package hook.
-module.exports.deserializeLspTester = (serialized: ?mixed): LspTester => {
-  const data = serialized && serialized.data || null;
-  return new LspTester({
-    lastCommand: data != null && typeof data.lastCommand === 'string'
-    ? data.lastCommand || null
-    : null,
-  });
-};
+  deserializeLspTester(serialized: ?mixed): LspTester {
+    const data = serialized && serialized.data || null;
+    return new LspTester({
+      lastCommand: data != null && typeof data.lastCommand === 'string'
+      ? data.lastCommand || null
+      : null,
+    });
+  }
+}
 
 createPackage(module.exports, Activation);
