@@ -8,11 +8,6 @@
  * @flow
  */
 
-import type {Observable} from 'rxjs';
-import type {DeviceDescription, AndroidJavaProcess, DebugBridgeType} from './AdbService';
-import type {ProcessMessage} from '../../commons-node/process-rpc-types';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-
 import invariant from 'assert';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {arrayCompact} from '../../commons-node/collection';
@@ -22,11 +17,16 @@ import {
   runCommand,
   observeProcessRaw,
 } from '../../commons-node/process';
-import * as os from 'os';
+import {findRunningAdbPath} from './RunningAdbFinder';
+import os from 'os';
 
-export function pathForDebugBridge(db: DebugBridgeType): string {
-  // TODO(wallace): add process detection (next diff)
-  return db;
+import type {Observable} from 'rxjs';
+import type {DeviceDescription, AndroidJavaProcess, DebugBridgeType} from './AdbService';
+import type {ProcessMessage} from '../../commons-node/process-rpc-types';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
+
+export async function pathForDebugBridge(db: DebugBridgeType): Promise<string> {
+  return (await findRunningAdbPath(db)) || db;
 }
 
 function runShortAdbCommand(
