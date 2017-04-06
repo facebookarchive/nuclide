@@ -73,6 +73,11 @@ export class FlowExecInfoContainer {
     return this._flowExecInfoCache.get(root);
   }
 
+  reallyGetFlowExecInfo(root: string | null): Promise<?FlowExecInfo> {
+    this._flowExecInfoCache.del(root);
+    return this.getFlowExecInfo(root);
+  }
+
   async _computeFlowExecInfo(root: string | null): Promise<?FlowExecInfo> {
     const flowPath = await this._getPathToFlow(root);
     if (flowPath == null) {

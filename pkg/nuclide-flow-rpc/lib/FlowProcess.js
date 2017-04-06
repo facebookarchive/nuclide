@@ -265,7 +265,10 @@ export class FlowProcess {
 
   /** Starts a Flow server in the current root */
   async _startFlowServer(): Promise<void> {
-    const flowExecInfo = await this._execInfoContainer.getFlowExecInfo(this._root);
+    // If the server is restarting because of a change in the version specified in the .flowconfig,
+    // then it's important not to use a stale path to start it, since we could have cached the path
+    // to a different version. In that case, starting the server will fail.
+    const flowExecInfo = await this._execInfoContainer.reallyGetFlowExecInfo(this._root);
     if (flowExecInfo == null) {
       // This should not happen in normal use. If Flow is not installed we should have caught it by
       // now.
