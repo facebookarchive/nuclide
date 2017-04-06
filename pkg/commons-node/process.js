@@ -635,8 +635,8 @@ export async function checkOutput(
 export function runCommand(
   command: string,
   args?: Array<string> = [],
-  options_?: ObserveProcessOptions = {},
-  killTreeOnComplete?: boolean = false,
+  options?: ObserveProcessOptions = {},
+  _: void,
 ): Observable<string> {
   const seed = {
     error: null,
@@ -644,8 +644,6 @@ export function runCommand(
     stderr: [],
     exitMessage: null,
   };
-  // TODO(matthewwithanm): Remove killTreeOnComplete from signature (put it in the options obj)
-  const options = {...options_, killTreeOnComplete};
   return observeProcess(command, args, options)
     .reduce(
       (acc, event) => {

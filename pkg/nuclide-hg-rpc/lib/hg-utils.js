@@ -75,7 +75,7 @@ export function hgRunCommand(
 ): Observable<string> {
   return Observable.fromPromise(getHgExecParams(args_, options_))
     .switchMap(({command, args, options}) => (
-      runCommand(command, args, options, true /* kill process tree on complete */)
+      runCommand(command, args, {...options, killTreeOnComplete: true})
     ));
 }
 
