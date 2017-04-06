@@ -124,7 +124,7 @@
     "eslint-plugin-nuclide-internal": "file:resources/eslint-plugin-nuclide-internal",
     "eslint-plugin-prefer-object-spread": "1.1.0",
     "eslint-plugin-react": "6.8.0",
-    "flow-bin": "0.43.0",
+    "flow-bin": "0.43.1",
     "fs-extra": "2.0.0",
     "jasmine-node": "1.14.5",
     "mock-spawn": "0.2.6",
