@@ -95,6 +95,10 @@ export type ObserveProcessOptions = child_process$spawnOpts & {
   killTreeOnComplete?: ?boolean,
 };
 
+export type ForkProcessOptions = child_process$forkOpts & {
+  killTreeOnComplete?: ?boolean,
+};
+
 export class ProcessExitError extends Error {
   command: string;
   args: Array<string>;
@@ -406,6 +410,18 @@ export function createProcessStream(
   killTreeOnComplete?: boolean = false,
 ): Observable<child_process$ChildProcess> {
   return _createProcessStream(createProcess, true, killTreeOnComplete);
+}
+
+export function forkProcessStream(
+  modulePath: string,
+  args?: Array<string>,
+  options?: ForkProcessOptions,
+): Observable<child_process$ChildProcess> {
+  return _createProcessStream(
+    () => safeFork(modulePath, args, options),
+    true,
+    Boolean(options && options.killTreeOnComplete),
+  );
 }
 
 function observeProcessExitMessage(
