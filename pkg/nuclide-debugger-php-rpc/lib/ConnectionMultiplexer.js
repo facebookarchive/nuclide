@@ -30,6 +30,7 @@ import {
 import {
   ASYNC_BREAK,
   BREAKPOINT,
+  EXCEPTION,
 } from './Connection';
 import EventEmitter from 'events';
 import invariant from 'assert';
@@ -555,6 +556,15 @@ export class ConnectionMultiplexer {
     }
   }
 
+  getConnectionStopReason(id: number): ?string {
+    const connection = this._connections.get(id);
+    if (connection != null) {
+      return connection.getStopReason();
+    }
+
+    return null;
+  }
+
   getScopesForFrame(frameIndex: number): Promise<Array<Debugger$Scope>> {
     if (this._enabledConnection) {
       return this._enabledConnection.getScopesForFrame(frameIndex);
@@ -607,6 +617,8 @@ export class ConnectionMultiplexer {
         (connection.getStopReason() === BREAKPOINT &&
          connection.getStatus() === ConnectionStatus.Break &&
          !this._connectionBreakpointExits(connection)) ||
+        (connection.getStopReason() === EXCEPTION &&
+          !this._breakpointStore.getPauseOnExceptions()) ||
         connection.getStatus() === ConnectionStatus.Starting)
       ) {
         try {

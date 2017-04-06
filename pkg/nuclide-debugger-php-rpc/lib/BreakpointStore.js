@@ -155,6 +155,10 @@ export class BreakpointStore {
     await Promise.all(breakpointPromises);
   }
 
+  getPauseOnExceptions(): boolean {
+    return this._pauseAllExceptionBreakpointId != null;
+  }
+
   async _removePauseAllExceptionBreakpointIfNeeded(): Promise<void> {
     const breakpointId = this._pauseAllExceptionBreakpointId;
     if (breakpointId) {

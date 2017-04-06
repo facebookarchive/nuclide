@@ -338,7 +338,7 @@ export class DebuggerHandler extends Handler {
           address: frame != null ? frame.functionName : 'N/A',
           location: frame != null ? frame.location : null,
           hasSource: true,
-          stopReason: 'breakpoint',
+          stopReason: this._connectionMultiplexer.getConnectionStopReason(enabledConnectionId),
           description: 'N/A',
         },
       });
