@@ -21,7 +21,7 @@ import ReactDOM from 'react-dom';
 import debounce from '../../commons-node/debounce';
 import invariant from 'assert';
 import {arrayCompact, arrayRemove} from '../../commons-node/collection';
-import {track, trackTiming} from '../../nuclide-analytics';
+import {track, TimingTracker} from '../../nuclide-analytics';
 import {getLogger} from '../../nuclide-logging';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {Observable} from 'rxjs';
@@ -108,19 +108,23 @@ async function fetchDatatip(editor, position, mouseEvent, allProviders, onPinCli
         provider: DatatipProvider,
       ): Promise<?{datatip: ?Datatip, provider: DatatipProvider}> => {
         const name = getProviderName(provider);
-        const datatip = await trackTiming(
-          name + '.datatip',
-          () => provider.datatip(editor, position, mouseEvent),
-        );
+        const timingTracker = new TimingTracker(name + '.datatip');
+        try {
+          const datatip = await provider.datatip(editor, position, mouseEvent);
+          if (!datatip) {
+            return null;
+          }
+          timingTracker.onSuccess();
 
-        if (!datatip) {
+          return {
+            datatip,
+            provider,
+          };
+        } catch (e) {
+          timingTracker.onError(e);
+          logger.error(`Error getting datatip from provider ${name}`, e);
           return null;
         }
-
-        return {
-          datatip,
-          provider,
-        };
       },
     ),
   ));
