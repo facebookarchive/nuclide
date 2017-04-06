@@ -47,6 +47,7 @@ export class Connection {
   _stopBreakpointLocation: ?FileLineBreakpointInfo;
   _isDummyConnection: boolean;
   _isDummyViewable: boolean;
+  _breakCount: number;
 
   constructor(
     socket: Socket,
@@ -62,6 +63,8 @@ export class Connection {
     this._isDummyConnection = isDummyConnection;
     this._isDummyViewable = false;
     this._disposables = new CompositeDisposable();
+    this._breakCount = 0;
+
     if (onStatusCallback != null) {
       this._disposables.add(this.onStatus((status, ...args) =>
         onStatusCallback(this, status, ...args)));
@@ -116,6 +119,7 @@ export class Connection {
             this._stopBreakpointLocation = null;
           }
         }
+        this._breakCount++;
         break;
       case ConnectionStatus.DummyIsViewable:
         this._isDummyViewable = true;
@@ -155,6 +159,10 @@ export class Connection {
     } else {
       return this._status === ConnectionStatus.Break;
     }
+  }
+
+  getBreakCount(): number {
+    return this._breakCount;
   }
 
   onNotification(callback: (notifyName: string, notify: Object) => mixed): IDisposable {

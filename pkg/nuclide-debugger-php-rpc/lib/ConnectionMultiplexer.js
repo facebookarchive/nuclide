@@ -155,7 +155,7 @@ export class ConnectionMultiplexer {
 
     const pleaseWaitMessage = {
       level: 'warning',
-      text: 'Pre-loading, please wait...',
+      text: 'Pre-loading all of your PHP types and symbols. This may take a moment, please wait...',
     };
     this._clientCallback.sendUserMessage('console', pleaseWaitMessage);
     this._clientCallback.sendUserMessage('outputWindow', pleaseWaitMessage);
@@ -232,12 +232,6 @@ export class ConnectionMultiplexer {
     await this._handleSetupForConnection(connection);
     await this._breakpointStore.addConnection(connection);
     this._connectionOnStatus(connection, connection.getStatus());
-    if (connection.isDummyConnection()) {
-      this._dummyConnection = connection;
-      const text = 'Pre-loading is done! You can use console window now.';
-      this._clientCallback.sendUserMessage('console', {text, level: 'warning'});
-      this._clientCallback.sendUserMessage('outputWindow', {text, level: 'success'});
-    }
   }
 
   _handleNotification(
@@ -304,6 +298,16 @@ export class ConnectionMultiplexer {
         }
         break;
       case ConnectionStatus.Break:
+        // Send the preloading complete message after the dummy connection hits its first
+        // breakpoint. This means all of the preloading done by the 'require' commands
+        // preceeding the first xdebug_break() call has completed.
+        if (connection.isDummyConnection() && connection.getBreakCount() === 1) {
+          this._dummyConnection = connection;
+          const text = 'Pre-loading is done! You can use console window now.';
+          this._clientCallback.sendUserMessage('console', {text, level: 'warning'});
+          this._clientCallback.sendUserMessage('outputWindow', {text, level: 'success'});
+        }
+
         if (this._isPaused()) {
           // We don't want to send the first threads updated message until the debugger is
           // paused.
@@ -483,6 +487,11 @@ export class ConnectionMultiplexer {
       this._reportEvaluationFailureIfNeeded(expression, result);
       return result;
     } else {
+      const message = {
+        level: 'error',
+        text: 'Error evaluating expression: the console is not ready yet. Please wait...',
+      };
+      this._sendClientError(message);
       throw this._noConnectionError();
     }
   }
@@ -504,9 +513,13 @@ export class ConnectionMultiplexer {
           + `"${expression}": (${result.error.$.code}) ${result.error.message[0]}`,
         level: 'error',
       };
-      this._clientCallback.sendUserMessage('console', message);
-      this._clientCallback.sendUserMessage('outputWindow', message);
+      this._sendClientError(message);
     }
+  }
+
+  _sendClientError(message: Object): void {
+    this._clientCallback.sendUserMessage('console', message);
+    this._clientCallback.sendUserMessage('outputWindow', message);
   }
 
   getBreakpointStore(): BreakpointStore {
@@ -540,7 +553,6 @@ export class ConnectionMultiplexer {
       return Promise.resolve({stack: {}});
     }
   }
-
 
   getScopesForFrame(frameIndex: number): Promise<Array<Debugger$Scope>> {
     if (this._enabledConnection) {
@@ -615,7 +627,7 @@ export class ConnectionMultiplexer {
 
   pause(): void {
     this._status = ConnectionMultiplexerStatus.UserAsyncBreakSent;
-    // allow a connection that hasnt hit a breakpoint to be enabled, then break all connections.
+    // allow a connection that hasn't hit a breakpoint to be enabled, then break all connections.
     this._asyncBreak();
   }
 

@@ -160,6 +160,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
           'isDummyConnection',
           'isViewable',
           'dispose',
+          'getBreakCount',
         ]): any
       ): ConnectionType);
       const id = connectionCount;
@@ -190,6 +191,11 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
       // $FlowFixMe override instance method.
       connection.getStopReason = jasmine.createSpy('getStopReason').andCallFake(() => {
         return 'breakpoint';
+      });
+      connection._breakCount = 0;
+      // $FlowFixMe override instance method.
+      connection.getBreakCount = jasmine.createSpy('getBreakCount').andCallFake(() => {
+        return ++connection._breakCount;
       });
       // $FlowFixMe override instance method.
       connection.dispose = jasmine.createSpy('connection.dispose' + connectionCount);
@@ -364,6 +370,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
         socket,
         message: 'dummy connection',
       });
+      sendConnectionStatus(0, ConnectionStatus.Break);
       expect(connectionCount).toBe(1);
       expect(connectionMultiplexer.getDummyConnection()).not.toBeNull();
     });
@@ -682,12 +689,12 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
       }
       expect(exceptionThrown).toBe(true);
 
-
       isDummyConnectionResult = true;
       await onDbgpConnectorAttach({
         socket,
         message: 'dummy connection',
       });
+      sendConnectionStatus(1, ConnectionStatus.Break);
 
       const dummyConnection = connectionMultiplexer.getDummyConnection();
       expect(dummyConnection).not.toBeNull();
@@ -768,7 +775,10 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
         socket,
         message: 'dummy connection',
       });
+      sendConnectionStatus(0, ConnectionStatus.Break);
+      sendConnectionStatus(1, ConnectionStatus.Break);
       sendConnectionStatus(0, ConnectionStatus.End);
+      sendConnectionStatus(1, ConnectionStatus.End);
       expect(onStatus).toHaveBeenCalledWith(ConnectionMultiplexerStatus.End);
     });
   });
