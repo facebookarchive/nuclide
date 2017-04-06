@@ -145,6 +145,12 @@ export class ConnectionMultiplexer {
   }
 
   listen(): void {
+    this._sendOutput('Debugger connected.', 'success');
+    this._sendOutput(
+      'Pre-loading all of your PHP types and symbols. This may take a moment, please wait...',
+      'warning',
+    );
+
     const {launchScriptPath} = getConfig();
     if (launchScriptPath != null) {
       this._launchModeListen();
@@ -153,13 +159,6 @@ export class ConnectionMultiplexer {
     }
 
     this._status = ConnectionMultiplexerStatus.Running;
-
-    const pleaseWaitMessage = {
-      level: 'warning',
-      text: 'Pre-loading all of your PHP types and symbols. This may take a moment, please wait...',
-    };
-    this._clientCallback.sendUserMessage('console', pleaseWaitMessage);
-    this._clientCallback.sendUserMessage('outputWindow', pleaseWaitMessage);
     this._dummyRequestProcess = sendDummyRequest();
 
     if (launchScriptPath != null) {
@@ -305,9 +304,7 @@ export class ConnectionMultiplexer {
         // preceeding the first xdebug_break() call has completed.
         if (connection.isDummyConnection() && connection.getBreakCount() === 1) {
           this._dummyConnection = connection;
-          const text = 'Pre-loading is done! You can use console window now.';
-          this._clientCallback.sendUserMessage('console', {text, level: 'warning'});
-          this._clientCallback.sendUserMessage('outputWindow', {text, level: 'success'});
+          this._sendOutput('Pre-loading is done! You can use console window now.', 'success');
         }
 
         if (this._isPaused()) {
@@ -351,11 +348,9 @@ export class ConnectionMultiplexer {
     this._updateStatus();
   }
 
-  _sendOutput(message: string, level: string): void {
-    this._clientCallback.sendUserMessage('outputWindow', {
-      level,
-      text: message,
-    });
+  _sendOutput(text: string, level: string): void {
+    this._clientCallback.sendUserMessage('console', {text, level});
+    this._clientCallback.sendUserMessage('outputWindow', {text, level});
   }
 
   _updateStatus(): void {
@@ -489,11 +484,10 @@ export class ConnectionMultiplexer {
       this._reportEvaluationFailureIfNeeded(expression, result);
       return result;
     } else {
-      const message = {
-        level: 'error',
-        text: 'Error evaluating expression: the console is not ready yet. Please wait...',
-      };
-      this._sendClientError(message);
+      this._sendOutput(
+        'Error evaluating expression: the console is not ready yet. Please wait...',
+        'error',
+      );
       throw this._noConnectionError();
     }
   }
@@ -510,18 +504,12 @@ export class ConnectionMultiplexer {
 
   _reportEvaluationFailureIfNeeded(expression: string, result: EvaluationFailureResult): void {
     if (result.wasThrown) {
-      const message = {
-        text: 'Failed to evaluate '
+      this._sendOutput(
+        'Failed to evaluate '
           + `"${expression}": (${result.error.$.code}) ${result.error.message[0]}`,
-        level: 'error',
-      };
-      this._sendClientError(message);
+        'error',
+      );
     }
-  }
-
-  _sendClientError(message: Object): void {
-    this._clientCallback.sendUserMessage('console', message);
-    this._clientCallback.sendUserMessage('outputWindow', message);
   }
 
   getBreakpointStore(): BreakpointStore {
