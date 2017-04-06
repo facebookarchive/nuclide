@@ -12,7 +12,7 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {Task} from '../../commons-node/tasks';
 import type {Action} from './redux/Actions';
 import type {PlatformService} from './PlatformService';
-import type {Observable, Subject} from 'rxjs';
+import type {Observable} from 'rxjs';
 import type {TaskEvent} from '../../commons-node/tasks';
 import type {BuckBuildSystem} from '../../nuclide-buck/lib/BuckBuildSystem';
 import type {
@@ -108,7 +108,7 @@ export type DeploymentTarget = {
 };
 
 export type PlatformProviderSettings = {
-  saveEvents: Subject<void>,
+  onSave: () => mixed,
   ui: React.Element<any>,
 };
 

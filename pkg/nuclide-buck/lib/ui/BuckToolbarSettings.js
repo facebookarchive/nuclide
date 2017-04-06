@@ -115,14 +115,8 @@ export default class BuckToolbarSettings extends React.Component {
         detail: err.stack,
       });
     }
-    try {
-      if (this.props.platformProviderSettings != null) {
-        this.props.platformProviderSettings.saveEvents.next(undefined);
-      }
-    } catch (err) {
-      atom.notifications.addError('Could not save platform-specific settings', {
-        detail: err.stack,
-      });
+    if (this.props.platformProviderSettings != null) {
+      this.props.platformProviderSettings.onSave();
     }
   }
 }
