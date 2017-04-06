@@ -12,10 +12,7 @@ import escapeStringRegExp from 'escape-string-regexp';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {Observable} from 'rxjs';
 
-import {
-  safeSpawn,
-  observeProcess,
-} from '../../commons-node/process';
+import {observeProcess} from '../../commons-node/process';
 
 const HEADER_EXTENSIONS = new Set(['.h', '.hh', '.hpp', '.hxx', '.h++']);
 const SOURCE_EXTENSIONS = new Set(['.c', '.cc', '.cpp', '.cxx', '.c++', '.m', '.mm']);
@@ -85,17 +82,14 @@ export function findIncludingSourceFile(
   const relativePath = escapeStringRegExp(nuclideUri.relative(projectRoot, headerFile));
   const pattern = `^\\s*#include\\s+["<](${relativePath}|(../)*${basename})[">]\\s*$`;
   const regex = new RegExp(pattern);
-  const spawnGrepProcess = () => {
-    // We need both the file and the match to verify relative includes.
-    // Relative includes may not always be correct, so we may have to go through all the results.
-    return safeSpawn('grep', [
-      '-RE',    // recursive, extended
-      '--null', // separate file/match with \0
-      pattern,
-      nuclideUri.dirname(headerFile),
-    ]);
-  };
-  return observeProcess(spawnGrepProcess)
+  // We need both the file and the match to verify relative includes.
+  // Relative includes may not always be correct, so we may have to go through all the results.
+  return observeProcess('grep', [
+    '-RE',    // recursive, extended
+    '--null', // separate file/match with \0
+    pattern,
+    nuclideUri.dirname(headerFile),
+  ])
     .flatMap(message => {
       switch (message.kind) {
         case 'stdout':

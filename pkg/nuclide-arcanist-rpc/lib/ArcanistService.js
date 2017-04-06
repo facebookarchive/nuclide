@@ -22,7 +22,6 @@ import {
   getOutputStream,
   observeProcess,
   runCommand,
-  safeSpawn,
   scriptSafeSpawnAndObserveOutput,
 } from '../../commons-node/process';
 import {niceSafeSpawn} from '../../commons-node/nice';
@@ -264,7 +263,7 @@ export function execArcPull(
       }
 
       return Observable.fromPromise(getArcExecOptions(cwd, editMergeConfigs.hgEditor))
-        .switchMap(opts => observeProcess(() => safeSpawn('arc', args, opts)));
+        .switchMap(opts => observeProcess('arc', args, opts));
     }).publish();
 }
 
@@ -273,7 +272,7 @@ export function execArcLand(
 ): ConnectableObservable<ProcessMessage> {
   const args = ['land'];
   return Observable.fromPromise(getArcExecOptions(cwd))
-    .switchMap(opts => observeProcess(() => safeSpawn('arc', args, opts)))
+    .switchMap(opts => observeProcess('arc', args, opts))
     .publish();
 }
 
@@ -287,7 +286,7 @@ export function execArcPatch(
   }
   args.push(differentialRevision);
   return Observable.fromPromise(getArcExecOptions(cwd))
-    .switchMap(opts => observeProcess(() => safeSpawn('arc', args, opts)))
+    .switchMap(opts => observeProcess('arc', args, opts))
     .publish();
 }
 

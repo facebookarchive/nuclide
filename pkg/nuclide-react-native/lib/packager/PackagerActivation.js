@@ -15,7 +15,7 @@ import type {PackagerEvent} from './types';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {LogTailer} from '../../../nuclide-console/lib/LogTailer';
 import {getCommandInfo} from '../../../nuclide-react-native-base';
-import {observeProcess, safeSpawn} from '../../../commons-node/process';
+import {observeProcess} from '../../../commons-node/process';
 import {parseMessages} from './parseMessages';
 import {CompositeDisposable, Disposable} from 'atom';
 import invariant from 'assert';
@@ -160,8 +160,13 @@ function getPackagerObservable(projectRootPath: ?string): Observable<PackagerEve
         editor.push('--dev');
       }
       return observeProcess(
-        () => safeSpawn(command, args, {cwd, env: {...process.env, REACT_EDITOR: quote(editor)}}),
-        true, // Kill all descendant processes when unsubscribing
+        command,
+        args,
+        {
+          cwd,
+          env: {...process.env, REACT_EDITOR: quote(editor)},
+          killTreeOnComplete: true,
+        },
       );
     })
     // Accumulate the stderr so that we can show it to the user if something goes wrong.

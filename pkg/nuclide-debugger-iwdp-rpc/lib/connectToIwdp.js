@@ -10,7 +10,7 @@
 
 import {logger} from './logger';
 import xfetch from '../../commons-node/xfetch';
-import {observeProcess, safeSpawn, createArgsForScriptCommand} from '../../commons-node/process';
+import {observeProcess, createArgsForScriptCommand} from '../../commons-node/process';
 import {Observable} from 'rxjs';
 
 import type {IosDeviceInfo} from './types';
@@ -20,14 +20,14 @@ const CONNECTED_TO_DEVICE_REGEX = /Connected :([0-9]+) to/;
 const POLLING_INTERVAL = 2000;
 
 export function connectToIwdp(): Observable<IosDeviceInfo> {
-  return observeProcess(() => {
+  return observeProcess(
     // Question: why are we running the debug proxy under `script`?
     // Answer: The iwdp binary will aggressively buffer stdout, unless it thinks it is running
     // under a terminal environment.  `script` runs the binary in a terminal-like environment,
     // and gives us less-aggressive buffering behavior, i.e. newlines cause stdout to be flushed.
-    const newArgs = createArgsForScriptCommand('ios_webkit_debug_proxy', ['--no-frontend']);
-    return safeSpawn('script', newArgs);
-  }).mergeMap(message => {
+    'script',
+    createArgsForScriptCommand('ios_webkit_debug_proxy', ['--no-frontend']),
+  ).mergeMap(message => {
     if (message.kind === 'stdout') {
       const {data} = message;
       const matches = CONNECTED_TO_DEVICE_REGEX.exec(data);

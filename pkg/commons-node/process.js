@@ -91,6 +91,10 @@ type ProcessExitErrorOptions = {
   stderr: string,
 };
 
+export type ObserveProcessOptions = child_process$spawnOpts & {
+  killTreeOnComplete?: ?boolean,
+};
+
 export class ProcessExitError extends Error {
   command: string;
   args: Array<string>;
@@ -299,41 +303,42 @@ function _createProcessStream(
   throwOnError: boolean,
   killTreeOnComplete: boolean,
 ): Observable<child_process$ChildProcess> {
-  return Observable.defer(() => {
-    const process = createProcess();
-    let finished = false;
+  return Observable.fromPromise(loadedShellPromise)
+    .switchMap(() => {
+      const process = createProcess();
+      let finished = false;
 
-    // If the process returned by `createProcess()` was not created by it (or at least in the same
-    // tick), it's possible that its error event has already been dispatched. This is a bug that
-    // needs to be fixed in the caller. Generally, that would just mean refactoring your code to
-    // create the process in the function you pass. If for some reason, this is absolutely not
-    // possible, you need to make sure that the process is passed here immediately after it's
-    // created (i.e. before an ENOENT error event would be dispatched). Don't refactor your code to
-    // avoid this function; you'll have the same bug, you just won't be notified! XD
-    invariant(
-      process.exitCode == null && !process.killed,
-      'Process already exited. (This indicates a race condition in Nuclide.)',
-    );
+      // If the process returned by `createProcess()` was not created by it (or at least in the same
+      // tick), it's possible that its error event has already been dispatched. This is a bug that
+      // needs to be fixed in the caller. Generally, that would just mean refactoring your code to
+      // create the process in the function you pass. If for some reason, this is absolutely not
+      // possible, you need to make sure that the process is passed here immediately after it's
+      // created (i.e. before an ENOENT error event would be dispatched). Don't refactor your code
+      // to avoid this function; you'll have the same bug, you just won't be notified! XD
+      invariant(
+        process.exitCode == null && !process.killed,
+        'Process already exited. (This indicates a race condition in Nuclide.)',
+      );
 
-    const errors = Observable.fromEvent(process, 'error');
-    const exit = observeProcessExitMessage(process);
+      const errors = Observable.fromEvent(process, 'error');
+      const exit = observeProcessExitMessage(process);
 
-    return Observable.of(process)
-      // Don't complete until we say so!
-      .merge(Observable.never())
-      // Get the errors.
-      .takeUntil(throwOnError ? errors.flatMap(Observable.throw) : errors)
-      .takeUntil(exit)
-      .do({
-        error: () => { finished = true; },
-        complete: () => { finished = true; },
-      })
-      .finally(() => {
-        if (!process.wasKilled && !finished) {
-          killProcess(process, killTreeOnComplete);
-        }
-      });
-  });
+      return Observable.of(process)
+        // Don't complete until we say so!
+        .merge(Observable.never())
+        // Get the errors.
+        .takeUntil(throwOnError ? errors.flatMap(Observable.throw) : errors)
+        .takeUntil(exit)
+        .do({
+          error: () => { finished = true; },
+          complete: () => { finished = true; },
+        })
+        .finally(() => {
+          if (!process.wasKilled && !finished) {
+            killProcess(process, killTreeOnComplete);
+          }
+        });
+    });
 }
 
 export function killProcess(
@@ -465,20 +470,31 @@ export function getOutputStream(
  * Observe the stdout, stderr and exit code of a process.
  */
 export function observeProcess(
-  createProcess: () => child_process$ChildProcess,
-  killTreeOnComplete?: boolean = false,
+  command: string,
+  args?: Array<string>,
+  options?: ObserveProcessOptions,
 ): Observable<ProcessMessage> {
-  return _createProcessStream(createProcess, false, killTreeOnComplete).flatMap(getOutputStream);
+  return _createProcessStream(
+    () => safeSpawn(command, args, options),
+    false,
+    Boolean(options && options.killTreeOnComplete),
+  )
+    .flatMap(getOutputStream);
 }
 
 /**
  * Observe the stdout, stderr and exit code of a process.
  */
 export function observeProcessRaw(
-  createProcess: () => child_process$ChildProcess,
-  killTreeOnComplete?: boolean = false,
+  command: string,
+  args?: Array<string>,
+  options?: ObserveProcessOptions,
 ): Observable<ProcessMessage> {
-  return _createProcessStream(createProcess, false, killTreeOnComplete)
+  return _createProcessStream(
+    () => safeSpawn(command, args, options),
+    false,
+    Boolean(options && options.killTreeOnComplete),
+  )
     .flatMap(process => getOutputStream(process, false, false));
 }
 
@@ -619,7 +635,7 @@ export async function checkOutput(
 export function runCommand(
   command: string,
   args?: Array<string> = [],
-  options?: Object = {},
+  options_?: ObserveProcessOptions = {},
   killTreeOnComplete?: boolean = false,
 ): Observable<string> {
   const seed = {
@@ -628,7 +644,9 @@ export function runCommand(
     stderr: [],
     exitMessage: null,
   };
-  return observeProcess(() => safeSpawn(command, args, options), killTreeOnComplete)
+  // TODO(matthewwithanm): Remove killTreeOnComplete from signature (put it in the options obj)
+  const options = {...options_, killTreeOnComplete};
+  return observeProcess(command, args, options)
     .reduce(
       (acc, event) => {
         switch (event.kind) {

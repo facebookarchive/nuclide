@@ -12,7 +12,7 @@ import typeof * as DummyService from './fixtures/dummy-service/DummyService';
 
 import nuclideUri from '../../commons-node/nuclideUri';
 import invariant from 'assert';
-import {safeSpawn, observeProcessExit} from '../../commons-node/process';
+import {safeSpawn} from '../../commons-node/process';
 import {RpcProcess} from '../lib/RpcProcess';
 import {ServiceRegistry} from '../../nuclide-rpc';
 
@@ -125,9 +125,10 @@ describe('RpcProcess', () => {
       await getService();
       const process = server._process;
       invariant(process != null);
-      const exitPromise = observeProcessExit(() => process).toPromise();
+      const spy = jasmine.createSpy();
+      process.on('exit', spy);
       server.dispose();
-      expect((await exitPromise).kind).toBe('exit');
+      waitsFor(() => spy.wasCalled);
     });
   });
 });

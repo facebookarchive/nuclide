@@ -10,7 +10,6 @@
 
 import {arrayCompact} from '../../commons-node/collection';
 import {
-  safeSpawn,
   observeProcess,
   runCommand,
 } from '../../commons-node/process';
@@ -39,7 +38,7 @@ export class DebugBridge {
 
   runLongAdbCommand(device: string, command: string[]): Observable<ProcessMessage> {
     const deviceArg = (device !== '') ? ['-s', device] : [];
-    return observeProcess(() => safeSpawn(this._adbPath, deviceArg.concat(command)), true);
+    return observeProcess(this._adbPath, deviceArg.concat(command), {killTreeOnComplete: true});
   }
 
   async getDeviceList(): Promise<Array<DeviceDescription>> {

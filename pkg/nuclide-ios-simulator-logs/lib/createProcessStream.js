@@ -8,7 +8,7 @@
  * @flow
  */
 
-import {observeProcess, safeSpawn} from '../../commons-node/process';
+import {observeProcess} from '../../commons-node/process';
 import featureConfig from '../../commons-atom/featureConfig';
 import invariant from 'assert';
 import os from 'os';
@@ -18,7 +18,7 @@ import {Observable} from 'rxjs';
 const VALID_UDID = /^[a-f0-9-]+$/i;
 
 export function createProcessStream(): Observable<string> {
-  const currentDeviceUdids = observeProcess(spawnCurrentDeviceMonitor)
+  const currentDeviceUdids = observeProcess('bash', ['-c', WATCH_CURRENT_UDID_SCRIPT])
     .map(event => {
       if (event.kind === 'error') {
         throw event.error;
@@ -38,8 +38,23 @@ export function createProcessStream(): Observable<string> {
 
   // Whenever the current device changes, start tailing that device's logs.
   return currentDeviceUdids
-    .switchMap(udid => (
-      observeProcess(() => tailDeviceLogs(udid))
+    .switchMap(udid => {
+      const logDir = nuclideUri.join(
+        os.homedir(),
+        'Library',
+        'Logs',
+        'CoreSimulator',
+        udid,
+        'asl',
+      );
+      return observeProcess(
+        ((featureConfig.get('nuclide-ios-simulator-logs.pathToSyslog'): any): string),
+        [
+          '-w',
+          '-F', 'xml',
+          '-d', logDir,
+        ],
+      )
         .map(event => {
           if (event.kind === 'error') {
             throw event.error;
@@ -50,8 +65,8 @@ export function createProcessStream(): Observable<string> {
         .map(event => {
           invariant(typeof event.data === 'string');
           return event.data;
-        })
-    ));
+        });
+    });
 }
 
 // A small shell script for polling the current device UDID. This allows us to avoid spawning a new
@@ -63,24 +78,3 @@ const WATCH_CURRENT_UDID_SCRIPT = `
     sleep 2;
   done;
 `;
-
-const spawnCurrentDeviceMonitor = () => safeSpawn('bash', ['-c', WATCH_CURRENT_UDID_SCRIPT]);
-
-function tailDeviceLogs(udid: string): child_process$ChildProcess {
-  const logDir = nuclideUri.join(
-    os.homedir(),
-    'Library',
-    'Logs',
-    'CoreSimulator',
-    udid,
-    'asl',
-  );
-  return safeSpawn(
-    ((featureConfig.get('nuclide-ios-simulator-logs.pathToSyslog'): any): string),
-    [
-      '-w',
-      '-F', 'xml',
-      '-d', logDir,
-    ],
-  );
-}

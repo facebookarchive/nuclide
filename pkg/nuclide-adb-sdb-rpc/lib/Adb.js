@@ -11,7 +11,6 @@
 import invariant from 'assert';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {
-  safeSpawn,
   runCommand,
   observeProcessRaw,
 } from '../../commons-node/process';
@@ -102,7 +101,7 @@ export class Adb extends DebugBridge {
       .toPromise();
 
     const args = (device !== '' ? ['-s', device] : []).concat('jdwp');
-    return observeProcessRaw(() => safeSpawn(this._adbPath, args), true)
+    return observeProcessRaw(this._adbPath, args, {killTreeOnComplete: true})
       .take(1)
       .map(output => {
         const jdwpPids = new Set();

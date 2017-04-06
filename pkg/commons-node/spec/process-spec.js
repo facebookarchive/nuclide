@@ -226,9 +226,12 @@ describe('commons-node/process', () => {
 
     it('stdout exitCode', () => {
       waitsForPromise(async () => {
-        const child = () => safeSpawn(process.execPath,
-          ['-e', 'console.log("stdout1\\nstdout2\\n\\n\\n"); process.exit(1);']);
-        const results = await observeProcess(child).toArray().toPromise();
+        const results = await observeProcess(
+          process.execPath,
+          ['-e', 'console.log("stdout1\\nstdout2\\n\\n\\n"); process.exit(1);'],
+        )
+          .toArray()
+          .toPromise();
         expect(results).toEqual([
           {kind: 'stdout', data: 'stdout1\n'},
           {kind: 'stdout', data: 'stdout2\n'},
@@ -241,9 +244,12 @@ describe('commons-node/process', () => {
 
     it('stderr exitCode', () => {
       waitsForPromise(async () => {
-        const child = () => safeSpawn(process.execPath,
-          ['-e', 'console.error("stderr"); process.exit(42);']);
-        const results = await observeProcess(child).toArray().toPromise();
+        const results = await observeProcess(
+          process.execPath,
+          ['-e', 'console.error("stderr"); process.exit(42);'],
+        )
+          .toArray()
+          .toPromise();
         expect(results).toEqual([{kind: 'stderr', data: 'stderr\n'},
           {kind: 'exit', exitCode: 42, signal: null}]);
       });
@@ -251,9 +257,12 @@ describe('commons-node/process', () => {
 
     it('stdout, stderr and exitCode', () => {
       waitsForPromise(async () => {
-        const child = () => safeSpawn(process.execPath,
-          ['-e', 'console.error("stderr"); console.log("std out"); process.exit(42);']);
-        const results = await observeProcess(child).toArray().toPromise();
+        const results = await observeProcess(
+          process.execPath,
+          ['-e', 'console.error("stderr"); console.log("std out"); process.exit(42);'],
+        )
+          .toArray()
+          .toPromise();
         expect(results).toEqual([
           {kind: 'stderr', data: 'stderr\n'},
           {kind: 'stdout', data: 'std out\n'},
@@ -342,16 +351,25 @@ describe('commons-node/process', () => {
 
     describe('already exited processeses', () => {
       it('protects against giving an exited process', () => {
-        waitsForPromise(async () => {
+        const spy = jasmine.createSpy();
+        let streamError;
+        let childProcess;
+        runs(() => {
           spyOn(console, 'error'); // suppress error printing
           spyOn(console, 'log'); // suppress log printing
-          const childProcess = safeSpawn('fakeCommand');
-          // Wait until after the "error" event is dispatched. (This is what makes the usage
-          // invalid.)
-          await new Promise(resolve => process.nextTick(resolve));
-          const func = () => createProcessStream(() => childProcess).subscribe();
-          expect(func)
-            .toThrow('Process already exited. (This indicates a race condition in Nuclide.)');
+          childProcess = safeSpawn('fakeCommand');
+          childProcess.on('error', spy);
+        });
+        waitsFor(() => spy.wasCalled);
+        runs(() => {
+          createProcessStream(() => childProcess).subscribe({error: err => {
+            streamError = err;
+          }});
+        });
+        waitsFor(() => streamError != null);
+        runs(() => {
+          expect(streamError.message)
+            .toBe('Process already exited. (This indicates a race condition in Nuclide.)');
         });
       });
 
@@ -440,7 +458,7 @@ describe('commons-node/process', () => {
       spyOn(console, 'log'); // suppress log printing
       // If the stream doesn't complete, this will timeout.
       waitsForPromise({timeout: 1000}, async () => {
-        await observeProcess(() => safeSpawn('fakeCommand')).toArray().toPromise();
+        await observeProcess('fakeCommand').toArray().toPromise();
       });
     });
   });
@@ -449,12 +467,13 @@ describe('commons-node/process', () => {
     it("doesn't split on line breaks", () => {
       spyOn(console, 'error');
       spyOn(console, 'log'); // suppress log printing
-      const createChild = () => safeSpawn(
-        process.execPath,
-        ['-e', 'process.stdout.write("stdout1\\nstdout2\\n"); process.exit(1)'],
-      );
       waitsForPromise({timeout: 1000}, async () => {
-        const event = await observeProcessRaw(createChild).take(1).toPromise();
+        const event = await observeProcessRaw(
+          process.execPath,
+          ['-e', 'process.stdout.write("stdout1\\nstdout2\\n"); process.exit(1)'],
+        )
+          .take(1)
+          .toPromise();
         invariant(event.kind === 'stdout');
         expect(event.data).toBe('stdout1\nstdout2\n');
       });

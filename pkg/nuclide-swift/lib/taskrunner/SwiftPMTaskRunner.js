@@ -18,7 +18,7 @@ import {Observable, Subject} from 'rxjs';
 import React from 'react';
 import UniversalDisposable from '../../../commons-node/UniversalDisposable';
 import fsPromise from '../../../commons-node/fsPromise';
-import {observeProcess, safeSpawn, exitEventToMessage} from '../../../commons-node/process';
+import {observeProcess, exitEventToMessage} from '../../../commons-node/process';
 import {observableFromSubscribeFunction} from '../../../commons-node/event';
 import {taskFromObservable} from '../../../commons-node/tasks';
 import SwiftPMTaskRunnerStore from './SwiftPMTaskRunnerStore';
@@ -137,36 +137,36 @@ export class SwiftPMTaskRunner {
     );
     this._logOutput(`${command.command} ${command.args.join(' ')}`, 'log');
 
-    const observable = observeProcess(
-      () => safeSpawn(command.command, command.args),
-    ).do(message => {
-      switch (message.kind) {
-        case 'stderr':
-        case 'stdout':
-          this._logOutput(message.data, 'log');
-          break;
-        case 'exit':
-          if (message.exitCode === 0) {
-            this._logOutput(
-              `${command.command} exited successfully.`,
-              'success',
-            );
-            this._getFlux().actions.updateCompileCommands(
-              chdir,
-              configuration,
-              buildPath,
-            );
-          } else {
-            this._logOutput(
-              `${command.command} failed with ${exitEventToMessage(message)}`,
-              'error',
-            );
-          }
-          break;
-        default:
-          break;
-      }
-    }).ignoreElements();
+    const observable = observeProcess(command.command, command.args)
+      .do(message => {
+        switch (message.kind) {
+          case 'stderr':
+          case 'stdout':
+            this._logOutput(message.data, 'log');
+            break;
+          case 'exit':
+            if (message.exitCode === 0) {
+              this._logOutput(
+                `${command.command} exited successfully.`,
+                'success',
+              );
+              this._getFlux().actions.updateCompileCommands(
+                chdir,
+                configuration,
+                buildPath,
+              );
+            } else {
+              this._logOutput(
+                `${command.command} failed with ${exitEventToMessage(message)}`,
+                'error',
+              );
+            }
+            break;
+          default:
+            break;
+        }
+      })
+      .ignoreElements();
 
     const task = taskFromObservable(observable);
     return {

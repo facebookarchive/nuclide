@@ -17,7 +17,6 @@ import {
   asyncExecute,
   checkOutput,
   observeProcess,
-  safeSpawn,
   getOriginalEnvironment,
 } from '../../commons-node/process';
 import {PromisePool} from '../../commons-node/promise-executors';
@@ -138,7 +137,7 @@ type FullBuckBuildOptions = {
 };
 type BuckCommandAndOptions = {
   pathToBuck: string,
-  buckCommandOptions: AsyncExecuteOptions & child_process$spawnOpts,
+  buckCommandOptions: AsyncExecuteOptions,
 };
 
 export type CommandInfo = {
@@ -492,8 +491,8 @@ function _buildWithOutput(
   return Observable.fromPromise(
     _getBuckCommandAndOptions(rootPath),
   ).switchMap(({pathToBuck, buckCommandOptions}) =>
-    observeProcess(() =>
-      safeSpawn(pathToBuck, args, buckCommandOptions)).startWith({
+    observeProcess(pathToBuck, args, {...buckCommandOptions})
+      .startWith({
         kind: 'stdout',
         data: `Starting "${pathToBuck} ${_getArgsStringSkipClientId(args)}"`,
       }));

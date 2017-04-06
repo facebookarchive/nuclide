@@ -9,10 +9,12 @@
  */
 
 import type {LRUCache} from 'lru-cache';
+import type {ProcessMessage} from './process-rpc-types';
 
 import type {
   AsyncExecuteOptions,
   AsyncExecuteReturn,
+  ObserveProcessOptions,
 } from './process';
 
 import LRU from 'lru-cache';
@@ -21,9 +23,11 @@ import {
   safeSpawn,
   asyncExecute,
   checkOutput,
+  observeProcess,
 } from './process';
 
 import which from './which';
+import {Observable} from 'rxjs';
 
 const NICE_COMMAND = 'nice';
 const IONICE_COMMAND = 'ionice';
@@ -105,4 +109,13 @@ async function hasCommand(command: string): Promise<boolean> {
     commandAvailabilityCache.set(command, result);
   }
   return result;
+}
+
+export function niceObserveProcess(
+  command_: string,
+  args_?: Array<string>,
+  options?: ObserveProcessOptions,
+): Observable<ProcessMessage> {
+  return Observable.defer(() => nicifyCommand(command_, args_ || []))
+    .switchMap(({command, args}) => observeProcess(command, args, options));
 }

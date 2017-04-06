@@ -8,13 +8,17 @@
  * @flow
  */
 
-import {observeProcess, safeSpawn} from '../../commons-node/process';
+import {observeProcess} from '../../commons-node/process';
 import {compact} from '../../commons-node/observable';
 import featureConfig from '../../commons-atom/featureConfig';
 import {Observable} from 'rxjs';
 
 export function createProcessStream(): Observable<string> {
-  const processEvents = observeProcess(spawnAdbLogcat).share();
+  const processEvents = observeProcess(
+    ((featureConfig.get('nuclide-adb-logcat.pathToAdb'): any): string),
+    ['logcat', '-v', 'long'],
+  )
+    .share();
   const stdoutEvents = processEvents
     .filter(event => event.kind === 'stdout')
     // Not all versions of adb have a way to skip historical logs so we just ignore the first
@@ -59,13 +63,6 @@ export function createProcessStream(): Observable<string> {
     // Only get the text from stdout.
     .filter(event => event.kind === 'stdout')
     .map(event => event.data && event.data.replace(/\r*\n$/, ''));
-}
-
-function spawnAdbLogcat(): child_process$ChildProcess {
-  return safeSpawn(
-    ((featureConfig.get('nuclide-adb-logcat.pathToAdb'): any): string),
-    ['logcat', '-v', 'long'],
-  );
 }
 
 function parseError(line: string): ?string {
