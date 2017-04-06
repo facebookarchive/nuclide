@@ -385,6 +385,9 @@ export class FlowProcess {
       ) {
       this._serverStatus.next(status);
     }
+    if (this._isDisposed.getValue()) {
+      logger.error('Attempted to update server status after disposal');
+    }
   }
 
   /** Ping the server until it reaches a steady state */
