@@ -9,10 +9,13 @@
  */
 
 import {ConnectableObservable, Observable} from 'rxjs';
+import invariant from 'invariant';
+import {Adb} from './Adb';
+import {Sdb} from './Sdb';
+import {pathForDebugBridge, DebugBridge} from './DebugBridge';
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {ProcessMessage} from '../../commons-node/process-rpc-types';
-import * as ADB from './ADB';
 
 export type DebugBridgeType = 'adb' | 'sdb';
 
@@ -29,8 +32,26 @@ export type AndroidJavaProcess = {
   name: string,
 };
 
+async function getAdb(): Promise<Adb> {
+  return new Adb(await pathForDebugBridge('adb'));
+}
+
+async function getSdb(): Promise<Sdb> {
+  return new Sdb(await pathForDebugBridge('sdb'));
+}
+
+function getDb(db: DebugBridgeType): Promise<DebugBridge> {
+  switch (db) {
+    case 'adb':
+      return getAdb();
+    case 'sdb':
+      return getSdb();
+  }
+  throw new Error('unreacable');
+}
+
 export async function getDeviceList(db: DebugBridgeType): Promise<Array<DeviceDescription>> {
-  return ADB.getDeviceList(await ADB.pathForDebugBridge(db));
+  return (await getDb(db)).getDeviceList();
 }
 
 export function installPackage(
@@ -38,8 +59,8 @@ export function installPackage(
   device: string,
   packagePath: NuclideUri,
 ): ConnectableObservable<ProcessMessage> {
-  return Observable.defer(() => ADB.pathForDebugBridge(db))
-    .switchMap(adbPath => ADB.installPackage(adbPath, device, packagePath))
+  return Observable.defer(() => getDb(db))
+    .switchMap(d => d.installPackage(device, packagePath))
     .publish();
 }
 
@@ -48,8 +69,8 @@ export function uninstallPackage(
   device: string,
   packageName: string,
 ): ConnectableObservable<ProcessMessage> {
-  return Observable.defer(() => ADB.pathForDebugBridge(db))
-    .switchMap(adbPath => ADB.uninstallPackage(adbPath, device, packageName))
+  return Observable.defer(() => getDb(db))
+    .switchMap(d => d.uninstallPackage(device, packageName))
     .publish();
 }
 
@@ -58,7 +79,7 @@ export async function getPidFromPackageName(
   device: string,
   packageName: string,
 ): Promise<number> {
-  return ADB.getPidFromPackageName(await ADB.pathForDebugBridge(db), device, packageName);
+  return (await getDb(db)).getPidFromPackageName(device, packageName);
 }
 
 export async function forwardJdwpPortToPid(
@@ -67,7 +88,8 @@ export async function forwardJdwpPortToPid(
   tcpPort: number,
   pid: number,
 ): Promise<string> {
-  return ADB.forwardJdwpPortToPid(await ADB.pathForDebugBridge(db), device, tcpPort, pid);
+  invariant(db === 'adb', 'only supported on android');
+  return (await getAdb()).forwardJdwpPortToPid(device, tcpPort, pid);
 }
 
 export async function launchActivity(
@@ -77,13 +99,8 @@ export async function launchActivity(
   activity: string,
   action: string,
 ): Promise<string> {
-  return ADB.launchActivity(
-    await ADB.pathForDebugBridge(db),
-    device,
-    packageName,
-    activity,
-    action,
-  );
+  invariant(db === 'adb', 'only supported on android');
+  return (await getAdb()).launchActivity(device, packageName, activity, action);
 }
 
 export async function activityExists(
@@ -92,12 +109,14 @@ export async function activityExists(
   packageName: string,
   activity: string,
 ): Promise<boolean> {
-  return ADB.activityExists(await ADB.pathForDebugBridge(db), device, packageName, activity);
+  invariant(db === 'adb', 'only supported on android');
+  return (await getAdb()).activityExists(device, packageName, activity);
 }
 
 export async function getJavaProcesses(
   db: DebugBridgeType,
   device: string,
 ): Promise<Array<AndroidJavaProcess>> {
-  return ADB.getJavaProcesses(await ADB.pathForDebugBridge(db), device);
+  invariant(db === 'adb', 'only supported on android');
+  return (await getAdb()).getJavaProcesses(device);
 }

@@ -12,7 +12,7 @@ import {checkOutput} from '../../commons-node/process';
 import nuclideUri from '../../commons-node/nuclideUri';
 import os from 'os';
 
-import type {DebugBridgeType} from './AdbService';
+import type {DebugBridgeType} from './DebugBridgeService';
 
 const cachedPids: { [DebugBridgeType]: ?{ pid: string, path: ?string } } = {
   adb: null,
@@ -20,7 +20,7 @@ const cachedPids: { [DebugBridgeType]: ?{ pid: string, path: ?string } } = {
 };
 const cachedCommandExists = new Map();
 
-class PosixRunningADBFinder {
+class PosixRunningDbFinder {
   _db: DebugBridgeType;
 
   constructor(db: DebugBridgeType) {
@@ -47,7 +47,7 @@ class PosixRunningADBFinder {
     throw new Error('unreachable');
   }
 
-  async _findPidOfRunningADB(): Promise<?string> {
+  async _findPidOfRunningDb(): Promise<?string> {
     if (!await this._doesCommandExist('lsof')) {
       return null;
     }
@@ -57,11 +57,11 @@ class PosixRunningADBFinder {
      .map(line => line.split(' ').filter(s => s.length > 0)[1])[0];
   }
 
-  async _findADBPath(pid: string): Promise<?string> {
+  async _findDbPath(pid: string): Promise<?string> {
     throw new Error('not implemented');
   }
 
-  async _isAdbRunning(pid?: string): Promise<boolean> {
+  async _isDbRunning(pid?: string): Promise<boolean> {
     return (await checkOutput('ps', ['-A', '-o', 'pid,command'])).stdout
      .split(/\n+/g)
      .some(line => (pid == null || line.trim().startsWith(`${pid} `))
@@ -69,27 +69,27 @@ class PosixRunningADBFinder {
                    && line.includes(' fork-server '));
   }
 
-  async findRunningAdbPath(): Promise<?string> {
-    if (!await this._isAdbRunning()) {
+  async findRunningDbPath(): Promise<?string> {
+    if (!await this._isDbRunning()) {
       cachedPids[this._db] = null;
       return null;
     }
     const cached = cachedPids[this._db];
     // Best effort, if an adb is running with the same cached pid, we return that path
-    if (cached != null && await this._isAdbRunning(cached.pid)) {
+    if (cached != null && await this._isDbRunning(cached.pid)) {
       return cached.path;
     }
     // This is very slow compared to the other operations, so we do it only when we know an adb is
     // running
-    const pid = await this._findPidOfRunningADB();
-    const path = pid == null ? null : await this._findADBPath(pid);
+    const pid = await this._findPidOfRunningDb();
+    const path = pid == null ? null : await this._findDbPath(pid);
     cachedPids[this._db] = pid == null ? null : {pid, path};
     return path;
   }
 }
 
-class DarwinRunningADBFinder extends PosixRunningADBFinder {
-  async _findADBPath(pid: string): Promise<?string> {
+class DarwinRunningDbFinder extends PosixRunningDbFinder {
+  async _findDbPath(pid: string): Promise<?string> {
     const runningProcess = (await checkOutput('vmmap', [pid])).stdout
       .split(/\n+/g)
       .find(line => line.includes('__TEXT'));
@@ -102,8 +102,8 @@ class DarwinRunningADBFinder extends PosixRunningADBFinder {
   }
 }
 
-class LinuxRunningADBFinder extends PosixRunningADBFinder {
-  async _findADBPath(pid: string): Promise<?string> {
+class LinuxRunningDbFinder extends PosixRunningDbFinder {
+  async _findDbPath(pid: string): Promise<?string> {
     if (!await this._doesCommandExist('readlink')) {
       return null;
     }
@@ -112,12 +112,12 @@ class LinuxRunningADBFinder extends PosixRunningADBFinder {
   }
 }
 
-export function findRunningAdbPath(db: DebugBridgeType): Promise<?string> {
+export function findRunningDbPath(db: DebugBridgeType): Promise<?string> {
   switch (os.type()) {
     case 'Darwin':
-      return new DarwinRunningADBFinder(db).findRunningAdbPath();
+      return new DarwinRunningDbFinder(db).findRunningDbPath();
     case 'Linux':
-      return new LinuxRunningADBFinder(db).findRunningAdbPath();
+      return new LinuxRunningDbFinder(db).findRunningDbPath();
     default:
       return Promise.resolve(null);
   }

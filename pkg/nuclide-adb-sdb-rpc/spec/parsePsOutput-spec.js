@@ -8,7 +8,7 @@
  * @flow
  */
 
-import {parsePsTableOutput} from '../lib/ADB';
+import {parsePsTableOutput} from '../lib/Adb';
 
 describe('parsePsOutput', () => {
   it('splits the output by message', () => {

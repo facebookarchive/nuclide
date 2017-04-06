@@ -1,9 +1,5 @@
 [
   {
-    "implementation": "../nuclide-adb-rpc/lib/AdbService.js",
-    "name": "AdbService"
-  },
-  {
     "implementation": "../nuclide-arcanist-rpc/lib/ArcanistService.js",
     "name": "ArcanistService"
   },
@@ -18,6 +14,10 @@
   {
     "implementation": "../nuclide-ctags-rpc/lib/CtagsService.js",
     "name": "CtagsService"
+  },
+  {
+    "implementation": "../nuclide-adb-sdb-rpc/lib/DebugBridgeService.js",
+    "name": "DebugBridgeService"
   },
   {
     "implementation": "./lib/services/FileSystemService.js",

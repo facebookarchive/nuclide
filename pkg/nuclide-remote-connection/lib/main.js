@@ -56,11 +56,11 @@ export {
   saveBuffer,
 } from './remote-text-buffer';
 
-import typeof * as AdbService from '../../nuclide-adb-rpc';
 import typeof * as ArcanistService from '../../nuclide-arcanist-rpc';
 import typeof * as BuckService from '../../nuclide-buck-rpc';
 import typeof * as ClangService from '../../nuclide-clang-rpc';
 import typeof * as CtagsService from '../../nuclide-ctags-rpc';
+import typeof * as DebugBridgeService from '../../nuclide-adb-sdb-rpc';
 import typeof * as FileSystemService from '../../nuclide-server/lib/services/FileSystemService';
 import typeof * as FileWatcherService from '../../nuclide-filewatcher-rpc';
 import typeof * as FlowService from '../../nuclide-flow-rpc';
@@ -81,8 +81,8 @@ import typeof * as RemoteCommandService from '../../nuclide-remote-atom-rpc';
 import typeof * as SourceControlService
   from '../../nuclide-server/lib/services/SourceControlService';
 
-export function getAdbServiceByNuclideUri(uri: NuclideUri): AdbService {
-  return nullthrows(getServiceByNuclideUri('AdbService', uri));
+export function getDebugBridgeServiceByNuclideUri(uri: NuclideUri): DebugBridgeService {
+  return nullthrows(getServiceByNuclideUri('DebugBridgeService', uri));
 }
 
 export function getArcanistServiceByNuclideUri(uri: NuclideUri): ArcanistService {
