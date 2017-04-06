@@ -17,8 +17,7 @@ import type {
 } from '../../nuclide-definition-service/lib/rpc-types';
 
 import invariant from 'assert';
-import {hackRangeToAtomRange} from './HackHelpers';
-import {Point} from 'simple-text-buffer';
+import {atomPointOfHackRangeStart, hackRangeToAtomRange, hackSpanToAtomRange} from './HackHelpers';
 
 export type HackDefinition = {
   name: string,
@@ -35,15 +34,15 @@ export function convertDefinitions(
   projectRoot: NuclideUri,
 ): ?DefinitionQueryResult {
   function convertDefinition(definition: HackDefinition): Definition {
-    invariant(definition.definition_pos != null);
+    const {definition_pos, definition_span, name} = definition;
+    invariant(definition_pos != null);
     return {
-      path: definition.definition_pos.filename || filePath,
-      position: new Point(
-        definition.definition_pos.line - 1,
-        definition.definition_pos.char_start - 1),
-      // TODO: range, definition_id
-      id: definition.name,
-      name: definition.name,
+      path: definition_pos.filename || filePath,
+      position: atomPointOfHackRangeStart(definition_pos),
+      range: definition_span == null ? undefined : hackSpanToAtomRange(definition_span),
+      // TODO: definition_id
+      id: name,
+      name,
       language: 'php',
       projectRoot,
     };

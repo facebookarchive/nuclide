@@ -9,6 +9,7 @@
  */
 
 import type {HackRange} from './rpc-types';
+import type {HackSpan} from './OutlineView';
 
 import invariant from 'assert';
 import {asyncExecute} from '../../commons-node/process';
@@ -91,16 +92,25 @@ stdout: ${stdout}, stderr: ${stderr}`;
 export function hackRangeToAtomRange(position: HackRange): atom$Range {
   return new Range(
     atomPointOfHackRangeStart(position),
-    new Point(
-      position.line - 1,
-      position.char_end),
+    // Atom ranges exclude the endpoint.
+    atomPointFromHack(position.line, position.char_end + 1),
+  );
+}
+
+export function hackSpanToAtomRange(span: HackSpan): atom$Range {
+  return new Range(
+    atomPointFromHack(span.line_start, span.char_start),
+    // Atom ranges exclude the endpoint.
+    atomPointFromHack(span.line_end, span.char_end + 1),
   );
 }
 
 export function atomPointOfHackRangeStart(position: HackRange): atom$Point {
-  return new Point(
-    position.line - 1,
-    position.char_start - 1);
+  return atomPointFromHack(position.line, position.char_start);
+}
+
+export function atomPointFromHack(hackLine: number, hackColumn: number): atom$Point {
+  return new Point(hackLine - 1, hackColumn - 1);
 }
 
 function trackingIdOfHackArgs(args: Array<string>): string {

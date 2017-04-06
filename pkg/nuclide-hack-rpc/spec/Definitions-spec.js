@@ -40,6 +40,13 @@ describe('convertDefinitions', () => {
       char_start: 42,
       char_end: 52,
     },
+    definition_span: {
+      filename: defPath,
+      line_start: 10,
+      char_start: 42,
+      line_end: 11,
+      char_end: 1,
+    },
     name: 'hack-name',
     pos: {
       filename: filePath,
@@ -90,6 +97,16 @@ describe('convertDefinitions', () => {
             position: {
               row: 9,
               column: 41,
+            },
+            range: {
+              start: {
+                row: 9,
+                column: 41,
+              },
+              end: {
+                row: 10,
+                column: 1,
+              },
             },
             id: 'hack-name',
             name: 'hack-name',

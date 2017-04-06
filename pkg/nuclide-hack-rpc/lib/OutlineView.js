@@ -21,8 +21,7 @@ import {
   plain,
 } from '../../commons-node/tokenizedText';
 
-import {Point} from 'simple-text-buffer';
-
+import {atomPointFromHack} from './HackHelpers';
 
 // Note that all line/column values are 1-based.
 export type HackSpan = {
@@ -114,12 +113,8 @@ function outlineFromHackIdeItem(hackItem: HackIdeOutlineItem): OutlineTree {
   return {
     tokenizedText,
     representativeName: hackItem.name,
-    startPosition: pointFromHack(hackItem.position.line, hackItem.position.char_start),
-    endPosition: pointFromHack(hackItem.span.line_end, hackItem.span.char_end),
+    startPosition: atomPointFromHack(hackItem.position.line, hackItem.position.char_start),
+    endPosition: atomPointFromHack(hackItem.span.line_end, hackItem.span.char_end),
     children: hackItem.children == null ? [] : hackItem.children.map(outlineFromHackIdeItem),
   };
-}
-
-function pointFromHack(hackLine: number, hackColumn: number): atom$Point {
-  return new Point(hackLine - 1, hackColumn - 1);
 }
