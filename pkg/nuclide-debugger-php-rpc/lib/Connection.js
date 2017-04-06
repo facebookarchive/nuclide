@@ -36,6 +36,7 @@ type NotificationCallback = (
 
 export const ASYNC_BREAK = 'async_break';
 export const BREAKPOINT = 'breakpoint';
+export const EXCEPTION = 'exception';
 
 export class Connection {
   _socket: DbgpSocket;
@@ -106,9 +107,9 @@ export class Connection {
           this._stopBreakpointLocation = null;
         } else if (prevStatus !== ConnectionStatus.Break) {
           // TODO(dbonafilia): investigate why we sometimes receive two BREAK_MESSAGES
-          this._stopReason = BREAKPOINT;
-          if (args != null && args.length >= 2) {
-            const [file, line] = args;
+          const [file, line, exception] = args;
+          this._stopReason = exception == null ? BREAKPOINT : EXCEPTION;
+          if (file != null && line != null) {
             this._stopBreakpointLocation = {
               filename: file,
               lineNumber: Number(line),
