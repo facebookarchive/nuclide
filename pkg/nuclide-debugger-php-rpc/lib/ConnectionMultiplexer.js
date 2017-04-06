@@ -13,6 +13,7 @@ import {launchPhpScriptWithXDebugEnabled} from './helpers';
 import {Connection} from './Connection';
 import {getConfig} from './config';
 import {getSettings} from './settings';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 import {
   isDummyConnection,
@@ -162,8 +163,9 @@ export class ConnectionMultiplexer {
     this._dummyRequestProcess = sendDummyRequest();
 
     if (launchScriptPath != null) {
+      const expandedScript = nuclideUri.expandHomeDir(launchScriptPath);
       this._launchedScriptProcessPromise = new Promise(resolve => {
-        this._launchedScriptProcess = launchPhpScriptWithXDebugEnabled(launchScriptPath,
+        this._launchedScriptProcess = launchPhpScriptWithXDebugEnabled(expandedScript,
           (text, level) => {
             this._clientCallback.sendUserMessage('outputWindow', {level, text});
             resolve();
