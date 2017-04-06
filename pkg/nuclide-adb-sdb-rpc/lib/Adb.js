@@ -24,7 +24,8 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 export class Adb extends DebugBridge {
   getAndroidProp(device: string, key: string): Observable<string> {
-    return this.runShortAdbCommand(device, ['shell', 'getprop', key]).map(s => s.trim());
+    return this.runShortAdbCommand(device, ['shell', 'getprop', key]).map(s =>
+      s.trim());
   }
 
   getDeviceArchitecture(device: string): Promise<string> {
@@ -41,28 +42,42 @@ export class Adb extends DebugBridge {
     return this.getAndroidProp(device, 'ro.build.version.sdk').toPromise();
   }
 
-  installPackage(device: string, packagePath: NuclideUri): Observable<ProcessMessage> {
+  installPackage(
+    device: string,
+    packagePath: NuclideUri,
+  ): Observable<ProcessMessage> {
     invariant(!nuclideUri.isRemote(packagePath));
     return this.runLongAdbCommand(device, ['install', '-r', packagePath]);
   }
 
-  forwardJdwpPortToPid(device: string, tcpPort: number, pid: number): Promise<string> {
-    return this.runShortAdbCommand(
-      device,
-      ['forward', `tcp:${tcpPort}`, `jdwp:${pid}`],
-    ).toPromise();
+  forwardJdwpPortToPid(
+    device: string,
+    tcpPort: number,
+    pid: number,
+  ): Promise<string> {
+    return this.runShortAdbCommand(device, [
+      'forward',
+      `tcp:${tcpPort}`,
+      `jdwp:${pid}`,
+    ]).toPromise();
   }
 
   launchActivity(
     device: string,
     packageName: string,
     activity: string,
-    action: string,
+    debug: boolean,
+    action: ?string,
   ): Promise<string> {
-    return this.runShortAdbCommand(
-      device,
-      ['shell', 'am', 'start', '-D', '-N', '-W', '-a', action, '-n', `${packageName}/${activity}`],
-    ).toPromise();
+    const args = ['shell', 'am', 'start', '-W', '-n'];
+    if (action != null) {
+      args.push('-a', action);
+    }
+    if (debug) {
+      args.push('-N', '-D');
+    }
+    args.push(`${packageName}/${activity}`);
+    return this.runShortAdbCommand(device, args).toPromise();
   }
 
   activityExists(
@@ -71,7 +86,7 @@ export class Adb extends DebugBridge {
     activity: string,
   ): Promise<boolean> {
     const packageActivityString = `${packageName}/${activity}`;
-    const deviceArg = (device !== '') ? ['-s', device] : [];
+    const deviceArg = device !== '' ? ['-s', device] : [];
     const command = deviceArg.concat(['shell', 'dumpsys', 'package']);
     return runCommand(this._adbPath, command)
       .map(stdout => stdout.includes(packageActivityString))
@@ -86,7 +101,7 @@ export class Adb extends DebugBridge {
       })
       .toPromise();
 
-    const args = ((device !== '') ? ['-s', device] : []).concat('jdwp');
+    const args = (device !== '' ? ['-s', device] : []).concat('jdwp');
     return observeProcessRaw(() => safeSpawn(this._adbPath, args), true)
       .take(1)
       .map(output => {
@@ -104,7 +119,10 @@ export class Adb extends DebugBridge {
   }
 }
 
-export function parsePsTableOutput(output: string, desiredFields: Array<string>): Array<Object> {
+export function parsePsTableOutput(
+  output: string,
+  desiredFields: Array<string>,
+): Array<Object> {
   const lines = output.split(/\n/);
   const header = lines[0];
   const cols = header.split(/\s+/);
@@ -119,26 +137,24 @@ export function parsePsTableOutput(output: string, desiredFields: Array<string>)
 
   const formattedData = [];
   const data = lines.slice(1);
-  data
-    .filter(row => row.trim() !== '')
-    .forEach(row => {
-      const rowData = row.split(/\s+/);
-      const rowObj = {};
-      for (let i = 0; i < rowData.length; i++) {
-        // Android's ps output has an extra column "S" in the data that doesn't appear
-        // in the header. Skip that column's value.
-        const effectiveColumn = i;
-        if (rowData[i] === 'S' && i < rowData.length - 1) {
-          i++;
-        }
-
-        if (colMapping[effectiveColumn] !== undefined) {
-          rowObj[colMapping[effectiveColumn]] = rowData[i];
-        }
+  data.filter(row => row.trim() !== '').forEach(row => {
+    const rowData = row.split(/\s+/);
+    const rowObj = {};
+    for (let i = 0; i < rowData.length; i++) {
+      // Android's ps output has an extra column "S" in the data that doesn't appear
+      // in the header. Skip that column's value.
+      const effectiveColumn = i;
+      if (rowData[i] === 'S' && i < rowData.length - 1) {
+        i++;
       }
 
-      formattedData.push(rowObj);
-    });
+      if (colMapping[effectiveColumn] !== undefined) {
+        rowObj[colMapping[effectiveColumn]] = rowData[i];
+      }
+    }
+
+    formattedData.push(rowObj);
+  });
 
   return formattedData;
 }

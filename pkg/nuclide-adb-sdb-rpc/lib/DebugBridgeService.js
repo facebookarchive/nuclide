@@ -97,10 +97,11 @@ export async function launchActivity(
   device: string,
   packageName: string,
   activity: string,
-  action: string,
+  debug: boolean,
+  action: ?string,
 ): Promise<string> {
   invariant(db === 'adb', 'only supported on android');
-  return (await getAdb()).launchActivity(device, packageName, activity, action);
+  return (await getAdb()).launchActivity(device, packageName, activity, debug, action);
 }
 
 export async function activityExists(
