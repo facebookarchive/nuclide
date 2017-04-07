@@ -12,7 +12,7 @@ import type {CategoryLogger} from '../../nuclide-logging';
 import type {JsonRpcConnection} from './jsonrpc';
 
 import * as rpc from 'vscode-jsonrpc';
-import * as p from './protocol-v2';
+import * as p from './protocol';
 
 const MAX_LOG_MESSAGE_LENGTH = 100;
 

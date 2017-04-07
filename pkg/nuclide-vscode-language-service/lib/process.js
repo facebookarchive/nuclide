@@ -52,7 +52,7 @@ import type {
   TextDocumentPositionParams,
   SymbolInformation,
   UncoveredRange,
-} from './protocol-v2';
+} from './protocol';
 import type {CategoryLogger} from '../../nuclide-logging';
 import type {JsonRpcConnection} from './jsonrpc';
 
@@ -69,11 +69,11 @@ import {getBufferAtVersion} from '../../nuclide-open-files-rpc';
 import * as rpc from 'vscode-jsonrpc';
 import {Observable} from 'rxjs';
 import {Point, Range as atom$Range} from 'simple-text-buffer';
-import {LanguageServerV2} from './languageserver-v2';
+import {LanguageServerV2} from './languageserver';
 import {
   DiagnosticSeverity,
   SymbolKind,
-} from './protocol-v2';
+} from './protocol';
 import {
   className,
   method,
