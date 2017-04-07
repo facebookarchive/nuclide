@@ -8,7 +8,7 @@
  * @flow
  */
 
-import {findArcProjectIdAndDirectory} from '../../commons-atom/arcanist';
+import {findArcProjectIdAndDirectory} from '../../nuclide-arcanist-base';
 import nuclideUri from '../../commons-node/nuclideUri';
 
 export default async function getMatchingProjects(

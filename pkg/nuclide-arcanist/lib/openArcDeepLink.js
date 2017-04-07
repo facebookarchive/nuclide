@@ -13,7 +13,7 @@ import type {RemoteProjectsService} from '../../nuclide-remote-projects';
 
 import invariant from 'assert';
 import {remote} from 'electron';
-import {getLastProjectPath} from '../../commons-atom/arcanist';
+import {getLastProjectPath} from '../../nuclide-arcanist-base';
 import {goToLocation} from '../../commons-atom/go-to-location';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {asyncFilter} from '../../commons-node/promise';

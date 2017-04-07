@@ -11,7 +11,7 @@
 /* global localStorage */
 
 import LRUCache from 'lru-cache';
-import {getArcanistServiceByNuclideUri} from '../nuclide-remote-connection';
+import {getArcanistServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 export type ArcProjectInfo = {
   projectId: string,
