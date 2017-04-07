@@ -246,6 +246,7 @@ declare class electron$BrowserWindow {
   once: electron$BrowserWindowListener,
   removeAllListeners(event?: electron$BrowserWindowEvents): electron$BrowserWindow,
   removeListener(event?: electron$BrowserWindowEvents, callback: Function): electron$BrowserWindow,
+  send(channel: string, ...args: Array<any>): void,
 
   static getAllWindows(): Array<electron$BrowserWindow>,
   static getFocusedWindow(): ?electron$BrowserWindow,
