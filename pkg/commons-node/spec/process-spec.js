@@ -24,7 +24,6 @@ import {
   killUnixProcessTree,
   observeProcess,
   observeProcessRaw,
-  observeProcessExit,
   parsePsOutput,
   runCommand,
   safeFork,
@@ -202,72 +201,6 @@ describe('commons-node/process', () => {
         {command: 'System Process', pid: 4, parentPid: 0},
         {command: 'smss.exe', pid: 228, parentPid: 4},
       ]);
-    });
-  });
-
-  describe('process.observeProcessExit', () => {
-    it('exitCode', () => {
-      waitsForPromise(async () => {
-        const child = () => safeSpawn(process.execPath, ['-e', 'process.exit(1)']);
-        const exitMessage = await observeProcessExit(child).toPromise();
-        expect(exitMessage).toEqual(makeExitMessage(1));
-      });
-    });
-
-    it('exit via signal', () => {
-      waitsForPromise(async () => {
-        const child =
-          () => safeSpawn(process.execPath, ['-e', 'process.kill(process.pid, "SIGTERM")']);
-        const exitMessage = await observeProcessExit(child).toPromise();
-        expect(exitMessage).toEqual({kind: 'exit', exitCode: null, signal: 'SIGTERM'});
-      });
-    });
-
-    it('stdout exitCode', () => {
-      waitsForPromise(async () => {
-        const results = await observeProcess(
-          process.execPath,
-          ['-e', 'console.log("stdout1\\nstdout2\\n\\n\\n"); process.exit(1);'],
-        )
-          .toArray()
-          .toPromise();
-        expect(results).toEqual([
-          {kind: 'stdout', data: 'stdout1\n'},
-          {kind: 'stdout', data: 'stdout2\n'},
-          {kind: 'stdout', data: '\n'},
-          {kind: 'stdout', data: '\n'},
-          {kind: 'stdout', data: '\n'},
-          {kind: 'exit', exitCode: 1, signal: null}]);
-      });
-    });
-
-    it('stderr exitCode', () => {
-      waitsForPromise(async () => {
-        const results = await observeProcess(
-          process.execPath,
-          ['-e', 'console.error("stderr"); process.exit(42);'],
-        )
-          .toArray()
-          .toPromise();
-        expect(results).toEqual([{kind: 'stderr', data: 'stderr\n'},
-          {kind: 'exit', exitCode: 42, signal: null}]);
-      });
-    });
-
-    it('stdout, stderr and exitCode', () => {
-      waitsForPromise(async () => {
-        const results = await observeProcess(
-          process.execPath,
-          ['-e', 'console.error("stderr"); console.log("std out"); process.exit(42);'],
-        )
-          .toArray()
-          .toPromise();
-        expect(results).toEqual([
-          {kind: 'stderr', data: 'stderr\n'},
-          {kind: 'stdout', data: 'std out\n'},
-          {kind: 'exit', exitCode: 42, signal: null},
-        ]);
-      });
     });
   });
 

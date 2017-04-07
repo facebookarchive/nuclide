@@ -441,18 +441,6 @@ function observeProcessExitMessage(
     .take(1);
 }
 
-/**
- * Observe the stdout, stderr and exit code of a process.
- * stdout and stderr are split by newlines.
- */
-export function observeProcessExit(
-  createProcess: () => child_process$ChildProcess,
-  killTreeOnComplete?: boolean = false,
-): Observable<ProcessExitMessage> {
-  return _createProcessStream(createProcess, false, killTreeOnComplete)
-    .flatMap(observeProcessExitMessage);
-}
-
 export function getOutputStream(
   process: child_process$ChildProcess,
   killTreeOnComplete?: boolean = false,
@@ -462,7 +450,7 @@ export function getOutputStream(
   return Observable.defer(() => {
     // We need to start listening for the exit event immediately, but defer emitting it until the
     // (buffered) output streams end.
-    const exit = observeProcessExit(() => process, killTreeOnComplete).publishReplay();
+    const exit = observeProcessExitMessage(process).publishReplay();
     const exitSub = exit.connect();
 
     const error = Observable.fromEvent(process, 'error')
