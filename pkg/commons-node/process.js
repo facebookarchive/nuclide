@@ -406,10 +406,15 @@ export async function killUnixProcessTree(childProcess: child_process$ChildProce
 }
 
 export function createProcessStream(
-  createProcess: () => child_process$ChildProcess,
-  killTreeOnComplete?: boolean = false,
+  command: string,
+  args?: Array<string>,
+  options?: ObserveProcessOptions,
 ): Observable<child_process$ChildProcess> {
-  return _createProcessStream(createProcess, true, killTreeOnComplete);
+  return _createProcessStream(
+    () => safeSpawn(command, args, options),
+    true,
+    Boolean(options && options.killTreeOnComplete),
+  );
 }
 
 export function forkProcessStream(

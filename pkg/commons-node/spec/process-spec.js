@@ -14,7 +14,6 @@ import {sleep} from '../promise';
 import child_process from 'child_process';
 import invariant from 'assert';
 import mockSpawn from 'mock-spawn';
-import path from 'path'; // eslint-disable-line nuclide-internal/prefer-nuclide-uri
 
 import {
   asyncExecute,
@@ -305,8 +304,7 @@ describe('commons-node/process', () => {
       waitsForPromise(async () => {
         spyOn(console, 'error'); // suppress error printing
         spyOn(console, 'log'); // suppress log printing
-        const createProcess = () => safeSpawn('fakeCommand');
-        const processStream = createProcessStream(createProcess);
+        const processStream = createProcessStream('fakeCommand');
         let error;
         try {
           await processStream.toPromise();
@@ -323,11 +321,9 @@ describe('commons-node/process', () => {
       waitsForPromise(async () => {
         spyOn(console, 'error'); // suppress error printing
         spyOn(console, 'log'); // suppress log printing
-        const createProcess = jasmine.createSpy().andCallFake(
-          () => safeSpawn('fakeCommand'),
-        );
+        spyOn(child_process, 'spawn');
         try {
-          await createProcessStream(createProcess)
+          await createProcessStream('fakeCommand')
             .retryWhen(errors => (
               errors.scan(
                 (errorCount, err) => {
@@ -345,62 +341,7 @@ describe('commons-node/process', () => {
             ))
             .toPromise();
         } catch (err) {}
-        expect(createProcess.callCount).toEqual(3);
-      });
-    });
-
-    describe('already exited processeses', () => {
-      it('protects against giving an exited process', () => {
-        const spy = jasmine.createSpy();
-        let streamError;
-        let childProcess;
-        runs(() => {
-          spyOn(console, 'error'); // suppress error printing
-          spyOn(console, 'log'); // suppress log printing
-          childProcess = safeSpawn('fakeCommand');
-          childProcess.on('error', spy);
-        });
-        waitsFor(() => spy.wasCalled);
-        runs(() => {
-          createProcessStream(() => childProcess).subscribe({error: err => {
-            streamError = err;
-          }});
-        });
-        waitsFor(() => streamError != null);
-        runs(() => {
-          expect(streamError.message)
-            .toBe('Process already exited. (This indicates a race condition in Nuclide.)');
-        });
-      });
-
-      it("doesn't complain when given a process that subsequently errors", () => {
-        waitsForPromise(async () => {
-          spyOn(console, 'error'); // suppress error printing
-          spyOn(console, 'log'); // suppress log printing
-          let error;
-          try {
-            await createProcessStream(() => safeSpawn('fakeCommand')).toPromise();
-          } catch (err) {
-            error = err;
-          }
-          expect((error: any).code).toBe('ENOENT');
-        });
-      });
-
-      it("doesn't complain when given a forked process that errors", () => {
-        waitsForPromise(async () => {
-          let error;
-          const childProcess = child_process.fork(
-            path.join(__dirname, 'fixtures', 'throw'),
-            {silent: true},
-          );
-          try {
-            await createProcessStream(() => childProcess).toPromise();
-          } catch (err) {
-            error = err;
-          }
-          expect(error).toEqual(null);
-        });
+        expect(child_process.spawn.callCount).toBe(3);
       });
     });
   });

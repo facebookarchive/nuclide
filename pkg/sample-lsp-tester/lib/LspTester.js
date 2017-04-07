@@ -19,7 +19,6 @@ import {createProcessStream, getOutputStream} from '../../commons-node/process';
 import {SimpleModel} from '../../commons-node/SimpleModel';
 import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
 import {PanelView} from './PanelView';
-import child_process from 'child_process';
 import React from 'react';
 import * as rpc from 'vscode-jsonrpc';
 import invariant from 'assert';
@@ -45,7 +44,6 @@ export class LspTester extends SimpleModel {
 
   constructor(serialized: ?SerializedState) {
     super();
-    (this: any)._createProcess = this._createProcess.bind(this);
     (this: any)._handleEvent = this._handleEvent.bind(this);
     (this: any)._sendMessage = this._sendMessage.bind(this);
     (this: any)._startServer = this._startServer.bind(this);
@@ -55,14 +53,6 @@ export class LspTester extends SimpleModel {
       running: false,
     };
     this._messages = new ReplaySubject(/* buffer size */ 200);
-  }
-
-  _createProcess(command: string, args: Array<string>): child_process$ChildProcess {
-    const process = child_process.spawn(command, args);
-    this._writer = new rpc.StreamMessageWriter(process.stdin);
-    const reader = new rpc.StreamMessageReader(process.stdout);
-    rpc.createMessageConnection(reader, this._writer).listen();
-    return process;
   }
 
   destroy(): void {
@@ -129,7 +119,12 @@ export class LspTester extends SimpleModel {
     const events = takeWhileInclusive(
       // Use the async scheduler so that `disposable.dispose()` can still be called in
       // error/complete handlers.
-      createProcessStream(() => this._createProcess(command, args))
+      createProcessStream(command, args)
+        .do(process => {
+          this._writer = new rpc.StreamMessageWriter(process.stdin);
+          const reader = new rpc.StreamMessageReader(process.stdout);
+          rpc.createMessageConnection(reader, this._writer).listen();
+        })
         .flatMap(getOutputStream)
         .subscribeOn(Scheduler.async),
       event => event.kind !== 'error' && event.kind !== 'exit',
