@@ -50,7 +50,7 @@ import {getLogger} from '../../nuclide-logging';
 const logger = getLogger();
 
 const SERVICE_FRAMEWORK_RPC_TIMEOUT_MS = 60 * 1000;
-const LARGE_RESPONSE_SIZE = 50000;
+const LARGE_RESPONSE_SIZE = 100000;
 
 type RpcConnectionKind = 'server' | 'client';
 
