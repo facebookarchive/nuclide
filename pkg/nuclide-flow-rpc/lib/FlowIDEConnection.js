@@ -11,10 +11,11 @@
 import type {FlowStatusOutput} from './flowOutputTypes';
 
 import {Disposable} from 'event-kit';
-import {Observable, Subject} from 'rxjs';
+import {Observable} from 'rxjs';
 import * as rpc from 'vscode-jsonrpc';
 import through from 'through';
 
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {track} from '../../nuclide-analytics';
 import {getLogger} from '../../nuclide-logging';
 
@@ -42,14 +43,19 @@ const SUBSCRIBE_RETRIES = 10;
 export class FlowIDEConnection {
   _connection: RpcConnection;
   _ideProcess: child_process$ChildProcess;
-  _isDisposed: boolean;
-  _onWillDisposeCallbacks: Set<() => mixed>;
+  _disposables: UniversalDisposable;
+
+  // Because vscode-jsonrpc offers no mechanism to unsubscribe from notifications, we have to make
+  // sure that we put a bound on the number of times we add subscriptions, otherwise we could have a
+  // memory leak. The most sensible bound is to just allow a single subscription per message type.
+  // Therefore, we must have singleton observables rather than returning new instances from method
+  // calls.
+  _diagnostics: Observable<FlowStatusOutput>;
 
   constructor(
     process: child_process$ChildProcess,
   ) {
-    this._isDisposed = false;
-    this._onWillDisposeCallbacks = new Set();
+    this._disposables = new UniversalDisposable();
     this._ideProcess = process;
     this._ideProcess.stderr.pipe(through(
       msg => {
@@ -64,31 +70,38 @@ export class FlowIDEConnection {
 
     this._ideProcess.on('exit', () => this.dispose());
     this._ideProcess.on('close', () => this.dispose());
-  }
 
-  dispose(): void {
-    if (!this._isDisposed) {
-      for (const callback of this._onWillDisposeCallbacks) {
-        callback();
-      }
+    this._diagnostics = Observable.fromEventPattern(
+      handler => {
+        this._connection.onNotification(NOTIFICATION_METHOD_NAME, (errors: FlowStatusOutput) => {
+          handler(errors);
+        });
+      },
+      // no-op: vscode-jsonrpc offers no way to unsubscribe
+      () => {},
+    ).publishReplay(1);
+    this._disposables.add(this._diagnostics.connect());
 
+    this._disposables.add(() => {
       this._ideProcess.stdin.end();
       this._ideProcess.kill();
 
       this._connection.dispose();
-      this._isDisposed = true;
-    }
+    });
+  }
+
+  dispose(): void {
+    this._disposables.dispose();
   }
 
   onWillDispose(callback: () => mixed): IDisposable {
-    this._onWillDisposeCallbacks.add(callback);
+    this._disposables.add(callback);
     return new Disposable(() => {
-      this._onWillDisposeCallbacks.delete(callback);
+      this._disposables.remove(callback);
     });
   }
 
   observeDiagnostics(): Observable<FlowStatusOutput> {
-    const s = new Subject();
     const subscribe = () => {
       this._connection.sendNotification(SUBSCRIBE_METHOD_NAME);
       // This is a temporary hack used to simplify the temporary vscode-jsonrpc implementation in
@@ -99,7 +112,7 @@ export class FlowIDEConnection {
 
     const retrySubscription = Observable.interval(SUBSCRIBE_RETRY_INTERVAL)
       .take(SUBSCRIBE_RETRIES)
-      .takeUntil(s)
+      .takeUntil(this._diagnostics)
       .subscribe(() => {
         getLogger().error(
           'Did not receive diagnostics after subscribe request -- retrying...',
@@ -108,13 +121,10 @@ export class FlowIDEConnection {
         subscribe();
       });
 
-    this._connection.onNotification(NOTIFICATION_METHOD_NAME, (arg: FlowStatusOutput) => {
-      s.next(arg);
-    });
     subscribe();
     return Observable.using(
       () => retrySubscription,
-      () => s.publishReplay(1).refCount(),
+      () => this._diagnostics,
     );
   }
 }
