@@ -25,7 +25,7 @@ import FileTreeActions from '../lib/FileTreeActions';
 import {FileTreeStore} from '../lib/FileTreeStore';
 import {MultiRootChangedFilesView} from '../../nuclide-ui/MultiRootChangedFilesView';
 import {PanelComponentScroller} from '../../nuclide-ui/PanelComponentScroller';
-import {nextAnimationFrame, toggle, throttle} from '../../commons-node/observable';
+import {nextAnimationFrame, toggle, throttle, compact} from '../../commons-node/observable';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {cacheWhileSubscribed} from '../../commons-node/observable';
@@ -90,7 +90,7 @@ export default class FileTreeSidebarComponent extends React.Component {
     this._disposables = new UniversalDisposable();
     this._scrollWasTriggeredProgrammatically = false;
     (this: any)._handleFocus = this._handleFocus.bind(this);
-    (this: any)._updateScrollerHeight = this._updateScrollerHeight.bind(this);
+    (this: any)._getScrollerHeight = this._getScrollerHeight.bind(this);
     (this: any)._handleScroll = this._handleScroll.bind(this);
     (this: any)._scrollToPosition = this._scrollToPosition.bind(this);
     (this: any)._processExternalUpdate = this._processExternalUpdate.bind(this);
@@ -121,9 +121,12 @@ export default class FileTreeSidebarComponent extends React.Component {
         showUncommittedChanges => this.setState({showUncommittedChanges}),
       ),
 
-      throttle(remeasureEvents, () => nextAnimationFrame).subscribe(() => {
-        this._updateScrollerHeight();
-      }),
+      compact(throttle(remeasureEvents, () => nextAnimationFrame)
+        .map(() => this._getScrollerHeight()))
+        .distinctUntilChanged()
+        .subscribe(scrollerHeight => {
+          this.setState({scrollerHeight});
+        }),
 
       // Customize the context menu to remove items that match the 'atom-pane' selector.
       Observable.fromEvent(ReactDOM.findDOMNode(this), 'contextmenu')
@@ -167,7 +170,10 @@ export default class FileTreeSidebarComponent extends React.Component {
           );
         }
         this._actions.clearFilter();
-        this._updateScrollerHeight();
+        const scrollerHeight = this._getScrollerHeight();
+        if (scrollerHeight != null) {
+          this.setState({scrollerHeight});
+        }
       }
     }
   }
@@ -345,17 +351,17 @@ export default class FileTreeSidebarComponent extends React.Component {
     );
   }
 
-  _updateScrollerHeight(): void {
+  _getScrollerHeight(): ?number {
     const component = this.refs.scroller;
-    if (component == null) {
-      return;
+    if (component != null) {
+      return null;
     }
     const el = ReactDOM.findDOMNode(component);
     if (el == null) {
-      return;
+      return null;
     }
     // $FlowFixMe
-    this.setState({scrollerHeight: el.clientHeight});
+    return el.clientHeight;
   }
 
   _handleScroll(): void {
