@@ -180,6 +180,8 @@ export type VcsLogResponse = {
 export type MergeConflict = {
   path: string,
   message: MergeConflictStatusValue,
+  mergeConflictsCount?: number,
+  resolvedConflictsCount?: number,
 };
 
 export type CheckoutSideName = 'ours' | 'theirs';
