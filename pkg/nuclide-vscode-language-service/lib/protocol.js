@@ -10,6 +10,7 @@
 
 
 // Flow definitions for Microsoft's Language Server Protocol
+// https://github.com/Microsoft/language-server-protocol/blob/master/protocol.md
 // https://github.com/Microsoft/language-server-protocol/blob/master/versions/protocol-2-x.md
 
 // Structures
@@ -183,9 +184,28 @@ export type DocumentOnTypeFormattingOptions = {
   moreTriggerCharacter?: string[],
 };
 
+// Save options.
+export type SaveOptions = {
+  // The client is supposed to include the content on save.
+  includeText?: boolean,
+};
+
+export type TextDocumentSyncOptions = {
+  // Open and close notifications are sent to the server.
+  openClose?: boolean,
+  // Change notifications are sent to the server. One of TextDocumentSyncKind.
+  change?: number,
+  // Will save notifications are sent to the server.
+  willSave?: boolean,
+  // Will save wait until requests are sent to the server.
+  willSaveWaitUntil?: boolean,
+  // Save notifications are sent to the server.
+  save?: SaveOptions,
+};
+
 export type ServerCapabilities = {
-  // Defines how text documents are synced.
-  textDocumentSync?: number,
+  // Defines how text documents are synced. If a number, is one of TextDocumentSyncKind
+  textDocumentSync?: TextDocumentSyncOptions | number,
   // The server provides hover support.
   hoverProvider?: boolean,
   // The server provides completion support.
