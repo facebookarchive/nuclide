@@ -42,12 +42,5 @@
         "^1.0.0": "consumeStatusBar"
       }
     }
-  },
-  "providedServices": {
-    "nuclide-home.homeFragments": {
-      "versions": {
-        "0.0.0": "getHomeFragments"
-      }
-    }
   }
 }

@@ -8,7 +8,6 @@
  * @flow
  */
 
-import type {HomeFragments} from '../../nuclide-home/lib/types';
 import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 import type {Result} from '../../commons-atom/ActiveEditorRegistry';
 import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
@@ -26,13 +25,6 @@ import {Observable} from 'rxjs';
 
 import type {TokenizedText} from '../../commons-node/tokenizedText-rpc-types';
 import type {Outline} from './rpc-types';
-
-import type {NuxTourModel} from '../../nuclide-nux/lib/NuxModel';
-import type {RegisterNux} from '../../nuclide-nux/lib/main';
-
-const NUX_OUTLINE_VIEW_TOUR = 'nuclide_outline_view_nux';
-const NUX_OUTLINE_VIEW_ID = 4342;
-const GK_NUX_OUTLINE_VIEW = 'mp_nuclide_outline_view_nux';
 
 export type OutlineTreeForUi = {
   icon?: string,  // from atom$Octicon, but we use string for convenience of remoting
@@ -101,51 +93,6 @@ class Activation {
 
   _editorService: ActiveEditorRegistry<OutlineProvider, ?Outline>;
 
-  _createOutlineViewNuxTourModel(): NuxTourModel {
-    const outlineViewToolbarIconNux = {
-      content: 'Check out the new Outline View!',
-      selector: '.nuclide-outline-view-toolbar-button',
-      position: 'auto',
-      completionPredicate: (() => document.querySelector('div.nuclide-outline-view') != null),
-    };
-
-    const outlineViewPanelNux = {
-      content: 'Click on a symbol to jump to its definition.',
-      selector: 'div.pane-item.nuclide-outline-view',
-      position: 'left',
-    };
-
-    const isValidFileTypeForNux = editor => {
-      if (editor == null) {
-        return false;
-      }
-      const path = editor.getPath();
-      if (path == null) {
-        return false;
-      }
-      return path.endsWith('.js') || path.endsWith('.php');
-    };
-
-    const isOutlineViewClosed = () => document.querySelector('.nuclide-outline-view') == null;
-    const triggerCallback
-      = editor => isOutlineViewClosed() && isValidFileTypeForNux(editor);
-
-    const nuxTriggerModel = {
-      triggerType: 'editor',
-      triggerCallback,
-    };
-
-    const outlineViewNuxTour = {
-      id: NUX_OUTLINE_VIEW_ID,
-      name: NUX_OUTLINE_VIEW_TOUR,
-      nuxList: [outlineViewToolbarIconNux, outlineViewPanelNux],
-      trigger: nuxTriggerModel,
-      gatekeeperID: GK_NUX_OUTLINE_VIEW,
-    };
-
-    return outlineViewNuxTour;
-  }
-
   constructor() {
     this._disposables = new UniversalDisposable();
 
@@ -210,30 +157,6 @@ class Activation {
   getOutlineViewResultsStream(): ResultsStreamProvider {
     return {
       getResultsStream: () => this._editorService.getResultsStream(),
-    };
-  }
-
-  consumeRegisterNuxService(addNewNux: RegisterNux): IDisposable {
-    const disposable = addNewNux(this._createOutlineViewNuxTourModel());
-    this._disposables.add(disposable);
-    return disposable;
-  }
-
-  getHomeFragments(): HomeFragments {
-    return {
-      feature: {
-        title: 'Outline View',
-        icon: 'list-unordered',
-        description: 'Displays major components of the current file (classes, methods, etc.)',
-        command: () => {
-          atom.commands.dispatch(
-            atom.views.getView(atom.workspace),
-            'nuclide-outline-view:toggle',
-            {visible: true},
-          );
-        },
-      },
-      priority: 2.5, // Between diff view and test runner
     };
   }
 }

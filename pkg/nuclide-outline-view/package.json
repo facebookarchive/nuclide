@@ -35,19 +35,9 @@
       "versions": {
         "^1.0.0": "consumeToolBar"
       }
-    },
-    "nux-register": {
-      "versions": {
-        "0.0.0": "consumeRegisterNuxService"
-      }
     }
   },
   "providedServices": {
-    "nuclide-home.homeFragments": {
-      "versions": {
-        "0.0.0": "getHomeFragments"
-      }
-    },
     "nuclide-outline-view-results-stream": {
       "versions": {
         "0.0.0": "getOutlineViewResultsStream"
