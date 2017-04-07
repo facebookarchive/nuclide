@@ -54,6 +54,7 @@ export type StoreConfigData = {
     vcsStatuses: Immutable.Map<NuclideUri, {[path: NuclideUri]: StatusCodeNumberValue}>,
     workingSet: WorkingSet,
     hideIgnoredNames: boolean,
+    isCalculatingChanges: boolean,
     excludeVcsIgnoredPaths: boolean,
     ignoredPatterns: Immutable.Set<Minimatch>,
     usePreviewTabs: boolean,
@@ -72,6 +73,7 @@ export const DEFAULT_CONF = {
   workingSet: new WorkingSet(),
   editedWorkingSet: new WorkingSet(),
   hideIgnoredNames: true,
+  isCalculatingChanges: false,
   excludeVcsIgnoredPaths: true,
   ignoredPatterns: new Immutable.Set(),
   usePreviewTabs: false,
@@ -270,6 +272,10 @@ export class FileTreeStore {
     this._updateConf(conf => { conf.hideIgnoredNames = hideIgnoredNames; });
   }
 
+  _setIsCalculatingChanges(isCalculatingChanges: boolean): void {
+    this._updateConf(conf => { conf.isCalculatingChanges = isCalculatingChanges; });
+  }
+
   /**
    * Given a list of names to ignore, compile them into minimatch patterns and
    * update the store with them.
@@ -337,6 +343,9 @@ export class FileTreeStore {
         break;
       case ActionTypes.SET_HIDE_IGNORED_NAMES:
         this._setHideIgnoredNames(payload.hideIgnoredNames);
+        break;
+      case ActionTypes.SET_IS_CALCULATING_CHANGES:
+        this._setIsCalculatingChanges(payload.isCalculatingChanges);
         break;
       case ActionTypes.SET_IGNORED_NAMES:
         this._setIgnoredNames(payload.ignoredNames);
@@ -646,6 +655,10 @@ export class FileTreeStore {
 
   getFileChanges(): Immutable.Map<NuclideUri, Map<NuclideUri, FileChangeStatusValue>> {
     return this._fileChanges;
+  }
+
+  getIsCalculatingChanges(): boolean {
+    return this._conf.isCalculatingChanges;
   }
 
   _invalidateRemovedFolder(): void {

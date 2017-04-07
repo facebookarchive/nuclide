@@ -154,6 +154,13 @@ export default class FileTreeActions {
     });
   }
 
+  setIsCalculatingChanges(isCalculatingChanges: boolean): void {
+    this._dispatcher.dispatch({
+      actionType: ActionTypes.SET_IS_CALCULATING_CHANGES,
+      isCalculatingChanges,
+    });
+  }
+
   setIgnoredNames(ignoredNames: Array<string>): void {
     this._dispatcher.dispatch({
       actionType: ActionTypes.SET_IGNORED_NAMES,
@@ -478,6 +485,8 @@ export default class FileTreeActions {
     // and subsequent values after any changes to the repository.
     let vcsChanges: Observable<{[filePath: NuclideUri]: StatusCodeNumberValue}>
       = Observable.empty();
+    let vcsCalculating: Observable<boolean>
+      = Observable.of(false);
 
     if (repo.isDestroyed()) {
        // Don't observe anything on a destroyed repo.
@@ -497,8 +506,8 @@ export default class FileTreeActions {
       // between two different observables.
       const hgRepo: HgRepositoryClient = (repo: any);
 
-      vcsChanges = FileTreeHelpers.observeUncommittedChangesKindConfigKey()
-        .switchMap(kind => {
+      const hgChanges = FileTreeHelpers.observeUncommittedChangesKindConfigKey()
+        .map(kind => {
           switch (kind) {
             case ShowUncommittedChangesKind.UNCOMMITTED:
               return hgRepo.observeUncommittedStatusChanges();
@@ -507,10 +516,15 @@ export default class FileTreeActions {
             case ShowUncommittedChangesKind.STACK:
               return hgRepo.observeStackStatusChanges();
             default:
-              return Observable.throw(new Error('Unrecognized ShowUncommittedChangesKind config'));
+              const error = Observable.throw(
+                new Error('Unrecognized ShowUncommittedChangesKind config'),
+              );
+              return {statusChanges: error, isCalculatingChanges: error};
           }
-        })
-        .map(objectFromMap);
+        }).share();
+
+      vcsChanges = hgChanges.switchMap(c => c.statusChanges).map(objectFromMap);
+      vcsCalculating = hgChanges.switchMap(c => c.isCalculatingChanges);
     }
 
     const subscription = vcsChanges.subscribe(statusCodeForPath => {
@@ -519,9 +533,13 @@ export default class FileTreeActions {
       }
     });
 
+    const subscriptionCalculating = vcsCalculating.subscribe(isCalculatingChanges => {
+      this.setIsCalculatingChanges(isCalculatingChanges);
+    });
+
     this._disposableForRepository = this._disposableForRepository.set(
       repo,
-      new UniversalDisposable(subscription),
+      new UniversalDisposable(subscription, subscriptionCalculating),
     );
   }
 

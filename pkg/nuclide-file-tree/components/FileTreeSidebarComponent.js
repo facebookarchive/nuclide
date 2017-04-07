@@ -30,6 +30,10 @@ import {
   filterMultiRootFileChanges,
   repositoryForPath,
 } from '../../commons-atom/vcs';
+import {
+  LoadingSpinner,
+  LoadingSpinnerSizes,
+} from '../../nuclide-ui/LoadingSpinner';
 import {FileTree} from './FileTree';
 import {Icon} from '../../nuclide-ui/Icon';
 import FileTreeSideBarFilterComponent from './FileTreeSideBarFilterComponent';
@@ -63,6 +67,7 @@ type State = {
   hasUncommittedChanges: boolean,
   hidden: boolean,
   uncommittedFileChanges: Map<NuclideUri, Map<NuclideUri, FileChangeStatusValue>>,
+  isCalculatingChanges: boolean,
 };
 
 export default class FileTreeSidebarComponent extends React.Component {
@@ -93,6 +98,7 @@ export default class FileTreeSidebarComponent extends React.Component {
       activeUri: null,
       hasUncommittedChanges: false,
       uncommittedFileChanges: new Map(),
+      isCalculatingChanges: false,
     };
     this._showOpenConfigValues = cacheWhileSubscribed(
       (featureConfig.observeAsStream(SHOW_OPEN_FILE_CONFIG_KEY): Observable<any>),
@@ -270,6 +276,15 @@ Just the changes that you've already amended/committed.<br />
 All the changes across your entire stacked diff.
 </div>`;
 
+      const calculatingChangesSpinner = (!this.state.isCalculatingChanges) ? null :
+        <span
+          className="nuclide-file-tree-spinner">&nbsp;
+          <LoadingSpinner
+            className="inline-block"
+            size={LoadingSpinnerSizes.EXTRA_SMALL}
+          />
+        </span>;
+
       const uncommittedChangesHeadline =
         <span
           ref={addTooltip({title: dropdownTooltip})}>
@@ -278,6 +293,7 @@ All the changes across your entire stacked diff.
             {this.state.showUncommittedChangesKind.toUpperCase()}
           </span>
           {dropdownIcon}
+          {calculatingChangesSpinner}
         </span>;
 
       uncommittedChangesSection =
@@ -366,7 +382,9 @@ All the changes across your entire stacked diff.
     const hasUncommittedChanges = Array.from(uncommittedFileChanges.values())
       .some(fileChanges => fileChanges.size > 0);
 
-    this.setState({uncommittedFileChanges, hasUncommittedChanges});
+    const isCalculatingChanges = this._store.getIsCalculatingChanges();
+
+    this.setState({uncommittedFileChanges, hasUncommittedChanges, isCalculatingChanges});
   }
 
   _onFileChosen(filePath: NuclideUri): void {

@@ -115,6 +115,11 @@ import {observableFromSubscribeFunction} from '../../commons-node/event';
 import invariant from 'assert';
 import {mapTransform} from '../../commons-node/collection';
 
+export type HgStatusChanges = {
+  statusChanges: Observable<Map<NuclideUri, StatusCodeNumberValue>>,
+  isCalculatingChanges: Observable<boolean>,
+};
+
 export class HgRepositoryClient {
   _path: string;
   _workingDirectory: atom$Directory | RemoteDirectory;
@@ -125,9 +130,9 @@ export class HgRepositoryClient {
   _emitter: Emitter;
   _subscriptions: UniversalDisposable;
   _hgStatusCache: Map<NuclideUri, StatusCodeNumberValue>; // legacy, only for uncommitted
-  _hgUncommittedStatusChanges: Observable<Map<NuclideUri, StatusCodeNumberValue>>;
-  _hgHeadStatusChanges: Observable<Map<NuclideUri, StatusCodeNumberValue>>;
-  _hgStackStatusChanges: Observable<Map<NuclideUri, StatusCodeNumberValue>>;
+  _hgUncommittedStatusChanges: HgStatusChanges;
+  _hgHeadStatusChanges: HgStatusChanges;
+  _hgStackStatusChanges: HgStatusChanges;
   _hgDiffCache: Map<NuclideUri, DiffInfo>;
   _hgDiffCacheFilesUpdating: Set<NuclideUri>;
   _hgDiffCacheFilesToClear: Set<NuclideUri>;
@@ -231,7 +236,7 @@ export class HgRepositoryClient {
       () => this._service.fetchHeadStatuses(),
     );
 
-    const statusChangesSubscription = this._hgUncommittedStatusChanges
+    const statusChangesSubscription = this._hgUncommittedStatusChanges.statusChanges
       .subscribe(statuses => {
         this._hgStatusCache = statuses;
         this._emitter.emit('did-change-statuses');
@@ -257,19 +262,30 @@ export class HgRepositoryClient {
     fileChanges: Observable<Array<string>>,
     repoStateChanges: Observable<void>,
     fetchStatuses: () => ConnectableObservable<Map<NuclideUri, StatusCodeIdValue>>,
-  ): Observable<Map<NuclideUri, StatusCodeNumberValue>> {
-    return cacheWhileSubscribed(
+  ): HgStatusChanges {
+    const triggers =
       Observable.merge(fileChanges, repoStateChanges)
       .debounceTime(STATUS_DEBOUNCE_DELAY_MS)
-      .startWith(null)
-      .switchMap(() =>
-        fetchStatuses().refCount().catch(error => {
-          getLogger().error('HgService cannot fetch statuses', error);
-          return Observable.empty();
-        }),
-      )
-      .map(uriToStatusIds => mapTransform(uriToStatusIds, (v, k) => StatusCodeIdToNumber[v])),
-    );
+      .share()
+      .startWith(null);
+    // Share comes before startWith. That's because fileChanges/repoStateChanges
+    // are already hot and can be shared fine. But we want both our subscribers,
+    // statusChanges and isCalculatingChanges, to pick up their own copy of
+    // startWith(null) no matter which order they subscribe.
+
+    const statusChanges = cacheWhileSubscribed(
+      triggers
+      .switchMap(() => fetchStatuses().refCount().catch(error => {
+        getLogger().error('HgService cannot fetch statuses', error);
+        return Observable.empty();
+      }))
+      .map(uriToStatusIds => mapTransform(uriToStatusIds, (v, k) => StatusCodeIdToNumber[v])));
+
+    const isCalculatingChanges = cacheWhileSubscribed(
+      Observable.merge(triggers.map(_ => true), statusChanges.map(_ => false))
+      .distinctUntilChanged());
+
+    return {statusChanges, isCalculatingChanges};
   }
 
   destroy() {
@@ -316,15 +332,15 @@ export class HgRepositoryClient {
     return this._revisionStatusCache.observeRevisionStatusesChanges();
   }
 
-  observeUncommittedStatusChanges(): Observable<Map<NuclideUri, StatusCodeNumberValue>> {
+  observeUncommittedStatusChanges(): HgStatusChanges {
     return this._hgUncommittedStatusChanges;
   }
 
-  observeHeadStatusChanges(): Observable<Map<NuclideUri, StatusCodeNumberValue>> {
+  observeHeadStatusChanges(): HgStatusChanges {
     return this._hgHeadStatusChanges;
   }
 
-  observeStackStatusChanges(): Observable<Map<NuclideUri, StatusCodeNumberValue>> {
+  observeStackStatusChanges(): HgStatusChanges {
     return this._hgStackStatusChanges;
   }
 

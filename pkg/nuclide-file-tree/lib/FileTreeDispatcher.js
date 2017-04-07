@@ -53,6 +53,10 @@ export type FileTreeAction =
     hideIgnoredNames: boolean,
   } |
   {
+    actionType: 'SET_IS_CALCULATING_CHANGES',
+    isCalculatingChanges: boolean,
+  } |
+  {
     actionType: 'SET_IGNORED_NAMES',
     ignoredNames: Array<string>,
   } |
@@ -213,6 +217,7 @@ export const ActionTypes = Object.freeze({
   EXPAND_NODE_DEEP: 'EXPAND_NODE_DEEP',
   SET_CWD: 'SET_CWD',
   SET_HIDE_IGNORED_NAMES: 'SET_HIDE_IGNORED_NAMES',
+  SET_IS_CALCULATING_CHANGES: 'SET_IS_CALCULATING_CHANGES',
   SET_IGNORED_NAMES: 'SET_IGNORED_NAMES',
   SET_ROOT_KEYS: 'SET_ROOT_KEYS',
   SET_TRACKED_NODE: 'SET_TRACKED_NODE',
