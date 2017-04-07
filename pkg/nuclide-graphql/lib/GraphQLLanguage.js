@@ -12,11 +12,9 @@ import type {
   ServerConnection,
 } from '../../nuclide-remote-connection';
 import type {
-  GraphQLLanguageService,
-} from '../../nuclide-graphql-rpc/lib/GraphQLService';
-import type {
   AtomLanguageServiceConfig,
 } from '../../nuclide-language-service/lib/AtomLanguageService';
+import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
 import typeof * as GraphQLService from '../../nuclide-graphql-rpc/lib/GraphQLService';
 
 import {AtomLanguageService} from '../../nuclide-language-service';
@@ -27,7 +25,7 @@ const GRAPHQL_SERVICE_NAME = 'GraphQLService';
 
 async function connectionToGraphQLService(
   connection: ?ServerConnection,
-): Promise<GraphQLLanguageService> {
+): Promise<LanguageService> {
   const graphqlService: GraphQLService = getServiceByConnection(
     GRAPHQL_SERVICE_NAME,
     connection,
@@ -78,7 +76,7 @@ const atomConfig: AtomLanguageServiceConfig = {
   autocomplete: autocompleteConfig,
 };
 
-export const graphqlLanguageService: AtomLanguageService<GraphQLLanguageService>
+export const graphqlLanguageService: AtomLanguageService<LanguageService>
  = new AtomLanguageService(connectionToGraphQLService, atomConfig);
 
 export function resetGraphQLLanguageService(): void {

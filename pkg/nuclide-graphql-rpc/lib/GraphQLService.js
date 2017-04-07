@@ -19,7 +19,10 @@ import {trackTiming} from '../../nuclide-analytics';
 
 /* LanguageService related type imports */
 import type {Observable} from 'rxjs';
-import type {AutocompleteResult} from '../../nuclide-language-service/lib/LanguageService';
+import type {
+  AutocompleteResult,
+  LanguageService,
+} from '../../nuclide-language-service/lib/LanguageService';
 import type {TextEdit} from '../../nuclide-textedit/lib/rpc-types';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 import type {
@@ -43,17 +46,11 @@ import {logger} from './config';
 
 export async function initialize(
   fileNotifier: FileNotifier,
-): Promise<GraphQLLanguageService> {
-  return new GraphQLLanguageService(fileNotifier);
-}
-
-export class GraphQLLanguageService extends ServerLanguageService {
-  constructor(fileNotifier: FileNotifier) {
-    super(fileNotifier, new GraphQLLanguageAnalyzer(fileNotifier));
-  }
-
-  dispose(): void {
-  }
+): Promise<LanguageService> {
+  return new ServerLanguageService(
+    fileNotifier,
+    new GraphQLLanguageAnalyzer(fileNotifier),
+  );
 }
 
 class GraphQLLanguageAnalyzer {
