@@ -10,7 +10,12 @@
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {RemoteDirectory, RemoteFile} from '../../nuclide-remote-connection';
+import type {ShowUncommittedChangesKindValue} from './Constants';
 
+import {
+  ShowUncommittedChangesKind,
+  SHOW_UNCOMMITTED_CHANGES_KIND_CONFIG_KEY,
+} from './Constants';
 import {Directory as LocalDirectory} from 'atom';
 import {File as LocalFile} from 'atom';
 import {
@@ -18,7 +23,9 @@ import {
   ServerConnection,
 } from '../../nuclide-remote-connection';
 import nuclideUri from '../../commons-node/nuclideUri';
-
+import featureConfig from '../../commons-atom/featureConfig';
+import {cacheWhileSubscribed} from '../../commons-node/observable';
+import {Observable} from 'rxjs';
 import crypto from 'crypto';
 
 export type Directory = LocalDirectory | RemoteDirectory;
@@ -148,6 +155,25 @@ function buildHashKey(nodeKey: string): string {
   return crypto.createHash('MD5').update(nodeKey).digest('base64');
 }
 
+function observeUncommittedChangesKindConfigKey(
+): Observable<ShowUncommittedChangesKindValue> {
+  return cacheWhileSubscribed(
+    featureConfig.observeAsStream(SHOW_UNCOMMITTED_CHANGES_KIND_CONFIG_KEY)
+    .map(setting => {
+      // We need to map the unsanitized feature-setting string
+      // into a properly typed value:
+      switch (setting) {
+        case ShowUncommittedChangesKind.UNCOMMITTED:
+          return ShowUncommittedChangesKind.UNCOMMITTED;
+        case ShowUncommittedChangesKind.STACK:
+          return ShowUncommittedChangesKind.STACK;
+        default:
+          return ShowUncommittedChangesKind.HEAD;
+      }
+    })
+    .distinctUntilChanged());
+}
+
 function updatePathInOpenedEditors(oldPath: NuclideUri, newPath: NuclideUri): void {
   atom.workspace.getTextEditors().forEach(editor => {
     const buffer = editor.getBuffer();
@@ -181,5 +207,6 @@ export default {
   isLocalEntry,
   isContextClick,
   buildHashKey,
+  observeUncommittedChangesKindConfigKey,
   updatePathInOpenedEditors,
 };

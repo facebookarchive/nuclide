@@ -14,6 +14,7 @@ import type {
 import type {RevisionInfo} from '../pkg/nuclide-hg-rpc/lib/HgService';
 import type {TestContext} from './utils/remotable-tests';
 
+import featureConfig from '../pkg/commons-atom/featureConfig';
 import fsPromise from '../pkg/commons-node/fsPromise';
 import {hgConstants} from '../pkg/nuclide-hg-rpc';
 import invariant from 'assert';
@@ -24,6 +25,11 @@ import {generateHgRepo1Fixture} from '../pkg/nuclide-test-helpers';
 import {describeRemotableTest} from './utils/remotable-tests';
 import {repositoryForPath} from '../pkg/commons-atom/vcs';
 import {waitsForRepositoryReady} from './utils/diff-view-utils';
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
+import {
+  SHOW_UNCOMMITTED_CHANGES_KIND_CONFIG_KEY,
+  ShowUncommittedChangesKind,
+} from '../pkg/nuclide-file-tree/lib/Constants';
 
 const {AmendMode} = hgConstants;
 
@@ -37,6 +43,10 @@ describeRemotableTest('Mercurial File Changes Tree Integration Tests', (context:
   beforeEach(() => {
     // Waiting for the UI to update is slow...
     jasmine.getEnv().defaultTimeoutInterval = 25000;
+    featureConfig.set(
+      SHOW_UNCOMMITTED_CHANGES_KIND_CONFIG_KEY,
+      ShowUncommittedChangesKind.UNCOMMITTED,
+    );
 
     waitsForPromise(async () => {
       // Set up repo and handles to file tree DOM nodes

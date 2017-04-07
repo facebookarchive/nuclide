@@ -10,14 +10,27 @@
 
 import type {FileChangeStatusValue} from '../../commons-atom/vcs';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {ShowUncommittedChangesKindValue} from '../lib/Constants';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {Observable} from 'rxjs';
+import {ShowUncommittedChangesKind} from '../lib/Constants';
+import FileTreeHelpers from '../lib/FileTreeHelpers';
 
-import {REVEAL_FILE_ON_SWITCH_SETTING, WORKSPACE_VIEW_URI} from '../lib/Constants';
-import {filterMultiRootFileChanges} from '../../commons-atom/vcs';
+import {
+  REVEAL_FILE_ON_SWITCH_SETTING,
+  SHOW_OPEN_FILE_CONFIG_KEY,
+  SHOW_UNCOMMITTED_CHANGES_CONFIG_KEY,
+  SHOW_UNCOMMITTED_CHANGES_KIND_CONFIG_KEY,
+  WORKSPACE_VIEW_URI,
+} from '../lib/Constants';
+import {
+  filterMultiRootFileChanges,
+  repositoryForPath,
+} from '../../commons-atom/vcs';
 import {FileTree} from './FileTree';
+import {Icon} from '../../nuclide-ui/Icon';
 import FileTreeSideBarFilterComponent from './FileTreeSideBarFilterComponent';
 import {FileTreeToolbarComponent} from './FileTreeToolbarComponent';
 import {OpenFilesListComponent} from './OpenFilesListComponent';
@@ -42,6 +55,7 @@ type State = {
   scrollerScrollTop: number,
   showOpenFiles: boolean,
   showUncommittedChanges: boolean,
+  showUncommittedChangesKind: ShowUncommittedChangesKindValue,
   openFilesUris: Array<NuclideUri>,
   modifiedUris: Array<NuclideUri>,
   activeUri: ?NuclideUri,
@@ -50,15 +64,13 @@ type State = {
   uncommittedFileChanges: Map<NuclideUri, Map<NuclideUri, FileChangeStatusValue>>,
 };
 
-const SHOW_OPEN_FILE_CONFIG_KEY = 'nuclide-file-tree.showOpenFiles';
-const SHOW_UNCOMMITTED_CHANGES_CONFIG_KEY = 'nuclide-file-tree.showUncommittedChanges';
-
 export default class FileTreeSidebarComponent extends React.Component {
   _actions: FileTreeActions;
   _store: FileTreeStore;
   _disposables: UniversalDisposable;
   _showOpenConfigValues: Observable<boolean>;
   _showUncommittedConfigValue: Observable<boolean>;
+  _showUncommittedKindConfigValue: Observable<ShowUncommittedChangesKindValue>;
   _scrollWasTriggeredProgrammatically: boolean;
   state: State;
 
@@ -74,6 +86,7 @@ export default class FileTreeSidebarComponent extends React.Component {
       scrollerScrollTop: 0,
       showOpenFiles: true,
       showUncommittedChanges: true,
+      showUncommittedChangesKind: 'Head changes',
       openFilesUris: [],
       modifiedUris: [],
       activeUri: null,
@@ -86,6 +99,8 @@ export default class FileTreeSidebarComponent extends React.Component {
     this._showUncommittedConfigValue = cacheWhileSubscribed(
       (featureConfig.observeAsStream(SHOW_UNCOMMITTED_CHANGES_CONFIG_KEY): Observable<any>),
     );
+    this._showUncommittedKindConfigValue =
+      FileTreeHelpers.observeUncommittedChangesKindConfigKey();
 
     this._disposables = new UniversalDisposable();
     this._scrollWasTriggeredProgrammatically = false;
@@ -97,6 +112,8 @@ export default class FileTreeSidebarComponent extends React.Component {
     (this: any)._handleOpenFilesExpandedChange = this._handleOpenFilesExpandedChange.bind(this);
     (this: any)._handleUncommittedFilesExpandedChange =
       this._handleUncommittedFilesExpandedChange.bind(this);
+    (this: any)._handleUncommittedChangesKindDownArrow =
+      this._handleUncommittedChangesKindDownArrow.bind(this);
   }
 
   componentDidMount(): void {
@@ -119,6 +136,9 @@ export default class FileTreeSidebarComponent extends React.Component {
       this._showOpenConfigValues.subscribe(showOpenFiles => this.setState({showOpenFiles})),
       this._showUncommittedConfigValue.subscribe(
         showUncommittedChanges => this.setState({showUncommittedChanges}),
+      ),
+      this._showUncommittedKindConfigValue.subscribe(
+        showUncommittedChangesKind => this.setState({showUncommittedChangesKind}),
       ),
 
       compact(throttle(remeasureEvents, () => nextAnimationFrame)
@@ -221,12 +241,35 @@ export default class FileTreeSidebarComponent extends React.Component {
         </div>
       );
 
+      const showDropdown =
+        Array.from(this.state.uncommittedFileChanges.keys())
+        .some(path => {
+          const repo = repositoryForPath(path);
+          return (repo != null) && repo.getType() === 'hg';
+        });
+
+      const dropdownIcon = (!showDropdown) ? null :
+        <Icon
+          icon="triangle-down"
+          className="nuclide-file-tree-toolbar-fader nuclide-ui-dropdown-icon"
+          onClick={this._handleUncommittedChangesKindDownArrow}
+        />;
+
+      const uncommittedChangesHeadline =
+        <span>
+          <span
+            className="nuclide-dropdown-label-text-wrapper">
+            {this.state.showUncommittedChangesKind.toUpperCase()}
+          </span>
+          {dropdownIcon}
+        </span>;
+
       uncommittedChangesSection =
         <Section
           className="nuclide-file-tree-section-caption"
           collapsable={true}
           collapsed={!this._store.uncommittedChangesExpanded}
-          headline="UNCOMMITTED CHANGES"
+          headline={uncommittedChangesHeadline}
           onChange={this._handleUncommittedFilesExpandedChange}
           size="small">
           {uncommittedChangesList}
@@ -322,6 +365,41 @@ export default class FileTreeSidebarComponent extends React.Component {
   _handleUncommittedFilesExpandedChange(isCollapsed: boolean): void {
     track('filetree-uncommitted-file-changes-toggle');
     this._actions.setUncommittedChangesExpanded(!isCollapsed);
+  }
+
+  _handleUncommittedChangesKindDownArrow(event: SyntheticMouseEvent): void {
+    invariant(remote != null);
+    const menu = new remote.Menu();
+    for (const enumKey in ShowUncommittedChangesKind) {
+      const kind: ShowUncommittedChangesKindValue = ShowUncommittedChangesKind[enumKey];
+      const menuItem = new remote.MenuItem({
+        type: 'checkbox',
+        checked: this.state.showUncommittedChangesKind === kind,
+        label: kind,
+        click: () => { this._handleShowUncommittedChangesKindChange(kind); },
+      });
+      menu.append(menuItem);
+    }
+    const currentWindow = remote.getCurrentWindow();
+    menu.popup(currentWindow, event.clientX, event.clientY);
+    event.stopPropagation();
+  }
+
+  _handleShowUncommittedChangesKindChange(
+    showUncommittedChangesKind: ShowUncommittedChangesKindValue,
+  ): void {
+    switch (showUncommittedChangesKind) {
+      case ShowUncommittedChangesKind.UNCOMMITTED:
+        track('filetree-changes-kind-uncommitted');
+        break;
+      case ShowUncommittedChangesKind.HEAD:
+        track('filetree-changes-kind-head');
+        break;
+      case ShowUncommittedChangesKind.STACK:
+        track('filetree-changes-kind-stack');
+        break;
+    }
+    featureConfig.set(SHOW_UNCOMMITTED_CHANGES_KIND_CONFIG_KEY, showUncommittedChangesKind);
   }
 
   _setModifiedUris(): void {
