@@ -26,6 +26,7 @@ import nuclideUri from '../../commons-node/nuclideUri';
 import featureConfig from '../../commons-atom/featureConfig';
 import {cacheWhileSubscribed} from '../../commons-node/observable';
 import {Observable} from 'rxjs';
+import passesGK from '../../commons-node/passesGK';
 import crypto from 'crypto';
 
 export type Directory = LocalDirectory | RemoteDirectory;
@@ -192,6 +193,10 @@ function updatePathInOpenedEditors(oldPath: NuclideUri, newPath: NuclideUri): vo
   });
 }
 
+function areStackChangesEnabled(): Promise<boolean> {
+  return passesGK('nuclide_file_tree_stack_changes');
+}
+
 export default {
   dirPathToKey,
   isDirKey,
@@ -209,4 +214,5 @@ export default {
   buildHashKey,
   observeUncommittedChangesKindConfigKey,
   updatePathInOpenedEditors,
+  areStackChangesEnabled,
 };

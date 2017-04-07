@@ -68,6 +68,7 @@ type State = {
   hidden: boolean,
   uncommittedFileChanges: Map<NuclideUri, Map<NuclideUri, FileChangeStatusValue>>,
   isCalculatingChanges: boolean,
+  areStackChangesEnabled: boolean,
 };
 
 export default class FileTreeSidebarComponent extends React.Component {
@@ -99,6 +100,7 @@ export default class FileTreeSidebarComponent extends React.Component {
       hasUncommittedChanges: false,
       uncommittedFileChanges: new Map(),
       isCalculatingChanges: false,
+      areStackChangesEnabled: false,
     };
     this._showOpenConfigValues = cacheWhileSubscribed(
       (featureConfig.observeAsStream(SHOW_OPEN_FILE_CONFIG_KEY): Observable<any>),
@@ -140,6 +142,9 @@ export default class FileTreeSidebarComponent extends React.Component {
       toggle(observeAllModifiedStatusChanges(), this._showOpenConfigValues)
         .subscribe(() => this._setModifiedUris()),
       this._monitorActiveUri(),
+      Observable.fromPromise(FileTreeHelpers.areStackChangesEnabled()).subscribe(
+        areStackChangesEnabled => this.setState({areStackChangesEnabled}),
+      ),
       this._showOpenConfigValues.subscribe(showOpenFiles => this.setState({showOpenFiles})),
       this._showUncommittedConfigValue.subscribe(
         showUncommittedChanges => this.setState({showUncommittedChanges}),
@@ -234,6 +239,7 @@ export default class FileTreeSidebarComponent extends React.Component {
     }
 
     let uncommittedChangesSection;
+    let uncommittedChangesHeadline;
     if (this.state.showUncommittedChanges && this.state.hasUncommittedChanges) {
       const uncommittedChangesList = (
         <div className="nuclide-file-tree-sidebar-uncommitted-changes">
@@ -248,21 +254,24 @@ export default class FileTreeSidebarComponent extends React.Component {
         </div>
       );
 
-      const showDropdown =
-        Array.from(this.state.uncommittedFileChanges.keys())
-        .some(path => {
-          const repo = repositoryForPath(path);
-          return (repo != null) && repo.getType() === 'hg';
-        });
+      if (!this.state.areStackChangesEnabled) {
+        uncommittedChangesHeadline = 'UNCOMMITTED CHANGES';
+      } else {
+        const showDropdown =
+          Array.from(this.state.uncommittedFileChanges.keys())
+          .some(path => {
+            const repo = repositoryForPath(path);
+            return (repo != null) && repo.getType() === 'hg';
+          });
 
-      const dropdownIcon = (!showDropdown) ? null :
-        <Icon
-          icon="triangle-down"
-          className="nuclide-file-tree-toolbar-fader nuclide-ui-dropdown-icon"
-          onClick={this._handleUncommittedChangesKindDownArrow}
-        />;
+        const dropdownIcon = (!showDropdown) ? null :
+          <Icon
+            icon="triangle-down"
+            className="nuclide-file-tree-toolbar-fader nuclide-ui-dropdown-icon"
+            onClick={this._handleUncommittedChangesKindDownArrow}
+          />;
 
-      const dropdownTooltip =
+        const dropdownTooltip =
 `<div style="text-align: left;">
 This section shows the file changes you've made:<br />
 <br />
@@ -276,25 +285,26 @@ Just the changes that you've already amended/committed.<br />
 All the changes across your entire stacked diff.
 </div>`;
 
-      const calculatingChangesSpinner = (!this.state.isCalculatingChanges) ? null :
-        <span
-          className="nuclide-file-tree-spinner">&nbsp;
-          <LoadingSpinner
-            className="inline-block"
-            size={LoadingSpinnerSizes.EXTRA_SMALL}
-          />
-        </span>;
-
-      const uncommittedChangesHeadline =
-        <span
-          ref={addTooltip({title: dropdownTooltip})}>
+        const calculatingChangesSpinner = (!this.state.isCalculatingChanges) ? null :
           <span
-            className="nuclide-dropdown-label-text-wrapper">
-            {this.state.showUncommittedChangesKind.toUpperCase()}
-          </span>
-          {dropdownIcon}
-          {calculatingChangesSpinner}
-        </span>;
+            className="nuclide-file-tree-spinner">&nbsp;
+            <LoadingSpinner
+              className="inline-block"
+              size={LoadingSpinnerSizes.EXTRA_SMALL}
+            />
+          </span>;
+
+        uncommittedChangesHeadline =
+          <span
+            ref={addTooltip({title: dropdownTooltip})}>
+            <span
+              className="nuclide-dropdown-label-text-wrapper">
+              {this.state.showUncommittedChangesKind.toUpperCase()}
+            </span>
+            {dropdownIcon}
+            {calculatingChangesSpinner}
+          </span>;
+      }
 
       uncommittedChangesSection =
         <Section

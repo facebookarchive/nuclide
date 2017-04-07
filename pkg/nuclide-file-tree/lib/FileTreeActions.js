@@ -490,7 +490,7 @@ export default class FileTreeActions {
 
     if (repo.isDestroyed()) {
        // Don't observe anything on a destroyed repo.
-    } else if (repo.getType() === 'git') {
+    } else if (repo.getType() === 'git' || !(await FileTreeHelpers.areStackChangesEnabled())) {
       // Different repo types emit different events at individual and refresh updates.
       // Hence, the need to debounce and listen to both change types.
       vcsChanges = Observable.merge(
