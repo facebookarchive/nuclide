@@ -8,9 +8,9 @@
  * @flow
  */
 
+import type {Observable} from 'rxjs';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
-import type {ProcessMaker} from '../../nuclide-rpc/lib/RpcProcess';
 import typeof * as GraphQLServerService from './GraphQLServerService';
 
 // GraphQL-related helpers
@@ -28,7 +28,7 @@ import {getBufferAtVersion} from '../../nuclide-open-files-rpc';
 // Nuclide-specific utility functions
 import {Cache, DISPOSE_VALUE} from '../../commons-node/cache';
 import nuclideUri from '../../commons-node/nuclideUri';
-import {safeFork} from '../../commons-node/process';
+import {forkProcessStream} from '../../commons-node/process';
 
 const GRAPHQL_FILE_EXTENTIONS: Array<string> = [
   '.graphql',
@@ -61,23 +61,21 @@ class GraphQLProcess {
   _fileSubscription: rxjs$ISubscription;
   _fileVersionNotifier: FileVersionNotifier;
   _process: RpcProcess;
-  _isDisposed: boolean;
   _configDir: NuclideUri;
 
   constructor(
     fileCache: FileCache,
     name: string,
     configDir: NuclideUri,
-    createProcess: ProcessMaker,
+    processStream: Observable<child_process$ChildProcess>,
   ) {
-    this._isDisposed = false;
     this._fileCache = fileCache;
     this._fileVersionNotifier = new FileVersionNotifier();
     this._configDir = configDir;
     this._process = new RpcProcess(
       'GraphQLServer',
       getServiceRegistry(),
-      createProcess,
+      processStream,
     );
     this.getService();
 
@@ -97,7 +95,7 @@ class GraphQLProcess {
     });
   }
 
-  getService(): GraphQLServerService {
+  getService(): Promise<GraphQLServerService> {
     if (this._process.isDisposed()) {
       throw new Error('GraphQLServerService disposed already');
     }
@@ -105,7 +103,7 @@ class GraphQLProcess {
   }
 
   async getDiagnostics(query: string, filePath: NuclideUri) {
-    return this.getService().getDiagnostics(query, filePath);
+    return (await this.getService()).getDiagnostics(query, filePath);
   }
 
   async getDefinition(
@@ -113,7 +111,7 @@ class GraphQLProcess {
     position: atom$Point,
     filePath: NuclideUri,
   ) {
-    return this.getService().getDefinition(query, position, filePath);
+    return (await this.getService()).getDefinition(query, position, filePath);
   }
 
   async getAutocompleteSuggestions(
@@ -121,7 +119,7 @@ class GraphQLProcess {
     position: atom$Point,
     filePath: NuclideUri,
   ) {
-    return this.getService().getAutocompleteSuggestions(
+    return (await this.getService()).getAutocompleteSuggestions(
       query,
       position,
       filePath,
@@ -139,22 +137,19 @@ class GraphQLProcess {
       buffer.changeCount === fileVersion.version ? buffer : null;
   }
 
-  isDisposed(): boolean {
-    return this._isDisposed;
-  }
-
   dispose(): void {
-    this._isDisposed = true;
     logger.logTrace('Cleaning up GraphQL artifacts');
-    // Atempt to send disconnect message before shutting down connection
-    try {
-      logger.logTrace('Attempting to disconnect cleanly from GraphQLProcess');
-      this._process.getService('GraphQLServerService').disconnect();
-    } catch (e) {
-      // Failing to send the shutdown is not fatal...
-      // ... continue with shutdown.
-      logger.logError('GraphQL Process died before disconnect() could be sent.');
-    }
+    this._process.getService('GraphQLServerService').then(service => {
+      // Atempt to send disconnect message before shutting down connection
+      try {
+        logger.logTrace('Attempting to disconnect cleanly from GraphQLProcess');
+        service.disconnect();
+      } catch (e) {
+        // Failing to send the shutdown is not fatal...
+        // ... continue with shutdown.
+        logger.logError('GraphQL Process died before disconnect() could be sent.');
+      }
+    });
     this._process.dispose();
     this._fileVersionNotifier.dispose();
     this._fileSubscription.unsubscribe();
@@ -164,16 +159,12 @@ class GraphQLProcess {
   }
 }
 
-const processes: Cache<FileCache, Cache<NuclideUri, Promise<?GraphQLProcess>>>
+const processes: Cache<FileCache, Cache<NuclideUri, GraphQLProcess>>
   = new Cache(
     fileCache => new Cache(
       graphqlRoot => createGraphQLProcess(fileCache, graphqlRoot),
-      value => {
-        value.then(process => {
-          if (process != null) {
-            process.dispose();
-          }
-        });
+      process => {
+        process.dispose();
       }),
     DISPOSE_VALUE);
 
@@ -187,20 +178,14 @@ export async function getGraphQLProcess(
   }
 
   const processCache = processes.get(fileCache);
-  const graphqlProcess = processCache.get(configDir);
-  graphqlProcess.then(result => {
-    if (result == null) {
-      processCache.delete(configDir);
-    }
-  });
-  return graphqlProcess;
+  return processCache.get(configDir);
 }
 
-async function createGraphQLProcess(
+function createGraphQLProcess(
   fileCache: FileCache,
   configDir: string,
-): Promise<?GraphQLProcess> {
-  const createProcess: ProcessMaker = () => safeFork(
+): GraphQLProcess {
+  const processStream = forkProcessStream(
     require.resolve(
       '../../nuclide-graphql-language-service/bin/graphql.js',
     ),
@@ -212,6 +197,6 @@ async function createGraphQLProcess(
     fileCache,
     `GraphQLProcess-${configDir}`,
     configDir,
-    createProcess,
+    processStream,
   );
 }

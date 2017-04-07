@@ -9,11 +9,10 @@
  */
 
 import typeof * as JediService from './JediService';
-import type {ProcessMaker} from '../../nuclide-rpc/lib/RpcProcess';
 
 import invariant from 'assert';
 import nuclideUri from '../../commons-node/nuclideUri';
-import {safeSpawn} from '../../commons-node/process';
+import {createProcessStream} from '../../commons-node/process';
 import {RpcProcess} from '../../nuclide-rpc';
 import {ServiceRegistry, loadServicesConfig} from '../../nuclide-rpc';
 import {localNuclideUriMarshalers} from '../../nuclide-marshalers-common';
@@ -53,8 +52,8 @@ export default class JediServer {
       args.push('-p');
       args = args.concat(paths);
     }
-    const createProcess: ProcessMaker = () => safeSpawn(pythonPath, args, OPTS);
-    this._process = new RpcProcess(name, getServiceRegistry(), createProcess);
+    const processStream = createProcessStream(pythonPath, args, OPTS);
+    this._process = new RpcProcess(name, getServiceRegistry(), processStream);
     this._isDisposed = false;
   }
 

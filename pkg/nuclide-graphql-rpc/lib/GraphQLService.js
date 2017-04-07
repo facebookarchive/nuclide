@@ -191,7 +191,7 @@ class GraphQLLanguageAnalyzer {
           return null;
         }
 
-        return graphQLProcess.getService().getOutline(buffer.getText());
+        return (await graphQLProcess.getService()).getOutline(buffer.getText());
       },
     );
   }

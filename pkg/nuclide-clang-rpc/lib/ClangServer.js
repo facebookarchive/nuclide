@@ -8,7 +8,7 @@
  * @flow
  */
 
-import type {Subscription} from 'rxjs';
+import type {Subscription, Observable} from 'rxjs';
 import typeof * as ClangProcessService from './ClangProcessService';
 import type {ClangCompileResult} from './rpc-types';
 import type {ClangServerArgs} from './find-clang-server-args';
@@ -17,7 +17,7 @@ import nuclideUri from '../../commons-node/nuclideUri';
 import {getServerSideMarshalers} from '../../nuclide-marshalers-common';
 import {BehaviorSubject} from 'rxjs';
 
-import {asyncExecute, safeSpawn} from '../../commons-node/process';
+import {asyncExecute, createProcessStream} from '../../commons-node/process';
 import {RpcProcess} from '../../nuclide-rpc';
 import {ServiceRegistry, loadServicesConfig} from '../../nuclide-rpc';
 import {watchFile} from '../../nuclide-filewatcher-rpc';
@@ -41,7 +41,7 @@ function spawnClangProcess(
   src: string,
   serverArgs: ClangServerArgs,
   flags: Array<string>,
-): child_process$ChildProcess {
+): Observable<child_process$ChildProcess> {
   const {libClangLibraryFile, pythonPathEnv, pythonExecutable} = serverArgs;
   const pathToLibClangServer = nuclideUri.join(__dirname, '../python/clang_server.py');
   const args = [pathToLibClangServer];
@@ -62,7 +62,7 @@ function spawnClangProcess(
   // Note that safeSpawn() often overrides options.env.PATH, but that only happens when
   // options.env is undefined (which is not the case here). This will only be an issue if the
   // system cannot find `pythonExecutable`.
-  return safeSpawn(pythonExecutable, args, options);
+  return createProcessStream(pythonExecutable, args, options);
 }
 
 export type ClangServerFlags = {
@@ -91,7 +91,7 @@ export default class ClangServer extends RpcProcess {
     super(
       `ClangServer-${src}`,
       getServiceRegistry(),
-      () => spawnClangProcess(src, serverArgs, flagsData.flags),
+      spawnClangProcess(src, serverArgs, flagsData.flags),
     );
     this._usesDefaultFlags = flagsData.usesDefaultFlags;
     this._pendingCompileRequests = 0;

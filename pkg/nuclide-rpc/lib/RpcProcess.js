@@ -19,8 +19,6 @@ import {getLogger} from '../../nuclide-logging';
 import invariant from 'assert';
 import {Subject} from 'rxjs';
 
-export type ProcessMaker = () => child_process$ChildProcess;
-
 const logger = getLogger();
 
 /**
@@ -37,7 +35,7 @@ const logger = getLogger();
  *   Don't override the stdio to close off any of these streams in the constructor opts.
  */
 export class RpcProcess {
-  _createProcess: ProcessMaker;
+  _processStream: Observable<child_process$ChildProcess>;
   _messageLogger: MessageLogger;
   _name: string;
   _disposed: boolean;
@@ -55,10 +53,10 @@ export class RpcProcess {
   constructor(
     name: string,
     serviceRegistry: ServiceRegistry,
-    createProcess: ProcessMaker,
+    processStream: Observable<child_process$ChildProcess>,
     messageLogger: MessageLogger = (direction, message) => { return; },
   ) {
-    this._createProcess = createProcess;
+    this._processStream = processStream;
     this._messageLogger = messageLogger;
     this._name = name;
     this._serviceRegistry = serviceRegistry;
@@ -75,10 +73,10 @@ export class RpcProcess {
     return this._disposed;
   }
 
-  getService(serviceName: string): Object {
-    this._ensureProcess();
-    invariant(this._rpcConnection != null);
-    return this._rpcConnection.getService(serviceName);
+  getService(serviceName: string): Promise<Object> {
+    return this._ensureConnection().then(rpcConnection => {
+      return rpcConnection.getService(serviceName);
+    });
   }
 
   observeExitCode(): Observable<ProcessExitMessage> {
@@ -89,29 +87,36 @@ export class RpcProcess {
    * Ensures that the child process is available. Asynchronously creates the child process,
    * only if it is currently null.
    */
-  _ensureProcess(): void {
-    if (this._process) {
-      return;
+  _ensureConnection(): Promise<RpcConnection<StreamTransport>> {
+    if (this._rpcConnection != null) {
+      return Promise.resolve(this._rpcConnection);
     }
-    try {
-      const proc = this._createProcess();
-      logger.info(`${this._name} - created child process with PID: `, proc.pid);
+    return new Promise((resolve, reject) => {
+      this._subscription = this._processStream
+        .do({
+          next: proc => {
+            this._process = proc;
+            logger.info(`${this._name} - created child process with PID: `, proc.pid);
 
-      proc.stdin.on('error', error => {
-        logger.error(`${this._name} - error writing data: `, error);
-      });
+            proc.stdin.on('error', error => {
+              logger.error(`${this._name} - error writing data: `, error);
+            });
 
-      this._rpcConnection = new RpcConnection(
-        'client',
-        this._serviceRegistry,
-        new StreamTransport(proc.stdin, proc.stdout, this._messageLogger));
-      this._subscription = getOutputStream(proc)
+            this._rpcConnection = new RpcConnection(
+              'client',
+              this._serviceRegistry,
+              new StreamTransport(proc.stdin, proc.stdout, this._messageLogger),
+            );
+            resolve(this._rpcConnection);
+          },
+          error: e => {
+            logger.error(`${this._name} - error spawning child process: `, e);
+            reject(e);
+          },
+        })
+        .switchMap(getOutputStream)
         .subscribe(this._onProcessMessage.bind(this));
-      this._process = proc;
-    } catch (e) {
-      logger.error(`${this._name} - error spawning child process: `, e);
-      throw e;
-    }
+    });
   }
 
   /**
@@ -152,18 +157,15 @@ export class RpcProcess {
     logger.info(`${this._name} - disposing connection.`);
     this._disposed = true;
 
-    if (this._subscription != null) {
-      // Note that this will kill the process if it is still live.
-      this._subscription.unsubscribe();
-      this._subscription = null;
-    }
     if (this._rpcConnection != null) {
       this._rpcConnection.dispose();
       this._rpcConnection = null;
     }
-    // If shouldKill is false, i.e. the process exited outside of this
-    // object's control or disposal, the process still needs to be nulled out
-    // to indicate that the process needs to be restarted upon the next call.
-    this._process = null;
+    if (this._subscription != null) {
+      // Note that this will kill the process if it is still live.
+      this._subscription.unsubscribe();
+      this._subscription = null;
+      this._process = null;
+    }
   }
 }

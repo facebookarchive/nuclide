@@ -14,11 +14,10 @@ import type {TextEdit} from './HackConnectionService';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {HackCompletionsResult} from './rpc-types';
-import type {ProcessMaker} from '../../nuclide-rpc/lib/RpcProcess';
 import type {AutocompleteResult} from '../../nuclide-language-service/lib/LanguageService';
 
 import nuclideUri from '../../commons-node/nuclideUri';
-import {asyncExecute, safeSpawn} from '../../commons-node/process';
+import {asyncExecute, createProcessStream} from '../../commons-node/process';
 import {maybeToString} from '../../commons-node/string';
 import {RpcProcess} from '../../nuclide-rpc';
 import {getHackCommand, findHackConfigDir, HACK_FILE_EXTENSIONS} from './hack-config';
@@ -68,22 +67,22 @@ class HackProcess extends RpcProcess {
   constructor(
     fileCache: FileCache,
     name: string,
-    createProcess: ProcessMaker,
+    processStream: Observable<child_process$ChildProcess>,
     hhconfigPath: string,
   ) {
-    super(name, getServiceRegistry(), createProcess, logMessage);
+    super(name, getServiceRegistry(), processStream, logMessage);
     this._fileCache = fileCache;
     this._fileVersionNotifier = new FileVersionNotifier();
     this._hhconfigPath = hhconfigPath;
 
-    const service = this.getConnectionService();
     this._fileSubscription = fileCache.observeFileEvents()
       // TODO: Filter on hhconfigPath
       .filter(fileEvent => {
         const fileExtension = nuclideUri.extname(fileEvent.fileVersion.filePath);
         return HACK_FILE_EXTENSIONS.indexOf(fileExtension) !== -1;
       })
-      .subscribe(fileEvent => {
+      .combineLatest(Observable.fromPromise(this.getConnectionService()))
+      .subscribe(([fileEvent, service]) => {
         const filePath = fileEvent.fileVersion.filePath;
         const version = fileEvent.fileVersion.version;
         switch (fileEvent.kind) {
@@ -118,7 +117,7 @@ class HackProcess extends RpcProcess {
     return this._hhconfigPath;
   }
 
-  getConnectionService(): HackConnectionService {
+  getConnectionService(): Promise<HackConnectionService> {
     invariant(!this.isDisposed(), 'getService called on disposed hackProcess');
     return this.getService('HackConnectionService');
   }
@@ -158,7 +157,7 @@ class HackProcess extends RpcProcess {
     logger.log('Got Hack Service');
     // TODO: Include version number to ensure agreement on file version.
     const unfilteredItems: ?HackCompletionsResult =
-        await service.getCompletions(filePath, {line, column});
+        await (await service).getCompletions(filePath, {line, column});
     if (unfilteredItems == null) {
       return null;
     }
@@ -177,14 +176,16 @@ class HackProcess extends RpcProcess {
   dispose(): void {
     if (!this.isDisposed()) {
       // Atempt to send disconnect message before shutting down connection
-      try {
-        logger.log('Attempting to disconnect cleanly from HackProcess');
-        this.getConnectionService().disconnect();
-      } catch (e) {
-        // Failing to send the shutdown is not fatal...
-        // ... continue with shutdown.
-        logger.logError('Hack Process died before disconnect() could be sent.');
-      }
+      this.getConnectionService().then(service => {
+        try {
+          logger.log('Attempting to disconnect cleanly from HackProcess');
+          service.disconnect();
+        } catch (e) {
+          // Failing to send the shutdown is not fatal...
+          // ... continue with shutdown.
+          logger.logError('Hack Process died before disconnect() could be sent.');
+        }
+      });
       super.dispose();
       this._fileVersionNotifier.dispose();
       this._fileSubscription.unsubscribe();
@@ -306,9 +307,9 @@ async function createHackProcess(
   if (exitCode !== 0 && exitCode !== HACK_SERVER_ALREADY_EXISTS_EXIT_CODE) {
     throw new Error(`Hack server start failed with code: ${String(exitCode)}`);
   }
-  const createProcess = () => safeSpawn(command, ['ide', configDir]);
+  const processStream = createProcessStream(command, ['ide', configDir]);
   const hackProcess = new HackProcess(
-    fileCache, `HackProcess-${configDir}`, createProcess, configDir);
+    fileCache, `HackProcess-${configDir}`, processStream, configDir);
 
   // If the process exits unexpectedly, create a new one immediately.
   const startTime = Date.now();
@@ -353,9 +354,9 @@ function editToHackEdit(editEvent: FileEditEvent): TextEdit {
 export function observeConnections(fileCache: FileCache): Observable<HackConnectionService> {
   logger.logInfo('observing connections');
   return processes.get(fileCache).observeValues()
-    .switchMap(process => Observable.fromPromise(process))
+    .switchMap(process => process)
     .filter(process => process != null)
-    .map(process => {
+    .switchMap(process => {
       invariant(process != null);
       logger.logInfo(`Observing process ${process._hhconfigPath}`);
       return process.getConnectionService();

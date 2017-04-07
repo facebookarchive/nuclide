@@ -12,7 +12,7 @@ import typeof * as DummyService from './fixtures/dummy-service/DummyService';
 
 import nuclideUri from '../../commons-node/nuclideUri';
 import invariant from 'assert';
-import {safeSpawn} from '../../commons-node/process';
+import {createProcessStream} from '../../commons-node/process';
 import {RpcProcess} from '../lib/RpcProcess';
 import {ServiceRegistry} from '../../nuclide-rpc';
 
@@ -36,8 +36,8 @@ describe('RpcProcess', () => {
         preserveFunctionNames: true,
       }]);
 
-    const createProcess = () => safeSpawn('python', [PROCESS_PATH], OPTS);
-    server = new RpcProcess('Dummy IO Server', serviceRegistry, createProcess);
+    const processStream = createProcessStream('python', [PROCESS_PATH], OPTS);
+    server = new RpcProcess('Dummy IO Server', serviceRegistry, processStream);
   });
 
   afterEach(() => {
