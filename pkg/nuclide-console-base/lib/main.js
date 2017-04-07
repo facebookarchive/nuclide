@@ -8,8 +8,8 @@
  * @flow
  */
 
-import type {Message} from '../nuclide-console/lib/types';
-import type {ProcessMessage} from '../commons-node/process-rpc-types';
+import type {Message} from '../../nuclide-console/lib/types';
+import type {ProcessMessage} from '../../commons-node/process-rpc-types';
 
 import {Subject} from 'rxjs';
 
