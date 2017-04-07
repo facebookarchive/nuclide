@@ -536,14 +536,13 @@ export class ConnectionMultiplexer {
     }
   }
 
-  async getConnectionStackFrames(id: number): Promise<{stack: Array<Object>}> {
+  getConnectionStackFrames(id: number): Promise<{stack: Object}> {
     const connection = this._connections.get(id);
     if (connection != null && connection.getStatus() === ConnectionStatus.Break) {
-      const frames = await connection.getStackFrames();
-      return frames;
+      return connection.getStackFrames();
     } else {
       // This occurs on startup with the loader breakpoint.
-      return Promise.resolve({stack: []});
+      return Promise.resolve({stack: {}});
     }
   }
 
@@ -551,9 +550,9 @@ export class ConnectionMultiplexer {
     const connection = this._connections.get(id);
     if (connection != null) {
       return connection.getStopReason();
-    } else {
-      return null;
     }
+
+    return null;
   }
 
   getScopesForFrame(frameIndex: number): Promise<Array<Debugger$Scope>> {

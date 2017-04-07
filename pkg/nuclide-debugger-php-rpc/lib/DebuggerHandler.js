@@ -137,10 +137,6 @@ export class DebuggerHandler extends Handler {
         this._selectThread(params);
         break;
 
-      case 'getThreadStack':
-        this._getThreadStack(params);
-        break;
-
       case 'setDebuggerSettings':
         updateSettings(params);
         break;
@@ -155,11 +151,6 @@ export class DebuggerHandler extends Handler {
     const {threadId} = params;
     await this._connectionMultiplexer.selectThread(threadId);
     this._sendPausedMessage();
-  }
-
-  async _getThreadStack(params: Object): Promise<void> {
-    const {threadId} = params;
-    return this._sendPausedMessageForConnection(threadId, null);
   }
 
   async _setPauseOnExceptions(id: number, params: Object): Promise<any> {
@@ -208,18 +199,10 @@ export class DebuggerHandler extends Handler {
     this._sendFakeLoaderBreakpoint();
   }
 
-  async _getStackFrames(id: number): Promise<Array<Object>> {
-    const frames =
-      this._connectionMultiplexer.getConnectionStackFrames != null ?
-        await this._connectionMultiplexer.getConnectionStackFrames(id) :
-        await this._connectionMultiplexer.getStackFrames();
-
-    if (frames != null && frames.stack != null) {
-      return Promise.all(
-        frames.stack.map((frame, frameIndex) => this._convertFrame(frame, frameIndex)));
-    }
-
-    return Promise.resolve([]);
+  async _getStackFrames(): Promise<Array<Object>> {
+    const frames = await this._connectionMultiplexer.getStackFrames();
+    return Promise.all(
+      frames.stack.map((frame, frameIndex) => this._convertFrame(frame, frameIndex)));
   }
 
   async _getTopFrameForConnection(id: number): Promise<?Object> {
@@ -323,7 +306,7 @@ export class DebuggerHandler extends Handler {
   }
 
   // May only call when in paused state.
-  async _sendPausedMessage(): Promise<void> {
+  async _sendPausedMessage(): Promise<any> {
     const requestSwitchMessage = this._connectionMultiplexer.getRequestSwitchMessage();
     this._connectionMultiplexer.resetRequestSwitchMessage();
     if (requestSwitchMessage != null) {
@@ -333,17 +316,10 @@ export class DebuggerHandler extends Handler {
       });
     }
     const enabledConnectionId = this._connectionMultiplexer.getEnabledConnectionId();
-    return this._sendPausedMessageForConnection(enabledConnectionId, requestSwitchMessage);
-  }
-
-  async _sendPausedMessageForConnection(
-    enabledConnectionId: ?number,
-    requestSwitchMessage: ?string,
-  ): Promise<void> {
     this.sendMethod(
       'Debugger.paused',
       {
-        callFrames: await this._getStackFrames(enabledConnectionId || -1),
+        callFrames: await this._getStackFrames(),
         reason: 'breakpoint', // TODO: better reason?
         threadSwitchMessage: requestSwitchMessage,
         data: {},
