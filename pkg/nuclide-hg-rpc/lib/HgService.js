@@ -308,6 +308,32 @@ export class HgService {
       .publish();
   }
 
+  /**
+   * Like fetchStatuses, but first calculates the root of the current
+   * stack and fetches changes since that revision.
+   */
+  fetchStackStatuses(): ConnectableObservable<Map<NuclideUri, StatusCodeIdValue>> {
+    // Note: an alternative which doesn't depend upon reading .arcconfig in getForkBaseName is:
+    //   return this.fetchStatuses('ancestor(ancestor((not public()) and (:: .))^ or .)')
+    // Both the code below and the alternative above have identical performance.
+
+    return Observable.fromPromise(getForkBaseName(this._workingDirectory)) // e.g. "master"
+      .switchMap(forkBaseName => {
+        const root = expressionForCommonAncestor(forkBaseName); // e.g. "ancestor(master, .)"
+        return this.fetchStatuses(root).refCount();
+      })
+      .publish();
+  }
+
+  /**
+   * Like fetchStatuses, but first checks whether the head is public. If so, returns
+   * changes *since* the head. If not, returns changes *including* the head.
+   */
+  fetchHeadStatuses(): ConnectableObservable<Map<NuclideUri, StatusCodeIdValue>> {
+    return this.fetchStatuses('ancestor(. or (. and (not public()))^)');
+  }
+
+
   async _subscribeToWatchman(): Promise<void> {
     // Using a local variable here to allow better type refinement.
     const watchmanClient = new WatchmanClient();

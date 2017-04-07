@@ -20,12 +20,15 @@ import type {
   MergeConflict,
   RevisionFileChanges,
   StatusCodeNumberValue,
+  StatusCodeIdValue,
   VcsLogResponse,
 } from '../../nuclide-hg-rpc/lib/HgService';
 import type {ProcessMessage} from '../../commons-node/process-rpc-types';
 import type {LRUCache} from 'lru-cache';
+import type {ConnectableObservable} from 'rxjs';
 
 import {Emitter} from 'atom';
+import {cacheWhileSubscribed} from '../../commons-node/observable';
 import RevisionsCache from './RevisionsCache';
 import {
   StatusCodeIdToNumber,
@@ -121,7 +124,10 @@ export class HgRepositoryClient {
   _service: HgService;
   _emitter: Emitter;
   _subscriptions: UniversalDisposable;
-  _hgStatusCache: Map<NuclideUri, StatusCodeNumberValue>;
+  _hgStatusCache: Map<NuclideUri, StatusCodeNumberValue>; // legacy, only for uncommitted
+  _hgUncommittedStatusChanges: Observable<Map<NuclideUri, StatusCodeNumberValue>>;
+  _hgHeadStatusChanges: Observable<Map<NuclideUri, StatusCodeNumberValue>>;
+  _hgStackStatusChanges: Observable<Map<NuclideUri, StatusCodeNumberValue>>;
   _hgDiffCache: Map<NuclideUri, DiffInfo>;
   _hgDiffCacheFilesUpdating: Set<NuclideUri>;
   _hgDiffCacheFilesToClear: Set<NuclideUri>;
@@ -207,23 +213,29 @@ export class HgRepositoryClient {
     const conflictStateChanges = this._service.observeHgConflictStateDidChange().refCount();
     const commitChanges = this._service.observeHgCommitsDidChange().refCount();
 
-    const statusChangesSubscription = Observable.merge(
+    this._hgUncommittedStatusChanges = this._observeStatus(
       fileChanges,
       repoStateChanges,
-    ).debounceTime(STATUS_DEBOUNCE_DELAY_MS)
-    .startWith(null)
-    .switchMap(() =>
-      this._service.fetchStatuses()
-        .refCount()
-        .catch(error => {
-          getLogger().error('HgService cannot fetch statuses', error);
-          return Observable.empty();
-        }),
-    ).subscribe(statuses => {
-      this._hgStatusCache = mapTransform(statuses,
-                                         (v, k) => StatusCodeIdToNumber[v]);
-      this._emitter.emit('did-change-statuses');
-    });
+      () => this._service.fetchStatuses(),
+    );
+
+    this._hgStackStatusChanges = this._observeStatus(
+      fileChanges,
+      repoStateChanges,
+      () => this._service.fetchStackStatuses(),
+    );
+
+    this._hgHeadStatusChanges = this._observeStatus(
+      fileChanges,
+      repoStateChanges,
+      () => this._service.fetchHeadStatuses(),
+    );
+
+    const statusChangesSubscription = this._hgUncommittedStatusChanges
+      .subscribe(statuses => {
+        this._hgStatusCache = statuses;
+        this._emitter.emit('did-change-statuses');
+      });
 
     const shouldRevisionsUpdate = Observable.merge(
       activeBookmarkChanges,
@@ -238,6 +250,25 @@ export class HgRepositoryClient {
       allBookmarkChanges.subscribe(() => { this._emitter.emit('did-change-bookmarks'); }),
       conflictStateChanges.subscribe(this._conflictStateChanged.bind(this)),
       shouldRevisionsUpdate.subscribe(() => this._revisionsCache.refreshRevisions()),
+    );
+  }
+
+  _observeStatus(
+    fileChanges: Observable<Array<string>>,
+    repoStateChanges: Observable<void>,
+    fetchStatuses: () => ConnectableObservable<Map<NuclideUri, StatusCodeIdValue>>,
+  ): Observable<Map<NuclideUri, StatusCodeNumberValue>> {
+    return cacheWhileSubscribed(
+      Observable.merge(fileChanges, repoStateChanges)
+      .debounceTime(STATUS_DEBOUNCE_DELAY_MS)
+      .startWith(null)
+      .switchMap(() =>
+        fetchStatuses().refCount().catch(error => {
+          getLogger().error('HgService cannot fetch statuses', error);
+          return Observable.empty();
+        }),
+      )
+      .map(uriToStatusIds => mapTransform(uriToStatusIds, (v, k) => StatusCodeIdToNumber[v])),
     );
   }
 
@@ -283,6 +314,18 @@ export class HgRepositoryClient {
 
   observeRevisionStatusesChanges(): Observable<RevisionStatuses> {
     return this._revisionStatusCache.observeRevisionStatusesChanges();
+  }
+
+  observeUncommittedStatusChanges(): Observable<Map<NuclideUri, StatusCodeNumberValue>> {
+    return this._hgUncommittedStatusChanges;
+  }
+
+  observeHeadStatusChanges(): Observable<Map<NuclideUri, StatusCodeNumberValue>> {
+    return this._hgHeadStatusChanges;
+  }
+
+  observeStackStatusChanges(): Observable<Map<NuclideUri, StatusCodeNumberValue>> {
+    return this._hgStackStatusChanges;
   }
 
   onDidChangeStatuses(callback: () => mixed): IDisposable {
@@ -515,6 +558,7 @@ export class HgRepositoryClient {
     return StatusCodeNumber.CLEAN;
   }
 
+  // getAllPathStatuses -- this legacy API gets only uncommitted statuses
   getAllPathStatuses(): {[filePath: NuclideUri]: StatusCodeNumberValue} {
     const pathStatuses = Object.create(null);
     for (const [filePath, status] of this._hgStatusCache) {
