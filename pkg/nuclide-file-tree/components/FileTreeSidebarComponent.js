@@ -14,6 +14,7 @@ import type {ShowUncommittedChangesKindValue} from '../lib/Constants';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
+import addTooltip from '../../nuclide-ui/add-tooltip';
 import {Observable} from 'rxjs';
 import {ShowUncommittedChangesKind} from '../lib/Constants';
 import FileTreeHelpers from '../lib/FileTreeHelpers';
@@ -255,8 +256,23 @@ export default class FileTreeSidebarComponent extends React.Component {
           onClick={this._handleUncommittedChangesKindDownArrow}
         />;
 
+      const dropdownTooltip =
+`<div style="text-align: left;">
+This section shows the file changes you've made:<br />
+<br />
+<b>UNCOMMITTED</b><br />
+Just the changes that you have yet to amend/commit.<br />
+<br />
+<b>HEAD</b><br />
+Just the changes that you've already amended/committed.<br />
+<br />
+<b>STACK</b><br />
+All the changes across your entire stacked diff.
+</div>`;
+
       const uncommittedChangesHeadline =
-        <span>
+        <span
+          ref={addTooltip({title: dropdownTooltip})}>
           <span
             className="nuclide-dropdown-label-text-wrapper">
             {this.state.showUncommittedChangesKind.toUpperCase()}
