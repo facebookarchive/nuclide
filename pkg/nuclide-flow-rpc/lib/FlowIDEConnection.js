@@ -15,6 +15,7 @@ import {Observable, Subject} from 'rxjs';
 import * as rpc from 'vscode-jsonrpc';
 import through from 'through';
 
+import {track} from '../../nuclide-analytics';
 import {getLogger} from '../../nuclide-logging';
 
 // TODO put these in flow-typed when they are fleshed out better
@@ -103,6 +104,7 @@ export class FlowIDEConnection {
         getLogger().error(
           'Did not receive diagnostics after subscribe request -- retrying...',
         );
+        track('nuclide-flow.missing-push-diagnostics');
         subscribe();
       });
 
