@@ -758,6 +758,8 @@ declare class atom$TextEditor extends atom$Model {
   duplicateLines: () => void,
 
   // History
+  createCheckpoint(): atom$TextBufferCheckpoint,
+  revertToCheckpoint(checkpoint: atom$TextBufferCheckpoint): boolean,
   transact(fn: () => mixed, _: void): void,
   transact(groupingInterval: number, fn: () => mixed): void,
 
