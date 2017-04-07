@@ -11,7 +11,7 @@
 import type {HgService as HgServiceType} from '../../nuclide-hg-rpc/lib/HgService';
 
 import {Directory, GitRepository} from 'atom';
-import {repositoryContainsPath} from '../../commons-atom/vcs';
+import {repositoryContainsPath} from '../../nuclide-vcs-base';
 import {checkOutput} from '../../commons-node/process';
 import MockHgService from '../../nuclide-hg-rpc/spec/MockHgService';
 import {HgRepositoryClient} from '../../nuclide-hg-repository-client';

@@ -9,7 +9,7 @@
  */
 
 import type {NuclideUri} from '../commons-node/nuclideUri';
-import type {FileChangeStatusValue} from '../commons-atom/vcs';
+import type {FileChangeStatusValue} from '../nuclide-vcs-base';
 
 import {
  addPath,
@@ -17,7 +17,7 @@ import {
  confirmAndDeletePath,
  FileChangeStatus,
  RevertibleStatusCodes,
-} from '../commons-atom/vcs';
+} from '../nuclide-vcs-base';
 import {goToLocation} from '../commons-atom/go-to-location';
 import {openFileInDiffView} from '../commons-atom/open-in-diff-view';
 import invariant from 'assert';

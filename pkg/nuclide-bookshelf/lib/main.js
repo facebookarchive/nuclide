@@ -28,7 +28,7 @@ import {
   getEmptBookShelfState,
   serializeBookShelfState,
 } from './utils';
-import {getHgRepositoryStream} from '../../commons-atom/vcs';
+import {getHgRepositoryStream} from '../../nuclide-vcs-base';
 import {getLogger} from '../../nuclide-logging';
 import featureConfig from '../../commons-atom/featureConfig';
 import invariant from 'assert';

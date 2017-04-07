@@ -22,7 +22,7 @@ import ReactDOM from 'react-dom';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {File} from 'atom';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
-import {repositoryForPath} from '../../commons-atom/vcs';
+import {repositoryForPath} from '../../nuclide-vcs-base';
 
 let atomPanel: ?Object;
 let dialogComponent: ?React.Component<any, any, any>;

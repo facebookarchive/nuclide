@@ -23,7 +23,7 @@ import nullthrows from 'nullthrows';
 import nuclideUri from '../pkg/commons-node/nuclideUri';
 import {generateHgRepo1Fixture} from '../pkg/nuclide-test-helpers';
 import {describeRemotableTest} from './utils/remotable-tests';
-import {repositoryForPath} from '../pkg/commons-atom/vcs';
+import {repositoryForPath} from '../pkg/nuclide-vcs-base';
 import {waitsForRepositoryReady} from './utils/diff-view-utils';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {

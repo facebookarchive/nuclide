@@ -26,7 +26,7 @@ import {Observable, BehaviorSubject} from 'rxjs';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {parseWithAnnotations} from './utils';
 import React from 'react';
-import {repositoryForPath} from '../../commons-atom/vcs';
+import {repositoryForPath} from '../../nuclide-vcs-base';
 import {rootReducer} from './redux/Reducers';
 import {track} from '../../nuclide-analytics';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';

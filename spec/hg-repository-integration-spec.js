@@ -22,7 +22,7 @@ import {
 
 const {AmendMode} = hgConstants;
 
-import {repositoryForPath} from '../pkg/commons-atom/vcs';
+import {repositoryForPath} from '../pkg/nuclide-vcs-base';
 import {
   fetchFileContentAtRevision,
   fetchFilesChangedSinceRevision,

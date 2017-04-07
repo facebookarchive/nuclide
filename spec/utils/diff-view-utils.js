@@ -11,7 +11,7 @@
 import type {HgRepositoryClient} from '../../pkg/nuclide-hg-repository-client';
 
 import invariant from 'assert';
-import {repositoryForPath} from '../../pkg/commons-atom/vcs';
+import {repositoryForPath} from '../../pkg/nuclide-vcs-base';
 
 function hgRepositoryForPath(filePath: string): HgRepositoryClient {
   const repository = repositoryForPath(filePath);

@@ -8,7 +8,7 @@
  * @flow
  */
 
-import type {FileChangeStatusValue} from '../../commons-atom/vcs';
+import type {FileChangeStatusValue} from '../../nuclide-vcs-base';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {ShowUncommittedChangesKindValue} from '../lib/Constants';
 
@@ -29,7 +29,7 @@ import {
 import {
   filterMultiRootFileChanges,
   repositoryForPath,
-} from '../../commons-atom/vcs';
+} from '../../nuclide-vcs-base';
 import {
   LoadingSpinner,
   LoadingSpinnerSizes,

@@ -8,7 +8,7 @@
  * @flow
  */
 
-import type {FileChangeStatusValue} from '../../commons-atom/vcs';
+import type {FileChangeStatusValue} from '../../nuclide-vcs-base';
 import type React from 'react';
 
 import FileTreeDispatcher, {ActionTypes} from './FileTreeDispatcher';
@@ -17,10 +17,10 @@ import FileTreeHgHelpers from './FileTreeHgHelpers';
 import {FileTreeNode} from './FileTreeNode';
 import Immutable from 'immutable';
 import {Emitter} from 'atom';
-import {HgStatusToFileChangeStatus} from '../../commons-atom/vcs';
+import {HgStatusToFileChangeStatus} from '../../nuclide-vcs-base';
 import {matchesFilter} from './FileTreeFilterHelper';
 import {Minimatch} from 'minimatch';
-import {repositoryForPath} from '../../commons-atom/vcs';
+import {repositoryForPath} from '../../nuclide-vcs-base';
 import {nextAnimationFrame} from '../../commons-node/observable';
 import {StatusCodeNumber} from '../../nuclide-hg-rpc/lib/hg-constants';
 import {getLogger} from '../../nuclide-logging';

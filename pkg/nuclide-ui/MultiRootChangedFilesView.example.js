@@ -11,7 +11,7 @@
 import React from 'react';
 import {Block} from './Block';
 import {MultiRootChangedFilesView} from './MultiRootChangedFilesView';
-import {FileChangeStatus} from '../commons-atom/vcs';
+import {FileChangeStatus} from '../nuclide-vcs-base';
 
 function onFileChosen(uri: string): void {
   atom.notifications.addInfo(`Selected file ${uri}`);

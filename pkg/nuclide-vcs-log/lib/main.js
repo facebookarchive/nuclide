@@ -21,7 +21,7 @@ import invariant from 'assert';
 import {getAtomProjectRelativePath} from '../../commons-atom/projects';
 import {maybeToString} from '../../commons-node/string';
 import querystring from 'querystring';
-import {repositoryForPath} from '../../commons-atom/vcs';
+import {repositoryForPath} from '../../nuclide-vcs-base';
 import {shortNameForAuthor as shortNameForAuthorFn} from './util';
 import {track} from '../../nuclide-analytics';
 import url from 'url';

@@ -8,22 +8,22 @@
  * @flow
  */
 
-import type {StatusCodeNumberValue} from '../nuclide-hg-rpc/lib/HgService';
-import type {HgRepositoryClient} from '../nuclide-hg-repository-client/lib/HgRepositoryClient';
-import type {IconName} from '../nuclide-ui/types';
-import type {NuclideUri} from '../commons-node/nuclideUri';
+import type {StatusCodeNumberValue} from '../../nuclide-hg-rpc/lib/HgService';
+import type {HgRepositoryClient} from '../../nuclide-hg-repository-client/lib/HgRepositoryClient';
+import type {IconName} from '../../nuclide-ui/types';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
-import {arrayCompact, mapFilter} from '../commons-node/collection';
-import {asyncExecute} from '../commons-node/process';
-import {diffSets} from '../commons-node/observable';
+import {arrayCompact, mapFilter} from '../../commons-node/collection';
+import {asyncExecute} from '../../commons-node/process';
+import {diffSets} from '../../commons-node/observable';
 import {Directory} from 'atom';
-import {getFileSystemServiceByNuclideUri} from '../nuclide-remote-connection';
-import {hgConstants} from '../nuclide-hg-rpc';
+import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {hgConstants} from '../../nuclide-hg-rpc';
 import invariant from 'assert';
-import nuclideUri from '../commons-node/nuclideUri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import {Observable} from 'rxjs';
-import {observableFromSubscribeFunction} from '../commons-node/event';
-import {track} from '../nuclide-analytics';
+import {observableFromSubscribeFunction} from '../../commons-node/event';
+import {track} from '../../nuclide-analytics';
 
 type VcsInfo = {
   vcs: string,

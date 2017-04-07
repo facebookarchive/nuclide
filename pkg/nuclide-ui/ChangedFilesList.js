@@ -9,7 +9,7 @@
  */
 
 import type {NuclideUri} from '../commons-node/nuclideUri';
-import type {FileChangeStatusValue} from '../commons-atom/vcs';
+import type {FileChangeStatusValue} from '../nuclide-vcs-base';
 
 import addTooltip from './add-tooltip';
 import classnames from 'classnames';
@@ -17,7 +17,7 @@ import {
  FileChangeStatusToIcon,
  FileChangeStatusToTextColor,
  repositoryForPath,
-} from '../commons-atom/vcs';
+} from '../nuclide-vcs-base';
 import nuclideUri from '../commons-node/nuclideUri';
 import React from 'react';
 import {Icon} from './Icon';

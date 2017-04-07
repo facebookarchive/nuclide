@@ -26,7 +26,7 @@ import invariant from 'assert';
 import {Observable} from 'rxjs';
 import featureConfig from '../../commons-atom/featureConfig';
 import nuclideUri from '../../commons-node/nuclideUri';
-import {repositoryForPath} from '../../commons-atom/vcs';
+import {repositoryForPath} from '../../nuclide-vcs-base';
 import {track} from '../../nuclide-analytics';
 
 export function getEmptBookShelfState(): BookShelfState {
