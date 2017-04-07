@@ -1,45 +1,52 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import createPackage from '../../commons-atom/createPackage';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {DevicesPanelState, WORKSPACE_VIEW_URI} from './DevicesPanelState';
+var _createPackage;
 
-import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
+function _load_createPackage() {
+  return _createPackage = _interopRequireDefault(require('../../commons-atom/createPackage'));
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../commons-node/UniversalDisposable'));
+}
+
+var _DevicesPanelState;
+
+function _load_DevicesPanelState() {
+  return _DevicesPanelState = require('./DevicesPanelState');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 class Activation {
-  _disposables: UniversalDisposable;
 
-  constructor(state: ?Object) {
-    this._disposables = new UniversalDisposable();
+  constructor(state) {
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
   }
 
-  consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
-    this._disposables.add(
-      api.addOpener(uri => {
-        if (uri === WORKSPACE_VIEW_URI) {
-          return new DevicesPanelState();
-        }
-      }),
-      () => api.destroyWhere(item => item instanceof DevicesPanelState),
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-devices:toggle',
-        event => { api.toggle(WORKSPACE_VIEW_URI, (event: any).detail); },
-      ),
-    );
+  consumeWorkspaceViewsService(api) {
+    this._disposables.add(api.addOpener(uri => {
+      if (uri === (_DevicesPanelState || _load_DevicesPanelState()).WORKSPACE_VIEW_URI) {
+        return new (_DevicesPanelState || _load_DevicesPanelState()).DevicesPanelState();
+      }
+    }), () => api.destroyWhere(item => item instanceof (_DevicesPanelState || _load_DevicesPanelState()).DevicesPanelState), atom.commands.add('atom-workspace', 'nuclide-devices:toggle', event => {
+      api.toggle((_DevicesPanelState || _load_DevicesPanelState()).WORKSPACE_VIEW_URI, event.detail);
+    }));
   }
-}
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   */
 
-createPackage(module.exports, Activation);
+(0, (_createPackage || _load_createPackage()).default)(module.exports, Activation);

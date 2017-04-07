@@ -1,3 +1,22 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getEmptyCommitState = getEmptyCommitState;
+exports.getEmptyPublishState = getEmptyPublishState;
+exports.getEmptySuggestedReviewerState = getEmptySuggestedReviewerState;
+exports.getEmptyFileDiffState = getEmptyFileDiffState;
+exports.getEmptyRepositoryState = getEmptyRepositoryState;
+exports.createEmptyAppState = createEmptyAppState;
+exports.getEmptyTextDiff = getEmptyTextDiff;
+
+var _constants;
+
+function _load_constants() {
+  return _constants = require('../constants');
+}
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,78 +24,57 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
 
-import type {
-  AppState,
-  CommitState,
-  EditorState,
-  FileDiffState,
-  PublishState,
-  RepositoryState,
-  SuggestedReviewersState,
-  TextDiff,
-} from '../types';
-
-import {
-  CommitMode,
-  CommitModeState,
-  DiffMode,
-  PublishMode,
-  PublishModeState,
-} from '../constants';
-
-
-export function getEmptyCommitState(): CommitState {
+function getEmptyCommitState() {
   return {
     message: null,
-    mode: CommitMode.COMMIT,
-    state: CommitModeState.READY,
+    mode: (_constants || _load_constants()).CommitMode.COMMIT,
+    state: (_constants || _load_constants()).CommitModeState.READY
   };
 }
 
-export function getEmptyPublishState(): PublishState {
+function getEmptyPublishState() {
   return {
     message: null,
-    mode: PublishMode.CREATE,
-    state: PublishModeState.READY,
+    mode: (_constants || _load_constants()).PublishMode.CREATE,
+    state: (_constants || _load_constants()).PublishModeState.READY
   };
 }
 
-export function getEmptySuggestedReviewerState(): SuggestedReviewersState {
+function getEmptySuggestedReviewerState() {
   return {
-    status: 'not-initialized',
+    status: 'not-initialized'
   };
 }
 
-function initialEditorState(): EditorState {
+function initialEditorState() {
   return {
     revisionTitle: 'No file selected',
     text: '',
     offsets: new Map(),
     highlightedLines: {
       added: [],
-      removed: [],
+      removed: []
     },
     inlineElements: new Map(),
-    inlineOffsetElements: new Map(),
+    inlineOffsetElements: new Map()
   };
 }
 
-export function getEmptyFileDiffState(): FileDiffState {
+function getEmptyFileDiffState() {
   return {
     filePath: '',
-    lineMapping: {oldToNew: [], newToOld: []},
+    lineMapping: { oldToNew: [], newToOld: [] },
     newEditorState: initialEditorState(),
     oldEditorState: initialEditorState(),
     navigationSections: [],
-    activeSectionIndex: -1,
+    activeSectionIndex: -1
   };
 }
 
-
-export function getEmptyRepositoryState(): RepositoryState {
+function getEmptyRepositoryState() {
   return {
     revisionStatuses: new Map(),
     dirtyFiles: new Map(),
@@ -84,11 +82,11 @@ export function getEmptyRepositoryState(): RepositoryState {
     headRevision: null,
     isLoadingSelectedFiles: false,
     compareRevisionId: null,
-    selectedFiles: new Map(),
+    selectedFiles: new Map()
   };
 }
 
-export function createEmptyAppState(): AppState {
+function createEmptyAppState() {
   return {
     activeRepository: null,
     activeRepositoryState: getEmptyRepositoryState(),
@@ -110,19 +108,19 @@ export function createEmptyAppState(): AppState {
     shouldRebaseOnAmend: true,
     shouldUseTextBasedForm: false,
     uiProviders: [],
-    viewMode: DiffMode.BROWSE_MODE,
+    viewMode: (_constants || _load_constants()).DiffMode.BROWSE_MODE,
     suggestedReviewers: getEmptySuggestedReviewerState(),
-    verbatimModeEnabled: false,
+    verbatimModeEnabled: false
   };
 }
 
-export function getEmptyTextDiff(): TextDiff {
+function getEmptyTextDiff() {
   return {
     addedLines: [],
     newLineOffsets: [],
     newToOld: [],
     oldLineOffsets: [],
     oldToNew: [],
-    removedLines: [],
+    removedLines: []
   };
 }
