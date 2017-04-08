@@ -14,6 +14,8 @@ import {Connection} from './Connection';
 import {getConfig} from './config';
 import {getSettings} from './settings';
 import nuclideUri from '../../commons-node/nuclideUri';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import {Observable} from 'rxjs';
 
 import {
   isDummyConnection,
@@ -43,7 +45,8 @@ import type {DbgpBreakpoint} from './DbgpSocket';
 
 const CONNECTION_MUX_STATUS_EVENT = 'connection-mux-status';
 const CONNECTION_MUX_NOTIFICATION_EVENT = 'connection-mux-notification';
-
+const DEBUGGER_CONNECT_TIMEOUT_MS = 30 * 1000;
+const DEBUGGER_TEAR_DOWN_TIMEOUT_MS = 3 * 1000;
 
 export const ConnectionMultiplexerStatus = {
   Init: 'Init',
@@ -116,6 +119,7 @@ export class ConnectionMultiplexer {
   _launchedScriptProcessPromise: ?Promise<void>;
   _requestSwitchMessage: ?string;
   _lastEnabledConnection: ?Connection;
+  _debuggerStartupDisposable: IDisposable;
 
   constructor(clientCallback: ClientCallback) {
     this._clientCallback = clientCallback;
@@ -133,6 +137,7 @@ export class ConnectionMultiplexer {
     this._launchedScriptProcessPromise = null;
     this._requestSwitchMessage = null;
     this._lastEnabledConnection = null;
+    this._debuggerStartupDisposable = new UniversalDisposable();
   }
 
   onStatus(callback: (status: string) => mixed): IDisposable {
@@ -145,10 +150,11 @@ export class ConnectionMultiplexer {
       CONNECTION_MUX_NOTIFICATION_EVENT, callback);
   }
 
-  listen(): void {
-    this._sendOutput('Debugger connected.', 'success');
+  listen(timeoutCallback: () => void): IDisposable {
+    this._debuggerStartupDisposable.dispose();
     this._sendOutput(
-      'Pre-loading all of your PHP types and symbols. This may take a moment, please wait...',
+      'Connecting and pre-loading all of your PHP types and symbols. This may take a moment, '
+        + ' please wait...',
       'warning',
     );
 
@@ -172,6 +178,20 @@ export class ConnectionMultiplexer {
           });
       });
     }
+
+    // If the debugger does not connect within a reasonable amount of time, tell the user.
+    this._debuggerStartupDisposable = new UniversalDisposable(
+      Observable.of(null).delay(DEBUGGER_CONNECT_TIMEOUT_MS).switchMap(() => {
+        this._clientCallback.sendUserMessage('notification', {
+          type: 'error',
+          message: 'Error: Timed out while trying to establish debugger connection. '
+              + 'Is the webserver available?',
+        });
+        return Observable.of(null).take(DEBUGGER_TEAR_DOWN_TIMEOUT_MS);
+      }).subscribe(timeoutCallback),
+    );
+
+    return this._debuggerStartupDisposable;
   }
 
   _attachModeListen(): void {
@@ -271,6 +291,8 @@ export class ConnectionMultiplexer {
 
   _connectionOnStatus(connection: Connection, status: string, ...args: Array<string>): void {
     logger.log(`Mux got status: ${status} on connection ${connection.getId()}`);
+
+    this._debuggerStartupDisposable.dispose();
 
     switch (status) {
       case ConnectionStatus.Starting:

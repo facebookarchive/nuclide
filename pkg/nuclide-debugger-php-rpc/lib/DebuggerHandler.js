@@ -250,7 +250,7 @@ export class DebuggerHandler extends Handler {
     if (!this._hadFirstContinuationCommand) {
       this._hadFirstContinuationCommand = true;
       this.sendMethod('Debugger.resumed');
-      this._connectionMultiplexer.listen();
+      this._subscriptions.add(this._connectionMultiplexer.listen(this._endSession.bind(this)));
       return;
     }
     this._connectionMultiplexer.resume();

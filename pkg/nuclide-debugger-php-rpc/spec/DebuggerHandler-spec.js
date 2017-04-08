@@ -13,7 +13,7 @@ import type {
   ConnectionMultiplexer as ConnectionMultiplexerType,
 } from '../lib/ConnectionMultiplexer';
 
-
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {ConnectionMultiplexerStatus} from '../lib/ConnectionMultiplexer';
 import {DebuggerHandler} from '../lib/DebuggerHandler';
 
@@ -54,6 +54,7 @@ describe('debugger-php-rpc DebuggerHandler', () => {
         'resetRequestSwitchMessage',
         'pause',
         'resume',
+        'dispose',
       ]): any
     ): ConnectionMultiplexerType);
     onStatusSubscription = jasmine.createSpyObj('onStatusSubscription', ['dispose']);
@@ -67,6 +68,12 @@ describe('debugger-php-rpc DebuggerHandler', () => {
       .andCallFake(callback => {
         onStatus = callback;
         return onStatusSubscription;
+      });
+    // $FlowFixMe override instance methods.
+    connectionMultiplexer.listen = jasmine
+      .createSpy('listen')
+      .andCallFake(callback => {
+        return new UniversalDisposable();
       });
     // $FlowFixMe
     connectionMultiplexer.onNotification = jasmine
@@ -169,7 +176,7 @@ describe('debugger-php-rpc DebuggerHandler', () => {
   it('continue from fake loader bp', () => {
     waitsForPromise(async () => {
       await handler.handleMethod(1, 'resume');
-      expect(connectionMultiplexer.listen).toHaveBeenCalledWith();
+      expect(connectionMultiplexer.listen).toHaveBeenCalledWith(jasmine.any(Function));
       expect(clientCallback.sendServerMethod).toHaveBeenCalledWith(
         'Debugger.resumed',
         undefined,
@@ -183,7 +190,7 @@ describe('debugger-php-rpc DebuggerHandler', () => {
 
       // Fake the run from loader bp
       await handler.handleMethod(1, 'resume');
-      expect(connectionMultiplexer.listen).toHaveBeenCalledWith();
+      expect(connectionMultiplexer.listen).toHaveBeenCalledWith(jasmine.any(Function));
       expect(clientCallback.sendServerMethod).toHaveBeenCalledWith(
         'Debugger.resumed',
         undefined,
@@ -222,7 +229,7 @@ describe('debugger-php-rpc DebuggerHandler', () => {
 
       // Fake the run from loader bp
       await handler.handleMethod(1, 'resume');
-      expect(connectionMultiplexer.listen).toHaveBeenCalledWith();
+      expect(connectionMultiplexer.listen).toHaveBeenCalledWith(jasmine.any(Function));
       expect(clientCallback.sendServerMethod).toHaveBeenCalledWith(
         'Debugger.resumed',
         undefined,
