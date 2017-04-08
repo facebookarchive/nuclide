@@ -29,32 +29,28 @@ export type Device = {
 };
 
 export function getFbsimctlDevices(): Observable<Array<Device>> {
-  return runCommand('fbsimctl', ['--json', '--devices', '--name', '--udid', '--arch', 'list'])
-    // fbsimctl API has changed, first command to be removed after update deployed to chef
-    .catch(error => runCommand('fbsimctl', ['--json', '--devices', '--format=%n%u%a', 'list']))
-    .map(parseDevicesFromFbsimctlOutput)
-    // Users may not have fbsimctl installed. If the command failed, just return an empty list.
-    .catch(error => Observable.of([]))
-    .share();
+  return (
+    runCommand('fbsimctl', ['--json', '--devices', '--format=%n%u%a', 'list'])
+      .map(parseDevicesFromFbsimctlOutput)
+      // Users may not have fbsimctl installed. If the command failed, just return an empty list.
+      .catch(error => Observable.of([]))
+      .share()
+  );
 }
 
-export const getFbsimctlSimulators: () => Observable<Array<Simulator>> = memoize(() => (
-  runCommand(
-    'fbsimctl',
-    ['--json', '--simulators', '--name', '--udid', '--state', '--os', '--arch', 'list'],
-  )
-    // fbsimctl API has changed, first command to be removed after update deployed to chef
-    .catch(error => runCommand(
-      'fbsimctl',
-      ['--json', '--simulators', '--format=%n%u%s%o%a', 'list']),
-    )
-    .map(parseSimulatorsFromFbsimctlOutput)
-    .catch(error => (
+export const getFbsimctlSimulators: () => Observable<Array<Simulator>> = memoize(
+  () =>
+    runCommand('fbsimctl', [
+      '--json',
+      '--simulators',
+      '--format=%n%u%s%o%a',
+      'list',
+    ])
+      .map(parseSimulatorsFromFbsimctlOutput)
+      .catch(error => getSimulators())
       // Users may not have fbsimctl installed. Fall back to xcrun simctl in that case.
-      getSimulators()
-    ))
-    .share()
-));
+      .share(),
+);
 
 export const getSimulators: () => Observable<Array<Simulator>> = memoize(() => (
   runCommand('xcrun', ['simctl', 'list', 'devices'])
