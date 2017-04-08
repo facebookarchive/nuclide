@@ -89,7 +89,7 @@ export function activate(state: any): void {
     'atom-text-editor',
     'nuclide-hg-repository:revert',
     event => {
-      const editorElement: atom$TextEditorElement = (event.target: any);
+      const editorElement: atom$TextEditorElement = (event.currentTarget: any);
       revertPath(editorElement.getModel().getPath());
     },
   ));
@@ -98,7 +98,7 @@ export function activate(state: any): void {
     'atom-text-editor',
     'nuclide-hg-repository:confirm-and-revert',
     event => {
-      const editorElement: atom$TextEditorElement = (event.target: any);
+      const editorElement: atom$TextEditorElement = (event.currentTarget: any);
       confirmAndRevertPath(editorElement.getModel().getPath());
     },
   ));
@@ -107,7 +107,7 @@ export function activate(state: any): void {
     'atom-text-editor',
     'nuclide-hg-repository:add',
     event => {
-      const editorElement: atom$TextEditorElement = (event.target: any);
+      const editorElement: atom$TextEditorElement = (event.currentTarget: any);
       addPath(editorElement.getModel().getPath());
     },
   ));
