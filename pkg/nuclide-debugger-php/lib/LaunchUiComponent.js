@@ -8,6 +8,8 @@
  * @flow
  */
 
+/* global localStorage */
+
 import React from 'react';
 import {AtomInput} from '../../nuclide-ui/AtomInput';
 import {LaunchProcessInfo} from './LaunchProcessInfo';
@@ -24,6 +26,8 @@ import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 import type EventEmitter from 'events';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
+const MAX_RECENTLY_LAUNCHED = 5;
+
 type PropsType = {
   targetUri: NuclideUri,
   parentEmitter: EventEmitter,
@@ -32,6 +36,8 @@ type PropsType = {
 type StateType = {
   pathsDropdownIndex: number,
   pathMenuItems: Array<{label: string, value: number}>,
+  recentlyLaunchedScripts: Array<{label: string, value: string}>,
+  recentlyLaunchedScript: ?string,
 };
 
 export class LaunchUiComponent extends React.Component<void, PropsType, StateType> {
@@ -44,9 +50,12 @@ export class LaunchUiComponent extends React.Component<void, PropsType, StateTyp
     (this: any)._handleCancelButtonClick = this._handleCancelButtonClick.bind(this);
     (this: any)._handleLaunchButtonClick = this._handleLaunchButtonClick.bind(this);
     (this: any)._handlePathsDropdownChange = this._handlePathsDropdownChange.bind(this);
+    (this: any)._handleRecentSelectionChange = this._handleRecentSelectionChange.bind(this);
     this.state = {
       pathsDropdownIndex: 0,
       pathMenuItems: this._getPathMenuItems(),
+      recentlyLaunchedScripts: this._getRecentlyLaunchedScripts(),
+      recentlyLaunchedScript: null,
     };
   }
 
@@ -74,12 +83,21 @@ export class LaunchUiComponent extends React.Component<void, PropsType, StateTyp
             value={this.state.pathsDropdownIndex}
           />
         </div>
+        <label>Recently launched commands: </label>
+        <Dropdown
+          className="inline-block nuclide-debugger-recently-launched"
+          options={[{label: '', value: null}, ...this.state.recentlyLaunchedScripts]}
+          onChange={this._handleRecentSelectionChange}
+          value={this.state.recentlyLaunchedScript}
+        />
         <label>Command: </label>
         <AtomInput
           ref="scriptPath"
           tabIndex="11"
           placeholderText="/path/to/my/script.php arg1 arg2"
           initialValue={this._getActiveFilePath()}
+          value={this.state.recentlyLaunchedScript || ''}
+          sugges
         />
         <div className="padded text-right">
           <Button onClick={this._handleCancelButtonClick}>
@@ -93,6 +111,48 @@ export class LaunchUiComponent extends React.Component<void, PropsType, StateTyp
         </div>
       </div>
     );
+  }
+
+  _getRecentlyLaunchedKey() {
+    const hostname = nuclideUri.getHostname(this.props.targetUri);
+    return 'nuclide-debugger-php.recentlyLaunchedScripts:' + hostname;
+  }
+
+  _getRecentlyLaunchedScripts(): Array<{label: string, value: string}> {
+    const recentlyLaunched = localStorage.getItem(this._getRecentlyLaunchedKey());
+    if (recentlyLaunched == null) {
+      return [];
+    }
+
+    const items = JSON.parse(String(recentlyLaunched));
+    return items
+      .filter(script => script !== '')
+      .map(script => {
+        return {
+          label: script,
+          value: script,
+        };
+      });
+  }
+
+  _setRecentlyLaunchedScript(
+    script: string,
+    recentlyLaunched: Array<{label: string, value: string}>,
+  ): void {
+    // Act like a simple MRU cache, move the script being launched to the front.
+    // NOTE: this array is expected to be really tiny.
+    const scriptNames = [script];
+    recentlyLaunched.forEach(item => {
+      if (item.label !== script && scriptNames.length < MAX_RECENTLY_LAUNCHED) {
+        scriptNames.push(item.label);
+      }
+    });
+
+    localStorage.setItem(this._getRecentlyLaunchedKey(), JSON.stringify(scriptNames));
+    this.setState({
+      recentlyLaunchedScripts: this._getRecentlyLaunchedScripts(),
+      recentlyLaunchedScript: script,
+    });
   }
 
   _getPathMenuItems(): Array<{label: string, value: number}> {
@@ -114,8 +174,16 @@ export class LaunchUiComponent extends React.Component<void, PropsType, StateTyp
     });
   }
 
+  _handleRecentSelectionChange(newValue: string): void {
+    this.setState({
+      recentlyLaunchedScript: newValue,
+    });
+  }
+
   _handleLaunchButtonClick(): void {
     const scriptPath = this.refs.scriptPath.getText().trim();
+    this._setRecentlyLaunchedScript(scriptPath, this.state.recentlyLaunchedScripts);
+
     const processInfo = new LaunchProcessInfo(this.props.targetUri, scriptPath);
     consumeFirstProvider('nuclide-debugger.remote')
       .then(debuggerService => debuggerService.startDebugging(processInfo));
