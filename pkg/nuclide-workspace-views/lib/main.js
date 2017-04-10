@@ -185,7 +185,10 @@ function createPackageStore(rawState: Object): Store {
   return store;
 }
 
-if (atom.workspace.docks != null && typeof atom.workspace.toggle === 'function') {
+if (
+  typeof atom.workspace.getLeftDock === 'function'
+  && typeof atom.workspace.toggle === 'function'
+) {
   createPackage(module.exports, CompatActivation);
 } else {
   createPackage(module.exports, Activation);
