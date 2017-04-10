@@ -35,7 +35,7 @@ export default function observeBuildCommands(store: Store): IDisposable {
         const buckService = getBuckServiceByNuclideUri(buckRoot);
         return Observable.interval(CHECK_INTERVAL).switchMap(() => {
           return Observable.fromPromise(
-            buckService.getLastCommandInfo(buckRoot),
+            buckService.getLastCommandInfo(buckRoot, 1),
           )
             // Ignore errors.
             .catch(() => Observable.of(null))

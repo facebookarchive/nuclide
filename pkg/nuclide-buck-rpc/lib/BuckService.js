@@ -789,6 +789,7 @@ function stripBrackets(str: string): string {
 
 export async function getLastCommandInfo(
   rootPath: NuclideUri,
+  maxArgs?: number,
 ): Promise<?CommandInfo> {
   const logFile = nuclideUri.join(rootPath, LOG_PATH);
   if (await fsPromise.exists(logFile)) {
@@ -807,7 +808,7 @@ export async function getLastCommandInfo(
         return null;
       }
       const args = stripBrackets(matches[matches.length - 1]).split(', ');
-      if (args.length <= 1) {
+      if (args.length <= 1 || (maxArgs != null && args.length - 1 > maxArgs)) {
         return null;
       }
       return {timestamp, command: args[0], args: args.slice(1)};
