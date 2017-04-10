@@ -106,7 +106,10 @@ export class BreakpointStore {
     xdebugBreakpoint: DbgpBreakpoint,
   ): ?BreakpointId {
     const map = this._connections.get(connection);
-    invariant(map);
+    if (map == null) {
+      return null;
+    }
+
     for (const [key, value] of map) {
       if (value === xdebugBreakpoint.id) {
         return key;
