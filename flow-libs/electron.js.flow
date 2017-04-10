@@ -356,6 +356,9 @@ declare class electron$BrowserWindow {
   setParentWindow(parent: electron$BrowserWindow): void, // Linux macOS
   getParentWindow(): ?electron$BrowserWindow,
   getChildWindows(): Array<electron$BrowserWindow>,
+
+  // Atom sets this during window setup (see: src/main-process/atom-window.coffee).
+  loadSettings?: Object,
 }
 
 /**
