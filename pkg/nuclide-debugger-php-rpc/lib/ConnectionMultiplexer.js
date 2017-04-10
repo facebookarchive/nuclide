@@ -176,6 +176,7 @@ export class ConnectionMultiplexer {
         this._launchedScriptProcess = launchPhpScriptWithXDebugEnabled(expandedScript,
           (text, level) => {
             this._clientCallback.sendUserMessage('outputWindow', {level, text});
+            this._checkForEnd();
             resolve();
           });
       });
@@ -735,7 +736,7 @@ export class ConnectionMultiplexer {
   }
 
   async _checkForEnd(): Promise<void> {
-    if (this._onlyDummyRemains() &&
+    if ((this._connections.size === 0 || this._onlyDummyRemains()) &&
       (this._attachConnector == null ||
         this._launchConnector == null ||
         getConfig().endDebugWhenNoRequests)) {
