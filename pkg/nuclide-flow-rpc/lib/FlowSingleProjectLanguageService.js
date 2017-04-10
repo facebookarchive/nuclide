@@ -268,6 +268,11 @@ export class FlowSingleProjectLanguageService {
       .switchMap(ideConnection => {
         if (ideConnection != null) {
           return ideConnection.observeDiagnostics()
+            .filter(msg => msg.kind === 'errors')
+            .map(msg => {
+              invariant(msg.kind === 'errors');
+              return msg.errors;
+            })
             .map(diagnosticsJson => {
               const diagnostics = flowStatusOutputToDiagnostics(diagnosticsJson);
               const filePathToMessages = new Map();

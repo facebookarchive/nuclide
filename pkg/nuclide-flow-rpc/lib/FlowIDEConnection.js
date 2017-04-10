@@ -31,6 +31,17 @@ type RpcConnection = {
   dispose(): void,
 };
 
+export type PushDiagnosticsMessage = RecheckBookend | {
+  kind: 'errors',
+  errors: FlowStatusOutput,
+};
+
+export type RecheckBookend = {
+  kind: 'start-recheck',
+} | {
+  kind: 'end-recheck',
+};
+
 const SUBSCRIBE_METHOD_NAME = 'subscribeToDiagnostics';
 
 const NOTIFICATION_METHOD_NAME = 'diagnosticsNotification';
@@ -51,6 +62,7 @@ export class FlowIDEConnection {
   // Therefore, we must have singleton observables rather than returning new instances from method
   // calls.
   _diagnostics: Observable<FlowStatusOutput>;
+  _recheckBookends: Observable<RecheckBookend>;
 
   constructor(
     process: child_process$ChildProcess,
@@ -82,6 +94,20 @@ export class FlowIDEConnection {
     ).publishReplay(1);
     this._disposables.add(this._diagnostics.connect());
 
+    this._recheckBookends = Observable.fromEventPattern(
+      handler => {
+        this._connection.onNotification('startRecheck', () => {
+          handler({kind: 'start-recheck'});
+        });
+        this._connection.onNotification('endRecheck', () => {
+          handler({kind: 'end-recheck'});
+        });
+      },
+      // no-op
+      () => {},
+    ).publish();
+    this._disposables.add(this._recheckBookends.connect());
+
     this._disposables.add(() => {
       this._ideProcess.stdin.end();
       this._ideProcess.kill();
@@ -101,7 +127,7 @@ export class FlowIDEConnection {
     });
   }
 
-  observeDiagnostics(): Observable<FlowStatusOutput> {
+  observeDiagnostics(): Observable<PushDiagnosticsMessage> {
     const subscribe = () => {
       this._connection.sendNotification(SUBSCRIBE_METHOD_NAME);
       // This is a temporary hack used to simplify the temporary vscode-jsonrpc implementation in
@@ -124,7 +150,18 @@ export class FlowIDEConnection {
     subscribe();
     return Observable.using(
       () => retrySubscription,
-      () => this._diagnostics,
+      () => {
+        return Observable.merge(
+          this._diagnostics.map(errors => ({kind: 'errors', errors})),
+          this._recheckBookends,
+        );
+      },
     );
+  }
+
+  // Flow will not send these messages unless we have subscribed to diagnostics. So, this observable
+  // will never emit any items unless observeDiagnostics() is called.
+  observeRecheckBookends(): Observable<RecheckBookend> {
+    return this._recheckBookends;
   }
 }
