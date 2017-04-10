@@ -16,7 +16,7 @@ import {
 import os from 'os';
 
 import type {Observable} from 'rxjs';
-import type {DeviceDescription, DebugBridgeType} from './DebugBridgeService';
+import type {DeviceDescription, DebugBridgeType} from './types';
 import type {ProcessMessage} from '../../commons-node/process-rpc-types';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 

@@ -17,7 +17,7 @@ import {
 import {DebugBridge} from './DebugBridge';
 
 import type {Observable} from 'rxjs';
-import type {AndroidJavaProcess} from './DebugBridgeService';
+import type {AndroidJavaProcess} from './types';
 import type {ProcessMessage} from '../../commons-node/process-rpc-types';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
