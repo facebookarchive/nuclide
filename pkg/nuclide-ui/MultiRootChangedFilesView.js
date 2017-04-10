@@ -57,7 +57,7 @@ export class MultiRootChangedFilesView extends React.Component {
           label: 'Open in Diff View',
           command: `${commandPrefix}:open-in-diff-view`,
           shouldDisplay: event => {
-            return openInDiffViewOption;
+            return atom.packages.isPackageLoaded('fb-diff-view') && openInDiffViewOption;
           },
         },
         {
