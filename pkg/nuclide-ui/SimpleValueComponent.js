@@ -54,7 +54,7 @@ function renderNumber(evaluationResult: EvaluationResult): ?React.Element<any> {
   } = evaluationResult;
   return (
     type === 'number'
-      ? <span className={ValueComponentClassNames.number}>{value}</span>
+      ? <span className={ValueComponentClassNames.number}>{String(value)}</span>
       : null
   );
 }
