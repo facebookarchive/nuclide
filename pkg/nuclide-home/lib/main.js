@@ -16,6 +16,7 @@ import type {HomeFragments} from './types';
 import createUtmUrl from './createUtmUrl';
 import featureConfig from '../../commons-atom/featureConfig';
 import nuclideUri from '../../commons-node/nuclideUri';
+import fsPromise from '../../commons-node/fsPromise';
 import {getRuntimeInformation} from '../../commons-node/runtime-info';
 import {getAtomNuclideDir} from '../../commons-node/system-info';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
@@ -79,7 +80,10 @@ async function displayChangelog() {
   const markdownPreviewPkg = atom.packages.getLoadedPackage('markdown-preview');
   if (markdownPreviewPkg != null) {
     await atom.packages.activatePackage('markdown-preview');
-    const changelogPath = nuclideUri.join(getAtomNuclideDir(), 'CHANGELOG.md');
+    const fbChangelogPath = nuclideUri.join(getAtomNuclideDir(), 'fb-CHANGELOG.md');
+    const osChangelogPath = nuclideUri.join(getAtomNuclideDir(), 'CHANGELOG.md');
+    const fbChangeLogExists = await fsPromise.exists(fbChangelogPath);
+    const changelogPath = fbChangeLogExists ? fbChangelogPath : osChangelogPath;
     // eslint-disable-next-line nuclide-internal/atom-apis
     await atom.workspace.open(encodeURI(`markdown-preview://${changelogPath}`));
   }
