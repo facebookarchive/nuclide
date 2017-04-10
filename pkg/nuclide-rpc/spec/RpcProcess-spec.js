@@ -131,4 +131,17 @@ describe('RpcProcess', () => {
       waitsFor(() => spy.wasCalled);
     });
   });
+
+  it('should respond to dispose immediately', () => {
+    waitsForPromise(async () => {
+      const service = getService();
+      server.dispose();
+      try {
+        await service;
+      } catch (e) {
+        return;
+      }
+      throw new Error('should have thrown');
+    });
+  });
 });

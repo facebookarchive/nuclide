@@ -90,9 +90,7 @@ class GraphQLProcess {
         this._fileVersionNotifier.onEvent(fileEvent);
       });
 
-    this._process.observeExitCode().subscribe({
-      complete: () => { this.dispose(); },
-    });
+    this._process.observeExitCode().subscribe(() => this.dispose());
   }
 
   getService(): Promise<GraphQLServerService> {
