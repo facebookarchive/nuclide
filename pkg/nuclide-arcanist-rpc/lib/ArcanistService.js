@@ -12,7 +12,6 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {ConnectableObservable} from 'rxjs';
 import type {ProcessMessage} from '../../commons-node/process-rpc-types';
 
-import {getEditMergeConfigs} from '../../nuclide-hg-rpc/lib/hg-utils';
 import invariant from 'assert';
 import {Observable} from 'rxjs';
 import nuclideUri from '../../commons-node/nuclideUri';
@@ -158,20 +157,11 @@ async function getCommitBasedArcConfigDirectory(filePath: string): Promise<?stri
 
 async function getArcExecOptions(
   cwd: string,
-  hgEditor?: string,
 ): Promise<Object> {
   const options = {
     cwd,
-    env: {
-      ...await getOriginalEnvironment(),
-      ATOM_BACKUP_EDITOR: 'false',
-    },
+    env: await getOriginalEnvironment(),
   };
-
-  if (hgEditor != null) {
-    options.env.HGEDITOR = hgEditor;
-  }
-
   return options;
 }
 
@@ -195,7 +185,9 @@ function _callArcDiff(
     .fromPromise(getCommitBasedArcConfigDirectory(filePath))
     .flatMap((arcConfigDir: ?string) => {
       if (arcConfigDir == null) {
-        throw new Error('Failed to find Arcanist config.  Is this project set up for Arcanist?');
+        return Observable.throw(
+          new Error('Failed to find Arcanist config.  Is this project set up for Arcanist?'),
+        );
       }
       return Observable.fromPromise(getArcExecOptions(arcConfigDir))
         .switchMap(opts => scriptSafeSpawnAndObserveOutput('arc', args, opts));
@@ -251,20 +243,18 @@ export function execArcPull(
   fetchLatest: boolean,
   allowDirtyChanges: boolean,
 ): ConnectableObservable<ProcessMessage> {
-  return Observable.fromPromise(getEditMergeConfigs())
-    .switchMap(editMergeConfigs => {
-      const args = ['pull'];
-      if (fetchLatest) {
-        args.push('--latest');
-      }
+  const args = ['pull'];
+  if (fetchLatest) {
+    args.push('--latest');
+  }
 
-      if (allowDirtyChanges) {
-        args.push('--allow-dirty');
-      }
+  if (allowDirtyChanges) {
+    args.push('--allow-dirty');
+  }
 
-      return Observable.fromPromise(getArcExecOptions(cwd, editMergeConfigs.hgEditor))
-        .switchMap(opts => observeProcess('arc', args, opts));
-    }).publish();
+  return Observable.fromPromise(getArcExecOptions(cwd))
+    .switchMap(opts => observeProcess('arc', args, opts))
+    .publish();
 }
 
 export function execArcLand(

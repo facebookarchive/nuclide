@@ -38,7 +38,7 @@ import {
 } from './hg-revision-state-helpers';
 import {
   createCommmitMessageTempFile,
-  getEditMergeConfigs,
+  getInteractiveCommitEditorConfig,
   hgAsyncExecute,
   hgObserveExecution,
   hgRunCommand,
@@ -794,19 +794,13 @@ export class HgService {
     args: Array<string>,
     isInteractive: boolean,
   ): Observable<ProcessMessage> {
-    if (isInteractive) {
-      args.push('--interactive');
-    } else {
-      // Currently if amend leads to a  merge conflict that requires user input
-      // nuclide just freezes doing nothing. This flag will prevent that behavior
-      // and will break out leaving the files unresolved.
-      args.push('--noninteractive');
-    }
-    let tempFile = null;
     let editMergeConfigs;
-
+    let tempFile = null;
     return Observable.fromPromise((async () => {
-      editMergeConfigs = await getEditMergeConfigs();
+      if (isInteractive) {
+        args.push('--interactive');
+        editMergeConfigs = await getInteractiveCommitEditorConfig();
+      }
       if (message == null) {
         return args;
       } else {
@@ -814,16 +808,16 @@ export class HgService {
         return [...args, '-l', tempFile];
       }
     })()).switchMap(argumentsWithCommitFile => {
-      invariant(editMergeConfigs != null, 'editMergeConfigs cannot be null');
-      const execOptions = {
+      const execArgs = argumentsWithCommitFile;
+      const execOptions: HgExecOptions = {
         cwd: this._workingDirectory,
-        HGEDITOR: editMergeConfigs.hgEditor,
       };
+      if (editMergeConfigs != null) {
+        execArgs.push(...editMergeConfigs.args);
+        execOptions.HGEDITOR = editMergeConfigs.hgEditor;
+      }
       return this._hgObserveExecution(
-        [
-          ...editMergeConfigs.args,
-          ...argumentsWithCommitFile,
-        ],
+        execArgs,
         execOptions,
       );
     }).finally(() => {
@@ -876,7 +870,7 @@ export class HgService {
   splitRevision(): ConnectableObservable<ProcessMessage> {
     let editMergeConfigs;
     return Observable.fromPromise((async () => {
-      editMergeConfigs = await getEditMergeConfigs();
+      editMergeConfigs = await getInteractiveCommitEditorConfig();
     })()).switchMap(() => {
       invariant(editMergeConfigs != null, 'editMergeConfigs cannot be null');
       const execOptions = {
