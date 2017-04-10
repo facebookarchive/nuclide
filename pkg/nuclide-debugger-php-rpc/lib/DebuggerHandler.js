@@ -199,10 +199,16 @@ export class DebuggerHandler extends Handler {
     this._sendFakeLoaderBreakpoint();
   }
 
-  async _getStackFrames(): Promise<Array<Object>> {
-    const frames = await this._connectionMultiplexer.getStackFrames();
-    return Promise.all(
-      frames.stack.map((frame, frameIndex) => this._convertFrame(frame, frameIndex)));
+  async _getStackFrames(id: number): Promise<Array<Object>> {
+    const frames =
+        await this._connectionMultiplexer.getConnectionStackFrames(id);
+
+    if (frames != null && frames.stack != null || frames.stack.length === 0) {
+      return Promise.all(
+        frames.stack.map((frame, frameIndex) => this._convertFrame(frame, frameIndex)));
+    }
+
+    return Promise.resolve([]);
   }
 
   async _getTopFrameForConnection(id: number): Promise<?Object> {
@@ -319,7 +325,8 @@ export class DebuggerHandler extends Handler {
     this.sendMethod(
       'Debugger.paused',
       {
-        callFrames: await this._getStackFrames(),
+        callFrames: enabledConnectionId != null ?
+          await this._getStackFrames(enabledConnectionId) : [],
         reason: 'breakpoint', // TODO: better reason?
         threadSwitchMessage: requestSwitchMessage,
         data: {},

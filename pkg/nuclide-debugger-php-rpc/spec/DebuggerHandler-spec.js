@@ -46,7 +46,7 @@ describe('debugger-php-rpc DebuggerHandler', () => {
         'onNotification',
         'listen',
         'getStatus',
-        'getStackFrames',
+        'getConnectionStackFrames',
         'sendContinuationCommand',
         'getScopesForFrame',
         'getRequestSwitchMessage',
@@ -98,33 +98,39 @@ describe('debugger-php-rpc DebuggerHandler', () => {
 
   it('stack', () => {
     waitsForPromise(async () => {
-      connectionMultiplexer.getStackFrames = jasmine.createSpy('getStackFrames').andReturn(
-        Promise.resolve({
-          stack: [
-            {
-              $: {
-                where: 'foo',
-                level: '0',
-                type: 'file',
-                filename: 'file:///usr/test.php',
-                lineno: '5',
+      connectionMultiplexer.getEnabledConnectionId =
+        jasmine.createSpy('getEnabledConnectionId').andReturn(1);
+      connectionMultiplexer.getConnectionStopReason =
+        jasmine.createSpy('getConnectionStopReason').andReturn('breakpoint');
+      connectionMultiplexer.getConnectionStackFrames =
+        jasmine.createSpy('getConnectionStackFrames').andReturn(
+          Promise.resolve({
+            stack: [
+              {
+                $: {
+                  where: 'foo',
+                  level: '0',
+                  type: 'file',
+                  filename: 'file:///usr/test.php',
+                  lineno: '5',
+                },
               },
-            },
-            {
-              $: {
-                where: 'main',
-                level: '1',
-                type: 'file',
-                filename: 'file:///usr/test.php',
-                lineno: '15',
+              {
+                $: {
+                  where: 'main',
+                  level: '1',
+                  type: 'file',
+                  filename: 'file:///usr/test.php',
+                  lineno: '15',
+                },
               },
-            },
-          ],
-        }));
+            ],
+          }));
 
       await onStatus(ConnectionMultiplexerStatus.SingleConnectionPaused);
 
-      expect(connectionMultiplexer.getStackFrames).toHaveBeenCalledWith();
+      expect(connectionMultiplexer.getConnectionStackFrames)
+        .toHaveBeenCalledWith(1);
       expect(connectionMultiplexer.getScopesForFrame).toHaveBeenCalledWith(0);
       expect(connectionMultiplexer.getScopesForFrame).toHaveBeenCalledWith(1);
       expect(clientCallback.sendServerMethod).toHaveBeenCalledWith(
@@ -161,7 +167,9 @@ describe('debugger-php-rpc DebuggerHandler', () => {
             },
           ],
           reason: 'breakpoint',
+          threadSwitchMessage: undefined,
           data: {},
+          stopThreadId: 1,
         });
     });
   });
@@ -197,9 +205,14 @@ describe('debugger-php-rpc DebuggerHandler', () => {
       );
       expect(connectionMultiplexer.sendContinuationCommand).not.toHaveBeenCalled();
 
-      connectionMultiplexer.getStackFrames = jasmine.createSpy('getStackFrames').andReturn(
-        Promise.resolve({stack: []}),
-      );
+      connectionMultiplexer.getEnabledConnectionId =
+        jasmine.createSpy('getEnabledConnectionId').andReturn(1);
+      connectionMultiplexer.getConnectionStopReason =
+        jasmine.createSpy('getConnectionStopReason').andReturn('breakpoint');
+      connectionMultiplexer.getConnectionStackFrames =
+        jasmine.createSpy('getConnectionStackFrames').andReturn(
+          Promise.resolve({stack: []}),
+        );
 
       await handler.handleMethod(1, chromeCommand);
 
@@ -212,13 +225,17 @@ describe('debugger-php-rpc DebuggerHandler', () => {
       );
 
       await onStatus(ConnectionMultiplexerStatus.SingleConnectionPaused);
-      expect(connectionMultiplexer.getStackFrames).toHaveBeenCalledWith();
+      expect(connectionMultiplexer.getConnectionStackFrames)
+        .toHaveBeenCalledWith(1);
+
       expect(clientCallback.sendServerMethod).toHaveBeenCalledWith(
         'Debugger.paused',
         {
           callFrames: [],
           reason: 'breakpoint',
           data: {},
+          threadSwitchMessage: undefined,
+          stopThreadId: 1,
         });
     };
   }
@@ -236,9 +253,16 @@ describe('debugger-php-rpc DebuggerHandler', () => {
       );
       expect(connectionMultiplexer.resume).not.toHaveBeenCalled();
 
-      connectionMultiplexer.getStackFrames = jasmine.createSpy('getStackFrames').andReturn(
-        Promise.resolve({stack: []}),
-      );
+      connectionMultiplexer.getEnabledConnectionId =
+        jasmine.createSpy('getEnabledConnectionId').andReturn(1);
+
+      connectionMultiplexer.getConnectionStopReason =
+        jasmine.createSpy('getConnectionStopReason').andReturn('breakpoint');
+
+      connectionMultiplexer.getConnectionStackFrames =
+        jasmine.createSpy('getConnectionStackFrames').andReturn(
+          Promise.resolve({stack: []}),
+        );
 
       await handler.handleMethod(1, chromeCommand);
 
@@ -251,13 +275,16 @@ describe('debugger-php-rpc DebuggerHandler', () => {
       );
 
       await onStatus(ConnectionMultiplexerStatus.SingleConnectionPaused);
-      expect(connectionMultiplexer.getStackFrames).toHaveBeenCalledWith();
+      expect(connectionMultiplexer.getConnectionStackFrames)
+        .toHaveBeenCalledWith(1);
       expect(clientCallback.sendServerMethod).toHaveBeenCalledWith(
         'Debugger.paused',
         {
           callFrames: [],
           reason: 'breakpoint',
           data: {},
+          threadSwitchMessage: undefined,
+          stopThreadId: 1,
         });
     };
   }

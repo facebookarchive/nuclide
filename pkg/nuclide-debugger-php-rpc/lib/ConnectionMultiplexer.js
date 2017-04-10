@@ -120,6 +120,7 @@ export class ConnectionMultiplexer {
   _requestSwitchMessage: ?string;
   _lastEnabledConnection: ?Connection;
   _debuggerStartupDisposable: IDisposable;
+  _pausePending: boolean;
 
   constructor(clientCallback: ClientCallback) {
     this._clientCallback = clientCallback;
@@ -138,6 +139,7 @@ export class ConnectionMultiplexer {
     this._requestSwitchMessage = null;
     this._lastEnabledConnection = null;
     this._debuggerStartupDisposable = new UniversalDisposable();
+    this._pausePending = false;
   }
 
   onStatus(callback: (status: string) => mixed): IDisposable {
@@ -320,6 +322,11 @@ export class ConnectionMultiplexer {
           this._disableConnection();
         } else if (this._isPaused()) {
           this._emitRequestUpdate(connection);
+        }
+        if (this._pausePending) {
+          // If an async break is pending and a new connection has started,
+          // we can finish honoring the Debugger.Pause instruction now.
+          this.pause();
         }
         break;
       case ConnectionStatus.Break:
@@ -651,9 +658,27 @@ export class ConnectionMultiplexer {
   }
 
   pause(): void {
-    this._status = ConnectionMultiplexerStatus.UserAsyncBreakSent;
-    // allow a connection that hasn't hit a breakpoint to be enabled, then break all connections.
-    this._asyncBreak();
+    if (this._onlyDummyRemains() &&
+        (this._dummyConnection != null && !this._dummyConnection.isViewable())) {
+      // If only the dummy remains, and the dummy is not viewable, there are no
+      // connections to break into. Since the front-end is waiting for a response
+      // from at least one connection, send a message to the console to indicate
+      // an async-break is pending, waiting for a request.
+      this._pausePending = true;
+      this._sendOutput(
+        'There are no active requests to break in to! The debugger will break when a new request '
+          + 'arrives.',
+        'warning',
+      );
+    } else {
+      if (this._pausePending) {
+        this._sendOutput('New connection received, breaking into debugger.', 'success');
+      }
+      this._pausePending = false;
+      this._status = ConnectionMultiplexerStatus.UserAsyncBreakSent;
+      // allow a connection that hasn't hit a breakpoint to be enabled, then break all connections.
+      this._asyncBreak();
+    }
   }
 
   resume(): void {
