@@ -261,24 +261,43 @@ export default class BreakpointDisplayController {
     if (!path) {
       return;
     }
-    this._debuggerActions.toggleBreakpoint(path, this._getCurrentMouseEventLine(event));
+
+    // Don't toggle a breakpoint if the user clicked on something in the gutter that is not
+    // the debugger, such as clicking on a line number to select the line.
+    if (!target.classList.contains('nuclide-debugger-shadow-breakpoint-icon') &&
+        !target.classList.contains('nuclide-debugger-breakpoint-icon') &&
+        !target.classList.contains('nuclide-debugger-breakpoint-icon-disabled') &&
+        !target.classList.contains('nuclide-debugger-breakpoint-icon-unresolved')) {
+      return;
+    }
+
+    try {
+      const curLine = this._getCurrentMouseEventLine(event);
+      this._debuggerActions.toggleBreakpoint(path, curLine);
+    } catch (e) {
+      return;
+    }
   }
 
   _getCurrentMouseEventLine(event: Event): number {
-    // $FlowIssue
+      // $FlowIssue
     const bufferPos = bufferPositionForMouseEvent(event, this._editor);
     return bufferPos.row;
   }
 
   _handleGutterMouseMove(event: Event): void {
-    const curLine = this._getCurrentMouseEventLine(event);
-    if (this._isLineOverLastShadowBreakpoint(curLine)) {
+    try {
+      const curLine = this._getCurrentMouseEventLine(event);
+      if (this._isLineOverLastShadowBreakpoint(curLine)) {
+        return;
+      }
+      // User moves to a new line we need to delete the old shadow breakpoint
+      // and create a new one.
+      this._removeLastShadowBreakpoint();
+      this._createShadowBreakpointAtLine(this._editor, curLine);
+    } catch (e) {
       return;
     }
-    // User moves to a new line we need to delete the old shadow breakpoint
-    // and create a new one.
-    this._removeLastShadowBreakpoint();
-    this._createShadowBreakpointAtLine(this._editor, curLine);
   }
 
   _handleGutterMouseEnter(event: Event): void {

@@ -40,6 +40,13 @@ describe('BreakpointDisplayController', () => {
       clientY: position.top,
       bubbles: true,
     });
+
+    const element: HTMLElement = (target: any);
+    const bpClass = 'nuclide-debugger-shadow-breakpoint-icon';
+    if (!element.classList.contains(bpClass)) {
+      element.classList.add(bpClass);
+    }
+
     target.dispatchEvent(event);
   }
 
