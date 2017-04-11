@@ -12,6 +12,7 @@ import {FlowIDEConnection} from './FlowIDEConnection';
 
 import {sleep} from '../../commons-node/promise';
 import {getLogger} from '../../nuclide-logging';
+import {Observable} from 'rxjs';
 
 const defaultIDEConnectionFactory = proc => new FlowIDEConnection(proc);
 
@@ -32,7 +33,7 @@ const MAX_UNHEALTHY_CONNECTIONS = 20;
 // For the lifetime of this class instance, keep a FlowIDEConnection alive, assuming we do not have
 // too many failures in a row.
 export class FlowIDEConnectionWatcher {
-  _processFactory: () => Promise<?child_process$ChildProcess>;
+  _processFactory: Observable<?child_process$ChildProcess>;
   _ideConnectionCallback: ?FlowIDEConnection => mixed;
   _ideConnectionFactory: child_process$ChildProcess => FlowIDEConnection;
 
@@ -44,7 +45,7 @@ export class FlowIDEConnectionWatcher {
   _isDisposed: boolean;
 
   constructor(
-    processFactory: () => Promise<?child_process$ChildProcess>,
+    processFactory: Observable<?child_process$ChildProcess>,
     ideConnectionCallback: ?FlowIDEConnection => mixed,
     // Can be injected for testing purposes
     ideConnectionFactory: child_process$ChildProcess => FlowIDEConnection =
@@ -77,8 +78,16 @@ export class FlowIDEConnectionWatcher {
     const endTimeMS = this._getTimeMS() + IDE_CONNECTION_MAX_WAIT_MS;
     while (true) {
       const attemptStartTime = this._getTimeMS();
+
+      // Start the process. Eventually we should cancel by unsubscribing, but for now we'll just
+      // convert to an uncancelable promise. We need to use `connect()` because otherwise, `take(1)`
+      // would complete the stream and kill the process as soon as we got it.
+      const processStream = this._processFactory.publish();
+      const processPromise = processStream.take(1).toPromise();
+      processStream.connect();
+
       // eslint-disable-next-line no-await-in-loop
-      proc = await this._processFactory();
+      proc = await processPromise;
       // dispose() could have been called while we were waiting for the above promise to resolve.
       if (this._isDisposed) {
         if (proc != null) {

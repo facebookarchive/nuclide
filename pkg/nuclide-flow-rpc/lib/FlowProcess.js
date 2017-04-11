@@ -25,7 +25,7 @@ import {track} from '../../nuclide-analytics';
 
 import {
   asyncExecute,
-  safeSpawn,
+  createProcessStream,
 } from '../../commons-node/process';
 import {sleep} from '../../commons-node/promise';
 import {niceSafeSpawn} from '../../commons-node/nice';
@@ -180,7 +180,7 @@ export class FlowProcess {
       handler => {
         invariant(connectionWatcher == null);
         connectionWatcher = new FlowIDEConnectionWatcher(
-          () => this._tryCreateIDEProcess(),
+          this._tryCreateIDEProcess(),
           handler,
         );
         connectionWatcher.start();
@@ -194,31 +194,38 @@ export class FlowProcess {
     );
   }
 
-  async _tryCreateIDEProcess(): Promise<?child_process$ChildProcess> {
-    if (!await this._serverIsReady()) {
-      return null;
-    }
-    const allExecInfo = await getAllExecInfo(
-      [
-        'ide',
-        '--protocol', 'very-unstable',
-        ...NO_RETRY_ARGS,
-      ],
-      this._root,
-      this._execInfoContainer,
-    );
-    if (allExecInfo == null) {
-      return null;
-    }
-    const proc = safeSpawn(allExecInfo.pathToFlow, allExecInfo.args, allExecInfo.options);
-    proc.once('exit', (code: ?number, signal: ?string) => {
-      // If it crashes we will get `null` or `undefined`, but that doesn't actually mean that Flow
-      // is not installed.
-      if (code != null) {
-        this._updateServerStatus(code);
-      }
-    });
-    return proc;
+  _tryCreateIDEProcess(): Observable<?child_process$ChildProcess> {
+    return Observable.defer(() => this._serverIsReady())
+      .switchMap(serverIsReady => {
+        if (!serverIsReady) {
+          return Observable.of(null);
+        }
+        return getAllExecInfo(
+          [
+            'ide',
+            '--protocol', 'very-unstable',
+            ...NO_RETRY_ARGS,
+          ],
+          this._root,
+          this._execInfoContainer,
+        );
+      })
+      .switchMap(allExecInfo => {
+        if (allExecInfo == null) {
+          return Observable.of(null);
+        }
+
+        return createProcessStream(allExecInfo.pathToFlow, allExecInfo.args, allExecInfo.options)
+          .do(proc => {
+            proc.once('exit', (code: ?number, signal: ?string) => {
+              // If it crashes we will get `null` or `undefined`, but that doesn't actually mean
+              // that Flow is not installed.
+              if (code != null) {
+                this._updateServerStatus(code);
+              }
+            });
+          });
+      });
   }
 
   /**
