@@ -89,10 +89,10 @@ describe('RemoteDirectory::getEntries()', () => {
     runs(() => {
       // Directories should sort first, then files, and case should be ignored
       spyOn(connectionMock.getFsService(), 'readdir').andReturn([
-        {name: 'Aa', isFile: true},
-        {name: 'a', isFile: true},
-        {name: 'Bb', isFile: false},
-        {name: 'b', isFile: false},
+        ['Aa', true],
+        ['a', true],
+        ['Bb', false],
+        ['b', false],
       ]);
       const remoteDirectory = new RemoteDirectory(connectionMock, 'nuclide://example.com/');
 

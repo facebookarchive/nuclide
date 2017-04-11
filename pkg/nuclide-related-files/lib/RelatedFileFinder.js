@@ -72,11 +72,12 @@ export default class RelatedFileFinder {
     // get all the files that matches the whitelist -> wlFilelist;
     // check the wlFilelist: if empty, use filelist
     const filelist = listing
-      .filter(otherFilePath => {
-        return otherFilePath.isFile && !otherFilePath.name.endsWith('~') &&
-          getPrefix(otherFilePath.name) === prefix;
+      .filter(entry => {
+        const [name, isFile] = entry;
+        return isFile && !name.endsWith('~') &&
+          getPrefix(name) === prefix;
       })
-      .map(fileObject => nuclideUri.join(dirName, fileObject.name))
+      .map(entry => nuclideUri.join(dirName, entry[0]))
       .concat(await RelatedFileFinder._findRelatedFilesFromProviders(filePath));
 
     let wlFilelist = fileTypeWhitelist.size <= 0 ? filelist :

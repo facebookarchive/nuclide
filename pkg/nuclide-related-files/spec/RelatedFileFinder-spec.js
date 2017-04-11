@@ -16,8 +16,8 @@ function mockFiles(files: Array<string>) {
     'getFileSystemServiceByNuclideUri',
   ).andReturn({
     readdir: async () => {
-      return files.map(file => {
-        return {name: file, isFile: true};
+      return files.map(name => {
+        return [name, true, false];
       });
     },
   });

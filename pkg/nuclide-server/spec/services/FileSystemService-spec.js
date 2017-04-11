@@ -105,16 +105,11 @@ describe('FileSystemService', () => {
       const entries = await service.readdir(pathToTestDir);
       expect(entries.length).toBe(2); // Skips broken link
       entries.sort((a, b) => {
-        return a.name.localeCompare(b.name);
+        return a[0].localeCompare(b[0]);
       });
 
-      expect(entries[0].name).toBe('testfile.txt');
-      expect(entries[0].isFile).toBe(true);
-      expect(entries[0].isSymbolicLink).toEqual(null);
-
-      expect(entries[1].name).toBe('testfile.txt.2');
-      expect(entries[1].isFile).toBe(true);
-      expect(entries[1].isSymbolicLink).toBe(true);
+      expect(entries[0]).toEqual(['testfile.txt', true, false]);
+      expect(entries[1]).toEqual(['testfile.txt.2', true, true]);
     });
   });
 

@@ -26,11 +26,11 @@ import {runCommand} from '../../../commons-node/process';
 import {observeRawStream} from '../../../commons-node/stream';
 import {Observable} from 'rxjs';
 
-export type DirectoryEntry = {
-  name: string,
-  isFile: boolean,
-  isSymbolicLink?: boolean,
-};
+export type DirectoryEntry = [
+  string,
+  boolean,
+  boolean,
+];
 
 // Attempting to read large files just crashes node, so just fail.
 // Atom can't handle files of this scale anyway.
@@ -125,18 +125,21 @@ export async function readdir(path: string): Promise<Array<DirectoryEntry>> {
     const fullpath = nuclideUri.join(path, file);
     const lstats = await fsPromise.lstat(fullpath);
     if (!lstats.isSymbolicLink()) {
-      return {name: file, isFile: lstats.isFile()};
+      return {file, stats: lstats, isSymbolicLink: false};
     } else {
       try {
         const stats = await fsPromise.stat(fullpath);
-        return {name: file, isFile: stats.isFile(), isSymbolicLink: true};
+        return {file, stats, isSymbolicLink: true};
       } catch (error) {
         return null;
       }
     }
   }));
   // TODO: Return entries directly and change client to handle error.
-  return arrayCompact(entries);
+  return arrayCompact(entries)
+    .map(entry => {
+      return [entry.file, entry.stats.isFile(), entry.isSymbolicLink];
+    });
 }
 
 /**
