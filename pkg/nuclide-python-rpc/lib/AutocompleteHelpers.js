@@ -28,8 +28,7 @@ const TYPES = {
   property: 'property',
 };
 
-const IMPLICIT_TRIGGER_COMPLETION_REGEX = /([. ]|[a-zA-Z_][a-zA-Z0-9_]*)$/;
-const EXPLICIT_TRIGGER_COMPLETION_REGEX = /([. (]|[a-zA-Z_][a-zA-Z0-9_]*)$/;
+const TRIGGER_REGEX = /(\.|[a-zA-Z_][a-zA-Z0-9_]*)$/;
 
 /**
  * Generate a function-signature line string if completion is a function.
@@ -71,9 +70,7 @@ export async function getAutocompleteSuggestions(
   autocompleteArguments: boolean,
   includeOptionalArguments: boolean,
 ): Promise<AutocompleteResult> {
-  const triggerRegex =
-    activatedManually ? EXPLICIT_TRIGGER_COMPLETION_REGEX : IMPLICIT_TRIGGER_COMPLETION_REGEX;
-  if (matchRegexEndingAt(buffer, position, triggerRegex) == null) {
+  if (!activatedManually && matchRegexEndingAt(buffer, position, TRIGGER_REGEX) == null) {
     return {isIncomplete: false, items: []};
   }
 
