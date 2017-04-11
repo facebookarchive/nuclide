@@ -1,3 +1,35 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.isHeaderFile = isHeaderFile;
+exports.isSourceFile = isSourceFile;
+exports.commonPrefix = commonPrefix;
+exports.findIncludingSourceFile = findIncludingSourceFile;
+
+var _escapeStringRegexp;
+
+function _load_escapeStringRegexp() {
+  return _escapeStringRegexp = _interopRequireDefault(require('escape-string-regexp'));
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _process;
+
+function _load_process() {
+  return _process = require('../../commons-node/process');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,27 +37,21 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
-
-import escapeStringRegExp from 'escape-string-regexp';
-import nuclideUri from '../../commons-node/nuclideUri';
-import {Observable} from 'rxjs';
-
-import {observeProcess} from '../../commons-node/process';
 
 const HEADER_EXTENSIONS = new Set(['.h', '.hh', '.hpp', '.hxx', '.h++']);
 const SOURCE_EXTENSIONS = new Set(['.c', '.cc', '.cpp', '.cxx', '.c++', '.m', '.mm']);
 
-export function isHeaderFile(filename: string): boolean {
-  return HEADER_EXTENSIONS.has(nuclideUri.extname(filename));
+function isHeaderFile(filename) {
+  return HEADER_EXTENSIONS.has((_nuclideUri || _load_nuclideUri()).default.extname(filename));
 }
 
-export function isSourceFile(filename: string): boolean {
-  return SOURCE_EXTENSIONS.has(nuclideUri.extname(filename));
+function isSourceFile(filename) {
+  return SOURCE_EXTENSIONS.has((_nuclideUri || _load_nuclideUri()).default.extname(filename));
 }
 
-export function commonPrefix(a: string, b: string): number {
+function commonPrefix(a, b) {
   let len = 0;
   while (len < a.length && len < b.length && a[len] === b[len]) {
     len++;
@@ -33,11 +59,7 @@ export function commonPrefix(a: string, b: string): number {
   return len;
 }
 
-function processGrepResult(
-  result: string,
-  headerFile: string,
-  includeRegex: RegExp,
-): ?string {
+function processGrepResult(result, headerFile, includeRegex) {
   const splitIndex = result.indexOf('\0');
   if (splitIndex === -1) {
     return null;
@@ -53,9 +75,7 @@ function processGrepResult(
   // Source-relative includes have to be verified.
   // Relative paths will match the (../)* rule (at index 2).
   if (match[2] != null) {
-    const includePath = nuclideUri.normalize(
-      nuclideUri.join(nuclideUri.dirname(filename), match[1]),
-    );
+    const includePath = (_nuclideUri || _load_nuclideUri()).default.normalize((_nuclideUri || _load_nuclideUri()).default.join((_nuclideUri || _load_nuclideUri()).default.dirname(filename), match[1]));
     if (includePath !== headerFile) {
       return null;
     }
@@ -74,34 +94,26 @@ function processGrepResult(
  * The resulting Observable fires and completes as soon as a matching file is found;
  * 'null' will always be emitted if no results are found.
  */
-export function findIncludingSourceFile(
-  headerFile: string,
-  projectRoot: string,
-): Observable<?string> {
-  const basename = escapeStringRegExp(nuclideUri.basename(headerFile));
-  const relativePath = escapeStringRegExp(nuclideUri.relative(projectRoot, headerFile));
+function findIncludingSourceFile(headerFile, projectRoot) {
+  const basename = (0, (_escapeStringRegexp || _load_escapeStringRegexp()).default)((_nuclideUri || _load_nuclideUri()).default.basename(headerFile));
+  const relativePath = (0, (_escapeStringRegexp || _load_escapeStringRegexp()).default)((_nuclideUri || _load_nuclideUri()).default.relative(projectRoot, headerFile));
   const pattern = `^\\s*#include\\s+["<](${relativePath}|(../)*${basename})[">]\\s*$`;
   const regex = new RegExp(pattern);
   // We need both the file and the match to verify relative includes.
   // Relative includes may not always be correct, so we may have to go through all the results.
-  return observeProcess('grep', [
-    '-RE',    // recursive, extended
-    '--null', // separate file/match with \0
-    pattern,
-    nuclideUri.dirname(headerFile),
-  ])
-    .flatMap(message => {
-      switch (message.kind) {
-        case 'stdout':
-          const file = processGrepResult(message.data, headerFile, regex);
-          return file == null ? Observable.empty() : Observable.of(file);
-        case 'error':
-          throw new Error(String(message.error));
-        case 'exit':
-          return Observable.of(null);
-        default:
-          return Observable.empty();
-      }
-    })
-    .take(1);
+  return (0, (_process || _load_process()).observeProcess)('grep', ['-RE', // recursive, extended
+  '--null', // separate file/match with \0
+  pattern, (_nuclideUri || _load_nuclideUri()).default.dirname(headerFile)]).flatMap(message => {
+    switch (message.kind) {
+      case 'stdout':
+        const file = processGrepResult(message.data, headerFile, regex);
+        return file == null ? _rxjsBundlesRxMinJs.Observable.empty() : _rxjsBundlesRxMinJs.Observable.of(file);
+      case 'error':
+        throw new Error(String(message.error));
+      case 'exit':
+        return _rxjsBundlesRxMinJs.Observable.of(null);
+      default:
+        return _rxjsBundlesRxMinJs.Observable.empty();
+    }
+  }).take(1);
 }

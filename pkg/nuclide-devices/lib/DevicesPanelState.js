@@ -1,21 +1,37 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import React from 'react';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DevicesPanelState = exports.WORKSPACE_VIEW_URI = undefined;
 
-import {renderReactRoot} from '../../commons-atom/renderReactRoot';
-import {DevicePanel} from './ui/DevicePanel';
+var _react = _interopRequireDefault(require('react'));
 
-export const WORKSPACE_VIEW_URI = 'atom://nuclide/devices';
+var _renderReactRoot;
 
-export class DevicesPanelState {
+function _load_renderReactRoot() {
+  return _renderReactRoot = require('../../commons-atom/renderReactRoot');
+}
+
+var _DevicePanel;
+
+function _load_DevicePanel() {
+  return _DevicePanel = require('./ui/DevicePanel');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const WORKSPACE_VIEW_URI = exports.WORKSPACE_VIEW_URI = 'atom://nuclide/devices'; /**
+                                                                                   * Copyright (c) 2015-present, Facebook, Inc.
+                                                                                   * All rights reserved.
+                                                                                   *
+                                                                                   * This source code is licensed under the license found in the LICENSE file in
+                                                                                   * the root directory of this source tree.
+                                                                                   *
+                                                                                   * 
+                                                                                   */
+
+class DevicesPanelState {
   getTitle() {
     return 'Devices';
   }
@@ -24,19 +40,20 @@ export class DevicesPanelState {
     return 'device-mobile';
   }
 
-  getPreferredWidth(): number {
+  getPreferredWidth() {
     return 300;
   }
 
-  getURI(): string {
+  getURI() {
     return WORKSPACE_VIEW_URI;
   }
 
-  getDefaultLocation(): string {
+  getDefaultLocation() {
     return 'right';
   }
 
-  getElement(): HTMLElement {
-    return renderReactRoot(<DevicePanel />);
+  getElement() {
+    return (0, (_renderReactRoot || _load_renderReactRoot()).renderReactRoot)(_react.default.createElement((_DevicePanel || _load_DevicePanel()).DevicePanel, null));
   }
 }
+exports.DevicesPanelState = DevicesPanelState;

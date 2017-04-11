@@ -1,3 +1,12 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getJavaProcesses = exports.activityExists = exports.launchActivity = exports.forwardJdwpPortToPid = exports.getPidFromPackageName = exports.getDeviceList = undefined;
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,42 +14,131 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
 
-import {ConnectableObservable, Observable} from 'rxjs';
-import invariant from 'invariant';
-import {Adb} from './Adb';
-import {Sdb} from './Sdb';
-import {pathForDebugBridge, DebugBridge} from './DebugBridge';
+let getAdb = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* () {
+    return new (_Adb || _load_Adb()).Adb((yield (0, (_DebugBridge || _load_DebugBridge()).pathForDebugBridge)('adb')));
+  });
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {ProcessMessage} from '../../commons-node/process-rpc-types';
+  return function getAdb() {
+    return _ref.apply(this, arguments);
+  };
+})();
 
-export type DebugBridgeType = 'adb' | 'sdb';
+let getSdb = (() => {
+  var _ref2 = (0, _asyncToGenerator.default)(function* () {
+    return new (_Sdb || _load_Sdb()).Sdb((yield (0, (_DebugBridge || _load_DebugBridge()).pathForDebugBridge)('sdb')));
+  });
 
-export type DeviceDescription = {
-  name: string,
-  architecture: string,
-  apiVersion: string,
-  model: string,
-};
+  return function getSdb() {
+    return _ref2.apply(this, arguments);
+  };
+})();
 
-export type AndroidJavaProcess = {
-  user: string,
-  pid: string,
-  name: string,
-};
+let getDeviceList = exports.getDeviceList = (() => {
+  var _ref3 = (0, _asyncToGenerator.default)(function* (db) {
+    return (yield getDb(db)).getDeviceList();
+  });
 
-async function getAdb(): Promise<Adb> {
-  return new Adb(await pathForDebugBridge('adb'));
+  return function getDeviceList(_x) {
+    return _ref3.apply(this, arguments);
+  };
+})();
+
+let getPidFromPackageName = exports.getPidFromPackageName = (() => {
+  var _ref4 = (0, _asyncToGenerator.default)(function* (db, device, packageName) {
+    return (yield getDb(db)).getPidFromPackageName(device, packageName);
+  });
+
+  return function getPidFromPackageName(_x2, _x3, _x4) {
+    return _ref4.apply(this, arguments);
+  };
+})();
+
+let forwardJdwpPortToPid = exports.forwardJdwpPortToPid = (() => {
+  var _ref5 = (0, _asyncToGenerator.default)(function* (db, device, tcpPort, pid) {
+    if (!(db === 'adb')) {
+      throw new Error('only supported on android');
+    }
+
+    return (yield getAdb()).forwardJdwpPortToPid(device, tcpPort, pid);
+  });
+
+  return function forwardJdwpPortToPid(_x5, _x6, _x7, _x8) {
+    return _ref5.apply(this, arguments);
+  };
+})();
+
+let launchActivity = exports.launchActivity = (() => {
+  var _ref6 = (0, _asyncToGenerator.default)(function* (db, device, packageName, activity, debug, action) {
+    if (!(db === 'adb')) {
+      throw new Error('only supported on android');
+    }
+
+    return (yield getAdb()).launchActivity(device, packageName, activity, debug, action);
+  });
+
+  return function launchActivity(_x9, _x10, _x11, _x12, _x13, _x14) {
+    return _ref6.apply(this, arguments);
+  };
+})();
+
+let activityExists = exports.activityExists = (() => {
+  var _ref7 = (0, _asyncToGenerator.default)(function* (db, device, packageName, activity) {
+    if (!(db === 'adb')) {
+      throw new Error('only supported on android');
+    }
+
+    return (yield getAdb()).activityExists(device, packageName, activity);
+  });
+
+  return function activityExists(_x15, _x16, _x17, _x18) {
+    return _ref7.apply(this, arguments);
+  };
+})();
+
+let getJavaProcesses = exports.getJavaProcesses = (() => {
+  var _ref8 = (0, _asyncToGenerator.default)(function* (db, device) {
+    if (!(db === 'adb')) {
+      throw new Error('only supported on android');
+    }
+
+    return (yield getAdb()).getJavaProcesses(device);
+  });
+
+  return function getJavaProcesses(_x19, _x20) {
+    return _ref8.apply(this, arguments);
+  };
+})();
+
+exports.installPackage = installPackage;
+exports.uninstallPackage = uninstallPackage;
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _Adb;
+
+function _load_Adb() {
+  return _Adb = require('./Adb');
 }
 
-async function getSdb(): Promise<Sdb> {
-  return new Sdb(await pathForDebugBridge('sdb'));
+var _Sdb;
+
+function _load_Sdb() {
+  return _Sdb = require('./Sdb');
 }
 
-function getDb(db: DebugBridgeType): Promise<DebugBridge> {
+var _DebugBridge;
+
+function _load_DebugBridge() {
+  return _DebugBridge = require('./DebugBridge');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function getDb(db) {
   switch (db) {
     case 'adb':
       return getAdb();
@@ -50,74 +148,10 @@ function getDb(db: DebugBridgeType): Promise<DebugBridge> {
   throw new Error('unreacable');
 }
 
-export async function getDeviceList(db: DebugBridgeType): Promise<Array<DeviceDescription>> {
-  return (await getDb(db)).getDeviceList();
+function installPackage(db, device, packagePath) {
+  return _rxjsBundlesRxMinJs.Observable.defer(() => getDb(db)).switchMap(d => d.installPackage(device, packagePath)).publish();
 }
 
-export function installPackage(
-  db: DebugBridgeType,
-  device: string,
-  packagePath: NuclideUri,
-): ConnectableObservable<ProcessMessage> {
-  return Observable.defer(() => getDb(db))
-    .switchMap(d => d.installPackage(device, packagePath))
-    .publish();
-}
-
-export function uninstallPackage(
-  db: DebugBridgeType,
-  device: string,
-  packageName: string,
-): ConnectableObservable<ProcessMessage> {
-  return Observable.defer(() => getDb(db))
-    .switchMap(d => d.uninstallPackage(device, packageName))
-    .publish();
-}
-
-export async function getPidFromPackageName(
-  db: DebugBridgeType,
-  device: string,
-  packageName: string,
-): Promise<number> {
-  return (await getDb(db)).getPidFromPackageName(device, packageName);
-}
-
-export async function forwardJdwpPortToPid(
-  db: DebugBridgeType,
-  device: string,
-  tcpPort: number,
-  pid: number,
-): Promise<string> {
-  invariant(db === 'adb', 'only supported on android');
-  return (await getAdb()).forwardJdwpPortToPid(device, tcpPort, pid);
-}
-
-export async function launchActivity(
-  db: DebugBridgeType,
-  device: string,
-  packageName: string,
-  activity: string,
-  debug: boolean,
-  action: ?string,
-): Promise<string> {
-  invariant(db === 'adb', 'only supported on android');
-  return (await getAdb()).launchActivity(device, packageName, activity, debug, action);
-}
-
-export async function activityExists(
-  db: DebugBridgeType,
-  device: string,
-  packageName: string,
-  activity: string,
-): Promise<boolean> {
-  invariant(db === 'adb', 'only supported on android');
-  return (await getAdb()).activityExists(device, packageName, activity);
-}
-
-export async function getJavaProcesses(
-  db: DebugBridgeType,
-  device: string,
-): Promise<Array<AndroidJavaProcess>> {
-  invariant(db === 'adb', 'only supported on android');
-  return (await getAdb()).getJavaProcesses(device);
+function uninstallPackage(db, device, packageName) {
+  return _rxjsBundlesRxMinJs.Observable.defer(() => getDb(db)).switchMap(d => d.uninstallPackage(device, packageName)).publish();
 }

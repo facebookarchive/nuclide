@@ -1,16 +1,12 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import type {MessageType} from '../../nuclide-diagnostics-common/lib/rpc-types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.parseFlake8Output = parseFlake8Output;
 
-function classifyCode(code: string): MessageType {
+
+function classifyCode(code) {
   if (/^(B9|C|E[35]|T400|T49)/.test(code)) {
     // TODO: make this "info" level when it's supported
     return 'Warning';
@@ -18,9 +14,17 @@ function classifyCode(code: string): MessageType {
     return 'Error';
   }
   return 'Warning';
-}
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   */
 
-export function parseFlake8Output(src: string, output: string): Array<Object> {
+function parseFlake8Output(src, output) {
   const regex = /(\d+):(\d+):\s([A-Z]\d{2,3})\s+(.*)/g;
   const results = [];
 
@@ -36,7 +40,7 @@ export function parseFlake8Output(src: string, output: string): Array<Object> {
       column: parseInt(column, 10) || 0,
       code,
       type: classifyCode(code),
-      message,
+      message
     });
   }
 
