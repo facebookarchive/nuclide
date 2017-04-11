@@ -73,11 +73,10 @@ export default class RelatedFileFinder {
     // check the wlFilelist: if empty, use filelist
     const filelist = listing
       .filter(otherFilePath => {
-        // $FlowFixMe stats may be null
-        return otherFilePath.stats.isFile() && !otherFilePath.file.endsWith('~') &&
-          getPrefix(otherFilePath.file) === prefix;
+        return otherFilePath.isFile && !otherFilePath.name.endsWith('~') &&
+          getPrefix(otherFilePath.name) === prefix;
       })
-      .map(fileObject => nuclideUri.join(dirName, fileObject.file))
+      .map(fileObject => nuclideUri.join(dirName, fileObject.name))
       .concat(await RelatedFileFinder._findRelatedFilesFromProviders(filePath));
 
     let wlFilelist = fileTypeWhitelist.size <= 0 ? filelist :

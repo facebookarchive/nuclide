@@ -267,15 +267,14 @@ export class RemoteDirectory {
     const directories : Array<RemoteDirectory> = [];
     const files = [];
     entries.sort((a, b) => {
-      return a.file.toLowerCase().localeCompare(b.file.toLowerCase());
+      return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
     }).forEach(entry => {
-      invariant(entry);
       const uri = nuclideUri.createRemoteUri(
         this._host,
-        nuclideUri.join(this._localPath, entry.file),
+        nuclideUri.join(this._localPath, entry.name),
       );
       const symlink = entry.isSymbolicLink;
-      if (entry.stats && entry.stats.isFile()) {
+      if (entry.isFile) {
         files.push(this._server.createFile(uri, symlink));
       } else {
         directories.push(this._server.createDirectory(uri, this._hgRepositoryDescription, symlink));

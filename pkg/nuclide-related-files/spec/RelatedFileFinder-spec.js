@@ -17,7 +17,7 @@ function mockFiles(files: Array<string>) {
   ).andReturn({
     readdir: async () => {
       return files.map(file => {
-        return {file, stats: {isFile: () => true}};
+        return {name: file, isFile: true};
       });
     },
   });

@@ -26,10 +26,10 @@ import {runCommand} from '../../../commons-node/process';
 import {observeRawStream} from '../../../commons-node/stream';
 import {Observable} from 'rxjs';
 
-export type FileWithStats = {
-  file: string,
-  stats: ?fs.Stats,
-  isSymbolicLink: boolean,
+export type DirectoryEntry = {
+  name: string,
+  isFile: boolean,
+  isSymbolicLink?: boolean,
 };
 
 // Attempting to read large files just crashes node, so just fail.
@@ -117,35 +117,26 @@ export async function newFile(filePath: string): Promise<boolean> {
 }
 
 /**
- * The readdir endpoint accepts the following query parameters:
- *
- *   path: path to the folder to list entries inside.
- *
- * Body contains a JSON encoded array of objects with file: and stats: entries.
- * file: has the file or directory name, stats: has the stats of the file/dir,
- * isSymbolicLink: true if the entry is a symlink to another filesystem location.
+ * Lists all children of the given directory.
  */
-export async function readdir(path: string): Promise<Array<FileWithStats>> {
+export async function readdir(path: string): Promise<Array<DirectoryEntry>> {
   const files = await fsPromise.readdir(path);
   const entries = await Promise.all(files.map(async file => {
     const fullpath = nuclideUri.join(path, file);
     const lstats = await fsPromise.lstat(fullpath);
     if (!lstats.isSymbolicLink()) {
-      return {file, stats: lstats, isSymbolicLink: false};
+      return {name: file, isFile: lstats.isFile()};
     } else {
       try {
         const stats = await fsPromise.stat(fullpath);
-        return {file, stats, isSymbolicLink: true};
+        return {name: file, isFile: stats.isFile(), isSymbolicLink: true};
       } catch (error) {
         return null;
       }
     }
   }));
   // TODO: Return entries directly and change client to handle error.
-  return arrayCompact(entries)
-    .map(entry => {
-      return {file: entry.file, stats: entry.stats, isSymbolicLink: entry.isSymbolicLink};
-    });
+  return arrayCompact(entries);
 }
 
 /**
