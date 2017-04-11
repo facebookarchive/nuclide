@@ -46,6 +46,13 @@ export class Adb extends DebugBridge {
     return this.runLongAdbCommand(device, ['install', '-r', packagePath]);
   }
 
+  uninstallPackage(
+    device: string,
+    packageName: string,
+  ): Observable<ProcessMessage> {
+    return this.runLongAdbCommand(device, ['uninstall', packageName]);
+  }
+
   forwardJdwpPortToPid(
     device: string,
     tcpPort: number,
