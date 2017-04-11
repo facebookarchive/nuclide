@@ -143,12 +143,9 @@ describe('nuclide-arcanist-rpc', () => {
     beforeEach(() => {
       setResult({});
       execArgs = [];
-      spyOn(require('../../commons-node/nice'), 'niceSafeSpawn')
-        .andCallFake(async (command, args, options) => {
+      spyOn(require('../../commons-node/nice'), 'niceObserveProcess')
+        .andCallFake((command, args, options) => {
           execArgs.push(args);
-        });
-      spyOn(require('../../commons-node/process'), 'getOutputStream')
-        .andCallFake(() => {
           return arcResult.map(line => ({kind: 'stdout', data: line}));
         });
       arcanist.__TEST__.reset();

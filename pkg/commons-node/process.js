@@ -452,10 +452,21 @@ function observeProcessExitMessage(
     .take(1);
 }
 
+/**
+ * Creates a stream of sensibly-ordered stdout, stdin, and exit messages from a process. Generally,
+ * you shouldn't use this function and should instead use `observeProcess()` (which makes use of
+ * this for you).
+ *
+ * IMPORTANT: If you must use this message, it's very important that the process you give it was
+ * just synchronously created. Otherwise, you can end up missing messages.
+ *
+ * This function intentionally does not close the process when you unsubscribe. It's usually used in
+ * conjunction with `createProcessStream()` which does that already.
+ */
 export function getOutputStream(
   process: child_process$ChildProcess,
-  killTreeOnComplete?: boolean = false,
   splitByLines?: boolean = true,
+  _: void,
 ): Observable<ProcessMessage> {
   const chunk = splitByLines ? splitStream : x => x;
   return Observable.defer(() => {
@@ -499,7 +510,7 @@ export function observeProcess(
     false,
     Boolean(options && options.killTreeOnComplete),
   )
-    .flatMap(getOutputStream);
+    .flatMap(process => getOutputStream(process));
 }
 
 /**
@@ -515,7 +526,7 @@ export function observeProcessRaw(
     false,
     Boolean(options && options.killTreeOnComplete),
   )
-    .flatMap(process => getOutputStream(process, false, false));
+    .flatMap(process => getOutputStream(process, false));
 }
 
 let FB_INCLUDE_PATHS;

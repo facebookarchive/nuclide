@@ -18,12 +18,11 @@ import nuclideUri from '../../commons-node/nuclideUri';
 import {
   exitEventToMessage,
   getOriginalEnvironment,
-  getOutputStream,
   observeProcess,
   runCommand,
   scriptSafeSpawnAndObserveOutput,
 } from '../../commons-node/process';
-import {niceSafeSpawn} from '../../commons-node/nice';
+import {niceObserveProcess} from '../../commons-node/nice';
 import fsPromise from '../../commons-node/fsPromise';
 import {
   fetchFilesChangedSinceRevision,
@@ -290,8 +289,7 @@ function execArcLint(
     args.push('--skip', skip.join(','));
   }
   return Observable.fromPromise(getArcExecOptions(cwd))
-    .switchMap(opts => niceSafeSpawn('arc', args, opts))
-    .switchMap(arcProcess => getOutputStream(arcProcess, /* killTreeOnComplete */ true))
+    .switchMap(opts => niceObserveProcess('arc', args, {...opts, killTreeOnComplete: true}))
     .mergeMap(event => {
       if (event.kind === 'error') {
         return Observable.throw(event.error);
