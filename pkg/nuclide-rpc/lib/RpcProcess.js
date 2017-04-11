@@ -17,7 +17,7 @@ import {RpcConnection} from './RpcConnection';
 import {getOutputStream} from '../../commons-node/process';
 import {getLogger} from '../../nuclide-logging';
 import invariant from 'assert';
-import {BehaviorSubject, Subject} from 'rxjs';
+import {Subject} from 'rxjs';
 
 const logger = getLogger();
 
@@ -42,7 +42,8 @@ export class RpcProcess {
   _process: ?child_process$ChildProcess;
   _subscription: ?Subscription;
   _serviceRegistry: ServiceRegistry;
-  _rpcConnection: BehaviorSubject<?RpcConnection<StreamTransport>>;
+  _rpcConnection: ?Promise<RpcConnection<StreamTransport>>;
+  _disposals: Subject<void>;
   _exitCode: Subject<ProcessExitMessage>;
 
   /**
@@ -63,7 +64,8 @@ export class RpcProcess {
     this._process = null;
     this._subscription = null;
     this._serviceRegistry = serviceRegistry;
-    this._rpcConnection = new BehaviorSubject(null);
+    this._rpcConnection = null;
+    this._disposals = new Subject();
     this._exitCode = new Subject();
   }
 
@@ -76,16 +78,8 @@ export class RpcProcess {
   }
 
   async getService(serviceName: string): Promise<Object> {
-    this._ensureConnection();
-    let connection = this._rpcConnection.getValue();
-    if (connection == null) {
-      connection = await this._rpcConnection.skip(1).take(1).toPromise();
-      // The only source of null connections is dispose().
-      if (connection == null) {
-        throw new Error('RpcProcess was disposed during getService');
-      }
-    }
-    return connection.getService(serviceName);
+    const connection = this._ensureConnection();
+    return (await connection).getService(serviceName);
   }
 
   observeExitCode(): Observable<ProcessExitMessage> {
@@ -96,33 +90,49 @@ export class RpcProcess {
    * Ensures that the child process is available. Asynchronously creates the child process,
    * only if it is currently null.
    */
-  _ensureConnection(): void {
-    if (this._subscription == null) {
-      this._subscription = this._processStream
+  _ensureConnection(): Promise<RpcConnection<StreamTransport>> {
+    if (this._rpcConnection == null) {
+      const processStream = this._processStream
         .do({
-          next: proc => {
+          error: e => {
+            logger.error(`${this._name} - error spawning child process: `, e);
+            this.dispose();
+          },
+        })
+        .takeUntil(this._disposals)
+        .publish();
+
+      // This is implicitly disposed by `dispose()` via `this._disposals`.
+      processStream
+        .switchMap(getOutputStream)
+        .subscribe(this._onProcessMessage.bind(this));
+
+      const connection = this._rpcConnection =
+        processStream
+          .take(1)
+          .toPromise()
+          .then(proc => {
+            if (proc == null) {
+              throw new Error('RpcProcess disposed during getService');
+            }
             this._process = proc;
             logger.info(`${this._name} - created child process with PID: `, proc.pid);
 
             proc.stdin.on('error', error => {
               logger.error(`${this._name} - error writing data: `, error);
             });
-
-            this._rpcConnection.next(new RpcConnection(
+            return new RpcConnection(
               'client',
               this._serviceRegistry,
               new StreamTransport(proc.stdin, proc.stdout, this._messageLogger),
-            ));
-          },
-          error: e => {
-            logger.error(`${this._name} - error spawning child process: `, e);
-            this.dispose();
-          },
-        })
-        .switchMap(getOutputStream)
-        .subscribe(this._onProcessMessage.bind(this));
+            );
+          });
+
+      this._subscription = processStream.connect();
+      return connection;
     }
     this._disposed = false;
+    return this._rpcConnection;
   }
 
   /**
@@ -161,13 +171,15 @@ export class RpcProcess {
   dispose(): void {
     logger.info(`${this._name} - disposing connection.`);
     this._disposed = true;
+    this._disposals.next();
 
-    const connection = this._rpcConnection.getValue();
-    if (connection != null) {
-      connection.dispose();
+    if (this._rpcConnection != null) {
+      // If this wasn't already resolved, then it's rejected via `this._disposals`.
+      this._rpcConnection
+        .then(connection => connection.dispose())
+        .catch(() => {});
+      this._rpcConnection = null;
     }
-    // Terminate any pending getService() calls.
-    this._rpcConnection.next(null);
 
     if (this._subscription != null) {
       // Note that this will kill the process if it is still live.
