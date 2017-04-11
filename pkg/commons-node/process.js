@@ -10,6 +10,7 @@
 
 import type {ProcessExitMessage, ProcessMessage, ProcessInfo} from './process-rpc-types';
 
+import {observableFromSubscribeFunction} from '../commons-node/event';
 import child_process from 'child_process';
 import {MultiMap} from './collection';
 import nuclideUri from './nuclideUri';
@@ -21,11 +22,20 @@ import invariant from 'assert';
 import {quote} from 'shell-quote';
 import performanceNow from './performanceNow';
 
+// TODO(T17266325): Replace this in favor of `atom.whenShellEnvironmentLoaded()` when it lands
+import atomWhenShellEnvironmentLoaded from './whenShellEnvironmentLoaded';
+
 // Node crashes if we allow buffers that are too large.
 const DEFAULT_MAX_BUFFER = 100 * 1024 * 1024;
 
 const MAX_LOGGED_CALLS = 100;
 const PREVERVED_HISTORY_CALLS = 50;
+
+const noopDisposable = {dispose: () => {}};
+const whenShellEnvironmentLoaded =
+  typeof atom !== 'undefined' && atomWhenShellEnvironmentLoaded && !atom.inSpecMode()
+    ? atomWhenShellEnvironmentLoaded
+    : cb => { cb(); return noopDisposable; };
 
 export const loggedCalls = [];
 function logCall(duration, command, args) {
@@ -307,7 +317,8 @@ function _createProcessStream(
   throwOnError: boolean,
   killTreeOnComplete: boolean,
 ): Observable<child_process$ChildProcess> {
-  return Observable.fromPromise(loadedShellPromise)
+  return observableFromSubscribeFunction(whenShellEnvironmentLoaded)
+    .take(1)
     .switchMap(() => {
       const process = createProcess();
       let finished = false;
@@ -698,29 +709,14 @@ export function runCommand(
 // If provided, read the original environment from NUCLIDE_ORIGINAL_ENV.
 // This should contain the base64-encoded output of `env -0`.
 let cachedOriginalEnvironment = null;
-
-let loadedShellResolve;
-const loadedShellPromise = new Promise(resolve => {
-  loadedShellResolve = resolve;
-}).then(() => {
+whenShellEnvironmentLoaded(() => {
   // No need to include default paths now that the environment is loaded.
   DEFAULT_PATH_INCLUDE = [];
   cachedOriginalEnvironment = null;
 });
 
-invariant(loadedShellResolve);
-if (typeof atom === 'undefined' || atom.inSpecMode()) {
-  // This doesn't apply server-side or in tests, so just immediately resolve.
-  loadedShellResolve();
-}
-
-export function loadedShellEnvironment(): void {
-  loadedShellResolve();
-}
-
 export async function getOriginalEnvironment(): Promise<Object> {
-  await loadedShellPromise;
-
+  await new Promise(resolve => { whenShellEnvironmentLoaded(resolve); });
   if (cachedOriginalEnvironment != null) {
     return cachedOriginalEnvironment;
   }

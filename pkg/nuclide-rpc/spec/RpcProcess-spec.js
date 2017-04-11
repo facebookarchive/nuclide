@@ -15,6 +15,7 @@ import invariant from 'assert';
 import {createProcessStream} from '../../commons-node/process';
 import {RpcProcess} from '../lib/RpcProcess';
 import {ServiceRegistry} from '../../nuclide-rpc';
+import {Scheduler} from 'rxjs';
 
 describe('RpcProcess', () => {
   let server: RpcProcess;
@@ -36,7 +37,9 @@ describe('RpcProcess', () => {
         preserveFunctionNames: true,
       }]);
 
-    const processStream = createProcessStream('python', [PROCESS_PATH], OPTS);
+    const processStream = createProcessStream('python', [PROCESS_PATH], OPTS)
+      // For the sake of our tests, simulate creating the process asynchronously.
+      .subscribeOn(Scheduler.async);
     server = new RpcProcess('Dummy IO Server', serviceRegistry, processStream);
   });
 
@@ -132,7 +135,7 @@ describe('RpcProcess', () => {
     });
   });
 
-  it('should respond to dispose immediately', () => {
+  it('should respond to dispose immediately if the process is created asynchronously', () => {
     waitsForPromise(async () => {
       const service = getService();
       server.dispose();
