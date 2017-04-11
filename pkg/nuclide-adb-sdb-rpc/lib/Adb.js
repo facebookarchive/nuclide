@@ -10,10 +10,7 @@
 
 import invariant from 'assert';
 import nuclideUri from '../../commons-node/nuclideUri';
-import {
-  runCommand,
-  observeProcessRaw,
-} from '../../commons-node/process';
+import {runCommand, observeProcessRaw} from '../../commons-node/process';
 import {DebugBridge} from './DebugBridge';
 
 import type {Observable} from 'rxjs';
@@ -115,6 +112,15 @@ export class Adb extends DebugBridge {
         return allProcesses.filter(row => jdwpPids.has(row.pid));
       })
       .toPromise();
+  }
+
+  async dumpsysPackage(device: string, identifier: string): Promise<string> {
+    return this.runShortAdbCommand(device, [
+      'shell',
+      'dumpsys',
+      'package',
+      identifier,
+    ]).toPromise();
   }
 }
 

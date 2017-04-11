@@ -17,14 +17,17 @@ import type {ProcessMessage} from '../../commons-node/process-rpc-types';
 import type {DeviceDescription, AndroidJavaProcess} from './types';
 
 async function getAdb(): Promise<Adb> {
-  return new Adb(await pathForDebugBridge('adb'));
+  return new Adb((await pathForDebugBridge('adb')));
 }
 
 export async function getDeviceList(): Promise<Array<DeviceDescription>> {
   return (await getAdb()).getDeviceList();
 }
 
-export async function getPidFromPackageName(device: string, packageName: string): Promise<number> {
+export async function getPidFromPackageName(
+  device: string,
+  packageName: string,
+): Promise<number> {
   return (await getAdb()).getPidFromPackageName(device, packageName);
 }
 
@@ -61,7 +64,13 @@ export async function launchActivity(
   debug: boolean,
   action: ?string,
 ): Promise<string> {
-  return (await getAdb()).launchActivity(device, packageName, activity, debug, action);
+  return (await getAdb()).launchActivity(
+    device,
+    packageName,
+    activity,
+    debug,
+    action,
+  );
 }
 
 export async function activityExists(
@@ -76,4 +85,11 @@ export async function getJavaProcesses(
   device: string,
 ): Promise<Array<AndroidJavaProcess>> {
   return (await getAdb()).getJavaProcesses(device);
+}
+
+export async function dumpsysPackage(
+  device: string,
+  identifier: string,
+): Promise<string> {
+  return (await getAdb()).dumpsysPackage(device, identifier);
 }
