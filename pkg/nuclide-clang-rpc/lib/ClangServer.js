@@ -8,21 +8,22 @@
  * @flow
  */
 
-import type {Subscription, Observable} from 'rxjs';
+import type {Subscription} from 'rxjs';
 import typeof * as ClangProcessService from './ClangProcessService';
 import type {ClangCompileResult} from './rpc-types';
 import type {ClangServerArgs} from './find-clang-server-args';
 
 import nuclideUri from '../../commons-node/nuclideUri';
 import {getServerSideMarshalers} from '../../nuclide-marshalers-common';
-import {BehaviorSubject} from 'rxjs';
+import idx from 'idx';
+import {BehaviorSubject, Observable} from 'rxjs';
 
 import {asyncExecute, createProcessStream} from '../../commons-node/process';
 import {RpcProcess} from '../../nuclide-rpc';
 import {ServiceRegistry, loadServicesConfig} from '../../nuclide-rpc';
 import {watchFile} from '../../nuclide-filewatcher-rpc';
 
-export type ClangServerStatus = 'ready' | 'compiling';
+export type ClangServerStatus = 'finding_flags' | 'compiling' | 'ready' | 'disposed';
 
 let serviceRegistry: ?ServiceRegistry = null;
 
@@ -39,30 +40,39 @@ function getServiceRegistry(): ServiceRegistry {
 
 function spawnClangProcess(
   src: string,
-  serverArgs: ClangServerArgs,
-  flags: Array<string>,
+  serverArgsPromise: Promise<ClangServerArgs>,
+  flagsPromise: Promise<?ClangServerFlags>,
 ): Observable<child_process$ChildProcess> {
-  const {libClangLibraryFile, pythonPathEnv, pythonExecutable} = serverArgs;
-  const pathToLibClangServer = nuclideUri.join(__dirname, '../python/clang_server.py');
-  const args = [pathToLibClangServer];
-  if (libClangLibraryFile != null) {
-    args.push('--libclang-file', libClangLibraryFile);
-  }
-  args.push('--', src);
-  args.push(...flags);
-  const options = {
-    cwd: nuclideUri.dirname(pathToLibClangServer),
-    stdio: 'pipe',
-    detached: false, // When Atom is killed, clang_server.py should be killed, too.
-    env: {
-      PYTHONPATH: pythonPathEnv,
-    },
-  };
+  return Observable.fromPromise(Promise.all([serverArgsPromise, flagsPromise]))
+    .switchMap(([serverArgs, flagsData]) => {
+      const flags = idx(flagsData, _ => _.flags);
+      if (flags == null) {
+        // We're going to reject here.
+        // ClangServer will also dispose itself upon encountering this.
+        throw new Error(`No flags found for ${src}`);
+      }
+      const {libClangLibraryFile, pythonPathEnv, pythonExecutable} = serverArgs;
+      const pathToLibClangServer = nuclideUri.join(__dirname, '../python/clang_server.py');
+      const args = [pathToLibClangServer];
+      if (libClangLibraryFile != null) {
+        args.push('--libclang-file', libClangLibraryFile);
+      }
+      args.push('--', src);
+      args.push(...flags);
+      const options = {
+        cwd: nuclideUri.dirname(pathToLibClangServer),
+        stdio: 'pipe',
+        detached: false, // When Atom is killed, clang_server.py should be killed, too.
+        env: {
+          PYTHONPATH: pythonPathEnv,
+        },
+      };
 
-  // Note that safeSpawn() often overrides options.env.PATH, but that only happens when
-  // options.env is undefined (which is not the case here). This will only be an issue if the
-  // system cannot find `pythonExecutable`.
-  return createProcessStream(pythonExecutable, args, options);
+      // Note that safeSpawn() often overrides options.env.PATH, but that only happens when
+      // options.env is undefined (which is not the case here). This will only be an issue if the
+      // system cannot find `pythonExecutable`.
+      return createProcessStream(pythonExecutable, args, options);
+    });
 }
 
 export type ClangServerFlags = {
@@ -71,54 +81,76 @@ export type ClangServerFlags = {
   flagsFile: ?string,
 };
 
-export default class ClangServer extends RpcProcess {
+export default class ClangServer {
   static Status: {[key: string]: ClangServerStatus} = Object.freeze({
-    READY: 'ready',
+    FINDING_FLAGS: 'finding_flags',
     COMPILING: 'compiling',
+    READY: 'ready',
+    DISPOSED: 'disposed',
   });
 
   _usesDefaultFlags: boolean;
   _pendingCompileRequests: number;
   _serverStatus: BehaviorSubject<ClangServerStatus>;
-  _flagsSubscription: ?Subscription;
+  _flagsSubscription: Subscription;
   _flagsChanged: boolean;
+  _rpcProcess: RpcProcess;
 
   constructor(
     src: string,
-    serverArgs: ClangServerArgs,
-    flagsData: ClangServerFlags,
+    contents: string,
+    serverArgsPromise: Promise<ClangServerArgs>,
+    flagsPromise: Promise<?ClangServerFlags>,
   ) {
-    super(
+    this._usesDefaultFlags = false;
+    this._pendingCompileRequests = 0;
+    this._serverStatus = new BehaviorSubject(ClangServer.Status.FINDING_FLAGS);
+    this._flagsChanged = false;
+    this._flagsSubscription =
+      Observable.fromPromise(flagsPromise)
+        .do(flagsData => {
+          if (flagsData == null) {
+            // Servers without flags will be left in the 'disposed' state forever.
+            // This ensures that all language requests bounce without erroring.
+            this.dispose();
+            return;
+          }
+          this._usesDefaultFlags = flagsData.usesDefaultFlags;
+        })
+        .switchMap(flagsData => {
+          if (flagsData != null && flagsData.flagsFile != null) {
+            return watchFile(flagsData.flagsFile)
+              .refCount()
+              .take(1);
+          }
+          return Observable.empty();
+        })
+        .subscribe(
+          x => { this._flagsChanged = true; },
+          () => {},  // ignore errors
+        );
+    this._rpcProcess = new RpcProcess(
       `ClangServer-${src}`,
       getServiceRegistry(),
-      spawnClangProcess(src, serverArgs, flagsData.flags),
+      spawnClangProcess(src, serverArgsPromise, flagsPromise),
     );
-    this._usesDefaultFlags = flagsData.usesDefaultFlags;
-    this._pendingCompileRequests = 0;
-    this._serverStatus = new BehaviorSubject(ClangServer.Status.READY);
-    this._flagsChanged = false;
-    if (flagsData.flagsFile != null) {
-      this._flagsSubscription =
-        watchFile(flagsData.flagsFile)
-          .refCount()
-          .take(1)
-          .subscribe(
-            x => { this._flagsChanged = true; },
-            () => {},  // ignore errors
-          );
-    }
+    // Kick off an initial compilation to provide an accurate server state.
+    // This will automatically reject if any kind of disposals/errors happen.
+    this.compile(contents).catch(() => {});
   }
 
   dispose() {
-    super.dispose();
+    this._serverStatus.next(ClangServer.Status.DISPOSED);
     this._serverStatus.complete();
-    if (this._flagsSubscription != null) {
-      this._flagsSubscription.unsubscribe();
-    }
+    this._rpcProcess.dispose();
+    this._flagsSubscription.unsubscribe();
   }
 
   getService(): Promise<ClangProcessService> {
-    return super.getService('ClangProcessService');
+    if (this.isDisposed()) {
+      throw new Error('Called getService() on a disposed ClangServer');
+    }
+    return this._rpcProcess.getService('ClangProcessService');
   }
 
   /**
@@ -126,12 +158,13 @@ export default class ClangServer extends RpcProcess {
    * Works on Unix and Mac OS X.
    */
   async getMemoryUsage(): Promise<number> {
-    if (this._process == null) {
+    const {_process} = this._rpcProcess;
+    if (_process == null) {
       return 0;
     }
     const {exitCode, stdout} = await asyncExecute(
       'ps',
-      ['-p', this._process.pid.toString(), '-o', 'rss='],
+      ['-p', _process.pid.toString(), '-o', 'rss='],
     );
     if (exitCode !== 0) {
       return 0;
@@ -146,18 +179,18 @@ export default class ClangServer extends RpcProcess {
   // Call this instead of using the RPC layer directly.
   // This way, we can track when the server is busy compiling.
   async compile(contents: string): Promise<?ClangCompileResult> {
+    const service = await this.getService();
     if (this._pendingCompileRequests++ === 0) {
       this._serverStatus.next(ClangServer.Status.COMPILING);
     }
     try {
-      const service = await this.getService();
       return await service.compile(contents)
         .then(result => ({
           ...result,
           accurateFlags: !this._usesDefaultFlags,
         }));
     } finally {
-      if (--this._pendingCompileRequests === 0) {
+      if (--this._pendingCompileRequests === 0 && !this.isDisposed()) {
         this._serverStatus.next(ClangServer.Status.READY);
       }
     }
@@ -165,6 +198,14 @@ export default class ClangServer extends RpcProcess {
 
   getStatus(): ClangServerStatus {
     return this._serverStatus.getValue();
+  }
+
+  isDisposed(): boolean {
+    return this.getStatus() === ClangServer.Status.DISPOSED;
+  }
+
+  isReady(): boolean {
+    return this.getStatus() === ClangServer.Status.READY;
   }
 
   waitForReady(): Promise<mixed> {

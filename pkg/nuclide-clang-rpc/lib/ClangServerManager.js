@@ -75,13 +75,13 @@ export default class ClangServerManager {
    * Currently, there's no "status" observable, so we can only provide a busy signal to the user
    * on diagnostic requests - and hence we only restart on 'compile' requests.
    */
-  async getClangServer(
+  getClangServer(
     src: string,
     contents: string,
     compilationDBFile: ?NuclideUri,
     defaultFlags?: ?Array<string>,
     restartIfChanged?: boolean,
-  ): Promise<?ClangServer> {
+  ): ClangServer {
     let server = this._servers.get(src);
     if (server != null) {
       if (restartIfChanged && server.getFlagsChanged()) {
@@ -90,21 +90,14 @@ export default class ClangServerManager {
         return server;
       }
     }
-    const [serverArgs, flagsResult] = await Promise.all([
+    server = new ClangServer(
+      src,
+      contents,
       findClangServerArgs(src),
       this._getFlags(src, compilationDBFile, defaultFlags),
-    ]);
-    if (flagsResult == null) {
-      return null;
-    }
-    // Another server could have been created while we were waiting.
-    server = this._servers.get(src);
-    if (server != null) {
-      return server;
-    }
-    server = new ClangServer(src, serverArgs, flagsResult);
-    // Seed with a compile request to ensure fast responses.
-    server.compile(contents)
+    );
+    server
+      .waitForReady()
       .then(() => this._checkMemoryUsage());
     this._servers.set(src, server);
     return server;

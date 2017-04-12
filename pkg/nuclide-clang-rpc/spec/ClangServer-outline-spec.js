@@ -26,12 +26,12 @@ describe('ClangServer', () => {
 
   it('can return outline data', () => {
     waitsForPromise(async () => {
-      const serverArgs = await findClangServerArgs();
-      const server = new ClangServer(TEST_FILE, serverArgs, {
+      const serverArgs = findClangServerArgs();
+      const server = new ClangServer(TEST_FILE, FILE_CONTENTS, serverArgs, Promise.resolve({
         flags: ['-x', 'c++'],
         usesDefaultFlags: false,
         flagsFile: null,
-      });
+      }));
       const service = await server.getService();
       const response = await service.get_outline(
         FILE_CONTENTS,

@@ -23,7 +23,6 @@ import type {ConnectableObservable} from 'rxjs';
 import {keyMirror} from '../../commons-node/collection';
 import {Observable} from 'rxjs';
 import {checkOutput} from '../../commons-node/process';
-import ClangServer from './ClangServer';
 import ClangServerManager from './ClangServerManager';
 
 const serverManager = new ClangServerManager();
@@ -86,16 +85,17 @@ async function getClangService(
   defaultFlags: ?Array<string>,
   blocking?: boolean,
 ): Promise<?ClangProcessService> {
-  const server = await serverManager.getClangServer(src, contents, compilationDBFile, defaultFlags);
-  if (server == null) {
-    return null;
-  }
-  if (server.getStatus() !== ClangServer.Status.READY) {
+  const server = serverManager.getClangServer(src, contents, compilationDBFile, defaultFlags);
+  if (!server.isReady()) {
     if (blocking) {
       await server.waitForReady();
     } else {
       return null;
     }
+  }
+  // It's possible that the server got disposed while waiting.
+  if (server.isDisposed()) {
+    return null;
   }
   return server.getService();
 }
@@ -113,14 +113,14 @@ export function compile(
 ): ConnectableObservable<?ClangCompileResult> {
   const doCompile = async () => {
     // Note: restarts the server if the flags changed.
-    const server = await serverManager.getClangServer(
+    const server = serverManager.getClangServer(
       src,
       contents,
       compilationDBFile,
       defaultFlags,
       true,
     );
-    if (server != null) {
+    if (!server.isDisposed()) {
       return server.compile(contents);
     }
   };
