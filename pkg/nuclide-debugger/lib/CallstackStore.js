@@ -10,6 +10,7 @@
 
 import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';
 import type {Callstack} from './types';
+import {DebuggerStore} from './DebuggerStore';
 
 import {
   Disposable,
@@ -26,14 +27,16 @@ export default class CallstackStore {
   _callstack: ?Callstack;
   _selectedCallFrameIndex: number;
   _selectedCallFrameMarker: ?atom$Marker;
+  _debuggerStore: DebuggerStore;
 
-  constructor(dispatcher: DebuggerDispatcher) {
+  constructor(dispatcher: DebuggerDispatcher, debuggerStore: DebuggerStore) {
     const dispatcherToken = dispatcher.register(this._handlePayload.bind(this));
     this._disposables = new CompositeDisposable(
       new Disposable(() => {
         dispatcher.unregister(dispatcherToken);
       }),
     );
+    this._debuggerStore = debuggerStore;
     this._callstack = null;
     this._selectedCallFrameIndex = 0;
     this._selectedCallFrameMarker = null;
@@ -155,6 +158,10 @@ export default class CallstackStore {
 
   getSelectedCallFrameIndex(): number {
     return this._selectedCallFrameIndex;
+  }
+
+  getDebuggerStore(): DebuggerStore {
+    return this._debuggerStore;
   }
 
   dispose(): void {

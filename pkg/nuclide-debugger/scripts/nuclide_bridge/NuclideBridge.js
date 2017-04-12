@@ -365,6 +365,7 @@ class NuclideBridge {
           path: callFrame.script.sourceURL,
           column: location.columnNumber,
           line: location.lineNumber,
+          hasSource: callFrame.hasSource() != null ? callFrame.hasSource() : true,
         },
       };
     });

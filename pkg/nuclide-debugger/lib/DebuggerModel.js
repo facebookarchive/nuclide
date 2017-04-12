@@ -72,7 +72,7 @@ export default class DebuggerModel {
       this._dispatcher,
     );
     this._debuggerActionStore = new DebuggerActionsStore(this._dispatcher, this._bridge);
-    this._callstackStore = new CallstackStore(this._dispatcher);
+    this._callstackStore = new CallstackStore(this._dispatcher, this._store);
     this._scopesStore = new ScopesStore(this._dispatcher);
     this._threadStore = new ThreadStore(this._dispatcher);
     this._debuggerPauseController = new DebuggerPauseController(this._store);
