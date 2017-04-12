@@ -13,9 +13,9 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 export type Device = {
   name: string,
   displayName: string,
-  type: string,
 };
 
 export interface DeviceFetcher {
   fetch(host: NuclideUri): Promise<Device[]>,
+  getType(): string,
 }

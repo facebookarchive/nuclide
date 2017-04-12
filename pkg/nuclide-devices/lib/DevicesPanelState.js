@@ -11,9 +11,8 @@
 import React from 'react';
 import {renderReactRoot} from '../../commons-atom/renderReactRoot';
 import {DevicePanel} from './ui/DevicePanel';
-import {arrayFlatten} from '../../commons-node/collection';
 
-import type {DeviceFetcher} from './types';
+import type {DeviceFetcher, Device} from './types';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 export const WORKSPACE_VIEW_URI = 'atom://nuclide/devices';
@@ -45,11 +44,22 @@ export class DevicesPanelState {
     return 'right';
   }
 
+  async _getDevices(host: NuclideUri): Promise<Map<string, Device[]>> {
+    const deviceLookups = Array.from(this._fetchers)
+      .map(fetcher => [fetcher.getType(), fetcher.fetch(host)]);
+    const deviceMap = new Map();
+    (await Promise.all(deviceLookups.map(d => d[1])))
+      .forEach((lookup, i) => {
+        if (lookup.length > 0) {
+          deviceMap.set(deviceLookups[i][0], lookup);
+        }
+      });
+    return deviceMap;
+  }
+
   getElement(): HTMLElement {
-    const devicesCB = (host: NuclideUri) => {
-      return Promise.all(Array.from(this._fetchers).map(fetcher => fetcher.fetch(host)))
-        .then(deviceLists => arrayFlatten(deviceLists));
-    };
-    return renderReactRoot(<DevicePanel hosts={['local']} getDevices={devicesCB} />);
+    return renderReactRoot(
+      <DevicePanel hosts={['local']} getDevices={host => this._getDevices(host)} />,
+    );
   }
 }

@@ -24,6 +24,10 @@ export class AndroidTizenBaseFetcher implements DeviceFetcher {
     this._rpcFactory = rpcFactory;
   }
 
+  getType(): string {
+    return this._type;
+  }
+
   fetch(host: NuclideUri): Promise<Device[]> {
     return this._rpcFactory(host).getDeviceList().then(
       devices => devices.map(device => this.parseRawDevice(device)),
@@ -41,7 +45,6 @@ export class AndroidTizenBaseFetcher implements DeviceFetcher {
 
     return {
       name: device.name,
-      type: this._type,
       displayName,
     };
   }
