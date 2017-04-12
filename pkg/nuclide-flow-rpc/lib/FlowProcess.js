@@ -16,7 +16,7 @@ import type {FlowExecInfoContainer} from './FlowExecInfoContainer';
 
 import os from 'os';
 import invariant from 'assert';
-import {BehaviorSubject, Observable} from 'rxjs';
+import {BehaviorSubject, Observable, Subject} from 'rxjs';
 
 import {getLogger} from '../../nuclide-logging';
 const logger = getLogger();
@@ -29,6 +29,7 @@ import {
 } from '../../commons-node/process';
 import {sleep} from '../../commons-node/promise';
 import {niceSafeSpawn} from '../../commons-node/nice';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 
 import {
   getStopFlowOnExit,
@@ -80,8 +81,10 @@ export class FlowProcess {
   _ideConnections: Observable<?FlowIDEConnection>;
 
   _isDisposed: BehaviorSubject<boolean>;
+  _subscriptions: UniversalDisposable;
 
   constructor(root: string, execInfoContainer: FlowExecInfoContainer) {
+    this._subscriptions = new UniversalDisposable();
     this._execInfoContainer = execInfoContainer;
     this._serverStatus = new BehaviorSubject(ServerStatus.UNKNOWN);
     this._root = root;
@@ -128,6 +131,7 @@ export class FlowProcess {
       // The default, SIGTERM, does not reliably kill the flow servers.
       this._startedServer.kill('SIGKILL');
     }
+    this._subscriptions.dispose();
   }
 
   /**
@@ -155,6 +159,23 @@ export class FlowProcess {
   }
 
   _createIDEConnectionStream(): Observable<?FlowIDEConnection> {
+    const optionalIDEConnections: Subject<?FlowIDEConnection> = new Subject();
+    this._subscriptions.add(
+      optionalIDEConnections
+        .filter(conn => conn != null)
+        .switchMap(conn => {
+          invariant(conn != null);
+          return conn.observeRecheckBookends();
+        })
+        .subscribe(bookend => {
+          if (bookend.kind === 'start-recheck') {
+            this._setServerStatus(ServerStatus.BUSY);
+          } else {
+            this._setServerStatus(ServerStatus.READY);
+          }
+        }),
+    );
+
     const isFailed: Observable<boolean> = this._serverStatus
       .map(x => x === ServerStatus.FAILED)
       .distinctUntilChanged();
@@ -169,6 +190,11 @@ export class FlowProcess {
       .switchMap(() => this._createSingleIDEConnectionStream())
       .takeUntil(this._isDisposed.filter(x => x))
       .concat(Observable.of(null))
+      // This is so we can passively observe IDE connections if somebody happens to be using one. We
+      // want to use it to more quickly update the Flow server status, but it's not crucial to
+      // correctness so we only want to do this if somebody is using the IDE connections anyway.
+      // Don't pass the Subject as an Observer since then it will complete if a client unsubscribes.
+      .do(conn => optionalIDEConnections.next(conn))
       // multicast and store the current connection and immediately deliver it to new subscribers
       .publishReplay(1).refCount();
   }
