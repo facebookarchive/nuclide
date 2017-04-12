@@ -46,6 +46,15 @@ export default class DebuggerProcessInfo {
     return false;
   }
 
+  configureSourceFilePaths(): void {
+    // Debuggers that support this will override this routine.
+    throw new Error('Not supported');
+  }
+
+  supportsConfigureSourcePaths(): boolean {
+    return false;
+  }
+
   supportSingleThreadStepping(): boolean {
     return false;
   }

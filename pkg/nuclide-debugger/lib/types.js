@@ -99,6 +99,7 @@ export type CallstackItem = {
     path: string,
     line: number,
     column?: number,
+    hasSource?: boolean,
   },
 };
 export type Callstack = Array<CallstackItem>;

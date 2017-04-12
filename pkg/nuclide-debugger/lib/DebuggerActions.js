@@ -101,6 +101,15 @@ export default class DebuggerActions {
           this.updateControlButtons([]);
         }
       }
+
+      if (processInfo.supportsConfigureSourcePaths()) {
+        this.updateConfigureSourcePathsCallback(
+          processInfo.configureSourceFilePaths.bind(processInfo),
+        );
+      } else {
+        this.updateConfigureSourcePathsCallback(null);
+      }
+
       await this._waitForChromeConnection(debuggerInstance);
     } catch (err) {
       failTimerTracking(err);
@@ -185,6 +194,7 @@ export default class DebuggerActions {
     this.updateControlButtons([]);
     this.setDebuggerMode(DebuggerMode.STOPPED);
     this.setDebugProcessInfo(null);
+    this.updateConfigureSourcePathsCallback(null);
     track(AnalyticsEvents.DEBUGGER_STOP);
     endTimerTracking();
 
@@ -223,6 +233,19 @@ export default class DebuggerActions {
     this._dispatcher.dispatch({
       actionType: ActionTypes.UPDATE_CUSTOM_CONTROL_BUTTONS,
       data: buttons,
+    });
+  }
+
+  updateConfigureSourcePathsCallback(callback: ?() => void): void {
+    this._dispatcher.dispatch({
+      actionType: ActionTypes.UPDATE_CONFIGURE_SOURCE_PATHS_CALLBACK,
+      data: callback,
+    });
+  }
+
+  configureSourcePaths(): void {
+    this._dispatcher.dispatch({
+      actionType: ActionTypes.CONFIGURE_SOURCE_PATHS,
     });
   }
 

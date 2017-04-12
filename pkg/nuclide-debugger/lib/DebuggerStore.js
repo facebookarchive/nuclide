@@ -60,6 +60,7 @@ export class DebuggerStore {
   _consoleDisposable: ?IDisposable;
   _customControlButtons: Array<ControlButtonSpecification>;
   _debugProcessInfo: ?DebuggerProcessInfo;
+  _setSourcePathCallback: ?() => void;
   loaderBreakpointResumePromise: Promise<void>;
 
   constructor(dispatcher: DebuggerDispatcher, model: DebuggerModel) {
@@ -81,6 +82,7 @@ export class DebuggerStore {
     this._consoleDisposable = null;
     this._customControlButtons = [];
     this._debugProcessInfo = null;
+    this._setSourcePathCallback = null;
     this.loaderBreakpointResumePromise = new Promise(resolve => {
       this._onLoaderBreakpointResume = resolve;
     });
@@ -147,6 +149,10 @@ export class DebuggerStore {
 
   getEvaluationExpressionProviders(): Set<NuclideEvaluationExpressionProvider> {
     return this._evaluationExpressionProviders;
+  }
+
+  getCanSetSourcePaths(): boolean {
+    return this._setSourcePathCallback != null;
   }
 
   initializeSingleThreadStepping(mode: boolean) {
@@ -229,6 +235,14 @@ export class DebuggerStore {
         break;
       case ActionTypes.UPDATE_CUSTOM_CONTROL_BUTTONS:
         this._customControlButtons = payload.data;
+        break;
+      case ActionTypes.UPDATE_CONFIGURE_SOURCE_PATHS_CALLBACK:
+        this._setSourcePathCallback = payload.data;
+        break;
+      case ActionTypes.CONFIGURE_SOURCE_PATHS:
+        if (this._setSourcePathCallback != null) {
+          this._setSourcePathCallback();
+        }
         break;
       case ActionTypes.SET_DEBUG_PROCESS_INFO:
         if (this._debugProcessInfo != null) {
