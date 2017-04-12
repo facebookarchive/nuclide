@@ -17,7 +17,11 @@ import nuclideUri from '../../commons-node/nuclideUri';
 import readline from 'readline';
 
 import fsPromise from '../../commons-node/fsPromise';
-import {asyncExecute, safeSpawn, getOriginalEnvironment} from '../../commons-node/process';
+import {
+  asyncExecute,
+  createProcessStream,
+  getOriginalEnvironment,
+} from '../../commons-node/process';
 import {PromiseQueue} from '../../commons-node/promise-executors';
 import {getLogger} from '../../nuclide-logging';
 
@@ -402,7 +406,10 @@ export async function getInstance(file: NuclideUri): Promise<?MerlinProcess> {
   };
 
   logger.info('Spawning new ocamlmerlin process version ' + version);
-  const process = await safeSpawn(merlinPath, flags, options);
+  const processStream = createProcessStream(merlinPath, flags, options).publish();
+  const processPromise = processStream.take(1).toPromise();
+  processStream.connect();
+  const process = await processPromise;
   // Turns 2.5.1 into 2.5
   const majorMinor = version.split('.').slice(0, 2).join('.');
   switch (majorMinor) {
