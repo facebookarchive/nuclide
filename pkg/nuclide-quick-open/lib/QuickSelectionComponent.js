@@ -235,8 +235,6 @@ export default class QuickSelectionComponent extends React.Component {
       Observable.fromEvent(document, 'mousedown')
         .subscribe(this._handleDocumentMouseDown),
       observableFromSubscribeFunction(cb => this._getTextEditor().onDidChange(cb))
-        // $FlowFixMe: Missing def for debounce and timer.
-        .debounce(() => Observable.timer(this.state.activeTab.debounceDelay || 0))
         .subscribe(this._handleTextInputChange),
       observableFromSubscribeFunction(
           cb => this.props.searchResultManager.onProvidersChanged(cb),
@@ -255,8 +253,10 @@ export default class QuickSelectionComponent extends React.Component {
     );
 
     // TODO: Find a better way to trigger an update.
-    this._getTextEditor().setText(this.refs.queryInput.getText());
-    this._getTextEditor().selectAll();
+    process.nextTick(() => {
+      this._getTextEditor().setText(this.refs.queryInput.getText());
+      this._getTextEditor().selectAll();
+    });
   }
 
   componentWillUnmount(): void {
@@ -338,6 +338,10 @@ export default class QuickSelectionComponent extends React.Component {
 
   _handleProvidersChange(): void {
     this._updateResults();
+
+    // Execute the current query again.
+    // This will update any new providers.
+    this.props.quickSelectionActions.query(this._getTextEditor().getText());
   }
 
   _updateResults(): void {

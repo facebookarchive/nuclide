@@ -70,7 +70,7 @@ function querySingleProvider(
     searchResultManager.onResultsChanged(() => {
       resolve(searchResultManager.getResults(query, providerName));
     });
-    searchResultManager._executeQuery(query);
+    searchResultManager.executeQuery(query);
   });
 }
 
@@ -86,7 +86,7 @@ function queryOmniSearchProvider(
         resolve(searchResultManager.getResults(query, 'OmniSearchResultProvider'));
       }
     });
-    searchResultManager._executeQuery(query);
+    searchResultManager.executeQuery(query);
   });
 }
 
