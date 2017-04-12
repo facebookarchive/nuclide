@@ -62,4 +62,10 @@ export class DevicesPanelState {
       <DevicePanel hosts={['local']} getDevices={host => this._getDevices(host)} />,
     );
   }
+
+  serialize(): {deserializer: string} {
+    return {
+      deserializer: 'nuclide.DevicePanelState',
+    };
+  }
 }

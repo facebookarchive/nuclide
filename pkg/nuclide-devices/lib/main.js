@@ -49,6 +49,10 @@ class Activation {
     );
   }
 
+  deserializeDevicePanelState(): DevicesPanelState {
+    return new DevicesPanelState(this._fetchers);
+  }
+
   registerDeviceFetcher(fetcher: DeviceFetcher): void {
     this._fetchers.add(fetcher);
   }

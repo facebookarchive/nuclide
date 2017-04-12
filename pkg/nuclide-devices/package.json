@@ -11,6 +11,9 @@
   },
   "activationCommands": {
   },
+  "deserializers": {
+    "nuclide.DevicePanelState": "deserializeDevicePanelState"
+  },
   "consumedServices": {
     "nuclide.workspace-views": {
       "versions": {
