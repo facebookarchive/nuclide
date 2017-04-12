@@ -189,13 +189,15 @@ export class NativeDebuggerService extends DebuggerRpcWebSocketService {
   _spawnPythonBackend(): child_process$ChildProcess {
     const lldbPythonScriptPath = nuclideUri.join(__dirname, '../scripts/main.py');
     const python_args = [lldbPythonScriptPath, '--arguments_in_json'];
+    const environ = process.env;
+    environ.PYTHONPATH = this._config.envPythonPath;
     const options = {
       cwd: nuclideUri.dirname(lldbPythonScriptPath),
       // FD[3] is used for sending arguments JSON blob.
       // FD[4] is used as a ipc channel for output/atom notifications.
       stdio: ['pipe', 'pipe', 'pipe', 'pipe', 'pipe'],
       detached: false, // When Atom is killed, clang_server.py should be killed, too.
-      env: {PYTHONPATH: this._config.envPythonPath},
+      env: environ,
     };
     this.getLogger().logInfo(`spawn child_process: ${JSON.stringify(python_args)}`);
     const lldbProcess = child_process.spawn(
