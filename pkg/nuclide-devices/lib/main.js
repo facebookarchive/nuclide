@@ -11,14 +11,22 @@
 import createPackage from '../../commons-atom/createPackage';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {DevicesPanelState, WORKSPACE_VIEW_URI} from './DevicesPanelState';
+import {AndroidFetcher} from './fetchers/AndroidFetcher';
+import {TizenFetcher} from './fetchers/TizenFetcher';
 
 import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
+import type {DeviceFetcher} from './types';
 
 class Activation {
   _disposables: UniversalDisposable;
+  _fetchers: Set<DeviceFetcher>;
 
   constructor(state: ?Object) {
     this._disposables = new UniversalDisposable();
+    this._fetchers = new Set();
+
+    this.registerDeviceFetcher(new AndroidFetcher());
+    this.registerDeviceFetcher(new TizenFetcher());
   }
 
   dispose(): void {
@@ -29,7 +37,7 @@ class Activation {
     this._disposables.add(
       api.addOpener(uri => {
         if (uri === WORKSPACE_VIEW_URI) {
-          return new DevicesPanelState();
+          return new DevicesPanelState(this._fetchers);
         }
       }),
       () => api.destroyWhere(item => item instanceof DevicesPanelState),
@@ -39,6 +47,10 @@ class Activation {
         event => { api.toggle(WORKSPACE_VIEW_URI, (event: any).detail); },
       ),
     );
+  }
+
+  registerDeviceFetcher(fetcher: DeviceFetcher): void {
+    this._fetchers.add(fetcher);
   }
 }
 

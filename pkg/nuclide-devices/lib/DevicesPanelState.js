@@ -9,13 +9,22 @@
  */
 
 import React from 'react';
-
 import {renderReactRoot} from '../../commons-atom/renderReactRoot';
 import {DevicePanel} from './ui/DevicePanel';
+import {arrayFlatten} from '../../commons-node/collection';
+
+import type {DeviceFetcher} from './types';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 export const WORKSPACE_VIEW_URI = 'atom://nuclide/devices';
 
 export class DevicesPanelState {
+  _fetchers: Set<DeviceFetcher>;
+
+  constructor(fetchers: Set<DeviceFetcher>) {
+    this._fetchers = fetchers;
+  }
+
   getTitle() {
     return 'Devices';
   }
@@ -37,6 +46,10 @@ export class DevicesPanelState {
   }
 
   getElement(): HTMLElement {
-    return renderReactRoot(<DevicePanel />);
+    const devicesCB = (host: NuclideUri) => {
+      return Promise.all(Array.from(this._fetchers).map(fetcher => fetcher.fetch(host)))
+        .then(deviceLists => arrayFlatten(deviceLists));
+    };
+    return renderReactRoot(<DevicePanel hosts={['local']} getDevices={devicesCB} />);
   }
 }
