@@ -141,7 +141,9 @@ class Activation {
       this._searchPanel.isVisible() &&
       this._searchResultManager.getActiveProviderName() === newProviderName
     ) {
-      this._closeSearchPanel();
+      // Search panel is already open. Just focus on the query textbox.
+      invariant(this._searchComponent != null);
+      this._searchComponent.selectAllText();
     } else {
       this._searchResultManager.setActiveProvider(newProviderName);
       this._showSearchPanel();

@@ -117,7 +117,7 @@ export function runTest(context: TestContext) {
 
     // Close the quick-open modal, making a TextEditor the active pane
     runs(() => {
-      dispatchKeyboardEvent('t', document.activeElement, {cmd: true});
+      dispatchKeyboardEvent('escape', document.activeElement, {cmd: false});
     });
 
     // Close half of the opened files in order to populate "Recent Files"

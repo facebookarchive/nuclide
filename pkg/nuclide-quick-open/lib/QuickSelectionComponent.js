@@ -149,6 +149,10 @@ export default class QuickSelectionComponent extends React.Component {
     this._getInputTextEditor().focus();
   }
 
+  selectAllText(): void {
+    this._getTextEditor().selectAll();
+  }
+
   setInputValue(value: string): void {
     this._getTextEditor().setText(value);
   }
