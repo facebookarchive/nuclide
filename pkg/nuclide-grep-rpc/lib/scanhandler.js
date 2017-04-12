@@ -15,12 +15,12 @@ import type {
 
 import {Observable} from 'rxjs';
 
-import {safeSpawn} from '../../commons-node/process';
+import {observeProcess} from '../../commons-node/process';
 import {compact} from '../../commons-node/observable';
 import fsPromise from '../../commons-node/fsPromise';
 import nuclideUri from '../../commons-node/nuclideUri';
+import invariant from 'assert';
 import {Minimatch} from 'minimatch';
-import split from 'split';
 
 // This pattern is used for parsing the output of grep.
 const GREP_PARSE_PATTERN = /(.*?):(\d*):(.*)/;
@@ -167,41 +167,29 @@ function getLinesFromCommand(
   args: Array<string>,
   localDirectoryPath: string,
 ): Observable<string> {
-  return Observable.create(observer => {
-    let exited = false;
+  return Observable.defer(() => {
+    // Keep a running string of stderr, in case we need to throw an error.
+    // TODO: Simplify once `observeProcess()` is updated to throw errors with accumulated stderr on
+    //   nonzero exit codes.
+    let stderr = '';
 
     // Spawn the search command in the given directory.
-    const proc = safeSpawn(command, args, {cwd: localDirectoryPath});
-
-    // Reject on error.
-    proc.on('error', observer.error.bind(observer));
-
-    // Call the callback on each line.
-    proc.stdout.pipe(split()).on('data', observer.next.bind(observer));
-
-    // Keep a running string of stderr, in case we need to throw an error.
-    let stderr = '';
-    proc.stderr.on('data', data => {
-      stderr += data;
-    });
-
-    // Resolve promise if error code is 0 (found matches) or 1 (found no matches). Otherwise
-    // reject. However, if a process was killed with a signal, don't reject, since this was likely
-    // to cancel the search.
-    proc.on('close', (code, signal) => {
-      exited = true;
-      if (signal || code <= 1) {
-        observer.complete();
-      } else {
-        observer.error(new Error(stderr));
-      }
-    });
-
-    // Kill the search process on dispose.
-    return () => {
-      if (!exited) {
-        proc && proc.kill();
-      }
-    };
+    return observeProcess(command, args, {cwd: localDirectoryPath})
+      .do(event => {
+        if (event.kind === 'stderr') {
+          stderr += event.data;
+        } else if (
+          // If the error code isn't 0 (found matches) or 1 (found no matches), error. Unless a
+          // process was killed with a signal, since this was likely to cancel the search.
+          event.kind === 'exit' && !event.signal && event.exitCode != null && event.exitCode > 1
+        ) {
+          throw new Error(stderr);
+        }
+      })
+      .filter(event => event.kind === 'stdout')
+      .map(event => {
+        invariant(event.kind === 'stdout');
+        return event.data;
+      });
   });
 }
