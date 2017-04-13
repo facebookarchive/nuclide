@@ -11,7 +11,6 @@
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import invariant from 'assert';
-import os from 'os';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {shellParse} from '../../commons-node/string';
 import {Observable} from 'rxjs';
@@ -437,8 +436,6 @@ export default class ClangFlagsManager {
     // TODO(t12973165): Allow configuring a custom flavor.
     // For now, this seems to use cxx.default_platform, which tends to be correct.
     const buildTarget = target + '#compilation-database';
-    // Since this is a background process, avoid stressing the system.
-    const maxLoad = os.cpus().length / 2;
     const buildReport = await BuckService.build(
       buckProjectRoot,
       [
@@ -450,8 +447,9 @@ export default class ClangFlagsManager {
         'client.skip-action-graph-cache=true',
 
         buildTarget,
-        '-L',
-        String(maxLoad),
+        // TODO(hansonw): Any alternative to doing this?
+        // '-L',
+        // String(os.cpus().length / 2),
       ],
       {commandOptions: {timeout: BUCK_TIMEOUT}},
     );
