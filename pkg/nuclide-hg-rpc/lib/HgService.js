@@ -800,6 +800,8 @@ export class HgService {
       if (isInteractive) {
         args.push('--interactive');
         editMergeConfigs = await getInteractiveCommitEditorConfig();
+      } else {
+        args.push('--noninteractive');
       }
       if (message == null) {
         return args;
