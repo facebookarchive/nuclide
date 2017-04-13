@@ -419,7 +419,7 @@ export async function getDiagnostics(
 
     // Read contents from stdin.
     args.push('-');
-
+    invariant(typeof command === 'string');
     result = await asyncExecute(command, args, {cwd: dirName, stdin: contents});
   }
   // 1 indicates unclean lint result (i.e. has errors/warnings).
