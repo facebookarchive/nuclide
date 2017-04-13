@@ -8,12 +8,6 @@
  * @flow
  */
 
-type ComboboxOption = {
-  value: string,
-  valueLowercase: string,
-  matchIndex: number,
-};
-
 import invariant from 'assert';
 import UniversalDisposable from '../commons-node/UniversalDisposable';
 import {Observable} from 'rxjs';
@@ -38,6 +32,7 @@ type Props = DefaultProps & {
   placeholderText?: string,
   onRequestOptionsError?: (error: Error) => void,
   onBlur?: (text: string) => void,
+  filterOptions?: (options: Array<string>, filterValue: string) => Array<string>,
   requestOptions: (inputText: string) => Observable<Array<string>>,
   size: 'xs' | 'sm' | 'lg',
   disabled: boolean,
@@ -45,7 +40,7 @@ type Props = DefaultProps & {
 
 type State = {
   error: ?Error,
-  filteredOptions: Array<Object>,
+  filteredOptions: Array<string>,
   loadingOptions: boolean,
   options: Array<string>,
   optionsVisible: boolean,
@@ -121,7 +116,6 @@ export class Combobox extends React.Component {
       atom.commands.add(node, 'core:confirm', this._handleConfirm),
       this.refs.freeformInput.onDidChange(this._handleTextInputChange),
     );
-    this.requestUpdate(this.state.textInput);
   }
 
   componentWillUnmount() {
@@ -185,8 +179,12 @@ export class Combobox extends React.Component {
     return this.refs.freeformInput.getText();
   }
 
-  // TODO use native (fuzzy/strict - configurable?) filter provider
-  _getFilteredOptions(options: Array<string>, filterValue: string): Array<ComboboxOption> {
+  _getFilteredOptions(options: Array<string>, filterValue: string): Array<string> {
+    if (this.props.filterOptions != null) {
+      return this.props.filterOptions(options, filterValue)
+        .slice(0, this.props.maxOptionCount);
+    }
+
     const lowerCaseState = filterValue.toLowerCase();
     return options
       .map(
@@ -194,7 +192,6 @@ export class Combobox extends React.Component {
           const valueLowercase = option.toLowerCase();
           return {
             value: option,
-            valueLowercase,
             matchIndex: valueLowercase.indexOf(lowerCaseState),
           };
         },
@@ -210,6 +207,8 @@ export class Combobox extends React.Component {
           // Then we prefer smaller options, thus close to the input
           return a.value.length - b.value.length;
         },
+      ).map(
+        option => option.value,
       ).slice(0, this.props.maxOptionCount);
   }
 
@@ -225,7 +224,7 @@ export class Combobox extends React.Component {
     return this._optionsElement;
   }
 
-  _getNewSelectedIndex(filteredOptions: Array<ComboboxOption>): number {
+  _getNewSelectedIndex(filteredOptions: Array<string>): number {
     if (filteredOptions.length === 0) {
       // If there aren't any options, don't select anything.
       return -1;
@@ -329,7 +328,7 @@ export class Combobox extends React.Component {
   _handleConfirm() {
     const option = this.state.filteredOptions[this.state.selectedIndex];
     if (option !== undefined) {
-      this.selectValue(option.value);
+      this.selectValue(option);
     }
   }
 
@@ -367,23 +366,32 @@ export class Combobox extends React.Component {
     }
 
     if (this.state.optionsVisible) {
+      const lowerCaseState = this.state.textInput.toLowerCase();
       options.push(...this.state.filteredOptions.map((option, i) => {
-        const beforeMatch = option.value.substring(0, option.matchIndex);
-        const endOfMatchIndex = option.matchIndex + this.state.textInput.length;
-        const highlightedMatch = option.value.substring(
-          option.matchIndex,
-          endOfMatchIndex,
-        );
-        const afterMatch = option.value.substring(
-          endOfMatchIndex,
-          option.value.length,
-        );
+        const matchIndex = option.toLowerCase().indexOf(lowerCaseState);
+        let beforeMatch;
+        let highlightedMatch;
+        let afterMatch;
+        if (matchIndex >= 0) {
+          beforeMatch = option.substring(0, matchIndex);
+          const endOfMatchIndex = matchIndex + this.state.textInput.length;
+          highlightedMatch = option.substring(
+            matchIndex,
+            endOfMatchIndex,
+          );
+          afterMatch = option.substring(
+            endOfMatchIndex,
+            option.length,
+          );
+        } else {
+          beforeMatch = option;
+        }
         const isSelected = i === this.state.selectedIndex;
         return (
           <li
             className={isSelected ? 'selected' : null}
-            key={'option-' + option.value}
-            onClick={this._handleItemClick.bind(this, option.value)}
+            key={'option-' + option}
+            onClick={this._handleItemClick.bind(this, option)}
             onMouseOver={this._setSelectedIndex.bind(this, i)}
             ref={isSelected ? 'selectedOption' : null}>
             {beforeMatch}
