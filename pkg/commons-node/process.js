@@ -177,19 +177,6 @@ function monitorStreamErrors(process: child_process$ChildProcess, command, args,
   });
 }
 
-/**
- * Basically like spawn/fork, except it handles and logs errors instead of
- * crashing the process. This is much lower-level than asyncExecute. Unless
- * you have a specific reason you should use asyncExecute instead.
- */
-export function safeSpawn(
-  command: string,
-  args?: Array<string> = [],
-  options?: child_process$spawnOpts = {},
-): child_process$ChildProcess {
-  return _makeChildProcess('spawn', command, args, options);
-}
-
 export function safeFork(
   command: string,
   args?: Array<string> = [],
@@ -257,7 +244,7 @@ export function scriptSafeSpawn(
   options?: Object = {},
 ): child_process$ChildProcess {
   const newArgs = createArgsForScriptCommand(command, args);
-  return safeSpawn('script', newArgs, options);
+  return _makeChildProcess('spawn', 'script', newArgs, options);
 }
 
 /**
@@ -422,7 +409,7 @@ export function createProcessStream(
   options?: ObserveProcessOptions,
 ): Observable<child_process$ChildProcess> {
   return _createProcessStream(
-    () => safeSpawn(command, args, options),
+    () => _makeChildProcess('spawn', command, args, options),
     true,
     Boolean(options && options.killTreeOnComplete),
   );
@@ -506,7 +493,7 @@ export function observeProcess(
   options?: ObserveProcessOptions,
 ): Observable<ProcessMessage> {
   return _createProcessStream(
-    () => safeSpawn(command, args, options),
+    () => _makeChildProcess('spawn', command, args, options),
     false,
     Boolean(options && options.killTreeOnComplete),
   )
@@ -522,7 +509,7 @@ export function observeProcessRaw(
   options?: ObserveProcessOptions,
 ): Observable<ProcessMessage> {
   return _createProcessStream(
-    () => safeSpawn(command, args, options),
+    () => _makeChildProcess('spawn', command, args, options),
     false,
     Boolean(options && options.killTreeOnComplete),
   )

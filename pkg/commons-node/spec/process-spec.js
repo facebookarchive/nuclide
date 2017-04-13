@@ -27,7 +27,6 @@ import {
   parsePsOutput,
   runCommand,
   safeFork,
-  safeSpawn,
   scriptSafeSpawn,
   exitEventToMessage,
 } from '../process';
@@ -108,18 +107,6 @@ describe('commons-node/process', () => {
         spyOn(console, 'error'); // suppress error printing
         spyOn(console, 'log'); // suppress log printing
         const child = await safeFork('fakeCommand');
-        expect(child).not.toBe(null);
-        expect(child.listeners('error').length).toBeGreaterThan(0);
-      });
-    });
-  });
-
-  describe('process.safeSpawn', () => {
-    it('should not crash the process on an error', () => {
-      waitsForPromise(async () => {
-        spyOn(console, 'error'); // suppress error printing
-        spyOn(console, 'log'); // suppress log printing
-        const child = await safeSpawn('fakeCommand');
         expect(child).not.toBe(null);
         expect(child.listeners('error').length).toBeGreaterThan(0);
       });
@@ -207,7 +194,7 @@ describe('commons-node/process', () => {
   describe('getOutputStream', () => {
     it('captures stdout, stderr and exitCode', () => {
       waitsForPromise(async () => {
-        const child = safeSpawn(process.execPath,
+        const child = child_process.spawn(process.execPath,
           ['-e', 'console.error("stderr"); console.log("std out"); process.exit(42);']);
         const results = await getOutputStream(child).toArray().toPromise();
         expect(results).toEqual([
@@ -220,7 +207,7 @@ describe('commons-node/process', () => {
 
     it('captures stdout, stderr and exitCode when passed a promise', () => {
       waitsForPromise(async () => {
-        const child = safeSpawn(process.execPath,
+        const child = child_process.spawn(process.execPath,
           ['-e', 'console.error("stderr"); console.log("std out"); process.exit(42);']);
         const results = await getOutputStream(child).toArray().toPromise();
         expect(results).toEqual([
