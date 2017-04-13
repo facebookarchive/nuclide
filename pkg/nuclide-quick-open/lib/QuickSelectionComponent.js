@@ -43,6 +43,7 @@ import Tabs from '../../nuclide-ui/Tabs';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import humanizeKeystroke from '../../commons-node/humanizeKeystroke';
+import {throttle, nextTick} from '../../commons-node/observable';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import classnames from 'classnames';
@@ -234,7 +235,12 @@ export default class QuickSelectionComponent extends React.Component {
       atom.commands.add('body', 'core:cancel', () => { this.props.onCancellation(); }),
       Observable.fromEvent(document, 'mousedown')
         .subscribe(this._handleDocumentMouseDown),
-      observableFromSubscribeFunction(cb => this._getTextEditor().onDidChange(cb))
+      // The text editor often changes during dispatches, so wait until the next tick.
+      throttle(
+        observableFromSubscribeFunction(cb => this._getTextEditor().onDidChange(cb)),
+        nextTick,
+        {leading: false},
+      )
         .subscribe(this._handleTextInputChange),
       observableFromSubscribeFunction(
           cb => this.props.searchResultManager.onProvidersChanged(cb),
@@ -253,10 +259,8 @@ export default class QuickSelectionComponent extends React.Component {
     );
 
     // TODO: Find a better way to trigger an update.
-    process.nextTick(() => {
-      this._getTextEditor().setText(this.refs.queryInput.getText());
-      this._getTextEditor().selectAll();
-    });
+    this._getTextEditor().setText(this.refs.queryInput.getText());
+    this._getTextEditor().selectAll();
   }
 
   componentWillUnmount(): void {
