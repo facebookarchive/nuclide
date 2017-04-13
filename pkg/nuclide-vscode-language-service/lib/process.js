@@ -89,7 +89,7 @@ export class LanguageServerProtocolProcess {
   _fileCache: FileCache;
   _fileSubscription: rxjs$ISubscription;
   _fileVersionNotifier: FileVersionNotifier;
-  _createProcess: () => child_process$ChildProcess;
+  _createProcess: () => Promise<child_process$ChildProcess>;
   _process: LspProcess;
   _fileExtensions: Array<string>;
   _logger: CategoryLogger;
@@ -97,7 +97,7 @@ export class LanguageServerProtocolProcess {
   constructor(
     logger: CategoryLogger,
     fileCache: FileCache,
-    createProcess: () => child_process$ChildProcess,
+    createProcess: () => Promise<child_process$ChildProcess>,
     projectRoot: string,
     fileExtensions: Array<string>,
   ) {
@@ -112,7 +112,7 @@ export class LanguageServerProtocolProcess {
   static async create(
     logger: CategoryLogger,
     fileCache: FileCache,
-    createProcess: () => child_process$ChildProcess,
+    createProcess: () => Promise<child_process$ChildProcess>,
     projectRoot: string,
     fileExtensions: Array<string>,
   ): Promise<LanguageServerProtocolProcess> {
@@ -179,8 +179,8 @@ export class LanguageServerProtocolProcess {
   // TODO: Handle the process termination/restart.
   async _ensureProcess(): Promise<void> {
     try {
-      this._process = await LspProcess.create(
-        this._logger, this._createProcess(), this._projectRoot);
+      const proc = await this._createProcess();
+      this._process = await LspProcess.create(this._logger, proc, this._projectRoot);
       this._subscribeToFileEvents();
     } catch (e) {
       this._logger.logError('LanguageServerProtocolProcess - error spawning child process: ' + e);
