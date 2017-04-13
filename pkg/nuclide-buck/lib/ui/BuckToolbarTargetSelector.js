@@ -44,6 +44,25 @@ export default class BuckToolbarTargetSelector extends React.Component {
     this._projectAliasesCache = new Map();
   }
 
+  _filterOptions(options: Array<string>, filterValue: string): Array<string> {
+    const filterLowerCase = filterValue.toLowerCase();
+    return options
+      .map((value, index) => {
+        const matchIndex = value.toLowerCase().indexOf(filterLowerCase);
+        if (matchIndex < 0) {
+          return null;
+        }
+        return {value, matchIndex, index};
+      })
+      .filter(Boolean)
+      .sort((a, b) => {
+        // Prefer earlier matches, but don't break ties by string length.
+        // Instead, make the sort stable by breaking ties with the index.
+        return (a.matchIndex - b.matchIndex) || (a.index - b.index);
+      })
+      .map(option => option.value);
+  }
+
   _requestOptions(inputText: string): Observable<Array<string>> {
     const {buckRoot} = this.props.appState;
     if (buckRoot == null) {
@@ -62,7 +81,11 @@ export default class BuckToolbarTargetSelector extends React.Component {
     if (cachedAliases == null) {
       const buckService = getBuckService(buckRoot);
       cachedAliases = buckService == null ? Promise.resolve([]) :
-        buckService.listAliases(buckRoot);
+        buckService.listAliases(buckRoot)
+          // Sort in alphabetical order.
+          .then(aliases => aliases.sort(
+            (a, b) => a.toLowerCase().localeCompare(b.toLowerCase()),
+          ));
       this._projectAliasesCache.set(buckRoot, cachedAliases);
     }
     return cachedAliases;
@@ -111,7 +134,9 @@ export default class BuckToolbarTargetSelector extends React.Component {
         key={this.props.appState.buildTarget}
         className="inline-block nuclide-buck-target-combobox"
         formatRequestOptionsErrorMessage={err => err.message}
+        filterOptions={this._filterOptions}
         requestOptions={this._requestOptions}
+        maxOptionCount={20}
         size="sm"
         loadingMessage="Updating target names..."
         initialTextInput={this.props.appState.buildTarget}
