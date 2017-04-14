@@ -18,7 +18,7 @@ import {getServerSideMarshalers} from '../../nuclide-marshalers-common';
 import idx from 'idx';
 import {BehaviorSubject, Observable} from 'rxjs';
 
-import {asyncExecute, spawnProcess} from '../../commons-node/process';
+import {asyncExecute, spawn} from '../../commons-node/process';
 import {RpcProcess} from '../../nuclide-rpc';
 import {ServiceRegistry, loadServicesConfig} from '../../nuclide-rpc';
 import {watchFile} from '../../nuclide-filewatcher-rpc';
@@ -71,7 +71,7 @@ function spawnClangProcess(
       // Note that safeSpawn() often overrides options.env.PATH, but that only happens when
       // options.env is undefined (which is not the case here). This will only be an issue if the
       // system cannot find `pythonExecutable`.
-      return spawnProcess(pythonExecutable, args, options);
+      return spawn(pythonExecutable, args, options);
     });
 }
 

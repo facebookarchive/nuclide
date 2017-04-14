@@ -17,7 +17,7 @@ import invariant from 'assert';
 import {
   asyncExecute,
   checkOutput,
-  spawnProcess,
+  spawn,
   getOutputStream,
   killProcess,
   killUnixProcessTree,
@@ -233,12 +233,12 @@ describe('commons-node/process', () => {
     });
   });
 
-  describe('spawnProcess', () => {
+  describe('spawn', () => {
     it('errors when the process does', () => {
       waitsForPromise(async () => {
         spyOn(console, 'error'); // suppress error printing
         spyOn(console, 'log'); // suppress log printing
-        const processStream = spawnProcess('fakeCommand');
+        const processStream = spawn('fakeCommand');
         let error;
         try {
           await processStream.toPromise();
@@ -257,7 +257,7 @@ describe('commons-node/process', () => {
         spyOn(console, 'log'); // suppress log printing
         spyOn(child_process, 'spawn');
         try {
-          await spawnProcess('fakeCommand')
+          await spawn('fakeCommand')
             .retryWhen(errors => (
               errors.scan(
                 (errorCount, err) => {

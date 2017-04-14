@@ -49,7 +49,7 @@ export class RpcProcess {
   /**
    * @param name           a name for this server, used to tag log entries
    * @param processStream  a (cold) Observable that creates processes upon subscription,
-   *                       both during initialization and on restart (see spawnProcess)
+   *                       both during initialization and on restart (see spawn)
    */
   constructor(
     name: string,

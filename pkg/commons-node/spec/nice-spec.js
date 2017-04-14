@@ -25,7 +25,7 @@ describe('nice', () => {
   let niceAsyncExecute: niceAsyncExecuteType = (null: any);
 
   let whichSpy: JasmineSpy = (null: any);
-  let spawnProcessSpy: JasmineSpy = (null: any);
+  let spawnSpy: JasmineSpy = (null: any);
   let checkOutputSpy: JasmineSpy = (null: any);
   let asyncExecuteSpy: JasmineSpy = (null: any);
   let shouldFindNiceCommand: boolean = (null: any);
@@ -49,7 +49,7 @@ describe('nice', () => {
         return null;
       }
     });
-    spawnProcessSpy = spyOn(require('../process'), 'spawnProcess')
+    spawnSpy = spyOn(require('../process'), 'spawn')
       .andReturn(Observable.of(fakeSafeSpawnReturn));
     checkOutputSpy = spyOn(require('../process'), 'checkOutput').andReturn(fakeCheckOutputReturn);
     asyncExecuteSpy =
@@ -58,11 +58,11 @@ describe('nice', () => {
       (uncachedRequire(require, '../nice'): any));
   });
 
-  it('should spawn `nice` and return whatever spawnProcess returns', () => {
+  it('should spawn `nice` and return whatever spawn returns', () => {
     waitsForPromise(async () => {
       const execOptions = {};
       const result = await niceSafeSpawn('echo', ['hi'], execOptions);
-      expect(spawnProcessSpy).toHaveBeenCalledWith(
+      expect(spawnSpy).toHaveBeenCalledWith(
         'ionice', ['-n', '7', 'nice', 'echo', 'hi'], execOptions,
       );
       expect(result).toBe(fakeSafeSpawnReturn);
@@ -75,7 +75,7 @@ describe('nice', () => {
       shouldFindIoniceCommand = false;
       const execOptions = {};
       const result = await niceSafeSpawn('echo', ['hi'], execOptions);
-      expect(spawnProcessSpy).toHaveBeenCalledWith('echo', ['hi'], execOptions);
+      expect(spawnSpy).toHaveBeenCalledWith('echo', ['hi'], execOptions);
       expect(result).toBe(fakeSafeSpawnReturn);
     });
   });
@@ -85,7 +85,7 @@ describe('nice', () => {
       shouldFindIoniceCommand = false;
       const execOptions = {};
       const result = await niceSafeSpawn('echo', ['hi'], execOptions);
-      expect(spawnProcessSpy).toHaveBeenCalledWith('nice', ['echo', 'hi'], execOptions);
+      expect(spawnSpy).toHaveBeenCalledWith('nice', ['echo', 'hi'], execOptions);
       expect(result).toBe(fakeSafeSpawnReturn);
     });
   });
@@ -96,7 +96,7 @@ describe('nice', () => {
       shouldFindNiceCommand = false;
       const execOptions = {};
       const result = await niceSafeSpawn('echo', ['hi'], execOptions);
-      expect(spawnProcessSpy)
+      expect(spawnSpy)
         .toHaveBeenCalledWith('ionice', ['-n', '7', 'echo', 'hi'], execOptions);
       expect(result).toBe(fakeSafeSpawnReturn);
     });

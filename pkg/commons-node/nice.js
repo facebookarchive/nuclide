@@ -20,7 +20,7 @@ import type {
 import LRU from 'lru-cache';
 
 import {
-  spawnProcess,
+  spawn,
   asyncExecute,
   checkOutput,
   observeProcess,
@@ -38,7 +38,7 @@ export async function niceSafeSpawn(
   execOptions?: Object,
 ): Promise<child_process$ChildProcess> {
   const nicified = await nicifyCommand(command, args);
-  const processStream = spawnProcess(nicified.command, nicified.args, execOptions).publish();
+  const processStream = spawn(nicified.command, nicified.args, execOptions).publish();
   const processPromise = processStream.take(1).toPromise();
   processStream.connect();
   return processPromise;

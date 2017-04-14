@@ -19,7 +19,7 @@ import readline from 'readline';
 import fsPromise from '../../commons-node/fsPromise';
 import {
   asyncExecute,
-  spawnProcess,
+  spawn,
   getOriginalEnvironment,
 } from '../../commons-node/process';
 import {PromiseQueue} from '../../commons-node/promise-executors';
@@ -406,7 +406,7 @@ export async function getInstance(file: NuclideUri): Promise<?MerlinProcess> {
   };
 
   logger.info('Spawning new ocamlmerlin process version ' + version);
-  const processStream = spawnProcess(merlinPath, flags, options).publish();
+  const processStream = spawn(merlinPath, flags, options).publish();
   const processPromise = processStream.take(1).toPromise();
   processStream.connect();
   const process = await processPromise;

@@ -11,7 +11,7 @@
 import type {ExecutorResponse, ExecutorRequest} from './types';
 
 import featureConfig from '../../../commons-atom/featureConfig';
-import {forkProcess, getOutputStream} from '../../../commons-node/process';
+import {fork, getOutputStream} from '../../../commons-node/process';
 import {getLogger} from '../../../nuclide-logging';
 import nuclideUri from '../../../commons-node/nuclideUri';
 import {Observable} from 'rxjs';
@@ -58,7 +58,7 @@ export function executeRequests(
 }
 
 function createWorker(): Observable<child_process$ChildProcess> {
-  return forkProcess(
+  return fork(
     // TODO: The node location/path needs to be more configurable. We need to figure out a way to
     //   handle this across the board.
     nuclideUri.join(__dirname, 'executor.js'),
