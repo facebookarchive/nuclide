@@ -28,6 +28,7 @@ type State = {
   devices: Map<string, Device[]>,
   selectedHost: NuclideUri,
   selectedDeviceType: ?string,
+  selectedDevice: ?Device,
 };
 
 export class DevicePanel extends React.Component {
@@ -38,10 +39,17 @@ export class DevicePanel extends React.Component {
   constructor(props: Props) {
     super(props);
     invariant(props.hosts.length > 0);
-    this.state = {devices: new Map(), selectedHost: props.hosts[0], selectedDeviceType: null};
+    this.state = {
+      devices: new Map(),
+      selectedHost: props.hosts[0],
+      selectedDeviceType: null,
+      selectedDevice: null,
+    };
     this._deviceFetcherSubscription = new Subscription();
+
     (this: any)._handleHostDropdownChange = this._handleHostDropdownChange.bind(this);
     (this: any)._handleDeviceTypeDropdownChange = this._handleDeviceTypeDropdownChange.bind(this);
+    (this: any)._onDeviceSelected = this._onDeviceSelected.bind(this);
   }
 
   componentDidMount(): void {
@@ -118,8 +126,12 @@ export class DevicePanel extends React.Component {
     )[0] || [];
 
     return (
-      <DeviceTable devices={devices} />
+      <DeviceTable devices={devices} onDeviceSelected={this._onDeviceSelected} />
     );
+  }
+
+  _onDeviceSelected(selectedDevice: Device): void {
+    this.setState({selectedDevice});
   }
 
   render(): React.Element<any> {

@@ -15,10 +15,22 @@ import type {Device} from '../types';
 
 type Props = {
   devices: Device[],
+  onDeviceSelected: (Device) => void,
+};
+
+type State = {
+  selectedDeviceIndex: ?number,
 };
 
 export class DeviceTable extends React.Component {
   props: Props;
+  state: State;
+
+  constructor(props: Props) {
+    super(props);
+    this.state = {selectedDeviceIndex: null};
+    (this: any)._handleDeviceTableSelection = this._handleDeviceTableSelection.bind(this);
+  }
 
   render(): React.Element<any> {
     if (this.props.devices.length === 0) {
@@ -41,9 +53,18 @@ export class DeviceTable extends React.Component {
         columns={columns}
         fixedHeader={true}
         maxBodyHeight="99999px"
-        rows={rows}
         selectable={true}
+        selectedIndex={this.state.selectedDeviceIndex}
+        onSelect={this._handleDeviceTableSelection}
+        rows={rows}
       />
+    );
+  }
+
+  _handleDeviceTableSelection(item: any, selectedDeviceIndex: number): void {
+    this.setState(
+      {selectedDeviceIndex},
+      this.props.onDeviceSelected(this.props.devices[selectedDeviceIndex]),
     );
   }
 }
