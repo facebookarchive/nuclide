@@ -162,14 +162,6 @@ function monitorStreamErrors(process: child_process$ChildProcess, command, args,
   });
 }
 
-export function safeFork(
-  command: string,
-  args?: Array<string> = [],
-  options?: child_process$forkOpts = {},
-): child_process$ChildProcess {
-  return _makeChildProcess('fork', command, args, options);
-}
-
 /**
  * Helper type/function to create child_process by spawning/forking the process.
  */
@@ -405,7 +397,7 @@ export function forkProcess(
   options?: ForkProcessOptions,
 ): Observable<child_process$ChildProcess> {
   return _createProcessStream(
-    () => safeFork(modulePath, args, options),
+    () => _makeChildProcess('fork', modulePath, args, options),
     {...options},
   );
 }

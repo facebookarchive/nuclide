@@ -26,7 +26,6 @@ import {
   observeProcessRaw,
   parsePsOutput,
   runCommand,
-  safeFork,
   scriptSafeSpawn,
   exitEventToMessage,
 } from '../process';
@@ -99,18 +98,6 @@ describe('commons-node/process', () => {
         });
       });
     }
-  });
-
-  describe('process.safeFork', () => {
-    it('should not crash the process on an error', () => {
-      waitsForPromise(async () => {
-        spyOn(console, 'error'); // suppress error printing
-        spyOn(console, 'log'); // suppress log printing
-        const child = await safeFork('fakeCommand');
-        expect(child).not.toBe(null);
-        expect(child.listeners('error').length).toBeGreaterThan(0);
-      });
-    });
   });
 
   describe('process.scriptSafeSpawn', () => {
