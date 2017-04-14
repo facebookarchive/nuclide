@@ -67,79 +67,58 @@ export type AsyncExecuteReturn = {
   stdout: string,
 };
 
-type ProcessSystemErrorOptions = {
-  command: string,
-  args: Array<string>,
-  options: Object,
-  code: string,
-  originalError: Error,
-};
-
-export class ProcessSystemError extends Error {
-  command: string;
-  args: Array<string>;
-  options: Object;
-  code: string;
-  originalError: Error;
-
-  constructor(opts: ProcessSystemErrorOptions) {
-    super(`"${opts.command}" failed with code ${opts.code}`);
-    this.name = 'ProcessSystemError';
-    this.command = opts.command;
-    this.args = opts.args;
-    this.options = opts.options;
-    this.code = opts.code;
-    this.originalError = opts.originalError;
-  }
-}
-
-type ProcessExitErrorOptions = {
-  command: string,
-  args: Array<string>,
-  options: Object,
-  exitMessage: ProcessExitMessage,
-  stdout: string,
-  stderr: string,
-};
-
-type CreateProcessOptions = {
-  throwOnError: boolean,
+type CreateProcessStreamOptions = {
+  _throwOnError?: ?boolean, // TODO: Switch this over to always true and remove it.
   killTreeOnComplete?: ?boolean,
 };
 
-export type ObserveProcessOptions = child_process$spawnOpts & {
-  killTreeOnComplete?: ?boolean,
+type GetOutputStreamOptions = {
+  splitByLines?: ?boolean,
+  isExitError?: ?(event: ProcessExitMessage) => boolean,
+  exitErrorBufferSize?: ?number,
 };
 
-export type ForkProcessOptions = child_process$forkOpts & {
-  killTreeOnComplete?: ?boolean,
-};
+export type ObserveProcessOptions = SpawnProcessOptions
+  & CreateProcessStreamOptions
+  & GetOutputStreamOptions;
 
+export type SpawnProcessOptions = child_process$spawnOpts & CreateProcessStreamOptions;
+export type ForkProcessOptions = child_process$forkOpts & CreateProcessStreamOptions;
+
+/**
+ * An error thrown by process utils when the process exits with an error code. This type should have
+ * all the properties of ProcessExitMessage (except "kind").
+ */
 export class ProcessExitError extends Error {
-  command: string;
-  args: Array<string>;
-  options: Object;
-  code: ?number;
-  exitMessage: ProcessExitMessage;
-  stdout: string;
+  exitCode: ?number;
+  signal: ?string;
   stderr: string;
+  process: child_process$ChildProcess;
 
-  constructor(opts: ProcessExitErrorOptions) {
+  constructor(exitMessage: ProcessExitMessage, proc: child_process$ChildProcess) {
+    // $FlowIssue: This isn't typed in the Flow node type defs
+    const {spawnargs} = proc;
+    const commandName = spawnargs[0] === process.execPath ? spawnargs[1] : spawnargs[0];
     super(
-      `"${opts.command}" failed with ${exitEventToMessage(opts.exitMessage)}\n\n${opts.stderr}`,
+      `"${commandName}" failed with ${exitEventToMessage(exitMessage)}\n\n${exitMessage.stderr}`,
     );
     this.name = 'ProcessExitError';
-    this.command = opts.command;
-    this.args = opts.args;
-    this.options = opts.options;
-    this.exitMessage = opts.exitMessage;
-    this.code = opts.exitMessage.exitCode;
-    this.stdout = opts.stdout;
-    this.stderr = opts.stderr;
+    this.exitCode = exitMessage.exitCode;
+    this.signal = exitMessage.signal;
+    this.stderr = exitMessage.stderr;
+    this.process = proc;
   }
 }
 
-export type ProcessError = ProcessSystemError | ProcessExitError;
+// Copied from https://github.com/facebook/flow/blob/v0.43.1/lib/node.js#L11-L16
+type ErrnoError = {
+  errno?: number,
+  code?: string,
+  path?: string,
+  syscall?: string,
+};
+
+export type ProcessError = ErrnoError | ProcessExitError;
 
 export type AsyncExecuteOptions = child_process$execFileOpts & {
   // The contents to write to stdin.
@@ -307,13 +286,14 @@ export function scriptSafeSpawnAndObserveOutput(
  */
 function _createProcessStream(
   createProcess: () => child_process$ChildProcess,
-  options: CreateProcessOptions,
+  options: CreateProcessStreamOptions = {},
 ): Observable<child_process$ChildProcess> {
   return observableFromSubscribeFunction(whenShellEnvironmentLoaded)
     .take(1)
     .switchMap(() => {
       const process = createProcess();
-      const {throwOnError, killTreeOnComplete} = options;
+      const throwOnError = idx(options, _ => _._throwOnError) !== false;
+      const {killTreeOnComplete} = options;
       let finished = false;
 
       // If the process returned by `createProcess()` was not created by it (or at least in the same
@@ -400,7 +380,6 @@ export function killPid(pid: number): void {
   }
 }
 
-
 export async function killUnixProcessTree(childProcess: child_process$ChildProcess): Promise<void> {
   const descendants = await getDescendantsOfProcess(childProcess.pid);
   // Kill the processes, starting with those of greatest depth.
@@ -412,14 +391,11 @@ export async function killUnixProcessTree(childProcess: child_process$ChildProce
 export function createProcessStream(
   command: string,
   args?: Array<string>,
-  options?: ObserveProcessOptions,
+  options?: SpawnProcessOptions,
 ): Observable<child_process$ChildProcess> {
   return _createProcessStream(
     () => _makeChildProcess('spawn', command, args, options),
-    {
-      ...options,
-      throwOnError: true,
-    },
+    options,
   );
 }
 
@@ -430,10 +406,7 @@ export function forkProcessStream(
 ): Observable<child_process$ChildProcess> {
   return _createProcessStream(
     () => safeFork(modulePath, args, options),
-    {
-      ...options,
-      throwOnError: true,
-    },
+    {...options},
   );
 }
 
@@ -443,10 +416,16 @@ function observeProcessExitMessage(
   return Observable.fromEvent(
       process,
       'exit',
-      (exitCode: ?number, signal: ?string) => ({kind: 'exit', exitCode, signal}))
+      (exitCode: ?number, signal: ?string) => ({kind: 'exit', exitCode, signal, stderr: ''}))
     // An exit signal from SIGUSR1 doesn't actually exit the process, so skip that.
     .filter(message => message.signal !== 'SIGUSR1')
     .take(1);
+}
+
+function isExitErrorDefault(exit: ProcessExitMessage): boolean {
+  // TODO: Return true for non-zero exit codes after updating existing callsites to not use the
+  //   default for backwards-compat.
+  return false;
 }
 
 /**
@@ -462,31 +441,52 @@ function observeProcessExitMessage(
  */
 export function getOutputStream(
   process: child_process$ChildProcess,
-  options?: ?{splitByLines?: ?boolean},
+  options?: GetOutputStreamOptions,
   rest: void,
 ): Observable<ProcessMessage> {
   const chunk = idx(options, _ => _.splitByLines) === false ? (x => x) : splitStream;
+  const isExitError = idx(options, _ => _.isExitError) || isExitErrorDefault;
+  const exitErrorBufferSize = idx(options, _ => _.exitErrorBufferSize) || 2000;
   return Observable.defer(() => {
+    const errorEvents = Observable.fromEvent(process, 'error')
+      .map(errorObj => ({kind: 'error', error: errorObj}));
+    const stdoutEvents = chunk(observeStream(process.stdout)).map(data => ({kind: 'stdout', data}));
+    const stderrEvents = chunk(observeStream(process.stderr))
+      .map(data => ({kind: 'stderr', data}))
+      .share();
+
+    // Accumulate the first `exitErrorBufferSize` bytes of stderr so that we can give feedback about
+    // exit errors. Once we have this much, we don't even listen to the event anymore.
+    const accumulatedStderr = takeWhileInclusive(
+      stderrEvents
+        .scan((acc, event) => (acc + event.data).slice(0, exitErrorBufferSize), '')
+        .startWith(''),
+      acc => acc.length < exitErrorBufferSize,
+    );
+
     // We need to start listening for the exit event immediately, but defer emitting it until the
     // (buffered) output streams end.
-    const exit = observeProcessExitMessage(process).publishReplay();
-    const exitSub = exit.connect();
+    const exitEvents = observeProcessExitMessage(process)
+      .withLatestFrom(accumulatedStderr)
+      .map(([rawEvent, stderr]) => {
+        const event = {...rawEvent, stderr};
+        if (isExitError(event)) {
+          throw new ProcessExitError(event, process);
+        }
+        return event;
+      })
+      .publishReplay();
+    const exitSub = exitEvents.connect();
 
-    const error = Observable.fromEvent(process, 'error')
-      .map(errorObj => ({kind: 'error', error: errorObj}));
     // It's possible for stdout and stderr to remain open (even indefinitely) after the exit event.
     // This utility, however, treats the exit event as stream-ending, which helps us to avoid easy
     // bugs. We give a short (100ms) timeout for the stdout and stderr streams to close.
-    const close = exit.delay(100);
-    const stdout = chunk(observeStream(process.stdout).takeUntil(close))
-      .map(data => ({kind: 'stdout', data}));
-    const stderr = chunk(observeStream(process.stderr).takeUntil(close))
-      .map(data => ({kind: 'stderr', data}));
+    const close = exitEvents.delay(100);
 
     return takeWhileInclusive(
       Observable.merge(
-        Observable.merge(stdout, stderr).concat(exit),
-        error,
+        Observable.merge(stdoutEvents, stderrEvents).takeUntil(close).concat(exitEvents),
+        errorEvents,
       ),
       event => event.kind !== 'error' && event.kind !== 'exit',
     )
@@ -506,10 +506,11 @@ export function observeProcess(
     () => _makeChildProcess('spawn', command, args, options),
     {
       ...options,
-      throwOnError: false,
+      // For now, default to `false` to preserve old behavior.
+      _throwOnError: idx(options, _ => _._throwOnError) === true,
     },
   )
-    .flatMap(process => getOutputStream(process));
+    .flatMap(process => getOutputStream(process, options));
 }
 
 /**
@@ -524,10 +525,11 @@ export function observeProcessRaw(
     () => _makeChildProcess('spawn', command, args, options),
     {
       ...options,
-      throwOnError: false,
+      // For now, default to `false` to preserve old behavior.
+      _throwOnError: idx(options, _ => _._throwOnError) === true,
     },
   )
-    .flatMap(process => getOutputStream(process, {splitByLines: false}));
+    .flatMap(process => getOutputStream(process, {...options, splitByLines: false}));
 }
 
 let FB_INCLUDE_PATHS;
@@ -667,55 +669,25 @@ export async function checkOutput(
 export function runCommand(
   command: string,
   args?: Array<string> = [],
-  options?: ObserveProcessOptions = {},
-  _: void,
+  options_?: ObserveProcessOptions = {},
+  rest: void,
 ): Observable<string> {
-  const seed = {
-    error: null,
-    stdout: [],
-    stderr: [],
-    exitMessage: null,
+  const options = {
+    ...options_,
+    // TODO: _throwOnError should always be true. Once we've switched that over, remove this.
+    _throwOnError: true,
+    // TODO: This can be removed once the default is updated to match it.
+    isExitError: idx(options_, _ => _.isExitError) || (exit => exit.exitCode !== 0),
   };
   return observeProcess(command, args, options)
+    .filter(event => event.kind === 'stdout')
     .reduce(
       (acc, event) => {
-        switch (event.kind) {
-          case 'stdout':
-            return {...acc, stdout: acc.stdout.concat(event.data)};
-          case 'stderr':
-            return {...acc, stderr: acc.stderr.concat(event.data)};
-          case 'error':
-            return {...acc, error: event.error};
-          case 'exit':
-            return {...acc, exitMessage: event};
-        }
-        return acc;
+        invariant(event.kind === 'stdout');
+        return acc + event.data;
       },
-      seed,
-    )
-    .map(acc => {
-      if (acc.error != null) {
-        throw new ProcessSystemError({
-          command,
-          args,
-          options,
-          code: acc.error.code, // Alias of errno
-          originalError: acc.error, // Just in case.
-        });
-      }
-      const stdout = acc.stdout.join('');
-      if (acc.exitMessage != null && acc.exitMessage.exitCode !== 0) {
-        throw new ProcessExitError({
-          command,
-          args,
-          options,
-          exitMessage: acc.exitMessage,
-          stdout,
-          stderr: acc.stderr.join(''),
-        });
-      }
-      return stdout;
-    });
+      '',
+    );
 }
 
 // If provided, read the original environment from NUCLIDE_ORIGINAL_ENV.

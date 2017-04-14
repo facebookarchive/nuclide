@@ -200,7 +200,7 @@ describe('commons-node/process', () => {
         expect(results).toEqual([
           {kind: 'stderr', data: 'stderr\n'},
           {kind: 'stdout', data: 'std out\n'},
-          {kind: 'exit', exitCode: 42, signal: null},
+          {kind: 'exit', exitCode: 42, signal: null, stderr: 'stderr\n'},
         ]);
       });
     });
@@ -213,8 +213,26 @@ describe('commons-node/process', () => {
         expect(results).toEqual([
           {kind: 'stderr', data: 'stderr\n'},
           {kind: 'stdout', data: 'std out\n'},
-          {kind: 'exit', exitCode: 42, signal: null},
+          {kind: 'exit', exitCode: 42, signal: null, stderr: 'stderr\n'},
         ]);
+      });
+    });
+
+    it('accumulates the first `exitErrorBufferSize` bytes of stderr for the exit error', () => {
+      waitsForPromise(async () => {
+        const child = child_process.spawn(process.execPath,
+          ['-e', 'console.error("stderr"); process.exit(42);']);
+        let error;
+        try {
+          await getOutputStream(child, {exitErrorBufferSize: 2, isExitError: () => true})
+            .toArray()
+            .toPromise();
+        } catch (err) {
+          error = err;
+        }
+        expect(error).toBeDefined();
+        invariant(error != null);
+        expect(error.stderr).toBe('st');
       });
     });
   });
@@ -366,7 +384,7 @@ describe('commons-node/process', () => {
           error = err;
         }
         invariant(error != null);
-        expect(error.name).toBe('ProcessSystemError');
+        expect(error.code).toBe('ENOENT');
       });
     });
 
@@ -380,24 +398,7 @@ describe('commons-node/process', () => {
         }
         invariant(error != null);
         expect(error.name).toBe('ProcessExitError');
-        expect(error.code).toBe(1);
-        expect(error.exitMessage).toEqual(makeExitMessage(1));
-      });
-    });
-
-    it('accumulates the stdout if the process exits with a non-zero code', () => {
-      waitsForPromise(async () => {
-        let error;
-        try {
-          await runCommand(
-            process.execPath,
-            ['-e', 'process.stdout.write("hola"); process.exit(1)'],
-          ).toPromise();
-        } catch (err) {
-          error = err;
-        }
-        invariant(error != null);
-        expect(error.stdout).toBe('hola');
+        expect(error.exitCode).toBe(1);
       });
     });
 
@@ -437,7 +438,7 @@ describe('commons-node/process', () => {
     });
 
     it('signal', () => {
-      expect(exitEventToMessage({kind: 'exit', exitCode: null, signal: 'SIGTERM'}))
+      expect(exitEventToMessage({kind: 'exit', exitCode: null, signal: 'SIGTERM', stderr: ''}))
         .toBe('signal SIGTERM');
     });
   });
@@ -448,5 +449,6 @@ function makeExitMessage(exitCode: number): ProcessExitMessage {
     kind: 'exit',
     exitCode,
     signal: null,
+    stderr: '',
   };
 }
