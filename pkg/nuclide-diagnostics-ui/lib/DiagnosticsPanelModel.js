@@ -143,6 +143,8 @@ function getPropsStream(
   const sortedDiagnostics = Observable.concat(
     Observable.of([]),
     diagnosticsStream.map(diagnostics => diagnostics.slice().sort(compareMessagesByFile)),
+    // If the diagnostics stream ever terminates, clear all messages.
+    Observable.of([]),
   );
 
   const filterByActiveTextEditorStream = new BehaviorSubject(initialfilterByActiveTextEditor);

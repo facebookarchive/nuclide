@@ -59,6 +59,8 @@ export default class StatusBarTile {
     this._subscriptions.add(
       diagnosticUpdater.allMessageUpdates.subscribe(
         this._onAllMessagesDidUpdate.bind(this, diagnosticUpdater),
+        null,
+        this._onAllMessagesDidUpdate.bind(this, diagnosticUpdater, []),
       ),
     );
   }

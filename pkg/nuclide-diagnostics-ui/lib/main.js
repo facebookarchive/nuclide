@@ -61,21 +61,22 @@ class Activation {
     };
   }
 
-  consumeDiagnosticUpdates(diagnosticUpdater: ObservableDiagnosticUpdater): void {
+  consumeDiagnosticUpdates(diagnosticUpdater: ObservableDiagnosticUpdater): IDisposable {
     this._getStatusBarTile().consumeDiagnosticUpdates(diagnosticUpdater);
     this._subscriptions.add(gutterConsumeDiagnosticUpdates(diagnosticUpdater));
 
     // Currently, the DiagnosticsPanel is designed to work with only one DiagnosticUpdater.
     if (this._diagnosticUpdaters.getValue() != null) {
-      return;
+      return new UniversalDisposable();
     }
     this._diagnosticUpdaters.next(diagnosticUpdater);
-    this._subscriptions.add(
-      addAtomCommands(diagnosticUpdater),
+    const atomCommandsDisposable = addAtomCommands(diagnosticUpdater);
+    this._subscriptions.add(atomCommandsDisposable);
+    return new UniversalDisposable(
+      atomCommandsDisposable,
       () => {
-        if (this._diagnosticUpdaters.getValue() === diagnosticUpdater) {
-          this._diagnosticUpdaters.next(null);
-        }
+        invariant(this._diagnosticUpdaters.getValue() === diagnosticUpdater);
+        this._diagnosticUpdaters.next(null);
       },
     );
   }

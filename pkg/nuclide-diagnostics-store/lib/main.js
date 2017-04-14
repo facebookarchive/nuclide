@@ -134,16 +134,13 @@ class Activation {
       updates: observableFromSubscribeFunction(provider.onMessageUpdate.bind(provider)),
       invalidations: observableFromSubscribeFunction(provider.onMessageInvalidation.bind(provider)),
     };
-    const disposable = this.consumeDiagnosticsProviderV2(observableProvider);
-    this._disposables.add(disposable);
-    return disposable;
+    return this.consumeDiagnosticsProviderV2(observableProvider);
   }
 
   consumeDiagnosticsProviderV2(provider: ObservableDiagnosticProvider): IDisposable {
-    const compositeDisposable = new UniversalDisposable();
     const store = this.getDiagnosticStore();
 
-    compositeDisposable.add(
+    const subscriptions = new UniversalDisposable(
       provider.updates.subscribe(
         update => store.updateMessages(provider, update),
         error => { getLogger().error(`Error: updates.subscribe ${error}`); },
@@ -154,12 +151,17 @@ class Activation {
         error => { getLogger().error(`Error: invalidations.subscribe ${error}`); },
         () => { getLogger().error('invalidations.subscribe completed'); },
       ),
+    );
+    this._disposables.add(subscriptions);
+
+    return new UniversalDisposable(
+      // V1 providers have no way of terminating the streams, so unsubscribe just in case.
+      subscriptions,
       () => {
+        // When the provider package goes away, we need to invalidate its messages.
         store.invalidateMessages(provider, {scope: 'all'});
       },
     );
-
-    return compositeDisposable;
   }
 }
 
