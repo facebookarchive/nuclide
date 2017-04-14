@@ -17,6 +17,7 @@ export function createProcessStream(): Observable<string> {
   const processEvents = observeProcess(
     ((featureConfig.get('nuclide-adb-logcat.pathToAdb'): any): string),
     ['logcat', '-v', 'long'],
+    {/* TODO(T17353599) */isExitError: () => false},
   )
     .share();
   const stdoutEvents = processEvents

@@ -60,7 +60,7 @@ export function hgObserveExecution(
       return observeProcess(
         'script',
         createArgsForScriptCommand(command, args),
-        {...options, killTreeOnComplete: true},
+        {...options, killTreeOnComplete: true, /* TODO(T17353599) */ isExitError: () => false},
       );
     });
 }

@@ -423,9 +423,7 @@ function observeProcessExitMessage(
 }
 
 function isExitErrorDefault(exit: ProcessExitMessage): boolean {
-  // TODO: Return true for non-zero exit codes after updating existing callsites to not use the
-  //   default for backwards-compat.
-  return false;
+  return exit.exitCode !== 0;
 }
 
 /**
@@ -676,8 +674,6 @@ export function runCommand(
     ...options_,
     // TODO: _throwOnError should always be true. Once we've switched that over, remove this.
     _throwOnError: true,
-    // TODO: This can be removed once the default is updated to match it.
-    isExitError: idx(options_, _ => _.isExitError) || (exit => exit.exitCode !== 0),
   };
   return observeProcess(command, args, options)
     .filter(event => event.kind === 'stdout')

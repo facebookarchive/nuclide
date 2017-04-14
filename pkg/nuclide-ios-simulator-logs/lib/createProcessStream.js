@@ -18,7 +18,11 @@ import {Observable} from 'rxjs';
 const VALID_UDID = /^[a-f0-9-]+$/i;
 
 export function createProcessStream(): Observable<string> {
-  const currentDeviceUdids = observeProcess('bash', ['-c', WATCH_CURRENT_UDID_SCRIPT])
+  const currentDeviceUdids = observeProcess(
+    'bash',
+    ['-c', WATCH_CURRENT_UDID_SCRIPT],
+    {/* TODO(T17353599) */isExitError: () => false},
+  )
     .map(event => {
       if (event.kind === 'error') {
         throw event.error;
@@ -54,6 +58,7 @@ export function createProcessStream(): Observable<string> {
           '-F', 'xml',
           '-d', logDir,
         ],
+        {/* TODO(T17353599) */isExitError: () => false},
       )
         .map(event => {
           if (event.kind === 'error') {

@@ -125,7 +125,7 @@ export class LspTester extends SimpleModel {
           const reader = new rpc.StreamMessageReader(process.stdout);
           rpc.createMessageConnection(reader, this._writer).listen();
         })
-        .flatMap(getOutputStream)
+        .flatMap(proc => getOutputStream(proc, {/* TODO(T17353599) */isExitError: () => false}))
         .subscribeOn(Scheduler.async),
       event => event.kind !== 'error' && event.kind !== 'exit',
     )

@@ -491,7 +491,11 @@ function _buildWithOutput(
   return Observable.fromPromise(
     _getBuckCommandAndOptions(rootPath),
   ).switchMap(({pathToBuck, buckCommandOptions}) =>
-    observeProcess(pathToBuck, args, {...buckCommandOptions})
+    observeProcess(
+      pathToBuck,
+      args,
+      {...buckCommandOptions, /* TODO(T17353599) */ isExitError: () => false},
+    )
       .startWith({
         kind: 'stdout',
         data: `Starting "${pathToBuck} ${_getArgsStringSkipClientId(args)}"`,

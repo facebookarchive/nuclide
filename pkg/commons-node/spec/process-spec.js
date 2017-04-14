@@ -196,7 +196,9 @@ describe('commons-node/process', () => {
       waitsForPromise(async () => {
         const child = child_process.spawn(process.execPath,
           ['-e', 'console.error("stderr"); console.log("std out"); process.exit(42);']);
-        const results = await getOutputStream(child).toArray().toPromise();
+        const results = await getOutputStream(child, {isExitError: () => false})
+          .toArray()
+          .toPromise();
         expect(results).toEqual([
           {kind: 'stderr', data: 'stderr\n'},
           {kind: 'stdout', data: 'std out\n'},
@@ -209,12 +211,31 @@ describe('commons-node/process', () => {
       waitsForPromise(async () => {
         const child = child_process.spawn(process.execPath,
           ['-e', 'console.error("stderr"); console.log("std out"); process.exit(42);']);
-        const results = await getOutputStream(child).toArray().toPromise();
+        const results = await getOutputStream(child, {isExitError: () => false})
+          .toArray()
+          .toPromise();
         expect(results).toEqual([
           {kind: 'stderr', data: 'stderr\n'},
           {kind: 'stdout', data: 'std out\n'},
           {kind: 'exit', exitCode: 42, signal: null, stderr: 'stderr\n'},
         ]);
+      });
+    });
+
+    it('errors on nonzero exit codes by default', () => {
+      waitsForPromise(async () => {
+        const child = child_process.spawn(process.execPath,
+          ['-e', 'console.error("stderr"); console.log("std out"); process.exit(42);']);
+        const results = await getOutputStream(child)
+          // $FlowIssue: Add materialize to type defs
+          .materialize()
+          .toArray()
+          .toPromise();
+        expect(results.map(notification => notification.kind)).toEqual(['N', 'N', 'E']);
+        const {error} = results[2];
+        expect(error.name).toBe('ProcessExitError');
+        expect(error.exitCode).toBe(42);
+        expect(error.stderr).toBe('stderr\n');
       });
     });
 

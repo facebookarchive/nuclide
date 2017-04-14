@@ -84,12 +84,16 @@ export function findIncludingSourceFile(
   const regex = new RegExp(pattern);
   // We need both the file and the match to verify relative includes.
   // Relative includes may not always be correct, so we may have to go through all the results.
-  return observeProcess('grep', [
-    '-RE',    // recursive, extended
-    '--null', // separate file/match with \0
-    pattern,
-    nuclideUri.dirname(headerFile),
-  ])
+  return observeProcess(
+    'grep',
+    [
+      '-RE',    // recursive, extended
+      '--null', // separate file/match with \0
+      pattern,
+      nuclideUri.dirname(headerFile),
+    ],
+    {/* TODO(T17353599) */isExitError: () => false},
+  )
     .flatMap(message => {
       switch (message.kind) {
         case 'stdout':

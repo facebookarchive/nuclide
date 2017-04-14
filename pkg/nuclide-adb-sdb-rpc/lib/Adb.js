@@ -105,7 +105,11 @@ export class Adb extends DebugBridge {
       .toPromise();
 
     const args = (device !== '' ? ['-s', device] : []).concat('jdwp');
-    return observeProcessRaw(this._adbPath, args, {killTreeOnComplete: true})
+    return observeProcessRaw(
+      this._adbPath,
+      args,
+      {killTreeOnComplete: true, /* TDOO(17353599) */ isExitError: () => false},
+    )
       .take(1)
       .map(output => {
         const jdwpPids = new Set();

@@ -137,7 +137,11 @@ export class SwiftPMTaskRunner {
     );
     this._logOutput(`${command.command} ${command.args.join(' ')}`, 'log');
 
-    const observable = observeProcess(command.command, command.args)
+    const observable = observeProcess(
+      command.command,
+      command.args,
+      {/* TODO(T17353599) */isExitError: () => false},
+    )
       .do(message => {
         switch (message.kind) {
           case 'stderr':

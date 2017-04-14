@@ -38,7 +38,11 @@ export class DebugBridge {
 
   runLongAdbCommand(device: string, command: string[]): Observable<ProcessMessage> {
     const deviceArg = (device !== '') ? ['-s', device] : [];
-    return observeProcess(this._adbPath, deviceArg.concat(command), {killTreeOnComplete: true});
+    return observeProcess(
+      this._adbPath,
+      deviceArg.concat(command),
+      {killTreeOnComplete: true, /* TODO(T17353599) */ isExitError: () => false},
+    );
   }
 
   async getDeviceList(): Promise<Array<DeviceDescription>> {

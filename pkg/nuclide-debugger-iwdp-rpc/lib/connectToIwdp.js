@@ -27,6 +27,7 @@ export function connectToIwdp(): Observable<IosDeviceInfo> {
     // and gives us less-aggressive buffering behavior, i.e. newlines cause stdout to be flushed.
     'script',
     createArgsForScriptCommand('ios_webkit_debug_proxy', ['--no-frontend']),
+    {/* TODO(T17353599) */isExitError: () => false},
   ).mergeMap(message => {
     if (message.kind === 'stdout') {
       const {data} = message;

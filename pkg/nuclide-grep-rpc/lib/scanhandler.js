@@ -174,7 +174,11 @@ function getLinesFromCommand(
     let stderr = '';
 
     // Spawn the search command in the given directory.
-    return observeProcess(command, args, {cwd: localDirectoryPath})
+    return observeProcess(
+      command,
+      args,
+      {cwd: localDirectoryPath, /* TODO(T17353599) */ isExitError: () => false},
+    )
       .do(event => {
         if (event.kind === 'stderr') {
           stderr += event.data;

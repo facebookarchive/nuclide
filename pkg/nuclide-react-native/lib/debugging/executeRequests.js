@@ -39,7 +39,7 @@ export function executeRequests(
       requests.do(request => process.send(request)).ignoreElements(),
 
       // Pipe output from forked process. This just makes things easier to debug for us.
-      getOutputStream(process)
+      getOutputStream(process, {/* TODO(T17353599) */isExitError: () => false})
         .do(message => {
           switch (message.kind) {
             case 'error':

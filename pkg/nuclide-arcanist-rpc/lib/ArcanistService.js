@@ -252,7 +252,11 @@ export function execArcPull(
   }
 
   return Observable.fromPromise(getArcExecOptions(cwd))
-    .switchMap(opts => observeProcess('arc', args, opts))
+    .switchMap(opts => observeProcess(
+      'arc',
+      args,
+      {...opts, /* TODO(T17353599) */ isExitError: () => false},
+    ))
     .publish();
 }
 
@@ -261,7 +265,11 @@ export function execArcLand(
 ): ConnectableObservable<ProcessMessage> {
   const args = ['land'];
   return Observable.fromPromise(getArcExecOptions(cwd))
-    .switchMap(opts => observeProcess('arc', args, opts))
+    .switchMap(opts => observeProcess(
+      'arc',
+      args,
+      {...opts, /* TODO(T17353599) */ isExitError: () => false},
+    ))
     .publish();
 }
 
@@ -275,7 +283,11 @@ export function execArcPatch(
   }
   args.push(differentialRevision);
   return Observable.fromPromise(getArcExecOptions(cwd))
-    .switchMap(opts => observeProcess('arc', args, opts))
+    .switchMap(opts => observeProcess(
+      'arc',
+      args,
+      {...opts, /* TODO(T17353599) */ isExitError: () => false},
+    ))
     .publish();
 }
 
