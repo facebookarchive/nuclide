@@ -99,6 +99,7 @@
     "vscode-jsonrpc": "3.0.3",
     "ws": "2.0.3",
     "xml2js": "0.4.17",
+    "xterm": "2.5.0",
     "yargs": "3.32.0"
   },
   "devDependencies": {
