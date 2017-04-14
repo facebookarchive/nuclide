@@ -800,8 +800,6 @@ export class HgService {
       if (isInteractive) {
         args.push('--interactive');
         editMergeConfigs = await getInteractiveCommitEditorConfig();
-      } else {
-        args.push('--noninteractive');
       }
       if (message == null) {
         return args;
@@ -1172,7 +1170,7 @@ export class HgService {
   }
 
   continueRebase(): ConnectableObservable<ProcessMessage> {
-    const args = ['rebase', '--continue', '--noninteractive'];
+    const args = ['rebase', '--continue'];
     const execOptions = {
       cwd: this._workingDirectory,
     };
@@ -1193,7 +1191,6 @@ export class HgService {
     if (source != null) {
       args.push('-s', source);
     }
-    args.push('--noninteractive');
     const execOptions = {
       cwd: this._workingDirectory,
     };

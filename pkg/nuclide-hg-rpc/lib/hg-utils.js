@@ -119,6 +119,7 @@ async function getHgExecParams(
   args.push(
     '--config',
     `ui.ssh=${sshCommand}`,
+    '--noninteractive',
   );
   const options = {
     ...options_,
@@ -164,8 +165,6 @@ export async function getInteractiveCommitEditorConfig():
     + ` -f ${connectionDetails.family} -p ${connectionDetails.port} --wait`;
   return {
     args: [
-      '--config',
-      'ui.interactive=no',
       '--config',
       'ui.interface.chunkselector=editor',
       '--config',

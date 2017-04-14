@@ -288,7 +288,7 @@ describe('HgService', () => {
 
     describe('::commit', () => {
       it('can commit changes', () => {
-        expectedArgs = ['commit', '--noninteractive', '-l', messageFile];
+        expectedArgs = ['commit', '-l', messageFile];
         waitsForPromise(async () => {
           await hgService.commit(commitMessage).refCount().toArray().toPromise();
           expect(committedToHg).toBeTruthy('Looks like commit did not happen');
@@ -300,7 +300,7 @@ describe('HgService', () => {
 
     describe('::amend', () => {
       it('can amend changes with a message', () => {
-        expectedArgs = ['amend', '--noninteractive', '-l', messageFile];
+        expectedArgs = ['amend', '-l', messageFile];
         waitsForPromise(async () => {
           await hgService.amend(commitMessage, AmendMode.CLEAN).refCount().toArray().toPromise();
           expect(committedToHg).toBeTruthy('Looks like commit did not happen');
@@ -310,7 +310,7 @@ describe('HgService', () => {
       });
 
       it('can amend changes without a message', () => {
-        expectedArgs = ['amend', '--noninteractive'];
+        expectedArgs = ['amend'];
         waitsForPromise(async () => {
           await hgService.amend(null, AmendMode.CLEAN).refCount().toArray().toPromise();
           expect(committedToHg).toBeTruthy('Looks like commit did not happen');
@@ -322,7 +322,7 @@ describe('HgService', () => {
       });
 
       it('can amend with --rebase & a commit message', () => {
-        expectedArgs = ['amend', '--rebase', '--noninteractive', '-l', messageFile];
+        expectedArgs = ['amend', '--rebase', '-l', messageFile];
         waitsForPromise(async () => {
           await hgService.amend(commitMessage, AmendMode.REBASE).refCount().toArray().toPromise();
           expect(committedToHg).toBeTruthy('Looks like commit did not happen');
@@ -332,7 +332,7 @@ describe('HgService', () => {
       });
 
       it('can amend with --fixup', () => {
-        expectedArgs = ['amend', '--fixup', '--noninteractive'];
+        expectedArgs = ['amend', '--fixup'];
         waitsForPromise(async () => {
           await hgService.amend(null, AmendMode.FIXUP).refCount().toArray().toPromise();
           expect(committedToHg).toBeTruthy('Looks like commit did not happen');
