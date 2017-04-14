@@ -112,7 +112,7 @@ export class DevicePanel extends React.Component {
   render(): React.Element<any> {
     return (
       <PanelComponentScroller>
-        <div style={{flexDirection: 'column', padding: '5px 5px 0px 5px', flex: '0 0 100%'}}>
+        <div className="nuclide-device-panel-container">
           <div className="block">
             {this._createSelectorSection()}
           </div>
