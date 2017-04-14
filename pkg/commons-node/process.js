@@ -174,11 +174,8 @@ function _makeChildProcess(
   options?: ChildProcessOpts = {},
 ): child_process$ChildProcess {
   const now = performanceNow();
-  const child = child_process[type](
-    nuclideUri.expandHomeDir(command),
-    args,
-    prepareProcessOptions(options),
-  );
+  // $FlowFixMe: child_process$spawnOpts and child_process$forkOpts have incompatable stdio types.
+  const child = child_process[type](nuclideUri.expandHomeDir(command), args, {...options});
   monitorStreamErrors(child, command, args, options);
   child.on('error', error => {
     logError('error with command:', command, args, options, 'error:', error);
@@ -469,43 +466,6 @@ export function observeProcessRaw(
     .flatMap(process => getOutputStream(process, {...options, splitByLines: false}));
 }
 
-let FB_INCLUDE_PATHS;
-try {
-  // $FlowFB
-  FB_INCLUDE_PATHS = require('./fb-config').FB_INCLUDE_PATHS;
-} catch (error) {
-  FB_INCLUDE_PATHS = [];
-}
-
-let DEFAULT_PATH_INCLUDE = [
-  ...FB_INCLUDE_PATHS,
-  '/usr/local/bin',
-];
-
-function prepareProcessOptions(
-  options: Object,
-): Object {
-  return {
-    ...options,
-    env: preparePathEnvironment(options.env),
-  };
-}
-
-function preparePathEnvironment(env: ?Object): Object {
-  const originalEnv = {
-    ...process.env,
-    ...env,
-  };
-  if (isWindowsPlatform()) {
-    return originalEnv;
-  }
-  const existingPath: string = originalEnv.PATH || '';
-  return {
-    ...originalEnv,
-    PATH: nuclideUri.joinPathList([existingPath, ...DEFAULT_PATH_INCLUDE]),
-  };
-}
-
 /**
  * Returns a promise that resolves to the result of executing a process.
  *
@@ -626,12 +586,6 @@ export function runCommand(
 // If provided, read the original environment from NUCLIDE_ORIGINAL_ENV.
 // This should contain the base64-encoded output of `env -0`.
 let cachedOriginalEnvironment = null;
-whenShellEnvironmentLoaded(() => {
-  // No need to include default paths now that the environment is loaded.
-  DEFAULT_PATH_INCLUDE = [];
-  cachedOriginalEnvironment = null;
-});
-
 export async function getOriginalEnvironment(): Promise<Object> {
   await new Promise(resolve => { whenShellEnvironmentLoaded(resolve); });
   if (cachedOriginalEnvironment != null) {
