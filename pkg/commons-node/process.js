@@ -21,6 +21,7 @@ import {Observable} from 'rxjs';
 import invariant from 'assert';
 import {quote} from 'shell-quote';
 import performanceNow from './performanceNow';
+import idx from 'idx';
 
 // TODO(T17266325): Replace this in favor of `atom.whenShellEnvironmentLoaded()` when it lands
 import atomWhenShellEnvironmentLoaded from './whenShellEnvironmentLoaded';
@@ -461,10 +462,10 @@ function observeProcessExitMessage(
  */
 export function getOutputStream(
   process: child_process$ChildProcess,
-  splitByLines?: boolean = true,
-  _: void,
+  options?: ?{splitByLines?: ?boolean},
+  rest: void,
 ): Observable<ProcessMessage> {
-  const chunk = splitByLines ? splitStream : x => x;
+  const chunk = idx(options, _ => _.splitByLines) === false ? (x => x) : splitStream;
   return Observable.defer(() => {
     // We need to start listening for the exit event immediately, but defer emitting it until the
     // (buffered) output streams end.
@@ -526,7 +527,7 @@ export function observeProcessRaw(
       throwOnError: false,
     },
   )
-    .flatMap(process => getOutputStream(process, false));
+    .flatMap(process => getOutputStream(process, {splitByLines: false}));
 }
 
 let FB_INCLUDE_PATHS;
