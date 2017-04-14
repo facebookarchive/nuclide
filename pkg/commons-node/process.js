@@ -101,6 +101,11 @@ type ProcessExitErrorOptions = {
   stderr: string,
 };
 
+type CreateProcessOptions = {
+  throwOnError: boolean,
+  killTreeOnComplete?: ?boolean,
+};
+
 export type ObserveProcessOptions = child_process$spawnOpts & {
   killTreeOnComplete?: ?boolean,
 };
@@ -301,13 +306,13 @@ export function scriptSafeSpawnAndObserveOutput(
  */
 function _createProcessStream(
   createProcess: () => child_process$ChildProcess,
-  throwOnError: boolean,
-  killTreeOnComplete: boolean,
+  options: CreateProcessOptions,
 ): Observable<child_process$ChildProcess> {
   return observableFromSubscribeFunction(whenShellEnvironmentLoaded)
     .take(1)
     .switchMap(() => {
       const process = createProcess();
+      const {throwOnError, killTreeOnComplete} = options;
       let finished = false;
 
       // If the process returned by `createProcess()` was not created by it (or at least in the same
@@ -337,7 +342,7 @@ function _createProcessStream(
         })
         .finally(() => {
           if (!process.wasKilled && !finished) {
-            killProcess(process, killTreeOnComplete);
+            killProcess(process, Boolean(killTreeOnComplete));
           }
         });
     });
@@ -410,8 +415,10 @@ export function createProcessStream(
 ): Observable<child_process$ChildProcess> {
   return _createProcessStream(
     () => _makeChildProcess('spawn', command, args, options),
-    true,
-    Boolean(options && options.killTreeOnComplete),
+    {
+      ...options,
+      throwOnError: true,
+    },
   );
 }
 
@@ -422,8 +429,10 @@ export function forkProcessStream(
 ): Observable<child_process$ChildProcess> {
   return _createProcessStream(
     () => safeFork(modulePath, args, options),
-    true,
-    Boolean(options && options.killTreeOnComplete),
+    {
+      ...options,
+      throwOnError: true,
+    },
   );
 }
 
@@ -494,8 +503,10 @@ export function observeProcess(
 ): Observable<ProcessMessage> {
   return _createProcessStream(
     () => _makeChildProcess('spawn', command, args, options),
-    false,
-    Boolean(options && options.killTreeOnComplete),
+    {
+      ...options,
+      throwOnError: false,
+    },
   )
     .flatMap(process => getOutputStream(process));
 }
@@ -510,8 +521,10 @@ export function observeProcessRaw(
 ): Observable<ProcessMessage> {
   return _createProcessStream(
     () => _makeChildProcess('spawn', command, args, options),
-    false,
-    Boolean(options && options.killTreeOnComplete),
+    {
+      ...options,
+      throwOnError: false,
+    },
   )
     .flatMap(process => getOutputStream(process, false));
 }
