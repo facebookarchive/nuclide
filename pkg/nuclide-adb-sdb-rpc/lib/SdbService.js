@@ -17,15 +17,25 @@ import type {ProcessMessage} from '../../commons-node/process-rpc-types';
 import type {DeviceDescription} from './types';
 
 async function getSdb(): Promise<Sdb> {
-  return new Sdb(await pathForDebugBridge('sdb'));
+  return new Sdb((await pathForDebugBridge('sdb')));
 }
 
 export async function getDeviceList(): Promise<Array<DeviceDescription>> {
   return (await getSdb()).getDeviceList();
 }
 
-export async function getPidFromPackageName(device: string, packageName: string): Promise<number> {
+export async function getPidFromPackageName(
+  device: string,
+  packageName: string,
+): Promise<number> {
   return (await getSdb()).getPidFromPackageName(device, packageName);
+}
+
+export async function getManifestForPackageName(
+  device: string,
+  packageName: string,
+): Promise<string> {
+  return (await getSdb()).getManifestForPackageName(device, packageName);
 }
 
 export function installPackage(
@@ -35,6 +45,13 @@ export function installPackage(
   return Observable.defer(() => getSdb())
     .switchMap(d => d.installPackage(device, packagePath))
     .publish();
+}
+
+export async function launchApp(
+  device: string,
+  identifier: string,
+): Promise<string> {
+  return (await getSdb()).launchApp(device, identifier);
 }
 
 export function uninstallPackage(

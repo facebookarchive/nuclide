@@ -78,16 +78,12 @@ import typeof * as PhpDebuggerService from '../../nuclide-debugger-php-rpc';
 import typeof * as PythonService from '../../nuclide-python-rpc';
 import typeof * as ReasonService from '../../nuclide-ocaml-rpc/lib/ReasonService';
 import typeof * as RemoteCommandService from '../../nuclide-remote-atom-rpc';
-import typeof * as SdbService from '../../nuclide-adb-sdb-rpc/lib/AdbService';
+import typeof * as SdbService from '../../nuclide-adb-sdb-rpc/lib/SdbService';
 import typeof * as SourceControlService
   from '../../nuclide-server/lib/services/SourceControlService';
 
 export function getAdbServiceByNuclideUri(uri: NuclideUri): AdbService {
   return nullthrows(getServiceByNuclideUri('AdbService', uri));
-}
-
-export function getSdbServiceByNuclideUri(uri: NuclideUri): SdbService {
-  return nullthrows(getServiceByNuclideUri('SdbService', uri));
 }
 
 export function getArcanistServiceByNuclideUri(uri: NuclideUri): ArcanistService {
@@ -172,6 +168,10 @@ export function getReasonServiceByNuclideUri(uri: NuclideUri): ReasonService {
 
 export function getRemoteCommandServiceByNuclideUri(uri: NuclideUri): RemoteCommandService {
   return nullthrows(getServiceByNuclideUri('RemoteCommandService', uri));
+}
+
+export function getSdbServiceByNuclideUri(uri: NuclideUri): SdbService {
+  return nullthrows(getServiceByNuclideUri('SdbService', uri));
 }
 
 export function getSourceControlServiceByNuclideUri(uri: NuclideUri): SourceControlService {
