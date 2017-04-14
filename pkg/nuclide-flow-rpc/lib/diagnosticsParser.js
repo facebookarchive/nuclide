@@ -24,6 +24,11 @@ import type {
 import invariant from 'assert';
 import {Range} from 'simple-text-buffer';
 
+// Flow sometimes reports this as the file path for an error. When this happens, we should simply
+// leave out the location, since it isn't very useful and it's not a well-formed path, which can
+// cause issues down the line.
+const BUILTIN_LOCATION = '(builtins)';
+
 export function flowStatusOutputToDiagnostics(
   statusOutput: FlowStatusOutput,
 ): Array<FileDiagnosticMessage> {
@@ -117,7 +122,10 @@ function namedImportTypo(diagnostic: FileDiagnosticMessage): ?Fix {
  */
 
 function extractPath(message: FlowStatusErrorMessageComponent): NuclideUri | void {
-  return message.loc == null ? undefined : message.loc.source;
+  if (message.loc == null || message.loc.source === BUILTIN_LOCATION) {
+    return undefined;
+  }
+  return message.loc.source;
 }
 
 // A trace object is very similar to an error object.
@@ -193,15 +201,14 @@ function extractTraces(flowStatusError: FlowStatusError): Array<Trace> | void {
 // compatible with the `range` property, which is an optional property rather than a nullable
 // property.
 export function extractRange(message: FlowStatusErrorMessageComponent): atom$Range | void {
-  // It's unclear why the 1-based to 0-based indexing works the way that it
-  // does, but this has the desired effect in the UI, in practice.
-  const flowRange = message.loc;
-  if (flowRange == null) {
+  if (message.loc == null || message.loc.source === BUILTIN_LOCATION) {
     return undefined;
   } else {
+    // It's unclear why the 1-based to 0-based indexing works the way that it
+    // does, but this has the desired effect in the UI, in practice.
     return new Range(
-      [flowRange.start.line - 1, flowRange.start.column - 1],
-      [flowRange.end.line - 1, flowRange.end.column],
+      [message.loc.start.line - 1, message.loc.start.column - 1],
+      [message.loc.end.line - 1, message.loc.end.column],
     );
   }
 }
