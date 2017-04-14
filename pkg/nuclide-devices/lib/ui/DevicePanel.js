@@ -14,7 +14,7 @@ import {Observable, Subscription} from 'rxjs';
 import {mapEqual, arrayEqual, mapFilter} from '../../../commons-node/collection';
 import invariant from 'invariant';
 import {Dropdown} from '../../../nuclide-ui/Dropdown';
-import {Table} from '../../../nuclide-ui/Table';
+import {DeviceTable} from './DeviceTable';
 
 import type {NuclideUri} from '../../../commons-node/nuclideUri';
 import type {Device} from '../types';
@@ -106,37 +106,19 @@ export class DevicePanel extends React.Component {
   }
 
   _createDeviceTable(): React.Element<any> {
-    const selectedDeviceType = this.state.devices.size === 1
+    const selectedDeviceType = this.state.devices.size > 0 && this.state.selectedDeviceType == null
       ? this.state.devices.keys().next().value
       : this.state.selectedDeviceType;
-    const rows = (Array.from(
+
+    const devices = Array.from(
       mapFilter(
         this.state.devices,
         (type, _) => type === selectedDeviceType,
       ).values(),
-    )[0] || []).map(device => ({data: {name: device.displayName}}));
-
-    const columns = [
-      {
-        key: 'name',
-        title: 'Device',
-        width: 1.0,
-      },
-    ];
-
-    if (rows.length === 0) {
-      return <div />;
-    }
+    )[0] || [];
 
     return (
-      <Table
-        collapsable={false}
-        columns={columns}
-        fixedHeader={true}
-        maxBodyHeight="99999px"
-        rows={rows}
-        selectable={true}
-      />
+      <DeviceTable devices={devices} />
     );
   }
 
