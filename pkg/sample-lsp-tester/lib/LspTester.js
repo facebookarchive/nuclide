@@ -15,7 +15,7 @@ import {renderReactRoot} from '../../commons-atom/renderReactRoot';
 import {bufferUntil, takeWhileInclusive} from '../../commons-node/observable';
 import {splitOnce} from '../../commons-node/string';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {createProcessStream, getOutputStream} from '../../commons-node/process';
+import {spawnProcess, getOutputStream} from '../../commons-node/process';
 import {SimpleModel} from '../../commons-node/SimpleModel';
 import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
 import {PanelView} from './PanelView';
@@ -119,7 +119,7 @@ export class LspTester extends SimpleModel {
     const events = takeWhileInclusive(
       // Use the async scheduler so that `disposable.dispose()` can still be called in
       // error/complete handlers.
-      createProcessStream(command, args)
+      spawnProcess(command, args)
         .do(process => {
           this._writer = new rpc.StreamMessageWriter(process.stdin);
           const reader = new rpc.StreamMessageReader(process.stdout);

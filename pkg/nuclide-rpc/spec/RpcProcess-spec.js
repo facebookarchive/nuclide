@@ -12,7 +12,7 @@ import typeof * as DummyService from './fixtures/dummy-service/DummyService';
 
 import nuclideUri from '../../commons-node/nuclideUri';
 import invariant from 'assert';
-import {createProcessStream} from '../../commons-node/process';
+import {spawnProcess} from '../../commons-node/process';
 import {RpcProcess} from '../lib/RpcProcess';
 import {ServiceRegistry} from '../../nuclide-rpc';
 import {Scheduler} from 'rxjs';
@@ -37,7 +37,7 @@ describe('RpcProcess', () => {
         preserveFunctionNames: true,
       }]);
 
-    const processStream = createProcessStream('python', [PROCESS_PATH], OPTS)
+    const processStream = spawnProcess('python', [PROCESS_PATH], OPTS)
       // For the sake of our tests, simulate creating the process asynchronously.
       .subscribeOn(Scheduler.async);
     server = new RpcProcess('Dummy IO Server', serviceRegistry, processStream);

@@ -17,7 +17,7 @@ import type {HackCompletionsResult} from './rpc-types';
 import type {AutocompleteResult} from '../../nuclide-language-service/lib/LanguageService';
 
 import nuclideUri from '../../commons-node/nuclideUri';
-import {asyncExecute, createProcessStream} from '../../commons-node/process';
+import {asyncExecute, spawnProcess} from '../../commons-node/process';
 import {maybeToString} from '../../commons-node/string';
 import {RpcProcess} from '../../nuclide-rpc';
 import {getHackCommand, findHackConfigDir, HACK_FILE_EXTENSIONS} from './hack-config';
@@ -307,7 +307,7 @@ async function createHackProcess(
   if (exitCode !== 0 && exitCode !== HACK_SERVER_ALREADY_EXISTS_EXIT_CODE) {
     throw new Error(`Hack server start failed with code: ${String(exitCode)}`);
   }
-  const processStream = createProcessStream(command, ['ide', configDir]);
+  const processStream = spawnProcess(command, ['ide', configDir]);
   const hackProcess = new HackProcess(
     fileCache, `HackProcess-${configDir}`, processStream, configDir);
 

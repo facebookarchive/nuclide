@@ -9,7 +9,7 @@
  */
 
 import os from 'os';
-import {asyncExecute, createProcessStream} from './process';
+import {asyncExecute, spawnProcess} from './process';
 // $FlowFixMe: Add EmptyError to type defs
 import {EmptyError, Subject} from 'rxjs';
 
@@ -97,7 +97,7 @@ export default class ScribeProcess {
     // Kick off the process. Ideally we would store the subscription and unsubscribe when
     // `dispose()` was called. Practically, it probably doesn't matter since there's very little
     // chance we'd want to cancel before the process was ready.
-    const processStream = createProcessStream(SCRIBE_CAT_COMMAND, [this._scribeCategory])
+    const processStream = spawnProcess(SCRIBE_CAT_COMMAND, [this._scribeCategory])
       .do(child => {
         child.stdin.setDefaultEncoding('utf8');
       })

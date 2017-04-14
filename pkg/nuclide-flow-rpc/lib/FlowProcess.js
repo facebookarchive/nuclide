@@ -25,7 +25,7 @@ import {track} from '../../nuclide-analytics';
 
 import {
   asyncExecute,
-  createProcessStream,
+  spawnProcess,
 } from '../../commons-node/process';
 import {sleep} from '../../commons-node/promise';
 import {niceSafeSpawn} from '../../commons-node/nice';
@@ -241,7 +241,7 @@ export class FlowProcess {
           return Observable.of(null);
         }
 
-        return createProcessStream(allExecInfo.pathToFlow, allExecInfo.args, allExecInfo.options)
+        return spawnProcess(allExecInfo.pathToFlow, allExecInfo.args, allExecInfo.options)
           .do(proc => {
             proc.once('exit', (code: ?number, signal: ?string) => {
               // If it crashes we will get `null` or `undefined`, but that doesn't actually mean

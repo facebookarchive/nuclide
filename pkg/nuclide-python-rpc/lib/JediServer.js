@@ -12,7 +12,7 @@ import typeof * as JediService from './JediService';
 
 import invariant from 'assert';
 import nuclideUri from '../../commons-node/nuclideUri';
-import {createProcessStream} from '../../commons-node/process';
+import {spawnProcess} from '../../commons-node/process';
 import {RpcProcess} from '../../nuclide-rpc';
 import {ServiceRegistry, loadServicesConfig} from '../../nuclide-rpc';
 import {localNuclideUriMarshalers} from '../../nuclide-marshalers-common';
@@ -52,7 +52,7 @@ export default class JediServer {
       args.push('-p');
       args = args.concat(paths);
     }
-    const processStream = createProcessStream(pythonPath, args, OPTS);
+    const processStream = spawnProcess(pythonPath, args, OPTS);
     this._process = new RpcProcess(name, getServiceRegistry(), processStream);
     this._isDisposed = false;
   }

@@ -28,7 +28,7 @@ import {getBufferAtVersion} from '../../nuclide-open-files-rpc';
 // Nuclide-specific utility functions
 import {Cache, DISPOSE_VALUE} from '../../commons-node/cache';
 import nuclideUri from '../../commons-node/nuclideUri';
-import {forkProcessStream} from '../../commons-node/process';
+import {forkProcess} from '../../commons-node/process';
 
 const GRAPHQL_FILE_EXTENTIONS: Array<string> = [
   '.graphql',
@@ -183,7 +183,7 @@ function createGraphQLProcess(
   fileCache: FileCache,
   configDir: string,
 ): GraphQLProcess {
-  const processStream = forkProcessStream(
+  const processStream = forkProcess(
     require.resolve(
       '../../nuclide-graphql-language-service/bin/graphql.js',
     ),

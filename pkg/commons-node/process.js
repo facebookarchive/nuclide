@@ -388,7 +388,7 @@ export async function killUnixProcessTree(childProcess: child_process$ChildProce
   }
 }
 
-export function createProcessStream(
+export function spawnProcess(
   command: string,
   args?: Array<string>,
   options?: SpawnProcessOptions,
@@ -399,7 +399,7 @@ export function createProcessStream(
   );
 }
 
-export function forkProcessStream(
+export function forkProcess(
   modulePath: string,
   args?: Array<string>,
   options?: ForkProcessOptions,
@@ -435,7 +435,7 @@ function isExitErrorDefault(exit: ProcessExitMessage): boolean {
  * just synchronously created. Otherwise, you can end up missing messages.
  *
  * This function intentionally does not close the process when you unsubscribe. It's usually used in
- * conjunction with `createProcessStream()` which does that already.
+ * conjunction with `spawnProcess()` which does that already.
  */
 export function getOutputStream(
   process: child_process$ChildProcess,

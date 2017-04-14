@@ -16,7 +16,7 @@ import {
 } from '../../nuclide-open-files-rpc';
 import {LanguageServerProtocolProcess} from './process';
 import {MultiProjectLanguageService} from '../../nuclide-language-service-rpc';
-import {createProcessStream} from '../../commons-node/process';
+import {spawnProcess} from '../../commons-node/process';
 
 export class PerConnectionLanguageService extends MultiProjectLanguageService {
   constructor(
@@ -34,7 +34,7 @@ export class PerConnectionLanguageService extends MultiProjectLanguageService {
         () => {
           logger.logInfo(`PerConnectionLanguageService launch: ${command} ${args.join(' ')}`);
           // TODO: This should be cancelable/killable.
-          const processStream = createProcessStream(command, args).publish(); // TODO: current dir?
+          const processStream = spawnProcess(command, args).publish(); // TODO: current dir?
           const processPromise = processStream.take(1).toPromise();
           processStream.connect();
           return processPromise;

@@ -18,7 +18,7 @@ import mockSpawn from 'mock-spawn';
 import {
   asyncExecute,
   checkOutput,
-  createProcessStream,
+  spawnProcess,
   getOutputStream,
   killProcess,
   killUnixProcessTree,
@@ -258,12 +258,12 @@ describe('commons-node/process', () => {
     });
   });
 
-  describe('createProcessStream', () => {
+  describe('spawnProcess', () => {
     it('errors when the process does', () => {
       waitsForPromise(async () => {
         spyOn(console, 'error'); // suppress error printing
         spyOn(console, 'log'); // suppress log printing
-        const processStream = createProcessStream('fakeCommand');
+        const processStream = spawnProcess('fakeCommand');
         let error;
         try {
           await processStream.toPromise();
@@ -282,7 +282,7 @@ describe('commons-node/process', () => {
         spyOn(console, 'log'); // suppress log printing
         spyOn(child_process, 'spawn');
         try {
-          await createProcessStream('fakeCommand')
+          await spawnProcess('fakeCommand')
             .retryWhen(errors => (
               errors.scan(
                 (errorCount, err) => {
