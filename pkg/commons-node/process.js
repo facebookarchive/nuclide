@@ -515,20 +515,18 @@ function preparePathEnvironment(env: ?Object): Object {
  *     Supports the options listed here: http://nodejs.org/api/child_process.html
  *     in addition to the custom options listed in AsyncExecuteOptions.
  */
-export function asyncExecute(
+export async function asyncExecute(
   command: string,
   args: Array<string>,
   options?: AsyncExecuteOptions = {},
 ): Promise<AsyncExecuteReturn> {
   const now = performanceNow();
+  await new Promise(resolve => whenShellEnvironmentLoaded(resolve));
   return new Promise((resolve, reject) => {
     const process = child_process.execFile(
       nuclideUri.expandHomeDir(command),
       args,
-      prepareProcessOptions({
-        maxBuffer: DEFAULT_MAX_BUFFER,
-        ...options,
-      }),
+      {maxBuffer: DEFAULT_MAX_BUFFER, ...options},
       // Node embeds various properties like code/errno in the Error object.
       (err: any /* Error */, stdoutBuf, stderrBuf) => {
         if (!options || !options.dontLogInNuclide) {
