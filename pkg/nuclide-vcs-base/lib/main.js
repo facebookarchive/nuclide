@@ -347,7 +347,7 @@ export function getMultiRootFileChanges(
   return changedRoots;
 }
 
-export function confirmAndDeletePath(nuclideFilePath: NuclideUri): void {
+export async function confirmAndDeletePath(nuclideFilePath: NuclideUri): Promise<boolean> {
   const result = atom.confirm({
     message: 'Are you sure you want to delete the following item?',
     detailedMessage: `You are deleting: \n ${nuclideUri.getPath(nuclideFilePath)}`,
@@ -355,23 +355,26 @@ export function confirmAndDeletePath(nuclideFilePath: NuclideUri): void {
   });
   invariant(result === 0 || result === 1);
   if (result === 0) {
-    deleteFile(nuclideFilePath);
+    return deleteFile(nuclideFilePath);
   }
+  return false;
 }
 
-async function deleteFile(nuclideFilePath: string): Promise<void> {
+async function deleteFile(nuclideFilePath: string): Promise<boolean> {
   const filePath = nuclideUri.getPath(nuclideFilePath);
   const fsService = getFileSystemServiceByNuclideUri(nuclideFilePath);
   try {
     await fsService.unlink(filePath);
     const repository = repositoryForPath(nuclideFilePath);
     if (repository == null || repository.getType() !== 'hg') {
-      return;
+      return false;
     }
     await ((repository: any): HgRepositoryClient).remove([filePath], true);
   } catch (error) {
     atom.notifications.addError('Failed to delete file', {
       detail: error,
     });
+    return false;
   }
+  return true;
 }
