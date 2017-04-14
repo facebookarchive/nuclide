@@ -15,7 +15,8 @@ import type {Device} from '../types';
 
 type Props = {
   devices: Device[],
-  onDeviceSelected: (Device) => void,
+  device: ?Device,
+  setDevice: (?Device) => void,
 };
 
 type State = {
@@ -30,6 +31,17 @@ export class DeviceTable extends React.Component {
     super(props);
     this.state = {selectedDeviceIndex: null};
     (this: any)._handleDeviceTableSelection = this._handleDeviceTableSelection.bind(this);
+  }
+
+  componentWillReceiveProps(nextProps: Props): void {
+    const nextDevice = nextProps.device;
+    let selectedDeviceIndex = null;
+    if (nextDevice != null) {
+      selectedDeviceIndex = nextProps.devices.findIndex(device => device.name === nextDevice.name);
+    }
+    if (selectedDeviceIndex !== this.state.selectedDeviceIndex) {
+      this.setState({selectedDeviceIndex});
+    }
   }
 
   render(): React.Element<any> {
@@ -64,7 +76,7 @@ export class DeviceTable extends React.Component {
   _handleDeviceTableSelection(item: any, selectedDeviceIndex: number): void {
     this.setState(
       {selectedDeviceIndex},
-      this.props.onDeviceSelected(this.props.devices[selectedDeviceIndex]),
+      this.props.setDevice(this.props.devices[selectedDeviceIndex]),
     );
   }
 }

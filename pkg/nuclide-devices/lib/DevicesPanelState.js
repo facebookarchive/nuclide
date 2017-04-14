@@ -11,17 +11,33 @@
 import React from 'react';
 import {renderReactRoot} from '../../commons-atom/renderReactRoot';
 import {DevicePanel} from './ui/DevicePanel';
+import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
+import {combineEpics, createEpicMiddleware} from '../../commons-node/redux-observable';
+import {applyMiddleware, createStore} from 'redux';
+import {Observable} from 'rxjs';
+import {createEmptyAppState} from './redux/createEmptyAppState';
+import * as Reducers from './redux/Reducers';
+import * as Actions from './redux/Actions';
+import * as Epics from './redux/Epics';
 
-import type {DeviceFetcher, Device} from './types';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {Props} from './ui/DevicePanel';
+import type {Store, DeviceFetcher, AppState} from './types';
 
 export const WORKSPACE_VIEW_URI = 'atom://nuclide/devices';
 
-export class DevicesPanelState {
-  _fetchers: Set<DeviceFetcher>;
 
-  constructor(fetchers: Set<DeviceFetcher>) {
-    this._fetchers = fetchers;
+export class DevicesPanelState {
+  _store: Store;
+
+  constructor(deviceFetchers: Set<DeviceFetcher>) {
+    const epics = Object.keys(Epics)
+      .map(k => Epics[k])
+      .filter(epic => typeof epic === 'function');
+    this._store = createStore(
+      Reducers.app,
+      createEmptyAppState(deviceFetchers),
+      applyMiddleware(createEpicMiddleware(combineEpics(...epics))),
+    );
   }
 
   getTitle() {
@@ -44,22 +60,43 @@ export class DevicesPanelState {
     return 'right';
   }
 
-  async _getDevices(host: NuclideUri): Promise<Map<string, Device[]>> {
-    const deviceLookups = Array.from(this._fetchers)
-      .map(fetcher => [fetcher.getType(), fetcher.fetch(host)]);
-    const deviceMap = new Map();
-    (await Promise.all(deviceLookups.map(d => d[1])))
-      .forEach((lookup, i) => {
-        if (lookup.length > 0) {
-          deviceMap.set(deviceLookups[i][0], lookup);
-        }
-      });
-    return deviceMap;
+  _appStateToProps(state: AppState): Props {
+    const refreshDevices = host => {
+      this._store.dispatch(Actions.refreshDevices());
+    };
+    const setHost = host => {
+      this._store.dispatch(Actions.setHost(host));
+    };
+    const setDeviceType = deviceType => {
+      this._store.dispatch(Actions.setDeviceType(deviceType));
+    };
+    const setDevice = device => {
+      this._store.dispatch(Actions.setDevice(device));
+    };
+    return {
+      devices: state.devices,
+      hosts: state.hosts,
+      host: state.host,
+      deviceType: state.deviceType,
+      device: state.device,
+      refreshDevices,
+      setHost,
+      setDeviceType,
+      setDevice,
+    };
   }
 
   getElement(): HTMLElement {
+    const PreparedDevicePanel = bindObservableAsProps(
+      // $FlowFixMe: Teach flow about Symbol.observable
+      Observable.from(this._store)
+        .distinctUntilChanged()
+        .map(state => this._appStateToProps(state)),
+      DevicePanel,
+    );
+
     return renderReactRoot(
-      <DevicePanel hosts={['local']} getDevices={host => this._getDevices(host)} />,
+      <PreparedDevicePanel />,
     );
   }
 

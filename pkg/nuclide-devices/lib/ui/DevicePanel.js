@@ -11,7 +11,7 @@
 import React from 'react';
 import {PanelComponentScroller} from '../../../nuclide-ui/PanelComponentScroller';
 import {Observable, Subscription} from 'rxjs';
-import {mapEqual, arrayEqual, mapFilter} from '../../../commons-node/collection';
+import {mapFilter} from '../../../commons-node/collection';
 import invariant from 'invariant';
 import {Dropdown} from '../../../nuclide-ui/Dropdown';
 import {DeviceTable} from './DeviceTable';
@@ -19,63 +19,42 @@ import {DeviceTable} from './DeviceTable';
 import type {NuclideUri} from '../../../commons-node/nuclideUri';
 import type {Device} from '../types';
 
-type Props = {
-  getDevices(host: NuclideUri): Promise<Map<string, Device[]>>,
+export type Props = {
+  refreshDevices: () => void,
+  setHost: (host: NuclideUri) => void,
+  setDeviceType: (deviceType: string) => void,
+  setDevice: (device: ?Device) => void,
   hosts: NuclideUri[],
-};
-
-type State = {
   devices: Map<string, Device[]>,
-  selectedHost: NuclideUri,
-  selectedDeviceType: ?string,
-  selectedDevice: ?Device,
+  host: NuclideUri,
+  deviceType: ?string,
+  device: ?Device,
 };
 
 export class DevicePanel extends React.Component {
   props: Props;
-  state: State;
   _deviceFetcherSubscription: Subscription;
 
   constructor(props: Props) {
     super(props);
     invariant(props.hosts.length > 0);
-    this.state = {
-      devices: new Map(),
-      selectedHost: props.hosts[0],
-      selectedDeviceType: null,
-      selectedDevice: null,
-    };
     this._deviceFetcherSubscription = new Subscription();
-
-    (this: any)._handleHostDropdownChange = this._handleHostDropdownChange.bind(this);
-    (this: any)._handleDeviceTypeDropdownChange = this._handleDeviceTypeDropdownChange.bind(this);
-    (this: any)._onDeviceSelected = this._onDeviceSelected.bind(this);
   }
 
   componentDidMount(): void {
     this._deviceFetcherSubscription = Observable.interval(3000)
       .startWith(0)
-      .switchMap(() => this.props.getDevices(this.state.selectedHost))
-      .distinctUntilChanged((previous, current) => {
-        return mapEqual(previous, current, (a, b) => arrayEqual(a, b, (x, y) => x.name === y.name));
-      }).subscribe(devices => this.setState({devices}));
+      .do(() => this.props.refreshDevices())
+      .subscribe();
   }
 
   componentWillUnmount(): void {
     this._deviceFetcherSubscription.unsubscribe();
   }
 
-  _handleHostDropdownChange(selectedHost: NuclideUri): void {
-    this.setState({selectedHost});
-  }
-
-  _handleDeviceTypeDropdownChange(selectedDeviceType: ?string): void {
-    this.setState({selectedDeviceType});
-  }
-
   _createSelectorSection(): React.Element<any> {
     const hostOptions = this.props.hosts.map(host => ({value: host, label: host}));
-    const typeOptions = Array.from(this.state.devices.keys())
+    const typeOptions = Array.from(this.props.devices.keys())
       .map(type => ({value: type, label: type}));
     if (typeOptions.length === 0) {
       typeOptions.push({value: null, label: 'No devices connected'});
@@ -90,8 +69,8 @@ export class DevicePanel extends React.Component {
             <Dropdown
               className="inline-block"
               options={hostOptions}
-              onChange={this._handleHostDropdownChange}
-              value={this.state.selectedHost}
+              onChange={this.props.setHost}
+              value={this.props.host}
             />
           </td>
         </tr>
@@ -103,9 +82,9 @@ export class DevicePanel extends React.Component {
             <Dropdown
               className="inline-block"
               options={typeOptions}
-              disabled={this.state.devices.size === 0}
-              onChange={this._handleDeviceTypeDropdownChange}
-              value={this.state.selectedDeviceType}
+              disabled={this.props.devices.size === 0}
+              onChange={this.props.setDeviceType}
+              value={this.props.deviceType}
             />
           </td>
         </tr>
@@ -114,24 +93,20 @@ export class DevicePanel extends React.Component {
   }
 
   _createDeviceTable(): React.Element<any> {
-    const selectedDeviceType = this.state.devices.size > 0 && this.state.selectedDeviceType == null
-      ? this.state.devices.keys().next().value
-      : this.state.selectedDeviceType;
+    const selectedDeviceType = this.props.devices.size > 0 && this.props.deviceType == null
+      ? this.props.devices.keys().next().value
+      : this.props.deviceType;
 
     const devices = Array.from(
       mapFilter(
-        this.state.devices,
+        this.props.devices,
         (type, _) => type === selectedDeviceType,
       ).values(),
     )[0] || [];
 
     return (
-      <DeviceTable devices={devices} onDeviceSelected={this._onDeviceSelected} />
+      <DeviceTable devices={devices} device={this.props.device} setDevice={this.props.setDevice} />
     );
-  }
-
-  _onDeviceSelected(selectedDevice: Device): void {
-    this.setState({selectedDevice});
   }
 
   render(): React.Element<any> {
