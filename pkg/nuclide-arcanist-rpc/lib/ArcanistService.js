@@ -20,8 +20,9 @@ import {
   getOriginalEnvironment,
   observeProcess,
   runCommand,
-  scriptSafeSpawnAndObserveOutput,
+  createArgsForScriptCommand,
 } from '../../commons-node/process';
+import {compact} from '../../commons-node/observable';
 import {niceObserveProcess} from '../../commons-node/nice';
 import fsPromise from '../../commons-node/fsPromise';
 import {
@@ -189,7 +190,18 @@ function _callArcDiff(
         );
       }
       return Observable.fromPromise(getArcExecOptions(arcConfigDir))
-        .switchMap(opts => scriptSafeSpawnAndObserveOutput('arc', args, opts));
+        .switchMap(opts => {
+          const scriptArgs = createArgsForScriptCommand('arc', args);
+          return compact(
+            observeProcess('script', scriptArgs, opts).map(event => {
+              switch (event.kind) {
+                case 'stdout': return {stdout: event.data};
+                case 'stderr': return {stderr: event.data};
+                default: return null;
+              }
+            }),
+          );
+        });
     }).share();
 }
 

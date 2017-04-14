@@ -225,46 +225,6 @@ export function scriptSafeSpawn(
 }
 
 /**
- * Wraps scriptSafeSpawn with an Observable that lets you listen to the stdout and
- * stderr of the spawned process.
- */
-export function scriptSafeSpawnAndObserveOutput(
-  command: string,
-  args?: Array<string> = [],
-  options?: Object = {},
-  killTreeOnComplete?: boolean = false,
-): Observable<{stderr?: string, stdout?: string}> {
-  return Observable.create((observer: rxjs$Observer<any>) => {
-    let childProcess = scriptSafeSpawn(command, args, options);
-
-    childProcess.stdout.on('data', data => {
-      observer.next({stdout: data.toString()});
-    });
-
-    let stderr = '';
-    childProcess.stderr.on('data', data => {
-      stderr += data;
-      observer.next({stderr: data.toString()});
-    });
-
-    childProcess.on('exit', (exitCode: number) => {
-      if (exitCode !== 0) {
-        observer.error(stderr);
-      } else {
-        observer.complete();
-      }
-      childProcess = null;
-    });
-
-    return () => {
-      if (childProcess) {
-        killProcess(childProcess, killTreeOnComplete);
-      }
-    };
-  });
-}
-
-/**
  * Creates an observable with the following properties:
  *
  * 1. It contains a process that's created using the provided factory when you subscribe.
