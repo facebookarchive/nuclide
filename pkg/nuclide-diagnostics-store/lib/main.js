@@ -15,7 +15,9 @@ import type {
   ObservableDiagnosticProvider,
   ObservableDiagnosticUpdater,
 } from '../../nuclide-diagnostics-common';
+import type {LinterAdapter} from './LinterAdapter';
 
+import createPackage from '../../commons-atom/createPackage';
 import featureConfig from '../../commons-atom/featureConfig';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
@@ -28,146 +30,137 @@ const legacyLinterSetting = 'nuclide-diagnostics-store.consumeLegacyLinters';
 
 const legacyLintOnTheFlySetting = 'nuclide-diagnostics-store.legacyLintOnTheFly';
 
-let disposables = null;
-let diagnosticStore = null;
-let diagnosticUpdater = null;
-let observableDiagnosticUpdater: ?ObservableDiagnosticUpdater;
+class Activation {
+  _disposables: UniversalDisposable;
+  _diagnosticStore: DiagnosticStore;
 
-function addDisposable(disposable: IDisposable) {
-  if (disposables) {
-    disposables.add(disposable);
-  } else {
-    getLogger().error('disposables is null');
+  _diagnosticUpdater: ?DiagnosticUpdater;
+  _observableDiagnosticUpdater: ?ObservableDiagnosticUpdater;
+
+  _consumeLegacyLinters: boolean;
+  _lintOnTheFly: boolean;
+  _allLinterAdapters: Set<LinterAdapter>;
+
+  constructor() {
+    this._allLinterAdapters = new Set();
+
+    // Returns mixed so a cast is necessary.
+    this._consumeLegacyLinters = ((featureConfig.get(legacyLinterSetting): any): boolean);
+    this._lintOnTheFly = ((featureConfig.get(legacyLintOnTheFlySetting): any): boolean);
+
+    this._disposables = new UniversalDisposable(
+      featureConfig.observe(legacyLinterSetting, (newValue: any) => {
+        // To make this really solid, we should also probably trigger the linter
+        // for the active text editor. Possibly more trouble than it's worth,
+        // though, since this may be a temporary option.
+        this._consumeLegacyLinters = newValue;
+        this._allLinterAdapters.forEach(adapter => adapter.setEnabled(newValue));
+      }),
+
+      featureConfig.observe(legacyLintOnTheFlySetting, (newValue: any) => {
+        this._lintOnTheFly = newValue;
+        this._allLinterAdapters.forEach(adapter => adapter.setLintOnFly(newValue));
+      }),
+    );
   }
-}
 
-function getDiagnosticStore(): DiagnosticStore {
-  if (!diagnosticStore) {
-    diagnosticStore = new DiagnosticStore();
+  dispose() {
+    this._allLinterAdapters.forEach(adapter => adapter.dispose());
+    this._allLinterAdapters.clear();
+    this._disposables.dispose();
   }
-  return diagnosticStore;
-}
 
-/**
- * @return A wrapper around the methods on DiagnosticStore that allow reading data.
- */
-export function provideDiagnosticUpdates(): DiagnosticUpdater {
-  if (!diagnosticUpdater) {
-    const store = getDiagnosticStore();
-    diagnosticUpdater = {
-      onFileMessagesDidUpdate: store.onFileMessagesDidUpdate.bind(store),
-      onProjectMessagesDidUpdate: store.onProjectMessagesDidUpdate.bind(store),
-      onAllMessagesDidUpdate: store.onAllMessagesDidUpdate.bind(store),
-      applyFix: store.applyFix.bind(store),
-      applyFixesForFile: store.applyFixesForFile.bind(store),
+  getDiagnosticStore() {
+    if (this._diagnosticStore == null) {
+      this._diagnosticStore = new DiagnosticStore();
+      this._disposables.add(this._diagnosticStore);
+    }
+    return this._diagnosticStore;
+  }
+
+  /**
+   * @return A wrapper around the methods on DiagnosticStore that allow reading data.
+   */
+  provideDiagnosticUpdates(): DiagnosticUpdater {
+    if (!this._diagnosticUpdater) {
+      const store = this.getDiagnosticStore();
+      this._diagnosticUpdater = {
+        onFileMessagesDidUpdate: store.onFileMessagesDidUpdate.bind(store),
+        onProjectMessagesDidUpdate: store.onProjectMessagesDidUpdate.bind(store),
+        onAllMessagesDidUpdate: store.onAllMessagesDidUpdate.bind(store),
+        applyFix: store.applyFix.bind(store),
+        applyFixesForFile: store.applyFixesForFile.bind(store),
+      };
+    }
+    return this._diagnosticUpdater;
+  }
+
+  provideObservableDiagnosticUpdates(): ObservableDiagnosticUpdater {
+    if (this._observableDiagnosticUpdater == null) {
+      const store = this._diagnosticStore;
+      this._observableDiagnosticUpdater = {
+        getFileMessageUpdates: path => store.getFileMessageUpdates(path),
+        projectMessageUpdates: store.getProjectMessageUpdates(),
+        allMessageUpdates: store.getAllMessageUpdates(),
+        applyFix: message => store.applyFix(message),
+        applyFixesForFile: file => store.applyFixesForFile(file),
+      };
+    }
+    return this._observableDiagnosticUpdater;
+  }
+
+  consumeLinterProvider(
+    provider: LinterProvider | Array<LinterProvider>,
+  ): IDisposable {
+    const newAdapters = createAdapters(provider);
+    const adapterDisposables = new UniversalDisposable();
+    for (const adapter of newAdapters) {
+      adapter.setEnabled(this._consumeLegacyLinters);
+      adapter.setLintOnFly(this._lintOnTheFly);
+      this._allLinterAdapters.add(adapter);
+      const diagnosticDisposable = this.consumeDiagnosticsProviderV1(adapter);
+      adapterDisposables.add(() => {
+        diagnosticDisposable.dispose();
+        adapter.dispose();
+        this._allLinterAdapters.delete(adapter);
+      });
+    }
+    return adapterDisposables;
+  }
+
+  consumeDiagnosticsProviderV1(provider: CallbackDiagnosticProvider): IDisposable {
+    // Register the diagnostic store for updates from the new provider.
+    const observableProvider = {
+      updates: observableFromSubscribeFunction(provider.onMessageUpdate.bind(provider)),
+      invalidations: observableFromSubscribeFunction(provider.onMessageInvalidation.bind(provider)),
     };
-  }
-  return diagnosticUpdater;
-}
-
-export function provideObservableDiagnosticUpdates(): ObservableDiagnosticUpdater {
-  if (observableDiagnosticUpdater == null) {
-    const store = getDiagnosticStore();
-    observableDiagnosticUpdater = {
-      getFileMessageUpdates: path => store.getFileMessageUpdates(path),
-      projectMessageUpdates: store.getProjectMessageUpdates(),
-      allMessageUpdates: store.getAllMessageUpdates(),
-      applyFix: message => store.applyFix(message),
-      applyFixesForFile: file => store.applyFixesForFile(file),
-    };
-  }
-  return observableDiagnosticUpdater;
-}
-
-let consumeLegacyLinters = false;
-let lintOnTheFly = false;
-const allLinterAdapters = new Set();
-
-export function activate(state: ?Object): void {
-  if (!disposables) {
-    disposables = new UniversalDisposable();
+    const disposable = this.consumeDiagnosticsProviderV2(observableProvider);
+    this._disposables.add(disposable);
+    return disposable;
   }
 
-  // Returns mixed so a cast is necessary.
-  consumeLegacyLinters = ((featureConfig.get(legacyLinterSetting): any): boolean);
-  featureConfig.observe(legacyLinterSetting, (newValue: any) => {
-    // To make this really solid, we should also probably trigger the linter
-    // for the active text editor. Possibly more trouble than it's worth,
-    // though, since this may be a temporary option.
-    consumeLegacyLinters = newValue;
-    allLinterAdapters.forEach(adapter => adapter.setEnabled(newValue));
-  });
+  consumeDiagnosticsProviderV2(provider: ObservableDiagnosticProvider): IDisposable {
+    const compositeDisposable = new UniversalDisposable();
+    const store = this.getDiagnosticStore();
 
-  lintOnTheFly = ((featureConfig.get(legacyLintOnTheFlySetting): any): boolean);
-  featureConfig.observe(legacyLintOnTheFlySetting, (newValue: any) => {
-    lintOnTheFly = newValue;
-    allLinterAdapters.forEach(adapter => adapter.setLintOnFly(newValue));
-  });
-}
+    compositeDisposable.add(
+      provider.updates.subscribe(
+        update => store.updateMessages(provider, update),
+        error => { getLogger().error(`Error: updates.subscribe ${error}`); },
+        () => { getLogger().error('updates.subscribe completed'); },
+      ),
+      provider.invalidations.subscribe(
+        invalidation => store.invalidateMessages(provider, invalidation),
+        error => { getLogger().error(`Error: invalidations.subscribe ${error}`); },
+        () => { getLogger().error('invalidations.subscribe completed'); },
+      ),
+      () => {
+        store.invalidateMessages(provider, {scope: 'all'});
+      },
+    );
 
-export function consumeLinterProvider(
-  provider: LinterProvider | Array<LinterProvider>,
-): IDisposable {
-  const newAdapters = createAdapters(provider);
-  const adapterDisposables = new UniversalDisposable();
-  for (const adapter of newAdapters) {
-    adapter.setEnabled(consumeLegacyLinters);
-    adapter.setLintOnFly(lintOnTheFly);
-    allLinterAdapters.add(adapter);
-    const diagnosticDisposable = consumeDiagnosticsProviderV1(adapter);
-    adapterDisposables.add(() => {
-      diagnosticDisposable.dispose();
-      adapter.dispose();
-      allLinterAdapters.delete(adapter);
-    });
-    addDisposable(adapter);
+    return compositeDisposable;
   }
-  return adapterDisposables;
 }
 
-export function consumeDiagnosticsProviderV1(provider: CallbackDiagnosticProvider): IDisposable {
-  // Register the diagnostic store for updates from the new provider.
-  const observableProvider = {
-    updates: observableFromSubscribeFunction(provider.onMessageUpdate.bind(provider)),
-    invalidations: observableFromSubscribeFunction(provider.onMessageInvalidation.bind(provider)),
-  };
-  const disposable = consumeDiagnosticsProviderV2(observableProvider);
-  addDisposable(disposable);
-  return disposable;
-}
-
-export function consumeDiagnosticsProviderV2(provider: ObservableDiagnosticProvider): IDisposable {
-  const compositeDisposable = new UniversalDisposable();
-  const store = getDiagnosticStore();
-
-  compositeDisposable.add(
-    provider.updates.subscribe(
-      update => store.updateMessages(provider, update),
-      error => { getLogger().error(`Error: updates.subscribe ${error}`); },
-      () => { getLogger().error('updates.subscribe completed'); },
-    ),
-    provider.invalidations.subscribe(
-      invalidation => store.invalidateMessages(provider, invalidation),
-      error => { getLogger().error(`Error: invalidations.subscribe ${error}`); },
-      () => { getLogger().error('invalidations.subscribe completed'); },
-    ),
-    () => {
-      store.invalidateMessages(provider, {scope: 'all'});
-    },
-  );
-
-  return compositeDisposable;
-}
-
-export function deactivate() {
-  if (disposables) {
-    disposables.dispose();
-    disposables = null;
-  }
-  if (diagnosticStore) {
-    diagnosticStore.dispose();
-    diagnosticStore = null;
-  }
-  diagnosticUpdater = null;
-  observableDiagnosticUpdater = null;
-}
+createPackage(module.exports, Activation);
