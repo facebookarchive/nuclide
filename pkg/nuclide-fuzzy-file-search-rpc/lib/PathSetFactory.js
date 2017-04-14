@@ -57,12 +57,22 @@ function getFilesFromCommand(
 }
 
 function getTrackedHgFiles(localDirectory: string): Promise<Array<string>> {
-  return getFilesFromCommand(
-    'hg',
-    ['locate', '--fullpath', '--include', '.'],
-    localDirectory,
-    filePath => filePath.slice(localDirectory.length + 1),
-  );
+  return fsPromise.exists(nuclideUri.join(localDirectory, '.hg')).then(isRoot => {
+    if (isRoot) {
+      return getFilesFromCommand(
+        'hg',
+        ['locate'],
+        localDirectory,
+      );
+    } else {
+      return getFilesFromCommand(
+        'hg',
+        ['locate', '--fullpath', '--include', '.'],
+        localDirectory,
+        filePath => filePath.slice(localDirectory.length + 1),
+      );
+    }
+  });
 }
 
 /**
