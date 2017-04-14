@@ -13,7 +13,6 @@ import type {ProcessExitMessage} from '../process-rpc-types';
 import {sleep} from '../promise';
 import child_process from 'child_process';
 import invariant from 'assert';
-import mockSpawn from 'mock-spawn';
 
 import {
   asyncExecute,
@@ -26,7 +25,6 @@ import {
   observeProcessRaw,
   parsePsOutput,
   runCommand,
-  scriptSafeSpawn,
   exitEventToMessage,
 } from '../process';
 
@@ -98,16 +96,6 @@ describe('commons-node/process', () => {
         });
       });
     }
-  });
-
-  describe('process.scriptSafeSpawn', () => {
-    it('should not crash the process on an error.', () => {
-      waitsForPromise(async () => {
-        const child = await scriptSafeSpawn('fakeCommand');
-        expect(child).not.toBe(null);
-        expect(child.listeners('error').length).toBeGreaterThan(0);
-      });
-    });
   });
 
   describe('process.killProcess', () => {
@@ -289,53 +277,6 @@ describe('commons-node/process', () => {
         } catch (err) {}
         expect(child_process.spawn.callCount).toBe(3);
       });
-    });
-  });
-
-  describe('scriptSafeSpawn', () => {
-    let mySpawn = null;
-    let realSpawn = null;
-    let realPlatform = null;
-
-    beforeEach(() => {
-      mySpawn = mockSpawn();
-      realSpawn = child_process.spawn;
-      child_process.spawn = mySpawn;
-      realPlatform = process.platform;
-      Object.defineProperty(process, 'platform', {value: 'linux'});
-    });
-
-    afterEach(() => {
-      invariant(realSpawn != null);
-      child_process.spawn = realSpawn;
-      invariant(realPlatform != null);
-      Object.defineProperty(process, 'platform', {value: realPlatform});
-    });
-
-    describe('scriptSafeSpawn', () => {
-      const arg = '--arg1 --arg2';
-      const bin = '/usr/bin/fakebinary';
-      const testCases = [
-        {arguments: [arg], expectedCmd: `${bin} '${arg}'`},
-        {arguments: arg.split(' '), expectedCmd: `${bin} ${arg}`},
-      ];
-      for (const testCase of testCases) {
-        it('should quote arguments', () => {
-          expect(process.platform).toEqual('linux', 'Platform was not properly mocked.');
-          waitsForPromise(async () => {
-            const child = scriptSafeSpawn(bin, testCase.arguments);
-            expect(child).not.toBeNull();
-            await new Promise((resolve, reject) => {
-              child.on('close', resolve);
-            });
-            invariant(mySpawn != null);
-            expect(mySpawn.calls.length).toBe(1);
-            const args = mySpawn.calls[0].args;
-            expect(args.length).toBeGreaterThan(0);
-            expect(args[args.length - 1]).toBe(testCase.expectedCmd);
-          });
-        });
-      }
     });
   });
 

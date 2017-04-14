@@ -212,19 +212,6 @@ export function createArgsForScriptCommand(
 }
 
 /**
- * Basically like safeSpawn, but runs the command with the `script` command.
- * `script` ensures terminal-like environment and commands we run give colored output.
- */
-export function scriptSafeSpawn(
-  command: string,
-  args?: Array<string> = [],
-  options?: Object = {},
-): child_process$ChildProcess {
-  const newArgs = createArgsForScriptCommand(command, args);
-  return _makeChildProcess('spawn', 'script', newArgs, options);
-}
-
-/**
  * Creates an observable with the following properties:
  *
  * 1. It contains a process that's created using the provided factory when you subscribe.
