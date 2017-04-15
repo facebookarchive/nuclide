@@ -51,16 +51,14 @@ for the most common shortcuts provided by Nuclide.
 | `Cmd-\` | `Ctrl-\` | Toggle the [Project Explorer](/docs/editor/basics/#project-explorer). |
 | `Ctrl-0` | `Ctrl-0` | Toggle between the [Editing Area](/docs/editor/basics/#editing-area) and the [Project Explorer](/docs/editor/basics/#project-explorer)'s File Tree. |
 | `Cmd-K-<arrow>` | `Ctrl-K-<arrow>` | Split the current file to the pane represented by `<arrow>`, where `<arrow>` is the down, up, left or right arrow. |
-| `Option-Shift-Cmd-D` | `Alt-Shift-Ctrl-D` | Open the [Diff View](/docs/features/hg/#diff-view). |
 | `Option-Shift-D` | `Alt-Shift-D` | Open the [Code Diagnostics](/docs/editor/basics/#status-bar__code-diagnostics) window. |
 
 ## Development
 
-These shortcuts provide quick access to development features such as [Diff View](/docs/features/hg/#diff-view), [Code Diagnostics](/docs/editor/basics/#status-bar__code-diagnostics) (e.g, linting), etc.
+These shortcuts provide quick access to development features such as [Code Diagnostics](/docs/editor/basics/#status-bar__code-diagnostics) (e.g, linting), etc.
 
 | Key (macOS) | Key (Linux) | Command | Description |
 |-----------|-------------|---------|-------------|
-| `Option-Shift-Cmd-D` | `Alt-Shift-Ctrl-D` | `nuclide-diff-view:open` | This will open the [Diff View](/docs/features/hg/#diff-view), which shows you the difference between the original version of a file and the current version of the file on which changes were made. |
 | `Option-O`| `Alt-O` | `nuclide-outline-view:toggle` | Toggles the [Outline View](/docs/features/outline-view/) for a supported file so you can easily navigate to class and function definitions. |
 | `Cmd-I` | `Ctrl-I` | `nuclide-context-view:toggle` | Toggles the [Context View](/docs/features/context-view/). |
 
