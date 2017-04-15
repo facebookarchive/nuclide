@@ -83,13 +83,16 @@ export default class CallstackStore {
   }
 
   _openSourceLocation(sourceURL: string, lineNumber: number): void {
-    const path = nuclideUri.uriToNuclideUri(sourceURL);
-    if (path != null && atom.workspace != null) { // only handle real files for now.
-      // This should be goToLocation instead but since the searchAllPanes option is correctly
-      // provided it's not urgent.
-      this._openPathInEditor(path).then(editor => {
-        this._nagivateToLocation(editor, lineNumber);
-      });
+    try {
+      const path = nuclideUri.uriToNuclideUri(sourceURL);
+      if (path != null && atom.workspace != null) { // only handle real files for now.
+        // This should be goToLocation instead but since the searchAllPanes option is correctly
+        // provided it's not urgent.
+        this._openPathInEditor(path).then(editor => {
+          this._nagivateToLocation(editor, lineNumber);
+        });
+      }
+    } catch (e) {
     }
   }
 
