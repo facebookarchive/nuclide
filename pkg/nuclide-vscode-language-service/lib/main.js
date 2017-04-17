@@ -34,7 +34,11 @@ export class PerConnectionLanguageService extends MultiProjectLanguageService {
         () => {
           logger.logInfo(`PerConnectionLanguageService launch: ${command} ${args.join(' ')}`);
           // TODO: This should be cancelable/killable.
-          const processStream = spawn(command, args).publish(); // TODO: current dir?
+          const processStream = spawn(
+            command,
+            args,
+            {/* TODO(T17353599) */isExitError: () => false},
+          ).publish(); // TODO: current dir?
           const processPromise = processStream.take(1).toPromise();
           processStream.connect();
           return processPromise;

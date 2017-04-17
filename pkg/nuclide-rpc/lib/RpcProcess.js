@@ -104,7 +104,7 @@ export class RpcProcess {
 
       // This is implicitly disposed by `dispose()` via `this._disposals`.
       processStream
-        .switchMap(proc => getOutputStream(proc, {/* TODO(T17353599) */isExitError: () => false}))
+        .switchMap(proc => getOutputStream(proc))
         .subscribe(this._onProcessMessage.bind(this));
 
       const connection = this._rpcConnection =

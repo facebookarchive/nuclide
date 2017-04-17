@@ -119,13 +119,13 @@ export class LspTester extends SimpleModel {
     const events = takeWhileInclusive(
       // Use the async scheduler so that `disposable.dispose()` can still be called in
       // error/complete handlers.
-      spawn(command, args)
+      spawn(command, args, {/* TODO(T17353599) */isExitError: () => false})
         .do(process => {
           this._writer = new rpc.StreamMessageWriter(process.stdin);
           const reader = new rpc.StreamMessageReader(process.stdout);
           rpc.createMessageConnection(reader, this._writer).listen();
         })
-        .flatMap(proc => getOutputStream(proc, {/* TODO(T17353599) */isExitError: () => false}))
+        .flatMap(proc => getOutputStream(proc))
         .subscribeOn(Scheduler.async),
       event => event.kind !== 'error' && event.kind !== 'exit',
     )

@@ -188,7 +188,10 @@ function createGraphQLProcess(
       '../../nuclide-graphql-language-service/bin/graphql.js',
     ),
     ['server', `-c ${configDir}`],
-    {silent: true},
+    {
+      silent: true,
+      /* TODO(T17353599) */isExitError: () => false,
+    },
   );
 
   return new GraphQLProcess(

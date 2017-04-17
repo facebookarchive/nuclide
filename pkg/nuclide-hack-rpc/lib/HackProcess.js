@@ -307,7 +307,11 @@ async function createHackProcess(
   if (exitCode !== 0 && exitCode !== HACK_SERVER_ALREADY_EXISTS_EXIT_CODE) {
     throw new Error(`Hack server start failed with code: ${String(exitCode)}`);
   }
-  const processStream = spawn(command, ['ide', configDir]);
+  const processStream = spawn(
+    command,
+    ['ide', configDir],
+    {/* TODO(T17353599) */isExitError: () => false},
+  );
   const hackProcess = new HackProcess(
     fileCache, `HackProcess-${configDir}`, processStream, configDir);
 

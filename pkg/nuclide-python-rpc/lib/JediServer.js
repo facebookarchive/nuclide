@@ -25,6 +25,7 @@ const OPTS = {
   stdio: 'pipe',
   detached: false, // When Atom is killed, server process should be killed.
   env: {PYTHONPATH: LIB_PATH},
+  /* TODO(T17353599) */isExitError: () => false,
 };
 
 let serviceRegistry: ?ServiceRegistry = null;

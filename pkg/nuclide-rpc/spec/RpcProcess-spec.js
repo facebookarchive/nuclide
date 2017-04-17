@@ -26,6 +26,7 @@ describe('RpcProcess', () => {
       cwd: nuclideUri.dirname(PROCESS_PATH),
       stdio: 'pipe',
       detached: false,
+      /* TODO(T17353599) */isExitError: () => false,
     };
 
     const serviceRegistry = new ServiceRegistry(

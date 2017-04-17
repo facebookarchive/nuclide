@@ -39,7 +39,7 @@ export function executeRequests(
       requests.do(request => process.send(request)).ignoreElements(),
 
       // Pipe output from forked process. This just makes things easier to debug for us.
-      getOutputStream(process, {/* TODO(T17353599) */isExitError: () => false})
+      getOutputStream(process)
         .do(message => {
           switch (message.kind) {
             case 'error':
@@ -67,6 +67,7 @@ function createWorker(): Observable<child_process$ChildProcess> {
       execArgv: ['--debug-brk'],
       execPath: ((featureConfig.get('nuclide-react-native.pathToNode'): any): string),
       silent: true,
+      /* TODO(T17353599) */isExitError: () => false,
     },
   );
 }

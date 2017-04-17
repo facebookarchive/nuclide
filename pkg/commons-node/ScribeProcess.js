@@ -97,7 +97,11 @@ export default class ScribeProcess {
     // Kick off the process. Ideally we would store the subscription and unsubscribe when
     // `dispose()` was called. Practically, it probably doesn't matter since there's very little
     // chance we'd want to cancel before the process was ready.
-    const processStream = spawn(SCRIBE_CAT_COMMAND, [this._scribeCategory])
+    const processStream = spawn(
+      SCRIBE_CAT_COMMAND,
+      [this._scribeCategory],
+      {/* TODO(T17353599) */isExitError: () => false},
+    )
       .do(child => {
         child.stdin.setDefaultEncoding('utf8');
       })

@@ -14,7 +14,6 @@ export type ProcessExitMessage = {
   kind: 'exit',
   exitCode: ?number,
   signal: ?string,
-  stderr: string,
 };
 
 // Separated out for RPC usage.
