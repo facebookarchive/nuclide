@@ -1,5 +1,32 @@
 # Nuclide Changelog
 
+## v0.218.0
+
+**Performance**
+
+* Quick Open should feel snappier (default 200ms debounce has been removed).
+* Fuzzy file search indexing is now faster in Hg repositories.
+* Fixed a bug where rebasing remote Hg repositories would flood the Nuclide server connection.
+* Significantly reduced the network/CPU usage of listing directories (e.g. in the file tree).
+
+**General**
+
+* Hyperclick URL matching is more accurate.
+* The Buck toolbar's target typeahead now suggests the owner of the current file at the top.
+
+**C++**
+
+* Language features are now compatible with the [language-cpp14](https://github.com/jbw3/language-cpp14) grammar package.
+
+**Debugger**
+
+* Fixed bugs around setting breakpoints by clicking in the gutter, and issues where clicking a line number to select a line of text sets unwanted breakpoints.
+* PHP/Hack: Fixed bug where debugger doesn't exit when the script being debugged finishes.
+* PHP/Hack: Fixed exceptions that can occur when resolving breakpoints that have already been removed.
+* C++ debugger: Fixed an issue where the child process is launched with an empty set of environment variables.
+* Added scrollbars to datatips so you can see all the content when examining variables that have lots of members.
+* Fixed weird scrolling issues in Watch Expressions pane.
+
 ## v0.217.0
 
 **Debugger**
