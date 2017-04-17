@@ -180,7 +180,7 @@ export type VcsLogResponse = {
 
 export type MergeConflict = {
   path: string,
-  message: MergeConflictStatusValue,
+  status: MergeConflictStatusValue,
   mergeConflictsCount?: number,
   resolvedConflictsCount?: number,
 };
@@ -1121,7 +1121,7 @@ export class HgService {
           .filter(fileStatus => fileStatus.status === MergeConflictFileStatus.RESOLVED)
           .map(fileStatus => ({
             path: fileStatus.path,
-            message: MergeConflictStatus.RESOLVED,
+            status: MergeConflictStatus.RESOLVED,
           }))
       : [];
     const conflictedFiles = fileListStatuses.filter(fileStatus => {
@@ -1129,16 +1129,16 @@ export class HgService {
     });
     const origBackupPath = await this._getOrigBackupPath();
     const conflicts = await Promise.all(conflictedFiles.map(async conflictedFile => {
-      let message;
+      let status;
       // Heuristic: If the `.orig` file doesn't exist, then it's deleted by the rebasing commit.
       if (await this._checkOrigFile(origBackupPath, conflictedFile.path)) {
-        message = MergeConflictStatus.BOTH_CHANGED;
+        status = MergeConflictStatus.BOTH_CHANGED;
       } else {
-        message = MergeConflictStatus.DELETED_IN_THEIRS;
+        status = MergeConflictStatus.DELETED_IN_THEIRS;
       }
       return {
         path: conflictedFile.path,
-        message,
+        status,
       };
     }));
     return [...conflicts, ...resolvedFiles];

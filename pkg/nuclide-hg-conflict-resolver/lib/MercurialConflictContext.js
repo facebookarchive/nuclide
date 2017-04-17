@@ -70,7 +70,10 @@ export class MercurialConflictContext {
       return [];
     }
     this._cachedMergeConflicts = await this._conflictingRepository.fetchMergeConflicts();
-    return this._cachedMergeConflicts;
+    return this._cachedMergeConflicts.map(conflict => ({
+      ...conflict,
+      message: conflict.status,
+    }));
   }
 
   async isResolvedFile(filePath: NuclideUri): Promise<boolean> {

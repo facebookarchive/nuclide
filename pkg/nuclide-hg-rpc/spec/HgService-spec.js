@@ -372,10 +372,10 @@ describe('HgService', () => {
         );
         expect(mergeConflicts.length).toBe(2);
         expect(mergeConflicts[0]).toEqual(
-          {path: relativePath1, message: MergeConflictStatus.BOTH_CHANGED},
+          {path: relativePath1, status: MergeConflictStatus.BOTH_CHANGED},
         );
         expect(mergeConflicts[1]).toEqual(
-          {path: relativePath2, message: MergeConflictStatus.DELETED_IN_THEIRS},
+          {path: relativePath2, status: MergeConflictStatus.DELETED_IN_THEIRS},
         );
       });
     });
