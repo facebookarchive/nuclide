@@ -1164,8 +1164,13 @@ export class HgService {
     return fsPromise.exists(origFilePath);
   }
 
-  resolveConflictedFile(filePath: NuclideUri): ConnectableObservable<ProcessMessage> {
-    const args = ['resolve', '-m', filePath];
+  markConflictedFile(
+    filePath: NuclideUri,
+    resolved: boolean,
+  ): ConnectableObservable<ProcessMessage> {
+    // -m marks file as resolved, -u marks file as unresolved
+    const fileStatus = resolved ? '-m' : '-u';
+    const args = ['resolve', fileStatus, filePath];
     const execOptions = {
       cwd: this._workingDirectory,
     };

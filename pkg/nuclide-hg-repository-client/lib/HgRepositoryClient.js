@@ -731,8 +731,8 @@ export class HgRepositoryClient {
     return this._service.fetchMergeConflicts(fetchResolved);
   }
 
-  resolveConflictedFile(filePath: NuclideUri): Observable<ProcessMessage> {
-    return this._service.resolveConflictedFile(filePath).refCount();
+  markConflictedFile(filePath: NuclideUri, resolved: boolean): Observable<ProcessMessage> {
+    return this._service.markConflictedFile(filePath, resolved).refCount();
   }
 
   /**

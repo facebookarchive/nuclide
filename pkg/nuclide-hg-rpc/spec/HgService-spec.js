@@ -390,7 +390,10 @@ describe('HgService', () => {
 
     it('calls hg resolve', () => {
       waitsForPromise(async () => {
-        await hgService.resolveConflictedFile(PATH_1).refCount().toArray().toPromise();
+        await hgService.markConflictedFile(
+          PATH_1,
+          /* resolved */ true,
+        ).refCount().toArray().toPromise();
         expect(hgService._hgObserveExecution).toHaveBeenCalledWith(
           ['resolve', '-m', PATH_1],
           {cwd: TEST_WORKING_DIRECTORY},
