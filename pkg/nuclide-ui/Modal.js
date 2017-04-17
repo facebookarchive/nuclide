@@ -62,7 +62,7 @@ export class Modal extends React.Component {
     el.focus();
     this._cancelDisposable = new UniversalDisposable(
       atom.commands.add(window, 'core:cancel', () => { this.props.onDismiss(); }),
-      Observable.fromEvent(window, 'click')
+      Observable.fromEvent(window, 'mousedown')
         // Ignore clicks in the current tick. We don't want to capture the click that showed this
         // modal.
         .skipUntil(Observable.interval(0).first())
