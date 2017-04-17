@@ -83,7 +83,8 @@ export default function observeBuildCommands(store: Store): IDisposable {
                   store.dispatch(Actions.setBuildTarget(args[0]));
                   atom.commands.dispatch(
                     atom.views.getView(atom.workspace),
-                    'nuclide-task-runner:Buck-build',
+                    'nuclide-task-runner:toggle-buck-toolbar',
+                    {visible: true},
                   );
                   dismiss();
                 },

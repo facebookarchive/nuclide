@@ -360,7 +360,7 @@ export function toggleToolbarVisibilityEpic(
     invariant(action.type === Actions.TOGGLE_TOOLBAR_VISIBILITY);
     const state = store.getState();
     const {activeTaskRunner, statesForTaskRunners} = state;
-    const {taskRunner} = action.payload;
+    const {visible, taskRunner} = action.payload;
 
     // If changing to a new task runner, select it and show it.
     if (taskRunner != null) {
@@ -372,13 +372,15 @@ export function toggleToolbarVisibilityEpic(
       ) {
         return Observable.of(
           Actions.selectTaskRunner(taskRunner, true),
-          Actions.setToolbarVisibility(true, true),
+          Actions.setToolbarVisibility(visible != null ? visible : true, true),
         );
       }
     }
 
-    // Otherwise, just toggle the visibility.
-    return Observable.of(Actions.setToolbarVisibility(!state.visible, true));
+    // Otherwise, just toggle the visibility (unless the "visible" override is provided).
+    return Observable.of(
+      Actions.setToolbarVisibility(visible != null ? visible : !state.visible, true),
+    );
   });
 }
 

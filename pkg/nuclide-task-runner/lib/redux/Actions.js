@@ -106,10 +106,13 @@ export function stopTask(): StopTaskAction {
   return {type: STOP_TASK};
 }
 
-export function toggleToolbarVisibility(taskRunner?: TaskRunner): ToggleToolbarVisibilityAction {
+export function toggleToolbarVisibility(
+  visible: ?boolean,
+  taskRunner: ?TaskRunner,
+): ToggleToolbarVisibilityAction {
   return {
     type: TOGGLE_TOOLBAR_VISIBILITY,
-    payload: {taskRunner},
+    payload: {visible, taskRunner},
   };
 }
 

@@ -94,7 +94,7 @@ export type BoundActionCreators = {
   setProjectRoot(dir: ?Directory): void,
   setToolbarVisibility(visible: boolean): void,
   stopTask(): void,
-  toggleToolbarVisibility(taskRunner?: TaskRunner): void,
+  toggleToolbarVisibility(visible: ?boolean, taskRunner: ?TaskRunner): void,
   unregisterTaskRunner(taskRunner: TaskRunner): void,
 };
 
@@ -201,6 +201,7 @@ export type StopTaskAction = {
 export type ToggleToolbarVisibilityAction = {
   type: 'TOGGLE_TOOLBAR_VISIBILITY',
   payload: {
+    visible: ?boolean,
     taskRunner: ?TaskRunner,
   },
 };
