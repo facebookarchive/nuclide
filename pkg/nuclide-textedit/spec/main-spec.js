@@ -34,6 +34,19 @@ describe('applyTextEdits', () => {
     expect(editor.getText()).toEqual('foo\nBARr\nbaz\n');
   });
 
+  it('should apply whole-file patches by diffing', () => {
+    const textedit = {
+      oldRange: editor.getBuffer().getRange(),
+      newText: 'BAR',
+    };
+
+    spyOn(editor.getBuffer(), 'setTextViaDiff').andCallThrough();
+
+    expect(applyTextEdits(fakeFile, textedit)).toBeTruthy();
+    expect(editor.getText()).toEqual('BAR');
+    expect(editor.getBuffer().setTextViaDiff).toHaveBeenCalled();
+  });
+
   it('should accept a patch with the right old text', () => {
     const textedit = {
       oldRange: new Range([1, 0], [1, 2]),

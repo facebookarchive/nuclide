@@ -34,6 +34,15 @@ export function applyTextEdits(path: NuclideUri, ...edits: Array<TextEdit>): boo
 }
 
 export function applyTextEditsToBuffer(buffer: atom$TextBuffer, edits: Array<TextEdit>): boolean {
+  // Special-case whole-buffer changes to minimize disruption.
+  if (edits.length === 1 && edits[0].oldRange.isEqual(buffer.getRange())) {
+    if (edits[0].oldText != null && edits[0].oldText !== buffer.getText()) {
+      return false;
+    }
+    buffer.setTextViaDiff(edits[0].newText);
+    return true;
+  }
+
   const checkpoint = buffer.createCheckpoint();
 
   // Iterate through in reverse order. Edits earlier in the file can move around text later in the
