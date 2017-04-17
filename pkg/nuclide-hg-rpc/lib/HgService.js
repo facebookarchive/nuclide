@@ -820,6 +820,10 @@ export class HgService {
       if (editMergeConfigs != null) {
         execArgs.push(...editMergeConfigs.args);
         execOptions.HGEDITOR = editMergeConfigs.hgEditor;
+      } else {
+        // Setting the editor to a non-existant tool to prevent operations that rely
+        // on the user's default editor from attempting to open up when needed.
+        execOptions.HGEDITOR = 'true';
       }
       return this._hgObserveExecution(
         execArgs,
@@ -1203,6 +1207,9 @@ export class HgService {
     }
     const execOptions = {
       cwd: this._workingDirectory,
+      // Setting the editor to a non-existant tool to prevent operations that rely
+      // on the user's default editor from attempting to open up when needed.
+      HGEDITOR: 'true',
     };
     return this._hgObserveExecution(
       args,
