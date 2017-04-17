@@ -200,10 +200,12 @@ export class FlowProcess {
   }
 
   _createSingleIDEConnectionStream(): Observable<?FlowIDEConnection> {
+    logger.info('Creating Flow IDE connection stream');
     let connectionWatcher: ?FlowIDEConnectionWatcher = null;
     return Observable.fromEventPattern(
       // Called when the observable is subscribed to
       handler => {
+        logger.info('Got a subscriber for the Flow IDE connection stream');
         invariant(connectionWatcher == null);
         connectionWatcher = new FlowIDEConnectionWatcher(
           this._tryCreateIDEProcess(),
@@ -213,6 +215,9 @@ export class FlowProcess {
       },
       // Called when the observable is unsubscribed from
       () => {
+        logger.info(
+          'No more IDE connection stream subscribers -- shutting down connection watcher',
+        );
         invariant(connectionWatcher != null);
         connectionWatcher.dispose();
         connectionWatcher = null;

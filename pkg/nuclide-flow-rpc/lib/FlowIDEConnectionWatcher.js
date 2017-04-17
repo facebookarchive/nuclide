@@ -74,6 +74,7 @@ export class FlowIDEConnectionWatcher {
   }
 
   async _makeIDEConnection(): Promise<void> {
+    getLogger().info('Attempting to start IDE connection...');
     let proc = null;
     const endTimeMS = this._getTimeMS() + IDE_CONNECTION_MAX_WAIT_MS;
     while (true) {
