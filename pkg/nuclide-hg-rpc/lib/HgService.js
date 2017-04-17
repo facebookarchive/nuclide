@@ -64,6 +64,7 @@ const WATCHMAN_HG_DIR_STATE = 'hg-repository-watchman-subscription-dirstate';
 const WATCHMAN_SUBSCRIPTION_NAME_CONFLICTS = 'hg-repository-watchman-subscription-conflicts';
 
 const CHECK_CONFLICT_DELAY_MS = 2000;
+const COMMIT_CHANGE_DEBOUNCE_MS = 1000;
 
 // If Watchman reports that many files have changed, it's not really useful to report this.
 // This is typically caused by a large rebase or a Watchman re-crawl.
@@ -512,7 +513,11 @@ export class HgService {
    * (e.g. commit, amend, histedit, strip, rebase) that would require refetching from the service.
    */
   observeHgCommitsDidChange(): ConnectableObservable<void> {
-    return this._hgRepoCommitsDidChangeObserver.publish();
+    return this._hgRepoCommitsDidChangeObserver
+      // Upon rebase, this can fire once per added commit!
+      // Apply a generous debounce to avoid overloading the RPC connection.
+      .debounceTime(COMMIT_CHANGE_DEBOUNCE_MS)
+      .publish();
   }
 
   /**
