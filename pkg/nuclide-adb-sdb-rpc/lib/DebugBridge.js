@@ -77,6 +77,10 @@ export class DebugBridge {
     return arrayCompact(deviceTable);
   }
 
+  async getFileContentsAtPath(device: string, path: string): Promise<string> {
+    return this.runShortAdbCommand(device, ['shell', 'cat', path]).toPromise();
+  }
+
   getDeviceArchitecture(device: string): Promise<string> {
     throw new Error('not implemented');
   }

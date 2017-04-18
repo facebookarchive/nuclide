@@ -42,6 +42,13 @@ export async function getManifestForPackageName(
   return (await getSdb()).getManifestForPackageName(device, packageName);
 }
 
+export async function getFileContentsAtPath(
+  device: string,
+  path: string,
+): Promise<string> {
+  return (await getSdb()).getFileContentsAtPath(device, path);
+}
+
 export function installPackage(
   device: string,
   packagePath: NuclideUri,
