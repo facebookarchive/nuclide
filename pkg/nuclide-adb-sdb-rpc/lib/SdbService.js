@@ -1,64 +1,93 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import {pathForDebugBridge} from './DebugBridge';
-import {ConnectableObservable, Observable} from 'rxjs';
-import {Sdb} from './Sdb';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.launchApp = exports.getManifestForPackageName = exports.getPidFromPackageName = exports.getDeviceList = undefined;
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {ProcessMessage} from '../../commons-node/process-rpc-types';
-import type {DeviceDescription} from './types';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-async function getSdb(): Promise<Sdb> {
-  return new Sdb((await pathForDebugBridge('sdb')));
+let getSdb = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* () {
+    return new (_Sdb || _load_Sdb()).Sdb((yield (0, (_DebugBridge || _load_DebugBridge()).pathForDebugBridge)('sdb')));
+  });
+
+  return function getSdb() {
+    return _ref.apply(this, arguments);
+  };
+})(); /**
+       * Copyright (c) 2015-present, Facebook, Inc.
+       * All rights reserved.
+       *
+       * This source code is licensed under the license found in the LICENSE file in
+       * the root directory of this source tree.
+       *
+       * 
+       */
+
+let getDeviceList = exports.getDeviceList = (() => {
+  var _ref2 = (0, _asyncToGenerator.default)(function* () {
+    return (yield getSdb()).getDeviceList();
+  });
+
+  return function getDeviceList() {
+    return _ref2.apply(this, arguments);
+  };
+})();
+
+let getPidFromPackageName = exports.getPidFromPackageName = (() => {
+  var _ref3 = (0, _asyncToGenerator.default)(function* (device, packageName) {
+    return (yield getSdb()).getPidFromPackageName(device, packageName);
+  });
+
+  return function getPidFromPackageName(_x, _x2) {
+    return _ref3.apply(this, arguments);
+  };
+})();
+
+let getManifestForPackageName = exports.getManifestForPackageName = (() => {
+  var _ref4 = (0, _asyncToGenerator.default)(function* (device, packageName) {
+    return (yield getSdb()).getManifestForPackageName(device, packageName);
+  });
+
+  return function getManifestForPackageName(_x3, _x4) {
+    return _ref4.apply(this, arguments);
+  };
+})();
+
+let launchApp = exports.launchApp = (() => {
+  var _ref5 = (0, _asyncToGenerator.default)(function* (device, identifier) {
+    return (yield getSdb()).launchApp(device, identifier);
+  });
+
+  return function launchApp(_x5, _x6) {
+    return _ref5.apply(this, arguments);
+  };
+})();
+
+exports.installPackage = installPackage;
+exports.uninstallPackage = uninstallPackage;
+
+var _DebugBridge;
+
+function _load_DebugBridge() {
+  return _DebugBridge = require('./DebugBridge');
 }
 
-export async function getDeviceList(): Promise<Array<DeviceDescription>> {
-  return (await getSdb()).getDeviceList();
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _Sdb;
+
+function _load_Sdb() {
+  return _Sdb = require('./Sdb');
 }
 
-export async function getPidFromPackageName(
-  device: string,
-  packageName: string,
-): Promise<number> {
-  return (await getSdb()).getPidFromPackageName(device, packageName);
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function installPackage(device, packagePath) {
+  return _rxjsBundlesRxMinJs.Observable.defer(() => getSdb()).switchMap(d => d.installPackage(device, packagePath)).publish();
 }
 
-export async function getManifestForPackageName(
-  device: string,
-  packageName: string,
-): Promise<string> {
-  return (await getSdb()).getManifestForPackageName(device, packageName);
-}
-
-export function installPackage(
-  device: string,
-  packagePath: NuclideUri,
-): ConnectableObservable<ProcessMessage> {
-  return Observable.defer(() => getSdb())
-    .switchMap(d => d.installPackage(device, packagePath))
-    .publish();
-}
-
-export async function launchApp(
-  device: string,
-  identifier: string,
-): Promise<string> {
-  return (await getSdb()).launchApp(device, identifier);
-}
-
-export function uninstallPackage(
-  device: string,
-  packageName: string,
-): ConnectableObservable<ProcessMessage> {
-  return Observable.defer(() => getSdb())
-    .switchMap(d => d.uninstallPackage(device, packageName))
-    .publish();
+function uninstallPackage(device, packageName) {
+  return _rxjsBundlesRxMinJs.Observable.defer(() => getSdb()).switchMap(d => d.uninstallPackage(device, packageName)).publish();
 }

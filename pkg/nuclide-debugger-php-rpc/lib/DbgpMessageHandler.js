@@ -1,27 +1,42 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import logger from './utils';
-import invariant from 'assert';
-import singleton from '../../commons-node/singleton';
-import xml2js from 'xml2js';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DbgpMessageHandler = undefined;
+exports.getDbgpMessageHandlerInstance = getDbgpMessageHandlerInstance;
 
-const GLOBAL_HHVM_DEBUGGER_KEY = '_global_hhvm_debugger_key';
+var _utils;
 
-type DbgpMessage = {
-  length: number,
-  content: string,
-};
+function _load_utils() {
+  return _utils = _interopRequireDefault(require('./utils'));
+}
 
-export class DbgpMessageHandler {
-  _prevIncompletedMessage: ?DbgpMessage;
+var _singleton;
+
+function _load_singleton() {
+  return _singleton = _interopRequireDefault(require('../../commons-node/singleton'));
+}
+
+var _xml2js;
+
+function _load_xml2js() {
+  return _xml2js = _interopRequireDefault(require('xml2js'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const GLOBAL_HHVM_DEBUGGER_KEY = '_global_hhvm_debugger_key'; /**
+                                                               * Copyright (c) 2015-present, Facebook, Inc.
+                                                               * All rights reserved.
+                                                               *
+                                                               * This source code is licensed under the license found in the LICENSE file in
+                                                               * the root directory of this source tree.
+                                                               *
+                                                               * 
+                                                               */
+
+class DbgpMessageHandler {
 
   constructor() {}
 
@@ -38,7 +53,7 @@ export class DbgpMessageHandler {
    *
    * Throws if the message is malformatted.
    */
-  parseMessages(data: string): Array<Object> {
+  parseMessages(data) {
     const components = data.split('\x00');
     /**
      * components.length can be 1, 2 or more than 3:
@@ -46,7 +61,7 @@ export class DbgpMessageHandler {
      * 2: length<NULL>xml-part1.
      * >=3: Other scenarios.
      */
-    logger.log(`Total components: ${components.length}`);
+    (_utils || _load_utils()).default.log(`Total components: ${components.length}`);
 
     // Merge head component with prevIncompletedMessage if needed.
     const results = [];
@@ -63,51 +78,49 @@ export class DbgpMessageHandler {
 
     // Verify that we can't get another message without completing previous one.
     if (prevIncompletedMessage && components.length !== 0) {
-      logger.logErrorAndThrow(
-        'Error: got extra messages without completing previous message. ' +
-        `Previous message was: ${JSON.stringify(prevIncompletedMessage)}. ` +
-        `Remaining components: ${JSON.stringify(components)}`,
-      );
+      (_utils || _load_utils()).default.logErrorAndThrow('Error: got extra messages without completing previous message. ' + `Previous message was: ${JSON.stringify(prevIncompletedMessage)}. ` + `Remaining components: ${JSON.stringify(components)}`);
     }
 
-    const isIncompleteResponse = (components.length % 2 === 0);
+    const isIncompleteResponse = components.length % 2 === 0;
 
     // Verify empty tail component for completed response.
     if (!isIncompleteResponse) {
       const lastComponent = components.pop();
       if (lastComponent.length !== 0) {
-        logger.logErrorAndThrow('The complete response should terminate with' +
-          ` zero character while got: ${lastComponent} `);
+        (_utils || _load_utils()).default.logErrorAndThrow('The complete response should terminate with' + ` zero character while got: ${lastComponent} `);
       }
     }
 
     // Process two tail components into prevIncompletedMessage for incompleted response.
     if (isIncompleteResponse && components.length > 0) {
-      invariant(components.length >= 2);
+      if (!(components.length >= 2)) {
+        throw new Error('Invariant violation: "components.length >= 2"');
+      }
       // content comes after length.
+
+
       const content = components.pop();
       const length = Number(components.pop());
-      const lastMessage = {length, content};
+      const lastMessage = { length, content };
       if (!this._isIncompletedMessage(lastMessage)) {
-        logger.logErrorAndThrow('The last message should be a fragment of a full message: ' +
-          JSON.stringify(lastMessage));
+        (_utils || _load_utils()).default.logErrorAndThrow('The last message should be a fragment of a full message: ' + JSON.stringify(lastMessage));
       }
       prevIncompletedMessage = lastMessage;
     }
 
     // The remaining middle components should all be completed messages.
-    invariant(components.length % 2 === 0);
+
+    if (!(components.length % 2 === 0)) {
+      throw new Error('Invariant violation: "components.length % 2 === 0"');
+    }
+
     while (components.length >= 2) {
       const message = {
         length: Number(components.shift()),
-        content: components.shift(),
+        content: components.shift()
       };
       if (!this._isCompletedMessage(message)) {
-        logger.logErrorAndThrow(
-          `Got message length(${message.content.length}) ` +
-          `not equal to expected(${message.length}). ` +
-          `Message was: ${JSON.stringify(message)}`,
-        );
+        (_utils || _load_utils()).default.logErrorAndThrow(`Got message length(${message.content.length}) ` + `not equal to expected(${message.length}). ` + `Message was: ${JSON.stringify(message)}`);
       }
       results.push(this._parseXml(message));
     }
@@ -115,11 +128,11 @@ export class DbgpMessageHandler {
     return results;
   }
 
-  _isCompletedMessage(message: DbgpMessage): boolean {
+  _isCompletedMessage(message) {
     return message.length === message.content.length;
   }
 
-  _isIncompletedMessage(message: DbgpMessage): boolean {
+  _isIncompletedMessage(message) {
     return message.length > message.content.length;
   }
 
@@ -138,31 +151,35 @@ export class DbgpMessageHandler {
    *
    * Throws if the input is not valid xml.
    */
-  _parseXml(message: DbgpMessage): Object {
+  _parseXml(message) {
     const xml = message.content;
     let errorValue;
     let resultValue;
-    xml2js.parseString(xml, (error, result) => {
+    (_xml2js || _load_xml2js()).default.parseString(xml, (error, result) => {
       errorValue = error;
       resultValue = result;
     });
     if (errorValue !== null) {
       throw new Error('Error ' + JSON.stringify(errorValue) + ' parsing xml: ' + xml);
     }
-    logger.log('Translating server message result json: ' + JSON.stringify(resultValue));
-    invariant(resultValue != null);
+    (_utils || _load_utils()).default.log('Translating server message result json: ' + JSON.stringify(resultValue));
+
+    if (!(resultValue != null)) {
+      throw new Error('Invariant violation: "resultValue != null"');
+    }
+
     return resultValue;
   }
 
   // For testing purpose.
-  clearIncompletedMessage(): void {
+  clearIncompletedMessage() {
     this._prevIncompletedMessage = null;
   }
 }
 
-export function getDbgpMessageHandlerInstance(): DbgpMessageHandler {
-  return singleton.get(
-    GLOBAL_HHVM_DEBUGGER_KEY, () => {
-      return new DbgpMessageHandler();
-    });
+exports.DbgpMessageHandler = DbgpMessageHandler;
+function getDbgpMessageHandlerInstance() {
+  return (_singleton || _load_singleton()).default.get(GLOBAL_HHVM_DEBUGGER_KEY, () => {
+    return new DbgpMessageHandler();
+  });
 }

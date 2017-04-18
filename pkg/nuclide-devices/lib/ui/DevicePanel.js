@@ -1,3 +1,40 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DevicePanel = undefined;
+
+var _react = _interopRequireDefault(require('react'));
+
+var _PanelComponentScroller;
+
+function _load_PanelComponentScroller() {
+  return _PanelComponentScroller = require('../../../nuclide-ui/PanelComponentScroller');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _collection;
+
+function _load_collection() {
+  return _collection = require('../../../commons-node/collection');
+}
+
+var _Dropdown;
+
+function _load_Dropdown() {
+  return _Dropdown = require('../../../nuclide-ui/Dropdown');
+}
+
+var _DeviceTable;
+
+function _load_DeviceTable() {
+  return _DeviceTable = require('./DeviceTable');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,122 +42,115 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
 
-import React from 'react';
-import {PanelComponentScroller} from '../../../nuclide-ui/PanelComponentScroller';
-import {Observable, Subscription} from 'rxjs';
-import {mapFilter} from '../../../commons-node/collection';
-import invariant from 'invariant';
-import {Dropdown} from '../../../nuclide-ui/Dropdown';
-import {DeviceTable} from './DeviceTable';
+class DevicePanel extends _react.default.Component {
 
-import type {NuclideUri} from '../../../commons-node/nuclideUri';
-import type {Device} from '../types';
-
-export type Props = {
-  refreshDevices: () => void,
-  setHost: (host: NuclideUri) => void,
-  setDeviceType: (deviceType: string) => void,
-  setDevice: (device: ?Device) => void,
-  hosts: NuclideUri[],
-  devices: Map<string, Device[]>,
-  host: NuclideUri,
-  deviceType: ?string,
-  device: ?Device,
-};
-
-export class DevicePanel extends React.Component {
-  props: Props;
-  _deviceFetcherSubscription: Subscription;
-
-  constructor(props: Props) {
+  constructor(props) {
     super(props);
-    invariant(props.hosts.length > 0);
-    this._deviceFetcherSubscription = new Subscription();
+
+    if (!(props.hosts.length > 0)) {
+      throw new Error('Invariant violation: "props.hosts.length > 0"');
+    }
+
+    this._deviceFetcherSubscription = new _rxjsBundlesRxMinJs.Subscription();
   }
 
-  componentDidMount(): void {
-    this._deviceFetcherSubscription = Observable.interval(3000)
-      .startWith(0)
-      .do(() => this.props.refreshDevices())
-      .subscribe();
+  componentDidMount() {
+    this._deviceFetcherSubscription = _rxjsBundlesRxMinJs.Observable.interval(3000).startWith(0).do(() => this.props.refreshDevices()).subscribe();
   }
 
-  componentWillUnmount(): void {
+  componentWillUnmount() {
     this._deviceFetcherSubscription.unsubscribe();
   }
 
-  _createSelectorSection(): React.Element<any> {
-    const hostOptions = this.props.hosts.map(host => ({value: host, label: host}));
-    const typeOptions = Array.from(this.props.devices.keys())
-      .map(type => ({value: type, label: type}));
+  _createSelectorSection() {
+    const hostOptions = this.props.hosts.map(host => ({ value: host, label: host }));
+    const typeOptions = Array.from(this.props.devices.keys()).map(type => ({ value: type, label: type }));
     if (typeOptions.length === 0) {
-      typeOptions.push({value: null, label: 'No devices connected'});
+      typeOptions.push({ value: null, label: 'No devices connected' });
     }
-    return (
-      <table>
-        <tr>
-          <td>
-            <label className="inline-block">Connection:</label>
-          </td>
-          <td>
-            <Dropdown
-              className="inline-block"
-              options={hostOptions}
-              onChange={this.props.setHost}
-              value={this.props.host}
-            />
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <label className="inline-block">Device type:</label>
-          </td>
-          <td>
-            <Dropdown
-              className="inline-block"
-              options={typeOptions}
-              disabled={this.props.devices.size === 0}
-              onChange={this.props.setDeviceType}
-              value={this.props.deviceType}
-            />
-          </td>
-        </tr>
-      </table>
+    return _react.default.createElement(
+      'table',
+      null,
+      _react.default.createElement(
+        'tr',
+        null,
+        _react.default.createElement(
+          'td',
+          null,
+          _react.default.createElement(
+            'label',
+            { className: 'inline-block' },
+            'Connection:'
+          )
+        ),
+        _react.default.createElement(
+          'td',
+          null,
+          _react.default.createElement((_Dropdown || _load_Dropdown()).Dropdown, {
+            className: 'inline-block',
+            options: hostOptions,
+            onChange: this.props.setHost,
+            value: this.props.host
+          })
+        )
+      ),
+      _react.default.createElement(
+        'tr',
+        null,
+        _react.default.createElement(
+          'td',
+          null,
+          _react.default.createElement(
+            'label',
+            { className: 'inline-block' },
+            'Device type:'
+          )
+        ),
+        _react.default.createElement(
+          'td',
+          null,
+          _react.default.createElement((_Dropdown || _load_Dropdown()).Dropdown, {
+            className: 'inline-block',
+            options: typeOptions,
+            disabled: this.props.devices.size === 0,
+            onChange: this.props.setDeviceType,
+            value: this.props.deviceType
+          })
+        )
+      )
     );
   }
 
-  _createDeviceTable(): React.Element<any> {
-    const selectedDeviceType = this.props.devices.size > 0 && this.props.deviceType == null
-      ? this.props.devices.keys().next().value
-      : this.props.deviceType;
+  _createDeviceTable() {
+    const selectedDeviceType = this.props.devices.size > 0 && this.props.deviceType == null ? this.props.devices.keys().next().value : this.props.deviceType;
 
-    const devices = Array.from(
-      mapFilter(
-        this.props.devices,
-        (type, _) => type === selectedDeviceType,
-      ).values(),
-    )[0] || [];
+    const devices = Array.from((0, (_collection || _load_collection()).mapFilter)(this.props.devices, (type, _) => type === selectedDeviceType).values())[0] || [];
 
-    return (
-      <DeviceTable devices={devices} device={this.props.device} setDevice={this.props.setDevice} />
-    );
+    return _react.default.createElement((_DeviceTable || _load_DeviceTable()).DeviceTable, { devices: devices, device: this.props.device, setDevice: this.props.setDevice });
   }
 
-  render(): React.Element<any> {
-    return (
-      <PanelComponentScroller>
-        <div className="nuclide-device-panel-container">
-          <div className="block">
-            {this._createSelectorSection()}
-          </div>
-          <div className="block">
-            {this._createDeviceTable()}
-          </div>
-        </div>
-      </PanelComponentScroller>
+  render() {
+    return _react.default.createElement(
+      (_PanelComponentScroller || _load_PanelComponentScroller()).PanelComponentScroller,
+      null,
+      _react.default.createElement(
+        'div',
+        { className: 'nuclide-device-panel-container' },
+        _react.default.createElement(
+          'div',
+          { className: 'block' },
+          this._createSelectorSection()
+        ),
+        _react.default.createElement(
+          'div',
+          { className: 'block' },
+          this._createDeviceTable()
+        )
+      )
     );
   }
 }
+exports.DevicePanel = DevicePanel;

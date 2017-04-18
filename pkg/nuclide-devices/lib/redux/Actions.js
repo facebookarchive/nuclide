@@ -1,3 +1,13 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.refreshDevices = refreshDevices;
+exports.setDevices = setDevices;
+exports.setHost = setHost;
+exports.setDeviceType = setDeviceType;
+exports.setDevice = setDevice;
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,56 +15,46 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
 
-import type {NuclideUri} from '../../../commons-node/nuclideUri';
-import type {
-  SetDevicesAction,
-  SetHostAction,
-  SetDeviceTypeAction,
-  SetDeviceAction,
-  RefreshDevicesAction,
-  Device,
-} from '../types';
+const SET_DEVICES = exports.SET_DEVICES = 'SET_DEVICES';
+const SET_HOST = exports.SET_HOST = 'SET_HOST';
+const SET_DEVICE_TYPE = exports.SET_DEVICE_TYPE = 'SET_DEVICE_TYPE';
+const SET_DEVICE = exports.SET_DEVICE = 'SET_DEVICE';
+const REFRESH_DEVICES = exports.REFRESH_DEVICES = 'REFRESH_DEVICES';
 
-export const SET_DEVICES = 'SET_DEVICES';
-export const SET_HOST = 'SET_HOST';
-export const SET_DEVICE_TYPE = 'SET_DEVICE_TYPE';
-export const SET_DEVICE = 'SET_DEVICE';
-export const REFRESH_DEVICES = 'REFRESH_DEVICES';
-
-export function refreshDevices(): RefreshDevicesAction {
+function refreshDevices() {
   return {
     type: REFRESH_DEVICES,
-    payload: {},
+    payload: {}
   };
 }
 
-export function setDevices(devices: Map<string, Device[]>): SetDevicesAction {
+function setDevices(devices) {
   return {
     type: SET_DEVICES,
-    payload: {devices},
+    payload: { devices }
   };
 }
 
-export function setHost(host: NuclideUri): SetHostAction {
+function setHost(host) {
   return {
     type: SET_HOST,
-    payload: {host},
+    payload: { host }
   };
 }
 
-export function setDeviceType(deviceType: ?string): SetDeviceTypeAction {
+function setDeviceType(deviceType) {
   return {
     type: SET_DEVICE_TYPE,
-    payload: {deviceType},
+    payload: { deviceType }
   };
 }
 
-export function setDevice(device: ?Device): SetDeviceAction {
+function setDevice(device) {
   return {
     type: SET_DEVICE,
-    payload: {device},
+    payload: { device }
   };
 }

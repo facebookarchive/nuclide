@@ -1,107 +1,103 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import {DebugBridge} from './DebugBridge';
-import invariant from 'assert';
-import nuclideUri from '../../commons-node/nuclideUri';
-import {Observable} from 'rxjs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Sdb = undefined;
 
-import type {ProcessMessage} from '../../commons-node/process-rpc-types';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-export class Sdb extends DebugBridge {
-  getTizenModelConfigKey(device: string, key: string): Promise<string> {
+var _DebugBridge;
+
+function _load_DebugBridge() {
+  return _DebugBridge = require('./DebugBridge');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class Sdb extends (_DebugBridge || _load_DebugBridge()).DebugBridge {
+  getTizenModelConfigKey(device, key) {
     const modelConfigPath = '/etc/config/model-config.xml';
 
-    return this.runShortAdbCommand(device, ['shell', 'cat', modelConfigPath])
-      .map(stdout => stdout.split(/\n+/g).filter(s => s.indexOf(key) !== -1)[0])
-      .map(s => {
-        const regex = /.*<.*>(.*)<.*>/g;
-        return regex.exec(s)[1];
-      })
-      .toPromise();
+    return this.runShortAdbCommand(device, ['shell', 'cat', modelConfigPath]).map(stdout => stdout.split(/\n+/g).filter(s => s.indexOf(key) !== -1)[0]).map(s => {
+      const regex = /.*<.*>(.*)<.*>/g;
+      return regex.exec(s)[1];
+    }).toPromise();
   }
 
-  getDeviceArchitecture(device: string): Promise<string> {
-    return this.runShortAdbCommand(device, ['shell', 'uname', '-m'])
-      .map(s => s.trim())
-      .toPromise();
+  getDeviceArchitecture(device) {
+    return this.runShortAdbCommand(device, ['shell', 'uname', '-m']).map(s => s.trim()).toPromise();
   }
 
-  getDeviceModel(device: string): Promise<string> {
+  getDeviceModel(device) {
     return this.getTizenModelConfigKey(device, 'tizen.org/system/model_name');
   }
 
-  async getManifestForPackageName(
-    device: string,
-    packageName: string,
-  ): Promise<string> {
-    const user = await this.runShortAdbCommand(device, [
-      'shell',
-      'whoami',
-    ]).toPromise();
-    const isRoot = user.trim() !== 'root';
-    let result;
-    try {
-      if (!isRoot) {
-        await this.runShortAdbCommand(device, ['root', 'on']).toPromise();
+  getManifestForPackageName(device, packageName) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const user = yield _this.runShortAdbCommand(device, ['shell', 'whoami']).toPromise();
+      const isRoot = user.trim() !== 'root';
+      let result;
+      try {
+        if (!isRoot) {
+          yield _this.runShortAdbCommand(device, ['root', 'on']).toPromise();
+        }
+        result = yield _this.runShortAdbCommand(device, ['shell', 'cat', `/opt/usr/apps/${packageName}/tizen-manifest.xml`]).toPromise();
+      } finally {
+        if (!isRoot) {
+          yield _this.runShortAdbCommand(device, ['root', 'off']).toPromise();
+        }
       }
-      result = await this.runShortAdbCommand(device, [
-        'shell',
-        'cat',
-        `/opt/usr/apps/${packageName}/tizen-manifest.xml`,
-      ]).toPromise();
-    } finally {
-      if (!isRoot) {
-        await this.runShortAdbCommand(device, ['root', 'off']).toPromise();
-      }
-    }
-    return result;
+      return result;
+    })();
   }
 
-  async getAPIVersion(device: string): Promise<string> {
-    let version;
-    try {
-      version = await this.getTizenModelConfigKey(
-        device,
-        'tizen.org/feature/platform.core.api.version',
-      );
-    } catch (e) {
-      version = await this.getTizenModelConfigKey(
-        device,
-        'tizen.org/feature/platform.native.api.version',
-      );
-    }
-    return version;
+  getAPIVersion(device) {
+    var _this2 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      let version;
+      try {
+        version = yield _this2.getTizenModelConfigKey(device, 'tizen.org/feature/platform.core.api.version');
+      } catch (e) {
+        version = yield _this2.getTizenModelConfigKey(device, 'tizen.org/feature/platform.native.api.version');
+      }
+      return version;
+    })();
   }
 
-  installPackage(
-    device: string,
-    packagePath: NuclideUri,
-  ): Observable<ProcessMessage> {
-    invariant(!nuclideUri.isRemote(packagePath));
+  installPackage(device, packagePath) {
+    if (!!(_nuclideUri || _load_nuclideUri()).default.isRemote(packagePath)) {
+      throw new Error('Invariant violation: "!nuclideUri.isRemote(packagePath)"');
+    }
+
     return this.runLongAdbCommand(device, ['install', packagePath]);
   }
 
-  launchApp(device: string, identifier: string): Promise<string> {
-    return this.runShortAdbCommand(device, [
-      'shell',
-      'launch_app',
-      identifier,
-    ]).toPromise();
+  launchApp(device, identifier) {
+    return this.runShortAdbCommand(device, ['shell', 'launch_app', identifier]).toPromise();
   }
 
-  uninstallPackage(
-    device: string,
-    packageName: string,
-  ): Observable<ProcessMessage> {
+  uninstallPackage(device, packageName) {
     return this.runLongAdbCommand(device, ['uninstall', packageName]);
   }
 }
+exports.Sdb = Sdb; /**
+                    * Copyright (c) 2015-present, Facebook, Inc.
+                    * All rights reserved.
+                    *
+                    * This source code is licensed under the license found in the LICENSE file in
+                    * the root directory of this source tree.
+                    *
+                    * 
+                    */
