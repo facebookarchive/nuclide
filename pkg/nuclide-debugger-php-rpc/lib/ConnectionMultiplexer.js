@@ -273,9 +273,10 @@ export class ConnectionMultiplexer {
           xdebugBreakpoint,
         );
         if (breakpointId == null) {
-          throw Error(
+          logger.logError(
             `Cannot find xdebug breakpoint ${JSON.stringify(xdebugBreakpoint)} in connection.`,
           );
+          break;
         }
         this._breakpointStore.updateBreakpoint(breakpointId, xdebugBreakpoint);
         const breakpoint = this._breakpointStore.getBreakpoint(breakpointId);
