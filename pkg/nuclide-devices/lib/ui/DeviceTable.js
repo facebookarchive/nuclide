@@ -26,11 +26,13 @@ type State = {
 export class DeviceTable extends React.Component {
   props: Props;
   state: State;
+  _emptyComponent: () => React.Element<any>;
 
   constructor(props: Props) {
     super(props);
     this.state = {selectedDeviceIndex: null};
     (this: any)._handleDeviceTableSelection = this._handleDeviceTableSelection.bind(this);
+    this._emptyComponent = () => <div className="padded">No devices connected</div>;
   }
 
   componentWillReceiveProps(nextProps: Props): void {
@@ -45,12 +47,7 @@ export class DeviceTable extends React.Component {
   }
 
   render(): React.Element<any> {
-    if (this.props.devices.length === 0) {
-      return <div />;
-    }
-
     const rows = this.props.devices.map(device => ({data: {name: device.displayName}}));
-
     const columns = [
       {
         key: 'name',
@@ -59,12 +56,14 @@ export class DeviceTable extends React.Component {
       },
     ];
 
+
     return (
       <Table
         collapsable={false}
         columns={columns}
         fixedHeader={true}
         maxBodyHeight="99999px"
+        emptyComponent={this._emptyComponent}
         selectable={true}
         selectedIndex={this.state.selectedDeviceIndex}
         onSelect={this._handleDeviceTableSelection}

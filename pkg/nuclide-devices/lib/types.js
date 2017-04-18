@@ -23,7 +23,7 @@ export interface DeviceFetcher {
 export type AppState = {
   hosts: NuclideUri[],
   host: NuclideUri,
-  devices: Map<string, Device[]>,
+  devices: Device[],
   deviceType: ?string,
   device: ?Device,
   deviceFetchers: Set<DeviceFetcher>,
@@ -41,7 +41,7 @@ export type Store = {
 export type SetDevicesAction = {
   type: 'SET_DEVICES',
   payload: {
-    devices: Map<string, Device[]>,
+    devices: Device[],
   },
 };
 

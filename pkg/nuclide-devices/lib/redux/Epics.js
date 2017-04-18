@@ -23,14 +23,12 @@
     .switchMap(action => {
       invariant(action.type === Actions.REFRESH_DEVICES);
       const state = store.getState();
-
-      const deviceMap = Promise.all(Array.from(state.deviceFetchers).map(fetcher => {
-        return fetcher.fetch(state.host)
-          .then(deviceList => [fetcher.getType(), deviceList]);
-      })).then(deviceLists => new Map(deviceLists));
-
-      return Observable
-        .fromPromise(deviceMap)
-        .switchMap(devices => Observable.of(Actions.setDevices(devices)));
+      for (const fetcher of state.deviceFetchers) {
+        if (fetcher.getType() === state.deviceType) {
+          return Observable.fromPromise(fetcher.fetch(state.host))
+            .switchMap(devices => Observable.of(Actions.setDevices(devices)));
+        }
+      }
+      return Observable.from([]);
     });
  }

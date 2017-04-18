@@ -14,7 +14,7 @@ export function createEmptyAppState(deviceFetchers: Set<DeviceFetcher>): AppStat
   return {
     hosts: ['local'],
     host: 'local',
-    devices: new Map(),
+    devices: [],
     deviceType: null,
     device: null,
     deviceFetchers,

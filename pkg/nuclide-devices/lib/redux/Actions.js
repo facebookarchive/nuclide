@@ -31,7 +31,7 @@ export function refreshDevices(): RefreshDevicesAction {
   };
 }
 
-export function setDevices(devices: Map<string, Device[]>): SetDevicesAction {
+export function setDevices(devices: Device[]): SetDevicesAction {
   return {
     type: SET_DEVICES,
     payload: {devices},

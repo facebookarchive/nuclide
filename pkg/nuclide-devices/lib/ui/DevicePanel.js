@@ -11,7 +11,6 @@
 import React from 'react';
 import {PanelComponentScroller} from '../../../nuclide-ui/PanelComponentScroller';
 import {Observable, Subscription} from 'rxjs';
-import {mapFilter} from '../../../commons-node/collection';
 import invariant from 'invariant';
 import {Dropdown} from '../../../nuclide-ui/Dropdown';
 import {DeviceTable} from './DeviceTable';
@@ -25,8 +24,9 @@ export type Props = {
   setDeviceType: (deviceType: string) => void,
   setDevice: (device: ?Device) => void,
   hosts: NuclideUri[],
-  devices: Map<string, Device[]>,
+  devices: Device[],
   host: NuclideUri,
+  deviceTypes: string[],
   deviceType: ?string,
   device: ?Device,
 };
@@ -54,11 +54,8 @@ export class DevicePanel extends React.Component {
 
   _createSelectorSection(): React.Element<any> {
     const hostOptions = this.props.hosts.map(host => ({value: host, label: host}));
-    const typeOptions = Array.from(this.props.devices.keys())
-      .map(type => ({value: type, label: type}));
-    if (typeOptions.length === 0) {
-      typeOptions.push({value: null, label: 'No devices connected'});
-    }
+    const typeOptions = this.props.deviceTypes.map(type => ({value: type, label: type}));
+    typeOptions.splice(0, 0, {value: null, label: 'Select...'});
     return (
       <table>
         <tr>
@@ -82,7 +79,6 @@ export class DevicePanel extends React.Component {
             <Dropdown
               className="inline-block"
               options={typeOptions}
-              disabled={this.props.devices.size === 0}
               onChange={this.props.setDeviceType}
               value={this.props.deviceType}
             />
@@ -92,20 +88,16 @@ export class DevicePanel extends React.Component {
     );
   }
 
-  _createDeviceTable(): React.Element<any> {
-    const selectedDeviceType = this.props.devices.size > 0 && this.props.deviceType == null
-      ? this.props.devices.keys().next().value
-      : this.props.deviceType;
-
-    const devices = Array.from(
-      mapFilter(
-        this.props.devices,
-        (type, _) => type === selectedDeviceType,
-      ).values(),
-    )[0] || [];
-
+  _createDeviceTable(): ?React.Element<any> {
+    if (this.props.deviceType === null) {
+      return null;
+    }
     return (
-      <DeviceTable devices={devices} device={this.props.device} setDevice={this.props.setDevice} />
+      <DeviceTable
+        devices={this.props.devices}
+        device={this.props.device}
+        setDevice={this.props.setDevice}
+      />
     );
   }
 
