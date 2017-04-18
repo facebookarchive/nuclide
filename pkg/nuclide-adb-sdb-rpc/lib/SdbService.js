@@ -20,6 +20,10 @@ async function getSdb(): Promise<Sdb> {
   return new Sdb((await pathForDebugBridge('sdb')));
 }
 
+export async function startServer(): Promise<boolean> {
+  return (await getSdb()).startServer();
+}
+
 export async function getDeviceList(): Promise<Array<DeviceDescription>> {
   return (await getSdb()).getDeviceList();
 }

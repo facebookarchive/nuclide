@@ -12,6 +12,7 @@ import {arrayCompact} from '../../commons-node/collection';
 import {
   observeProcess,
   runCommand,
+  checkOutput,
 } from '../../commons-node/process';
 import os from 'os';
 
@@ -42,6 +43,13 @@ export class DebugBridge {
       this._adbPath,
       deviceArg.concat(command),
       {killTreeOnComplete: true, /* TODO(T17353599) */ isExitError: () => false},
+    );
+  }
+
+  startServer(): Promise<boolean> {
+    return checkOutput(this._adbPath, ['start-server']).then(
+      () => true,
+      () => false,
     );
   }
 
