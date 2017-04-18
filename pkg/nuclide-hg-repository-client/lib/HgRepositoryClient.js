@@ -397,8 +397,8 @@ export class HgRepositoryClient {
   /**
    * @return The current Hg bookmark.
    */
-  getShortHead(filePath: NuclideUri): string {
-    if (!this._activeBookmark) {
+  getShortHead(filePath?: NuclideUri): string {
+    if (this._activeBookmark == null) {
       // Kick off a fetch to get the current bookmark. This is async.
       this._getShortHeadAsync();
       return '';
