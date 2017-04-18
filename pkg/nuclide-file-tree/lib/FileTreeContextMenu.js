@@ -56,13 +56,14 @@ export type FileTreeContextMenuItem = atom$ContextMenuItem | AtomContextMenuItem
 
 const FILE_TREE_CSS = '.nuclide-file-tree';
 
-const NEW_MENU_PRIORITY = 0;
-const ADD_PROJECT_MENU_PRIORITY = 1000;
-const SOURCE_CONTROL_MENU_PRIORITY = 2000;
-const MODIFY_FILE_MENU_PRIORITY = 3000;
-const SPLIT_MENU_PRIORITY = 4000;
-const TEST_SECTION_PRIORITY = 5000;
-const SHOW_IN_MENU_PRIORITY = 6000;
+const WORKING_ROOT_PRIORITY = 0;
+const NEW_MENU_PRIORITY = 1000;
+const ADD_PROJECT_MENU_PRIORITY = 2000;
+const SOURCE_CONTROL_MENU_PRIORITY = 3000;
+const MODIFY_FILE_MENU_PRIORITY = 4000;
+const SPLIT_MENU_PRIORITY = 5000;
+const TEST_SECTION_PRIORITY = 6000;
+const SHOW_IN_MENU_PRIORITY = 7000;
 
 /**
  * This context menu wrapper exists to address some of the limitations in the ContextMenuManager:
@@ -139,6 +140,7 @@ const SHOW_IN_MENU_PRIORITY = 6000;
  */
 export default class FileTreeContextMenu {
   _contextMenu: ContextMenu;
+  _newMenu: ContextMenu;
   _sourceControlMenu: ContextMenu;
   _store: FileTreeStore;
   _disposables: UniversalDisposable;
@@ -164,28 +166,21 @@ export default class FileTreeContextMenu {
         command: 'nuclide-file-tree:set-current-working-root',
         shouldDisplay: shouldDisplaySetToCurrentWorkingRootOption,
       },
-      {
-        type: 'separator',
-        shouldDisplay: shouldDisplaySetToCurrentWorkingRootOption,
-      },
-      {
-        label: 'New',
-        shouldDisplay: () => {
-          return this._store.getSingleSelectedNode() != null;
-        },
-        submenu: [
-          {
-            label: 'File',
-            command: 'nuclide-file-tree:add-file',
-          },
-          {
-            label: 'Folder',
-            command: 'nuclide-file-tree:add-folder',
-          },
-        ],
-      },
     ],
-    NEW_MENU_PRIORITY);
+    WORKING_ROOT_PRIORITY);
+
+    this._newMenu = new ContextMenu({
+      type: 'submenu',
+      label: 'New',
+      parent: this._contextMenu,
+      shouldDisplay: (e: MouseEvent) => {
+        return this._store.getSingleSelectedNode() != null;
+      },
+    });
+    this._newMenu.addItem({label: 'File', command: 'nuclide-file-tree:add-file'}, 0);
+    this._newMenu.addItem({label: 'Folder', command: 'nuclide-file-tree:add-folder'}, 1);
+    this._contextMenu.addSubmenu(this._newMenu, NEW_MENU_PRIORITY);
+    this._contextMenu.addItem({type: 'separator'}, NEW_MENU_PRIORITY + 1);
 
     this._addContextMenuItemGroup([
       {
@@ -348,6 +343,10 @@ export default class FileTreeContextMenu {
       this._contextMenu,
       ADD_PROJECT_MENU_PRIORITY + priority,
     );
+  }
+
+  addItemToNewMenu(originalItem: FileTreeContextMenuItem, priority: number): IDisposable {
+    return this._addItemToMenu(originalItem, this._newMenu, priority);
   }
 
   addItemToSourceControlMenu(originalItem: FileTreeContextMenuItem, priority: number): IDisposable {
