@@ -12,7 +12,7 @@ import invariant from 'assert';
 import {updateSettings} from './settings';
 import {makeExpressionHphpdCompatible} from './utils';
 import logger from './utils';
-import {uriToPath, getBreakpointLocation} from './helpers';
+import {pathToUri, uriToPath, getBreakpointLocation} from './helpers';
 import Handler from './Handler';
 import {
   idOfFrame,
@@ -31,6 +31,8 @@ import {
   ConnectionMultiplexerNotification,
   ConnectionMultiplexerStatus,
 } from './ConnectionMultiplexer.js';
+import nuclideUri from '../../commons-node/nuclideUri';
+import {sleep} from '../../commons-node/promise';
 
 import FileCache from './FileCache';
 import EventEmitter from 'events';
@@ -40,6 +42,7 @@ import type {ConnectionMultiplexer} from './ConnectionMultiplexer';
 import type {ClientCallback} from './ClientCallback';
 
 const SESSION_END_EVENT = 'session-end-event';
+const RESOLVE_BREAKPOINT_DELAY_MS = 500;
 
 // Handles all 'Debug.*' Chrome dev tools messages
 export class DebuggerHandler extends Handler {
@@ -48,6 +51,7 @@ export class DebuggerHandler extends Handler {
   _emitter: EventEmitter;
   _subscriptions: CompositeDisposable;
   _hadFirstContinuationCommand: boolean;
+  _temporaryBreakpointpointId: ?string;
 
   constructor(
     clientCallback: ClientCallback,
@@ -120,6 +124,10 @@ export class DebuggerHandler extends Handler {
         this._setBreakpointByUrl(id, params);
         break;
 
+      case 'continueToLocation':
+        this._continueToLocation(id, params);
+        break;
+
       case 'removeBreakpoint':
         await this._removeBreakpoint(id, params);
         break;
@@ -186,6 +194,50 @@ export class DebuggerHandler extends Handler {
         getBreakpointLocation(breakpoint),
       ],
     });
+  }
+
+  async _continueToLocation(id: number, params: Object): Promise<void> {
+    const enabledConnection = this._connectionMultiplexer.getEnabledConnection();
+    const {location: {columnNumber, lineNumber, scriptId}} = params;
+    if (enabledConnection == null) {
+      this.replyWithError(id, 'No active connection to continue running!');
+      return;
+    }
+
+    const breakpointStore = this._connectionMultiplexer.getBreakpointStore();
+
+    if (this._temporaryBreakpointpointId != null) {
+      await breakpointStore.removeBreakpoint(this._temporaryBreakpointpointId);
+      this._temporaryBreakpointpointId = null;
+    }
+
+    if (!scriptId || columnNumber !== 0) {
+      this.replyWithError(id, 'Invalid arguments to Debugger.continueToLocation: '
+        + JSON.stringify(params));
+      return;
+    }
+
+    const filePath = nuclideUri.getPath(scriptId);
+    const url = pathToUri(filePath);
+    this._files.registerFile(url);
+
+    // Chrome lineNumber is 0-based while xdebug lineno is 1-based.
+    this._temporaryBreakpointpointId = await breakpointStore.setFileLineBreakpointForConnection(
+      enabledConnection,
+      String(id),
+      filePath,
+      lineNumber + 1,
+      /* condition */ '',
+    );
+
+    const breakpoint = breakpointStore.getBreakpoint(this._temporaryBreakpointpointId);
+    invariant(breakpoint != null);
+    invariant(breakpoint.connectionId === enabledConnection.getId());
+
+    this.replyToCommand(id, {});
+    // TODO change to resume on resolve notification when it's received after setting a breakpoint.
+    await sleep(RESOLVE_BREAKPOINT_DELAY_MS);
+    this._resume();
   }
 
   async _removeBreakpoint(id: number, params: Object): Promise<any> {
@@ -268,6 +320,7 @@ export class DebuggerHandler extends Handler {
       case ConnectionMultiplexerStatus.AllConnectionsPaused:
       case ConnectionMultiplexerStatus.SingleConnectionPaused:
         await this._sendPausedMessage();
+        await this._clearIfTemporaryBreakpoint();
         break;
       case ConnectionMultiplexerStatus.Running:
         this.sendMethod('Debugger.resumed');
@@ -277,6 +330,33 @@ export class DebuggerHandler extends Handler {
         break;
       default:
         logger.logErrorAndThrow('Unexpected status: ' + status);
+    }
+  }
+
+  async _clearIfTemporaryBreakpoint(): Promise<void> {
+    const temporaryBreakpointId = this._temporaryBreakpointpointId;
+    if (temporaryBreakpointId == null) {
+      return;
+    }
+    const breakpointStore = this._connectionMultiplexer.getBreakpointStore();
+    const breakpoint = breakpointStore.getBreakpoint(temporaryBreakpointId);
+    const enabledConnection = this._connectionMultiplexer.getEnabledConnection();
+    if (
+      enabledConnection == null
+      || breakpoint == null
+      || enabledConnection.getId() !== breakpoint.connectionId
+    ) {
+      return;
+    }
+    const {breakpointInfo} = breakpoint;
+    const stopLocation = enabledConnection.getStopBreakpointLocation();
+    if (
+      stopLocation != null
+      && stopLocation.filename === breakpointInfo.filename
+      && stopLocation.lineNumber === breakpointInfo.lineNumber
+    ) {
+      await breakpointStore.removeBreakpoint(temporaryBreakpointId);
+      this._temporaryBreakpointpointId = null;
     }
   }
 

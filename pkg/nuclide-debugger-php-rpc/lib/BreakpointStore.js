@@ -24,6 +24,7 @@ type XDebugBreakpointId = string;
 
 export type BreakpointId = string;
 export type Breakpoint = {
+  connectionId?: number,
   chromeId: BreakpointId,
   breakpointInfo: FileLineBreakpointInfo,
   resolved: boolean,
@@ -72,29 +73,55 @@ export class BreakpointStore {
       breakpointInfo,
       resolved: false,
     });
-    const breakpointPromises = Array.from(this._connections.entries())
+    const connectionEnries = Array.from(this._connections.entries());
+    const breakpointPromises = connectionEnries
       .map(async entry => {
         const [connection, map] = entry;
         const xdebugBreakpointId = await connection.setFileLineBreakpoint(breakpointInfo);
         map.set(chromeId, xdebugBreakpointId);
       });
     await Promise.all(breakpointPromises);
-    await this._updateBreakpointInfo(chromeId);
+    const firstConnectionEntry = connectionEnries[0];
+    if (firstConnectionEntry != null) {
+      await this._updateBreakpointInfoForConnection(
+        firstConnectionEntry[0], firstConnectionEntry[1], chromeId);
+    }
+
     return chromeId;
   }
 
-  async _updateBreakpointInfo(chromeId: BreakpointId): Promise<void> {
-    for (const entry of this._connections) {
-      const [connection, map] = entry;
-      const xdebugBreakpointId = map.get(chromeId);
-      invariant(xdebugBreakpointId != null);
-      const promise = connection.getBreakpoint(xdebugBreakpointId);
-      const xdebugBreakpoint = await promise; // eslint-disable-line no-await-in-loop
-      this.updateBreakpoint(chromeId, xdebugBreakpoint);
-      // Breakpoint status should be the same for all connections
-      // so only need to fetch from the first connection.
-      break;
-    }
+  async setFileLineBreakpointForConnection(
+    connection: Connection,
+    chromeId: BreakpointId,
+    filename: string,
+    lineNumber: number,
+    conditionExpression: ?string,
+  ): Promise<BreakpointId> {
+    const breakpointInfo = {filename, lineNumber, conditionExpression};
+    this._breakpoints.set(chromeId, {
+      connectionId: connection.getId(),
+      chromeId,
+      breakpointInfo,
+      resolved: false,
+    });
+    const breakpoints = this._connections.get(connection);
+    invariant(breakpoints != null);
+    const xdebugBreakpointId = await connection.setFileLineBreakpoint(breakpointInfo);
+    breakpoints.set(chromeId, xdebugBreakpointId);
+    await this._updateBreakpointInfoForConnection(connection, breakpoints, chromeId);
+    return chromeId;
+  }
+
+  async _updateBreakpointInfoForConnection(
+    connection: Connection,
+    breakpoints: Map<BreakpointId, XDebugBreakpointId>,
+    chromeId: BreakpointId,
+  ): Promise<void> {
+    const xdebugBreakpointId = breakpoints.get(chromeId);
+    invariant(xdebugBreakpointId != null);
+    const promise = connection.getBreakpoint(xdebugBreakpointId);
+    const xdebugBreakpoint = await promise; // eslint-disable-line no-await-in-loop
+    this.updateBreakpoint(chromeId, xdebugBreakpoint);
   }
 
   getBreakpoint(breakpointId: BreakpointId): ?Breakpoint {
@@ -122,7 +149,7 @@ export class BreakpointStore {
     const breakpoint = this._breakpoints.get(chromeId);
     invariant(breakpoint != null);
     const {breakpointInfo} = breakpoint;
-    breakpointInfo.lineNumber = xdebugBreakpoint.lineno || breakpointInfo.lineNumber;
+    breakpointInfo.lineNumber = Number(xdebugBreakpoint.lineno || breakpointInfo.lineNumber);
     breakpointInfo.filename = xdebugBreakpoint.filename || breakpointInfo.filename;
     if (xdebugBreakpoint.resolved != null) {
       breakpoint.resolved = (xdebugBreakpoint.resolved === 'resolved');
@@ -222,7 +249,11 @@ export class BreakpointStore {
     const map: Map<BreakpointId, XDebugBreakpointId> = new Map();
     const breakpointPromises = Array.from(this._breakpoints.values())
       .map(async breakpoint => {
-        const {chromeId, breakpointInfo} = breakpoint;
+        const {chromeId, breakpointInfo, connectionId} = breakpoint;
+        if (connectionId != null) {
+          // That breakpoint is set for a sepecific connection (doesn't apply to all connections).
+          return;
+        }
         const xdebugBreakpointId =
           await connection.setFileLineBreakpoint(breakpointInfo);
         map.set(chromeId, xdebugBreakpointId);

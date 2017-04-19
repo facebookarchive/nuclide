@@ -821,6 +821,10 @@ export class ConnectionMultiplexer {
     }
   }
 
+  getEnabledConnection(): ?Connection {
+    return this._enabledConnection;
+  }
+
   selectThread(id: number): void {
     const connection = this._connections.get(id);
     if (connection != null && connection.getStatus() === ConnectionStatus.Break) {
