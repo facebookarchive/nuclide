@@ -154,8 +154,10 @@ export default class FileTreeSidebarComponent extends React.Component {
         showUncommittedChangesKind => this.setState({showUncommittedChangesKind}),
       ),
 
-      compact(throttle(remeasureEvents, () => nextAnimationFrame)
-        .map(() => this._getScrollerHeight()))
+      compact(
+        throttle(remeasureEvents, () => nextAnimationFrame)
+          .map(() => this._getScrollerHeight()),
+      )
         .distinctUntilChanged()
         .subscribe(scrollerHeight => {
           this.setState({scrollerHeight});
@@ -476,7 +478,7 @@ All the changes across your entire stacked diff.
 
   _getScrollerHeight(): ?number {
     const component = this.refs.scroller;
-    if (component != null) {
+    if (component == null) {
       return null;
     }
     const el = ReactDOM.findDOMNode(component);
