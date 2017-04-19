@@ -10,7 +10,7 @@
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {AsyncExecuteOptions} from '../../commons-node/process';
-import type {ProcessMessage} from '../../commons-node/process-rpc-types';
+import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
 import type {ConnectableObservable} from 'rxjs';
 
 import {
@@ -405,7 +405,7 @@ export function buildWithOutput(
   rootPath: NuclideUri,
   buildTargets: Array<string>,
   extraArguments: Array<string>,
-): ConnectableObservable<ProcessMessage> {
+): ConnectableObservable<LegacyProcessMessage> { // TODO(T17463635)
   return _buildWithOutput(rootPath, buildTargets, {extraArguments}).publish();
 }
 
@@ -425,7 +425,7 @@ export function testWithOutput(
   buildTargets: Array<string>,
   extraArguments: Array<string>,
   debug: boolean,
-): ConnectableObservable<ProcessMessage> {
+): ConnectableObservable<LegacyProcessMessage> { // TODO(T17463635)
   return _buildWithOutput(rootPath, buildTargets, {
     test: true,
     extraArguments,
@@ -451,7 +451,7 @@ export function installWithOutput(
   simulator: ?string,
   run: boolean,
   debug: boolean,
-): ConnectableObservable<ProcessMessage> {
+): ConnectableObservable<LegacyProcessMessage> { // TODO(T17463635)
   return _buildWithOutput(rootPath, buildTargets, {
     install: true,
     simulator,
@@ -466,7 +466,7 @@ export function runWithOutput(
   buildTargets: Array<string>,
   extraArguments: Array<string>,
   simulator: ?string,
-): ConnectableObservable<ProcessMessage> {
+): ConnectableObservable<LegacyProcessMessage> { // TODO(T17463635)
   return _buildWithOutput(rootPath, buildTargets, {
     run: true,
     simulator,
@@ -483,7 +483,7 @@ function _buildWithOutput(
   rootPath: NuclideUri,
   buildTargets: Array<string>,
   options: BaseBuckBuildOptions,
-): Observable<ProcessMessage> {
+): Observable<LegacyProcessMessage> { // TODO(T17463635)
   const args = _translateOptionsToBuckBuildArgs({
     baseOptions: {...options},
     buildTargets,
@@ -496,6 +496,7 @@ function _buildWithOutput(
       args,
       {...buckCommandOptions, /* TODO(T17353599) */ isExitError: () => false},
     )
+      .catch(error => Observable.of({kind: 'error', error})) // TODO(T17463635)
       .startWith({
         kind: 'stdout',
         data: `Starting "${pathToBuck} ${_getArgsStringSkipClientId(args)}"`,

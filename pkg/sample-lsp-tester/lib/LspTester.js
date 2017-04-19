@@ -8,7 +8,7 @@
  * @flow
  */
 
-import type {ProcessMessage} from '../../commons-node/process-rpc-types';
+import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
 import type {Message} from './PanelView';
 
 import {renderReactRoot} from '../../commons-atom/renderReactRoot';
@@ -179,7 +179,7 @@ export class LspTester extends SimpleModel {
     };
   }
 
-  _handleEvent(event: ProcessMessage): void {
+  _handleEvent(event: LegacyProcessMessage /* TODO(T17463635) */): void {
     switch (event.kind) {
       case 'stderr':
         // eslint-disable-next-line no-console

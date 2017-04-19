@@ -9,7 +9,7 @@
  */
 
 import type {Message} from '../../nuclide-console/lib/types';
-import type {ProcessMessage} from '../../commons-node/process-rpc-types';
+import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
 
 import {Subject} from 'rxjs';
 
@@ -24,7 +24,7 @@ export function dispatchConsoleToggle(visible: boolean): void {
 export function pipeProcessMessagesToConsole(
   processName: string,
   progressUpdates: Subject<Message>,
-  processMessage: ProcessMessage,
+  processMessage: LegacyProcessMessage /* TODO(T17463635) */,
 ): void {
   switch (processMessage.kind) {
     case 'stderr':

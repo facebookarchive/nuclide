@@ -168,7 +168,8 @@ function getPackagerObservable(projectRootPath: ?string): Observable<PackagerEve
           killTreeOnComplete: true,
           /* TODO(T17353599) */ isExitError: () => false,
         },
-      );
+      )
+        .catch(error => Observable.of({kind: 'error', error})); // TODO(T17463635)
     })
     // Accumulate the stderr so that we can show it to the user if something goes wrong.
     .scan(

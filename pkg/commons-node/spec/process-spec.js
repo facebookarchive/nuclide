@@ -269,21 +269,11 @@ describe('commons-node/process', () => {
   });
 
   describe('observeProcess', () => {
-    it('completes the stream if the process errors', () => {
-      spyOn(console, 'error');
-      spyOn(console, 'log'); // suppress log printing
-      // If the stream doesn't complete, this will timeout.
-      waitsForPromise({timeout: 1000}, async () => {
-        await observeProcess('fakeCommand').toArray().toPromise();
-      });
-    });
-
     it('errors when the process does', () => {
       waitsForPromise(async () => {
         spyOn(console, 'error'); // suppress error printing
         spyOn(console, 'log'); // suppress log printing
-        // TODO: Remove `_throwOnError` and make it the default behavior
-        const processStream = observeProcess('fakeCommand', [], {_throwOnError: true});
+        const processStream = observeProcess('fakeCommand', []);
         let error;
         try {
           await processStream.toPromise();

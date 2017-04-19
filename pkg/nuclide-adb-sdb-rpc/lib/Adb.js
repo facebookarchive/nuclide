@@ -12,10 +12,10 @@ import invariant from 'assert';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {runCommand, observeProcessRaw} from '../../commons-node/process';
 import {DebugBridge} from './DebugBridge';
+import {Observable} from 'rxjs';
 
-import type {Observable} from 'rxjs';
 import type {AndroidJavaProcess} from './types';
-import type {ProcessMessage} from '../../commons-node/process-rpc-types';
+import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 export class Adb extends DebugBridge {
@@ -41,7 +41,7 @@ export class Adb extends DebugBridge {
   installPackage(
     device: string,
     packagePath: NuclideUri,
-  ): Observable<ProcessMessage> {
+  ): Observable<LegacyProcessMessage> { // TODO(T17463635)
     invariant(!nuclideUri.isRemote(packagePath));
     return this.runLongAdbCommand(device, ['install', '-r', packagePath]);
   }
@@ -49,7 +49,7 @@ export class Adb extends DebugBridge {
   uninstallPackage(
     device: string,
     packageName: string,
-  ): Observable<ProcessMessage> {
+  ): Observable<LegacyProcessMessage> { // TODO(T17463635)
     return this.runLongAdbCommand(device, ['uninstall', packageName]);
   }
 
@@ -110,6 +110,7 @@ export class Adb extends DebugBridge {
       args,
       {killTreeOnComplete: true, /* TDOO(17353599) */ isExitError: () => false},
     )
+      .catch(error => Observable.of({kind: 'error', error})) // TODO(T17463635)
       .take(1)
       .map(output => {
         const jdwpPids = new Set();

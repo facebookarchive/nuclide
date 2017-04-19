@@ -13,7 +13,7 @@ import invariant from 'assert';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {Observable} from 'rxjs';
 
-import type {ProcessMessage} from '../../commons-node/process-rpc-types';
+import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 export class Sdb extends DebugBridge {
@@ -85,7 +85,7 @@ export class Sdb extends DebugBridge {
   installPackage(
     device: string,
     packagePath: NuclideUri,
-  ): Observable<ProcessMessage> {
+  ): Observable<LegacyProcessMessage> { // TODO(T17463635)
     invariant(!nuclideUri.isRemote(packagePath));
     return this.runLongAdbCommand(device, ['install', packagePath]);
   }
@@ -101,7 +101,7 @@ export class Sdb extends DebugBridge {
   uninstallPackage(
     device: string,
     packageName: string,
-  ): Observable<ProcessMessage> {
+  ): Observable<LegacyProcessMessage> { // TODO(T17463635)
     return this.runLongAdbCommand(device, ['uninstall', packageName]);
   }
 }

@@ -17,16 +17,20 @@ export type ProcessExitMessage = {
 };
 
 // Separated out for RPC usage.
-export type ProcessMessage = {
-  kind: 'stdout',
-  data: string,
-} | {
-  kind: 'stderr',
-  data: string,
-} | ProcessExitMessage | {
-  kind: 'error',
-  error: Object,
-};
+export type ProcessMessage =
+  | {
+      kind: 'stdout',
+      data: string,
+    }
+  | {
+      kind: 'stderr',
+      data: string,
+    }
+  | ProcessExitMessage;
+
+// In older versions of process.js, errors were emitted as messages instead of errors. This type
+// exists to support the transition, but no new usages should be added.
+export type LegacyProcessMessage = ProcessMessage | {kind: 'error', error: Object};
 
 export type ProcessInfo = {
   parentPid: number,

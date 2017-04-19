@@ -13,7 +13,7 @@ import type {Level} from '../../nuclide-console/lib/types';
 import type {
   FileDiagnosticMessage,
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
-import type {ProcessMessage} from '../../commons-node/process-rpc-types';
+import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
 import type {BuckSubcommand} from './types';
 
 import {Observable} from 'rxjs';
@@ -128,7 +128,7 @@ export function getEventsFromSocket(
 }
 
 export function getEventsFromProcess(
-  processStream: Observable<ProcessMessage>,
+  processStream: Observable<LegacyProcessMessage>, // TODO(T17463635)
 ): Observable<BuckEvent> {
   return processStream.map(message => {
     switch (message.kind) {

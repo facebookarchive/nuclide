@@ -68,7 +68,6 @@ export type AsyncExecuteReturn = {
 };
 
 type CreateProcessStreamOptions = {
-  _throwOnError?: ?boolean, // TODO: Switch this over to always true and remove it.
   killTreeOnComplete?: ?boolean,
   exitErrorBufferSize?: ?number,
   isExitError?: ?(event: ProcessExitMessage) => boolean,
@@ -228,7 +227,6 @@ function _createProcessStream(
     .take(1)
     .switchMap(() => {
       const process = createProcess();
-      const throwOnError = idx(options, _ => _._throwOnError) !== false;
       const isExitError = idx(options, _ => _.isExitError) || isExitErrorDefault;
       const exitErrorBufferSize = idx(options, _ => _.exitErrorBufferSize) || 2000;
       const {killTreeOnComplete} = options;
@@ -246,7 +244,7 @@ function _createProcessStream(
         'Process already exited. (This indicates a race condition in Nuclide.)',
       );
 
-      const errors = Observable.fromEvent(process, 'error');
+      const errors = Observable.fromEvent(process, 'error').flatMap(Observable.throw);
 
       // Accumulate the first `exitErrorBufferSize` bytes of stderr so that we can give feedback
       // about exit errors. Once we have this much, we don't even listen to the event anymore.
@@ -270,8 +268,7 @@ function _createProcessStream(
       return Observable.of(process)
         // Don't complete until we say so!
         .merge(Observable.never())
-        // Get the errors.
-        .takeUntil(throwOnError ? errors.flatMap(Observable.throw) : errors)
+        .takeUntil(errors)
         .takeUntil(exitEvents)
         .do({
           error: () => { finished = true; },
@@ -400,8 +397,6 @@ export function getOutputStream(
 ): Observable<ProcessMessage> {
   const chunk = idx(options, _ => _.splitByLines) === false ? (x => x) : splitStream;
   return Observable.defer(() => {
-    const errorEvents = Observable.fromEvent(process, 'error')
-      .map(errorObj => ({kind: 'error', error: errorObj}));
     const stdoutEvents = chunk(observeStream(process.stdout)).map(data => ({kind: 'stdout', data}));
     const stderrEvents = chunk(observeStream(process.stderr)).map(data => ({kind: 'stderr', data}));
 
@@ -416,10 +411,7 @@ export function getOutputStream(
     const close = exitEvents.delay(100);
 
     return takeWhileInclusive(
-      Observable.merge(
-        Observable.merge(stdoutEvents, stderrEvents).takeUntil(close).concat(exitEvents),
-        errorEvents,
-      ),
+      Observable.merge(stdoutEvents, stderrEvents).takeUntil(close).concat(exitEvents),
       event => event.kind !== 'error' && event.kind !== 'exit',
     )
       .finally(() => { exitSub.unsubscribe(); });
@@ -436,11 +428,7 @@ export function observeProcess(
 ): Observable<ProcessMessage> {
   return _createProcessStream(
     () => _makeChildProcess('spawn', command, args, options),
-    {
-      ...options,
-      // For now, default to `false` to preserve old behavior.
-      _throwOnError: idx(options, _ => _._throwOnError) === true,
-    },
+    options,
   )
     .flatMap(process => getOutputStream(process, options));
 }
@@ -455,11 +443,7 @@ export function observeProcessRaw(
 ): Observable<ProcessMessage> {
   return _createProcessStream(
     () => _makeChildProcess('spawn', command, args, options),
-    {
-      ...options,
-      // For now, default to `false` to preserve old behavior.
-      _throwOnError: idx(options, _ => _._throwOnError) === true,
-    },
+    options,
   )
     .flatMap(process => getOutputStream(process, {...options, splitByLines: false}));
 }
@@ -562,14 +546,9 @@ export async function checkOutput(
 export function runCommand(
   command: string,
   args?: Array<string> = [],
-  options_?: ObserveProcessOptions = {},
+  options?: ObserveProcessOptions = {},
   rest: void,
 ): Observable<string> {
-  const options = {
-    ...options_,
-    // TODO: _throwOnError should always be true. Once we've switched that over, remove this.
-    _throwOnError: true,
-  };
   return observeProcess(command, args, options)
     .filter(event => event.kind === 'stdout')
     .reduce(

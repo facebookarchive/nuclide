@@ -8,7 +8,7 @@
  * @flow
  */
 
-import type {ProcessMessage} from '../../commons-node/process-rpc-types';
+import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
 import typeof * as BuckService from '../../nuclide-buck-rpc';
 import type RemoteControlService
   from '../../nuclide-debugger/lib/RemoteControlService';
@@ -162,7 +162,7 @@ async function _getAttachProcessInfoFromPid(
 }
 
 export function getDeployBuildEvents(
-  processStream: Observable<ProcessMessage>,
+  processStream: Observable<LegacyProcessMessage>, // TODO(T17463635)
   buckService: BuckService,
   buckRoot: string,
   buildTarget: string,
@@ -208,7 +208,7 @@ export function getDeployBuildEvents(
 }
 
 export function getDeployInstallEvents(
-  processStream: Observable<ProcessMessage>,
+  processStream: Observable<LegacyProcessMessage>, // TODO(T17463635)
   buckRoot: string,
 ): Observable<BuckEvent> {
   let targetType = LLDB_TARGET_TYPE;
@@ -261,7 +261,7 @@ export function getDeployInstallEvents(
 }
 
 export function getDeployTestEvents(
-  processStream: Observable<ProcessMessage>,
+  processStream: Observable<LegacyProcessMessage>, // TODO(T17463635)
   buckRoot: string,
 ): Observable<BuckEvent> {
   return processStream

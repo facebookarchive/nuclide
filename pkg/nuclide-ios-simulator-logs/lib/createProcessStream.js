@@ -23,6 +23,7 @@ export function createProcessStream(): Observable<string> {
     ['-c', WATCH_CURRENT_UDID_SCRIPT],
     {/* TODO(T17353599) */isExitError: () => false},
   )
+    .catch(error => Observable.of({kind: 'error', error})) // TODO(T17463635)
     .map(event => {
       if (event.kind === 'error') {
         throw event.error;
@@ -60,6 +61,7 @@ export function createProcessStream(): Observable<string> {
         ],
         {/* TODO(T17353599) */isExitError: () => false},
       )
+        .catch(error => Observable.of({kind: 'error', error})) // TODO(T17463635)
         .map(event => {
           if (event.kind === 'error') {
             throw event.error;

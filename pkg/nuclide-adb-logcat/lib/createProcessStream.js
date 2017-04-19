@@ -19,6 +19,7 @@ export function createProcessStream(): Observable<string> {
     ['logcat', '-v', 'long'],
     {/* TODO(T17353599) */isExitError: () => false},
   )
+    .catch(error => Observable.of({kind: 'error', error})) // TODO(T17463635)
     .share();
   const stdoutEvents = processEvents
     .filter(event => event.kind === 'stdout')

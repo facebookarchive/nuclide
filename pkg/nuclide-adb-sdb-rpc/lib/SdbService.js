@@ -13,7 +13,7 @@ import {ConnectableObservable, Observable} from 'rxjs';
 import {Sdb} from './Sdb';
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {ProcessMessage} from '../../commons-node/process-rpc-types';
+import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
 import type {DeviceDescription} from './types';
 
 async function getSdb(): Promise<Sdb> {
@@ -52,7 +52,7 @@ export async function getFileContentsAtPath(
 export function installPackage(
   device: string,
   packagePath: NuclideUri,
-): ConnectableObservable<ProcessMessage> {
+): ConnectableObservable<LegacyProcessMessage> { // TODO(T17463635)
   return Observable.defer(() => getSdb())
     .switchMap(d => d.installPackage(device, packagePath))
     .publish();
@@ -68,7 +68,7 @@ export async function launchApp(
 export function uninstallPackage(
   device: string,
   packageName: string,
-): ConnectableObservable<ProcessMessage> {
+): ConnectableObservable<LegacyProcessMessage> { // TODO(T17463635)
   return Observable.defer(() => getSdb())
     .switchMap(d => d.uninstallPackage(device, packageName))
     .publish();

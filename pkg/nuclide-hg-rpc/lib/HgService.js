@@ -10,7 +10,7 @@
 
 import type {ConnectableObservable} from 'rxjs';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {ProcessMessage} from '../../commons-node/process-rpc-types';
+import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
 import type {HgExecOptions} from './hg-exec-types';
 
 import nuclideUri from '../../commons-node/nuclideUri';
@@ -274,7 +274,10 @@ export class HgService {
     return hgAsyncExecute(args, options);
   }
 
-  _hgObserveExecution(args: Array<string>, options: HgExecOptions): Observable<ProcessMessage> {
+  _hgObserveExecution(
+    args: Array<string>,
+    options: HgExecOptions,
+  ): Observable<LegacyProcessMessage> { // TODO(T17463635)
     return hgObserveExecution(args, options);
   }
 
@@ -798,7 +801,7 @@ export class HgService {
     message: ?string,
     args: Array<string>,
     isInteractive: boolean,
-  ): Observable<ProcessMessage> {
+  ): Observable<LegacyProcessMessage> { // TODO(T17463635)
     let editMergeConfigs;
     let tempFile = null;
     return Observable.fromPromise((async () => {
@@ -843,7 +846,7 @@ export class HgService {
   commit(
     message: string,
     isInteractive: boolean = false,
-  ): ConnectableObservable<ProcessMessage> {
+  ): ConnectableObservable<LegacyProcessMessage> { // TODO(T17463635)
     return this._commitCode(message, ['commit'], isInteractive).publish();
   }
 
@@ -859,7 +862,7 @@ export class HgService {
     message: ?string,
     amendMode: AmendModeValue,
     isInteractive: boolean = false,
-  ): ConnectableObservable<ProcessMessage> {
+  ): ConnectableObservable<LegacyProcessMessage> { // TODO(T17463635)
     const args = ['amend'];
     switch (amendMode) {
       case AmendMode.CLEAN:
@@ -876,7 +879,7 @@ export class HgService {
     return this._commitCode(message, args, isInteractive).publish();
   }
 
-  splitRevision(): ConnectableObservable<ProcessMessage> {
+  splitRevision(): ConnectableObservable<LegacyProcessMessage> { // TODO(T17463635)
     let editMergeConfigs;
     return Observable.fromPromise((async () => {
       editMergeConfigs = await getInteractiveCommitEditorConfig();
@@ -935,7 +938,7 @@ export class HgService {
     revision: string,
     create: boolean,
     options?: CheckoutOptions,
-  ): ConnectableObservable<ProcessMessage> {
+  ): ConnectableObservable<LegacyProcessMessage> { // TODO(T17463635)
     const args = ['checkout', revision];
     if (options && options.clean) {
       args.push('--clean');
@@ -1171,7 +1174,7 @@ export class HgService {
   markConflictedFile(
     filePath: NuclideUri,
     resolved: boolean,
-  ): ConnectableObservable<ProcessMessage> {
+  ): ConnectableObservable<LegacyProcessMessage> { // TODO(T17463635)
     // -m marks file as resolved, -u marks file as unresolved
     const fileStatus = resolved ? '-m' : '-u';
     const args = ['resolve', fileStatus, filePath];
@@ -1183,7 +1186,7 @@ export class HgService {
       .publish();
   }
 
-  continueRebase(): ConnectableObservable<ProcessMessage> {
+  continueRebase(): ConnectableObservable<LegacyProcessMessage> { // TODO(T17463635)
     const args = ['rebase', '--continue'];
     const execOptions = {
       cwd: this._workingDirectory,
@@ -1200,7 +1203,7 @@ export class HgService {
   rebase(
     destination: string,
     source?: string,
-  ): ConnectableObservable<ProcessMessage> {
+  ): ConnectableObservable<LegacyProcessMessage> { // TODO(T17463635)
     const args = ['rebase', '-d', destination];
     if (source != null) {
       args.push('-s', source);
@@ -1218,7 +1221,7 @@ export class HgService {
     .publish();
   }
 
-  pull(options: Array<string>): ConnectableObservable<ProcessMessage> {
+  pull(options: Array<string>): ConnectableObservable<LegacyProcessMessage> { // TODO(T17463635)
     const args = ['pull', ...options];
     const execOptions = {
       cwd: this._workingDirectory,

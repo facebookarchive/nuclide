@@ -10,7 +10,7 @@
 
 import type {Subscription, Observable} from 'rxjs';
 import type {ServiceRegistry, MessageLogger} from '..';
-import type {ProcessMessage, ProcessExitMessage} from '../../commons-node/process-rpc-types';
+import type {LegacyProcessMessage, ProcessExitMessage} from '../../commons-node/process-rpc-types';
 
 import {StreamTransport} from './StreamTransport';
 import {RpcConnection} from './RpcConnection';
@@ -139,7 +139,7 @@ export class RpcProcess {
    * Handles lifecycle messages from stderr, exit, and error streams,
    * responding by logging and staging for process restart.
    */
-  _onProcessMessage(message: ProcessMessage): void {
+  _onProcessMessage(message: LegacyProcessMessage /* TODO(T17463635) */): void {
     switch (message.kind) {
       case 'stdout':
         break;

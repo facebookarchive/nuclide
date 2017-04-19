@@ -15,10 +15,10 @@ import {
   checkOutput,
 } from '../../commons-node/process';
 import os from 'os';
+import {Observable} from 'rxjs';
 
-import type {Observable} from 'rxjs';
 import type {DeviceDescription, DebugBridgeType} from './types';
-import type {ProcessMessage} from '../../commons-node/process-rpc-types';
+import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 export async function pathForDebugBridge(db: DebugBridgeType): Promise<string> {
@@ -37,13 +37,17 @@ export class DebugBridge {
     return runCommand(this._adbPath, deviceArg.concat(command));
   }
 
-  runLongAdbCommand(device: string, command: string[]): Observable<ProcessMessage> {
+  runLongAdbCommand(
+    device: string,
+    command: string[],
+  ): Observable<LegacyProcessMessage> { // TODO(T17463635)
     const deviceArg = (device !== '') ? ['-s', device] : [];
     return observeProcess(
       this._adbPath,
       deviceArg.concat(command),
       {killTreeOnComplete: true, /* TODO(T17353599) */ isExitError: () => false},
-    );
+    )
+      .catch(error => Observable.of({kind: 'error', error})); // TODO(T17463635)
   }
 
   startServer(): Promise<boolean> {
@@ -93,11 +97,16 @@ export class DebugBridge {
     throw new Error('not implemented');
   }
 
-  installPackage(device: string, packagePath: NuclideUri): Observable<ProcessMessage> {
+  installPackage(
+    device: string, packagePath: NuclideUri,
+  ): Observable<LegacyProcessMessage> { // TODO(T17463635)
     throw new Error('not implemented');
   }
 
-  uninstallPackage(device: string, packageName: string): Observable<ProcessMessage> {
+  uninstallPackage(
+    device: string,
+    packageName: string,
+  ): Observable<LegacyProcessMessage> { // TODO(T17463635)
     throw new Error('not implemented');
   }
 

@@ -94,6 +94,7 @@ export function findIncludingSourceFile(
     ],
     {/* TODO(T17353599) */isExitError: () => false},
   )
+    .catch(error => Observable.of({kind: 'error', error})) // TODO(T17463635)
     .flatMap(message => {
       switch (message.kind) {
         case 'stdout':

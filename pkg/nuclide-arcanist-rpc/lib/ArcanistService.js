@@ -10,7 +10,7 @@
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {ConnectableObservable} from 'rxjs';
-import type {ProcessMessage} from '../../commons-node/process-rpc-types';
+import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
 
 import invariant from 'assert';
 import {Observable} from 'rxjs';
@@ -198,13 +198,15 @@ function _callArcDiff(
         .switchMap(opts => {
           const scriptArgs = createArgsForScriptCommand('arc', args);
           return compact(
-            observeProcess('script', scriptArgs, opts).map(event => {
-              switch (event.kind) {
-                case 'stdout': return {stdout: event.data};
-                case 'stderr': return {stderr: event.data};
-                default: return null;
-              }
-            }),
+            observeProcess('script', scriptArgs, opts)
+              .catch(error => Observable.of({kind: 'error', error})) // TODO(T17463635)
+              .map(event => {
+                switch (event.kind) {
+                  case 'stdout': return {stdout: event.data};
+                  case 'stderr': return {stderr: event.data};
+                  default: return null;
+                }
+              }),
           );
         });
     }).share();
@@ -258,7 +260,7 @@ export function execArcPull(
   cwd: NuclideUri,
   fetchLatest: boolean,
   allowDirtyChanges: boolean,
-): ConnectableObservable<ProcessMessage> {
+): ConnectableObservable<LegacyProcessMessage> { // TODO(T17463635)
   const args = ['pull'];
   if (fetchLatest) {
     args.push('--latest');
@@ -269,42 +271,51 @@ export function execArcPull(
   }
 
   return Observable.fromPromise(getArcExecOptions(cwd))
-    .switchMap(opts => observeProcess(
-      'arc',
-      args,
-      {...opts, /* TODO(T17353599) */ isExitError: () => false},
-    ))
+    .switchMap(opts =>
+      observeProcess(
+        'arc',
+        args,
+        {...opts, /* TODO(T17353599) */ isExitError: () => false},
+      )
+        .catch(error => Observable.of({kind: 'error', error})), // TODO(T17463635)
+    )
     .publish();
 }
 
 export function execArcLand(
   cwd: NuclideUri,
-): ConnectableObservable<ProcessMessage> {
+): ConnectableObservable<LegacyProcessMessage> { // TODO(T17463635)
   const args = ['land'];
   return Observable.fromPromise(getArcExecOptions(cwd))
-    .switchMap(opts => observeProcess(
-      'arc',
-      args,
-      {...opts, /* TODO(T17353599) */ isExitError: () => false},
-    ))
+    .switchMap(opts =>
+      observeProcess(
+        'arc',
+        args,
+        {...opts, /* TODO(T17353599) */ isExitError: () => false},
+      )
+        .catch(error => Observable.of({kind: 'error', error})), // TODO(T17463635)
+    )
     .publish();
 }
 
 export function execArcPatch(
   cwd: NuclideUri,
   differentialRevision: string,
-): ConnectableObservable<ProcessMessage> {
+): ConnectableObservable<LegacyProcessMessage> { // TODO(T17463635)
   const args = ['patch'];
   if (differentialRevision.match(/^[0-9]+$/)) {
     args.push('--diff');
   }
   args.push(differentialRevision);
   return Observable.fromPromise(getArcExecOptions(cwd))
-    .switchMap(opts => observeProcess(
-      'arc',
-      args,
-      {...opts, /* TODO(T17353599) */ isExitError: () => false},
-    ))
+    .switchMap(opts =>
+      observeProcess(
+        'arc',
+        args,
+        {...opts, /* TODO(T17353599) */ isExitError: () => false},
+      )
+        .catch(error => Observable.of({kind: 'error', error})), // TODO(T17463635)
+    )
     .publish();
 }
 
@@ -318,7 +329,10 @@ function execArcLint(
     args.push('--skip', skip.join(','));
   }
   return Observable.fromPromise(getArcExecOptions(cwd))
-    .switchMap(opts => niceObserveProcess('arc', args, {...opts, killTreeOnComplete: true}))
+    .switchMap(opts =>
+      niceObserveProcess('arc', args, {...opts, killTreeOnComplete: true})
+        .catch(error => Observable.of({kind: 'error', error})), // TODO(T17463635)
+    )
     .mergeMap(event => {
       if (event.kind === 'error') {
         return Observable.throw(event.error);

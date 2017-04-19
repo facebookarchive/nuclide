@@ -12,6 +12,7 @@ import * as arcanist from '..';
 import nuclideUri from '../../commons-node/nuclideUri';
 import fsPromise from '../../commons-node/fsPromise';
 import {copyFixture} from '../../nuclide-test-helpers';
+import {Observable} from 'rxjs';
 
 const rootConfig = {
   project_id: 'project1',
@@ -146,7 +147,7 @@ describe('nuclide-arcanist-rpc', () => {
       spyOn(require('../../commons-node/nice'), 'niceObserveProcess')
         .andCallFake((command, args, options) => {
           execArgs.push(args);
-          return arcResult.map(line => ({kind: 'stdout', data: line}));
+          return Observable.from(arcResult.map(line => ({kind: 'stdout', data: line})));
         });
       arcanist.__TEST__.reset();
       // Add these paths to the arcConfigDirectoryMap as a roundabout way to mock

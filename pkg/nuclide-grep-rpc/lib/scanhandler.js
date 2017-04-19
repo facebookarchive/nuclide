@@ -179,6 +179,7 @@ function getLinesFromCommand(
       args,
       {cwd: localDirectoryPath, /* TODO(T17353599) */ isExitError: () => false},
     )
+      .catch(error => Observable.of({kind: 'error', error})) // TODO(T17463635)
       .do(event => {
         if (event.kind === 'stderr') {
           stderr += event.data;

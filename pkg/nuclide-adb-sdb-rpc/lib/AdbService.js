@@ -13,7 +13,7 @@ import {ConnectableObservable, Observable} from 'rxjs';
 import {Adb} from './Adb';
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {ProcessMessage} from '../../commons-node/process-rpc-types';
+import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
 import type {DeviceDescription, AndroidJavaProcess} from './types';
 
 async function getAdb(): Promise<Adb> {
@@ -38,7 +38,7 @@ export async function getPidFromPackageName(
 export function installPackage(
   device: string,
   packagePath: NuclideUri,
-): ConnectableObservable<ProcessMessage> {
+): ConnectableObservable<LegacyProcessMessage> { // TODO(T17463635)
   return Observable.defer(() => getAdb())
     .switchMap(d => d.installPackage(device, packagePath))
     .publish();
@@ -47,7 +47,7 @@ export function installPackage(
 export function uninstallPackage(
   device: string,
   packageName: string,
-): ConnectableObservable<ProcessMessage> {
+): ConnectableObservable<LegacyProcessMessage> { // TODO(T17463635)
   return Observable.defer(() => getAdb())
     .switchMap(d => d.uninstallPackage(device, packageName))
     .publish();

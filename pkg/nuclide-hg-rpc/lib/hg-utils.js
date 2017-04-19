@@ -8,7 +8,7 @@
  * @flow
  */
 
-import type {ProcessMessage} from '../../commons-node/process-rpc-types';
+import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
 import type {HgExecOptions} from './hg-exec-types';
 
 import {Observable} from 'rxjs';
@@ -54,14 +54,15 @@ export async function hgAsyncExecute(args_: Array<string>, options_: HgExecOptio
 export function hgObserveExecution(
   args_: Array<string>,
   options_: HgExecOptions,
-): Observable<ProcessMessage> {
+): Observable<LegacyProcessMessage> { // TODO(T17463635)
   return Observable.fromPromise(getHgExecParams(args_, options_))
     .switchMap(({command, args, options}) => {
       return observeProcess(
         'script',
         createArgsForScriptCommand(command, args),
         {...options, killTreeOnComplete: true, /* TODO(T17353599) */ isExitError: () => false},
-      );
+      )
+        .catch(error => Observable.of({kind: 'error', error})); // TODO(T17463635)
     });
 }
 
@@ -188,8 +189,8 @@ function getAtomRpcScriptPath(): string {
 }
 
 export function processExitCodeAndThrow(
-  processMessage: ProcessMessage,
-): Observable<ProcessMessage> {
+  processMessage: LegacyProcessMessage,
+): Observable<LegacyProcessMessage> { // TODO(T17463635)
   if (processMessage.kind === 'exit' && processMessage.exitCode !== 0) {
     return Observable.throw(
       new Error(`HG failed with exit code: ${String(processMessage.exitCode)}`),

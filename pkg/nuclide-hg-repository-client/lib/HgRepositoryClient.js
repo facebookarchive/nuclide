@@ -23,7 +23,7 @@ import type {
   StatusCodeIdValue,
   VcsLogResponse,
 } from '../../nuclide-hg-rpc/lib/HgService';
-import type {ProcessMessage} from '../../commons-node/process-rpc-types';
+import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
 import type {LRUCache} from 'lru-cache';
 import type {ConnectableObservable} from 'rxjs';
 
@@ -731,7 +731,10 @@ export class HgRepositoryClient {
     return this._service.fetchMergeConflicts(fetchResolved);
   }
 
-  markConflictedFile(filePath: NuclideUri, resolved: boolean): Observable<ProcessMessage> {
+  markConflictedFile(
+    filePath: NuclideUri,
+    resolved: boolean,
+  ): Observable<LegacyProcessMessage> { // TODO(T17463635)
     return this._service.markConflictedFile(filePath, resolved).refCount();
   }
 
@@ -754,7 +757,7 @@ export class HgRepositoryClient {
     reference: string,
     create: boolean,
     options?: CheckoutOptions,
-  ): Observable<ProcessMessage> {
+  ): Observable<LegacyProcessMessage> { // TODO(T17463635)
     return this._service.checkout(reference, create, options).refCount();
   }
 
@@ -968,7 +971,7 @@ export class HgRepositoryClient {
   commit(
     message: string,
     isInteractive: boolean = false,
-  ): Observable<ProcessMessage> {
+  ): Observable<LegacyProcessMessage> { // TODO(T17463635)
     if (isInteractive) {
       this._updateInteractiveMode(true);
     }
@@ -982,7 +985,7 @@ export class HgRepositoryClient {
     message: ?string,
     amendMode: AmendModeValue,
     isInteractive: boolean = false,
-  ): Observable<ProcessMessage> {
+  ): Observable<LegacyProcessMessage> { // TODO(T17463635)
     if (isInteractive) {
       this._updateInteractiveMode(true);
     }
@@ -992,13 +995,13 @@ export class HgRepositoryClient {
       .finally(this._updateInteractiveMode.bind(this, false));
   }
 
-  splitRevision(): Observable<ProcessMessage> {
+  splitRevision(): Observable<LegacyProcessMessage> { // TODO(T17463635)
     this._updateInteractiveMode(true);
     return this._service.splitRevision().refCount()
       .finally(this._updateInteractiveMode.bind(this, false));
   }
 
-  _clearOnSuccessExit(isInteractive: boolean, message: ProcessMessage) {
+  _clearOnSuccessExit(isInteractive: boolean, message: LegacyProcessMessage) {
     if (!isInteractive && message.kind === 'exit' && message.exitCode === 0) {
       this._clearClientCache();
     }
@@ -1015,7 +1018,7 @@ export class HgRepositoryClient {
     return this._service.log(filePaths, limit);
   }
 
-  continueRebase(): Observable<ProcessMessage> {
+  continueRebase(): Observable<LegacyProcessMessage> { // TODO(T17463635)
     return this._service.continueRebase().refCount();
   }
 
@@ -1023,11 +1026,14 @@ export class HgRepositoryClient {
     return this._service.abortRebase();
   }
 
-  rebase(destination: string, source?: string): Observable<ProcessMessage> {
+  rebase(
+    destination: string,
+    source?: string,
+  ): Observable<LegacyProcessMessage> { // TODO(T17463635)
     return this._service.rebase(destination, source).refCount();
   }
 
-  pull(options?: Array<string> = []): Observable<ProcessMessage> {
+  pull(options?: Array<string> = []): Observable<LegacyProcessMessage> { // TODO(T17463635)
     return this._service.pull(options).refCount();
   }
 

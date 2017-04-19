@@ -8,7 +8,7 @@
  * @flow
  */
 
-import type {ProcessMessage} from '../../commons-node/process-rpc-types';
+import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
 import type {Task, TaskEvent} from '../../commons-node/tasks';
 import type {Directory} from '../../nuclide-remote-connection';
 import type {TaskMetadata} from '../../nuclide-task-runner/lib/types';
@@ -613,7 +613,7 @@ function runBuckCommand(
   args: Array<string>,
   debug: boolean,
   simulator: ?string,
-): Observable<ProcessMessage> {
+): Observable<LegacyProcessMessage> { // TODO(T17463635)
   if (debug) {
     // Stop any existing debugging sessions, as install hangs if an existing
     // app that's being overwritten is being debugged.

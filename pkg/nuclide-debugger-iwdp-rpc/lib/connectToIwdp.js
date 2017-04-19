@@ -28,27 +28,29 @@ export function connectToIwdp(): Observable<IosDeviceInfo> {
     'script',
     createArgsForScriptCommand('ios_webkit_debug_proxy', ['--no-frontend']),
     {/* TODO(T17353599) */isExitError: () => false},
-  ).mergeMap(message => {
-    if (message.kind === 'stdout') {
-      const {data} = message;
-      const matches = CONNECTED_TO_DEVICE_REGEX.exec(data);
-      if (matches != null) {
-        const port = Number(matches[1]);
-        log(`Fetching device data because we got ${data}`);
-        return Observable.interval(POLLING_INTERVAL).switchMap(() => fetchDeviceData(port));
+  )
+    .catch(error => Observable.of({kind: 'error', error})) // TODO(T17463635)
+    .mergeMap(message => {
+      if (message.kind === 'stdout') {
+        const {data} = message;
+        const matches = CONNECTED_TO_DEVICE_REGEX.exec(data);
+        if (matches != null) {
+          const port = Number(matches[1]);
+          log(`Fetching device data because we got ${data}`);
+          return Observable.interval(POLLING_INTERVAL).switchMap(() => fetchDeviceData(port));
+        }
+        if (data.startsWith('Listing devices on :')) {
+          log(`IWDP Connected!: ${data}`);
+        }
+        return Observable.never();
+      } else if (message.kind === 'exit') {
+        return Observable.empty();
+      } else {
+        return Observable.throw(
+          new Error(`Error for ios_webkit_debug_proxy: ${JSON.stringify(message)}`),
+        );
       }
-      if (data.startsWith('Listing devices on :')) {
-        log(`IWDP Connected!: ${data}`);
-      }
-      return Observable.never();
-    } else if (message.kind === 'exit') {
-      return Observable.empty();
-    } else {
-      return Observable.throw(
-        new Error(`Error for ios_webkit_debug_proxy: ${JSON.stringify(message)}`),
-      );
-    }
-  })
+    })
     .mergeMap(deviceInfos => deviceInfos)
     .distinct(deviceInfo => deviceInfo.webSocketDebuggerUrl);
 }

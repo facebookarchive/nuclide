@@ -142,6 +142,7 @@ export class SwiftPMTaskRunner {
       command.args,
       {/* TODO(T17353599) */isExitError: () => false},
     )
+      .catch(error => Observable.of({kind: 'error', error})) // TODO(T17463635)
       .do(message => {
         switch (message.kind) {
           case 'stderr':
