@@ -17,6 +17,7 @@ import {DebuggerMode} from './DebuggerStore';
 import invariant from 'assert';
 import {bufferPositionForMouseEvent} from '../../commons-atom/mouse-to-position';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import {showMenuForEvent} from '../../commons-atom/context-menu';
 
 /**
  * A single delegate which handles events from the object.
@@ -49,6 +50,7 @@ export default class BreakpointDisplayController {
   _markerInfo: Map<number, BreakpointMarkerProperties>;
   _lastShadowBreakpointMarker: ?atom$Marker;
   _boundGlobalMouseMoveHandler: (event: MouseEvent) => void;
+  _boundCreateContextMenuHandler: (event: MouseEvent) => void;
   _debugging: boolean;
 
   constructor(
@@ -66,14 +68,8 @@ export default class BreakpointDisplayController {
     this._markerInfo = new Map();
     this._lastShadowBreakpointMarker = null;
     this._boundGlobalMouseMoveHandler = this._handleGlobalMouseLeave.bind(this);
-
-    const debuggerStore = this._breakpointStore.getDebuggerStore();
-    if (debuggerStore) {
-      const mode = debuggerStore.getDebuggerMode();
-      this._debugging = (mode !== DebuggerMode.STOPPED && mode !== DebuggerMode.STOPPING);
-    } else {
-      this._debugging = false;
-    }
+    this._boundCreateContextMenuHandler = this._handleCreateContextMenu.bind(this);
+    this._debugging = this._isDebugging();
 
     // Configure the gutter.
     const gutter = editor.addGutter({
@@ -88,8 +84,27 @@ export default class BreakpointDisplayController {
       editor.observeGutters(this._registerGutterMouseHandlers.bind(this)),
       this._breakpointStore.onNeedUIUpdate(this._handleBreakpointsChanged.bind(this)),
       this._editor.onDidDestroy(this._handleTextEditorDestroyed.bind(this)),
+      this._registerEditorContextMenuHandler(),
     );
     this._update();
+  }
+
+  _isDebugging(): boolean {
+    const debuggerStore = this._breakpointStore.getDebuggerStore();
+    if (debuggerStore) {
+      const mode = debuggerStore.getDebuggerMode();
+      return mode !== DebuggerMode.STOPPED && mode !== DebuggerMode.STOPPING;
+    } else {
+      return false;
+    }
+  }
+
+  _registerEditorContextMenuHandler(): IDisposable {
+    const editorElement = atom.views.getView(this._editor);
+    editorElement.addEventListener('contextmenu', this._boundCreateContextMenuHandler);
+    return new UniversalDisposable(
+      () => editorElement.removeEventListener('contextmenu', this._boundCreateContextMenuHandler),
+    );
   }
 
   _registerGutterMouseHandlers(gutter: atom$Gutter): void {
@@ -106,13 +121,30 @@ export default class BreakpointDisplayController {
     gutterView.addEventListener('mousemove', boundMouseMoveHandler);
     gutterView.addEventListener('mouseenter', boundMouseEnterHandler);
     gutterView.addEventListener('mouseleave', boundMouseLeaveHandler);
+    gutterView.addEventListener('contextmenu', this._boundCreateContextMenuHandler);
     this._disposables.add(
       () => gutterView.removeEventListener('click', boundClickHandler),
       () => gutterView.removeEventListener('mousemove', boundMouseMoveHandler),
       () => gutterView.removeEventListener('mouseenter', boundMouseEnterHandler),
       () => gutterView.removeEventListener('mouseleave', boundMouseLeaveHandler),
+      () => gutterView.removeEventListener('contextmenu', this._boundCreateContextMenuHandler),
       () => window.removeEventListener('mousemove', this._boundGlobalMouseMoveHandler),
     );
+  }
+
+  _handleCreateContextMenu(event: MouseEvent): void {
+    if (event.button !== 2 || !this._isDebugging()) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    const menuTemplate = atom.contextMenu.templateForEvent(event);
+    const debuggerGroupIndex = menuTemplate.findIndex(item => item.label === 'Debugger');
+    const [debuggerGroup] = menuTemplate.splice(debuggerGroupIndex, 1);
+    menuTemplate.unshift(...debuggerGroup.submenu, {type: 'separator'});
+    showMenuForEvent(event, menuTemplate);
   }
 
   dispose() {
@@ -168,12 +200,7 @@ export default class BreakpointDisplayController {
       return;
     }
 
-    let debugging = true;
-    const debuggerStore = this._breakpointStore.getDebuggerStore();
-    if (debuggerStore) {
-      const mode = debuggerStore.getDebuggerMode();
-      debugging = mode !== DebuggerMode.STOPPED && mode !== DebuggerMode.STOPPING;
-    }
+    const debugging = this._isDebugging();
 
     const path = this._editor.getPath();
     if (path == null) {
