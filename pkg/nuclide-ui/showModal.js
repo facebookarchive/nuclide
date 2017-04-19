@@ -24,9 +24,14 @@ type ContentFactory = (dismiss: () => void) => React$Element<any>;
 
 /** Wrap options in an object so we can add new ones later without an explosion of params */
 type Options = {|
+  /** Called when the modal is dismissed (just before it is destroyed). */
   onDismiss?: () => void,
   /** Disable the default behavior of dismissing when the user clicks outside the modal. */
   disableDismissOnClickOutsideModal?: boolean,
+  /** Passed to atom's underlying addModalPanel function. */
+  priority?: number,
+  /** Passed to atom's underlying addModalPanel function. */
+  className?: string,
 |};
 
 /**
@@ -41,7 +46,11 @@ export default function showModal(
   options: Options = defaults,
 ): IDisposable {
   const hostElement = document.createElement('div');
-  const atomPanel = atom.workspace.addModalPanel({item: hostElement});
+  const atomPanel = atom.workspace.addModalPanel({
+    item: hostElement,
+    priority: options.priority,
+    className: options.className,
+  });
   const disposable = new UniversalDisposable(
     options.disableDismissOnClickOutsideModal ? () => undefined :
       Observable.fromEvent(document, 'mousedown').subscribe(({target}) => {

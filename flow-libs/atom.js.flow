@@ -1035,6 +1035,7 @@ type atom$WorkspaceAddPanelOptions = {
   item: Object,
   visible?: boolean,
   priority?: number,
+  className?: string,
 };
 
 type atom$TextEditorParams = {
