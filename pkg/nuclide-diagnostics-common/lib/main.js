@@ -105,31 +105,11 @@ export type LinterMessage = {
 };
 
 export type LinterProvider = {
-  /**
-   * Extension: Allows a provider to include a display name that will be shown with its messages.
-   */
-  providerName?: string,
-  /**
-   * In the official Linter API, the providerName is just "name".
-   */
-  name?: string,
-  /**
-   * Extension: Intended for developers who want to provide both interfaces to cater towards people
-   * who use only the `linter` package. This way you can provide both, but tell Nuclide to ignore
-   * the `linter` provider so that duplicate results do not appear.
-   */
-  disabledForNuclide?: boolean,
+  name: string,
   grammarScopes: Array<string>,
-  /**
-   * Extension: Overrides `grammarScopes` and triggers the linter on changes to any file, rather
-   * than just files with specific grammar scopes.
-   */
-  allGrammarScopes?: boolean,
-  /**
-   * Extension: Clear file-level diagnostics when the file is closed.
-   */
-  invalidateOnClose?: boolean,
   scope: 'file' | 'project',
-  lintOnFly: boolean,
+  // Linter v2 renames lintOnFly to lintsOnChange. Accept both.
+  lintsOnChange?: boolean,
+  lintOnFly?: boolean,
   lint: (textEditor: TextEditor) => ?Promise<?Array<LinterMessage>>,
 };

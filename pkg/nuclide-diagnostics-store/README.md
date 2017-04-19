@@ -9,7 +9,7 @@ is our UI implementation.
 
 We consume two APIs: Our own provider API, described below, and the
 [`linter`](https://atom.io/packages/linter) [package
-API](https://github.com/atom-community/linter/wiki/Linter-API) (with some extensions).
+API](http://steelbrain.me/linter) (with some extensions).
 
 The Nuclide API is designed to support a "push" model where providers notify the store
 asynchronously about new diagnostics (and when to invalidate old ones). A provider may choose to
@@ -101,36 +101,10 @@ pain, we have created the
 feature.
 
 To see it in action, look at our [sample diagnostics
-provider](https://github.com/facebook/nuclide/tree/master/pkg/sample/diagnostics-provider).
+provider](https://github.com/facebook/nuclide/tree/master/pkg/sample-diagnostics-provider).
 
 ## Linter API
 
-`nuclide-diagnostics` is compatible with
-[providers](https://github.com/atom-community/linter/wiki/Linter-API) for the
-[`linter`](https://atom.io/packages/linter) package.
-
-We implement several extensions to the linter API. Here is the type for providers that we accept:
-
-```js
-type LinterProvider = {
-  /**
-   * Extension: Allows a provider to include a display name that will be shown with its messages.
-   */
-  providerName?: string;
-  /**
-   * Extension: Intended for developers who want to provide both interfaces to cater towards people
-   * who use only the `linter` package. This way you can provide both, but tell Nuclide to ignore
-   * the `linter` provider so that duplicate results do not appear.
-   */
-  disabledForNuclide?: boolean;
-  grammarScopes: Array<string>;
-  /**
-   * Extension: Overrides `grammarScopes` and triggers the linter on changes to any file, rather
-   * than just files with specific grammar scopes.
-   */
-  allGrammarScopes?: boolean;
-  scope: 'file' | 'project';
-  lintOnFly: boolean;
-  lint: (textEditor: TextEditor) => Promise<Array<LinterMessage>>;
-};
-```
+`nuclide-diagnostics` is compatible with the
+[Standard Linter v1 API](https://github.com/steelbrain/linter/blob/v1/docs/types/standard-linter-v1.md)
+for the [`linter`](https://atom.io/packages/linter) package.

@@ -18,14 +18,11 @@ function createSingleAdapter(
   provider: LinterProvider,
   ProviderBase?: typeof DiagnosticsProviderBase,
 ): ?LinterAdapter {
-  if (provider.disabledForNuclide) {
-    return;
-  }
   const validationErrors = validateLinter(provider);
   if (validationErrors.length === 0) {
     return new LinterAdapter(provider, ProviderBase);
   } else {
-    const nameString = provider && provider.providerName ? ` (${provider.providerName})` : '';
+    const nameString = provider.name;
     let message = `nuclide-diagnostics-store found problems with a linter${nameString}. ` +
       'Diagnostic messages from that linter will be unavailable.\n';
     message += validationErrors.map(error => `- ${error}\n`).join('');
@@ -86,9 +83,7 @@ export function validateLinter(provider: LinterProvider): Array<string> {
     validate(provider.lint, 'lint function must be specified', errors);
     validate(typeof provider.lint === 'function', 'lint must be a function', errors);
 
-    if (provider.providerName) {
-      validate(typeof provider.providerName === 'string', 'providerName must be a string', errors);
-    }
+    validate(typeof provider.name === 'string', 'provider must have a name', errors);
   }
 
   return errors;

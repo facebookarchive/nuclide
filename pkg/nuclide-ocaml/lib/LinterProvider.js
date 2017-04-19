@@ -22,7 +22,6 @@ module.exports = {
   grammarScopes: Array.from(GRAMMARS),
   scope: 'file',
   lintOnFly: false,
-  invalidateOnClose: true,
 
   lint(textEditor: atom$TextEditor): Promise<Array<LinterMessage>> {
     if (!featureConfig.get('nuclide-ocaml.enableDiagnostics')) {

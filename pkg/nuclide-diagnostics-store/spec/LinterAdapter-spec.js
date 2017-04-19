@@ -8,6 +8,8 @@
  * @flow
  */
 
+import type {LinterProvider} from '../../nuclide-diagnostics-common';
+
 import {Disposable} from 'atom';
 
 import invariant from 'assert';
@@ -68,14 +70,13 @@ describe('LinterAdapter', () => {
     }
   }
 
-  function newLinterAdapter(linter) {
+  function newLinterAdapter(linter: LinterProvider) {
     return new LinterAdapter(linter, (FakeDiagnosticsProviderBase: any));
   }
 
   function shouldNotInvalidate() {
     waitsForPromise(() => {
       return eventCallback(fakeEditor).then(result => {
-        expect(bufferDestroyCallback).toBeUndefined();
         expect(result).toBeUndefined();
         expect(publishMessageUpdateSpy).not.toHaveBeenCalled();
         expect(publishMessageInvalidationSpy).not.toHaveBeenCalled();
@@ -99,9 +100,10 @@ describe('LinterAdapter', () => {
     spyOn(atom.workspace, 'getActiveTextEditor').andReturn(fakeEditor);
     linterReturn = Promise.resolve([]);
     fakeLinter = {
+      name: 'fakeLinter',
       grammarScopes: [grammar],
       scope: 'file',
-      lintOnFly: true,
+      lintsOnChange: true,
       lint: () => linterReturn,
     };
     spyOn(fakeLinter, 'lint').andCallThrough();
@@ -110,6 +112,7 @@ describe('LinterAdapter', () => {
 
   afterEach(() => {
     jasmine.unspy(atom.workspace, 'getActiveTextEditor');
+    bufferDestroyCallback = null;
   });
 
   it('should dispatch the linter on an event', () => {
@@ -117,12 +120,12 @@ describe('LinterAdapter', () => {
     expect(fakeLinter.lint).toHaveBeenCalled();
   });
 
-  it("should subscribe to 'all' for linters for allGrammarScopes", () => {
+  it("should subscribe to 'all' when * is in grammarScopes", () => {
     newLinterAdapter({
-      grammarScopes: [],
-      allGrammarScopes: true,
+      name: 'linter',
+      grammarScopes: ['*'],
       scope: 'file',
-      lintOnFly: true,
+      lintsOnChange: true,
       lint: () => linterReturn,
     });
     expect(subscribedToAny).toBe(true);
@@ -160,9 +163,10 @@ describe('LinterAdapter', () => {
 
   it('should not invalidate previous result when linter resolves to null', () => {
     newLinterAdapter({
+      name: 'linter',
       grammarScopes: [],
       scope: 'file',
-      lintOnFly: true,
+      lintsOnChange: true,
       lint: () => Promise.resolve(null),
     });
 
@@ -171,9 +175,10 @@ describe('LinterAdapter', () => {
 
   it('should not invalidate previous result when linter resolves to undefined', () => {
     newLinterAdapter({
+      name: 'linter',
       grammarScopes: [],
       scope: 'file',
-      lintOnFly: true,
+      lintsOnChange: true,
       lint: () => Promise.resolve(undefined),
     });
 
@@ -182,9 +187,10 @@ describe('LinterAdapter', () => {
 
   it('should not invalidate previous result when linter returns null', () => {
     newLinterAdapter({
+      name: 'linter',
       grammarScopes: [],
       scope: 'file',
-      lintOnFly: true,
+      lintsOnChange: true,
       lint: () => null,
     });
 
@@ -193,9 +199,10 @@ describe('LinterAdapter', () => {
 
   it('should not invalidate previous result when linter returns undefined', () => {
     newLinterAdapter({
+      name: 'linter',
       grammarScopes: [],
       scope: 'file',
-      lintOnFly: true,
+      lintsOnChange: true,
       lint: () => undefined,
     });
 
@@ -229,13 +236,12 @@ describe('LinterAdapter', () => {
     expect(fakeDiagnosticsProviderBase.dispose).toHaveBeenCalled();
   });
 
-  it('implements invalidateOnClose', () => {
+  it('invalidates files on close', () => {
     newLinterAdapter({
-      grammarScopes: [],
-      allGrammarScopes: true,
+      name: 'linter',
+      grammarScopes: ['*'],
       scope: 'file',
-      lintOnFly: true,
-      invalidateOnClose: true,
+      lintsOnChange: true,
       lint: () => Promise.resolve([
         {type: 'Error', filePath: 'foo'},
         {type: 'Error', filePath: 'bar'},
@@ -317,16 +323,6 @@ describe('message transformation functions', () => {
       const result = runWith([]);
       invariant(result.filePathToMessages);
       expect(result.filePathToMessages.get(currentPath)).toEqual([]);
-    });
-
-    it('should name linters that do not provide a name', () => {
-      providerName = undefined;
-      const result = runWith([fileMessage]);
-      invariant(result.filePathToMessages);
-      const messages = result.filePathToMessages.get(fileMessage.filePath);
-      invariant(messages != null);
-      const resultMessage = messages[0];
-      expect(resultMessage.providerName).toEqual('Unnamed Linter');
     });
 
     it('should use the LinterProvider name when one is not specified in message', () => {

@@ -71,7 +71,7 @@ export function linterMessageToDiagnosticMessage(
 export function linterMessagesToDiagnosticUpdate(
   currentPath: ?NuclideUri,
   msgs: Array<LinterMessage>,
-  providerName?: string = 'Unnamed Linter',
+  providerName: string,
 ): DiagnosticProviderUpdate {
   const filePathToMessages: Map<NuclideUri, Array<FileDiagnosticMessage>> = new Map();
   if (currentPath) {
@@ -134,8 +134,8 @@ export class LinterAdapter {
   ) {
     const utilsOptions = {
       grammarScopes: new Set(provider.grammarScopes),
-      enableForAllGrammars: provider.allGrammarScopes,
-      shouldRunOnTheFly: provider.lintOnFly,
+      enableForAllGrammars: provider.grammarScopes[0] === '*',
+      shouldRunOnTheFly: provider.lintsOnChange || provider.lintOnFly,
       onTextEditorEvent: editor => this._runLint(editor),
       onNewUpdateSubscriber: callback => this._newUpdateSubscriber(callback),
     };
@@ -172,7 +172,7 @@ export class LinterAdapter {
       return;
     }
 
-    if (this._provider.invalidateOnClose && !this._onDestroyDisposables.has(buffer)) {
+    if (!this._onDestroyDisposables.has(buffer)) {
       const disposable = buffer.onDidDestroy(() => {
         this._invalidateBuffer(buffer);
         this._onDestroyDisposables.delete(buffer);
@@ -183,7 +183,8 @@ export class LinterAdapter {
 
     const diagnosticUpdate = linterMessagesToDiagnosticUpdate(
       editor.getPath(),
-      linterMessages, this._provider.providerName || this._provider.name,
+      linterMessages,
+      this._provider.name,
     );
     this._invalidateBuffer(buffer);
     this._providerUtils.publishMessageUpdate(diagnosticUpdate);
@@ -209,7 +210,7 @@ export class LinterAdapter {
   }
 
   setLintOnFly(lintOnFly: boolean): void {
-    this._providerUtils.setRunOnTheFly(lintOnFly && this._provider.lintOnFly);
+    this._providerUtils.setRunOnTheFly(lintOnFly && Boolean(this._provider.lintOnFly));
   }
 
   dispose(): void {

@@ -104,7 +104,6 @@ export function provideLint(): LinterProvider {
     scope: 'file',
     lintOnFly: getLintOnFly(),
     name: 'nuclide-python',
-    invalidateOnClose: true,
     lint(editor) {
       invariant(busySignalProvider);
       return busySignalProvider.reportBusy(

@@ -119,7 +119,6 @@ export function provideLinter(): LinterProvider {
     scope: 'file',
     lintOnFly: false,
     name: 'Clang',
-    invalidateOnClose: true,
     lint(editor) {
       const getResult = () => ClangLinter.lint(editor);
       if (busySignalProvider) {

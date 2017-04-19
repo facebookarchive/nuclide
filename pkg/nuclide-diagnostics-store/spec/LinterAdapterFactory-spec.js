@@ -37,6 +37,7 @@ describe('createAdapters', () => {
     };
     spyOn(atom.workspace, 'getActiveTextEditor').andReturn(fakeEditor);
     fakeLinter = {
+      name: 'test',
       grammarScopes: [grammar],
       scope: 'file',
       lintOnFly: true,
@@ -52,11 +53,6 @@ describe('createAdapters', () => {
     expect(createAdaptersWithMock(fakeLinter).size).toBe(1);
   });
 
-  it('should not return an adapter if it is disabled for Nuclide', () => {
-    fakeLinter.disabledForNuclide = true;
-    expect(createAdaptersWithMock(fakeLinter).size).toBe(0);
-  });
-
   it('should return multiple adapters if it is passed an array', () => {
     expect(createAdaptersWithMock([fakeLinter, fakeLinter]).size).toBe(2);
   });
@@ -67,6 +63,7 @@ describe('validateLinter', () => {
 
   beforeEach(() => {
     linter = {
+      name: 'test',
       grammarScopes: [grammar],
       scope: 'file',
       lintOnFly: true,
