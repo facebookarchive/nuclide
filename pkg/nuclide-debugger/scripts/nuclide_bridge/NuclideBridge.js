@@ -413,7 +413,7 @@ class NuclideBridge {
         const result = getIpcEvaluationResult(wasThrown, remoteObject);
         ipcRenderer.sendToHost('notification', 'ExpressionEvaluationResponse', {
           result,
-          error: wasThrown ? error : null,
+          error: wasThrown ? error || result : null,
           expression,
           id,
         });
@@ -772,7 +772,7 @@ function getIpcEvaluationResult(
   wasThrown: boolean,
   remoteObject: ?EvaluationResult,
 ): ?EvaluationResult {
-  if (wasThrown || remoteObject == null) {
+  if (remoteObject == null) {
     return null;
   }
   return {
