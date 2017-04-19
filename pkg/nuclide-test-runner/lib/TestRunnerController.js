@@ -48,7 +48,7 @@ export class TestRunnerController {
 
   constructor(testRunners: Set<TestRunner>) {
     this._root = document.createElement('div');
-    this._root.style.display = 'flex';
+    this._root.className = 'nuclide-test-runner-root';
 
     // Bind Functions for use as callbacks;
     // TODO: Replace with property initializers when supported by Flow;
