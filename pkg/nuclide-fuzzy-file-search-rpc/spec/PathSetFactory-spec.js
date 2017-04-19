@@ -79,7 +79,7 @@ describe('PathSetFactory', () => {
     };
 
     it('returns tracked and untracked files, but not ignored files.', () => {
-      waitsForPromise(async () => {
+      waitsForPromise({timeout: 15000}, async () => {
         await setUpHgRepo();
         const expectedOutput = [TRACKED_FILE_BASE, UNTRACKED_FILE_BASE];
         invariant(testDir);
