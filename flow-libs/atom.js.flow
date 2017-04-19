@@ -773,7 +773,7 @@ declare class atom$TextEditor extends atom$Model {
     },
   ): atom$Point,
   bufferPositionForScreenPosition(
-    bufferPosition: atom$PointLike,
+    screenPosition: atom$PointLike,
     options?: {
       wrapBeyondNewlines?: boolean,
       wrapAtSoftNewlines?: boolean,

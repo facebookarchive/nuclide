@@ -54,6 +54,7 @@ import DebuggerControllerView from './DebuggerControllerView';
 import {wordAtPosition, trimRange} from '../../commons-atom/range';
 import {DebuggerLaunchAttachEventTypes} from '../../nuclide-debugger-base';
 import os from 'os';
+import nullthrows from 'nullthrows';
 
 export type SerializedState = {
   breakpoints: ?Array<SerializedBreakpoint>,
@@ -63,6 +64,56 @@ const DATATIP_PACKAGE_NAME = 'nuclide-debugger-datatip';
 const NUX_NEW_DEBUGGER_UI_ID = 4377;
 const GK_NEW_DEBUGGER_UI_NUX = 'mp_nuclide_new_debugger_ui';
 const NUX_NEW_DEBUGGER_UI_NAME = 'nuclide_new_debugger_ui';
+const SCREEN_ROW_ATTRIBUTE_NAME = 'data-screen-row';
+
+function getGutterLineNumber(target: HTMLElement): ?number {
+  const eventLine = parseInt(target.dataset.line, 10);
+  if (eventLine != null && eventLine >= 0 && !isNaN(Number(eventLine))) {
+    return eventLine;
+  }
+}
+
+function getEditorLineNumber(
+  editor: atom$TextEditor,
+  target: HTMLElement,
+): ?number {
+  let node = target;
+  while (node != null) {
+    if (node.hasAttribute(SCREEN_ROW_ATTRIBUTE_NAME)) {
+      const screenRow = Number(node.getAttribute(SCREEN_ROW_ATTRIBUTE_NAME));
+      try {
+        return editor.bufferPositionForScreenPosition([screenRow, 0]).row;
+      } catch (error) {
+        return null;
+      }
+    }
+    node = node.parentElement;
+  }
+}
+
+function firstNonNull(...args) {
+  return nullthrows(args.find(arg => arg != null));
+}
+
+function getLineForEvent(
+  editor: atom$TextEditor,
+  event: any,
+): number {
+  const cursorLine = editor.getLastCursor().getBufferRow();
+  const target = event ? (event.target: HTMLElement) : null;
+  if (target == null) {
+    return cursorLine;
+  }
+  // toggleLine is the line the user clicked in the gutter next to, as opposed
+  // to the line the editor's cursor happens to be in. If this command was invoked
+  // from the menu, then the cursor position is the target line.
+  return firstNonNull(
+    getGutterLineNumber(target),
+    getEditorLineNumber(editor, target),
+    // fall back to the line the cursor is on.
+    cursorLine,
+  );
+}
 
 type Props = {
   model: DebuggerModel,
@@ -359,34 +410,20 @@ class Activation {
     this._model.getBridge().stepOut();
   }
 
-  _getLineForEvent(event: any, editorLine: number): number {
-    const target = event ? (event.target: HTMLElement) : null;
-    // toggleLine is the line the user clicked in the gutter next to, as opposed
-    // to the line the editor's cursor happens to be in. If this command was invoked
-    // from the menu, then the cursor position is the target line.
-    const eventLine = target ? parseInt(target.dataset.line, 10) : null;
-    if (eventLine == null || eventLine < 0 || isNaN(Number(eventLine))) {
-      // fall back to the line the cursor is on.
-      return editorLine;
-    }
-
-    return eventLine;
-  }
-
   _toggleBreakpoint(event: any) {
     return trackTiming('nuclide-debugger-atom:toggleBreakpoint', () => {
-      this._executeWithEditorPath((filePath, line) => {
-        this._model.getActions().toggleBreakpoint(filePath, this._getLineForEvent(event, line));
+      this._executeWithEditorPath(event, (filePath, line) => {
+        this._model.getActions().toggleBreakpoint(filePath, line);
       });
     });
   }
 
   _toggleBreakpointEnabled(event: any) {
     return trackTiming('nuclide-debugger-atom:toggleBreakpointEnabled', () => {
-      this._executeWithEditorPath((filePath, line) => {
+      this._executeWithEditorPath(event, (filePath, line) => {
         const bp = this._model
           .getBreakpointStore()
-          .getBreakpointAtLine(filePath, this._getLineForEvent(event, line));
+          .getBreakpointAtLine(filePath, line);
 
         if (bp) {
           const {id, enabled} = bp;
@@ -396,20 +433,22 @@ class Activation {
     });
   }
 
-  _runToLocation() {
-    this._executeWithEditorPath((path, line) => {
+  _runToLocation(event: any) {
+    this._executeWithEditorPath(event, (path, line) => {
       this._model.getBridge().runToLocation(path, line);
     });
   }
 
-  _executeWithEditorPath(fn) {
+  _executeWithEditorPath(event: any, fn) {
     const editor = atom.workspace.getActiveTextEditor();
     if (editor && editor.getPath()) {
       const filePath = editor.getPath();
-      if (filePath) {
-        const line = editor.getLastCursor().getBufferRow();
-        fn(filePath, line);
+      if (!filePath) {
+        return;
       }
+
+      const line = getLineForEvent(editor, event);
+      fn(filePath, line);
     }
   }
 
