@@ -103,6 +103,12 @@ class ModalContainer extends React.Component {
   componentDidMount(): void {
     const node = ReactDOM.findDOMNode(this);
     invariant(node instanceof HTMLElement);
-    node.focus();
+    // Steal the focus away from any active editor or pane, setting it on the modal;
+    // but don't steal focus away from a descendant. This can happen if a React element focuses
+    // during its componentDidMount. For example, <AtomInput> does this since the underlying
+    // <atom-text-editor> does not support the autofocus attribute.
+    if (!node.contains(document.activeElement)) {
+      node.focus();
+    }
   }
 }
