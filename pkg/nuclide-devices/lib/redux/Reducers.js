@@ -26,6 +26,8 @@ export function app(state: AppState, action: Action): AppState {
       return {
         ...state,
         deviceType,
+        device: null,
+        infoTables: new Map(),
       };
 
     case Actions.SET_DEVICE:
@@ -40,6 +42,13 @@ export function app(state: AppState, action: Action): AppState {
       return {
         ...state,
         devices,
+      };
+
+    case Actions.SET_INFO_TABLES:
+      const {infoTables} = action.payload;
+      return {
+        ...state,
+        infoTables,
       };
 
     default:

@@ -8,12 +8,12 @@
  * @flow
  */
 
-import {getSdbServiceByNuclideUri} from '../../../nuclide-remote-connection';
-import {AndroidTizenBaseFetcher} from './AndroidTizenBaseFetcher';
+import {AndroidTizenInfoBaseProvider} from './AndroidTizenInfoBaseProvider';
+import {getSdbServiceByNuclideUri} from '../../nuclide-remote-connection';
 
-import type {NuclideUri} from '../../../commons-node/nuclideUri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
-export class TizenFetcher extends AndroidTizenBaseFetcher {
+export class TizenInfoProvider extends AndroidTizenInfoBaseProvider {
   constructor() {
     super('tizen', (host: NuclideUri) => getSdbServiceByNuclideUri(host));
   }

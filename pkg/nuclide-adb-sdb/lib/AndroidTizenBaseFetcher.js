@@ -8,12 +8,12 @@
  * @flow
  */
 
-import typeof * as AdbService from '../../../nuclide-adb-sdb-rpc/lib/AdbService';
-import typeof * as SdbService from '../../../nuclide-adb-sdb-rpc/lib/SdbService';
+import typeof * as AdbService from '../../nuclide-adb-sdb-rpc/lib/AdbService';
+import typeof * as SdbService from '../../nuclide-adb-sdb-rpc/lib/SdbService';
 
-import type {DeviceDescription} from '../../../nuclide-adb-sdb-rpc/lib/types';
-import type {NuclideUri} from '../../../commons-node/nuclideUri';
-import type {Device, DeviceFetcher} from '../types';
+import type {DeviceDescription} from '../../nuclide-adb-sdb-rpc/lib/types';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {Device, DeviceFetcher} from '../../nuclide-devices/lib/types';
 
 export class AndroidTizenBaseFetcher implements DeviceFetcher {
   _type: string;

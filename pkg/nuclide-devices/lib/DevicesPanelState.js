@@ -21,7 +21,7 @@ import * as Actions from './redux/Actions';
 import * as Epics from './redux/Epics';
 
 import type {Props} from './ui/DevicePanel';
-import type {Store, DeviceFetcher, AppState} from './types';
+import type {Store, DeviceFetcher, AppState, DeviceInfoProvider} from './types';
 
 export const WORKSPACE_VIEW_URI = 'atom://nuclide/devices';
 
@@ -29,13 +29,13 @@ export const WORKSPACE_VIEW_URI = 'atom://nuclide/devices';
 export class DevicesPanelState {
   _store: Store;
 
-  constructor(deviceFetchers: Set<DeviceFetcher>) {
+  constructor(deviceFetchers: Set<DeviceFetcher>, infoProviders: Set<DeviceInfoProvider>) {
     const epics = Object.keys(Epics)
       .map(k => Epics[k])
       .filter(epic => typeof epic === 'function');
     this._store = createStore(
       Reducers.app,
-      createEmptyAppState(deviceFetchers),
+      createEmptyAppState(deviceFetchers, infoProviders),
       applyMiddleware(createEpicMiddleware(combineEpics(...epics))),
     );
   }
@@ -80,6 +80,7 @@ export class DevicesPanelState {
       deviceTypes: Array.from(state.deviceFetchers).map(fetcher => fetcher.getType()),
       deviceType: state.deviceType,
       device: state.device,
+      infoTables: state.infoTables,
       refreshDevices,
       setHost,
       setDeviceType,

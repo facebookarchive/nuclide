@@ -14,6 +14,7 @@ import {Observable, Subscription} from 'rxjs';
 import invariant from 'invariant';
 import {Dropdown} from '../../../nuclide-ui/Dropdown';
 import {DeviceTable} from './DeviceTable';
+import {InfoTable} from './InfoTable';
 
 import type {NuclideUri} from '../../../commons-node/nuclideUri';
 import type {Device} from '../types';
@@ -29,6 +30,7 @@ export type Props = {
   deviceTypes: string[],
   deviceType: ?string,
   device: ?Device,
+  infoTables: Map<string, Map<string, string>>,
 };
 
 export class DevicePanel extends React.Component {
@@ -44,8 +46,7 @@ export class DevicePanel extends React.Component {
   componentDidMount(): void {
     this._deviceFetcherSubscription = Observable.interval(3000)
       .startWith(0)
-      .do(() => this.props.refreshDevices())
-      .subscribe();
+      .subscribe(() => this.props.refreshDevices());
   }
 
   componentWillUnmount(): void {
@@ -101,6 +102,15 @@ export class DevicePanel extends React.Component {
     );
   }
 
+  _createInfoTables(): React.Element<any>[] {
+    return Array.from(this.props.infoTables.entries())
+      .map(([title, infoTable]) => (
+        <div className="block" key={title}>
+          <InfoTable title={title} table={infoTable} />
+        </div>
+      ));
+  }
+
   render(): React.Element<any> {
     return (
       <PanelComponentScroller>
@@ -111,6 +121,7 @@ export class DevicePanel extends React.Component {
           <div className="block">
             {this._createDeviceTable()}
           </div>
+          {this._createInfoTables()}
         </div>
       </PanelComponentScroller>
     );

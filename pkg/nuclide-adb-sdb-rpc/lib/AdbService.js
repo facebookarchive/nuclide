@@ -20,6 +20,10 @@ async function getAdb(): Promise<Adb> {
   return new Adb((await pathForDebugBridge('adb')));
 }
 
+export async function getDeviceInfo(device: string): Promise<Map<string, string>> {
+  return (await getAdb()).getDeviceInfo(device);
+}
+
 export async function getDeviceList(): Promise<Array<DeviceDescription>> {
   return (await getAdb()).getDeviceList();
 }

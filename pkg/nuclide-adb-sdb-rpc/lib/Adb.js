@@ -38,6 +38,27 @@ export class Adb extends DebugBridge {
     return this.getAndroidProp(device, 'ro.build.version.sdk').toPromise();
   }
 
+  getBrand(device: string): Promise<string> {
+    return this.getAndroidProp(device, 'ro.product.brand').toPromise();
+  }
+
+  getManufacturer(device: string): Promise<string> {
+    return this.getAndroidProp(device, 'ro.product.manufacturer').toPromise();
+  }
+
+  async getDeviceInfo(device: string): Promise<Map<string, string>> {
+    const infoTable = await this.getCommonDeviceInfo(device);
+    const unknownCB = () => null;
+    infoTable.set('android_version', await this.getOSVersion(device).catch(unknownCB));
+    infoTable.set('manufacturer', await this.getManufacturer(device).catch(unknownCB));
+    infoTable.set('brand', await this.getBrand(device).catch(unknownCB));
+    return infoTable;
+  }
+
+  getOSVersion(device: string): Promise<string> {
+    return this.getAndroidProp(device, 'ro.build.version.release').toPromise();
+  }
+
   installPackage(
     device: string,
     packagePath: NuclideUri,

@@ -14,6 +14,7 @@ import type {
   SetHostAction,
   SetDeviceTypeAction,
   SetDeviceAction,
+  SetInfoTablesAction,
   RefreshDevicesAction,
   Device,
 } from '../types';
@@ -23,6 +24,14 @@ export const SET_HOST = 'SET_HOST';
 export const SET_DEVICE_TYPE = 'SET_DEVICE_TYPE';
 export const SET_DEVICE = 'SET_DEVICE';
 export const REFRESH_DEVICES = 'REFRESH_DEVICES';
+export const SET_INFO_TABLES = 'SET_INFO_TABLES';
+
+export function setInfoTables(infoTables: Map<string, Map<string, string>>): SetInfoTablesAction {
+  return {
+    type: SET_INFO_TABLES,
+    payload: {infoTables},
+  };
+}
 
 export function refreshDevices(): RefreshDevicesAction {
   return {

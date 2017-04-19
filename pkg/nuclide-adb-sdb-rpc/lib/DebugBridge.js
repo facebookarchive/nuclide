@@ -57,6 +57,19 @@ export class DebugBridge {
     );
   }
 
+  async getCommonDeviceInfo(device: string): Promise<Map<string, string>> {
+    const unknownCB = () => null;
+    const architecture = await this.getDeviceArchitecture(device).catch(unknownCB);
+    const apiVersion = await this.getAPIVersion(device).catch(unknownCB);
+    const model = await this.getDeviceModel(device).catch(unknownCB);
+    return new Map([
+      ['name', device],
+      ['architecture', architecture],
+      ['api_version', apiVersion],
+      ['model', model],
+    ]);
+  }
+
   async getDeviceList(): Promise<Array<DeviceDescription>> {
     const devices = await runCommand(this._adbPath, ['devices'])
       .map(stdout => stdout.split(/\n+/g)

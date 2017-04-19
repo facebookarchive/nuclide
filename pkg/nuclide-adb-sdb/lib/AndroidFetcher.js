@@ -8,10 +8,10 @@
  * @flow
  */
 
-import {getAdbServiceByNuclideUri} from '../../../nuclide-remote-connection';
+import {getAdbServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {AndroidTizenBaseFetcher} from './AndroidTizenBaseFetcher';
 
-import type {NuclideUri} from '../../../commons-node/nuclideUri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 export class AndroidFetcher extends AndroidTizenBaseFetcher {
   constructor() {
