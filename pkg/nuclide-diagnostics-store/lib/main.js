@@ -93,7 +93,10 @@ class Activation {
     const adapterDisposables = new UniversalDisposable();
     for (const adapter of newAdapters) {
       this._allLinterAdapters.add(adapter);
-      const diagnosticDisposable = this.consumeDiagnosticsProviderV1(adapter);
+      const diagnosticDisposable = this.consumeDiagnosticsProviderV2({
+        updates: adapter.getUpdates(),
+        invalidations: adapter.getInvalidations(),
+      });
       adapterDisposables.add(() => {
         diagnosticDisposable.dispose();
         adapter.dispose();

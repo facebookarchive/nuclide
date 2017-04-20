@@ -14,19 +14,22 @@ import type {
   DiagnosticMessage,
   LinterMessage,
   LinterProvider,
-  MessageUpdateCallback,
-  MessageInvalidationCallback,
 } from '../../nuclide-diagnostics-common';
 import type {
   DiagnosticProviderUpdate,
+  InvalidationMessage,
   FileDiagnosticMessage,
   ProjectDiagnosticMessage,
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
 
 import {Range} from 'atom';
-import {DiagnosticsProviderBase} from '../../nuclide-diagnostics-provider-base';
-import nuclideUri from '../../commons-node/nuclideUri';
-import {RequestSerializer} from '../../commons-node/promise';
+import {Observable, Subject} from 'rxjs';
+import {
+  observeTextEditorEvents,
+} from '../../nuclide-diagnostics-provider-base/lib/TextEventDispatcher';
+import {getLogger} from '../../nuclide-logging';
+import {observableFromSubscribeFunction} from '../../commons-node/event';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 
 // Exported for testing.
 export function linterMessageToDiagnosticMessage(
@@ -102,124 +105,110 @@ export function linterMessagesToDiagnosticUpdate(
 }
 
 /**
- * Provides an adapter between legacy linters (defined by the LinterProvider
+ * Provides an adapter between Atom linters (defined by the LinterProvider
  * type), and Nuclide Diagnostic Providers.
  *
  * The constructor takes a LinterProvider as an argument, and the resulting
  * LinterAdapter is a valid DiagnosticProvider.
- *
- * Note that this allows an extension to ordinary LinterProviders. We allow an
- * optional additional field, providerName, to indicate the display name of the
- * linter.
  */
 export class LinterAdapter {
   _provider: LinterProvider;
+  _disposables: UniversalDisposable;
 
-  _requestSerializer: RequestSerializer<any>;
+  _updates: Subject<DiagnosticProviderUpdate>;
+  _invalidations: Subject<InvalidationMessage>;
 
-  _providerUtils: DiagnosticsProviderBase;
-
-  /**
-   * Keep track of the files with diagnostics for each text buffer.
-   * This way we can accurately invalidate diagnostics when files are renamed.
-   */
-  _filesForBuffer: WeakMap<atom$TextBuffer, Array<NuclideUri>>;
-  _onDestroyDisposables: Map<atom$TextBuffer, IDisposable>;
-
-  constructor(
-    provider: LinterProvider,
-    ProviderBase?: typeof DiagnosticsProviderBase = DiagnosticsProviderBase,
-  ) {
-    const utilsOptions = {
-      grammarScopes: new Set(provider.grammarScopes),
-      enableForAllGrammars: provider.grammarScopes[0] === '*',
-      shouldRunOnTheFly: provider.lintsOnChange || provider.lintOnFly,
-      onTextEditorEvent: editor => this._runLint(editor),
-      onNewUpdateSubscriber: callback => this._newUpdateSubscriber(callback),
-    };
-    this._providerUtils = new ProviderBase(utilsOptions);
+  constructor(provider: LinterProvider) {
     this._provider = provider;
-    this._requestSerializer = new RequestSerializer();
-    this._filesForBuffer = new WeakMap();
-    this._onDestroyDisposables = new Map();
-  }
-
-  async _runLint(editor: TextEditor): Promise<void> {
-    const maybe = this._provider.lint(editor);
-    if (maybe == null) {
-      return;
-    }
-
-    const result = await this._requestSerializer.run(maybe);
-    if (result.status !== 'success') {
-      return;
-    }
-
-    const linterMessages = result.result;
-    if (linterMessages == null) {
-      return;
-    }
-
-    const buffer = editor.getBuffer();
-    if (buffer.isDestroyed()) {
-      return;
-    }
-
-    if (!this._onDestroyDisposables.has(buffer)) {
-      const disposable = buffer.onDidDestroy(() => {
-        this._invalidateBuffer(buffer);
-        this._onDestroyDisposables.delete(buffer);
-        disposable.dispose();
-      });
-      this._onDestroyDisposables.set(buffer, disposable);
-    }
-
-    const diagnosticUpdate = linterMessagesToDiagnosticUpdate(
-      editor.getPath(),
-      linterMessages,
-      this._provider.name,
+    this._updates = new Subject();
+    this._invalidations = new Subject();
+    this._disposables = new UniversalDisposable(
+      observeTextEditorEvents(
+        this._provider.grammarScopes[0] === '*' ? 'all' : this._provider.grammarScopes,
+        this._provider.lintsOnChange || this._provider.lintOnFly ? 'changes' : 'saves',
+      )
+        // Group text editor events by their underlying text buffer.
+        // Each grouped stream lasts until the buffer gets destroyed.
+        .groupBy(
+          editor => editor.getBuffer(),
+          editor => editor,
+          // $FlowFixMe: add durationSelector to groupBy
+          grouped => observableFromSubscribeFunction(cb => grouped.key.onDidDestroy(cb))
+            .take(1),
+        )
+        .mergeMap(bufferObservable => (
+          // Run the linter on each buffer event.
+          Observable.concat(
+            // switchMap ensures that earlier lints are overridden by later ones.
+            bufferObservable.switchMap(editor => this._runLint(editor)),
+            // When the buffer gets destroyed, invalidate its last update.
+            Observable.of(null),
+          )
+            // Track the previous update so we can invalidate its results.
+            // (Prevents dangling diagnostics when a linter affects multiple files).
+            .scan(
+              (acc, update) => ({update, lastUpdate: acc.update}),
+              {update: null, lastUpdate: null},
+            )
+        ))
+        .subscribe(
+          ({update, lastUpdate}) => this._processUpdate(update, lastUpdate),
+        ),
     );
-    this._invalidateBuffer(buffer);
-    this._providerUtils.publishMessageUpdate(diagnosticUpdate);
-    const {filePathToMessages} = diagnosticUpdate;
-    if (filePathToMessages != null) {
-      this._filesForBuffer.set(buffer, Array.from(filePathToMessages.keys()));
-    }
   }
 
-  _newUpdateSubscriber(callback: MessageUpdateCallback): void {
-    const activeTextEditor = atom.workspace.getActiveTextEditor();
-    if (activeTextEditor && !nuclideUri.isBrokenDeserializedUri(activeTextEditor.getPath())) {
-      const matchesGrammar =
-        this._provider.grammarScopes.indexOf(activeTextEditor.getGrammar().scopeName) !== -1;
-      if (!this._lintInProgress() && matchesGrammar) {
-        this._runLint(activeTextEditor);
+  _runLint(editor: TextEditor): Observable<DiagnosticProviderUpdate> {
+    return Observable.defer(() => {
+      const lintPromise = this._provider.lint(editor);
+      if (lintPromise == null) {
+        return Observable.empty();
       }
+      return Promise.resolve(lintPromise)
+        .catch(error => {
+          // Prevent errors from blowing up the entire stream.
+          getLogger().error(`Error in linter provider ${this._provider.name}:`, error);
+          return null;
+        });
+    })
+      .switchMap(linterMessages => {
+        if (linterMessages == null) {
+          return Observable.empty();
+        }
+        const update = linterMessagesToDiagnosticUpdate(
+          editor.getPath(),
+          linterMessages,
+          this._provider.name,
+        );
+        return Observable.of(update);
+      });
+  }
+
+  _processUpdate(
+    update: ?DiagnosticProviderUpdate,
+    lastUpdate: ?DiagnosticProviderUpdate,
+  ): void {
+    if (lastUpdate != null && lastUpdate.filePathToMessages != null) {
+      this._invalidations.next({
+        scope: 'file',
+        filePaths: Array.from(lastUpdate.filePathToMessages.keys()),
+      });
+    }
+    if (update != null) {
+      this._updates.next(update);
     }
   }
 
   dispose(): void {
-    this._providerUtils.dispose();
-    this._onDestroyDisposables.forEach(disposable => disposable.dispose());
-    this._onDestroyDisposables.clear();
+    this._disposables.dispose();
+    this._updates.complete();
+    this._invalidations.complete();
   }
 
-  _lintInProgress(): boolean {
-    return this._requestSerializer.isRunInProgress();
+  getUpdates(): Observable<DiagnosticProviderUpdate> {
+    return this._updates.asObservable();
   }
 
-  onMessageUpdate(callback: MessageUpdateCallback): IDisposable {
-    return this._providerUtils.onMessageUpdate(callback);
-  }
-
-  onMessageInvalidation(callback: MessageInvalidationCallback): IDisposable {
-    return this._providerUtils.onMessageInvalidation(callback);
-  }
-
-  _invalidateBuffer(buffer: atom$TextBuffer): void {
-    const filePaths = this._filesForBuffer.get(buffer);
-    if (filePaths != null) {
-      this._providerUtils.publishMessageInvalidation({scope: 'file', filePaths});
-    }
+  getInvalidations(): Observable<InvalidationMessage> {
+    return this._invalidations.asObservable();
   }
 }

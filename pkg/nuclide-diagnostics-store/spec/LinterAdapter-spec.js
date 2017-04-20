@@ -11,8 +11,8 @@
 import type {LinterProvider} from '../../nuclide-diagnostics-common';
 
 import {Disposable} from 'atom';
-
 import invariant from 'assert';
+import {Subject} from 'rxjs';
 
 import {
   LinterAdapter,
@@ -33,58 +33,25 @@ function makePromise<T>(ret: T, timeout: number): Promise<T> {
 }
 
 describe('LinterAdapter', () => {
-  let eventCallback: any;
   let fakeLinter: any;
   let linterAdapter: any;
   let linterReturn: any;
   let fakeEditor: any;
-  let subscribedToAny: any;
-  let newUpdateSubscriber: any;
-  let publishMessageUpdateSpy: any;
-  let publishMessageInvalidationSpy: any;
-  let fakeDiagnosticsProviderBase: any;
   let bufferDestroyCallback: any;
-
-  class FakeDiagnosticsProviderBase {
-    publishMessageUpdate: JasmineSpy;
-    publishMessageInvalidation: JasmineSpy;
-    dispose: JasmineSpy;
-    constructor(options) {
-      eventCallback = options.onTextEditorEvent;
-      subscribedToAny = options.enableForAllGrammars;
-      newUpdateSubscriber = options.onNewUpdateSubscriber;
-      this.publishMessageUpdate = jasmine.createSpy();
-      publishMessageUpdateSpy = this.publishMessageUpdate;
-      this.publishMessageInvalidation = jasmine.createSpy();
-      publishMessageInvalidationSpy = this.publishMessageInvalidation;
-      this.dispose = jasmine.createSpy();
-      fakeDiagnosticsProviderBase = this;
-    }
-    onMessageUpdate(callback) {
-      this.publishMessageUpdate.andCallFake(callback);
-      return new Disposable(() => {});
-    }
-    onMessageInvalidation(callback) {
-      this.publishMessageInvalidation.andCallFake(callback);
-      return new Disposable(() => {});
-    }
-  }
+  let textEventSubject;
+  let textEventSpy;
 
   function newLinterAdapter(linter: LinterProvider) {
-    return new LinterAdapter(linter, (FakeDiagnosticsProviderBase: any));
-  }
-
-  function shouldNotInvalidate() {
-    waitsForPromise(() => {
-      return eventCallback(fakeEditor).then(result => {
-        expect(result).toBeUndefined();
-        expect(publishMessageUpdateSpy).not.toHaveBeenCalled();
-        expect(publishMessageInvalidationSpy).not.toHaveBeenCalled();
-      });
-    });
+    return new LinterAdapter(linter);
   }
 
   beforeEach(() => {
+    textEventSubject = new Subject();
+    textEventSpy = spyOn(
+      require('../../nuclide-diagnostics-provider-base/lib/TextEventDispatcher'),
+      'observeTextEditorEvents',
+    ).andReturn(textEventSubject.asObservable());
+
     const fakeBuffer = {
       onDidDestroy(callback) {
         bufferDestroyCallback = callback;
@@ -97,7 +64,6 @@ describe('LinterAdapter', () => {
       getGrammar() { return {scopeName: grammar}; },
       getBuffer() { return fakeBuffer; },
     };
-    spyOn(atom.workspace, 'getActiveTextEditor').andReturn(fakeEditor);
     linterReturn = Promise.resolve([]);
     fakeLinter = {
       name: 'fakeLinter',
@@ -111,12 +77,11 @@ describe('LinterAdapter', () => {
   });
 
   afterEach(() => {
-    jasmine.unspy(atom.workspace, 'getActiveTextEditor');
     bufferDestroyCallback = null;
   });
 
   it('should dispatch the linter on an event', () => {
-    eventCallback(fakeEditor);
+    textEventSubject.next(fakeEditor);
     expect(fakeLinter.lint).toHaveBeenCalled();
   });
 
@@ -128,99 +93,67 @@ describe('LinterAdapter', () => {
       lintsOnChange: true,
       lint: () => linterReturn,
     });
-    expect(subscribedToAny).toBe(true);
-  });
-
-  it('should dispatch an event on subscribe if no lint is in progress', () => {
-    const callback = jasmine.createSpy();
-    newUpdateSubscriber(callback);
-    waitsFor(() => {
-      return publishMessageUpdateSpy.callCount > 0;
-    }, 'It should call the callback', 100);
-  });
-
-  it('should not lint broken remote paths', () => {
-    jasmine.unspy(atom.workspace, 'getActiveTextEditor');
-    spyOn(atom.workspace, 'getActiveTextEditor').andReturn({
-      getPath: () => 'nuclide:/badpath',
-    });
-    const callback = jasmine.createSpy();
-    newUpdateSubscriber(callback);
-    expect(publishMessageUpdateSpy).not.toHaveBeenCalled();
+    expect(textEventSpy).toHaveBeenCalledWith('all', 'changes');
   });
 
   it('should work when the linter is synchronous', () => {
-    linterReturn = [{type: 'Error', filePath: 'foo'}];
-    let message = null;
-    linterAdapter.onMessageUpdate(m => {
-      message = m;
+    waitsForPromise(async () => {
+      linterReturn = [{type: 'Error', filePath: 'foo'}];
+      textEventSubject.next(fakeEditor);
+      const message = await linterAdapter.getUpdates().take(1).toPromise();
+      expect(message.filePathToMessages.has('foo')).toBe(true);
     });
-    eventCallback(fakeEditor);
-    waitsFor(() => {
-      return message && message.filePathToMessages.has('foo');
-    }, 'The adapter should publish a message');
   });
 
-  it('should not invalidate previous result when linter resolves to null', () => {
-    newLinterAdapter({
-      name: 'linter',
-      grammarScopes: [],
-      scope: 'file',
-      lintsOnChange: true,
-      lint: () => Promise.resolve(null),
-    });
+  function shouldNotInvalidate(value) {
+    waitsForPromise(async () => {
+      const spy = jasmine.createSpy();
+      linterAdapter.getInvalidations().subscribe(() => spy());
 
-    shouldNotInvalidate();
+      const promise = linterAdapter.getUpdates().take(1).toPromise();
+
+      // Populate the result.
+      linterReturn = [{type: 'Error', filePath: 'foo'}];
+      textEventSubject.next(fakeEditor);
+      await promise;
+
+      linterReturn = value;
+      textEventSubject.next(fakeEditor);
+
+      // This is tricky - the result resolves on the next tick.
+      await new Promise(resolve => process.nextTick(resolve));
+      expect(spy).not.toHaveBeenCalled();
+    });
+  }
+
+  it('should not invalidate previous result when linter resolves to null', () => {
+    shouldNotInvalidate(Promise.resolve(null));
   });
 
   it('should not invalidate previous result when linter resolves to undefined', () => {
-    newLinterAdapter({
-      name: 'linter',
-      grammarScopes: [],
-      scope: 'file',
-      lintsOnChange: true,
-      lint: () => Promise.resolve(undefined),
-    });
-
-    shouldNotInvalidate();
+    shouldNotInvalidate(Promise.resolve(undefined));
   });
 
   it('should not invalidate previous result when linter returns null', () => {
-    newLinterAdapter({
-      name: 'linter',
-      grammarScopes: [],
-      scope: 'file',
-      lintsOnChange: true,
-      lint: () => null,
-    });
-
-    shouldNotInvalidate();
+    shouldNotInvalidate(null);
   });
 
   it('should not invalidate previous result when linter returns undefined', () => {
-    newLinterAdapter({
-      name: 'linter',
-      grammarScopes: [],
-      scope: 'file',
-      lintsOnChange: true,
-      lint: () => undefined,
-    });
-
-    shouldNotInvalidate();
+    shouldNotInvalidate(undefined);
   });
 
   it('should not reorder results', () => {
     let numMessages = 0;
     let lastMessage = null;
-    linterAdapter.onMessageUpdate(message => {
+    linterAdapter.getUpdates().subscribe(message => {
       numMessages++;
       lastMessage = message;
     });
     // Dispatch two linter requests.
     linterReturn = makePromise([{type: 'Error', filePath: 'bar'}], 50);
-    eventCallback(fakeEditor);
+    textEventSubject.next(fakeEditor);
     linterReturn = makePromise([{type: 'Error', filePath: 'baz'}], 10);
-    eventCallback(fakeEditor);
+    textEventSubject.next(fakeEditor);
     // If we call it once with a larger value, the first promise will resolve
     // first, even though the timeout is larger
     advanceClock(30);
@@ -230,14 +163,8 @@ describe('LinterAdapter', () => {
     }, 'There should be only the latest message', 100);
   });
 
-  it('should delegate dispose', () => {
-    expect(fakeDiagnosticsProviderBase.dispose).not.toHaveBeenCalled();
-    linterAdapter.dispose();
-    expect(fakeDiagnosticsProviderBase.dispose).toHaveBeenCalled();
-  });
-
   it('invalidates files on close', () => {
-    newLinterAdapter({
+    const adapter = newLinterAdapter({
       name: 'linter',
       grammarScopes: ['*'],
       scope: 'file',
@@ -247,11 +174,13 @@ describe('LinterAdapter', () => {
         {type: 'Error', filePath: 'bar'},
       ]),
     });
-    eventCallback(fakeEditor);
+    textEventSubject.next(fakeEditor);
     waitsFor(() => bufferDestroyCallback != null);
-    runs(() => {
+    waitsForPromise(async () => {
+      const promise = adapter.getInvalidations().take(1).toPromise();
       bufferDestroyCallback();
-      expect(publishMessageInvalidationSpy).toHaveBeenCalledWith({
+      const invalidation = await promise;
+      expect(invalidation).toEqual({
         scope: 'file',
         filePaths: ['foo', 'bar'],
       });

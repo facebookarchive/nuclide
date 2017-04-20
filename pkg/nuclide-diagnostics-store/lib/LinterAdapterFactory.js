@@ -9,18 +9,12 @@
  */
 
 import type {LinterProvider} from '../../nuclide-diagnostics-common';
-// Flow didn't like it when I tried import type here. This shouldn't affect
-// performance though, since LinterAdapter requires this anyway.
-import {DiagnosticsProviderBase} from '../../nuclide-diagnostics-provider-base';
 import {LinterAdapter} from './LinterAdapter';
 
-function createSingleAdapter(
-  provider: LinterProvider,
-  ProviderBase?: typeof DiagnosticsProviderBase,
-): ?LinterAdapter {
+function createSingleAdapter(provider: LinterProvider): ?LinterAdapter {
   const validationErrors = validateLinter(provider);
   if (validationErrors.length === 0) {
-    return new LinterAdapter(provider, ProviderBase);
+    return new LinterAdapter(provider);
   } else {
     const nameString = provider.name;
     let message = `nuclide-diagnostics-store found problems with a linter${nameString}. ` +
@@ -34,7 +28,6 @@ function createSingleAdapter(
 function addSingleAdapter(
   adapters: Set<LinterAdapter>,
   provider: LinterProvider,
-  ProviderBase?: typeof DiagnosticsProviderBase,
 ): void {
   const adapter: ?LinterAdapter = createSingleAdapter(provider);
   if (adapter) {
@@ -44,7 +37,6 @@ function addSingleAdapter(
 
 export function createAdapters(
   providers: LinterProvider | Array<LinterProvider>,
-  ProviderBase?: typeof DiagnosticsProviderBase,
 ): Set<LinterAdapter> {
   const adapters = new Set();
   if (Array.isArray(providers)) {
