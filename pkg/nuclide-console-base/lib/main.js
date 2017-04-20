@@ -24,6 +24,7 @@ export function dispatchConsoleToggle(visible: boolean): void {
 export function pipeProcessMessagesToConsole(
   processName: string,
   progressUpdates: Subject<Message>,
+  showNotificationOnCompletion: boolean,
   processMessage: LegacyProcessMessage /* TODO(T17463635) */,
 ): void {
   switch (processMessage.kind) {
@@ -50,11 +51,13 @@ export function pipeProcessMessagesToConsole(
         );
       } else {
         progressUpdates.next({text: `${processName} exited with non zero code`, level: 'error'});
-        atom.notifications.addError(
-          'Operation Failed', {
-            detail: 'Check console for output',
-          },
-        );
+        if (showNotificationOnCompletion) {
+          atom.notifications.addError(
+            'Operation Failed', {
+              detail: 'Check console for output',
+            },
+          );
+        }
         dispatchConsoleToggle(true /* console visibility */);
       }
       break;
