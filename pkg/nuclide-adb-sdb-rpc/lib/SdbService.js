@@ -8,13 +8,21 @@
  * @flow
  */
 
-import {pathForDebugBridge} from './DebugBridge';
+import {pathForDebugBridge, getStore} from './DebugBridgePathStore';
 import {ConnectableObservable, Observable} from 'rxjs';
 import {Sdb} from './Sdb';
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
 import type {DeviceDescription} from './types';
+
+export async function registerAdbPath(
+  id: string,
+  path: NuclideUri,
+  priority: number = -1,
+): Promise<void> {
+  getStore('sdb').registerPath(id, {path, priority});
+}
 
 async function getSdb(): Promise<Sdb> {
   return new Sdb((await pathForDebugBridge('sdb')));

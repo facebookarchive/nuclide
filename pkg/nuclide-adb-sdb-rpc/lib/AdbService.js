@@ -8,7 +8,7 @@
  * @flow
  */
 
-import {pathForDebugBridge} from './DebugBridge';
+import {pathForDebugBridge, getStore} from './DebugBridgePathStore';
 import {ConnectableObservable, Observable} from 'rxjs';
 import {Adb} from './Adb';
 
@@ -18,6 +18,14 @@ import type {DeviceDescription, AndroidJavaProcess} from './types';
 
 async function getAdb(): Promise<Adb> {
   return new Adb((await pathForDebugBridge('adb')));
+}
+
+export async function registerAdbPath(
+  id: string,
+  path: NuclideUri,
+  priority: number = -1,
+): Promise<void> {
+  getStore('adb').registerPath(id, {path, priority});
 }
 
 export async function getDeviceInfo(device: string): Promise<Map<string, string>> {

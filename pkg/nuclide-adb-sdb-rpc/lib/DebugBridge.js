@@ -17,13 +17,9 @@ import {
 import os from 'os';
 import {Observable} from 'rxjs';
 
-import type {DeviceDescription, DebugBridgeType} from './types';
+import type {DeviceDescription} from './types';
 import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-
-export async function pathForDebugBridge(db: DebugBridgeType): Promise<string> {
-  return db;
-}
 
 export class DebugBridge {
   _adbPath: string;
