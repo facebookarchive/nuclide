@@ -39,33 +39,6 @@ export class Sdb extends DebugBridge {
     return this.getTizenModelConfigKey(device, 'tizen.org/system/model_name');
   }
 
-  async getManifestForPackageName(
-    device: string,
-    packageName: string,
-  ): Promise<string> {
-    const user = await this.runShortAdbCommand(device, [
-      'shell',
-      'whoami',
-    ]).toPromise();
-    const isRoot = user.trim() !== 'root';
-    let result;
-    try {
-      if (!isRoot) {
-        await this.runShortAdbCommand(device, ['root', 'on']).toPromise();
-      }
-      result = await this.runShortAdbCommand(device, [
-        'shell',
-        'cat',
-        `/opt/usr/apps/${packageName}/tizen-manifest.xml`,
-      ]).toPromise();
-    } finally {
-      if (!isRoot) {
-        await this.runShortAdbCommand(device, ['root', 'off']).toPromise();
-      }
-    }
-    return result;
-  }
-
   async getAPIVersion(device: string): Promise<string> {
     let version;
     try {

@@ -39,13 +39,6 @@ export async function getPidFromPackageName(
   return (await getSdb()).getPidFromPackageName(device, packageName);
 }
 
-export async function getManifestForPackageName(
-  device: string,
-  packageName: string,
-): Promise<string> {
-  return (await getSdb()).getManifestForPackageName(device, packageName);
-}
-
 export async function getFileContentsAtPath(
   device: string,
   path: string,
