@@ -9,113 +9,55 @@
  */
 
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {BusySignalProviderBase} from '../../nuclide-busy-signal';
-import {ArcanistDiagnosticsProvider} from '../lib/ArcanistDiagnosticsProvider';
-import nuclideUri from '../../commons-node/nuclideUri';
-import {generateFixture} from '../../nuclide-test-helpers';
+import {__testing__} from '../lib/ArcanistDiagnosticsProvider';
 import {Range} from 'atom';
 import invariant from 'assert';
 import {Observable} from 'rxjs';
 
+const {
+  _findDiagnostics,
+  _getFix,
+  _getRangeForFix,
+  _runningProcess,
+} = __testing__;
+
 describe('ArcanistDiagnosticsProvider', () => {
-  let provider: ArcanistDiagnosticsProvider = (null: any);
-  let tempFile: string = (null: any);
-
-  beforeEach(() => {
-    waitsForPromise(async () => {
-      const folder = await generateFixture('arcanist_diagnostic_provider', new Map([
-        ['test', 'abc'],
-      ]));
-      tempFile = nuclideUri.join(folder, 'test');
-      provider = new ArcanistDiagnosticsProvider(new BusySignalProviderBase());
-    });
-  });
-
-  it('should invalidate the messages when a file is closed', () => {
-    spyOn(provider._providerBase, 'publishMessageInvalidation');
-    waitsForPromise(async () => {
-      const editor = await atom.workspace.open(tempFile);
-
-      // The editor path may get changed (empiracally, prefixed with 'private/'),
-      // so we 'getPath()' here.
-      const filePath = editor.getPath();
-
-      const theOnlyPane = atom.workspace.getPanes()[0];
-
-      // Reaching into the class to trigger the Provider's TextEditor event
-      // callback during test. atom.workspace.getActiveTextEditor() is returns
-      // undefined during test causing TextEventDispatcher to queue rather
-      // than execute events.
-      provider._runLintWithBusyMessage(editor);
-
-      theOnlyPane.destroy();
-
-      expect(provider._providerBase.publishMessageInvalidation).toHaveBeenCalledWith({
-        scope: 'file',
-        filePaths: [filePath],
-      });
-    });
-  });
-
-  it('should not invalidate the messages when there are multiple buffers with the file', () => {
-    spyOn(provider._providerBase, 'publishMessageInvalidation');
-    waitsForPromise(async () => {
-      const firstEditor = await atom.workspace.open(tempFile);
-
-      // Reaching into the class to trigger the Provider's TextEditor event
-      // callback during test. atom.workspace.getActiveTextEditor() is returns
-      // undefined during test causing TextEventDispatcher to queue rather
-      // than execute events.
-      provider._runLintWithBusyMessage(firstEditor);
-
-      // Open a second pane, containing a second editor with the same file.
-      const paneToSplit = atom.workspace.getPanes()[0];
-      const secondPane = paneToSplit.splitLeft({copyActiveItem: true});
-      const item: any = secondPane.itemAtIndex(0);
-      const secondEditor = (item: TextEditor);
-      provider._runLintWithBusyMessage(secondEditor);
-
-      paneToSplit.destroy();
-      expect(provider._providerBase.publishMessageInvalidation).not.toHaveBeenCalled();
-    });
-  });
-
   describe('_getRangeForFix', () => {
     it('should work for single-line fixes', () => {
-      const range = provider._getRangeForFix(3, 4, 'asdf');
+      const range = _getRangeForFix(3, 4, 'asdf');
       expect(range).toEqual(new Range([3, 4], [3, 8]));
     });
 
     it('should work for multi-line fixes', () => {
-      const range = provider._getRangeForFix(3, 4, '\nasdf\njdjdj\n');
+      const range = _getRangeForFix(3, 4, '\nasdf\njdjdj\n');
       expect(range).toEqual(new Range([3, 4], [6, 0]));
     });
   });
 
   describe('_getFix', () => {
     it('should return the fix', () => {
-      const fix = provider._getFix({
+      const fix = _getFix({
         row: 1,
         col: 3,
         original: 'foo',
         replacement: 'bar',
       });
       expect(fix).toEqual({
-        oldRange: new Range([1, 3], [1, 6]),
+        range: new Range([1, 3], [1, 6]),
         oldText: 'foo',
         newText: 'bar',
       });
     });
 
     it('should truncate a common suffix', () => {
-      const fix = provider._getFix({
+      const fix = _getFix({
         row: 1,
         col: 3,
         original: 'foobar',
         replacement: 'fbar',
       });
       expect(fix).toEqual({
-        oldRange: new Range([1, 3], [1, 6]),
+        range: new Range([1, 3], [1, 6]),
         oldText: 'foo',
         newText: 'f',
       });
@@ -137,8 +79,8 @@ describe('ArcanistDiagnosticsProvider', () => {
             },
           });
 
-        const run1 = provider._findDiagnostics('test');
-        const run2 = provider._findDiagnostics('test');
+        const run1 = _findDiagnostics('test');
+        const run2 = _findDiagnostics('test');
         // The first run should be cancelled as soon as the second run is triggered.
         expect(await run1).toBeUndefined();
         expect(disposeSpy).toHaveBeenCalled();
@@ -152,13 +94,13 @@ describe('ArcanistDiagnosticsProvider', () => {
 
         jasmine.Clock.useMock();
         const rejectSpy = jasmine.createSpy('reject');
-        const run3 = provider._findDiagnostics('test').catch(rejectSpy);
+        const run3 = _findDiagnostics('test').catch(rejectSpy);
         jasmine.Clock.tick(100000);
         await run3;
         expect(rejectSpy).toHaveBeenCalled();
 
         // Ensure that the subject cache cleans itself up.
-        expect(provider._runningProcess.size).toBe(0);
+        expect(_runningProcess.size).toBe(0);
       });
     });
   });
