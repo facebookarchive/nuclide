@@ -56,6 +56,7 @@ export function compareMessagesByFile(a: DiagnosticMessage, b: DiagnosticMessage
 const messageLevelRank: {[key: MessageType]: number} = {
   Error: 0,
   Warning: 1,
+  Info: 2,
 };
 
 function compareMessagesByLevel(a: DiagnosticMessage, b: DiagnosticMessage): number {

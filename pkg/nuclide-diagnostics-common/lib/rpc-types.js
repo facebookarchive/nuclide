@@ -38,7 +38,7 @@ export type FileDiagnosticUpdate = {
   messages: Array<FileDiagnosticMessage>,
 };
 
-export type MessageType = 'Error' | 'Warning';
+export type MessageType = 'Error' | 'Warning' | 'Info';
 
 export type Trace = {
   type: 'Trace',

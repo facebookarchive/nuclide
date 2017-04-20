@@ -24,14 +24,18 @@ type DiagnosticsMessageProps = {
   fixer: (message: FileDiagnosticMessage) => void,
 };
 
+const PROVIDER_CLASS_NAME = {
+  Error: 'highlight-error',
+  Warning: 'highlight-warning',
+  Info: 'highlight-info',
+};
+
 function diagnosticHeader(props: DiagnosticsMessageProps) {
   const {
-      message,
-      fixer,
+    message,
+    fixer,
   } = props;
-  const providerClassName = message.type === 'Error'
-    ? 'highlight-error'
-    : 'highlight-warning';
+  const providerClassName = PROVIDER_CLASS_NAME[message.type];
   let fixButton = null;
   if (message.fix != null) {
     const applyFix = () => {

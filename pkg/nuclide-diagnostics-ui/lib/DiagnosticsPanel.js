@@ -70,7 +70,8 @@ export default class DiagnosticsPanel extends React.Component {
     diagnostics.forEach(diagnostic => {
       if (diagnostic.type === 'Error') {
         ++errorCount;
-      } else if (diagnostic.type === 'Warning') {
+      } else if (diagnostic.type === 'Warning' || diagnostic.type === 'Info') {
+        // TODO: should "Info" messages have their own category?
         ++warningCount;
       }
     });

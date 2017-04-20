@@ -86,7 +86,7 @@ export type LinterTrace = {
 };
 
 export type LinterMessage = {
-  type: 'Error' | 'Warning',
+  type: 'Error' | 'Warning' | 'Info',
   text?: string,
   html?: string,
   /*

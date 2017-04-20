@@ -91,7 +91,8 @@ export default class StatusBarTile {
     for (const message of messages) {
       if (message.type === 'Error') {
         ++errorCount;
-      } else if (message.type === 'Warning') {
+      } else if (message.type === 'Warning' || message.type === 'Info') {
+        // TODO: should "Info" messages have their own category?
         ++warningCount;
       }
     }

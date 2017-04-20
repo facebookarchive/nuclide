@@ -54,9 +54,10 @@ const EmptyComponent = () =>
 const TypeToHighlightColor = Object.freeze({
   ERROR: HighlightColors.error,
   WARNING: HighlightColors.warning,
+  INFO: HighlightColors.info,
 });
 
-function TypeComponent(props: {data: 'Warning' | 'Error'}): React.Element<any> {
+function TypeComponent(props: {data: 'Warning' | 'Error' | 'Info'}): React.Element<any> {
   const text = props.data;
   const highlightColor = TypeToHighlightColor[text.toUpperCase()];
   return <Highlight color={highlightColor}>{text}</Highlight>;
