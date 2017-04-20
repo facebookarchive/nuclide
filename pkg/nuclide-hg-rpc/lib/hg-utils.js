@@ -147,11 +147,8 @@ async function getHgExecParams(
   return {command, args, options};
 }
 
-export async function createCommmitMessageTempFile(commitMessage: string): Promise<string> {
-  const tempFile = await fsPromise.tempfile();
-  const strippedMessage = commitMessage.replace(COMMIT_MESSAGE_STRIP_LINE, '');
-  await fsPromise.writeFile(tempFile, strippedMessage);
-  return tempFile;
+export function formatCommitMessage(commitMessage: string): string {
+  return commitMessage.replace(COMMIT_MESSAGE_STRIP_LINE, '');
 }
 
 export async function getInteractiveCommitEditorConfig():

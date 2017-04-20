@@ -37,7 +37,7 @@ import {
   fetchFilesChangedAtRevision,
 } from './hg-revision-state-helpers';
 import {
-  createCommmitMessageTempFile,
+  formatCommitMessage,
   getInteractiveCommitEditorConfig,
   hgAsyncExecute,
   hgObserveExecution,
@@ -802,13 +802,11 @@ export class HgService {
     args: Array<string>,
   ): Observable<LegacyProcessMessage> { // TODO(T17463635)
     let editMergeConfigs;
-    let tempFile = null;
     return Observable.fromPromise((async () => {
       if (message == null) {
         return args;
       } else {
-        tempFile = await createCommmitMessageTempFile(message);
-        return [...args, '-l', tempFile];
+        return [...args, '-m', formatCommitMessage(message)];
       }
     })()).switchMap(argumentsWithCommitFile => {
       const execArgs = argumentsWithCommitFile;
@@ -827,10 +825,6 @@ export class HgService {
         execArgs,
         execOptions,
       );
-    }).finally(() => {
-      if (tempFile != null) {
-        fsPromise.unlink(tempFile);
-      }
     });
   }
 
