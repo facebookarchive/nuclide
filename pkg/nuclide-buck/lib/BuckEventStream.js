@@ -199,7 +199,7 @@ export function combineEventStreams(
     // We ensure that error/info logs will not duplicate messages from the websocket.
     processEvents.skipWhile(isRegularLogMessage),
   );
-  if (subcommand === 'test') {
+  if (subcommand === 'test' || subcommand === 'run') {
     // The websocket does not reliably provide test output.
     // After the build finishes, fall back to the Buck output stream.
     mergedEvents = Observable.concat(

@@ -79,6 +79,25 @@ describe('combineEventStreams', () => {
     });
   });
 
+  it('run: takes process messages after build finishes', () => {
+    waitsForPromise(async () => {
+      const combinedStream = combineEventStreams('test', socketSubject, processSubject);
+      const promise = combinedStream.toArray().toPromise();
+
+      processSubject.next({type: 'log', message: 'take', level: 'log'});
+      socketSubject.next({type: 'progress', progress: 1});
+      processSubject.next({type: 'log', message: 'take', level: 'log'});
+      processSubject.complete();
+
+      const result = await promise;
+      expect(result).toEqual([
+        {type: 'log', message: 'take', level: 'log'},
+        {type: 'progress', progress: null},
+        {type: 'log', message: 'take', level: 'log'},
+      ]);
+    });
+  });
+
   it('install: adds installing message after build finish', () => {
     waitsForPromise(async () => {
       const combinedStream = combineEventStreams('install', socketSubject, processSubject);
