@@ -27,6 +27,7 @@ import createBuckWebSocket from './createBuckWebSocket';
 import {getLogger} from '../../nuclide-logging';
 import ini from 'ini';
 import {quote} from 'shell-quote';
+import * as os from 'os';
 
 const logger = getLogger();
 
@@ -237,9 +238,11 @@ async function _getBuckCommandAndOptions(
   commandOptions?: AsyncExecuteOptions = {},
 ): Promise<BuckCommandAndOptions> {
   // $UPFixMe: This should use nuclide-features-config
-  const pathToBuck = (global.atom &&
-    global.atom.config.get('nuclide.nuclide-buck.pathToBuck')) ||
-    'buck';
+  let pathToBuck = (global.atom &&
+    global.atom.config.get('nuclide.nuclide-buck.pathToBuck')) || 'buck';
+  if (pathToBuck === 'buck' && os.platform() === 'win32') {
+    pathToBuck = 'buck.bat';
+  }
   const buckCommandOptions = {
     cwd: rootPath,
     // Buck restarts itself if the environment changes, so try to preserve
