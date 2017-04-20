@@ -167,34 +167,22 @@ function getLinesFromCommand(
   args: Array<string>,
   localDirectoryPath: string,
 ): Observable<string> {
-  return Observable.defer(() => {
-    // Keep a running string of stderr, in case we need to throw an error.
-    // TODO: Simplify once `observeProcess()` is updated to throw errors with accumulated stderr on
-    //   nonzero exit codes.
-    let stderr = '';
-
-    // Spawn the search command in the given directory.
-    return observeProcess(
-      command,
-      args,
-      {cwd: localDirectoryPath, /* TODO(T17353599) */ isExitError: () => false},
-    )
-      .catch(error => Observable.of({kind: 'error', error})) // TODO(T17463635)
-      .do(event => {
-        if (event.kind === 'stderr') {
-          stderr += event.data;
-        } else if (
-          // If the error code isn't 0 (found matches) or 1 (found no matches), error. Unless a
-          // process was killed with a signal, since this was likely to cancel the search.
-          event.kind === 'exit' && !event.signal && event.exitCode != null && event.exitCode > 1
-        ) {
-          throw new Error(stderr);
-        }
-      })
-      .filter(event => event.kind === 'stdout')
-      .map(event => {
-        invariant(event.kind === 'stdout');
-        return event.data;
-      });
-  });
+  // Spawn the search command in the given directory.
+  return observeProcess(
+    command,
+    args,
+    {
+      cwd: localDirectoryPath,
+      // An exit code of 0 or 1 is perfectly normal for grep (1 = no results).
+      // `hg grep` can sometimes have an exit code of 123, since it uses xargs.
+      isExitError: ({exitCode, signal}) => {
+        return !signal && (exitCode == null || (exitCode > 1 && exitCode !== 123));
+      },
+    },
+  )
+    .filter(event => event.kind === 'stdout')
+    .map(event => {
+      invariant(event.kind === 'stdout');
+      return event.data;
+    });
 }
