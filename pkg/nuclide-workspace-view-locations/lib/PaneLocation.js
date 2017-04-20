@@ -20,7 +20,10 @@ export class PaneLocation {
 
   constructor() {
     this._disposables = new UniversalDisposable(
-      syncPaneItemVisibility(observePanes(atom.workspace.paneContainer), Observable.of(true)),
+      syncPaneItemVisibility(
+        observePanes((atom.workspace: any).paneContainer),
+        Observable.of(true),
+      ),
     );
   }
 
@@ -86,7 +89,7 @@ export class PaneLocation {
 
   onDidAddItem(cb: (item: Viewable) => void): IDisposable {
     return new UniversalDisposable(
-      observeAddedPaneItems(atom.workspace.paneContainer).subscribe(cb),
+      observeAddedPaneItems((atom.workspace: any).paneContainer).subscribe(cb),
     );
   }
 }
