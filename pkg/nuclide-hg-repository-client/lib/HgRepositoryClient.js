@@ -970,29 +970,19 @@ export class HgRepositoryClient {
 
   commit(
     message: string,
-    isInteractive: boolean = false,
   ): Observable<LegacyProcessMessage> { // TODO(T17463635)
-    if (isInteractive) {
-      this._updateInteractiveMode(true);
-    }
-    return this._service.commit(message, isInteractive)
+    return this._service.commit(message)
       .refCount()
-      .do(this._clearOnSuccessExit.bind(this, isInteractive))
-      .finally(this._updateInteractiveMode.bind(this, false));
+      .do(processMessage => this._clearOnSuccessExit(processMessage));
   }
 
   amend(
     message: ?string,
     amendMode: AmendModeValue,
-    isInteractive: boolean = false,
   ): Observable<LegacyProcessMessage> { // TODO(T17463635)
-    if (isInteractive) {
-      this._updateInteractiveMode(true);
-    }
-    return this._service.amend(message, amendMode, isInteractive)
+    return this._service.amend(message, amendMode)
       .refCount()
-      .do(this._clearOnSuccessExit.bind(this, isInteractive))
-      .finally(this._updateInteractiveMode.bind(this, false));
+      .do(processMessage => this._clearOnSuccessExit(processMessage));
   }
 
   splitRevision(): Observable<LegacyProcessMessage> { // TODO(T17463635)
@@ -1001,8 +991,8 @@ export class HgRepositoryClient {
       .finally(this._updateInteractiveMode.bind(this, false));
   }
 
-  _clearOnSuccessExit(isInteractive: boolean, message: LegacyProcessMessage) {
-    if (!isInteractive && message.kind === 'exit' && message.exitCode === 0) {
+  _clearOnSuccessExit(message: LegacyProcessMessage) {
+    if (message.kind === 'exit' && message.exitCode === 0) {
       this._clearClientCache();
     }
   }

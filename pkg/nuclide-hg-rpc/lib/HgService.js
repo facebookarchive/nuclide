@@ -800,15 +800,10 @@ export class HgService {
   _commitCode(
     message: ?string,
     args: Array<string>,
-    isInteractive: boolean,
   ): Observable<LegacyProcessMessage> { // TODO(T17463635)
     let editMergeConfigs;
     let tempFile = null;
     return Observable.fromPromise((async () => {
-      if (isInteractive) {
-        args.push('--interactive');
-        editMergeConfigs = await getInteractiveCommitEditorConfig();
-      }
       if (message == null) {
         return args;
       } else {
@@ -845,9 +840,8 @@ export class HgService {
    */
   commit(
     message: string,
-    isInteractive: boolean = false,
   ): ConnectableObservable<LegacyProcessMessage> { // TODO(T17463635)
-    return this._commitCode(message, ['commit'], isInteractive).publish();
+    return this._commitCode(message, ['commit']).publish();
   }
 
   /**
@@ -861,7 +855,6 @@ export class HgService {
   amend(
     message: ?string,
     amendMode: AmendModeValue,
-    isInteractive: boolean = false,
   ): ConnectableObservable<LegacyProcessMessage> { // TODO(T17463635)
     const args = ['amend'];
     switch (amendMode) {
@@ -876,7 +869,7 @@ export class HgService {
       default:
         throw new Error('Unexpected AmendMode');
     }
-    return this._commitCode(message, args, isInteractive).publish();
+    return this._commitCode(message, args).publish();
   }
 
   splitRevision(): ConnectableObservable<LegacyProcessMessage> { // TODO(T17463635)
