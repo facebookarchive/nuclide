@@ -201,7 +201,7 @@ export default class FileTreeSidebarComponent extends React.Component {
         if (featureConfig.get(REVEAL_FILE_ON_SWITCH_SETTING)) {
           atom.commands.dispatch(
             atom.views.getView(atom.workspace),
-            'nuclide-file-tree:reveal-in-file-tree',
+            'nuclide-file-tree:reveal-active-file',
           );
         }
         this._actions.clearFilter();

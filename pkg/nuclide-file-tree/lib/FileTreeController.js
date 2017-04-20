@@ -89,7 +89,7 @@ export default class FileTreeController {
     this._disposables.add(
       atom.project.onDidChangePaths(() => this._updateRootDirectories()),
       atom.commands.add('atom-workspace', {
-        'nuclide-file-tree:reveal-in-file-tree': this._revealFile.bind(this),
+        'nuclide-file-tree:reveal-active-file': this._revealFile.bind(this),
         'nuclide-file-tree:recursive-collapse-all': this._collapseAll.bind(this),
         'nuclide-file-tree:add-file-relative': () => {
           FileSystemActions.openAddFileDialogRelative(
