@@ -17,4 +17,8 @@ export class AndroidInfoProvider extends AndroidTizenInfoBaseProvider {
   constructor() {
     super('android', (host: NuclideUri) => getAdbServiceByNuclideUri(host));
   }
+
+  getPriority(): number {
+    return 100;
+  }
 }

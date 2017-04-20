@@ -13,7 +13,7 @@ import * as Actions from './Actions';
 import invariant from 'invariant';
 
 import type {ActionsObservable} from '../../../commons-node/redux-observable';
-import type {Action, Store} from '../types';
+import type {Action, Store, AppState} from '../types';
 
 export function setDevicesEpic(
   actions: ActionsObservable<Action>,
@@ -41,16 +41,25 @@ export function setDeviceEpic(
     .switchMap(action => {
       invariant(action.type === Actions.SET_DEVICE);
       const state = store.getState();
-      const device = state.device;
-      if (device == null) {
-        return Observable.empty();
-      }
-      const infoTables = new Map();
-      const promise = Promise.all(Array.from(state.deviceInfoProviders)
-        .filter(provider => provider.getType() === state.deviceType)
-        .map(provider => provider.fetch(state.host, device)
-                           .then(infoTable => infoTables.set(provider.getTitle(), infoTable))));
-      return Observable.fromPromise(promise)
-        .switchMap(_ => Observable.of(Actions.setInfoTables(infoTables)));
+      return Observable.fromPromise(getInfoTables(state))
+        .switchMap(infoTables => Observable.of(Actions.setInfoTables(infoTables)));
     });
+}
+
+async function getInfoTables(state: AppState): Promise<Map<string, Map<string, string>>> {
+  const device = state.device;
+  if (device == null) {
+    return new Map();
+  }
+  const sortedProviders = Array.from(state.deviceInfoProviders)
+    .filter(provider => provider.getType() === state.deviceType)
+    .sort((a, b) => {
+      const pa = a.getPriority === undefined ? -1 : a.getPriority();
+      const pb = b.getPriority === undefined ? -1 : b.getPriority();
+      return pb - pa;
+    });
+  const infoTables = await Promise.all(sortedProviders.map(async provider => {
+    return [provider.getTitle(), await provider.fetch(state.host, device)];
+  }));
+  return new Map(infoTables);
 }

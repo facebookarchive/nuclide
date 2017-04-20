@@ -33,7 +33,7 @@ export class AndroidTizenInfoBaseProvider implements DeviceInfoProvider {
   }
 
   getTitle(): string {
-    return 'Device Information';
+    return 'Device information';
   }
 
   getType(): string {
