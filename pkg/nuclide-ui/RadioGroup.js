@@ -48,7 +48,7 @@ export default class RadioGroup extends React.Component {
     const checkboxes = this.props.optionLabels.map((labelContent, i) => {
       const id = 'nuclide-radiogroup-' + uid + '-' + i;
       return (
-        <div key={i}>
+        <div key={i} className="nuclide-ui-radiogroup-div">
           <input
             className="input-radio"
             type="radio"
