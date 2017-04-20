@@ -24,9 +24,7 @@ import type {
 
 import {Range} from 'atom';
 import {Observable, Subject} from 'rxjs';
-import {
-  observeTextEditorEvents,
-} from '../../nuclide-diagnostics-provider-base/lib/TextEventDispatcher';
+import {observeTextEditorEvents} from '../../nuclide-diagnostics-common';
 import {getLogger} from '../../nuclide-logging';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';

@@ -113,3 +113,8 @@ export type LinterProvider = {
   lintOnFly?: boolean,
   lint: (textEditor: TextEditor) => ?Promise<?Array<LinterMessage>>,
 };
+
+export {
+  TextEventDispatcher,
+  observeTextEditorEvents,
+} from './TextEventDispatcher';

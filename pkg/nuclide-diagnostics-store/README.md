@@ -18,6 +18,8 @@ diagnostics in response to other events, such as file changes that occur outside
 comparison, the `linter` API exclusively polls for changes in response to change events from a
 `TextEditor`.
 
+For simple use cases, we recommend just using the pull-based Linter API.
+
 ## Provider API
 
 ### API Overview
@@ -91,17 +93,6 @@ type InvalidationMessage = {
 Note that when an update is sent, any file names that are keys in `filePathToMessages` implicitly
 have their previous messages invalidated. This means that simple providers that act only on the
 currently active file need not ever send an invalidation message.
-
-### Implementing a Provider
-
-You are free to implement a provider using only the specification above, but you will duplicate a
-lot of work -- most of it related to subscribing to the appropriate Atom events. To alleviate that
-pain, we have created the
-[`nuclide-diagnostics-provider-base`](https://github.com/facebook/nuclide/tree/master/pkg/nuclide-diagnostics-provider-base)
-feature.
-
-To see it in action, look at our [sample diagnostics
-provider](https://github.com/facebook/nuclide/tree/master/pkg/sample-diagnostics-provider).
 
 ## Linter API
 

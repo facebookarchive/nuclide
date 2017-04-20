@@ -27,7 +27,7 @@ import {ConnectionCache} from '../../nuclide-remote-connection';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {track, trackTiming} from '../../nuclide-analytics';
 import {RequestSerializer} from '../../commons-node/promise';
-import {DiagnosticsProviderBase} from '../../nuclide-diagnostics-provider-base';
+import {DiagnosticsProviderBase} from './DiagnosticsProviderBase';
 import {onDidRemoveProjectPath} from '../../commons-atom/projects';
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
 import {Observable} from 'rxjs';

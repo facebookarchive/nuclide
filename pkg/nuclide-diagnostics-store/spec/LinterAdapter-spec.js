@@ -48,7 +48,7 @@ describe('LinterAdapter', () => {
   beforeEach(() => {
     textEventSubject = new Subject();
     textEventSpy = spyOn(
-      require('../../nuclide-diagnostics-provider-base/lib/TextEventDispatcher'),
+      require('../../nuclide-diagnostics-common/lib/TextEventDispatcher'),
       'observeTextEditorEvents',
     ).andReturn(textEventSubject.asObservable());
 
