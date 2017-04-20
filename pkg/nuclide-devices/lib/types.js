@@ -26,7 +26,7 @@ export interface DeviceFetcher {
 }
 
 export interface DeviceInfoProvider {
-  fetch(host: NuclideUri, device: Device): Promise<Map<string, string>>,
+  fetch(host: NuclideUri, device: string): Promise<Map<string, string>>,
   getType(): string,
   getTitle(): string,
   getPriority?: () => number,

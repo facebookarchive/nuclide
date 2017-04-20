@@ -59,7 +59,7 @@ async function getInfoTables(state: AppState): Promise<Map<string, Map<string, s
       return pb - pa;
     });
   const infoTables = await Promise.all(sortedProviders.map(async provider => {
-    return [provider.getTitle(), await provider.fetch(state.host, device)];
+    return [provider.getTitle(), await provider.fetch(state.host, device.name)];
   }));
   return new Map(infoTables);
 }
