@@ -10,8 +10,10 @@
 
 import invariant from 'assert';
 import {Disposable, CompositeDisposable} from 'atom';
+import {Observable} from 'rxjs';
 import {observeTextEditors} from '../../commons-atom/text-editor';
 import debounce from '../../commons-node/debounce';
+import {observableFromSubscribeFunction} from '../../commons-node/event';
 
 type EventCallback = (editor: TextEditor) => mixed;
 
@@ -158,7 +160,7 @@ class TextCallbackContainer<CallbackArg> {
  * from Atom's text events.
  *
  */
-export default class TextEventDispatcher {
+export class TextEventDispatcher {
   _callbackContainer: TextCallbackContainer<TextEditor>;
 
   _editorListenerDisposable: ?CompositeDisposable;
@@ -279,6 +281,28 @@ export default class TextEventDispatcher {
     invariant(disposable, 'TextEventDispatcher disposable is not initialized');
     return disposable;
   }
+}
+
+export function observeTextEditorEvents(
+  grammarScopes: Iterable<string> | 'all',
+  events: 'changes' | 'saves',
+): Observable<atom$TextEditor> {
+  return Observable.defer(() => {
+    const dispatcher = new TextEventDispatcher();
+    if (events === 'changes') {
+      if (grammarScopes === 'all') {
+        return observableFromSubscribeFunction(cb => dispatcher.onAnyFileChange(cb));
+      } else {
+        return observableFromSubscribeFunction(cb => dispatcher.onFileChange(grammarScopes, cb));
+      }
+    } else {
+      if (grammarScopes === 'all') {
+        return observableFromSubscribeFunction(cb => dispatcher.onAnyFileSave(cb));
+      } else {
+        return observableFromSubscribeFunction(cb => dispatcher.onFileSave(grammarScopes, cb));
+      }
+    }
+  });
 }
 
 export const __TEST__ = {

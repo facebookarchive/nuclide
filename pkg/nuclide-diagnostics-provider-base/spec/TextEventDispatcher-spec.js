@@ -11,7 +11,7 @@
 import {Disposable} from 'atom';
 import {sleep} from '../../commons-node/promise';
 
-import TextEventDispatcher, {__TEST__} from '../lib/TextEventDispatcher';
+import {TextEventDispatcher, observeTextEditorEvents, __TEST__} from '../lib/TextEventDispatcher';
 
 const grammar = 'testgrammar';
 
@@ -147,6 +147,14 @@ describe('TextEventDispatcher', () => {
     textEventDispatcher.onFileChange([grammar], callback);
     triggerAtomEvent(fakeTextEditor);
     expect(callback).toHaveBeenCalled();
+  });
+
+  it('should work with observeTextEditorEvents', () => {
+    const spy = jasmine.createSpy();
+    observeTextEditorEvents([grammar], 'changes')
+      .subscribe(editor => spy(editor));
+    triggerAtomEvent(fakeTextEditor);
+    expect(spy).toHaveBeenCalledWith(fakeTextEditor);
   });
 
   it('should debounce events', () => {
