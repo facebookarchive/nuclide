@@ -6,25 +6,6 @@
   "description": "Provides an API to consume diagnostics.",
   "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
-    "configMetadata": {
-      "pathComponents": [
-        "Language",
-        "Legacy Linters"
-      ]
-    },
-    "config": {
-      "consumeLegacyLinters": {
-        "title": "Consume Linters for the `linter` package",
-        "type": "boolean",
-        "default": true
-      },
-      "legacyLintOnTheFly": {
-        "title": "'lint-on-the-fly' for `linter` package linters",
-        "type": "boolean",
-        "default": true,
-        "description": "Does not apply to packages using diagnostics, since they can send updates whenever they want."
-      }
-    },
     "packageType": "Atom",
     "testRunner": "apm"
   },

@@ -115,8 +115,6 @@ export function linterMessagesToDiagnosticUpdate(
 export class LinterAdapter {
   _provider: LinterProvider;
 
-  _enabled: boolean;
-
   _requestSerializer: RequestSerializer<any>;
 
   _providerUtils: DiagnosticsProviderBase;
@@ -141,17 +139,12 @@ export class LinterAdapter {
     };
     this._providerUtils = new ProviderBase(utilsOptions);
     this._provider = provider;
-    this._enabled = true;
     this._requestSerializer = new RequestSerializer();
     this._filesForBuffer = new WeakMap();
     this._onDestroyDisposables = new Map();
   }
 
   async _runLint(editor: TextEditor): Promise<void> {
-    if (!this._enabled) {
-      return;
-    }
-
     const maybe = this._provider.lint(editor);
     if (maybe == null) {
       return;
@@ -203,14 +196,6 @@ export class LinterAdapter {
         this._runLint(activeTextEditor);
       }
     }
-  }
-
-  setEnabled(enabled: boolean): void {
-    this._enabled = enabled;
-  }
-
-  setLintOnFly(lintOnFly: boolean): void {
-    this._providerUtils.setRunOnTheFly(lintOnFly && Boolean(this._provider.lintOnFly));
   }
 
   dispose(): void {

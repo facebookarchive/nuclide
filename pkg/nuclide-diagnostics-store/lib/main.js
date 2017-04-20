@@ -18,17 +18,12 @@ import type {
 import type {LinterAdapter} from './LinterAdapter';
 
 import createPackage from '../../commons-atom/createPackage';
-import featureConfig from '../../commons-atom/featureConfig';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {getLogger} from '../../nuclide-logging';
 import {DiagnosticStore} from '../../nuclide-diagnostics-common';
 
 import {createAdapters} from './LinterAdapterFactory';
-
-const legacyLinterSetting = 'nuclide-diagnostics-store.consumeLegacyLinters';
-
-const legacyLintOnTheFlySetting = 'nuclide-diagnostics-store.legacyLintOnTheFly';
 
 class Activation {
   _disposables: UniversalDisposable;
@@ -37,36 +32,18 @@ class Activation {
   _diagnosticUpdater: ?DiagnosticUpdater;
   _observableDiagnosticUpdater: ?ObservableDiagnosticUpdater;
 
-  _consumeLegacyLinters: boolean;
-  _lintOnTheFly: boolean;
   _allLinterAdapters: Set<LinterAdapter>;
 
   constructor() {
     this._allLinterAdapters = new Set();
 
-    // Returns mixed so a cast is necessary.
-    this._consumeLegacyLinters = ((featureConfig.get(legacyLinterSetting): any): boolean);
-    this._lintOnTheFly = ((featureConfig.get(legacyLintOnTheFlySetting): any): boolean);
-
-    this._disposables = new UniversalDisposable(
-      featureConfig.observe(legacyLinterSetting, (newValue: any) => {
-        // To make this really solid, we should also probably trigger the linter
-        // for the active text editor. Possibly more trouble than it's worth,
-        // though, since this may be a temporary option.
-        this._consumeLegacyLinters = newValue;
-        this._allLinterAdapters.forEach(adapter => adapter.setEnabled(newValue));
-      }),
-
-      featureConfig.observe(legacyLintOnTheFlySetting, (newValue: any) => {
-        this._lintOnTheFly = newValue;
-        this._allLinterAdapters.forEach(adapter => adapter.setLintOnFly(newValue));
-      }),
-    );
+    this._disposables = new UniversalDisposable(() => {
+      this._allLinterAdapters.forEach(adapter => adapter.dispose());
+      this._allLinterAdapters.clear();
+    });
   }
 
   dispose() {
-    this._allLinterAdapters.forEach(adapter => adapter.dispose());
-    this._allLinterAdapters.clear();
     this._disposables.dispose();
   }
 
@@ -115,8 +92,6 @@ class Activation {
     const newAdapters = createAdapters(provider);
     const adapterDisposables = new UniversalDisposable();
     for (const adapter of newAdapters) {
-      adapter.setEnabled(this._consumeLegacyLinters);
-      adapter.setLintOnFly(this._lintOnTheFly);
       this._allLinterAdapters.add(adapter);
       const diagnosticDisposable = this.consumeDiagnosticsProviderV1(adapter);
       adapterDisposables.add(() => {
