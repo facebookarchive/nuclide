@@ -350,6 +350,17 @@ declare class atom$StyleManager {
 
   // Paths
   getUserStyleSheetPath(): string,
+
+  // (Undocumented.)
+  addStyleSheet(
+    source: string,
+    params: {
+      sourcePath?: string,
+      context?: boolean,
+      priority?: number,
+      skipDeprecatedSelectorsTransformation?: boolean
+    }
+  ): IDisposable,
 }
 
 type atom$PaneSplitParams = {
