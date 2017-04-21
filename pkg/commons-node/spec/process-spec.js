@@ -363,6 +363,19 @@ describe('commons-node/process', () => {
 
     if (origPlatform === 'win32') { return; }
 
+    it('enforces maxBuffer', () => {
+      waitsForPromise(async () => {
+        let error;
+        try {
+          await runCommand('yes', [], {maxBuffer: 100}).toPromise();
+        } catch (err) {
+          error = err;
+        }
+        invariant(error != null);
+        expect(error.message).toContain('maxBuffer');
+      });
+    });
+
     it('returns stdout of the running process', () => {
       waitsForPromise(async () => {
         const val = await runCommand('echo', ['-n', 'foo'], {env: process.env}).toPromise();

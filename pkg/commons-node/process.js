@@ -75,6 +75,7 @@ type CreateProcessStreamOptions = {
 
 type GetOutputStreamOptions = {
   splitByLines?: ?boolean,
+  maxBuffer?: ?number,
 };
 
 export type ObserveProcessOptions = SpawnProcessOptions
@@ -106,6 +107,13 @@ export class ProcessExitError extends Error {
     this.signal = exitMessage.signal;
     this.stderr = stderr;
     this.process = proc;
+  }
+}
+
+export class MaxBufferExceededError extends Error {
+  constructor(streamName: string) {
+    super(`${streamName} maxBuffer exceeded`);
+    this.name = 'MaxBufferExceededError';
   }
 }
 
@@ -396,9 +404,12 @@ export function getOutputStream(
   rest: void,
 ): Observable<ProcessMessage> {
   const chunk = idx(options, _ => _.splitByLines) === false ? (x => x) : splitStream;
+  const maxBuffer = idx(options, _ => _.maxBuffer);
   return Observable.defer(() => {
-    const stdoutEvents = chunk(observeStream(process.stdout)).map(data => ({kind: 'stdout', data}));
-    const stderrEvents = chunk(observeStream(process.stderr)).map(data => ({kind: 'stderr', data}));
+    const stdoutEvents = chunk(limitBufferSize(observeStream(process.stdout), maxBuffer, 'stdout'))
+      .map(data => ({kind: 'stdout', data}));
+    const stderrEvents = chunk(limitBufferSize(observeStream(process.stderr), maxBuffer, 'stderr'))
+      .map(data => ({kind: 'stderr', data}));
 
     // We need to start listening for the exit event immediately, but defer emitting it until the
     // (buffered) output streams end.
@@ -549,7 +560,8 @@ export function runCommand(
   options?: ObserveProcessOptions = {},
   rest: void,
 ): Observable<string> {
-  return observeProcess(command, args, options)
+  const maxBuffer = idx(options, _ => _.maxBuffer) || DEFAULT_MAX_BUFFER;
+  return observeProcess(command, args, {...options, maxBuffer})
     .filter(event => event.kind === 'stdout')
     .reduce(
       (acc, event) => {
@@ -665,5 +677,24 @@ export function parsePsOutput(
       parentPid: parseInt(parentPid, 10),
       pid: parseInt(pid, 10),
     };
+  });
+}
+
+function limitBufferSize(
+  stream: Observable<string>,
+  maxBuffer: ?number,
+  streamName: string,
+): Observable<string> {
+  if (maxBuffer == null) {
+    return stream;
+  }
+  return Observable.defer(() => {
+    let totalSize = 0;
+    return stream.do(data => {
+      totalSize += data.length;
+      if (totalSize > maxBuffer) {
+        throw new MaxBufferExceededError(streamName);
+      }
+    });
   });
 }
