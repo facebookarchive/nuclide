@@ -58,11 +58,12 @@ function logMessage(direction: string, message: string): void {
   logger.logTrace(`Hack Connection message ${direction}: '${message}'`);
 }
 
-class HackProcess extends RpcProcess {
+class HackProcess {
   _hhconfigPath: string;
   _fileCache: FileCache;
   _fileSubscription: rxjs$ISubscription;
   _fileVersionNotifier: FileVersionNotifier;
+  _process: RpcProcess;
 
   constructor(
     fileCache: FileCache,
@@ -70,7 +71,7 @@ class HackProcess extends RpcProcess {
     processStream: Observable<child_process$ChildProcess>,
     hhconfigPath: string,
   ) {
-    super(name, getServiceRegistry(), processStream, logMessage);
+    this._process = new RpcProcess(name, getServiceRegistry(), processStream, logMessage);
     this._fileCache = fileCache;
     this._fileVersionNotifier = new FileVersionNotifier();
     this._hhconfigPath = hhconfigPath;
@@ -118,8 +119,12 @@ class HackProcess extends RpcProcess {
   }
 
   getConnectionService(): Promise<HackConnectionService> {
-    invariant(!this.isDisposed(), 'getService called on disposed hackProcess');
-    return this.getService('HackConnectionService');
+    invariant(!this._process.isDisposed(), 'getService called on disposed hackProcess');
+    return this._process.getService('HackConnectionService');
+  }
+
+  observeExitMessage() {
+    return this._process.observeExitMessage();
   }
 
   async getBufferAtVersion(fileVersion: FileVersion): Promise<?simpleTextBuffer$TextBuffer> {
@@ -173,28 +178,23 @@ class HackProcess extends RpcProcess {
     return {isIncomplete, items};
   }
 
-  dispose(): void {
-    if (!this.isDisposed()) {
-      // Atempt to send disconnect message before shutting down connection
-      this.getConnectionService().then(service => {
-        try {
-          logger.log('Attempting to disconnect cleanly from HackProcess');
-          service.disconnect();
-        } catch (e) {
-          // Failing to send the shutdown is not fatal...
-          // ... continue with shutdown.
-          logger.logError('Hack Process died before disconnect() could be sent.');
-        }
-      });
-      super.dispose();
-      this._fileVersionNotifier.dispose();
-      this._fileSubscription.unsubscribe();
-      if (processes.has(this._fileCache)) {
-        processes.get(this._fileCache).delete(this._hhconfigPath);
-      }
-    } else {
-      logger.logInfo(`HackProcess attempt to shut down already disposed ${this.getRoot()}.`);
+  async _disconnect(): Promise<void> {
+    // Attempt to send disconnect message before shutting down connection
+    try {
+      logger.log('Attempting to disconnect cleanly from HackProcess');
+      (await this.getConnectionService()).disconnect();
+    } catch (e) {
+      // Failing to send the shutdown is not fatal...
+      // ... continue with shutdown.
+      logger.logError('Hack Process died before disconnect() could be sent.');
     }
+  }
+
+  dispose(): void {
+    this._disconnect();
+    this._process.dispose();
+    this._fileVersionNotifier.dispose();
+    this._fileSubscription.unsubscribe();
   }
 }
 
@@ -317,19 +317,15 @@ async function createHackProcess(
 
   // If the process exits unexpectedly, create a new one immediately.
   const startTime = Date.now();
-  hackProcess.observeExitCode().subscribe(message => {
-    if (message.exitCode === HACK_IDE_NEW_CLIENT_CONNECTED_EXIT_CODE) {
+  hackProcess.observeExitMessage().subscribe(message => {
+    // Dispose the process by removing it from the cache.
+    if (processes.has(fileCache)) {
+      processes.get(fileCache).delete(configDir);
+    }
+    if (message != null && message.exitCode === HACK_IDE_NEW_CLIENT_CONNECTED_EXIT_CODE) {
       logger.logInfo('Not reconnecting Hack process--another client connected');
       return;
     }
-    // This should always be true because the exit code sequence is terminated
-    // immediately after the HackProcess disposes itself, and it removes itself
-    // from the processes cache during disposal.
-    invariant(
-      !processes.has(fileCache) ||
-      !processes.get(fileCache).has(configDir),
-      'Attempt to reconnect Hack process when connection already exists',
-    );
     // If the process exited too quickly (possibly due to a crash), don't get
     // stuck in a loop creating and crashing it.
     const processUptimeMs = Date.now() - startTime;

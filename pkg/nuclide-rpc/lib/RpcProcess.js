@@ -10,11 +10,11 @@
 
 import type {Subscription, Observable} from 'rxjs';
 import type {ServiceRegistry, MessageLogger} from '..';
-import type {LegacyProcessMessage, ProcessExitMessage} from '../../commons-node/process-rpc-types';
+import type {ProcessMessage, ProcessExitMessage} from '../../commons-node/process-rpc-types';
 
 import {StreamTransport} from './StreamTransport';
 import {RpcConnection} from './RpcConnection';
-import {getOutputStream} from '../../commons-node/process';
+import {exitEventToMessage, getOutputStream} from '../../commons-node/process';
 import {getLogger} from '../../nuclide-logging';
 import invariant from 'assert';
 import {Subject} from 'rxjs';
@@ -44,7 +44,7 @@ export class RpcProcess {
   _serviceRegistry: ServiceRegistry;
   _rpcConnection: ?Promise<RpcConnection<StreamTransport>>;
   _disposals: Subject<void>;
-  _exitCode: Subject<ProcessExitMessage>;
+  _exitMessage: Subject<?ProcessExitMessage>;
 
   /**
    * @param name           a name for this server, used to tag log entries
@@ -66,7 +66,7 @@ export class RpcProcess {
     this._serviceRegistry = serviceRegistry;
     this._rpcConnection = null;
     this._disposals = new Subject();
-    this._exitCode = new Subject();
+    this._exitMessage = new Subject();
   }
 
   getName(): string {
@@ -82,8 +82,12 @@ export class RpcProcess {
     return (await connection).getService(serviceName);
   }
 
-  observeExitCode(): Observable<ProcessExitMessage> {
-    return this._exitCode.asObservable();
+  /**
+   * Emits the exit message of the currently running process, or null on error.
+   * Completes when the process finishes.
+   */
+  observeExitMessage(): Observable<?ProcessExitMessage> {
+    return this._exitMessage.takeUntil(this._disposals);
   }
 
   /**
@@ -96,15 +100,18 @@ export class RpcProcess {
         .do({
           error: e => {
             logger.error(`${this._name} - error spawning child process: `, e);
+            this._exitMessage.next(null);
             this.dispose();
           },
         })
         .takeUntil(this._disposals)
         .publish();
 
-      // This is implicitly disposed by `dispose()` via `this._disposals`.
       processStream
         .switchMap(proc => getOutputStream(proc))
+        // switchMap won't stop until the mapped observable stops.
+        // Manual disposals shouldn't trigger the exit message.
+        .takeUntil(this._disposals)
         .subscribe(this._onProcessMessage.bind(this));
 
       const connection = this._rpcConnection =
@@ -139,7 +146,7 @@ export class RpcProcess {
    * Handles lifecycle messages from stderr, exit, and error streams,
    * responding by logging and staging for process restart.
    */
-  _onProcessMessage(message: LegacyProcessMessage /* TODO(T17463635) */): void {
+  _onProcessMessage(message: ProcessMessage): void {
     switch (message.kind) {
       case 'stdout':
         break;
@@ -147,15 +154,8 @@ export class RpcProcess {
         logger.warn(`${this._name} - error from stderr received: `, message.data.toString());
         break;
       case 'exit':
-        // Log exit code if process exited not as a result of being disposed.
-        if (!this._disposed) {
-          logger.error(`${this._name} - exited before dispose: `, message.exitCode);
-        }
-        this.dispose();
-        this._exitCode.next(message);
-        break;
-      case 'error':
-        logger.error(`${this._name} - error received: `, message.error.message);
+        logger.error(`${this._name} - exited with ${exitEventToMessage(message)}`);
+        this._exitMessage.next(message);
         this.dispose();
         break;
       default:
@@ -169,6 +169,10 @@ export class RpcProcess {
    * and killing the child process if necessary.
    */
   dispose(): void {
+    if (this._disposed) {
+      return;
+    }
+
     logger.info(`${this._name} - disposing connection.`);
     this._disposed = true;
     this._disposals.next();

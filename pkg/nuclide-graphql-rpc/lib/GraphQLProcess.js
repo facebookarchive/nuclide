@@ -89,8 +89,6 @@ class GraphQLProcess {
       .subscribe(fileEvent => {
         this._fileVersionNotifier.onEvent(fileEvent);
       });
-
-    this._process.observeExitCode().subscribe(() => this.dispose());
   }
 
   getService(): Promise<GraphQLServerService> {
@@ -98,6 +96,10 @@ class GraphQLProcess {
       throw new Error('GraphQLServerService disposed already');
     }
     return this._process.getService('GraphQLServerService');
+  }
+
+  observeExitMessage() {
+    return this._process.observeExitMessage();
   }
 
   async getDiagnostics(query: string, filePath: NuclideUri) {
@@ -135,25 +137,24 @@ class GraphQLProcess {
       buffer.changeCount === fileVersion.version ? buffer : null;
   }
 
+  async _disconnect(): Promise<void> {
+    // Attempt to send disconnect message before shutting down connection
+    try {
+      logger.logTrace('Attempting to disconnect cleanly from GraphQLProcess');
+      (await this.getService()).disconnect();
+    } catch (e) {
+      // Failing to send the shutdown is not fatal...
+      // ... continue with shutdown.
+      logger.logError('GraphQL Process died before disconnect() could be sent.');
+    }
+  }
+
   dispose(): void {
     logger.logTrace('Cleaning up GraphQL artifacts');
-    this._process.getService('GraphQLServerService').then(service => {
-      // Atempt to send disconnect message before shutting down connection
-      try {
-        logger.logTrace('Attempting to disconnect cleanly from GraphQLProcess');
-        service.disconnect();
-      } catch (e) {
-        // Failing to send the shutdown is not fatal...
-        // ... continue with shutdown.
-        logger.logError('GraphQL Process died before disconnect() could be sent.');
-      }
-    });
+    this._disconnect();
     this._process.dispose();
     this._fileVersionNotifier.dispose();
     this._fileSubscription.unsubscribe();
-    if (processes.has(this._fileCache)) {
-      processes.get(this._fileCache).delete(this._configDir);
-    }
   }
 }
 
@@ -194,10 +195,19 @@ function createGraphQLProcess(
     },
   );
 
-  return new GraphQLProcess(
+  const graphQLProcess = new GraphQLProcess(
     fileCache,
     `GraphQLProcess-${configDir}`,
     configDir,
     processStream,
   );
+
+  graphQLProcess.observeExitMessage().subscribe(() => {
+    // Dispose the process by removing it from the cache.
+    if (processes.has(fileCache)) {
+      processes.get(fileCache).delete(configDir);
+    }
+  });
+
+  return graphQLProcess;
 }

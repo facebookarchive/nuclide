@@ -96,6 +96,7 @@ describe('RpcProcess', () => {
 
   it('should reject pending calls upon the child process exiting', () => {
     waitsForPromise(async () => {
+      const message = server.observeExitMessage().take(1).toPromise();
       try {
         await (await getService()).kill();
         invariant(false, 'Fail - expected promise to reject');
@@ -103,6 +104,7 @@ describe('RpcProcess', () => {
         expect(e.message.startsWith('Remote Error: Connection Closed processing message'))
           .toBeTruthy();
       }
+      expect((await message).exitCode).toBe(0);
     });
   });
 
@@ -133,6 +135,11 @@ describe('RpcProcess', () => {
       process.on('exit', spy);
       server.dispose();
       waitsFor(() => spy.wasCalled);
+
+      const exitSpy = jasmine.createSpy();
+      server.observeExitMessage().subscribe(() => exitSpy());
+      // Manual dispose should not trigger any side effects.
+      expect(exitSpy).not.toHaveBeenCalled();
     });
   });
 
