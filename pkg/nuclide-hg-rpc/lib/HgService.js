@@ -1177,6 +1177,7 @@ export class HgService {
     const args = ['rebase', '--continue'];
     const execOptions = {
       cwd: this._workingDirectory,
+      HGEDITOR: 'true',
     };
     return this._hgObserveExecution(args, execOptions)
       .switchMap(processExitCodeAndThrow)
