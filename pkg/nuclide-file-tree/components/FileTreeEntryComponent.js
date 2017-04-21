@@ -14,7 +14,6 @@ import FileTreeActions from '../lib/FileTreeActions';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import classnames from 'classnames';
-import fileTypeClass from '../../commons-atom/file-type-class';
 import {nextAnimationFrame} from '../../commons-node/observable';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {filterName} from '../lib/FileTreeFilterHelper';
@@ -23,6 +22,7 @@ import {StatusCodeNumber} from '../../nuclide-hg-rpc/lib/hg-constants';
 import {FileTreeStore} from '../lib/FileTreeStore';
 import FileTreeHgHelpers from '../lib/FileTreeHgHelpers';
 import addTooltip from '../../nuclide-ui/add-tooltip';
+import PathWithFileIcon from '../../nuclide-ui/PathWithFileIcon';
 import invariant from 'assert';
 import os from 'os';
 import {Observable} from 'rxjs';
@@ -174,17 +174,11 @@ export class FileTreeEntryComponent extends React.Component {
       }
     }
 
-    let iconName;
     let tooltip;
     if (node.isContainer) {
       if (node.isCwd) {
-        iconName = 'icon-nuclicon-file-directory-starred';
         tooltip = addTooltip({title: 'Current Working Root'});
-      } else {
-        iconName = 'icon-nuclicon-file-directory';
       }
-    } else {
-      iconName = fileTypeClass(node.name);
     }
 
     return (
@@ -198,8 +192,16 @@ export class FileTreeEntryComponent extends React.Component {
         <div
           className={listItemClassName}
           ref="arrowContainer">
-          <span
-            className={`nuclide-file-tree-path icon name ${iconName}`}
+          <PathWithFileIcon
+            className={classnames(
+              'name',
+              'nuclide-file-tree-path', {
+                'icon-nuclicon-file-directory': node.isContainer && !node.isCwd,
+                'icon-nuclicon-file-directory-starred': node.isContainer && node.isCwd,
+              },
+            )}
+            isFolder={node.isContainer}
+            path={node.uri}
             ref={elem => {
               this._pathContainer = elem;
               tooltip && tooltip(elem);
@@ -207,13 +209,8 @@ export class FileTreeEntryComponent extends React.Component {
             data-name={node.name}
             data-path={node.uri}>
             {this._renderCheckbox()}
-            <span
-              className="nuclide-file-tree-path"
-              data-name={node.name}
-              data-path={node.uri}>
-              {filterName(node.name, node.highlightedText, node.isSelected)}
-            </span>
-          </span>
+            {filterName(node.name, node.highlightedText, node.isSelected)}
+          </PathWithFileIcon>
           {this._renderConnectionTitle()}
         </div>
       </li>
