@@ -14,7 +14,7 @@ import typeof * as SdbService from '../../nuclide-adb-sdb-rpc/lib/SdbService';
 import type {DeviceInfoProvider} from '../../nuclide-devices/lib/types';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
-export class AndroidTizenInfoBaseProvider implements DeviceInfoProvider {
+export class ATDeviceInfoProvider implements DeviceInfoProvider {
   _type: string;
   _rpcFactory: (host: NuclideUri) => AdbService | SdbService;
 
@@ -38,5 +38,9 @@ export class AndroidTizenInfoBaseProvider implements DeviceInfoProvider {
 
   getType(): string {
     return this._type;
+  }
+
+  getPriority(): number {
+    return 100;
   }
 }

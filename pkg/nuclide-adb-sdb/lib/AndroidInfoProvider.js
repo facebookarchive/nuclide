@@ -8,17 +8,11 @@
  * @flow
  */
 
-import {AndroidTizenInfoBaseProvider} from './AndroidTizenInfoBaseProvider';
+import {ATDeviceInfoProvider} from './ATDeviceInfoProvider';
 import {getAdbServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
-export class AndroidInfoProvider extends AndroidTizenInfoBaseProvider {
-  constructor() {
-    super('android', (host: NuclideUri) => getAdbServiceByNuclideUri(host));
-  }
-
-  getPriority(): number {
-    return 100;
-  }
+export function createAndroidInfoProvider() {
+  return new ATDeviceInfoProvider('android', (host: NuclideUri) => getAdbServiceByNuclideUri(host));
 }

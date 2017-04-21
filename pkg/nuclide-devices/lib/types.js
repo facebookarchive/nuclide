@@ -29,7 +29,7 @@ export interface DeviceInfoProvider {
   fetch(host: NuclideUri, device: string): Promise<Map<string, string>>,
   getType(): string,
   getTitle(): string,
-  getPriority?: () => number,
+  getPriority(): number,
 }
 
 export type AppState = {
