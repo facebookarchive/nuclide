@@ -8,7 +8,7 @@
  * @flow
  */
 
-import {checkOutput} from '../../commons-node/process';
+import {runCommand} from '../../commons-node/process';
 import {asyncFind} from '../../commons-node/promise';
 import {arrayUnique} from '../../commons-node/collection';
 
@@ -64,7 +64,7 @@ export async function pathForDebugBridge(db: DebugBridgeType): Promise<string> {
     store.getPaths(),
     async path => {
       try {
-        await checkOutput(path, ['start-server']);
+        await runCommand(path, ['start-server']).toPromise();
         return path;
       } catch (e) {
         return null;
