@@ -248,6 +248,7 @@ export default class FileTreeSidebarComponent extends React.Component {
         <div className="nuclide-file-tree-sidebar-uncommitted-changes">
           <MultiRootChangedFilesView
             commandPrefix="file-tree-sidebar"
+            enableInlineActions={true}
             fileChanges={filterMultiRootFileChanges(this.state.uncommittedFileChanges)}
             selectedFile={this.state.activeUri}
             hideEmptyFolders={true}
