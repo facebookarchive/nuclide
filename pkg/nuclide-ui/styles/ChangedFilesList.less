@@ -28,3 +28,20 @@
 .nuclide-file-changes-list-item.text-error .icon::before {
   color: @text-color-error;
 }
+
+.nuclide-file-changes-file-actions {
+  cursor: pointer;
+  display: inline-block;
+  margin-left: @component-padding;
+  opacity: 0;
+  .nuclide-file-changes-list-item:hover & {
+    opacity: 1;
+  }
+}
+
+.nuclide-file-changes-file-action {
+  display: inline-block;
+  &:hover .icon::before {
+    color: @text-color-highlight;
+  }
+}
