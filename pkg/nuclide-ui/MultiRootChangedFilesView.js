@@ -166,9 +166,9 @@ export class MultiRootChangedFilesView extends React.Component {
   }
 
   _getStatusCodeForFile(event: MouseEvent): ?number {
-    // The context menu has the `currentTarget` set to `document`.
-    // Hence, use `target` instead.
-    const target = ((event.target: any): HTMLElement);
+    // Walk up the DOM tree to the element containing the relevant data- attributes.
+    const target = ((event.target: any): HTMLElement).closest('.nuclide-file-changes-list-item');
+    invariant(target);
     const filePath = target.getAttribute('data-path');
     const rootPath = target.getAttribute('data-root');
     // $FlowFixMe
