@@ -945,7 +945,7 @@
             'name': 'storage.type.function.php'
           '2':
             'name': 'storage.modifier.reference.php'
-        'end': '\\{'
+        'end': '\\{|\\)'
         'name': 'meta.function.closure.php'
         'patterns': [
           {

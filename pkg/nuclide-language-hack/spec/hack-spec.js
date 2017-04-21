@@ -1598,4 +1598,14 @@ describe('PHP grammar', () => {
       );
     });
   });
+
+  describe('function typehints', () => {
+    it('terminates the function scope', () => {
+      invariant(grammar != null);
+      const tokens = grammar.tokenizeLines('<?hh\nnewtype T = (function(): bool); $test = 1;');
+      const testToken = tokens[1].find(token => token.value === 'test');
+      invariant(testToken != null);
+      expect(testToken.scopes).toContain('variable.other.php');
+    });
+  });
 });
