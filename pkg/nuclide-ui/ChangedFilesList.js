@@ -36,7 +36,6 @@ type ChangedFilesProps = {
   onDeleteFile: (filePath: NuclideUri) => void,
   onFileChosen: (filePath: NuclideUri) => void,
   onForgetFile: (filePath: NuclideUri) => void,
-  onMarkFileDeleted: (filePath: NuclideUri) => void,
   onOpenFileInDiffView: (filePath: NuclideUri) => void,
   onRevertFile: (filePath: NuclideUri) => void,
   rootPath: NuclideUri,
@@ -118,7 +117,7 @@ export default class ChangedFilesList extends React.Component {
       'mark-deleted', /* key */
       'circle-slash', /* icon */
       'Mark as deleted (remove from version control)', /* title */
-      this.props.onMarkFileDeleted.bind(this, filePath),
+      this.props.onForgetFile.bind(this, filePath),
     );
   }
 

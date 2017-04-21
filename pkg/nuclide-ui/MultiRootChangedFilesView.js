@@ -27,6 +27,7 @@ import UniversalDisposable from '../commons-node/UniversalDisposable';
 import ChangedFilesList from './ChangedFilesList';
 
 type Props = {
+  enableInlineActions?: true,
   fileChanges: Map<NuclideUri, Map<NuclideUri, FileChangeStatusValue>>,
   commandPrefix: string,
   selectedFile: ?NuclideUri,
@@ -40,9 +41,21 @@ export class MultiRootChangedFilesView extends React.Component {
   props: Props;
   _subscriptions: UniversalDisposable;
 
+  constructor(props: Props) {
+    super(props);
+    (this: any)._handleAddFile = this._handleAddFile.bind(this);
+    (this: any)._handleDeleteFile = this._handleDeleteFile.bind(this);
+    (this: any)._handleForgetFile = this._handleForgetFile.bind(this);
+    (this: any)._handleOpenFileInDiffView = this._handleOpenFileInDiffView.bind(this);
+    (this: any)._handleRevertFile = this._handleRevertFile.bind(this);
+  }
+
   componentDidMount(): void {
     this._subscriptions = new UniversalDisposable();
-    const {commandPrefix, getRevertTargetRevision, openInDiffViewOption} = this.props;
+    const {
+      commandPrefix,
+      openInDiffViewOption,
+    } = this.props;
     this._subscriptions.add(atom.contextMenu.add({
       [`.${commandPrefix}-file-entry`]: [
         {type: 'separator'},
@@ -118,7 +131,7 @@ export class MultiRootChangedFilesView extends React.Component {
       `${commandPrefix}:delete-file`,
       event => {
         const nuclideFilePath = this._getFilePathFromEvent(event);
-        confirmAndDeletePath(nuclideFilePath);
+        this._handleDeleteFile(nuclideFilePath);
       }),
     );
     this._subscriptions.add(atom.commands.add(
@@ -134,7 +147,7 @@ export class MultiRootChangedFilesView extends React.Component {
       event => {
         const filePath = this._getFilePathFromEvent(event);
         if (filePath != null && filePath.length) {
-          addPath(filePath);
+          this._handleAddFile(filePath);
         }
       },
     ));
@@ -144,11 +157,7 @@ export class MultiRootChangedFilesView extends React.Component {
       event => {
         const filePath = this._getFilePathFromEvent(event);
         if (filePath != null && filePath.length) {
-          let targetRevision = null;
-          if (getRevertTargetRevision != null) {
-            targetRevision = getRevertTargetRevision();
-          }
-          confirmAndRevertPath(filePath, targetRevision);
+          this._handleRevertFile(filePath);
         }
       },
     ));
@@ -159,7 +168,7 @@ export class MultiRootChangedFilesView extends React.Component {
       event => {
         const filePath = this._getFilePathFromEvent(event);
         if (filePath != null && filePath.length) {
-          openFileInDiffView(filePath);
+          this._handleOpenFileInDiffView(filePath);
         }
       },
     ));
@@ -185,23 +194,62 @@ export class MultiRootChangedFilesView extends React.Component {
     return eventTarget.getAttribute('data-path');
   }
 
+  _handleAddFile(filePath: string): void {
+    addPath(filePath);
+  }
+
+  _handleDeleteFile(filePath: string): void {
+    confirmAndDeletePath(filePath);
+  }
+
+  _handleForgetFile(filePath: string): void {
+    // TODO(jxg): implement
+  }
+
+  _handleOpenFileInDiffView(filePath: string): void {
+    openFileInDiffView(filePath);
+  }
+
+  _handleRevertFile(filePath: string): void {
+    const {getRevertTargetRevision} = this.props;
+    let targetRevision = null;
+    if (getRevertTargetRevision != null) {
+      targetRevision = getRevertTargetRevision();
+    }
+    confirmAndRevertPath(filePath, targetRevision);
+  }
+
   render(): React.Element<any> {
-    if (this.props.fileChanges.size === 0) {
+    const {
+      commandPrefix,
+      enableInlineActions,
+      fileChanges: fileChangesByRoot,
+      hideEmptyFolders,
+      onFileChosen,
+      selectedFile,
+    } = this.props;
+    if (fileChangesByRoot.size === 0) {
       return <div>No changes</div>;
     }
-
+    const shouldShowFolderName = fileChangesByRoot.size > 1;
     return (
       <div className="nuclide-ui-multi-root-file-tree-container">
-        {Array.from(this.props.fileChanges.entries()).map(([root, fileChanges]) =>
+        {Array.from(fileChangesByRoot.entries()).map(([root, fileChanges]) =>
           <ChangedFilesList
-            key={root}
+            commandPrefix={commandPrefix}
+            enableInlineActions={enableInlineActions === true}
             fileChanges={fileChanges}
+            hideEmptyFolders={hideEmptyFolders}
+            key={root}
+            onAddFile={this._handleAddFile}
+            onDeleteFile={this._handleDeleteFile}
+            onFileChosen={onFileChosen}
+            onForgetFile={this._handleForgetFile}
+            onOpenFileInDiffView={this._handleOpenFileInDiffView}
+            onRevertFile={this._handleRevertFile}
             rootPath={root}
-            commandPrefix={this.props.commandPrefix}
-            selectedFile={this.props.selectedFile}
-            hideEmptyFolders={this.props.hideEmptyFolders}
-            shouldShowFolderName={this.props.fileChanges.size > 1}
-            onFileChosen={this.props.onFileChosen}
+            selectedFile={selectedFile}
+            shouldShowFolderName={shouldShowFolderName}
           />,
         )}
       </div>
