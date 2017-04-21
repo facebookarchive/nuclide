@@ -66,21 +66,21 @@ export class MultiRootChangedFilesView extends React.Component {
       [`.${commandPrefix}-file-entry`]: [
         {type: 'separator'},
         {
-          label: 'Add to Mercurial',
+          label: 'Add file to Mercurial',
           command: `${commandPrefix}:add`,
           shouldDisplay: event => {
             return this._getStatusCodeForFile(event) === FileChangeStatus.UNTRACKED;
           },
         },
         {
-          label: 'Open in Diff View',
+          label: 'Open file in Diff View',
           command: `${commandPrefix}:open-in-diff-view`,
           shouldDisplay: event => {
             return atom.packages.isPackageLoaded('fb-diff-view') && openInDiffViewOption;
           },
         },
         {
-          label: 'Revert',
+          label: 'Revert File',
           command: `${commandPrefix}:revert`,
           shouldDisplay: event => {
             const statusCode = this._getStatusCodeForFile(event);
@@ -91,7 +91,7 @@ export class MultiRootChangedFilesView extends React.Component {
           },
         },
         {
-          label: 'Delete',
+          label: 'Delete File',
           command: `${commandPrefix}:delete-file`,
           shouldDisplay: event => {
             const statusCode = this._getStatusCodeForFile(event);

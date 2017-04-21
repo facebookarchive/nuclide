@@ -99,7 +99,7 @@ export default class ChangedFilesList extends React.Component {
     return this._renderAction(
       'forget', /* key */
       'circle-slash', /* icon */
-      'Forget (stop tracking in version control)', /* title */
+      'Forget (stop tracking file in version control)', /* title */
       this.props.onForgetFile.bind(this, filePath, ANALYTICS_SOURCE_KEY),
     );
   }
@@ -108,7 +108,7 @@ export default class ChangedFilesList extends React.Component {
     return this._renderAction(
       'delete', /* key */
       'trashcan', /* icon */
-      'Delete from file system', /* title */
+      'Delete file from file system', /* title */
       this.props.onDeleteFile.bind(this, filePath, ANALYTICS_SOURCE_KEY),
     );
   }
@@ -117,7 +117,7 @@ export default class ChangedFilesList extends React.Component {
     return this._renderAction(
       'mark-deleted', /* key */
       'circle-slash', /* icon */
-      'Mark as deleted (remove from version control)', /* title */
+      'Mark file as deleted (remove from version control)', /* title */
       this.props.onForgetFile.bind(this, filePath, ANALYTICS_SOURCE_KEY),
     );
   }
@@ -126,7 +126,7 @@ export default class ChangedFilesList extends React.Component {
     return this._renderAction(
       'restore', /* key */
       'playback-rewind', /* icon */
-      'Restore (revert to last known version)', /* title */
+      'Restore file (revert to last known version)', /* title */
       this.props.onRevertFile.bind(this, filePath, ANALYTICS_SOURCE_KEY),
     );
   }
@@ -135,7 +135,7 @@ export default class ChangedFilesList extends React.Component {
     return this._renderAction(
       'add', /* key */
       'plus', /* icon */
-      'Add to version control', /* title */
+      'Add file to version control', /* title */
       this.props.onAddFile.bind(this, filePath, ANALYTICS_SOURCE_KEY),
     );
   }
@@ -144,7 +144,7 @@ export default class ChangedFilesList extends React.Component {
     return this._renderAction(
       'diff', /* key */
       'diff', /* icon */
-      'Open in Diff View', /* title */
+      'Open file in Diff View', /* title */
       this.props.onOpenFileInDiffView.bind(this, filePath, ANALYTICS_SOURCE_KEY),
     );
   }
