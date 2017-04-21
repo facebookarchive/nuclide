@@ -34,9 +34,9 @@ import {ResizableFlexContainerExamples} from '../../nuclide-ui/ResizableFlexCont
 import {ModalExamples} from '../../nuclide-ui/Modal.example';
 import {FileChangesExamples} from '../../nuclide-ui/FileChanges.example';
 import {MessageExamples} from '../../nuclide-ui/Message.example';
+import {PathWithFileIconExamples} from '../../nuclide-ui/PathWithFileIcon.example';
 
 const playgroundComponents = [
-  MessageExamples,
   ButtonExamples,
   ModalExamples,
   ProgressIndicatorExamples,
@@ -55,8 +55,10 @@ const playgroundComponents = [
   ListviewExamples,
   TableExamples,
   RelativeDateExamples,
+  MessageExamples,
   MultiRootChangedFilesViewExample,
   FileChangesExamples,
+  PathWithFileIconExamples,
 ];
 
 type ComponentSpec = {
