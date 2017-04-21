@@ -14,6 +14,7 @@ import type {ShowUncommittedChangesKindValue} from '../lib/Constants';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
+import observePaneItemVisibility from '../../commons-atom/observePaneItemVisibility';
 import addTooltip from '../../nuclide-ui/add-tooltip';
 import {Observable} from 'rxjs';
 import {ShowUncommittedChangesKind} from '../lib/Constants';
@@ -186,6 +187,8 @@ export default class FileTreeSidebarComponent extends React.Component {
           return Observable.create(() => showMenuForEvent(event, menuTemplate));
         })
         .subscribe(),
+
+      observePaneItemVisibility(this).subscribe(visible => { this.didChangeVisibility(visible); }),
     );
   }
 

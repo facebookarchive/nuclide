@@ -12,6 +12,7 @@ import type {OutlineForUi, SerializedOutlineViewPanelState} from '..';
 
 import React from 'react';
 
+import observePaneItemVisibility from '../../commons-atom/observePaneItemVisibility';
 import {renderReactRoot} from '../../commons-atom/renderReactRoot';
 import {OutlineView} from './OutlineView';
 import {BehaviorSubject, Observable} from 'rxjs';
@@ -21,10 +22,18 @@ export const WORKSPACE_VIEW_URI = 'atom://nuclide/outline-view';
 export class OutlineViewPanelState {
   _outlines: Observable<OutlineForUi>;
   _visibility: BehaviorSubject<boolean>;
+  _visibilitySubscription: rxjs$ISubscription;
 
   constructor(outlines: Observable<OutlineForUi>) {
     this._outlines = outlines;
+    // TODO(T17495163)
     this._visibility = new BehaviorSubject(true);
+    this._visibilitySubscription = observePaneItemVisibility(this)
+      .subscribe(visible => { this.didChangeVisibility(visible); });
+  }
+
+  destroy(): void {
+    this._visibilitySubscription.unsubscribe();
   }
 
   getTitle() {

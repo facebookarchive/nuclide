@@ -14,6 +14,7 @@ import type {IconName} from '../../nuclide-ui/types';
 import {compareMessagesByFile} from './paneUtils';
 import React from 'react';
 import DiagnosticsPanel from './DiagnosticsPanel';
+import observePaneItemVisibility from '../../commons-atom/observePaneItemVisibility';
 import {renderReactRoot} from '../../commons-atom/renderReactRoot';
 import {isValidTextEditor} from '../../commons-atom/text-editor';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
@@ -54,6 +55,9 @@ export class DiagnosticsPanelModel {
     initialfilterByActiveTextEditor: boolean,
     onFilterByActiveTextEditorChange: (filterByActiveTextEditor: boolean) => void,
   ) {
+    // TODO(T17495163)
+    this._visibilitySubscription = observePaneItemVisibility(this)
+      .subscribe(visible => { this.didChangeVisibility(visible); });
     this._visibility = new BehaviorSubject(true);
 
     this._visibilitySubscription = this._visibility

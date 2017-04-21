@@ -20,6 +20,7 @@ import type {ContextProvider} from './types';
 
 import invariant from 'assert';
 import featureConfig from '../../commons-atom/featureConfig';
+import observePaneItemVisibility from '../../commons-atom/observePaneItemVisibility';
 import {arrayCompact} from '../../commons-node/collection';
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -60,6 +61,7 @@ export class ContextViewManager {
   _locked: boolean;
   _panelDOMElement: HTMLElement;
   currentDefinition: ?Definition;
+  _visibilitySubscription: rxjs$ISubscription;
 
   constructor() {
     this._contextProviders = [];
@@ -76,6 +78,9 @@ export class ContextViewManager {
     this._panelDOMElement = document.createElement('div');
     this._panelDOMElement.style.display = 'flex';
 
+    this._visibilitySubscription = observePaneItemVisibility(this)
+      .subscribe(visible => { this.didChangeVisibility(visible); });
+
     this._render();
   }
 
@@ -84,6 +89,7 @@ export class ContextViewManager {
     this._settingDisposables.forEach(disposable => {
       disposable.dispose();
     });
+    this._visibilitySubscription.unsubscribe();
   }
 
   hide(): void {
