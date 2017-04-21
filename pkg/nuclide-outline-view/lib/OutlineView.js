@@ -138,46 +138,51 @@ class OutlineViewComponent extends React.Component {
   }
 }
 
-function renderTree(
-  editor: atom$TextEditor,
-  outline: OutlineTreeForUi,
-  index: number,
-): React.Element<any> {
-  const onClick = () => {
-    const pane = atom.workspace.paneForItem(editor);
-    if (pane == null) {
-      return;
-    }
-    track('nuclide-outline-view:go-to-location');
-    pane.activate();
-    pane.activateItem(editor);
-    goToLocationInEditor(editor, outline.startPosition.row, outline.startPosition.column);
+class OutlineTree extends React.PureComponent {
+  props: {
+    editor: atom$TextEditor,
+    outline: OutlineTreeForUi,
   };
 
-  const onDoubleClick = () => {
-    // Assumes that the click handler has already run, activating the text editor and moving the
-    // cursor to the start of the symbol.
-    const endPosition = outline.endPosition;
-    if (endPosition != null) {
-      editor.selectToBufferPosition(endPosition);
-    }
-  };
+  render(): React.Element<any> {
+    const {editor, outline} = this.props;
 
-  const classes = classnames(
-    'list-nested-item',
-    {selected: outline.highlighted},
-  );
-  return (
-    <li className={classes} key={index}>
-      <div
-        className="list-item nuclide-outline-view-item"
-        onClick={onClick}
-        onDoubleClick={onDoubleClick}>
-        {renderItem(outline)}
-      </div>
-      {renderTrees(editor, outline.children)}
-    </li>
-  );
+    const onClick = () => {
+      const pane = atom.workspace.paneForItem(editor);
+      if (pane == null) {
+        return;
+      }
+      track('nuclide-outline-view:go-to-location');
+      pane.activate();
+      pane.activateItem(editor);
+      goToLocationInEditor(editor, outline.startPosition.row, outline.startPosition.column);
+    };
+
+    const onDoubleClick = () => {
+      // Assumes that the click handler has already run, activating the text editor and moving the
+      // cursor to the start of the symbol.
+      const endPosition = outline.endPosition;
+      if (endPosition != null) {
+        editor.selectToBufferPosition(endPosition);
+      }
+    };
+
+    const classes = classnames(
+      'list-nested-item',
+      {selected: outline.highlighted},
+    );
+    return (
+      <li className={classes}>
+        <div
+          className="list-item nuclide-outline-view-item"
+          onClick={onClick}
+          onDoubleClick={onDoubleClick}>
+          {renderItem(outline)}
+        </div>
+        {renderTrees(editor, outline.children)}
+      </li>
+    );
+  }
 }
 
 function renderItem(outline: OutlineTreeForUi): Array<React.Element<any> | string> {
@@ -215,7 +220,9 @@ function renderTrees(
     // Add `position: relative;` to let `li.selected` style position itself relative to the list
     // tree rather than to its container.
     <ul className="list-tree" style={{position: 'relative'}}>
-      {outlines.map((outline, index) => renderTree(editor, outline, index))}
+      {outlines.map((outline, index) => (
+        <OutlineTree editor={editor} outline={outline} key={index} />
+      ))}
     </ul>
   );
 }

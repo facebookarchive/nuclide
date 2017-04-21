@@ -105,13 +105,23 @@ function highlightCurrentNodeInTrees(
   outlineTrees: Array<OutlineTreeForUi>,
   cursorLocation: atom$Point,
 ): Array<OutlineTreeForUi> {
-  return outlineTrees.map(tree => {
+  // The corresponding UI component uses React.PureComponent.
+  // Minimize the amount of re-rendering per keystroke by only copying on change.
+  let changed = false;
+  const newTrees = outlineTrees.map(tree => {
+    const highlighted = shouldHighlightNode(tree, cursorLocation);
+    const children = highlightCurrentNodeInTrees(tree.children, cursorLocation);
+    if (highlighted === tree.highlighted && children === tree.children) {
+      return tree;
+    }
+    changed = true;
     return {
       ...tree,
-      highlighted: shouldHighlightNode(tree, cursorLocation),
-      children: highlightCurrentNodeInTrees(tree.children, cursorLocation),
+      highlighted,
+      children,
     };
   });
+  return changed ? newTrees : outlineTrees;
 }
 
 function shouldHighlightNode(outlineTree: OutlineTreeForUi, cursorLocation: atom$Point): boolean {
