@@ -164,20 +164,19 @@ describe('LinterAdapter', () => {
   });
 
   it('invalidates files on close', () => {
-    const adapter = newLinterAdapter({
-      name: 'linter',
-      grammarScopes: ['*'],
-      scope: 'file',
-      lintsOnChange: true,
-      lint: () => Promise.resolve([
-        {type: 'Error', filePath: 'foo'},
-        {type: 'Error', filePath: 'bar'},
-      ]),
-    });
+    linterReturn = Promise.resolve([
+      {type: 'Error', filePath: 'foo'},
+      {type: 'Error', filePath: 'bar'},
+    ]);
     textEventSubject.next(fakeEditor);
     waitsFor(() => bufferDestroyCallback != null);
     waitsForPromise(async () => {
-      const promise = adapter.getInvalidations().take(1).toPromise();
+      // Wait for the first lint to finish.
+      await linterAdapter.getUpdates().take(1).toPromise();
+      // Start a pending lint.
+      linterReturn = makePromise([], 10);
+      textEventSubject.next(fakeEditor);
+      const promise = linterAdapter.getInvalidations().take(1).toPromise();
       bufferDestroyCallback();
       const invalidation = await promise;
       expect(invalidation).toEqual({

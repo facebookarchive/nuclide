@@ -137,11 +137,12 @@ export class LinterAdapter {
         .mergeMap(bufferObservable => (
           // Run the linter on each buffer event.
           Observable.concat(
-            // switchMap ensures that earlier lints are overridden by later ones.
-            bufferObservable.switchMap(editor => this._runLint(editor)),
-            // When the buffer gets destroyed, invalidate its last update.
+            bufferObservable,
+            // When the buffer gets destroyed, immediately stop linting and invalidate.
             Observable.of(null),
           )
+            // switchMap ensures that earlier lints are overridden by later ones.
+            .switchMap(editor => (editor == null ? Observable.of(null) : this._runLint(editor)))
             // Track the previous update so we can invalidate its results.
             // (Prevents dangling diagnostics when a linter affects multiple files).
             .scan(
