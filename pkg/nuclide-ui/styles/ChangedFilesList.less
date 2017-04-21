@@ -2,6 +2,18 @@
 
 .nuclide-file-changes-file-entry {
   cursor: pointer;
+  &:hover {
+    color: @text-color-highlight;
+    .nuclide-file-changes-file-entry-icon:before {
+      color: @text-color-highlight;
+    }
+  }
+}
+
+.nuclide-file-changes-list-item.text-error .nuclide-file-changes-file-entry:hover .icon::before,
+.nuclide-file-changes-list-item.text-success .nuclide-file-changes-file-entry:hover .icon::before,
+.nuclide-file-changes-list-item.text-warning .nuclide-file-changes-file-entry:hover .icon::before {
+  color: @text-color-highlight;
 }
 
 /* Override the color of file-icons according to their VCS state. */

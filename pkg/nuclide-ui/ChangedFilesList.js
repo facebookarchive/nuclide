@@ -116,21 +116,24 @@ export default class ChangedFilesList extends React.Component {
                     data-path={filePath}
                     data-root={this.props.rootPath}
                     className={this._getFileClassname(filePath, fileChangeValue)}
-                    key={filePath}
-                    onClick={() => this.props.onFileChosen(filePath)}>
-                    <Icon
-                      className="nuclide-file-changes-file-entry-icon"
-                      icon={FileChangeStatusToIcon[fileChangeValue]}
-                    />
-                    <PathWithFileIcon
+                    key={filePath}>
+                    <span
                       className="nuclide-file-changes-file-entry"
-                      path={baseName}
-                      ref={addTooltip({
-                        title: `${filePath} – Click to open`,
-                        delay: 100,
-                        placement: 'top',
-                      })}
-                    />
+                      onClick={() => this.props.onFileChosen(filePath)}>
+                      <Icon
+                        className="nuclide-file-changes-file-entry-icon"
+                        icon={FileChangeStatusToIcon[fileChangeValue]}
+                      />
+                      <PathWithFileIcon
+                        path={baseName}
+                        ref={addTooltip({
+                          title: `${filePath} – Click to open`,
+                          // Extra long delay to limit spawning aggressive follow-through behavior.
+                          delay: 1000,
+                          placement: 'top',
+                        })}
+                      />
+                    </span>
                   </li>
                 );
               },
