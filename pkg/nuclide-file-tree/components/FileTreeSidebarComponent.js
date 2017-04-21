@@ -247,6 +247,7 @@ export default class FileTreeSidebarComponent extends React.Component {
       const uncommittedChangesList = (
         <div className="nuclide-file-tree-sidebar-uncommitted-changes">
           <MultiRootChangedFilesView
+            analyticsSurface="file-tree-uncommitted-changes"
             commandPrefix="file-tree-sidebar"
             enableInlineActions={true}
             fileChanges={filterMultiRootFileChanges(this.state.uncommittedFileChanges)}

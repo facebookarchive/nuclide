@@ -10,7 +10,6 @@
 
 import type {NuclideUri} from '../commons-node/nuclideUri';
 import type {FileChangeStatusValue} from '../nuclide-vcs-base';
-
 import {
  addPath,
  confirmAndRevertPath,
@@ -21,6 +20,7 @@ import {
 } from '../nuclide-vcs-base';
 import {goToLocation} from '../commons-atom/go-to-location';
 import {openFileInDiffView} from '../commons-atom/open-in-diff-view';
+import {track} from '../nuclide-analytics';
 import invariant from 'assert';
 import nuclideUri from '../commons-node/nuclideUri';
 import React from 'react';
@@ -28,6 +28,8 @@ import UniversalDisposable from '../commons-node/UniversalDisposable';
 import ChangedFilesList from './ChangedFilesList';
 
 type Props = {
+  // Used to identify which surface (e.g. file tree vs SCM side bar) was used to trigger an action.
+  analyticsSurface?: string,
   enableInlineActions?: true,
   fileChanges: Map<NuclideUri, Map<NuclideUri, FileChangeStatusValue>>,
   commandPrefix: string,
@@ -37,6 +39,9 @@ type Props = {
   getRevertTargetRevision?: () => ?string,
   openInDiffViewOption?: boolean,
 };
+
+const ANALYTICS_PREFIX = 'changed-files-view';
+const DEFAULT_ANALYTICS_SOURCE_KEY = 'command';
 
 export class MultiRootChangedFilesView extends React.Component {
   props: Props;
@@ -215,29 +220,85 @@ export class MultiRootChangedFilesView extends React.Component {
     return eventTarget.getAttribute('data-path');
   }
 
-  _handleAddFile(filePath: string): void {
+  _getAnalyticsSurface(): string {
+    const {analyticsSurface} = this.props;
+    return analyticsSurface == null ? 'n/a' : analyticsSurface;
+  }
+
+  _handleAddFile(
+    filePath: string,
+    analyticsSource?: string = DEFAULT_ANALYTICS_SOURCE_KEY,
+  ): void {
     addPath(filePath);
+    track(
+      `${ANALYTICS_PREFIX}-add-file`,
+      {
+        source: analyticsSource,
+        surface: this._getAnalyticsSurface(),
+
+      },
+    );
   }
 
-  _handleDeleteFile(filePath: string): void {
+  _handleDeleteFile(
+    filePath: string,
+    analyticsSource?: string = DEFAULT_ANALYTICS_SOURCE_KEY,
+  ): void {
     confirmAndDeletePath(filePath);
+    track(
+      `${ANALYTICS_PREFIX}-delete-file`,
+      {
+        source: analyticsSource,
+        surface: this._getAnalyticsSurface(),
+      },
+    );
   }
 
-  _handleForgetFile(filePath: string): void {
+  _handleForgetFile(
+    filePath: string,
+    analyticsSource?: string = DEFAULT_ANALYTICS_SOURCE_KEY,
+  ): void {
     forgetPath(filePath);
+    track(
+      `${ANALYTICS_PREFIX}-forget-file`,
+      {
+        source: analyticsSource,
+        surface: this._getAnalyticsSurface(),
+      },
+    );
   }
 
-  _handleOpenFileInDiffView(filePath: string): void {
+  _handleOpenFileInDiffView(
+    filePath: string,
+    analyticsSource?: string = DEFAULT_ANALYTICS_SOURCE_KEY,
+  ): void {
     openFileInDiffView(filePath);
+    track(
+      `${ANALYTICS_PREFIX}-file-in-diff-view`,
+      {
+        source: analyticsSource,
+        surface: this._getAnalyticsSurface(),
+      },
+    );
   }
 
-  _handleRevertFile(filePath: string): void {
+  _handleRevertFile(
+    filePath: string,
+    analyticsSource?: string = DEFAULT_ANALYTICS_SOURCE_KEY,
+  ): void {
     const {getRevertTargetRevision} = this.props;
     let targetRevision = null;
     if (getRevertTargetRevision != null) {
       targetRevision = getRevertTargetRevision();
     }
     confirmAndRevertPath(filePath, targetRevision);
+    track(
+      `${ANALYTICS_PREFIX}-revert-file`,
+      {
+        source: analyticsSource,
+        surface: this._getAnalyticsSurface(),
+      },
+    );
   }
 
   render(): React.Element<any> {
