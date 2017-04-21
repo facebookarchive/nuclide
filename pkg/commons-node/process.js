@@ -17,7 +17,7 @@ import nuclideUri from './nuclideUri';
 import {splitStream, takeWhileInclusive} from './observable';
 import {observeStream} from './stream';
 import {maybeToString} from './string';
-import {Observable} from 'rxjs';
+import {Observable, TimeoutError} from 'rxjs';
 import invariant from 'assert';
 import {quote} from 'shell-quote';
 import performanceNow from './performanceNow';
@@ -71,6 +71,7 @@ type CreateProcessStreamOptions = {
   killTreeOnComplete?: ?boolean,
   exitErrorBufferSize?: ?number,
   isExitError?: ?(event: ProcessExitMessage) => boolean,
+  timeout?: ?number,
 };
 
 type GetOutputStreamOptions = {
@@ -114,6 +115,16 @@ export class MaxBufferExceededError extends Error {
   constructor(streamName: string) {
     super(`${streamName} maxBuffer exceeded`);
     this.name = 'MaxBufferExceededError';
+  }
+}
+
+export class ProcessTimeoutError extends Error {
+  constructor(timeout: number, proc: child_process$ChildProcess) {
+    // $FlowIssue: This isn't typed in the Flow node type defs
+    const {spawnargs} = proc;
+    const commandName = spawnargs[0] === process.execPath ? spawnargs[1] : spawnargs[0];
+    super(`"${commandName}" timed out after ${timeout}ms`);
+    this.name = 'ProcessTimeoutError';
   }
 }
 
@@ -237,7 +248,11 @@ function _createProcessStream(
       const process = createProcess();
       const isExitError = idx(options, _ => _.isExitError) || isExitErrorDefault;
       const exitErrorBufferSize = idx(options, _ => _.exitErrorBufferSize) || 2000;
-      const {killTreeOnComplete} = options;
+      const {killTreeOnComplete, timeout} = options;
+      const enforceTimeout = timeout
+        // TODO: Use `timeoutWith()` when we upgrade to an RxJS that has it.
+        ? x => timeoutWith(x, timeout, Observable.throw(new ProcessTimeoutError(timeout, process)))
+        : x => x;
       let finished = false;
 
       // If the process returned by `createProcess()` was not created by it (or at least in the same
@@ -273,20 +288,22 @@ function _createProcessStream(
           return event;
         });
 
-      return Observable.of(process)
-        // Don't complete until we say so!
-        .merge(Observable.never())
-        .takeUntil(errors)
-        .takeUntil(exitEvents)
-        .do({
-          error: () => { finished = true; },
-          complete: () => { finished = true; },
-        })
-        .finally(() => {
-          if (!process.wasKilled && !finished) {
-            killProcess(process, Boolean(killTreeOnComplete));
-          }
-        });
+      return enforceTimeout(
+        Observable.of(process)
+          // Don't complete until we say so!
+          .merge(Observable.never())
+          .takeUntil(errors)
+          .takeUntil(exitEvents)
+          .do({
+            error: () => { finished = true; },
+            complete: () => { finished = true; },
+          }),
+      )
+      .finally(() => {
+        if (!process.wasKilled && !finished) {
+          killProcess(process, Boolean(killTreeOnComplete));
+        }
+      });
     });
 }
 
@@ -697,4 +714,13 @@ function limitBufferSize(
       }
     });
   });
+}
+
+// TODO: Use `Observable::timeoutWith()` when we upgrade RxJS
+function timeoutWith<T>(source: Observable<T>, time: number, other: Observable<T>): Observable<T> {
+  return source
+    .timeout(time)
+    // Technically we could catch other TimeoutErrors here. `Observable::timeoutWith()` won't have
+    // this problem.
+    .catch(err => (err instanceof TimeoutError ? other : Observable.throw(err)));
 }

@@ -266,6 +266,27 @@ describe('commons-node/process', () => {
         expect(child_process.spawn.callCount).toBe(3);
       });
     });
+
+    it('can be timed out', () => {
+      waitsForPromise(async () => {
+        let error;
+        let proc;
+        try {
+          await spawn('sleep', ['10000'], {timeout: 1})
+            .do(p => {
+              proc = p;
+              spyOn(proc, 'kill');
+            })
+            .toPromise();
+        } catch (err) {
+          error = err;
+        }
+        invariant(proc != null);
+        invariant(error != null);
+        expect(error.name).toBe('ProcessTimeoutError');
+        expect(proc.kill).toHaveBeenCalled();
+      });
+    });
   });
 
   describe('observeProcess', () => {
