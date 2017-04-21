@@ -177,7 +177,7 @@ export function revertPath(nodePath: ?NuclideUri, toRevision?: ?string): Promise
 
 export function confirmAndRevertPath(path: ?NuclideUri, toRevision?: ?string): void {
   const result = atom.confirm({
-    message: 'Are you sure you want to revert?',
+    message: `Are you sure you want to revert${path == null ? '' : ` "${path}"`}?`,
     buttons: ['Revert', 'Cancel'],
   });
   invariant(result === 0 || result === 1);
