@@ -16,7 +16,7 @@ import invariant from 'assert';
 import fsPromise from '../../commons-node/fsPromise';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {asyncLimit} from '../../commons-node/promise';
-import {checkOutput} from '../../commons-node/process';
+import {runCommand} from '../../commons-node/process';
 
 /**
  * Traverses up the parent directories looking for `fixtures/FIXTURE_NAME`.
@@ -80,17 +80,17 @@ export async function generateHgRepo1Fixture(): Promise<string> {
     ['test.txt', testTxt],
   ]));
   const repoPath = await fsPromise.realpath(tempDir);
-  await checkOutput('hg', ['init'], {cwd: repoPath});
+  await runCommand('hg', ['init'], {cwd: repoPath}).toPromise();
   await fsPromise.writeFile(
     nuclideUri.join(repoPath, '.hg', 'hgrc'),
     '[ui]\nusername = Test <test@mail.com>\n',
   );
-  await checkOutput('hg', ['commit', '-A', '-m', 'first commit'], {cwd: repoPath});
+  await runCommand('hg', ['commit', '-A', '-m', 'first commit'], {cwd: repoPath}).toPromise();
   await fsPromise.writeFile(
     nuclideUri.join(repoPath, 'test.txt'),
     testTxt + '\nthis line added on second commit\n',
   );
-  await checkOutput('hg', ['commit', '-A', '-m', 'second commit'], {cwd: repoPath});
+  await runCommand('hg', ['commit', '-A', '-m', 'second commit'], {cwd: repoPath}).toPromise();
   return repoPath;
 }
 
@@ -114,27 +114,28 @@ export async function generateHgRepo2Fixture(): Promise<string> {
     ['test.txt', testTxt],
   ]));
   const repoPath = await fsPromise.realpath(tempDir);
-  await checkOutput('hg', ['init'], {cwd: repoPath});
+  await runCommand('hg', ['init'], {cwd: repoPath}).toPromise();
   await fsPromise.writeFile(
     nuclideUri.join(repoPath, '.hg', 'hgrc'),
     '[paths]\ndefault = .\n' +
     '[ui]\nusername = Test <test@mail.com>\n',
   );
-  await checkOutput('hg', ['commit', '-A', '-m', 'first commit'], {cwd: repoPath});
+  await runCommand('hg', ['commit', '-A', '-m', 'first commit'], {cwd: repoPath}).toPromise();
   await fsPromise.writeFile(
     nuclideUri.join(repoPath, 'test.txt'),
     testTxt + '\nthis line added on second commit\n',
   );
-  await checkOutput('hg', ['commit', '-A', '-m', 'second commit'], {cwd: repoPath});
+  await runCommand('hg', ['commit', '-A', '-m', 'second commit'], {cwd: repoPath}).toPromise();
   await fsPromise.writeFile(
     nuclideUri.join(repoPath, '.arcconfig'),
     '{\n  "arc.feature.start.default": "master"\n}\n',
   );
-  await checkOutput('hg', ['commit', '-A', '-m', 'add .arcconfig to set base'], {cwd: repoPath});
-  await checkOutput('hg', [
+  await runCommand('hg', ['commit', '-A', '-m', 'add .arcconfig to set base'], {cwd: repoPath})
+    .toPromise();
+  await runCommand('hg', [
     'bookmark', '--rev', '.~2', 'master',
     '--config', 'remotenames.disallowedbookmarks=',
-  ], {cwd: repoPath});
+  ], {cwd: repoPath}).toPromise();
   return repoPath;
 }
 

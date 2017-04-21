@@ -363,6 +363,13 @@ describe('commons-node/process', () => {
 
     if (origPlatform === 'win32') { return; }
 
+    it('sends the stdin to the process', () => {
+      waitsForPromise(async () => {
+        const output = await runCommand('cat', [], {stdin: 'hello'}).toPromise();
+        expect(output).toBe('hello');
+      });
+    });
+
     it('enforces maxBuffer', () => {
       waitsForPromise(async () => {
         let error;
@@ -437,6 +444,22 @@ describe('commons-node/process', () => {
         await observable.toPromise();
         expect(await observable.toPromise()).toBe('hello');
       });
+    });
+
+    describe('checkOutput compatibility', () => {
+      if (origPlatform !== 'win32') {
+        it('returns stdout of the running process', () => {
+          waitsForPromise(async () => {
+            const val = await runCommand('echo', ['-n', 'foo'], {env: process.env}).toPromise();
+            expect(val).toEqual('foo');
+          });
+        });
+        it('throws an error if the exit code !== 0', () => {
+          waitsForPromise({shouldReject: true}, async () => {
+            await runCommand(process.execPath, ['-e', 'process.exit(1)']).toPromise();
+          });
+        });
+      }
     });
   });
 

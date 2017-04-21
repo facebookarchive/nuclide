@@ -13,7 +13,7 @@ import split from 'split';
 import {WatchmanClient} from '../../nuclide-watchman-helpers';
 import fsPromise from '../../commons-node/fsPromise';
 import nuclideUri from '../../commons-node/nuclideUri';
-import {checkOutput} from '../../commons-node/process';
+import {runCommand} from '../../commons-node/process';
 import {asyncLimit} from '../../commons-node/promise';
 
 function getFilesFromCommand(
@@ -147,8 +147,8 @@ async function getFilesFromRepo(localDirectory: string): Promise<Array<string>> 
   if (!await fsPromise.exists(nuclideUri.join(localDirectory, '.repo'))) {
     throw new Error(`${localDirectory} is not a repo root`);
   }
-  const subRoots = (await checkOutput('repo', ['list', '-p'], {cwd: localDirectory}))
-    .stdout.split(/\n/).filter(s => s.length > 0);
+  const subRoots = (await runCommand('repo', ['list', '-p'], {cwd: localDirectory}).toPromise())
+    .split(/\n/).filter(s => s.length > 0);
 
   const fileLists = await asyncLimit(subRoots, 20, subRoot => {
     return getFilesFromGit(nuclideUri.join(localDirectory, subRoot))

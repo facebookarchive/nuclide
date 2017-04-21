@@ -12,7 +12,7 @@ import type {HgService as HgServiceType} from '../../nuclide-hg-rpc/lib/HgServic
 
 import {Directory, GitRepository} from 'atom';
 import {repositoryContainsPath} from '../../nuclide-vcs-base';
-import {checkOutput} from '../../commons-node/process';
+import {runCommand} from '../../commons-node/process';
 import MockHgService from '../../nuclide-hg-rpc/spec/MockHgService';
 import {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import nuclideUri from '../../commons-node/nuclideUri';
@@ -35,7 +35,7 @@ describe('repositoryContainsPath', () => {
   it('is accurate for GitRepository.', () => {
     waitsForPromise(async () => {
       // Create a temporary Git repository.
-      await checkOutput('git', ['init'], {cwd: repoRoot});
+      await runCommand('git', ['init'], {cwd: repoRoot}).toPromise();
 
       const gitRepository = new GitRepository(repoRoot);
       // For some reason, the path returned in tests from
@@ -58,7 +58,7 @@ describe('repositoryContainsPath', () => {
   it('is accurate for HgRepositoryClient.', () => {
     waitsForPromise(async () => {
       // Create temporary Hg repository.
-      await checkOutput('hg', ['init'], {cwd: repoRoot});
+      await runCommand('hg', ['init'], {cwd: repoRoot}).toPromise();
 
       const mockService = new MockHgService();
       const mockHgService: HgServiceType = (mockService: any);

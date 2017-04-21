@@ -9,20 +9,21 @@
  */
 
 import which from '../which';
+import {Observable} from 'rxjs';
 
 describe('which', () => {
-  let checkOutput: JasmineSpy;
-  let checkOutputReturn: {stdout: string} = (null: any);
+  let runCommand: JasmineSpy;
+  let runCommandReturn = '';
 
   beforeEach(() => {
-    checkOutputReturn = {stdout: ''};
-    checkOutput = spyOn(require('../process'), 'checkOutput').andCallFake(() =>
-      checkOutputReturn,
+    runCommandReturn = '';
+    runCommand = spyOn(require('../process'), 'runCommand').andCallFake(() =>
+      Observable.of(runCommandReturn),
     );
   });
 
   afterEach(() => {
-    jasmine.unspy(require('../process'), 'checkOutput');
+    jasmine.unspy(require('../process'), 'runCommand');
   });
 
   describe('on windows', () => {
@@ -42,12 +43,12 @@ describe('which', () => {
     it('calls where on Windows', () => {
       const param: string = '';
       which(param);
-      expect(checkOutput).toHaveBeenCalledWith('where', [param]);
+      expect(runCommand).toHaveBeenCalledWith('where', [param]);
     });
 
     it('returns the first match', () => {
       waitsForPromise(async () => {
-        checkOutputReturn.stdout = 'hello' + os.EOL + 'hello.exe' + os.EOL;
+        runCommandReturn = 'hello' + os.EOL + 'hello.exe' + os.EOL;
         const ret = await which('bla');
         expect(ret).toEqual('hello');
       });
@@ -71,12 +72,12 @@ describe('which', () => {
     it('calls which', () => {
       const param: string = '';
       which(param);
-      expect(checkOutput).toHaveBeenCalledWith('which', [param]);
+      expect(runCommand).toHaveBeenCalledWith('which', [param]);
     });
 
     it('returns the first match', () => {
       waitsForPromise(async () => {
-        checkOutputReturn.stdout = 'hello' + os.EOL + '/bin/hello' + os.EOL;
+        runCommandReturn = 'hello' + os.EOL + '/bin/hello' + os.EOL;
         const ret = await which('bla');
         expect(ret).toEqual('hello');
       });

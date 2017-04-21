@@ -8,7 +8,7 @@
  * @flow
  */
 
-import {checkOutput} from './process';
+import {runCommand} from './process';
 import os from 'os';
 
 /**
@@ -20,8 +20,8 @@ import os from 'os';
 export default async function which(command: string): Promise<?string> {
   const whichCommand = process.platform === 'win32' ? 'where' : 'which';
   try {
-    const result = await checkOutput(whichCommand, [command]);
-    return result.stdout.split(os.EOL)[0];
+    const result = await runCommand(whichCommand, [command]).toPromise();
+    return result.split(os.EOL)[0];
   } catch (e) {
     return null;
   }

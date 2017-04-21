@@ -22,7 +22,7 @@ import type {ConnectableObservable} from 'rxjs';
 
 import {keyMirror} from '../../commons-node/collection';
 import {Observable} from 'rxjs';
-import {checkOutput} from '../../commons-node/process';
+import {runCommand} from '../../commons-node/process';
 import ClangServerManager from './ClangServerManager';
 
 const serverManager = new ClangServerManager();
@@ -239,7 +239,7 @@ export async function formatCode(
   if (length != null) {
     args.push(`-length=${length}`);
   }
-  const {stdout} = await checkOutput('clang-format', args, {stdin: contents});
+  const stdout = await runCommand('clang-format', args, {stdin: contents}).toPromise();
 
   // The first line is a JSON blob indicating the new cursor position.
   const newLine = stdout.indexOf('\n');

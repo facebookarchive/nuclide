@@ -11,7 +11,7 @@
 import invariant from 'assert';
 import fs from 'fs';
 import nuclideUri from '../../commons-node/nuclideUri';
-import {checkOutput} from '../../commons-node/process';
+import {runCommand} from '../../commons-node/process';
 import {generateFixture} from '../../nuclide-test-helpers';
 import {fileSearchForDirectory} from '../lib/FileSearch';
 import * as watchmanHelpers from '../../nuclide-watchman-helpers';
@@ -158,8 +158,8 @@ function createTestFolder(): Promise<string> {
 async function hgTestFolder(): Promise<string> {
   const folder = await createTestFolder();
 
-  await checkOutput('hg', ['init'], {cwd: folder});
-  await checkOutput('hg', ['addremove'], {cwd: folder});
+  await runCommand('hg', ['init'], {cwd: folder}).toPromise();
+  await runCommand('hg', ['addremove'], {cwd: folder}).toPromise();
 
   // After adding the existing files to hg, add an ignored file to
   // prove we're using hg to populate the list.
@@ -173,8 +173,8 @@ async function hgTestFolder(): Promise<string> {
 async function gitTestFolder(): Promise<string> {
   const folder = await createTestFolder();
 
-  await checkOutput('git', ['init'], {cwd: folder});
-  await checkOutput('git', ['add', '*'], {cwd: folder});
+  await runCommand('git', ['init'], {cwd: folder}).toPromise();
+  await runCommand('git', ['add', '*'], {cwd: folder}).toPromise();
 
   // After adding the existing files to git, add an ignored file to
   // prove we're using git to populate the list.

@@ -12,7 +12,7 @@ import invariant from 'assert';
 import {ConnectableObservable} from 'rxjs';
 import WS from 'ws';
 import {CompositeDisposable, Disposable} from 'event-kit';
-import {checkOutput} from '../../commons-node/process';
+import {runCommand} from '../../commons-node/process';
 import utils from './utils';
 const {logInfo} = utils;
 import {ClientCallback} from '../../nuclide-debugger-common';
@@ -30,8 +30,8 @@ export async function getAttachTargetInfoList(): Promise<Array<NodeAttachTargetI
   //     done by the OS, not the ps utility
   // -o pid,comm: custom format the output to be two columns(pid and process name)
   const pidToName: Map<number, string> = new Map();
-  const processes = await checkOutput('ps', ['-e', '-o', 'pid,comm'], {});
-  processes.stdout.toString().split('\n').slice(1).forEach(line => {
+  const processes = await runCommand('ps', ['-e', '-o', 'pid,comm'], {}).toPromise();
+  processes.toString().split('\n').slice(1).forEach(line => {
     const words = line.trim().split(' ');
     const pid = Number(words[0]);
     const command = words.slice(1).join(' ');
@@ -44,8 +44,8 @@ export async function getAttachTargetInfoList(): Promise<Array<NodeAttachTargetI
   // -ww: provides unlimited width for output and prevents the truncating of command names by ps.
   // -o pid,args: custom format the output to be two columns(pid and command name)
   const pidToCommand: Map<number, string> = new Map();
-  const commands = await checkOutput('ps', ['-eww', '-o', 'pid,args'], {});
-  commands.stdout.toString().split('\n').slice(1).forEach(line => {
+  const commands = await runCommand('ps', ['-eww', '-o', 'pid,args'], {}).toPromise();
+  commands.toString().split('\n').slice(1).forEach(line => {
     const words = line.trim().split(' ');
     const pid = Number(words[0]);
     const command = words.slice(1).join(' ');

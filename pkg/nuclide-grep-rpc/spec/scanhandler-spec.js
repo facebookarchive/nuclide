@@ -10,7 +10,7 @@
 
 import type {search$FileResult} from '..';
 
-import {checkOutput} from '../../commons-node/process';
+import {runCommand} from '../../commons-node/process';
 import {addMatchers} from '../../nuclide-test-helpers';
 import fs from 'fs';
 import nuclideUri from '../../commons-node/nuclideUri';
@@ -114,7 +114,7 @@ describe('Scan Handler Tests', () => {
     waitsForPromise(async () => {
       // Create a git repo in a temporary folder.
       const folder = await generateFixture('grep-rpc');
-      await checkOutput('git', ['init'], {cwd: folder});
+      await runCommand('git', ['init'], {cwd: folder}).toPromise();
 
       // Create a file that is ignored.
       fs.writeFileSync(nuclideUri.join(folder, '.gitignore'), 'ignored.txt');
@@ -122,7 +122,7 @@ describe('Scan Handler Tests', () => {
 
       // Create a file that is tracked.
       fs.writeFileSync(nuclideUri.join(folder, 'tracked.txt'), 'Hello World!');
-      await checkOutput('git', ['add', 'tracked.txt'], {cwd: folder});
+      await runCommand('git', ['add', 'tracked.txt'], {cwd: folder}).toPromise();
 
       // Create a file that is untracked.
       fs.writeFileSync(nuclideUri.join(folder, 'untracked.txt'), 'Hello World!');
@@ -146,7 +146,7 @@ describe('Scan Handler Tests', () => {
     waitsForPromise(async () => {
       // Create a git repo in a temporary folder.
       const folder = await generateFixture('grep-rpc');
-      await checkOutput('hg', ['init'], {cwd: folder});
+      await runCommand('hg', ['init'], {cwd: folder}).toPromise();
 
       // Create a file that is ignored.
       fs.writeFileSync(nuclideUri.join(folder, '.hgignore'), 'ignored.txt');
@@ -154,12 +154,12 @@ describe('Scan Handler Tests', () => {
 
       // Create a file that is tracked.
       fs.writeFileSync(nuclideUri.join(folder, 'tracked.txt'), 'Hello World!');
-      await checkOutput('hg', ['add', 'tracked.txt'], {cwd: folder});
+      await runCommand('hg', ['add', 'tracked.txt'], {cwd: folder}).toPromise();
 
       // Create a file that is untracked.
       fs.writeFileSync(nuclideUri.join(folder, 'untracked.txt'), 'Hello World!');
 
-      await checkOutput('hg', ['commit', '-m', 'test commit'], {cwd: folder});
+      await runCommand('hg', ['commit', '-m', 'test commit'], {cwd: folder}).toPromise();
 
       const results = await search(folder, /hello world()/i, []).toArray().toPromise();
       const expected = JSON.parse(

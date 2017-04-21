@@ -11,7 +11,7 @@
 import invariant from 'assert';
 import fs from 'fs';
 import nuclideUri from '../../commons-node/nuclideUri';
-import {checkOutput} from '../../commons-node/process';
+import {runCommand} from '../../commons-node/process';
 import {generateFixture} from '../../nuclide-test-helpers';
 
 import {__test__} from '../lib/PathSetFactory';
@@ -40,7 +40,7 @@ describe('PathSetFactory', () => {
   describe('getFilesFromGit()', () => {
     const setUpGitRepo = async () => {
       // Add a tracked file, ignored file, and untracked file.
-      await checkOutput('git', ['init'], {cwd: testDir});
+      await runCommand('git', ['init'], {cwd: testDir}).toPromise();
       invariant(testDir);
       invariant(trackedFile);
       invariant(ignoredFile);
@@ -48,7 +48,7 @@ describe('PathSetFactory', () => {
       fs.writeFileSync(trackedFile, '');
       fs.writeFileSync(nuclideUri.join(testDir, '.gitignore'), `.gitignore\n${IGNORED_FILE_BASE}`);
       fs.writeFileSync(ignoredFile, '');
-      await checkOutput('git', ['add', '*'], {cwd: testDir});
+      await runCommand('git', ['add', '*'], {cwd: testDir}).toPromise();
       fs.writeFileSync(untrackedFile, '');
     };
 
@@ -66,7 +66,7 @@ describe('PathSetFactory', () => {
   describe('getFilesFromHg()', () => {
     const setUpHgRepo = async () => {
       // Add a tracked file, ignored file, and untracked file.
-      await checkOutput('hg', ['init'], {cwd: testDir});
+      await runCommand('hg', ['init'], {cwd: testDir}).toPromise();
       invariant(testDir);
       invariant(trackedFile);
       invariant(ignoredFile);
@@ -74,7 +74,7 @@ describe('PathSetFactory', () => {
       fs.writeFileSync(trackedFile, '');
       fs.writeFileSync(nuclideUri.join(testDir, '.hgignore'), `.hgignore\n${IGNORED_FILE_BASE}`);
       fs.writeFileSync(ignoredFile, '');
-      await checkOutput('hg', ['addremove'], {cwd: testDir});
+      await runCommand('hg', ['addremove'], {cwd: testDir}).toPromise();
       fs.writeFileSync(untrackedFile, '');
     };
 

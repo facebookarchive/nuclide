@@ -12,7 +12,6 @@ import {arrayCompact} from '../../commons-node/collection';
 import {
   observeProcess,
   runCommand,
-  checkOutput,
 } from '../../commons-node/process';
 import os from 'os';
 import {Observable} from 'rxjs';
@@ -47,10 +46,12 @@ export class DebugBridge {
   }
 
   startServer(): Promise<boolean> {
-    return checkOutput(this._adbPath, ['start-server']).then(
-      () => true,
-      () => false,
-    );
+    return runCommand(this._adbPath, ['start-server'])
+      .toPromise()
+      .then(
+        () => true,
+        () => false,
+      );
   }
 
   async getCommonDeviceInfo(device: string): Promise<Map<string, string>> {
