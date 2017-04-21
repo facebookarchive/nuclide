@@ -75,9 +75,12 @@ export class DebuggerCallstackComponent extends React.Component {
     // lldb://asm/0x1234. These are not valid paths that can be used to
     // construct a nuclideUri so we need to skip the protocol prefix.
     const path = nuclideUri.basename(props.data.path.replace(/^[a-zA-Z]+:\/\//, ''));
-    return <div title={`${path}:${props.data.line}`}>
+
+    // Chrome line numbers are actually 0-based, so add 1.
+    const line = props.data.line + 1;
+    return <div title={`${path}:${line}`}>
       {missingSourceItem}
-      <span>{path}:{props.data.line}</span>
+      <span>{path}:{line}</span>
       </div>;
   }
 
