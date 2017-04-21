@@ -11,33 +11,20 @@
 import React from 'react';
 import {renderReactRoot} from '../../commons-atom/renderReactRoot';
 import {DevicePanel} from './ui/DevicePanel';
-import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
-import {combineEpics, createEpicMiddleware} from '../../commons-node/redux-observable';
-import {applyMiddleware, createStore} from 'redux';
 import {Observable} from 'rxjs';
-import {createEmptyAppState} from './redux/createEmptyAppState';
-import * as Reducers from './redux/Reducers';
+import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
 import * as Actions from './redux/Actions';
-import * as Epics from './redux/Epics';
 
 import type {Props} from './ui/DevicePanel';
-import type {Store, DeviceFetcher, AppState, DeviceInfoProvider} from './types';
+import type {Store, AppState} from './types';
 
 export const WORKSPACE_VIEW_URI = 'atom://nuclide/devices';
-
 
 export class DevicesPanelState {
   _store: Store;
 
-  constructor(deviceFetchers: Set<DeviceFetcher>, infoProviders: Set<DeviceInfoProvider>) {
-    const epics = Object.keys(Epics)
-      .map(k => Epics[k])
-      .filter(epic => typeof epic === 'function');
-    this._store = createStore(
-      Reducers.app,
-      createEmptyAppState(deviceFetchers, infoProviders),
-      applyMiddleware(createEpicMiddleware(combineEpics(...epics))),
-    );
+  constructor(store: Store) {
+    this._store = store;
   }
 
   getTitle() {

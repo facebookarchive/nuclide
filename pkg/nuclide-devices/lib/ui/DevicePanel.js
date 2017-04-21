@@ -9,6 +9,7 @@
  */
 
 import React from 'react';
+import nuclideUri from '../../../commons-node/nuclideUri';
 import {PanelComponentScroller} from '../../../nuclide-ui/PanelComponentScroller';
 import {Observable, Subscription} from 'rxjs';
 import invariant from 'invariant';
@@ -54,7 +55,9 @@ export class DevicePanel extends React.Component {
   }
 
   _createSelectorSection(): React.Element<any> {
-    const hostOptions = this.props.hosts.map(host => ({value: host, label: host}));
+    const hostOptions = this.props.hosts.map(
+      host => ({value: host, label: host === 'local' ? host : nuclideUri.getHostname(host)}),
+    );
     const typeOptions = this.props.deviceTypes.map(type => ({value: type, label: type}));
     typeOptions.splice(0, 0, {value: null, label: 'Select...'});
     return (

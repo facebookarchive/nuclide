@@ -59,6 +59,13 @@ export type SetDevicesAction = {
   },
 };
 
+export type SetHostsAction = {
+  type: 'SET_HOSTS',
+  payload: {
+    hosts: NuclideUri[],
+  },
+};
+
 export type RefreshDevicesAction = {
   type: 'REFRESH_DEVICES',
   payload: {},
@@ -95,6 +102,7 @@ export type SetInfoTablesAction = {
 export type Action =
   RefreshDevicesAction
   | SetHostAction
+  | SetHostsAction
   | SetDevicesAction
   | SetDeviceTypeAction
   | SetInfoTablesAction

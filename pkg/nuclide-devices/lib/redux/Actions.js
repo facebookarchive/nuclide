@@ -10,19 +10,21 @@
 
 import type {NuclideUri} from '../../../commons-node/nuclideUri';
 import type {
-  SetDevicesAction,
-  SetHostAction,
   SetDeviceTypeAction,
+  SetDevicesAction,
   SetDeviceAction,
+  SetHostsAction,
+  SetHostAction,
   SetInfoTablesAction,
   RefreshDevicesAction,
   Device,
 } from '../types';
 
-export const SET_DEVICES = 'SET_DEVICES';
-export const SET_HOST = 'SET_HOST';
 export const SET_DEVICE_TYPE = 'SET_DEVICE_TYPE';
+export const SET_DEVICES = 'SET_DEVICES';
 export const SET_DEVICE = 'SET_DEVICE';
+export const SET_HOSTS = 'SET_HOSTS';
+export const SET_HOST = 'SET_HOST';
 export const REFRESH_DEVICES = 'REFRESH_DEVICES';
 export const SET_INFO_TABLES = 'SET_INFO_TABLES';
 
@@ -44,6 +46,13 @@ export function setDevices(devices: Device[]): SetDevicesAction {
   return {
     type: SET_DEVICES,
     payload: {devices},
+  };
+}
+
+export function setHosts(hosts: NuclideUri[]): SetHostsAction {
+  return {
+    type: SET_HOSTS,
+    payload: {hosts},
   };
 }
 

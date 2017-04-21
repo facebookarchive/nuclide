@@ -8,7 +8,6 @@
  * @flow
  */
 
-import type {Observable} from 'rxjs';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {RemoteConnection} from './RemoteConnection';
 import type {HgRepositoryDescription} from '../../nuclide-source-control-helpers';
@@ -16,8 +15,10 @@ import typeof * as InfoService from '../../nuclide-server/lib/services/InfoServi
 import typeof * as FileWatcherService from '../../nuclide-filewatcher-rpc';
 import type {WatchResult} from '../../nuclide-filewatcher-rpc';
 
+import {observableFromSubscribeFunction} from '../../commons-node/event';
 import invariant from 'assert';
 import {RpcConnection} from '../../nuclide-rpc';
+import {Observable} from 'rxjs';
 import servicesConfig from '../../nuclide-server/lib/servicesConfig';
 import {setConnectionConfig, clearConnectionConfig} from './RemoteConnectionConfigurationManager';
 import {ConnectionHealthNotifier} from './ConnectionHealthNotifier';
@@ -366,6 +367,15 @@ export class ServerConnection {
       // Clear the saved connection config so we don't try it again at startup.
       clearConnectionConfig(this._config.host);
     }
+  }
+
+  static observeRemoteConnections(): Observable<Array<ServerConnection>> {
+    const emitter = ServerConnection._emitter;
+    return Observable.merge(
+      observableFromSubscribeFunction(cb => emitter.on('did-add', cb)),
+      observableFromSubscribeFunction(cb => emitter.on('did-close', cb)),
+      Observable.of(null), // so subscribers get a full list immediately
+    ).map(() => Array.from(ServerConnection._connections.values()));
   }
 }
 
