@@ -105,6 +105,17 @@ export class MultiRootChangedFilesView extends React.Component {
           label: 'Copy Full Path',
           command: `${commandPrefix}:copy-full-path`,
         },
+        {
+          label: 'Forget file',
+          command: `${commandPrefix}:forget-file`,
+          shouldDisplay: event => {
+            const statusCode = this._getStatusCodeForFile(event);
+            return (
+              statusCode !== FileChangeStatus.REMOVED &&
+              statusCode !== FileChangeStatus.UNTRACKED
+            );
+          },
+        },
         {type: 'separator'},
       ],
     }));
@@ -162,7 +173,6 @@ export class MultiRootChangedFilesView extends React.Component {
         }
       },
     ));
-
     this._subscriptions.add(atom.commands.add(
       `.${commandPrefix}-file-entry`,
       `${commandPrefix}:open-in-diff-view`,
@@ -170,6 +180,16 @@ export class MultiRootChangedFilesView extends React.Component {
         const filePath = this._getFilePathFromEvent(event);
         if (filePath != null && filePath.length) {
           this._handleOpenFileInDiffView(filePath);
+        }
+      },
+    ));
+    this._subscriptions.add(atom.commands.add(
+      `.${commandPrefix}-file-entry`,
+      `${commandPrefix}:forget-file`,
+      event => {
+        const filePath = this._getFilePathFromEvent(event);
+        if (filePath != null && filePath.length) {
+          this._handleForgetFile(filePath);
         }
       },
     ));
