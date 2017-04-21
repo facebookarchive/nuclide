@@ -16,7 +16,7 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
 import type {DeviceDescription} from './types';
 
-export async function registerAdbPath(
+export async function registerSdbPath(
   id: string,
   path: NuclideUri,
   priority: number = -1,
