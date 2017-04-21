@@ -18,9 +18,16 @@
     "config": {
       "maximumMessageCount": {
         "title": "Maximum Message Count",
-        "description": "The number of messages to save",
+        "description": "The number of messages to retain in the console",
         "type": "number",
         "default": 10000,
+        "minimum": 1
+      },
+      "maximumSerializedMessages": {
+        "title": "Maximum Serialized Messages",
+        "description": "The number of messages to save across Nuclide sessions",
+        "type": "number",
+        "default": 10,
         "minimum": 1
       }
     },

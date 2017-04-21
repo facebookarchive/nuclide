@@ -32,7 +32,7 @@ import invariant from 'assert';
 import React from 'react';
 import {applyMiddleware, createStore} from 'redux';
 
-const MAX_SERIALIZED_RECORDS = 1000;
+const MAXIMUM_SERIALIZED_MESSAGES_CONFIG = 'nuclide-console.maximumSerializedMessages';
 
 class Activation {
   _disposables: UniversalDisposable;
@@ -168,8 +168,10 @@ class Activation {
     if (this._store == null) {
       return {};
     }
+    const maximumSerializedMessages: number =
+      (featureConfig.get(MAXIMUM_SERIALIZED_MESSAGES_CONFIG): any);
     return {
-      records: this._store.getState().records.slice(-MAX_SERIALIZED_RECORDS),
+      records: this._store.getState().records.slice(-maximumSerializedMessages),
     };
   }
 }
