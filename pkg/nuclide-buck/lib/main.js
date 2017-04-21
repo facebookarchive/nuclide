@@ -18,9 +18,12 @@ import type {BuckBuilder, SerializedState} from './types';
 import registerGrammar from '../../commons-atom/register-grammar';
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
+import {openNearestBuildFile} from './buildFiles';
 import {getSuggestion} from './HyperclickProvider';
 import {BuckBuildSystem} from './BuckBuildSystem';
 import {PlatformService} from './PlatformService';
+
+const OPEN_NEAREST_BUILD_FILE_COMMAND = 'nuclide-buck:open-nearest-build-file';
 
 let disposables: ?CompositeDisposable = null;
 let buildSystem: ?BuckBuildSystemType = null;
@@ -32,6 +35,14 @@ export function activate(rawState: ?Object): void {
   disposables = new CompositeDisposable(
     new Disposable(() => { buildSystem = null; }),
     new Disposable(() => { initialState = null; }),
+    atom.commands.add(
+      'atom-workspace',
+      OPEN_NEAREST_BUILD_FILE_COMMAND,
+      event => {
+        const target = ((event.target: any): HTMLElement);
+        openNearestBuildFile(target);  // Note this returns a Promise.
+      },
+    ),
   );
   registerGrammar('source.python', ['BUCK']);
   registerGrammar('source.json', ['BUCK.autodeps']);

@@ -14,26 +14,13 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {HyperclickSuggestion} from '../../hyperclick/lib/types';
 import type {Point} from 'atom';
 
-import {getBuckProjectRoot, getBuckService} from '../../nuclide-buck-base';
+import {getBuckProjectRoot} from '../../nuclide-buck-base';
+import {getBuildFileName} from './buildFiles';
 import {wordAtPosition} from '../../commons-atom/range';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {goToLocation} from '../../commons-atom/go-to-location';
 import nuclideUri from '../../commons-node/nuclideUri';
 import escapeStringRegExp from 'escape-string-regexp';
-
-const buildFileNameCache = new Map();
-function getBuildFileName(buckRoot: string): Promise<?string> {
-  let buildFileName = buildFileNameCache.get(buckRoot);
-  if (buildFileName != null) {
-    return buildFileName;
-  }
-  const buckService = getBuckService(buckRoot);
-  buildFileName = buckService == null ? Promise.resolve(null) :
-    buckService.getBuckConfig(buckRoot, 'buildfile', 'name')
-      .catch(() => null);
-  buildFileNameCache.set(buckRoot, buildFileName);
-  return buildFileName;
-}
 
 /**
  * Takes target regex match and file path where given target is found as
@@ -60,11 +47,7 @@ export async function parseTarget(
     // Strip off the leading slashes from the fully-qualified build target.
     const basePath = fullTarget.substring('//'.length);
 
-    let buildFileName = await getBuildFileName(buckRoot);
-    if (buildFileName == null) {
-      buildFileName = 'BUCK';
-    }
-
+    const buildFileName = await getBuildFileName(buckRoot);
     path = nuclideUri.join(buckRoot, basePath, buildFileName);
   } else {
     // filePath is already an absolute path.
