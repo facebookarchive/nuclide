@@ -1042,6 +1042,20 @@ export class HgService {
   }
 
   /**
+   * Mark the specified files so they will no longer be tracked by hg after the next commit.
+   * The file will remain in the working directory.
+   * @param filePath Which file(s) should be forgotten.
+   */
+  async forget(filePaths: Array<NuclideUri>): Promise<void> {
+    const args = [...filePaths.map(p => nuclideUri.getPath(p))];
+    try {
+      await this._runSimpleInWorkingDirectory('forget', args);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  /**
    * Version a new file under Hg.
    * @param filePath Which file should be versioned.
    */

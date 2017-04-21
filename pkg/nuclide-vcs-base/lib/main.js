@@ -149,6 +149,19 @@ export function observeStatusChanges(
   .map(() => getDirtyFileChanges(repository));
 }
 
+export function forgetPath(nodePath: ?NuclideUri): Promise<void> {
+  return hgActionToPath(
+    nodePath,
+    'forget',
+    'Forgot',
+    async (hgRepository: HgRepositoryClient) => {
+      invariant(nodePath);
+      track('hg-repository-forget', {nodePath});
+      await hgRepository.forget([nodePath]);
+    },
+  );
+}
+
 export function addPath(nodePath: ?NuclideUri): Promise<void> {
   return hgActionToPath(
     nodePath,

@@ -964,6 +964,10 @@ export class HgRepositoryClient {
     return this._service.remove(filePaths, after);
   }
 
+  forget(filePaths: Array<string>): Promise<void> {
+    return this._service.forget(filePaths);
+  }
+
   addAll(filePaths: Array<NuclideUri>): Promise<void> {
     return this._service.add(filePaths);
   }

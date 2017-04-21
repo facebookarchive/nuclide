@@ -15,6 +15,7 @@ import {
  addPath,
  confirmAndRevertPath,
  confirmAndDeletePath,
+ forgetPath,
  FileChangeStatus,
  RevertibleStatusCodes,
 } from '../nuclide-vcs-base';
@@ -203,7 +204,7 @@ export class MultiRootChangedFilesView extends React.Component {
   }
 
   _handleForgetFile(filePath: string): void {
-    // TODO(jxg): implement
+    forgetPath(filePath);
   }
 
   _handleOpenFileInDiffView(filePath: string): void {
