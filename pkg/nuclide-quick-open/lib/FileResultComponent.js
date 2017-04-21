@@ -11,8 +11,8 @@
 import type {FileResult} from './types';
 
 import React from 'react';
-import fileTypeClass from '../../commons-atom/file-type-class';
 import nuclideUri from '../../commons-node/nuclideUri';
+import PathWithFileIcon from '../../nuclide-ui/PathWithFileIcon';
 
 type Key = number | string;
 
@@ -74,14 +74,10 @@ export default class FileResultComponent {
       }
     });
     pathComponents.push(renderUnmatchedSubsequence(filePath.slice(start, filePath.length), 'last'));
-
-    const filenameClasses = ['file', 'icon', fileTypeClass(filePath)].join(' ');
-    // `data-name` is support for the "file-icons" package.
-    // See: https://atom.io/packages/file-icons
     return (
-      <div className={filenameClasses} data-name={nuclideUri.basename(filePath)}>
+      <PathWithFileIcon path={nuclideUri.basename(filePath)}>
         {pathComponents}
-      </div>
+      </PathWithFileIcon>
     );
   }
 }

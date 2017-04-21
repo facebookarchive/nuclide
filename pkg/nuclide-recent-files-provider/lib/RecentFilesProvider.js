@@ -19,6 +19,7 @@ import type {
 import {arrayCompact} from '../../commons-node/collection';
 import {relativeDate} from '../../commons-node/string';
 import {Matcher} from '../../nuclide-fuzzy-native';
+import PathWithFileIcon from '../../nuclide-ui/PathWithFileIcon';
 
 // Imported from nuclide-files-service, which is an apm package, preventing a direct import.
 type FilePath = string;
@@ -121,11 +122,11 @@ export const RecentFilesProvider: Provider = {
         style={{opacity: opacityForTimestamp(item.timestamp || Date.now())}}
         title={datetime}>
         <div className="recent-files-provider-filepath-container">
-          <span
-            className="icon icon-file-text file recent-files-provider-file-path"
-            data-name={filename}>
+          <PathWithFileIcon
+            className="recent-files-provider-file-path"
+            path={filename}>
             {filePath}
-          </span>
+          </PathWithFileIcon>
           <span className="recent-files-provider-file-name">{filename}</span>
         </div>
         <div className="recent-files-provider-datetime-container">
