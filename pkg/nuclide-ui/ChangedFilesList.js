@@ -21,6 +21,7 @@ import {
 import nuclideUri from '../commons-node/nuclideUri';
 import React from 'react';
 import {Icon} from './Icon';
+import PathWithFileIcon from './PathWithFileIcon';
 
 const FILE_CHANGES_INITIAL_PAGE_SIZE = 100;
 
@@ -77,12 +78,6 @@ export default class ChangedFilesList extends React.Component {
       collapsed: this.state.isCollapsed,
     });
 
-    const fileClassName = classnames(
-      'icon',
-      'icon-file-text',
-      'nuclide-file-changes-file-entry',
-    );
-
     const showMoreFilesElement = fileChanges.size > filesToShow
       ? <div
           className="icon icon-ellipsis"
@@ -127,9 +122,15 @@ export default class ChangedFilesList extends React.Component {
                       className="nuclide-file-changes-file-entry-icon"
                       icon={FileChangeStatusToIcon[fileChangeValue]}
                     />
-                    <span className={fileClassName}>
-                      {baseName}
-                    </span>
+                    <PathWithFileIcon
+                      className="nuclide-file-changes-file-entry"
+                      path={baseName}
+                      ref={addTooltip({
+                        title: `${filePath} – Click to open`,
+                        delay: 100,
+                        placement: 'top',
+                      })}
+                    />
                   </li>
                 );
               },
