@@ -97,6 +97,8 @@ export default class PathWithFileIcon extends React.Component {
     } = this.props;
     return classnames(
       'icon',
+      'name',
+      'nuclide-ui-path-with-file-icon',
       {
         'icon-file-text': isFolder !== true,
         'icon-file-directory': isFolder === true,
