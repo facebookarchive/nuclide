@@ -17,6 +17,7 @@ import type {
   MergeConflictStatusValue,
   StatusCodeIdValue,
   StatusCodeNumberValue,
+  SuccessorTypeValue,
 } from './HgService';
 
 const StatusCodeId = Object.freeze({
@@ -83,10 +84,20 @@ const CommitPhase = Object.freeze({
   SECRET: 'secret',
 });
 
-const HEAD_REVISION_EXPRESSION = '.';
-
 // This is to work around flow's missing support of enums.
 (CommitPhase: {[key: string]: CommitPhaseType});
+
+const SuccessorType = Object.freeze({
+  PUBLIC: 'public',
+  AMEND: 'amend',
+  REBASE: 'rebase',
+  SPLIT: 'split',
+  FOLD: 'fold',
+  HISTEDIT: 'histedit',
+});
+
+// This is to work around flow's missing support of enums.
+(SuccessorType: {[key: string]: SuccessorTypeValue});
 
 const MergeConflictFileStatus = Object.freeze({
   RESOLVED: 'R',
@@ -94,6 +105,8 @@ const MergeConflictFileStatus = Object.freeze({
 });
 
 (MergeConflictFileStatus: {[key: string]: MergeConflictStatusCodeId});
+
+const HEAD_REVISION_EXPRESSION = '.';
 
 module.exports = {
   AmendMode,
@@ -104,4 +117,5 @@ module.exports = {
   StatusCodeId,
   StatusCodeIdToNumber,
   StatusCodeNumber,
+  SuccessorType,
 };

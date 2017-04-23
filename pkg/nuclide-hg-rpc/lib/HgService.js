@@ -126,6 +126,13 @@ export type DiffInfo = {
 
 export type CommitPhaseType = 'public' | 'draft' | 'secret';
 
+export type SuccessorTypeValue = 'public' | 'amend' | 'rebase' | 'split' | 'fold' | 'histedit';
+
+export type RevisionSuccessorInfo = {
+  hash: string,
+  type: SuccessorTypeValue,
+};
+
 export type RevisionInfo = {
   author: string,
   bookmarks: Array<string>,
@@ -138,6 +145,7 @@ export type RevisionInfo = {
   remoteBookmarks: Array<string>,
   parents: Array<string>,
   phase: CommitPhaseType,
+  successorInfo: ?RevisionSuccessorInfo,
   tags: Array<string>,
   title: string,
 };

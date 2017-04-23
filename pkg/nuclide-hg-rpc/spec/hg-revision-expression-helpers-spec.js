@@ -13,6 +13,9 @@ import {
   parseRevisionInfoOutput,
   INFO_REV_END_MARK,
 } from '../lib/hg-revision-expression-helpers';
+import {
+  SuccessorType,
+} from '../lib/hg-constants';
 
 describe('hg-revision-expression-helpers', () => {
   describe('expressionForRevisionsBeforeHead', () => {
@@ -50,6 +53,12 @@ b-1 b-2
 tip
 a343fb211111 000000000000
 @
+
+
+
+
+
+
 ${commit1Description}
 ${INFO_REV_END_MARK}
 123
@@ -63,6 +72,12 @@ public
 remote/master
 
 abc123411111 000000000000
+
+
+af3435454321
+
+
+
 
 ${commit2Description}
 ${INFO_REV_END_MARK}
@@ -83,6 +98,7 @@ ${INFO_REV_END_MARK}
           tags: ['tip'],
           parents: ['a343fb211111'],
           description: commit1Description,
+          successorInfo: null,
         },
         {
           id: 123,
@@ -98,6 +114,10 @@ ${INFO_REV_END_MARK}
           tags: [],
           parents: ['abc123411111'],
           description: commit2Description,
+          successorInfo: {
+            hash: 'af3435454321',
+            type: SuccessorType.AMEND,
+          },
         },
       ]);
     });

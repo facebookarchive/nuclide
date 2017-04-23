@@ -8,12 +8,13 @@
  * @flow
  */
 
-import type {RevisionInfo} from './HgService';
+import type {RevisionInfo, RevisionSuccessorInfo} from './HgService';
 import type {ConnectableObservable} from 'rxjs';
 
 import {hgAsyncExecute, hgRunCommand} from './hg-utils';
-import {HEAD_REVISION_EXPRESSION} from './hg-constants';
+import {HEAD_REVISION_EXPRESSION, SuccessorType} from './hg-constants';
 import {getLogger} from '../../nuclide-logging';
+import invariant from 'assert';
 import {Observable} from 'rxjs';
 
 /**
@@ -46,9 +47,24 @@ const REVISION_INFO_TEMPLATE = `{rev}
 {tags}
 {p1node|short} {p2node|short}
 {ifcontains(rev, revset('.'), '${HEAD_MARKER}')}
+{singlepublicsuccessor}
+{amendsuccessors}
+{rebasesuccessors}
+{splitsuccessors}
+{foldsuccessors}
+{histeditsuccessors}
 {desc}
 ${INFO_REV_END_MARK}
 `;
+
+const SUCCESSOR_TEMPLATE_ORDER = [
+  SuccessorType.PUBLIC,
+  SuccessorType.AMEND,
+  SuccessorType.REBASE,
+  SuccessorType.SPLIT,
+  SuccessorType.FOLD,
+  SuccessorType.HISTEDIT,
+];
 
 /**
  * @param revisionExpression An expression that can be passed to hg as an argument
@@ -202,9 +218,10 @@ export function parseRevisionInfoOutput(revisionsInfoOutput: string): Array<Revi
   const revisionInfo = [];
   for (const chunk of revisions) {
     const revisionLines = chunk.trim().split('\n');
-    if (revisionLines.length < 12) {
+    if (revisionLines.length < 18) {
       continue;
     }
+    const successorInfo = parseSuccessorData(revisionLines.slice(12, 18));
     revisionInfo.push({
       id: parseInt(revisionLines[0], 10),
       title: revisionLines[1],
@@ -221,10 +238,24 @@ export function parseRevisionInfoOutput(revisionsInfoOutput: string): Array<Revi
       parents: splitLine(revisionLines[10])
         .filter(hash => hash !== NO_NODE_HASH),
       isHead: revisionLines[11] === HEAD_MARKER,
-      description: revisionLines.slice(12).join('\n'),
+      successorInfo,
+      description: revisionLines.slice(18).join('\n'),
     });
   }
   return revisionInfo;
+}
+
+function parseSuccessorData(successorLines: Array<string>): ?RevisionSuccessorInfo {
+  invariant(successorLines.length === SUCCESSOR_TEMPLATE_ORDER.length);
+  for (let i = 0; i < SUCCESSOR_TEMPLATE_ORDER.length; i++) {
+    if (successorLines[i].length > 0) {
+      return {
+        hash: successorLines[i],
+        type: SUCCESSOR_TEMPLATE_ORDER[i],
+      };
+    }
+  }
+  return null;
 }
 
 function splitLine(line: string): Array<string> {
