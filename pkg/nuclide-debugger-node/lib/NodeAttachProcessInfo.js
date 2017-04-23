@@ -39,4 +39,8 @@ export class NodeAttachProcessInfo extends DebuggerProcessInfo {
     const service = getNodeDebuggerServiceByNuclideUri(this.getTargetUri());
     return new service.NodeDebuggerService();
   }
+
+  supportContinueToLocation(): boolean {
+    return true;
+  }
 }

@@ -91,6 +91,10 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
     return true;
   }
 
+  supportContinueToLocation(): boolean {
+    return true;
+  }
+
   customControlButtons(): Array<ControlButtonSpecification> {
     const customControlButtons = [{
       icon: 'link-external',

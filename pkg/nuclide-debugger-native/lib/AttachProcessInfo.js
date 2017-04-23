@@ -38,6 +38,10 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
     return true;
   }
 
+  supportContinueToLocation(): boolean {
+    return true;
+  }
+
   async debug(): Promise<DebuggerInstanceBase> {
     const rpcService = this._getRpcService();
     let debugSession = null;

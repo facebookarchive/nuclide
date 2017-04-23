@@ -59,6 +59,10 @@ export default class DebuggerProcessInfo {
     return false;
   }
 
+  supportContinueToLocation(): boolean {
+    return false;
+  }
+
   singleThreadSteppingEnabled(): boolean {
     return false;
   }

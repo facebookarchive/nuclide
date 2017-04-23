@@ -40,6 +40,10 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
     return true;
   }
 
+  supportContinueToLocation(): boolean {
+    return true;
+  }
+
   async debug(): Promise<DebuggerInstanceBase> {
     const rpcService = this._getRpcService();
     if (typeof this.basepath === 'string') {
