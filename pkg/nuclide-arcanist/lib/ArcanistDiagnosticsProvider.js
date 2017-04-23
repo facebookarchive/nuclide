@@ -13,16 +13,19 @@ import type {LinterMessage} from '../../nuclide-diagnostics-common';
 
 import {Range} from 'atom';
 import {Subject} from 'rxjs';
+import os from 'os';
 
 import featureConfig from '../../commons-atom/featureConfig';
 import {trackTiming} from '../../nuclide-analytics';
 import {removeCommonSuffix} from '../../commons-node/string';
+import {PromisePool} from '../../commons-node/promise-executors';
 import {getLogger} from '../../nuclide-logging';
 import {getArcanistServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 const logger = getLogger();
 
 const _runningProcess = new Map();
+const _promisePool = new PromisePool(Math.round(os.cpus().length / 2));
 
 export function lint(textEditor: TextEditor): Promise<?Array<LinterMessage>> {
   return trackTiming(
@@ -91,20 +94,26 @@ async function _findDiagnostics(filePath: string): Promise<?Array<ArcDiagnostic>
     // This will cause the previous lint run to resolve with `undefined`.
     runningProcess.complete();
   }
-  const arcService = getArcanistServiceByNuclideUri(filePath);
   const subject = new Subject();
   _runningProcess.set(filePath, subject);
-  const subscription = arcService.findDiagnostics(filePath, blacklistedLinters)
-    .refCount()
-    .toArray()
-    .timeout((featureConfig.get('nuclide-arcanist.lintTimeout'): any))
-    .subscribe(subject);
-  return subject
-    .finally(() => {
-      subscription.unsubscribe();
-      _runningProcess.delete(filePath);
-    })
-    .toPromise();
+  return _promisePool.submit(() => {
+    // It's possible that the subject was replaced by a queued lint run.
+    if (_runningProcess.get(filePath) !== subject) {
+      return Promise.resolve(null);
+    }
+    const arcService = getArcanistServiceByNuclideUri(filePath);
+    const subscription = arcService.findDiagnostics(filePath, blacklistedLinters)
+      .refCount()
+      .toArray()
+      .timeout((featureConfig.get('nuclide-arcanist.lintTimeout'): any))
+      .subscribe(subject);
+    return subject
+      .finally(() => {
+        subscription.unsubscribe();
+        _runningProcess.delete(filePath);
+      })
+      .toPromise();
+  });
 }
 
 // This type is a bit different than an ArcDiagnostic since original and replacement are
