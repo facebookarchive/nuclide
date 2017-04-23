@@ -88,7 +88,7 @@ module.exports = {
     'dot-notation': 1,
     'eqeqeq': [1, 'allow-null'],
     'guard-for-in': 0,
-    'no-alert': 1,
+    'no-alert': 0,
     'no-caller': 1,
     'no-case-declarations': 0,
     'no-div-regex': 1,
