@@ -49,6 +49,7 @@ import {renderReactRoot} from '../../commons-atom/renderReactRoot';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {ServerConnection} from '../../nuclide-remote-connection';
 import {setNotificationService} from '../../nuclide-debugger-base';
+import {DebuggerMode} from './DebuggerStore';
 import {NewDebuggerView} from './NewDebuggerView';
 import DebuggerControllerView from './DebuggerControllerView';
 import {wordAtPosition, trimRange} from '../../commons-atom/range';
@@ -315,20 +316,47 @@ class Activation {
             label: 'Debugger',
             submenu: [
               {
+                label: 'Run to Location',
+                command: 'nuclide-debugger:run-to-location',
+                shouldDisplay: event => {
+                  // Should also check for is paused.
+                  const store = this.getModel().getStore();
+                  const debuggerInstance = store.getDebuggerInstance();
+                  if (
+                    store.getDebuggerMode() === DebuggerMode.PAUSED &&
+                    debuggerInstance != null &&
+                    debuggerInstance.getDebuggerProcessInfo().supportContinueToLocation()
+                  ) {
+                    return true;
+                  }
+                  return false;
+                },
+              },
+              {
                 label: 'Toggle Breakpoint',
                 command: 'nuclide-debugger:toggle-breakpoint',
               },
               {
                 label: 'Toggle Breakpoint enabled/disabled',
                 command: 'nuclide-debugger:toggle-breakpoint-enabled',
+                shouldDisplay: event =>
+                  this._executeWithEditorPath(event, (filePath, line) =>
+                    this.getModel()
+                      .getBreakpointStore()
+                      .getBreakpointAtLine(filePath, line) != null,
+                  ) || false,
               },
               {
                 label: 'Add to Watch',
                 command: 'nuclide-debugger:add-to-watch',
-              },
-              {
-                label: 'Run to Location',
-                command: 'nuclide-debugger:run-to-location',
+                shouldDisplay: event => {
+                  const textEditor = atom.workspace.getActiveTextEditor();
+                  if (!this.getModel().getStore().isDebugging() || textEditor == null) {
+                    return false;
+                  }
+                  return textEditor.getSelections().length === 1
+                    && !textEditor.getSelectedBufferRange().isEmpty();
+                },
               },
             ],
           },
@@ -439,17 +467,17 @@ class Activation {
     });
   }
 
-  _executeWithEditorPath(event: any, fn) {
+  _executeWithEditorPath<T>(
+    event: any,
+    fn: (filePath: string, line: number) => T,
+  ): ?T {
     const editor = atom.workspace.getActiveTextEditor();
-    if (editor && editor.getPath()) {
-      const filePath = editor.getPath();
-      if (!filePath) {
-        return;
-      }
-
-      const line = getLineForEvent(editor, event);
-      fn(filePath, line);
+    if (!editor || !editor.getPath()) {
+      return null;
     }
+
+    const line = getLineForEvent(editor, event);
+    return fn(nullthrows(editor.getPath()), line);
   }
 
   _deleteBreakpoint(event: any): void {

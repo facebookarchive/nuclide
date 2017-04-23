@@ -12,7 +12,6 @@ import type {FileLineBreakpoint} from './types';
 
 import type BreakpointStore from './BreakpointStore';
 import type DebuggerActions from './DebuggerActions';
-import {DebuggerMode} from './DebuggerStore';
 
 import invariant from 'assert';
 import {bufferPositionForMouseEvent} from '../../commons-atom/mouse-to-position';
@@ -91,12 +90,7 @@ export default class BreakpointDisplayController {
 
   _isDebugging(): boolean {
     const debuggerStore = this._breakpointStore.getDebuggerStore();
-    if (debuggerStore) {
-      const mode = debuggerStore.getDebuggerMode();
-      return mode !== DebuggerMode.STOPPED && mode !== DebuggerMode.STOPPING;
-    } else {
-      return false;
-    }
+    return debuggerStore != null && debuggerStore.isDebugging();
   }
 
   _registerEditorContextMenuHandler(): IDisposable {

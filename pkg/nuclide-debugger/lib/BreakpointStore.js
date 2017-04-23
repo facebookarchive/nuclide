@@ -281,7 +281,7 @@ export default class BreakpointStore {
   getBreakpointAtLine(path: string, line: number): ?FileLineBreakpoint {
     const lineMap = this._breakpoints.get(path);
     if (lineMap == null) {
-      return;
+      return null;
     }
     return lineMap.get(line);
   }

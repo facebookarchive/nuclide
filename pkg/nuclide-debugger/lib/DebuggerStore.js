@@ -25,13 +25,16 @@ import invariant from 'assert';
 import {ActionTypes} from './DebuggerDispatcher';
 import type {DebuggerProcessInfo} from '../../nuclide-debugger-base';
 
-export const DebuggerMode: {[key: string]: DebuggerModeType} = Object.freeze({
+export const DebuggerMode = Object.freeze({
   STARTING: 'starting',
   RUNNING: 'running',
   PAUSED: 'paused',
   STOPPING: 'stopping',
   STOPPED: 'stopped',
 });
+
+// This is to work around flow's missing support of enums.
+(DebuggerMode: {[key: string]: DebuggerModeType});
 
 const DEBUGGER_CHANGE_EVENT = 'change';
 const DEBUGGER_MODE_CHANGE_EVENT = 'debugger mode change';
@@ -129,6 +132,11 @@ export class DebuggerStore {
 
   getDebuggerMode(): DebuggerModeType {
     return this._debuggerMode;
+  }
+
+  isDebugging(): boolean {
+    return this._debuggerMode !== DebuggerMode.STOPPED
+      && this._debuggerMode !== DebuggerMode.STOPPING;
   }
 
   getTogglePauseOnException(): boolean {
