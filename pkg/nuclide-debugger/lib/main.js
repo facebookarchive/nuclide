@@ -31,15 +31,13 @@ import type {
   TriggerNux,
 } from '../../nuclide-nux/lib/main';
 
+import {AnalyticsEvents} from './constants';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {Subject} from 'rxjs';
 import invariant from 'assert';
 import classnames from 'classnames';
 import {Disposable} from 'atom';
-import {
-  track,
-  trackTiming,
-} from '../../nuclide-analytics';
+import {track} from '../../nuclide-analytics';
 import RemoteControlService from './RemoteControlService';
 import DebuggerModel, {WORKSPACE_VIEW_URI} from './DebuggerModel';
 import {debuggerDatatip} from './DebuggerDatatip';
@@ -141,7 +139,7 @@ class DebuggerView extends React.Component {
   }
 
   componentDidMount(): void {
-    track('debugger-ui-mounted', {
+    track(AnalyticsEvents.DEBUGGER_UI_MOUNTED, {
       frontend: this._getUiTypeForAnalytics(),
     });
     // Wait for UI to initialize and "calm down"
@@ -154,7 +152,7 @@ class DebuggerView extends React.Component {
 
   componentDidUpdate(prevProps: Props, prevState: State): void {
     if (prevState.showOldView !== this.state.showOldView) {
-      track('debugger-ui-toggled', {
+      track(AnalyticsEvents.DEBUGGER_UI_TOGGLED, {
         frontend: this._getUiTypeForAnalytics(),
       });
     }
@@ -419,6 +417,7 @@ class Activation {
   _continue() {
     // TODO(jeffreytan): when we figured out the launch lifecycle story
     // we may bind this to start-debugging too.
+    track(AnalyticsEvents.DEBUGGER_STEP_CONTINUE);
     this._model.getBridge().continue();
   }
 
@@ -427,42 +426,42 @@ class Activation {
   }
 
   _stepOver() {
+    track(AnalyticsEvents.DEBUGGER_STEP_OVER);
     this._model.getBridge().stepOver();
   }
 
   _stepInto() {
+    track(AnalyticsEvents.DEBUGGER_STEP_INTO);
     this._model.getBridge().stepInto();
   }
 
   _stepOut() {
+    track(AnalyticsEvents.DEBUGGER_STEP_OUT);
     this._model.getBridge().stepOut();
   }
 
   _toggleBreakpoint(event: any) {
-    return trackTiming('nuclide-debugger-atom:toggleBreakpoint', () => {
-      this._executeWithEditorPath(event, (filePath, line) => {
-        this._model.getActions().toggleBreakpoint(filePath, line);
-      });
+    return this._executeWithEditorPath(event, (filePath, line) => {
+      this._model.getActions().toggleBreakpoint(filePath, line);
     });
   }
 
   _toggleBreakpointEnabled(event: any) {
-    return trackTiming('nuclide-debugger-atom:toggleBreakpointEnabled', () => {
-      this._executeWithEditorPath(event, (filePath, line) => {
-        const bp = this._model
-          .getBreakpointStore()
-          .getBreakpointAtLine(filePath, line);
+    this._executeWithEditorPath(event, (filePath, line) => {
+      const bp = this._model
+        .getBreakpointStore()
+        .getBreakpointAtLine(filePath, line);
 
-        if (bp) {
-          const {id, enabled} = bp;
-          this._model.getActions().updateBreakpointEnabled(id, !enabled);
-        }
-      });
+      if (bp) {
+        const {id, enabled} = bp;
+        this._model.getActions().updateBreakpointEnabled(id, !enabled);
+      }
     });
   }
 
   _runToLocation(event: any) {
     this._executeWithEditorPath(event, (path, line) => {
+      track(AnalyticsEvents.DEBUGGER_STEP_RUN_TO_LOCATION);
       this._model.getBridge().runToLocation(path, line);
     });
   }
@@ -503,6 +502,7 @@ class Activation {
     } else {
       dialog.show();
     }
+    track(AnalyticsEvents.DEBUGGER_TOGGLE_ATTACH_DIALOG, {visible: dialog.isVisible()});
     this._emitLaunchAttachVisibilityChangedEvent();
   }
 
@@ -511,6 +511,7 @@ class Activation {
     if (dialog.isVisible()) {
       dialog.hide();
     }
+    track(AnalyticsEvents.DEBUGGER_TOGGLE_ATTACH_DIALOG, {visible: false});
     this._emitLaunchAttachVisibilityChangedEvent();
   }
 

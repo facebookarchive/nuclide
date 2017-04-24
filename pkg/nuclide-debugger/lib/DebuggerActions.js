@@ -31,6 +31,7 @@ import type {
 } from './types';
 
 import {ActionTypes} from './DebuggerDispatcher';
+import {AnalyticsEvents} from './constants';
 import {CompositeDisposable} from 'atom';
 import {beginTimerTracking, failTimerTracking, endTimerTracking} from './AnalyticsHelper';
 import invariant from 'assert';
@@ -38,13 +39,8 @@ import {DebuggerMode} from './DebuggerStore';
 import passesGK from '../../commons-node/passesGK';
 import {track} from '../../nuclide-analytics';
 import {getLogger} from '../../nuclide-logging';
-const logger = getLogger();
-
-const AnalyticsEvents = Object.freeze({
-  DEBUGGER_START: 'debugger-start',
-  DEBUGGER_START_FAIL: 'debugger-start-fail',
-  DEBUGGER_STOP: 'debugger-stop',
-});
+const logger = getLogger('nuclide-debugger');
+import ChromeActionRegistryActions from './ChromeActionRegistryActions';
 
 const GK_DEBUGGER_REQUEST_WINDOW = 'nuclide_debugger_php_request_window';
 const GK_DEBUGGER_REQUEST_SENDER = 'nuclide_debugger_request_sender';
@@ -317,6 +313,7 @@ export default class DebuggerActions {
   }
 
   addWatchExpression(expression: string): void {
+    track(AnalyticsEvents.DEBUGGER_WATCH_ADD_EXPRESSION);
     this._dispatcher.dispatch({
       actionType: ActionTypes.ADD_WATCH_EXPRESSION,
       data: {
@@ -326,6 +323,7 @@ export default class DebuggerActions {
   }
 
   removeWatchExpression(index: number): void {
+    track(AnalyticsEvents.DEBUGGER_WATCH_REMOVE_EXPRESSION);
     this._dispatcher.dispatch({
       actionType: ActionTypes.REMOVE_WATCH_EXPRESSION,
       data: {
@@ -335,6 +333,7 @@ export default class DebuggerActions {
   }
 
   updateWatchExpression(index: number, newExpression: string): void {
+    track(AnalyticsEvents.DEBUGGER_WATCH_UPDATE_EXPRESSION);
     this._dispatcher.dispatch({
       actionType: ActionTypes.UPDATE_WATCH_EXPRESSION,
       data: {
@@ -358,6 +357,27 @@ export default class DebuggerActions {
    * `actionId` is a debugger action understood by Chrome's `WebInspector.ActionRegistry`.
    */
   triggerDebuggerAction(actionId: string): void {
+    switch (actionId) {
+      case ChromeActionRegistryActions.PAUSE:
+        if (this._store.getDebuggerMode() === DebuggerMode.RUNNING) {
+          track(AnalyticsEvents.DEBUGGER_STEP_PAUSE);
+        } else {
+          track(AnalyticsEvents.DEBUGGER_STEP_CONTINUE);
+        }
+        break;
+      case ChromeActionRegistryActions.STEP_INTO:
+        track(AnalyticsEvents.DEBUGGER_STEP_INTO);
+        break;
+      case ChromeActionRegistryActions.STEP_OVER:
+        track(AnalyticsEvents.DEBUGGER_STEP_OVER);
+        break;
+      case ChromeActionRegistryActions.STEP_OUT:
+        track(AnalyticsEvents.DEBUGGER_STEP_OUT);
+        break;
+      default:
+        logger.error('Unkown debugger action type', actionId);
+        break;
+    }
     this._dispatcher.dispatch({
       actionType: ActionTypes.TRIGGER_DEBUGGER_ACTION,
       data: {
@@ -401,6 +421,7 @@ export default class DebuggerActions {
   }
 
   addBreakpoint(path: string, line: number): void {
+    track(AnalyticsEvents.DEBUGGER_BREAKPOINT_ADD);
     this._dispatcher.dispatch({
       actionType: ActionTypes.ADD_BREAKPOINT,
       data: {
@@ -411,6 +432,7 @@ export default class DebuggerActions {
   }
 
   updateBreakpointEnabled(breakpointId: number, enabled: boolean): void {
+    track(AnalyticsEvents.DEBUGGER_BREAKPOINT_TOGGLE_ENABLED, {enabled});
     this._dispatcher.dispatch({
       actionType: ActionTypes.UPDATE_BREAKPOINT_ENABLED,
       data: {
@@ -421,6 +443,7 @@ export default class DebuggerActions {
   }
 
   updateBreakpointCondition(breakpointId: number, condition: string): void {
+    track(AnalyticsEvents.DEBUGGER_BREAKPOINT_UPDATE_CONDITION, {condition});
     this._dispatcher.dispatch({
       actionType: ActionTypes.UPDATE_BREAKPOINT_CONDITION,
       data: {
@@ -431,6 +454,7 @@ export default class DebuggerActions {
   }
 
   deleteBreakpoint(path: string, line: number): void {
+    track(AnalyticsEvents.DEBUGGER_BREAKPOINT_DELETE);
     this._dispatcher.dispatch({
       actionType: ActionTypes.DELETE_BREAKPOINT,
       data: {
@@ -441,6 +465,7 @@ export default class DebuggerActions {
   }
 
   deleteAllBreakpoints(): void {
+    track(AnalyticsEvents.DEBUGGER_BREAKPOINT_DELETE_ALL);
     this._dispatcher.dispatch({
       actionType: ActionTypes.DELETE_ALL_BREAKPOINTS,
       data: {},
@@ -448,6 +473,7 @@ export default class DebuggerActions {
   }
 
   toggleBreakpoint(path: string, line: number): void {
+    track(AnalyticsEvents.DEBUGGER_BREAKPOINT_TOGGLE);
     this._dispatcher.dispatch({
       actionType: ActionTypes.TOGGLE_BREAKPOINT,
       data: {
@@ -487,6 +513,7 @@ export default class DebuggerActions {
   }
 
   togglePauseOnException(pauseOnException: boolean): void {
+    track(AnalyticsEvents.DEBUGGER_TOGGLE_PAUSE_EXCEPTION, {pauseOnException});
     this._dispatcher.dispatch({
       actionType: ActionTypes.TOGGLE_PAUSE_ON_EXCEPTION,
       data: pauseOnException,
@@ -494,6 +521,7 @@ export default class DebuggerActions {
   }
 
   togglePauseOnCaughtException(pauseOnCaughtException: boolean): void {
+    track(AnalyticsEvents.DEBUGGER_TOGGLE_CAUGHT_EXCEPTION, {pauseOnCaughtException});
     this._dispatcher.dispatch({
       actionType: ActionTypes.TOGGLE_PAUSE_ON_CAUGHT_EXCEPTION,
       data: pauseOnCaughtException,
@@ -501,6 +529,7 @@ export default class DebuggerActions {
   }
 
   toggleSingleThreadStepping(singleThreadStepping: boolean): void {
+    track(AnalyticsEvents.DEBUGGER_TOGGLE_SINGLE_THREAD_STEPPING, {singleThreadStepping});
     this._dispatcher.dispatch({
       actionType: ActionTypes.TOGGLE_SINGLE_THREAD_STEPPING,
       data: singleThreadStepping,
