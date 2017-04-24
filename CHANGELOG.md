@@ -1,5 +1,38 @@
 # Nuclide Changelog
 
+## v0.219.0
+
+**Highlights**
+
+* Fuzzy-filename search is ~50% faster.
+* PHP Debugger: Added run to cursor location functionality.
+
+![](https://zippy.gfycat.com/DemandingOrnateBeardedcollie.gif)
+* New feature: “Open nearest `BUCK` (or `TARGETS`) file.” For the current file, opens the Buck build file that owns it. Use the keyboard shortcut `cmd-shift-k` on OS X (`ctrl-shift-k` on Windows/Linux), or search for “Open Nearest Build File” in the command palette.
+
+**General**
+
+* The number of active “arc lint” processes is now limited to half the number of CPUs.
+* Fixed a bug in “Search in Directory” returning duplicate results in remote Hg repositories.
+* Optimized outline tree rendering (especially for large files).
+* The “Nuclide File Tree: Reveal in File Tree” command has been renamed back to its original name, “Nuclide File Tree: Reveal Active File.”
+* Added support for `file-icons`.
+  * Install the third-party `file-icons` [package](https://atom.io/packages/file-icons) to get extension-specific icons in the file tree, Smartlog, quick-open, and source control sidebar.
+
+**Debuggers**
+
+* Added “Copy” to copy to clipboard in context menu for all variables in the Scopes pane.
+* Fixed a bug causing line numbers in the call stack pane to be off by one in all debuggers.
+* Fix an issue where debugger context menu items would act on wrong line numbers.
+* Fix an error case when deleting a breakpoint.
+* PHP/Hack - Fixed bug causing fatal “cannot find xdebug breakpoint” errors.
+* PHP/Hack - Fixed a bug that caused scopes, watch expressions and data tips not to update if an eval command is executed from the console that causes side effects.
+
+**UI**
+
+* Fixed a bug whereby the contents of the test runner panel would be hidden.
+* Fixed file-tree weird scrolling issues.
+
 ## v0.218.0
 
 **Performance**
