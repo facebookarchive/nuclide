@@ -57,7 +57,7 @@ export function getPathToLogFile(): string {
 }
 
 export const FileAppender: Object = {
-  type: 'file',
+  type: nuclideUri.join(__dirname, './fileAppender'),
   filename: LOG_FILE_PATH,
   maxLogSize: MAX_LOG_SIZE,
   backups: MAX_LOG_BACKUPS,
