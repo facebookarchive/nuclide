@@ -195,6 +195,7 @@ class Activation {
     this._disposables.add(currentSubscription);
 
     const rebuildSignals = Observable.merge(
+      Observable.of(null),  // None of the subscriptions below will trigger at startup.
       observableFromSubscribeFunction(atom.workspace.onDidAddPaneItem.bind(atom.workspace)),
       observableFromSubscribeFunction(atom.workspace.onDidDestroyPaneItem.bind(atom.workspace)),
       observableFromSubscribeFunction(observeTextEditors)

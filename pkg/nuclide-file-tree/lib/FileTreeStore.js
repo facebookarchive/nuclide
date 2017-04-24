@@ -1738,6 +1738,12 @@ export class FileTreeStore {
   }
 
   _setOpenFilesWorkingSet(openFilesWorkingSet: WorkingSet): void {
+    // Optimization: with an empty working set, we don't need a full tree refresh.
+    if (this._conf.workingSet.isEmpty()) {
+      this._conf.openFilesWorkingSet = openFilesWorkingSet;
+      this._emitChange();
+      return;
+    }
     this._updateConf(conf => { conf.openFilesWorkingSet = openFilesWorkingSet; });
   }
 

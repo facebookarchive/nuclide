@@ -43,7 +43,7 @@ type Props = {
 const ANALYTICS_PREFIX = 'changed-files-view';
 const DEFAULT_ANALYTICS_SOURCE_KEY = 'command';
 
-export class MultiRootChangedFilesView extends React.Component {
+export class MultiRootChangedFilesView extends React.PureComponent {
   props: Props;
   _subscriptions: UniversalDisposable;
 
