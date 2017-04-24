@@ -426,7 +426,11 @@ class NuclideBridge {
               callFrames :
               mainTarget.debuggerModel.callFrames;
 
-            frames.filter(frame => frame.id === this._callframeId)
+            const targetFrameId = (frames.length === 0 || this._callframeId !== -1) ?
+              this._callframeId :
+              frames[0].id;
+
+            frames.filter(frame => frame.id === targetFrameId)
               .forEach(frame => this._updateScopes(frame));
           });
         }

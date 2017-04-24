@@ -149,10 +149,24 @@ export class DebuggerHandler extends Handler {
         updateSettings(params);
         break;
 
+      case 'getThreadStack':
+        const threadStackObject = await this._getThreadStack();
+        this.replyToCommand(id, threadStackObject);
+        break;
+
       default:
         this.unknownMethod(id, method, params);
         break;
     }
+  }
+
+  async _getThreadStack(): Object {
+    const enabledConnection = this._connectionMultiplexer.getEnabledConnectionId();
+    return {
+      callFrames: enabledConnection == null
+        ? []
+        : await this._getStackFrames(enabledConnection),
+    };
   }
 
   async _selectThread(params: Object): Promise<void> {
