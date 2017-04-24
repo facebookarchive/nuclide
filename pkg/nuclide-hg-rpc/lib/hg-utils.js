@@ -32,6 +32,18 @@ import nuclideUri from '../../commons-node/nuclideUri';
 // [1] https://selenic.com/hg/file/3.7.2/mercurial/cmdutil.py#l2734
 const COMMIT_MESSAGE_STRIP_LINE = /^HG:.*(\n|$)/gm;
 
+// Avoid spamming the hg blackbox with read-only hg commands.
+const EXCLUDE_FROM_HG_BLACKBOX_COMMANDS = new Set([
+  // 'bookmarks' is technically another read-only command, but the possible
+  //  --rename/--delete options make this detection unreliable.
+  'cat',
+  'config', // Nuclide only ever *reads* the config.
+  'diff',
+  'log',
+  'show',
+  'status',
+]);
+
 /**
  * Calls out to checkOutput using the 'hg' command.
  * @param options as specified by http://nodejs.org/api/child_process.html. Additional options:
@@ -122,6 +134,13 @@ async function getHgExecParams(
     `ui.ssh=${sshCommand}`,
     '--noninteractive',
   );
+  const [hgCommandName] = args;
+  if (EXCLUDE_FROM_HG_BLACKBOX_COMMANDS.has(hgCommandName)) {
+    args.push(
+      '--config',
+      'extensions.blackbox=!',
+    );
+  }
   const options = {
     ...options_,
     env: {
