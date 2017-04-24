@@ -47,8 +47,31 @@ export function exists(path: string): Promise<boolean> {
   return fsPromise.exists(path);
 }
 
+/**
+ * @deprecated: Prefer findNearestAncestorNamed(). It has two major differences:
+ *     1. It operates on NuclideUri instead of string.
+ *     2. It returns the path to the file, not the directory (or null).
+ */
 export function findNearestFile(fileName: string, pathToDirectory: string): Promise<?string> {
   return fsPromise.findNearestFile(fileName, pathToDirectory);
+}
+
+/**
+ * Starting in the directory `pathToDirectory`, checks if it contains a file named `fileName`.
+ * If so, it returns the path to the file. If not, it successively looks for `fileName` in the
+ * parent directory. If it gets all the way to the root and still does not find the file, then it
+ * returns `null`.
+ */
+export async function findNearestAncestorNamed(
+  fileName: string,
+  pathToDirectory: NuclideUri,
+): Promise<?NuclideUri> {
+  const directory = await fsPromise.findNearestFile(fileName, pathToDirectory);
+  if (directory != null) {
+    return nuclideUri.join(directory, fileName);
+  } else {
+    return null;
+  }
 }
 
 export function findFilesInDirectories(

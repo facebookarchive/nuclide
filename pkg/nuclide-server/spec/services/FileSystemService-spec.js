@@ -447,6 +447,45 @@ describe('FileSystemService', () => {
     });
   });
 
+  describe('findNearestAncestorNamed', () => {
+    let dirPath: string = (null: any);
+
+    beforeEach(() => {
+      dirPath = temp.mkdirSync('findNearestAncestorNamed_test');
+      fs.mkdirSync(nuclideUri.join(dirPath, 'foo'));
+      fs.mkdirSync(nuclideUri.join(dirPath, 'foo', 'bar'));
+      fs.mkdirSync(nuclideUri.join(dirPath, 'foo', 'bar', 'baz'));
+      fs.mkdirSync(nuclideUri.join(dirPath, 'boo'));
+      const filePaths = [
+        nuclideUri.join(dirPath, 'foo', 'BUCK'),
+        nuclideUri.join(dirPath, 'foo', 'bar', 'baz', 'BUCK'),
+      ];
+      filePaths.forEach(filePath => fs.writeFileSync(filePath, 'any contents'));
+    });
+
+    it('findNearestAncestorNamed in dir', async () => {
+      const pathToDirectory1 = nuclideUri.join(dirPath, 'foo');
+      const nearestFile1 = await service.findNearestAncestorNamed('BUCK', pathToDirectory1);
+      expect(nearestFile1).toBe(nuclideUri.join(dirPath, 'foo', 'BUCK'));
+
+      const pathToDirectory2 = nuclideUri.join(dirPath, 'foo', 'bar', 'baz');
+      const nearestFile2 = await service.findNearestAncestorNamed('BUCK', pathToDirectory2);
+      expect(nearestFile2).toBe(nuclideUri.join(dirPath, 'foo', 'bar', 'baz', 'BUCK'));
+    });
+
+    it('findNearestAncestorNamed in ancestor', async () => {
+      const pathToDirectory = nuclideUri.join(dirPath, 'foo', 'bar');
+      const nearestFile = await service.findNearestAncestorNamed('BUCK', pathToDirectory);
+      expect(nearestFile).toBe(nuclideUri.join(dirPath, 'foo', 'BUCK'));
+    });
+
+    it('findNearestAncestorNamed not in ancestor', async () => {
+      const pathToDirectory = nuclideUri.join(dirPath, 'boo');
+      const nearestFile = await service.findNearestAncestorNamed('BUCK', pathToDirectory);
+      expect(nearestFile).toBe(null);
+    });
+  });
+
   describe('findFilesInDirectories()', () => {
     let dirPath: string = (null: any);
     let fileName: string = (null: any);

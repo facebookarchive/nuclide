@@ -34,19 +34,15 @@ export async function openNearestBuildFile(target: HTMLElement) {
 
 export async function findNearestBuildFile(
   textEditorPath: NuclideUri,
-): Promise<?string> {
+): Promise<?NuclideUri> {
   const buckRoot = await getBuckProjectRoot(textEditorPath);
   if (buckRoot != null) {
     const buildFileName = await getBuildFileName(buckRoot);
     const fsService = getFileSystemServiceByNuclideUri(textEditorPath);
-    // Surprisingly, findNearestFile() returns a directory rather than a file.
-    const directory = await fsService.findNearestFile(
+    return fsService.findNearestAncestorNamed(
       buildFileName,
       nuclideUri.dirname(textEditorPath),
     );
-    if (directory != null) {
-      return nuclideUri.join(directory, buildFileName);
-    }
   }
   return null;
 }
