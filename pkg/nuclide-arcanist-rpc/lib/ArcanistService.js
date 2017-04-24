@@ -11,6 +11,7 @@
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {ConnectableObservable} from 'rxjs';
 import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
+import type {LRUCache} from 'lru-cache';
 
 import invariant from 'assert';
 import {Observable} from 'rxjs';
@@ -35,6 +36,7 @@ import {
   findHgRepository,
 } from '../../nuclide-source-control-helpers';
 import {getLogger} from '../../nuclide-logging';
+import LRU from 'lru-cache';
 
 const ARC_CONFIG_FILE_NAME = '.arcconfig';
 
@@ -51,8 +53,9 @@ export type ArcDiagnostic = {
   replacement?: string,
 };
 
-const arcConfigDirectoryMap: Map<NuclideUri, ?NuclideUri> = new Map();
-const arcProjectMap: Map<?NuclideUri, ?Object> = new Map();
+const CACHE_TIME = 30 * 1000; // 30 seconds
+const arcConfigDirectoryMap: LRUCache<NuclideUri, ?NuclideUri> = LRU({maxAge: CACHE_TIME});
+const arcProjectMap: LRUCache<?NuclideUri, ?Object> = LRU({maxAge: CACHE_TIME});
 
 export async function findArcConfigDirectory(fileName: NuclideUri): Promise<?NuclideUri> {
   if (!arcConfigDirectoryMap.has(fileName)) {
@@ -432,7 +435,7 @@ export const __TEST__ = {
   arcConfigDirectoryMap,
   arcProjectMap,
   reset() {
-    arcConfigDirectoryMap.clear();
-    arcProjectMap.clear();
+    arcConfigDirectoryMap.reset();
+    arcProjectMap.reset();
   },
 };
