@@ -16,7 +16,7 @@ import {
 import {copyBuildFixture} from '../pkg/nuclide-test-helpers';
 import {setLocalProject} from '../pkg/commons-atom/testHelpers';
 import nuclideUri from '../pkg/commons-node/nuclideUri';
-import {checkOutput} from '../pkg/commons-node/process';
+import {observeProcess} from '../pkg/commons-node/process';
 import {existingEditorForUri} from '../pkg/commons-atom/text-editor';
 
 describe('Remote Open', () => {
@@ -36,7 +36,19 @@ describe('Remote Open', () => {
       // Open file via remote atom command
       const remoteAtomCommand =
         nuclideUri.join(__dirname, '../pkg/nuclide-remote-atom-rpc/bin/atom');
-      const result = await checkOutput(remoteAtomCommand, [filePath]);
+      const result = await observeProcess(remoteAtomCommand, [filePath])
+        .reduce(
+          (acc, event) => {
+            switch (event.kind) {
+              case 'stdout': return {...acc, stdout: acc.stdout + event.data};
+              case 'stderr': return {...acc, stderr: acc.stderr + event.data};
+              case 'exit': return {...acc, exitCode: event.exitCode};
+              default: return acc;
+            }
+          },
+          {stdout: '', stderr: '', exitCode: null},
+        )
+        .toPromise();
 
       // Process should exit cleanly
       expect(result.exitCode).toEqual(0);
