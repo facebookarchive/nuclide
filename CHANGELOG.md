@@ -6,8 +6,6 @@
 
 * Fuzzy-filename search is ~50% faster.
 * PHP Debugger: Added run to cursor location functionality.
-
-![](https://zippy.gfycat.com/DemandingOrnateBeardedcollie.gif)
 * New feature: “Open nearest `BUCK` (or `TARGETS`) file.” For the current file, opens the Buck build file that owns it. Use the keyboard shortcut `cmd-shift-k` on OS X (`ctrl-shift-k` on Windows/Linux), or search for “Open Nearest Build File” in the command palette.
 
 **General**
