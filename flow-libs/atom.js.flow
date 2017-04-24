@@ -1362,7 +1362,7 @@ declare class atom$KeymapManager {
   getKeyBindings(): Array<atom$KeyBinding>,
   findKeyBindings(params: {
     keystrokes?: string,
-    command: string,
+    command?: string,
     target?: HTMLElement,
   }): Array<atom$KeyBinding>,
 
