@@ -49,6 +49,11 @@ type ChangedFilesState = {
   visiblePagesCount: number,
 };
 
+function isHgPath(path: NuclideUri): boolean {
+  const repo = repositoryForPath(path);
+  return (repo != null) && repo.getType() === 'hg';
+}
+
 export default class ChangedFilesList extends React.Component {
   props: ChangedFilesProps;
   state: ChangedFilesState;
@@ -198,7 +203,7 @@ export default class ChangedFilesList extends React.Component {
               ([filePath, fileChangeValue]) => {
                 const baseName = nuclideUri.basename(filePath);
                 let actions;
-                if (enableInlineActions) {
+                if (enableInlineActions && isHgPath(filePath)) {
                   const eligibleActions = [
                     this._renderOpenInDiffViewAction(filePath),
                   ];
