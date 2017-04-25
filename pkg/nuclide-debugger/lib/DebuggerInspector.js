@@ -10,10 +10,7 @@
 
 import BreakpointStore from './BreakpointStore';
 import React from 'react';
-import {
-  Button,
-  ButtonTypes,
-} from '../../nuclide-ui/Button';
+import {Button} from '../../nuclide-ui/Button';
 
 type Props = {
   breakpointStore: BreakpointStore,
@@ -37,12 +34,6 @@ export default class DebuggerInspector extends React.PureComponent {
     return (
       <div className="inspector">
         <div className="control-bar">
-          <Button
-            title="Detach from the current process."
-            icon="x"
-            buttonType={ButtonTypes.ERROR}
-            onClick={this._handleClickClose}
-          />
           <Button
             title="(Debug) Open Web Inspector for the debugger frame."
             icon="gear"

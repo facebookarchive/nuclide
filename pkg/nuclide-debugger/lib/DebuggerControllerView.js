@@ -13,7 +13,6 @@ import BreakpointStore from './BreakpointStore.js';
 import DebuggerInspector from './DebuggerInspector';
 import {DebuggerStore} from './DebuggerStore';
 import Bridge from './Bridge';
-import {Button} from '../../nuclide-ui/Button';
 import {LoadingSpinner} from '../../nuclide-ui/LoadingSpinner';
 
 type Props = {
@@ -43,7 +42,6 @@ export default class DebuggerControllerView extends React.Component {
     super(props);
     this.state = getStateFromStore(props.store);
 
-    (this: any)._handleClickClose = this._handleClickClose.bind(this);
     (this: any)._updateStateFromStore = this._updateStateFromStore.bind(this);
   }
 
@@ -89,19 +87,10 @@ export default class DebuggerControllerView extends React.Component {
             <span className="inline-block">Starting Debugger...</span>
             <LoadingSpinner className="inline-block" size="EXTRA_SMALL" />
           </div>
-          <Button
-            icon="x"
-            onClick={this._handleClickClose}
-            title="Close"
-          />
         </div>
       );
     }
     return null;
-  }
-
-  _handleClickClose() {
-    this.props.stopDebugging();
   }
 
   _updateStateFromStore(store?: DebuggerStore) {

@@ -240,9 +240,10 @@ export class DebuggerSteppingComponent extends React.Component {
           />
           <Button
             icon="primitive-square"
+            disabled={isStopped}
             tooltip={{
               ...defaultTooltipOptions,
-              title: 'Stop debugging',
+              title: 'Detach debugger',
               keyBindingCommand: 'nuclide-debugger:stop-debugging',
             }}
             onClick={

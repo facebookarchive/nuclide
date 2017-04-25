@@ -28,7 +28,7 @@
               "command": "nuclide-debugger:toggle-launch-attach"
             },
             {
-              "label": "Stop Debugging",
+              "label": "Detach debugger",
               "command": "nuclide-debugger:stop-debugging"
             },
             {
