@@ -1,5 +1,11 @@
 # Nuclide Changelog
 
+## v0.220.0
+
+**Hotfix from 0.219.0**
+
+* Fix an exception being thrown when dragging files in the file-tree.
+
 ## v0.219.0
 
 **Highlights**
