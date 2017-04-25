@@ -9,13 +9,13 @@
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {AsyncExecuteOptions} from '../../commons-node/process';
+import type {ObserveProcessOptions} from '../../commons-node/process';
 import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
 import type {ConnectableObservable} from 'rxjs';
 
 import {
   asyncExecute,
-  checkOutput,
+  runCommand,
   observeProcess,
   getOriginalEnvironment,
 } from '../../commons-node/process';
@@ -128,7 +128,7 @@ export type BaseBuckBuildOptions = {
   debug?: boolean,
   simulator?: ?string,
   // The service framework doesn't support imported types
-  commandOptions?: Object /* AsyncExecuteOptions */,
+  commandOptions?: Object /* ObserveProcessOptions */,
   extraArguments?: Array<string>,
 };
 type FullBuckBuildOptions = {
@@ -138,7 +138,7 @@ type FullBuckBuildOptions = {
 };
 type BuckCommandAndOptions = {
   pathToBuck: string,
-  buckCommandOptions: AsyncExecuteOptions,
+  buckCommandOptions: ObserveProcessOptions,
 };
 
 export type CommandInfo = {
@@ -215,10 +215,10 @@ export async function getBuildFile(
 async function _runBuckCommandFromProjectRoot(
   rootPath: string,
   args: Array<string>,
-  commandOptions?: AsyncExecuteOptions,
+  commandOptions?: ObserveProcessOptions,
   addClientId?: boolean = true,
   readOnly?: boolean = true,
-): Promise<{stdout: string, stderr: string, exitCode?: number}> {
+): Promise<string> {
   const {
     pathToBuck,
     buckCommandOptions: options,
@@ -227,7 +227,7 @@ async function _runBuckCommandFromProjectRoot(
   const newArgs = addClientId ? args.concat(CLIENT_ID_ARGS) : args;
   logger.debug('Buck command:', pathToBuck, newArgs, options);
   return getPool(rootPath, readOnly).submit(() =>
-    checkOutput(pathToBuck, newArgs, options));
+    runCommand(pathToBuck, newArgs, options).toPromise());
 }
 
 /**
@@ -235,7 +235,7 @@ async function _runBuckCommandFromProjectRoot(
  */
 async function _getBuckCommandAndOptions(
   rootPath: string,
-  commandOptions?: AsyncExecuteOptions = {},
+  commandOptions?: ObserveProcessOptions = {},
 ): Promise<BuckCommandAndOptions> {
   // $UPFixMe: This should use nuclide-features-config
   let pathToBuck = (global.atom &&
@@ -572,7 +572,7 @@ export async function listAliases(
 ): Promise<Array<string>> {
   const args = ['audit', 'alias', '--list'];
   const result = await _runBuckCommandFromProjectRoot(rootPath, args);
-  const stdout = result.stdout.trim();
+  const stdout = result.trim();
   return stdout ? stdout.split('\n') : [];
 }
 
@@ -583,7 +583,7 @@ export async function listFlavors(
   const args = ['audit', 'flavors', '--json'].concat(targets);
   try {
     const result = await _runBuckCommandFromProjectRoot(rootPath, args);
-    return JSON.parse(result.stdout);
+    return JSON.parse(result);
   } catch (e) {
     return null;
   }
@@ -598,7 +598,7 @@ export async function resolveAlias(
 ): Promise<string> {
   const args = ['query', aliasOrTarget];
   const result = await _runBuckCommandFromProjectRoot(rootPath, args);
-  return result.stdout.trim();
+  return result.trim();
 }
 
 /**
@@ -617,7 +617,7 @@ export async function showOutput(
     extraArguments,
   );
   const result = await _runBuckCommandFromProjectRoot(rootPath, args);
-  return JSON.parse(result.stdout.trim());
+  return JSON.parse(result.trim());
 }
 
 export async function buildRuleTypeFor(
@@ -665,7 +665,7 @@ export async function _buildRuleTypeFor(
     'buck.type',
   ];
   const result = await _runBuckCommandFromProjectRoot(rootPath, args);
-  const json: {[target: string]: Object} = JSON.parse(result.stdout);
+  const json: {[target: string]: Object} = JSON.parse(result);
   // If aliasOrTarget is an alias, targets[0] will be the fully qualified build target.
   const targets = Object.keys(json);
   if (targets.length === 0) {
@@ -732,7 +732,7 @@ export async function getHTTPServerPort(rootPath: NuclideUri): Promise<number> {
 
   const args = ['server', 'status', '--json', '--http-port'];
   const result = await _runBuckCommandFromProjectRoot(rootPath, args);
-  const json: Object = JSON.parse(result.stdout);
+  const json: Object = JSON.parse(result);
   port = json['http.port'];
   _cachedPorts.set(rootPath, port);
   return port;
@@ -745,7 +745,7 @@ export async function query(
 ): Promise<Array<string>> {
   const args = ['query', '--json', queryString];
   const result = await _runBuckCommandFromProjectRoot(rootPath, args);
-  const json: Array<string> = JSON.parse(result.stdout);
+  const json: Array<string> = JSON.parse(result);
   return json;
 }
 
@@ -765,9 +765,7 @@ export async function queryWithArgs(
 ): Promise<{[aliasOrTarget: string]: Array<string>}> {
   const completeArgs = ['query', '--json', queryString].concat(args);
   const result = await _runBuckCommandFromProjectRoot(rootPath, completeArgs);
-  const json: {[aliasOrTarget: string]: Array<string>} = JSON.parse(
-    result.stdout,
-  );
+  const json: {[aliasOrTarget: string]: Array<string>} = JSON.parse(result);
 
   // `buck query` does not include entries in the JSON for params that did not match anything. We
   // massage the output to ensure that every argument has an entry in the output.

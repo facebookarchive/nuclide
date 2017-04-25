@@ -83,7 +83,7 @@ describe('BuckService (test-project-with-failing-targets)', () => {
             commandOptions: {timeout: 1},
           });
         } catch (e) {
-          expect(e.message).toMatch('Command failed');
+          expect(e.name).toBe('ProcessTimeoutError');
           return;
         }
         throw new Error('promise should have been rejected');
