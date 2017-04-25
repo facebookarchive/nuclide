@@ -10,7 +10,6 @@
 
 import typeof {
   niceSafeSpawn as niceSafeSpawnType,
-  niceCheckOutput as niceCheckOutputType,
   niceAsyncExecute as niceAsyncExecuteType,
 } from '../nice';
 
@@ -21,19 +20,16 @@ import {Observable} from 'rxjs';
 
 describe('nice', () => {
   let niceSafeSpawn: niceSafeSpawnType = (null: any);
-  let niceCheckOutput: niceCheckOutputType = (null: any);
   let niceAsyncExecute: niceAsyncExecuteType = (null: any);
 
   let whichSpy: JasmineSpy = (null: any);
   let spawnSpy: JasmineSpy = (null: any);
-  let checkOutputSpy: JasmineSpy = (null: any);
   let asyncExecuteSpy: JasmineSpy = (null: any);
   let shouldFindNiceCommand: boolean = (null: any);
   let shouldFindIoniceCommand: boolean = (null: any);
   // All we need here is a unique value to make sure that `nice` returns whatever `safeSpawn`
   // returns
   const fakeSafeSpawnReturn: child_process$ChildProcess = ({}: any);
-  const fakeCheckOutputReturn: AsyncExecuteReturn = ({}: any);
   const fakeAsyncExecuteReturn: AsyncExecuteReturn = ({}: any);
 
   beforeEach(() => {
@@ -51,11 +47,9 @@ describe('nice', () => {
     });
     spawnSpy = spyOn(require('../process'), 'spawn')
       .andReturn(Observable.of(fakeSafeSpawnReturn));
-    checkOutputSpy = spyOn(require('../process'), 'checkOutput').andReturn(fakeCheckOutputReturn);
     asyncExecuteSpy =
       spyOn(require('../process'), 'asyncExecute').andReturn(fakeAsyncExecuteReturn);
-    ({niceSafeSpawn, niceAsyncExecute, niceCheckOutput} =
-      (uncachedRequire(require, '../nice'): any));
+    ({niceSafeSpawn, niceAsyncExecute} = (uncachedRequire(require, '../nice'): any));
   });
 
   it('should spawn `nice` and return whatever spawn returns', () => {
@@ -109,17 +103,6 @@ describe('nice', () => {
       expect(whichSpy).toHaveBeenCalledWith('nice');
       expect(whichSpy).toHaveBeenCalledWith('ionice');
       expect(whichSpy.callCount).toBe(2);
-    });
-  });
-
-  it('should call checkOutput when the niceCheckOutput variant is used', () => {
-    waitsForPromise(async () => {
-      const execOptions = {};
-      const result = await niceCheckOutput('echo', ['hi'], execOptions);
-      expect(checkOutputSpy).toHaveBeenCalledWith(
-        'ionice', ['-n', '7', 'nice', 'echo', 'hi'], execOptions,
-      );
-      expect(result).toBe(fakeCheckOutputReturn);
     });
   });
 
