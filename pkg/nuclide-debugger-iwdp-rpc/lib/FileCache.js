@@ -14,6 +14,8 @@ import fsPromise from '../../commons-node/fsPromise';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {logger} from './logger';
 
+import type {AtomNotificationType} from '../../nuclide-debugger-base/lib/types';
+
 const {log} = logger;
 // Android's stock emulator and other emulators such as genymotion use a standard localhost alias.
 const EMULATOR_LOCALHOST_ADDR: RegExp = /10\.0\.2\.2|10\.0\.3\.2/;
@@ -32,11 +34,14 @@ export class FileCache {
   _nuclidePathToFileData: Map<string, FileData>;
   _targetPathToFileData: Map<string, FileData>;
   _getScriptSource: (scriptId: string) => Promise<{result: {scriptSource: string}}>;
+  _sendAtomNotification: (level: AtomNotificationType, message: string) => void;
 
   constructor(
     getScriptSource: (scriptId: string) => Promise<{result: {scriptSource: string}}>,
+    sendAtomNotification: (level: AtomNotificationType, message: string) => void,
   ) {
     this._getScriptSource = getScriptSource;
+    this._sendAtomNotification = sendAtomNotification;
     this._nuclidePathToFileData = new Map();
     this._targetPathToFileData = new Map();
     this._disposables = new UniversalDisposable(
@@ -82,7 +87,7 @@ export class FileCache {
     const newFileData: FileData = {
       nuclidePath,
       targetPath: urlString,
-      sourceMapUrl: await getSourceMapFromDisk(scriptSource),
+      sourceMapUrl: await this._getSourceMapFromDisk(scriptSource),
     };
     this._targetPathToFileData.set(newFileData.targetPath, newFileData);
     this._nuclidePathToFileData.set(newFileData.nuclidePath, newFileData);
@@ -123,6 +128,27 @@ export class FileCache {
     return obj;
   }
 
+  async _getSourceMapFromDisk(bundle: string): Promise<void | string> {
+    const matches = SOURCE_MAP_REGEX.exec(bundle);
+    if (matches == null) {
+      return undefined;
+    }
+    // Handle source maps for the bundle.
+    const sourceMapPath = matches[1];
+    try {
+      const sourceMap = await fsPromise.readFile(sourceMapPath);
+      const base64SourceMap = new Buffer(sourceMap).toString('base64');
+      return `${SOURCE_MAP_PREFIX}${base64SourceMap}`;
+    } catch (e) {
+      log(`Mobile JS debugger could not find source map: ${JSON.stringify(e)}`);
+      this._sendAtomNotification(
+        'warning',
+        `Could not find a source map at \`${sourceMapPath}\`!  Try rebuilding your app.`,
+      );
+      return;
+    }
+  }
+
   getUrlFromFilePath(filePath: string): string {
     const fileData = this._nuclidePathToFileData.get(filePath);
     if (fileData == null) {
@@ -134,18 +160,6 @@ export class FileCache {
   async dispose(): Promise<void> {
     this._disposables.dispose();
   }
-}
-
-async function getSourceMapFromDisk(bundle: string): Promise<void | string> {
-  const matches = SOURCE_MAP_REGEX.exec(bundle);
-  if (matches == null) {
-    return undefined;
-  }
-  // Handle source maps for the bundle.
-  const sourceMapPath = matches[1];
-  const sourceMap = await fsPromise.readFile(sourceMapPath);
-  const base64SourceMap = new Buffer(sourceMap).toString('base64');
-  return `${SOURCE_MAP_PREFIX}${base64SourceMap}`;
 }
 
 async function getSourceMapFromUrl(url: URL, bundle: string): Promise<void | string> {

@@ -37,6 +37,7 @@ export class IwdpDebuggerService {
     this._clientCallback = new ClientCallback();
     this._connectionMultiplexer = new ConnectionMultiplexer(
       message => this._clientCallback.sendChromeMessage(JSON.stringify(message)),
+      (level, message) => this._clientCallback.sendAtomNotification(level, message),
     );
     this._disposables = new UniversalDisposable(
       this._clientCallback,

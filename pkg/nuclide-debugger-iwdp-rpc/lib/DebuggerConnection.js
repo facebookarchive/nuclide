@@ -17,6 +17,7 @@ import {FileCache} from './FileCache';
 
 import type {DeviceInfo, RuntimeStatus} from './types';
 import type {AnyTeardown} from '../../commons-node/UniversalDisposable';
+import type {AtomNotificationType} from '../../nuclide-debugger-base/lib/types';
 
 const {log} = logger;
 
@@ -32,6 +33,7 @@ const {log} = logger;
  * `Debugger.paused` events.  Interested parties can subscribe to these events via the
  * `subscribeToEvents` API, which accepts a callback called when events are emitted from the target.
  */
+
 export class DebuggerConnection {
   _disposables: UniversalDisposable;
   _status: BehaviorSubject<RuntimeStatus>;
@@ -40,13 +42,19 @@ export class DebuggerConnection {
   _deviceInfo: DeviceInfo;
   _socket: Socket;
   _fileCache: FileCache;
+  _sendAtomNotification: (level: AtomNotificationType, message: string) => void;
 
-  constructor(connectionId: number, deviceInfo: DeviceInfo) {
+  constructor(
+    connectionId: number,
+    deviceInfo: DeviceInfo,
+    sendAtomNotification: (level: AtomNotificationType, message: string) => void,
+  ) {
+    this._sendAtomNotification = sendAtomNotification;
     this._deviceInfo = deviceInfo;
     this._connectionId = connectionId;
     this._events = new Subject();
     this._status = new BehaviorSubject(RUNNING);
-    this._fileCache = new FileCache(this._getScriptSource.bind(this));
+    this._fileCache = new FileCache(this._getScriptSource.bind(this), sendAtomNotification);
     const {webSocketDebuggerUrl} = deviceInfo;
     this._socket = new Socket(
       webSocketDebuggerUrl,

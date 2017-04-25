@@ -21,6 +21,7 @@ import type {
   DeviceInfo,
   RuntimeStatus,
 } from './types';
+import type {AtomNotificationType} from '../../nuclide-debugger-base/lib/types';
 
 const {log, logError} = logger;
 
@@ -41,13 +42,18 @@ export class ConnectionMultiplexer {
   // Invariant: this._enabledConnection != null, if and only if that connection is paused.
   _enabledConnection: ?DebuggerConnection;
   _sendMessageToClient: (message: Object) => void;
+  _sendAtomNotification: (level: AtomNotificationType, message: string) => void;
   _newConnections: Subject<DebuggerConnection>;
   _breakpointManager: BreakpointManager;
   _freshConnectionId: number;
 
-  constructor(sendMessageToClient: (message: Object) => void) {
+  constructor(
+    sendMessageToClient: (message: Object) => void,
+    sendAtomNotification: (level: AtomNotificationType, message: string) => void,
+  ) {
     this._connections = new Set();
-    this._sendMessageToClient = message => sendMessageToClient(message);
+    this._sendMessageToClient = sendMessageToClient;
+    this._sendAtomNotification = sendAtomNotification;
     this._freshConnectionId = 0;
     this._newConnections = new Subject();
     this._breakpointManager = new BreakpointManager(this._sendMessageToClient.bind(this));
@@ -242,7 +248,11 @@ export class ConnectionMultiplexer {
   }
 
   _connectToContext(deviceInfo: DeviceInfo): DebuggerConnection {
-    const connection = new DebuggerConnection(this._freshConnectionId++, deviceInfo);
+    const connection = new DebuggerConnection(
+      this._freshConnectionId++,
+      deviceInfo,
+      this._sendAtomNotification.bind(this),
+    );
     // While it is the CM's responsibility to create these subscriptions, their lifetimes are the
     // same as the connection, so their disposal will be handled by the connection.
     connection.onDispose(
