@@ -7,6 +7,7 @@
 <PROJECT_ROOT>/node_modules/react/.*
 <PROJECT_ROOT>/node_modules/rxjs/.*
 <PROJECT_ROOT>/node_modules/semver/.*
+<PROJECT_ROOT>/node_modules/jest-validate/.*
 ; annotated with `@flow` but have errors
 <PROJECT_ROOT>/node_modules/fbjs/lib/.*
 <PROJECT_ROOT>/pkg/nuclide-node-transpiler/spec/fixtures/.*

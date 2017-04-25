@@ -16,6 +16,7 @@ const RuleTester = require('eslint').RuleTester;
 
 const {
   FLOW_AND_TRANSPILE,
+  FLOW_FORMAT_AND_TRANSPILE,
   NO_FLOW_AND_NO_TRANSPILE,
 } = rule;
 
@@ -36,6 +37,10 @@ ruleTester.run('license-header', rule, {
     {code: [FLOW_AND_TRANSPILE, LINE].join('\n')},
     {code: [FLOW_AND_TRANSPILE, LINE, CODE].join('\n')},
 
+    {code: [FLOW_FORMAT_AND_TRANSPILE].join('\n')},
+    {code: [FLOW_FORMAT_AND_TRANSPILE, LINE].join('\n')},
+    {code: [FLOW_FORMAT_AND_TRANSPILE, LINE, CODE].join('\n')},
+
     {code: [NO_FLOW_AND_NO_TRANSPILE].join('\n')},
     {code: [NO_FLOW_AND_NO_TRANSPILE, LINE].join('\n')},
     {code: [NO_FLOW_AND_NO_TRANSPILE, LINE, CODE].join('\n')},
@@ -51,6 +56,14 @@ ruleTester.run('license-header', rule, {
     },
     {
       code: [USE_BABEL, FLOW_AND_TRANSPILE].join('\n'),
+      errors: [LICENSE_ERROR],
+    },
+    {
+      code: [SHEBANG, FLOW_FORMAT_AND_TRANSPILE].join('\n'),
+      errors: [LICENSE_ERROR],
+    },
+    {
+      code: [USE_BABEL, FLOW_FORMAT_AND_TRANSPILE].join('\n'),
       errors: [LICENSE_ERROR],
     },
     {
