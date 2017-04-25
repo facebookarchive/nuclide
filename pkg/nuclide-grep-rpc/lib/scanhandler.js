@@ -16,7 +16,6 @@ import type {
 import {Observable} from 'rxjs';
 
 import {observeProcess} from '../../commons-node/process';
-import {compact} from '../../commons-node/observable';
 import fsPromise from '../../commons-node/fsPromise';
 import nuclideUri from '../../commons-node/nuclideUri';
 import invariant from 'assert';
@@ -99,11 +98,11 @@ function searchInSubdir(
     .catch(() => Observable.throw(new Error('Failed to execute a grep search.')));
 
   // Transform lines into file matches.
-  const results = compact(linesSource.map((line: string) => {
+  const results = linesSource.flatMap((line: string) => {
     // Try to parse the output of grep.
     const grepMatchResult = line.match(GREP_PARSE_PATTERN);
     if (!grepMatchResult) {
-      return null;
+      return [];
     }
 
     // Extract the filename, line number, and line text from grep output.
@@ -111,28 +110,36 @@ function searchInSubdir(
     const lineNo = parseInt(grepMatchResult[2], 10) - 1;
     const filePath = nuclideUri.join(subdir, grepMatchResult[1]);
 
-    // Try to extract the actual "matched" text.
-    const matchTextResult = regex.exec(lineText);
-    if (!matchTextResult) {
-      return null;
+    // Try to extract all actual "matched" texts on the same line.
+    const result = [];
+    // Loop through each matched text on a line
+    let matchTextResult;
+    // Note: Atom will auto-insert 'g' flag, so, we can loop through all matches.
+    while ((matchTextResult = regex.exec(lineText)) != null) {
+      const matchText = matchTextResult[0];
+      const matchIndex = matchTextResult.index;
+
+      result.push({
+        filePath,
+        match: {
+          lineText,
+          lineTextOffset: 0,
+          matchText,
+          range: [[lineNo, matchIndex], [lineNo, matchIndex + matchText.length]],
+        },
+      });
+
+      // Handle corner case if 'g' flag is not provided
+      if (!regex.global) {
+        break;
+      }
     }
 
     // IMPORTANT: reset the regex for the next search
     regex.lastIndex = 0;
 
-    const matchText = matchTextResult[0];
-    const matchIndex = matchTextResult.index;
-
-    return {
-      filePath,
-      match: {
-        lineText,
-        lineTextOffset: 0,
-        matchText,
-        range: [[lineNo, matchIndex], [lineNo, matchIndex + matchText.length]],
-      },
-    };
-  })).share();
+    return result;
+  }).share();
 
   return results
     // Limit the total result size.

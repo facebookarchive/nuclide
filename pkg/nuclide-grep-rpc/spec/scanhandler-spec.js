@@ -109,6 +109,33 @@ describe('Scan Handler Tests', () => {
     });
   });
 
+  it('Should include multiple results matching on the same line', () => {
+    waitsForPromise(async () => {
+      // Setup test files
+      const folder = await generateFixture('grep-rpc', new Map([
+        ['foo.js', 'const foo = require("foo");'],
+        ['test/foo.js', 'const foo = require("foo");'],
+      ]));
+      const results = await search(
+        // Need 'g' flag to search all matches. Normally, Atom inserts it for us.
+        folder, /foo/g, ['*.js', 'test'],
+      ).toArray().toPromise();
+      const expected = JSON.parse(
+        fs.readFileSync(
+          nuclideUri.join(
+            __dirname,
+            'fixtures',
+            'multipleMatchesOnSameLine.json',
+          ),
+          'utf8',
+        ),
+      );
+
+      sortResults(results);
+      expect(results).diffJson(expected);
+    });
+  });
+
   /* GIT GREP TESTS */
   it('Git repo: should ignore untracked files or files listed in .gitignore', () => {
     waitsForPromise(async () => {
