@@ -369,7 +369,12 @@ export class FileTreeEntryComponent extends React.Component {
 
   _onDragStart(event: DragEvent) {
     event.stopPropagation();
-    const target = this._pathContainer;
+    if (this._pathContainer == null) {
+      return;
+    }
+
+    // $FlowFixMe
+    const target: HTMLElement = ReactDOM.findDOMNode(this._pathContainer);
     if (target == null) {
       return;
     }
