@@ -1,108 +1,138 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import type {
-  PhpDebuggerService as PhpDebuggerServiceType,
-} from '../../nuclide-debugger-php-rpc/lib/PhpDebuggerService';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {ControlButtonSpecification} from '../../nuclide-debugger/lib/types';
-import type {ThreadColumn} from '../../nuclide-debugger-base/lib/types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.AttachProcessInfo = undefined;
 
-import {DebuggerProcessInfo} from '../../nuclide-debugger-base';
-import {PhpDebuggerInstance} from './PhpDebuggerInstance';
-import {getPhpDebuggerServiceByNuclideUri} from '../../nuclide-remote-connection';
-import nuclideUri from '../../commons-node/nuclideUri';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-import utils from './utils';
-const {logInfo} = utils;
-import {getSessionConfig} from './utils';
+var _nuclideDebuggerBase;
 
-export class AttachProcessInfo extends DebuggerProcessInfo {
-  constructor(targetUri: NuclideUri) {
+function _load_nuclideDebuggerBase() {
+  return _nuclideDebuggerBase = require('../../nuclide-debugger-base');
+}
+
+var _PhpDebuggerInstance;
+
+function _load_PhpDebuggerInstance() {
+  return _PhpDebuggerInstance = require('./PhpDebuggerInstance');
+}
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var _utils;
+
+function _load_utils() {
+  return _utils = _interopRequireDefault(require('./utils'));
+}
+
+var _utils2;
+
+function _load_utils2() {
+  return _utils2 = require('./utils');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const { logInfo } = (_utils || _load_utils()).default; /**
+                                                        * Copyright (c) 2015-present, Facebook, Inc.
+                                                        * All rights reserved.
+                                                        *
+                                                        * This source code is licensed under the license found in the LICENSE file in
+                                                        * the root directory of this source tree.
+                                                        *
+                                                        * 
+                                                        */
+
+class AttachProcessInfo extends (_nuclideDebuggerBase || _load_nuclideDebuggerBase()).DebuggerProcessInfo {
+  constructor(targetUri) {
     super('hhvm', targetUri);
   }
 
-  async preAttachActions(): Promise<void> {
-    try {
-      // $FlowFB
-      const services = require('./fb/services');
-      services.startSlog();
-    } catch (_) {}
+  preAttachActions() {
+    return (0, _asyncToGenerator.default)(function* () {
+      try {
+        // $FlowFB
+        const services = require('./fb/services');
+        services.startSlog();
+      } catch (_) {}
+    })();
   }
 
-  async debug(): Promise<PhpDebuggerInstance> {
-    logInfo('Connecting to: ' + this.getTargetUri());
-    await this.preAttachActions();
+  debug() {
+    var _this = this;
 
-    const rpcService = this._getRpcService();
-    const sessionConfig = getSessionConfig(nuclideUri.getPath(this.getTargetUri()), false);
-    logInfo(`Connection session config: ${JSON.stringify(sessionConfig)}`);
-    const result = await rpcService.debug(sessionConfig);
-    logInfo(`Launch process result: ${result}`);
+    return (0, _asyncToGenerator.default)(function* () {
+      logInfo('Connecting to: ' + _this.getTargetUri());
+      yield _this.preAttachActions();
 
-    return new PhpDebuggerInstance(this, rpcService);
+      const rpcService = _this._getRpcService();
+      const sessionConfig = (0, (_utils2 || _load_utils2()).getSessionConfig)((_nuclideUri || _load_nuclideUri()).default.getPath(_this.getTargetUri()), false);
+      logInfo(`Connection session config: ${JSON.stringify(sessionConfig)}`);
+      const result = yield rpcService.debug(sessionConfig);
+      logInfo(`Launch process result: ${result}`);
+
+      return new (_PhpDebuggerInstance || _load_PhpDebuggerInstance()).PhpDebuggerInstance(_this, rpcService);
+    })();
   }
 
-  _getRpcService(): PhpDebuggerServiceType {
-    const service = getPhpDebuggerServiceByNuclideUri(this.getTargetUri());
+  _getRpcService() {
+    const service = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getPhpDebuggerServiceByNuclideUri)(this.getTargetUri());
     return new service.PhpDebuggerService();
   }
 
-  supportThreads(): boolean {
+  supportThreads() {
     return true;
   }
 
-  getThreadsComponentTitle(): string {
+  getThreadsComponentTitle() {
     return 'Requests';
   }
 
-  getThreadColumns(): ?Array<ThreadColumn> {
-    return [
-      {
-        key: 'id',
-        title: 'ID',
-        width: 0.15,
-      },
-      {
-        key: 'address',
-        title: 'Location',
-        width: 0.55,
-      },
-      {
-        key: 'stopReason',
-        title: 'Stop Reason',
-        width: 0.25,
-      },
-    ];
+  getThreadColumns() {
+    return [{
+      key: 'id',
+      title: 'ID',
+      width: 0.15
+    }, {
+      key: 'address',
+      title: 'Location',
+      width: 0.55
+    }, {
+      key: 'stopReason',
+      title: 'Stop Reason',
+      width: 0.25
+    }];
   }
 
-  supportSingleThreadStepping(): boolean {
+  supportSingleThreadStepping() {
     return true;
   }
 
-  singleThreadSteppingEnabled(): boolean {
+  singleThreadSteppingEnabled() {
     return true;
   }
 
-  supportContinueToLocation(): boolean {
+  supportContinueToLocation() {
     return true;
   }
 
-  customControlButtons(): Array<ControlButtonSpecification> {
+  customControlButtons() {
     const customControlButtons = [{
       icon: 'link-external',
       title: 'Toggle HTTP Request Sender',
-      onClick: () => atom.commands.dispatch(
-        atom.views.getView(atom.workspace),
-        'nuclide-http-request-sender:toggle-http-request-edit-dialog',
-      ),
+      onClick: () => atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-http-request-sender:toggle-http-request-edit-dialog')
     }];
     try {
       return customControlButtons.concat(require('./fb/services').customControlButtons);
@@ -111,3 +141,4 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
     }
   }
 }
+exports.AttachProcessInfo = AttachProcessInfo;

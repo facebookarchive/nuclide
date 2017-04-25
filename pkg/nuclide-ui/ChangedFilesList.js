@@ -1,163 +1,147 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import type {NuclideUri} from '../commons-node/nuclideUri';
-import type {FileChangeStatusValue} from '../nuclide-vcs-base';
-import type {IconName} from '../nuclide-ui/types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import addTooltip from './add-tooltip';
-import classnames from 'classnames';
-import {
- FileChangeStatusToIcon,
- FileChangeStatusToTextColor,
- repositoryForPath,
-} from '../nuclide-vcs-base';
-import nuclideUri from '../commons-node/nuclideUri';
-import React from 'react';
-import {FileChangeStatus} from '../nuclide-vcs-base';
-import {Icon} from './Icon';
-import PathWithFileIcon from './PathWithFileIcon';
+var _addTooltip;
 
-const FILE_CHANGES_INITIAL_PAGE_SIZE = 100;
-const ANALYTICS_SOURCE_KEY = 'inline';
-
-type ChangedFilesProps = {
-  commandPrefix: string,
-  enableInlineActions: boolean,
-  fileChanges: Map<NuclideUri, FileChangeStatusValue>,
-  hideEmptyFolders: boolean,
-  onAddFile: (filePath: NuclideUri) => void,
-  onDeleteFile: (filePath: NuclideUri) => void,
-  onFileChosen: (filePath: NuclideUri) => void,
-  onForgetFile: (filePath: NuclideUri) => void,
-  onOpenFileInDiffView: (filePath: NuclideUri) => void,
-  onRevertFile: (filePath: NuclideUri) => void,
-  rootPath: NuclideUri,
-  selectedFile: ?NuclideUri,
-  shouldShowFolderName: boolean,
-};
-
-type ChangedFilesState = {
-  isCollapsed: boolean,
-  visiblePagesCount: number,
-};
-
-function isHgPath(path: NuclideUri): boolean {
-  const repo = repositoryForPath(path);
-  return (repo != null) && repo.getType() === 'hg';
+function _load_addTooltip() {
+  return _addTooltip = _interopRequireDefault(require('./add-tooltip'));
 }
 
-export default class ChangedFilesList extends React.Component {
-  props: ChangedFilesProps;
-  state: ChangedFilesState;
+var _classnames;
 
-  constructor(props: ChangedFilesProps) {
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
+
+var _nuclideVcsBase;
+
+function _load_nuclideVcsBase() {
+  return _nuclideVcsBase = require('../nuclide-vcs-base');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../commons-node/nuclideUri'));
+}
+
+var _react = _interopRequireDefault(require('react'));
+
+var _Icon;
+
+function _load_Icon() {
+  return _Icon = require('./Icon');
+}
+
+var _PathWithFileIcon;
+
+function _load_PathWithFileIcon() {
+  return _PathWithFileIcon = _interopRequireDefault(require('./PathWithFileIcon'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const FILE_CHANGES_INITIAL_PAGE_SIZE = 100; /**
+                                             * Copyright (c) 2015-present, Facebook, Inc.
+                                             * All rights reserved.
+                                             *
+                                             * This source code is licensed under the license found in the LICENSE file in
+                                             * the root directory of this source tree.
+                                             *
+                                             * 
+                                             */
+
+const ANALYTICS_SOURCE_KEY = 'inline';
+
+function isHgPath(path) {
+  const repo = (0, (_nuclideVcsBase || _load_nuclideVcsBase()).repositoryForPath)(path);
+  return repo != null && repo.getType() === 'hg';
+}
+
+class ChangedFilesList extends _react.default.Component {
+
+  constructor(props) {
     super(props);
     this.state = {
       isCollapsed: false,
-      visiblePagesCount: 1,
+      visiblePagesCount: 1
     };
   }
 
-  _getFileClassname(file: NuclideUri, fileChangeValue: FileChangeStatusValue): string {
-    const {commandPrefix, rootPath, selectedFile} = this.props;
-    const repository = repositoryForPath(rootPath);
-    return classnames(
-      'nuclide-file-changes-list-item',
-      'list-item', {
-        selected: file === selectedFile,
-        [`${commandPrefix}-file-entry`]: repository != null && repository.getType() === 'hg',
-      },
-      FileChangeStatusToTextColor[fileChangeValue],
-    );
+  _getFileClassname(file, fileChangeValue) {
+    const { commandPrefix, rootPath, selectedFile } = this.props;
+    const repository = (0, (_nuclideVcsBase || _load_nuclideVcsBase()).repositoryForPath)(rootPath);
+    return (0, (_classnames || _load_classnames()).default)('nuclide-file-changes-list-item', 'list-item', {
+      selected: file === selectedFile,
+      [`${commandPrefix}-file-entry`]: repository != null && repository.getType() === 'hg'
+    }, (_nuclideVcsBase || _load_nuclideVcsBase()).FileChangeStatusToTextColor[fileChangeValue]);
   }
 
-  _renderAction(
-    key: string,
-    icon: IconName,
-    tooltipTitle: string,
-    onClick: () => void,
-  ): React.Element<any> {
-    return (
-      <div
-        className="nuclide-file-changes-file-action"
-        key={key}
-        onClick={onClick}
-        ref={addTooltip({
+  _renderAction(key, icon, tooltipTitle, onClick) {
+    return _react.default.createElement(
+      'div',
+      {
+        className: 'nuclide-file-changes-file-action',
+        key: key,
+        onClick: onClick,
+        ref: (0, (_addTooltip || _load_addTooltip()).default)({
           delay: 300,
           placement: 'top',
-          title: tooltipTitle,
-        })}>
-        <Icon icon={icon} />
-      </div>
+          title: tooltipTitle
+        }) },
+      _react.default.createElement((_Icon || _load_Icon()).Icon, { icon: icon })
     );
   }
 
-  _renderForgetAction(filePath: string): React.Element<any> {
-    return this._renderAction(
-      'forget', /* key */
-      'circle-slash', /* icon */
-      'Forget (stop tracking file in version control)', /* title */
-      this.props.onForgetFile.bind(this, filePath, ANALYTICS_SOURCE_KEY),
-    );
+  _renderForgetAction(filePath) {
+    return this._renderAction('forget', /* key */
+    'circle-slash', /* icon */
+    'Forget (stop tracking file in version control)', /* title */
+    this.props.onForgetFile.bind(this, filePath, ANALYTICS_SOURCE_KEY));
   }
 
-  _renderDeleteAction(filePath: string): React.Element<any> {
-    return this._renderAction(
-      'delete', /* key */
-      'trashcan', /* icon */
-      'Delete file from file system', /* title */
-      this.props.onDeleteFile.bind(this, filePath, ANALYTICS_SOURCE_KEY),
-    );
+  _renderDeleteAction(filePath) {
+    return this._renderAction('delete', /* key */
+    'trashcan', /* icon */
+    'Delete file from file system', /* title */
+    this.props.onDeleteFile.bind(this, filePath, ANALYTICS_SOURCE_KEY));
   }
 
-  _renderMarkDeletedAction(filePath: string): React.Element<any> {
-    return this._renderAction(
-      'mark-deleted', /* key */
-      'circle-slash', /* icon */
-      'Mark file as deleted (remove from version control)', /* title */
-      this.props.onForgetFile.bind(this, filePath, ANALYTICS_SOURCE_KEY),
-    );
+  _renderMarkDeletedAction(filePath) {
+    return this._renderAction('mark-deleted', /* key */
+    'circle-slash', /* icon */
+    'Mark file as deleted (remove from version control)', /* title */
+    this.props.onForgetFile.bind(this, filePath, ANALYTICS_SOURCE_KEY));
   }
 
-  _renderRestoreAction(filePath: string): React.Element<any> {
-    return this._renderAction(
-      'restore', /* key */
-      'playback-rewind', /* icon */
-      'Restore file (revert to last known version)', /* title */
-      this.props.onRevertFile.bind(this, filePath, ANALYTICS_SOURCE_KEY),
-    );
+  _renderRestoreAction(filePath) {
+    return this._renderAction('restore', /* key */
+    'playback-rewind', /* icon */
+    'Restore file (revert to last known version)', /* title */
+    this.props.onRevertFile.bind(this, filePath, ANALYTICS_SOURCE_KEY));
   }
 
-  _renderAddAction(filePath: string): React.Element<any> {
-    return this._renderAction(
-      'add', /* key */
-      'plus', /* icon */
-      'Add file to version control', /* title */
-      this.props.onAddFile.bind(this, filePath, ANALYTICS_SOURCE_KEY),
-    );
+  _renderAddAction(filePath) {
+    return this._renderAction('add', /* key */
+    'plus', /* icon */
+    'Add file to version control', /* title */
+    this.props.onAddFile.bind(this, filePath, ANALYTICS_SOURCE_KEY));
   }
 
-  _renderOpenInDiffViewAction(filePath: string): React.Element<any> {
-    return this._renderAction(
-      'diff', /* key */
-      'diff', /* icon */
-      'Open file in Diff View', /* title */
-      this.props.onOpenFileInDiffView.bind(this, filePath, ANALYTICS_SOURCE_KEY),
-    );
+  _renderOpenInDiffViewAction(filePath) {
+    return this._renderAction('diff', /* key */
+    'diff', /* icon */
+    'Open file in Diff View', /* title */
+    this.props.onOpenFileInDiffView.bind(this, filePath, ANALYTICS_SOURCE_KEY));
   }
 
-  render(): ?React.Element<any> {
+  render() {
     const {
       fileChanges,
-      enableInlineActions,
+      enableInlineActions
     } = this.props;
     if (fileChanges.size === 0 && this.props.hideEmptyFolders) {
       return null;
@@ -166,112 +150,109 @@ export default class ChangedFilesList extends React.Component {
     const filesToShow = FILE_CHANGES_INITIAL_PAGE_SIZE * this.state.visiblePagesCount;
     const sizeLimitedFileChanges = Array.from(fileChanges.entries()).slice(0, filesToShow);
 
-    const rootClassName = classnames('list-nested-item', {
-      collapsed: this.state.isCollapsed,
+    const rootClassName = (0, (_classnames || _load_classnames()).default)('list-nested-item', {
+      collapsed: this.state.isCollapsed
     });
 
-    const showMoreFilesElement = fileChanges.size > filesToShow
-      ? <div
-          className="icon icon-ellipsis"
-          ref={addTooltip({
-            title: 'Show more files with uncommitted changes',
-            delay: 300,
-            placement: 'bottom',
-          })}
-          onClick={() => this.setState({visiblePagesCount: this.state.visiblePagesCount + 1})}
-        />
-      : null;
+    const showMoreFilesElement = fileChanges.size > filesToShow ? _react.default.createElement('div', {
+      className: 'icon icon-ellipsis',
+      ref: (0, (_addTooltip || _load_addTooltip()).default)({
+        title: 'Show more files with uncommitted changes',
+        delay: 300,
+        placement: 'bottom'
+      }),
+      onClick: () => this.setState({ visiblePagesCount: this.state.visiblePagesCount + 1 })
+    }) : null;
 
-    return (
-      <ul className="list-tree has-collapsable-children">
-        <li className={rootClassName}>
-          {this.props.shouldShowFolderName ?
-            <div
-              className="list-item"
-              key={this.props.rootPath}
-              onClick={() => this.setState({isCollapsed: !this.state.isCollapsed})}>
-              <span
-                className="icon icon-file-directory nuclide-file-changes-root-entry"
-                data-path={this.props.rootPath}>
-                {nuclideUri.basename(this.props.rootPath)}
-              </span>
-            </div> :
-            null
-          }
-          <ul className="list-tree has-flat-children">
-            {sizeLimitedFileChanges.map(
-              ([filePath, fileChangeValue]) => {
-                const baseName = nuclideUri.basename(filePath);
-                let actions;
-                if (enableInlineActions && isHgPath(filePath)) {
-                  const eligibleActions = [
-                    this._renderOpenInDiffViewAction(filePath),
-                  ];
-                  switch (fileChangeValue) {
-                    case FileChangeStatus.ADDED:
-                      eligibleActions.push(
-                        this._renderForgetAction(filePath),
-                        this._renderDeleteAction(filePath),
-                      );
-                      break;
-                    case FileChangeStatus.UNTRACKED:
-                      eligibleActions.push(
-                        this._renderAddAction(filePath),
-                        this._renderDeleteAction(filePath),
-                      );
-                      break;
-                    case FileChangeStatus.MISSING: // removed from FS but not VCS
-                      eligibleActions.push(
-                        this._renderRestoreAction(filePath),
-                        this._renderMarkDeletedAction(filePath),
-                      );
-                      break;
-                    case FileChangeStatus.MODIFIED:
-                    case FileChangeStatus.REMOVED: // removed from both FS and VCS
-                      eligibleActions.push(
-                        this._renderRestoreAction(filePath),
-                      );
-                      break;
-                  }
-                  actions = (
-                    <div className="nuclide-file-changes-file-actions">
-                      {eligibleActions}
-                    </div>
-                  );
-                }
-                return (
-                  <li
-                    data-name={baseName}
-                    data-path={filePath}
-                    data-root={this.props.rootPath}
-                    className={this._getFileClassname(filePath, fileChangeValue)}
-                    key={filePath}>
-                    <span
-                      className="nuclide-file-changes-file-entry"
-                      onClick={() => this.props.onFileChosen(filePath)}>
-                      <Icon
-                        className="nuclide-file-changes-file-entry-icon"
-                        icon={FileChangeStatusToIcon[fileChangeValue]}
-                      />
-                      <PathWithFileIcon
-                        path={baseName}
-                        ref={addTooltip({
-                          title: `${filePath} – Click to open`,
-                          // Extra long delay to limit spawning aggressive follow-through behavior.
-                          delay: 1000,
-                          placement: 'top',
-                        })}
-                      />
-                    </span>
-                    {actions}
-                  </li>
-                );
-              },
-            )}
-            <li>{showMoreFilesElement}</li>
-          </ul>
-        </li>
-      </ul>
+    return _react.default.createElement(
+      'ul',
+      { className: 'list-tree has-collapsable-children' },
+      _react.default.createElement(
+        'li',
+        { className: rootClassName },
+        this.props.shouldShowFolderName ? _react.default.createElement(
+          'div',
+          {
+            className: 'list-item',
+            key: this.props.rootPath,
+            onClick: () => this.setState({ isCollapsed: !this.state.isCollapsed }) },
+          _react.default.createElement(
+            'span',
+            {
+              className: 'icon icon-file-directory nuclide-file-changes-root-entry',
+              'data-path': this.props.rootPath },
+            (_nuclideUri || _load_nuclideUri()).default.basename(this.props.rootPath)
+          )
+        ) : null,
+        _react.default.createElement(
+          'ul',
+          { className: 'list-tree has-flat-children' },
+          sizeLimitedFileChanges.map(([filePath, fileChangeValue]) => {
+            const baseName = (_nuclideUri || _load_nuclideUri()).default.basename(filePath);
+            let actions;
+            if (enableInlineActions && isHgPath(filePath)) {
+              const eligibleActions = [this._renderOpenInDiffViewAction(filePath)];
+              switch (fileChangeValue) {
+                case (_nuclideVcsBase || _load_nuclideVcsBase()).FileChangeStatus.ADDED:
+                  eligibleActions.push(this._renderForgetAction(filePath), this._renderDeleteAction(filePath));
+                  break;
+                case (_nuclideVcsBase || _load_nuclideVcsBase()).FileChangeStatus.UNTRACKED:
+                  eligibleActions.push(this._renderAddAction(filePath), this._renderDeleteAction(filePath));
+                  break;
+                case (_nuclideVcsBase || _load_nuclideVcsBase()).FileChangeStatus.MISSING:
+                  // removed from FS but not VCS
+                  eligibleActions.push(this._renderRestoreAction(filePath), this._renderMarkDeletedAction(filePath));
+                  break;
+                case (_nuclideVcsBase || _load_nuclideVcsBase()).FileChangeStatus.MODIFIED:
+                case (_nuclideVcsBase || _load_nuclideVcsBase()).FileChangeStatus.REMOVED:
+                  // removed from both FS and VCS
+                  eligibleActions.push(this._renderRestoreAction(filePath));
+                  break;
+              }
+              actions = _react.default.createElement(
+                'div',
+                { className: 'nuclide-file-changes-file-actions' },
+                eligibleActions
+              );
+            }
+            return _react.default.createElement(
+              'li',
+              {
+                'data-name': baseName,
+                'data-path': filePath,
+                'data-root': this.props.rootPath,
+                className: this._getFileClassname(filePath, fileChangeValue),
+                key: filePath },
+              _react.default.createElement(
+                'span',
+                {
+                  className: 'nuclide-file-changes-file-entry',
+                  onClick: () => this.props.onFileChosen(filePath) },
+                _react.default.createElement((_Icon || _load_Icon()).Icon, {
+                  className: 'nuclide-file-changes-file-entry-icon',
+                  icon: (_nuclideVcsBase || _load_nuclideVcsBase()).FileChangeStatusToIcon[fileChangeValue]
+                }),
+                _react.default.createElement((_PathWithFileIcon || _load_PathWithFileIcon()).default, {
+                  path: baseName,
+                  ref: (0, (_addTooltip || _load_addTooltip()).default)({
+                    title: `${filePath} – Click to open`,
+                    // Extra long delay to limit spawning aggressive follow-through behavior.
+                    delay: 1000,
+                    placement: 'top'
+                  })
+                })
+              ),
+              actions
+            );
+          }),
+          _react.default.createElement(
+            'li',
+            null,
+            showMoreFilesElement
+          )
+        )
+      )
     );
   }
 }
+exports.default = ChangedFilesList;

@@ -1,3 +1,38 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DiagnosticsMessageNoHeader = exports.DiagnosticsMessage = undefined;
+
+var _react = _interopRequireDefault(require('react'));
+
+var _Button;
+
+function _load_Button() {
+  return _Button = require('./Button');
+}
+
+var _ButtonGroup;
+
+function _load_ButtonGroup() {
+  return _ButtonGroup = require('./ButtonGroup');
+}
+
+var _DiagnosticsMessageText;
+
+function _load_DiagnosticsMessageText() {
+  return _DiagnosticsMessageText = require('./DiagnosticsMessageText');
+}
+
+var _DiagnosticsTraceItem;
+
+function _load_DiagnosticsTraceItem() {
+  return _DiagnosticsTraceItem = require('./DiagnosticsTraceItem');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,35 +40,19 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
-
-import type {
-  FileDiagnosticMessage,
-} from '../nuclide-diagnostics-common/lib/rpc-types';
-
-import React from 'react';
-import {Button, ButtonTypes} from './Button';
-import {ButtonGroup} from './ButtonGroup';
-import {DiagnosticsMessageText} from './DiagnosticsMessageText';
-import {DiagnosticsTraceItem} from './DiagnosticsTraceItem';
-
-type DiagnosticsMessageProps = {
-  message: FileDiagnosticMessage,
-  goToLocation: (path: string, line: number) => mixed,
-  fixer: (message: FileDiagnosticMessage) => void,
-};
 
 const PROVIDER_CLASS_NAME = {
   Error: 'highlight-error',
   Warning: 'highlight-warning',
-  Info: 'highlight-info',
+  Info: 'highlight-info'
 };
 
-function diagnosticHeader(props: DiagnosticsMessageProps) {
+function diagnosticHeader(props) {
   const {
     message,
-    fixer,
+    fixer
   } = props;
   const providerClassName = PROVIDER_CLASS_NAME[message.type];
   let fixButton = null;
@@ -42,60 +61,66 @@ function diagnosticHeader(props: DiagnosticsMessageProps) {
       fixer(message);
     };
     const speculative = message.fix.speculative === true;
-    const buttonType = speculative ? undefined : ButtonTypes.SUCCESS;
-    fixButton = (
-      <Button buttonType={buttonType} size="EXTRA_SMALL" onClick={applyFix}>Fix</Button>
+    const buttonType = speculative ? undefined : (_Button || _load_Button()).ButtonTypes.SUCCESS;
+    fixButton = _react.default.createElement(
+      (_Button || _load_Button()).Button,
+      { buttonType: buttonType, size: 'EXTRA_SMALL', onClick: applyFix },
+      'Fix'
     );
   }
-  return (
-    <div className="nuclide-diagnostics-gutter-ui-popup-header">
-      <ButtonGroup>
-        {fixButton}
-      </ButtonGroup>
-      <span className={providerClassName}>{message.providerName}</span>
-    </div>
+  return _react.default.createElement(
+    'div',
+    { className: 'nuclide-diagnostics-gutter-ui-popup-header' },
+    _react.default.createElement(
+      (_ButtonGroup || _load_ButtonGroup()).ButtonGroup,
+      null,
+      fixButton
+    ),
+    _react.default.createElement(
+      'span',
+      { className: providerClassName },
+      message.providerName
+    )
   );
 }
 
-function traceElements(props: DiagnosticsMessageProps) {
+function traceElements(props) {
   const {
-      message,
-      goToLocation,
+    message,
+    goToLocation
   } = props;
-  return message.trace
-    ? message.trace.map((traceItem, i) =>
-      <DiagnosticsTraceItem
-        key={i}
-        trace={traceItem}
-        goToLocation={goToLocation}
-      />,
-    )
-    : null;
+  return message.trace ? message.trace.map((traceItem, i) => _react.default.createElement((_DiagnosticsTraceItem || _load_DiagnosticsTraceItem()).DiagnosticsTraceItem, {
+    key: i,
+    trace: traceItem,
+    goToLocation: goToLocation
+  })) : null;
 }
 
 /**
  * Visually groups Buttons passed in as children.
  */
-export const DiagnosticsMessage = (props: DiagnosticsMessageProps) => {
-  return (
-    <div>
-      {diagnosticHeader(props)}
-      <div className="nuclide-diagnostics-gutter-ui-popup-message">
-        <DiagnosticsMessageText message={props.message} />
-      </div>
-      {traceElements(props)}
-    </div>
+const DiagnosticsMessage = exports.DiagnosticsMessage = props => {
+  return _react.default.createElement(
+    'div',
+    null,
+    diagnosticHeader(props),
+    _react.default.createElement(
+      'div',
+      { className: 'nuclide-diagnostics-gutter-ui-popup-message' },
+      _react.default.createElement((_DiagnosticsMessageText || _load_DiagnosticsMessageText()).DiagnosticsMessageText, { message: props.message })
+    ),
+    traceElements(props)
   );
 };
 
 /**
  * Visually groups Buttons passed in as children.
  */
-export const DiagnosticsMessageNoHeader = (props: DiagnosticsMessageProps) => {
-  return (
-    <div>
-      <DiagnosticsMessageText message={props.message} />
-      {traceElements(props)}
-    </div>
+const DiagnosticsMessageNoHeader = exports.DiagnosticsMessageNoHeader = props => {
+  return _react.default.createElement(
+    'div',
+    null,
+    _react.default.createElement((_DiagnosticsMessageText || _load_DiagnosticsMessageText()).DiagnosticsMessageText, { message: props.message }),
+    traceElements(props)
   );
 };

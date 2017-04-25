@@ -1,96 +1,104 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import WS from 'ws';
-import {createWebSocketListener} from './createWebSocketListener';
-import invariant from 'assert';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Socket = undefined;
 
-import type {Observable} from 'rxjs';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-type Id = number;
-type onResponseReceived = (response: Object) => void;
+var _UniversalDisposable;
 
-export class Socket {
-  _webSocket: ?WS;
-  _webSocketOpenPromise: Promise<WS>;
-  _disposables: UniversalDisposable;
-  _pendingRequests: Map<Id, onResponseReceived>;
-  _webSocketClosed: boolean;
-  _id: number;
-  _handleChromeEvent: (message: Object) => mixed;
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../commons-node/UniversalDisposable'));
+}
 
-  constructor(
-    url: string,
-    handleChromeEvent: (message: Object) => mixed,
-    handleSocketEnd: () => mixed,
-  ) {
+var _ws;
+
+function _load_ws() {
+  return _ws = _interopRequireDefault(require('ws'));
+}
+
+var _createWebSocketListener;
+
+function _load_createWebSocketListener() {
+  return _createWebSocketListener = require('./createWebSocketListener');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class Socket {
+
+  constructor(url, handleChromeEvent, handleSocketEnd) {
     this._id = 0;
     this._handleChromeEvent = handleChromeEvent;
     this._webSocket = null;
     this._pendingRequests = new Map();
     this._webSocketClosed = false;
-    const webSocket = new WS(url);
+    const webSocket = new (_ws || _load_ws()).default(url);
     // It's not enough to just construct the websocket -- we have to also wait for it to open.
-    this._webSocketOpenPromise = new Promise(
-      resolve => webSocket.on('open', () => resolve(webSocket)),
-    );
-    webSocket.on(
-      'close',
-      () => {
-        this._webSocketClosed = true;
-        handleSocketEnd();
-      },
-    );
-    const socketMessages: Observable<string> = createWebSocketListener(webSocket);
-    this._disposables = new UniversalDisposable(
-      () => {
-        if (!this._webSocketClosed) {
-          webSocket.close();
-        }
-      },
-      socketMessages.subscribe(message => this._handleSocketMessage(message)),
-    );
-  }
-
-  async sendCommand(message: Object): Promise<Object> {
-    if (this._webSocket == null) {
-      this._webSocket = await this._webSocketOpenPromise;
-    }
-    const webSocket = this._webSocket;
-    if (message.id == null) {
-      message.id = this._id++;
-    }
-    return new Promise(resolve => {
-      this._pendingRequests.set(message.id, resolve);
-      webSocket.send(JSON.stringify(message));
+    this._webSocketOpenPromise = new Promise(resolve => webSocket.on('open', () => resolve(webSocket)));
+    webSocket.on('close', () => {
+      this._webSocketClosed = true;
+      handleSocketEnd();
     });
+    const socketMessages = (0, (_createWebSocketListener || _load_createWebSocketListener()).createWebSocketListener)(webSocket);
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default(() => {
+      if (!this._webSocketClosed) {
+        webSocket.close();
+      }
+    }, socketMessages.subscribe(message => this._handleSocketMessage(message)));
   }
 
-  _handleSocketMessage(message: string): void {
+  sendCommand(message) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      if (_this._webSocket == null) {
+        _this._webSocket = yield _this._webSocketOpenPromise;
+      }
+      const webSocket = _this._webSocket;
+      if (message.id == null) {
+        message.id = _this._id++;
+      }
+      return new Promise(function (resolve) {
+        _this._pendingRequests.set(message.id, resolve);
+        webSocket.send(JSON.stringify(message));
+      });
+    })();
+  }
+
+  _handleSocketMessage(message) {
     const obj = JSON.parse(message);
     if (isEvent(obj)) {
       this._handleChromeEvent(obj);
     } else {
       const resolve = this._pendingRequests.get(obj.id);
-      invariant(resolve != null, `Got response for a request that wasn't sent: ${message}`);
+
+      if (!(resolve != null)) {
+        throw new Error(`Got response for a request that wasn't sent: ${message}`);
+      }
+
       this._pendingRequests.delete(obj.id);
       resolve(obj);
     }
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
   }
 }
 
-function isEvent(obj: Object): boolean {
+exports.Socket = Socket; /**
+                          * Copyright (c) 2015-present, Facebook, Inc.
+                          * All rights reserved.
+                          *
+                          * This source code is licensed under the license found in the LICENSE file in
+                          * the root directory of this source tree.
+                          *
+                          * 
+                          */
+
+function isEvent(obj) {
   return obj.id == null;
 }

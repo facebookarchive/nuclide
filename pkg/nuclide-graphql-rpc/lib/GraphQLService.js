@@ -1,245 +1,201 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {
-  FileDiagnosticUpdate,
-  DiagnosticProviderUpdate,
-} from '../../nuclide-diagnostics-common/lib/rpc-types';
-import {convertDiagnostics} from './DiagnosticsHelper';
-import {findGraphQLConfigDir} from './config';
-import {trackTiming} from '../../nuclide-analytics';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.initialize = undefined;
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
 /* LanguageService related type imports */
-import type {Observable} from 'rxjs';
-import type {
-  AutocompleteResult,
-  LanguageService,
-} from '../../nuclide-language-service/lib/LanguageService';
-import type {TextEdit} from '../../nuclide-textedit/lib/rpc-types';
-import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
-import type {
-  Definition,
-  DefinitionQueryResult,
-} from '../../nuclide-definition-service/lib/rpc-types';
-import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
-import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
-import type {FindReferencesReturn} from '../../nuclide-find-references/lib/rpc-types';
-import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
+let initialize = exports.initialize = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (fileNotifier) {
+    return new (_nuclideLanguageServiceRpc || _load_nuclideLanguageServiceRpc()).ServerLanguageService(fileNotifier, new GraphQLLanguageAnalyzer(fileNotifier));
+  });
 
-import invariant from 'assert';
+  return function initialize(_x) {
+    return _ref.apply(this, arguments);
+  };
+})(); /**
+       * Copyright (c) 2015-present, Facebook, Inc.
+       * All rights reserved.
+       *
+       * This source code is licensed under the license found in the LICENSE file in
+       * the root directory of this source tree.
+       *
+       * 
+       */
 
-import {FileCache} from '../../nuclide-open-files-rpc';
-import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
-import {ServerLanguageService} from '../../nuclide-language-service-rpc';
+var _DiagnosticsHelper;
 
-import {getGraphQLProcess} from './GraphQLProcess';
-
-import {logger} from './config';
-
-export async function initialize(
-  fileNotifier: FileNotifier,
-): Promise<LanguageService> {
-  return new ServerLanguageService(
-    fileNotifier,
-    new GraphQLLanguageAnalyzer(fileNotifier),
-  );
+function _load_DiagnosticsHelper() {
+  return _DiagnosticsHelper = require('./DiagnosticsHelper');
 }
 
-class GraphQLLanguageAnalyzer {
-  _fileCache: FileCache;
+var _config;
 
-  constructor(fileNotifier: FileNotifier) {
-    invariant(fileNotifier instanceof FileCache);
+function _load_config() {
+  return _config = require('./config');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _nuclideOpenFilesRpc;
+
+function _load_nuclideOpenFilesRpc() {
+  return _nuclideOpenFilesRpc = require('../../nuclide-open-files-rpc');
+}
+
+var _nuclideLanguageServiceRpc;
+
+function _load_nuclideLanguageServiceRpc() {
+  return _nuclideLanguageServiceRpc = require('../../nuclide-language-service-rpc');
+}
+
+var _GraphQLProcess;
+
+function _load_GraphQLProcess() {
+  return _GraphQLProcess = require('./GraphQLProcess');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class GraphQLLanguageAnalyzer {
+
+  constructor(fileNotifier) {
+    if (!(fileNotifier instanceof (_nuclideOpenFilesRpc || _load_nuclideOpenFilesRpc()).FileCache)) {
+      throw new Error('Invariant violation: "fileNotifier instanceof FileCache"');
+    }
+
     this._fileCache = fileNotifier;
   }
 
-  async getDiagnostics(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-  ): Promise<?DiagnosticProviderUpdate> {
-    return trackTiming(
-      'GraphQLLanguageAnalyzer.getDiagnostics',
-      async () => {
-        const graphQLProcess = await getGraphQLProcess(this._fileCache, filePath);
+  getDiagnostics(filePath, buffer) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackTiming)('GraphQLLanguageAnalyzer.getDiagnostics', (0, _asyncToGenerator.default)(function* () {
+        const graphQLProcess = yield (0, (_GraphQLProcess || _load_GraphQLProcess()).getGraphQLProcess)(_this._fileCache, filePath);
         if (!graphQLProcess) {
           return null;
         }
 
-        const result = await graphQLProcess.getDiagnostics(
-          buffer.getText(),
-          filePath,
-        );
-        return convertDiagnostics(result);
-      });
+        const result = yield graphQLProcess.getDiagnostics(buffer.getText(), filePath);
+        return (0, (_DiagnosticsHelper || _load_DiagnosticsHelper()).convertDiagnostics)(result);
+      }));
+    })();
   }
 
   /**
    * Returns the root of .graphqlrc file.
    */
-  getProjectRoot(fileUri: NuclideUri): Promise<?NuclideUri> {
-    return findGraphQLConfigDir(fileUri);
+  getProjectRoot(fileUri) {
+    return (0, (_config || _load_config()).findGraphQLConfigDir)(fileUri);
   }
 
-  observeDiagnostics(): Observable<FileDiagnosticUpdate> {
+  observeDiagnostics() {
     throw new Error('Not implemented');
   }
 
-  async getAutocompleteSuggestions(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    position: atom$Point,
-    activatedManually: boolean,
-  ): Promise<AutocompleteResult> {
-    return trackTiming(
-      'GraphQLLanguageAnalyzer.getAutocompleteSuggestions',
-      async () => {
-        const graphQLProcess = await getGraphQLProcess(
-          this._fileCache,
-          filePath,
-        );
+  getAutocompleteSuggestions(filePath, buffer, position, activatedManually) {
+    var _this2 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackTiming)('GraphQLLanguageAnalyzer.getAutocompleteSuggestions', (0, _asyncToGenerator.default)(function* () {
+        const graphQLProcess = yield (0, (_GraphQLProcess || _load_GraphQLProcess()).getGraphQLProcess)(_this2._fileCache, filePath);
 
         if (!graphQLProcess) {
-          return {isIncomplete: false, items: []};
+          return { isIncomplete: false, items: [] };
         }
 
-        const result = await graphQLProcess.getAutocompleteSuggestions(
-          buffer.getText(),
-          position,
-          filePath,
-        );
+        const result = yield graphQLProcess.getAutocompleteSuggestions(buffer.getText(), position, filePath);
 
-        const items = result.map(completion => ({
-          text: completion.text,
-          description: completion.description || null,
-          iconHTML: '<i class="icon-nuclicon-graphql"></i>',
-          leftLabelHTML: completion.typeName ?
-            `<span style="color: #E10098;">${completion.typeName}</span>` :
-            null,
-        }));
+        const items = result.map(function (completion) {
+          return {
+            text: completion.text,
+            description: completion.description || null,
+            iconHTML: '<i class="icon-nuclicon-graphql"></i>',
+            leftLabelHTML: completion.typeName ? `<span style="color: #E10098;">${completion.typeName}</span>` : null
+          };
+        });
         return {
           isIncomplete: false,
-          items,
+          items
         };
-      },
-    );
+      }));
+    })();
   }
 
-  async getDefinition(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    position: atom$Point,
-  ): Promise<?DefinitionQueryResult> {
-    return trackTiming(
-      'GraphQLLanguageAnalyzer.getDefinition',
-      async () => {
-        const graphQLProcess = await getGraphQLProcess(this._fileCache, filePath);
+  getDefinition(filePath, buffer, position) {
+    var _this3 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackTiming)('GraphQLLanguageAnalyzer.getDefinition', (0, _asyncToGenerator.default)(function* () {
+        const graphQLProcess = yield (0, (_GraphQLProcess || _load_GraphQLProcess()).getGraphQLProcess)(_this3._fileCache, filePath);
         if (!graphQLProcess || !position) {
-          logger.logError('no GraphQLProcess or position during getDefinition');
+          (_config || _load_config()).logger.logError('no GraphQLProcess or position during getDefinition');
           return null;
         }
-        return graphQLProcess.getDefinition(
-          buffer.getText(),
-          position,
-          filePath,
-        );
-      },
-    );
+        return graphQLProcess.getDefinition(buffer.getText(), position, filePath);
+      }));
+    })();
   }
 
-  getDefinitionById(
-    file: NuclideUri,
-    id: string,
-  ): Promise<?Definition> {
+  getDefinitionById(file, id) {
     throw new Error('Not implemented');
   }
 
-  findReferences(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    position: atom$Point,
-  ): Promise<?FindReferencesReturn> {
+  findReferences(filePath, buffer, position) {
     throw new Error('Not implemented');
   }
 
-  getCoverage(
-    filePath: NuclideUri,
-  ): Promise<?CoverageResult> {
+  getCoverage(filePath) {
     throw new Error('Not implemented');
   }
 
-  async getOutline(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-  ): Promise<?Outline> {
-    return trackTiming(
-      'GraphQLLanguageAnalyzer.getOutline',
-      async () => {
-        const graphQLProcess = await getGraphQLProcess(this._fileCache, filePath);
+  getOutline(filePath, buffer) {
+    var _this4 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackTiming)('GraphQLLanguageAnalyzer.getOutline', (0, _asyncToGenerator.default)(function* () {
+        const graphQLProcess = yield (0, (_GraphQLProcess || _load_GraphQLProcess()).getGraphQLProcess)(_this4._fileCache, filePath);
         if (!graphQLProcess) {
-          logger.logError('no GraphQLProcess during getOutline');
+          (_config || _load_config()).logger.logError('no GraphQLProcess during getOutline');
           return null;
         }
 
-        return (await graphQLProcess.getService()).getOutline(buffer.getText());
-      },
-    );
+        return (yield graphQLProcess.getService()).getOutline(buffer.getText());
+      }));
+    })();
   }
 
-  typeHint(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    position: atom$Point,
-  ): Promise<?TypeHint> {
+  typeHint(filePath, buffer, position) {
     throw new Error('Not implemented');
   }
 
-  highlight(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    position: atom$Point,
-  ): Promise<?Array<atom$Range>> {
+  highlight(filePath, buffer, position) {
     throw new Error('Not implemented');
   }
 
-  formatSource(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    range: atom$Range,
-  ): Promise<?Array<TextEdit>> {
+  formatSource(filePath, buffer, range) {
     throw new Error('Not implemented');
   }
 
-  formatEntireFile(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    range: atom$Range,
-  ): Promise<?{
-    newCursor?: number,
-    formatted: string,
-  }> {
+  formatEntireFile(filePath, buffer, range) {
     throw new Error('Not implemented');
   }
 
-  getEvaluationExpression(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    position: atom$Point,
-  ): Promise<?NuclideEvaluationExpression> {
+  getEvaluationExpression(filePath, buffer, position) {
     throw new Error('Not implemented');
   }
 
-  isFileInProject(fileUri: NuclideUri): Promise<boolean> {
+  isFileInProject(fileUri) {
     throw new Error('Not implemented');
   }
 
-  dispose(): void {
-  }
+  dispose() {}
 }

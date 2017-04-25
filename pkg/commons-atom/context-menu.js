@@ -1,16 +1,19 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+'use strict';
 
-import invariant from 'assert';
-import {remote} from 'electron';
-import UniversalDisposable from '../commons-node/UniversalDisposable';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.showMenuForEvent = showMenuForEvent;
+
+var _electron = require('electron');
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../commons-node/UniversalDisposable'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
 * Shows the provided menu template. This will result in [an extra call to `templateForEvent()`][1],
@@ -19,14 +22,16 @@ import UniversalDisposable from '../commons-node/UniversalDisposable';
 *
 * [1]: https://github.com/atom/atom/blob/v1.13.0/src/context-menu-manager.coffee#L200
 */
-export function showMenuForEvent(
-  event: MouseEvent,
-  menuTemplate: Array<Object>,
-): UniversalDisposable {
-  invariant(remote != null);
-  const win = (remote.getCurrentWindow(): any);
+function showMenuForEvent(event, menuTemplate) {
+  if (!(_electron.remote != null)) {
+    throw new Error('Invariant violation: "remote != null"');
+  }
+
+  const win = _electron.remote.getCurrentWindow();
   const originalEmit = win.emit;
-  const restore = () => { win.emit = originalEmit; };
+  const restore = () => {
+    win.emit = originalEmit;
+  };
   win.emit = (eventType, ...args) => {
     if (eventType !== 'context-menu') {
       return originalEmit(eventType, ...args);
@@ -36,5 +41,13 @@ export function showMenuForEvent(
     return result;
   };
   atom.contextMenu.showForEvent(event);
-  return new UniversalDisposable(restore);
-}
+  return new (_UniversalDisposable || _load_UniversalDisposable()).default(restore);
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   */
