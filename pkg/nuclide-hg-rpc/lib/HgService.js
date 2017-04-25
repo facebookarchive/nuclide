@@ -376,6 +376,7 @@ export class HgService {
         fields: ['name', 'exists', 'new'],
         expression: primarySubscriptionExpression,
         defer: ['hg.update'],
+        empty_on_fresh_instance: true,
       },
     );
     logger.debug(`Watchman subscription ${WATCHMAN_SUBSCRIPTION_NAME_PRIMARY} established.`);
@@ -389,6 +390,7 @@ export class HgService {
         fields: ['name', 'exists', 'new'],
         expression: ['name', '.hg/merge', 'wholename'],
         defer: ['hg.update'],
+        empty_on_fresh_instance: true,
       },
     );
     logger.debug(`Watchman subscription ${WATCHMAN_SUBSCRIPTION_NAME_CONFLICTS} established.`);
@@ -401,6 +403,7 @@ export class HgService {
         fields: ['name', 'exists'],
         expression: ['name', '.hg/bookmarks.current', 'wholename'],
         defer: ['hg.update'],
+        empty_on_fresh_instance: true,
       },
     );
     logger.debug(`Watchman subscription ${WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARK} established.`);
@@ -413,6 +416,7 @@ export class HgService {
         fields: ['name', 'exists'],
         expression: ['name', '.hg/bookmarks', 'wholename'],
         defer: ['hg.update'],
+        empty_on_fresh_instance: true,
       },
     );
     logger.debug(`Watchman subscription ${WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARKS} established.`);
@@ -424,6 +428,7 @@ export class HgService {
         fields: ['name'],
         expression: ['name', '.hg/dirstate', 'wholename'],
         defer: ['hg.update'],
+        empty_on_fresh_instance: true,
       },
     );
     logger.debug(`Watchman subscription ${WATCHMAN_HG_DIR_STATE} established.`);
