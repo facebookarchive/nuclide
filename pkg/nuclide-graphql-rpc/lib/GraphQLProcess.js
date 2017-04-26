@@ -1,3 +1,88 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getGraphQLProcess = undefined;
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+let getGraphQLProcess = exports.getGraphQLProcess = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (fileCache, filePath) {
+    const configDir = yield (0, (_config || _load_config()).findGraphQLConfigDir)(filePath);
+    if (configDir == null) {
+      return null;
+    }
+
+    const processCache = processes.get(fileCache);
+    return processCache.get(configDir);
+  });
+
+  return function getGraphQLProcess(_x, _x2) {
+    return _ref.apply(this, arguments);
+  };
+})();
+
+var _config;
+
+function _load_config() {
+  return _config = require('./config');
+}
+
+var _RpcProcess;
+
+function _load_RpcProcess() {
+  return _RpcProcess = require('../../nuclide-rpc/lib/RpcProcess');
+}
+
+var _nuclideRpc;
+
+function _load_nuclideRpc() {
+  return _nuclideRpc = require('../../nuclide-rpc');
+}
+
+var _nuclideMarshalersCommon;
+
+function _load_nuclideMarshalersCommon() {
+  return _nuclideMarshalersCommon = require('../../nuclide-marshalers-common');
+}
+
+var _nuclideOpenFilesRpc;
+
+function _load_nuclideOpenFilesRpc() {
+  return _nuclideOpenFilesRpc = require('../../nuclide-open-files-rpc');
+}
+
+var _cache;
+
+function _load_cache() {
+  return _cache = require('../../commons-node/cache');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var _process;
+
+function _load_process() {
+  return _process = require('../../commons-node/process');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// RPC Process interface and service registry/marshalers
+const GRAPHQL_FILE_EXTENTIONS = ['.graphql'];
+
+// Nuclide-specific utility functions
+
+
+// Deals with the file event from Atom process
+
+
+// GraphQL-related helpers
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,43 +90,13 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
 
-import type {Observable} from 'rxjs';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
-import typeof * as GraphQLServerService from './GraphQLServerService';
-
-// GraphQL-related helpers
-import {findGraphQLConfigDir, logger} from './config';
-
-// RPC Process interface and service registry/marshalers
-import {RpcProcess} from '../../nuclide-rpc/lib/RpcProcess';
-import {ServiceRegistry, loadServicesConfig} from '../../nuclide-rpc';
-import {getServerSideMarshalers} from '../../nuclide-marshalers-common';
-
-// Deals with the file event from Atom process
-import {FileCache, FileVersionNotifier} from '../../nuclide-open-files-rpc';
-import {getBufferAtVersion} from '../../nuclide-open-files-rpc';
-
-// Nuclide-specific utility functions
-import {Cache, DISPOSE_VALUE} from '../../commons-node/cache';
-import nuclideUri from '../../commons-node/nuclideUri';
-import {fork} from '../../commons-node/process';
-
-const GRAPHQL_FILE_EXTENTIONS: Array<string> = [
-  '.graphql',
-];
-
-let serviceRegistry: ?ServiceRegistry = null;
-function getServiceRegistry(): ServiceRegistry {
+let serviceRegistry = null;
+function getServiceRegistry() {
   if (serviceRegistry == null) {
-    serviceRegistry = new ServiceRegistry(
-      getServerSideMarshalers,
-      loadServicesConfig(nuclideUri.join(__dirname, '..')),
-      'graphql-protocol',
-    );
+    serviceRegistry = new (_nuclideRpc || _load_nuclideRpc()).ServiceRegistry((_nuclideMarshalersCommon || _load_nuclideMarshalersCommon()).getServerSideMarshalers, (0, (_nuclideRpc || _load_nuclideRpc()).loadServicesConfig)((_nuclideUri || _load_nuclideUri()).default.join(__dirname, '..')), 'graphql-protocol');
   }
   return serviceRegistry;
 }
@@ -57,41 +112,23 @@ function getServiceRegistry(): ServiceRegistry {
  */
 
 class GraphQLProcess {
-  _fileCache: FileCache;
-  _fileSubscription: rxjs$ISubscription;
-  _fileVersionNotifier: FileVersionNotifier;
-  _process: RpcProcess;
-  _configDir: NuclideUri;
 
-  constructor(
-    fileCache: FileCache,
-    name: string,
-    configDir: NuclideUri,
-    processStream: Observable<child_process$ChildProcess>,
-  ) {
+  constructor(fileCache, name, configDir, processStream) {
     this._fileCache = fileCache;
-    this._fileVersionNotifier = new FileVersionNotifier();
+    this._fileVersionNotifier = new (_nuclideOpenFilesRpc || _load_nuclideOpenFilesRpc()).FileVersionNotifier();
     this._configDir = configDir;
-    this._process = new RpcProcess(
-      'GraphQLServer',
-      getServiceRegistry(),
-      processStream,
-    );
+    this._process = new (_RpcProcess || _load_RpcProcess()).RpcProcess('GraphQLServer', getServiceRegistry(), processStream);
     this.getService();
 
-    this._fileSubscription = fileCache.observeFileEvents()
-      .filter(fileEvent => {
-        const fileExtension = nuclideUri.extname(
-          fileEvent.fileVersion.filePath,
-        );
-        return GRAPHQL_FILE_EXTENTIONS.indexOf(fileExtension) !== -1;
-      })
-      .subscribe(fileEvent => {
-        this._fileVersionNotifier.onEvent(fileEvent);
-      });
+    this._fileSubscription = fileCache.observeFileEvents().filter(fileEvent => {
+      const fileExtension = (_nuclideUri || _load_nuclideUri()).default.extname(fileEvent.fileVersion.filePath);
+      return GRAPHQL_FILE_EXTENTIONS.indexOf(fileExtension) !== -1;
+    }).subscribe(fileEvent => {
+      this._fileVersionNotifier.onEvent(fileEvent);
+    });
   }
 
-  getService(): Promise<GraphQLServerService> {
+  getService() {
     if (this._process.isDisposed()) {
       throw new Error('GraphQLServerService disposed already');
     }
@@ -102,55 +139,60 @@ class GraphQLProcess {
     return this._process.observeExitMessage();
   }
 
-  async getDiagnostics(query: string, filePath: NuclideUri) {
-    return (await this.getService()).getDiagnostics(query, filePath);
+  getDiagnostics(query, filePath) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      return (yield _this.getService()).getDiagnostics(query, filePath);
+    })();
   }
 
-  async getDefinition(
-    query: string,
-    position: atom$Point,
-    filePath: NuclideUri,
-  ) {
-    return (await this.getService()).getDefinition(query, position, filePath);
+  getDefinition(query, position, filePath) {
+    var _this2 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      return (yield _this2.getService()).getDefinition(query, position, filePath);
+    })();
   }
 
-  async getAutocompleteSuggestions(
-    query: string,
-    position: atom$Point,
-    filePath: NuclideUri,
-  ) {
-    return (await this.getService()).getAutocompleteSuggestions(
-      query,
-      position,
-      filePath,
-    );
+  getAutocompleteSuggestions(query, position, filePath) {
+    var _this3 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      return (yield _this3.getService()).getAutocompleteSuggestions(query, position, filePath);
+    })();
   }
 
-  async getBufferAtVersion(
-    fileVersion: FileVersion,
-  ): Promise<?simpleTextBuffer$TextBuffer> {
-    const buffer = await getBufferAtVersion(fileVersion);
-    if (!(await this._fileVersionNotifier.waitForBufferAtVersion(fileVersion))) {
-      return null;
-    }
-    return buffer != null &&
-      buffer.changeCount === fileVersion.version ? buffer : null;
+  getBufferAtVersion(fileVersion) {
+    var _this4 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const buffer = yield (0, (_nuclideOpenFilesRpc || _load_nuclideOpenFilesRpc()).getBufferAtVersion)(fileVersion);
+      if (!(yield _this4._fileVersionNotifier.waitForBufferAtVersion(fileVersion))) {
+        return null;
+      }
+      return buffer != null && buffer.changeCount === fileVersion.version ? buffer : null;
+    })();
   }
 
-  async _disconnect(): Promise<void> {
-    // Attempt to send disconnect message before shutting down connection
-    try {
-      logger.logTrace('Attempting to disconnect cleanly from GraphQLProcess');
-      (await this.getService()).disconnect();
-    } catch (e) {
-      // Failing to send the shutdown is not fatal...
-      // ... continue with shutdown.
-      logger.logError('GraphQL Process died before disconnect() could be sent.');
-    }
+  _disconnect() {
+    var _this5 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      // Attempt to send disconnect message before shutting down connection
+      try {
+        (_config || _load_config()).logger.logTrace('Attempting to disconnect cleanly from GraphQLProcess');
+        (yield _this5.getService()).disconnect();
+      } catch (e) {
+        // Failing to send the shutdown is not fatal...
+        // ... continue with shutdown.
+        (_config || _load_config()).logger.logError('GraphQL Process died before disconnect() could be sent.');
+      }
+    })();
   }
 
-  dispose(): void {
-    logger.logTrace('Cleaning up GraphQL artifacts');
+  dispose() {
+    (_config || _load_config()).logger.logTrace('Cleaning up GraphQL artifacts');
     this._disconnect();
     this._process.dispose();
     this._fileVersionNotifier.dispose();
@@ -158,49 +200,17 @@ class GraphQLProcess {
   }
 }
 
-const processes: Cache<FileCache, Cache<NuclideUri, GraphQLProcess>>
-  = new Cache(
-    fileCache => new Cache(
-      graphqlRoot => createGraphQLProcess(fileCache, graphqlRoot),
-      process => {
-        process.dispose();
-      }),
-    DISPOSE_VALUE);
+const processes = new (_cache || _load_cache()).Cache(fileCache => new (_cache || _load_cache()).Cache(graphqlRoot => createGraphQLProcess(fileCache, graphqlRoot), process => {
+  process.dispose();
+}), (_cache || _load_cache()).DISPOSE_VALUE);
 
-export async function getGraphQLProcess(
-  fileCache: FileCache,
-  filePath: string,
-): Promise<?GraphQLProcess> {
-  const configDir = await findGraphQLConfigDir(filePath);
-  if (configDir == null) {
-    return null;
-  }
+function createGraphQLProcess(fileCache, configDir) {
+  const processStream = (0, (_process || _load_process()).fork)(require.resolve('../../nuclide-graphql-language-service/bin/graphql.js'), ['server', `-c ${configDir}`], {
+    silent: true,
+    /* TODO(T17353599) */isExitError: () => false
+  });
 
-  const processCache = processes.get(fileCache);
-  return processCache.get(configDir);
-}
-
-function createGraphQLProcess(
-  fileCache: FileCache,
-  configDir: string,
-): GraphQLProcess {
-  const processStream = fork(
-    require.resolve(
-      '../../nuclide-graphql-language-service/bin/graphql.js',
-    ),
-    ['server', `-c ${configDir}`],
-    {
-      silent: true,
-      /* TODO(T17353599) */isExitError: () => false,
-    },
-  );
-
-  const graphQLProcess = new GraphQLProcess(
-    fileCache,
-    `GraphQLProcess-${configDir}`,
-    configDir,
-    processStream,
-  );
+  const graphQLProcess = new GraphQLProcess(fileCache, `GraphQLProcess-${configDir}`, configDir, processStream);
 
   graphQLProcess.observeExitMessage().subscribe(() => {
     // Dispose the process by removing it from the cache.

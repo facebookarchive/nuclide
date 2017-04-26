@@ -1,3 +1,34 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.FlowIDEConnectionWatcher = undefined;
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _FlowIDEConnection;
+
+function _load_FlowIDEConnection() {
+  return _FlowIDEConnection = require('./FlowIDEConnection');
+}
+
+var _promise;
+
+function _load_promise() {
+  return _promise = require('../../commons-node/promise');
+}
+
+var _nuclideLogging;
+
+function _load_nuclideLogging() {
+  return _nuclideLogging = require('../../nuclide-logging');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,16 +36,10 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  */
 
-import {FlowIDEConnection} from './FlowIDEConnection';
-
-import {sleep} from '../../commons-node/promise';
-import {getLogger} from '../../nuclide-logging';
-import {Observable} from 'rxjs';
-
-const defaultIDEConnectionFactory = proc => new FlowIDEConnection(proc);
+const defaultIDEConnectionFactory = proc => new (_FlowIDEConnection || _load_FlowIDEConnection()).FlowIDEConnection(proc);
 
 // ESLint thinks the comment at the end is whitespace and warns. Worse, the autofix removes the
 // entire comment as well as the whitespace.
@@ -32,25 +57,11 @@ const MAX_UNHEALTHY_CONNECTIONS = 20;
 
 // For the lifetime of this class instance, keep a FlowIDEConnection alive, assuming we do not have
 // too many failures in a row.
-export class FlowIDEConnectionWatcher {
-  _processFactory: Observable<?child_process$ChildProcess>;
-  _ideConnectionCallback: ?FlowIDEConnection => mixed;
-  _ideConnectionFactory: child_process$ChildProcess => FlowIDEConnection;
+class FlowIDEConnectionWatcher {
 
-  _currentIDEConnection: ?FlowIDEConnection;
-  _currentIDEConnectionSubscription: ?IDisposable;
-  _consecutiveUnhealthyConnections: number;
-
-  _isStarted: boolean;
-  _isDisposed: boolean;
-
-  constructor(
-    processFactory: Observable<?child_process$ChildProcess>,
-    ideConnectionCallback: ?FlowIDEConnection => mixed,
-    // Can be injected for testing purposes
-    ideConnectionFactory: child_process$ChildProcess => FlowIDEConnection =
-        defaultIDEConnectionFactory,
-  ) {
+  constructor(processFactory, ideConnectionCallback,
+  // Can be injected for testing purposes
+  ideConnectionFactory = defaultIDEConnectionFactory) {
     this._processFactory = processFactory;
     this._ideConnectionFactory = ideConnectionFactory;
     this._ideConnectionCallback = ideConnectionCallback;
@@ -64,7 +75,7 @@ export class FlowIDEConnectionWatcher {
   }
 
   // Returns a promise which resolves when the first connection has been established, or we give up.
-  start(): Promise<void> {
+  start() {
     if (!this._isStarted) {
       this._isStarted = true;
       return this._makeIDEConnection();
@@ -73,81 +84,83 @@ export class FlowIDEConnectionWatcher {
     }
   }
 
-  async _makeIDEConnection(): Promise<void> {
-    getLogger().info('Attempting to start IDE connection...');
-    let proc = null;
-    const endTimeMS = this._getTimeMS() + IDE_CONNECTION_MAX_WAIT_MS;
-    while (true) {
-      const attemptStartTime = this._getTimeMS();
+  _makeIDEConnection() {
+    var _this = this;
 
-      // Start the process. Eventually we should cancel by unsubscribing, but for now we'll just
-      // convert to an uncancelable promise. We need to use `connect()` because otherwise, `take(1)`
-      // would complete the stream and kill the process as soon as we got it.
-      const processStream = this._processFactory.publish();
-      const processPromise = processStream.take(1).toPromise();
-      processStream.connect();
+    return (0, _asyncToGenerator.default)(function* () {
+      (0, (_nuclideLogging || _load_nuclideLogging()).getLogger)().info('Attempting to start IDE connection...');
+      let proc = null;
+      const endTimeMS = _this._getTimeMS() + IDE_CONNECTION_MAX_WAIT_MS;
+      while (true) {
+        const attemptStartTime = _this._getTimeMS();
 
-      // eslint-disable-next-line no-await-in-loop
-      proc = await processPromise;
-      // dispose() could have been called while we were waiting for the above promise to resolve.
-      if (this._isDisposed) {
-        if (proc != null) {
-          proc.kill();
+        // Start the process. Eventually we should cancel by unsubscribing, but for now we'll just
+        // convert to an uncancelable promise. We need to use `connect()` because otherwise, `take(1)`
+        // would complete the stream and kill the process as soon as we got it.
+        const processStream = _this._processFactory.publish();
+        const processPromise = processStream.take(1).toPromise();
+        processStream.connect();
+
+        // eslint-disable-next-line no-await-in-loop
+        proc = yield processPromise;
+        // dispose() could have been called while we were waiting for the above promise to resolve.
+        if (_this._isDisposed) {
+          if (proc != null) {
+            proc.kill();
+          }
+          return;
         }
+        const attemptEndTime = _this._getTimeMS();
+        if (proc != null || attemptEndTime > endTimeMS) {
+          break;
+        } else {
+          (0, (_nuclideLogging || _load_nuclideLogging()).getLogger)().info('Failed to start Flow IDE connection... retrying');
+          const attemptWallTime = attemptEndTime - attemptStartTime;
+          const additionalWaitTime = IDE_CONNECTION_MIN_INTERVAL_MS - attemptWallTime;
+          if (additionalWaitTime > 0) {
+            (0, (_nuclideLogging || _load_nuclideLogging()).getLogger)().info(`Waiting an additional ${additionalWaitTime} ms before retrying`);
+            // eslint-disable-next-line no-await-in-loop
+            yield _this._sleep(additionalWaitTime);
+          }
+        }
+      }
+      if (proc == null) {
+        (0, (_nuclideLogging || _load_nuclideLogging()).getLogger)().error('Failed to start Flow IDE connection too many times... giving up');
         return;
       }
-      const attemptEndTime = this._getTimeMS();
-      if (proc != null || attemptEndTime > endTimeMS) {
-        break;
-      } else {
-        getLogger().info('Failed to start Flow IDE connection... retrying');
-        const attemptWallTime = attemptEndTime - attemptStartTime;
-        const additionalWaitTime = IDE_CONNECTION_MIN_INTERVAL_MS - attemptWallTime;
-        if (additionalWaitTime > 0) {
-          getLogger().info(`Waiting an additional ${additionalWaitTime} ms before retrying`);
-          // eslint-disable-next-line no-await-in-loop
-          await this._sleep(additionalWaitTime);
-        }
-      }
-    }
-    if (proc == null) {
-      getLogger().error('Failed to start Flow IDE connection too many times... giving up');
-      return;
-    }
-    const connectionStartTime = this._getTimeMS();
-    const ideConnection = this._ideConnectionFactory(proc);
-    this._ideConnectionCallback(ideConnection);
-    this._currentIDEConnectionSubscription = ideConnection.onWillDispose(
-      () => {
-        this._ideConnectionCallback(null);
-        const connectionAliveTime = this._getTimeMS() - connectionStartTime;
+      const connectionStartTime = _this._getTimeMS();
+      const ideConnection = _this._ideConnectionFactory(proc);
+      _this._ideConnectionCallback(ideConnection);
+      _this._currentIDEConnectionSubscription = ideConnection.onWillDispose(function () {
+        _this._ideConnectionCallback(null);
+        const connectionAliveTime = _this._getTimeMS() - connectionStartTime;
         if (connectionAliveTime < IDE_CONNECTION_HEALTHY_THRESHOLD_MS) {
-          this._consecutiveUnhealthyConnections++;
-          if (this._consecutiveUnhealthyConnections >= MAX_UNHEALTHY_CONNECTIONS) {
-            getLogger().error('Too many consecutive unhealthy Flow IDE connections... giving up');
+          _this._consecutiveUnhealthyConnections++;
+          if (_this._consecutiveUnhealthyConnections >= MAX_UNHEALTHY_CONNECTIONS) {
+            (0, (_nuclideLogging || _load_nuclideLogging()).getLogger)().error('Too many consecutive unhealthy Flow IDE connections... giving up');
             return;
           }
         } else {
-          this._consecutiveUnhealthyConnections = 0;
+          _this._consecutiveUnhealthyConnections = 0;
         }
-        this._makeIDEConnection();
-      },
-    );
+        _this._makeIDEConnection();
+      });
 
-    this._currentIDEConnection = ideConnection;
+      _this._currentIDEConnection = ideConnection;
+    })();
   }
 
   // Split this out just so it's easy to mock
-  _getTimeMS(): number {
+  _getTimeMS() {
     return Date.now();
   }
 
   // Split this out just so it's easy to mock
-  _sleep(ms: number): Promise<void> {
-    return sleep(ms);
+  _sleep(ms) {
+    return (0, (_promise || _load_promise()).sleep)(ms);
   }
 
-  dispose(): void {
+  dispose() {
     if (!this._isDisposed) {
       this._isDisposed = true;
       if (this._currentIDEConnectionSubscription != null) {
@@ -159,3 +172,4 @@ export class FlowIDEConnectionWatcher {
     }
   }
 }
+exports.FlowIDEConnectionWatcher = FlowIDEConnectionWatcher;
