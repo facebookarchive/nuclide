@@ -9,16 +9,14 @@ is our UI implementation.
 
 We consume two APIs: Our own provider API, described below, and the
 [`linter`](https://atom.io/packages/linter) [package
-API](http://steelbrain.me/linter) (with some extensions).
+APIs](http://steelbrain.me/linter) (with some extensions).
 
 The Nuclide API is designed to support a "push" model where providers notify the store
 asynchronously about new diagnostics (and when to invalidate old ones). A provider may choose to
 publish diagnostics in response to file change events from a `TextEditor`, but it may also report
-diagnostics in response to other events, such as file changes that occur outside of Atom. By
-comparison, the `linter` API exclusively polls for changes in response to change events from a
-`TextEditor`.
+diagnostics in response to other events, such as file changes that occur outside of Atom.
 
-For simple use cases, we recommend just using the pull-based Linter API.
+For simple pull-based use cases (linting on save), we recommend just using the Standard Linter API.
 
 ## Provider API
 
@@ -96,6 +94,15 @@ currently active file need not ever send an invalidation message.
 
 ## Linter API
 
-`nuclide-diagnostics` is compatible with the
-[Standard Linter v1 API](https://github.com/steelbrain/linter/blob/v1/docs/types/standard-linter-v1.md)
-for the [`linter`](https://atom.io/packages/linter) package.
+`nuclide-diagnostics` is compatible with the following APIs for the [`linter`](https://atom.io/packages/linter) package.
+- [Standard Linter v1 API](https://github.com/steelbrain/linter/blob/v1/docs/types/standard-linter-v1.md)
+- [Standard Linter v2 API](https://github.com/steelbrain/linter/blob/master/docs/types/standard-linter-v2.md)
+- [Indie (push-based) Linter v2 API](https://github.com/steelbrain/linter/blob/master/docs/types/indie-linter-v2.md)
+
+Note that a few v2 message features are currently unimplemented:
+
+- markdown rendering of `description`
+- the `url` and `icon` fields
+- multiple `solutions` (only the first one is used)
+- callback-based `solutions`
+- callback-based `description`

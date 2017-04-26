@@ -126,7 +126,6 @@ export function linterMessageV2ToDiagnosticMessage(
   };
 }
 
-// Exported for testing.
 export function linterMessagesToDiagnosticUpdate(
   currentPath: ?NuclideUri,
   msgs: Array<LinterMessage>,

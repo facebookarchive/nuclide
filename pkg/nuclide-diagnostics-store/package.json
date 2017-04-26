@@ -29,6 +29,11 @@
         "0.0.0": "provideDiagnosticUpdates",
         "0.2.0": "provideObservableDiagnosticUpdates"
       }
+    },
+    "linter-indie": {
+      "versions": {
+        "2.0.0": "provideIndie"
+      }
     }
   }
 }

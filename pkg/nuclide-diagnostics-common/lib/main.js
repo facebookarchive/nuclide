@@ -17,6 +17,13 @@ import type {
   ProjectDiagnosticMessage,
 } from './rpc-types';
 
+export type {
+  InvalidationMessage,
+  DiagnosticProviderUpdate,
+  FileDiagnosticMessage,
+  ProjectDiagnosticMessage,
+};
+
 export type MessageUpdateCallback = (update: DiagnosticProviderUpdate) => mixed;
 export type MessageInvalidationCallback = (message: InvalidationMessage) => mixed;
 

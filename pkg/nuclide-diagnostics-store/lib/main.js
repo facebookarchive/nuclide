@@ -16,6 +16,7 @@ import type {
   ObservableDiagnosticUpdater,
 } from '../../nuclide-diagnostics-common';
 import type {LinterAdapter} from './LinterAdapter';
+import type {IndieLinterDelegate} from './IndieLinterRegistry';
 
 import createPackage from '../../commons-atom/createPackage';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
@@ -24,6 +25,9 @@ import {getLogger} from '../../nuclide-logging';
 import {DiagnosticStore} from '../../nuclide-diagnostics-common';
 
 import {createAdapters} from './LinterAdapterFactory';
+import IndieLinterRegistry from './IndieLinterRegistry';
+
+type RegisterIndieLinter = ({name: string}) => IndieLinterDelegate;
 
 class Activation {
   _disposables: UniversalDisposable;
@@ -33,26 +37,33 @@ class Activation {
   _observableDiagnosticUpdater: ?ObservableDiagnosticUpdater;
 
   _allLinterAdapters: Set<LinterAdapter>;
+  _indieRegistry: ?IndieLinterRegistry;
 
   constructor() {
     this._allLinterAdapters = new Set();
+    this._diagnosticStore = new DiagnosticStore();
 
-    this._disposables = new UniversalDisposable(() => {
-      this._allLinterAdapters.forEach(adapter => adapter.dispose());
-      this._allLinterAdapters.clear();
-    });
+    this._disposables = new UniversalDisposable(
+      this._diagnosticStore,
+      () => {
+        this._allLinterAdapters.forEach(adapter => adapter.dispose());
+        this._allLinterAdapters.clear();
+      },
+    );
   }
 
   dispose() {
     this._disposables.dispose();
   }
 
-  getDiagnosticStore() {
-    if (this._diagnosticStore == null) {
-      this._diagnosticStore = new DiagnosticStore();
-      this._disposables.add(this._diagnosticStore);
+  _getIndieRegistry(): IndieLinterRegistry {
+    if (this._indieRegistry == null) {
+      const registry = new IndieLinterRegistry();
+      this._disposables.add(registry);
+      this._indieRegistry = registry;
+      return registry;
     }
-    return this._diagnosticStore;
+    return this._indieRegistry;
   }
 
   /**
@@ -60,7 +71,7 @@ class Activation {
    */
   provideDiagnosticUpdates(): DiagnosticUpdater {
     if (!this._diagnosticUpdater) {
-      const store = this.getDiagnosticStore();
+      const store = this._diagnosticStore;
       this._diagnosticUpdater = {
         onFileMessagesDidUpdate: store.onFileMessagesDidUpdate.bind(store),
         onProjectMessagesDidUpdate: store.onProjectMessagesDidUpdate.bind(store),
@@ -84,6 +95,17 @@ class Activation {
       };
     }
     return this._observableDiagnosticUpdater;
+  }
+
+  provideIndie(): RegisterIndieLinter {
+    return config => {
+      const delegate = this._getIndieRegistry().register(config);
+      const disposable = this.consumeDiagnosticsProviderV2(delegate);
+      delegate.onDidDestroy(() => {
+        disposable.dispose();
+      });
+      return delegate;
+    };
   }
 
   consumeLinterProvider(
@@ -116,7 +138,7 @@ class Activation {
   }
 
   consumeDiagnosticsProviderV2(provider: ObservableDiagnosticProvider): IDisposable {
-    const store = this.getDiagnosticStore();
+    const store = this._diagnosticStore;
 
     const subscriptions = new UniversalDisposable(
       provider.updates.subscribe(
