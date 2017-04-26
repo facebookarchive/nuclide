@@ -11,17 +11,12 @@
 import type {LRUCache} from 'lru-cache';
 import type {ProcessMessage} from './process-rpc-types';
 
-import type {
-  AsyncExecuteOptions,
-  AsyncExecuteReturn,
-  ObserveProcessOptions,
-} from './process';
+import type {ObserveProcessOptions} from './process';
 
 import LRU from 'lru-cache';
 
 import {
   spawn,
-  asyncExecute,
   observeProcess,
 } from './process';
 
@@ -41,15 +36,6 @@ export async function niceSafeSpawn(
   const processPromise = processStream.take(1).toPromise();
   processStream.connect();
   return processPromise;
-}
-
-export async function niceAsyncExecute(
-  command: string,
-  args: Array<string>,
-  execOptions?: AsyncExecuteOptions,
-): Promise<AsyncExecuteReturn> {
-  const nicified = await nicifyCommand(command, args);
-  return asyncExecute(nicified.command, nicified.args, execOptions);
 }
 
 async function nicifyCommand(
