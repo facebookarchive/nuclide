@@ -44,7 +44,9 @@ function diagnosticHeader(props: DiagnosticsMessageProps) {
     const speculative = message.fix.speculative === true;
     const buttonType = speculative ? undefined : ButtonTypes.SUCCESS;
     fixButton = (
-      <Button buttonType={buttonType} size="EXTRA_SMALL" onClick={applyFix}>Fix</Button>
+      <Button buttonType={buttonType} size="EXTRA_SMALL" onClick={applyFix}>
+        {message.fix.title || 'Fix'}
+      </Button>
     );
   }
   return (

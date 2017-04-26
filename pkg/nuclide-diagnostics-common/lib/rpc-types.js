@@ -53,6 +53,8 @@ export type Fix = TextEdit & {
   // fixed with the "fix all in current file" command, instead an explicit interaction with this fix
   // will be required).
   speculative?: boolean,
+  // Text to display in the UI. (defaults to "Fix")
+  title?: string,
 };
 
 export type FileDiagnosticMessage = {
