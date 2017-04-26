@@ -45,7 +45,14 @@ function createStateStream(
   initialState: BookShelfState,
 ): BehaviorSubject<BookShelfState> {
   const states = new BehaviorSubject(initialState);
-  actions.scan(accumulateState, initialState).subscribe(states);
+  actions.scan(accumulateState, initialState)
+    .catch(error => {
+      getLogger().fatal('bookshelf middleware got broken', error);
+      atom.notifications.addError(
+        'Nuclide bookshelf broke, please report a bug to help us fix it!',
+      );
+      return Observable.empty();
+    }).subscribe(states);
   return states;
 }
 

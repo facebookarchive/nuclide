@@ -21,6 +21,7 @@ import {ActionType, EMPTY_SHORTHEAD} from './constants';
 import {getRepoPathToEditors} from './utils';
 import invariant from 'assert';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
+import {getLogger} from '../../nuclide-logging';
 import {goToLocation} from '../../commons-atom/go-to-location';
 import {Observable} from 'rxjs';
 
@@ -131,8 +132,10 @@ function restorePaneItemState(
         } else {
           textEditor.destroy();
         }
-      })
-      .ignoreElements(),
+      }).catch(error => {
+        getLogger().error('bookshelf failed to close some editors', error);
+        return Observable.empty();
+      }).ignoreElements(),
     // Note: the reloading step can be omitted if the file watchers are proven to be robust.
     // But that's not the case; hence, a reload on bookmark switch/restore doesn't hurt.
     Observable.from(editorsToReload)
@@ -145,13 +148,17 @@ function restorePaneItemState(
         } else {
           return Observable.fromPromise(textEditor.getBuffer().load());
         }
-      })
-      .ignoreElements(),
+      }).catch(error => {
+        getLogger().error('bookshelf failed to reload some editors', error);
+        return Observable.empty();
+      }).ignoreElements(),
     Observable.from(urisToOpen)
       .flatMap(fileUri => {
         return Observable.fromPromise(goToLocation(fileUri));
-      })
-      .ignoreElements(),
+      }).catch(error => {
+        getLogger().error('bookshelf failed to open some editors', error);
+        return Observable.empty();
+      }).ignoreElements(),
     Observable.of({
       payload: {
         repository,
