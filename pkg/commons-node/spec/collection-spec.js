@@ -17,6 +17,7 @@ import {
   isEmpty,
   keyMirror,
   setIntersect,
+  setUnion,
   collect,
   MultiMap,
   objectEntries,
@@ -165,6 +166,17 @@ describe('setIntersect', () => {
 
     expect(result.size).toBe(1);
     expect(result.has('bar')).toBe(true);
+  });
+});
+
+describe('setUnion', () => {
+  it('unions', () => {
+    const set1 = new Set(['foo', 'bar', 'baz']);
+    const set2 = new Set(['fool', 'bar', 'bazl']);
+    const result = setUnion(set1, set2);
+
+    const expected = new Set(['foo', 'bar', 'baz', 'fool', 'bazl']);
+    expect(areSetsEqual(result, expected)).toBe(true);
   });
 });
 

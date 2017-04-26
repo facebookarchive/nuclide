@@ -151,6 +151,14 @@ export function setIntersect<T>(a: Set<T>, b: Set<T>): Set<T> {
   return new Set(Array.from(a).filter(e => b.has(e)));
 }
 
+export function setUnion<T>(a: Set<T>, b: Set<T>): Set<T> {
+  // Avoids the extra Array allocations that `new Set([...a, ...b])` would incur. Some quick tests
+  // indicate it would be about 60% slower.
+  const result = new Set(a);
+  b.forEach(x => { result.add(x); });
+  return result;
+}
+
 export function setDifference<T>(a: Set<T>, b: Set<T>, hash_?: (v: T) => any): Set<T> {
   if (a.size === 0) {
     return new Set();
