@@ -45,7 +45,7 @@ describe('DiagnosticsProvider', () => {
           type: 'Error',
           filePath: '/good_file.cpp',
           text: 'test error',
-          range: new Range([0, 0], [0, INDEFINITE_END_COLUMN]),
+          range: new Range([0, 1], [0, 1]),
           trace: [
             {
               type: 'Trace',
@@ -67,7 +67,7 @@ describe('DiagnosticsProvider', () => {
           type: 'Error',
           filePath: '/good_file2.cpp',
           text: 'test error2',
-          range: new Range([1, 0], [1, INDEFINITE_END_COLUMN]),
+          range: new Range([1, 2], [1, 2]),
           trace: [
             {
               type: 'Trace',
@@ -91,7 +91,7 @@ describe('DiagnosticsProvider', () => {
           type: 'Error',
           filePath: '/a/good_file.cpp',
           text: 'test error',
-          range: new Range([0, 0], [0, INDEFINITE_END_COLUMN]),
+          range: new Range([0, 1], [0, 1]),
         },
       ]);
     });

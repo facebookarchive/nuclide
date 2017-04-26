@@ -24,6 +24,7 @@ import ReactDOM from 'react-dom';
 import {
   goToLocation as atomGoToLocation,
 } from '../../commons-atom/go-to-location';
+import {wordAtPosition} from '../../commons-atom/range';
 import {track} from '../../nuclide-analytics';
 import {DiagnosticsPopup} from './DiagnosticsPopup';
 
@@ -102,7 +103,9 @@ export function applyUpdateToEditor(
   }
 
   for (const message of update.messages) {
-    const range = message.range;
+    const wordRange = message.range != null && message.range.isEmpty() ?
+      wordAtPosition(editor, message.range.start) : null;
+    const range = wordRange != null ? wordRange.range : message.range;
 
     const highlightCssClass = classnames(
       HIGHLIGHT_CSS,

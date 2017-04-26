@@ -38,7 +38,7 @@ type ParsedDiagnostic = {
   filePath: string,
   text: string,
   line: number,
-  column: number,
+  column: ?number,
 };
 
 function getFileSystemServiceIfNecessary(
@@ -60,7 +60,7 @@ function pushParsedDiagnostic(
   level: string,
   text: string,
   line: number,
-  column: number,
+  column: ?number,
 ) {
   if (fileSystemService != null) {
     const filePath = nuclideUri.resolve(root, file);
@@ -94,7 +94,7 @@ function pushParsedTestDiagnostic(
     'error',
     text,
     parseInt(strLine, 10),
-    0,
+    null,
   );
 }
 
@@ -105,12 +105,15 @@ function makeDiagnostic(result: ParsedDiagnostic): FileDiagnosticMessage {
     type: result.level === 'error' ? 'Error' : 'Warning',
     filePath: result.filePath,
     text: result.text,
-    range: new Range([result.line - 1, 0], [result.line - 1, INDEFINITE_END_COLUMN]),
+    range: result.column == null ?
+      new Range([result.line - 1, 0], [result.line - 1, INDEFINITE_END_COLUMN]) :
+      // This gets expanded to the containing word at display time.
+      new Range([result.line - 1, result.column - 1], [result.line - 1, result.column - 1]),
   };
 }
 
 function makeTrace(result: ParsedDiagnostic): Trace {
-  const point = new Point(result.line - 1, result.column - 1);
+  const point = new Point(result.line - 1, result.column == null ? 0 : result.column - 1);
   return {
     type: 'Trace',
     text: result.text,
