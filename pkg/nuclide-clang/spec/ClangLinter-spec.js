@@ -119,8 +119,6 @@ describe('ClangDiagnosticsProvider', () => {
 
       expect(messages).toEqual([
         {
-          scope: 'file',
-          providerName: 'Clang',
           type: 'Warning',
           filePath: TEST_PATH,
           text: 'whole file',
@@ -129,8 +127,6 @@ describe('ClangDiagnosticsProvider', () => {
           trace: undefined,
         },
         {
-          scope: 'file',
-          providerName: 'Clang',
           type: 'Warning',
           filePath: TEST_PATH2,
           text: 'other file',
@@ -149,8 +145,6 @@ describe('ClangDiagnosticsProvider', () => {
           },
         },
         {
-          scope: 'file',
-          providerName: 'Clang',
           type: 'Warning',
           filePath: TEST_PATH,
           text: 'test error',
@@ -159,8 +153,6 @@ describe('ClangDiagnosticsProvider', () => {
           trace: undefined,
         },
         {
-          scope: 'file',
-          providerName: 'Clang',
           type: 'Error',
           filePath: TEST_PATH,
           text: 'test error 2',

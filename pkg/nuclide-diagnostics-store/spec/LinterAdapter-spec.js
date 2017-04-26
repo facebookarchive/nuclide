@@ -10,13 +10,14 @@
 
 import type {LinterProvider} from '../../nuclide-diagnostics-common';
 
-import {Disposable} from 'atom';
+import {Disposable, Range} from 'atom';
 import invariant from 'assert';
 import {Subject} from 'rxjs';
 
 import {
   LinterAdapter,
   linterMessageToDiagnosticMessage,
+  linterMessageV2ToDiagnosticMessage,
   linterMessagesToDiagnosticUpdate,
 } from '../lib/LinterAdapter';
 
@@ -238,6 +239,52 @@ describe('message transformation functions', () => {
         providerName,
         type: projectMessage.type,
         text: projectMessage.text,
+      });
+    });
+  });
+
+  describe('linterMessageV2ToDiagnosticMessage', () => {
+    it('should correctly convert messages', () => {
+      expect(linterMessageV2ToDiagnosticMessage({
+        location: {
+          file: 'file.txt',
+          position: [[0, 0], [0, 1]],
+        },
+        reference: {
+          file: 'ref.txt',
+          position: [1, 1],
+        },
+        excerpt: 'Error',
+        severity: 'error',
+        solutions: [
+          {
+            title: 'Solution',
+            position: [[0, 0], [0, 1]],
+            currentText: '',
+            replaceWith: 'a',
+          },
+        ],
+        description: 'Description',
+      }, 'test')).toEqual({
+        scope: 'file',
+        providerName: 'test',
+        type: 'Error',
+        filePath: 'file.txt',
+        range: new Range([0, 0], [0, 1]),
+        text: 'Error\nDescription',
+        trace: [
+          {
+            type: 'Trace',
+            filePath: 'ref.txt',
+            range: new Range([1, 1], [1, 1]),
+          },
+        ],
+        fix: {
+          title: 'Solution',
+          oldRange: new Range([0, 0], [0, 1]),
+          oldText: '',
+          newText: 'a',
+        },
       });
     });
   });

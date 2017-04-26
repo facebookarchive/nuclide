@@ -85,7 +85,7 @@ export type LinterTrace = {
   range?: atom$Range,
 };
 
-export type LinterMessage = {
+export type LinterMessageV1 = {
   type: 'Error' | 'Warning' | 'Info',
   text?: string,
   html?: string,
@@ -95,14 +95,54 @@ export type LinterMessage = {
    */
   name?: string,
   filePath?: NuclideUri,
-  range?: atom$Range,
+  range?: atom$RangeLike,
   trace?: Array<LinterTrace>,
   fix?: {
-    range: atom$Range,
+    range: atom$RangeLike,
     newText: string,
     oldText?: string,
   },
 };
+
+export type LinterMessageV2 = {
+  type?: void, // Hint for Flow.
+  location: {
+    file: string,
+    position: atom$RangeLike,
+  },
+  reference?: {
+    file: string,
+    position?: atom$PointLike,
+  },
+  // Extension: preserve the v1 traces API, as it's still pretty useful.
+  // Languages like C++ can have errors with a huge stack, so one reference isn't enough.
+  // `reference` will be ignored if this is provided.
+  trace?: Array<LinterTrace>,
+  // TODO: use the URL and icon fields.
+  url?: string,
+  icon?: string,
+  excerpt: string,
+  severity: 'error' | 'warning' | 'info',
+  // TODO: only the first solution is used at the moment.
+  solutions?: Array<{
+    title?: string,
+    position: atom$RangeLike,
+    priority?: number,
+    currentText?: string,
+    replaceWith: string,
+  } | {
+    // TODO: not currently supported.
+    title?: string,
+    position: atom$RangeLike,
+    priority?: number,
+    apply: (() => any),
+    replaceWith?: void, // Hint for Flow.
+  }>,
+  // TODO: the callback version is not supported.
+  description?: string | (() => Promise<string> | string),
+};
+
+export type LinterMessage = LinterMessageV1 | LinterMessageV2;
 
 export type LinterProvider = {
   name: string,

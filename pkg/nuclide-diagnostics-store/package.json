@@ -13,7 +13,7 @@
   "consumedServices": {
     "linter": {
       "versions": {
-        "^1.0.0": "consumeLinterProvider"
+        "^1.0.0 || ^2.0.0": "consumeLinterProvider"
       }
     },
     "nuclide-diagnostics-provider": {

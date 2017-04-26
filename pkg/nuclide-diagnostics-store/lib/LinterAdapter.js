@@ -13,6 +13,8 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {
   DiagnosticMessage,
   LinterMessage,
+  LinterMessageV1,
+  LinterMessageV2,
   LinterProvider,
 } from '../../nuclide-diagnostics-common';
 import type {
@@ -22,7 +24,7 @@ import type {
   ProjectDiagnosticMessage,
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
 
-import {Range} from 'atom';
+import {Point, Range} from 'atom';
 import {Observable, Subject} from 'rxjs';
 import {observeTextEditorEvents} from '../../nuclide-diagnostics-common';
 import {getLogger} from '../../nuclide-logging';
@@ -31,7 +33,7 @@ import UniversalDisposable from '../../commons-node/UniversalDisposable';
 
 // Exported for testing.
 export function linterMessageToDiagnosticMessage(
-  msg: LinterMessage,
+  msg: LinterMessageV1,
   providerName: string,
 ): DiagnosticMessage {
   // The types are slightly different, so we need to copy to make Flow happy. Basically, a Trace
@@ -40,6 +42,7 @@ export function linterMessageToDiagnosticMessage(
   // https://github.com/facebook/flow/issues/908
   const trace = msg.trace ? msg.trace.map(component => ({...component})) : undefined;
   if (msg.filePath) {
+    const {fix} = msg;
     return ({
       scope: 'file',
       providerName: msg.name != null ? msg.name : providerName,
@@ -49,10 +52,10 @@ export function linterMessageToDiagnosticMessage(
       html: msg.html,
       range: msg.range && Range.fromObject(msg.range),
       trace,
-      fix: msg.fix == null ? undefined : {
-        oldRange: msg.fix.range,
-        oldText: msg.fix.oldText,
-        newText: msg.fix.newText,
+      fix: fix == null ? undefined : {
+        oldRange: Range.fromObject(fix.range),
+        oldText: fix.oldText,
+        newText: fix.newText,
       },
     }: FileDiagnosticMessage);
   } else {
@@ -66,6 +69,61 @@ export function linterMessageToDiagnosticMessage(
       trace,
     }: ProjectDiagnosticMessage);
   }
+}
+
+const LinterSeverityMap = {
+  error: 'Error',
+  warning: 'Warning',
+  info: 'Info',
+};
+
+// Version 2 only handles file-level diagnostics.
+export function linterMessageV2ToDiagnosticMessage(
+  msg: LinterMessageV2,
+  providerName: string,
+): FileDiagnosticMessage {
+  let trace;
+  if (msg.trace != null) {
+    trace = msg.trace.map(component => ({...component}));
+  } else if (msg.reference != null) {
+    const point = msg.reference.position != null ?
+      Point.fromObject(msg.reference.position) : null;
+    trace = [{
+      type: 'Trace',
+      filePath: msg.reference.file,
+      range: point ? new Range(point, point) : undefined,
+    }];
+  }
+  // TODO: handle multiple solutions and priority.
+  let fix;
+  const {solutions} = msg;
+  if (solutions != null) {
+    const solution = solutions[0];
+    if (solution.replaceWith !== undefined) {
+      fix = {
+        oldRange: Range.fromObject(solution.position),
+        oldText: solution.currentText,
+        newText: solution.replaceWith,
+        title: solution.title,
+      };
+    }
+    // TODO: support the callback version.
+  }
+  let text = msg.excerpt;
+  // TODO: use markdown + handle callback-based version.
+  if (typeof msg.description === 'string') {
+    text = text + '\n' + msg.description;
+  }
+  return {
+    scope: 'file',
+    providerName,
+    type: LinterSeverityMap[msg.severity],
+    filePath: msg.location.file,
+    text,
+    range: Range.fromObject(msg.location.position),
+    trace,
+    fix,
+  };
 }
 
 // Exported for testing.
@@ -83,7 +141,10 @@ export function linterMessagesToDiagnosticUpdate(
   }
   const projectMessages = [];
   for (const msg of msgs) {
-    const diagnosticMessage = linterMessageToDiagnosticMessage(msg, providerName);
+    const diagnosticMessage =
+      msg.type === undefined ?
+        linterMessageV2ToDiagnosticMessage(msg, providerName) :
+        linterMessageToDiagnosticMessage(msg, providerName);
     if (diagnosticMessage.scope === 'file') {
       const path = diagnosticMessage.filePath;
       let messages = filePathToMessages.get(path);

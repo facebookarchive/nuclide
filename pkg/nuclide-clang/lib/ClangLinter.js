@@ -134,8 +134,6 @@ export default class ClangLinter {
         }
 
         result.push({
-          scope: 'file',
-          providerName: 'Clang',
           type: diagnostic.severity === 2 ? 'Warning' : 'Error',
           filePath,
           text: diagnostic.spelling,
@@ -146,8 +144,6 @@ export default class ClangLinter {
       });
     } else {
       result.push({
-        scope: 'file',
-        providerName: 'Clang',
         type: 'Warning',
         filePath: bufferPath,
         text: DEFAULT_FLAGS_WARNING,
