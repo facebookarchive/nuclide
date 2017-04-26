@@ -289,6 +289,13 @@ export class HgService {
     return hgObserveExecution(args, options);
   }
 
+  _hgRunCommand(
+    args: Array<string>,
+    options: HgExecOptions,
+  ): Observable<string> {
+    return hgRunCommand(args, options);
+  }
+
   /**
    * Section: File and Repository Status
    */
@@ -620,21 +627,15 @@ export class HgService {
   /**
    * @return An Array of bookmarks for this repository.
    */
-  async fetchBookmarks(): Promise<Array<BookmarkInfo>> {
+  fetchBookmarks(): ConnectableObservable<Array<BookmarkInfo>> {
     const args = ['bookmarks', '-Tjson'];
     const execOptions = {
       cwd: this._workingDirectory,
     };
 
-    let output;
-    try {
-      output = await this._hgAsyncExecute(args, execOptions);
-    } catch (e) {
-      getLogger().error(`LocalHgServiceBase failed to fetch bookmarks. Error: ${e.stderr}`);
-      throw e;
-    }
-
-    return JSON.parse(output.stdout);
+    return this._hgRunCommand(args, execOptions)
+      .map(stdout => JSON.parse(stdout))
+      .publish();
   }
 
   /**

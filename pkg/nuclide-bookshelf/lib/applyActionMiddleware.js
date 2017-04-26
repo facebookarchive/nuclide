@@ -61,20 +61,7 @@ function watchProjectRepository(
   const {repository} = action.payload;
   const hgRepository: HgRepositoryClient = (repository: any);
   // Type was checked with `getType`. Downcast to safely access members with Flow.
-  return Observable.merge(
-    observableFromSubscribeFunction(
-      // Re-fetch when the list of bookmarks changes.
-      hgRepository.onDidChangeBookmarks.bind(hgRepository),
-    ),
-    observableFromSubscribeFunction(
-      // Re-fetch when the active bookmark changes (called "short head" to match
-      // Atom's Git API).
-      hgRepository.onDidChangeShortHead.bind(hgRepository),
-    ),
-  )
-  .startWith(null) // Kick it off the first time
-  .switchMap(() => Observable.fromPromise(hgRepository.getBookmarks()))
-  .map(bookmarks => {
+  return hgRepository.observeBookmarks().map(bookmarks => {
     const bookmarkNames = new Set(
       bookmarks.map(bookmark => bookmark.bookmark).concat([EMPTY_SHORTHEAD]),
     );

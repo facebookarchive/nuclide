@@ -34,7 +34,7 @@ import {
   StatusCodeIdToNumber,
   StatusCodeNumber,
 } from '../../nuclide-hg-rpc/lib/hg-constants';
-import {Observable} from 'rxjs';
+import {BehaviorSubject, Observable} from 'rxjs';
 import LRU from 'lru-cache';
 import featureConfig from '../../commons-atom/featureConfig';
 import {observeBufferOpen, observeBufferCloseOrRename} from '../../commons-atom/text-buffer';
@@ -42,6 +42,8 @@ import {getLogger} from '../../nuclide-logging';
 
 const STATUS_DEBOUNCE_DELAY_MS = 300;
 const REVISION_DEBOUNCE_DELAY = 300;
+const BOOKMARKS_DEBOUNCE_DELAY = 200;
+const FETCH_BOOKMARKS_TIMEOUT = 15 * 1000;
 
 export type RevisionStatusDisplay = {
   id: number,
@@ -141,7 +143,7 @@ export class HgRepositoryClient {
   _revisionIdToFileChanges: LRUCache<string, RevisionFileChanges>;
   _fileContentsAtRevisionIds: LRUCache<string, Map<NuclideUri, string>>;
 
-  _activeBookmark: ?string;
+  _bookmarks: BehaviorSubject<{isLoading: boolean, bookmarks: Array<BookmarkInfo>}>;
   _isInConflict: boolean;
   _isDestroyed: boolean;
 
@@ -168,6 +170,7 @@ export class HgRepositoryClient {
     );
 
     this._hgStatusCache = new Map();
+    this._bookmarks = new BehaviorSubject({isLoading: true, bookmarks: []});
 
     this._hgDiffCache = new Map();
     this._hgDiffCacheFilesUpdating = new Set();
@@ -249,10 +252,22 @@ export class HgRepositoryClient {
       repoStateChanges,
     ).debounceTime(REVISION_DEBOUNCE_DELAY);
 
+    const bookmarksUpdates = Observable.merge(activeBookmarkChanges, allBookmarkChanges)
+      .startWith(null)
+      .debounceTime(BOOKMARKS_DEBOUNCE_DELAY)
+      .switchMap(() =>
+        Observable.defer(() => {
+          return this._service.fetchBookmarks().refCount().timeout(FETCH_BOOKMARKS_TIMEOUT);
+        }).retry(2)
+        .catch(error => {
+          getLogger().error('failed to fetch bookmarks info:', error);
+          return Observable.empty();
+        }),
+      );
+
     this._subscriptions.add(
       statusChangesSubscription,
-      activeBookmarkChanges.subscribe(this.fetchActiveBookmark.bind(this)),
-      allBookmarkChanges.subscribe(() => { this._emitter.emit('did-change-bookmarks'); }),
+      bookmarksUpdates.subscribe(bookmarks => this._bookmarks.next({isLoading: false, bookmarks})),
       conflictStateChanges.subscribe(this._conflictStateChanged.bind(this)),
       shouldRevisionsUpdate.subscribe(() => this._revisionsCache.refreshRevisions()),
     );
@@ -322,6 +337,12 @@ export class HgRepositoryClient {
     callback: (event: {path: string, pathStatus: StatusCodeNumberValue}) => mixed,
   ): IDisposable {
     return this._emitter.on('did-change-status', callback);
+  }
+
+  observeBookmarks(): Observable<Array<BookmarkInfo>> {
+    return this._bookmarks.asObservable()
+      .filter(b => !b.isLoading)
+      .map(b => b.bookmarks);
   }
 
   observeRevisionChanges(): Observable<Array<RevisionInfo>> {
@@ -398,12 +419,9 @@ export class HgRepositoryClient {
    * @return The current Hg bookmark.
    */
   getShortHead(filePath?: NuclideUri): string {
-    if (this._activeBookmark == null) {
-      // Kick off a fetch to get the current bookmark. This is async.
-      this._getShortHeadAsync();
-      return '';
-    }
-    return this._activeBookmark;
+    return this._bookmarks.getValue().bookmarks
+      .filter(bookmark => bookmark.active)
+      .map(bookmark => bookmark.bookmark)[0] || '';
   }
 
   // TODO This is a stub.
@@ -717,13 +735,6 @@ export class HgRepositoryClient {
   */
 
   /*
-   * @deprecated Use {#async.getShortHead} instead
-   */
-  fetchActiveBookmark(): Promise<string> {
-    return this._getShortHeadAsync();
-  }
-
-  /*
    * Setting fetchResolved will return all resolved and unresolved conflicts,
    * the default would only fetch the current unresolved conflicts.
    */
@@ -798,35 +809,8 @@ export class HgRepositoryClient {
     return this._service.renameBookmark(name, nextName);
   }
 
-  getBookmarks(): Promise<Array<BookmarkInfo>> {
-    return this._service.fetchBookmarks();
-  }
-
-  onDidChangeBookmarks(callback: () => mixed): IDisposable {
-    return this._emitter.on('did-change-bookmarks', callback);
-  }
-
-  async _getShortHeadAsync(): Promise<string> {
-    let newlyFetchedBookmark = '';
-    try {
-      newlyFetchedBookmark = await this._service.fetchActiveBookmark();
-    } catch (e) {
-      // Suppress the error. There are legitimate times when there may be no
-      // current bookmark, such as during a rebase. In this case, we just want
-      // to return an empty string if there is no current bookmark.
-    }
-    if (newlyFetchedBookmark !== this._activeBookmark) {
-      this._activeBookmark = newlyFetchedBookmark;
-      // The Atom status-bar uses this as a signal to refresh the 'shortHead'.
-      // There is currently no dedicated 'shortHeadDidChange' event.
-      this._emitter.emit('did-change-statuses');
-      this._emitter.emit('did-change-short-head');
-    }
-    return this._activeBookmark || '';
-  }
-
-  onDidChangeShortHead(callback: () => mixed): IDisposable {
-    return this._emitter.on('did-change-short-head', callback);
+  getBookmarks(): Array<BookmarkInfo> {
+    return this._bookmarks.getValue().bookmarks;
   }
 
   /**
