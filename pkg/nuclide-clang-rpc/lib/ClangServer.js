@@ -13,6 +13,7 @@ import typeof * as ClangProcessService from './ClangProcessService';
 import type {ClangCompileResult} from './rpc-types';
 import type {ClangServerArgs} from './find-clang-server-args';
 
+import fsPromise from '../../commons-node/fsPromise';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {getServerSideMarshalers} from '../../nuclide-marshalers-common';
 import idx from 'idx';
@@ -38,22 +39,45 @@ function getServiceRegistry(): ServiceRegistry {
   return serviceRegistry;
 }
 
+/**
+ * If the compilation flags provide an absolute Clang path, and that Clang path
+ * contains an actual libclang.so, then use that first.
+ */
+async function getLibClangFromFlags(flagsData: ?ClangServerFlags): Promise<?string> {
+  if (flagsData == null || flagsData.flags == null || flagsData.flags.length === 0) {
+    return null;
+  }
+  const clangPath = flagsData.flags[0];
+  if (nuclideUri.isAbsolute(clangPath)) {
+    const libClangPath = nuclideUri.join(nuclideUri.dirname(clangPath), '../lib/libclang.so');
+    if (libClangPath != null && await fsPromise.exists(libClangPath)) {
+      return libClangPath;
+    }
+  }
+  return null;
+}
+
 function spawnClangProcess(
   src: string,
   serverArgsPromise: Promise<ClangServerArgs>,
   flagsPromise: Promise<?ClangServerFlags>,
 ): Observable<child_process$ChildProcess> {
-  return Observable.fromPromise(Promise.all([serverArgsPromise, flagsPromise]))
-    .switchMap(([serverArgs, flagsData]) => {
+  return Observable.fromPromise(Promise.all([
+    serverArgsPromise,
+    flagsPromise,
+    flagsPromise.then(getLibClangFromFlags),
+  ]))
+    .switchMap(([serverArgs, flagsData, libClangFromFlags]) => {
       const flags = idx(flagsData, _ => _.flags);
       if (flags == null) {
         // We're going to reject here.
         // ClangServer will also dispose itself upon encountering this.
         throw new Error(`No flags found for ${src}`);
       }
-      const {libClangLibraryFile, pythonPathEnv, pythonExecutable} = serverArgs;
+      const {pythonPathEnv, pythonExecutable} = serverArgs;
       const pathToLibClangServer = nuclideUri.join(__dirname, '../python/clang_server.py');
       const args = [pathToLibClangServer];
+      const libClangLibraryFile = libClangFromFlags || serverArgs.libClangLibraryFile;
       if (libClangLibraryFile != null) {
         args.push('--libclang-file', libClangLibraryFile);
       }
