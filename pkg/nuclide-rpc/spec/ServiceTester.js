@@ -34,6 +34,7 @@ export class ServiceTester {
       transports.clientTransport,
       [getRemoteNuclideUriMarshalers('localhost')],
       customServices,
+      {},
       protocol);
   }
 

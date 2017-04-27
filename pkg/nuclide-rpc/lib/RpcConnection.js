@@ -171,6 +171,12 @@ class Call {
   }
 }
 
+export type RpcConnectionOptions = {
+  // Enables timing tracking for function/method calls (with the given sample rate).
+  // Must be a positive integer; e.g. trackSampling = 10 means a 1/10 sample rate.
+  trackSampleRate?: number,
+};
+
 export class RpcConnection<TransportType: Transport> {
   _rpcRequestId: number;
   _transport: TransportType;
@@ -178,14 +184,17 @@ export class RpcConnection<TransportType: Transport> {
   _objectRegistry: ObjectRegistry;
   _subscriptions: Map<number, Subscription>;
   _calls: Map<number, Call>;
+  _options: RpcConnectionOptions;
 
   // Do not call this directly, use factory methods below.
   constructor(
     kind: RpcConnectionKind,
     serviceRegistry: ServiceRegistry,
     transport: TransportType,
+    options: RpcConnectionOptions = {},
   ) {
     this._transport = transport;
+    this._options = options;
     this._rpcRequestId = 1;
     this._serviceRegistry = serviceRegistry;
     this._objectRegistry = new ObjectRegistry(kind, this._serviceRegistry, this);
@@ -210,12 +219,14 @@ export class RpcConnection<TransportType: Transport> {
     transport: TransportType,
     predefinedTypes: Array<PredefinedTransformer>,
     services: Array<ConfigEntry>,
+    options: RpcConnectionOptions = {},
     protocol: string = SERVICE_FRAMEWORK3_PROTOCOL,
   ): RpcConnection<TransportType> {
     return new RpcConnection(
       'client',
       new ServiceRegistry(predefinedTypes, services, protocol),
-      transport);
+      transport,
+      options);
   }
 
   // Creates a client side connection to a server on the same machine.
@@ -380,10 +391,14 @@ export class RpcConnection<TransportType: Transport> {
             },
           ));
         });
-        return trackTiming(
-          trackingIdOfMessageAndNetwork(this._objectRegistry, message),
-          () => promise,
-        );
+        const {trackSampleRate} = this._options;
+        if (trackSampleRate && Math.random() * trackSampleRate <= 1) {
+          return trackTiming(
+            trackingIdOfMessageAndNetwork(this._objectRegistry, message),
+            () => promise,
+          );
+        }
+        return promise;
       case 'observable': {
         const id = message.id;
         invariant(!this._subscriptions.has(id));
@@ -738,6 +753,9 @@ export class RpcConnection<TransportType: Transport> {
   }
 
   _trackLargeResponse(message: RequestMessage, size: number) {
+    if (!this._options.trackSampleRate) {
+      return;
+    }
     const eventName = trackingIdOfMessage(this._objectRegistry, message);
     const args = message.args != null ?
       shorten(JSON.stringify(message.args), 100, '...') : '';
