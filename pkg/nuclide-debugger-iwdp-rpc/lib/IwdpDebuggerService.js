@@ -65,7 +65,9 @@ export class IwdpDebuggerService {
           logError(`The debug proxy was killed!  Error: ${err}`);
           this._clientCallback.sendAtomNotification(
             'warning',
-            'The session has ended because the debug proxy was killed!',
+            err.type === undefined
+              ? 'The session has ended because the debug proxy was killed!'
+              : err.type,
           );
           // We need to wait for the event loop to run before disposing, otherwise our atom
           // notification never makes it through the service framework.
