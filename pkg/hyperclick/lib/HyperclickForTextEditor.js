@@ -12,14 +12,12 @@
 
 import type {HyperclickSuggestion} from './types';
 import type Hyperclick from './Hyperclick';
-import type {TimingTracker} from '../../nuclide-analytics';
 
 import {CompositeDisposable, Disposable, Point} from 'atom';
 import {getWordTextAndRange} from './hyperclick-utils';
 import showTriggerConflictWarning from './showTriggerConflictWarning';
 import invariant from 'assert';
 
-import {trackTiming, startTracking} from '../../nuclide-analytics';
 import {getLogger} from '../../nuclide-logging';
 
 const logger = getLogger();
@@ -47,7 +45,6 @@ export default class HyperclickForTextEditor {
   _subscriptions: atom$CompositeDisposable;
   _isDestroyed: boolean;
   _isLoading: boolean;
-  _loadingTracker: ?TimingTracker;
   _triggerKeys: Set<'shiftKey' | 'ctrlKey' | 'altKey' | 'metaKey'>;
 
   constructor(textEditor: atom$TextEditor, hyperclick: Hyperclick) {
@@ -85,7 +82,6 @@ export default class HyperclickForTextEditor {
 
     this._isDestroyed = false;
     this._isLoading = false;
-    this._loadingTracker = null;
 
     this._subscriptions.add(
       atom.config.observe(
@@ -260,7 +256,6 @@ export default class HyperclickForTextEditor {
     }
 
     this._isLoading = true;
-    this._loadingTracker = startTracking('hyperclick-loading');
 
     try {
       this._lastPosition = position;
@@ -277,13 +272,7 @@ export default class HyperclickForTextEditor {
         // Remove all the markers if we've finished loading and there's no suggestion.
         this._updateNavigationMarkers(null);
       }
-      if (this._loadingTracker != null) {
-        this._loadingTracker.onSuccess();
-      }
     } catch (e) {
-      if (this._loadingTracker != null) {
-        this._loadingTracker.onError(e);
-      }
       logger.error('Error getting Hyperclick suggestion:', e);
     } finally {
       this._doneLoading();
@@ -337,15 +326,13 @@ export default class HyperclickForTextEditor {
     this._updateNavigationMarkers(null);
   }
 
-  _confirmSuggestionAtCursor(): Promise<void> {
-    return trackTiming('hyperclick:confirm-cursor', async () => {
-      const suggestion = await this._hyperclick.getSuggestion(
-          this._textEditor,
-          this._textEditor.getCursorBufferPosition());
-      if (suggestion) {
-        this._confirmSuggestion(suggestion);
-      }
-    });
+  async _confirmSuggestionAtCursor(): Promise<void> {
+    const suggestion = await this._hyperclick.getSuggestion(
+        this._textEditor,
+        this._textEditor.getCursorBufferPosition());
+    if (suggestion) {
+      this._confirmSuggestion(suggestion);
+    }
   }
 
   /**
@@ -389,7 +376,6 @@ export default class HyperclickForTextEditor {
 
   _doneLoading(): void {
     this._isLoading = false;
-    this._loadingTracker = null;
     this._textEditorView.classList.remove('hyperclick-loading');
   }
 
