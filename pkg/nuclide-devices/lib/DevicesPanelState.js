@@ -64,7 +64,7 @@ export class DevicesPanelState {
       devices: state.devices,
       hosts: state.hosts,
       host: state.host,
-      deviceTypes: Array.from(state.deviceFetchers).map(fetcher => fetcher.getType()),
+      deviceTypes: state.deviceTypes,
       deviceType: state.deviceType,
       device: state.device,
       infoTables: state.infoTables,

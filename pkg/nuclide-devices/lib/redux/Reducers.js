@@ -8,9 +8,9 @@
  * @flow
  */
 
-import type {Action, AppState} from '../types';
-
 import * as Actions from './Actions';
+
+import type {Action, AppState} from '../types';
 
 export function app(state: AppState, action: Action): AppState {
   switch (action.type) {
@@ -31,6 +31,13 @@ export function app(state: AppState, action: Action): AppState {
         deviceType,
         device: null,
         infoTables: new Map(),
+      };
+
+    case Actions.SET_DEVICE_TYPES:
+      const {deviceTypes} = action.payload;
+      return {
+        ...state,
+        deviceTypes,
       };
 
     case Actions.SET_DEVICE:

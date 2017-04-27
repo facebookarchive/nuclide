@@ -22,25 +22,22 @@ import {createEmptyAppState} from './redux/createEmptyAppState';
 import * as Reducers from './redux/Reducers';
 import * as Actions from './redux/Actions';
 import * as Epics from './redux/Epics';
+import {getDeviceInfoProviders, getDeviceListProviders} from './providers';
 
 import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
-import type {Store, DeviceFetcher, DeviceInfoProvider, DevicePanelServiceApi} from './types';
+import type {Store, DeviceListProvider, DeviceInfoProvider, DevicePanelServiceApi} from './types';
 
 class Activation {
   _disposables: UniversalDisposable;
-  _fetchers: Set<DeviceFetcher>;
-  _deviceInfoProviders: Set<DeviceInfoProvider>;
   _store: Store;
 
   constructor(state: ?Object) {
-    this._fetchers = new Set();
-    this._deviceInfoProviders = new Set();
     const epics = Object.keys(Epics)
       .map(k => Epics[k])
       .filter(epic => typeof epic === 'function');
     this._store = createStore(
       Reducers.app,
-      createEmptyAppState(this._fetchers, this._deviceInfoProviders),
+      createEmptyAppState(),
       applyMiddleware(createEpicMiddleware(combineEpics(...epics))),
     );
     this._disposables = new UniversalDisposable(
@@ -77,25 +74,35 @@ class Activation {
     return new DevicesPanelState(this._store);
   }
 
+  _refreshDeviceTypes(): void {
+    this._store.dispatch(Actions.setDeviceTypes(
+      Array.from(getDeviceListProviders()).map(p => p.getType()),
+    ));
+  }
+
   provideDevicePanelServiceApi(): DevicePanelServiceApi {
     let pkg = this;
     this._disposables.add(() => { pkg = null; });
     return {
-      registerDeviceFetcher: (fetcher: DeviceFetcher) => {
+      registerListProvider: (provider: DeviceListProvider) => {
         invariant(pkg != null, 'Device panel service API used after deactivation');
-        pkg._fetchers.add(fetcher);
+        const providers = getDeviceListProviders();
+        providers.add(provider);
+        this._refreshDeviceTypes();
         return new Disposable(() => {
           if (pkg != null) {
-            pkg._fetchers.delete(fetcher);
+            providers.delete(provider);
+            this._refreshDeviceTypes();
           }
         });
       },
       registerInfoProvider: (provider: DeviceInfoProvider) => {
         invariant(pkg != null, 'Device panel service API used after deactivation');
-        pkg._deviceInfoProviders.add(provider);
+        const providers = getDeviceInfoProviders();
+        providers.add(provider);
         return new Disposable(() => {
           if (pkg != null) {
-            pkg._deviceInfoProviders.delete(provider);
+            providers.delete(provider);
           }
         });
       },

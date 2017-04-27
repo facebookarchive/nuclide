@@ -29,8 +29,8 @@ class Activation {
   }
 
   consumeDevicePanelServiceApi(api: DevicePanelServiceApi): void {
-    this._disposables.add(api.registerDeviceFetcher(new AndroidFetcher()));
-    this._disposables.add(api.registerDeviceFetcher(new TizenFetcher()));
+    this._disposables.add(api.registerListProvider(new AndroidFetcher()));
+    this._disposables.add(api.registerListProvider(new TizenFetcher()));
     this._disposables.add(api.registerInfoProvider(createAndroidInfoProvider()));
     this._disposables.add(api.registerInfoProvider(createTizenInfoProvider()));
   }

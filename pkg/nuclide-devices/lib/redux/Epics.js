@@ -11,6 +11,7 @@
 import {Observable} from 'rxjs';
 import * as Actions from './Actions';
 import invariant from 'invariant';
+import {getDeviceListProviders, getDeviceInfoProviders} from '../providers';
 
 import type {ActionsObservable} from '../../../commons-node/redux-observable';
 import type {Action, Store, AppState} from '../types';
@@ -23,7 +24,7 @@ export function setDevicesEpic(
     .switchMap(action => {
       invariant(action.type === Actions.REFRESH_DEVICES);
       const state = store.getState();
-      for (const fetcher of state.deviceFetchers) {
+      for (const fetcher of getDeviceListProviders()) {
         if (fetcher.getType() === state.deviceType) {
           return Observable.fromPromise(fetcher.fetch(state.host))
           .switchMap(devices => Observable.of(Actions.setDevices(devices)));
@@ -51,7 +52,7 @@ async function getInfoTables(state: AppState): Promise<Map<string, Map<string, s
   if (device == null) {
     return new Map();
   }
-  const sortedProviders = Array.from(state.deviceInfoProviders)
+  const sortedProviders = Array.from(getDeviceInfoProviders())
     .filter(provider => provider.getType() === state.deviceType)
     .sort((a, b) => {
       const pa = a.getPriority === undefined ? -1 : a.getPriority();

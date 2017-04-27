@@ -8,20 +8,16 @@
  * @flow
  */
 
-import type {AppState, DeviceFetcher, DeviceInfoProvider} from '../types';
+import type {AppState} from '../types';
 
-export function createEmptyAppState(
-  deviceFetchers: Set<DeviceFetcher>,
-  deviceInfoProviders: Set<DeviceInfoProvider>,
-): AppState {
+export function createEmptyAppState(): AppState {
   return {
     hosts: ['local'],
     host: 'local',
     devices: [],
     deviceType: null,
+    deviceTypes: [],
     device: null,
     infoTables: new Map(),
-    deviceFetchers,
-    deviceInfoProviders,
   };
 }

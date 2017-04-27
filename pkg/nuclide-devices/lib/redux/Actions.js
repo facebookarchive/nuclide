@@ -10,6 +10,7 @@
 
 import type {NuclideUri} from '../../../commons-node/nuclideUri';
 import type {
+  SetDeviceTypesAction,
   SetDeviceTypeAction,
   SetDevicesAction,
   SetDeviceAction,
@@ -20,6 +21,7 @@ import type {
   Device,
 } from '../types';
 
+export const SET_DEVICE_TYPES = 'SET_DEVICE_TYPES';
 export const SET_DEVICE_TYPE = 'SET_DEVICE_TYPE';
 export const SET_DEVICES = 'SET_DEVICES';
 export const SET_DEVICE = 'SET_DEVICE';
@@ -67,6 +69,13 @@ export function setDeviceType(deviceType: ?string): SetDeviceTypeAction {
   return {
     type: SET_DEVICE_TYPE,
     payload: {deviceType},
+  };
+}
+
+export function setDeviceTypes(deviceTypes: string[]): SetDeviceTypesAction {
+  return {
+    type: SET_DEVICE_TYPES,
+    payload: {deviceTypes},
   };
 }
 

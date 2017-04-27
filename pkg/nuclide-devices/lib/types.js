@@ -11,7 +11,7 @@
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 export type DevicePanelServiceApi = {
-  registerDeviceFetcher: (fetcher: DeviceFetcher) => IDisposable,
+  registerListProvider: (provider: DeviceListProvider) => IDisposable,
   registerInfoProvider: (provider: DeviceInfoProvider) => IDisposable,
 };
 
@@ -20,7 +20,7 @@ export type Device = {
   displayName: string,
 };
 
-export interface DeviceFetcher {
+export interface DeviceListProvider {
   fetch(host: NuclideUri): Promise<Device[]>,
   getType(): string,
 }
@@ -37,9 +37,8 @@ export type AppState = {
   host: NuclideUri,
   devices: Device[],
   deviceType: ?string,
+  deviceTypes: string[],
   device: ?Device,
-  deviceFetchers: Set<DeviceFetcher>,
-  deviceInfoProviders: Set<DeviceInfoProvider>,
   infoTables: Map<string, Map<string, string>>,
 };
 
@@ -85,6 +84,13 @@ export type SetDeviceTypeAction = {
   },
 };
 
+export type SetDeviceTypesAction = {
+  type: 'SET_DEVICE_TYPES',
+  payload: {
+    deviceTypes: string[],
+  },
+};
+
 export type SetDeviceAction = {
   type: 'SET_DEVICE',
   payload: {
@@ -105,5 +111,6 @@ export type Action =
   | SetHostsAction
   | SetDevicesAction
   | SetDeviceTypeAction
+  | SetDeviceTypesAction
   | SetInfoTablesAction
   | SetDeviceAction;
