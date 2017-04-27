@@ -18,7 +18,7 @@ import readline from 'readline';
 
 import fsPromise from '../../commons-node/fsPromise';
 import {
-  asyncExecute,
+  runCommand,
   spawn,
   getOriginalEnvironment,
 } from '../../commons-node/process';
@@ -458,19 +458,21 @@ function getMerlinFlags(): Array<string> {
 let merlinVersionCache: ?string;
 async function getMerlinVersion(merlinPath: string): Promise<string | null> {
   if (merlinVersionCache === undefined) {
-    const result = await asyncExecute(merlinPath, ['-version'], {
-      env: await getOriginalEnvironment(),
-    });
-    if (result.exitCode === 0) {
-      const match = result.stdout.match(/^The Merlin toolkit version (\d+(?:\.\d)*),/);
-      if (match != null && match[1] != null) {
-        merlinVersionCache = match[1];
-      } else {
-        logger.info('unable to determine ocamlmerlin version');
-        merlinVersionCache = null;
-      }
-    } else {
+    let stdout;
+    try {
+      stdout = await runCommand(merlinPath, ['-version'], {
+        env: await getOriginalEnvironment(),
+      }).toPromise();
+    } catch (err) {
       logger.info('ocamlmerlin not installed');
+      merlinVersionCache = null;
+      return merlinVersionCache;
+    }
+    const match = stdout.match(/^The Merlin toolkit version (\d+(?:\.\d)*),/);
+    if (match != null && match[1] != null) {
+      merlinVersionCache = match[1];
+    } else {
+      logger.info('unable to determine ocamlmerlin version');
       merlinVersionCache = null;
     }
   }

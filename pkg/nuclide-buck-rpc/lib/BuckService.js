@@ -14,7 +14,6 @@ import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
 import type {ConnectableObservable} from 'rxjs';
 
 import {
-  asyncExecute,
   runCommand,
   observeProcess,
   getOriginalEnvironment,
@@ -799,26 +798,28 @@ export async function getLastCommandInfo(
 ): Promise<?CommandInfo> {
   const logFile = nuclideUri.join(rootPath, LOG_PATH);
   if (await fsPromise.exists(logFile)) {
-    const result = await asyncExecute('head', ['-n', '1', logFile]);
-    if (result.exitCode === 0) {
-      const line = result.stdout;
-      const matches = line.match(LOG_REGEX);
-      if (matches == null || matches.length < 2) {
-        return null;
-      }
-      // Log lines are of the form:
-      // [time][level][?][?][JavaClass] .... [args]
-      // Parse this to figure out what the last command was.
-      const timestamp = Number(new Date(stripBrackets(matches[0])));
-      if (isNaN(timestamp)) {
-        return null;
-      }
-      const args = stripBrackets(matches[matches.length - 1]).split(', ');
-      if (args.length <= 1 || (maxArgs != null && args.length - 1 > maxArgs)) {
-        return null;
-      }
-      return {timestamp, command: args[0], args: args.slice(1)};
+    let line;
+    try {
+      line = await runCommand('head', ['-n', '1', logFile]).toPromise();
+    } catch (err) {
+      return null;
     }
+    const matches = line.match(LOG_REGEX);
+    if (matches == null || matches.length < 2) {
+      return null;
+    }
+    // Log lines are of the form:
+    // [time][level][?][?][JavaClass] .... [args]
+    // Parse this to figure out what the last command was.
+    const timestamp = Number(new Date(stripBrackets(matches[0])));
+    if (isNaN(timestamp)) {
+      return null;
+    }
+    const args = stripBrackets(matches[matches.length - 1]).split(', ');
+    if (args.length <= 1 || (maxArgs != null && args.length - 1 > maxArgs)) {
+      return null;
+    }
+    return {timestamp, command: args[0], args: args.slice(1)};
   }
   return null;
 }

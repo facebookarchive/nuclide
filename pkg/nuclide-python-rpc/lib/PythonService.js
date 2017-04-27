@@ -30,7 +30,7 @@ import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interface
 import type {ConnectableObservable} from 'rxjs';
 
 import invariant from 'assert';
-import {asyncExecute} from '../../commons-node/process';
+import {runCommand, ProcessExitError} from '../../commons-node/process';
 import {maybeToString} from '../../commons-node/string';
 import fsPromise from '../../commons-node/fsPromise';
 import nuclideUri from '../../commons-node/nuclideUri';
@@ -297,33 +297,33 @@ class PythonSingleFileLanguageService {
     const libCommand = getFormatterPath();
     const dirName = nuclideUri.dirname(nuclideUri.getPath(filePath));
 
-    const result = await asyncExecute(
-      libCommand,
-      ['--line', `${start}-${end}`],
-      {cwd: dirName, stdin: contents},
-    );
-
-    /*
-     * At the moment, yapf outputs 3 possible exit codes:
-     * 0 - success, no content change.
-     * 2 - success, contents changed.
-     * 1 - internal failure, most likely due to syntax errors.
-     *
-     * See: https://github.com/google/yapf/issues/228#issuecomment-198682079
-     */
-    if (result.exitCode === 1) {
+    let stdout;
+    try {
+      stdout = await runCommand(
+        libCommand,
+        ['--line', `${start}-${end}`],
+        {
+          cwd: dirName,
+          stdin: contents,
+          // At the moment, yapf outputs 3 possible exit codes:
+          // 0 - success, no content change.
+          // 2 - success, contents changed.
+          // 1 - internal failure, most likely due to syntax errors.
+          //
+          // See: https://github.com/google/yapf/issues/228#issuecomment-198682079
+          isExitError: exit => exit.exitCode === 1,
+        },
+      ).toPromise();
+    } catch (err) {
       throw new Error(`"${libCommand}" failed, likely due to syntax errors.`);
-    } else if (result.exitCode == null) {
-      throw new Error(
-        `"${libCommand}" failed with error: ${maybeToString(result.errorMessage)}, ` +
-        `stderr: ${result.stderr}, stdout: ${result.stdout}.`,
-      );
-    } else if (contents !== '' && result.stdout === '') {
+    }
+
+    if (contents !== '' && stdout === '') {
       // Throw error if the yapf output is empty, which is almost never desirable.
       throw new Error('Empty output received from yapf.');
     }
 
-    return {formatted: result.stdout};
+    return {formatted: stdout};
   }
 
   getEvaluationExpression(
@@ -394,50 +394,67 @@ export async function getDiagnostics(
     return [];
   }
 
+  let result;
+  try {
+    result = await runLinterCommand(src, contents);
+  } catch (err) {
+    // A non-successful exit code can result in some cases that we want to ignore,
+    // for example when an incorrect python version is specified for a source file.
+    if (err instanceof ProcessExitError) {
+      return [];
+    } else if (err.errorCode === 'ENOENT') {
+      // Don't throw if flake8 is not found on the user's system.
+      // Don't retry again.
+      shouldRunFlake8 = false;
+      return [];
+    }
+    throw new Error(`flake8 failed with error: ${maybeToString(err.message)}`);
+  }
+
+  return parseFlake8Output(src, result);
+}
+
+async function runLinterCommand(src: NuclideUri, contents: string): Promise<string> {
   const dirName = nuclideUri.dirname(src);
   const configDir = await fsPromise.findNearestFile('.flake8', dirName);
   const configPath = configDir ? nuclideUri.join(configDir, '.flake8') : null;
 
   let result;
+  let runFlake8;
   try {
     // $FlowFB
-    const runFlake8 = require('./fb/run-flake8').default;
-    result = await runFlake8(src, contents, configPath);
+    runFlake8 = require('./fb/run-flake8').default;
   } catch (e) {
     // Ignore.
   }
 
-  if (!result) {
-    const command =
-      global.atom && atom.config.get('nuclide.nuclide-python.pathToFlake8') || 'flake8';
-    const args = [];
-
-    if (configPath) {
-      args.push('--config');
-      args.push(configPath);
+  if (runFlake8 != null) {
+    result = await runFlake8(src, contents, configPath);
+    if (result != null) {
+      return result;
     }
+  }
 
-    // Read contents from stdin.
-    args.push('-');
-    invariant(typeof command === 'string');
-    result = await asyncExecute(command, args, {cwd: dirName, stdin: contents});
+  const command =
+    global.atom && atom.config.get('nuclide.nuclide-python.pathToFlake8') || 'flake8';
+  const args = [];
+
+  if (configPath) {
+    args.push('--config');
+    args.push(configPath);
   }
-  // 1 indicates unclean lint result (i.e. has errors/warnings).
-  // A non-successful exit code can result in some cases that we want to ignore,
-  // for example when an incorrect python version is specified for a source file.
-  if (result.exitCode && result.exitCode > 1) {
-    return [];
-  } else if (result.exitCode == null) {
-    // Don't throw if flake8 is not found on the user's system.
-    if (result.errorCode === 'ENOENT') {
-      // Don't retry again.
-      shouldRunFlake8 = false;
-      return [];
-    }
-    throw new Error(
-      `flake8 failed with error: ${maybeToString(result.errorMessage)}, ` +
-      `stderr: ${result.stderr}, stdout: ${result.stdout}`,
-    );
-  }
-  return parseFlake8Output(src, result.stdout);
+
+  // Read contents from stdin.
+  args.push('-');
+  invariant(typeof command === 'string');
+  return runCommand(
+    command,
+    args,
+    {
+      cwd: dirName,
+      stdin: contents,
+      // 1 indicates unclean lint result (i.e. has errors/warnings).
+      isExitError: exit => exit.exitCode == null || exit.exitCode > 1,
+    })
+      .toPromise();
 }

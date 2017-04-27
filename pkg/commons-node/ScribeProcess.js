@@ -9,7 +9,7 @@
  */
 
 import os from 'os';
-import {asyncExecute, spawn} from './process';
+import {runCommand, spawn} from './process';
 // $FlowFixMe: Add EmptyError to type defs
 import {EmptyError, Subject} from 'rxjs';
 
@@ -38,8 +38,12 @@ export default class ScribeProcess {
    * Check if `scribe_cat` exists in PATH.
    */
   static async isScribeCatOnPath(): Promise<boolean> {
-    const {exitCode} = await asyncExecute('which', [SCRIBE_CAT_COMMAND]);
-    return exitCode === 0;
+    try {
+      await runCommand('which', [SCRIBE_CAT_COMMAND]).toPromise();
+      return true;
+    } catch (err) {
+      return false;
+    }
   }
 
   /**

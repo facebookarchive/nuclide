@@ -9,7 +9,7 @@
  */
 
 import {ConfigCache} from '../../commons-node/ConfigCache';
-import {asyncExecute} from '../../commons-node/process';
+import {runCommand} from '../../commons-node/process';
 import {getCategoryLogger} from '../../nuclide-logging';
 
 const HACK_LOGGER_CATEGORY = 'nuclide-hack';
@@ -45,8 +45,11 @@ export function findHackConfigDir(localFile: string): Promise<?string> {
 
 // Returns the empty string on failure
 async function findHackCommand(): Promise<string> {
-  // `stdout` would be empty if there is no such command.
-  return (await asyncExecute('which', [PATH_TO_HH_CLIENT])).stdout.trim();
+  try {
+    return (await runCommand('which', [PATH_TO_HH_CLIENT]).toPromise()).trim();
+  } catch (err) {
+    return '';
+  }
 }
 
 export function setHackCommand(newHackCommand: string): void {

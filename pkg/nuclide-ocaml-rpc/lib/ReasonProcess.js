@@ -10,7 +10,7 @@
 
 import type {refmtResult} from './ReasonService';
 
-import {asyncExecute, getOriginalEnvironment} from '../../commons-node/process';
+import {runCommand, getOriginalEnvironment} from '../../commons-node/process';
 
 export async function refmt(content: string, flags: Array<string>): Promise<refmtResult> {
   const refmtPath = getPathToRefmt();
@@ -23,15 +23,16 @@ export async function refmt(content: string, flags: Array<string>): Promise<refm
     env: await getOriginalEnvironment(),
     stdin: content,
   };
-  const result = await asyncExecute(refmtPath, flags, options);
-  if (result.exitCode === 0) {
-    return {type: 'result', formattedResult: result.stdout};
+  try {
+    const stdout = await runCommand(refmtPath, flags, options).toPromise();
+    return {type: 'result', formattedResult: stdout};
+  } catch (err) {
+    // Unsuccessfully exited. Two cases: syntax error and refmt nonexistent.
+    if (err.errno === 'ENOENT') {
+      return {type: 'error', error: 'refmt is not found. Is it available in the path?'};
+    }
+    return {type: 'error', error: err.stderr};
   }
-  // Unsuccessfully exited. Two cases: syntax error and refmt nonexistent.
-  if (result.errorCode === 'ENOENT') {
-    return {type: 'error', error: 'refmt is not found. Is it available in the path?'};
-  }
-  return {type: 'error', error: result.stderr};
 }
 /**
  * @return The path to ocamlmerlin on the user's machine. It is recommended not to cache the result

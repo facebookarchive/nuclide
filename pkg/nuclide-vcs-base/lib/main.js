@@ -14,7 +14,7 @@ import type {IconName} from '../../nuclide-ui/types';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import {arrayCompact, mapFilter} from '../../commons-node/collection';
-import {asyncExecute} from '../../commons-node/process';
+import {runCommand} from '../../commons-node/process';
 import {diffSets} from '../../commons-node/observable';
 import {Directory} from 'atom';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
@@ -35,20 +35,20 @@ const vcsInfoCache: {[dir: string]: VcsInfo} = {};
 
 async function findVcsHelper(dir: string): Promise<VcsInfo> {
   const options = {cwd: dir};
-  const hgResult = await asyncExecute('hg', ['root'], options);
-  if (hgResult.exitCode === 0) {
+  try {
     return {
       vcs: 'hg',
-      root: hgResult.stdout.trim(),
+      root: (await runCommand('hg', ['root'], options).toPromise()).trim(),
     };
+  } catch (err) {
   }
 
-  const gitResult = await asyncExecute('git', ['rev-parse', '--show-toplevel'], options);
-  if (gitResult.exitCode === 0) {
+  try {
     return {
       vcs: 'git',
-      root: gitResult.stdout.trim(),
+      root: (await runCommand('git', ['rev-parse', '--show-toplevel'], options).toPromise()).trim(),
     };
+  } catch (err) {
   }
 
   throw new Error('Could not find VCS for: ' + dir);

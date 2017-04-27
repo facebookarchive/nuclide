@@ -18,7 +18,7 @@ import {getServerSideMarshalers} from '../../nuclide-marshalers-common';
 import idx from 'idx';
 import {BehaviorSubject, Observable} from 'rxjs';
 
-import {asyncExecute, spawn} from '../../commons-node/process';
+import {runCommand, spawn} from '../../commons-node/process';
 import {RpcProcess} from '../../nuclide-rpc';
 import {ServiceRegistry, loadServicesConfig} from '../../nuclide-rpc';
 import {watchFile} from '../../nuclide-filewatcher-rpc';
@@ -163,11 +163,12 @@ export default class ClangServer {
     if (_process == null) {
       return 0;
     }
-    const {exitCode, stdout} = await asyncExecute(
-      'ps',
-      ['-p', _process.pid.toString(), '-o', 'rss='],
-    );
-    if (exitCode !== 0) {
+    let stdout;
+    try {
+      stdout = await runCommand('ps',
+        ['-p', _process.pid.toString(), '-o', 'rss='],
+      ).toPromise();
+    } catch (err) {
       return 0;
     }
     return parseInt(stdout, 10) * 1024; // ps returns KB

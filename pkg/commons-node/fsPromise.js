@@ -15,7 +15,7 @@ import mkdirpLib from 'mkdirp';
 import nuclideUri from '../commons-node/nuclideUri';
 import rimraf from 'rimraf';
 import temp from 'temp';
-import {asyncExecute} from './process';
+import {runCommand} from './process';
 
 /**
  * Create a temp directory with given prefix. The caller is responsible for cleaning up the
@@ -171,10 +171,10 @@ function rmdir(filePath: string): Promise<void> {
 /** @return true only if we are sure directoryPath is on NFS. */
 async function isNfs(entityPath: string): Promise<boolean> {
   if (process.platform === 'linux' || process.platform === 'darwin') {
-    const {stdout, exitCode} = await asyncExecute('stat', ['-f', '-L', '-c', '%T', entityPath]);
-    if (exitCode === 0) {
+    try {
+      const stdout = await runCommand('stat', ['-f', '-L', '-c', '%T', entityPath]).toPromise();
       return stdout.trim() === 'nfs';
-    } else {
+    } catch (err) {
       return false;
     }
   } else {

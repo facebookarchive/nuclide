@@ -10,7 +10,7 @@
 
 import nuclideUri from '../../commons-node/nuclideUri';
 
-import {asyncExecute} from '../../commons-node/process';
+import {runCommand} from '../../commons-node/process';
 
 let fbFindClangServerArgs: ?(src: ?string) => {[string]: ?string};
 
@@ -33,14 +33,15 @@ export default async function findClangServerArgs(src?: string): Promise<ClangSe
 
   let libClangLibraryFile;
   if (process.platform === 'darwin') {
-    const result = await asyncExecute('xcode-select', ['--print-path']);
-    if (result.exitCode === 0) {
-      libClangLibraryFile = result.stdout.trim();
+    try {
+      const stdout = await runCommand('xcode-select', ['--print-path']).toPromise();
+      libClangLibraryFile = stdout.trim();
       // If the user only has Xcode Command Line Tools installed, the path is different.
       if (nuclideUri.basename(libClangLibraryFile) !== 'CommandLineTools') {
         libClangLibraryFile += '/Toolchains/XcodeDefault.xctoolchain';
       }
       libClangLibraryFile += '/usr/lib/libclang.dylib';
+    } catch (err) {
     }
   }
 
