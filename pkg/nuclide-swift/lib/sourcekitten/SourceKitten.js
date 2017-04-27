@@ -8,7 +8,7 @@
  * @flow
  */
 
-import {asyncExecute} from '../../../commons-node/process';
+import {runCommandDetailed} from '../../../commons-node/process';
 import featureConfig from '../../../commons-atom/featureConfig';
 
 /**
@@ -40,26 +40,31 @@ export async function asyncExecuteSourceKitten(
   }
 
   const sourceKittenPath = getSourceKittenPath();
-  const result = await asyncExecute(sourceKittenPath, [command].concat(args));
-  if (result.exitCode == null) {
-    const errorCode = result.errorCode ? result.errorCode : '';
-    const errorMessage = result.errorMessage ? result.errorMessage : '';
+  let result;
+  try {
+    result = await runCommandDetailed(
+      sourceKittenPath,
+      [command].concat(args),
+      {isExitError: () => false},
+    ).toPromise();
+  } catch (err) {
     atom.notifications.addError(`Could not invoke SourceKitten at path \`${sourceKittenPath}\``, {
       description:
         'Please double-check that the path you have set for the ' +
         '`nuclide-swift.sourceKittenPath` config setting is correct.<br>' +
-        `**Error code:** \`${errorCode}\`<br>` +
-        `**Error message:** <pre>${errorMessage}</pre>`,
+        `**Error code:** \`${err.errno || ''}\`<br>` +
+        `**Error message:** <pre>${err.message}</pre>`,
     });
     return null;
-  } else if (result.exitCode !== 0 || result.stdout.length === 0) {
+  }
+  if (result.exitCode !== 0 || result.stdout.length === 0) {
     atom.notifications.addError('An error occured when invoking SourceKitten', {
       description:
         'Please file a bug.<br>' +
         `**exit code:** \`${String(result.exitCode)}\`<br>` +
         `**stdout:** <pre>${String(result.stdout)}</pre><br>` +
         `**stderr:** <pre>${String(result.stderr)}</pre><br>` +
-        `**command:** <pre>${String(result.command ? result.command : '')}</pre><br>`,
+        `**command:** <pre>${[command].concat(args).join(' ')}</pre><br>`,
     });
     return null;
   }
