@@ -13,9 +13,7 @@
 // in its package.json. As such, any tests for it that need to use Atom's built-in test runner
 // need to live elsewhere, which is why they are in the top-level spec/ directory.
 
-import type {AsyncExecuteReturn} from '../pkg/commons-node/process';
-
-import {asyncExecute} from '../pkg/commons-node/process';
+import {runCommand} from '../pkg/commons-node/process';
 
 describe('atom-script', () => {
   describe('echo sample', () => {
@@ -24,15 +22,15 @@ describe('atom-script', () => {
 
     it('with zero arguments', () => {
       waitsForPromise(async () => {
-        const result = await runAtomScript(echoScript);
-        expect(result.stdout).toBe('Please pass me an arg!\n');
+        const stdout = await runAtomScript(echoScript);
+        expect(stdout).toBe('Please pass me an arg!\n');
       });
     });
 
     it('with multiple arguments arguments', () => {
       waitsForPromise(async () => {
-        const result = await runAtomScript(echoScript, ['one', 'two', 'three']);
-        expect(result.stdout).toBe('one two three\n');
+        const stdout = await runAtomScript(echoScript, ['one', 'two', 'three']);
+        expect(stdout).toBe('one two three\n');
       });
     });
   });
@@ -48,16 +46,17 @@ describe('atom-script', () => {
       'is a bit shaky.)',
       () => {
         waitsForPromise(async () => {
-          const result = await runAtomScript(markdownScript, [readme]);
-          expect(result.stdout.endsWith('</body>\n</html>\n')).toBe(true);
+          const stdout = await runAtomScript(markdownScript, [readme]);
+          expect(stdout.endsWith('</body>\n</html>\n')).toBe(true);
         });
       },
     );
   });
 });
 
-function runAtomScript(script: string, args = []): Promise<AsyncExecuteReturn> {
-  return asyncExecute(
+function runAtomScript(script: string, args = []): Promise<string> {
+  return runCommand(
     require.resolve('../pkg/nuclide-atom-script/bin/atom-script'),
-    [script].concat(args));
+    [script].concat(args),
+  ).toPromise();
 }
