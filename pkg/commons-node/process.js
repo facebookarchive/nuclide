@@ -556,15 +556,27 @@ export function runCommand(
   options?: ObserveProcessOptions = {},
   rest: void,
 ): Observable<string> {
+  return runCommandDetailed(command, args, options).map(event => event.stdout);
+}
+
+export function runCommandDetailed(
+  command: string,
+  args?: Array<string> = [],
+  options?: ObserveProcessOptions = {},
+  rest: void,
+): Observable<{stdout: string, stderr: string, exitCode: ?number}> {
   const maxBuffer = idx(options, _ => _.maxBuffer) || DEFAULT_MAX_BUFFER;
   return observeProcess(command, args, {...options, maxBuffer})
-    .filter(event => event.kind === 'stdout')
     .reduce(
       (acc, event) => {
-        invariant(event.kind === 'stdout');
-        return acc + event.data;
+        switch (event.kind) {
+          case 'stdout': return {...acc, stdout: acc.stdout + event.data};
+          case 'stderr': return {...acc, stderr: acc.stderr + event.data};
+          case 'exit': return {...acc, exitCode: event.exitCode};
+          default: throw new Error(`Invalid event kind: ${event.kind}`);
+        }
       },
-      '',
+      {stdout: '', stderr: '', exitCode: null},
     );
 }
 
