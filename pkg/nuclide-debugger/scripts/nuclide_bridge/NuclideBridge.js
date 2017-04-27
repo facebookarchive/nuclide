@@ -357,14 +357,16 @@ class NuclideBridge {
   _convertFramesToIPCFrames(callFrames: Array<Object>): Array<Object> {
     return callFrames.map(callFrame => {
       const location = callFrame.location();
+      // If there is a sourcemap available, use it to adjust the column and line numbers.
+      const uiLocation = WebInspector.debuggerWorkspaceBinding.rawLocationToUILocation(location);
       /* names anonymous functions "(anonymous function)" */
       const functionName = WebInspector.beautifyFunctionName(callFrame.functionName);
       return {
         name: functionName,
         location: {
-          path: callFrame.script.sourceURL,
-          column: location.columnNumber,
-          line: location.lineNumber,
+          path: uiLocation.uiSourceCode.uri(),
+          column: uiLocation.columnNumber,
+          line: uiLocation.lineNumber,
           hasSource: callFrame.hasSource() != null ? callFrame.hasSource() : true,
         },
       };

@@ -418,6 +418,7 @@ declare class WebInspector$UILocation {
   toUIString(): string,
   uiSourceCode: WebInspector$UISourceCode,
   lineNumber: number,
+  columnNumber: number,
 }
 
 declare class WebInspector$DebuggerWorkspaceBinding {
