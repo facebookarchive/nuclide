@@ -21,7 +21,7 @@ function resetModules() {
 }
 
 describe('FlowProcess', () => {
-  let fakeCheckOutput: () => Object = (null: any);
+  let fakeRunCommandDetailed: () => Object = (null: any);
 
   // Mocked ChildProcess instance (not typed as such because the mock only implements a subset of
   // methods).
@@ -55,10 +55,10 @@ describe('FlowProcess', () => {
         return runCommand.call(this, command, args, options);
       });
 
-    spyOn(processModule, 'asyncExecute')
-      // We need this level of indirection to ensure that if fakeCheckOutput
+    spyOn(processModule, 'runCommandDetailed')
+      // We need this level of indirection to ensure that if fakeRunCommandDetailed
       // is rebound, the new one gets executed.
-      .andCallFake((...args) => fakeCheckOutput(...args));
+      .andCallFake((...args) => fakeRunCommandDetailed(...args));
 
     childSpy = {
       stdout: {on() {}},
@@ -84,7 +84,8 @@ describe('FlowProcess', () => {
     const FlowExecInfoContainerModule = require('../lib/FlowExecInfoContainer');
     FlowExecInfoContainer = FlowExecInfoContainerModule.FlowExecInfoContainer;
 
-    fakeCheckOutput = jasmine.createSpy().andReturn({exitCode: FLOW_RETURN_CODES.ok});
+    fakeRunCommandDetailed = jasmine.createSpy()
+      .andReturn(Observable.of({exitCode: FLOW_RETURN_CODES.ok}));
 
     flowProcess = new FlowProcess(root, new FlowExecInfoContainer());
   });
@@ -96,18 +97,18 @@ describe('FlowProcess', () => {
   describe('Server startup and teardown', () => {
     beforeEach(() => {
       let called = false;
-      // we want asyncExecute to error the first time, to mimic Flow not
+      // we want runCommandDetailed to error the first time, to mimic Flow not
       // runinng. Then, it will spawn a new flow process, and we want that to be
       // successful
-      fakeCheckOutput = () => {
+      fakeRunCommandDetailed = () => {
         if (called) {
-          return {exitCode: FLOW_RETURN_CODES.ok};
+          return Observable.of({exitCode: FLOW_RETURN_CODES.ok});
         } else {
           called = true;
-          return {
+          return Observable.throw({
             exitCode: FLOW_RETURN_CODES.noServerRunning,
             stderr: 'There is no flow server running\n\'/path/to/flow/root\'',
-          };
+          });
         }
       };
 
@@ -209,7 +210,7 @@ describe('FlowProcess', () => {
     exitCodeStatusPairs.forEach(([exitCode, status]) => {
       it(`should be ${status} when Flow returns ${exitCode}`, () => {
         waitsForPromise(async () => {
-          fakeCheckOutput = () => ({exitCode});
+          fakeRunCommandDetailed = () => Observable.of({exitCode});
           await execFlow(/* waitForServer */ false).catch(e => {
             expect(e.exitCode).toBe(exitCode);
           });
@@ -222,14 +223,14 @@ describe('FlowProcess', () => {
       waitsForPromise(async () => {
         jasmine.useRealClock();
         const states = statusUpdates.take(4).toArray().toPromise();
-        fakeCheckOutput = () => {
+        fakeRunCommandDetailed = () => {
           switch (currentStatus) {
             case 'unknown':
-              return {exitCode: FLOW_RETURN_CODES.noServerRunning};
+              return Observable.of({exitCode: FLOW_RETURN_CODES.noServerRunning});
             case 'not running':
-              return {exitCode: FLOW_RETURN_CODES.serverInitializing};
+              return Observable.of({exitCode: FLOW_RETURN_CODES.serverInitializing});
             case 'init':
-              return {exitCode: FLOW_RETURN_CODES.ok};
+              return Observable.of({exitCode: FLOW_RETURN_CODES.ok});
             default:
               throw new Error('should not happen');
           }
@@ -243,12 +244,12 @@ describe('FlowProcess', () => {
   });
 
   describe('execFlowClient', () => {
-    it('should call asyncExecute', () => {
+    it('should call runCommandDetailed', () => {
       waitsForPromise(async () => {
         await FlowProcess.execFlowClient(['arg'], null, new FlowExecInfoContainer());
-        const [asyncExecuteArgs] = fakeCheckOutput.argsForCall;
-        expect(asyncExecuteArgs[0]).toEqual(binary);
-        expect(asyncExecuteArgs[1]).toEqual(['arg', '--from', 'nuclide']);
+        const [runCommandDetailedArgs] = fakeRunCommandDetailed.argsForCall;
+        expect(runCommandDetailedArgs[0]).toEqual(binary);
+        expect(runCommandDetailedArgs[1]).toEqual(['arg', '--from', 'nuclide']);
       });
     });
   });

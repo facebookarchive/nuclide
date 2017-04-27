@@ -8,8 +8,6 @@
  * @flow
  */
 
-import type {AsyncExecuteReturn} from '../../commons-node/process';
-
 import type {ServerStatusType} from '..';
 
 import type {FlowExecInfoContainer} from './FlowExecInfoContainer';
@@ -24,7 +22,7 @@ const logger = getLogger();
 import {track} from '../../nuclide-analytics';
 
 import {
-  asyncExecute,
+  runCommandDetailed,
   spawn,
 } from '../../commons-node/process';
 import {sleep} from '../../commons-node/promise';
@@ -38,6 +36,12 @@ import {
 import {ServerStatus} from './FlowConstants';
 import {FlowIDEConnection} from './FlowIDEConnection';
 import {FlowIDEConnectionWatcher} from './FlowIDEConnectionWatcher';
+
+type FlowExecResult = {
+  stdout: string,
+  stderr: string,
+  exitCode: ?number,
+};
 
 // Names modeled after https://github.com/facebook/flow/blob/master/src/common/flowExitStatus.ml
 export const FLOW_RETURN_CODES = {
@@ -267,7 +271,7 @@ export class FlowProcess {
     options: Object,
     waitForServer?: boolean = false,
     suppressErrors?: boolean = false,
-  ): Promise<?AsyncExecuteReturn> {
+  ): Promise<?FlowExecResult> {
     const maxRetries = waitForServer ? EXEC_FLOW_RETRIES : 0;
     if (this._serverStatus.getValue() === ServerStatus.FAILED) {
       return null;
@@ -314,7 +318,7 @@ export class FlowProcess {
       this._setServerStatus(ServerStatus.NOT_INSTALLED);
       return;
     }
-    // `flow server` will start a server in the foreground. asyncExecute
+    // `flow server` will start a server in the foreground. runCommand/runCommandDetailed
     // will not resolve the promise until the process exits, which in this
     // case is never. We need to use spawn directly to get access to the
     // ChildProcess object.
@@ -352,7 +356,7 @@ export class FlowProcess {
   }
 
   /** Execute Flow with the given arguments */
-  async _rawExecFlow(args_: Array<any>, options?: Object = {}): Promise<?AsyncExecuteReturn> {
+  async _rawExecFlow(args_: Array<any>, options?: Object = {}): Promise<?FlowExecResult> {
     let args = args_;
     args = [
       ...args,
@@ -493,17 +497,15 @@ export class FlowProcess {
     root: string | null,
     execInfoContainer: FlowExecInfoContainer,
     options: Object = {},
-  ): Promise<?AsyncExecuteReturn> {
+  ): Promise<?FlowExecResult> {
     const allExecInfo = await getAllExecInfo(args, root, execInfoContainer, options);
     if (allExecInfo == null) {
       return null;
     }
-    const ret = await asyncExecute(allExecInfo.pathToFlow, allExecInfo.args, allExecInfo.options);
-    if (ret.exitCode !== 0) {
-      // TODO: bubble up the exit code via return value instead
-      throw ret;
-    }
-    return ret;
+
+    // TODO: bubble up the exit code via return value instead of the error
+    return runCommandDetailed(allExecInfo.pathToFlow, allExecInfo.args, allExecInfo.options)
+      .toPromise();
   }
 }
 
