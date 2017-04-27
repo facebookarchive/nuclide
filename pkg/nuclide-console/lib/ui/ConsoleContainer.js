@@ -19,6 +19,7 @@ import type {
   Source,
   Store,
 } from '../types';
+import type {CreatePasteFunction} from '../../../nuclide-paste-base';
 
 import {viewableFromReactElement} from '../../../commons-atom/viewableFromReactElement';
 import UniversalDisposable from '../../../commons-node/UniversalDisposable';
@@ -29,12 +30,14 @@ import Console from './Console';
 import escapeStringRegexp from 'escape-string-regexp';
 import React from 'react';
 import {Observable, Subject} from 'rxjs';
+import invariant from 'assert';
 
 type Props = {
   store: Store,
   initialFilterText?: string,
   initialEnableRegExpFilter?: boolean,
   initialUnselectedSourceIds?: Array<string>,
+  createPasteFunction: ?CreatePasteFunction,
 };
 
 type State = {
@@ -88,6 +91,7 @@ export class ConsoleContainer extends React.Component {
     (this: any)._toggleRegExpFilter = this._toggleRegExpFilter.bind(this);
     (this: any)._updateFilterText = this._updateFilterText.bind(this);
     (this: any)._resetAllFilters = this._resetAllFilters.bind(this);
+    (this: any)._createPaste = this._createPaste.bind(this);
     const {initialFilterText, initialEnableRegExpFilter, initialUnselectedSourceIds} = props;
     this.state = {
       ready: false,
@@ -174,6 +178,7 @@ export class ConsoleContainer extends React.Component {
     return viewableFromReactElement(
       <ConsoleContainer
         store={this.props.store}
+        createPasteFunction={this.props.createPasteFunction}
         initialFilterText={this.state.filterText}
         initialEnableRegExpFilter={this.state.enableRegExpFilter}
         initialUnselectedSourceIds={this.state.unselectedSourceIds}
@@ -198,11 +203,48 @@ export class ConsoleContainer extends React.Component {
     this._updateFilterText('');
   }
 
-  render(): ?React.Element<any> {
-    if (!this.state.ready) { return <span />; }
+  async _createPaste(): Promise<void> {
+    if (this.props.createPasteFunction == null) {
+      return;
+    }
 
-    const actionCreators = this._getBoundActionCreators();
+    const {displayableRecords} = this._getFilterInfo();
+    const lines = displayableRecords
+      .filter(displayable => displayable.record.kind === 'message')
+      .map(displayable => {
+        const record = displayable.record;
+        const level = record.level.toString().toUpperCase();
+        const timestamp = record.timestamp.toLocaleString();
+        return `[${level}][${record.sourceId}][${timestamp}]\t ${record.text}`;
+      }).join('\n');
 
+    if (lines === '') {
+      // Can't create an empty paste!
+      atom.notifications.addWarning(
+        'There is nothing in your console to Paste! Check your console filters and try again.',
+      );
+      return;
+    }
+
+    atom.notifications.addInfo('Creating Paste...');
+
+    invariant(this.props.createPasteFunction != null);
+    const uri = await this.props.createPasteFunction(
+      lines,
+      {
+        title: 'Nuclide Console Paste',
+      },
+      'console paste',
+    );
+
+    atom.notifications.addSuccess(`Created Paste at ${uri}`);
+  }
+
+  _getFilterInfo(): {
+    isValid: boolean,
+    selectedSourceIds: Array<string>,
+    displayableRecords: Array<DisplayableRecord>,
+  } {
     const {pattern, isValid} =
       this._getFilterPattern(this.state.filterText, this.state.enableRegExpFilter);
 
@@ -217,10 +259,26 @@ export class ConsoleContainer extends React.Component {
       this.state.sources.length !== selectedSourceIds.length,
     );
 
+    return {
+      isValid,
+      selectedSourceIds,
+      displayableRecords,
+    };
+  }
+
+  render(): ?React.Element<any> {
+    if (!this.state.ready) { return <span />; }
+
+    const actionCreators = this._getBoundActionCreators();
+    const {isValid, selectedSourceIds, displayableRecords} = this._getFilterInfo();
     const filteredRecordCount = (
       this.state.displayableRecords.length -
       displayableRecords.length
     );
+
+    const createPaste = this.props.createPasteFunction != null ?
+      this._createPaste :
+      null;
 
     // TODO(matthewwithanm): serialize and restore `initialSelectedSourceId`
     return (
@@ -229,6 +287,7 @@ export class ConsoleContainer extends React.Component {
         execute={actionCreators.execute}
         selectExecutor={actionCreators.selectExecutor}
         clearRecords={actionCreators.clearRecords}
+        createPaste={createPaste}
         currentExecutor={this.state.currentExecutor}
         unselectedSourceIds={this.state.unselectedSourceIds}
         filterText={this.state.filterText}

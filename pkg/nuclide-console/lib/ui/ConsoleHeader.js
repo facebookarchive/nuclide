@@ -19,6 +19,8 @@ import {ModalMultiSelect} from '../../../nuclide-ui/ModalMultiSelect';
 import {Toolbar} from '../../../nuclide-ui/Toolbar';
 import {ToolbarLeft} from '../../../nuclide-ui/ToolbarLeft';
 import {ToolbarRight} from '../../../nuclide-ui/ToolbarRight';
+import addTooltip from '../../../nuclide-ui/add-tooltip';
+
 import {
   Button,
   ButtonSizes,
@@ -27,6 +29,7 @@ import invariant from 'assert';
 
 type Props = {
   clear: () => void,
+  createPaste: ?() => Promise<void>,
   invalidFilterInput: boolean,
   enableRegExpFilter: boolean,
   selectedSourceIds: Array<string>,
@@ -43,12 +46,19 @@ export default class ConsoleHeader extends React.Component {
   constructor(props: Props) {
     super(props);
     (this: any)._handleClearButtonClick = this._handleClearButtonClick.bind(this);
+    (this: any)._handleCreatePasteButtonClick = this._handleCreatePasteButtonClick.bind(this);
     (this: any)._handleReToggleButtonClick = this._handleReToggleButtonClick.bind(this);
     (this: any)._renderOption = this._renderOption.bind(this);
   }
 
   _handleClearButtonClick(event: SyntheticMouseEvent): void {
     this.props.clear();
+  }
+
+  _handleCreatePasteButtonClick(event: SyntheticMouseEvent): void {
+    if (this.props.createPaste != null) {
+      this.props.createPaste();
+    }
   }
 
   _handleReToggleButtonClick(): void {
@@ -116,6 +126,16 @@ export default class ConsoleHeader extends React.Component {
     });
 
     const MultiSelectOption = this._renderOption;
+    const pasteButton = this.props.createPaste == null ? null :
+      <Button
+        className="inline-block"
+        size={ButtonSizes.SMALL}
+        onClick={this._handleCreatePasteButtonClick}
+        ref={addTooltip({
+          title: 'Creates a Paste from the current contents of the console',
+        })}>
+        Create Paste
+      </Button>;
 
     return (
       <Toolbar location="top">
@@ -152,6 +172,7 @@ export default class ConsoleHeader extends React.Component {
           </ButtonGroup>
         </ToolbarLeft>
         <ToolbarRight>
+          {pasteButton}
           <Button
             size={ButtonSizes.SMALL}
             onClick={this._handleClearButtonClick}>

@@ -18,7 +18,7 @@ import type {
   RegisterExecutorFunction,
   Store,
 } from './types';
-
+import type {CreatePasteFunction} from '../../nuclide-paste-base';
 import createPackage from '../../commons-atom/createPackage';
 import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
 import {combineEpics, createEpicMiddleware} from '../../commons-node/redux-observable';
@@ -38,6 +38,7 @@ class Activation {
   _disposables: UniversalDisposable;
   _rawState: ?Object;
   _store: Store;
+  _createPasteFunction: ?CreatePasteFunction;
 
   constructor(rawState: ?Object) {
     this._rawState = rawState;
@@ -108,11 +109,19 @@ class Activation {
     );
   }
 
+  consumePasteProvider(provider: any): void {
+    this._createPasteFunction = (provider.createPaste: CreatePasteFunction);
+  }
+
   consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
     this._disposables.add(
       api.addOpener(uri => {
         if (uri === WORKSPACE_VIEW_URI) {
-          return viewableFromReactElement(<ConsoleContainer store={this._getStore()} />);
+          return viewableFromReactElement(
+            <ConsoleContainer
+              store={this._getStore()}
+              createPasteFunction={this._createPasteFunction}
+            />);
         }
       }),
       () => api.destroyWhere(item => item instanceof ConsoleContainer),
@@ -125,7 +134,11 @@ class Activation {
   }
 
   deserializeConsoleContainer(): Viewable {
-    return viewableFromReactElement(<ConsoleContainer store={this._getStore()} />);
+    return viewableFromReactElement(
+      <ConsoleContainer
+        store={this._getStore()}
+        createPasteFunction={this._createPasteFunction}
+      />);
   }
 
   provideOutputService(): OutputService {

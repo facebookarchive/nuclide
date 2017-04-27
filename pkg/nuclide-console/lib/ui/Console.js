@@ -31,6 +31,7 @@ type Props = {
   displayableRecords: Array<DisplayableRecord>,
   history: Array<string>,
   clearRecords: () => void,
+  createPaste: ?() => Promise<void>,
   execute: (code: string) => void,
   currentExecutor: ?Executor,
   executors: Map<string, Executor>,
@@ -132,6 +133,7 @@ export default class Console extends React.Component {
       <div className="nuclide-console">
         <ConsoleHeader
           clear={this.props.clearRecords}
+          createPaste={this.props.createPaste}
           invalidFilterInput={this.props.invalidFilterInput}
           enableRegExpFilter={this.props.enableRegExpFilter}
           filterText={this.props.filterText}
