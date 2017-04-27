@@ -11,10 +11,15 @@
 import {Observable} from 'rxjs';
 import * as Actions from './Actions';
 import invariant from 'invariant';
-import {getDeviceListProviders, getDeviceInfoProviders} from '../providers';
+import {arrayFlatten} from '../../../commons-node/collection';
+import {
+  getDeviceListProviders,
+  getDeviceInfoProviders,
+  getDeviceActionsProviders,
+} from '../providers';
 
 import type {ActionsObservable} from '../../../commons-node/redux-observable';
-import type {Action, Store, AppState} from '../types';
+import type {Action, Store, AppState, DeviceAction} from '../types';
 
 export function setDevicesEpic(
   actions: ActionsObservable<Action>,
@@ -42,8 +47,12 @@ export function setDeviceEpic(
     .switchMap(action => {
       invariant(action.type === Actions.SET_DEVICE);
       const state = store.getState();
-      return Observable.fromPromise(getInfoTables(state))
-        .switchMap(infoTables => Observable.of(Actions.setInfoTables(infoTables)));
+      return Observable.merge(
+        Observable.fromPromise(getInfoTables(state))
+          .switchMap(infoTables => Observable.of(Actions.setInfoTables(infoTables))),
+        Observable.fromPromise(getDeviceActions(state))
+          .switchMap(deviceActions => Observable.of(Actions.setDeviceActions(deviceActions))),
+      );
     });
 }
 
@@ -63,4 +72,17 @@ async function getInfoTables(state: AppState): Promise<Map<string, Map<string, s
     return [provider.getTitle(), await provider.fetch(state.host, device.name)];
   }));
   return new Map(infoTables);
+}
+
+async function getDeviceActions(state: AppState): Promise<DeviceAction[]> {
+  const device = state.device;
+  if (device == null) {
+    return [];
+  }
+  const actions = await Promise.all(
+    Array.from(getDeviceActionsProviders())
+      .filter(provider => provider.getType() === state.deviceType)
+      .map(provider => provider.getActions(state.host, device.name)),
+  );
+  return arrayFlatten(actions).sort((a, b) => a.name.localeCompare(b.name));
 }

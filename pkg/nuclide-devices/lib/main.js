@@ -22,10 +22,20 @@ import {createEmptyAppState} from './redux/createEmptyAppState';
 import * as Reducers from './redux/Reducers';
 import * as Actions from './redux/Actions';
 import * as Epics from './redux/Epics';
-import {getDeviceInfoProviders, getDeviceListProviders} from './providers';
+import {
+  getDeviceInfoProviders,
+  getDeviceListProviders,
+  getDeviceActionsProviders,
+} from './providers';
 
 import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
-import type {Store, DeviceListProvider, DeviceInfoProvider, DevicePanelServiceApi} from './types';
+import type {
+  Store,
+  DeviceListProvider,
+  DeviceInfoProvider,
+  DeviceActionsProvider,
+  DevicePanelServiceApi,
+} from './types';
 
 class Activation {
   _disposables: UniversalDisposable;
@@ -83,9 +93,10 @@ class Activation {
   provideDevicePanelServiceApi(): DevicePanelServiceApi {
     let pkg = this;
     this._disposables.add(() => { pkg = null; });
+    const expiredPackageMessage = 'Device panel service API used after deactivation';
     return {
       registerListProvider: (provider: DeviceListProvider) => {
-        invariant(pkg != null, 'Device panel service API used after deactivation');
+        invariant(pkg != null, expiredPackageMessage);
         const providers = getDeviceListProviders();
         providers.add(provider);
         this._refreshDeviceTypes();
@@ -97,8 +108,18 @@ class Activation {
         });
       },
       registerInfoProvider: (provider: DeviceInfoProvider) => {
-        invariant(pkg != null, 'Device panel service API used after deactivation');
+        invariant(pkg != null, expiredPackageMessage);
         const providers = getDeviceInfoProviders();
+        providers.add(provider);
+        return new Disposable(() => {
+          if (pkg != null) {
+            providers.delete(provider);
+          }
+        });
+      },
+      registerActionsProvider: (provider: DeviceActionsProvider) => {
+        invariant(pkg != null, expiredPackageMessage);
+        const providers = getDeviceActionsProviders();
         providers.add(provider);
         return new Disposable(() => {
           if (pkg != null) {

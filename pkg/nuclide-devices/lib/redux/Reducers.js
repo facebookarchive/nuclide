@@ -21,6 +21,7 @@ export function app(state: AppState, action: Action): AppState {
         deviceType: null,
         device: null,
         infoTables: new Map(),
+        actions: [],
         host,
       };
 
@@ -31,6 +32,7 @@ export function app(state: AppState, action: Action): AppState {
         deviceType,
         device: null,
         infoTables: new Map(),
+        actions: [],
       };
 
     case Actions.SET_DEVICE_TYPES:
@@ -66,6 +68,13 @@ export function app(state: AppState, action: Action): AppState {
       return {
         ...state,
         hosts,
+      };
+
+    case Actions.SET_DEVICE_ACTIONS:
+      const {actions} = action.payload;
+      return {
+        ...state,
+        actions,
       };
 
     default:

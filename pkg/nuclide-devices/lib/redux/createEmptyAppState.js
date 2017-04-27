@@ -18,6 +18,7 @@ export function createEmptyAppState(): AppState {
     deviceType: null,
     deviceTypes: [],
     device: null,
+    deviceActions: [],
     infoTables: new Map(),
   };
 }

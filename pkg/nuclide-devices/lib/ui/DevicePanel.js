@@ -17,7 +17,7 @@ import {DeviceTable} from './DeviceTable';
 import {InfoTable} from './InfoTable';
 
 import type {NuclideUri} from '../../../commons-node/nuclideUri';
-import type {Device} from '../types';
+import type {Device, DeviceAction} from '../types';
 
 export type Props = {
   refreshDevices: () => void,
@@ -29,6 +29,7 @@ export type Props = {
   host: NuclideUri,
   deviceTypes: string[],
   deviceType: ?string,
+  deviceActions: DeviceAction[],
   device: ?Device,
   infoTables: Map<string, Map<string, string>>,
 };
@@ -87,6 +88,7 @@ export class DevicePanel extends React.Component {
               host={this.props.host}
               setDeviceType={this.props.setDeviceType}
               setHost={this.props.setHost}
+              deviceActions={this.props.deviceActions}
             />
           </div>
           <div className="block">

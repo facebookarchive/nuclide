@@ -8,10 +8,11 @@
  * @flow
  */
 
-import {DeviceListProvider, DeviceInfoProvider} from './types';
+import {DeviceListProvider, DeviceInfoProvider, DeviceActionsProvider} from './types';
 
 const deviceListProviders: Set<DeviceListProvider> = new Set();
 const deviceInfoProviders: Set<DeviceInfoProvider> = new Set();
+const deviceActionsProviders: Set<DeviceActionsProvider> = new Set();
 
 export function getDeviceListProviders(): Set<DeviceListProvider> {
   return deviceListProviders;
@@ -19,4 +20,8 @@ export function getDeviceListProviders(): Set<DeviceListProvider> {
 
 export function getDeviceInfoProviders(): Set<DeviceInfoProvider> {
   return deviceInfoProviders;
+}
+
+export function getDeviceActionsProviders(): Set<DeviceActionsProvider> {
+  return deviceActionsProviders;
 }

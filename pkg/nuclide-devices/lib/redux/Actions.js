@@ -13,18 +13,21 @@ import type {
   SetDeviceTypesAction,
   SetDeviceTypeAction,
   SetDevicesAction,
+  SetDeviceActionsAction,
   SetDeviceAction,
   SetHostsAction,
   SetHostAction,
   SetInfoTablesAction,
   RefreshDevicesAction,
   Device,
+  DeviceAction,
 } from '../types';
 
 export const SET_DEVICE_TYPES = 'SET_DEVICE_TYPES';
 export const SET_DEVICE_TYPE = 'SET_DEVICE_TYPE';
 export const SET_DEVICES = 'SET_DEVICES';
 export const SET_DEVICE = 'SET_DEVICE';
+export const SET_DEVICE_ACTIONS = 'SET_DEVICE_ACTIONS';
 export const SET_HOSTS = 'SET_HOSTS';
 export const SET_HOST = 'SET_HOST';
 export const REFRESH_DEVICES = 'REFRESH_DEVICES';
@@ -83,5 +86,12 @@ export function setDevice(device: ?Device): SetDeviceAction {
   return {
     type: SET_DEVICE,
     payload: {device},
+  };
+}
+
+export function setDeviceActions(actions: DeviceAction[]): SetDeviceActionsAction {
+  return {
+    type: SET_DEVICE_ACTIONS,
+    payload: {actions},
   };
 }

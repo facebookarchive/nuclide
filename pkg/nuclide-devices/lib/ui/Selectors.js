@@ -12,6 +12,7 @@ import React from 'react';
 import {Dropdown} from '../../../nuclide-ui/Dropdown';
 
 import type {NuclideUri} from '../../../commons-node/nuclideUri';
+import type {DeviceAction} from '../types';
 
 type Props = {
   setHost: (host: NuclideUri) => void,
@@ -20,10 +21,24 @@ type Props = {
   host: NuclideUri,
   deviceTypes: string[],
   deviceType: ?string,
+  deviceActions: DeviceAction[],
 };
 
 export class Selectors extends React.Component {
   props: Props;
+
+  constructor(props: Props) {
+    super(props);
+    (this: any)._handleDeviceActionSelected = this._handleDeviceActionSelected.bind(this);
+  }
+
+  _handleDeviceActionSelected(value: ?string): void {
+    if (value == null) {
+      return;
+    }
+    const index = parseInt(value, 10);
+    this.props.deviceActions[index].callback();
+  }
 
   _getHostOptions(): Array<{value: ?string, label: string}> {
     return this.props.hosts.map(host => ({value: host, label: host}));
@@ -33,6 +48,16 @@ export class Selectors extends React.Component {
     const typeOptions = this.props.deviceTypes.map(type => ({value: type, label: type}));
     typeOptions.splice(0, 0, {value: null, label: 'Select...'});
     return typeOptions;
+  }
+
+  _getDeviceActionOptions(): Array<{value: ?string, label: string}> {
+    const actionOptions = this.props.deviceActions.map(
+      (action, index) => ({value: `${index}`, label: action.name}),
+    );
+    if (actionOptions.length > 0) {
+      actionOptions.splice(0, 0, {value: null, label: 'Select...'});
+    }
+    return actionOptions;
   }
 
   render(): React.Element<any> {
@@ -58,6 +83,22 @@ export class Selectors extends React.Component {
         />,
       ],
     ];
+
+    const deviceActionOptions = this._getDeviceActionOptions();
+    if (deviceActionOptions.length > 0) {
+      dropdowns.push(
+        [
+          'Actions:',
+          <Dropdown
+            className="inline-block"
+            options={deviceActionOptions}
+            onChange={this._handleDeviceActionSelected}
+            value={null}
+            key="actions"
+          />,
+        ],
+      );
+    }
 
     return (
       <table>
