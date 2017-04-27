@@ -75,21 +75,34 @@ type ClangProjectFlags = {
   ignoredCompilerFlags: Array<string>,
 };
 
-let _overrideIncludePath = undefined;
-function overrideIncludePath(src: string): string {
-  if (_overrideIncludePath === undefined) {
-    _overrideIncludePath = null;
-    try {
-      // $FlowFB
-      _overrideIncludePath = require('./fb/custom-flags').overrideIncludePath;
-    } catch (e) {
-      // open-source version
-    }
+let _customFlags;
+function getCustomFlags() {
+  if (_customFlags !== undefined) {
+    return _customFlags;
   }
-  if (_overrideIncludePath != null) {
-    return _overrideIncludePath(src);
+  try {
+    // $FlowFB
+    _customFlags = require('./fb/custom-flags');
+  } catch (e) {
+    _customFlags = null;
+  }
+  return _customFlags;
+}
+
+function overrideIncludePath(src: string): string {
+  const customFlags = getCustomFlags();
+  if (customFlags != null) {
+    return customFlags.overrideIncludePath(src);
   }
   return src;
+}
+
+function customizeBuckTarget(root: string, target: string): Promise<Array<string>> {
+  const customFlags = getCustomFlags();
+  if (customFlags != null) {
+    return customFlags.customizeBuckTarget(root, target);
+  }
+  return Promise.resolve([target]);
 }
 
 export default class ClangFlagsManager {
@@ -446,7 +459,7 @@ export default class ClangFlagsManager {
         '--config',
         'client.skip-action-graph-cache=true',
 
-        buildTarget,
+        ...await customizeBuckTarget(buckProjectRoot, buildTarget),
         // TODO(hansonw): Any alternative to doing this?
         // '-L',
         // String(os.cpus().length / 2),
@@ -458,7 +471,8 @@ export default class ClangFlagsManager {
       logger.error(error);
       throw error;
     }
-    let pathToCompilationDatabase = buildReport.results[buildTarget].output;
+    const firstResult = Object.keys(buildReport.results)[0];
+    let pathToCompilationDatabase = buildReport.results[firstResult].output;
     pathToCompilationDatabase = nuclideUri.join(
       buckProjectRoot,
       pathToCompilationDatabase,
