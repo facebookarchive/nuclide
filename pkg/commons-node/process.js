@@ -16,7 +16,6 @@ import {MultiMap} from './collection';
 import nuclideUri from './nuclideUri';
 import {splitStream, takeWhileInclusive} from './observable';
 import {observeStream} from './stream';
-import {maybeToString} from './string';
 import {Observable, TimeoutError} from 'rxjs';
 import invariant from 'assert';
 import {quote} from 'shell-quote';
@@ -548,26 +547,6 @@ function writeToStdin(
 }
 
 /**
- * Simple wrapper around asyncExecute that throws if the exitCode is non-zero.
- */
-export async function checkOutput(
-  command: string,
-  args: Array<string>,
-  options?: AsyncExecuteOptions = {},
-): Promise<AsyncExecuteReturn> {
-  const result = await asyncExecute(nuclideUri.expandHomeDir(command), args, options);
-  if (result.exitCode !== 0) {
-    const reason = result.exitCode != null ? `exitCode: ${result.exitCode}` :
-      `error: ${maybeToString(result.errorMessage)}`;
-    throw new Error(
-      `asyncExecute "${command}" failed with ${reason}, ` +
-      `stderr: ${result.stderr}, stdout: ${result.stdout}.`,
-    );
-  }
-  return result;
-}
-
-/**
  * Run a command, accumulate the output. Errors are surfaced as stream errors and unsubscribing will
  * kill the process.
  */
@@ -664,17 +643,10 @@ function isWindowsPlatform(): boolean {
 }
 
 export async function psTree(): Promise<Array<ProcessInfo>> {
-  let psPromise;
-  const isWindows = isWindowsPlatform();
-  if (isWindows) {
+  const stdout = isWindowsPlatform()
     // See also: https://github.com/nodejs/node-v0.x-archive/issues/2318
-    psPromise = checkOutput('wmic.exe',
-      ['PROCESS', 'GET', 'ParentProcessId,ProcessId,Name']);
-  } else {
-    psPromise = checkOutput('ps',
-      ['-A', '-o', 'ppid,pid,comm']);
-  }
-  const {stdout} = await psPromise;
+    ? await runCommand('wmic.exe', ['PROCESS', 'GET', 'ParentProcessId,ProcessId,Name']).toPromise()
+    : await runCommand('ps', ['-A', '-o', 'ppid,pid,comm']).toPromise();
   return parsePsOutput(stdout);
 }
 

@@ -16,7 +16,6 @@ import invariant from 'assert';
 
 import {
   asyncExecute,
-  checkOutput,
   spawn,
   getOutputStream,
   killProcess,
@@ -40,22 +39,6 @@ describe('commons-node/process', () => {
 
   afterEach(() => {
     Object.defineProperty(process, 'platform', {value: origPlatform});
-  });
-
-  describe('checkOutput', () => {
-    if (origPlatform !== 'win32') {
-      it('returns stdout of the running process', () => {
-        waitsForPromise(async () => {
-          const val = await checkOutput('echo', ['-n', 'foo'], {env: process.env});
-          expect(val.stdout).toEqual('foo');
-        });
-      });
-      it('throws an error if the exit code !== 0', () => {
-        waitsForPromise({shouldReject: true}, async () => {
-          await checkOutput(process.execPath, ['-e', 'process.exit(1)']);
-        });
-      });
-    }
   });
 
   describe('asyncExecute', () => {
