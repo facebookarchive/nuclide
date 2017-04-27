@@ -105,6 +105,7 @@ describe('ClangFlagsManager', () => {
         '/Users/whoami/project/local/path/EXExample.m', originalArgs, buckProjectRoot);
 
     const expectedArgs = [
+      '/usr/bin/clang',
       '-mios-simulator-version-min=7.0',
       '-c',
       '-x',
@@ -158,7 +159,7 @@ describe('ClangFlagsManager', () => {
   it('gets flags for a source file', () => {
     waitsForPromise(async () => {
       let result = await flagsManager.getFlagsForSrc('test.cpp');
-      expect(nullthrows(result).flags).toEqual(['-fPIC', '-O3']);
+      expect(nullthrows(result).flags).toEqual(['g++', '-fPIC', '-O3']);
       expect(nullthrows(result).flagsFile).toEqual(
         nuclideUri.join(__dirname, 'fixtures', 'BUCK'),
       );
@@ -166,13 +167,13 @@ describe('ClangFlagsManager', () => {
       // Make sure this is cached (different file, but same target).
       buildSpy.wasCalled = false;
       result = await flagsManager.getFlagsForSrc('test.h');
-      expect(nullthrows(result).flags).toEqual(['-fPIC', '-O3']);
+      expect(nullthrows(result).flags).toEqual(['g++', '-fPIC', '-O3']);
       expect(BuckService.build).not.toHaveBeenCalled();
 
       // Make sure cache gets reset.
       flagsManager.reset();
       result = await flagsManager.getFlagsForSrc('test.cpp');
-      expect(nullthrows(result).flags).toEqual(['-fPIC', '-O3']);
+      expect(nullthrows(result).flags).toEqual(['g++', '-fPIC', '-O3']);
       expect(BuckService.build).toHaveBeenCalled();
     });
   });
@@ -194,20 +195,20 @@ describe('ClangFlagsManager', () => {
   it('gets flags for header files', () => {
     waitsForPromise(async () => {
       let result = await flagsManager.getFlagsForSrc('header.h');
-      expect(nullthrows(result).flags).toEqual(['-fPIC', '-O3']);
+      expect(nullthrows(result).flags).toEqual(['g++', '-fPIC', '-O3']);
 
       result = await flagsManager.getFlagsForSrc('header.hpp');
-      expect(nullthrows(result).flags).toEqual(['-fPIC', '-O3']);
+      expect(nullthrows(result).flags).toEqual(['g++', '-fPIC', '-O3']);
 
       // When headers are not properly owned, we should look for source files
       // in the same directory.
       const spy = ownerSpy.andReturn(['//test:__default_headers__']);
       const dir = nuclideUri.join(__dirname, 'fixtures');
       result = await flagsManager.getFlagsForSrc(nuclideUri.join(dir, 'testInternal.h'));
-      expect(nullthrows(result).flags).toEqual(['-fPIC', '-O3', '-x', 'c++']);
+      expect(nullthrows(result).flags).toEqual(['g++', '-fPIC', '-O3', '-x', 'c++']);
 
       result = await flagsManager.getFlagsForSrc(nuclideUri.join(dir, 'test-inl.h'));
-      expect(nullthrows(result).flags).toEqual(['-fPIC', '-O3', '-x', 'c++']);
+      expect(nullthrows(result).flags).toEqual(['g++', '-fPIC', '-O3', '-x', 'c++']);
 
       result = await flagsManager.getFlagsForSrc(nuclideUri.join(dir, 'test2.h'));
       expect(nullthrows(result).flags).toBeNull();
@@ -223,12 +224,12 @@ describe('ClangFlagsManager', () => {
     waitsForPromise(async () => {
       let testFile = nuclideUri.join(__dirname, 'fixtures', 'test.cpp');
       let result = await flagsManager.getFlagsForSrc(testFile);
-      expect(nullthrows(result).flags).toEqual(['-fPIC', '-O3']);
+      expect(nullthrows(result).flags).toEqual(['g++', '-fPIC', '-O3']);
       expect(BuckService.build).not.toHaveBeenCalled();
 
       testFile = nuclideUri.join(__dirname, 'fixtures', 'test.h');
       result = await flagsManager.getFlagsForSrc(testFile);
-      expect(nullthrows(result).flags).toEqual(['-fPIC', '-O3']);
+      expect(nullthrows(result).flags).toEqual(['g++', '-fPIC', '-O3']);
 
       // Fall back to Buck if it's not in the compilation DB.
       testFile = nuclideUri.join(__dirname, 'fixtures', 'test2.cpp');
@@ -243,6 +244,7 @@ describe('ClangFlagsManager', () => {
       const testDir = await copyFixture('cpp_cmake_project', __dirname);
 
       const expectedFlags = [
+        'g++',
         '-fPIC',
         '-D_THIS_IS_MY_CRAZY_DEFINE',
         '-O2',

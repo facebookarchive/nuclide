@@ -58,7 +58,8 @@ function spawnClangProcess(
         args.push('--libclang-file', libClangLibraryFile);
       }
       args.push('--', src);
-      args.push(...flags);
+      // Note that the first flag is always the compiler path.
+      args.push(...flags.slice(1));
       const options = {
         cwd: nuclideUri.dirname(pathToLibClangServer),
         stdio: 'pipe',
