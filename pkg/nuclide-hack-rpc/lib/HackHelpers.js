@@ -12,7 +12,7 @@ import type {HackRange} from './rpc-types';
 import type {HackSpan} from './OutlineView';
 
 import invariant from 'assert';
-import {asyncExecute} from '../../commons-node/process';
+import {runCommandDetailed} from '../../commons-node/process';
 import {PromiseQueue} from '../../commons-node/promise-executors';
 import {getHackExecOptions} from './hack-config';
 import {Point, Range} from 'simple-text-buffer';
@@ -59,7 +59,18 @@ export async function callHHClient(
         logger.log(`Calling Hack: ${hackCommand} with ${allArgs.toString()}`);
         execResult = await trackTiming(
           trackingIdOfHackArgs(args),
-          () => asyncExecute(hackCommand, allArgs, {stdin: processInput}),
+          () => {
+            // TODO: Can't we do a better job with error handling here?
+            try {
+              return runCommandDetailed(
+                hackCommand,
+                allArgs,
+                {stdin: processInput, isExitError: () => false},
+              ).toPromise();
+            } catch (err) {
+              return {stdout: '', stderr: ''};
+            }
+          },
         );
 
         const {stdout, stderr} = execResult;

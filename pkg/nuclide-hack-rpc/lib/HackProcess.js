@@ -17,7 +17,7 @@ import type {HackCompletionsResult} from './rpc-types';
 import type {AutocompleteResult} from '../../nuclide-language-service/lib/LanguageService';
 
 import nuclideUri from '../../commons-node/nuclideUri';
-import {asyncExecute, spawn} from '../../commons-node/process';
+import {runCommand, spawn} from '../../commons-node/process';
 import {maybeToString} from '../../commons-node/string';
 import {RpcProcess} from '../../nuclide-rpc';
 import {getHackCommand, findHackConfigDir, HACK_FILE_EXTENSIONS} from './hack-config';
@@ -300,12 +300,20 @@ async function createHackProcess(
 
   logger.logInfo(`Creating new hack connection for ${configDir}: ${command}`);
   logger.logInfo(`Current PATH: ${maybeToString(process.env.PATH)}`);
-  const startServerResult = await asyncExecute(command, ['start', configDir]);
-  logger.logInfo(
-    `Hack connection start server results:\n${JSON.stringify(startServerResult, null, 2)}\n`);
-  const {exitCode} = startServerResult;
-  if (exitCode !== 0 && exitCode !== HACK_SERVER_ALREADY_EXISTS_EXIT_CODE) {
-    throw new Error(`Hack server start failed with code: ${String(exitCode)}`);
+  try {
+    await runCommand(
+      command,
+      ['start', configDir],
+      {
+        isExitError: ({exitCode}) =>
+          !(exitCode === 0 || exitCode === HACK_SERVER_ALREADY_EXISTS_EXIT_CODE),
+      },
+    ).toPromise();
+  } catch (err) {
+    if (err.exitCode != null) {
+      throw new Error(`Hack server start failed with code: ${String(err.exitCode)}`);
+    }
+    throw new Error(`Hack server failed with error: ${err.message}`);
   }
   const processStream = spawn(
     command,
