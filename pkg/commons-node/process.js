@@ -279,8 +279,7 @@ function _createProcessStream(
 
       const exitEvents = observeProcessExitMessage(process)
         .withLatestFrom(accumulatedStderr)
-        .map(([rawEvent, stderr]) => {
-          const event = {...rawEvent, stderr};
+        .map(([event, stderr]) => {
           if (isExitError(event)) {
             throw new ProcessExitError(event, process, stderr);
           }

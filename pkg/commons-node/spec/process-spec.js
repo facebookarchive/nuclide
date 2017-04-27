@@ -557,7 +557,7 @@ describe('commons-node/process', () => {
     });
 
     it('signal', () => {
-      expect(exitEventToMessage({kind: 'exit', exitCode: null, signal: 'SIGTERM', stderr: ''}))
+      expect(exitEventToMessage({kind: 'exit', exitCode: null, signal: 'SIGTERM'}))
         .toBe('signal SIGTERM');
     });
   });
@@ -568,6 +568,5 @@ function makeExitMessage(exitCode: number): ProcessExitMessage {
     kind: 'exit',
     exitCode,
     signal: null,
-    stderr: '',
   };
 }
