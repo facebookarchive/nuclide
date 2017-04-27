@@ -135,6 +135,14 @@ export function launchPhpScriptWithXDebugEnabled(
     const output = `child_process(${proc.pid}) stdout: ${block}`;
     logger.log(output);
   });
+  proc.stderr.on('data', chunk => {
+    const block: string = chunk.toString().trim();
+    const output = `child_process(${proc.pid}) stderr: ${block}`;
+    logger.log(output);
+    if (sendToOutputWindowAndResolve != null) {
+      sendToOutputWindowAndResolve(block, 'error');
+    }
+  });
   proc.on('error', err => {
     logger.log(`child_process(${proc.pid}) error: ${err}`);
     if (sendToOutputWindowAndResolve != null) {
