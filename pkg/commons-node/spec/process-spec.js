@@ -422,6 +422,24 @@ describe('commons-node/process', () => {
       });
     });
 
+    it('includes stdout and stderr in ProcessExitErrors', () => {
+      waitsForPromise(async () => {
+        let error;
+        try {
+          await runCommand(
+            process.execPath,
+            ['-e', 'process.stderr.write("oopsy"); process.stdout.write("daisy"); process.exit(1)'],
+          ).toPromise();
+        } catch (err) {
+          error = err;
+        }
+        invariant(error != null);
+        expect(error.name).toBe('ProcessExitError');
+        expect(error.stderr).toBe('oopsy');
+        expect(error.stdout).toBe('daisy');
+      });
+    });
+
     it('accumulates the stderr if the process exits with a non-zero code', () => {
       waitsForPromise(async () => {
         let error;

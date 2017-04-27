@@ -93,6 +93,7 @@ export class ProcessExitError extends Error {
   exitCode: ?number;
   signal: ?string;
   stderr: string;
+  stdout: ?string; // stdout will only be accumulated by `runCommand()`
   process: child_process$ChildProcess;
 
   constructor(
@@ -100,6 +101,7 @@ export class ProcessExitError extends Error {
     signal: ?string,
     proc: child_process$ChildProcess,
     stderr: string,
+    stdout?: string,
   ) {
     // $FlowIssue: This isn't typed in the Flow node type defs
     const {spawnargs} = proc;
@@ -111,6 +113,7 @@ export class ProcessExitError extends Error {
     this.exitCode = exitCode;
     this.signal = signal;
     this.stderr = stderr;
+    this.stdout = stdout;
     this.process = proc;
   }
 }
@@ -571,13 +574,30 @@ export function runCommandDetailed(
 ): Observable<{stdout: string, stderr: string, exitCode: ?number}> {
   const maxBuffer = idx(options, _ => _.maxBuffer) || DEFAULT_MAX_BUFFER;
   return observeProcess(command, args, {...options, maxBuffer})
+    .catch(error => {
+      // Catch ProcessExitErrors so that we can add stdout to them.
+      if (error instanceof ProcessExitError) {
+        return Observable.of({kind: 'process-exit-error', error});
+      }
+      throw error;
+    })
     .reduce(
       (acc, event) => {
         switch (event.kind) {
           case 'stdout': return {...acc, stdout: acc.stdout + event.data};
           case 'stderr': return {...acc, stderr: acc.stderr + event.data};
           case 'exit': return {...acc, exitCode: event.exitCode};
-          default: throw new Error(`Invalid event kind: ${event.kind}`);
+          case 'process-exit-error':
+            const {error} = event;
+            throw new ProcessExitError(
+              error.exitCode,
+              error.signal,
+              error.process,
+              acc.stderr,
+              acc.stdout,
+            );
+          default:
+            throw new Error(`Invalid event kind: ${event.kind}`);
         }
       },
       {stdout: '', stderr: '', exitCode: null},
