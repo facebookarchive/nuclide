@@ -12,7 +12,7 @@ import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
 import type {HgExecOptions} from './hg-exec-types';
 
 import {Observable} from 'rxjs';
-import {asyncExecute, createArgsForScriptCommand} from '../../commons-node/process';
+import {runCommandDetailed, createArgsForScriptCommand} from '../../commons-node/process';
 import {getLogger} from '../../nuclide-logging';
 import fsPromise from '../../commons-node/fsPromise';
 import {
@@ -52,11 +52,10 @@ const EXCLUDE_FROM_HG_BLACKBOX_COMMANDS = new Set([
  */
 export async function hgAsyncExecute(args_: Array<string>, options_: HgExecOptions): Promise<any> {
   const {command, args, options} = await getHgExecParams(args_, options_);
-  const result = await asyncExecute(command, args, options);
-  if (result.exitCode === 0) {
-    return result;
-  } else {
-    logAndThrowHgError(args, options, result.stdout, result.stderr);
+  try {
+    return await runCommandDetailed(command, args, options).toPromise();
+  } catch (err) {
+    logAndThrowHgError(args, options, err.stdout, err.stderr);
   }
 }
 
