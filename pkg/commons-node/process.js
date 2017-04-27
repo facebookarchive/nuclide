@@ -95,16 +95,21 @@ export class ProcessExitError extends Error {
   stderr: string;
   process: child_process$ChildProcess;
 
-  constructor(exitMessage: ProcessExitMessage, proc: child_process$ChildProcess, stderr: string) {
+  constructor(
+    exitCode: ?number,
+    signal: ?string,
+    proc: child_process$ChildProcess,
+    stderr: string,
+  ) {
     // $FlowIssue: This isn't typed in the Flow node type defs
     const {spawnargs} = proc;
     const commandName = spawnargs[0] === process.execPath ? spawnargs[1] : spawnargs[0];
     super(
-      `"${commandName}" failed with ${exitEventToMessage(exitMessage)}\n\n${stderr}`,
+      `"${commandName}" failed with ${exitEventToMessage({exitCode, signal})}\n\n${stderr}`,
     );
     this.name = 'ProcessExitError';
-    this.exitCode = exitMessage.exitCode;
-    this.signal = exitMessage.signal;
+    this.exitCode = exitCode;
+    this.signal = signal;
     this.stderr = stderr;
     this.process = proc;
   }
@@ -281,7 +286,7 @@ function _createProcessStream(
         .withLatestFrom(accumulatedStderr)
         .map(([event, stderr]) => {
           if (isExitError(event)) {
-            throw new ProcessExitError(event, process, stderr);
+            throw new ProcessExitError(event.exitCode, event.signal, process, stderr);
           }
           return event;
         });
@@ -607,7 +612,7 @@ export async function getOriginalEnvironment(): Promise<Object> {
 }
 
 // Returns a string suitable for including in displayed error messages.
-export function exitEventToMessage(event: ProcessExitMessage): string {
+export function exitEventToMessage(event: {exitCode: ?number, signal: ?string}): string {
   if (event.exitCode != null) {
     return `exit code ${event.exitCode}`;
   } else {
