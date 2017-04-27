@@ -29,7 +29,11 @@ function isValidRange(
   clangRange: atom$Range,
 ): boolean {
   // Some ranges are unbounded/invalid (end with -1) or empty.
-  return clangRange.end.row !== -1 && !clangRange.start.isEqual(clangRange.end);
+  return (
+    clangRange.start.row !== -1 &&
+    clangRange.end.row !== -1 &&
+    !clangRange.start.isEqual(clangRange.end)
+  );
 }
 
 function getRangeFromPoint(
