@@ -15,7 +15,7 @@ import type {DeviceDescription} from '../../nuclide-adb-sdb-rpc/lib/types';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {Device, DeviceListProvider} from '../../nuclide-devices/lib/types';
 
-export class AndroidTizenBaseFetcher implements DeviceListProvider {
+export class ATDeviceListProvider implements DeviceListProvider {
   _type: string;
   _rpcFactory: (host: NuclideUri) => AdbService | SdbService;
   _dbAvailable: Map<NuclideUri, Promise<boolean>>;

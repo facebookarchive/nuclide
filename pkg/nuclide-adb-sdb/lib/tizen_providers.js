@@ -8,11 +8,16 @@
  * @flow
  */
 
-import {ATDeviceInfoProvider} from './ATDeviceInfoProvider';
 import {getSdbServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {ATDeviceListProvider} from './ATDeviceListProvider';
+import {ATDeviceInfoProvider} from './ATDeviceInfoProvider';
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
-export function createTizenInfoProvider() {
+export function createTizenDeviceListProvider(): ATDeviceListProvider {
+  return new ATDeviceListProvider('tizen', (host: NuclideUri) => getSdbServiceByNuclideUri(host));
+}
+
+export function createTizenInfoProvider(): ATDeviceInfoProvider {
   return new ATDeviceInfoProvider('tizen', (host: NuclideUri) => getSdbServiceByNuclideUri(host));
 }

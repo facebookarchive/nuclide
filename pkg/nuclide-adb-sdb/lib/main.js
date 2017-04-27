@@ -10,10 +10,8 @@
 
 import createPackage from '../../commons-atom/createPackage';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {AndroidFetcher} from './AndroidFetcher';
-import {TizenFetcher} from './TizenFetcher';
-import {createAndroidInfoProvider} from './AndroidInfoProvider';
-import {createTizenInfoProvider} from './TizenInfoProvider';
+import {createAndroidDeviceListProvider, createAndroidInfoProvider} from './android_providers';
+import {createTizenDeviceListProvider, createTizenInfoProvider} from './tizen_providers';
 
 import type {DevicePanelServiceApi} from '../../nuclide-devices/lib/types';
 
@@ -29,8 +27,8 @@ class Activation {
   }
 
   consumeDevicePanelServiceApi(api: DevicePanelServiceApi): void {
-    this._disposables.add(api.registerListProvider(new AndroidFetcher()));
-    this._disposables.add(api.registerListProvider(new TizenFetcher()));
+    this._disposables.add(api.registerListProvider(createAndroidDeviceListProvider()));
+    this._disposables.add(api.registerListProvider(createTizenDeviceListProvider()));
     this._disposables.add(api.registerInfoProvider(createAndroidInfoProvider()));
     this._disposables.add(api.registerInfoProvider(createTizenInfoProvider()));
   }
