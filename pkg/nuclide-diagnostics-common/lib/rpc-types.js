@@ -67,6 +67,9 @@ export type FileDiagnosticMessage = {
   range?: atom$Range,
   trace?: Array<Trace>,
   fix?: Fix,
+  // Indicates that the message should still be displayed, but there should be some UI indicating
+  // that it is out of date. TODO(matthewwithanm) implement this UI.
+  stale?: boolean,
 };
 
 export type ProjectDiagnosticMessage = {
@@ -77,4 +80,5 @@ export type ProjectDiagnosticMessage = {
   html?: string,
   range?: atom$Range,
   trace?: Array<Trace>,
+  stale?: boolean,
 };
