@@ -8,13 +8,11 @@
  * @flow
  */
 
-
-import type {Observable} from 'rxjs';
-
 import type {ServerStatusType} from '..';
 import type {FlowProcess as FlowProcessType} from '../lib/FlowProcess';
 
 import os from 'os';
+import {Observable} from 'rxjs';
 
 function resetModules() {
   for (const key in require.cache) {
@@ -47,18 +45,14 @@ describe('FlowProcess', () => {
     resetModules();
 
     const processModule = require('../../commons-node/process');
-    const checkOutput = processModule.checkOutput;
+    const runCommand = processModule.runCommand;
 
-    spyOn(processModule, 'checkOutput')
-      .andCallFake(async function(command, args, options) {
+    spyOn(processModule, 'runCommand')
+      .andCallFake((command, args, options) => {
         if (args && args[0] === 'version' && args[1] === '--json') {
-          return new Promise(resolve => resolve({
-            stdout: JSON.stringify({binary}),
-            stderr: '',
-            exitCode: 0,
-          }));
+          return new Observable.of(JSON.stringify({binary}));
         }
-        return checkOutput.call(this, command, args, options);
+        return runCommand.call(this, command, args, options);
       });
 
     spyOn(processModule, 'asyncExecute')

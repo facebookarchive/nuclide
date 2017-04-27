@@ -15,7 +15,7 @@ import {CompositeDisposable} from 'event-kit';
 
 import nuclideUri from '../../commons-node/nuclideUri';
 import which from '../../commons-node/which';
-import {checkOutput} from '../../commons-node/process';
+import {runCommand} from '../../commons-node/process';
 import {ConfigCache} from '../../commons-node/ConfigCache';
 
 const FLOW_BIN_PATH = 'node_modules/.bin/flow';
@@ -165,12 +165,12 @@ async function getFlowVersionInformation(
   root: string | null,
 ): Promise<?{flowVersion: string, pathToFlow: string}> {
   try {
-    const result = await checkOutput(
+    const result = await runCommand(
       flowPath,
       ['version', '--json'],
       root != null ? {cwd: root} : undefined,
-    );
-    const json = JSON.parse(result.stdout);
+    ).toPromise();
+    const json = JSON.parse(result);
     return {
       flowVersion: json.semver,
       pathToFlow: json.binary,
