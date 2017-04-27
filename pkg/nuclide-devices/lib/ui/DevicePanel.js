@@ -9,11 +9,10 @@
  */
 
 import React from 'react';
-import nuclideUri from '../../../commons-node/nuclideUri';
 import {PanelComponentScroller} from '../../../nuclide-ui/PanelComponentScroller';
 import {Observable, Subscription} from 'rxjs';
 import invariant from 'invariant';
-import {Dropdown} from '../../../nuclide-ui/Dropdown';
+import {Selectors} from './Selectors';
 import {DeviceTable} from './DeviceTable';
 import {InfoTable} from './InfoTable';
 
@@ -54,44 +53,6 @@ export class DevicePanel extends React.Component {
     this._deviceFetcherSubscription.unsubscribe();
   }
 
-  _createSelectorSection(): React.Element<any> {
-    const hostOptions = this.props.hosts.map(
-      host => ({value: host, label: host === 'local' ? host : nuclideUri.getHostname(host)}),
-    );
-    const typeOptions = this.props.deviceTypes.map(type => ({value: type, label: type}));
-    typeOptions.splice(0, 0, {value: null, label: 'Select...'});
-    return (
-      <table>
-        <tr>
-          <td>
-            <label className="inline-block">Connection:</label>
-          </td>
-          <td>
-            <Dropdown
-              className="inline-block"
-              options={hostOptions}
-              onChange={this.props.setHost}
-              value={this.props.host}
-            />
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <label className="inline-block">Device type:</label>
-          </td>
-          <td>
-            <Dropdown
-              className="inline-block"
-              options={typeOptions}
-              onChange={this.props.setDeviceType}
-              value={this.props.deviceType}
-            />
-          </td>
-        </tr>
-      </table>
-    );
-  }
-
   _createDeviceTable(): ?React.Element<any> {
     if (this.props.deviceType === null) {
       return null;
@@ -119,7 +80,14 @@ export class DevicePanel extends React.Component {
       <PanelComponentScroller>
         <div className="nuclide-device-panel-container">
           <div className="block">
-            {this._createSelectorSection()}
+            <Selectors
+              deviceType={this.props.deviceType}
+              deviceTypes={this.props.deviceTypes}
+              hosts={this.props.hosts}
+              host={this.props.host}
+              setDeviceType={this.props.setDeviceType}
+              setHost={this.props.setHost}
+            />
           </div>
           <div className="block">
             {this._createDeviceTable()}
