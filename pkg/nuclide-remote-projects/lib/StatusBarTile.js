@@ -34,9 +34,6 @@ export default class StatusBarTile extends React.Component {
     switch (this.props.connectionState) {
       case ConnectionState.NONE:
         break;
-      case ConnectionState.LOCAL:
-        iconName = 'device-desktop';
-        break;
       case ConnectionState.CONNECTED:
         iconName = 'cloud-upload';
         break;
