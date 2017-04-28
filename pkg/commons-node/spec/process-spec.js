@@ -15,7 +15,6 @@ import child_process from 'child_process';
 import invariant from 'assert';
 
 import {
-  asyncExecute,
   spawn,
   getOutputStream,
   killProcess,
@@ -40,46 +39,6 @@ describe('commons-node/process', () => {
 
   afterEach(() => {
     Object.defineProperty(process, 'platform', {value: origPlatform});
-  });
-
-  describe('asyncExecute', () => {
-    if (origPlatform !== 'win32') {
-      it('asyncExecute returns an error if the process cannot be started', () => {
-        waitsForPromise(async () => {
-          const result = await asyncExecute('non_existing_command', /* args */ []);
-          expect(result.errorCode).toBe('ENOENT');
-        });
-      });
-      it('asyncExecute does not throw an error if the exit code !== 0', () => {
-        waitsForPromise(async () => {
-          const {exitCode} =
-              await asyncExecute(process.execPath, ['-e', 'process.exit(1)']);
-          expect(exitCode).toBe(1);
-        });
-      });
-      it('supports stdin', () => {
-        waitsForPromise(async () => {
-          const result = await asyncExecute('cat', [], {stdin: 'test'});
-          expect(result.stdout).toBe('test');
-        });
-      });
-      it('supports a timeout', () => {
-        waitsForPromise(async () => {
-          jasmine.useRealClock();
-          let result = await asyncExecute('sleep', ['5'], {timeout: 100});
-          expect(result.errorCode).toBe('EUNKNOWN');
-
-          result = await asyncExecute('sleep', ['0'], {timeout: 100});
-          expect(result.exitCode).toBe(0);
-        });
-      });
-      it('enforces maxBuffer', () => {
-        waitsForPromise(async () => {
-          const result = await asyncExecute('yes', [], {maxBuffer: 100});
-          expect(result.errorMessage).toContain('maxBuffer');
-        });
-      });
-    }
   });
 
   describe('process.killProcess', () => {

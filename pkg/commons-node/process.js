@@ -55,17 +55,6 @@ function logCall(duration, command, args) {
   });
 }
 
-export type AsyncExecuteReturn = {
-  // If the process fails to even start up, exitCode will not be set
-  // and errorCode / errorMessage will contain the actual error message.
-  // Otherwise, exitCode will always be defined.
-  errorMessage?: string,
-  errorCode?: string,
-  exitCode?: number,
-  stderr: string,
-  stdout: string,
-};
-
 type CreateProcessStreamOptions = {
   killTreeOnComplete?: ?boolean,
   exitErrorBufferSize?: ?number,
@@ -144,12 +133,6 @@ type ErrnoError = {
 };
 
 export type ProcessError = ErrnoError | ProcessExitError;
-
-export type AsyncExecuteOptions = child_process$execFileOpts & {
-  // The contents to write to stdin.
-  stdin?: ?string,
-  dontLogInNuclide?: ?boolean,
-};
 
 const STREAM_NAMES = ['stdin', 'stdout', 'stderr'];
 
@@ -480,60 +463,6 @@ export function observeProcessRaw(
     options,
   )
     .flatMap(process => getOutputStream(process, {...options, splitByLines: false}));
-}
-
-/**
- * Returns a promise that resolves to the result of executing a process.
- *
- * @param command The command to execute.
- * @param args The arguments to pass to the command.
- * @param options Options for changing how to run the command.
- *     Supports the options listed here: http://nodejs.org/api/child_process.html
- *     in addition to the custom options listed in AsyncExecuteOptions.
- */
-export async function asyncExecute(
-  command: string,
-  args: Array<string>,
-  options?: AsyncExecuteOptions = {},
-): Promise<AsyncExecuteReturn> {
-  const now = performanceNow();
-  await new Promise(resolve => whenShellEnvironmentLoaded(resolve));
-  return new Promise((resolve, reject) => {
-    const process = child_process.execFile(
-      nuclideUri.expandHomeDir(command),
-      args,
-      {maxBuffer: DEFAULT_MAX_BUFFER, ...options},
-      // Node embeds various properties like code/errno in the Error object.
-      (err: any /* Error */, stdoutBuf, stderrBuf) => {
-        if (!options || !options.dontLogInNuclide) {
-          logCall(Math.round(performanceNow() - now), command, args);
-        }
-        const stdout = stdoutBuf.toString('utf8');
-        const stderr = stderrBuf.toString('utf8');
-        if (err == null) {
-          resolve({
-            stdout,
-            stderr,
-            exitCode: 0,
-          });
-        } else if (Number.isInteger(err.code)) {
-          resolve({
-            stdout,
-            stderr,
-            exitCode: err.code,
-          });
-        } else {
-          resolve({
-            stdout,
-            stderr,
-            errorCode: err.errno || 'EUNKNOWN',
-            errorMessage: err.message,
-          });
-        }
-      },
-    );
-    writeToStdin(process, options);
-  });
 }
 
 function writeToStdin(
