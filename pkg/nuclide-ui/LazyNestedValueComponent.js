@@ -37,7 +37,10 @@ function isObjectValue(result: EvaluationResult): boolean {
 }
 
 function TreeItemWithLoadingSpinner(): React.Element<any> {
-  return <TreeItem><LoadingSpinner size="EXTRA_SMALL" delay={SPINNER_DELAY} /></TreeItem>;
+  return (
+    <TreeItem className="nuclide-ui-lazy-nested-value-spinner">
+      <LoadingSpinner size="EXTRA_SMALL" delay={SPINNER_DELAY} />
+    </TreeItem>);
 }
 
 type LoadableValueComponentProps = {
