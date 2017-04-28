@@ -40,7 +40,7 @@ export class DebugBridge {
     return observeProcess(
       this._adbPath,
       deviceArg.concat(command),
-      {killTreeOnComplete: true, /* TODO(T17353599) */ isExitError: () => false},
+      {killTreeWhenDone: true, /* TODO(T17353599) */ isExitError: () => false},
     )
       .catch(error => Observable.of({kind: 'error', error})); // TODO(T17463635)
   }

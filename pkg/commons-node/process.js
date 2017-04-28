@@ -69,7 +69,7 @@ import atomWhenShellEnvironmentLoaded from './whenShellEnvironmentLoaded';
  * function, `runCommand()` also accepts the following:
  *
  * - `stdin` {string} Text to write to the new process's stdin.
- * - `killTreeOnComplete` {boolean} `false` by default. If you pass `true`, unsubscribing from the
+ * - `killTreeWhenDone` {boolean} `false` by default. If you pass `true`, unsubscribing from the
  *   observable will kill not only this process but also its descendants.
  * - `isExitError` {function} Determines whether a ProcessExitError should be raised based on the
  *   exit message. By default, this is a function that returns `true` if the exit code is non-zero.
@@ -480,7 +480,7 @@ export function parsePsOutput(
 //
 
 type CreateProcessStreamOptions = {
-  killTreeOnComplete?: ?boolean,
+  killTreeWhenDone?: ?boolean,
   exitErrorBufferSize?: ?number,
   isExitError?: ?(event: ProcessExitMessage) => boolean,
   timeout?: ?number,
@@ -705,7 +705,7 @@ function _createProcessStream(
       const process = createProcess();
       const isExitError = idx(options, _ => _.isExitError) || isExitErrorDefault;
       const exitErrorBufferSize = idx(options, _ => _.exitErrorBufferSize) || 2000;
-      const {killTreeOnComplete, timeout} = options;
+      const {killTreeWhenDone, timeout} = options;
       const enforceTimeout = timeout
         // TODO: Use `timeoutWith()` when we upgrade to an RxJS that has it.
         ? x => timeoutWith(x, timeout, Observable.throw(new ProcessTimeoutError(timeout, process)))
@@ -757,7 +757,7 @@ function _createProcessStream(
       )
       .finally(() => {
         if (!process.wasKilled && !finished) {
-          killProcess(process, Boolean(killTreeOnComplete));
+          killProcess(process, Boolean(killTreeWhenDone));
         }
       });
     });

@@ -71,7 +71,7 @@ export function hgObserveExecution(
       return observeProcess(
         'script',
         createArgsForScriptCommand(command, args),
-        {...options, killTreeOnComplete: true, /* TODO(T17353599) */ isExitError: () => false},
+        {...options, killTreeWhenDone: true, /* TODO(T17353599) */ isExitError: () => false},
       )
         .catch(error => Observable.of({kind: 'error', error})); // TODO(T17463635)
     });
@@ -87,7 +87,7 @@ export function hgRunCommand(
 ): Observable<string> {
   return Observable.fromPromise(getHgExecParams(args_, options_))
     .switchMap(({command, args, options}) => (
-      runCommand(command, args, {...options, killTreeOnComplete: true})
+      runCommand(command, args, {...options, killTreeWhenDone: true})
     ));
 }
 

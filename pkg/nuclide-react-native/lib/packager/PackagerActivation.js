@@ -165,7 +165,7 @@ function getPackagerObservable(projectRootPath: ?string): Observable<PackagerEve
         {
           cwd,
           env: {...process.env, REACT_EDITOR: quote(editor)},
-          killTreeOnComplete: true,
+          killTreeWhenDone: true,
           /* TODO(T17353599) */ isExitError: () => false,
         },
       )

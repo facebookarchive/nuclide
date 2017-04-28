@@ -333,7 +333,7 @@ function execArcLint(
   }
   return Observable.fromPromise(getArcExecOptions(cwd))
     .switchMap(opts =>
-      niceObserveProcess('arc', args, {...opts, killTreeOnComplete: true})
+      niceObserveProcess('arc', args, {...opts, killTreeWhenDone: true})
         .catch(error => Observable.of({kind: 'error', error})), // TODO(T17463635)
     )
     .mergeMap(event => {
