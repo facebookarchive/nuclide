@@ -133,6 +133,21 @@ export function mapEqual<T, X>(
   return true;
 }
 
+export function mapGetWithDefault<K, V>(
+  map: Map<K, V>,
+  key: K,
+  default_: V,
+): V {
+  if (map.has(key)) {
+    // Cast through `any` since map.get's return is a maybe type. We can't just get the value and
+    // check it against `null`, since null/undefined may inhabit V. We know this is safe since we
+    // just checked that the map has the key.
+    return (map.get(key): any);
+  } else {
+    return default_;
+  }
+}
+
 export function areSetsEqual<T>(a: Set<T>, b: Set<T>): boolean {
   return a.size === b.size && every(a, element => b.has(element));
 }

@@ -29,6 +29,7 @@ import {
   filterIterable,
   mapEqual,
   mapIterable,
+  mapGetWithDefault,
 } from '../collection';
 
 describe('arrayRemove', () => {
@@ -419,5 +420,20 @@ describe('mapIterable', () => {
     expect(Array.from(mapIterable(new Set(), element => true))).toEqual([]);
     expect(Array.from(mapIterable(new Set([1, 2, 3, 4, 5]), element => element * element)))
       .toEqual([1, 4, 9, 16, 25]);
+  });
+});
+
+describe('mapGetWithDefault', () => {
+  it('normally returns whatever is in the map', () => {
+    expect(mapGetWithDefault(new Map([[1, 2]]), 1, 3)).toBe(2);
+  });
+
+  it('returns the default if the key is not in the map', () => {
+    expect(mapGetWithDefault(new Map([[1, 2]]), 5, 3)).toBe(3);
+  });
+
+  it('returns `null` or `undefined` if they are values in the map', () => {
+    expect(mapGetWithDefault(new Map([[1, null]]), 1, 3)).toBeNull();
+    expect(mapGetWithDefault(new Map([[1, undefined]]), 1, 3)).toBeUndefined();
   });
 });
