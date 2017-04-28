@@ -68,7 +68,7 @@ import atomWhenShellEnvironmentLoaded from './whenShellEnvironmentLoaded';
  * kill the process. In addition to the options accepted by Node's [`child_process.spawn()`][1]
  * function, `runCommand()` also accepts the following:
  *
- * - `stdin` {string} Text to write to the new process's stdin.
+ * - `input` {string} Text to write to the new process's stdin.
  * - `killTreeWhenDone` {boolean} `false` by default. If you pass `true`, unsubscribing from the
  *   observable will kill not only this process but also its descendants.
  * - `isExitError` {function} Determines whether a ProcessExitError should be raised based on the
@@ -484,6 +484,8 @@ type CreateProcessStreamOptions = {
   exitErrorBufferSize?: ?number,
   isExitError?: ?(event: ProcessExitMessage) => boolean,
   timeout?: ?number,
+  input?: ?string,
+  dontLogInNuclide?: ?boolean,
 };
 
 type GetOutputStreamOptions = {
@@ -642,7 +644,11 @@ function monitorStreamErrors(process: child_process$ChildProcess, command, args,
 /**
  * Helper type/function to create child_process by spawning/forking the process.
  */
-type ChildProcessOpts = child_process$spawnOpts | child_process$forkOpts;
+type ChildProcessOpts = (child_process$spawnOpts | child_process$forkOpts)
+  & {
+    input?: ?string,
+    dontLogInNuclide?: ?boolean,
+  };
 
 function _makeChildProcess(
   type: 'spawn' | 'fork' = 'spawn',
@@ -662,15 +668,12 @@ function _makeChildProcess(
       logCall(Math.round(performanceNow() - now), command, args);
     });
   }
-  writeToStdin(child, options);
+  writeToStdin(child, options.input);
   return child;
 }
 
-function writeToStdin(
-  childProcess: child_process$ChildProcess,
-  options: Object,
-): void {
-  if (typeof options.stdin === 'string' && childProcess.stdin != null) {
+function writeToStdin(childProcess: child_process$ChildProcess, input: ?string): void {
+  if (typeof input === 'string' && childProcess.stdin != null) {
     // Note that the Node docs have this scary warning about stdin.end() on
     // http://nodejs.org/api/child_process.html#child_process_child_stdin:
     //
@@ -678,7 +681,7 @@ function writeToStdin(
     // this stream via end() often causes the child process to terminate."
     //
     // In practice, this has not appeared to cause any issues thus far.
-    childProcess.stdin.write(options.stdin);
+    childProcess.stdin.write(input);
     childProcess.stdin.end();
   }
 }

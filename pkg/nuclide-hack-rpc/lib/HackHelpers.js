@@ -65,7 +65,7 @@ export async function callHHClient(
               return runCommandDetailed(
                 hackCommand,
                 allArgs,
-                {stdin: processInput, isExitError: () => false},
+                {input: processInput, isExitError: () => false},
               ).toPromise();
             } catch (err) {
               return {stdout: '', stderr: ''};

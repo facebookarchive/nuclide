@@ -239,7 +239,7 @@ export async function formatCode(
   if (length != null) {
     args.push(`-length=${length}`);
   }
-  const stdout = await runCommand('clang-format', args, {stdin: contents}).toPromise();
+  const stdout = await runCommand('clang-format', args, {input: contents}).toPromise();
 
   // The first line is a JSON blob indicating the new cursor position.
   const newLine = stdout.indexOf('\n');

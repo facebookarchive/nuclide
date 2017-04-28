@@ -21,7 +21,7 @@ export async function refmt(content: string, flags: Array<string>): Promise<refm
     // extra override; to simulate the same behavior, do this in your bashrc:
     // if [ "$TERM" = "nuclide"]; then someOverrideLogic if
     env: await getOriginalEnvironment(),
-    stdin: content,
+    input: content,
   };
   try {
     const stdout = await runCommand(refmtPath, flags, options).toPromise();

@@ -304,7 +304,7 @@ class PythonSingleFileLanguageService {
         ['--line', `${start}-${end}`],
         {
           cwd: dirName,
-          stdin: contents,
+          input: contents,
           // At the moment, yapf outputs 3 possible exit codes:
           // 0 - success, no content change.
           // 2 - success, contents changed.
@@ -452,7 +452,7 @@ async function runLinterCommand(src: NuclideUri, contents: string): Promise<stri
     args,
     {
       cwd: dirName,
-      stdin: contents,
+      input: contents,
       // 1 indicates unclean lint result (i.e. has errors/warnings).
       isExitError: exit => exit.exitCode == null || exit.exitCode > 1,
     })

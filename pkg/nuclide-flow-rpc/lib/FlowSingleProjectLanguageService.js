@@ -123,7 +123,7 @@ export class FlowSingleProjectLanguageService {
     // the user's editor rather than what is saved on disk. It would be annoying
     // if the user had to save before using the jump-to-definition feature to
     // ensure he or she got accurate results.
-    options.stdin = buffer.getText();
+    options.input = buffer.getText();
 
     const args = ['get-def', '--json', '--path', filePath, line, column];
     try {
@@ -175,7 +175,7 @@ export class FlowSingleProjectLanguageService {
       return null;
     }
 
-    const options = {stdin: buffer.getText()};
+    const options = {input: buffer.getText()};
     const args = [
       'find-refs', '--json', '--path', filePath, position.row + 1, position.column + 1,
     ];
@@ -347,7 +347,7 @@ export class FlowSingleProjectLanguageService {
     // Note that Atom coordinates are 0-indexed whereas Flow's are 1-indexed, so we must add 1.
     const args = ['autocomplete', '--json', filePath, position.row + 1, position.column + 1];
 
-    options.stdin = buffer.getText();
+    options.input = buffer.getText();
     try {
       const result = await this._process.execFlow(args, options);
       if (!result) {
@@ -382,7 +382,7 @@ export class FlowSingleProjectLanguageService {
 
     const options = {};
 
-    options.stdin = buffer.getText();
+    options.input = buffer.getText();
 
     const line = position.row + 1;
     const column = position.column + 1;
@@ -520,7 +520,7 @@ export class FlowSingleProjectLanguageService {
     execInfoContainer: FlowExecInfoContainer,
   ): Promise<any> {
     const options = {
-      stdin: currentContents,
+      input: currentContents,
     };
 
     const flowRootPath = root == null ? null : root.getPathToRoot();

@@ -329,7 +329,7 @@ describe('commons-node/process', () => {
 
     it('sends the stdin to the process', () => {
       waitsForPromise(async () => {
-        const output = await runCommand('cat', [], {stdin: 'hello'}).toPromise();
+        const output = await runCommand('cat', [], {input: 'hello'}).toPromise();
         expect(output).toBe('hello');
       });
     });
@@ -456,7 +456,7 @@ describe('commons-node/process', () => {
 
     it('sends the stdin to the process', () => {
       waitsForPromise(async () => {
-        const output = await runCommandDetailed('cat', [], {stdin: 'hello'}).toPromise();
+        const output = await runCommandDetailed('cat', [], {input: 'hello'}).toPromise();
         expect(output.stdout).toBe('hello');
       });
     });

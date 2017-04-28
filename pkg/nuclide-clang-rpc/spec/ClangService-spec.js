@@ -24,7 +24,7 @@ describe('ClangService.formatCode', () => {
       expect(spy).toHaveBeenCalledWith(
         'clang-format',
         ['-style=file', '-assume-filename=test.cpp', '-cursor=1', '-offset=2', '-length=3'],
-        {stdin: 'test'},
+        {input: 'test'},
       );
     });
   });
