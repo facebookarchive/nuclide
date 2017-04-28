@@ -450,6 +450,9 @@ function getSelectionMode(event: SyntheticMouseEvent): SelectionMode {
     || os.platform() !== 'darwin' && event.ctrlKey && event.button === 0) {
     return 'multi-select';
   }
+  if (os.platform() === 'darwin' && event.ctrlKey && event.button === 0) {
+    return 'single-select';
+  }
   if (event.shiftKey && event.button === 0) {
     return 'range-select';
   }
