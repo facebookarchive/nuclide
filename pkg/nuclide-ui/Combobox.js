@@ -214,9 +214,11 @@ export class Combobox extends React.Component {
 
   _getOptionsElement(): HTMLElement {
     if (this._optionsElement == null) {
+      const workspaceElement = atom.views.getView(atom.workspace);
+      invariant(workspaceElement != null);
+
       this._optionsElement = document.createElement('div');
-      invariant(document.body != null);
-      document.body.appendChild(this._optionsElement);
+      workspaceElement.appendChild(this._optionsElement);
       this._subscriptions.add(
         () => { this._optionsElement.remove(); },
       );
