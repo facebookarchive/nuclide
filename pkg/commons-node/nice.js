@@ -31,18 +31,31 @@ export async function niceSafeSpawn(
   args: Array<string>,
   execOptions?: Object,
 ): Promise<child_process$ChildProcess> {
-  const nicified = await nicifyCommand(command, args);
-  const processStream = spawn(nicified.command, nicified.args, execOptions).publish();
+  const nicified = await nicifyCommand(command, args, execOptions);
+  const processStream = spawn(...nicified).publish();
   const processPromise = processStream.take(1).toPromise();
   processStream.connect();
   return processPromise;
 }
 
-async function nicifyCommand(
+/**
+* Takes the arguments that you would normally pass to `spawn()` and returns an array of new
+* arguments to use to run the command under `nice`.
+ *
+ * Example:
+ *
+ * ```js
+ * observeProcess(...(await nicifyCommand('hg', ['diff']))).subscribe(...);
+ * ```
+ *
+ * See also `scriptifyCommand()` which does a similar thing but for `script`.
+ */
+async function nicifyCommand<T>(
   command: string,
-  args: Array<string>,
-): Promise<{command: string, args: Array<string>}> {
-  const fullArgs = [command, ...args];
+  args?: Array<string>,
+  options: T,
+): Promise<[string, Array<string>, T]> {
+  const fullArgs = [command, ...(args || [])];
   if (await hasNiceCommand()) {
     fullArgs.unshift(NICE_COMMAND);
   }
@@ -59,10 +72,7 @@ async function nicifyCommand(
     // think we can assume that it uses this interface if it exists.
     fullArgs.unshift(IONICE_COMMAND, '-n', '7');
   }
-  return {
-    command: fullArgs[0],
-    args: fullArgs.slice(1),
-  };
+  return [fullArgs[0], fullArgs.slice(1), options];
 }
 
 const commandAvailabilityCache: LRUCache<string, boolean> = LRU({
@@ -91,10 +101,10 @@ async function hasCommand(command: string): Promise<boolean> {
 }
 
 export function niceObserveProcess(
-  command_: string,
-  args_?: Array<string>,
+  command: string,
+  args?: Array<string>,
   options?: ObserveProcessOptions,
 ): Observable<ProcessMessage> {
-  return Observable.defer(() => nicifyCommand(command_, args_ || []))
-    .switchMap(({command, args}) => observeProcess(command, args, options));
+  return Observable.defer(() => nicifyCommand(command, args, options))
+    .switchMap(spawnArgs => observeProcess(...spawnArgs));
 }

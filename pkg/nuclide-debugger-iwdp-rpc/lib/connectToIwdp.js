@@ -10,7 +10,7 @@
 
 import {logger} from './logger';
 import xfetch from '../../commons-node/xfetch';
-import {observeProcess, createArgsForScriptCommand} from '../../commons-node/process';
+import {observeProcess, scriptifyCommand} from '../../commons-node/process';
 import {Observable} from 'rxjs';
 
 import type {IosDeviceInfo} from './types';
@@ -25,9 +25,11 @@ export function connectToIwdp(): Observable<IosDeviceInfo> {
     // Answer: The iwdp binary will aggressively buffer stdout, unless it thinks it is running
     // under a terminal environment.  `script` runs the binary in a terminal-like environment,
     // and gives us less-aggressive buffering behavior, i.e. newlines cause stdout to be flushed.
-    'script',
-    createArgsForScriptCommand('ios_webkit_debug_proxy', ['--no-frontend']),
-    {/* TODO(T17353599) */isExitError: () => false},
+    ...scriptifyCommand(
+      'ios_webkit_debug_proxy',
+      ['--no-frontend'],
+      {/* TODO(T17353599) */isExitError: () => false},
+    ),
   )
     .catch(error => Observable.of({kind: 'error', error})) // TODO(T17463635)
     .mergeMap(message => {

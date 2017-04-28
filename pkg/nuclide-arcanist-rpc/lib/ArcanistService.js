@@ -21,7 +21,7 @@ import {
   getOriginalEnvironment,
   observeProcess,
   runCommand,
-  createArgsForScriptCommand,
+  scriptifyCommand,
 } from '../../commons-node/process';
 import {compact} from '../../commons-node/observable';
 import {niceObserveProcess} from '../../commons-node/nice';
@@ -199,9 +199,9 @@ function _callArcDiff(
       }
       return Observable.fromPromise(getArcExecOptions(arcConfigDir))
         .switchMap(opts => {
-          const scriptArgs = createArgsForScriptCommand('arc', args);
+          const scriptArgs = scriptifyCommand('arc', args, opts);
           return compact(
-            observeProcess('script', scriptArgs, opts)
+            observeProcess(...scriptArgs)
               .catch(error => Observable.of({kind: 'error', error})) // TODO(T17463635)
               .map(event => {
                 switch (event.kind) {

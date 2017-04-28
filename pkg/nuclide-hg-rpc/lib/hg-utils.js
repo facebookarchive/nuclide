@@ -12,7 +12,7 @@ import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
 import type {HgExecOptions} from './hg-exec-types';
 
 import {Observable} from 'rxjs';
-import {runCommandDetailed, createArgsForScriptCommand} from '../../commons-node/process';
+import {runCommandDetailed, scriptifyCommand} from '../../commons-node/process';
 import {getLogger} from '../../nuclide-logging';
 import fsPromise from '../../commons-node/fsPromise';
 import {
@@ -69,9 +69,11 @@ export function hgObserveExecution(
   return Observable.fromPromise(getHgExecParams(args_, options_))
     .switchMap(({command, args, options}) => {
       return observeProcess(
-        'script',
-        createArgsForScriptCommand(command, args),
-        {...options, killTreeWhenDone: true, /* TODO(T17353599) */ isExitError: () => false},
+        ...scriptifyCommand(
+          command,
+          args,
+          {...options, killTreeWhenDone: true, /* TODO(T17353599) */ isExitError: () => false},
+        ),
       )
         .catch(error => Observable.of({kind: 'error', error})); // TODO(T17463635)
     });
@@ -140,7 +142,7 @@ async function getHgExecParams(
       'extensions.blackbox=!',
     );
   }
-  const options = {
+  let options = {
     ...options_,
     env: {
       ...await getOriginalEnvironment(),
@@ -157,8 +159,7 @@ async function getHgExecParams(
 
   let command;
   if (options.TTY_OUTPUT) {
-    command = 'script';
-    args = createArgsForScriptCommand('hg', args);
+    [command, args, options] = scriptifyCommand('hg', args, options);
   } else {
     command = 'hg';
   }

@@ -329,21 +329,29 @@ export function getOutputStream(
 //
 
 /**
- * Takes the command and args that you would normally pass to `spawn()` and returns `newArgs` such
- * that you should call it with `spawn('script', newArgs)` to run the original command/args pair
- * under `script`.
+ * Takes the arguments that you would normally pass to `spawn()` and returns an array of new
+ * arguments to use to run the command under `script`.
+ *
+ * Example:
+ *
+ * ```js
+ * observeProcess(...scriptifyCommand('hg', ['diff'])).subscribe(...);
+ * ```
+ *
+ * See also `nicifyCommand()` which does a similar thing but for `nice`.
  */
-export function createArgsForScriptCommand(
+export function scriptifyCommand<T>(
   command: string,
   args?: Array<string> = [],
-): Array<string> {
+  options: T,
+): [string, Array<string>, T] {
   if (process.platform === 'darwin') {
     // On OS X, script takes the program to run and its arguments as varargs at the end.
-    return ['-q', '/dev/null', command].concat(args);
+    return ['script', ['-q', '/dev/null', command].concat(args), options];
   } else {
     // On Linux, script takes the command to run as the -c parameter.
     const allArgs = [command].concat(args);
-    return ['-q', '/dev/null', '-c', quote(allArgs)];
+    return ['script', ['-q', '/dev/null', '-c', quote(allArgs)], options];
   }
 }
 
