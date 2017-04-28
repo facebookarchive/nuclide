@@ -27,6 +27,16 @@ export function getBuiltinProviders(): Array<DistractionFreeModeProvider> {
     providers.push(new FindAndReplaceProvider('project-find'));
   }
 
+  if (atom.workspace.getLeftDock != null) {
+    providers.push(new DockProvider(atom.workspace.getLeftDock(), 'left-dock'));
+  }
+  if (atom.workspace.getRightDock != null) {
+    providers.push(new DockProvider(atom.workspace.getRightDock(), 'right-dock'));
+  }
+  if (atom.workspace.getBottomDock != null) {
+    providers.push(new DockProvider(atom.workspace.getBottomDock(), 'bottom-dock'));
+  }
+
   return providers;
 }
 
@@ -102,5 +112,23 @@ class StatusBarProvider {
   }
   _getStatusBarElement(): ?HTMLElement {
     return document.querySelector('status-bar');
+  }
+}
+
+class DockProvider {
+  _dock: atom$Dock;
+  name: string;
+
+  constructor(dock: atom$Dock, name: string) {
+    this._dock = dock;
+    this.name = name;
+  }
+
+  isVisible(): boolean {
+    return this._dock.isVisible();
+  }
+
+  toggle(): void {
+    this._dock.toggle();
   }
 }
