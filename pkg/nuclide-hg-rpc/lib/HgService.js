@@ -1263,8 +1263,10 @@ export class HgService {
       .publish();
   }
 
-  continueRebase(): ConnectableObservable<LegacyProcessMessage> { // TODO(T17463635)
-    const args = ['rebase', '--continue'];
+  continueOperation(
+    command: string,
+  ): ConnectableObservable<LegacyProcessMessage> { // TODO(T17463635)
+    const args = [command, '--continue'];
     const execOptions = {
       cwd: this._workingDirectory,
       HGEDITOR: 'true',
@@ -1274,8 +1276,12 @@ export class HgService {
       .publish();
   }
 
-  abortRebase(): Promise<void> {
-    return this._runSimpleInWorkingDirectory('rebase', ['--abort']);
+  abortOperation(command: string): ConnectableObservable<string> {
+    const args = [command, '--abort'];
+    const execOptions = {
+      cwd: this._workingDirectory,
+    };
+    return hgRunCommand(args, execOptions).publish();
   }
 
   rebase(

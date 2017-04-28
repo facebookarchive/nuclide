@@ -995,12 +995,12 @@ export class HgRepositoryClient {
     return this._service.log(filePaths, limit);
   }
 
-  continueRebase(): Observable<LegacyProcessMessage> { // TODO(T17463635)
-    return this._service.continueRebase().refCount();
+  continueOperation(command: string): Observable<LegacyProcessMessage> { // TODO(T17463635)
+    return this._service.continueOperation(command).refCount();
   }
 
-  abortRebase(): Promise<void> {
-    return this._service.abortRebase();
+  abortOperation(command: string): Observable<string> {
+    return this._service.abortOperation(command).refCount();
   }
 
   rebase(

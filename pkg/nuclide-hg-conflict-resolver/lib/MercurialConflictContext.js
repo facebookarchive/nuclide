@@ -128,7 +128,7 @@ export class MercurialConflictContext {
             notification.dismiss();
             this.clearConflictState();
             try {
-              await repository.continueRebase().toPromise();
+              await repository.continueOperation(/* operation to continue */ 'rebase').toPromise();
               atom.notifications.addInfo('Rebase continued');
             } catch (error) {
               atom.notifications.addError(
@@ -161,7 +161,7 @@ export class MercurialConflictContext {
             notification.dismiss();
             this.clearConflictState();
             try {
-              await repository.abortRebase();
+              await repository.abortOperation(/* operation to abort */ 'rebase').toPromise();
               atom.notifications.addInfo('Rebase aborted');
             } catch (error) {
               atom.notifications.addError(
