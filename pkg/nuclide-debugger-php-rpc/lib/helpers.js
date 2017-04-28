@@ -134,6 +134,9 @@ export function launchPhpScriptWithXDebugEnabled(
     const block: string = chunk.toString();
     const output = `child_process(${proc.pid}) stdout: ${block}`;
     logger.log(output);
+    if (sendToOutputWindowAndResolve != null) {
+      sendToOutputWindowAndResolve(block, 'text');
+    }
   });
   proc.stderr.on('data', chunk => {
     const block: string = chunk.toString().trim();
