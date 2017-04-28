@@ -18,6 +18,7 @@ import type {
   RevisionInfo,
   RevisionShowInfo,
   MergeConflict,
+  MergeConflictsEnriched,
   RevisionFileChanges,
   StatusCodeNumberValue,
   StatusCodeIdValue,
@@ -728,11 +729,9 @@ export class HgRepositoryClient {
     this._emitter.emit('did-change-interactive-mode', isInteractiveMode);
   }
 
-  /**
-  *
-  * Section: Retrieving Bookmark (async methods)
-  *
-  */
+  fetchMergeConflictsWithDetails(): Observable<?MergeConflictsEnriched> {
+    return this._service.fetchMergeConflictsWithDetails().refCount();
+  }
 
   /*
    * Setting fetchResolved will return all resolved and unresolved conflicts,

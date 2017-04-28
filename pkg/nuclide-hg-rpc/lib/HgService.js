@@ -193,6 +193,33 @@ export type MergeConflict = {
   resolvedConflictsCount?: number,
 };
 
+// Information about file for local, base and other commit that caused the conflict
+export type MergeConflictSideFileData = {
+  contents: string,
+  exists: boolean,
+  isexec: boolean,
+  issymlink: boolean,
+};
+
+// Information about the output file
+export type MergeConflictOutputFileData = MergeConflictSideFileData & {
+  path: NuclideUri,
+};
+
+export type MergeConflictFileData = {
+  base: MergeConflictSideFileData,
+  local: MergeConflictSideFileData,
+  other: MergeConflictSideFileData,
+  output: MergeConflictOutputFileData,
+  status: MergeConflictStatusValue,
+  conflictCount?: number,
+};
+
+export type MergeConflictsEnriched = {
+  conflicts: Array<MergeConflictFileData>,
+  command: string,
+};
+
 export type CheckoutSideName = 'ours' | 'theirs';
 
 export type AmendModeValue = 'Clean' | 'Rebase' | 'Fixup';
@@ -1127,6 +1154,41 @@ export class HgService {
     const result = await this._hgAsyncExecute(args, execOptions);
     const entries = JSON.parse(result.stdout);
     return {entries};
+  }
+
+  fetchMergeConflictsWithDetails(): ConnectableObservable<?MergeConflictsEnriched> {
+    const args = ['resolve', '--tool=internal:dumpjson', '--all'];
+    const execOptions = {
+      cwd: this._workingDirectory,
+    };
+    return hgRunCommand(args, execOptions)
+      .map(data => {
+        const parsedData = JSON.parse(data)[0];
+        if (parsedData.command == null) {
+          return null;
+        }
+        const conflicts = parsedData.conflicts.map(conflict => {
+          const {local, other} = conflict;
+          let status;
+          if (local.exists && other.exists) {
+            status = MergeConflictStatus.BOTH_CHANGED;
+          } else if (local.exists) {
+            status = MergeConflictStatus.DELETED_IN_THEIRS;
+          } else {
+            status = MergeConflictStatus.DELETED_IN_OURS;
+          }
+
+          return {
+            ...conflict,
+            status,
+          };
+        });
+        return {
+          ...parsedData,
+          conflicts,
+        };
+      })
+      .publish();
   }
 
   /*
