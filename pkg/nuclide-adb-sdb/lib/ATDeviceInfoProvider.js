@@ -43,4 +43,8 @@ export class ATDeviceInfoProvider implements DeviceInfoProvider {
   getPriority(): number {
     return 100;
   }
+
+  isSupported(): Promise<boolean> {
+    return Promise.resolve(true);
+  }
 }

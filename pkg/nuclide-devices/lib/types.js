@@ -30,6 +30,7 @@ export interface DeviceActionsProvider {
   getActions(host: NuclideUri, device: string): DeviceAction[],
   getName(): string,
   getType(): string,
+  isSupported(host: NuclideUri): Promise<boolean>,
 }
 
 export interface DeviceListProvider {
@@ -42,6 +43,7 @@ export interface DeviceInfoProvider {
   getType(): string,
   getTitle(): string,
   getPriority(): number,
+  isSupported(host: NuclideUri): Promise<boolean>,
 }
 
 export type AppState = {

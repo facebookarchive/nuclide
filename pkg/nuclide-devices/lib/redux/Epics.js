@@ -11,7 +11,7 @@
 import {Observable} from 'rxjs';
 import * as Actions from './Actions';
 import invariant from 'invariant';
-import {arrayFlatten} from '../../../commons-node/collection';
+import {arrayFlatten, arrayCompact} from '../../../commons-node/collection';
 import {
   getDeviceListProviders,
   getDeviceInfoProviders,
@@ -69,9 +69,12 @@ async function getInfoTables(state: AppState): Promise<Map<string, Map<string, s
       return pb - pa;
     });
   const infoTables = await Promise.all(sortedProviders.map(async provider => {
+    if (!await provider.isSupported(state.host)) {
+      return null;
+    }
     return [provider.getTitle(), await provider.fetch(state.host, device.name)];
   }));
-  return new Map(infoTables);
+  return new Map(arrayCompact(infoTables));
 }
 
 async function getDeviceActions(state: AppState): Promise<DeviceAction[]> {
@@ -82,7 +85,12 @@ async function getDeviceActions(state: AppState): Promise<DeviceAction[]> {
   const actions = await Promise.all(
     Array.from(getDeviceActionsProviders())
       .filter(provider => provider.getType() === state.deviceType)
-      .map(provider => provider.getActions(state.host, device.name)),
+      .map(async provider => {
+        if (!await provider.isSupported(state.host)) {
+          return null;
+        }
+        return provider.getActions(state.host, device.name);
+      }),
   );
-  return arrayFlatten(actions).sort((a, b) => a.name.localeCompare(b.name));
+  return arrayFlatten(arrayCompact(actions)).sort((a, b) => a.name.localeCompare(b.name));
 }
