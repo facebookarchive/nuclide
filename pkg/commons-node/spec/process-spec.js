@@ -113,15 +113,54 @@ describe('commons-node/process', () => {
     it('captures stdout, stderr and exitCode', () => {
       waitsForPromise(async () => {
         const child = child_process.spawn(process.execPath,
-          ['-e', 'console.error("stderr"); console.log("std out"); process.exit(42);']);
+          ['-e', 'console.error("stderr"); console.log("std out"); process.exit(0);']);
         const results = await getOutputStream(child)
           .toArray()
           .toPromise();
         expect(results).toEqual([
           {kind: 'stderr', data: 'stderr\n'},
           {kind: 'stdout', data: 'std out\n'},
-          {kind: 'exit', exitCode: 42, signal: null},
+          {kind: 'exit', exitCode: 0, signal: null},
         ]);
+      });
+    });
+
+    it('errors on nonzero exit codes by default', () => {
+      waitsForPromise(async () => {
+        const child = child_process.spawn(
+          process.execPath,
+          ['-e', 'console.error("stderr"); console.log("std out"); process.exit(42);'],
+        );
+        const results = await getOutputStream(child)
+          // $FlowIssue: Add materialize to type defs
+          .materialize()
+          .toArray()
+          .toPromise();
+        expect(results.map(notification => notification.kind)).toEqual(['N', 'N', 'E']);
+        const {error} = results[2];
+        expect(error.name).toBe('ProcessExitError');
+        expect(error.exitCode).toBe(42);
+        expect(error.stderr).toBe('stderr\n');
+      });
+    });
+
+    it('accumulates the first `exitErrorBufferSize` bytes of stderr for the exit error', () => {
+      waitsForPromise(async () => {
+        let error;
+        const child = child_process.spawn(
+          process.execPath,
+          ['-e', 'console.error("stderr"); process.exit(42);'],
+        );
+        try {
+          await getOutputStream(child, {exitErrorBufferSize: 2, isExitError: () => true})
+            .toArray()
+            .toPromise();
+        } catch (err) {
+          error = err;
+        }
+        expect(error).toBeDefined();
+        invariant(error != null);
+        expect(error.stderr).toBe('st');
       });
     });
   });
@@ -141,44 +180,6 @@ describe('commons-node/process', () => {
         expect(error).toBeDefined();
         invariant(error);
         expect(error.code).toBe('ENOENT');
-      });
-    });
-
-    it('errors on nonzero exit codes by default', () => {
-      waitsForPromise(async () => {
-        const results = await spawn(
-          process.execPath,
-          ['-e', 'console.error("stderr"); console.log("std out"); process.exit(42);'],
-        )
-          // $FlowIssue: Add materialize to type defs
-          .materialize()
-          .toArray()
-          .toPromise();
-        expect(results.map(notification => notification.kind)).toEqual(['N', 'E']);
-        const {error} = results[1];
-        expect(error.name).toBe('ProcessExitError');
-        expect(error.exitCode).toBe(42);
-        expect(error.stderr).toBe('stderr\n');
-      });
-    });
-
-    it('accumulates the first `exitErrorBufferSize` bytes of stderr for the exit error', () => {
-      waitsForPromise(async () => {
-        let error;
-        try {
-          await spawn(
-            process.execPath,
-            ['-e', 'console.error("stderr"); process.exit(42);'],
-            {exitErrorBufferSize: 2, isExitError: () => true},
-          )
-            .toArray()
-            .toPromise();
-        } catch (err) {
-          error = err;
-        }
-        expect(error).toBeDefined();
-        invariant(error != null);
-        expect(error.stderr).toBe('st');
       });
     });
 

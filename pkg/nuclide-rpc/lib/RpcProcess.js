@@ -108,7 +108,7 @@ export class RpcProcess {
         .publish();
 
       processStream
-        .switchMap(proc => getOutputStream(proc))
+        .switchMap(proc => getOutputStream(proc, {/* TODO(T17353599) */isExitError: () => false}))
         // switchMap won't stop until the mapped observable stops.
         // Manual disposals shouldn't trigger the exit message.
         .takeUntil(this._disposals)

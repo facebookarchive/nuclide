@@ -91,7 +91,6 @@ function spawnClangProcess(
         env: {
           PYTHONPATH: pythonPathEnv,
         },
-        /* TODO(T17353599) */isExitError: () => false,
       };
 
       // Note that safeSpawn() often overrides options.env.PATH, but that only happens when

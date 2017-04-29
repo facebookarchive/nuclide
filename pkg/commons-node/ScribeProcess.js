@@ -104,7 +104,6 @@ export default class ScribeProcess {
     const processStream = spawn(
       SCRIBE_CAT_COMMAND,
       [this._scribeCategory],
-      {/* TODO(T17353599) */isExitError: () => false},
     )
       .do(child => {
         child.stdin.setDefaultEncoding('utf8');

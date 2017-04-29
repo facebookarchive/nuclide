@@ -235,8 +235,10 @@ export function observeProcessRaw(
  * `observeProcess()`, if you unsubscribe from the returned observable, the process will be killed
  * (or, if it hasn't yet been spawned, it won't be created).
  *
- * Also like `observeProcess()`, the returned observable can throw system errors or
- * ProcessExitErrors (with truncated stderr for debugging).
+ * Unlike `observeProcess()`, the returned observable won't throw ProcessExitErrors--only system
+ * errors raised when trying to spawn the process. This is because it's meant to be composed with
+ * `getOutputStream` which terminates based on the "close" event whereas this terminates on the
+ * "exit" event to ensure that you don't try to interact with a dead process.
  *
  * This function is useful when, for example, you need access to the process in order to send IPC
  * messages to it. It can be composed with `getOutputStream()` to give the same functionality of
@@ -284,7 +286,7 @@ export function fork(
  * you shouldn't use this function and should instead use `observeProcess()` (which makes use of
  * this for you).
  *
- * IMPORTANT: If you must use this message, it's very important that the process you give it was
+ * IMPORTANT: If you must use this function, it's very important that the process you give it was
  * just synchronously created. Otherwise, you can end up missing messages.
  *
  * This function intentionally does not close the process when you unsubscribe. It's usually used in
@@ -297,24 +299,48 @@ export function getOutputStream(
 ): Observable<ProcessMessage> {
   const chunk = idx(options, _ => _.splitByLines) === false ? (x => x) : splitStream;
   const maxBuffer = idx(options, _ => _.maxBuffer);
+  const isExitError = idx(options, _ => _.isExitError) || isExitErrorDefault;
+  const exitErrorBufferSize = idx(options, _ => _.exitErrorBufferSize) || 2000;
   return Observable.defer(() => {
     const stdoutEvents = chunk(limitBufferSize(observeStream(process.stdout), maxBuffer, 'stdout'))
       .map(data => ({kind: 'stdout', data}));
     const stderrEvents = chunk(limitBufferSize(observeStream(process.stderr), maxBuffer, 'stderr'))
-      .map(data => ({kind: 'stderr', data}));
+      .map(data => ({kind: 'stderr', data}))
+      .share();
+
+    // Accumulate the first `exitErrorBufferSize` bytes of stderr so that we can give feedback about
+    // about exit errors (then stop so we don't fill up memory with it).
+    const accumulatedStderr = takeWhileInclusive(
+      stderrEvents
+        .scan((acc, event) => (acc + event.data).slice(0, exitErrorBufferSize), '')
+        .startWith(''),
+      acc => acc.length < exitErrorBufferSize,
+    );
 
     // We need to start listening for the exit event immediately, but defer emitting it until the
     // (buffered) output streams end.
-    const exitEvents = observeProcessExitMessage(process).publishReplay();
-    const exitSub = exitEvents.connect();
-
-    // It's possible for stdout and stderr to remain open (even indefinitely) after the exit event.
-    // This utility, however, treats the exit event as stream-ending, which helps us to avoid easy
-    // bugs. We give a short (100ms) timeout for the stdout and stderr streams to close.
-    const close = exitEvents.delay(100);
+    const closeEvents = Observable.fromEvent(
+      process,
+      // We listen to the "close" event instead of "exit" because we want to get all of the stdout
+      // and stderr.
+      'close',
+      (exitCode: ?number, signal: ?string) => ({kind: 'exit', exitCode, signal}),
+    )
+      // An exit signal from SIGUSR1 doesn't actually exit the process, so skip that.
+      .filter(message => message.signal !== 'SIGUSR1')
+      .take(1)
+      .withLatestFrom(accumulatedStderr)
+      .map(([event, stderr]) => {
+        if (isExitError(event)) {
+          throw new ProcessExitError(event.exitCode, event.signal, process, stderr);
+        }
+        return event;
+      })
+      .publishReplay();
+    const exitSub = closeEvents.connect();
 
     return takeWhileInclusive(
-      Observable.merge(stdoutEvents, stderrEvents).takeUntil(close).concat(exitEvents),
+      Observable.merge(stdoutEvents, stderrEvents).concat(closeEvents),
       event => event.kind !== 'error' && event.kind !== 'exit',
     )
       .finally(() => { exitSub.unsubscribe(); });
@@ -489,8 +515,6 @@ export function parsePsOutput(
 
 type CreateProcessStreamOptions = {
   killTreeWhenDone?: ?boolean,
-  exitErrorBufferSize?: ?number,
-  isExitError?: ?(event: ProcessExitMessage) => boolean,
   timeout?: ?number,
   input?: ?string,
   dontLogInNuclide?: ?boolean,
@@ -499,6 +523,8 @@ type CreateProcessStreamOptions = {
 type GetOutputStreamOptions = {
   splitByLines?: ?boolean,
   maxBuffer?: ?number,
+  exitErrorBufferSize?: ?number,
+  isExitError?: ?(event: ProcessExitMessage) => boolean,
 };
 
 export type ObserveProcessOptions = SpawnProcessOptions
@@ -714,8 +740,6 @@ function _createProcessStream(
     .take(1)
     .switchMap(() => {
       const process = createProcess();
-      const isExitError = idx(options, _ => _.isExitError) || isExitErrorDefault;
-      const exitErrorBufferSize = idx(options, _ => _.exitErrorBufferSize) || 2000;
       const {killTreeWhenDone, timeout} = options;
       const enforceTimeout = timeout
         // TODO: Use `timeoutWith()` when we upgrade to an RxJS that has it.
@@ -736,24 +760,14 @@ function _createProcessStream(
       );
 
       const errors = Observable.fromEvent(process, 'error').flatMap(Observable.throw);
-
-      // Accumulate the first `exitErrorBufferSize` bytes of stderr so that we can give feedback
-      // about exit errors. Once we have this much, we don't even listen to the event anymore.
-      const accumulatedStderr = takeWhileInclusive(
-        observeStream(process.stderr)
-          .scan((acc, stderrData) => (acc + stderrData).slice(0, exitErrorBufferSize), '')
-          .startWith(''),
-        acc => acc.length < exitErrorBufferSize,
-      );
-
-      const exitEvents = observeProcessExitMessage(process)
-        .withLatestFrom(accumulatedStderr)
-        .map(([event, stderr]) => {
-          if (isExitError(event)) {
-            throw new ProcessExitError(event.exitCode, event.signal, process, stderr);
-          }
-          return event;
-        });
+      const exitEvents = Observable.fromEvent(
+        process,
+        'exit',
+        (exitCode: ?number, signal: ?string) => ({kind: 'exit', exitCode, signal}),
+      )
+        // An exit signal from SIGUSR1 doesn't actually exit the process, so skip that.
+        .filter(message => message.signal !== 'SIGUSR1')
+        .take(1);
 
       return enforceTimeout(
         Observable.of(process)
@@ -808,18 +822,6 @@ export async function killUnixProcessTree(childProcess: child_process$ChildProce
   for (const info of descendants.reverse()) {
     killPid(info.pid);
   }
-}
-
-function observeProcessExitMessage(
-  process: child_process$ChildProcess,
-): Observable<ProcessExitMessage> {
-  return Observable.fromEvent(
-      process,
-      'exit',
-      (exitCode: ?number, signal: ?string) => ({kind: 'exit', exitCode, signal}))
-    // An exit signal from SIGUSR1 doesn't actually exit the process, so skip that.
-    .filter(message => message.signal !== 'SIGUSR1')
-    .take(1);
 }
 
 function isExitErrorDefault(exit: ProcessExitMessage): boolean {

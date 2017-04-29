@@ -318,7 +318,6 @@ async function createHackProcess(
   const processStream = spawn(
     command,
     ['ide', configDir],
-    {/* TODO(T17353599) */isExitError: () => false},
   );
   const hackProcess = new HackProcess(
     fileCache, `HackProcess-${configDir}`, processStream, configDir);
