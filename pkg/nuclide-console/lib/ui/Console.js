@@ -23,7 +23,7 @@ import OutputTable from './OutputTable';
 import ConsoleHeader from './ConsoleHeader';
 import InputArea from './InputArea';
 import PromptButton from './PromptButton';
-import UnseenMessagesNotification from './UnseenMessagesNotification';
+import NewMessagesNotification from './NewMessagesNotification';
 import invariant from 'assert';
 import shallowEqual from 'shallowequal';
 
@@ -114,6 +114,10 @@ export default class Console extends React.Component {
         this.setState({unseenMessages: true});
       }
     }
+
+    if (nextProps.displayableRecords.length === 0) {
+      this.setState({unseenMessages: false});
+    }
   }
 
   shouldComponentUpdate(nextProps: Props, nextState: State): boolean {
@@ -162,7 +166,7 @@ export default class Console extends React.Component {
               onScroll={this._handleScroll}
               onDisplayableRecordHeightChange={this.props.onDisplayableRecordHeightChange}
             />
-            <UnseenMessagesNotification
+            <NewMessagesNotification
               visible={this.state.unseenMessages}
               onClick={this._scrollToBottom}
             />
