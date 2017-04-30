@@ -8,35 +8,31 @@
  * @flow
  */
 
-import {
-  activateAllPackages,
-  deactivateAllPackages,
-  jasmineIntegrationTestSetup,
-} from './utils/integration-test-helpers';
+import type {TestContext} from './utils/remotable-tests';
+
 import {copyBuildFixture} from '../pkg/nuclide-test-helpers';
-import {setLocalProject} from '../pkg/commons-atom/testHelpers';
 import nuclideUri from '../pkg/commons-node/nuclideUri';
 import {observeProcess} from '../pkg/commons-node/process';
 import {existingEditorForUri} from '../pkg/commons-atom/text-editor';
+import {describeRemote} from './utils/remotable-tests';
 
-describe('Remote Open', () => {
+describeRemote('Remote Open', (context: TestContext) => {
   it('tests remote open', () => {
-    let filePath;
+    let localFilePath: string = (null: any);
+    let remoteFilePath: string = (null: any);
 
     waitsForPromise(async () => {
-      jasmineIntegrationTestSetup();
-      await activateAllPackages();
-
-      const projectPath = await copyBuildFixture('python_project_1', __dirname);
-      setLocalProject(projectPath);
-      filePath = nuclideUri.join(projectPath, 'Foo.py');
+      const repoPath = await copyBuildFixture('python_project_1', __dirname);
+      await context.setProject(repoPath);
+      localFilePath = nuclideUri.join(repoPath, 'Foo.py');
+      remoteFilePath = context.getProjectRelativePath('Foo.py');
     });
 
     waitsForPromise(async () => {
       // Open file via remote atom command
       const remoteAtomCommand =
         nuclideUri.join(__dirname, '../pkg/nuclide-remote-atom-rpc/bin/atom');
-      const result = await observeProcess(remoteAtomCommand, [filePath])
+      const result = await observeProcess(remoteAtomCommand, [localFilePath])
         .reduce(
           (acc, event) => {
             switch (event.kind) {
@@ -57,11 +53,7 @@ describe('Remote Open', () => {
     });
 
     waitsFor('File should open up in short order', 10000, () => {
-      return existingEditorForUri(filePath) != null;
-    });
-
-    runs(() => {
-      deactivateAllPackages();
+      return existingEditorForUri(remoteFilePath) != null;
     });
   });
 });
